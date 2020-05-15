@@ -1,21 +1,22 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 14 May 2020 23:34:53 -0700
-Subject: [Intel-wired-lan] [iecm/idpf V1 07/14] iecm: Implement vector
- allocation
+Date: Thu, 14 May 2020 23:35:00 -0700
+Subject: [Intel-wired-lan] [iecm/idpf V1 14/14] idpf: Introduce idpf driver
 In-Reply-To: <20200515063500.48301-1-alice.michael@intel.com>
 References: <20200515063500.48301-1-alice.michael@intel.com>
-Message-ID: <20200515063500.48301-8-alice.michael@intel.com>
+Message-ID: <20200515063500.48301-15-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This allocates PCI vectors and maps to interrupt
-routines.
+From: Alan Brady <alan.brady@intel.com>
 
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Utilizes the Intel Ethernet Common Module and provides
+a device specific implementation for data plane devices.
+
 Signed-off-by: Alan Brady <Alan.Brady@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
@@ -24,881 +25,476 @@ Reviewed-by: Donald Skidmore <donald.c.skidmore@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    |  63 +-
- drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 606 +++++++++++++++++-
- .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  24 +-
- 3 files changed, 669 insertions(+), 24 deletions(-)
+ .../networking/device_drivers/intel/idpf.rst  |  47 ++++++
+ MAINTAINERS                                   |   1 +
+ drivers/net/ethernet/intel/Kconfig            |   8 +
+ drivers/net/ethernet/intel/Makefile           |   1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |  14 ++
+ drivers/net/ethernet/intel/idpf/idpf_dev.h    |  17 ++
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |  10 ++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 139 ++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_reg.c    | 152 ++++++++++++++++++
+ 9 files changed, 389 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/intel/idpf.rst
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_reg.c
 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index eafe5ae39f4b..f41fb395ab66 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -15,7 +15,11 @@ extern int debug;
-  */
- static void iecm_mb_intr_rel_irq(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	int irq_num;
+diff --git a/Documentation/networking/device_drivers/intel/idpf.rst b/Documentation/networking/device_drivers/intel/idpf.rst
+new file mode 100644
+index 000000000000..973fa9613428
+--- /dev/null
++++ b/Documentation/networking/device_drivers/intel/idpf.rst
+@@ -0,0 +1,47 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
-+	irq_num = adapter->msix_entries[0].vector;
-+	synchronize_irq(irq_num);
-+	free_irq(irq_num, adapter);
- }
- 
- /**
-@@ -44,7 +48,12 @@ static void iecm_intr_rel(struct iecm_adapter *adapter)
-  */
- irqreturn_t iecm_mb_intr_clean(int __always_unused irq, void *data)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = (struct iecm_adapter *)data;
++==================================================================
++Linux Base Driver for the Intel(R) Smart Network Adapter Family Series
++==================================================================
 +
-+	set_bit(__IECM_MB_INTR_TRIGGER, adapter->flags);
-+	queue_delayed_work(adapter->serv_wq, &adapter->serv_task,
-+			   msecs_to_jiffies(0));
-+	return IRQ_HANDLED;
- }
- 
- /**
-@@ -53,7 +62,12 @@ irqreturn_t iecm_mb_intr_clean(int __always_unused irq, void *data)
-  */
- void iecm_mb_irq_enable(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct iecm_hw *hw = &adapter->hw;
-+	struct iecm_intr_reg *intr = &adapter->mb_vector.intr_reg;
-+	u32 val;
++Intel idpf Linux driver.
++Copyright(c) 2020 Intel Corporation.
 +
-+	val = intr->dyn_ctl_intena_m | intr->dyn_ctl_itridx_m;
-+	writel_relaxed(val, (u8 *)(hw->hw_addr + intr->dyn_ctl));
- }
- 
- /**
-@@ -62,7 +76,22 @@ void iecm_mb_irq_enable(struct iecm_adapter *adapter)
-  */
- int iecm_mb_intr_req_irq(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct iecm_q_vector *mb_vector = &adapter->mb_vector;
-+	int irq_num, mb_vidx = 0, err;
++Contents
++========
 +
-+	irq_num = adapter->msix_entries[mb_vidx].vector;
-+	snprintf(mb_vector->name, sizeof(mb_vector->name) - 1,
-+		 "%s-%s-%d", dev_driver_string(&adapter->pdev->dev),
-+		 "Mailbox", mb_vidx);
-+	err = request_irq(irq_num, adapter->irq_mb_handler, 0,
-+			  mb_vector->name, adapter);
-+	if (err) {
-+		dev_err(&adapter->pdev->dev,
-+			"Request_irq for mailbox failed, error: %d\n", err);
++- Enabling the driver
++- Support
++
++The driver in this release supports Intel's Smart Network Adapter Family Series
++of products. For more information, visit Intel's support page at
++https://support.intel.com.
++
++Enabling the driver
++===================
++The driver is enabled via the standard kernel configuration system,
++using the make command::
++
++  make oldconfig/menuconfig/etc.
++
++The driver is located in the menu structure at:
++
++  -> Device Drivers
++    -> Network device support (NETDEVICES [=y])
++      -> Ethernet driver support
++        -> Intel devices
++          -> Intel(R) Smart Network Adapter Family Series Support
++
++Support
++=======
++For general information, go to the Intel support website at:
++
++https://www.intel.com/support/
++
++or the Intel Wired Networking project hosted by Sourceforge at:
++
++https://sourceforge.net/projects/e1000
++
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to e1000-devel at lists.sf.net.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b0a4b2b2f75f..f247298626df 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8546,6 +8546,7 @@ F:	Documentation/networking/device_drivers/intel/fm10k.rst
+ F:	Documentation/networking/device_drivers/intel/i40e.rst
+ F:	Documentation/networking/device_drivers/intel/iavf.rst
+ F:	Documentation/networking/device_drivers/intel/ice.rst
++F:	Documentation/networking/device_drivers/intel/idpf.rst
+ F:	Documentation/networking/device_drivers/intel/iecm.rst
+ F:	Documentation/networking/device_drivers/intel/igb.rst
+ F:	Documentation/networking/device_drivers/intel/igbvf.rst
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 9b5d413e6831..f5a371435b4d 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -351,4 +351,12 @@ config IECM
+ 	---help---
+ 	 To compile this driver as a module, choose M here. The module
+ 	 will be called iecm.  MSI-X interrupt support is required
++
++config IDPF
++	tristate "Intel(R) Data Plane Function Support"
++	default n
++	depends on PCI
++	---help---
++	 To compile this driver as a module, choose M here. The module
++	 will be called idpf.
+ endif # NET_VENDOR_INTEL
+diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
+index c9eba9cc5087..3786c2269f3d 100644
+--- a/drivers/net/ethernet/intel/Makefile
++++ b/drivers/net/ethernet/intel/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_IAVF) += iavf/
+ obj-$(CONFIG_FM10K) += fm10k/
+ obj-$(CONFIG_ICE) += ice/
+ obj-$(CONFIG_IECM) += iecm/
++obj-$(CONFIG_IDPF) += idpf/
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+new file mode 100644
+index 000000000000..cf59bd22fa83
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -0,0 +1,14 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2020 Intel Corporation
++
++#
++# Makefile for the Intel(R) Data Plane Function Linux Driver
++#
++
++obj-$(CONFIG_IDPF) += idpf.o
++
++ccflags-y += -I${src}/../include -I${src}
++
++idpf-y := \
++	idpf_main.o \
++	idpf_reg.o
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.h b/drivers/net/ethernet/intel/idpf/idpf_dev.h
+new file mode 100644
+index 000000000000..fc66580f4126
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_dev.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2020 Intel Corporation */
++
++#ifndef _IDPF_DEV_H_
++#define _IDPF_DEV_H_
++
++#include "iecm.h"
++
++void idpf_intr_reg_init(struct iecm_vport *vport);
++void idpf_mb_intr_reg_init(struct iecm_adapter *adapter);
++void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg);
++void idpf_trigger_reset(struct iecm_adapter *adapter,
++			enum iecm_flags trig_cause);
++void idpf_vportq_reg_init(struct iecm_vport *vport);
++void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq);
++
++#endif /* _IDPF_DEV_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_devids.h b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+new file mode 100644
+index 000000000000..ee373a04cb20
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2020 Intel Corporation */
++
++#ifndef _IDPF_DEVIDS_H_
++#define _IDPF_DEVIDS_H_
++
++/* Device IDs */
++#define IDPF_DEV_ID_PF			0x1452
++
++#endif /* _IDPF_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+new file mode 100644
+index 000000000000..8573c25114f4
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -0,0 +1,139 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2020 Intel Corporation */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/version.h>
++
++#include "idpf_dev.h"
++#include "idpf_devids.h"
++
++#define DRV_SUMMARY	"Intel(R) Data Plane Function Linux Driver"
++static const char idpf_driver_string[] = DRV_SUMMARY;
++static const char idpf_copyright[] = "Copyright (c) 2020, Intel Corporation.";
++
++MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
++MODULE_DESCRIPTION(DRV_SUMMARY);
++MODULE_LICENSE("GPL v2");
++
++static int debug = -1;
++module_param(debug, int, 0644);
++#ifndef CONFIG_DYNAMIC_DEBUG
++MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXXXXX)");
++#else
++MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
++#endif /* !CONFIG_DYNAMIC_DEBUG */
++
++/**
++ * idpf_reg_ops_init - Initialize register API function pointers
++ * @adapter: Driver specific private structure
++ */
++static void idpf_reg_ops_init(struct iecm_adapter *adapter)
++{
++	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_ctlq_reg_init;
++	adapter->dev_ops.reg_ops.vportq_reg_init = idpf_vportq_reg_init;
++	adapter->dev_ops.reg_ops.intr_reg_init = idpf_intr_reg_init;
++	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
++	adapter->dev_ops.reg_ops.reset_reg_init = idpf_reset_reg_init;
++	adapter->dev_ops.reg_ops.trigger_reset = idpf_trigger_reset;
++}
++
++/**
++ * idpf_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in idpf_pci_tbl
++ *
++ * Returns 0 on success, negative on failure
++ */
++int idpf_probe(struct pci_dev *pdev,
++	       const struct pci_device_id __always_unused *ent)
++{
++	struct iecm_adapter *adapter = NULL;
++	int err;
++
++	err = pcim_enable_device(pdev);
++	if (err)
 +		return err;
-+	}
-+	set_bit(__IECM_MB_INTR_MODE, adapter->flags);
-+	return 0;
- }
- 
- /**
-@@ -74,7 +103,16 @@ int iecm_mb_intr_req_irq(struct iecm_adapter *adapter)
-  */
- void iecm_get_mb_vec_id(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct virtchnl_vector_chunks *vchunks;
-+	struct virtchnl_vector_chunk *chunk;
 +
-+	if (adapter->req_vec_chunks) {
-+		vchunks = &adapter->req_vec_chunks->vchunks;
-+		chunk = &vchunks->num_vchunk[0];
-+		adapter->mb_vector.v_idx = chunk->start_vector_id;
-+	} else {
-+		adapter->mb_vector.v_idx = 0;
-+	}
- }
- 
- /**
-@@ -83,7 +121,13 @@ void iecm_get_mb_vec_id(struct iecm_adapter *adapter)
-  */
- int iecm_mb_intr_init(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	int err = 0;
++	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
++	if (!adapter)
++		return -ENOMEM;
 +
-+	iecm_get_mb_vec_id(adapter);
-+	adapter->dev_ops.reg_ops.mb_intr_reg_init(adapter);
-+	adapter->irq_mb_handler = iecm_mb_intr_clean;
-+	err = iecm_mb_intr_req_irq(adapter);
++	adapter->dev_ops.reg_ops_init = idpf_reg_ops_init;
++
++	err = iecm_probe(pdev, ent, adapter);
++	if (err)
++		kfree(adapter);
++
 +	return err;
- }
- 
- /**
-@@ -95,7 +139,12 @@ int iecm_mb_intr_init(struct iecm_adapter *adapter)
-  */
- void iecm_intr_distribute(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct iecm_vport *vport;
++}
 +
-+	vport = adapter->vports[0];
-+	if (adapter->num_msix_entries != adapter->num_req_msix)
-+		vport->num_q_vectors = adapter->num_msix_entries -
-+				       IECM_MAX_NONQ_VEC - IECM_MIN_RDMA_VEC;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-index 5fe51c61f046..a31dd170394b 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-@@ -1002,7 +1002,16 @@ iecm_vport_intr_clean_queues(int __always_unused irq, void *data)
-  */
- static void iecm_vport_intr_napi_dis_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	int q_idx;
++/**
++ * idpf_remove - Device removal routine
++ * @pdev: PCI device information struct
++ */
++static void idpf_remove(struct pci_dev *pdev)
++{
++	struct iecm_adapter *adapter = pci_get_drvdata(pdev);
 +
-+	if (!vport->netdev)
-+		return;
++	iecm_remove(pdev);
++	kfree(adapter);
++}
 +
-+	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
++/* idpf_pci_tbl - PCI Dev idpf ID Table
++ *
++ * Wildcard entries (PCI_ANY_ID) should come last
++ * Last entry must be all 0s
++ *
++ * { Vendor ID, Deviecm ID, SubVendor ID, SubDevice ID,
++ *   Class, Class Mask, private data (not used) }
++ */
++static const struct pci_device_id idpf_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_PF), 0 },
++	/* required last entry */
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, idpf_pci_tbl);
 +
-+		napi_disable(&q_vector->napi);
-+	}
- }
- 
- /**
-@@ -1013,7 +1022,44 @@ static void iecm_vport_intr_napi_dis_all(struct iecm_vport *vport)
-  */
- static void iecm_vport_intr_rel(struct iecm_vport *vport)
- {
--	/* stub */
-+	int i, j, v_idx;
++static struct pci_driver idpf_driver = {
++	.name = KBUILD_MODNAME,
++	.id_table = idpf_pci_tbl,
++	.probe = idpf_probe,
++	.remove = idpf_remove,
++	.shutdown = iecm_shutdown,
++};
 +
-+	if (!vport->netdev)
-+		return;
++/**
++ * idpf_module_init - Driver registration routine
++ *
++ * idpf_module_init is the first routine called when the driver is
++ * loaded. All it does is register with the PCI subsystem.
++ */
++static int __init idpf_module_init(void)
++{
++	int status;
 +
-+	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[v_idx];
++	pr_info("%s - version %d\n", idpf_driver_string, LINUX_VERSION_CODE);
++	pr_info("%s\n", idpf_copyright);
 +
-+		if (q_vector)
-+			netif_napi_del(&q_vector->napi);
-+	}
-+
-+	/* Clean up the mapping of queues to vectors */
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
-+
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			for (j = 0; j < rx_qgrp->splitq.num_rxq_sets; j++)
-+				rx_qgrp->splitq.rxq_sets[j].rxq.q_vector =
-+									   NULL;
-+		} else {
-+			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++)
-+				rx_qgrp->singleq.rxqs[j].q_vector = NULL;
-+		}
++	status = pci_register_driver(&idpf_driver);
++	if (status) {
++		pr_err("failed to register pci driver, err %d\n", status);
 +	}
 +
-+	if (iecm_is_queue_model_split(vport->txq_model)) {
-+		for (i = 0; i < vport->num_txq_grp; i++)
-+			vport->txq_grps[i].complq->q_vector = NULL;
-+	} else {
-+		for (i = 0; i < vport->num_txq_grp; i++) {
-+			for (j = 0; j < vport->txq_grps[i].num_txq; j++)
-+				vport->txq_grps[i].txqs[j].q_vector = NULL;
-+		}
-+	}
++	return status;
++}
++module_init(idpf_module_init);
 +
-+	kfree(vport->q_vectors);
-+	vport->q_vectors = NULL;
- }
- 
- /**
-@@ -1022,7 +1068,25 @@ static void iecm_vport_intr_rel(struct iecm_vport *vport)
-  */
- static void iecm_vport_intr_rel_irq(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	int vector;
++/**
++ * idpf_module_exit - Driver exit cleanup routine
++ *
++ * idpf_module_exit is called just before the driver is removed
++ * from memory.
++ */
++static void __exit idpf_module_exit(void)
++{
++	pci_unregister_driver(&idpf_driver);
++	pr_info("module unloaded\n");
++}
++module_exit(idpf_module_exit);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_reg.c b/drivers/net/ethernet/intel/idpf/idpf_reg.c
+new file mode 100644
+index 000000000000..3bbe57f58b92
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_reg.c
+@@ -0,0 +1,152 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2020 Intel Corporation */
 +
-+	for (vector = 0; vector < vport->num_q_vectors; vector++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[vector];
-+		int irq_num, vidx;
++#include "idpf_dev.h"
++#include "iecm_lan_pf_regs.h"
 +
-+		/* free only the irqs that were actually requested */
-+		if (!q_vector)
-+			continue;
-+
-+		vidx = vector + vport->q_vector_base;
-+		irq_num = adapter->msix_entries[vidx].vector;
-+
-+		/* clear the affinity_mask in the IRQ descriptor */
-+		irq_set_affinity_hint(irq_num, NULL);
-+		synchronize_irq(irq_num);
-+		free_irq(irq_num, q_vector);
-+	}
- }
- 
- /**
-@@ -1031,7 +1095,13 @@ static void iecm_vport_intr_rel_irq(struct iecm_vport *vport)
-  */
- void iecm_vport_intr_dis_irq_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_q_vector *q_vector = vport->q_vectors;
-+	struct iecm_hw *hw = &vport->adapter->hw;
-+	int q_idx;
-+
-+	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++)
-+		writel_relaxed(0, (u8 *)(hw->hw_addr +
-+					 q_vector[q_idx].intr_reg.dyn_ctl));
- }
- 
- /**
-@@ -1043,12 +1113,42 @@ void iecm_vport_intr_dis_irq_all(struct iecm_vport *vport)
- static u32 iecm_vport_intr_buildreg_itr(struct iecm_q_vector *q_vector,
- 					const int type, u16 itr)
- {
--	/* stub */
-+	u32 itr_val;
-+
-+	itr &= IECM_ITR_MASK;
-+	/* Don't clear PBA because that can cause lost interrupts that
-+	 * came in while we were cleaning/polling
-+	 */
-+	itr_val = q_vector->intr_reg.dyn_ctl_intena_m |
-+		  (type << q_vector->intr_reg.dyn_ctl_itridx_s) |
-+		  (itr << (q_vector->intr_reg.dyn_ctl_intrvl_s - 1));
-+
-+	return itr_val;
- }
- 
- static inline unsigned int iecm_itr_divisor(struct iecm_q_vector *q_vector)
- {
--	/* stub */
-+	unsigned int divisor;
-+
-+	switch (q_vector->vport->adapter->link_speed) {
-+	case VIRTCHNL_LINK_SPEED_40GB:
-+		divisor = IECM_ITR_ADAPTIVE_MIN_INC * 1024;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_25GB:
-+	case VIRTCHNL_LINK_SPEED_20GB:
-+		divisor = IECM_ITR_ADAPTIVE_MIN_INC * 512;
-+		break;
-+	default:
-+	case VIRTCHNL_LINK_SPEED_10GB:
-+		divisor = IECM_ITR_ADAPTIVE_MIN_INC * 256;
-+		break;
-+	case VIRTCHNL_LINK_SPEED_1GB:
-+	case VIRTCHNL_LINK_SPEED_100MB:
-+		divisor = IECM_ITR_ADAPTIVE_MIN_INC * 32;
-+		break;
-+	}
-+
-+	return divisor;
- }
- 
- /**
-@@ -1069,7 +1169,206 @@ static void iecm_vport_intr_set_new_itr(struct iecm_q_vector *q_vector,
- 					struct iecm_itr *itr,
- 					enum virtchnl_queue_type q_type)
- {
--	/* stub */
-+	unsigned int avg_wire_size, packets = 0, bytes = 0, new_itr;
-+	unsigned long next_update = jiffies;
-+
-+	/* If we don't have any queues just leave ourselves set for maximum
-+	 * possible latency so we take ourselves out of the equation.
-+	 */
-+	if (!IECM_ITR_IS_DYNAMIC(itr->target_itr))
-+		return;
-+
-+	/* For Rx we want to push the delay up and default to low latency.
-+	 * for Tx we want to pull the delay down and default to high latency.
-+	 */
-+	new_itr = q_type == VIRTCHNL_QUEUE_TYPE_RX ?
-+	      IECM_ITR_ADAPTIVE_MIN_USECS | IECM_ITR_ADAPTIVE_LATENCY :
-+	      IECM_ITR_ADAPTIVE_MAX_USECS | IECM_ITR_ADAPTIVE_LATENCY;
-+
-+	/* If we didn't update within up to 1 - 2 jiffies we can assume
-+	 * that either packets are coming in so slow there hasn't been
-+	 * any work, or that there is so much work that NAPI is dealing
-+	 * with interrupt moderation and we don't need to do anything.
-+	 */
-+	if (time_after(next_update, itr->next_update))
-+		goto clear_counts;
-+
-+	/* If itr_countdown is set it means we programmed an ITR within
-+	 * the last 4 interrupt cycles. This has a side effect of us
-+	 * potentially firing an early interrupt. In order to work around
-+	 * this we need to throw out any data received for a few
-+	 * interrupts following the update.
-+	 */
-+	if (q_vector->itr_countdown) {
-+		new_itr = itr->target_itr;
-+		goto clear_counts;
-+	}
-+
-+	if (q_type == VIRTCHNL_QUEUE_TYPE_TX) {
-+		packets = itr->stats.tx.packets;
-+		bytes = itr->stats.tx.bytes;
-+	}
-+
-+	if (q_type == VIRTCHNL_QUEUE_TYPE_RX) {
-+		packets = itr->stats.rx.packets;
-+		bytes = itr->stats.rx.bytes;
-+
-+		/* If there are 1 to 4 RX packets and bytes are less than
-+		 * 9000 assume insufficient data to use bulk rate limiting
-+		 * approach unless Tx is already in bulk rate limiting. We
-+		 * are likely latency driven.
-+		 */
-+		if (packets && packets < 4 && bytes < 9000 &&
-+		    (q_vector->tx[0]->itr.target_itr &
-+		     IECM_ITR_ADAPTIVE_LATENCY)) {
-+			new_itr = IECM_ITR_ADAPTIVE_LATENCY;
-+			goto adjust_by_size;
-+		}
-+	} else if (packets < 4) {
-+		/* If we have Tx and Rx ITR maxed and Tx ITR is running in
-+		 * bulk mode and we are receiving 4 or fewer packets just
-+		 * reset the ITR_ADAPTIVE_LATENCY bit for latency mode so
-+		 * that the Rx can relax.
-+		 */
-+		if (itr->target_itr == IECM_ITR_ADAPTIVE_MAX_USECS &&
-+		    ((q_vector->rx[0]->itr.target_itr & IECM_ITR_MASK) ==
-+		     IECM_ITR_ADAPTIVE_MAX_USECS))
-+			goto clear_counts;
-+	} else if (packets > 32) {
-+		/* If we have processed over 32 packets in a single interrupt
-+		 * for Tx assume we need to switch over to "bulk" mode.
-+		 */
-+		itr->target_itr &= ~IECM_ITR_ADAPTIVE_LATENCY;
-+	}
-+
-+	/* We have no packets to actually measure against. This means
-+	 * either one of the other queues on this vector is active or
-+	 * we are a Tx queue doing TSO with too high of an interrupt rate.
-+	 *
-+	 * Between 4 and 56 we can assume that our current interrupt delay
-+	 * is only slightly too low. As such we should increase it by a small
-+	 * fixed amount.
-+	 */
-+	if (packets < 56) {
-+		new_itr = itr->target_itr + IECM_ITR_ADAPTIVE_MIN_INC;
-+		if ((new_itr & IECM_ITR_MASK) > IECM_ITR_ADAPTIVE_MAX_USECS) {
-+			new_itr &= IECM_ITR_ADAPTIVE_LATENCY;
-+			new_itr += IECM_ITR_ADAPTIVE_MAX_USECS;
-+		}
-+		goto clear_counts;
-+	}
-+
-+	if (packets <= 256) {
-+		new_itr = min(q_vector->tx[0]->itr.current_itr,
-+			      q_vector->rx[0]->itr.current_itr);
-+		new_itr &= IECM_ITR_MASK;
-+
-+		/* Between 56 and 112 is our "goldilocks" zone where we are
-+		 * working out "just right". Just report that our current
-+		 * ITR is good for us.
-+		 */
-+		if (packets <= 112)
-+			goto clear_counts;
-+
-+		/* If packet count is 128 or greater we are likely looking
-+		 * at a slight overrun of the delay we want. Try halving
-+		 * our delay to see if that will cut the number of packets
-+		 * in half per interrupt.
-+		 */
-+		new_itr /= 2;
-+		new_itr &= IECM_ITR_MASK;
-+		if (new_itr < IECM_ITR_ADAPTIVE_MIN_USECS)
-+			new_itr = IECM_ITR_ADAPTIVE_MIN_USECS;
-+
-+		goto clear_counts;
-+	}
-+
-+	/* The paths below assume we are dealing with a bulk ITR since
-+	 * number of packets is greater than 256. We are just going to have
-+	 * to compute a value and try to bring the count under control,
-+	 * though for smaller packet sizes there isn't much we can do as
-+	 * NAPI polling will likely be kicking in sooner rather than later.
-+	 */
-+	new_itr = IECM_ITR_ADAPTIVE_BULK;
-+
-+adjust_by_size:
-+	/* If packet counts are 256 or greater we can assume we have a gross
-+	 * overestimation of what the rate should be. Instead of trying to fine
-+	 * tune it just use the formula below to try and dial in an exact value
-+	 * give the current packet size of the frame.
-+	 */
-+	avg_wire_size = bytes / packets;
-+
-+	/* The following is a crude approximation of:
-+	 *  wmem_default / (size + overhead) = desired_pkts_per_int
-+	 *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
-+	 *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
-+	 *
-+	 * Assuming wmem_default is 212992 and overhead is 640 bytes per
-+	 * packet, (256 skb, 64 headroom, 320 shared info), we can reduce the
-+	 * formula down to
-+	 *
-+	 *  (170 * (size + 24)) / (size + 640) = ITR
-+	 *
-+	 * We first do some math on the packet size and then finally bitshift
-+	 * by 8 after rounding up. We also have to account for PCIe link speed
-+	 * difference as ITR scales based on this.
-+	 */
-+	if (avg_wire_size <= 60) {
-+		/* Start at 250k ints/sec */
-+		avg_wire_size = 4096;
-+	} else if (avg_wire_size <= 380) {
-+		/* 250K ints/sec to 60K ints/sec */
-+		avg_wire_size *= 40;
-+		avg_wire_size += 1696;
-+	} else if (avg_wire_size <= 1084) {
-+		/* 60K ints/sec to 36K ints/sec */
-+		avg_wire_size *= 15;
-+		avg_wire_size += 11452;
-+	} else if (avg_wire_size <= 1980) {
-+		/* 36K ints/sec to 30K ints/sec */
-+		avg_wire_size *= 5;
-+		avg_wire_size += 22420;
-+	} else {
-+		/* plateau@a limit of 30K ints/sec */
-+		avg_wire_size = 32256;
-+	}
-+
-+	/* If we are in low latency mode halve our delay which doubles the
-+	 * rate to somewhere between 100K to 16K ints/sec
-+	 */
-+	if (new_itr & IECM_ITR_ADAPTIVE_LATENCY)
-+		avg_wire_size /= 2;
-+
-+	/* Resultant value is 256 times larger than it needs to be. This
-+	 * gives us room to adjust the value as needed to either increase
-+	 * or decrease the value based on link speeds of 10G, 2.5G, 1G, etc.
-+	 *
-+	 * Use addition as we have already recorded the new latency flag
-+	 * for the ITR value.
-+	 */
-+	new_itr += DIV_ROUND_UP(avg_wire_size, iecm_itr_divisor(q_vector)) *
-+	       IECM_ITR_ADAPTIVE_MIN_INC;
-+
-+	if ((new_itr & IECM_ITR_MASK) > IECM_ITR_ADAPTIVE_MAX_USECS) {
-+		new_itr &= IECM_ITR_ADAPTIVE_LATENCY;
-+		new_itr += IECM_ITR_ADAPTIVE_MAX_USECS;
-+	}
-+
-+clear_counts:
-+	/* write back value */
-+	itr->target_itr = new_itr;
-+
-+	/* next update should occur within next jiffy */
-+	itr->next_update = next_update + 1;
-+
-+	if (q_type == VIRTCHNL_QUEUE_TYPE_RX) {
-+		itr->stats.rx.bytes = 0;
-+		itr->stats.rx.packets = 0;
-+	} else if (q_type == VIRTCHNL_QUEUE_TYPE_TX) {
-+		itr->stats.tx.bytes = 0;
-+		itr->stats.tx.packets = 0;
-+	}
- }
- 
- /**
-@@ -1078,7 +1377,59 @@ static void iecm_vport_intr_set_new_itr(struct iecm_q_vector *q_vector,
-  */
- void iecm_vport_intr_update_itr_ena_irq(struct iecm_q_vector *q_vector)
- {
--	/* stub */
-+	struct iecm_hw *hw = &q_vector->vport->adapter->hw;
-+	struct iecm_itr *tx_itr = &q_vector->tx[0]->itr;
-+	struct iecm_itr *rx_itr = &q_vector->rx[0]->itr;
-+	u32 intval;
-+
-+	/* These will do nothing if dynamic updates are not enabled */
-+	iecm_vport_intr_set_new_itr(q_vector, tx_itr, q_vector->tx[0]->q_type);
-+	iecm_vport_intr_set_new_itr(q_vector, rx_itr, q_vector->rx[0]->q_type);
-+
-+	/* This block of logic allows us to get away with only updating
-+	 * one ITR value with each interrupt. The idea is to perform a
-+	 * pseudo-lazy update with the following criteria.
-+	 *
-+	 * 1. Rx is given higher priority than Tx if both are in same state
-+	 * 2. If we must reduce an ITR that is given highest priority.
-+	 * 3. We then give priority to increasing ITR based on amount.
-+	 */
-+	if (rx_itr->target_itr < rx_itr->current_itr) {
-+		/* Rx ITR needs to be reduced, this is highest priority */
-+		intval = iecm_vport_intr_buildreg_itr(q_vector,
-+						      rx_itr->itr_idx,
-+						      rx_itr->target_itr);
-+		rx_itr->current_itr = rx_itr->target_itr;
-+		q_vector->itr_countdown = ITR_COUNTDOWN_START;
-+	} else if ((tx_itr->target_itr < tx_itr->current_itr) ||
-+		   ((rx_itr->target_itr - rx_itr->current_itr) <
-+		    (tx_itr->target_itr - tx_itr->current_itr))) {
-+		/* Tx ITR needs to be reduced, this is second priority
-+		 * Tx ITR needs to be increased more than Rx, fourth priority
-+		 */
-+		intval = iecm_vport_intr_buildreg_itr(q_vector,
-+						      tx_itr->itr_idx,
-+						      tx_itr->target_itr);
-+		tx_itr->current_itr = tx_itr->target_itr;
-+		q_vector->itr_countdown = ITR_COUNTDOWN_START;
-+	} else if (rx_itr->current_itr != rx_itr->target_itr) {
-+		/* Rx ITR needs to be increased, third priority */
-+		intval = iecm_vport_intr_buildreg_itr(q_vector,
-+						      rx_itr->itr_idx,
-+						      rx_itr->target_itr);
-+		rx_itr->current_itr = rx_itr->target_itr;
-+		q_vector->itr_countdown = ITR_COUNTDOWN_START;
-+	} else {
-+		/* No ITR update, lowest priority */
-+		intval = iecm_vport_intr_buildreg_itr(q_vector,
-+						      VIRTCHNL_ITR_IDX_NO_ITR,
-+						      0);
-+		if (q_vector->itr_countdown)
-+			q_vector->itr_countdown--;
-+	}
-+
-+	writel_relaxed(intval, (u8 *)(hw->hw_addr +
-+				      q_vector->intr_reg.dyn_ctl));
- }
- 
- /**
-@@ -1089,7 +1440,40 @@ void iecm_vport_intr_update_itr_ena_irq(struct iecm_q_vector *q_vector)
- static int
- iecm_vport_intr_req_irq(struct iecm_vport *vport, char *basename)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	int vector, err, irq_num, vidx;
-+
-+	for (vector = 0; vector < vport->num_q_vectors; vector++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[vector];
-+
-+		vidx = vector + vport->q_vector_base;
-+		irq_num = adapter->msix_entries[vidx].vector;
-+
-+		snprintf(q_vector->name, sizeof(q_vector->name) - 1,
-+			 "%s-%s-%d", basename, "TxRx", vidx);
-+
-+		err = request_irq(irq_num, vport->irq_q_handler, 0,
-+				  q_vector->name, q_vector);
-+		if (err) {
-+			netdev_err(vport->netdev,
-+				   "Request_irq failed, error: %d\n", err);
-+			goto free_q_irqs;
-+		}
-+		/* assign the mask for this irq */
-+		irq_set_affinity_hint(irq_num, &q_vector->affinity_mask);
-+	}
-+
-+	return 0;
-+
-+free_q_irqs:
-+	while (vector) {
-+		vector--;
-+		vidx = vector + vport->q_vector_base;
-+		irq_num = adapter->msix_entries[vidx].vector,
-+		free_irq(irq_num,
-+			 &vport->q_vectors[vector]);
-+	}
-+	return err;
- }
- 
- /**
-@@ -1098,7 +1482,14 @@ iecm_vport_intr_req_irq(struct iecm_vport *vport, char *basename)
-  */
- void iecm_vport_intr_ena_irq_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	int q_idx;
-+
-+	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
-+
-+		if (q_vector->num_txq || q_vector->num_rxq)
-+			iecm_vport_intr_update_itr_ena_irq(q_vector);
-+	}
- }
- 
- /**
-@@ -1107,7 +1498,10 @@ void iecm_vport_intr_ena_irq_all(struct iecm_vport *vport)
-  */
- void iecm_vport_intr_deinit(struct iecm_vport *vport)
- {
--	/* stub */
-+	iecm_vport_intr_napi_dis_all(vport);
-+	iecm_vport_intr_dis_irq_all(vport);
-+	iecm_vport_intr_rel_irq(vport);
-+	iecm_vport_intr_rel(vport);
- }
- 
- /**
-@@ -1117,7 +1511,16 @@ void iecm_vport_intr_deinit(struct iecm_vport *vport)
- static void
- iecm_vport_intr_napi_ena_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	int q_idx;
-+
-+	if (!vport->netdev)
-+		return;
-+
-+	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
-+
-+		napi_enable(&q_vector->napi);
-+	}
- }
- 
- /**
-@@ -1166,7 +1569,65 @@ int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
-  */
- void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
- {
--	/* stub */
-+	int i, j, k = 0, num_rxq, num_txq;
-+	struct iecm_rxq_group *rx_qgrp;
-+	struct iecm_txq_group *tx_qgrp;
-+	struct iecm_queue *q;
-+	int q_index;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		rx_qgrp = &vport->rxq_grps[i];
-+		if (iecm_is_queue_model_split(vport->rxq_model))
-+			num_rxq = rx_qgrp->splitq.num_rxq_sets;
-+		else
-+			num_rxq = rx_qgrp->singleq.num_rxq;
-+
-+		for (j = 0; j < num_rxq; j++) {
-+			if (k >= vport->num_q_vectors)
-+				k = k % vport->num_q_vectors;
-+
-+			if (iecm_is_queue_model_split(vport->rxq_model))
-+				q = &rx_qgrp->splitq.rxq_sets[j].rxq;
-+			else
-+				q = &rx_qgrp->singleq.rxqs[j];
-+			q->q_vector = &vport->q_vectors[k];
-+			q_index = q->q_vector->num_rxq;
-+			q->q_vector->rx[q_index] = q;
-+			q->q_vector->num_rxq++;
-+
-+			k++;
-+		}
-+	}
-+	k = 0;
-+	for (i = 0; i < vport->num_txq_grp; i++) {
-+		tx_qgrp = &vport->txq_grps[i];
-+		num_txq = tx_qgrp->num_txq;
-+
-+		if (iecm_is_queue_model_split(vport->txq_model)) {
-+			if (k >= vport->num_q_vectors)
-+				k = k % vport->num_q_vectors;
-+
-+			q = tx_qgrp->complq;
-+			q->q_vector = &vport->q_vectors[k];
-+			q_index = q->q_vector->num_txq;
-+			q->q_vector->tx[q_index] = q;
-+			q->q_vector->num_txq++;
-+			k++;
-+		} else {
-+			for (j = 0; j < num_txq; j++) {
-+				if (k >= vport->num_q_vectors)
-+					k = k % vport->num_q_vectors;
-+
-+				q = &tx_qgrp->txqs[j];
-+				q->q_vector = &vport->q_vectors[k];
-+				q_index = q->q_vector->num_txq;
-+				q->q_vector->tx[q_index] = q;
-+				q->q_vector->num_txq++;
-+
-+				k++;
-+			}
-+		}
-+	}
- }
- 
- /**
-@@ -1177,7 +1638,38 @@ void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
-  */
- static int iecm_vport_intr_init_vec_idx(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct iecm_q_vector *q_vector;
++/**
++ * idpf_ctlq_reg_init - initialize default mailbox registers
++ * @cq: pointer to the array of create control queues
++ */
++void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq)
++{
 +	int i;
 +
-+	if (adapter->req_vec_chunks) {
-+		struct virtchnl_vector_chunks *vchunks;
-+		struct virtchnl_alloc_vectors *ac;
-+		/* We may never deal with more that 256 same type of vectors */
-+#define IECM_MAX_VECIDS	256
-+		u16 vecids[IECM_MAX_VECIDS];
-+		int num_ids;
++#define NUM_Q 2
++	for (i = 0; i < NUM_Q; i++) {
++		struct iecm_ctlq_create_info *ccq = cq + i;
 +
-+		ac = adapter->req_vec_chunks;
-+		vchunks = &ac->vchunks;
-+
-+		num_ids = iecm_vport_get_vec_ids(vecids, IECM_MAX_VECIDS,
-+						 vchunks);
-+		if (num_ids != adapter->num_msix_entries)
-+			return -EFAULT;
-+
-+		for (i = 0; i < vport->num_q_vectors; i++) {
-+			q_vector = &vport->q_vectors[i];
-+			q_vector->v_idx = vecids[i + vport->q_vector_base];
-+		}
-+	} else {
-+		for (i = 0; i < vport->num_q_vectors; i++) {
-+			q_vector = &vport->q_vectors[i];
-+			q_vector->v_idx = i + vport->q_vector_base;
-+		}
-+	}
-+
-+	return 0;
- }
- 
- /**
-@@ -1189,7 +1681,65 @@ static int iecm_vport_intr_init_vec_idx(struct iecm_vport *vport)
-  */
- int iecm_vport_intr_alloc(struct iecm_vport *vport)
- {
--	/* stub */
-+	int txqs_per_vector, rxqs_per_vector;
-+	struct iecm_q_vector *q_vector;
-+	int v_idx, err = 0;
-+
-+	vport->q_vectors = kcalloc(vport->num_q_vectors,
-+				   sizeof(struct iecm_q_vector), GFP_KERNEL);
-+
-+	if (!vport->q_vectors)
-+		return -ENOMEM;
-+
-+	txqs_per_vector = DIV_ROUND_UP(vport->num_txq, vport->num_q_vectors);
-+	rxqs_per_vector = DIV_ROUND_UP(vport->num_rxq, vport->num_q_vectors);
-+
-+	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++) {
-+		q_vector = &vport->q_vectors[v_idx];
-+		q_vector->vport = vport;
-+		q_vector->itr_countdown = ITR_COUNTDOWN_START;
-+
-+		q_vector->tx = kcalloc(txqs_per_vector,
-+				       sizeof(struct iecm_queue *),
-+				       GFP_KERNEL);
-+		if (!q_vector->tx) {
-+			err = -ENOMEM;
-+			goto free_vport_q_vec;
-+		}
-+
-+		q_vector->rx = kcalloc(rxqs_per_vector,
-+				       sizeof(struct iecm_queue *),
-+				       GFP_KERNEL);
-+		if (!q_vector->rx) {
-+			err = -ENOMEM;
-+			goto free_vport_q_vec_tx;
-+		}
-+
-+		/* only set affinity_mask if the CPU is online */
-+		if (cpu_online(v_idx))
-+			cpumask_set_cpu(v_idx, &q_vector->affinity_mask);
-+
-+		/* Register the NAPI handler */
-+		if (vport->netdev) {
-+			if (iecm_is_queue_model_split(vport->txq_model))
-+				netif_napi_add(vport->netdev, &q_vector->napi,
-+					       iecm_vport_splitq_napi_poll,
-+					       NAPI_POLL_WEIGHT);
-+			else
-+				netif_napi_add(vport->netdev, &q_vector->napi,
-+					       iecm_vport_singleq_napi_poll,
-+					       NAPI_POLL_WEIGHT);
++		switch (ccq->type) {
++		case IECM_CTLQ_TYPE_MAILBOX_TX:
++			/* set head and tail registers in our local struct */
++			ccq->reg.head = PF_FW_ATQH;
++			ccq->reg.tail = PF_FW_ATQT;
++			ccq->reg.len = PF_FW_ATQLEN;
++			ccq->reg.bah = PF_FW_ATQBAH;
++			ccq->reg.bal = PF_FW_ATQBAL;
++			ccq->reg.len_mask = PF_FW_ATQLEN_ATQLEN_M;
++			ccq->reg.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
++			ccq->reg.head_mask = PF_FW_ATQH_ATQH_M;
++			break;
++		case IECM_CTLQ_TYPE_MAILBOX_RX:
++			/* set head and tail registers in our local struct */
++			ccq->reg.head = PF_FW_ARQH;
++			ccq->reg.tail = PF_FW_ARQT;
++			ccq->reg.len = PF_FW_ARQLEN;
++			ccq->reg.bah = PF_FW_ARQBAH;
++			ccq->reg.bal = PF_FW_ARQBAL;
++			ccq->reg.len_mask = PF_FW_ARQLEN_ARQLEN_M;
++			ccq->reg.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
++			ccq->reg.head_mask = PF_FW_ARQH_ARQH_M;
++			break;
++		default:
++			break;
 +		}
 +	}
++}
 +
-+	err = iecm_vport_intr_init_vec_idx(vport);
-+	goto handle_err;
-+free_vport_q_vec_tx:
-+	kfree(q_vector->tx);
-+free_vport_q_vec:
-+	kfree(vport->q_vectors);
-+handle_err:
-+	return err;
- }
- 
- /**
-@@ -1200,7 +1750,31 @@ int iecm_vport_intr_alloc(struct iecm_vport *vport)
-  */
- int iecm_vport_intr_init(struct iecm_vport *vport)
- {
--	/* stub */
-+	char int_name[IECM_INT_NAME_STR_LEN];
-+	int err = 0;
-+
-+	if (iecm_vport_intr_alloc(vport))
-+		return -ENOMEM;
-+
-+	iecm_vport_intr_map_vector_to_qs(vport);
-+	iecm_vport_intr_napi_ena_all(vport);
-+
-+	vport->adapter->dev_ops.reg_ops.intr_reg_init(vport);
-+
-+	snprintf(int_name, sizeof(int_name) - 1, "%s-%s",
-+		 dev_driver_string(&vport->adapter->pdev->dev),
-+		 vport->netdev->name);
-+
-+	err = iecm_vport_intr_req_irq(vport, int_name);
-+	if (err)
-+		goto unroll_vectors_alloc;
-+
-+	iecm_vport_intr_ena_irq_all(vport);
-+	goto handle_err;
-+unroll_vectors_alloc:
-+	iecm_vport_intr_rel(vport);
-+handle_err:
-+	return err;
- }
- EXPORT_SYMBOL(iecm_vport_calc_num_q_vec);
- 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-index cef14fc573da..a386a5f6af55 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-@@ -1874,7 +1874,29 @@ int
- iecm_vport_get_vec_ids(u16 *vecids, int num_vecids,
- 		       struct virtchnl_vector_chunks *chunks)
- {
--	/* stub */
-+	int num_chunks = chunks->num_vector_chunks;
-+	struct virtchnl_vector_chunk *chunk;
-+	int num_vecid_filled = 0;
-+	int start_vecid;
-+	int num_vec;
++/**
++ * idpf_vportq_reg_init - Initialize tail registers
++ * @vport: virtual port structure
++ */
++void idpf_vportq_reg_init(struct iecm_vport *vport)
++{
++	struct iecm_hw *hw = &vport->adapter->hw;
++	struct iecm_queue *q;
 +	int i, j;
 +
-+	for (j = 0; j < num_chunks; j++) {
-+		chunk = &chunks->num_vchunk[j];
-+		num_vec = chunk->num_vectors;
-+		start_vecid = chunk->start_vector_id;
-+		for (i = 0; i < num_vec; i++) {
-+			if ((num_vecid_filled + i) < num_vecids) {
-+				vecids[num_vecid_filled + i] = start_vecid;
-+				start_vecid++;
-+			} else {
-+				break;
-+			}
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		int num_txq = vport->txq_grps[i].num_txq;
++
++		for (j = 0; j < num_txq; j++) {
++			q = &vport->txq_grps[i].txqs[j];
++			q->tail = hw->hw_addr + PF_QTX_COMM_DBELL(q->q_id);
 +		}
-+		num_vecid_filled = num_vecid_filled + i;
 +	}
 +
-+	return num_vecid_filled;
- }
- 
- /**
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rxq_grp = &vport->rxq_grps[i];
++		int num_rxq;
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				q = &rxq_grp->splitq.bufq_sets[j].bufq;
++				q->tail = hw->hw_addr +
++					  PF_QRX_BUFFQ_TAIL(q->q_id);
++			}
++
++			num_rxq = rxq_grp->splitq.num_rxq_sets;
++		} else {
++			num_rxq = rxq_grp->singleq.num_rxq;
++		}
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model))
++				q = &rxq_grp->splitq.rxq_sets[j].rxq;
++			else
++				q = &rxq_grp->singleq.rxqs[j];
++			q->tail = hw->hw_addr + PF_QRX_TAIL(q->q_id);
++		}
++	}
++}
++
++/**
++ * idpf_mb_intr_reg_init - Initialize mailbox interrupt register
++ * @adapter: adapter structure
++ */
++void idpf_mb_intr_reg_init(struct iecm_adapter *adapter)
++{
++	struct iecm_intr_reg *intr = &adapter->mb_vector.intr_reg;
++	int vidx;
++
++	vidx = adapter->mb_vector.v_idx;
++	intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
++	intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
++	intr->dyn_ctl_itridx_m = 0x3 << PF_GLINT_DYN_CTL_ITR_INDX_S;
++}
++
++/**
++ * idpf_intr_reg_init - Initialize interrupt registers
++ * @vport: virtual port structure
++ */
++void idpf_intr_reg_init(struct iecm_vport *vport)
++{
++	int q_idx;
++
++	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
++		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
++		struct iecm_intr_reg *intr = &q_vector->intr_reg;
++		u32 vidx = q_vector->v_idx;
++
++		intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
++		intr->dyn_ctl_clrpba_m = PF_GLINT_DYN_CTL_CLEARPBA_M;
++		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
++		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
++		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
++		intr->itr = PF_GLINT_ITR(VIRTCHNL_ITR_IDX_0, vidx);
++	}
++}
++
++/**
++ * idpf_reset_reg_init - Initialize reset registers
++ * @reset_reg: struct to be filled in with reset registers
++ */
++void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg)
++{
++	reset_reg->rstat = PFGEN_RSTAT;
++	reset_reg->rstat_m = PFGEN_RSTAT_PFR_STATE_M;
++}
++
++/**
++ * idpf_trigger_reset - trigger reset
++ * @adapter: Driver specific private structure
++ * @trig_cause: Reason to trigger a reset
++ */
++void idpf_trigger_reset(struct iecm_adapter *adapter,
++			enum iecm_flags trig_cause)
++{
++	u32 reset_reg;
++
++	reset_reg = rd32(&adapter->hw, PFGEN_CTRL);
++	wr32(&adapter->hw, PFGEN_CTRL, (reset_reg | PFGEN_CTRL_PFSWR));
++}
 -- 
 2.21.0
 
