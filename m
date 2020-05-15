@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 May 2020 19:40:17 +0000
-Subject: [Intel-wired-lan] [PATCH S41 02/15] ice: Don't reset and
- rebuild for Tx timeout on PFC enabled queue
-In-Reply-To: <20200508004113.39725-2-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 19:40:39 +0000
+Subject: [Intel-wired-lan] [PATCH S41 03/15] ice: Fix check for
+ contiguous TCs
+In-Reply-To: <20200508004113.39725-3-anthony.l.nguyen@intel.com>
 References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
- <20200508004113.39725-2-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB1659038E8CFD9E5534040D048CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200508004113.39725-3-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB16593D432CC3CBC0EA7E07988CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 7, 2020 5:41 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S41 02/15] ice: Don't reset and rebuild for
-> Tx timeout on PFC enabled queue
+> Subject: [Intel-wired-lan] [PATCH S41 03/15] ice: Fix check for contiguous TCs
 > 
-> From: Avinash JD <avinash.dayanand@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> When there's a Tx timeout for a queue which belongs to a PFC enabled TC,
-> then it's not because the queue is hung but because PFC is in action.
+> The current implementation for contiguous TC check is assuming that the UPs
+> will be mapped to TCs in a linear progressing fashion.  This is obviously not
+> always true.
 > 
-> In PFC, peer sends a pause frame for a specified period of time when its
-> buffer threshold is exceeded (due to congestion). Netdev on the other hand
-> checks if ACK is received within a specified time for a TX packet, if not, it'll
-> invoke the tx_timeout routine.
+> Change the check to allow for various UP2TC mapping configurations.
 > 
-> Signed-off-by: Avinash JD <avinash.dayanand@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 58 ++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_dcb_lib.h | 23 ++++++++
->  drivers/net/ethernet/intel/ice/ice_main.c    | 10 ++++
->  drivers/net/ethernet/intel/ice/ice_type.h    |  2 +
->  4 files changed, 93 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 19 ++++++++++++-------
+>  1 file changed, 12 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
