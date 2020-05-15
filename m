@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 15 May 2020 19:46:28 +0000
-Subject: [Intel-wired-lan] [PATCH S41 10/15] ice: refactor filter
- functions
-In-Reply-To: <20200508004113.39725-10-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 19:46:50 +0000
+Subject: [Intel-wired-lan] [PATCH S41 11/15] ice: Fix check for
+ removing/adding mac filters
+In-Reply-To: <20200508004113.39725-11-anthony.l.nguyen@intel.com>
 References: <20200508004113.39725-1-anthony.l.nguyen@intel.com>
- <20200508004113.39725-10-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB1659FD33B92AB9733E4DD3868CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200508004113.39725-11-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB16592C08453F7FE06753971A8CBD0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,41 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 7, 2020 5:41 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S41 10/15] ice: refactor filter functions
+> Subject: [Intel-wired-lan] [PATCH S41 11/15] ice: Fix check for
+> removing/adding mac filters
 > 
-> From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+> From: Lihong Yang <lihong.yang@intel.com>
 > 
-> Move filter functions to separate file.
+> In function ice_set_mac_address, we will remove old dev_addr before
+> adding the new MAC. In the removing and adding process of the MAC, there
+> is no need to return error if the check finds the to-be-removed dev_addr
+> does not exist in the MAC filter list or the to-be-added mac already exists,
+> keep going or return success accordingly.
 > 
-> Add functions that prepare suitable ice_fltr_info struct depending on the
-> filter type and add this struct to earlier created
-> list:
-> - ice_fltr_add_mac_to_list
-> - ice_fltr_add_vlan_to_list
-> - ice_fltr_add_eth_to_list
-> This functions are used in adding and removing filters.
-> 
-> Create wrappers for functions mentioned above that alloc list, add suitable
-> ice_fltr_info to it and call add or remove function.
-> - ice_fltr_prepare_mac
-> - ice_fltr_prepare_mac_and_broadcast
-> - ice_fltr_prepare_vlan
-> - ice_fltr_prepare_eth
-> 
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile       |   1 +
->  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  13 +-
->  drivers/net/ethernet/intel/ice/ice_fltr.c     | 397 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_fltr.h     |  39 ++
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 212 +---------
->  drivers/net/ethernet/intel/ice/ice_lib.h      |   9 +-
->  drivers/net/ethernet/intel/ice/ice_main.c     |  53 +--
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  34 +-
->  8 files changed, 494 insertions(+), 264 deletions(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_fltr.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_fltr.h
+>  drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
