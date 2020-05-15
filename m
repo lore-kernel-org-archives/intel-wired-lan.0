@@ -1,22 +1,19 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 14 May 2020 23:35:00 -0700
-Subject: [Intel-wired-lan] [iecm/idpf V1 14/14] idpf: Introduce idpf driver
+Date: Thu, 14 May 2020 23:34:58 -0700
+Subject: [Intel-wired-lan] [iecm/idpf V1 12/14] iecm: Add ethtool
 In-Reply-To: <20200515063500.48301-1-alice.michael@intel.com>
 References: <20200515063500.48301-1-alice.michael@intel.com>
-Message-ID: <20200515063500.48301-15-alice.michael@intel.com>
+Message-ID: <20200515063500.48301-13-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+Implement ethtool interface for the common module.
 
-Utilizes the Intel Ethernet Common Module and provides
-a device specific implementation for data plane devices.
-
-Signed-off-by: Alan Brady <Alan.Brady@intel.com>
 Signed-off-by: Alice Michael <alice.michael@intel.com>
+Signed-off-by: Alan Brady <Alan.Brady@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
@@ -25,476 +22,1266 @@ Reviewed-by: Donald Skidmore <donald.c.skidmore@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- .../networking/device_drivers/intel/idpf.rst  |  47 ++++++
- MAINTAINERS                                   |   1 +
- drivers/net/ethernet/intel/Kconfig            |   8 +
- drivers/net/ethernet/intel/Makefile           |   1 +
- drivers/net/ethernet/intel/idpf/Makefile      |  14 ++
- drivers/net/ethernet/intel/idpf/idpf_dev.h    |  17 ++
- drivers/net/ethernet/intel/idpf/idpf_devids.h |  10 ++
- drivers/net/ethernet/intel/idpf/idpf_main.c   | 139 ++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_reg.c    | 152 ++++++++++++++++++
- 9 files changed, 389 insertions(+)
- create mode 100644 Documentation/networking/device_drivers/intel/idpf.rst
- create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_reg.c
+ .../net/ethernet/intel/iecm/iecm_ethtool.c    | 1107 ++++++++++++++++-
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    |  100 +-
+ 2 files changed, 1203 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/networking/device_drivers/intel/idpf.rst b/Documentation/networking/device_drivers/intel/idpf.rst
-new file mode 100644
-index 000000000000..973fa9613428
---- /dev/null
-+++ b/Documentation/networking/device_drivers/intel/idpf.rst
-@@ -0,0 +1,47 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+==================================================================
-+Linux Base Driver for the Intel(R) Smart Network Adapter Family Series
-+==================================================================
-+
-+Intel idpf Linux driver.
-+Copyright(c) 2020 Intel Corporation.
-+
-+Contents
-+========
-+
-+- Enabling the driver
-+- Support
-+
-+The driver in this release supports Intel's Smart Network Adapter Family Series
-+of products. For more information, visit Intel's support page at
-+https://support.intel.com.
-+
-+Enabling the driver
-+===================
-+The driver is enabled via the standard kernel configuration system,
-+using the make command::
-+
-+  make oldconfig/menuconfig/etc.
-+
-+The driver is located in the menu structure at:
-+
-+  -> Device Drivers
-+    -> Network device support (NETDEVICES [=y])
-+      -> Ethernet driver support
-+        -> Intel devices
-+          -> Intel(R) Smart Network Adapter Family Series Support
-+
-+Support
-+=======
-+For general information, go to the Intel support website at:
-+
-+https://www.intel.com/support/
-+
-+or the Intel Wired Networking project hosted by Sourceforge at:
-+
-+https://sourceforge.net/projects/e1000
-+
-+If an issue is identified with the released source code on a supported kernel
-+with a supported adapter, email the specific information related to the issue
-+to e1000-devel at lists.sf.net.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b0a4b2b2f75f..f247298626df 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8546,6 +8546,7 @@ F:	Documentation/networking/device_drivers/intel/fm10k.rst
- F:	Documentation/networking/device_drivers/intel/i40e.rst
- F:	Documentation/networking/device_drivers/intel/iavf.rst
- F:	Documentation/networking/device_drivers/intel/ice.rst
-+F:	Documentation/networking/device_drivers/intel/idpf.rst
- F:	Documentation/networking/device_drivers/intel/iecm.rst
- F:	Documentation/networking/device_drivers/intel/igb.rst
- F:	Documentation/networking/device_drivers/intel/igbvf.rst
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 9b5d413e6831..f5a371435b4d 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -351,4 +351,12 @@ config IECM
- 	---help---
- 	 To compile this driver as a module, choose M here. The module
- 	 will be called iecm.  MSI-X interrupt support is required
-+
-+config IDPF
-+	tristate "Intel(R) Data Plane Function Support"
-+	default n
-+	depends on PCI
-+	---help---
-+	 To compile this driver as a module, choose M here. The module
-+	 will be called idpf.
- endif # NET_VENDOR_INTEL
-diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
-index c9eba9cc5087..3786c2269f3d 100644
---- a/drivers/net/ethernet/intel/Makefile
-+++ b/drivers/net/ethernet/intel/Makefile
-@@ -17,3 +17,4 @@ obj-$(CONFIG_IAVF) += iavf/
- obj-$(CONFIG_FM10K) += fm10k/
- obj-$(CONFIG_ICE) += ice/
- obj-$(CONFIG_IECM) += iecm/
-+obj-$(CONFIG_IDPF) += idpf/
-diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
-new file mode 100644
-index 000000000000..cf59bd22fa83
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/Makefile
-@@ -0,0 +1,14 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+# Copyright (C) 2020 Intel Corporation
-+
-+#
-+# Makefile for the Intel(R) Data Plane Function Linux Driver
-+#
-+
-+obj-$(CONFIG_IDPF) += idpf.o
-+
-+ccflags-y += -I${src}/../include -I${src}
-+
-+idpf-y := \
-+	idpf_main.o \
-+	idpf_reg.o
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.h b/drivers/net/ethernet/intel/idpf/idpf_dev.h
-new file mode 100644
-index 000000000000..fc66580f4126
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_dev.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Copyright (C) 2020 Intel Corporation */
-+
-+#ifndef _IDPF_DEV_H_
-+#define _IDPF_DEV_H_
-+
-+#include "iecm.h"
-+
-+void idpf_intr_reg_init(struct iecm_vport *vport);
-+void idpf_mb_intr_reg_init(struct iecm_adapter *adapter);
-+void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg);
-+void idpf_trigger_reset(struct iecm_adapter *adapter,
-+			enum iecm_flags trig_cause);
-+void idpf_vportq_reg_init(struct iecm_vport *vport);
-+void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq);
-+
-+#endif /* _IDPF_DEV_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_devids.h b/drivers/net/ethernet/intel/idpf/idpf_devids.h
-new file mode 100644
-index 000000000000..ee373a04cb20
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_devids.h
-@@ -0,0 +1,10 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Copyright (C) 2020 Intel Corporation */
-+
-+#ifndef _IDPF_DEVIDS_H_
-+#define _IDPF_DEVIDS_H_
-+
-+/* Device IDs */
-+#define IDPF_DEV_ID_PF			0x1452
-+
-+#endif /* _IDPF_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-new file mode 100644
-index 000000000000..8573c25114f4
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -0,0 +1,139 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Copyright (C) 2020 Intel Corporation */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/version.h>
-+
-+#include "idpf_dev.h"
-+#include "idpf_devids.h"
-+
-+#define DRV_SUMMARY	"Intel(R) Data Plane Function Linux Driver"
-+static const char idpf_driver_string[] = DRV_SUMMARY;
-+static const char idpf_copyright[] = "Copyright (c) 2020, Intel Corporation.";
-+
-+MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
-+MODULE_DESCRIPTION(DRV_SUMMARY);
-+MODULE_LICENSE("GPL v2");
-+
-+static int debug = -1;
-+module_param(debug, int, 0644);
-+#ifndef CONFIG_DYNAMIC_DEBUG
-+MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXXXXX)");
-+#else
-+MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
-+#endif /* !CONFIG_DYNAMIC_DEBUG */
-+
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_ethtool.c b/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+index bdf3005217e1..ec5f03d2bc0b 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+@@ -3,6 +3,1111 @@
+ 
+ #include "iecm.h"
+ 
 +/**
-+ * idpf_reg_ops_init - Initialize register API function pointers
-+ * @adapter: Driver specific private structure
++ * iecm_get_rxnfc - command to get RX flow classification rules
++ * @netdev: network interface device structure
++ * @cmd: ethtool rxnfc command
++ * @rule_locs: pointer to store rule locations
++ *
++ * Returns Success if the command is supported.
 + */
-+static void idpf_reg_ops_init(struct iecm_adapter *adapter)
++static int iecm_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
++			  u32 *rule_locs)
 +{
-+	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_ctlq_reg_init;
-+	adapter->dev_ops.reg_ops.vportq_reg_init = idpf_vportq_reg_init;
-+	adapter->dev_ops.reg_ops.intr_reg_init = idpf_intr_reg_init;
-+	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
-+	adapter->dev_ops.reg_ops.reset_reg_init = idpf_reset_reg_init;
-+	adapter->dev_ops.reg_ops.trigger_reset = idpf_trigger_reset;
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	int ret = -EOPNOTSUPP;
++
++	switch (cmd->cmd) {
++	case ETHTOOL_GRXRINGS:
++		cmd->data = vport->num_rxq;
++		ret = 0;
++		break;
++	case ETHTOOL_GRXFH:
++		netdev_info(netdev, "RSS hash info is not available\n");
++		break;
++	default:
++		break;
++	}
++
++	return ret;
 +}
 +
 +/**
-+ * idpf_probe - Device initialization routine
-+ * @pdev: PCI device information struct
-+ * @ent: entry in idpf_pci_tbl
++ * iecm_get_rxfh_key_size - get the RSS hash key size
++ * @netdev: network interface device structure
 + *
-+ * Returns 0 on success, negative on failure
++ * Returns the table size.
 + */
-+int idpf_probe(struct pci_dev *pdev,
-+	       const struct pci_device_id __always_unused *ent)
++static u32 iecm_get_rxfh_key_size(struct net_device *netdev)
 +{
-+	struct iecm_adapter *adapter = NULL;
-+	int err;
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
 +
-+	err = pcim_enable_device(pdev);
-+	if (err)
-+		return err;
++	if (!iecm_is_cap_ena(vport->adapter, VIRTCHNL_CAP_RSS)) {
++		dev_info(&vport->adapter->pdev->dev, "RSS is not supported on this device\n");
++		return 0;
++	}
 +
-+	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
-+	if (!adapter)
++	return vport->adapter->rss_data.rss_key_size;
++}
++
++/**
++ * iecm_get_rxfh_indir_size - get the rx flow hash indirection table size
++ * @netdev: network interface device structure
++ *
++ * Returns the table size.
++ */
++static u32 iecm_get_rxfh_indir_size(struct net_device *netdev)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++
++	if (!iecm_is_cap_ena(vport->adapter, VIRTCHNL_CAP_RSS)) {
++		dev_info(&vport->adapter->pdev->dev, "RSS is not supported on this device\n");
++		return 0;
++	}
++
++	return vport->adapter->rss_data.rss_lut_size;
++}
++
++/**
++ * iecm_find_virtual_qid - Finds the virtual RX qid from the absolute RX qid
++ * @vport: virtual port structure
++ * @qid_list: List of the RX qid's
++ *
++ * Returns the virtual RX QID.
++ */
++static u32 iecm_find_virtual_qid(struct iecm_vport *vport, u16 *qid_list,
++				 u32 abs_rx_qid)
++{
++	u32 i;
++
++	for (i = 0; i < vport->num_rxq; i++)
++		if ((u32)qid_list[i] == abs_rx_qid)
++			break;
++	return i;
++}
++
++/**
++ * iecm_get_rxfh - get the rx flow hash indirection table
++ * @netdev: network interface device structure
++ * @indir: indirection table
++ * @key: hash key
++ * @hfunc: hash function in use
++ *
++ * Reads the indirection table directly from the hardware. Always returns 0.
++ */
++static int iecm_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
++			 u8 *hfunc)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	struct iecm_adapter *adapter;
++	u16 i, *qid_list;
++	u32 abs_qid;
++
++	adapter = vport->adapter;
++
++	if (!iecm_is_cap_ena(adapter, VIRTCHNL_CAP_RSS)) {
++		dev_info(&vport->adapter->pdev->dev, "RSS is not supported on this device\n");
++		return 0;
++	}
++
++	if (adapter->state != __IECM_UP)
++		return 0;
++
++	if (hfunc)
++		*hfunc = ETH_RSS_HASH_TOP;
++
++	if (key)
++		memcpy(key, adapter->rss_data.rss_key,
++		       adapter->rss_data.rss_key_size);
++
++	qid_list = kcalloc(vport->num_rxq, sizeof(u16), GFP_KERNEL);
++	if (!qid_list)
 +		return -ENOMEM;
 +
-+	adapter->dev_ops.reg_ops_init = idpf_reg_ops_init;
++	iecm_get_rx_qid_list(vport, qid_list);
 +
-+	err = iecm_probe(pdev, ent, adapter);
-+	if (err)
-+		kfree(adapter);
-+
-+	return err;
-+}
-+
-+/**
-+ * idpf_remove - Device removal routine
-+ * @pdev: PCI device information struct
-+ */
-+static void idpf_remove(struct pci_dev *pdev)
-+{
-+	struct iecm_adapter *adapter = pci_get_drvdata(pdev);
-+
-+	iecm_remove(pdev);
-+	kfree(adapter);
-+}
-+
-+/* idpf_pci_tbl - PCI Dev idpf ID Table
-+ *
-+ * Wildcard entries (PCI_ANY_ID) should come last
-+ * Last entry must be all 0s
-+ *
-+ * { Vendor ID, Deviecm ID, SubVendor ID, SubDevice ID,
-+ *   Class, Class Mask, private data (not used) }
-+ */
-+static const struct pci_device_id idpf_pci_tbl[] = {
-+	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_PF), 0 },
-+	/* required last entry */
-+	{ 0, }
-+};
-+MODULE_DEVICE_TABLE(pci, idpf_pci_tbl);
-+
-+static struct pci_driver idpf_driver = {
-+	.name = KBUILD_MODNAME,
-+	.id_table = idpf_pci_tbl,
-+	.probe = idpf_probe,
-+	.remove = idpf_remove,
-+	.shutdown = iecm_shutdown,
-+};
-+
-+/**
-+ * idpf_module_init - Driver registration routine
-+ *
-+ * idpf_module_init is the first routine called when the driver is
-+ * loaded. All it does is register with the PCI subsystem.
-+ */
-+static int __init idpf_module_init(void)
-+{
-+	int status;
-+
-+	pr_info("%s - version %d\n", idpf_driver_string, LINUX_VERSION_CODE);
-+	pr_info("%s\n", idpf_copyright);
-+
-+	status = pci_register_driver(&idpf_driver);
-+	if (status) {
-+		pr_err("failed to register pci driver, err %d\n", status);
-+	}
-+
-+	return status;
-+}
-+module_init(idpf_module_init);
-+
-+/**
-+ * idpf_module_exit - Driver exit cleanup routine
-+ *
-+ * idpf_module_exit is called just before the driver is removed
-+ * from memory.
-+ */
-+static void __exit idpf_module_exit(void)
-+{
-+	pci_unregister_driver(&idpf_driver);
-+	pr_info("module unloaded\n");
-+}
-+module_exit(idpf_module_exit);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_reg.c b/drivers/net/ethernet/intel/idpf/idpf_reg.c
-new file mode 100644
-index 000000000000..3bbe57f58b92
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_reg.c
-@@ -0,0 +1,152 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/* Copyright (C) 2020 Intel Corporation */
-+
-+#include "idpf_dev.h"
-+#include "iecm_lan_pf_regs.h"
-+
-+/**
-+ * idpf_ctlq_reg_init - initialize default mailbox registers
-+ * @cq: pointer to the array of create control queues
-+ */
-+void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq)
-+{
-+	int i;
-+
-+#define NUM_Q 2
-+	for (i = 0; i < NUM_Q; i++) {
-+		struct iecm_ctlq_create_info *ccq = cq + i;
-+
-+		switch (ccq->type) {
-+		case IECM_CTLQ_TYPE_MAILBOX_TX:
-+			/* set head and tail registers in our local struct */
-+			ccq->reg.head = PF_FW_ATQH;
-+			ccq->reg.tail = PF_FW_ATQT;
-+			ccq->reg.len = PF_FW_ATQLEN;
-+			ccq->reg.bah = PF_FW_ATQBAH;
-+			ccq->reg.bal = PF_FW_ATQBAL;
-+			ccq->reg.len_mask = PF_FW_ATQLEN_ATQLEN_M;
-+			ccq->reg.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
-+			ccq->reg.head_mask = PF_FW_ATQH_ATQH_M;
-+			break;
-+		case IECM_CTLQ_TYPE_MAILBOX_RX:
-+			/* set head and tail registers in our local struct */
-+			ccq->reg.head = PF_FW_ARQH;
-+			ccq->reg.tail = PF_FW_ARQT;
-+			ccq->reg.len = PF_FW_ARQLEN;
-+			ccq->reg.bah = PF_FW_ARQBAH;
-+			ccq->reg.bal = PF_FW_ARQBAL;
-+			ccq->reg.len_mask = PF_FW_ARQLEN_ARQLEN_M;
-+			ccq->reg.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
-+			ccq->reg.head_mask = PF_FW_ARQH_ARQH_M;
-+			break;
-+		default:
-+			break;
++	if (indir)
++		/* Each 32 bits pointed by 'indir' is stored with a lut entry */
++		for (i = 0; i < adapter->rss_data.rss_lut_size; i++) {
++			abs_qid = (u32)adapter->rss_data.rss_lut[i];
++			indir[i] = iecm_find_virtual_qid(vport, qid_list,
++							 abs_qid);
 +		}
++
++	kfree(qid_list);
++
++	return 0;
++}
++
++/**
++ * iecm_set_rxfh - set the rx flow hash indirection table
++ * @netdev: network interface device structure
++ * @indir: indirection table
++ * @key: hash key
++ * @hfunc: hash function to use
++ *
++ * Returns -EINVAL if the table specifies an invalid queue id, otherwise
++ * returns 0 after programming the table.
++ */
++static int iecm_set_rxfh(struct net_device *netdev, const u32 *indir,
++			 const u8 *key, const u8 hfunc)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	struct iecm_adapter *adapter;
++	u16 *qid_list;
++	u16 lut;
++
++	adapter = vport->adapter;
++
++	if (!iecm_is_cap_ena(adapter, VIRTCHNL_CAP_RSS)) {
++		dev_info(&adapter->pdev->dev, "RSS is not supported on this device.\n");
++		return 0;
++	}
++	if (adapter->state != __IECM_UP)
++		return 0;
++
++	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
++		return -EOPNOTSUPP;
++
++	if (key)
++		memcpy(adapter->rss_data.rss_key, key,
++		       adapter->rss_data.rss_key_size);
++
++	qid_list = kcalloc(vport->num_rxq, sizeof(u16), GFP_KERNEL);
++	if (!qid_list)
++		return -ENOMEM;
++
++	iecm_get_rx_qid_list(vport, qid_list);
++
++	if (indir) {
++		for (lut = 0; lut < adapter->rss_data.rss_lut_size; lut++) {
++			int index = indir[lut];
++
++			if (index >= vport->num_rxq) {
++				kfree(qid_list);
++				return -EINVAL;
++			}
++			adapter->rss_data.rss_lut[lut] = qid_list[index];
++		}
++	} else {
++		iecm_fill_dflt_rss_lut(vport, qid_list);
++	}
++
++	kfree(qid_list);
++
++	return iecm_config_rss(vport);
++}
++
++/**
++ * iecm_get_channels: get the number of channels supported by the device
++ * @netdev: network interface device structure
++ * @ch: channel information structure
++ *
++ * Report mamimum of TX and RX. Report one extra channel to match our MailBox
++ * Queue.
++ */
++static void iecm_get_channels(struct net_device *netdev,
++			      struct ethtool_channels *ch)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++
++	/* Report maximum channels */
++	ch->max_combined = IECM_MAX_Q;
++
++	ch->max_other = IECM_MAX_NONQ;
++	ch->other_count = IECM_MAX_NONQ;
++
++	ch->combined_count = max(vport->num_txq, vport->num_rxq);
++}
++
++/**
++ * iecm_set_channels: set the new channel count
++ * @netdev: network interface device structure
++ * @ch: channel information structure
++ *
++ * Negotiate a new number of channels with CP. Returns 0 on success, negative
++ * on failure.
++ */
++static int iecm_set_channels(struct net_device *netdev,
++			     struct ethtool_channels *ch)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	int num_req_q = ch->combined_count;
++
++	if (num_req_q == max(vport->num_txq, vport->num_rxq))
++		return 0;
++
++	/* All of these should have already been checked by ethtool before this
++	 * even gets to us, but just to be sure.
++	 */
++	if (num_req_q <= 0 || num_req_q > IECM_MAX_Q)
++		return -EINVAL;
++
++	if (ch->rx_count || ch->tx_count || ch->other_count != IECM_MAX_NONQ)
++		return -EINVAL;
++
++	vport->adapter->config_data.num_req_qs = num_req_q;
++
++	return iecm_initiate_soft_reset(vport, __IECM_SR_Q_CHANGE);
++}
++
++/**
++ * iecm_get_ringparam - Get ring parameters
++ * @netdev: network interface device structure
++ * @ring: ethtool ringparam structure
++ *
++ * Returns current ring parameters. TX and RX rings are reported separately,
++ * but the number of rings is not reported.
++ */
++static void iecm_get_ringparam(struct net_device *netdev,
++			       struct ethtool_ringparam *ring)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++
++	ring->rx_max_pending = IECM_MAX_RXQ_DESC;
++	ring->tx_max_pending = IECM_MAX_TXQ_DESC;
++	ring->rx_pending = vport->rxq_desc_count;
++	ring->tx_pending = vport->txq_desc_count;
++}
++
++/**
++ * iecm_set_ringparam - Set ring parameters
++ * @netdev: network interface device structure
++ * @ring: ethtool ringparam structure
++ *
++ * Sets ring parameters. TX and RX rings are controlled separately, but the
++ * number of rings is not specified, so all rings get the same settings.
++ */
++static int iecm_set_ringparam(struct net_device *netdev,
++			      struct ethtool_ringparam *ring)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	u32 new_rx_count, new_tx_count;
++
++	if (ring->rx_mini_pending || ring->rx_jumbo_pending)
++		return -EINVAL;
++
++	new_tx_count = clamp_t(u32, ring->tx_pending,
++			       IECM_MIN_TXQ_DESC,
++			       IECM_MAX_TXQ_DESC);
++	new_tx_count = ALIGN(new_tx_count, IECM_REQ_DESC_MULTIPLE);
++
++	new_rx_count = clamp_t(u32, ring->rx_pending,
++			       IECM_MIN_RXQ_DESC,
++			       IECM_MAX_RXQ_DESC);
++	new_rx_count = ALIGN(new_rx_count, IECM_REQ_DESC_MULTIPLE);
++
++	/* if nothing to do return success */
++	if (new_tx_count == vport->txq_desc_count &&
++	    new_rx_count == vport->rxq_desc_count)
++		return 0;
++
++	vport->adapter->config_data.num_req_txq_desc = new_tx_count;
++	vport->adapter->config_data.num_req_rxq_desc = new_rx_count;
++
++	return iecm_initiate_soft_reset(vport, __IECM_SR_Q_DESC_CHANGE);
++}
++
++/**
++ * struct iecm_stats - definition for an ethtool statistic
++ * @stat_string: statistic name to display in ethtool -S output
++ * @sizeof_stat: the sizeof() the stat, must be no greater than sizeof(u64)
++ * @stat_offset: offsetof() the stat from a base pointer
++ *
++ * This structure defines a statistic to be added to the ethtool stats buffer.
++ * It defines a statistic as offset from a common base pointer. Stats should
++ * be defined in constant arrays using the IECM_STAT macro, with every element
++ * of the array using the same _type for calculating the sizeof_stat and
++ * stat_offset.
++ *
++ * The @sizeof_stat is expected to be sizeof(u8), sizeof(u16), sizeof(u32) or
++ * sizeof(u64). Other sizes are not expected and will produce a WARN_ONCE from
++ * the iecm_add_ethtool_stat() helper function.
++ *
++ * The @stat_string is interpreted as a format string, allowing formatted
++ * values to be inserted while looping over multiple structures for a given
++ * statistics array. Thus, every statistic string in an array should have the
++ * same type and number of format specifiers, to be formatted by variadic
++ * arguments to the iecm_add_stat_string() helper function.
++ */
++struct iecm_stats {
++	char stat_string[ETH_GSTRING_LEN];
++	int sizeof_stat;
++	int stat_offset;
++};
++
++/* Helper macro to define an iecm_stat structure with proper size and type.
++ * Use this when defining constant statistics arrays. Note that @_type expects
++ * only a type name and is used multiple times.
++ */
++#define IECM_STAT(_type, _name, _stat) { \
++	.stat_string = _name, \
++	.sizeof_stat = sizeof_field(_type, _stat), \
++	.stat_offset = offsetof(_type, _stat) \
++}
++
++/* Helper macro for defining some statistics related to queues */
++#define IECM_QUEUE_STAT(_name, _stat) \
++	IECM_STAT(struct iecm_queue, _name, _stat)
++
++/* Stats associated with a Tx queue */
++static const struct iecm_stats iecm_gstrings_tx_queue_stats[] = {
++	IECM_QUEUE_STAT("%s-%u.packets", q_stats.tx.packets),
++	IECM_QUEUE_STAT("%s-%u.bytes", q_stats.tx.bytes),
++};
++
++/* Stats associated with an Rx queue */
++static const struct iecm_stats iecm_gstrings_rx_queue_stats[] = {
++	IECM_QUEUE_STAT("%s-%u.packets", q_stats.rx.packets),
++	IECM_QUEUE_STAT("%s-%u.bytes", q_stats.rx.bytes),
++	IECM_QUEUE_STAT("%s-%u.generic_csum", q_stats.rx.generic_csum),
++	IECM_QUEUE_STAT("%s-%u.basic_csum", q_stats.rx.basic_csum),
++	IECM_QUEUE_STAT("%s-%u.csum_err", q_stats.rx.csum_err),
++	IECM_QUEUE_STAT("%s-%u.hsplit_buf_overflow", q_stats.rx.hsplit_hbo),
++};
++
++#define IECM_TX_QUEUE_STATS_LEN		ARRAY_SIZE(iecm_gstrings_tx_queue_stats)
++#define IECM_RX_QUEUE_STATS_LEN		ARRAY_SIZE(iecm_gstrings_rx_queue_stats)
++
++/* For now we have one and only one private flag and it is only defined
++ * when we have support for the SKIP_CPU_SYNC DMA attribute.  Instead
++ * of leaving all this code sitting around empty we will strip it unless
++ * our one private flag is actually available.
++ */
++struct iecm_priv_flags {
++	char flag_string[ETH_GSTRING_LEN];
++	bool read_only;
++	u32 flag;
++};
++
++#define IECM_PRIV_FLAG(_name, _flag, _read_only) { \
++	.read_only = _read_only, \
++	.flag_string = _name, \
++	.flag = _flag, \
++}
++
++static const struct iecm_priv_flags iecm_gstrings_priv_flags[] = {
++	IECM_PRIV_FLAG("", 0, 0),
++};
++
++#define IECM_PRIV_FLAGS_STR_LEN ARRAY_SIZE(iecm_gstrings_priv_flags)
++
++/**
++ * __iecm_add_stat_strings - copy stat strings into ethtool buffer
++ * @p: ethtool supplied buffer
++ * @stats: stat definitions array
++ * @size: size of the stats array
++ *
++ * Format and copy the strings described by stats into the buffer pointed at
++ * by p.
++ */
++static void __iecm_add_stat_strings(u8 **p, const struct iecm_stats stats[],
++				    const unsigned int size, ...)
++{
++	unsigned int i;
++
++	for (i = 0; i < size; i++) {
++		va_list args;
++
++		va_start(args, size);
++		vsnprintf((char *)*p, ETH_GSTRING_LEN,
++			  stats[i].stat_string, args);
++		*p += ETH_GSTRING_LEN;
++		va_end(args);
 +	}
 +}
 +
 +/**
-+ * idpf_vportq_reg_init - Initialize tail registers
-+ * @vport: virtual port structure
++ * iecm_add_stat_strings - copy stat strings into ethtool buffer
++ * @p: ethtool supplied buffer
++ * @stats: stat definitions array
++ *
++ * Format and copy the strings described by the const static stats value into
++ * the buffer pointed@by p.
++ *
++ * The parameter @stats is evaluated twice, so parameters with side effects
++ * should be avoided. Additionally, stats must be an array such that
++ * ARRAY_SIZE can be called on it.
 + */
-+void idpf_vportq_reg_init(struct iecm_vport *vport)
-+{
-+	struct iecm_hw *hw = &vport->adapter->hw;
-+	struct iecm_queue *q;
-+	int i, j;
++#define iecm_add_stat_strings(p, stats, ...) \
++	__iecm_add_stat_strings(p, stats, ARRAY_SIZE(stats), ## __VA_ARGS__)
 +
++/**
++ * iecm_get_stat_strings - Get stat strings
++ * @netdev: network interface device structure
++ * @data: buffer for string data
++ *
++ * Builds the statistics string table
++ */
++static void iecm_get_stat_strings(struct net_device *netdev, u8 *data)
++{
++	unsigned int i;
++
++	/* It's critical that we always report a constant number of strings and
++	 * that the strings are reported in the same order regardless of how
++	 * many queues are actually in use.
++	 */
++	for (i = 0; i < IECM_MAX_Q; i++)
++		iecm_add_stat_strings(&data, iecm_gstrings_tx_queue_stats,
++				      "tx", i);
++	for (i = 0; i < IECM_MAX_Q; i++)
++		iecm_add_stat_strings(&data, iecm_gstrings_rx_queue_stats,
++				      "rx", i);
++}
++
++/**
++ * iecm_get_priv_flag_strings - Get private flag strings
++ * @netdev: network interface device structure
++ * @data: buffer for string data
++ *
++ * Builds the private flags string table
++ */
++static void iecm_get_priv_flag_strings(struct net_device *netdev, u8 *data)
++{
++	unsigned int i;
++
++	for (i = 0; i < IECM_PRIV_FLAGS_STR_LEN; i++) {
++		snprintf((char *)data, ETH_GSTRING_LEN, "%s",
++			 iecm_gstrings_priv_flags[i].flag_string);
++		data += ETH_GSTRING_LEN;
++	}
++}
++
++/**
++ * iecm_get_strings - Get string set
++ * @netdev: network interface device structure
++ * @sset: id of string set
++ * @data: buffer for string data
++ *
++ * Builds string tables for various string sets
++ */
++static void iecm_get_strings(struct net_device *netdev, u32 sset, u8 *data)
++{
++	switch (sset) {
++	case ETH_SS_STATS:
++		iecm_get_stat_strings(netdev, data);
++		break;
++	case ETH_SS_PRIV_FLAGS:
++		iecm_get_priv_flag_strings(netdev, data);
++		break;
++	default:
++		break;
++	}
++}
++
++/**
++ * iecm_get_sset_count - Get length of string set
++ * @netdev: network interface device structure
++ * @sset: id of string set
++ *
++ * Reports size of various string tables.
++ */
++static int iecm_get_sset_count(struct net_device *netdev, int sset)
++{
++	if (sset == ETH_SS_STATS)
++		/* This size reported back here *must* be constant throughout
++		 * the lifecycle of the netdevice, i.e. we must report the
++		 * maximum length even for queues that don't technically exist.
++		 * This is due to the fact that this userspace API uses three
++		 * separate ioctl calls to get stats data but has no way to
++		 * communicate back to userspace when that size has changed,
++		 * which can typically happen as a result of changing number of
++		 * queues. If the number/order of stats change in the middle of
++		 * this call chain it will lead to userspace crashing/accessing
++		 * bad data through buffer under/overflow.
++		 */
++		return (IECM_TX_QUEUE_STATS_LEN * IECM_MAX_Q) +
++			(IECM_RX_QUEUE_STATS_LEN * IECM_MAX_Q);
++	else if (sset == ETH_SS_PRIV_FLAGS)
++		return IECM_PRIV_FLAGS_STR_LEN;
++	else
++		return -EINVAL;
++}
++
++/**
++ * iecm_add_one_ethtool_stat - copy the stat into the supplied buffer
++ * @data: location to store the stat value
++ * @pstat: old stat pointer to copy from
++ * @stat: the stat definition
++ *
++ * Copies the stat data defined by the pointer and stat structure pair into
++ * the memory supplied as data. Used to implement iecm_add_ethtool_stats and
++ * iecm_add_queue_stats. If the pointer is null, data will be zero'd.
++ */
++static void
++iecm_add_one_ethtool_stat(u64 *data, void *pstat,
++			  const struct iecm_stats *stat)
++{
++	char *p;
++
++	if (!pstat) {
++		/* ensure that the ethtool data buffer is zero'd for any stats
++		 * which don't have a valid pointer.
++		 */
++		*data = 0;
++		return;
++	}
++
++	p = (char *)pstat + stat->stat_offset;
++	switch (stat->sizeof_stat) {
++	case sizeof(u64):
++		*data = *((u64 *)p);
++		break;
++	case sizeof(u32):
++		*data = *((u32 *)p);
++		break;
++	case sizeof(u16):
++		*data = *((u16 *)p);
++		break;
++	case sizeof(u8):
++		*data = *((u8 *)p);
++		break;
++	default:
++		WARN_ONCE(1, "unexpected stat size for %s",
++			  stat->stat_string);
++		*data = 0;
++	}
++}
++
++/**
++ * iecm_add_queue_stats - copy queue statistics into supplied buffer
++ * @data: ethtool stats buffer
++ * @q: the queue to copy
++ *
++ * Queue statistics must be copied while protected by
++ * u64_stats_fetch_begin_irq, so we can't directly use iecm_add_ethtool_stats.
++ * Assumes that queue stats are defined in iecm_gstrings_queue_stats. If the
++ * queue pointer is null, zero out the queue stat values and update the data
++ * pointer. Otherwise safely copy the stats from the queue into the supplied
++ * buffer and update the data pointer when finished.
++ *
++ * This function expects to be called while under rcu_read_lock().
++ */
++static void
++iecm_add_queue_stats(u64 **data, struct iecm_queue *q)
++{
++	const struct iecm_stats *stats;
++	unsigned int start;
++	unsigned int size;
++	unsigned int i;
++
++	if (q->q_type == VIRTCHNL_QUEUE_TYPE_RX) {
++		size = IECM_RX_QUEUE_STATS_LEN;
++		stats = iecm_gstrings_rx_queue_stats;
++	} else {
++		size = IECM_TX_QUEUE_STATS_LEN;
++		stats = iecm_gstrings_tx_queue_stats;
++	}
++
++	/* To avoid invalid statistics values, ensure that we keep retrying
++	 * the copy until we get a consistent value according to
++	 * u64_stats_fetch_retry_irq. But first, make sure our queue is
++	 * non-null before attempting to access its syncp.
++	 */
++	do {
++		start = u64_stats_fetch_begin_irq(&q->stats_sync);
++		for (i = 0; i < size; i++)
++			iecm_add_one_ethtool_stat(&(*data)[i], q, &stats[i]);
++	} while (u64_stats_fetch_retry_irq(&q->stats_sync, start));
++
++	/* Once we successfully copy the stats in, update the data pointer */
++	*data += size;
++}
++
++/**
++ * iecm_add_empty_queue_stats - Add stats for a non-existent queue
++ * @data: pointer to data buffer
++ * @qtype: type of data queue
++ *
++ * We must report a constant length of stats back to userspace regardless of
++ * how many queues are actually in use because stats collection happens over
++ * three separate ioctls and there's no way to notify userspace the size
++ * changed between those calls. This adds empty to data to the stats since we
++ * don't have a real queue to refer to for this stats slot.
++ */
++static void
++iecm_add_empty_queue_stats(u64 **data, enum virtchnl_queue_type qtype)
++{
++	unsigned int i;
++	int stats_len;
++
++	if (qtype == VIRTCHNL_QUEUE_TYPE_RX)
++		stats_len = IECM_RX_QUEUE_STATS_LEN;
++	else
++		stats_len = IECM_TX_QUEUE_STATS_LEN;
++
++	for (i = 0; i < stats_len; i++)
++		(*data)[i] = 0;
++	*data += stats_len;
++}
++
++/**
++ * iecm_get_ethtool_stats - report device statistics
++ * @netdev: network interface device structure
++ * @stats: ethtool statistics structure
++ * @data: pointer to data buffer
++ *
++ * All statistics are added to the data buffer as an array of u64.
++ */
++static void iecm_get_ethtool_stats(struct net_device *netdev,
++				   struct ethtool_stats *stats, u64 *data)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	enum virtchnl_queue_type qtype;
++	unsigned int total = 0;
++	unsigned int i, j;
++
++	if (vport->adapter->state != __IECM_UP)
++		return;
++
++	rcu_read_lock();
 +	for (i = 0; i < vport->num_txq_grp; i++) {
-+		int num_txq = vport->txq_grps[i].num_txq;
++		struct iecm_txq_group *txq_grp = &vport->txq_grps[i];
 +
-+		for (j = 0; j < num_txq; j++) {
-+			q = &vport->txq_grps[i].txqs[j];
-+			q->tail = hw->hw_addr + PF_QTX_COMM_DBELL(q->q_id);
++		qtype = VIRTCHNL_QUEUE_TYPE_TX;
++
++		for (j = 0; j < txq_grp->num_txq; j++, total++) {
++			struct iecm_queue *txq = &txq_grp->txqs[j];
++
++			if (!txq)
++				iecm_add_empty_queue_stats(&data, qtype);
++			else
++				iecm_add_queue_stats(&data, txq);
 +		}
 +	}
++	/* It is critical we provide a constant number of stats back to
++	 * userspace regardless of how many queues are actually in use because
++	 * there is no way to inform userspace the size has changed between
++	 * ioctl calls. This will fill in any missing stats with zero.
++	 */
++	for (; total < IECM_MAX_Q; total++)
++		iecm_add_empty_queue_stats(&data, VIRTCHNL_QUEUE_TYPE_TX);
++	total = 0;
 +
 +	for (i = 0; i < vport->num_rxq_grp; i++) {
 +		struct iecm_rxq_group *rxq_grp = &vport->rxq_grps[i];
 +		int num_rxq;
 +
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
-+				q = &rxq_grp->splitq.bufq_sets[j].bufq;
-+				q->tail = hw->hw_addr +
-+					  PF_QRX_BUFFQ_TAIL(q->q_id);
-+			}
++		qtype = VIRTCHNL_QUEUE_TYPE_RX;
 +
++		if (iecm_is_queue_model_split(vport->rxq_model))
 +			num_rxq = rxq_grp->splitq.num_rxq_sets;
-+		} else {
++		else
 +			num_rxq = rxq_grp->singleq.num_rxq;
-+		}
 +
-+		for (j = 0; j < num_rxq; j++) {
++		for (j = 0; j < num_rxq; j++, total++) {
++			struct iecm_queue *rxq;
++
 +			if (iecm_is_queue_model_split(vport->rxq_model))
-+				q = &rxq_grp->splitq.rxq_sets[j].rxq;
++				rxq = &rxq_grp->splitq.rxq_sets[j].rxq;
 +			else
-+				q = &rxq_grp->singleq.rxqs[j];
-+			q->tail = hw->hw_addr + PF_QRX_TAIL(q->q_id);
++				rxq = &rxq_grp->singleq.rxqs[j];
++			if (!rxq)
++				iecm_add_empty_queue_stats(&data, qtype);
++			else
++				iecm_add_queue_stats(&data, rxq);
 +		}
 +	}
++	for (; total < IECM_MAX_Q; total++)
++		iecm_add_empty_queue_stats(&data, VIRTCHNL_QUEUE_TYPE_RX);
++	rcu_read_unlock();
 +}
 +
 +/**
-+ * idpf_mb_intr_reg_init - Initialize mailbox interrupt register
-+ * @adapter: adapter structure
++ * iecm_find_rxq - find rxq from q index
++ * @vport: virtual port associated to queue
++ * @q_num: q index used to find queue
++ *
++ * returns pointer to rx queue
 + */
-+void idpf_mb_intr_reg_init(struct iecm_adapter *adapter)
++static struct iecm_queue *
++iecm_find_rxq(struct iecm_vport *vport, int q_num)
 +{
-+	struct iecm_intr_reg *intr = &adapter->mb_vector.intr_reg;
-+	int vidx;
++	struct iecm_queue *rxq;
++	int q_grp, q_idx;
 +
-+	vidx = adapter->mb_vector.v_idx;
-+	intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
-+	intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-+	intr->dyn_ctl_itridx_m = 0x3 << PF_GLINT_DYN_CTL_ITR_INDX_S;
++	if (iecm_is_queue_model_split(vport->rxq_model)) {
++		q_grp = q_num / IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++		q_idx = q_num % IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++
++		rxq = &vport->rxq_grps[q_grp].splitq.rxq_sets[q_idx].rxq;
++	} else {
++		q_grp = q_num / IECM_DFLT_SINGLEQ_RXQ_PER_GROUP;
++		q_idx = q_num % IECM_DFLT_SINGLEQ_RXQ_PER_GROUP;
++
++		rxq = &vport->rxq_grps[q_grp].singleq.rxqs[q_idx];
++	}
++
++	return rxq;
 +}
 +
 +/**
-+ * idpf_intr_reg_init - Initialize interrupt registers
-+ * @vport: virtual port structure
++ * iecm_find_txq - find txq from q index
++ * @vport: virtual port associated to queue
++ * @q_num: q index used to find queue
++ *
++ * returns pointer to tx queue
 + */
-+void idpf_intr_reg_init(struct iecm_vport *vport)
++static struct iecm_queue *
++iecm_find_txq(struct iecm_vport *vport, int q_num)
 +{
-+	int q_idx;
++	struct iecm_queue *txq;
 +
-+	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
-+		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
-+		struct iecm_intr_reg *intr = &q_vector->intr_reg;
-+		u32 vidx = q_vector->v_idx;
++	if (iecm_is_queue_model_split(vport->txq_model)) {
++		int q_grp = q_num / IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
 +
-+		intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
-+		intr->dyn_ctl_clrpba_m = PF_GLINT_DYN_CTL_CLEARPBA_M;
-+		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-+		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
-+		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
-+		intr->itr = PF_GLINT_ITR(VIRTCHNL_ITR_IDX_0, vidx);
++		txq = vport->txq_grps[q_grp].complq;
++	} else {
++		txq = vport->txqs[q_num];
++	}
++
++	return txq;
++}
++
++/**
++ * __iecm_get_q_coalesce - get ITR values for specific queue
++ * @ec: ethtool structure to fill with driver's coalesce settings
++ * @q: quuee of Rx or Tx
++ */
++static void
++__iecm_get_q_coalesce(struct ethtool_coalesce *ec, struct iecm_queue *q)
++{
++	u16 itr_setting;
++	bool dyn_ena;
++
++	itr_setting = IECM_ITR_SETTING(q->itr.target_itr);
++	dyn_ena = IECM_ITR_IS_DYNAMIC(q->itr.target_itr);
++	if (q->q_type == VIRTCHNL_QUEUE_TYPE_RX) {
++		ec->use_adaptive_rx_coalesce = dyn_ena;
++		ec->rx_coalesce_usecs = itr_setting;
++	} else {
++		ec->use_adaptive_tx_coalesce = dyn_ena;
++		ec->tx_coalesce_usecs = itr_setting;
 +	}
 +}
 +
 +/**
-+ * idpf_reset_reg_init - Initialize reset registers
-+ * @reset_reg: struct to be filled in with reset registers
++ * iecm_get_q_coalesce - get ITR values for specific queue
++ * @netdev: pointer to the netdev associated with this query
++ * @ec: coalesce settings to program the device with
++ * @q_num: update ITR/INTRL (coalesce) settings for this queue number/index
++ *
++ * Return 0 on success, and negative on failure
 + */
-+void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg)
++static int
++iecm_get_q_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
++		    u32 q_num)
 +{
-+	reset_reg->rstat = PFGEN_RSTAT;
-+	reset_reg->rstat_m = PFGEN_RSTAT_PFR_STATE_M;
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++
++	if (vport->adapter->state != __IECM_UP)
++		return 0;
++
++	if (q_num >= vport->num_rxq && q_num >= vport->num_txq)
++		return -EINVAL;
++
++	if (q_num < vport->num_rxq) {
++		struct iecm_queue *rxq = iecm_find_rxq(vport, q_num);
++
++		__iecm_get_q_coalesce(ec, rxq);
++	}
++
++	if (q_num < vport->num_txq) {
++		struct iecm_queue *txq = iecm_find_txq(vport, q_num);
++
++		__iecm_get_q_coalesce(ec, txq);
++	}
++
++	return 0;
 +}
 +
 +/**
-+ * idpf_trigger_reset - trigger reset
-+ * @adapter: Driver specific private structure
-+ * @trig_cause: Reason to trigger a reset
++ * iecm_get_coalesce - get ITR values as requested by user
++ * @netdev: pointer to the netdev associated with this query
++ * @ec: coalesce settings to be filled
++ *
++ * Return 0 on success, and negative on failure
 + */
-+void idpf_trigger_reset(struct iecm_adapter *adapter,
-+			enum iecm_flags trig_cause)
++static int
++iecm_get_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec)
 +{
-+	u32 reset_reg;
-+
-+	reset_reg = rd32(&adapter->hw, PFGEN_CTRL);
-+	wr32(&adapter->hw, PFGEN_CTRL, (reset_reg | PFGEN_CTRL_PFSWR));
++	/* Return coalesce based on queue number zero */
++	return iecm_get_q_coalesce(netdev, ec, 0);
 +}
++
++/**
++ * iecm_get_per_q_coalesce - get ITR values as requested by user
++ * @netdev: pointer to the netdev associated with this query
++ * @q_num: queue for which the itr values has to retrieved
++ * @ec: coalesce settings to be filled
++ *
++ * Return 0 on success, and negative on failure
++ */
++
++static int
++iecm_get_per_q_coalesce(struct net_device *netdev, u32 q_num,
++			struct ethtool_coalesce *ec)
++{
++	return iecm_get_q_coalesce(netdev, ec, q_num);
++}
++
++/**
++ * __iecm_set_q_coalesce - set ITR values for specific queue
++ * @ec: ethtool structure from user to update ITR settings
++ * @q: queue for which itr values has to be set
++ *
++ * Returns 0 on success, negative otherwise.
++ */
++static int
++__iecm_set_q_coalesce(struct ethtool_coalesce *ec, struct iecm_queue *q)
++{
++	const char *q_type_str = (q->q_type == VIRTCHNL_QUEUE_TYPE_RX)
++				  ? "Rx" : "Tx";
++	u32 use_adaptive_coalesce, coalesce_usecs;
++	struct iecm_vport *vport;
++	u16 itr_setting;
++
++	itr_setting = IECM_ITR_SETTING(q->itr.target_itr);
++	vport = q->vport;
++	if (q->q_type == VIRTCHNL_QUEUE_TYPE_RX) {
++		use_adaptive_coalesce = ec->use_adaptive_rx_coalesce;
++		coalesce_usecs = ec->rx_coalesce_usecs;
++	} else {
++		use_adaptive_coalesce = ec->use_adaptive_tx_coalesce;
++		coalesce_usecs = ec->tx_coalesce_usecs;
++	}
++
++	if (itr_setting != coalesce_usecs && use_adaptive_coalesce) {
++		netdev_info(vport->netdev, "%s ITR cannot be changed if adaptive-%s is enabled\n",
++			    q_type_str, q_type_str);
++		return -EINVAL;
++	}
++
++	if (coalesce_usecs > IECM_ITR_MAX) {
++		netdev_info(vport->netdev,
++			    "Invalid value, %d-usecs range is 0-%d\n",
++			    coalesce_usecs, IECM_ITR_MAX);
++		return -EINVAL;
++	}
++
++	/* hardware only supports an ITR granularity of 2us */
++	if (coalesce_usecs % 2 != 0) {
++		netdev_info(vport->netdev,
++			    "Invalid value, %d-usecs must be even\n",
++			    coalesce_usecs);
++		return -EINVAL;
++	}
++
++	q->itr.target_itr = coalesce_usecs;
++	if (use_adaptive_coalesce)
++		q->itr.target_itr |= IECM_ITR_DYNAMIC;
++	/* Update of static/dynamic itr will be taken care when interrupt is
++	 * fired
++	 */
++	return 0;
++}
++
++/**
++ * iecm_set_q_coalesce - set ITR values for specific queue
++ * @vport: vport associated to the queue that need updating
++ * @ec: coalesce settings to program the device with
++ * @q_num: update ITR/INTRL (coalesce) settings for this queue number/index
++ * @is_rxq: is queue type rx
++ *
++ * Return 0 on success, and negative on failure
++ */
++static int
++iecm_set_q_coalesce(struct iecm_vport *vport, struct ethtool_coalesce *ec,
++		    int q_num, bool is_rxq)
++{
++	if (is_rxq) {
++		struct iecm_queue *rxq = iecm_find_rxq(vport, q_num);
++
++		if (rxq && __iecm_set_q_coalesce(ec, rxq))
++			return -EINVAL;
++	} else {
++		struct iecm_queue *txq = iecm_find_txq(vport, q_num);
++
++		if (txq && __iecm_set_q_coalesce(ec, txq))
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_set_coalesce - set ITR values as requested by user
++ * @netdev: pointer to the netdev associated with this query
++ * @ec: coalesce settings to program the device with
++ *
++ * Return 0 on success, and negative on failure
++ */
++static int
++iecm_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	int i, err = 0;
++
++	if (vport->adapter->state != __IECM_UP)
++		return 0;
++
++	for (i = 0; i < vport->num_txq; i++) {
++		err = iecm_set_q_coalesce(vport, ec, i, false);
++		if (err)
++			goto set_coalesce_err;
++	}
++
++	for (i = 0; i < vport->num_rxq; i++) {
++		err = iecm_set_q_coalesce(vport, ec, i, true);
++		if (err)
++			goto set_coalesce_err;
++	}
++set_coalesce_err:
++	return err;
++}
++
++/**
++ * iecm_set_per_q_coalesce - set ITR values as requested by user
++ * @netdev: pointer to the netdev associated with this query
++ * @q_num: queue for which the itr values has to be set
++ * @ec: coalesce settings to program the device with
++ *
++ * Return 0 on success, and negative on failure
++ */
++static int
++iecm_set_per_q_coalesce(struct net_device *netdev, u32 q_num,
++			struct ethtool_coalesce *ec)
++{
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	int err;
++
++	if (vport->adapter->state != __IECM_UP)
++		return 0;
++
++	err = iecm_set_q_coalesce(vport, ec, q_num, false);
++	if (!err)
++		err = iecm_set_q_coalesce(vport, ec, q_num, true);
++
++	return err;
++}
++
++/**
++ * iecm_get_msglevel - Get debug message level
++ * @netdev: network interface device structure
++ *
++ * Returns current debug message level.
++ */
++static u32 iecm_get_msglevel(struct net_device *netdev)
++{
++	struct iecm_adapter *adapter = iecm_netdev_to_adapter(netdev);
++
++	return adapter->msg_enable;
++}
++
++/**
++ * iecm_set_msglevel - Set debug message level
++ * @netdev: network interface device structure
++ * @data: message level
++ *
++ * Set current debug message level. Higher values cause the driver to
++ * be noisier.
++ */
++static void iecm_set_msglevel(struct net_device *netdev, u32 data)
++{
++	struct iecm_adapter *adapter = iecm_netdev_to_adapter(netdev);
++
++	adapter->msg_enable = data;
++}
++
++/**
++ * iecm_get_link_ksettings - Get Link Speed and Duplex settings
++ * @netdev: network interface device structure
++ * @ecmd: ethtool command
++ *
++ * Reports speed/duplex settings.
++ **/
++static int iecm_get_link_ksettings(struct net_device *netdev,
++				   struct ethtool_link_ksettings *cmd)
++{
++	struct iecm_netdev_priv *np = netdev_priv(netdev);
++	struct iecm_adapter *adapter = np->vport->adapter;
++
++	ethtool_link_ksettings_zero_link_mode(cmd, supported);
++	cmd->base.autoneg = AUTONEG_DISABLE;
++	cmd->base.port = PORT_NONE;
++	/* Set speed and duplex */
++	switch (adapter->link_speed) {
++	case VIRTCHNL_LINK_SPEED_40GB:
++		cmd->base.speed = SPEED_40000;
++		break;
++	case VIRTCHNL_LINK_SPEED_25GB:
++#ifdef SPEED_25000
++		cmd->base.speed = SPEED_25000;
++#else
++		netdev_info(netdev,
++			    "Speed is 25G, display not supported by this version of ethtool.\n");
++#endif
++		break;
++	case VIRTCHNL_LINK_SPEED_20GB:
++		cmd->base.speed = SPEED_20000;
++		break;
++	case VIRTCHNL_LINK_SPEED_10GB:
++		cmd->base.speed = SPEED_10000;
++		break;
++	case VIRTCHNL_LINK_SPEED_1GB:
++		cmd->base.speed = SPEED_1000;
++		break;
++	case VIRTCHNL_LINK_SPEED_100MB:
++		cmd->base.speed = SPEED_100;
++		break;
++	default:
++		break;
++	}
++	cmd->base.duplex = DUPLEX_FULL;
++
++	return 0;
++}
++
++/**
++ * iecm_get_drvinfo - Get driver info
++ * @netdev: network interface device structure
++ * @drvinfo: ethool driver info structure
++ *
++ * Returns information about the driver and device for display to the user.
++ */
++static void iecm_get_drvinfo(struct net_device *netdev,
++			     struct ethtool_drvinfo *drvinfo)
++{
++	struct iecm_adapter *adapter = iecm_netdev_to_adapter(netdev);
++
++	strlcpy(drvinfo->driver, iecm_drv_name, 32);
++	strlcpy(drvinfo->fw_version, "N/A", 4);
++	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev), 32);
++}
++
++static const struct ethtool_ops iecm_ethtool_ops = {
++	.get_drvinfo		= iecm_get_drvinfo,
++	.get_msglevel		= iecm_get_msglevel,
++	.set_msglevel		= iecm_set_msglevel,
++	.get_coalesce		= iecm_get_coalesce,
++	.set_coalesce		= iecm_set_coalesce,
++	.get_per_queue_coalesce = iecm_get_per_q_coalesce,
++	.set_per_queue_coalesce = iecm_set_per_q_coalesce,
++	.get_ethtool_stats	= iecm_get_ethtool_stats,
++	.get_strings		= iecm_get_strings,
++	.get_sset_count		= iecm_get_sset_count,
++	.get_rxnfc		= iecm_get_rxnfc,
++	.get_rxfh_key_size	= iecm_get_rxfh_key_size,
++	.get_rxfh_indir_size	= iecm_get_rxfh_indir_size,
++	.get_rxfh		= iecm_get_rxfh,
++	.set_rxfh		= iecm_set_rxfh,
++	.get_channels		= iecm_get_channels,
++	.set_channels		= iecm_set_channels,
++	.get_ringparam		= iecm_get_ringparam,
++	.set_ringparam		= iecm_set_ringparam,
++	.get_link_ksettings	= iecm_get_link_ksettings,
++};
++
+ /**
+  * iecm_set_ethtool_ops - Initialize ethtool ops struct
+  * @netdev: network interface device structure
+@@ -12,5 +1117,5 @@
+  */
+ void iecm_set_ethtool_ops(struct net_device *netdev)
+ {
+-	/* stub */
++	netdev->ethtool_ops = &iecm_ethtool_ops;
+ }
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+index 4782f4d9d982..1a27a68556e4 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+@@ -764,7 +764,37 @@ void iecm_deinit_task(struct iecm_adapter *adapter)
+ static enum iecm_status
+ iecm_init_hard_reset(struct iecm_adapter *adapter)
+ {
+-	/* stub */
++	enum iecm_status err;
++
++	/* Prepare for reset */
++	if (test_bit(__IECM_HR_FUNC_RESET, adapter->flags)) {
++		iecm_deinit_task(adapter);
++		adapter->dev_ops.reg_ops.trigger_reset(adapter,
++						       __IECM_HR_FUNC_RESET);
++		set_bit(__IECM_UP_REQUESTED, adapter->flags);
++		clear_bit(__IECM_HR_FUNC_RESET, adapter->flags);
++	} else if (test_bit(__IECM_HR_CORE_RESET, adapter->flags)) {
++		if (adapter->state == __IECM_UP)
++			set_bit(__IECM_UP_REQUESTED, adapter->flags);
++		iecm_deinit_task(adapter);
++		clear_bit(__IECM_HR_CORE_RESET, adapter->flags);
++	} else if (test_and_clear_bit(__IECM_HR_DRV_LOAD, adapter->flags)) {
++	/* Trigger reset */
++	} else {
++		dev_err(&adapter->pdev->dev, "Unhandled hard reset cause\n");
++		err = IECM_ERR_PARAM;
++		goto handle_err;
++	}
++
++	/* Reset is complete and so start building the driver resources again */
++	err = iecm_init_dflt_mbx(adapter);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "Failed to initialize default mailbox: %d\n",
++			err);
++	}
++handle_err:
++	mutex_unlock(&adapter->reset_lock);
++	return err;
+ }
+ 
+ /**
+@@ -793,7 +823,57 @@ static void iecm_vc_event_task(struct work_struct *work)
+ int iecm_initiate_soft_reset(struct iecm_vport *vport,
+ 			     enum iecm_flags reset_cause)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	enum iecm_state current_state;
++	enum iecm_status status;
++	int err = 0;
++
++	/* Make sure we do not end up in initiating multiple resets */
++	mutex_lock(&adapter->reset_lock);
++
++	current_state = vport->adapter->state;
++	switch (reset_cause) {
++	case __IECM_SR_Q_CHANGE:
++		/* If we're changing number of queues requested, we need to
++		 * send a 'delete' message before freeing the queue resources.
++		 * We'll send an 'add' message in adjust_qs which doesn't
++		 * require the queue resources to be reallocated yet.
++		 */
++		if (current_state <= __IECM_DOWN) {
++			iecm_send_delete_queues_msg(vport);
++		} else {
++			set_bit(__IECM_DEL_QUEUES, adapter->flags);
++			iecm_vport_stop(vport);
++		}
++		iecm_deinit_rss(vport);
++		status = adapter->dev_ops.vc_ops.adjust_qs(vport);
++		if (status) {
++			err = -EFAULT;
++			goto reset_failure;
++		}
++		iecm_intr_rel(adapter);
++		iecm_vport_calc_num_q_vec(vport);
++		iecm_intr_req(adapter);
++		break;
++	case __IECM_SR_Q_DESC_CHANGE:
++		iecm_vport_stop(vport);
++		iecm_vport_calc_num_q_desc(vport);
++		break;
++	case __IECM_SR_Q_SCH_CHANGE:
++	case __IECM_SR_MTU_CHANGE:
++		iecm_vport_stop(vport);
++		break;
++	default:
++		dev_err(&adapter->pdev->dev, "Unhandled soft reset cause\n");
++		err = -EINVAL;
++		goto reset_failure;
++	}
++
++	if (current_state == __IECM_UP)
++		err = iecm_vport_open(vport);
++reset_failure:
++	mutex_unlock(&adapter->reset_lock);
++	return err;
+ }
+ 
+ /**
+@@ -884,6 +964,7 @@ int iecm_probe(struct pci_dev *pdev,
+ 	INIT_DELAYED_WORK(&adapter->init_task, iecm_init_task);
+ 	INIT_DELAYED_WORK(&adapter->vc_event_task, iecm_vc_event_task);
+ 
++	adapter->dev_ops.reg_ops.reset_reg_init(&adapter->reset_reg);
+ 	mutex_lock(&adapter->reset_lock);
+ 	set_bit(__IECM_HR_DRV_LOAD, adapter->flags);
+ 	err = iecm_init_hard_reset(adapter);
+@@ -977,7 +1058,20 @@ static int iecm_open(struct net_device *netdev)
+  */
+ static int iecm_change_mtu(struct net_device *netdev, int new_mtu)
+ {
+-	/* stub */
++	struct iecm_vport *vport =  iecm_netdev_to_vport(netdev);
++
++	if (new_mtu < netdev->min_mtu) {
++		netdev_err(netdev, "new MTU invalid. min_mtu is %d\n",
++			   netdev->min_mtu);
++		return -EINVAL;
++	} else if (new_mtu > netdev->max_mtu) {
++		netdev_err(netdev, "new MTU invalid. max_mtu is %d\n",
++			   netdev->max_mtu);
++		return -EINVAL;
++	}
++	netdev->mtu = new_mtu;
++
++	return iecm_initiate_soft_reset(vport, __IECM_SR_MTU_CHANGE);
+ }
+ 
+ static const struct net_device_ops iecm_netdev_ops_splitq = {
 -- 
 2.21.0
+
 
