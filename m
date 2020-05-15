@@ -1,40 +1,39 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 16 May 2020 00:18:46 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- aed2602f73ba907bac52d7f13133ad7ad297b511
-Message-ID: <5ebec0e6.oFOq5mWUHrf5LhDU%lkp@intel.com>
+Date: Sat, 16 May 2020 01:17:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 756129cfb5be8cc34b5c185962b2182d92ca13fd
+Message-ID: <5ebece90.V1FF733Hwil9n/2s%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: aed2602f73ba907bac52d7f13133ad7ad297b511  e1000e: Relax condition to trigger reset for ME workaround
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 756129cfb5be8cc34b5c185962b2182d92ca13fd  ice: Fix a couple off by one bugs
 
-elapsed time: 481m
+elapsed time: 540m
 
-configs tested: 91
+configs tested: 92
 configs skipped: 1
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
 arm64                            allyesconfig
 arm64                               defconfig
 arm64                            allmodconfig
 arm64                             allnoconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
 sparc                            allyesconfig
 mips                             allyesconfig
-m68k                             allyesconfig
+i386                              allnoconfig
 i386                             allyesconfig
 i386                                defconfig
 i386                              debian-10.3
-i386                              allnoconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                              allnoconfig
@@ -43,6 +42,7 @@ m68k                             allmodconfig
 m68k                              allnoconfig
 m68k                           sun3_defconfig
 m68k                                defconfig
+m68k                             allyesconfig
 nios2                               defconfig
 nios2                            allyesconfig
 openrisc                            defconfig
@@ -95,6 +95,7 @@ s390                             allyesconfig
 s390                              allnoconfig
 s390                             allmodconfig
 s390                                defconfig
+x86_64                              defconfig
 sparc                               defconfig
 sparc64                             defconfig
 sparc64                           allnoconfig
