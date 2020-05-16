@@ -1,94 +1,52 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:42:19 -0700
-Subject: [Intel-wired-lan] [PATCH S44 07/14] ice: Refactor Rx checksum checks
+Date: Fri, 15 May 2020 17:42:24 -0700
+Subject: [Intel-wired-lan] [PATCH S44 12/14] ice: fix potential double free
+ in probe unrolling
 In-Reply-To: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
 References: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516004226.4795-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200516004226.4795-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-We don't need both rx_status and rx_error parameters, as the latter is
-a subset of the former. Remove rx_error completely and check the right bit
-in rx_status.
+If ice_init_interrupt_scheme fails, ice_probe will jump to clearing up
+the interrupts. This can lead to some static analysis tools such as the
+compiler sanitizers complaining about double free problems.
 
-Rename rx_status to rx_status0, and rx_status_err1 to
-rx_status1. This naming more closely reflects the specification.
+Since ice_init_interrupt_scheme already unrolls internally on failure,
+there is no need to call ice_clear_interrupt_scheme when it fails. Add
+a new unroll label and use that instead.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 27 ++++++++-----------
- 1 file changed, 11 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index 1ba97172d8d0..ab2031b1c635 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -84,17 +84,12 @@ ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
- 	    union ice_32b_rx_flex_desc *rx_desc, u8 ptype)
- {
- 	struct ice_rx_ptype_decoded decoded;
--	u16 rx_error, rx_status;
--	u16 rx_stat_err1;
-+	u16 rx_status0, rx_status1;
- 	bool ipv4, ipv6;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1853dca3f364..943fde5abdb7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3443,7 +3443,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	if (err) {
+ 		dev_err(dev, "ice_init_interrupt_scheme failed: %d\n", err);
+ 		err = -EIO;
+-		goto err_init_interrupt_unroll;
++		goto err_init_vsi_unroll;
+ 	}
  
--	rx_status = le16_to_cpu(rx_desc->wb.status_error0);
--	rx_error = rx_status & (BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_IPE_S) |
--				BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_L4E_S) |
--				BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EIPE_S) |
--				BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EUDPE_S));
-+	rx_status0 = le16_to_cpu(rx_desc->wb.status_error0);
-+	rx_status1 = le16_to_cpu(rx_desc->wb.status_error1);
- 
--	rx_stat_err1 = le16_to_cpu(rx_desc->wb.status_error1);
- 	decoded = ice_decode_rx_desc_ptype(ptype);
- 
- 	/* Start with CHECKSUM_NONE and by default csum_level = 0 */
-@@ -106,7 +101,7 @@ ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
- 		return;
- 
- 	/* check if HW has decoded the packet and checksum */
--	if (!(rx_status & BIT(ICE_RX_FLEX_DESC_STATUS0_L3L4P_S)))
-+	if (!(rx_status0 & BIT(ICE_RX_FLEX_DESC_STATUS0_L3L4P_S)))
- 		return;
- 
- 	if (!(decoded.known && decoded.outer_ip))
-@@ -117,22 +112,22 @@ ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
- 	ipv6 = (decoded.outer_ip == ICE_RX_PTYPE_OUTER_IP) &&
- 	       (decoded.outer_ip_ver == ICE_RX_PTYPE_OUTER_IPV6);
- 
--	if (ipv4 && (rx_error & (BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_IPE_S) |
--				 BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EIPE_S))))
-+	if (ipv4 && (rx_status0 & (BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_IPE_S) |
-+				   BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EIPE_S))))
- 		goto checksum_fail;
--	else if (ipv6 && (rx_status &
--		 (BIT(ICE_RX_FLEX_DESC_STATUS0_IPV6EXADD_S))))
-+
-+	if (ipv6 && (rx_status0 & (BIT(ICE_RX_FLEX_DESC_STATUS0_IPV6EXADD_S))))
- 		goto checksum_fail;
- 
- 	/* check for L4 errors and handle packets that were not able to be
- 	 * checksummed due to arrival speed
- 	 */
--	if (rx_error & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_L4E_S))
-+	if (rx_status0 & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_L4E_S))
- 		goto checksum_fail;
- 
- 	/* check for outer UDP checksum error in tunneled packets */
--	if ((rx_stat_err1 & BIT(ICE_RX_FLEX_DESC_STATUS1_NAT_S)) &&
--	    (rx_error & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EUDPE_S)))
-+	if ((rx_status1 & BIT(ICE_RX_FLEX_DESC_STATUS1_NAT_S)) &&
-+	    (rx_status0 & BIT(ICE_RX_FLEX_DESC_STATUS0_XSUM_EUDPE_S)))
- 		goto checksum_fail;
- 
- 	/* If there is an outer header present that might contain a checksum
+ 	/* In case of MSIX we are going to setup the misc vector right here
+@@ -3564,6 +3564,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	ice_free_irq_msix_misc(pf);
+ err_init_interrupt_unroll:
+ 	ice_clear_interrupt_scheme(pf);
++err_init_vsi_unroll:
+ 	devm_kfree(dev, pf->vsi);
+ err_init_pf_unroll:
+ 	ice_deinit_pf(pf);
 -- 
 2.20.1
 
