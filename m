@@ -1,10 +1,8 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:51:19 -0700
-Subject: [Intel-wired-lan] [PATCH S45 13/15] ice: Fix transmit for all
- software offloaded VLANs
-In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
-References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516005121.4963-13-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 17:51:07 -0700
+Subject: [Intel-wired-lan] [PATCH S45 01/15] ice: Refactor
+ ice_ena_vf_mappings to split MSIX and queue mappings
+Message-ID: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,161 +11,160 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently the driver does not recognize when there is an 802.1AD VLAN
-tag right after the dmac/smac (outermost VLAN tag). If any DCB map is
-applied and/or DCB is enabled this is causing the hardware to insert a
-VLAN 0 tag after the 802.1AD VLAN tag that is already in the packet.
-Fix this by preventing VLAN tag 0 from being added when any VLAN is
-already present after dmac/smac (software offloaded) or skb (hardware
-offloaded).
+Currently ice_ena_vf_mappings() does all of the VF's MSIX and queue
+mapping in one function. This makes it hard to digest. Fix this by
+creating a new function for enabling MSIX mappings and one for enabling
+queue mappings.
+
+Also, rename some variables in the functions for clarity.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 28 +++++-------
- drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c    | 45 +++++---------------
- 3 files changed, 21 insertions(+), 54 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 91 ++++++++++++-------
+ 1 file changed, 59 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index d5055d9e3fd2..663d29c0f4a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -828,39 +828,31 @@ void ice_update_dcb_stats(struct ice_pf *pf)
-  * ice_tx_prepare_vlan_flags_dcb - prepare VLAN tagging for DCB
-  * @tx_ring: ring to send buffer on
-  * @first: pointer to struct ice_tx_buf
-+ *
-+ * This should not be called if the outer VLAN is software offloaded as the VLAN
-+ * tag will already be configured with the correct ID and priority bits
-  */
--int
-+void
- ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
- 			      struct ice_tx_buf *first)
- {
- 	struct sk_buff *skb = first->skb;
- 
- 	if (!test_bit(ICE_FLAG_DCB_ENA, tx_ring->vsi->back->flags))
--		return 0;
-+		return;
- 
- 	/* Insert 802.1p priority into VLAN header */
--	if ((first->tx_flags & (ICE_TX_FLAGS_HW_VLAN | ICE_TX_FLAGS_SW_VLAN)) ||
-+	if ((first->tx_flags & ICE_TX_FLAGS_HW_VLAN) ||
- 	    skb->priority != TC_PRIO_CONTROL) {
- 		first->tx_flags &= ~ICE_TX_FLAGS_VLAN_PR_M;
- 		/* Mask the lower 3 bits to set the 802.1p priority */
- 		first->tx_flags |= (skb->priority & 0x7) <<
- 				   ICE_TX_FLAGS_VLAN_PR_S;
--		if (first->tx_flags & ICE_TX_FLAGS_SW_VLAN) {
--			struct vlan_ethhdr *vhdr;
--			int rc;
--
--			rc = skb_cow_head(skb, 0);
--			if (rc < 0)
--				return rc;
--			vhdr = (struct vlan_ethhdr *)skb->data;
--			vhdr->h_vlan_TCI = htons(first->tx_flags >>
--						 ICE_TX_FLAGS_VLAN_S);
--		} else {
--			first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
--		}
-+		/* if this is not already set it means a VLAN 0 + priority needs
-+		 * to be offloaded
-+		 */
-+		first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
- 	}
--
--	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index b27206423537..8547eaaa7e40 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -651,55 +651,70 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-index a7a5d9833a93..c76cca3e489e 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
-@@ -27,7 +27,7 @@ void ice_pf_dcb_recfg(struct ice_pf *pf);
- void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
- int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
- void ice_update_dcb_stats(struct ice_pf *pf);
--int
-+void
- ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
- 			      struct ice_tx_buf *first);
- void
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 4b1a7ab147f8..4d08e4756f50 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -2037,49 +2037,25 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+- * ice_ena_vf_mappings
+- * @vf: pointer to the VF structure
++ * ice_ena_vf_msix_mappings - enable VF MSIX mappings in hardware
++ * @vf: VF to enable MSIX mappings for
   *
-  * Checks the skb and set up correspondingly several generic transmit flags
-  * related to VLAN tagging for the HW, such as VLAN, DCB, etc.
-- *
-- * Returns error code indicate the frame should be dropped upon error and the
-- * otherwise returns 0 to indicate the flags has been set properly.
+- * Enable VF vectors and queues allocation by writing the details into
+- * respective registers.
++ * Some of the registers need to be indexed/configured using hardware global
++ * device values and other registers need 0-based values, which represent PF
++ * based values.
   */
--static int
-+static void
- ice_tx_prepare_vlan_flags(struct ice_ring *tx_ring, struct ice_tx_buf *first)
+-static void ice_ena_vf_mappings(struct ice_vf *vf)
++static void ice_ena_vf_msix_mappings(struct ice_vf *vf)
  {
- 	struct sk_buff *skb = first->skb;
--	__be16 protocol = skb->protocol;
--
--	if (protocol == htons(ETH_P_8021Q) &&
--	    !(tx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_TX)) {
--		/* when HW VLAN acceleration is turned off by the user the
--		 * stack sets the protocol to 8021q so that the driver
--		 * can take any steps required to support the SW only
--		 * VLAN handling. In our case the driver doesn't need
--		 * to take any further steps so just set the protocol
--		 * to the encapsulated ethertype.
--		 */
--		skb->protocol = vlan_get_protocol(skb);
--		return 0;
--	}
+-	int abs_vf_id, abs_first, abs_last;
++	int device_based_first_msix, device_based_last_msix;
++	int pf_based_first_msix, pf_based_last_msix, v;
+ 	struct ice_pf *pf = vf->pf;
+-	struct ice_vsi *vsi;
+-	struct device *dev;
+-	int first, last, v;
++	int device_based_vf_id;
+ 	struct ice_hw *hw;
+ 	u32 reg;
  
--	/* if we have a HW VLAN tag being added, default to the HW one */
-+	/* nothing left to do, software offloaded VLAN */
-+	if (!skb_vlan_tag_present(skb) && eth_type_vlan(skb->protocol))
-+		return;
+-	dev = ice_pf_to_dev(pf);
+ 	hw = &pf->hw;
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+-	first = vf->first_vector_idx;
+-	last = (first + pf->num_msix_per_vf) - 1;
+-	abs_first = first + pf->hw.func_caps.common_cap.msix_vector_first_id;
+-	abs_last = (abs_first + pf->num_msix_per_vf) - 1;
+-	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
+-
+-	/* VF Vector allocation */
+-	reg = (((abs_first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
+-	       ((abs_last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
+-	       VPINT_ALLOC_VALID_M);
++	pf_based_first_msix = vf->first_vector_idx;
++	pf_based_last_msix = (pf_based_first_msix + pf->num_msix_per_vf) - 1;
 +
-+	/* currently, we always assume 802.1Q for VLAN insertion as VLAN
-+	 * insertion for 802.1AD is not supported
-+	 */
- 	if (skb_vlan_tag_present(skb)) {
- 		first->tx_flags |= skb_vlan_tag_get(skb) << ICE_TX_FLAGS_VLAN_S;
- 		first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
--	} else if (protocol == htons(ETH_P_8021Q)) {
--		struct vlan_hdr *vhdr, _vhdr;
--
--		/* for SW VLAN, check the next protocol and store the tag */
--		vhdr = (struct vlan_hdr *)skb_header_pointer(skb, ETH_HLEN,
--							     sizeof(_vhdr),
--							     &_vhdr);
--		if (!vhdr)
--			return -EINVAL;
--
--		first->tx_flags |= ntohs(vhdr->h_vlan_TCI) <<
--				   ICE_TX_FLAGS_VLAN_S;
--		first->tx_flags |= ICE_TX_FLAGS_SW_VLAN;
++	device_based_first_msix = pf_based_first_msix +
++		pf->hw.func_caps.common_cap.msix_vector_first_id;
++	device_based_last_msix =
++		(device_based_first_msix + pf->num_msix_per_vf) - 1;
++	device_based_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
++
++	reg = (((device_based_first_msix << VPINT_ALLOC_FIRST_S) &
++		VPINT_ALLOC_FIRST_M) |
++	       ((device_based_last_msix << VPINT_ALLOC_LAST_S) &
++		VPINT_ALLOC_LAST_M) | VPINT_ALLOC_VALID_M);
+ 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
+ 
+-	reg = (((abs_first << VPINT_ALLOC_PCI_FIRST_S)
++	reg = (((device_based_first_msix << VPINT_ALLOC_PCI_FIRST_S)
+ 		 & VPINT_ALLOC_PCI_FIRST_M) |
+-	       ((abs_last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
+-	       VPINT_ALLOC_PCI_VALID_M);
++	       ((device_based_last_msix << VPINT_ALLOC_PCI_LAST_S) &
++		VPINT_ALLOC_PCI_LAST_M) | VPINT_ALLOC_PCI_VALID_M);
+ 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
++
+ 	/* map the interrupts to its functions */
+-	for (v = first; v <= last; v++) {
+-		reg = (((abs_vf_id << GLINT_VECT2FUNC_VF_NUM_S) &
++	for (v = pf_based_first_msix; v <= pf_based_last_msix; v++) {
++		reg = (((device_based_vf_id << GLINT_VECT2FUNC_VF_NUM_S) &
+ 			GLINT_VECT2FUNC_VF_NUM_M) |
+ 		       ((hw->pf_id << GLINT_VECT2FUNC_PF_NUM_S) &
+ 			GLINT_VECT2FUNC_PF_NUM_M));
+ 		wr32(hw, GLINT_VECT2FUNC(v), reg);
  	}
  
--	return ice_tx_prepare_vlan_flags_dcb(tx_ring, first);
-+	ice_tx_prepare_vlan_flags_dcb(tx_ring, first);
+-	/* Map mailbox interrupt. We put an explicit 0 here to remind us that
+-	 * VF admin queue interrupts will go to VF MSI-X vector 0.
+-	 */
+-	wr32(hw, VPINT_MBX_CTL(abs_vf_id), VPINT_MBX_CTL_CAUSE_ENA_M | 0);
++	/* Map mailbox interrupt to VF MSI-X vector 0 */
++	wr32(hw, VPINT_MBX_CTL(device_based_vf_id), VPINT_MBX_CTL_CAUSE_ENA_M);
++}
++
++/**
++ * ice_ena_vf_q_mappings - enable Rx/Tx queue mappings for a VF
++ * @vf: VF to enable the mappings for
++ * @max_txq: max Tx queues allowed on the VF's VSI
++ * @max_rxq: max Rx queues allowed on the VF's VSI
++ */
++static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
++{
++	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	struct device *dev = ice_pf_to_dev(vf->pf);
++	struct ice_hw *hw = &vf->pf->hw;
++	u32 reg;
++
+ 	/* set regardless of mapping mode */
+ 	wr32(hw, VPLAN_TXQ_MAPENA(vf->vf_id), VPLAN_TXQ_MAPENA_TX_ENA_M);
+ 
+@@ -711,7 +726,7 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
+ 		 */
+ 		reg = (((vsi->txq_map[0] << VPLAN_TX_QBASE_VFFIRSTQ_S) &
+ 			VPLAN_TX_QBASE_VFFIRSTQ_M) |
+-		       (((vsi->alloc_txq - 1) << VPLAN_TX_QBASE_VFNUMQ_S) &
++		       (((max_txq - 1) << VPLAN_TX_QBASE_VFNUMQ_S) &
+ 			VPLAN_TX_QBASE_VFNUMQ_M));
+ 		wr32(hw, VPLAN_TX_QBASE(vf->vf_id), reg);
+ 	} else {
+@@ -729,7 +744,7 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
+ 		 */
+ 		reg = (((vsi->rxq_map[0] << VPLAN_RX_QBASE_VFFIRSTQ_S) &
+ 			VPLAN_RX_QBASE_VFFIRSTQ_M) |
+-		       (((vsi->alloc_txq - 1) << VPLAN_RX_QBASE_VFNUMQ_S) &
++		       (((max_rxq - 1) << VPLAN_RX_QBASE_VFNUMQ_S) &
+ 			VPLAN_RX_QBASE_VFNUMQ_M));
+ 		wr32(hw, VPLAN_RX_QBASE(vf->vf_id), reg);
+ 	} else {
+@@ -737,6 +752,18 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
+ 	}
  }
  
++/**
++ * ice_ena_vf_mappings - enable VF MSIX and queue mapping
++ * @vf: pointer to the VF structure
++ */
++static void ice_ena_vf_mappings(struct ice_vf *vf)
++{
++	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++
++	ice_ena_vf_msix_mappings(vf);
++	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq);
++}
++
  /**
-@@ -2387,8 +2363,7 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
- 	first->tx_flags = 0;
- 
- 	/* prepare the VLAN tagging flags for Tx */
--	if (ice_tx_prepare_vlan_flags(tx_ring, first))
--		goto out_drop;
-+	ice_tx_prepare_vlan_flags(tx_ring, first);
- 
- 	/* set up TSO offload */
- 	tso = ice_tso(first, &offload);
+  * ice_determine_res
+  * @pf: pointer to the PF structure
 -- 
 2.20.1
 
