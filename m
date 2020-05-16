@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:51:10 -0700
-Subject: [Intel-wired-lan] [PATCH S45 04/15] ice: Separate VF VSI
- initialization/creation from reset flow
+Date: Fri, 15 May 2020 17:51:13 -0700
+Subject: [Intel-wired-lan] [PATCH S45 07/15] ice: Add functions to rebuild
+ host VLAN/MAC config for a VF
 In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516005121.4963-4-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005121.4963-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,156 +13,173 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently the same flow is used for VF VSI initialization/creation and VF
-VSI reset. This makes the initialization/creation flow unnecessarily
-complicated. Fix this by separating the initialization/creation of the
-VF VSI from the reset flow.
+When resetting a VF the VLAN and MAC filter configurations need to be
+replayed. Add helper functions for this purpose.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 110 +++++++++++++++++-
- 1 file changed, 106 insertions(+), 4 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 121 +++++++++++++-----
+ 1 file changed, 89 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 18fe4cfe4443..5b9f01f1f65b 100644
+index 1599d89216a5..1212bf42c135 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1375,6 +1375,99 @@ static void ice_vc_notify_vf_reset(struct ice_vf *vf)
- 			      NULL);
+@@ -540,6 +540,82 @@ static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+ 	return pf->sriov_base_vector + vf->vf_id * pf->num_msix_per_vf;
  }
  
 +/**
-+ * ice_init_vf_vsi_res - initialize/setup VF VSI resources
-+ * @vf: VF to initialize/setup the VSI for
++ * ice_vf_rebuild_host_vlan_cfg - add VLAN 0 filter or rebuild the Port VLAN
++ * @vf: VF to add MAC filters for
 + *
-+ * This function creates a VSI for the VF, adds a VLAN 0 filter, and sets up the
-+ * VF VSI's broadcast filter and is only used during initial VF creation.
++ * Called after a VF VSI has been re-added/rebuilt during reset. The PF driver
++ * always re-adds either a VLAN 0 or port VLAN based filter after reset.
 + */
-+static int ice_init_vf_vsi_res(struct ice_vf *vf)
++static int ice_vf_rebuild_host_vlan_cfg(struct ice_vf *vf)
 +{
-+	struct ice_pf *pf = vf->pf;
-+	u8 broadcast[ETH_ALEN];
-+	enum ice_status status;
-+	struct ice_vsi *vsi;
-+	struct device *dev;
++	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	struct device *dev = ice_pf_to_dev(vf->pf);
++	u16 vlan_id = 0;
 +	int err;
 +
-+	vf->first_vector_idx = ice_calc_vf_first_vector_idx(pf, vf);
++	if (vf->port_vlan_info) {
++		err = ice_vsi_manage_pvid(vsi, vf->port_vlan_info, true);
++		if (err) {
++			dev_err(dev, "failed to configure port VLAN via VSI parameters for VF %u, error %d\n",
++				vf->vf_id, err);
++			return err;
++		}
 +
-+	dev = ice_pf_to_dev(pf);
-+	vsi = ice_vf_vsi_setup(pf, pf->hw.port_info, vf->vf_id);
-+	if (!vsi) {
-+		dev_err(dev, "Failed to create VF VSI\n");
-+		return -ENOMEM;
++		vlan_id = vf->port_vlan_info & VLAN_VID_MASK;
 +	}
 +
-+	vf->lan_vsi_idx = vsi->idx;
-+	vf->lan_vsi_num = vsi->vsi_num;
-+
-+	err = ice_vsi_add_vlan(vsi, 0, ICE_FWD_TO_VSI);
++	/* vlan_id will either be 0 or the port VLAN number */
++	err = ice_vsi_add_vlan(vsi, vlan_id, ICE_FWD_TO_VSI);
 +	if (err) {
-+		dev_warn(dev, "Failed to add VLAN 0 filter for VF %d\n",
-+			 vf->vf_id);
-+		goto release_vsi;
++		dev_err(dev, "failed to add %s VLAN %u filter for VF %u, error %d\n",
++			vf->port_vlan_info ? "port" : "", vlan_id, vf->vf_id,
++			err);
++		return err;
 +	}
++
++	return 0;
++}
++
++/**
++ * ice_vf_rebuild_host_mac_cfg - add broadcast and the VF's perm_addr/LAA
++ * @vf: VF to add MAC filters for
++ *
++ * Called after a VF VSI has been re-added/rebuilt during reset. The PF driver
++ * always re-adds a broadcast filter and the VF's perm_addr/LAA after reset.
++ */
++static int ice_vf_rebuild_host_mac_cfg(struct ice_vf *vf)
++{
++	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
++	struct device *dev = ice_pf_to_dev(vf->pf);
++	enum ice_status status;
++	u8 broadcast[ETH_ALEN];
 +
 +	eth_broadcast_addr(broadcast);
 +	status = ice_fltr_add_mac(vsi, broadcast, ICE_FWD_TO_VSI);
 +	if (status) {
-+		dev_err(dev, "Failed to add broadcast MAC filter for VF %d, status %s\n",
++		dev_err(dev, "failed to add broadcast MAC filter for VF %u, error %s\n",
 +			vf->vf_id, ice_stat_str(status));
-+		err = ice_status_to_errno(status);
-+		goto release_vsi;
++		return ice_status_to_errno(status);
 +	}
 +
-+	vf->num_mac = 1;
++	vf->num_mac++;
 +
-+	return 0;
-+
-+release_vsi:
-+	ice_vsi_release(vsi);
-+	return err;
-+}
-+
-+/**
-+ * ice_start_vfs - start VFs so they are ready to be used by SR-IOV
-+ * @pf: PF the VFs are associated with
-+ */
-+static int ice_start_vfs(struct ice_pf *pf)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	int retval, i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		ice_clear_vf_reset_trigger(vf);
-+
-+		retval = ice_init_vf_vsi_res(vf);
-+		if (retval) {
-+			dev_err(ice_pf_to_dev(pf), "Failed to initialize VSI resources for VF %d, error %d\n",
-+				vf->vf_id, retval);
-+			goto teardown;
++	if (is_valid_ether_addr(vf->dflt_lan_addr.addr)) {
++		status = ice_fltr_add_mac(vsi, vf->dflt_lan_addr.addr,
++					  ICE_FWD_TO_VSI);
++		if (status) {
++			dev_err(dev, "failed to add default unicast MAC filter %pM for VF %u, error %s\n",
++				&vf->dflt_lan_addr.addr[0], vf->vf_id,
++				ice_stat_str(status));
++			return ice_status_to_errno(status);
 +		}
-+
-+		set_bit(ICE_VF_STATE_INIT, vf->vf_states);
-+		ice_ena_vf_mappings(vf);
-+		wr32(hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
++		vf->num_mac++;
 +	}
 +
-+	ice_flush(hw);
 +	return 0;
-+
-+teardown:
-+	for (i = i - 1; i >= 0; i--) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		ice_dis_vf_mappings(vf);
-+		ice_vsi_release(pf->vsi[vf->lan_vsi_idx]);
-+	}
-+
-+	return retval;
 +}
 +
  /**
-  * ice_alloc_vfs - Allocate and set up VFs resources
-  * @pf: pointer to the PF structure
-@@ -1407,6 +1500,13 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	pf->vf = vfs;
- 	pf->num_alloc_vfs = num_alloc_vfs;
+  * ice_alloc_vsi_res - Setup VF VSI and its resources
+  * @vf: pointer to the VF structure
+@@ -549,10 +625,9 @@ static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ {
+ 	struct ice_pf *pf = vf->pf;
+-	u8 broadcast[ETH_ALEN];
+ 	struct ice_vsi *vsi;
+ 	struct device *dev;
+-	int status = 0;
++	int ret;
  
-+	if (ice_set_per_vf_res(pf)) {
-+		dev_err(dev, "Not enough resources for %d VFs, try with fewer number of VFs\n",
-+			num_alloc_vfs);
-+		ret = -ENOSPC;
-+		goto err_unroll_sriov;
+ 	dev = ice_pf_to_dev(pf);
+ 	/* first vector index is the VFs OICR index */
+@@ -567,38 +642,20 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 	vf->lan_vsi_idx = vsi->idx;
+ 	vf->lan_vsi_num = vsi->vsi_num;
+ 
+-	/* Check if port VLAN exist before, and restore it accordingly */
+-	if (vf->port_vlan_info) {
+-		ice_vsi_manage_pvid(vsi, vf->port_vlan_info, true);
+-		if (ice_vsi_add_vlan(vsi, vf->port_vlan_info & VLAN_VID_MASK,
+-				     ICE_FWD_TO_VSI))
+-			dev_warn(ice_pf_to_dev(pf), "Failed to add Port VLAN %d filter for VF %d\n",
+-				 vf->port_vlan_info & VLAN_VID_MASK, vf->vf_id);
+-	} else {
+-		/* set VLAN 0 filter by default when no port VLAN is
+-		 * enabled. If a port VLAN is enabled we don't want
+-		 * untagged broadcast/multicast traffic seen on the VF
+-		 * interface.
+-		 */
+-		if (ice_vsi_add_vlan(vsi, 0, ICE_FWD_TO_VSI))
+-			dev_warn(ice_pf_to_dev(pf), "Failed to add VLAN 0 filter for VF %d, MDD events will trigger. Reset the VF, disable spoofchk, or enable 8021q module on the guest\n",
+-				 vf->vf_id);
++	ret = ice_vf_rebuild_host_vlan_cfg(vf);
++	if (ret) {
++		dev_err(dev, "failed to rebuild default MAC configuration for VF %d, error %d\n",
++			vf->vf_id, ret);
++		goto ice_alloc_vsi_res_exit;
+ 	}
+ 
+-	if (is_valid_ether_addr(vf->dflt_lan_addr.addr)) {
+-		status = ice_fltr_add_mac(vsi, vf->dflt_lan_addr.addr,
+-					  ICE_FWD_TO_VSI);
+-		if (status)
+-			goto ice_alloc_vsi_res_exit;
+-	}
+ 
+-	eth_broadcast_addr(broadcast);
+-	status = ice_fltr_add_mac(vsi, broadcast, ICE_FWD_TO_VSI);
+-	if (status)
+-		dev_err(dev, "could not add mac filters error %d\n",
+-			status);
+-	else
+-		vf->num_mac = 1;
++	ret = ice_vf_rebuild_host_mac_cfg(vf);
++	if (ret) {
++		dev_err(dev, "failed to rebuild default MAC configuration for VF %d, error %d\n",
++			vf->vf_id, ret);
++		goto ice_alloc_vsi_res_exit;
 +	}
-+
- 	/* apply default profile */
- 	ice_for_each_vf(pf, i) {
- 		vfs[i].pf = pf;
-@@ -1416,15 +1516,17 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 		/* assign default capabilities */
- 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vfs[i].vf_caps);
- 		vfs[i].spoofchk = true;
-+		vfs[i].num_vf_qs = pf->num_qps_per_vf;
- 	}
  
--	/* VF resources get allocated with initialization */
--	if (!ice_config_res_vfs(pf)) {
--		ret = -EIO;
-+	if (ice_start_vfs(pf)) {
-+		dev_err(dev, "Failed to start VF(s)\n");
-+		ret = -EAGAIN;
- 		goto err_unroll_sriov;
- 	}
+ 	/* Clear this bit after VF initialization since we shouldn't reclaim
+ 	 * and reassign interrupts for synchronous or asynchronous VFR events.
+@@ -607,7 +664,7 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 	 * more vectors.
+ 	 */
+ ice_alloc_vsi_res_exit:
+-	return status;
++	return ret;
+ }
  
--	return ret;
-+	clear_bit(__ICE_VF_DIS, pf->state);
-+	return 0;
- 
- err_unroll_sriov:
- 	pf->vf = NULL;
+ /**
 -- 
 2.20.1
 
