@@ -1,101 +1,81 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:36:33 -0700
-Subject: [Intel-wired-lan] [PATCH S43 04/15] ice: Check if unicast MAC
- exists before setting VF MAC
+Date: Fri, 15 May 2020 17:36:36 -0700
+Subject: [Intel-wired-lan] [PATCH S43 07/15] ice: fix usage of incorrect
+ variable
 In-Reply-To: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
 References: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516003644.4658-4-anthony.l.nguyen@intel.com>
+Message-ID: <20200516003644.4658-7-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Currently if a unicast MAC is set via ndo_set_vf_mac, the PF driver will
-set the VF's dflt_lan_addr.addr once some basic checks have passed. The
-VF is then reset. During reset the PF driver will attempt to program the
-VF's MAC from the dflt_lan_addr.addr field. This fails when the MAC
-already exists on the PF's switch.
+The driver was using rq_last_status where it should have been
+using sq_last_status. Fix the string to be using the correct
+error reporting variable.
 
-This is causing the VF to be completely disabled until removing/enabling
-any VFs via sysfs.
-
-Fix this by checking if the unicast MAC exists before triggering a VF
-reset directly in ndo_set_vf_mac. Also, add a check if the unicast MAC
-is set to the same value as before and return 0 if that is the case.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 43 +++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c    | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 2e6c81555668..6ea3d15e1a6d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -3648,6 +3648,39 @@ ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi)
- 	return 0;
- }
- 
-+/**
-+ * ice_unicast_mac_exists - check if the unicast MAC exists on the PF's switch
-+ * @pf: PF used to reference the switch's rules
-+ * @umac: unicast MAC to compare against existing switch rules
-+ *
-+ * Return true on the first/any match, else return false
-+ */
-+static bool ice_unicast_mac_exists(struct ice_pf *pf, u8 *umac)
-+{
-+	struct ice_sw_recipe *mac_recipe_list =
-+		&pf->hw.switch_info->recp_list[ICE_SW_LKUP_MAC];
-+	struct ice_fltr_mgmt_list_entry *list_itr;
-+	struct list_head *rule_head;
-+	struct mutex *rule_lock; /* protect MAC filter list access */
-+
-+	rule_head = &mac_recipe_list->filt_rules;
-+	rule_lock = &mac_recipe_list->filt_rule_lock;
-+
-+	mutex_lock(rule_lock);
-+	list_for_each_entry(list_itr, rule_head, list_entry) {
-+		u8 *existing_mac = &list_itr->fltr_info.l_data.mac.mac_addr[0];
-+
-+		if (ether_addr_equal(existing_mac, umac)) {
-+			mutex_unlock(rule_lock);
-+			return true;
-+		}
-+	}
-+
-+	mutex_unlock(rule_lock);
-+
-+	return false;
-+}
-+
- /**
-  * ice_set_vf_mac
-  * @netdev: network interface device structure
-@@ -3671,10 +3704,20 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 477ad33e0403..f39d4eb7fd8b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3251,7 +3251,7 @@ static int ice_vsi_set_dflt_rss_lut(struct ice_vsi *vsi, int req_rss_size)
+ 	if (status) {
+ 		dev_err(dev, "Cannot set RSS lut, err %s aq_err %s\n",
+ 			ice_stat_str(status),
+-			ice_aq_str(hw->adminq.rq_last_status));
++			ice_aq_str(hw->adminq.sq_last_status));
+ 		err = -EIO;
  	}
  
- 	vf = &pf->vf[vf_id];
-+	/* nothing left to do, unicast MAC already set */
-+	if (ether_addr_equal(vf->dflt_lan_addr.addr, mac))
-+		return 0;
-+
- 	ret = ice_check_vf_ready_for_cfg(vf);
- 	if (ret)
- 		return ret;
- 
-+	if (ice_unicast_mac_exists(pf, mac)) {
-+		netdev_err(netdev, "Unicast MAC %pM already exists on this PF. Preventing setting VF %u unicast MAC address to %pM\n",
-+			   mac, vf_id, mac);
-+		return -EINVAL;
-+	}
-+
- 	/* copy MAC into dflt_lan_addr and trigger a VF reset. The reset
- 	 * flow will use the updated dflt_lan_addr and add a MAC filter
- 	 * using ice_add_mac. Also set pf_set_mac to indicate that the PF has
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 5675804ba899..4731c919a080 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5317,7 +5317,7 @@ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ 		if (status) {
+ 			dev_err(dev, "Cannot set RSS key, err %s aq_err %s\n",
+ 				ice_stat_str(status),
+-				ice_aq_str(hw->adminq.rq_last_status));
++				ice_aq_str(hw->adminq.sq_last_status));
+ 			return -EIO;
+ 		}
+ 	}
+@@ -5328,7 +5328,7 @@ int ice_set_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ 		if (status) {
+ 			dev_err(dev, "Cannot set RSS lut, err %s aq_err %s\n",
+ 				ice_stat_str(status),
+-				ice_aq_str(hw->adminq.rq_last_status));
++				ice_aq_str(hw->adminq.sq_last_status));
+ 			return -EIO;
+ 		}
+ 	}
+@@ -5361,7 +5361,7 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ 		if (status) {
+ 			dev_err(dev, "Cannot get RSS key, err %s aq_err %s\n",
+ 				ice_stat_str(status),
+-				ice_aq_str(hw->adminq.rq_last_status));
++				ice_aq_str(hw->adminq.sq_last_status));
+ 			return -EIO;
+ 		}
+ 	}
+@@ -5372,7 +5372,7 @@ int ice_get_rss(struct ice_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ 		if (status) {
+ 			dev_err(dev, "Cannot get RSS lut, err %s aq_err %s\n",
+ 				ice_stat_str(status),
+-				ice_aq_str(hw->adminq.rq_last_status));
++				ice_aq_str(hw->adminq.sq_last_status));
+ 			return -EIO;
+ 		}
+ 	}
 -- 
 2.20.1
 
