@@ -1,43 +1,60 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:51:18 -0700
-Subject: [Intel-wired-lan] [PATCH S45 12/15] ice: support adding 16
- unicast/multicast filter on untrusted VF
+Date: Fri, 15 May 2020 17:51:12 -0700
+Subject: [Intel-wired-lan] [PATCH S45 06/15] ice: Add function to set trust
+ mode bit on reset
 In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516005121.4963-12-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005121.4963-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Allow untrusted VF to add 16 unicast/multicast filters. VF uses 1 filter
-for the default/perm_addr/LAA MAC, 1 for broadcast, and 16 additional
-unicast/multicast filters.
+As the title says, use a function to set trust mode bit on reset.
 
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c    | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 0adff89a6749..67aa9110fdd1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -7,7 +7,10 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index d5c1c55f7ebc..1599d89216a5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -610,6 +610,18 @@ static int ice_alloc_vsi_res(struct ice_vf *vf)
+ 	return status;
+ }
  
- /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
- #define ICE_MAX_VLAN_PER_VF		8
--#define ICE_MAX_MACADDR_PER_VF		12
-+/* MAC filters: 1 is reserved for the VF's default/perm_addr/LAA MAC, 1 for
-+ * broadcast, and 16 for additional unicast/multicast filters
++/**
++ * ice_vf_set_host_trust_cfg - set trust setting based on pre-reset value
++ * @vf: VF to configure trust setting for
 + */
-+#define ICE_MAX_MACADDR_PER_VF		18
++static void ice_vf_set_host_trust_cfg(struct ice_vf *vf)
++{
++	if (vf->trusted)
++		set_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
++	else
++		clear_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
++}
++
+ /**
+  * ice_alloc_vf_res - Allocate VF resources
+  * @vf: pointer to the VF structure
+@@ -635,10 +647,7 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
+ 	if (status)
+ 		goto ice_alloc_vf_res_exit;
  
- /* Malicious Driver Detection */
- #define ICE_DFLT_NUM_INVAL_MSGS_ALLOWED		10
+-	if (vf->trusted)
+-		set_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
+-	else
+-		clear_bit(ICE_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps);
++	ice_vf_set_host_trust_cfg(vf);
+ 
+ 	/* VF is now completely initialized */
+ 	set_bit(ICE_VF_STATE_INIT, vf->vf_states);
 -- 
 2.20.1
 
