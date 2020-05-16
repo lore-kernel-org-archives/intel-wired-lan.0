@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:51:11 -0700
-Subject: [Intel-wired-lan] [PATCH S45 05/15] ice: Renaming and
- simplification in VF init path
+Date: Fri, 15 May 2020 17:51:19 -0700
+Subject: [Intel-wired-lan] [PATCH S45 13/15] ice: Fix transmit for all
+ software offloaded VLANs
 In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516005121.4963-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005121.4963-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,148 +13,161 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Some function names weren't very clear and some portions of VF creation
-could be moved into functions for clarity. Fix this by renaming some
-functions and move pieces of code into clearly name functions.
+Currently the driver does not recognize when there is an 802.1AD VLAN
+tag right after the dmac/smac (outermost VLAN tag). If any DCB map is
+applied and/or DCB is enabled this is causing the hardware to insert a
+VLAN 0 tag after the 802.1AD VLAN tag that is already in the packet.
+Fix this by preventing VLAN tag 0 from being added when any VLAN is
+already present after dmac/smac (software offloaded) or skb (hardware
+offloaded).
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 83 ++++++++++++-------
- 1 file changed, 54 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 28 +++++-------
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c    | 45 +++++---------------
+ 3 files changed, 21 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 5b9f01f1f65b..d5c1c55f7ebc 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1469,16 +1469,56 @@ static int ice_start_vfs(struct ice_pf *pf)
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index d5055d9e3fd2..663d29c0f4a4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -828,39 +828,31 @@ void ice_update_dcb_stats(struct ice_pf *pf)
+  * ice_tx_prepare_vlan_flags_dcb - prepare VLAN tagging for DCB
+  * @tx_ring: ring to send buffer on
+  * @first: pointer to struct ice_tx_buf
++ *
++ * This should not be called if the outer VLAN is software offloaded as the VLAN
++ * tag will already be configured with the correct ID and priority bits
+  */
+-int
++void
+ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
+ 			      struct ice_tx_buf *first)
+ {
+ 	struct sk_buff *skb = first->skb;
+ 
+ 	if (!test_bit(ICE_FLAG_DCB_ENA, tx_ring->vsi->back->flags))
+-		return 0;
++		return;
+ 
+ 	/* Insert 802.1p priority into VLAN header */
+-	if ((first->tx_flags & (ICE_TX_FLAGS_HW_VLAN | ICE_TX_FLAGS_SW_VLAN)) ||
++	if ((first->tx_flags & ICE_TX_FLAGS_HW_VLAN) ||
+ 	    skb->priority != TC_PRIO_CONTROL) {
+ 		first->tx_flags &= ~ICE_TX_FLAGS_VLAN_PR_M;
+ 		/* Mask the lower 3 bits to set the 802.1p priority */
+ 		first->tx_flags |= (skb->priority & 0x7) <<
+ 				   ICE_TX_FLAGS_VLAN_PR_S;
+-		if (first->tx_flags & ICE_TX_FLAGS_SW_VLAN) {
+-			struct vlan_ethhdr *vhdr;
+-			int rc;
+-
+-			rc = skb_cow_head(skb, 0);
+-			if (rc < 0)
+-				return rc;
+-			vhdr = (struct vlan_ethhdr *)skb->data;
+-			vhdr->h_vlan_TCI = htons(first->tx_flags >>
+-						 ICE_TX_FLAGS_VLAN_S);
+-		} else {
+-			first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
+-		}
++		/* if this is not already set it means a VLAN 0 + priority needs
++		 * to be offloaded
++		 */
++		first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
+ 	}
+-
+-	return 0;
  }
  
  /**
-- * ice_alloc_vfs - Allocate and set up VFs resources
-+ * ice_set_dflt_settings - set VF defaults during initialization/creation
-+ * @pf: PF holding reference to all VFs for default configuration
-+ */
-+static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
-+{
-+	int i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		vf->pf = pf;
-+		vf->vf_id = i;
-+		vf->vf_sw_id = pf->first_sw;
-+		/* assign default capabilities */
-+		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
-+		vf->spoofchk = true;
-+		vf->num_vf_qs = pf->num_qps_per_vf;
-+	}
-+}
-+
-+/**
-+ * ice_alloc_vfs - allocate num_vfs in the PF structure
-+ * @pf: PF to store the allocated VFs in
-+ * @num_vfs: number of VFs to allocate
-+ */
-+static int ice_alloc_vfs(struct ice_pf *pf, int num_vfs)
-+{
-+	struct ice_vf *vfs;
-+
-+	vfs = devm_kcalloc(ice_pf_to_dev(pf), num_vfs, sizeof(*vfs),
-+			   GFP_KERNEL);
-+	if (!vfs)
-+		return -ENOMEM;
-+
-+	pf->vf = vfs;
-+	pf->num_alloc_vfs = num_vfs;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ena_vfs - enable VFs so they are ready to be used
-  * @pf: pointer to the PF structure
-- * @num_alloc_vfs: number of VFs to allocate
-+ * @num_vfs: number of VFs to enable
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index a7a5d9833a93..c76cca3e489e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -27,7 +27,7 @@ void ice_pf_dcb_recfg(struct ice_pf *pf);
+ void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
+ int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
+ void ice_update_dcb_stats(struct ice_pf *pf);
+-int
++void
+ ice_tx_prepare_vlan_flags_dcb(struct ice_ring *tx_ring,
+ 			      struct ice_tx_buf *first);
+ void
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 4b1a7ab147f8..4d08e4756f50 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -2037,49 +2037,25 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+  *
+  * Checks the skb and set up correspondingly several generic transmit flags
+  * related to VLAN tagging for the HW, such as VLAN, DCB, etc.
+- *
+- * Returns error code indicate the frame should be dropped upon error and the
+- * otherwise returns 0 to indicate the flags has been set properly.
   */
--static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
-+static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+-static int
++static void
+ ice_tx_prepare_vlan_flags(struct ice_ring *tx_ring, struct ice_tx_buf *first)
  {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_hw *hw = &pf->hw;
--	struct ice_vf *vfs;
--	int i, ret;
-+	int ret;
- 
- 	/* Disable global interrupt 0 so we don't try to handle the VFLR. */
- 	wr32(hw, GLINT_DYN_CTL(pf->oicr_idx),
-@@ -1486,38 +1526,24 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	set_bit(__ICE_OICR_INTR_DIS, pf->state);
- 	ice_flush(hw);
- 
--	ret = pci_enable_sriov(pf->pdev, num_alloc_vfs);
-+	ret = pci_enable_sriov(pf->pdev, num_vfs);
- 	if (ret) {
- 		pf->num_alloc_vfs = 0;
- 		goto err_unroll_intr;
- 	}
--	/* allocate memory */
--	vfs = devm_kcalloc(dev, num_alloc_vfs, sizeof(*vfs), GFP_KERNEL);
--	if (!vfs) {
--		ret = -ENOMEM;
-+
-+	ret = ice_alloc_vfs(pf, num_vfs);
-+	if (ret)
- 		goto err_pci_disable_sriov;
--	}
--	pf->vf = vfs;
--	pf->num_alloc_vfs = num_alloc_vfs;
- 
- 	if (ice_set_per_vf_res(pf)) {
- 		dev_err(dev, "Not enough resources for %d VFs, try with fewer number of VFs\n",
--			num_alloc_vfs);
-+			num_vfs);
- 		ret = -ENOSPC;
- 		goto err_unroll_sriov;
- 	}
- 
--	/* apply default profile */
--	ice_for_each_vf(pf, i) {
--		vfs[i].pf = pf;
--		vfs[i].vf_sw_id = pf->first_sw;
--		vfs[i].vf_id = i;
+ 	struct sk_buff *skb = first->skb;
+-	__be16 protocol = skb->protocol;
 -
--		/* assign default capabilities */
--		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vfs[i].vf_caps);
--		vfs[i].spoofchk = true;
--		vfs[i].num_vf_qs = pf->num_qps_per_vf;
+-	if (protocol == htons(ETH_P_8021Q) &&
+-	    !(tx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_TX)) {
+-		/* when HW VLAN acceleration is turned off by the user the
+-		 * stack sets the protocol to 8021q so that the driver
+-		 * can take any steps required to support the SW only
+-		 * VLAN handling. In our case the driver doesn't need
+-		 * to take any further steps so just set the protocol
+-		 * to the encapsulated ethertype.
+-		 */
+-		skb->protocol = vlan_get_protocol(skb);
+-		return 0;
 -	}
-+	ice_set_dflt_settings_vfs(pf);
  
- 	if (ice_start_vfs(pf)) {
- 		dev_err(dev, "Failed to start VF(s)\n");
-@@ -1529,9 +1555,8 @@ static int ice_alloc_vfs(struct ice_pf *pf, u16 num_alloc_vfs)
- 	return 0;
- 
- err_unroll_sriov:
-+	devm_kfree(dev, pf->vf);
- 	pf->vf = NULL;
--	devm_kfree(dev, vfs);
--	vfs = NULL;
- 	pf->num_alloc_vfs = 0;
- err_pci_disable_sriov:
- 	pci_disable_sriov(pf->pdev);
-@@ -1566,8 +1591,8 @@ static int ice_pci_sriov_ena(struct ice_pf *pf, int num_vfs)
- 		return -EOPNOTSUPP;
+-	/* if we have a HW VLAN tag being added, default to the HW one */
++	/* nothing left to do, software offloaded VLAN */
++	if (!skb_vlan_tag_present(skb) && eth_type_vlan(skb->protocol))
++		return;
++
++	/* currently, we always assume 802.1Q for VLAN insertion as VLAN
++	 * insertion for 802.1AD is not supported
++	 */
+ 	if (skb_vlan_tag_present(skb)) {
+ 		first->tx_flags |= skb_vlan_tag_get(skb) << ICE_TX_FLAGS_VLAN_S;
+ 		first->tx_flags |= ICE_TX_FLAGS_HW_VLAN;
+-	} else if (protocol == htons(ETH_P_8021Q)) {
+-		struct vlan_hdr *vhdr, _vhdr;
+-
+-		/* for SW VLAN, check the next protocol and store the tag */
+-		vhdr = (struct vlan_hdr *)skb_header_pointer(skb, ETH_HLEN,
+-							     sizeof(_vhdr),
+-							     &_vhdr);
+-		if (!vhdr)
+-			return -EINVAL;
+-
+-		first->tx_flags |= ntohs(vhdr->h_vlan_TCI) <<
+-				   ICE_TX_FLAGS_VLAN_S;
+-		first->tx_flags |= ICE_TX_FLAGS_SW_VLAN;
  	}
  
--	dev_info(dev, "Allocating %d VFs\n", num_vfs);
--	err = ice_alloc_vfs(pf, num_vfs);
-+	dev_info(dev, "Enabling %d VFs\n", num_vfs);
-+	err = ice_ena_vfs(pf, num_vfs);
- 	if (err) {
- 		dev_err(dev, "Failed to enable SR-IOV: %d\n", err);
- 		return err;
+-	return ice_tx_prepare_vlan_flags_dcb(tx_ring, first);
++	ice_tx_prepare_vlan_flags_dcb(tx_ring, first);
+ }
+ 
+ /**
+@@ -2387,8 +2363,7 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
+ 	first->tx_flags = 0;
+ 
+ 	/* prepare the VLAN tagging flags for Tx */
+-	if (ice_tx_prepare_vlan_flags(tx_ring, first))
+-		goto out_drop;
++	ice_tx_prepare_vlan_flags(tx_ring, first);
+ 
+ 	/* set up TSO offload */
+ 	tso = ice_tso(first, &offload);
 -- 
 2.20.1
 
