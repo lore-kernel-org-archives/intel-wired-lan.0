@@ -1,124 +1,325 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:36:43 -0700
-Subject: [Intel-wired-lan] [PATCH S43 14/15] ice: Fix for memory leaks and
- modify ICE_FREE_CQ_BUFS
+Date: Fri, 15 May 2020 17:36:34 -0700
+Subject: [Intel-wired-lan] [PATCH S43 05/15] ice: check for compatibility
+ between DDP package and firmware
 In-Reply-To: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
 References: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516003644.4658-14-anthony.l.nguyen@intel.com>
+Message-ID: <20200516003644.4658-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Surabhi Boob <surabhi.boob@intel.com>
+From: Victor Raj <victor.raj@intel.com>
 
-Handle memory leaks during control queue initialization and
-buffer allocation failures. The macro ICE_FREE_CQ_BUFS is modified to
-re-use for this fix.
+Require the Dynamic Device Personalization (DDP) file to have the same
+major version number and the same or older minor number than the firmware
+version major and minor, respectively.
 
-Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
+Check the OS and NVM package versions before downloading the package.
+If the OS package version is not compatible with NVM then return an
+appropriate error.
+
+Split the 32-byte segment name into a 28-byte segment name and
+a 4-byte Track-ID. Older packages will still work with this change
+because no package has a name that will take up more than 28 bytes;
+in this case the Track-ID will be 0.
+
+Note that the driver will store the segment name as 32-bytes in the
+ice_hw structure, in order to normalize the length of the various
+package name strings that it uses.
+
+Also add section ID and structure for the segment metadata section.
+
+Signed-off-by: Victor Raj <victor.raj@intel.com>
+Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 49 +++++++++++--------
- 1 file changed, 28 insertions(+), 21 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   4 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 112 ++++++++++++++----
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   8 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   5 +
+ drivers/net/ethernet/intel/ice/ice_status.h   |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ 6 files changed, 102 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index 9a865962296d..62c2c1e621d2 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -199,7 +199,9 @@ ice_alloc_rq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 		cq->rq.r.rq_bi[i].pa = 0;
- 		cq->rq.r.rq_bi[i].size = 0;
- 	}
-+	cq->rq.r.rq_bi = NULL;
- 	devm_kfree(ice_hw_to_dev(hw), cq->rq.dma_head);
-+	cq->rq.dma_head = NULL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 1586f24f26fb..d0ee14254df1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1734,10 +1734,12 @@ struct ice_pkg_ver {
+ };
  
- 	return ICE_ERR_NO_MEMORY;
- }
-@@ -245,7 +247,9 @@ ice_alloc_sq_bufs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 		cq->sq.r.sq_bi[i].pa = 0;
- 		cq->sq.r.sq_bi[i].size = 0;
- 	}
-+	cq->sq.r.sq_bi = NULL;
- 	devm_kfree(ice_hw_to_dev(hw), cq->sq.dma_head);
-+	cq->sq.dma_head = NULL;
+ #define ICE_PKG_NAME_SIZE	32
++#define ICE_SEG_NAME_SIZE	28
  
- 	return ICE_ERR_NO_MEMORY;
- }
-@@ -304,6 +308,28 @@ ice_cfg_rq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+ struct ice_aqc_get_pkg_info {
+ 	struct ice_pkg_ver ver;
+-	char name[ICE_PKG_NAME_SIZE];
++	char name[ICE_SEG_NAME_SIZE];
++	__le32 track_id;
+ 	u8 is_in_nvm;
+ 	u8 is_active;
+ 	u8 is_active_at_boot;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index da82783d1571..4420fc02f7e7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -864,8 +864,9 @@ ice_find_seg_in_pkg(struct ice_hw *hw, u32 seg_type,
+ 	u32 i;
+ 
+ 	ice_debug(hw, ICE_DBG_PKG, "Package format version: %d.%d.%d.%d\n",
+-		  pkg_hdr->format_ver.major, pkg_hdr->format_ver.minor,
+-		  pkg_hdr->format_ver.update, pkg_hdr->format_ver.draft);
++		  pkg_hdr->pkg_format_ver.major, pkg_hdr->pkg_format_ver.minor,
++		  pkg_hdr->pkg_format_ver.update,
++		  pkg_hdr->pkg_format_ver.draft);
+ 
+ 	/* Search all package segments for the requested segment type */
+ 	for (i = 0; i < le32_to_cpu(pkg_hdr->seg_count); i++) {
+@@ -1035,13 +1036,15 @@ ice_download_pkg(struct ice_hw *hw, struct ice_seg *ice_seg)
+ {
+ 	struct ice_buf_table *ice_buf_tbl;
+ 
+-	ice_debug(hw, ICE_DBG_PKG, "Segment version: %d.%d.%d.%d\n",
+-		  ice_seg->hdr.seg_ver.major, ice_seg->hdr.seg_ver.minor,
+-		  ice_seg->hdr.seg_ver.update, ice_seg->hdr.seg_ver.draft);
++	ice_debug(hw, ICE_DBG_PKG, "Segment format version: %d.%d.%d.%d\n",
++		  ice_seg->hdr.seg_format_ver.major,
++		  ice_seg->hdr.seg_format_ver.minor,
++		  ice_seg->hdr.seg_format_ver.update,
++		  ice_seg->hdr.seg_format_ver.draft);
+ 
+ 	ice_debug(hw, ICE_DBG_PKG, "Seg: type 0x%X, size %d, name %s\n",
+ 		  le32_to_cpu(ice_seg->hdr.seg_type),
+-		  le32_to_cpu(ice_seg->hdr.seg_size), ice_seg->hdr.seg_name);
++		  le32_to_cpu(ice_seg->hdr.seg_size), ice_seg->hdr.seg_id);
+ 
+ 	ice_buf_tbl = ice_find_buf_table(ice_seg);
+ 
+@@ -1086,14 +1089,16 @@ ice_init_pkg_info(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr)
+ 
+ 	seg_hdr = ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE, pkg_hdr);
+ 	if (seg_hdr) {
+-		hw->ice_pkg_ver = seg_hdr->seg_ver;
+-		memcpy(hw->ice_pkg_name, seg_hdr->seg_name,
++		hw->ice_pkg_ver = seg_hdr->seg_format_ver;
++		memcpy(hw->ice_pkg_name, seg_hdr->seg_id,
+ 		       sizeof(hw->ice_pkg_name));
+ 
+-		ice_debug(hw, ICE_DBG_PKG, "Ice Pkg: %d.%d.%d.%d, %s\n",
+-			  seg_hdr->seg_ver.major, seg_hdr->seg_ver.minor,
+-			  seg_hdr->seg_ver.update, seg_hdr->seg_ver.draft,
+-			  seg_hdr->seg_name);
++		ice_debug(hw, ICE_DBG_PKG, "Ice Seg: %d.%d.%d.%d, %s\n",
++			  seg_hdr->seg_format_ver.major,
++			  seg_hdr->seg_format_ver.minor,
++			  seg_hdr->seg_format_ver.update,
++			  seg_hdr->seg_format_ver.draft,
++			  seg_hdr->seg_id);
+ 	} else {
+ 		ice_debug(hw, ICE_DBG_INIT,
+ 			  "Did not find ice segment in driver package\n");
+@@ -1134,9 +1139,11 @@ static enum ice_status ice_get_pkg_info(struct ice_hw *hw)
+ 		if (pkg_info->pkg_info[i].is_active) {
+ 			flags[place++] = 'A';
+ 			hw->active_pkg_ver = pkg_info->pkg_info[i].ver;
++			hw->active_track_id =
++				le32_to_cpu(pkg_info->pkg_info[i].track_id);
+ 			memcpy(hw->active_pkg_name,
+ 			       pkg_info->pkg_info[i].name,
+-			       sizeof(hw->active_pkg_name));
++			       sizeof(pkg_info->pkg_info[i].name));
+ 			hw->active_pkg_in_nvm = pkg_info->pkg_info[i].is_in_nvm;
+ 		}
+ 		if (pkg_info->pkg_info[i].is_active_at_boot)
+@@ -1176,10 +1183,10 @@ static enum ice_status ice_verify_pkg(struct ice_pkg_hdr *pkg, u32 len)
+ 	if (len < sizeof(*pkg))
+ 		return ICE_ERR_BUF_TOO_SHORT;
+ 
+-	if (pkg->format_ver.major != ICE_PKG_FMT_VER_MAJ ||
+-	    pkg->format_ver.minor != ICE_PKG_FMT_VER_MNR ||
+-	    pkg->format_ver.update != ICE_PKG_FMT_VER_UPD ||
+-	    pkg->format_ver.draft != ICE_PKG_FMT_VER_DFT)
++	if (pkg->pkg_format_ver.major != ICE_PKG_FMT_VER_MAJ ||
++	    pkg->pkg_format_ver.minor != ICE_PKG_FMT_VER_MNR ||
++	    pkg->pkg_format_ver.update != ICE_PKG_FMT_VER_UPD ||
++	    pkg->pkg_format_ver.draft != ICE_PKG_FMT_VER_DFT)
+ 		return ICE_ERR_CFG;
+ 
+ 	/* pkg must have at least one segment */
+@@ -1260,6 +1267,68 @@ static enum ice_status ice_chk_pkg_version(struct ice_pkg_ver *pkg_ver)
  	return 0;
  }
  
-+#define ICE_FREE_CQ_BUFS(hw, qi, ring)					\
-+do {									\
-+	int i;								\
-+	/* free descriptors */						\
-+	if ((qi)->ring.r.ring##_bi)					\
-+		for (i = 0; i < (qi)->num_##ring##_entries; i++)	\
-+			if ((qi)->ring.r.ring##_bi[i].pa) {		\
-+				dmam_free_coherent(ice_hw_to_dev(hw),	\
-+					(qi)->ring.r.ring##_bi[i].size,	\
-+					(qi)->ring.r.ring##_bi[i].va,	\
-+					(qi)->ring.r.ring##_bi[i].pa);	\
-+					(qi)->ring.r.ring##_bi[i].va = NULL;\
-+					(qi)->ring.r.ring##_bi[i].pa = 0;\
-+					(qi)->ring.r.ring##_bi[i].size = 0;\
-+		}							\
-+	/* free the buffer info list */					\
-+	if ((qi)->ring.cmd_buf)						\
-+		devm_kfree(ice_hw_to_dev(hw), (qi)->ring.cmd_buf);	\
-+	/* free DMA head */						\
-+	devm_kfree(ice_hw_to_dev(hw), (qi)->ring.dma_head);		\
-+} while (0)
++/**
++ * ice_chk_pkg_compat
++ * @hw: pointer to the hardware structure
++ * @ospkg: pointer to the package hdr
++ * @seg: pointer to the package segment hdr
++ *
++ * This function checks the package version compatibility with driver and NVM
++ */
++static enum ice_status
++ice_chk_pkg_compat(struct ice_hw *hw, struct ice_pkg_hdr *ospkg,
++		   struct ice_seg **seg)
++{
++	struct ice_aqc_get_pkg_info_resp *pkg;
++	enum ice_status status;
++	u16 size;
++	u32 i;
++
++	/* Check package version compatibility */
++	status = ice_chk_pkg_version(&hw->pkg_ver);
++	if (status) {
++		ice_debug(hw, ICE_DBG_INIT, "Package version check failed.\n");
++		return status;
++	}
++
++	/* find ICE segment in given package */
++	*seg = (struct ice_seg *)ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE,
++						     ospkg);
++	if (!*seg) {
++		ice_debug(hw, ICE_DBG_INIT, "no ice segment in package.\n");
++		return ICE_ERR_CFG;
++	}
++
++	/* Check if FW is compatible with the OS package */
++	size = struct_size(pkg, pkg_info, ICE_PKG_CNT - 1);
++	pkg = kzalloc(size, GFP_KERNEL);
++	if (!pkg)
++		return ICE_ERR_NO_MEMORY;
++
++	status = ice_aq_get_pkg_info_list(hw, pkg, size, NULL);
++	if (status)
++		goto fw_ddp_compat_free_alloc;
++
++	for (i = 0; i < le32_to_cpu(pkg->count); i++) {
++		/* loop till we find the NVM package */
++		if (!pkg->pkg_info[i].is_in_nvm)
++			continue;
++		if ((*seg)->hdr.seg_format_ver.major !=
++			pkg->pkg_info[i].ver.major ||
++		    (*seg)->hdr.seg_format_ver.minor >
++			pkg->pkg_info[i].ver.minor) {
++			status = ICE_ERR_FW_DDP_MISMATCH;
++			ice_debug(hw, ICE_DBG_INIT,
++				  "OS package is not compatible with NVM.\n");
++		}
++		/* done processing NVM package so break */
++		break;
++	}
++fw_ddp_compat_free_alloc:
++	kfree(pkg);
++	return status;
++}
 +
  /**
-  * ice_init_sq - main initialization routine for Control ATQ
+  * ice_init_pkg - initialize/download package
   * @hw: pointer to the hardware structure
-@@ -357,6 +383,7 @@ static enum ice_status ice_init_sq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 	goto init_ctrlq_exit;
+@@ -1310,17 +1379,10 @@ enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buf, u32 len)
+ 	/* before downloading the package, check package version for
+ 	 * compatibility with driver
+ 	 */
+-	status = ice_chk_pkg_version(&hw->pkg_ver);
++	status = ice_chk_pkg_compat(hw, pkg, &seg);
+ 	if (status)
+ 		return status;
  
- init_ctrlq_free_rings:
-+	ICE_FREE_CQ_BUFS(hw, cq, sq);
- 	ice_free_cq_ring(hw, &cq->sq);
- 
- init_ctrlq_exit:
-@@ -416,33 +443,13 @@ static enum ice_status ice_init_rq(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 	goto init_ctrlq_exit;
- 
- init_ctrlq_free_rings:
-+	ICE_FREE_CQ_BUFS(hw, cq, rq);
- 	ice_free_cq_ring(hw, &cq->rq);
- 
- init_ctrlq_exit:
- 	return ret_code;
- }
- 
--#define ICE_FREE_CQ_BUFS(hw, qi, ring)					\
--do {									\
--	int i;								\
--	/* free descriptors */						\
--	for (i = 0; i < (qi)->num_##ring##_entries; i++)		\
--		if ((qi)->ring.r.ring##_bi[i].pa) {			\
--			dmam_free_coherent(ice_hw_to_dev(hw),		\
--					   (qi)->ring.r.ring##_bi[i].size,\
--					   (qi)->ring.r.ring##_bi[i].va,\
--					   (qi)->ring.r.ring##_bi[i].pa);\
--			(qi)->ring.r.ring##_bi[i].va = NULL;		\
--			(qi)->ring.r.ring##_bi[i].pa = 0;		\
--			(qi)->ring.r.ring##_bi[i].size = 0;		\
--		}							\
--	/* free the buffer info list */					\
--	if ((qi)->ring.cmd_buf)						\
--		devm_kfree(ice_hw_to_dev(hw), (qi)->ring.cmd_buf);	\
--	/* free DMA head */						\
--	devm_kfree(ice_hw_to_dev(hw), (qi)->ring.dma_head);		\
--} while (0)
+-	/* find segment in given package */
+-	seg = (struct ice_seg *)ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE, pkg);
+-	if (!seg) {
+-		ice_debug(hw, ICE_DBG_INIT, "no ice segment in package.\n");
+-		return ICE_ERR_CFG;
+-	}
 -
- /**
-  * ice_shutdown_sq - shutdown the Control ATQ
-  * @hw: pointer to the hardware structure
+ 	/* initialize package hints and then download package */
+ 	ice_init_pkg_hints(hw, seg);
+ 	status = ice_download_pkg(hw, seg);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 249fb66fc230..a6f391eac8ff 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -20,7 +20,7 @@ struct ice_fv {
+ 
+ /* Package and segment headers and tables */
+ struct ice_pkg_hdr {
+-	struct ice_pkg_ver format_ver;
++	struct ice_pkg_ver pkg_format_ver;
+ 	__le32 seg_count;
+ 	__le32 seg_offset[1];
+ };
+@@ -30,9 +30,9 @@ struct ice_generic_seg_hdr {
+ #define SEGMENT_TYPE_METADATA	0x00000001
+ #define SEGMENT_TYPE_ICE	0x00000010
+ 	__le32 seg_type;
+-	struct ice_pkg_ver seg_ver;
++	struct ice_pkg_ver seg_format_ver;
+ 	__le32 seg_size;
+-	char seg_name[ICE_PKG_NAME_SIZE];
++	char seg_id[ICE_PKG_NAME_SIZE];
+ };
+ 
+ /* ice specific segment */
+@@ -75,7 +75,7 @@ struct ice_buf_table {
+ struct ice_global_metadata_seg {
+ 	struct ice_generic_seg_hdr hdr;
+ 	struct ice_pkg_ver pkg_ver;
+-	__le32 track_id;
++	__le32 rsvd;
+ 	char pkg_name[ICE_PKG_NAME_SIZE];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 9a05945c6419..5675804ba899 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3077,6 +3077,9 @@ ice_log_pkg_init(struct ice_hw *hw, enum ice_status *status)
+ 			*status = ICE_ERR_NOT_SUPPORTED;
+ 		}
+ 		break;
++	case ICE_ERR_FW_DDP_MISMATCH:
++		dev_err(dev, "The firmware loaded on the device is not compatible with the DDP package.  Please update the device's NVM.  Entering safe mode.\n");
++		break;
+ 	case ICE_ERR_BUF_TOO_SHORT:
+ 	case ICE_ERR_CFG:
+ 		dev_err(dev, "The DDP package file is invalid. Entering Safe Mode.\n");
+@@ -5271,6 +5274,8 @@ const char *ice_stat_str(enum ice_status stat_err)
+ 		return "ICE_ERR_HW_TABLE";
+ 	case ICE_ERR_DOES_NOT_EXIST:
+ 		return "ICE_ERR_DOES_NOT_EXIST";
++	case ICE_ERR_FW_DDP_MISMATCH:
++		return "ICE_ERR_FW_DDP_MISMATCH";
+ 	case ICE_ERR_AQ_ERROR:
+ 		return "ICE_ERR_AQ_ERROR";
+ 	case ICE_ERR_AQ_TIMEOUT:
+diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
+index a9a8bc3aca42..546a02856d09 100644
+--- a/drivers/net/ethernet/intel/ice/ice_status.h
++++ b/drivers/net/ethernet/intel/ice/ice_status.h
+@@ -27,6 +27,8 @@ enum ice_status {
+ 	ICE_ERR_MAX_LIMIT			= -17,
+ 	ICE_ERR_RESET_ONGOING			= -18,
+ 	ICE_ERR_HW_TABLE			= -19,
++	ICE_ERR_FW_DDP_MISMATCH			= -20,
++
+ 	ICE_ERR_NVM_CHECKSUM			= -51,
+ 	ICE_ERR_BUF_TOO_SHORT			= -52,
+ 	ICE_ERR_NVM_BLANK_MODE			= -53,
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 88a729e20fe4..06fce408acb0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -601,6 +601,7 @@ struct ice_hw {
+ 
+ 	/* Active package version (currently active) */
+ 	struct ice_pkg_ver active_pkg_ver;
++	u32 active_track_id;
+ 	u8 active_pkg_name[ICE_PKG_NAME_SIZE];
+ 	u8 active_pkg_in_nvm;
+ 
 -- 
 2.20.1
 
