@@ -1,8 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:51:07 -0700
-Subject: [Intel-wired-lan] [PATCH S45 01/15] ice: Refactor
- ice_ena_vf_mappings to split MSIX and queue mappings
-Message-ID: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 17:51:17 -0700
+Subject: [Intel-wired-lan] [PATCH S45 11/15] ice: allow host to clear
+ administratively set VF MAC
+In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005121.4963-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,160 +13,64 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Brett Creeley <brett.creeley@intel.com>
 
-Currently ice_ena_vf_mappings() does all of the VF's MSIX and queue
-mapping in one function. This makes it hard to digest. Fix this by
-creating a new function for enabling MSIX mappings and one for enabling
-queue mappings.
+Currently a user is not allowed to clear a VF's administratively set MAC
+on the PF. Fix this by allowing an all zero MAC address via "ip link set
+${pf_eth} vf ${vf_id} mac 00:00:00:00:00:00".
 
-Also, rename some variables in the functions for clarity.
+An example use case for this would be issuing a "virsh shutdown"
+command on a VM. The call to iproute mentioned above is part of this flow.
+Without this change the driver incorrectly rejects clearing the VF's
+administratively set MAC and prints unhelpful log messages.
+
+Also, improve the comments surrounding this change.
 
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 91 ++++++++++++-------
- 1 file changed, 59 insertions(+), 32 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 22 ++++++++++++-------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index b27206423537..8547eaaa7e40 100644
+index f5596b45b996..abc4f2dba388 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -651,55 +651,70 @@ static int ice_alloc_vf_res(struct ice_vf *vf)
- }
+@@ -3912,7 +3912,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	if (ice_validate_vf_id(pf, vf_id))
+ 		return -EINVAL;
  
- /**
-- * ice_ena_vf_mappings
-- * @vf: pointer to the VF structure
-+ * ice_ena_vf_msix_mappings - enable VF MSIX mappings in hardware
-+ * @vf: VF to enable MSIX mappings for
-  *
-- * Enable VF vectors and queues allocation by writing the details into
-- * respective registers.
-+ * Some of the registers need to be indexed/configured using hardware global
-+ * device values and other registers need 0-based values, which represent PF
-+ * based values.
-  */
--static void ice_ena_vf_mappings(struct ice_vf *vf)
-+static void ice_ena_vf_msix_mappings(struct ice_vf *vf)
- {
--	int abs_vf_id, abs_first, abs_last;
-+	int device_based_first_msix, device_based_last_msix;
-+	int pf_based_first_msix, pf_based_last_msix, v;
- 	struct ice_pf *pf = vf->pf;
--	struct ice_vsi *vsi;
--	struct device *dev;
--	int first, last, v;
-+	int device_based_vf_id;
- 	struct ice_hw *hw;
- 	u32 reg;
- 
--	dev = ice_pf_to_dev(pf);
- 	hw = &pf->hw;
--	vsi = pf->vsi[vf->lan_vsi_idx];
--	first = vf->first_vector_idx;
--	last = (first + pf->num_msix_per_vf) - 1;
--	abs_first = first + pf->hw.func_caps.common_cap.msix_vector_first_id;
--	abs_last = (abs_first + pf->num_msix_per_vf) - 1;
--	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
--
--	/* VF Vector allocation */
--	reg = (((abs_first << VPINT_ALLOC_FIRST_S) & VPINT_ALLOC_FIRST_M) |
--	       ((abs_last << VPINT_ALLOC_LAST_S) & VPINT_ALLOC_LAST_M) |
--	       VPINT_ALLOC_VALID_M);
-+	pf_based_first_msix = vf->first_vector_idx;
-+	pf_based_last_msix = (pf_based_first_msix + pf->num_msix_per_vf) - 1;
-+
-+	device_based_first_msix = pf_based_first_msix +
-+		pf->hw.func_caps.common_cap.msix_vector_first_id;
-+	device_based_last_msix =
-+		(device_based_first_msix + pf->num_msix_per_vf) - 1;
-+	device_based_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
-+
-+	reg = (((device_based_first_msix << VPINT_ALLOC_FIRST_S) &
-+		VPINT_ALLOC_FIRST_M) |
-+	       ((device_based_last_msix << VPINT_ALLOC_LAST_S) &
-+		VPINT_ALLOC_LAST_M) | VPINT_ALLOC_VALID_M);
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
- 
--	reg = (((abs_first << VPINT_ALLOC_PCI_FIRST_S)
-+	reg = (((device_based_first_msix << VPINT_ALLOC_PCI_FIRST_S)
- 		 & VPINT_ALLOC_PCI_FIRST_M) |
--	       ((abs_last << VPINT_ALLOC_PCI_LAST_S) & VPINT_ALLOC_PCI_LAST_M) |
--	       VPINT_ALLOC_PCI_VALID_M);
-+	       ((device_based_last_msix << VPINT_ALLOC_PCI_LAST_S) &
-+		VPINT_ALLOC_PCI_LAST_M) | VPINT_ALLOC_PCI_VALID_M);
- 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
-+
- 	/* map the interrupts to its functions */
--	for (v = first; v <= last; v++) {
--		reg = (((abs_vf_id << GLINT_VECT2FUNC_VF_NUM_S) &
-+	for (v = pf_based_first_msix; v <= pf_based_last_msix; v++) {
-+		reg = (((device_based_vf_id << GLINT_VECT2FUNC_VF_NUM_S) &
- 			GLINT_VECT2FUNC_VF_NUM_M) |
- 		       ((hw->pf_id << GLINT_VECT2FUNC_PF_NUM_S) &
- 			GLINT_VECT2FUNC_PF_NUM_M));
- 		wr32(hw, GLINT_VECT2FUNC(v), reg);
+-	if (is_zero_ether_addr(mac) || is_multicast_ether_addr(mac)) {
++	if (is_multicast_ether_addr(mac)) {
+ 		netdev_err(netdev, "%pM not a valid unicast address\n", mac);
+ 		return -EINVAL;
+ 	}
+@@ -3932,15 +3932,21 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 		return -EINVAL;
  	}
  
--	/* Map mailbox interrupt. We put an explicit 0 here to remind us that
--	 * VF admin queue interrupts will go to VF MSI-X vector 0.
--	 */
--	wr32(hw, VPINT_MBX_CTL(abs_vf_id), VPINT_MBX_CTL_CAUSE_ENA_M | 0);
-+	/* Map mailbox interrupt to VF MSI-X vector 0 */
-+	wr32(hw, VPINT_MBX_CTL(device_based_vf_id), VPINT_MBX_CTL_CAUSE_ENA_M);
-+}
-+
-+/**
-+ * ice_ena_vf_q_mappings - enable Rx/Tx queue mappings for a VF
-+ * @vf: VF to enable the mappings for
-+ * @max_txq: max Tx queues allowed on the VF's VSI
-+ * @max_rxq: max Rx queues allowed on the VF's VSI
-+ */
-+static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
-+{
-+	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	struct ice_hw *hw = &vf->pf->hw;
-+	u32 reg;
-+
- 	/* set regardless of mapping mode */
- 	wr32(hw, VPLAN_TXQ_MAPENA(vf->vf_id), VPLAN_TXQ_MAPENA_TX_ENA_M);
+-	/* copy MAC into dflt_lan_addr and trigger a VF reset. The reset
+-	 * flow will use the updated dflt_lan_addr and add a MAC filter
+-	 * using ice_add_mac. Also set pf_set_mac to indicate that the PF has
+-	 * set the MAC address for this VF.
++	/* VF is notified of its new MAC via the PF's response to the
++	 * VIRTCHNL_OP_GET_VF_RESOURCES message after the VF has been reset
+ 	 */
+ 	ether_addr_copy(vf->dflt_lan_addr.addr, mac);
+-	vf->pf_set_mac = true;
+-	netdev_info(netdev, "MAC on VF %d set to %pM. VF driver will be reinitialized\n",
+-		    vf_id, mac);
++	if (is_zero_ether_addr(mac)) {
++		/* VF will send VIRTCHNL_OP_ADD_ETH_ADDR message with its MAC */
++		vf->pf_set_mac = false;
++		netdev_info(netdev, "Removing MAC on VF %d. VF driver will be reinitialized\n",
++			    vf->vf_id);
++	} else {
++		/* PF will add MAC rule for the VF */
++		vf->pf_set_mac = true;
++		netdev_info(netdev, "Setting MAC %pM on VF %d. VF driver will be reinitialized\n",
++			    mac, vf_id);
++	}
  
-@@ -711,7 +726,7 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
- 		 */
- 		reg = (((vsi->txq_map[0] << VPLAN_TX_QBASE_VFFIRSTQ_S) &
- 			VPLAN_TX_QBASE_VFFIRSTQ_M) |
--		       (((vsi->alloc_txq - 1) << VPLAN_TX_QBASE_VFNUMQ_S) &
-+		       (((max_txq - 1) << VPLAN_TX_QBASE_VFNUMQ_S) &
- 			VPLAN_TX_QBASE_VFNUMQ_M));
- 		wr32(hw, VPLAN_TX_QBASE(vf->vf_id), reg);
- 	} else {
-@@ -729,7 +744,7 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
- 		 */
- 		reg = (((vsi->rxq_map[0] << VPLAN_RX_QBASE_VFFIRSTQ_S) &
- 			VPLAN_RX_QBASE_VFFIRSTQ_M) |
--		       (((vsi->alloc_txq - 1) << VPLAN_RX_QBASE_VFNUMQ_S) &
-+		       (((max_rxq - 1) << VPLAN_RX_QBASE_VFNUMQ_S) &
- 			VPLAN_RX_QBASE_VFNUMQ_M));
- 		wr32(hw, VPLAN_RX_QBASE(vf->vf_id), reg);
- 	} else {
-@@ -737,6 +752,18 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
- 	}
- }
- 
-+/**
-+ * ice_ena_vf_mappings - enable VF MSIX and queue mapping
-+ * @vf: pointer to the VF structure
-+ */
-+static void ice_ena_vf_mappings(struct ice_vf *vf)
-+{
-+	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
-+
-+	ice_ena_vf_msix_mappings(vf);
-+	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq);
-+}
-+
- /**
-  * ice_determine_res
-  * @pf: pointer to the PF structure
+ 	ice_vc_reset_vf(vf);
+ 	return 0;
 -- 
 2.20.1
 
