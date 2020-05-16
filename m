@@ -1,66 +1,99 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sat, 16 May 2020 17:09:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 105/115]
- sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in
- declaration of 'MODULE_IMPORT_NS'
-Message-ID: <202005161723.4iixD7Z2%lkp@intel.com>
+From: Michal Kubecek <mkubecek@suse.cz>
+Date: Sat, 16 May 2020 11:33:17 +0200
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+In-Reply-To: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+Message-ID: <20200516093317.GJ21714@lion.mk-sys.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   1ae51690bc317eb011c6fcc8f5549b151b347167
-commit: 2f4dd43456871c929a14c14aed8999a2abef8592 [105/115] ASoC: SOF: ops: Add new op for client registration
-config: parisc-allyesconfig (attached as .config)
-compiler: hppa-linux-gcc (GCC) 9.3.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 2f4dd43456871c929a14c14aed8999a2abef8592
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day GCC_VERSION=9.3.0 make.cross ARCH=parisc 
+On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
+> Hi,
+> 
+> This series adds support for configuring frame preemption, as defined
+> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
+> 
+> Frame preemption allows a packet from a higher priority queue marked
+> as "express" to preempt a packet from lower priority queue marked as
+> "preemptible". The idea is that this can help reduce the latency for
+> higher priority traffic.
+> 
+> Previously, the proposed interface for configuring these features was
+> using the qdisc layer. But as this is very hardware dependent and all
+> that qdisc did was pass the information to the driver, it makes sense
+> to have this in ethtool.
+> 
+> One example, for retrieving and setting the configuration:
+> 
+> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+> Frame preemption settings for enp3s0:
+> 	support: supported
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
+IMHO we don't need a special bool for this. IIUC this is not a state
+flag that would change value for a particular device; either the device
+supports the feature or it does not. If it does not, the ethtool_ops
+callbacks would return -EOPNOTSUPP (or would not even exist if the
+driver has no support) and ethtool would say so.
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+> 	active: active
+> 	supported queues: 0xf
+> 	supported queues: 0xe
+> 	minimum fragment size: 68
+> 
+> 
+> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68 preemptible-queues-mask 0xe
+> 
+> This is a RFC because I wanted to have feedback on some points:
+> 
+>   - The parameters added are enough for the hardware I have, is it
+>     enough in general?
+> 
+>   - even with the ethtool via netlink effort, I chose to keep the
+>     ioctl() way, in case someone wants to backport this to an older
+>     kernel, is there a problem with this?
 
-sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or storage class
-167 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
-| ^~~~~~~~~~~~~~~~
->> sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
-sound/soc/sof/intel/apl.c:167:1: warning: parameter names (without types) in function declaration
-cc1: some warnings being treated as errors
+I would prefer not extending ioctl interface with new features, with
+obvious exceptions like adding new link modes or so. Not only because
+having new features only available through netlink will motivate authors
+of userspace tools to support netlink but mostly because the lack of
+flexibility and extensibility of ioctl interface inevitably leads to
+compromises you wouldn't have to do if you only implement netlink
+requests.
 
-vim +167 sound/soc/sof/intel/apl.c
+One example I can see is the use of u32 for queue bitmaps. Perhaps you
+don't expect this feature to be supported on devices with more than 32
+queues (and I don't have enough expertise to tell if it's justified at
+the moment) but can you be sure it will be the case in 10 or 20 years?
+As long as these hardcoded u32 bitmaps are only part of internal kernel
+API (ethtool_ops), extending the support for bigger devices will mean
+some code churn (possibly large if many drivers implement the feature)
+but it's something that can be done. But if you have this limit in
+userspace API, you are in a much bigger trouble. The same can be said
+for adding new attributes - easy with netlink but with ioctl you never
+know if those reserved fields will suffice.
 
-   151	
-   152	const struct sof_intel_dsp_desc apl_chip_info = {
-   153		/* Apollolake */
-   154		.cores_num = 2,
-   155		.init_core_mask = 1,
-   156		.cores_mask = HDA_DSP_CORE_MASK(0) | HDA_DSP_CORE_MASK(1),
-   157		.ipc_req = HDA_DSP_REG_HIPCI,
-   158		.ipc_req_mask = HDA_DSP_REG_HIPCI_BUSY,
-   159		.ipc_ack = HDA_DSP_REG_HIPCIE,
-   160		.ipc_ack_mask = HDA_DSP_REG_HIPCIE_DONE,
-   161		.ipc_ctl = HDA_DSP_REG_HIPCCTL,
-   162		.rom_init_timeout	= 150,
-   163		.ssp_count = APL_SSP_COUNT,
-   164		.ssp_base_offset = APL_SSP_BASE_OFFSET,
-   165	};
-   166	EXPORT_SYMBOL_NS(apl_chip_info, SND_SOC_SOF_INTEL_HDA_COMMON);
- > 167	MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+> 
+>   - Some space for bikeshedding the names and location (for example,
+>     does it make sense for these settings to be per-queue?), as I am
+>     not quite happy with them, one example, is the use of preemptible
+>     vs. preemptable;
+> 
+> 
+> About the patches, should be quite straightforward:
+> 
+> Patch 1, adds the ETHTOOL_GFP and ETHOOL_SFP commands and the
+> associated data structures;
+> 
+> Patch 2, adds the ETHTOOL_MSG_PREEMPT_GET and ETHTOOL_MSG_PREEMPT_SET
+> netlink messages and the associated attributes;
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 61670 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200516/39666202/attachment-0001.bin>
+I didn't look too deeply but one thing I noticed is that setting the
+parameters using ioctl() does not trigger netlink notification. If we
+decide to implement ioctl support (and I'm not a fan of that), the
+notifications should be sent even when ioctl is used.
+
+Michal
