@@ -1,51 +1,101 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:36:42 -0700
-Subject: [Intel-wired-lan] [PATCH S43 13/15] ice: Fix memory leak
+Date: Fri, 15 May 2020 17:36:33 -0700
+Subject: [Intel-wired-lan] [PATCH S43 04/15] ice: Check if unicast MAC
+ exists before setting VF MAC
 In-Reply-To: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
 References: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516003644.4658-13-anthony.l.nguyen@intel.com>
+Message-ID: <20200516003644.4658-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Surabhi Boob <surabhi.boob@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Handle memory leak on filter management initialization failure.
+Currently if a unicast MAC is set via ndo_set_vf_mac, the PF driver will
+set the VF's dflt_lan_addr.addr once some basic checks have passed. The
+VF is then reset. During reset the PF driver will attempt to program the
+VF's MAC from the dflt_lan_addr.addr field. This fails when the MAC
+already exists on the PF's switch.
 
-Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+This is causing the VF to be completely disabled until removing/enabling
+any VFs via sysfs.
+
+Fix this by checking if the unicast MAC exists before triggering a VF
+reset directly in ndo_set_vf_mac. Also, add a check if the unicast MAC
+is set to the same value as before and return 0 if that is the case.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 43 +++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index bba787a6faff..b0bbba8e6f6c 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -387,6 +387,7 @@ ice_aq_set_mac_cfg(struct ice_hw *hw, u16 max_frame_size, struct ice_sq_cd *cd)
- static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
- {
- 	struct ice_switch_info *sw;
-+	enum ice_status status;
- 
- 	hw->switch_info = devm_kzalloc(ice_hw_to_dev(hw),
- 				       sizeof(*hw->switch_info), GFP_KERNEL);
-@@ -397,7 +398,12 @@ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
- 
- 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
- 
--	return ice_init_def_sw_recp(hw);
-+	status = ice_init_def_sw_recp(hw);
-+	if (status) {
-+		devm_kfree(ice_hw_to_dev(hw), hw->switch_info);
-+		return status;
-+	}
-+	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 2e6c81555668..6ea3d15e1a6d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -3648,6 +3648,39 @@ ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi)
+ 	return 0;
  }
  
++/**
++ * ice_unicast_mac_exists - check if the unicast MAC exists on the PF's switch
++ * @pf: PF used to reference the switch's rules
++ * @umac: unicast MAC to compare against existing switch rules
++ *
++ * Return true on the first/any match, else return false
++ */
++static bool ice_unicast_mac_exists(struct ice_pf *pf, u8 *umac)
++{
++	struct ice_sw_recipe *mac_recipe_list =
++		&pf->hw.switch_info->recp_list[ICE_SW_LKUP_MAC];
++	struct ice_fltr_mgmt_list_entry *list_itr;
++	struct list_head *rule_head;
++	struct mutex *rule_lock; /* protect MAC filter list access */
++
++	rule_head = &mac_recipe_list->filt_rules;
++	rule_lock = &mac_recipe_list->filt_rule_lock;
++
++	mutex_lock(rule_lock);
++	list_for_each_entry(list_itr, rule_head, list_entry) {
++		u8 *existing_mac = &list_itr->fltr_info.l_data.mac.mac_addr[0];
++
++		if (ether_addr_equal(existing_mac, umac)) {
++			mutex_unlock(rule_lock);
++			return true;
++		}
++	}
++
++	mutex_unlock(rule_lock);
++
++	return false;
++}
++
  /**
+  * ice_set_vf_mac
+  * @netdev: network interface device structure
+@@ -3671,10 +3704,20 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	}
+ 
+ 	vf = &pf->vf[vf_id];
++	/* nothing left to do, unicast MAC already set */
++	if (ether_addr_equal(vf->dflt_lan_addr.addr, mac))
++		return 0;
++
+ 	ret = ice_check_vf_ready_for_cfg(vf);
+ 	if (ret)
+ 		return ret;
+ 
++	if (ice_unicast_mac_exists(pf, mac)) {
++		netdev_err(netdev, "Unicast MAC %pM already exists on this PF. Preventing setting VF %u unicast MAC address to %pM\n",
++			   mac, vf_id, mac);
++		return -EINVAL;
++	}
++
+ 	/* copy MAC into dflt_lan_addr and trigger a VF reset. The reset
+ 	 * flow will use the updated dflt_lan_addr and add a MAC filter
+ 	 * using ice_add_mac. Also set pf_set_mac to indicate that the PF has
 -- 
 2.20.1
 
