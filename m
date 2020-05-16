@@ -1,59 +1,48 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:36:35 -0700
-Subject: [Intel-wired-lan] [PATCH S43 06/15] ice: Fix bad register reads
+Date: Fri, 15 May 2020 17:36:40 -0700
+Subject: [Intel-wired-lan] [PATCH S43 11/15] ice: set VF default LAN address
 In-Reply-To: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
 References: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516003644.4658-6-anthony.l.nguyen@intel.com>
+Message-ID: <20200516003644.4658-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-The "ethtool -d" handler reads registers in the ice_regs_dump_list array
-and returns read values back to the userspace.
+Remove is_zero_ether_add() check when setting the VF default LAN address.
+This check assumed that the address had been delete and zeroed before
+calling ice_vc_add_mac_addr(). Now the default LAN address will be set
+to the last unicast MAC address added by the VF.
 
-The register offsets PFINT0_ITR* are not valid as per the specification
-and reading these causes a "unable to handle kernel paging request" bug
-in the driver. Remove these registers from ice_regs_dump_list.
+The default LAN address is reported by the PF via ndo_get_vf_config.
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 3 ---
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h | 3 ---
- 2 files changed, 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 72105d70cead..477ad33e0403 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -142,9 +142,6 @@ static const u32 ice_regs_dump_list[] = {
- 	QINT_RQCTL(0),
- 	PFINT_OICR_ENA,
- 	QRX_ITR(0),
--	PF0INT_ITR_0(0),
--	PF0INT_ITR_1(0),
--	PF0INT_ITR_2(0),
- };
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index aec619215b2e..b27206423537 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2836,9 +2836,11 @@ ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+ 		return -EIO;
+ 	}
  
- struct ice_priv_flag {
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 16ec9bebf4b4..5803bacef129 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -6,9 +6,6 @@
- #ifndef _ICE_HW_AUTOGEN_H_
- #define _ICE_HW_AUTOGEN_H_
+-	/* only set dflt_lan_addr once */
+-	if (is_zero_ether_addr(vf->dflt_lan_addr.addr) &&
+-	    is_unicast_ether_addr(mac_addr))
++	/* Set the default LAN address to the latest unicast MAC address added
++	 * by the VF. The default LAN address is reported by the PF via
++	 * ndo_get_vf_config.
++	 */
++	if (is_unicast_ether_addr(mac_addr))
+ 		ether_addr_copy(vf->dflt_lan_addr.addr, mac_addr);
  
--#define PF0INT_ITR_0(_i)			(0x03000004 + ((_i) * 4096))
--#define PF0INT_ITR_1(_i)			(0x03000008 + ((_i) * 4096))
--#define PF0INT_ITR_2(_i)			(0x0300000C + ((_i) * 4096))
- #define QTX_COMM_DBELL(_DBQM)			(0x002C0000 + ((_DBQM) * 4))
- #define QTX_COMM_HEAD(_DBQM)			(0x000E0000 + ((_DBQM) * 4))
- #define QTX_COMM_HEAD_HEAD_S			0
+ 	vf->num_mac++;
 -- 
 2.20.1
 
