@@ -1,60 +1,43 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:42:25 -0700
-Subject: [Intel-wired-lan] [PATCH S44 13/14] ice: fix kernel BUG if
- register_netdev fails
-In-Reply-To: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
-References: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516004226.4795-13-anthony.l.nguyen@intel.com>
+Date: Fri, 15 May 2020 17:51:18 -0700
+Subject: [Intel-wired-lan] [PATCH S45 12/15] ice: support adding 16
+ unicast/multicast filter on untrusted VF
+In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005121.4963-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-If register_netdev() fails, the driver will attempt to cleanup the
-q_vectors and inadvertently trigger a kernel BUG due to a NULL pointer
-dereference.
+Allow untrusted VF to add 16 unicast/multicast filters. VF uses 1 filter
+for the default/perm_addr/LAA MAC, 1 for broadcast, and 16 additional
+unicast/multicast filters.
 
-This occurs because cleaning up q_vectors attempts to call
-netif_napi_del on napi_structs which were never initialized.
-
-Resolve this by releasing the netdev in ice_cfg_netdev and setting
-vsi->netdev to NULL. This ensures that after ice_cfg_netdev fails the
-state is rewound to match as if ice_cfg_netdev was never called.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 943fde5abdb7..14aa02b000cc 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2435,7 +2435,7 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 0adff89a6749..67aa9110fdd1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -7,7 +7,10 @@
  
- 	err = register_netdev(vsi->netdev);
- 	if (err)
--		goto err_destroy_devlink_port;
-+		goto err_free_netdev;
+ /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
+ #define ICE_MAX_VLAN_PER_VF		8
+-#define ICE_MAX_MACADDR_PER_VF		12
++/* MAC filters: 1 is reserved for the VF's default/perm_addr/LAA MAC, 1 for
++ * broadcast, and 16 for additional unicast/multicast filters
++ */
++#define ICE_MAX_MACADDR_PER_VF		18
  
- 	devlink_port_type_eth_set(&pf->devlink_port, vsi->netdev);
- 
-@@ -2446,9 +2446,11 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
- 
- 	return 0;
- 
-+err_free_netdev:
-+	free_netdev(vsi->netdev);
-+	vsi->netdev = NULL;
- err_destroy_devlink_port:
- 	ice_devlink_destroy_port(pf);
--
- 	return err;
- }
- 
+ /* Malicious Driver Detection */
+ #define ICE_DFLT_NUM_INVAL_MSGS_ALLOWED		10
 -- 
 2.20.1
 
