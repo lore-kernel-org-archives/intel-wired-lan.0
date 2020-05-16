@@ -1,51 +1,43 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 May 2020 17:55:00 -0700
-Subject: [Intel-wired-lan] [PATCH S46 3/9] ice: Fix inability to set
- channels when down
+Date: Fri, 15 May 2020 17:55:03 -0700
+Subject: [Intel-wired-lan] [PATCH S46 6/9] ice: fix PCI device serial number
+ to be lowercase values
 In-Reply-To: <20200516005506.5113-1-anthony.l.nguyen@intel.com>
 References: <20200516005506.5113-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200516005506.5113-3-anthony.l.nguyen@intel.com>
+Message-ID: <20200516005506.5113-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 
-Currently the driver prevents a user from doing
-modprobe ice
-ethtool -L eth0 combined 5
-ip link set eth0 up
+Commit ceb2f00707f9 ("ice: Use pci_get_dsn()") changed the code to
+use a new function to get the Device Serial Number. It also changed
+the case of the filename for loading a package on a specific NIC
+from lowercase to uppercase. Change the filename back to
+lowercase since that is what we specified.
 
-The ethtool command fails, because the driver is checking to see if the
-interface is down before allowing the get_channels to proceed (even for
-a set_channels).
-
-Remove this check and allow the user to configure the interface
-before bringing it up, which is a much better usability case.
-
-Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Fixes: ceb2f00707f9 ("ice: Use pci_get_dsn()")
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index fd1849155d85..68c38004a088 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3189,10 +3189,6 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 4107f6982543..7f444a24be07 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3273,7 +3273,7 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
+ 	if (!opt_fw_filename)
+ 		return NULL;
  
--	/* check to see if VSI is active */
--	if (test_bit(__ICE_DOWN, vsi->state))
--		return;
--
- 	/* report maximum channels */
- 	ch->max_rx = ice_get_max_rxq(pf);
- 	ch->max_tx = ice_get_max_txq(pf);
+-	snprintf(opt_fw_filename, NAME_MAX, "%sice-%016llX.pkg",
++	snprintf(opt_fw_filename, NAME_MAX, "%sice-%016llx.pkg",
+ 		 ICE_DDP_PKG_PATH, dsn);
+ 
+ 	return opt_fw_filename;
 -- 
 2.20.1
 
