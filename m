@@ -1,13 +1,11 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 18 May 2020 12:05:04 -0700
+Date: Mon, 18 May 2020 12:34:22 -0700
 Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
  frame preemption
-In-Reply-To: <20200516.151932.575795129235955389.davem@davemloft.net>
+In-Reply-To: <20200516093317.GJ21714@lion.mk-sys.cz>
 References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516.133739.285740119627243211.davem@davemloft.net>
- <CA+h21hoNW_++QHRob+NbWC2k7y7sFec3kotSjTL6s8eZGGT+2Q@mail.gmail.com>
- <20200516.151932.575795129235955389.davem@davemloft.net>
-Message-ID: <87wo59oyhr.fsf@intel.com>
+ <20200516093317.GJ21714@lion.mk-sys.cz>
+Message-ID: <87sgfxox4x.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,33 +14,115 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi,
 
-David Miller <davem@davemloft.net> writes:
+Michal Kubecek <mkubecek@suse.cz> writes:
 
-> From: Vladimir Oltean <olteanv@gmail.com>
-> Date: Sun, 17 May 2020 00:03:39 +0300
+> On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
+>> Hi,
+>> 
+>> This series adds support for configuring frame preemption, as defined
+>> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
+>> 
+>> Frame preemption allows a packet from a higher priority queue marked
+>> as "express" to preempt a packet from lower priority queue marked as
+>> "preemptible". The idea is that this can help reduce the latency for
+>> higher priority traffic.
+>> 
+>> Previously, the proposed interface for configuring these features was
+>> using the qdisc layer. But as this is very hardware dependent and all
+>> that qdisc did was pass the information to the driver, it makes sense
+>> to have this in ethtool.
+>> 
+>> One example, for retrieving and setting the configuration:
+>> 
+>> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+>> Frame preemption settings for enp3s0:
+>> 	support: supported
 >
->> As to why this doesn't go to tc but to ethtool: why would it go to tc?
->
-> Maybe you can't %100 duplicate the on-the-wire special format and
-> whatever, but the queueing behavior ABSOLUTELY you can emulate in
-> software.
+> IMHO we don't need a special bool for this. IIUC this is not a state
+> flag that would change value for a particular device; either the device
+> supports the feature or it does not. If it does not, the ethtool_ops
+> callbacks would return -EOPNOTSUPP (or would not even exist if the
+> driver has no support) and ethtool would say so.
 
-Just saying what Vladimir said in different words: the queueing behavior
-is already implemented in software, by mqprio or taprio, for example.
+(I know that the comments below only apply if "ethtool-way" is what's
+decided)
 
-That is to say, if we add frame preemption support to those qdiscs all
-they will do is pass the information to the driver, and that's it. They
-won't be able to use that information at all.
-
-The mental model I have for this feature is that is more similar to the
-segmentation offloads, energy efficient ethernet or auto-negotiation
-than it is to a traffic shaper like CBS.
+Cool. Will remove the supported bit.
 
 >
-> And then you have the proper hooks added for HW offload which can
-> do the on-the-wire stuff.
+>> 	active: active
+>> 	supported queues: 0xf
+>> 	supported queues: 0xe
+>> 	minimum fragment size: 68
+>> 
+>> 
+>> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68 preemptible-queues-mask 0xe
+>> 
+>> This is a RFC because I wanted to have feedback on some points:
+>> 
+>>   - The parameters added are enough for the hardware I have, is it
+>>     enough in general?
+>> 
+>>   - even with the ethtool via netlink effort, I chose to keep the
+>>     ioctl() way, in case someone wants to backport this to an older
+>>     kernel, is there a problem with this?
 >
-> That's how we do these things, not with bolted on ethtool stuff.
+> I would prefer not extending ioctl interface with new features, with
+> obvious exceptions like adding new link modes or so. Not only because
+> having new features only available through netlink will motivate authors
+> of userspace tools to support netlink but mostly because the lack of
+> flexibility and extensibility of ioctl interface inevitably leads to
+> compromises you wouldn't have to do if you only implement netlink
+> requests.
+
+Agreed. Will send the next version with only the netlink interface, and
+let's see who complains.
+
+>
+> One example I can see is the use of u32 for queue bitmaps. Perhaps you
+> don't expect this feature to be supported on devices with more than 32
+> queues (and I don't have enough expertise to tell if it's justified at
+> the moment) but can you be sure it will be the case in 10 or 20 years?
+> As long as these hardcoded u32 bitmaps are only part of internal kernel
+> API (ethtool_ops), extending the support for bigger devices will mean
+> some code churn (possibly large if many drivers implement the feature)
+> but it's something that can be done. But if you have this limit in
+> userspace API, you are in a much bigger trouble. The same can be said
+> for adding new attributes - easy with netlink but with ioctl you never
+> know if those reserved fields will suffice.
+
+A bit of background for this decision (using u32), frame preemption has
+dimishing returns in relation to link speeds, my gut feeling is that for
+links faster than 2.5G it stops making sense, at least in Linux, the
+measurement noise will hide any latency improvement brought by frame
+preemption. And I don't see many 2.5G NICs supporting more than 32
+queues.
+
+But I agree that keeping the interface future proof is better. Will
+change to expose the queues configuration as bitset.
+
+>
+>> 
+>>   - Some space for bikeshedding the names and location (for example,
+>>     does it make sense for these settings to be per-queue?), as I am
+>>     not quite happy with them, one example, is the use of preemptible
+>>     vs. preemptable;
+>> 
+>> 
+>> About the patches, should be quite straightforward:
+>> 
+>> Patch 1, adds the ETHTOOL_GFP and ETHOOL_SFP commands and the
+>> associated data structures;
+>> 
+>> Patch 2, adds the ETHTOOL_MSG_PREEMPT_GET and ETHTOOL_MSG_PREEMPT_SET
+>> netlink messages and the associated attributes;
+>
+> I didn't look too deeply but one thing I noticed is that setting the
+> parameters using ioctl() does not trigger netlink notification. If we
+> decide to implement ioctl support (and I'm not a fan of that), the
+> notifications should be sent even when ioctl is used.
+
+Oh, yeah, that's right. Nice catch.
 
 
 Cheers,
