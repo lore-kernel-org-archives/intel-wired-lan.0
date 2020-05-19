@@ -1,174 +1,77 @@
-From: Murali Karicheri <m-karicheri2@ti.com>
-Date: Tue, 19 May 2020 11:27:17 -0400
-Subject: [Intel-wired-lan] [next-queue RFC 1/4] ethtool: Add support for
- configuring frame preemption
-In-Reply-To: <20200516012948.3173993-2-vinicius.gomes@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 19 May 2020 08:32:40 -0700
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+In-Reply-To: <b33e582f-e0e6-467a-636a-674322108855@ti.com>
 References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516012948.3173993-2-vinicius.gomes@intel.com>
-Message-ID: <3d9351d6-4a04-5bd3-69a4-c30275373804@ti.com>
+ <b33e582f-e0e6-467a-636a-674322108855@ti.com>
+Message-ID: <87v9ksndnr.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
+Murali Karicheri <m-karicheri2@ti.com> writes:
 
-On 5/15/20 9:29 PM, Vinicius Costa Gomes wrote:
-> Frame preemption (described in IEEE 802.3br-2016) defines the concept
-> of preemptible and express queues. It allows traffic from express
-> queues to "interrupt" traffic from preemptible queues, which are
-> "resumed" after the express traffic has finished transmitting.
-> 
-> Frame preemption can only be used when both the local device and the
-> link partner support it.
-> 
-> A new ethtool command was added to support the configuration
-> parameters.
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->   include/linux/ethtool.h      |  6 ++++++
->   include/uapi/linux/ethtool.h | 25 +++++++++++++++++++++++++
->   net/ethtool/ioctl.c          | 36 ++++++++++++++++++++++++++++++++++++
->   3 files changed, 67 insertions(+)
-> 
-> diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-> index a23b26e..e4a6710 100644
-> --- a/include/linux/ethtool.h
-> +++ b/include/linux/ethtool.h
-> @@ -360,6 +360,8 @@ bool ethtool_convert_link_mode_to_legacy_u32(u32 *legacy_u32,
->    * @get_ethtool_phy_stats: Return extended statistics about the PHY device.
->    *	This is only useful if the device maintains PHY statistics and
->    *	cannot use the standard PHY library helpers.
-> + * @get_preempt: Get the network device Frame Preemption parameters.
-> + * @set_preempt: Set the network device Frame Preemption parameters.
->    *
->    * All operations are optional (i.e. the function pointer may be set
->    * to %NULL) and callers must take this into account.  Callers must
-> @@ -454,6 +456,10 @@ struct ethtool_ops {
->   				      struct ethtool_fecparam *);
->   	int	(*set_fecparam)(struct net_device *,
->   				      struct ethtool_fecparam *);
-> +	int	(*get_preempt)(struct net_device *,
-> +			       struct ethtool_fp *);
-> +	int	(*set_preempt)(struct net_device *,
-> +			       struct ethtool_fp *);
->   	void	(*get_ethtool_phy_stats)(struct net_device *,
->   					 struct ethtool_stats *, u64 *);
+>> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+>> Frame preemption settings for enp3s0:
+>> 	support: supported
+>> 	active: active
+>> 	supported queues: 0xf
+>
+> I assume this is will be in sync with ethtool -L output which indicates
+> how many tx h/w queues present? I mean if there are 8 h/w queues,
+> supported queues will show 0xff.
 
-I understand this series for IET Preemption. But want to see if we can
-also add EST parameter, queueMaxSDU, that is also configurable.
+In this approach, the driver builds these bitmasks, so it's responsible
+to keep it consistent with the rest of the stuff that's exposed in
+ethtool.
 
-This is defined as up to 8 entries of queueMaxSDU (unsigned int) defined
-in 12.29.1.1,12.29.1.1.1 of 802.1Q 2018 edition. May be
-set_queue_max_sdu() with per traffic class queue value as an array
-of __u16 values?
+>
+>> 	supported queues: 0xe
+>  From the command below, it appears this is the preemptible queue mask.
+> bit 0  is Q0, bit 1 Q1 and so forth. Right? In that case isn't it more
+> clear to display
+>          preemptible queues : 0xef
+>
+> In the above Q7 is express queue and Q6-Q0 are preemptible.
+
+In my case, the controller I have here only has 4 queues, and Queue 0 is
+the highest priority one, and it's marked as express.
+
+>
+> Also there is a handshake called verify that happens which initiated
+> by the h/w to check the capability of peer. It looks like
+> not all vendor's hardware supports it and good to have it displayed
+> something like
+>
+>          Verify supported/{not supported}
+>
+> If Verify is supported, FPE is enabled only if it succeeds. So may be
+> good to show a status of Verify if it is supported something like
+>          Verify success/Failed
+>
+>> 	minimum fragment size: 68
+>> 
+>> 
+>> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68 preemptible-queues-mask 0xe
+>> 
+>> This is a RFC because I wanted to have feedback on some points:
+>> 
+>>    - The parameters added are enough for the hardware I have, is it
+>>      enough in general?
+>
+> As described above, it would be good to add an optional parameter for
+> verify
+>
+> ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68 
+> preemptible-queues-mask 0xe verify on
+>
+
+The hardware I have do not support this, but this makes sense.
 
 
->   };
-> diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-> index f4662b3..d63f9f8 100644
-> --- a/include/uapi/linux/ethtool.h
-> +++ b/include/uapi/linux/ethtool.h
-> @@ -369,6 +369,28 @@ struct ethtool_eee {
->   	__u32	reserved[2];
->   };
->   
-> +/**
-> + * struct ethtool_fp - Frame Preemption information
-> + * @cmd: ETHTOOL_{G,S}FP
-> + * @fp_supported: If frame preemption is supported.
-> + * @fp_enabled: If frame preemption should be advertised to the link partner
-> + *	as enabled.
-> + * @supported_queues_mask: Bitmask indicating which queues support being
-> + *	configured as preemptible (bit 0 -> queue 0, bit N -> queue N).
-> + * @preemptible_queues_mask: Bitmask indicating which queues are
-> + *	configured as preemptible (bit 0 -> queue 0, bit N -> queue N).
-> + * @min_frag_size: Minimum size for all non-final fragment size.
-> + */
-> +struct ethtool_fp {
-> +	__u32	cmd;
-> +	__u8	fp_supported;
-> +	__u8	fp_enabled;
-
-Could we add verify_supported and verify_enabled?
-
-> +	__u32	supported_queues_mask;
-> +	__u32	preemptible_queues_mask;
-> +	__u32	min_frag_size;
-> +	__u32	reserved[2];
-> +};
-> +
->   /**
->    * struct ethtool_modinfo - plugin module eeprom information
->    * @cmd: %ETHTOOL_GMODULEINFO
-> @@ -1441,6 +1463,9 @@ enum ethtool_fec_config_bits {
->   #define ETHTOOL_GFECPARAM	0x00000050 /* Get FEC settings */
->   #define ETHTOOL_SFECPARAM	0x00000051 /* Set FEC settings */
->   
-> +#define ETHTOOL_GFP		0x00000052 /* Get Frame Preemption settings */
-> +#define ETHTOOL_SFP		0x00000053 /* Set Frame Preemption settings */
-> +
->   /* compatibility with older code */
->   #define SPARC_ETH_GSET		ETHTOOL_GSET
->   #define SPARC_ETH_SSET		ETHTOOL_SSET
-> diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
-> index 52102ab..e15ad5c 100644
-> --- a/net/ethtool/ioctl.c
-> +++ b/net/ethtool/ioctl.c
-> @@ -2531,6 +2531,36 @@ static int ethtool_set_fecparam(struct net_device *dev, void __user *useraddr)
->   	return dev->ethtool_ops->set_fecparam(dev, &fecparam);
->   }
->   
-> +static int ethtool_get_preempt(struct net_device *dev, void __user *useraddr)
-> +{
-> +	struct ethtool_fp fpparam = { .cmd = ETHTOOL_GFP };
-> +	int rc;
-> +
-> +	if (!dev->ethtool_ops->get_preempt)
-> +		return -EOPNOTSUPP;
-> +
-> +	rc = dev->ethtool_ops->get_preempt(dev, &fpparam);
-> +	if (rc)
-> +		return rc;
-> +
-> +	if (copy_to_user(useraddr, &fpparam, sizeof(fpparam)))
-> +		return -EFAULT;
-> +	return 0;
-> +}
-> +
-> +static int ethtool_set_preempt(struct net_device *dev, void __user *useraddr)
-> +{
-> +	struct ethtool_fp fpparam;
-> +
-> +	if (!dev->ethtool_ops->set_preempt)
-> +		return -EOPNOTSUPP;
-> +
-> +	if (copy_from_user(&fpparam, useraddr, sizeof(fpparam)))
-> +		return -EFAULT;
-> +
-> +	return dev->ethtool_ops->set_preempt(dev, &fpparam);
-> +}
-> +
->   /* The main entry point in this file.  Called from net/core/dev_ioctl.c */
->   
->   int dev_ethtool(struct net *net, struct ifreq *ifr)
-> @@ -2810,6 +2840,12 @@ int dev_ethtool(struct net *net, struct ifreq *ifr)
->   	case ETHTOOL_SFECPARAM:
->   		rc = ethtool_set_fecparam(dev, useraddr);
->   		break;
-> +	case ETHTOOL_GFP:
-> +		rc = ethtool_get_preempt(dev, useraddr);
-> +		break;
-> +	case ETHTOOL_SFP:
-> +		rc = ethtool_set_preempt(dev, useraddr);
-> +		break;
->   	default:
->   		rc = -EOPNOTSUPP;
->   	}
-> 
-
+Cheers,
 -- 
-Murali Karicheri
-Texas Instruments
+Vinicius
