@@ -1,71 +1,84 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 May 2020 16:38:05 +0000
-Subject: [Intel-wired-lan] [PATCH S42 7/7] ice: Implement aRFS
-In-Reply-To: <20200512010146.41303-7-anthony.l.nguyen@intel.com>
-References: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
- <20200512010146.41303-7-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB165915648FEE68955FB201498CB90@DM5PR11MB1659.namprd11.prod.outlook.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 19 May 2020 09:43:27 -0700
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+In-Reply-To: <VE1PR04MB6496D0B1507969D8474F78FC92B90@VE1PR04MB6496.eurprd04.prod.outlook.com>
+References: <VE1PR04MB6496D0B1507969D8474F78FC92B90@VE1PR04MB6496.eurprd04.prod.outlook.com>
+Message-ID: <87lflnooy8.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Monday, May 11, 2020 6:02 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S42 7/7] ice: Implement aRFS
-> 
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> Enable accelerated Receive Flow Steering (aRFS). It is used to steer Rx flows
-> to a specific queue. This functionality is triggerred by the network stack
-> through ndo_rx_flow_steer and requires Flow Director (ntuple on) to
-> function.
-> 
-> The fltr_info is used to add/remove/update flow rules in the HW, the
-> fltr_state is used to determine what to do with the filter with respect to HW
-> and/or SW, and the flow_id is used in co-ordination with the network stack.
-> 
-> The work for aRFS is split into two paths: the ndo_rx_flow_steer operation
-> and the ice_service_task. The former is where the kernel hands us an Rx SKB
-> among other items to setup aRFS and the latter is where the driver
-> adds/updates/removes filter rules from HW and updates filter state.
-> 
-> In the Rx path the following things can happen:
->         1. New aRFS entries are added to the hash table and the state is
->            set to ICE_ARFS_INACTIVE so the filter can be updated in HW
->            by the ice_service_task path.
->         2. aRFS entries have their Rx Queue updated if we receive a
->            pre-existing flow_id and the filter state is ICE_ARFS_ACTIVE.
->            The state is set to ICE_ARFS_INACTIVE so the filter can be
->            updated in HW by the ice_service_task path.
->         3. aRFS entries marked as ICE_ARFS_TODEL are deleted
-> 
-> In the ice_service_task path the following things can happen:
->         1. New aRFS entries marked as ICE_ARFS_INACTIVE are added or
->            updated in HW.
->            and their state is updated to ICE_ARFS_ACTIVE.
->         2. aRFS entries are deleted from HW and their state is updated
->            to ICE_ARFS_TODEL.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/Makefile       |   1 +
->  drivers/net/ethernet/intel/ice/ice.h          |  14 +
->  drivers/net/ethernet/intel/ice/ice_arfs.c     | 663 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_arfs.h     |  82 +++
->  .../net/ethernet/intel/ice/ice_ethtool_fdir.c |   8 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c      |   1 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |  48 +-
->  7 files changed, 805 insertions(+), 12 deletions(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_arfs.c
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_arfs.h
+Po Liu <po.liu@nxp.com> writes:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+> Hi Vinicius,
+>
+>> -----Original Message-----
+>> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>> Sent: 2020?5?19? 3:34
+>> To: Michal Kubecek <mkubecek@suse.cz>; netdev at vger.kernel.org
+>> Cc: intel-wired-lan at lists.osuosl.org; jeffrey.t.kirsher at intel.com; Vladimir
+>> Oltean <vladimir.oltean@nxp.com>; Po Liu <po.liu@nxp.com>; m-
+>> karicheri2 at ti.com; Jose.Abreu at synopsys.com
+>> Subject: Re: [next-queue RFC 0/4] ethtool: Add support for frame
+>> preemption
+>> 
+>> Hi,
+>> 
+>> Michal Kubecek <mkubecek@suse.cz> writes:
+>> 
+>> > On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
+>> >> Hi,
+>> >>
+>> >> This series adds support for configuring frame preemption, as defined
+>> >> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
+>> >>
+>> >> Frame preemption allows a packet from a higher priority queue marked
+>> >> as "express" to preempt a packet from lower priority queue marked as
+>> >> "preemptible". The idea is that this can help reduce the latency for
+>> >> higher priority traffic.
+>> >>
+>> >> Previously, the proposed interface for configuring these features was
+>> >> using the qdisc layer. But as this is very hardware dependent and all
+>> >> that qdisc did was pass the information to the driver, it makes sense
+>> >> to have this in ethtool.
+>> >>
+>> >> One example, for retrieving and setting the configuration:
+>> >>
+>> >> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0 Frame
+>> >> preemption settings for enp3s0:
+>> >>      support: supported
+>> >
+>> > IMHO we don't need a special bool for this. IIUC this is not a state
+>> > flag that would change value for a particular device; either the
+>> > device supports the feature or it does not. If it does not, the
+>> > ethtool_ops callbacks would return -EOPNOTSUPP (or would not even
+>> > exist if the driver has no support) and ethtool would say so.
+>> 
+>> (I know that the comments below only apply if "ethtool-way" is what's
+>> decided)
+>> 
+>> Cool. Will remove the supported bit.
+>
+> Shall it move to the link_ksettings fixed supported list? So can be
+> checked by the ethtool -k command. I understand that the hw features
+> are encouraged listing in the ksettings.
+
+Having it in link_ksettings might make sense, using something like
+"frame-preemption: off [fixed]" to mean "not supported" sounds nice.
+
+> The two MACs should all be initialized at driver size. And all frame queues should assigned to the express MAC by default. That looks as normal mode called preemption disable.
+> Any frame queues assigned pass preemptable MAC could be called
+> preemption enable.
+
+If you mean to have frame-preemption enabled by default, I think it
+should be a per-driver decision, and probably disabled by default, at
+least in the begining: frame preemption might interact badly with other
+features, jumbo frames and EEE come to mind.
 
 
+Cheers,
+--
+Vinicius
