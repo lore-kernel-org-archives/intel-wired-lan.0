@@ -1,67 +1,68 @@
-From: Murali Karicheri <m-karicheri2@ti.com>
-Date: Tue, 19 May 2020 12:34:30 -0400
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-In-Reply-To: <87h7wcq4nx.fsf@intel.com>
-References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516.133739.285740119627243211.davem@davemloft.net>
- <CA+h21hoNW_++QHRob+NbWC2k7y7sFec3kotSjTL6s8eZGGT+2Q@mail.gmail.com>
- <20200516.151932.575795129235955389.davem@davemloft.net>
- <87wo59oyhr.fsf@intel.com>
- <20200518135613.379f6a63@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <87h7wcq4nx.fsf@intel.com>
-Message-ID: <29959a1a-fc45-6870-fa11-311866b51aa0@ti.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 19 May 2020 16:35:19 +0000
+Subject: [Intel-wired-lan] [PATCH S42 1/7] ice: Initialize Flow Director
+ resources
+In-Reply-To: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
+References: <20200512010146.41303-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659EC231376B8A6430C0CAE8CB90@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Monday, May 11, 2020 6:02 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S42 1/7] ice: Initialize Flow Director
+> resources
+> 
+> From: Henry Tieman <henry.w.tieman@intel.com>
+> 
+> Flow Director allows for redirection based on ntuple rules. Rules are
+> programmed using the ethtool set-ntuple interface. Supported actions are
+> redirect to queue and drop.
+> 
+> Setup the initial framework to process Flow Director filters. Create and
+> allocate resources to manage and program filters to the hardware. Filters
+> are processed via a sideband interface; a control VSI is created to manage
+> communication and process requests through the sideband. Upon allocation
+> of
+> resources, update the hardware tables to accept perfect filters.
+> 
+> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/Makefile       |   2 +
+>  drivers/net/ethernet/intel/ice/ice.h          |  24 ++
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   9 +
+>  drivers/net/ethernet/intel/ice/ice_base.c     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   |  36 ++
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  11 +-
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 399 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_fdir.c     |  54 +++
+>  drivers/net/ethernet/intel/ice/ice_fdir.h     |  12 +
+>  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 224 ++++++++++
+>  drivers/net/ethernet/intel/ice/ice_flow.c     | 169 +++++++-
+>  drivers/net/ethernet/intel/ice/ice_flow.h     |  32 +-
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |  11 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 210 +++++++--
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 160 ++++++-
+>  .../ethernet/intel/ice/ice_protocol_type.h    |   1 +
+>  drivers/net/ethernet/intel/ice/ice_switch.c   |  75 ++++
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |   7 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.c     | 100 ++++-
+>  drivers/net/ethernet/intel/ice/ice_txrx.h     |   7 +-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |  45 +-
+>  22 files changed, 1552 insertions(+), 39 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_fdir.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_fdir.h
 
 
-On 5/18/20 6:06 PM, Vinicius Costa Gomes wrote:
-> Hi,
-> 
-> Jakub Kicinski <kuba@kernel.org> writes:
->>
->> Please take a look at the example from the cover letter:
->>
->> $ ethtool $ sudo ./ethtool --show-frame-preemption
->> enp3s0 Frame preemption settings for enp3s0:
->> 	support: supported
->> 	active: active
->> 	supported queues: 0xf
->> 	supported queues: 0xe
->> 	minimum fragment size: 68
->>
->> Reading this I have no idea what 0xe is. I have to go and query TC API
->> to see what priorities and queues that will be. Which IMHO is a strong
->> argument that this information belongs there in the first place.
-> 
-> That was the (only?) strong argument in favor of having frame preemption
-> in the TC side when this was last discussed.
-> 
-> We can have a hybrid solution, we can move the express/preemptible per
-> queue map to mqprio/taprio/whatever. And have the more specific
-> configuration knobs, minimum fragment size, etc, in ethtool.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-Isn't this a pure h/w feature? FPE is implemented at L2 and involves
-fragments that are only seen by h/w and never at Linux network core
-unlike IP fragments and is transparent to network stack. However it
-enhances priority handling at h/w to the next level by pre-empting 
-existing lower priority traffic to give way to express queue traffic
-and improve latency. So everything happens in h/w. So ethtool makes
-perfect sense here as it is a queue configuration. I agree with Vinicius
-and Vladmir to support this in ethtool instead of TC.
 
-Murali
-> 
-> What do you think?
-> 
-> 
-> Cheers,
-> 
-
--- 
-Murali Karicheri
-Texas Instruments
