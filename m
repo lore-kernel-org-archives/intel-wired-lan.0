@@ -1,10 +1,10 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 19 May 2020 23:18:58 +0800
+Date: Wed, 20 May 2020 00:57:17 +0800
 Subject: [Intel-wired-lan] [PATCH bpf-next v3 07/15] i40e: separate
  kernel allocated rx_bi rings from AF_XDP rings
 In-Reply-To: <20200519085724.294949-8-bjorn.topel@gmail.com>
 References: <20200519085724.294949-8-bjorn.topel@gmail.com>
-Message-ID: <202005192351.j1H08VpV%lkp@intel.com>
+Message-ID: <202005200007.ZYHoGJ9G%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,22 +24,29 @@ base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
 
 url:    https://github.com/0day-ci/linux/commits/Bj-rn-T-pel/Introduce-AF_XDP-buffer-allocation-API/20200519-203122
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git master
-config: riscv-allyesconfig (attached as .config)
-compiler: riscv64-linux-gcc (GCC) 9.3.0
+config: x86_64-allyesconfig (attached as .config)
+compiler: clang version 11.0.0 (https://github.com/llvm/llvm-project 135b877874fae96b4372c8a3fbfaa8ff44ff86e3)
 reproduce:
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
+        # install x86_64 cross compiling tool for clang build
+        # apt-get install binutils-x86-64-linux-gnu
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=riscv 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kbuild test robot <lkp@intel.com>
 
 All warnings (new ones prefixed by >>, old ones prefixed by <<):
 
->> drivers/net/ethernet/intel/i40e/i40e_txrx.c:531:6: warning: no previous prototype for 'i40e_fd_handle_status' [-Wmissing-prototypes]
-531 | void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
-|      ^~~~~~~~~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c:531:6: warning: no previous prototype for function 'i40e_fd_handle_status' [-Wmissing-prototypes]
+void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
+^
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:531:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
+^
+static
+1 warning generated.
 
 vim +/i40e_fd_handle_status +531 drivers/net/ethernet/intel/i40e/i40e_txrx.c
 
@@ -128,6 +135,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 63439 bytes
+Size: 73478 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200519/3d0ec82b/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200520/796d30e9/attachment-0001.bin>
