@@ -1,53 +1,73 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 19 May 2020 10:49:04 -0700
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-In-Reply-To: <29959a1a-fc45-6870-fa11-311866b51aa0@ti.com>
-References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516.133739.285740119627243211.davem@davemloft.net>
- <CA+h21hoNW_++QHRob+NbWC2k7y7sFec3kotSjTL6s8eZGGT+2Q@mail.gmail.com>
- <20200516.151932.575795129235955389.davem@davemloft.net>
- <87wo59oyhr.fsf@intel.com>
- <20200518135613.379f6a63@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <87h7wcq4nx.fsf@intel.com> <29959a1a-fc45-6870-fa11-311866b51aa0@ti.com>
-Message-ID: <87ftbvolwv.fsf@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 20 May 2020 03:06:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 105/183]
+ sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in
+ declaration of 'MODULE_IMPORT_NS'
+Message-ID: <202005200349.7ZATWxlp%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Murali Karicheri <m-karicheri2@ti.com> writes:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   7c7dd63d321082aff5fb170d27beab8a756e3434
+commit: aee46c9d07a0bd4fcc62eeed627fe4f8a0946d50 [105/183] ASoC: SOF: ops: Add new op for client registration
+config: sparc64-allyesconfig (attached as .config)
+compiler: sparc64-linux-gcc (GCC) 9.3.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout aee46c9d07a0bd4fcc62eeed627fe4f8a0946d50
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc64 
 
->> That was the (only?) strong argument in favor of having frame preemption
->> in the TC side when this was last discussed.
->> 
->> We can have a hybrid solution, we can move the express/preemptible per
->> queue map to mqprio/taprio/whatever. And have the more specific
->> configuration knobs, minimum fragment size, etc, in ethtool.
->
-> Isn't this a pure h/w feature? FPE is implemented at L2 and involves
-> fragments that are only seen by h/w and never at Linux network core
-> unlike IP fragments and is transparent to network stack. However it
-> enhances priority handling at h/w to the next level by pre-empting 
-> existing lower priority traffic to give way to express queue traffic
-> and improve latency. So everything happens in h/w. So ethtool makes
-> perfect sense here as it is a queue configuration. I agree with Vinicius
-> and Vladmir to support this in ethtool instead of TC.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
 
-The way I see, the issue that Jakub is pointing here is more of
-usability/understandability.
+All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-By having the express/preemptible queue mapping in TC, we have the
-configuration near where the "priority to queue" mapping happens. That
-improves the ease of configuration, makes it easier to spot mistakes,
-that kind of thing, all of which are a big plus.
+sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or storage class
+167 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+| ^~~~~~~~~~~~~~~~
+>> sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+sound/soc/sof/intel/apl.c:167:1: warning: parameter names (without types) in function declaration
+cc1: some warnings being treated as errors
+--
+sound/soc/sof/intel/cnl.c:444:1: warning: data definition has no type or storage class
+444 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+| ^~~~~~~~~~~~~~~~
+>> sound/soc/sof/intel/cnl.c:444:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+sound/soc/sof/intel/cnl.c:444:1: warning: parameter names (without types) in function declaration
+cc1: some warnings being treated as errors
 
-Right now, I am seeing this hybrid approach as a good compromise, we
-have the queue settings near to where the kinds of traffic are mapped to
-queues, and we have the rest of the hardware configuration in ethtool.
+vim +167 sound/soc/sof/intel/apl.c
 
+   151	
+   152	const struct sof_intel_dsp_desc apl_chip_info = {
+   153		/* Apollolake */
+   154		.cores_num = 2,
+   155		.init_core_mask = 1,
+   156		.cores_mask = HDA_DSP_CORE_MASK(0) | HDA_DSP_CORE_MASK(1),
+   157		.ipc_req = HDA_DSP_REG_HIPCI,
+   158		.ipc_req_mask = HDA_DSP_REG_HIPCI_BUSY,
+   159		.ipc_ack = HDA_DSP_REG_HIPCIE,
+   160		.ipc_ack_mask = HDA_DSP_REG_HIPCIE_DONE,
+   161		.ipc_ctl = HDA_DSP_REG_HIPCCTL,
+   162		.rom_init_timeout	= 150,
+   163		.ssp_count = APL_SSP_COUNT,
+   164		.ssp_base_offset = APL_SSP_BASE_OFFSET,
+   165	};
+   166	EXPORT_SYMBOL_NS(apl_chip_info, SND_SOC_SOF_INTEL_HDA_COMMON);
+ > 167	MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
 
-Cheers,
--- 
-Vinicius
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 62521 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200520/2d3bcd70/attachment-0001.bin>
