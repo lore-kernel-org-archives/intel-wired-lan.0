@@ -1,140 +1,148 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 20 May 2020 00:57:17 +0800
-Subject: [Intel-wired-lan] [PATCH bpf-next v3 07/15] i40e: separate
- kernel allocated rx_bi rings from AF_XDP rings
-In-Reply-To: <20200519085724.294949-8-bjorn.topel@gmail.com>
-References: <20200519085724.294949-8-bjorn.topel@gmail.com>
-Message-ID: <202005200007.ZYHoGJ9G%lkp@intel.com>
+From: Po Liu <po.liu@nxp.com>
+Date: Tue, 19 May 2020 09:10:32 +0000
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+Message-ID: <VE1PR04MB6496D0B1507969D8474F78FC92B90@VE1PR04MB6496.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi "Bj?rn,
+Hi Vinicius,
 
-I love your patch! Perhaps something to improve:
+> -----Original Message-----
+> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Sent: 2020?5?19? 3:34
+> To: Michal Kubecek <mkubecek@suse.cz>; netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org; jeffrey.t.kirsher at intel.com; Vladimir
+> Oltean <vladimir.oltean@nxp.com>; Po Liu <po.liu@nxp.com>; m-
+> karicheri2 at ti.com; Jose.Abreu at synopsys.com
+> Subject: Re: [next-queue RFC 0/4] ethtool: Add support for frame
+> preemption
+> 
+> Hi,
+> 
+> Michal Kubecek <mkubecek@suse.cz> writes:
+> 
+> > On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
+> >> Hi,
+> >>
+> >> This series adds support for configuring frame preemption, as defined
+> >> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
+> >>
+> >> Frame preemption allows a packet from a higher priority queue marked
+> >> as "express" to preempt a packet from lower priority queue marked as
+> >> "preemptible". The idea is that this can help reduce the latency for
+> >> higher priority traffic.
+> >>
+> >> Previously, the proposed interface for configuring these features was
+> >> using the qdisc layer. But as this is very hardware dependent and all
+> >> that qdisc did was pass the information to the driver, it makes sense
+> >> to have this in ethtool.
+> >>
+> >> One example, for retrieving and setting the configuration:
+> >>
+> >> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0 Frame
+> >> preemption settings for enp3s0:
+> >>      support: supported
+> >
+> > IMHO we don't need a special bool for this. IIUC this is not a state
+> > flag that would change value for a particular device; either the
+> > device supports the feature or it does not. If it does not, the
+> > ethtool_ops callbacks would return -EOPNOTSUPP (or would not even
+> > exist if the driver has no support) and ethtool would say so.
+> 
+> (I know that the comments below only apply if "ethtool-way" is what's
+> decided)
+> 
+> Cool. Will remove the supported bit.
 
-[auto build test WARNING on bpf-next/master]
-[also build test WARNING on jkirsher-next-queue/dev-queue next-20200518]
-[cannot apply to bpf/master linus/master v5.7-rc6]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+Shall it move to the link_ksettings fixed supported list? So can be checked by the ethtool -k command. I understand that the hw features are encouraged listing in the ksettings.
+The two MACs should all be initialized at driver size. And all frame queues should assigned to the express MAC by default. That looks as normal mode called preemption disable.
+Any frame queues assigned pass preemptable MAC could be called preemption enable.  
 
-url:    https://github.com/0day-ci/linux/commits/Bj-rn-T-pel/Introduce-AF_XDP-buffer-allocation-API/20200519-203122
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git master
-config: x86_64-allyesconfig (attached as .config)
-compiler: clang version 11.0.0 (https://github.com/llvm/llvm-project 135b877874fae96b4372c8a3fbfaa8ff44ff86e3)
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install x86_64 cross compiling tool for clang build
-        # apt-get install binutils-x86-64-linux-gnu
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+> 
+> >
+> >>      active: active
+> >>      supported queues: 0xf
+> >>      supported queues: 0xe
+> >>      minimum fragment size: 68
+> >>
+> >>
+> >> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68
+> >> preemptible-queues-mask 0xe
+> >>
+> >> This is a RFC because I wanted to have feedback on some points:
+> >>
+> >>   - The parameters added are enough for the hardware I have, is it
+> >>     enough in general?
+> >>
+> >>   - even with the ethtool via netlink effort, I chose to keep the
+> >>     ioctl() way, in case someone wants to backport this to an older
+> >>     kernel, is there a problem with this?
+> >
+> > I would prefer not extending ioctl interface with new features, with
+> > obvious exceptions like adding new link modes or so. Not only because
+> > having new features only available through netlink will motivate
+> > authors of userspace tools to support netlink but mostly because the
+> > lack of flexibility and extensibility of ioctl interface inevitably
+> > leads to compromises you wouldn't have to do if you only implement
+> > netlink requests.
+> 
+> Agreed. Will send the next version with only the netlink interface, and let's
+> see who complains.
+> 
+> >
+> > One example I can see is the use of u32 for queue bitmaps. Perhaps you
+> > don't expect this feature to be supported on devices with more than 32
+> > queues (and I don't have enough expertise to tell if it's justified at
+> > the moment) but can you be sure it will be the case in 10 or 20 years?
+> > As long as these hardcoded u32 bitmaps are only part of internal
+> > kernel API (ethtool_ops), extending the support for bigger devices
+> > will mean some code churn (possibly large if many drivers implement
+> > the feature) but it's something that can be done. But if you have this
+> > limit in userspace API, you are in a much bigger trouble. The same can
+> > be said for adding new attributes - easy with netlink but with ioctl
+> > you never know if those reserved fields will suffice.
+> 
+> A bit of background for this decision (using u32), frame preemption has
+> dimishing returns in relation to link speeds, my gut feeling is that for links
+> faster than 2.5G it stops making sense, at least in Linux, the measurement
+> noise will hide any latency improvement brought by frame preemption.
+> And I don't see many 2.5G NICs supporting more than 32 queues.
+> 
+> But I agree that keeping the interface future proof is better. Will change to
+> expose the queues configuration as bitset.
+> 
+> >
+> >>
+> >>   - Some space for bikeshedding the names and location (for example,
+> >>     does it make sense for these settings to be per-queue?), as I am
+> >>     not quite happy with them, one example, is the use of preemptible
+> >>     vs. preemptable;
+> >>
+> >>
+> >> About the patches, should be quite straightforward:
+> >>
+> >> Patch 1, adds the ETHTOOL_GFP and ETHOOL_SFP commands and the
+> >> associated data structures;
+> >>
+> >> Patch 2, adds the ETHTOOL_MSG_PREEMPT_GET and
+> ETHTOOL_MSG_PREEMPT_SET
+> >> netlink messages and the associated attributes;
+> >
+> > I didn't look too deeply but one thing I noticed is that setting the
+> > parameters using ioctl() does not trigger netlink notification. If we
+> > decide to implement ioctl support (and I'm not a fan of that), the
+> > notifications should be sent even when ioctl is used.
+> 
+> Oh, yeah, that's right. Nice catch.
+> 
+> 
+> Cheers,
+> --
+> Vinicius
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>, old ones prefixed by <<):
-
->> drivers/net/ethernet/intel/i40e/i40e_txrx.c:531:6: warning: no previous prototype for function 'i40e_fd_handle_status' [-Wmissing-prototypes]
-void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
-^
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:531:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
-^
-static
-1 warning generated.
-
-vim +/i40e_fd_handle_status +531 drivers/net/ethernet/intel/i40e/i40e_txrx.c
-
-   520	
-   521	/**
-   522	 * i40e_fd_handle_status - check the Programming Status for FD
-   523	 * @rx_ring: the Rx ring for this descriptor
-   524	 * @qword0_raw: qword0
-   525	 * @qword1: qword1 after le_to_cpu
-   526	 * @prog_id: the id originally used for programming
-   527	 *
-   528	 * This is used to verify if the FD programming or invalidation
-   529	 * requested by SW to the HW is successful or not and take actions accordingly.
-   530	 **/
- > 531	void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
-   532				   u64 qword1, u8 prog_id)
-   533	{
-   534		struct i40e_pf *pf = rx_ring->vsi->back;
-   535		struct pci_dev *pdev = pf->pdev;
-   536		struct i40e_32b_rx_wb_qw0 *qw0;
-   537		u32 fcnt_prog, fcnt_avail;
-   538		u32 error;
-   539	
-   540		qw0 = (struct i40e_32b_rx_wb_qw0 *)&qword0_raw;
-   541		error = (qword1 & I40E_RX_PROG_STATUS_DESC_QW1_ERROR_MASK) >>
-   542			I40E_RX_PROG_STATUS_DESC_QW1_ERROR_SHIFT;
-   543	
-   544		if (error == BIT(I40E_RX_PROG_STATUS_DESC_FD_TBL_FULL_SHIFT)) {
-   545			pf->fd_inv = le32_to_cpu(qw0->hi_dword.fd_id);
-   546			if (qw0->hi_dword.fd_id != 0 ||
-   547			    (I40E_DEBUG_FD & pf->hw.debug_mask))
-   548				dev_warn(&pdev->dev, "ntuple filter loc = %d, could not be added\n",
-   549					 pf->fd_inv);
-   550	
-   551			/* Check if the programming error is for ATR.
-   552			 * If so, auto disable ATR and set a state for
-   553			 * flush in progress. Next time we come here if flush is in
-   554			 * progress do nothing, once flush is complete the state will
-   555			 * be cleared.
-   556			 */
-   557			if (test_bit(__I40E_FD_FLUSH_REQUESTED, pf->state))
-   558				return;
-   559	
-   560			pf->fd_add_err++;
-   561			/* store the current atr filter count */
-   562			pf->fd_atr_cnt = i40e_get_current_atr_cnt(pf);
-   563	
-   564			if (qw0->hi_dword.fd_id == 0 &&
-   565			    test_bit(__I40E_FD_SB_AUTO_DISABLED, pf->state)) {
-   566				/* These set_bit() calls aren't atomic with the
-   567				 * test_bit() here, but worse case we potentially
-   568				 * disable ATR and queue a flush right after SB
-   569				 * support is re-enabled. That shouldn't cause an
-   570				 * issue in practice
-   571				 */
-   572				set_bit(__I40E_FD_ATR_AUTO_DISABLED, pf->state);
-   573				set_bit(__I40E_FD_FLUSH_REQUESTED, pf->state);
-   574			}
-   575	
-   576			/* filter programming failed most likely due to table full */
-   577			fcnt_prog = i40e_get_global_fd_count(pf);
-   578			fcnt_avail = pf->fdir_pf_filter_count;
-   579			/* If ATR is running fcnt_prog can quickly change,
-   580			 * if we are very close to full, it makes sense to disable
-   581			 * FD ATR/SB and then re-enable it when there is room.
-   582			 */
-   583			if (fcnt_prog >= (fcnt_avail - I40E_FDIR_BUFFER_FULL_MARGIN)) {
-   584				if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
-   585				    !test_and_set_bit(__I40E_FD_SB_AUTO_DISABLED,
-   586						      pf->state))
-   587					if (I40E_DEBUG_FD & pf->hw.debug_mask)
-   588						dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
-   589			}
-   590		} else if (error == BIT(I40E_RX_PROG_STATUS_DESC_NO_FD_ENTRY_SHIFT)) {
-   591			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-   592				dev_info(&pdev->dev, "ntuple filter fd_id = %d, could not be removed\n",
-   593					 qw0->hi_dword.fd_id);
-   594		}
-   595	}
-   596	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 73478 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200520/796d30e9/attachment-0001.bin>
+Br,
+Po Liu
