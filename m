@@ -1,93 +1,62 @@
 From: Murali Karicheri <m-karicheri2@ti.com>
-Date: Tue, 19 May 2020 12:11:05 -0400
+Date: Tue, 19 May 2020 12:34:30 -0400
 Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
  frame preemption
-In-Reply-To: <87v9ksndnr.fsf@intel.com>
+In-Reply-To: <87h7wcq4nx.fsf@intel.com>
 References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <b33e582f-e0e6-467a-636a-674322108855@ti.com> <87v9ksndnr.fsf@intel.com>
-Message-ID: <a6c28ef7-59ae-94d8-a12a-1c6a821dc330@ti.com>
+ <20200516.133739.285740119627243211.davem@davemloft.net>
+ <CA+h21hoNW_++QHRob+NbWC2k7y7sFec3kotSjTL6s8eZGGT+2Q@mail.gmail.com>
+ <20200516.151932.575795129235955389.davem@davemloft.net>
+ <87wo59oyhr.fsf@intel.com>
+ <20200518135613.379f6a63@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <87h7wcq4nx.fsf@intel.com>
+Message-ID: <29959a1a-fc45-6870-fa11-311866b51aa0@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
 
-On 5/19/20 11:32 AM, Vinicius Costa Gomes wrote:
-> Murali Karicheri <m-karicheri2@ti.com> writes:
-> 
->>> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
->>> Frame preemption settings for enp3s0:
->>> 	support: supported
->>> 	active: active
->>> 	supported queues: 0xf
->>
->> I assume this is will be in sync with ethtool -L output which indicates
->> how many tx h/w queues present? I mean if there are 8 h/w queues,
->> supported queues will show 0xff.
-> 
-> In this approach, the driver builds these bitmasks, so it's responsible
-> to keep it consistent with the rest of the stuff that's exposed in
-> ethtool.
-Agree
-> 
->>
->>> 	supported queues: 0xe
->>   From the command below, it appears this is the preemptible queue mask.
->> bit 0  is Q0, bit 1 Q1 and so forth. Right? In that case isn't it more
->> clear to display
->>           preemptible queues : 0xef
->>
->> In the above Q7 is express queue and Q6-Q0 are preemptible.
-> 
-> In my case, the controller I have here only has 4 queues, and Queue 0 is
-> the highest priority one, and it's marked as express.
-> 
 
-Ok. So it is up to the device driver to manage this.
-
->>
->> Also there is a handshake called verify that happens which initiated
->> by the h/w to check the capability of peer. It looks like
->> not all vendor's hardware supports it and good to have it displayed
->> something like
->>
->>           Verify supported/{not supported}
->>
->> If Verify is supported, FPE is enabled only if it succeeds. So may be
->> good to show a status of Verify if it is supported something like
->>           Verify success/Failed
->>
->>> 	minimum fragment size: 68
->>>
->>>
->>> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68 preemptible-queues-mask 0xe
->>>
->>> This is a RFC because I wanted to have feedback on some points:
->>>
->>>     - The parameters added are enough for the hardware I have, is it
->>>       enough in general?
->>
->> As described above, it would be good to add an optional parameter for
->> verify
->>
->> ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68
->> preemptible-queues-mask 0xe verify on
->>
+On 5/18/20 6:06 PM, Vinicius Costa Gomes wrote:
+> Hi,
 > 
-> The hardware I have do not support this, but this makes sense.
+> Jakub Kicinski <kuba@kernel.org> writes:
+>>
+>> Please take a look at the example from the cover letter:
+>>
+>> $ ethtool $ sudo ./ethtool --show-frame-preemption
+>> enp3s0 Frame preemption settings for enp3s0:
+>> 	support: supported
+>> 	active: active
+>> 	supported queues: 0xf
+>> 	supported queues: 0xe
+>> 	minimum fragment size: 68
+>>
+>> Reading this I have no idea what 0xe is. I have to go and query TC API
+>> to see what priorities and queues that will be. Which IMHO is a strong
+>> argument that this information belongs there in the first place.
+> 
+> That was the (only?) strong argument in favor of having frame preemption
+> in the TC side when this was last discussed.
+> 
+> We can have a hybrid solution, we can move the express/preemptible per
+> queue map to mqprio/taprio/whatever. And have the more specific
+> configuration knobs, minimum fragment size, etc, in ethtool.
 
-I can work to support this for TI AM65 CPSW once a formal patch is
-available. AM65 CPSW supports Verify as an optional feature. H/w works
-also in manual mode where it is assumed that it is connected to a
-IET FPE capable partner, but can't do Verify.
-
-Thanks for sending the RFC.
-
-regards,
+Isn't this a pure h/w feature? FPE is implemented at L2 and involves
+fragments that are only seen by h/w and never at Linux network core
+unlike IP fragments and is transparent to network stack. However it
+enhances priority handling at h/w to the next level by pre-empting 
+existing lower priority traffic to give way to express queue traffic
+and improve latency. So everything happens in h/w. So ethtool makes
+perfect sense here as it is a queue configuration. I agree with Vinicius
+and Vladmir to support this in ethtool instead of TC.
 
 Murali
+> 
+> What do you think?
 > 
 > 
 > Cheers,
