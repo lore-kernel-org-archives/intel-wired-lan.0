@@ -1,10 +1,11 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 19 May 2020 15:39:54 -0700
+Date: Tue, 19 May 2020 15:40:14 -0700
 Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
  frame preemption
-In-Reply-To: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+In-Reply-To: <87sgfxox4x.fsf@intel.com>
 References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
-Message-ID: <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
+ <20200516093317.GJ21714@lion.mk-sys.cz> <87sgfxox4x.fsf@intel.com>
+Message-ID: <158992801438.36166.9692784713665851855@twxiong-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,34 +14,48 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi,
 
-Quoting Vinicius Costa Gomes (2020-05-15 18:29:44)
-> One example, for retrieving and setting the configuration:
+Quoting Vinicius Costa Gomes (2020-05-18 12:34:22)
+> Hi,
 > 
-> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
-> Frame preemption settings for enp3s0:
->         support: supported
->         active: active
+> Michal Kubecek <mkubecek@suse.cz> writes:
+> 
+> > On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
+> >> Hi,
+> >> 
+> >> This series adds support for configuring frame preemption, as defined
+> >> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
+> >> 
+> >> Frame preemption allows a packet from a higher priority queue marked
+> >> as "express" to preempt a packet from lower priority queue marked as
+> >> "preemptible". The idea is that this can help reduce the latency for
+> >> higher priority traffic.
+> >> 
+> >> Previously, the proposed interface for configuring these features was
+> >> using the qdisc layer. But as this is very hardware dependent and all
+> >> that qdisc did was pass the information to the driver, it makes sense
+> >> to have this in ethtool.
+> >> 
+> >> One example, for retrieving and setting the configuration:
+> >> 
+> >> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+> >> Frame preemption settings for enp3s0:
+> >>      support: supported
+> >
+> > IMHO we don't need a special bool for this. IIUC this is not a state
+> > flag that would change value for a particular device; either the device
+> > supports the feature or it does not. If it does not, the ethtool_ops
+> > callbacks would return -EOPNOTSUPP (or would not even exist if the
+> > driver has no support) and ethtool would say so.
+> 
+> (I know that the comments below only apply if "ethtool-way" is what's
+> decided)
+> 
+> Cool. Will remove the supported bit.
+> 
+> >
+> >>      active: active
+> >>      supported queues: 0xf
 
-IIUC the code in patch 2, 'active' is the actual configuration knob that
-enables or disables the FP functionality on the NIC.
+Following the same rationale, is this 'supported queue' going aways as well?
 
-That sounded a bit confusing to me since the spec uses the term 'active' to
-indicate FP is currently enabled at both ends, and it is a read-only
-information (see 12.30.1.4 from IEEE 802.1Q-2018). Maybe if we called this
-'enabled' it would be more clear.
-
->         supported queues: 0xf
->         supported queues: 0xe
->         minimum fragment size: 68
-
-I'm assuming this is the configuration knob for the minimal non-final fragment
-defined in 802.3br.
-
-My understanding from the specs is that this value must be a multiple from 64
-and cannot assume arbitrary values like shown here. See 99.4.7.3 from IEEE
-802.3 and Note 1 in S.2 from IEEE 802.1Q. In the previous discussion about FP,
-we had this as a multiplier factor, not absolute value.
-
-Regards,
-
-Andre
+- Andre
