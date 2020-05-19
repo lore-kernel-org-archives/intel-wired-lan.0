@@ -1,52 +1,46 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 20 May 2020 04:32:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 183/183]
- drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No
- such file or directory
-Message-ID: <202005200428.AHEQoK3C%lkp@intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Tue, 19 May 2020 15:39:54 -0700
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+In-Reply-To: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+Message-ID: <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   7c7dd63d321082aff5fb170d27beab8a756e3434
-commit: 7c7dd63d321082aff5fb170d27beab8a756e3434 [183/183] idpf: Introduce idpf driver
-config: arm64-allyesconfig (attached as .config)
-compiler: aarch64-linux-gcc (GCC) 9.3.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 7c7dd63d321082aff5fb170d27beab8a756e3434
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arm64 
+Hi,
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
+Quoting Vinicius Costa Gomes (2020-05-15 18:29:44)
+> One example, for retrieving and setting the configuration:
+> 
+> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+> Frame preemption settings for enp3s0:
+>         support: supported
+>         active: active
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+IIUC the code in patch 2, 'active' is the actual configuration knob that
+enables or disables the FP functionality on the NIC.
 
->> cc1: warning: drivers/net/ethernet/intel/idpf/../include: No such file or directory [-Wmissing-include-dirs]
-In file included from drivers/net/ethernet/intel/idpf/idpf_main.c:8:
->> drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No such file or directory
-7 | #include "iecm.h"
-|          ^~~~~~~~
-compilation terminated.
+That sounded a bit confusing to me since the spec uses the term 'active' to
+indicate FP is currently enabled at both ends, and it is a read-only
+information (see 12.30.1.4 from IEEE 802.1Q-2018). Maybe if we called this
+'enabled' it would be more clear.
 
-vim +7 drivers/net/ethernet/intel/idpf/idpf_dev.h
+>         supported queues: 0xf
+>         supported queues: 0xe
+>         minimum fragment size: 68
 
-     6	
-   > 7	#include "iecm.h"
-     8	
+I'm assuming this is the configuration knob for the minimal non-final fragment
+defined in 802.3br.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 71872 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200520/7dca7ef3/attachment-0001.bin>
+My understanding from the specs is that this value must be a multiple from 64
+and cannot assume arbitrary values like shown here. See 99.4.7.3 from IEEE
+802.3 and Note 1 in S.2 from IEEE 802.1Q. In the previous discussion about FP,
+we had this as a multiplier factor, not absolute value.
+
+Regards,
+
+Andre
