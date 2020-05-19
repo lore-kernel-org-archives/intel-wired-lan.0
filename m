@@ -1,148 +1,57 @@
-From: Po Liu <po.liu@nxp.com>
-Date: Tue, 19 May 2020 09:10:32 +0000
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-Message-ID: <VE1PR04MB6496D0B1507969D8474F78FC92B90@VE1PR04MB6496.eurprd04.prod.outlook.com>
+From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Date: Tue, 19 May 2020 14:37:17 -0500
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 105/183]
+ sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in
+ declaration of 'MODULE_IMPORT_NS'
+In-Reply-To: <202005200349.7ZATWxlp%lkp@intel.com>
+References: <202005200349.7ZATWxlp%lkp@intel.com>
+Message-ID: <8b058daf-f870-b126-cd1d-d935bdadbf52@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
 
-> -----Original Message-----
-> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> Sent: 2020?5?19? 3:34
-> To: Michal Kubecek <mkubecek@suse.cz>; netdev at vger.kernel.org
-> Cc: intel-wired-lan at lists.osuosl.org; jeffrey.t.kirsher at intel.com; Vladimir
-> Oltean <vladimir.oltean@nxp.com>; Po Liu <po.liu@nxp.com>; m-
-> karicheri2 at ti.com; Jose.Abreu at synopsys.com
-> Subject: Re: [next-queue RFC 0/4] ethtool: Add support for frame
-> preemption
-> 
-> Hi,
-> 
-> Michal Kubecek <mkubecek@suse.cz> writes:
-> 
-> > On Fri, May 15, 2020 at 06:29:44PM -0700, Vinicius Costa Gomes wrote:
-> >> Hi,
-> >>
-> >> This series adds support for configuring frame preemption, as defined
-> >> by IEEE 802.1Q-2018 (previously IEEE 802.1Qbu) and IEEE 802.3br.
-> >>
-> >> Frame preemption allows a packet from a higher priority queue marked
-> >> as "express" to preempt a packet from lower priority queue marked as
-> >> "preemptible". The idea is that this can help reduce the latency for
-> >> higher priority traffic.
-> >>
-> >> Previously, the proposed interface for configuring these features was
-> >> using the qdisc layer. But as this is very hardware dependent and all
-> >> that qdisc did was pass the information to the driver, it makes sense
-> >> to have this in ethtool.
-> >>
-> >> One example, for retrieving and setting the configuration:
-> >>
-> >> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0 Frame
-> >> preemption settings for enp3s0:
-> >>      support: supported
-> >
-> > IMHO we don't need a special bool for this. IIUC this is not a state
-> > flag that would change value for a particular device; either the
-> > device supports the feature or it does not. If it does not, the
-> > ethtool_ops callbacks would return -EOPNOTSUPP (or would not even
-> > exist if the driver has no support) and ethtool would say so.
-> 
-> (I know that the comments below only apply if "ethtool-way" is what's
-> decided)
-> 
-> Cool. Will remove the supported bit.
 
-Shall it move to the link_ksettings fixed supported list? So can be checked by the ethtool -k command. I understand that the hw features are encouraged listing in the ksettings.
-The two MACs should all be initialized at driver size. And all frame queues should assigned to the express MAC by default. That looks as normal mode called preemption disable.
-Any frame queues assigned pass preemptable MAC could be called preemption enable.  
-
-> 
-> >
-> >>      active: active
-> >>      supported queues: 0xf
-> >>      supported queues: 0xe
-> >>      minimum fragment size: 68
-> >>
-> >>
-> >> $ ethtool --set-frame-preemption enp3s0 fp on min-frag-size 68
-> >> preemptible-queues-mask 0xe
-> >>
-> >> This is a RFC because I wanted to have feedback on some points:
-> >>
-> >>   - The parameters added are enough for the hardware I have, is it
-> >>     enough in general?
-> >>
-> >>   - even with the ethtool via netlink effort, I chose to keep the
-> >>     ioctl() way, in case someone wants to backport this to an older
-> >>     kernel, is there a problem with this?
-> >
-> > I would prefer not extending ioctl interface with new features, with
-> > obvious exceptions like adding new link modes or so. Not only because
-> > having new features only available through netlink will motivate
-> > authors of userspace tools to support netlink but mostly because the
-> > lack of flexibility and extensibility of ioctl interface inevitably
-> > leads to compromises you wouldn't have to do if you only implement
-> > netlink requests.
-> 
-> Agreed. Will send the next version with only the netlink interface, and let's
-> see who complains.
-> 
-> >
-> > One example I can see is the use of u32 for queue bitmaps. Perhaps you
-> > don't expect this feature to be supported on devices with more than 32
-> > queues (and I don't have enough expertise to tell if it's justified at
-> > the moment) but can you be sure it will be the case in 10 or 20 years?
-> > As long as these hardcoded u32 bitmaps are only part of internal
-> > kernel API (ethtool_ops), extending the support for bigger devices
-> > will mean some code churn (possibly large if many drivers implement
-> > the feature) but it's something that can be done. But if you have this
-> > limit in userspace API, you are in a much bigger trouble. The same can
-> > be said for adding new attributes - easy with netlink but with ioctl
-> > you never know if those reserved fields will suffice.
-> 
-> A bit of background for this decision (using u32), frame preemption has
-> dimishing returns in relation to link speeds, my gut feeling is that for links
-> faster than 2.5G it stops making sense, at least in Linux, the measurement
-> noise will hide any latency improvement brought by frame preemption.
-> And I don't see many 2.5G NICs supporting more than 32 queues.
-> 
-> But I agree that keeping the interface future proof is better. Will change to
-> expose the queues configuration as bitset.
-> 
-> >
-> >>
-> >>   - Some space for bikeshedding the names and location (for example,
-> >>     does it make sense for these settings to be per-queue?), as I am
-> >>     not quite happy with them, one example, is the use of preemptible
-> >>     vs. preemptable;
-> >>
-> >>
-> >> About the patches, should be quite straightforward:
-> >>
-> >> Patch 1, adds the ETHTOOL_GFP and ETHOOL_SFP commands and the
-> >> associated data structures;
-> >>
-> >> Patch 2, adds the ETHTOOL_MSG_PREEMPT_GET and
-> ETHTOOL_MSG_PREEMPT_SET
-> >> netlink messages and the associated attributes;
-> >
-> > I didn't look too deeply but one thing I noticed is that setting the
-> > parameters using ioctl() does not trigger netlink notification. If we
-> > decide to implement ioctl support (and I'm not a fan of that), the
-> > notifications should be sent even when ioctl is used.
-> 
-> Oh, yeah, that's right. Nice catch.
-> 
-> 
-> Cheers,
+> sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or storage class
+> 167 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+> | ^~~~~~~~~~~~~~~~
+>>> sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+> sound/soc/sof/intel/apl.c:167:1: warning: parameter names (without types) in function declaration
+> cc1: some warnings being treated as errors
 > --
-> Vinicius
+> sound/soc/sof/intel/cnl.c:444:1: warning: data definition has no type or storage class
+> 444 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+> | ^~~~~~~~~~~~~~~~
+>>> sound/soc/sof/intel/cnl.c:444:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+> sound/soc/sof/intel/cnl.c:444:1: warning: parameter names (without types) in function declaration
+> cc1: some warnings being treated as errors
 
-Br,
-Po Liu
+valid issue, the following diff seems to solve it. No idea why it shows 
+up no sparc64.
+
+diff --git a/sound/soc/sof/intel/apl.c b/sound/soc/sof/intel/apl.c
+index 0565ff315681..547b2b0ccb9a 100644
+--- a/sound/soc/sof/intel/apl.c
++++ b/sound/soc/sof/intel/apl.c
+@@ -15,6 +15,7 @@
+   * Hardware interface for audio DSP on Apollolake and GeminiLake
+   */
+
++#include <linux/module.h>
+  #include "../sof-priv.h"
+  #include "hda.h"
+  #include "../sof-audio.h"
+diff --git a/sound/soc/sof/intel/cnl.c b/sound/soc/sof/intel/cnl.c
+index 9a40293f872d..0eedb39e1c89 100644
+--- a/sound/soc/sof/intel/cnl.c
++++ b/sound/soc/sof/intel/cnl.c
+@@ -15,6 +15,7 @@
+   * Hardware interface for audio DSP on Cannonlake.
+   */
+
++#include <linux/module.h>
+  #include "../ops.h"
+  #include "hda.h"
+  #include "hda-ipc.h"
