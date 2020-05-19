@@ -1,9 +1,9 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Tue, 19 May 2020 14:16:56 +0800
+Date: Tue, 19 May 2020 16:22:22 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 182/183]
  drivers/net/ethernet/intel/iecm/iecm_lib.c:49:13: warning: no previous
- prototype for 'iecm_mb_intr_clean'
-Message-ID: <202005191453.5a8XyAYk%lkp@intel.com>
+ prototype for function 'iecm_mb_intr_clean'
+Message-ID: <202005191617.lel3zQBD%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,99 +17,167 @@ First bad commit (maybe != root cause):
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   7c7dd63d321082aff5fb170d27beab8a756e3434
 commit: cbcbf4f29548030710cedcaccbdacb5851a1f112 [182/183] iecm: Add iecm to the kernel build system
-config: alpha-allyesconfig (attached as .config)
-compiler: alpha-linux-gcc (GCC) 9.3.0
+config: x86_64-allyesconfig (attached as .config)
+compiler: clang version 11.0.0 (https://github.com/llvm/llvm-project 135b877874fae96b4372c8a3fbfaa8ff44ff86e3)
 reproduce:
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
+        # install x86_64 cross compiling tool for clang build
+        # apt-get install binutils-x86-64-linux-gnu
         git checkout cbcbf4f29548030710cedcaccbdacb5851a1f112
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kbuild test robot <lkp@intel.com>
 
 All warnings (new ones prefixed by >>, old ones prefixed by <<):
 
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:49:13: warning: no previous prototype for 'iecm_mb_intr_clean' [-Wmissing-prototypes]
-49 | irqreturn_t iecm_mb_intr_clean(int __always_unused irq, void *data)
-|             ^~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:63:6: warning: no previous prototype for 'iecm_mb_irq_enable' [-Wmissing-prototypes]
-63 | void iecm_mb_irq_enable(struct iecm_adapter *adapter)
-|      ^~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:77:5: warning: no previous prototype for 'iecm_mb_intr_req_irq' [-Wmissing-prototypes]
-77 | int iecm_mb_intr_req_irq(struct iecm_adapter *adapter)
-|     ^~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:104:6: warning: no previous prototype for 'iecm_get_mb_vec_id' [-Wmissing-prototypes]
-104 | void iecm_get_mb_vec_id(struct iecm_adapter *adapter)
-|      ^~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:122:5: warning: no previous prototype for 'iecm_mb_intr_init' [-Wmissing-prototypes]
-122 | int iecm_mb_intr_init(struct iecm_adapter *adapter)
-|     ^~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:140:6: warning: no previous prototype for 'iecm_intr_distribute' [-Wmissing-prototypes]
-140 | void iecm_intr_distribute(struct iecm_adapter *adapter)
-|      ^~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:417:5: warning: no previous prototype for 'iecm_vport_rel' [-Wmissing-prototypes]
-417 | int iecm_vport_rel(struct iecm_vport *vport)
-|     ^~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_lib.c:748:6: warning: no previous prototype for 'iecm_deinit_task' [-Wmissing-prototypes]
-748 | void iecm_deinit_task(struct iecm_adapter *adapter)
-|      ^~~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/include/iecm.h:50,
-from drivers/net/ethernet/intel/iecm/iecm_lib.c:6:
-drivers/net/ethernet/intel/include/iecm_txrx.h:293:30: warning: 'iecm_rx_ptype_lkup' defined but not used [-Wunused-const-variable=]
-293 | struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
-|                              ^~~~~~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:49:13: warning: no previous prototype for function 'iecm_mb_intr_clean' [-Wmissing-prototypes]
+irqreturn_t iecm_mb_intr_clean(int __always_unused irq, void *data)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:49:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+irqreturn_t iecm_mb_intr_clean(int __always_unused irq, void *data)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:63:6: warning: no previous prototype for function 'iecm_mb_irq_enable' [-Wmissing-prototypes]
+void iecm_mb_irq_enable(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:63:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_mb_irq_enable(struct iecm_adapter *adapter)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:77:5: warning: no previous prototype for function 'iecm_mb_intr_req_irq' [-Wmissing-prototypes]
+int iecm_mb_intr_req_irq(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:77:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int iecm_mb_intr_req_irq(struct iecm_adapter *adapter)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:104:6: warning: no previous prototype for function 'iecm_get_mb_vec_id' [-Wmissing-prototypes]
+void iecm_get_mb_vec_id(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:104:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_get_mb_vec_id(struct iecm_adapter *adapter)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:122:5: warning: no previous prototype for function 'iecm_mb_intr_init' [-Wmissing-prototypes]
+int iecm_mb_intr_init(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:122:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int iecm_mb_intr_init(struct iecm_adapter *adapter)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:140:6: warning: no previous prototype for function 'iecm_intr_distribute' [-Wmissing-prototypes]
+void iecm_intr_distribute(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:140:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_intr_distribute(struct iecm_adapter *adapter)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:417:5: warning: no previous prototype for function 'iecm_vport_rel' [-Wmissing-prototypes]
+int iecm_vport_rel(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:417:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int iecm_vport_rel(struct iecm_vport *vport)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_lib.c:748:6: warning: no previous prototype for function 'iecm_deinit_task' [-Wmissing-prototypes]
+void iecm_deinit_task(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_lib.c:748:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_deinit_task(struct iecm_adapter *adapter)
+^
+static
+8 warnings generated.
 --
->> drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:12:6: warning: no previous prototype for 'iecm_recv_event_msg' [-Wmissing-prototypes]
-12 | void iecm_recv_event_msg(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:61:1: warning: no previous prototype for 'iecm_mb_clean' [-Wmissing-prototypes]
-61 | iecm_mb_clean(struct iecm_adapter *adapter)
-| ^~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:12:6: warning: no previous prototype for function 'iecm_recv_event_msg' [-Wmissing-prototypes]
+void iecm_recv_event_msg(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:12:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_recv_event_msg(struct iecm_vport *vport)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:61:1: warning: no previous prototype for function 'iecm_mb_clean' [-Wmissing-prototypes]
+iecm_mb_clean(struct iecm_adapter *adapter)
+^
+drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:60:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+enum iecm_status
+^
+static
+2 warnings generated.
 --
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:84:6: warning: no previous prototype for 'iecm_tx_buf_rel_all' [-Wmissing-prototypes]
-84 | void iecm_tx_buf_rel_all(struct iecm_queue *txq)
-|      ^~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:115:6: warning: no previous prototype for 'iecm_tx_desc_rel' [-Wmissing-prototypes]
-115 | void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
-|      ^~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:136:6: warning: no previous prototype for 'iecm_tx_desc_rel_all' [-Wmissing-prototypes]
-136 | void iecm_tx_desc_rel_all(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:312:6: warning: no previous prototype for 'iecm_rx_buf_rel_all' [-Wmissing-prototypes]
-312 | void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
-|      ^~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:341:6: warning: no previous prototype for 'iecm_rx_desc_rel' [-Wmissing-prototypes]
-341 | void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
-|      ^~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:371:6: warning: no previous prototype for 'iecm_rx_desc_rel_all' [-Wmissing-prototypes]
-371 | void iecm_rx_desc_rel_all(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:486:6: warning: no previous prototype for 'iecm_rx_hdr_buf_hw_alloc' [-Wmissing-prototypes]
-486 | bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
-|      ^~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c: In function 'iecm_rx_can_reuse_page':
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: error: 'last_offset' undeclared (first use in this function); did you mean 'page_offset'?
-2510 |  if (rx_buf->page_offset > last_offset)
-|                            ^~~~~~~~~~~
-|                            page_offset
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: note: each undeclared identifier is reported only once for each function it appears in
-drivers/net/ethernet/intel/iecm/iecm_txrx.c: At top level:
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3565:5: warning: no previous prototype for 'iecm_vport_splitq_napi_poll' [-Wmissing-prototypes]
-3565 | int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
-|     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3603:6: warning: no previous prototype for 'iecm_vport_intr_map_vector_to_qs' [-Wmissing-prototypes]
-3603 | void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3715:5: warning: no previous prototype for 'iecm_vport_intr_alloc' [-Wmissing-prototypes]
-3715 | int iecm_vport_intr_alloc(struct iecm_vport *vport)
-|     ^~~~~~~~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/include/iecm.h:50,
-from drivers/net/ethernet/intel/iecm/iecm_txrx.c:4:
-drivers/net/ethernet/intel/include/iecm_txrx.h:293:30: warning: 'iecm_rx_ptype_lkup' defined but not used [-Wunused-const-variable=]
-293 | struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
-|                              ^~~~~~~~~~~~~~~~~~
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:84:6: warning: no previous prototype for function 'iecm_tx_buf_rel_all' [-Wmissing-prototypes]
+void iecm_tx_buf_rel_all(struct iecm_queue *txq)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:84:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_tx_buf_rel_all(struct iecm_queue *txq)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:115:6: warning: no previous prototype for function 'iecm_tx_desc_rel' [-Wmissing-prototypes]
+void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:115:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:136:6: warning: no previous prototype for function 'iecm_tx_desc_rel_all' [-Wmissing-prototypes]
+void iecm_tx_desc_rel_all(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:136:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_tx_desc_rel_all(struct iecm_vport *vport)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:312:6: warning: no previous prototype for function 'iecm_rx_buf_rel_all' [-Wmissing-prototypes]
+void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:312:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:341:6: warning: no previous prototype for function 'iecm_rx_desc_rel' [-Wmissing-prototypes]
+void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:341:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:371:6: warning: no previous prototype for function 'iecm_rx_desc_rel_all' [-Wmissing-prototypes]
+void iecm_rx_desc_rel_all(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:371:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_rx_desc_rel_all(struct iecm_vport *vport)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:486:6: warning: no previous prototype for function 'iecm_rx_hdr_buf_hw_alloc' [-Wmissing-prototypes]
+bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:486:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3565:5: warning: no previous prototype for function 'iecm_vport_splitq_napi_poll' [-Wmissing-prototypes]
+int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3565:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3603:6: warning: no previous prototype for function 'iecm_vport_intr_map_vector_to_qs' [-Wmissing-prototypes]
+void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3603:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
+^
+static
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3715:5: warning: no previous prototype for function 'iecm_vport_intr_alloc' [-Wmissing-prototypes]
+int iecm_vport_intr_alloc(struct iecm_vport *vport)
+^
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3715:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int iecm_vport_intr_alloc(struct iecm_vport *vport)
+^
+static
+10 warnings generated.
 
 vim +/iecm_mb_intr_clean +49 drivers/net/ethernet/intel/iecm/iecm_lib.c
 
@@ -234,6 +302,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 61455 bytes
+Size: 73620 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200519/e088dbc6/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200519/8b34eff6/attachment-0001.bin>
