@@ -1,57 +1,52 @@
-From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Date: Tue, 19 May 2020 14:37:17 -0500
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 105/183]
- sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in
- declaration of 'MODULE_IMPORT_NS'
-In-Reply-To: <202005200349.7ZATWxlp%lkp@intel.com>
-References: <202005200349.7ZATWxlp%lkp@intel.com>
-Message-ID: <8b058daf-f870-b126-cd1d-d935bdadbf52@linux.intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 20 May 2020 04:32:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 183/183]
+ drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No
+ such file or directory
+Message-ID: <202005200428.AHEQoK3C%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   7c7dd63d321082aff5fb170d27beab8a756e3434
+commit: 7c7dd63d321082aff5fb170d27beab8a756e3434 [183/183] idpf: Introduce idpf driver
+config: arm64-allyesconfig (attached as .config)
+compiler: aarch64-linux-gcc (GCC) 9.3.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 7c7dd63d321082aff5fb170d27beab8a756e3434
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arm64 
 
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
 
-> sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or storage class
-> 167 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
-> | ^~~~~~~~~~~~~~~~
->>> sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
-> sound/soc/sof/intel/apl.c:167:1: warning: parameter names (without types) in function declaration
-> cc1: some warnings being treated as errors
-> --
-> sound/soc/sof/intel/cnl.c:444:1: warning: data definition has no type or storage class
-> 444 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
-> | ^~~~~~~~~~~~~~~~
->>> sound/soc/sof/intel/cnl.c:444:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
-> sound/soc/sof/intel/cnl.c:444:1: warning: parameter names (without types) in function declaration
-> cc1: some warnings being treated as errors
+All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-valid issue, the following diff seems to solve it. No idea why it shows 
-up no sparc64.
+>> cc1: warning: drivers/net/ethernet/intel/idpf/../include: No such file or directory [-Wmissing-include-dirs]
+In file included from drivers/net/ethernet/intel/idpf/idpf_main.c:8:
+>> drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No such file or directory
+7 | #include "iecm.h"
+|          ^~~~~~~~
+compilation terminated.
 
-diff --git a/sound/soc/sof/intel/apl.c b/sound/soc/sof/intel/apl.c
-index 0565ff315681..547b2b0ccb9a 100644
---- a/sound/soc/sof/intel/apl.c
-+++ b/sound/soc/sof/intel/apl.c
-@@ -15,6 +15,7 @@
-   * Hardware interface for audio DSP on Apollolake and GeminiLake
-   */
+vim +7 drivers/net/ethernet/intel/idpf/idpf_dev.h
 
-+#include <linux/module.h>
-  #include "../sof-priv.h"
-  #include "hda.h"
-  #include "../sof-audio.h"
-diff --git a/sound/soc/sof/intel/cnl.c b/sound/soc/sof/intel/cnl.c
-index 9a40293f872d..0eedb39e1c89 100644
---- a/sound/soc/sof/intel/cnl.c
-+++ b/sound/soc/sof/intel/cnl.c
-@@ -15,6 +15,7 @@
-   * Hardware interface for audio DSP on Cannonlake.
-   */
+     6	
+   > 7	#include "iecm.h"
+     8	
 
-+#include <linux/module.h>
-  #include "../ops.h"
-  #include "hda.h"
-  #include "hda-ipc.h"
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 71872 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200520/7dca7ef3/attachment-0001.bin>
