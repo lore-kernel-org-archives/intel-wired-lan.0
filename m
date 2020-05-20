@@ -1,124 +1,73 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 20 May 2020 15:49:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- e5264212eb622fbc5704571c8e490c2b5fc718b9
-Message-ID: <5ec4e0ec.X9GXJaE72K6Pn8uK%lkp@intel.com>
+From: Murali Karicheri <m-karicheri2@ti.com>
+Date: Wed, 20 May 2020 08:47:36 -0400
+Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
+ frame preemption
+In-Reply-To: <87y2pnmr83.fsf@intel.com>
+References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
+ <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
+ <87y2pnmr83.fsf@intel.com>
+Message-ID: <13d8b7ba-8afd-cb67-c782-56aff1412bcd@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: e5264212eb622fbc5704571c8e490c2b5fc718b9  igc: Remove unused registers
+Hi Vinicius,
 
-elapsed time: 481m
+On 5/19/20 7:37 PM, Vinicius Costa Gomes wrote:
+> Andre Guedes <andre.guedes@intel.com> writes:
+> 
+>> Hi,
+>>
+>> Quoting Vinicius Costa Gomes (2020-05-15 18:29:44)
+>>> One example, for retrieving and setting the configuration:
+>>>
+>>> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
+>>> Frame preemption settings for enp3s0:
+>>>          support: supported
+>>>          active: active
+>>
+>> IIUC the code in patch 2, 'active' is the actual configuration knob that
+>> enables or disables the FP functionality on the NIC.
+>>
+>> That sounded a bit confusing to me since the spec uses the term 'active' to
+>> indicate FP is currently enabled at both ends, and it is a read-only
+>> information (see 12.30.1.4 from IEEE 802.1Q-2018). Maybe if we called this
+>> 'enabled' it would be more clear.
+> 
+> Good point. Will rename this to "enabled".
+> 
+>>
+>>>          supported queues: 0xf
+>>>          supported queues: 0xe
+>>>          minimum fragment size: 68
+>>
+>> I'm assuming this is the configuration knob for the minimal non-final fragment
+>> defined in 802.3br.
+>>
+>> My understanding from the specs is that this value must be a multiple from 64
+>> and cannot assume arbitrary values like shown here. See 99.4.7.3 from IEEE
+>> 802.3 and Note 1 in S.2 from IEEE 802.1Q. In the previous discussion about FP,
+>> we had this as a multiplier factor, not absolute value.
+> 
+> I thought that exposing this as "(1 + N)*64" (with 0 <= N <= 3) that it
+> was more related to what's exposed via LLDP than the actual capabilities
+> of the hardware. And for the hardware I have actually the values
+> supported are: (1 + N)*64 + 4 (for N = 0, 1, 2, 3).
+> 
+> So I thought I was better to let the driver decide what values are
+> acceptable.
+> 
+> This is a good question for people working with other hardware.
+> 
+> 
+AM65 CPSW supports this as a multiple of 64. Since this ethtool
+configuration is for the hardware, might want to make it as a multiple
+of 64.
 
-configs tested: 98
-configs skipped: 1
+Murali
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a006-20200519
-i386                 randconfig-a005-20200519
-i386                 randconfig-a001-20200519
-i386                 randconfig-a003-20200519
-i386                 randconfig-a004-20200519
-i386                 randconfig-a002-20200519
-i386                 randconfig-a012-20200519
-i386                 randconfig-a014-20200519
-i386                 randconfig-a016-20200519
-i386                 randconfig-a011-20200519
-i386                 randconfig-a015-20200519
-i386                 randconfig-a013-20200519
-x86_64               randconfig-a003-20200519
-x86_64               randconfig-a005-20200519
-x86_64               randconfig-a004-20200519
-x86_64               randconfig-a006-20200519
-x86_64               randconfig-a002-20200519
-x86_64               randconfig-a001-20200519
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                              defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allmodconfig
-um                               allyesconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-- 
+Murali Karicheri
+Texas Instruments
