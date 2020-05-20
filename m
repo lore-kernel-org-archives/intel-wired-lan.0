@@ -1,62 +1,240 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 19 May 2020 16:37:16 -0700
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-In-Reply-To: <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
-References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
-Message-ID: <87y2pnmr83.fsf@intel.com>
+From: Shiraz Saleem <shiraz.saleem@intel.com>
+Date: Tue, 19 May 2020 19:15:57 -0500
+Subject: [Intel-wired-lan] [PATCH RFC v6 00/16] Add Intel Ethernet Protocol
+ Driver for RDMA (irdma)
+Message-ID: <20200520001613.475-1-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Andre Guedes <andre.guedes@intel.com> writes:
+From: "Shiraz, Saleem" <shiraz.saleem@intel.com>
 
-> Hi,
->
-> Quoting Vinicius Costa Gomes (2020-05-15 18:29:44)
->> One example, for retrieving and setting the configuration:
->> 
->> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
->> Frame preemption settings for enp3s0:
->>         support: supported
->>         active: active
->
-> IIUC the code in patch 2, 'active' is the actual configuration knob that
-> enables or disables the FP functionality on the NIC.
->
-> That sounded a bit confusing to me since the spec uses the term 'active' to
-> indicate FP is currently enabled at both ends, and it is a read-only
-> information (see 12.30.1.4 from IEEE 802.1Q-2018). Maybe if we called this
-> 'enabled' it would be more clear.
+This patchset adds a unified Intel Ethernet Protocol Driver for RDMA
+that supports a new network device E810 (iWARP and RoCEv2 capable)
+and the existing X722 iWARP device. The driver architecture
+provides the extensibility for future generations of Intel HW
+supporting RDMA.
 
-Good point. Will rename this to "enabled".
+This driver replaces the legacy X722 driver i40iw and extends
+the ABI already defined for i40iw. It is backward compatible
+with legacy X722 rdma-core provider (libi40iw).
 
->
->>         supported queues: 0xf
->>         supported queues: 0xe
->>         minimum fragment size: 68
->
-> I'm assuming this is the configuration knob for the minimal non-final fragment
-> defined in 802.3br.
->
-> My understanding from the specs is that this value must be a multiple from 64
-> and cannot assume arbitrary values like shown here. See 99.4.7.3 from IEEE
-> 802.3 and Note 1 in S.2 from IEEE 802.1Q. In the previous discussion about FP,
-> we had this as a multiplier factor, not absolute value.
+This series was built against the rdma for-next branch.
 
-I thought that exposing this as "(1 + N)*64" (with 0 <= N <= 3) that it
-was more related to what's exposed via LLDP than the actual capabilities
-of the hardware. And for the hardware I have actually the values
-supported are: (1 + N)*64 + 4 (for N = 0, 1, 2, 3).
+v5-->v6:
+*Convert irdma destroy QP to a synchronous API
+*Drop HMC obj macros for use counts like IRDMA_INC_SD_REFCNT et al.
+*cleanup unneccesary 'mem' variable in irdma_create_qp
+*cleanup unused headers such as linux/moduleparam.h et. al
+*set kernel_ver in irdma_ualloc_resp struct to current ABI ver.
+placeholder to support user-space compatbility checks in future
+*GENMASK/FIELD_PREP scheme to set WQE descriptor fields considered
+for irdma driver but decision to drop. The FIELD_PREP macro cannot
+be used on the device bitfield mask array maintained for common WQE
+descriptors and initialized based on HW generation. The macro expects
+compile time constants only.
+*Use irdma_dbg macro in driver callsites for debug. This macro will use
+ibdev_dbg or dev_dbg depending on ibdevice allocated or not. Other
+print callsites reviewed to use ibdev_* macros wherever possible.
+*module alias for i40iw moved to Patch #15 where i40iw driver is removed.
+*Misc. driver fixes
 
-So I thought I was better to let the driver decide what values are
-acceptable.
+v4-->v5:
+*Drop driver_data usage from virtbus device id. Use string id
+match to identify virtbus device type.
+*Rename device discovery functions
+*Drop rdma_set_device_sysfs_group API usage
+*READ_ONCE annotations for netdev flags in rcu_read_lock 
 
-This is a good question for people working with other hardware.
+v4:
+*Remove redundant explicit casts
+*Scrub all WQs to define correct charateristics and use system WQ for reset recovery work
+*Remove all non-functional NULL checks on IDC peer dev OPs
+*Change all pr_* to dev_* if struct device present. Remove dev_info logging
+*Dont use test_bit on non-atomic IIDC_* event types
+*Remove all module parameters
+*Use bool bitfields in structures instead of bool
+*Change CQP completion handling from kthread to WQ
+*Use the generic devlink parameter enable_roce instead of driver specific one
+*Use meaningful labels for goto unwind
+*Use new RDMA mmap API
+*Use refcount_t APIs for refcounts on driver objects
+*Add support for ibdev OP dealloc_driver
+*Adapt to use new version of virtbus
+*Remove RCU locking in CM address resolve
+*Misc. driver fixes
 
+Michael J. Ruhl (1):
+  RDMA/irdma: Add dynamic tracing for CM
+
+Mustafa Ismail (13):
+  RDMA/irdma: Add driver framework definitions
+  RDMA/irdma: Implement device initialization definitions
+  RDMA/irdma: Implement HW Admin Queue OPs
+  RDMA/irdma: Add HMC backing store setup functions
+  RDMA/irdma: Add privileged UDA queue implementation
+  RDMA/irdma: Add QoS definitions
+  RDMA/irdma: Add connection manager
+  RDMA/irdma: Add PBLE resource manager
+  RDMA/irdma: Implement device supported verb APIs
+  RDMA/irdma: Add RoCEv2 UD OP support
+  RDMA/irdma: Add user/kernel shared libraries
+  RDMA/irdma: Add miscellaneous utility definitions
+  RDMA/irdma: Add ABI definitions
+
+Shiraz Saleem (2):
+  RDMA/irdma: Add irdma Kconfig/Makefile and remove i40iw
+  RDMA/irdma: Update MAINTAINERS file
+
+ Documentation/ABI/stable/sysfs-class-infiniband |   18 -
+ MAINTAINERS                                     |    8 +-
+ drivers/infiniband/Kconfig                      |    2 +-
+ drivers/infiniband/hw/Makefile                  |    2 +-
+ drivers/infiniband/hw/i40iw/Kconfig             |    9 -
+ drivers/infiniband/hw/i40iw/Makefile            |    9 -
+ drivers/infiniband/hw/i40iw/i40iw.h             |  622 ---
+ drivers/infiniband/hw/i40iw/i40iw_cm.c          | 4422 -----------------
+ drivers/infiniband/hw/i40iw/i40iw_cm.h          |  462 --
+ drivers/infiniband/hw/i40iw/i40iw_ctrl.c        | 5294 --------------------
+ drivers/infiniband/hw/i40iw/i40iw_d.h           | 1757 -------
+ drivers/infiniband/hw/i40iw/i40iw_hmc.c         |  821 ---
+ drivers/infiniband/hw/i40iw/i40iw_hmc.h         |  241 -
+ drivers/infiniband/hw/i40iw/i40iw_hw.c          |  852 ----
+ drivers/infiniband/hw/i40iw/i40iw_main.c        | 2070 --------
+ drivers/infiniband/hw/i40iw/i40iw_osdep.h       |  217 -
+ drivers/infiniband/hw/i40iw/i40iw_p.h           |  129 -
+ drivers/infiniband/hw/i40iw/i40iw_pble.c        |  612 ---
+ drivers/infiniband/hw/i40iw/i40iw_pble.h        |  131 -
+ drivers/infiniband/hw/i40iw/i40iw_puda.c        | 1493 ------
+ drivers/infiniband/hw/i40iw/i40iw_puda.h        |  188 -
+ drivers/infiniband/hw/i40iw/i40iw_register.h    | 1030 ----
+ drivers/infiniband/hw/i40iw/i40iw_status.h      |  102 -
+ drivers/infiniband/hw/i40iw/i40iw_type.h        | 1375 ------
+ drivers/infiniband/hw/i40iw/i40iw_uk.c          | 1232 -----
+ drivers/infiniband/hw/i40iw/i40iw_user.h        |  430 --
+ drivers/infiniband/hw/i40iw/i40iw_utils.c       | 1557 ------
+ drivers/infiniband/hw/i40iw/i40iw_verbs.c       | 2791 -----------
+ drivers/infiniband/hw/i40iw/i40iw_verbs.h       |  179 -
+ drivers/infiniband/hw/i40iw/i40iw_vf.c          |   85 -
+ drivers/infiniband/hw/i40iw/i40iw_vf.h          |   62 -
+ drivers/infiniband/hw/i40iw/i40iw_virtchnl.c    |  756 ---
+ drivers/infiniband/hw/i40iw/i40iw_virtchnl.h    |  124 -
+ drivers/infiniband/hw/irdma/Kconfig             |   11 +
+ drivers/infiniband/hw/irdma/Makefile            |   28 +
+ drivers/infiniband/hw/irdma/cm.c                | 4484 +++++++++++++++++
+ drivers/infiniband/hw/irdma/cm.h                |  417 ++
+ drivers/infiniband/hw/irdma/ctrl.c              | 6021 +++++++++++++++++++++++
+ drivers/infiniband/hw/irdma/defs.h              | 2167 ++++++++
+ drivers/infiniband/hw/irdma/hmc.c               |  703 +++
+ drivers/infiniband/hw/irdma/hmc.h               |  209 +
+ drivers/infiniband/hw/irdma/hw.c                | 2694 ++++++++++
+ drivers/infiniband/hw/irdma/i40iw_hw.c          |  219 +
+ drivers/infiniband/hw/irdma/i40iw_hw.h          |  162 +
+ drivers/infiniband/hw/irdma/i40iw_if.c          |  222 +
+ drivers/infiniband/hw/irdma/icrdma_hw.c         |   80 +
+ drivers/infiniband/hw/irdma/icrdma_hw.h         |   65 +
+ drivers/infiniband/hw/irdma/irdma.h             |  193 +
+ drivers/infiniband/hw/irdma/irdma_if.c          |  443 ++
+ drivers/infiniband/hw/irdma/main.c              |  571 +++
+ drivers/infiniband/hw/irdma/main.h              |  612 +++
+ drivers/infiniband/hw/irdma/osdep.h             |   98 +
+ drivers/infiniband/hw/irdma/pble.c              |  511 ++
+ drivers/infiniband/hw/irdma/pble.h              |  136 +
+ drivers/infiniband/hw/irdma/protos.h            |  120 +
+ drivers/infiniband/hw/irdma/puda.c              | 1739 +++++++
+ drivers/infiniband/hw/irdma/puda.h              |  187 +
+ drivers/infiniband/hw/irdma/status.h            |   69 +
+ drivers/infiniband/hw/irdma/trace.c             |  112 +
+ drivers/infiniband/hw/irdma/trace.h             |    3 +
+ drivers/infiniband/hw/irdma/trace_cm.h          |  458 ++
+ drivers/infiniband/hw/irdma/type.h              | 1721 +++++++
+ drivers/infiniband/hw/irdma/uda.c               |  391 ++
+ drivers/infiniband/hw/irdma/uda.h               |   63 +
+ drivers/infiniband/hw/irdma/uda_d.h             |  382 ++
+ drivers/infiniband/hw/irdma/uk.c                | 1750 +++++++
+ drivers/infiniband/hw/irdma/user.h              |  448 ++
+ drivers/infiniband/hw/irdma/utils.c             | 2437 +++++++++
+ drivers/infiniband/hw/irdma/verbs.c             | 4566 +++++++++++++++++
+ drivers/infiniband/hw/irdma/verbs.h             |  216 +
+ drivers/infiniband/hw/irdma/ws.c                |  393 ++
+ drivers/infiniband/hw/irdma/ws.h                |   39 +
+ include/uapi/rdma/i40iw-abi.h                   |  107 -
+ include/uapi/rdma/ib_user_ioctl_verbs.h         |    1 +
+ include/uapi/rdma/irdma-abi.h                   |  140 +
+ 75 files changed, 35287 insertions(+), 29183 deletions(-)
+ delete mode 100644 drivers/infiniband/hw/i40iw/Kconfig
+ delete mode 100644 drivers/infiniband/hw/i40iw/Makefile
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_cm.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_cm.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_ctrl.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_d.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_hmc.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_hmc.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_hw.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_main.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_osdep.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_p.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_pble.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_pble.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_puda.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_puda.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_register.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_status.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_type.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_uk.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_user.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_utils.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_verbs.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_verbs.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_vf.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_vf.h
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_virtchnl.c
+ delete mode 100644 drivers/infiniband/hw/i40iw/i40iw_virtchnl.h
+ create mode 100644 drivers/infiniband/hw/irdma/Kconfig
+ create mode 100644 drivers/infiniband/hw/irdma/Makefile
+ create mode 100644 drivers/infiniband/hw/irdma/cm.c
+ create mode 100644 drivers/infiniband/hw/irdma/cm.h
+ create mode 100644 drivers/infiniband/hw/irdma/ctrl.c
+ create mode 100644 drivers/infiniband/hw/irdma/defs.h
+ create mode 100644 drivers/infiniband/hw/irdma/hmc.c
+ create mode 100644 drivers/infiniband/hw/irdma/hmc.h
+ create mode 100644 drivers/infiniband/hw/irdma/hw.c
+ create mode 100644 drivers/infiniband/hw/irdma/i40iw_hw.c
+ create mode 100644 drivers/infiniband/hw/irdma/i40iw_hw.h
+ create mode 100644 drivers/infiniband/hw/irdma/i40iw_if.c
+ create mode 100644 drivers/infiniband/hw/irdma/icrdma_hw.c
+ create mode 100644 drivers/infiniband/hw/irdma/icrdma_hw.h
+ create mode 100644 drivers/infiniband/hw/irdma/irdma.h
+ create mode 100644 drivers/infiniband/hw/irdma/irdma_if.c
+ create mode 100644 drivers/infiniband/hw/irdma/main.c
+ create mode 100644 drivers/infiniband/hw/irdma/main.h
+ create mode 100644 drivers/infiniband/hw/irdma/osdep.h
+ create mode 100644 drivers/infiniband/hw/irdma/pble.c
+ create mode 100644 drivers/infiniband/hw/irdma/pble.h
+ create mode 100644 drivers/infiniband/hw/irdma/protos.h
+ create mode 100644 drivers/infiniband/hw/irdma/puda.c
+ create mode 100644 drivers/infiniband/hw/irdma/puda.h
+ create mode 100644 drivers/infiniband/hw/irdma/status.h
+ create mode 100644 drivers/infiniband/hw/irdma/trace.c
+ create mode 100644 drivers/infiniband/hw/irdma/trace.h
+ create mode 100644 drivers/infiniband/hw/irdma/trace_cm.h
+ create mode 100644 drivers/infiniband/hw/irdma/type.h
+ create mode 100644 drivers/infiniband/hw/irdma/uda.c
+ create mode 100644 drivers/infiniband/hw/irdma/uda.h
+ create mode 100644 drivers/infiniband/hw/irdma/uda_d.h
+ create mode 100644 drivers/infiniband/hw/irdma/uk.c
+ create mode 100644 drivers/infiniband/hw/irdma/user.h
+ create mode 100644 drivers/infiniband/hw/irdma/utils.c
+ create mode 100644 drivers/infiniband/hw/irdma/verbs.c
+ create mode 100644 drivers/infiniband/hw/irdma/verbs.h
+ create mode 100644 drivers/infiniband/hw/irdma/ws.c
+ create mode 100644 drivers/infiniband/hw/irdma/ws.h
+ delete mode 100644 include/uapi/rdma/i40iw-abi.h
+ create mode 100644 include/uapi/rdma/irdma-abi.h
 
 -- 
-Vinicius
+1.8.3.1
+
