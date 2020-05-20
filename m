@@ -1,73 +1,74 @@
 From: Murali Karicheri <m-karicheri2@ti.com>
-Date: Wed, 20 May 2020 08:47:36 -0400
-Subject: [Intel-wired-lan] [next-queue RFC 0/4] ethtool: Add support for
- frame preemption
-In-Reply-To: <87y2pnmr83.fsf@intel.com>
+Date: Wed, 20 May 2020 08:50:27 -0400
+Subject: [Intel-wired-lan] [next-queue RFC 4/4] igc: Add support for
+ exposing frame preemption stats registers
+In-Reply-To: <20200516012948.3173993-5-vinicius.gomes@intel.com>
 References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <158992799425.36166.17850279656312622646@twxiong-mobl.amr.corp.intel.com>
- <87y2pnmr83.fsf@intel.com>
-Message-ID: <13d8b7ba-8afd-cb67-c782-56aff1412bcd@ti.com>
+ <20200516012948.3173993-5-vinicius.gomes@intel.com>
+Message-ID: <92daa9e5-fd76-3801-a485-36f1be59cfd6@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
+Hi Vinicious,
 
-On 5/19/20 7:37 PM, Vinicius Costa Gomes wrote:
-> Andre Guedes <andre.guedes@intel.com> writes:
+On 5/15/20 9:29 PM, Vinicius Costa Gomes wrote:
+> [WIP]
 > 
->> Hi,
->>
->> Quoting Vinicius Costa Gomes (2020-05-15 18:29:44)
->>> One example, for retrieving and setting the configuration:
->>>
->>> $ ethtool $ sudo ./ethtool --show-frame-preemption enp3s0
->>> Frame preemption settings for enp3s0:
->>>          support: supported
->>>          active: active
->>
->> IIUC the code in patch 2, 'active' is the actual configuration knob that
->> enables or disables the FP functionality on the NIC.
->>
->> That sounded a bit confusing to me since the spec uses the term 'active' to
->> indicate FP is currently enabled at both ends, and it is a read-only
->> information (see 12.30.1.4 from IEEE 802.1Q-2018). Maybe if we called this
->> 'enabled' it would be more clear.
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_ethtool.c |  9 +++++++++
+>   drivers/net/ethernet/intel/igc/igc_regs.h    | 10 ++++++++++
+>   2 files changed, 19 insertions(+)
 > 
-> Good point. Will rename this to "enabled".
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> index 48d5d18..09d72f7 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> @@ -322,6 +322,15 @@ static void igc_ethtool_get_regs(struct net_device *netdev,
+>   
+>   	for (i = 0; i < 8; i++)
+>   		regs_buff[205 + i] = rd32(IGC_ETQF(i));
+> +
+> +	regs_buff[214] = rd32(IGC_PRMPTDTCNT);
+> +	regs_buff[215] = rd32(IGC_PRMEVNTTCNT);
+> +	regs_buff[216] = rd32(IGC_PRMPTDRCNT);
+> +	regs_buff[217] = rd32(IGC_PRMEVNTRCNT);
+> +	regs_buff[218] = rd32(IGC_PRMPBLTCNT);
+> +	regs_buff[219] = rd32(IGC_PRMPBLRCNT);
+> +	regs_buff[220] = rd32(IGC_PRMEXPTCNT);
+> +	regs_buff[221] = rd32(IGC_PRMEXPRCNT);
+>   }
+>   
+>   static void igc_ethtool_get_wol(struct net_device *netdev,
+> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+> index 7f999cf..010bb48 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+> @@ -211,6 +211,16 @@
+>   
+>   #define IGC_FTQF(_n)	(0x059E0 + (4 * (_n)))  /* 5-tuple Queue Fltr */
+>   
+> +/* Time sync registers - preemption statistics */
+> +#define IGC_PRMPTDTCNT	0x04280  /* Good TX Preempted Packets */
+> +#define IGC_PRMEVNTTCNT	0x04298  /* TX Preemption event counter */
+> +#define IGC_PRMPTDRCNT	0x04284  /* Good RX Preempted Packets */
+> +#define IGC_PRMEVNTRCNT	0x0429C  /* RX Preemption event counter */
+> +#define IGC_PRMPBLTCNT	0x04288  /* Good TX Preemptable Packets */
+> +#define IGC_PRMPBLRCNT	0x0428C  /* Good RX Preemptable Packets */
+> +#define IGC_PRMEXPTCNT	0x04290  /* Good TX Express Packets */
+> +#define IGC_PRMEXPRCNT	0x042A0  /* Preemption Exception Counter */
+> +
+>   /* Transmit Scheduling Registers */
+>   #define IGC_TQAVCTRL		0x3570
+>   #define IGC_TXQCTL(_n)		(0x3344 + 0x4 * (_n))
 > 
->>
->>>          supported queues: 0xf
->>>          supported queues: 0xe
->>>          minimum fragment size: 68
->>
->> I'm assuming this is the configuration knob for the minimal non-final fragment
->> defined in 802.3br.
->>
->> My understanding from the specs is that this value must be a multiple from 64
->> and cannot assume arbitrary values like shown here. See 99.4.7.3 from IEEE
->> 802.3 and Note 1 in S.2 from IEEE 802.1Q. In the previous discussion about FP,
->> we had this as a multiplier factor, not absolute value.
-> 
-> I thought that exposing this as "(1 + N)*64" (with 0 <= N <= 3) that it
-> was more related to what's exposed via LLDP than the actual capabilities
-> of the hardware. And for the hardware I have actually the values
-> supported are: (1 + N)*64 + 4 (for N = 0, 1, 2, 3).
-> 
-> So I thought I was better to let the driver decide what values are
-> acceptable.
-> 
-> This is a good question for people working with other hardware.
-> 
-> 
-AM65 CPSW supports this as a multiple of 64. Since this ethtool
-configuration is for the hardware, might want to make it as a multiple
-of 64.
+There are some statistics supported by AM65 CPSW as well. So do you plan
+to add this to ethtool stats that is dumped using ethtool -S option?
 
-Murali
-
+Thanks and regards,
 -- 
 Murali Karicheri
 Texas Instruments
