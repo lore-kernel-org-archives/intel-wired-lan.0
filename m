@@ -1,31 +1,30 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 20 May 2020 10:02:18 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next v4 07/15] i40e: separate
- kernel allocated rx_bi rings from AF_XDP rings
-In-Reply-To: <20200520094742.337678-8-bjorn.topel@gmail.com>
+Date: Wed, 20 May 2020 10:03:42 -0700
+Subject: [Intel-wired-lan] [PATCH bpf-next v4 09/15] ice,
+ xsk: migrate to new MEM_TYPE_XSK_BUFF_POOL
+In-Reply-To: <20200520094742.337678-10-bjorn.topel@gmail.com>
 References: <20200520094742.337678-1-bjorn.topel@gmail.com>
- <20200520094742.337678-8-bjorn.topel@gmail.com>
-Message-ID: <20200520100218.56e4ee2c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20200520094742.337678-10-bjorn.topel@gmail.com>
+Message-ID: <20200520100342.620a0979@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 20 May 2020 11:47:34 +0200 Bj?rn T?pel wrote:
+On Wed, 20 May 2020 11:47:36 +0200 Bj?rn T?pel wrote:
 > From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> Continuing the path to support MEM_TYPE_XSK_BUFF_POOL, the AF_XDP
-> zero-copy/sk_buff rx_bi rings are now separate. Functions to properly
-> allocate the different rings are added as well.
-> 
-> v3->v4: Made i40e_fd_handle_status() static. (kbuild test robot)
+> Remove MEM_TYPE_ZERO_COPY in favor of the new MEM_TYPE_XSK_BUFF_POOL
+> APIs.
 > 
 > Cc: intel-wired-lan at lists.osuosl.org
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 
-There is a new warning here, at least one. But i40e has so many
-existing warnings with W=1, I can't figure out which one is new :(
+patch 8 also has a warning I can't figure out.
 
-You most likely forgot to adjust kdoc somewhere after adding or
-removing a function parameter.
+But here (patch 9) it's quite clear:
+
+drivers/net/ethernet/intel/ice/ice_xsk.c:414: warning: Excess function parameter 'alloc' description in 'ice_alloc_rx_bufs_zc'
+drivers/net/ethernet/intel/ice/ice_xsk.c:480: warning: Excess function parameter 'xdp' description in 'ice_construct_skb_zc'
