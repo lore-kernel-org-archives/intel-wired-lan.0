@@ -1,74 +1,133 @@
-From: Murali Karicheri <m-karicheri2@ti.com>
-Date: Wed, 20 May 2020 08:50:27 -0400
-Subject: [Intel-wired-lan] [next-queue RFC 4/4] igc: Add support for
- exposing frame preemption stats registers
-In-Reply-To: <20200516012948.3173993-5-vinicius.gomes@intel.com>
-References: <20200516012948.3173993-1-vinicius.gomes@intel.com>
- <20200516012948.3173993-5-vinicius.gomes@intel.com>
-Message-ID: <92daa9e5-fd76-3801-a485-36f1be59cfd6@ti.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 20 May 2020 21:12:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ abd0316ac02e1c29c3876fa1c6231949cd7ae14d
+Message-ID: <5ec52ccd.X1LJcAMRAa+O6447%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicious,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: abd0316ac02e1c29c3876fa1c6231949cd7ae14d  ASoC: SOF: ops: Add new op for client registration
 
-On 5/15/20 9:29 PM, Vinicius Costa Gomes wrote:
-> [WIP]
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_ethtool.c |  9 +++++++++
->   drivers/net/ethernet/intel/igc/igc_regs.h    | 10 ++++++++++
->   2 files changed, 19 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> index 48d5d18..09d72f7 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> @@ -322,6 +322,15 @@ static void igc_ethtool_get_regs(struct net_device *netdev,
->   
->   	for (i = 0; i < 8; i++)
->   		regs_buff[205 + i] = rd32(IGC_ETQF(i));
-> +
-> +	regs_buff[214] = rd32(IGC_PRMPTDTCNT);
-> +	regs_buff[215] = rd32(IGC_PRMEVNTTCNT);
-> +	regs_buff[216] = rd32(IGC_PRMPTDRCNT);
-> +	regs_buff[217] = rd32(IGC_PRMEVNTRCNT);
-> +	regs_buff[218] = rd32(IGC_PRMPBLTCNT);
-> +	regs_buff[219] = rd32(IGC_PRMPBLRCNT);
-> +	regs_buff[220] = rd32(IGC_PRMEXPTCNT);
-> +	regs_buff[221] = rd32(IGC_PRMEXPRCNT);
->   }
->   
->   static void igc_ethtool_get_wol(struct net_device *netdev,
-> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-> index 7f999cf..010bb48 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-> @@ -211,6 +211,16 @@
->   
->   #define IGC_FTQF(_n)	(0x059E0 + (4 * (_n)))  /* 5-tuple Queue Fltr */
->   
-> +/* Time sync registers - preemption statistics */
-> +#define IGC_PRMPTDTCNT	0x04280  /* Good TX Preempted Packets */
-> +#define IGC_PRMEVNTTCNT	0x04298  /* TX Preemption event counter */
-> +#define IGC_PRMPTDRCNT	0x04284  /* Good RX Preempted Packets */
-> +#define IGC_PRMEVNTRCNT	0x0429C  /* RX Preemption event counter */
-> +#define IGC_PRMPBLTCNT	0x04288  /* Good TX Preemptable Packets */
-> +#define IGC_PRMPBLRCNT	0x0428C  /* Good RX Preemptable Packets */
-> +#define IGC_PRMEXPTCNT	0x04290  /* Good TX Express Packets */
-> +#define IGC_PRMEXPRCNT	0x042A0  /* Preemption Exception Counter */
-> +
->   /* Transmit Scheduling Registers */
->   #define IGC_TQAVCTRL		0x3570
->   #define IGC_TXQCTL(_n)		(0x3344 + 0x4 * (_n))
-> 
-There are some statistics supported by AM65 CPSW as well. So do you plan
-to add this to ethtool stats that is dumped using ethtool -S option?
+elapsed time: 563m
 
-Thanks and regards,
--- 
-Murali Karicheri
-Texas Instruments
+configs tested: 107
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+m68k                             allyesconfig
+arm                         lpc18xx_defconfig
+arm                        keystone_defconfig
+arm                          exynos_defconfig
+arm                       spear13xx_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                           se7722_defconfig
+arm                         ebsa110_defconfig
+sh                             espt_defconfig
+x86_64                           alldefconfig
+mips                           ip22_defconfig
+h8300                       h8s-sim_defconfig
+m68k                       m5208evb_defconfig
+sh                         ecovec24_defconfig
+sh                           se7721_defconfig
+mips                   sb1250_swarm_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20200519
+i386                 randconfig-a005-20200519
+i386                 randconfig-a001-20200519
+i386                 randconfig-a003-20200519
+i386                 randconfig-a004-20200519
+i386                 randconfig-a002-20200519
+x86_64               randconfig-a003-20200519
+x86_64               randconfig-a005-20200519
+x86_64               randconfig-a004-20200519
+x86_64               randconfig-a006-20200519
+x86_64               randconfig-a002-20200519
+x86_64               randconfig-a001-20200519
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                              defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
