@@ -1,66 +1,123 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 May 2020 07:56:12 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Relax condition to trigger
- reset for ME workaround
-In-Reply-To: <20200515043127.3882162-1-punit1.agrawal@toshiba.co.jp>
-References: <20200515043127.3882162-1-punit1.agrawal@toshiba.co.jp>
-Message-ID: <DM6PR11MB2890F48ACD9A4ECF9181A819BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Thu, 21 May 2020 18:48:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ dfe3e60b26f78aabc0c6dcf373a6066b03dc2244
+Message-ID: <5ec65c65.P7jOD37/1wQ3A2As%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
-> Behalf Of Punit Agrawal
-> Sent: Thursday, May 14, 2020 9:31 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: daniel.sangorrin at toshiba.co.jp; Punit Agrawal
-> <punit1.agrawal@toshiba.co.jp>; Alexander Duyck
-> <alexander.h.duyck@linux.intel.com>; David S. Miller <davem@davemloft.net>;
-> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org
-> Subject: [PATCH] e1000e: Relax condition to trigger reset for ME workaround
-> 
-> It's an error if the value of the RX/TX tail descriptor does not match
-> what was written. The error condition is true regardless the duration
-> of the interference from ME. But the driver only performs the reset if
-> E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
-> transpired. The extra condition can lead to inconsistency between the
-> state of hardware as expected by the driver.
-> 
-> Fix this by dropping the check for number of delay iterations.
-> 
-> While at it, also make __ew32_prepare() static as it's not used
-> anywhere else.
-> 
-> Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org
-> Cc: linux-kernel at vger.kernel.org
-> ---
-> Hi Jeff,
-> 
-> If there are no further comments please consider merging the patch.
-> 
-> Also, should it be marked for backport to stable?
-> 
-> Thanks,
-> Punit
-> 
-> RFC[0] -> v1:
-> * Dropped return value for __ew32_prepare() as it's not used
-> * Made __ew32_prepare() static
-> * Added tags
-> 
-> [0] https://lkml.org/lkml/2020/5/12/20
-> 
->  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 -
->  drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++-------
->  2 files changed, 5 insertions(+), 8 deletions(-)
-> 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: dfe3e60b26f78aabc0c6dcf373a6066b03dc2244  ice: Fix a couple off by one bugs
 
+elapsed time: 485m
+
+configs tested: 97
+configs skipped: 1
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+sparc                            allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+powerpc                         ps3_defconfig
+sh                          r7780mp_defconfig
+arm                           sama5_defconfig
+sh                           se7712_defconfig
+arm                          iop32x_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a001-20200520
+i386                 randconfig-a004-20200520
+i386                 randconfig-a006-20200520
+i386                 randconfig-a003-20200520
+i386                 randconfig-a002-20200520
+i386                 randconfig-a005-20200520
+i386                 randconfig-a013-20200520
+i386                 randconfig-a012-20200520
+i386                 randconfig-a015-20200520
+i386                 randconfig-a011-20200520
+i386                 randconfig-a016-20200520
+i386                 randconfig-a014-20200520
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                              defconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
