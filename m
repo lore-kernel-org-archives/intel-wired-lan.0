@@ -1,123 +1,99 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 21 May 2020 18:48:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- dfe3e60b26f78aabc0c6dcf373a6066b03dc2244
-Message-ID: <5ec65c65.P7jOD37/1wQ3A2As%lkp@intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Thu, 21 May 2020 11:09:07 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Add initial EEE support
+In-Reply-To: <20200521051033.30813-1-sasha.neftin@intel.com>
+References: <20200521051033.30813-1-sasha.neftin@intel.com>
+Message-ID: <159008454769.70366.11413367573186547439@swaranku-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: dfe3e60b26f78aabc0c6dcf373a6066b03dc2244  ice: Fix a couple off by one bugs
+Hi Sasha,
 
-elapsed time: 485m
+Quoting Sasha Neftin (2020-05-20 22:10:33)
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> index 2214a5d3a259..3035d3a96621 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+[...]
+> +static int igc_ethtool_set_eee(struct net_device *netdev,
+> +                              struct ethtool_eee *edata)
+> +{
+> +       struct igc_adapter *adapter = netdev_priv(netdev);
+> +       struct igc_hw *hw = &adapter->hw;
+> +       struct ethtool_eee eee_curr;
+> +       s32 ret_val;
+> +
+> +       memset(&eee_curr, 0, sizeof(struct ethtool_eee));
+> +
+> +       ret_val = igc_ethtool_get_eee(netdev, &eee_curr);
+> +       if (ret_val)
+> +               return ret_val;
+> +
+> +       if (eee_curr.eee_enabled) {
+> +               if (eee_curr.tx_lpi_enabled != edata->tx_lpi_enabled) {
+> +                       netdev_err(netdev,
+> +                                  "Setting EEE tx-lpi is not supported\n");
+> +                       return -EINVAL;
+> +               }
+> +
+> +               /* Tx LPI timer is not implemented currently */
+> +               if (edata->tx_lpi_timer) {
+> +                       netdev_err(netdev,
+> +                                  "Setting EEE Tx LPI timer is not supported\n");
+> +                       return -EINVAL;
+> +               }
+> +       } else if (!edata->eee_enabled) {
+> +               netdev_err(netdev,
+> +                          "Setting EEE options are not supported with EEE disabled\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       adapter->eee_advert = ethtool_adv_to_mmd_eee_adv_t(edata->advertised);
+> +       if (hw->dev_spec._base.eee_enable != edata->eee_enabled) {
+> +               hw->dev_spec._base.eee_enable = edata->eee_enabled;
+> +               adapter->flags |= IGC_FLAG_EEE;
+> +
+> +               /* reset link */
+> +               if (netif_running(netdev))
+> +                       igc_reinit_locked(adapter);
+> +               else
+> +                       igc_reset(adapter);
+> +       }
+> +
+> +       if (ret_val) {
+> +               netdev_err(netdev,
+> +                          "Problem setting EEE advertisement options\n");
+> +               return -EINVAL;
+> +       }
 
-configs tested: 97
-configs skipped: 1
+'ret_val' is already checked in the beginning of this function, and it is not
+set afterwards. So it seems this check is pointless.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index c4df7129f930..6110093c6ad9 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+[...]
+> @@ -5190,6 +5202,10 @@ static int igc_probe(struct pci_dev *pdev,
+>         netdev_info(netdev, "MAC: %pM", netdev->dev_addr);
+>  
+>         dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
+> +       /* Disable EEE for internal copper PHY devices */
+> +       hw->dev_spec._base.eee_enable = false;
+> +       adapter->flags &= ~IGC_FLAG_EEE;
+> +       igc_set_eee_i225(hw, false, false, false);
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sparc                            allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-powerpc                         ps3_defconfig
-sh                          r7780mp_defconfig
-arm                           sama5_defconfig
-sh                           se7712_defconfig
-arm                          iop32x_defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a001-20200520
-i386                 randconfig-a004-20200520
-i386                 randconfig-a006-20200520
-i386                 randconfig-a003-20200520
-i386                 randconfig-a002-20200520
-i386                 randconfig-a005-20200520
-i386                 randconfig-a013-20200520
-i386                 randconfig-a012-20200520
-i386                 randconfig-a015-20200520
-i386                 randconfig-a011-20200520
-i386                 randconfig-a016-20200520
-i386                 randconfig-a014-20200520
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                              defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
+Could you please clarify if EEE is expected to be enabled or disabled by
+default? IIUC this code, EEE is disabled by default. But in IGB it is enabled
+by default.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+In addition to that, the comment above mentions it disables EEE for copper
+devices, but there is no check for such device. Is the comment indeed
+applicable here?
+
+Regards,
+
+Andre
