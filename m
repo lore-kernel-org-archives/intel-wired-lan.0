@@ -1,34 +1,27 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 May 2020 07:27:59 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] igb: make
- igb_set_fc_watermarks() return void
-In-Reply-To: <20200507110915.38349-1-yanaijie@huawei.com>
-References: <20200507110915.38349-1-yanaijie@huawei.com>
-Message-ID: <DM6PR11MB2890A3BB1993EF97E4368F06BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Thu, 21 May 2020 07:40:35 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused flags
+In-Reply-To: <20200510155200.21068-1-sasha.neftin@intel.com>
+References: <20200510155200.21068-1-sasha.neftin@intel.com>
+Message-ID: <DM6PR11MB289087A560A6916D9E1A53D9BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
-> Behalf Of Jason Yan
-> Sent: Thursday, May 7, 2020 4:09 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; davem at davemloft.net;
-> yanaijie at huawei.com; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH net-next] igb: make igb_set_fc_watermarks() return void
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sasha
+> Neftin
+> Sent: Sunday, May 10, 2020 8:52 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused flags
 > 
-> This function always return 0 now, we can make it return void to
-> simplify the code. This fixes the following coccicheck warning:
+> Transmit underrun, late and excess collision flags not in use.
+> This patch comes to clean up these flags.
 > 
-> drivers/net/ethernet/intel/igb/e1000_mac.c:728:5-12: Unneeded variable:
-> "ret_val". Return "0" on line 751
-> 
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/e1000_mac.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
->
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+>  drivers/net/ethernet/intel/igc/igc_defines.h | 4 ----
+>  1 file changed, 4 deletions(-)
 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
