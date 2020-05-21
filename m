@@ -1,27 +1,66 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 May 2020 07:40:35 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused flags
-In-Reply-To: <20200510155200.21068-1-sasha.neftin@intel.com>
-References: <20200510155200.21068-1-sasha.neftin@intel.com>
-Message-ID: <DM6PR11MB289087A560A6916D9E1A53D9BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Thu, 21 May 2020 07:56:12 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: Relax condition to trigger
+ reset for ME workaround
+In-Reply-To: <20200515043127.3882162-1-punit1.agrawal@toshiba.co.jp>
+References: <20200515043127.3882162-1-punit1.agrawal@toshiba.co.jp>
+Message-ID: <DM6PR11MB2890F48ACD9A4ECF9181A819BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sasha
-> Neftin
-> Sent: Sunday, May 10, 2020 8:52 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused flags
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
+> Behalf Of Punit Agrawal
+> Sent: Thursday, May 14, 2020 9:31 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: daniel.sangorrin at toshiba.co.jp; Punit Agrawal
+> <punit1.agrawal@toshiba.co.jp>; Alexander Duyck
+> <alexander.h.duyck@linux.intel.com>; David S. Miller <davem@davemloft.net>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Subject: [PATCH] e1000e: Relax condition to trigger reset for ME workaround
 > 
-> Transmit underrun, late and excess collision flags not in use.
-> This patch comes to clean up these flags.
+> It's an error if the value of the RX/TX tail descriptor does not match
+> what was written. The error condition is true regardless the duration
+> of the interference from ME. But the driver only performs the reset if
+> E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
+> transpired. The extra condition can lead to inconsistency between the
+> state of hardware as expected by the driver.
 > 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> Fix this by dropping the check for number of delay iterations.
+> 
+> While at it, also make __ew32_prepare() static as it's not used
+> anywhere else.
+> 
+> Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Cc: linux-kernel at vger.kernel.org
 > ---
->  drivers/net/ethernet/intel/igc/igc_defines.h | 4 ----
->  1 file changed, 4 deletions(-)
-
+> Hi Jeff,
+> 
+> If there are no further comments please consider merging the patch.
+> 
+> Also, should it be marked for backport to stable?
+> 
+> Thanks,
+> Punit
+> 
+> RFC[0] -> v1:
+> * Dropped return value for __ew32_prepare() as it's not used
+> * Made __ew32_prepare() static
+> * Added tags
+> 
+> [0] https://lkml.org/lkml/2020/5/12/20
+> 
+>  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 -
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++-------
+>  2 files changed, 5 insertions(+), 8 deletions(-)
+> 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
