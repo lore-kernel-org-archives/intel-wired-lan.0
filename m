@@ -1,99 +1,80 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 21 May 2020 11:09:07 -0700
-Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Add initial EEE support
-In-Reply-To: <20200521051033.30813-1-sasha.neftin@intel.com>
-References: <20200521051033.30813-1-sasha.neftin@intel.com>
-Message-ID: <159008454769.70366.11413367573186547439@swaranku-mobl2.amr.corp.intel.com>
+From: Michal Kubecek <mkubecek@suse.cz>
+Date: Thu, 21 May 2020 21:23:42 +0200
+Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: Make WOL info in ethtool
+ consistent with device wake up ability
+In-Reply-To: <725bad2f3ce7f7b7f1667d53b6527dc059f9e419.1590081982.git.yu.c.chen@intel.com>
+References: <cover.1590081982.git.yu.c.chen@intel.com>
+ <725bad2f3ce7f7b7f1667d53b6527dc059f9e419.1590081982.git.yu.c.chen@intel.com>
+Message-ID: <20200521192342.GE8771@lion.mk-sys.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Sasha,
+On Fri, May 22, 2020 at 01:59:13AM +0800, Chen Yu wrote:
+> Currently the ethtool shows that WOL(Wake On Lan) is enabled
+> even if the device wakeup ability has been disabled via sysfs:
+>   cat /sys/devices/pci0000:00/0000:00:1f.6/power/wakeup
+>    disabled
+> 
+>   ethtool eno1
+>   ...
+>   Wake-on: g
+> 
+> Fix this in ethtool to check if the user has explicitly disabled the
+> wake up ability for this device.
 
-Quoting Sasha Neftin (2020-05-20 22:10:33)
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> index 2214a5d3a259..3035d3a96621 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-[...]
-> +static int igc_ethtool_set_eee(struct net_device *netdev,
-> +                              struct ethtool_eee *edata)
-> +{
-> +       struct igc_adapter *adapter = netdev_priv(netdev);
-> +       struct igc_hw *hw = &adapter->hw;
-> +       struct ethtool_eee eee_curr;
-> +       s32 ret_val;
-> +
-> +       memset(&eee_curr, 0, sizeof(struct ethtool_eee));
-> +
-> +       ret_val = igc_ethtool_get_eee(netdev, &eee_curr);
-> +       if (ret_val)
-> +               return ret_val;
-> +
-> +       if (eee_curr.eee_enabled) {
-> +               if (eee_curr.tx_lpi_enabled != edata->tx_lpi_enabled) {
-> +                       netdev_err(netdev,
-> +                                  "Setting EEE tx-lpi is not supported\n");
-> +                       return -EINVAL;
-> +               }
-> +
-> +               /* Tx LPI timer is not implemented currently */
-> +               if (edata->tx_lpi_timer) {
-> +                       netdev_err(netdev,
-> +                                  "Setting EEE Tx LPI timer is not supported\n");
-> +                       return -EINVAL;
-> +               }
-> +       } else if (!edata->eee_enabled) {
-> +               netdev_err(netdev,
-> +                          "Setting EEE options are not supported with EEE disabled\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       adapter->eee_advert = ethtool_adv_to_mmd_eee_adv_t(edata->advertised);
-> +       if (hw->dev_spec._base.eee_enable != edata->eee_enabled) {
-> +               hw->dev_spec._base.eee_enable = edata->eee_enabled;
-> +               adapter->flags |= IGC_FLAG_EEE;
-> +
-> +               /* reset link */
-> +               if (netif_running(netdev))
-> +                       igc_reinit_locked(adapter);
-> +               else
-> +                       igc_reset(adapter);
-> +       }
-> +
-> +       if (ret_val) {
-> +               netdev_err(netdev,
-> +                          "Problem setting EEE advertisement options\n");
-> +               return -EINVAL;
-> +       }
+Wouldn't this lead to rather unexpected and inconsistent behaviour when
+the wakeup is disabled? As you don't touch the set_wol handler, I assume
+it will still allow setting enabled modes as usual so that you get e.g.
 
-'ret_val' is already checked in the beginning of this function, and it is not
-set afterwards. So it seems this check is pointless.
+  ethtool -s eth0 wol g   # no error or warning, returns 0
+  ethtool eth0            # reports no modes enabled
 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index c4df7129f930..6110093c6ad9 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-[...]
-> @@ -5190,6 +5202,10 @@ static int igc_probe(struct pci_dev *pdev,
->         netdev_info(netdev, "MAC: %pM", netdev->dev_addr);
+The first command would set the enabled wol modes but that would be
+hidden from user and even the netlink notification would claim something
+different. Another exampe (with kernel and ethtool >= 5.6):
+
+  ethtool -s eth0 wol g
+  ethtool -s eth0 wol +m
+
+resulting in "mg" if device wakeup is enabled but "m" when it's disabled
+(but the latter would be hidden from user and only revealed when you
+enable the device wakeup).
+
+This is a general problem discussed recently for EEE and pause
+autonegotiation: if setting A can be effectively used only when B is
+enabled, should we hide actual setting of A from userspace when B is
+disabled or even reset the value of A whenever B gets toggled or rather
+allow setting A and B independently? AFAICS the consensus seemed to be
+that A should be allowed to be set and queried independently of the
+value of B.
+
+Michal
+
+> Fixes: 6ff68026f475 ("e1000e: Use device_set_wakeup_enable")
+> Reported-by: Len Brown <len.brown@intel.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: <Stable@vger.kernel.org>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> index 1d47e2503072..0cccd823ff24 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> @@ -1891,7 +1891,7 @@ static void e1000_get_wol(struct net_device *netdev,
+>  	wol->wolopts = 0;
 >  
->         dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
-> +       /* Disable EEE for internal copper PHY devices */
-> +       hw->dev_spec._base.eee_enable = false;
-> +       adapter->flags &= ~IGC_FLAG_EEE;
-> +       igc_set_eee_i225(hw, false, false, false);
-
-Could you please clarify if EEE is expected to be enabled or disabled by
-default? IIUC this code, EEE is disabled by default. But in IGB it is enabled
-by default.
-
-In addition to that, the comment above mentions it disables EEE for copper
-devices, but there is no check for such device. Is the comment indeed
-applicable here?
-
-Regards,
-
-Andre
+>  	if (!(adapter->flags & FLAG_HAS_WOL) ||
+> -	    !device_can_wakeup(&adapter->pdev->dev))
+> +	    !device_may_wakeup(&adapter->pdev->dev))
+>  		return;
+>  
+>  	wol->supported = WAKE_UCAST | WAKE_MCAST |
+> -- 
+> 2.17.1
+> 
