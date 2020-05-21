@@ -1,41 +1,35 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 21 May 2020 07:18:28 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Disable TSO for buffer
- overrun workaround
-In-Reply-To: <20200507142108.13090-1-kai.heng.feng@canonical.com>
-References: <20200507142108.13090-1-kai.heng.feng@canonical.com>
-Message-ID: <DM6PR11MB2890015E69238E4215E93CB9BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Thu, 21 May 2020 07:23:59 +0000
+Subject: [Intel-wired-lan] [PATCH v1] e1000e: disable s0ix entry and
+ exit flows for ME systems
+In-Reply-To: <20200507171406.6883-1-vitaly.lifshits@intel.com>
+References: <20200507171406.6883-1-vitaly.lifshits@intel.com>
+Message-ID: <DM6PR11MB2890BA07ECF487EE8969C454BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
-> Behalf Of Kai-Heng Feng
-> Sent: Thursday, May 7, 2020 7:21 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>; David S. Miller
-> <davem@davemloft.net>; Neftin, Sasha <sasha.neftin@intel.com>; Dima
-> Ruinskiy <dima.ruinskiy@intel.com>; Avargil, Raanan
-> <raanan.avargil@intel.com>; moderated list:INTEL ETHERNET DRIVERS <intel-
-> wired-lan at lists.osuosl.org>; open list:NETWORKING DRIVERS
-> <netdev@vger.kernel.org>; open list <linux-kernel@vger.kernel.org>
-> Subject: [PATCH] e1000e: Disable TSO for buffer overrun workaround
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Vitaly
+> Lifshits
+> Sent: Thursday, May 7, 2020 10:14 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1] e1000e: disable s0ix entry and exit flows
+> for ME systems
 > 
-> Commit b10effb92e27 ("e1000e: fix buffer overrun while the I219 is
-> processing DMA transactions") imposes roughly 30% performance penalty.
+> Since ME systems do not support SLP_S0 in S0ix state, and S0ix entry
+> and exit flows may cause errors on them it is best to avoid using
+> e1000e_s0ix_entry_flow and e1000e_s0ix_exit_flow functions.
 > 
-> The commit log states that "Disabling TSO eliminates performance loss
-> for TCP traffic without a noticeable impact on CPU performance", so
-> let's disable TSO by default to regain the loss.
+> This was done by creating a struct of all devices that comes with ME
+> and by checking if the current device has ME.
 > 
-> Fixes: b10effb92e27 ("e1000e: fix buffer overrun while the I219 is processing
-> DMA transactions")
-> BugLink: https://bugs.launchpad.net/bugs/1802691
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 45
+> ++++++++++++++++++++++++++++--
+>  1 file changed, 43 insertions(+), 2 deletions(-)
+> 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
