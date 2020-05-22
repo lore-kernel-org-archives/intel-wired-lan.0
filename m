@@ -1,80 +1,40 @@
-From: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-Date: Fri, 22 May 2020 12:20:57 +0900
-Subject: [Intel-wired-lan] [PATCH] e1000e: Relax condition to trigger
- reset for ME workaround
-In-Reply-To: <DM6PR11MB2890F48ACD9A4ECF9181A819BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
- (Aaron F. Brown's message of "Thu, 21 May 2020 07:56:12 +0000")
-References: <20200515043127.3882162-1-punit1.agrawal@toshiba.co.jp>
- <DM6PR11MB2890F48ACD9A4ECF9181A819BCB70@DM6PR11MB2890.namprd11.prod.outlook.com>
-Message-ID: <87367sac4m.fsf@kokedama.swc.toshiba.co.jp>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 22 May 2020 19:14:38 +0000
+Subject: [Intel-wired-lan] [PATCH S43 01/15] ice: Call ice_aq_set_mac_cfg
+In-Reply-To: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
+References: <20200516003644.4658-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659DBE1702110307E68D26C8CB40@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Aaron,
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Friday, May 15, 2020 5:37 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S43 01/15] ice: Call ice_aq_set_mac_cfg
+> 
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> 
+> As per the specification, the driver needs to call set_mac_cfg (opcode
+> 0x0603) to be able to exercise jumbo frames. Call the function during
+> initialization and the post reset rebuild flow.
+> 
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 21 ++++++
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 69
+> +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  2 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |  5 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  6 ++
+>  5 files changed, 103 insertions(+)
 
-"Brown, Aaron F" <aaron.f.brown@intel.com> writes:
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
->> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
->> Behalf Of Punit Agrawal
->> Sent: Thursday, May 14, 2020 9:31 PM
->> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
->> Cc: daniel.sangorrin at toshiba.co.jp; Punit Agrawal
->> <punit1.agrawal@toshiba.co.jp>; Alexander Duyck
->> <alexander.h.duyck@linux.intel.com>; David S. Miller <davem@davemloft.net>;
->> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
->> kernel at vger.kernel.org
->> Subject: [PATCH] e1000e: Relax condition to trigger reset for ME workaround
->> 
->> It's an error if the value of the RX/TX tail descriptor does not match
->> what was written. The error condition is true regardless the duration
->> of the interference from ME. But the driver only performs the reset if
->> E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
->> transpired. The extra condition can lead to inconsistency between the
->> state of hardware as expected by the driver.
->> 
->> Fix this by dropping the check for number of delay iterations.
->> 
->> While at it, also make __ew32_prepare() static as it's not used
->> anywhere else.
->> 
->> Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
->> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
->> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->> Cc: "David S. Miller" <davem@davemloft.net>
->> Cc: intel-wired-lan at lists.osuosl.org
->> Cc: netdev at vger.kernel.org
->> Cc: linux-kernel at vger.kernel.org
->> ---
->> Hi Jeff,
->> 
->> If there are no further comments please consider merging the patch.
->> 
->> Also, should it be marked for backport to stable?
->> 
->> Thanks,
->> Punit
->> 
->> RFC[0] -> v1:
->> * Dropped return value for __ew32_prepare() as it's not used
->> * Made __ew32_prepare() static
->> * Added tags
->> 
->> [0] https://lkml.org/lkml/2020/5/12/20
->> 
->>  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 -
->>  drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++-------
->>  2 files changed, 5 insertions(+), 8 deletions(-)
->> 
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-
-Thanks for taking the patch for a spin.
-
-Jeff, let me know if you're okay to apply the tag or want me to send a
-new version.
-
-Thanks,
-Punit
 
