@@ -1,157 +1,109 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 24 May 2020 19:16:54 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 50/99]
- drivers/net/ethernet/intel/ice/ice_base.c:421:39: error: 'struct xdp_umem'
- has no member named 'chunk_size_nohr'; did you mean 'chunk_size'?
-Message-ID: <202005241935.mMMwwbiA%lkp@intel.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Date: Sat, 23 May 2020 17:09:50 +0800
+Subject: [Intel-wired-lan] [PATCH 2/2] e1000e: Make WOL info in ethtool
+ consistent with device wake up ability
+In-Reply-To: <20200521192342.GE8771@lion.mk-sys.cz>
+References: <cover.1590081982.git.yu.c.chen@intel.com>
+ <725bad2f3ce7f7b7f1667d53b6527dc059f9e419.1590081982.git.yu.c.chen@intel.com>
+ <20200521192342.GE8771@lion.mk-sys.cz>
+Message-ID: <20200523090950.GA20370@chenyu-office.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   5950d1e508b225372208a78339e6434adf129852
-commit: 307e0c99a4576106e2fb77e73ae82b514a3fd8ce [50/99] ice: Refactor ice_setup_rx_ctx
-config: i386-allyesconfig (attached as .config)
-compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
-reproduce (this is a W=1 build):
-        git checkout 307e0c99a4576106e2fb77e73ae82b514a3fd8ce
-        # save the attached .config to linux build tree
-        make ARCH=i386 
+Hi Michal,
+Thanks for reviewing,
+and sorry for late reply.
+On Thu, May 21, 2020 at 09:23:42PM +0200, Michal Kubecek wrote:
+> On Fri, May 22, 2020 at 01:59:13AM +0800, Chen Yu wrote:
+> > Currently the ethtool shows that WOL(Wake On Lan) is enabled
+> > even if the device wakeup ability has been disabled via sysfs:
+> >   cat /sys/devices/pci0000:00/0000:00:1f.6/power/wakeup
+> >    disabled
+> > 
+> >   ethtool eno1
+> >   ...
+> >   Wake-on: g
+> > 
+> > Fix this in ethtool to check if the user has explicitly disabled the
+> > wake up ability for this device.
+> 
+> Wouldn't this lead to rather unexpected and inconsistent behaviour when
+> the wakeup is disabled? As you don't touch the set_wol handler, I assume
+> it will still allow setting enabled modes as usual so that you get e.g.
+> 
+>   ethtool -s eth0 wol g   # no error or warning, returns 0
+>   ethtool eth0            # reports no modes enabled
+> 
+> The first command would set the enabled wol modes but that would be
+> hidden from user and even the netlink notification would claim something
+> different. Another exampe (with kernel and ethtool >= 5.6):
+> 
+>   ethtool -s eth0 wol g
+>   ethtool -s eth0 wol +m
+> 
+> resulting in "mg" if device wakeup is enabled but "m" when it's disabled
+> (but the latter would be hidden from user and only revealed when you
+> enable the device wakeup).
+> 
+I've tested ethtool v5.6 on top of kernel v5.7-rc6, it looks like
+the scenario you described will not happen as it will not allow
+the user to enable the wol options with device wakeup disabled,
+not sure if I missed something:
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
+/sys/devices/pci0000:00/0000:00:1f.6/power# echo disabled > wakeup
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+ethtool -s eno1 wol g
+netlink error: cannot enable unsupported WoL mode (offset 36)
+netlink error: Invalid argument
 
-drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_vsi_cfg_rxq':
->> drivers/net/ethernet/intel/ice/ice_base.c:421:39: error: 'struct xdp_umem' has no member named 'chunk_size_nohr'; did you mean 'chunk_size'?
-ring->rx_buf_len = ring->xsk_umem->chunk_size_nohr -
-^~~~~~~~~~~~~~~
-chunk_size
->> drivers/net/ethernet/intel/ice/ice_base.c:423:8: error: 'struct ice_ring' has no member named 'zca'
-ring->zca.free = ice_zca_free;
-^~
->> drivers/net/ethernet/intel/ice/ice_base.c:423:21: error: 'ice_zca_free' undeclared (first use in this function); did you mean 'ice_get_res'?
-ring->zca.free = ice_zca_free;
-^~~~~~~~~~~~
-ice_get_res
-drivers/net/ethernet/intel/ice/ice_base.c:423:21: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/net/ethernet/intel/ice/ice_base.c:425:9: error: 'MEM_TYPE_ZERO_COPY' undeclared (first use in this function); did you mean 'MEM_TYPE_PAGE_POOL'?
-MEM_TYPE_ZERO_COPY,
-^~~~~~~~~~~~~~~~~~
-MEM_TYPE_PAGE_POOL
-drivers/net/ethernet/intel/ice/ice_base.c:426:14: error: 'struct ice_ring' has no member named 'zca'
-&ring->zca);
-^~
-drivers/net/ethernet/intel/ice/ice_base.c:433:8: error: 'struct ice_ring' has no member named 'zca'
-ring->zca.free = NULL;
-^~
-drivers/net/ethernet/intel/ice/ice_base.c:456:8: error: implicit declaration of function 'xsk_umem_has_addrs_rq'; did you mean 'xsk_umem_get_headroom'? [-Werror=implicit-function-declaration]
-if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
-^~~~~~~~~~~~~~~~~~~~~
-xsk_umem_get_headroom
-drivers/net/ethernet/intel/ice/ice_base.c:464:9: error: implicit declaration of function 'ice_alloc_rx_bufs_slow_zc'; did you mean 'ice_alloc_rx_bufs_zc'? [-Werror=implicit-function-declaration]
-err = ice_alloc_rx_bufs_slow_zc(ring, num_bufs);
-^~~~~~~~~~~~~~~~~~~~~~~~~
-ice_alloc_rx_bufs_zc
-cc1: some warnings being treated as errors
+I've not digged into the code too much, but according to
+ethhl_set_wol(), it will first get the current wol options
+via dev->ethtool_ops->get_wol(), and both the wolopts and
+wol.supported are 0 when device wake up are disabled. Then
+ethnl_update_bitset32 might manipulate on wolopts and
+make it non-zero each is controdict with the precondition that
+no opts should be enabled due to 0 wol.supported.
+> This is a general problem discussed recently for EEE and pause
+> autonegotiation: if setting A can be effectively used only when B is
+> enabled, should we hide actual setting of A from userspace when B is
+> disabled or even reset the value of A whenever B gets toggled or rather
+> allow setting A and B independently? AFAICS the consensus seemed to be
+> that A should be allowed to be set and queried independently of the
+> value of B.
 
-vim +421 drivers/net/ethernet/intel/ice/ice_base.c
+But then there would be an inconsistence between A and B. I was thinking
+if there's a way to align them in kernel space and  maintain the difference in user space?
 
-   396	
-   397	/**
-   398	 * ice_vsi_cfg_rxq - Configure an Rx queue
-   399	 * @ring: the ring being configured
-   400	 *
-   401	 * Return 0 on success and a negative value on error.
-   402	 */
-   403	int ice_vsi_cfg_rxq(struct ice_ring *ring)
-   404	{
-   405		struct device *dev = ice_pf_to_dev(ring->vsi->back);
-   406		u16 num_bufs = ICE_DESC_UNUSED(ring);
-   407		int err;
-   408	
-   409		ring->rx_buf_len = ring->vsi->rx_buf_len;
-   410	
-   411		if (ring->vsi->type == ICE_VSI_PF) {
-   412			if (!xdp_rxq_info_is_reg(&ring->xdp_rxq))
-   413				/* coverity[check_return] */
-   414				xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
-   415						 ring->q_index);
-   416	
-   417			ring->xsk_umem = ice_xsk_umem(ring);
-   418			if (ring->xsk_umem) {
-   419				xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
-   420	
- > 421				ring->rx_buf_len = ring->xsk_umem->chunk_size_nohr -
-   422						   XDP_PACKET_HEADROOM;
- > 423				ring->zca.free = ice_zca_free;
-   424				err = xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
- > 425								 MEM_TYPE_ZERO_COPY,
-   426								 &ring->zca);
-   427				if (err)
-   428					return err;
-   429	
-   430				dev_info(dev, "Registered XDP mem model MEM_TYPE_ZERO_COPY on Rx ring %d\n",
-   431					 ring->q_index);
-   432			} else {
-   433				ring->zca.free = NULL;
-   434				if (!xdp_rxq_info_is_reg(&ring->xdp_rxq))
-   435					/* coverity[check_return] */
-   436					xdp_rxq_info_reg(&ring->xdp_rxq,
-   437							 ring->netdev,
-   438							 ring->q_index);
-   439	
-   440				err = xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
-   441								 MEM_TYPE_PAGE_SHARED,
-   442								 NULL);
-   443				if (err)
-   444					return err;
-   445			}
-   446		}
-   447	
-   448		err = ice_setup_rx_ctx(ring);
-   449		if (err) {
-   450			dev_err(dev, "ice_setup_rx_ctx failed for RxQ %d, err %d\n",
-   451				ring->q_index, err);
-   452			return err;
-   453		}
-   454	
-   455		if (ring->xsk_umem) {
-   456			if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
-   457				dev_warn(dev, "UMEM does not provide enough addresses to fill %d buffers on Rx ring %d\n",
-   458					 num_bufs, ring->q_index);
-   459				dev_warn(dev, "Change Rx ring/fill queue size to avoid performance issues\n");
-   460	
-   461				return 0;
-   462			}
-   463	
-   464			err = ice_alloc_rx_bufs_slow_zc(ring, num_bufs);
-   465			if (err) {
-   466				u16 pf_q = ring->vsi->rxq_map[ring->q_index];
-   467	
-   468				dev_info(dev, "Failed to allocate some buffers on UMEM enabled Rx ring %d (pf_q %d)\n",
-   469					 ring->q_index, pf_q);
-   470			}
-   471	
-   472			return 0;
-   473		}
-   474	
-   475		ice_alloc_rx_bufs(ring, num_bufs);
-   476	
-   477		return 0;
-   478	}
-   479	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 72601 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200524/f5174a28/attachment-0001.bin>
+Thanks,
+Chenyu
+> 
+> Michal
+> 
+> > Fixes: 6ff68026f475 ("e1000e: Use device_set_wakeup_enable")
+> > Reported-by: Len Brown <len.brown@intel.com>
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: <Stable@vger.kernel.org>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/e1000e/ethtool.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > index 1d47e2503072..0cccd823ff24 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> > @@ -1891,7 +1891,7 @@ static void e1000_get_wol(struct net_device *netdev,
+> >  	wol->wolopts = 0;
+> >  
+> >  	if (!(adapter->flags & FLAG_HAS_WOL) ||
+> > -	    !device_can_wakeup(&adapter->pdev->dev))
+> > +	    !device_may_wakeup(&adapter->pdev->dev))
+> >  		return;
+> >  
+> >  	wol->supported = WAKE_UCAST | WAKE_MCAST |
+> > -- 
+> > 2.17.1
+> > 
