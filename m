@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 26 May 2020 20:24:38 +0000
-Subject: [Intel-wired-lan] [PATCH S44 07/14] ice: Refactor Rx checksum
- checks
-In-Reply-To: <20200516004226.4795-7-anthony.l.nguyen@intel.com>
+Date: Tue, 26 May 2020 20:25:03 +0000
+Subject: [Intel-wired-lan] [PATCH S44 08/14] ice: Check UMEM FQ size
+ when allocating bufs
+In-Reply-To: <20200516004226.4795-8-anthony.l.nguyen@intel.com>
 References: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
- <20200516004226.4795-7-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB165987DC85CB7F77E79E3CD88CB00@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516004226.4795-8-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB16597A2B946004C469991E988CB00@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:42 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S44 07/14] ice: Refactor Rx checksum
-> checks
+> Subject: [Intel-wired-lan] [PATCH S44 08/14] ice: Check UMEM FQ size when
+> allocating bufs
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > 
-> We don't need both rx_status and rx_error parameters, as the latter is a
-> subset of the former. Remove rx_error completely and check the right bit in
-> rx_status.
+> If a UMEM is present on a queue when an interface/queue pair is being
+> enabled, the driver will try to prepare the Rx buffers in advance to improve
+> performance. However, if fill queue is shorter than HW Rx ring, the driver will
+> report failure after getting the last address from the fill queue.
 > 
-> Rename rx_status to rx_status0, and rx_status_err1 to rx_status1. This
-> naming more closely reflects the specification.
+> This still lets the driver process the packets correctly during the NAPI poll, but
+> leads to a constant NAPI rescheduling. Not allocating the buffers in advance
+> would result in a potential performance decrease.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Commit d57d76428ae9 ("xsk: Add API to check for available entries in FQ")
+> provides an API that lets drivers check the number of addresses that the fill
+> queue holds.
+> 
+> Notify the user if fill queue is not long enough to prepare all buffers before
+> packet processing starts, and allocate the buffers during the NAPI poll. If the
+> fill queue size is sufficient, prepare Rx buffers in advance.
+> 
+> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 27 ++++++++-----------
->  1 file changed, 11 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_base.c | 30 ++++++++++++++++-------
+>  1 file changed, 21 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
