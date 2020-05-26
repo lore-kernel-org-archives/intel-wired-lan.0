@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 26 May 2020 20:25:21 +0000
-Subject: [Intel-wired-lan] [PATCH S44 09/14] ice: Refactor
- ice_setup_rx_ctx
-In-Reply-To: <20200516004226.4795-9-anthony.l.nguyen@intel.com>
+Date: Tue, 26 May 2020 20:25:44 +0000
+Subject: [Intel-wired-lan] [PATCH S44 10/14] ice: Poll for reset
+ completion when DDP load fails
+In-Reply-To: <20200516004226.4795-10-anthony.l.nguyen@intel.com>
 References: <20200516004226.4795-1-anthony.l.nguyen@intel.com>
- <20200516004226.4795-9-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB165939D6D428C1AE34DDC3778CB00@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516004226.4795-10-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659DF4FEF20A48B6753A5178CB00@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:42 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S44 09/14] ice: Refactor ice_setup_rx_ctx
+> Subject: [Intel-wired-lan] [PATCH S44 10/14] ice: Poll for reset completion
+> when DDP load fails
 > 
-> From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> Move AF_XDP logic and buffer allocation out of ice_setup_rx_ctx() to a new
-> function ice_vsi_cfg_rxq(), so the function actually sets up the Rx context.
+> There are certain cases where the DDP load fails and the FW issues a core
+> reset. For these cases, wait for reset to complete before proceeding with
+> reset of the driver init.
 > 
-> Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c | 123 +++++++++++++---------
->  drivers/net/ethernet/intel/ice/ice_base.h |   2 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c  |  10 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c  |   2 +-
->  4 files changed, 80 insertions(+), 57 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
