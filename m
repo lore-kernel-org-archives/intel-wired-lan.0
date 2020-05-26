@@ -1,151 +1,129 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 27 May 2020 05:07:10 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- e086ba2fccda4c196b84a167493f67f089d0ebdc
-Message-ID: <5ecd84fe.6xjchfnrfgJvJK4w%lkp@intel.com>
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Tue, 26 May 2020 17:14:59 -0500
+Subject: [Intel-wired-lan] [PATCH][next] ice: Replace one-element arrays
+ with flexible-arrays
+Message-ID: <20200526221459.GA31611@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: e086ba2fccda4c196b84a167493f67f089d0ebdc  e1000e: disable s0ix entry and exit flows for ME systems
+The current codebase makes use of one-element arrays in the following
+form:
 
-elapsed time: 5215m
+struct something {
+    int length;
+    u8 data[1];
+};
 
-configs tested: 125
-configs skipped: 2
+struct something *instance;
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+instance = kmalloc(sizeof(*instance) + size, GFP_KERNEL);
+instance->length = size;
+memcpy(instance->data, source, size);
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sparc                            allyesconfig
-m68k                             allyesconfig
-xtensa                generic_kc705_defconfig
-m68k                       bvme6000_defconfig
-mips                            e55_defconfig
-sh                           se7722_defconfig
-arc                        vdk_hs38_defconfig
-arm                          gemini_defconfig
-sh                          sdk7786_defconfig
-powerpc                      ppc64e_defconfig
-h8300                               defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20200524
-i386                 randconfig-a004-20200524
-i386                 randconfig-a006-20200524
-i386                 randconfig-a003-20200524
-i386                 randconfig-a002-20200524
-i386                 randconfig-a005-20200524
-i386                 randconfig-a001-20200526
-i386                 randconfig-a004-20200526
-i386                 randconfig-a003-20200526
-i386                 randconfig-a006-20200526
-i386                 randconfig-a002-20200526
-i386                 randconfig-a005-20200526
-x86_64               randconfig-a015-20200526
-x86_64               randconfig-a013-20200526
-x86_64               randconfig-a016-20200526
-x86_64               randconfig-a012-20200526
-x86_64               randconfig-a014-20200526
-x86_64               randconfig-a011-20200526
-x86_64               randconfig-a013-20200524
-x86_64               randconfig-a015-20200524
-x86_64               randconfig-a016-20200524
-x86_64               randconfig-a012-20200524
-x86_64               randconfig-a014-20200524
-x86_64               randconfig-a011-20200524
-i386                 randconfig-a013-20200526
-i386                 randconfig-a015-20200526
-i386                 randconfig-a012-20200526
-i386                 randconfig-a011-20200526
-i386                 randconfig-a016-20200526
-i386                 randconfig-a014-20200526
-i386                 randconfig-a013-20200524
-i386                 randconfig-a015-20200524
-i386                 randconfig-a012-20200524
-i386                 randconfig-a011-20200524
-i386                 randconfig-a016-20200524
-i386                 randconfig-a014-20200524
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                              defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allyesconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
+but the preferred mechanism to declare variable-length types such as
+these ones is a flexible array member[1][2], introduced in C99:
 
+struct foo {
+        int stuff;
+        struct boo array[];
+};
+
+By making use of the mechanism above, we will get a compiler warning
+in case the flexible array does not occur last in the structure, which
+will help us prevent some kind of undefined behavior bugs from being
+inadvertently introduced[3] to the codebase from now on. So, replace
+the one-element array with a flexible-array member.
+
+Also, make use of the sizeof_field() and offsetof() helpers to simplify
+some macros and properly calcualte the size of the structures that
+contain flexible-array members.
+
+This issue was found with the help of Coccinelle and, audited and fixed
+_manually_.
+
+[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+[2] https://github.com/KSPP/linux/issues/21
+[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  6 ++---
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 22 +++++++++----------
+ 2 files changed, 13 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 586d69491268a..faa21830e40d8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -570,7 +570,7 @@ struct ice_sw_rule_lkup_rx_tx {
+ 	 * lookup-type
+ 	 */
+ 	__le16 hdr_len;
+-	u8 hdr[1];
++	u8 hdr[];
+ } __packed;
+ 
+ /* Add/Update/Remove large action command/response entry
+@@ -580,7 +580,7 @@ struct ice_sw_rule_lkup_rx_tx {
+ struct ice_sw_rule_lg_act {
+ 	__le16 index; /* Index in large action table */
+ 	__le16 size;
+-	__le32 act[1]; /* array of size for actions */
++	__le32 act[]; /* array of size for actions */
+ 	/* Max number of large actions */
+ #define ICE_MAX_LG_ACT	4
+ 	/* Bit 0:1 - Action type */
+@@ -640,7 +640,7 @@ struct ice_sw_rule_lg_act {
+ struct ice_sw_rule_vsi_list {
+ 	__le16 index; /* Index of VSI/Prune list */
+ 	__le16 number_vsi;
+-	__le16 vsi[1]; /* Array of number_vsi VSI numbers */
++	__le16 vsi[]; /* Array of number_vsi VSI numbers */
+ };
+ 
+ /* Query VSI list command/response entry */
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 0156b73df1b1f..e3e2ee7bec9e7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -30,24 +30,22 @@ static const u8 dummy_eth_header[DUMMY_ETH_HDR_LEN] = { 0x2, 0, 0, 0, 0, 0,
+ 
+ #define ICE_SW_RULE_RX_TX_ETH_HDR_SIZE \
+ 	(sizeof(struct ice_aqc_sw_rules_elem) - \
+-	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
+-	 sizeof(struct ice_sw_rule_lkup_rx_tx) + DUMMY_ETH_HDR_LEN - 1)
++	 sizeof_field(struct ice_aqc_sw_rules_elem, pdata) + \
++	 sizeof(struct ice_sw_rule_lkup_rx_tx) + DUMMY_ETH_HDR_LEN)
+ #define ICE_SW_RULE_RX_TX_NO_HDR_SIZE \
+ 	(sizeof(struct ice_aqc_sw_rules_elem) - \
+-	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
+-	 sizeof(struct ice_sw_rule_lkup_rx_tx) - 1)
++	 sizeof_field(struct ice_aqc_sw_rules_elem, pdata) + \
++	 sizeof(struct ice_sw_rule_lkup_rx_tx))
+ #define ICE_SW_RULE_LG_ACT_SIZE(n) \
+ 	(sizeof(struct ice_aqc_sw_rules_elem) - \
+-	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
+-	 sizeof(struct ice_sw_rule_lg_act) - \
+-	 sizeof(((struct ice_sw_rule_lg_act *)0)->act) + \
+-	 ((n) * sizeof(((struct ice_sw_rule_lg_act *)0)->act)))
++	 sizeof_field(struct ice_aqc_sw_rules_elem, pdata) + \
++	 offsetof(struct ice_sw_rule_lg_act, act) + \
++	 ((n) * sizeof(__le32)))
+ #define ICE_SW_RULE_VSI_LIST_SIZE(n) \
+ 	(sizeof(struct ice_aqc_sw_rules_elem) - \
+-	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
+-	 sizeof(struct ice_sw_rule_vsi_list) - \
+-	 sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi) + \
+-	 ((n) * sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi)))
++	 sizeof_field(struct ice_aqc_sw_rules_elem, pdata) + \
++	 offsetof(struct ice_sw_rule_vsi_list, vsi) + \
++	 ((n) * sizeof(__le16)))
+ 
+ /**
+  * ice_init_def_sw_recp - initialize the recipe book keeping tables
+-- 
+2.26.2
+
