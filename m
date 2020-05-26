@@ -1,63 +1,154 @@
 From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Date: Tue, 26 May 2020 12:51:12 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: make PF wait reset loop reliable
-Message-ID: <20200526105112.3228-1-piotr.kwapulinski@intel.com>
+Date: Tue, 26 May 2020 12:56:15 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: detect and log info about
+ pre-recovery mode
+Message-ID: <20200526105615.3315-1-piotr.kwapulinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use jiffies to limit max waiting time for PF reset to succeed.
-Previous wait loop was unreliable. It required unreasonably long time
-to wait for PF reset after reboot when NIC was about to enter
-recovery mode
+Detect and log information about pre-recovery mode when firmware
+transitions to a recovery mode.
+When a firmware transitions to a recovery mode it stores a number
+of unexpected EMP resets in one of its registers. The number of EMP
+resets ranging from 0x21 to 0x2A indicates that FW transitions
+to recovery mode. Use these values to emit log entry about transition
+process. Previously the pre-recovery mode may not have been detected
+and there was no log entry when NIC was in pre-recovery mode.
 
 Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 74 +++++++++++++------
+ .../net/ethernet/intel/i40e/i40e_register.h   |  2 +
+ 2 files changed, 53 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2a037ec..4b12a54 100644
+index 2a037ec..ef9630b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14606,25 +14606,23 @@ static bool i40e_check_recovery_mode(struct i40e_pf *pf)
+@@ -14557,28 +14557,17 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags)
   **/
- static i40e_status i40e_pf_loop_reset(struct i40e_pf *pf)
+ static bool i40e_check_recovery_mode(struct i40e_pf *pf)
  {
--	const unsigned short MAX_CNT = 1000;
--	const unsigned short MSECS = 10;
-+	/* wait max 10 seconds for PF reset to succeed */
-+	const unsigned long time_end = jiffies + 10 * HZ;
+-	u32 val = rd32(&pf->hw, I40E_GL_FWSTS) & I40E_GL_FWSTS_FWS1B_MASK;
+-	bool is_recovery_mode = false;
+-
+-	if (pf->hw.mac.type == I40E_MAC_XL710)
+-		is_recovery_mode =
+-		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
+-		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK ||
+-		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK ||
+-		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_NVM_MASK;
+-	if (pf->hw.mac.type == I40E_MAC_X722)
+-		is_recovery_mode =
+-		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
+-		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK;
+-	if (is_recovery_mode) {
+-		dev_notice(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
+-		dev_notice(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
++	u32 val = rd32(&pf->hw, I40E_GL_FWSTS);
 +
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status ret;
--	int cnt;
++	if (val & I40E_GL_FWSTS_FWS1B_MASK) {
++		dev_crit(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
++		dev_crit(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
+ 		set_bit(__I40E_RECOVERY_MODE, pf->state);
  
--	for (cnt = 0; cnt < MAX_CNT; ++cnt) {
-+	ret = i40e_pf_reset(hw);
-+	while (ret != I40E_SUCCESS && time_before(jiffies, time_end)) {
-+		usleep_range(10000, 20000);
+ 		return true;
+ 	}
+-	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
+-		dev_info(&pf->pdev->dev, "Reinitializing in normal mode with full functionality.\n");
++	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
++		dev_info(&pf->pdev->dev, "Please do Power-On Reset to initialize adapter in normal mode with full functionality.\n");
+ 
+ 	return false;
+ }
+@@ -14614,7 +14603,7 @@ static i40e_status i40e_pf_loop_reset(struct i40e_pf *pf)
+ 
+ 	for (cnt = 0; cnt < MAX_CNT; ++cnt) {
  		ret = i40e_pf_reset(hw);
 -		if (!ret)
--			break;
--		msleep(MSECS);
++		if (ret == I40E_SUCCESS)
+ 			break;
+ 		msleep(MSECS);
  	}
- 
--	if (cnt == MAX_CNT) {
-+	if (ret == I40E_SUCCESS)
-+		pf->pfr_count++;
-+	else
- 		dev_info(&pf->pdev->dev, "PF reset failed: %d\n", ret);
--		return ret;
--	}
- 
--	pf->pfr_count++;
+@@ -14628,6 +14617,47 @@ static i40e_status i40e_pf_loop_reset(struct i40e_pf *pf)
  	return ret;
  }
  
++/**
++ * i40e_check_fw_empr - check if FW issued unexpected EMP Reset
++ * @pf: board private structure
++ *
++ * Check FW registers to determine if FW issued unexpected EMP Reset.
++ * Every time when unexpected EMP Reset occurs the FW increments
++ * a counter of unexpected EMP Resets. When the counter reaches 10
++ * the FW should enter the Recovery mode
++ *
++ * Returns true if FW issued unexpected EMP Reset
++ **/
++static inline bool i40e_check_fw_empr(struct i40e_pf *pf)
++{
++	const u32 fw_sts = rd32(&pf->hw, I40E_GL_FWSTS) &
++			   I40E_GL_FWSTS_FWS1B_MASK;
++	return (fw_sts > I40E_GL_FWSTS_FWS1B_EMPR_0) &&
++	       (fw_sts <= I40E_GL_FWSTS_FWS1B_EMPR_10);
++}
++
++/**
++ * i40e_handle_resets - handle EMP resets and PF resets
++ * @pf: board private structure
++ *
++ * Handle both EMP resets and PF resets and conclude whether there are
++ * any issues regarding these resets. If there are any issues then
++ * generate log entry.
++ *
++ * Return 0 if NIC is healthy or negative value when there are issues
++ * with resets
++ **/
++static inline i40e_status i40e_handle_resets(struct i40e_pf *pf)
++{
++	const i40e_status pfr = i40e_pf_loop_reset(pf);
++	const bool is_empr = i40e_check_fw_empr(pf);
++
++	if (is_empr || pfr != I40E_SUCCESS)
++		dev_crit(&pf->pdev->dev, "Entering recovery mode due to repeated FW resets. This may take several minutes. Refer to the Intel(R) Ethernet Adapters and Devices User Guide.\n");
++
++	return is_empr ? I40E_ERR_RESET_FAILED : pfr;
++}
++
+ /**
+  * i40e_init_recovery_mode - initialize subsystems needed in recovery mode
+  * @pf: board private structure
+@@ -14864,11 +14894,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_pf_reset;
+ 	}
+ 
+-	err = i40e_pf_loop_reset(pf);
+-	if (err) {
+-		dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
++	err = i40e_handle_resets(pf);
++	if (err)
+ 		goto err_pf_reset;
+-	}
+ 
+ 	i40e_check_recovery_mode(pf);
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
+index d35d690..32cc874 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_register.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
+@@ -363,6 +363,8 @@
+ #define I40E_GL_FWSTS_FWRI_MASK I40E_MASK(0x1, I40E_GL_FWSTS_FWRI_SHIFT)
+ #define I40E_GL_FWSTS_FWS1B_SHIFT 16
+ #define I40E_GL_FWSTS_FWS1B_MASK I40E_MASK(0xFF, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_GL_FWSTS_FWS1B_EMPR_0 I40E_MASK(0x20, I40E_GL_FWSTS_FWS1B_SHIFT)
++#define I40E_GL_FWSTS_FWS1B_EMPR_10 I40E_MASK(0x2A, I40E_GL_FWSTS_FWS1B_SHIFT)
+ #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK I40E_MASK(0x30, I40E_GL_FWSTS_FWS1B_SHIFT)
+ #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK I40E_MASK(0x31, I40E_GL_FWSTS_FWS1B_SHIFT)
+ #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK I40E_MASK(0x32, I40E_GL_FWSTS_FWS1B_SHIFT)
 -- 
 2.17.1
 
