@@ -1,62 +1,61 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 27 May 2020 22:24:08 +0000
+From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+Date: Wed, 27 May 2020 22:29:35 +0000
 Subject: [Intel-wired-lan] Is it just me? next-queue_dev-queue Compile
  problems with ice as a module.
 In-Reply-To: <BYAPR11MB2888ACE728EDA5B9B758F5E8BCB10@BYAPR11MB2888.namprd11.prod.outlook.com>
 References: <BYAPR11MB2888ACE728EDA5B9B758F5E8BCB10@BYAPR11MB2888.namprd11.prod.outlook.com>
-Message-ID: <DM5PR11MB165925D2DF7AB44B2F2D064C8CB10@DM5PR11MB1659.namprd11.prod.outlook.com>
+Message-ID: <61CC2BC414934749BD9F5BF3D5D94044986DBDD0@ORSMSX112.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Let me do a fresh pull and see if I'm getting the same thing, wasn't getting any errors a few days ago. 
-
+Nope it is not just you.  I have been working on fixing it since last night.  The XDP changes from Bjorn is what caused all these issues.  I just have it all fixed up here in the next hour.
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Brown, Aaron F
-> Sent: Wednesday, May 27, 2020 3:07 PM
+> From: Brown, Aaron F <aaron.f.brown@intel.com>
+> Sent: Wednesday, May 27, 2020 15:07
 > To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] Is it just me? next-queue_dev-queue Compile
-> problems with ice as a module.
+> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Subject: Is it just me? next-queue_dev-queue Compile problems with ice as a
+> module.
 > 
 > Hi all,
 > 
-> I'm getting a compile failure on a fresh pull of next-queue_dev-queue if I try
-> to build a kernel with the ice driver included as a module.  It builds fine when
-> I checkout master branch and build or if I de-select CONFIG_ICE in the
-> .config.  The failure I get is as follows:
+> I'm getting a compile failure on a fresh pull of next-queue_dev-queue if I try to
+> build a kernel with the ice driver included as a module.  It builds fine when I
+> checkout master branch and build or if I de-select CONFIG_ICE in the .config.
+> The failure I get is as follows:
 > -----------------------------------------------
 >   AR      net/core/built-in.a
 >   AR      net/built-in.a
 > u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
 > drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_vsi_cfg_rxq':
-> drivers/net/ethernet/intel/ice/ice_base.c:410:37: error: 'struct xdp_umem'
-> has no member named 'chunk_size_nohr'
+> drivers/net/ethernet/intel/ice/ice_base.c:410:37: error: 'struct xdp_umem' has
+> no member named 'chunk_size_nohr'
 >     ring->rx_buf_len = ring->xsk_umem->chunk_size_nohr -
 >                                      ^
-> drivers/net/ethernet/intel/ice/ice_base.c:412:8: error: 'struct ice_ring' has
-> no member named 'zca'
+> drivers/net/ethernet/intel/ice/ice_base.c:412:8: error: 'struct ice_ring' has no
+> member named 'zca'
 >     ring->zca.free = ice_zca_free;
 >         ^
-> drivers/net/ethernet/intel/ice/ice_base.c:412:21: error: 'ice_zca_free'
-> undeclared (first use in this function)
+> drivers/net/ethernet/intel/ice/ice_base.c:412:21: error: 'ice_zca_free' undeclared
+> (first use in this function)
 >     ring->zca.free = ice_zca_free;
 >                      ^
-> drivers/net/ethernet/intel/ice/ice_base.c:412:21: note: each undeclared
-> identifier is reported only once for each function it appears in
-> drivers/net/ethernet/intel/ice/ice_base.c:414:9: error:
-> 'MEM_TYPE_ZERO_COPY' undeclared (first use in this function)
+> drivers/net/ethernet/intel/ice/ice_base.c:412:21: note: each undeclared identifier
+> is reported only once for each function it appears in
+> drivers/net/ethernet/intel/ice/ice_base.c:414:9: error: 'MEM_TYPE_ZERO_COPY'
+> undeclared (first use in this function)
 >          MEM_TYPE_ZERO_COPY,
 >          ^
-> drivers/net/ethernet/intel/ice/ice_base.c:415:14: error: 'struct ice_ring' has
-> no member named 'zca'
+> drivers/net/ethernet/intel/ice/ice_base.c:415:14: error: 'struct ice_ring' has no
+> member named 'zca'
 >          &ring->zca);
 >               ^
-> drivers/net/ethernet/intel/ice/ice_base.c:422:8: error: 'struct ice_ring' has
-> no member named 'zca'
+> drivers/net/ethernet/intel/ice/ice_base.c:422:8: error: 'struct ice_ring' has no
+> member named 'zca'
 >     ring->zca.free = NULL;
 >         ^
 > drivers/net/ethernet/intel/ice/ice_base.c:445:3: error: implicit declaration of
@@ -76,9 +75,9 @@ Let me do a fresh pull and see if I'm getting the same thing, wasn't getting any
 > u1519:[2]/usr/src/kernels/next-queue>
 > -----------------------------------------------
 > I bisected it down to this patch or one on either side:
-> 714c21f ice: Check UMEM FQ size when allocating bufs I am not exactly sure
-> as I had 0 steps left when I got here, but received a different message on
-> compile instead:
+> 714c21f ice: Check UMEM FQ size when allocating bufs I am not exactly sure as
+> I had 0 steps left when I got here, but received a different message on compile
+> instead:
 > u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
 > drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_setup_rx_ctx':
 > drivers/net/ethernet/intel/ice/ice_base.c:432:3: error: implicit declaration of
@@ -98,7 +97,4 @@ Let me do a fresh pull and see if I'm getting the same thing, wasn't getting any
 > I'm using a relatively minimal kernel so could easily be missing something that
 > gets defined elsewhere.
 > 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
