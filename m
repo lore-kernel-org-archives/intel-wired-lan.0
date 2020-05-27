@@ -1,68 +1,104 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 28 May 2020 06:08:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 5/96]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition
- of 'truesize'
-Message-ID: <202005280640.DVIDnFaN%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 27 May 2020 22:24:08 +0000
+Subject: [Intel-wired-lan] Is it just me? next-queue_dev-queue Compile
+ problems with ice as a module.
+In-Reply-To: <BYAPR11MB2888ACE728EDA5B9B758F5E8BCB10@BYAPR11MB2888.namprd11.prod.outlook.com>
+References: <BYAPR11MB2888ACE728EDA5B9B758F5E8BCB10@BYAPR11MB2888.namprd11.prod.outlook.com>
+Message-ID: <DM5PR11MB165925D2DF7AB44B2F2D064C8CB10@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   3d503a6460bbb1818124427e24618c53b2796d55
-commit: 7a3fb46c3d63d783ef155c160105f3d4d7c25f6a [5/96] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
-config: alpha-randconfig-r024-20200527 (attached as .config)
-compiler: alpha-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 7a3fb46c3d63d783ef155c160105f3d4d7c25f6a
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
+Let me do a fresh pull and see if I'm getting the same thing, wasn't getting any errors a few days ago. 
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
-
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition of 'truesize'
-2271 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-|               ^~~~~~~~
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2267:15: note: previous definition of 'truesize' was here
-2267 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-|               ^~~~~~~~
-
-vim +/truesize +2271 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  2262	
-  2263	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
-  2264					 struct ixgbe_rx_buffer *rx_buffer,
-  2265					 unsigned int size)
-  2266	{
-  2267		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-  2268	#if (PAGE_SIZE < 8192)
-  2269		rx_buffer->page_offset ^= truesize;
-  2270	#else
-> 2271		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-  2272					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
-  2273					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
-  2274					SKB_DATA_ALIGN(size);
-  2275	
-  2276		rx_buffer->page_offset += truesize;
-  2277	#endif
-  2278	}
-  2279	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 33083 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200528/c812c81a/attachment-0001.bin>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Brown, Aaron F
+> Sent: Wednesday, May 27, 2020 3:07 PM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] Is it just me? next-queue_dev-queue Compile
+> problems with ice as a module.
+> 
+> Hi all,
+> 
+> I'm getting a compile failure on a fresh pull of next-queue_dev-queue if I try
+> to build a kernel with the ice driver included as a module.  It builds fine when
+> I checkout master branch and build or if I de-select CONFIG_ICE in the
+> .config.  The failure I get is as follows:
+> -----------------------------------------------
+>   AR      net/core/built-in.a
+>   AR      net/built-in.a
+> u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
+> drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_vsi_cfg_rxq':
+> drivers/net/ethernet/intel/ice/ice_base.c:410:37: error: 'struct xdp_umem'
+> has no member named 'chunk_size_nohr'
+>     ring->rx_buf_len = ring->xsk_umem->chunk_size_nohr -
+>                                      ^
+> drivers/net/ethernet/intel/ice/ice_base.c:412:8: error: 'struct ice_ring' has
+> no member named 'zca'
+>     ring->zca.free = ice_zca_free;
+>         ^
+> drivers/net/ethernet/intel/ice/ice_base.c:412:21: error: 'ice_zca_free'
+> undeclared (first use in this function)
+>     ring->zca.free = ice_zca_free;
+>                      ^
+> drivers/net/ethernet/intel/ice/ice_base.c:412:21: note: each undeclared
+> identifier is reported only once for each function it appears in
+> drivers/net/ethernet/intel/ice/ice_base.c:414:9: error:
+> 'MEM_TYPE_ZERO_COPY' undeclared (first use in this function)
+>          MEM_TYPE_ZERO_COPY,
+>          ^
+> drivers/net/ethernet/intel/ice/ice_base.c:415:14: error: 'struct ice_ring' has
+> no member named 'zca'
+>          &ring->zca);
+>               ^
+> drivers/net/ethernet/intel/ice/ice_base.c:422:8: error: 'struct ice_ring' has
+> no member named 'zca'
+>     ring->zca.free = NULL;
+>         ^
+> drivers/net/ethernet/intel/ice/ice_base.c:445:3: error: implicit declaration of
+> function 'xsk_umem_has_addrs_rq' [-Werror=implicit-function-declaration]
+>    if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
+>    ^
+> cc1: some warnings being treated as errors
+> make[6]: *** [drivers/net/ethernet/intel/ice/ice_base.o] Error 1
+> make[6]: *** Waiting for unfinished jobs....
+> make[5]: *** [drivers/net/ethernet/intel/ice] Error 2
+> make[4]: *** [drivers/net/ethernet/intel] Error 2
+> make[3]: *** [drivers/net/ethernet] Error 2
+> make[2]: *** [drivers/net] Error 2
+> make[1]: *** [drivers] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+> make: *** [sub-make] Error 2
+> u1519:[2]/usr/src/kernels/next-queue>
+> -----------------------------------------------
+> I bisected it down to this patch or one on either side:
+> 714c21f ice: Check UMEM FQ size when allocating bufs I am not exactly sure
+> as I had 0 steps left when I got here, but received a different message on
+> compile instead:
+> u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
+> drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_setup_rx_ctx':
+> drivers/net/ethernet/intel/ice/ice_base.c:432:3: error: implicit declaration of
+> function 'xsk_umem_has_addrs_rq' [-Werror=implicit-function-declaration]
+>    if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
+>    ^
+> cc1: some warnings being treated as errors
+> make[6]: *** [drivers/net/ethernet/intel/ice/ice_base.o] Error 1
+> make[5]: *** [drivers/net/ethernet/intel/ice] Error 2
+> make[4]: *** [drivers/net/ethernet/intel] Error 2
+> make[3]: *** [drivers/net/ethernet] Error 2
+> make[2]: *** [drivers/net] Error 2
+> make[1]: *** [drivers] Error 2
+> make: *** [sub-make] Error 2
+> u1519:[2]/usr/src/kernels/next-queue>
+> 
+> I'm using a relatively minimal kernel so could easily be missing something that
+> gets defined elsewhere.
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
