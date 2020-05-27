@@ -1,149 +1,73 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 May 2020 14:12:04 -0700
-Subject: [Intel-wired-lan] [next-queue v2] i40e: detect and log info about
- pre-recovery mode
-Message-ID: <20200527211204.234642-1-jeffrey.t.kirsher@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 27 May 2020 22:06:50 +0000
+Subject: [Intel-wired-lan] Is it just me? next-queue_dev-queue Compile
+ problems with ice as a module.
+Message-ID: <BYAPR11MB2888ACE728EDA5B9B758F5E8BCB10@BYAPR11MB2888.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
+Hi all,
 
-Detect and log information about pre-recovery mode when firmware
-transitions to a recovery mode.
-When a firmware transitions to a recovery mode it stores a number
-of unexpected EMP resets in one of its registers. The number of EMP
-resets ranging from 0x21 to 0x2A indicates that FW transitions
-to recovery mode. Use these values to emit log entry about transition
-process. Previously the pre-recovery mode may not have been detected
-and there was no log entry when NIC was in pre-recovery mode.
+I'm getting a compile failure on a fresh pull of next-queue_dev-queue if I try to build a kernel with the ice driver included as a module.  It builds fine when I checkout master branch and build or if I de-select CONFIG_ICE in the .config.  The failure I get is as follows:
+-----------------------------------------------
+  AR      net/core/built-in.a
+  AR      net/built-in.a
+u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
+drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_vsi_cfg_rxq':
+drivers/net/ethernet/intel/ice/ice_base.c:410:37: error: 'struct xdp_umem' has no member named 'chunk_size_nohr'
+    ring->rx_buf_len = ring->xsk_umem->chunk_size_nohr -
+                                     ^
+drivers/net/ethernet/intel/ice/ice_base.c:412:8: error: 'struct ice_ring' has no member named 'zca'
+    ring->zca.free = ice_zca_free;
+        ^
+drivers/net/ethernet/intel/ice/ice_base.c:412:21: error: 'ice_zca_free' undeclared (first use in this function)
+    ring->zca.free = ice_zca_free;
+                     ^
+drivers/net/ethernet/intel/ice/ice_base.c:412:21: note: each undeclared identifier is reported only once for each function it appears in
+drivers/net/ethernet/intel/ice/ice_base.c:414:9: error: 'MEM_TYPE_ZERO_COPY' undeclared (first use in this function)
+         MEM_TYPE_ZERO_COPY,
+         ^
+drivers/net/ethernet/intel/ice/ice_base.c:415:14: error: 'struct ice_ring' has no member named 'zca'
+         &ring->zca);
+              ^
+drivers/net/ethernet/intel/ice/ice_base.c:422:8: error: 'struct ice_ring' has no member named 'zca'
+    ring->zca.free = NULL;
+        ^
+drivers/net/ethernet/intel/ice/ice_base.c:445:3: error: implicit declaration of function 'xsk_umem_has_addrs_rq' [-Werror=implicit-function-declaration]
+   if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
+   ^
+cc1: some warnings being treated as errors
+make[6]: *** [drivers/net/ethernet/intel/ice/ice_base.o] Error 1
+make[6]: *** Waiting for unfinished jobs....
+make[5]: *** [drivers/net/ethernet/intel/ice] Error 2
+make[4]: *** [drivers/net/ethernet/intel] Error 2
+make[3]: *** [drivers/net/ethernet] Error 2
+make[2]: *** [drivers/net] Error 2
+make[1]: *** [drivers] Error 2
+make[1]: *** Waiting for unfinished jobs....
+make: *** [sub-make] Error 2
+u1519:[2]/usr/src/kernels/next-queue>
+-----------------------------------------------
+I bisected it down to this patch or one on either side: 
+714c21f ice: Check UMEM FQ size when allocating bufs
+I am not exactly sure as I had 0 steps left when I got here, but received a different message on compile instead:
+u1519:[2]/usr/src/kernels/next-queue> cat err_make.log
+drivers/net/ethernet/intel/ice/ice_base.c: In function 'ice_setup_rx_ctx':
+drivers/net/ethernet/intel/ice/ice_base.c:432:3: error: implicit declaration of function 'xsk_umem_has_addrs_rq' [-Werror=implicit-function-declaration]
+   if (!xsk_umem_has_addrs_rq(ring->xsk_umem, num_bufs)) {
+   ^
+cc1: some warnings being treated as errors
+make[6]: *** [drivers/net/ethernet/intel/ice/ice_base.o] Error 1
+make[5]: *** [drivers/net/ethernet/intel/ice] Error 2
+make[4]: *** [drivers/net/ethernet/intel] Error 2
+make[3]: *** [drivers/net/ethernet] Error 2
+make[2]: *** [drivers/net] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+u1519:[2]/usr/src/kernels/next-queue>
 
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
----
-v2: Fixed conflicts when trying to apply to next-queue tree
-
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 72 +++++++++++++------
- .../net/ethernet/intel/i40e/i40e_register.h   |  2 +
- 2 files changed, 52 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5c21b7bafd8a..fe53cda1a187 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -14562,28 +14562,17 @@ void i40e_set_fec_in_flags(u8 fec_cfg, u32 *flags)
-  **/
- static bool i40e_check_recovery_mode(struct i40e_pf *pf)
- {
--	u32 val = rd32(&pf->hw, I40E_GL_FWSTS) & I40E_GL_FWSTS_FWS1B_MASK;
--	bool is_recovery_mode = false;
--
--	if (pf->hw.mac.type == I40E_MAC_XL710)
--		is_recovery_mode =
--		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
--		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK ||
--		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK ||
--		val == I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_NVM_MASK;
--	if (pf->hw.mac.type == I40E_MAC_X722)
--		is_recovery_mode =
--		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK ||
--		val == I40E_X722_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK;
--	if (is_recovery_mode) {
--		dev_notice(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
--		dev_notice(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
-+	u32 val = rd32(&pf->hw, I40E_GL_FWSTS);
-+
-+	if (val & I40E_GL_FWSTS_FWS1B_MASK) {
-+		dev_crit(&pf->pdev->dev, "Firmware recovery mode detected. Limiting functionality.\n");
-+		dev_crit(&pf->pdev->dev, "Refer to the Intel(R) Ethernet Adapters and Devices User Guide for details on firmware recovery mode.\n");
- 		set_bit(__I40E_RECOVERY_MODE, pf->state);
- 
- 		return true;
- 	}
--	if (test_and_clear_bit(__I40E_RECOVERY_MODE, pf->state))
--		dev_info(&pf->pdev->dev, "Reinitializing in normal mode with full functionality.\n");
-+	if (test_bit(__I40E_RECOVERY_MODE, pf->state))
-+		dev_info(&pf->pdev->dev, "Please do Power-On Reset to initialize adapter in normal mode with full functionality.\n");
- 
- 	return false;
- }
-@@ -14631,6 +14620,47 @@ static i40e_status i40e_pf_loop_reset(struct i40e_pf *pf)
- 	return ret;
- }
- 
-+/**
-+ * i40e_check_fw_empr - check if FW issued unexpected EMP Reset
-+ * @pf: board private structure
-+ *
-+ * Check FW registers to determine if FW issued unexpected EMP Reset.
-+ * Every time when unexpected EMP Reset occurs the FW increments
-+ * a counter of unexpected EMP Resets. When the counter reaches 10
-+ * the FW should enter the Recovery mode
-+ *
-+ * Returns true if FW issued unexpected EMP Reset
-+ **/
-+static inline bool i40e_check_fw_empr(struct i40e_pf *pf)
-+{
-+	const u32 fw_sts = rd32(&pf->hw, I40E_GL_FWSTS) &
-+			   I40E_GL_FWSTS_FWS1B_MASK;
-+	return (fw_sts > I40E_GL_FWSTS_FWS1B_EMPR_0) &&
-+	       (fw_sts <= I40E_GL_FWSTS_FWS1B_EMPR_10);
-+}
-+
-+/**
-+ * i40e_handle_resets - handle EMP resets and PF resets
-+ * @pf: board private structure
-+ *
-+ * Handle both EMP resets and PF resets and conclude whether there are
-+ * any issues regarding these resets. If there are any issues then
-+ * generate log entry.
-+ *
-+ * Return 0 if NIC is healthy or negative value when there are issues
-+ * with resets
-+ **/
-+static inline i40e_status i40e_handle_resets(struct i40e_pf *pf)
-+{
-+	const i40e_status pfr = i40e_pf_loop_reset(pf);
-+	const bool is_empr = i40e_check_fw_empr(pf);
-+
-+	if (is_empr || pfr != I40E_SUCCESS)
-+		dev_crit(&pf->pdev->dev, "Entering recovery mode due to repeated FW resets. This may take several minutes. Refer to the Intel(R) Ethernet Adapters and Devices User Guide.\n");
-+
-+	return is_empr ? I40E_ERR_RESET_FAILED : pfr;
-+}
-+
- /**
-  * i40e_init_recovery_mode - initialize subsystems needed in recovery mode
-  * @pf: board private structure
-@@ -14867,11 +14897,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_pf_reset;
- 	}
- 
--	err = i40e_pf_loop_reset(pf);
--	if (err) {
--		dev_info(&pdev->dev, "Initial pf_reset failed: %d\n", err);
-+	err = i40e_handle_resets(pf);
-+	if (err)
- 		goto err_pf_reset;
--	}
- 
- 	i40e_check_recovery_mode(pf);
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
-index d9c8ff6a47d3..8b9a12393a50 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_register.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
-@@ -43,6 +43,8 @@
- #define I40E_GL_FWSTS 0x00083048 /* Reset: POR */
- #define I40E_GL_FWSTS_FWS1B_SHIFT 16
- #define I40E_GL_FWSTS_FWS1B_MASK I40E_MASK(0xFF, I40E_GL_FWSTS_FWS1B_SHIFT)
-+#define I40E_GL_FWSTS_FWS1B_EMPR_0 I40E_MASK(0x20, I40E_GL_FWSTS_FWS1B_SHIFT)
-+#define I40E_GL_FWSTS_FWS1B_EMPR_10 I40E_MASK(0x2A, I40E_GL_FWSTS_FWS1B_SHIFT)
- #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_CORER_MASK I40E_MASK(0x30, I40E_GL_FWSTS_FWS1B_SHIFT)
- #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_GLOBR_MASK I40E_MASK(0x31, I40E_GL_FWSTS_FWS1B_SHIFT)
- #define I40E_XL710_GL_FWSTS_FWS1B_REC_MOD_TRANSITION_MASK I40E_MASK(0x32, I40E_GL_FWSTS_FWS1B_SHIFT)
--- 
-2.26.2
+I'm using a relatively minimal kernel so could easily be missing something that gets defined elsewhere.
 
