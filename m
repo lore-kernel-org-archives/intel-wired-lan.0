@@ -1,134 +1,113 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Wed, 27 May 2020 07:27:37 -0500
-Subject: [Intel-wired-lan] [PATCH v2][net-next] ice: Replace one-element
- arrays with flexible-arrays
-Message-ID: <20200527122737.GA18133@embeddedor>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 27 May 2020 15:47:00 +0200
+Subject: [Intel-wired-lan] [PATCH] [net-next] e1000e: fix unused-function
+ warning
+Message-ID: <20200527134716.948148-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The current codebase makes use of one-element arrays in the following
-form:
+The CONFIG_PM_SLEEP #ifdef checks in this file are inconsistent,
+leading to a warning about sometimes unused function:
 
-struct something {
-    int length;
-    u8 data[1];
-};
+drivers/net/ethernet/intel/e1000e/netdev.c:137:13: error: unused function 'e1000e_check_me' [-Werror,-Wunused-function]
 
-struct something *instance;
+Rather than adding more #ifdefs, just remove them completely
+and mark the PM functions as __maybe_unused to let the compiler
+work it out on it own.
 
-instance = kmalloc(sizeof(*instance) + size, GFP_KERNEL);
-instance->length = size;
-memcpy(instance->data, source, size);
-
-but the preferred mechanism to declare variable-length types such as
-these ones is a flexible array member[1][2], introduced in C99:
-
-struct foo {
-        int stuff;
-        struct boo array[];
-};
-
-By making use of the mechanism above, we will get a compiler warning
-in case the flexible array does not occur last in the structure, which
-will help us prevent some kind of undefined behavior bugs from being
-inadvertently introduced[3] to the codebase from now on. So, replace
-the one-element array with a flexible-array member.
-
-Also, make use of the offsetof() helper in order to simplify the macros
-that calculate the size of the structures that contain flexible-array
-members.
-
-This issue was found with the help of Coccinelle and, audited _manually_.
-
-[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-[2] https://github.com/KSPP/linux/issues/21
-[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
-
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-Changes in v2:
- - Use offsetof(struct ice_aqc_sw_rules_elem, pdata) instead of
-   sizeof(struct ice_aqc_sw_rules_elem) - sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata)
- - Update changelog text. 
+ drivers/net/ethernet/intel/e1000e/netdev.c | 16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  6 ++---
- drivers/net/ethernet/intel/ice/ice_switch.c   | 26 +++++++------------
- 2 files changed, 13 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 586d69491268a..faa21830e40d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -570,7 +570,7 @@ struct ice_sw_rule_lkup_rx_tx {
- 	 * lookup-type
- 	 */
- 	__le16 hdr_len;
--	u8 hdr[1];
-+	u8 hdr[];
- } __packed;
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9cc8ec5421d5..66ca083b95f9 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6351,7 +6351,6 @@ static void e1000e_flush_lpic(struct pci_dev *pdev)
+ 	pm_runtime_put_sync(netdev->dev.parent);
+ }
  
- /* Add/Update/Remove large action command/response entry
-@@ -580,7 +580,7 @@ struct ice_sw_rule_lkup_rx_tx {
- struct ice_sw_rule_lg_act {
- 	__le16 index; /* Index in large action table */
- 	__le16 size;
--	__le32 act[1]; /* array of size for actions */
-+	__le32 act[]; /* array of size for actions */
- 	/* Max number of large actions */
- #define ICE_MAX_LG_ACT	4
- 	/* Bit 0:1 - Action type */
-@@ -640,7 +640,7 @@ struct ice_sw_rule_lg_act {
- struct ice_sw_rule_vsi_list {
- 	__le16 index; /* Index of VSI/Prune list */
- 	__le16 number_vsi;
--	__le16 vsi[1]; /* Array of number_vsi VSI numbers */
-+	__le16 vsi[]; /* Array of number_vsi VSI numbers */
- };
+-#ifdef CONFIG_PM_SLEEP
+ /* S0ix implementation */
+ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+ {
+@@ -6573,7 +6572,6 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 	mac_data &= ~E1000_CTRL_EXT_FORCE_SMBUS;
+ 	ew32(CTRL_EXT, mac_data);
+ }
+-#endif /* CONFIG_PM_SLEEP */
  
- /* Query VSI list command/response entry */
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 0156b73df1b1f..df0ddffaf03a2 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -29,25 +29,19 @@ static const u8 dummy_eth_header[DUMMY_ETH_HDR_LEN] = { 0x2, 0, 0, 0, 0, 0,
- 							0x81, 0, 0, 0};
+ static int e1000e_pm_freeze(struct device *dev)
+ {
+@@ -6871,7 +6869,6 @@ static int e1000e_pm_thaw(struct device *dev)
+ 	return rc;
+ }
  
- #define ICE_SW_RULE_RX_TX_ETH_HDR_SIZE \
--	(sizeof(struct ice_aqc_sw_rules_elem) - \
--	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
--	 sizeof(struct ice_sw_rule_lkup_rx_tx) + DUMMY_ETH_HDR_LEN - 1)
-+	(offsetof(struct ice_aqc_sw_rules_elem, pdata) + \
-+	 sizeof(struct ice_sw_rule_lkup_rx_tx) + DUMMY_ETH_HDR_LEN)
- #define ICE_SW_RULE_RX_TX_NO_HDR_SIZE \
--	(sizeof(struct ice_aqc_sw_rules_elem) - \
--	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
--	 sizeof(struct ice_sw_rule_lkup_rx_tx) - 1)
-+	(offsetof(struct ice_aqc_sw_rules_elem, pdata) + \
-+	 sizeof(struct ice_sw_rule_lkup_rx_tx))
- #define ICE_SW_RULE_LG_ACT_SIZE(n) \
--	(sizeof(struct ice_aqc_sw_rules_elem) - \
--	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
--	 sizeof(struct ice_sw_rule_lg_act) - \
--	 sizeof(((struct ice_sw_rule_lg_act *)0)->act) + \
--	 ((n) * sizeof(((struct ice_sw_rule_lg_act *)0)->act)))
-+	(offsetof(struct ice_aqc_sw_rules_elem, pdata) + \
-+	 offsetof(struct ice_sw_rule_lg_act, act) + \
-+	 ((n) * sizeof(__le32)))
- #define ICE_SW_RULE_VSI_LIST_SIZE(n) \
--	(sizeof(struct ice_aqc_sw_rules_elem) - \
--	 sizeof(((struct ice_aqc_sw_rules_elem *)0)->pdata) + \
--	 sizeof(struct ice_sw_rule_vsi_list) - \
--	 sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi) + \
--	 ((n) * sizeof(((struct ice_sw_rule_vsi_list *)0)->vsi)))
-+	(offsetof(struct ice_aqc_sw_rules_elem, pdata) + \
-+	 offsetof(struct ice_sw_rule_vsi_list, vsi) + \
-+	 ((n) * sizeof(__le16)))
+-#ifdef CONFIG_PM
+ static int __e1000_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -6937,8 +6934,7 @@ static int __e1000_resume(struct pci_dev *pdev)
+ 	return 0;
+ }
  
- /**
-  * ice_init_def_sw_recp - initialize the recipe book keeping tables
+-#ifdef CONFIG_PM_SLEEP
+-static int e1000e_pm_suspend(struct device *dev)
++static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+@@ -6962,7 +6958,7 @@ static int e1000e_pm_suspend(struct device *dev)
+ 	return rc;
+ }
+ 
+-static int e1000e_pm_resume(struct device *dev)
++static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+@@ -6981,9 +6977,8 @@ static int e1000e_pm_resume(struct device *dev)
+ 
+ 	return e1000e_pm_thaw(dev);
+ }
+-#endif /* CONFIG_PM_SLEEP */
+ 
+-static int e1000e_pm_runtime_idle(struct device *dev)
++static __maybe_unused int e1000e_pm_runtime_idle(struct device *dev)
+ {
+ 	struct net_device *netdev = dev_get_drvdata(dev);
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+@@ -6999,7 +6994,7 @@ static int e1000e_pm_runtime_idle(struct device *dev)
+ 	return -EBUSY;
+ }
+ 
+-static int e1000e_pm_runtime_resume(struct device *dev)
++static __maybe_unused int e1000e_pm_runtime_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -7016,7 +7011,7 @@ static int e1000e_pm_runtime_resume(struct device *dev)
+ 	return rc;
+ }
+ 
+-static int e1000e_pm_runtime_suspend(struct device *dev)
++static __maybe_unused int e1000e_pm_runtime_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -7041,7 +7036,6 @@ static int e1000e_pm_runtime_suspend(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif /* CONFIG_PM */
+ 
+ static void e1000_shutdown(struct pci_dev *pdev)
+ {
 -- 
 2.26.2
 
