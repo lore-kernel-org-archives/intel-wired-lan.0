@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 23:19:45 +0000
-Subject: [Intel-wired-lan] [PATCH S46 6/9] ice: fix PCI device serial
- number to be lowercase values
-In-Reply-To: <20200516005506.5113-6-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 23:20:06 +0000
+Subject: [Intel-wired-lan] [PATCH S46 7/9] ice: Use coalesce values from
+ q_vector 0 when increasing q_vectors
+In-Reply-To: <20200516005506.5113-7-anthony.l.nguyen@intel.com>
 References: <20200516005506.5113-1-anthony.l.nguyen@intel.com>
- <20200516005506.5113-6-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB16599D4C071B91EE9E4F6C9F8C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005506.5113-7-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659F3FD9950A7DF12482C098C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S46 6/9] ice: fix PCI device serial number to
-> be lowercase values
+> Subject: [Intel-wired-lan] [PATCH S46 7/9] ice: Use coalesce values from
+> q_vector 0 when increasing q_vectors
 > 
-> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Commit ceb2f00707f9 ("ice: Use pci_get_dsn()") changed the code to use a
-> new function to get the Device Serial Number. It also changed the case of the
-> filename for loading a package on a specific NIC from lowercase to
-> uppercase. Change the filename back to lowercase since that is what we
-> specified.
+> Currently when a VSI is built (i.e. reset, set channels, etc.) the coalesce
+> settings will be preserved in most cases. However, when the number of
+> q_vectors are increased the settings for the new q_vectors will be set to the
+> driver defaults of AIM on, Rx/Tx ITR 50, and INTRL 0.
+> This is causing issues with how the ethtool layer gets the current coalesce
+> settings since it only uses q_vector 0. So, assume that the user set the
+> coalesce settings globally (i.e. ethtool -C eth0) and use q_vector 0's settings
+> for all of the new q_vectors.
 > 
-> Fixes: ceb2f00707f9 ("ice: Use pci_get_dsn()")
-> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
