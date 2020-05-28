@@ -1,46 +1,38 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 29 May 2020 04:46:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 91/101] cc1:
- warning: drivers/net/ethernet/intel/idpf/../include: No such file or
- directory
-Message-ID: <202005290454.g4d19ubh%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 28 May 2020 21:38:52 +0000
+Subject: [Intel-wired-lan] [PATCH S45 01/15] ice: Refactor
+ ice_ena_vf_mappings to split MSIX and queue mappings
+In-Reply-To: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659FAB6B2C65C6506C8B1848C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   3ef27f2497f6408f432049c5d117d425048ae1e7
-commit: 4f3de7b8a4f2d62fdb138f1878d3885e4f7cb47a [91/101] idpf: Introduce idpf driver
-config: sparc64-allyesconfig (attached as .config)
-compiler: sparc64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 4f3de7b8a4f2d62fdb138f1878d3885e4f7cb47a
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc64 
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Friday, May 15, 2020 5:51 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S45 01/15] ice: Refactor
+> ice_ena_vf_mappings to split MSIX and queue mappings
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Currently ice_ena_vf_mappings() does all of the VF's MSIX and queue
+> mapping in one function. This makes it hard to digest. Fix this by creating a
+> new function for enabling MSIX mappings and one for enabling queue
+> mappings.
+> 
+> Also, rename some variables in the functions for clarity.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 91 ++++++++++++-------
+>  1 file changed, 59 insertions(+), 32 deletions(-)
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
 
->> cc1: warning: drivers/net/ethernet/intel/idpf/../include: No such file or directory [-Wmissing-include-dirs]
-In file included from drivers/net/ethernet/intel/idpf/idpf_main.c:8:
-drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No such file or directory
-7 | #include "iecm.h"
-|          ^~~~~~~~
-compilation terminated.
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 62526 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200529/e4c8d15d/attachment-0001.bin>
