@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 23:18:10 +0000
-Subject: [Intel-wired-lan] [PATCH S46 2/9] ice: Always clear
- QRXFLXP_CNTXT before writing new value
-In-Reply-To: <20200516005506.5113-2-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 23:18:28 +0000
+Subject: [Intel-wired-lan] [PATCH S46 3/9] ice: Fix inability to set
+ channels when down
+In-Reply-To: <20200516005506.5113-3-anthony.l.nguyen@intel.com>
 References: <20200516005506.5113-1-anthony.l.nguyen@intel.com>
- <20200516005506.5113-2-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB165990B8E3C16B71C4C79D118C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005506.5113-3-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659AFD89009B1FAF8977F658C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S46 2/9] ice: Always clear QRXFLXP_CNTXT
-> before writing new value
+> Subject: [Intel-wired-lan] [PATCH S46 3/9] ice: Fix inability to set channels
+> when down
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Always clear the previous value in QRXFLXP_CNTXT before writing a new
-> value. This will make it so re-used queues will not accidentally take the
-> previously configured settings.
+> Currently the driver prevents a user from doing modprobe ice ethtool -L eth0
+> combined 5 ip link set eth0 up
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> The ethtool command fails, because the driver is checking to see if the
+> interface is down before allowing the get_channels to proceed (even for a
+> set_channels).
+> 
+> Remove this check and allow the user to configure the interface before
+> bringing it up, which is a much better usability case.
+> 
+> Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c | 33 ++++++++---------------
-> drivers/net/ethernet/intel/ice/ice_lib.c  | 26 ++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_lib.h  |  3 +++
->  3 files changed, 40 insertions(+), 22 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ----
+>  1 file changed, 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
