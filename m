@@ -1,10 +1,10 @@
 From: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
-Date: Thu, 28 May 2020 12:43:36 -0700
-Subject: [Intel-wired-lan] [PATCH 08/14] virtual-bus: remove superfluous
- assignment
+Date: Thu, 28 May 2020 12:43:32 -0700
+Subject: [Intel-wired-lan] [PATCH 04/14] virtual-bus: add comment for
+ virtbus entry
 In-Reply-To: <20200528194342.3495-1-ranjani.sridharan@linux.intel.com>
 References: <20200528194342.3495-1-ranjani.sridharan@linux.intel.com>
-Message-ID: <20200528194342.3495-9-ranjani.sridharan@linux.intel.com>
+Message-ID: <20200528194342.3495-5-ranjani.sridharan@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,22 +13,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Signed-off-by: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
 ---
- drivers/bus/virtual_bus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/mod/file2alias.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/bus/virtual_bus.c b/drivers/bus/virtual_bus.c
-index 519b578a347f..2b0007932517 100644
---- a/drivers/bus/virtual_bus.c
-+++ b/drivers/bus/virtual_bus.c
-@@ -153,7 +153,7 @@ static int virtbus_remove_driver(struct device *_dev)
- {
- 	struct virtbus_driver *vdrv = to_virtbus_drv(_dev->driver);
- 	struct virtbus_device *vdev = to_virtbus_dev(_dev);
--	int ret = 0;
-+	int ret;
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index fd3908ed922d..929fc152e404 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -1361,6 +1361,7 @@ static int do_mhi_entry(const char *filename, void *symval, char *alias)
+ 	return 1;
+ }
  
- 	ret = vdrv->remove(vdev);
- 	dev_pm_domain_detach(_dev, true);
++/* Looks like: virtbus:S */
+ static int do_virtbus_entry(const char *filename, void *symval, char *alias)
+ {
+ 	DEF_FIELD_ADDR(symval, virtbus_device_id, name);
 -- 
 2.17.1
 
