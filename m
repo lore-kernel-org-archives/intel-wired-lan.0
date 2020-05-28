@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 21:43:55 +0000
-Subject: [Intel-wired-lan] [PATCH S45 12/15] ice: support adding 16
- unicast/multicast filter on untrusted VF
-In-Reply-To: <20200516005121.4963-12-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 21:44:20 +0000
+Subject: [Intel-wired-lan] [PATCH S45 13/15] ice: Fix transmit for all
+ software offloaded VLANs
+In-Reply-To: <20200516005121.4963-13-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
- <20200516005121.4963-12-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB16596D7F3DEECCE5B3C919008C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005121.4963-13-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB1659C755CC20AF8D106083188C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S45 12/15] ice: support adding 16
-> unicast/multicast filter on untrusted VF
+> Subject: [Intel-wired-lan] [PATCH S45 13/15] ice: Fix transmit for all software
+> offloaded VLANs
 > 
-> From: Paul Greenwalt <paul.greenwalt@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Allow untrusted VF to add 16 unicast/multicast filters. VF uses 1 filter for the
-> default/perm_addr/LAA MAC, 1 for broadcast, and 16 additional
-> unicast/multicast filters.
+> Currently the driver does not recognize when there is an 802.1AD VLAN tag
+> right after the dmac/smac (outermost VLAN tag). If any DCB map is applied
+> and/or DCB is enabled this is causing the hardware to insert a VLAN 0 tag
+> after the 802.1AD VLAN tag that is already in the packet.
+> Fix this by preventing VLAN tag 0 from being added when any VLAN is
+> already present after dmac/smac (software offloaded) or skb (hardware
+> offloaded).
 > 
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 28 +++++-------
+> drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_txrx.c    | 45 +++++---------------
+>  3 files changed, 21 insertions(+), 54 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
