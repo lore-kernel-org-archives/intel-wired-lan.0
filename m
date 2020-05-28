@@ -1,123 +1,60 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Thu, 28 May 2020 08:01:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
- 8529944465b047b3e2273a6b11a77d97b55c2f16
-Message-ID: <5eceff4b.gA8KkOBSEPCRSELl%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 28 May 2020 10:11:11 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove Sequence Error Counter
+Message-ID: <20200528071111.9808-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: 8529944465b047b3e2273a6b11a77d97b55c2f16  idpf: Introduce idpf driver
+Accordance to the i225 datasheet sequence error counter does not
+applicable to the i225 device.
+This patch comes to clean up this counter.
 
-elapsed time: 1169m
-
-configs tested: 97
-configs skipped: 1
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a001-20200527
-i386                 randconfig-a004-20200527
-i386                 randconfig-a003-20200527
-i386                 randconfig-a006-20200527
-i386                 randconfig-a002-20200527
-i386                 randconfig-a005-20200527
-x86_64               randconfig-a006-20200527
-x86_64               randconfig-a002-20200527
-x86_64               randconfig-a005-20200527
-x86_64               randconfig-a003-20200527
-x86_64               randconfig-a004-20200527
-x86_64               randconfig-a001-20200527
-i386                 randconfig-a013-20200527
-i386                 randconfig-a015-20200527
-i386                 randconfig-a012-20200527
-i386                 randconfig-a011-20200527
-i386                 randconfig-a016-20200527
-i386                 randconfig-a014-20200527
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                               allyesconfig
-um                                allnoconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
-
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc_mac.c  | 1 -
+ drivers/net/ethernet/intel/igc/igc_main.c | 1 -
+ drivers/net/ethernet/intel/igc/igc_regs.h | 1 -
+ 3 files changed, 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index a5a087e1ac02..fb496617e8e1 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -243,7 +243,6 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
+ 	rd32(IGC_COLC);
+ 	rd32(IGC_RERC);
+ 	rd32(IGC_DC);
+-	rd32(IGC_SEC);
+ 	rd32(IGC_RLEC);
+ 	rd32(IGC_XONRXC);
+ 	rd32(IGC_XONTXC);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 26f5ce23e255..0be6153195f2 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3705,7 +3705,6 @@ void igc_update_stats(struct igc_adapter *adapter)
+ 	adapter->stats.prc511 += rd32(IGC_PRC511);
+ 	adapter->stats.prc1023 += rd32(IGC_PRC1023);
+ 	adapter->stats.prc1522 += rd32(IGC_PRC1522);
+-	adapter->stats.sec += rd32(IGC_SEC);
+ 
+ 	mpc = rd32(IGC_MPC);
+ 	adapter->stats.mpc += mpc;
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index 5a4873dddcbf..48f46ee96bfd 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -137,7 +137,6 @@
+ #define IGC_RERC	0x0402C  /* Receive Error Count - R/clr */
+ #define IGC_DC		0x04030  /* Defer Count - R/clr */
+ #define IGC_TNCRS	0x04034  /* Tx-No CRS - R/clr */
+-#define IGC_SEC		0x04038  /* Sequence Error Count - R/clr */
+ #define IGC_CEXTERR	0x0403C  /* Carrier Extension Error Count - R/clr */
+ #define IGC_RLEC	0x04040  /* Receive Length Error Count - R/clr */
+ #define IGC_XONRXC	0x04048  /* XON Rx Count - R/clr */
+-- 
+2.11.0
+
