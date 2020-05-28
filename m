@@ -1,10 +1,10 @@
 From: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
-Date: Thu, 28 May 2020 12:43:32 -0700
-Subject: [Intel-wired-lan] [PATCH 04/14] virtual-bus: add comment for
- virtbus entry
+Date: Thu, 28 May 2020 12:43:39 -0700
+Subject: [Intel-wired-lan] [PATCH 11/14] virtual-bus: remove filename from
+ header
 In-Reply-To: <20200528194342.3495-1-ranjani.sridharan@linux.intel.com>
 References: <20200528194342.3495-1-ranjani.sridharan@linux.intel.com>
-Message-ID: <20200528194342.3495-5-ranjani.sridharan@linux.intel.com>
+Message-ID: <20200528194342.3495-12-ranjani.sridharan@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +13,34 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Signed-off-by: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
 ---
- scripts/mod/file2alias.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/bus/virtual_bus.c   | 2 +-
+ include/linux/virtual_bus.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index fd3908ed922d..929fc152e404 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -1361,6 +1361,7 @@ static int do_mhi_entry(const char *filename, void *symval, char *alias)
- 	return 1;
- }
- 
-+/* Looks like: virtbus:S */
- static int do_virtbus_entry(const char *filename, void *symval, char *alias)
- {
- 	DEF_FIELD_ADDR(symval, virtbus_device_id, name);
+diff --git a/drivers/bus/virtual_bus.c b/drivers/bus/virtual_bus.c
+index 613445640cd0..64d7e588fe7d 100644
+--- a/drivers/bus/virtual_bus.c
++++ b/drivers/bus/virtual_bus.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * virtual_bus.c - lightweight software based bus for virtual devices
++ * Lightweight software based bus for virtual devices
+  *
+  * Copyright (c) 2019-2020 Intel Corporation
+  *
+diff --git a/include/linux/virtual_bus.h b/include/linux/virtual_bus.h
+index aeac7144b220..a34e060ded56 100644
+--- a/include/linux/virtual_bus.h
++++ b/include/linux/virtual_bus.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+- * virtual_bus.h - lightweight software bus
++ * Lightweight software bus
+  *
+  * Copyright (c) 2019-2020 Intel Corporation
+  *
 -- 
 2.17.1
 
