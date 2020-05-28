@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 21:44:39 +0000
-Subject: [Intel-wired-lan] [PATCH S45 14/15] ice: Increase timeout after
- PFR
-In-Reply-To: <20200516005121.4963-14-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 21:44:54 +0000
+Subject: [Intel-wired-lan] [PATCH S45 15/15] ice: Update
+ ICE_PHY_TYPE_HIGH_MAX_INDEX value
+In-Reply-To: <20200516005121.4963-15-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
- <20200516005121.4963-14-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB1659F54A101AC3882F3CC2C38C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005121.4963-15-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB165992EB445D0679C4E7F3488C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S45 14/15] ice: Increase timeout after PFR
+> Subject: [Intel-wired-lan] [PATCH S45 15/15] ice: Update
+> ICE_PHY_TYPE_HIGH_MAX_INDEX value
 > 
-> From: Dan Nowlin <dan.nowlin@intel.com>
+> From: Chinh T Cao <chinh.t.cao@intel.com>
 > 
-> To allow for resets during package download, increase the timeout period
-> after performing a PFR. The time waited is the global config lock timeout plus
-> the normal PFSWR timeout.
+> As currently, we are supporting only 5 PHY_SPEEDs for phy_type_high.
+> Thus, we should adjust the value of ICE_PHY_TYPE_HIGH_MAX_INDEX to 5.
 > 
-> Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+> Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
