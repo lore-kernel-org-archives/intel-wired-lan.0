@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 23:20:06 +0000
-Subject: [Intel-wired-lan] [PATCH S46 7/9] ice: Use coalesce values from
- q_vector 0 when increasing q_vectors
-In-Reply-To: <20200516005506.5113-7-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 23:20:33 +0000
+Subject: [Intel-wired-lan] [PATCH S46 8/9] ice: fix aRFS after flow
+ director delete
+In-Reply-To: <20200516005506.5113-8-anthony.l.nguyen@intel.com>
 References: <20200516005506.5113-1-anthony.l.nguyen@intel.com>
- <20200516005506.5113-7-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB1659F3FD9950A7DF12482C098C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005506.5113-8-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB16598AC5FB266D4C4F918BB28C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S46 7/9] ice: Use coalesce values from
-> q_vector 0 when increasing q_vectors
+> Subject: [Intel-wired-lan] [PATCH S46 8/9] ice: fix aRFS after flow director
+> delete
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Henry Tieman <henry.w.tieman@intel.com>
 > 
-> Currently when a VSI is built (i.e. reset, set channels, etc.) the coalesce
-> settings will be preserved in most cases. However, when the number of
-> q_vectors are increased the settings for the new q_vectors will be set to the
-> driver defaults of AIM on, Rx/Tx ITR 50, and INTRL 0.
-> This is causing issues with how the ethtool layer gets the current coalesce
-> settings since it only uses q_vector 0. So, assume that the user set the
-> coalesce settings globally (i.e. ethtool -C eth0) and use q_vector 0's settings
-> for all of the new q_vectors.
+> The logic was missing for adding back perfect flows after flow director filter
+> delete. The code now adds perfect flows into the HW tables after filter
+> delete.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 27 ++++++++++++++++++-
+>  1 file changed, 26 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
