@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 May 2020 21:42:58 +0000
-Subject: [Intel-wired-lan] [PATCH S45 10/15] ice: Refactor VF VSI
- release and setup functions
-In-Reply-To: <20200516005121.4963-10-anthony.l.nguyen@intel.com>
+Date: Thu, 28 May 2020 21:43:25 +0000
+Subject: [Intel-wired-lan] [PATCH S45 11/15] ice: allow host to clear
+ administratively set VF MAC
+In-Reply-To: <20200516005121.4963-11-anthony.l.nguyen@intel.com>
 References: <20200516005121.4963-1-anthony.l.nguyen@intel.com>
- <20200516005121.4963-10-anthony.l.nguyen@intel.com>
-Message-ID: <DM5PR11MB165988B21DA811977AF0FC2A8C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
+ <20200516005121.4963-11-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR11MB16599ACCED4E7DA70290CC178C8E0@DM5PR11MB1659.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,31 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, May 15, 2020 5:51 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S45 10/15] ice: Refactor VF VSI release and
-> setup functions
+> Subject: [Intel-wired-lan] [PATCH S45 11/15] ice: allow host to clear
+> administratively set VF MAC
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently when a VF VSI calls ice_vsi_release() and ice_vsi_setup() it
-> subsequently clears/sets the VF cached variables for lan_vsi_idx and
-> lan_vsi_num. This works fine, but can be improved by handling this in the VF
-> specific VSI release and setup functions.
+> Currently a user is not allowed to clear a VF's administratively set MAC on the
+> PF. Fix this by allowing an all zero MAC address via "ip link set ${pf_eth} vf
+> ${vf_id} mac 00:00:00:00:00:00".
 > 
-> Also, when a VF VSI is setup too many parameters are passed that can be
-> derived from the VF. Fix this by only calling VF VSI setup with the bare
-> minimum parameters.
+> An example use case for this would be issuing a "virsh shutdown"
+> command on a VM. The call to iproute mentioned above is part of this flow.
+> Without this change the driver incorrectly rejects clearing the VF's
+> administratively set MAC and prints unhelpful log messages.
 > 
-> Also, add functionality to invalidate a VF's VSI when it's released and/or
-> setup fails. This will make it so a VF VSI cannot be accessed via its cached
-> vsi_idx/vsi_num in these cases.
-> 
-> Finally when a VF's VSI is invalidated set the lan_vsi_idx and lan_vsi_num to
-> ICE_NO_VSI to clearly show that there is no valid VSI associated with this VF.
+> Also, improve the comments surrounding this change.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 86 ++++++++++++-------
->  1 file changed, 55 insertions(+), 31 deletions(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 22 ++++++++++++-------
+>  1 file changed, 14 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
