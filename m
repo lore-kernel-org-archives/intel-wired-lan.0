@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 29 May 2020 13:42:20 -0700
-Subject: [Intel-wired-lan] [next-queue] i40e: Remove scheduling while atomic
- possibility
-Message-ID: <20200529204220.1528522-1-jeffrey.t.kirsher@intel.com>
+Date: Fri, 29 May 2020 14:10:39 -0700
+Subject: [Intel-wired-lan] [next-queue v2] i40e: Remove scheduling while
+ atomic possibility
+Message-ID: <20200529211039.1673605-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,11 +19,13 @@ while atomic.
 Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
+v2: fixed trailing whitespace
+
  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 222 +++++++++++-------
  1 file changed, 135 insertions(+), 87 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 56b9e445732b..15de9f8f4314 100644
+index 56b9e445732b..539fdb5f4c50 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 @@ -1107,6 +1107,11 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
@@ -208,7 +210,7 @@ index 56b9e445732b..15de9f8f4314 100644
 + * @vl: List of VLANs - apply filter for given VLANs
 + * @num_vlans: Number of elements in @vl
 + **/
-+static inline i40e_status 
++static inline i40e_status
 +i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
 +		     bool unicast_enable, s16 *vl, int num_vlans)
 +{
