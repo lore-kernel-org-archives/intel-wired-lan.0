@@ -1,129 +1,65 @@
 From: kbuild test robot <lkp@intel.com>
-Date: Sat, 30 May 2020 16:50:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 62/73]
- drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: error: 'last_offset'
- undeclared; did you mean 'page_offset'?
-Message-ID: <202005301615.20r1Boot%lkp@intel.com>
+Date: Sat, 30 May 2020 18:21:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 19/73]
+ sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or
+ storage class
+Message-ID: <202005301854.8hILgkKC%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alice,
-
-First bad commit (maybe != root cause):
-
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   616dff9bb24c494fe9c269ba0c3129771b099bad
-commit: a5a2826bdc83c84e3d01c23b24ef40621d5b2dff [62/73] iecm: Add iecm to the kernel build system
-config: alpha-allyesconfig (attached as .config)
-compiler: alpha-linux-gcc (GCC) 9.3.0
+head:   4b1ba063a5a5cf9c533aa0b2ca8a423df159773e
+commit: faaee1f35495df5981cbbe3c925e8ec2d91d1d81 [19/73] ASoC: SOF: ops: Add new op for client registration
+config: riscv-allyesconfig (attached as .config)
+compiler: riscv64-linux-gcc (GCC) 9.3.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        git checkout a5a2826bdc83c84e3d01c23b24ef40621d5b2dff
+        git checkout faaee1f35495df5981cbbe3c925e8ec2d91d1d81
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=riscv 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kbuild test robot <lkp@intel.com>
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+All warnings (new ones prefixed by >>, old ones prefixed by <<):
 
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:84:6: warning: no previous prototype for 'iecm_tx_buf_rel_all' [-Wmissing-prototypes]
-84 | void iecm_tx_buf_rel_all(struct iecm_queue *txq)
-|      ^~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:115:6: warning: no previous prototype for 'iecm_tx_desc_rel' [-Wmissing-prototypes]
-115 | void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
-|      ^~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:136:6: warning: no previous prototype for 'iecm_tx_desc_rel_all' [-Wmissing-prototypes]
-136 | void iecm_tx_desc_rel_all(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:312:6: warning: no previous prototype for 'iecm_rx_buf_rel_all' [-Wmissing-prototypes]
-312 | void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
-|      ^~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:341:6: warning: no previous prototype for 'iecm_rx_desc_rel' [-Wmissing-prototypes]
-341 | void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
-|      ^~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:371:6: warning: no previous prototype for 'iecm_rx_desc_rel_all' [-Wmissing-prototypes]
-371 | void iecm_rx_desc_rel_all(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:486:6: warning: no previous prototype for 'iecm_rx_hdr_buf_hw_alloc' [-Wmissing-prototypes]
-486 | bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
-|      ^~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c: In function 'iecm_rx_can_reuse_page':
->> drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: error: 'last_offset' undeclared (first use in this function); did you mean 'page_offset'?
-2510 |  if (rx_buf->page_offset > last_offset)
-|                            ^~~~~~~~~~~
-|                            page_offset
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: note: each undeclared identifier is reported only once for each function it appears in
-drivers/net/ethernet/intel/iecm/iecm_txrx.c: At top level:
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:3565:5: warning: no previous prototype for 'iecm_vport_splitq_napi_poll' [-Wmissing-prototypes]
-3565 | int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
-|     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:3603:6: warning: no previous prototype for 'iecm_vport_intr_map_vector_to_qs' [-Wmissing-prototypes]
-3603 | void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
-|      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:3715:5: warning: no previous prototype for 'iecm_vport_intr_alloc' [-Wmissing-prototypes]
-3715 | int iecm_vport_intr_alloc(struct iecm_vport *vport)
-|     ^~~~~~~~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/include/iecm.h:50,
-from drivers/net/ethernet/intel/iecm/iecm_txrx.c:4:
-drivers/net/ethernet/intel/include/iecm_txrx.h:293:30: warning: 'iecm_rx_ptype_lkup' defined but not used [-Wunused-const-variable=]
-293 | struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
-|                              ^~~~~~~~~~~~~~~~~~
+>> sound/soc/sof/intel/apl.c:167:1: warning: data definition has no type or storage class
+167 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+| ^~~~~~~~~~~~~~~~
+sound/soc/sof/intel/apl.c:167:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+sound/soc/sof/intel/apl.c:167:1: warning: parameter names (without types) in function declaration
+cc1: some warnings being treated as errors
+--
+>> sound/soc/sof/intel/cnl.c:444:1: warning: data definition has no type or storage class
+444 | MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
+| ^~~~~~~~~~~~~~~~
+sound/soc/sof/intel/cnl.c:444:1: error: type defaults to 'int' in declaration of 'MODULE_IMPORT_NS' [-Werror=implicit-int]
+sound/soc/sof/intel/cnl.c:444:1: warning: parameter names (without types) in function declaration
+cc1: some warnings being treated as errors
 
-vim +2510 drivers/net/ethernet/intel/iecm/iecm_txrx.c
+vim +167 sound/soc/sof/intel/apl.c
 
-e2a067b979206e Alice Michael 2020-05-18  2484  
-e2a067b979206e Alice Michael 2020-05-18  2485  /**
-e2a067b979206e Alice Michael 2020-05-18  2486   * iecm_rx_can_reuse_page - Determine if page can be reused for another rx
-e2a067b979206e Alice Michael 2020-05-18  2487   * @rx_buf: buffer containing the page
-e2a067b979206e Alice Michael 2020-05-18  2488   *
-e2a067b979206e Alice Michael 2020-05-18  2489   * If page is reusable, we have a green light for calling iecm_reuse_rx_page,
-e2a067b979206e Alice Michael 2020-05-18  2490   * which will assign the current buffer to the buffer that next_to_alloc is
-e2a067b979206e Alice Michael 2020-05-18  2491   * pointing to; otherwise, the dma mapping needs to be destroyed and
-e2a067b979206e Alice Michael 2020-05-18  2492   * page freed
-e2a067b979206e Alice Michael 2020-05-18  2493   */
-e2a067b979206e Alice Michael 2020-05-18  2494  static bool iecm_rx_can_reuse_page(struct iecm_rx_buf *rx_buf)
-e2a067b979206e Alice Michael 2020-05-18  2495  {
-81f3d5e1c9696d Alice Michael 2020-05-18  2496  #if (PAGE_SIZE >= 8192)
-81f3d5e1c9696d Alice Michael 2020-05-18  2497  #endif
-81f3d5e1c9696d Alice Michael 2020-05-18  2498  	unsigned int pagecnt_bias = rx_buf->pagecnt_bias;
-81f3d5e1c9696d Alice Michael 2020-05-18  2499  	struct page *page = rx_buf->page;
-81f3d5e1c9696d Alice Michael 2020-05-18  2500  
-81f3d5e1c9696d Alice Michael 2020-05-18  2501  	/* avoid re-using remote pages */
-81f3d5e1c9696d Alice Michael 2020-05-18  2502  	if (unlikely(iecm_rx_page_is_reserved(page)))
-81f3d5e1c9696d Alice Michael 2020-05-18  2503  		return false;
-81f3d5e1c9696d Alice Michael 2020-05-18  2504  
-81f3d5e1c9696d Alice Michael 2020-05-18  2505  #if (PAGE_SIZE < 8192)
-81f3d5e1c9696d Alice Michael 2020-05-18  2506  	/* if we are only owner of page we can reuse it */
-81f3d5e1c9696d Alice Michael 2020-05-18  2507  	if (unlikely((page_count(page) - pagecnt_bias) > 1))
-81f3d5e1c9696d Alice Michael 2020-05-18  2508  		return false;
-81f3d5e1c9696d Alice Michael 2020-05-18  2509  #else
-81f3d5e1c9696d Alice Michael 2020-05-18 @2510  	if (rx_buf->page_offset > last_offset)
-81f3d5e1c9696d Alice Michael 2020-05-18  2511  		return false;
-81f3d5e1c9696d Alice Michael 2020-05-18  2512  #endif /* PAGE_SIZE < 8192) */
-81f3d5e1c9696d Alice Michael 2020-05-18  2513  
-81f3d5e1c9696d Alice Michael 2020-05-18  2514  	/* If we have drained the page fragment pool we need to update
-81f3d5e1c9696d Alice Michael 2020-05-18  2515  	 * the pagecnt_bias and page count so that we fully restock the
-81f3d5e1c9696d Alice Michael 2020-05-18  2516  	 * number of references the driver holds.
-81f3d5e1c9696d Alice Michael 2020-05-18  2517  	 */
-81f3d5e1c9696d Alice Michael 2020-05-18  2518  	if (unlikely(pagecnt_bias == 1)) {
-81f3d5e1c9696d Alice Michael 2020-05-18  2519  		page_ref_add(page, USHRT_MAX - 1);
-81f3d5e1c9696d Alice Michael 2020-05-18  2520  		rx_buf->pagecnt_bias = USHRT_MAX;
-81f3d5e1c9696d Alice Michael 2020-05-18  2521  	}
-81f3d5e1c9696d Alice Michael 2020-05-18  2522  
-81f3d5e1c9696d Alice Michael 2020-05-18  2523  	return true;
-e2a067b979206e Alice Michael 2020-05-18  2524  }
-e2a067b979206e Alice Michael 2020-05-18  2525  
-
-:::::: The code at line 2510 was first introduced by commit
-:::::: 81f3d5e1c9696d032913999d7d953f7e85f28bca iecm: Add splitq TX/RX
-
-:::::: TO: Alice Michael <alice.michael@intel.com>
-:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+   151	
+   152	const struct sof_intel_dsp_desc apl_chip_info = {
+   153		/* Apollolake */
+   154		.cores_num = 2,
+   155		.init_core_mask = 1,
+   156		.cores_mask = HDA_DSP_CORE_MASK(0) | HDA_DSP_CORE_MASK(1),
+   157		.ipc_req = HDA_DSP_REG_HIPCI,
+   158		.ipc_req_mask = HDA_DSP_REG_HIPCI_BUSY,
+   159		.ipc_ack = HDA_DSP_REG_HIPCIE,
+   160		.ipc_ack_mask = HDA_DSP_REG_HIPCIE_DONE,
+   161		.ipc_ctl = HDA_DSP_REG_HIPCCTL,
+   162		.rom_init_timeout	= 150,
+   163		.ssp_count = APL_SSP_COUNT,
+   164		.ssp_base_offset = APL_SSP_BASE_OFFSET,
+   165	};
+   166	EXPORT_SYMBOL_NS(apl_chip_info, SND_SOC_SOF_INTEL_HDA_COMMON);
+ > 167	MODULE_IMPORT_NS(SND_SOC_SOF_CLIENT);
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
@@ -132,6 +68,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 61439 bytes
+Size: 63541 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200530/61a97f8f/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200530/a1b54ff5/attachment-0001.bin>
