@@ -1,146 +1,68 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Tue, 30 Jun 2020 14:49:41 -0400
-Subject: [Intel-wired-lan] [PATCH net-next] bonding: allow xfrm offload
- setup post-module-load
-Message-ID: <20200630184941.65165-1-jarod@redhat.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 1 Jun 2020 00:52:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 5/57]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition
+ of 'truesize'
+Message-ID: <202006010051.8EAhGnR3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-At the moment, bonding xfrm crypto offload can only be set up if the bonding
-module is loaded with active-backup mode already set. We need to be able to
-make this work with bonds set to AB after the bonding driver has already
-been loaded.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   cf731225b28c18d6e612900febee69b61a395ed8
+commit: a44c5f291928687775352aafa86ffb30304f8e66 [5/57] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
+config: ia64-allmodconfig (attached as .config)
+compiler: ia64-linux-gcc (GCC) 9.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout a44c5f291928687775352aafa86ffb30304f8e66
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=ia64 
 
-So what's done here is:
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
 
-1) move #define BOND_XFRM_FEATURES to net/bonding.h so it can be used
-by both bond_main.c and bond_options.c
-2) set BOND_XFRM_FEATURES in bond_dev->hw_features universally, rather than
-only when loading in AB mode
-3) wire up xfrmdev_ops universally too
-4) disable BOND_XFRM_FEATURES in bond_dev->features if not AB
-5) exit early (non-AB case) from bond_ipsec_offload_ok, to prevent a
-performance hit from traversing into the underlying drivers
-5) toggle BOND_XFRM_FEATURES in bond_dev->wanted_features and call
-netdev_change_features() from bond_option_mode_set()
+All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-In my local testing, I can change bonding modes back and forth on the fly,
-have hardware offload work when I'm in AB, and see no performance penalty
-to non-AB software encryption, despite having xfrm bits all wired up for
-all modes now.
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition of 'truesize'
+2271 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+|               ^~~~~~~~
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2267:15: note: previous definition of 'truesize' was here
+2267 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+|               ^~~~~~~~
 
-Fixes: 18cb261afd7b ("bonding: support hardware encryption offload to slaves")
-Reported-by: Huy Nguyen <huyn@mellanox.com>
-CC: Saeed Mahameed <saeedm@mellanox.com>
-CC: Jay Vosburgh <j.vosburgh@gmail.com>
-CC: Veaceslav Falico <vfalico@gmail.com>
-CC: Andy Gospodarek <andy@greyhouse.net>
-CC: "David S. Miller" <davem@davemloft.net>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: Jakub Kicinski <kuba@kernel.org>
-CC: Steffen Klassert <steffen.klassert@secunet.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>
-CC: netdev at vger.kernel.org
-CC: intel-wired-lan at lists.osuosl.org
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+vim +/truesize +2271 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+
+  2262	
+  2263	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
+  2264					 struct ixgbe_rx_buffer *rx_buffer,
+  2265					 unsigned int size)
+  2266	{
+  2267		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+  2268	#if (PAGE_SIZE < 8192)
+  2269		rx_buffer->page_offset ^= truesize;
+  2270	#else
+> 2271		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+  2272					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
+  2273					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
+  2274					SKB_DATA_ALIGN(size);
+  2275	
+  2276		rx_buffer->page_offset += truesize;
+  2277	#endif
+  2278	}
+  2279	
+
 ---
- drivers/net/bonding/bond_main.c    | 19 ++++++++++---------
- drivers/net/bonding/bond_options.c |  8 ++++++++
- include/net/bonding.h              |  5 +++++
- 3 files changed, 23 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index b3479584cc16..2adf6ce20a38 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -434,6 +434,9 @@ static bool bond_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
- 	struct slave *curr_active = rtnl_dereference(bond->curr_active_slave);
- 	struct net_device *slave_dev = curr_active->dev;
- 
-+	if (BOND_MODE(bond) != BOND_MODE_ACTIVEBACKUP)
-+		return true;
-+
- 	if (!(slave_dev->xfrmdev_ops
- 	      && slave_dev->xfrmdev_ops->xdo_dev_offload_ok)) {
- 		slave_warn(bond_dev, slave_dev, "%s: no slave xdo_dev_offload_ok\n", __func__);
-@@ -1218,11 +1221,6 @@ static netdev_features_t bond_fix_features(struct net_device *dev,
- #define BOND_ENC_FEATURES	(NETIF_F_HW_CSUM | NETIF_F_SG | \
- 				 NETIF_F_RXCSUM | NETIF_F_ALL_TSO)
- 
--#ifdef CONFIG_XFRM_OFFLOAD
--#define BOND_XFRM_FEATURES	(NETIF_F_HW_ESP | NETIF_F_HW_ESP_TX_CSUM | \
--				 NETIF_F_GSO_ESP)
--#endif /* CONFIG_XFRM_OFFLOAD */
--
- #define BOND_MPLS_FEATURES	(NETIF_F_HW_CSUM | NETIF_F_SG | \
- 				 NETIF_F_ALL_TSO)
- 
-@@ -4654,8 +4652,7 @@ void bond_setup(struct net_device *bond_dev)
- 
- #ifdef CONFIG_XFRM_OFFLOAD
- 	/* set up xfrm device ops (only supported in active-backup right now) */
--	if (BOND_MODE(bond) == BOND_MODE_ACTIVEBACKUP)
--		bond_dev->xfrmdev_ops = &bond_xfrmdev_ops;
-+	bond_dev->xfrmdev_ops = &bond_xfrmdev_ops;
- 	bond->xs = NULL;
- #endif /* CONFIG_XFRM_OFFLOAD */
- 
-@@ -4678,11 +4675,15 @@ void bond_setup(struct net_device *bond_dev)
- 
- 	bond_dev->hw_features |= NETIF_F_GSO_ENCAP_ALL | NETIF_F_GSO_UDP_L4;
- #ifdef CONFIG_XFRM_OFFLOAD
--	if (BOND_MODE(bond) == BOND_MODE_ACTIVEBACKUP)
--		bond_dev->hw_features |= BOND_XFRM_FEATURES;
-+	bond_dev->hw_features |= BOND_XFRM_FEATURES;
- #endif /* CONFIG_XFRM_OFFLOAD */
- 	bond_dev->features |= bond_dev->hw_features;
- 	bond_dev->features |= NETIF_F_HW_VLAN_CTAG_TX | NETIF_F_HW_VLAN_STAG_TX;
-+#ifdef CONFIG_XFRM_OFFLOAD
-+	/* Disable XFRM features if this isn't an active-backup config */
-+	if (BOND_MODE(bond) != BOND_MODE_ACTIVEBACKUP)
-+		bond_dev->features &= ~BOND_XFRM_FEATURES;
-+#endif /* CONFIG_XFRM_OFFLOAD */
- }
- 
- /* Destroy a bonding device.
-diff --git a/drivers/net/bonding/bond_options.c b/drivers/net/bonding/bond_options.c
-index ddb3916d3506..9abfaae1c6f7 100644
---- a/drivers/net/bonding/bond_options.c
-+++ b/drivers/net/bonding/bond_options.c
-@@ -767,6 +767,14 @@ static int bond_option_mode_set(struct bonding *bond,
- 	if (newval->value == BOND_MODE_ALB)
- 		bond->params.tlb_dynamic_lb = 1;
- 
-+#ifdef CONFIG_XFRM_OFFLOAD
-+	if (newval->value == BOND_MODE_ACTIVEBACKUP)
-+		bond->dev->wanted_features |= BOND_XFRM_FEATURES;
-+	else
-+		bond->dev->wanted_features &= ~BOND_XFRM_FEATURES;
-+	netdev_change_features(bond->dev);
-+#endif /* CONFIG_XFRM_OFFLOAD */
-+
- 	/* don't cache arp_validate between modes */
- 	bond->params.arp_validate = BOND_ARP_VALIDATE_NONE;
- 	bond->params.mode = newval->value;
-diff --git a/include/net/bonding.h b/include/net/bonding.h
-index a00e1764e9b1..7d132cc1e584 100644
---- a/include/net/bonding.h
-+++ b/include/net/bonding.h
-@@ -86,6 +86,11 @@
- #define bond_for_each_slave_rcu(bond, pos, iter) \
- 	netdev_for_each_lower_private_rcu((bond)->dev, pos, iter)
- 
-+#ifdef CONFIG_XFRM_OFFLOAD
-+#define BOND_XFRM_FEATURES (NETIF_F_HW_ESP | NETIF_F_HW_ESP_TX_CSUM | \
-+			    NETIF_F_GSO_ESP)
-+#endif /* CONFIG_XFRM_OFFLOAD */
-+
- #ifdef CONFIG_NET_POLL_CONTROLLER
- extern atomic_t netpoll_block_tx;
- 
--- 
-2.20.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 57844 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200601/3b6482d0/attachment-0001.bin>
