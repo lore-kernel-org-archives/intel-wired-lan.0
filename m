@@ -1,95 +1,50 @@
-From: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-Date: Tue, 02 Jun 2020 18:34:25 +0900
-Subject: [Intel-wired-lan] Intel-wired-lan Digest, Vol 268, Issue 43,
- Replay to message number 6,
- Test hints request for e1000e: Relax condition to trigger reset for ME
- workaround patch
-In-Reply-To: <7cdf1300-973e-6950-8146-d0481661b98b@intel.com> (Amir Avivi's
- message of "Tue, 2 Jun 2020 10:13:00 +0300")
-References: <mailman.9577.1590117676.59095.intel-wired-lan@osuosl.org>
- <7cdf1300-973e-6950-8146-d0481661b98b@intel.com>
-Message-ID: <87367d7qvy.fsf@kokedama.swc.toshiba.co.jp>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 2 Jun 2020 13:26:55 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: fix wrong index in
+ i40e_xsk_umem_dma_map
+In-Reply-To: <1591089148-959-1-git-send-email-lirongqing@baidu.com>
+References: <1591089148-959-1-git-send-email-lirongqing@baidu.com>
+Message-ID: <CAJ+HfNjXh882Dc2N9qpYDGhEuTed9Vp36RuHSXnBMmWXfV9iHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Amir,
+On Tue, 2 Jun 2020 at 11:20, Li RongQing <lirongqing@baidu.com> wrote:
+>
 
-"Avivi, Amir" <amir.avivi@intel.com> writes:
+Li, thanks for the patch! Good catch!
 
-[...]
+Please add a proper description for the patch. The fix should be added
+to the stable branches (5.7 and earlier). Note that this code was
+recently removed in favor of the new AF_XDP buffer allocation scheme.
 
-> Subject: [PATCH] e1000e: Relax condition to trigger reset for ME workaround
->
-> It's an error if the value of the RX/TX tail descriptor does not match
-> what was written. The error condition is true regardless the duration
-> of the interference from ME. But the driver only performs the reset if
-> E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
-> transpired. The extra condition can lead to inconsistency between the
-> state of hardware as expected by the driver.
->
-> Fix this by dropping the check for number of delay iterations.
->
-> While at it, also make __ew32_prepare() static as it's not used
-> anywhere else.
->
-> Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org
-> Cc: linux-kernel at vger.kernel.org
+
+Bj?rn
+
+> Fixes: 0a714186d3c0 "(i40e: add AF_XDP zero-copy Rx support)"
+> Signed-off-by: Li RongQing <lirongqing@baidu.com>
 > ---
-> Hi Jeff,
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> If there are no further comments please consider merging the patch.
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> index 0b7d29192b2c..c926438118ea 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+> @@ -37,9 +37,9 @@ static int i40e_xsk_umem_dma_map(struct i40e_vsi *vsi, struct xdp_umem *umem)
 >
-> Also, should it be marked for backport to stable?
+>  out_unmap:
+>         for (j = 0; j < i; j++) {
+> -               dma_unmap_page_attrs(dev, umem->pages[i].dma, PAGE_SIZE,
+> +               dma_unmap_page_attrs(dev, umem->pages[j].dma, PAGE_SIZE,
+>                                      DMA_BIDIRECTIONAL, I40E_RX_DMA_ATTR);
+> -               umem->pages[i].dma = 0;
+> +               umem->pages[j].dma = 0;
+>         }
 >
-> Thanks,
-> Punit
+>         return -1;
+> --
+> 2.16.2
 >
-> RFC[0] -> v1:
-> * Dropped return value for __ew32_prepare() as it's not used
-> * Made __ew32_prepare() static
-> * Added tags
->
-> [0] https://lkml.org/lkml/2020/5/12/02
->
->  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 -
->  drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++-------
->  2 files changed, 5 insertions(+), 8 deletions(-)
->
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
->
-> Thanks for taking the patch for a spin.
->
-> Jeff, let me know if you're okay to apply the tag or want me to send a
-> new version.
->
-> Hi Punit,
-> This patch appears to be effecting some legacy code effecting old
-> hardware.
-
-Indeed. The problem under investigation was reported on a machine
-released ~2012 I think.
-
-> We tried applying it but we could not get the driver to run the
-> changed code lines.
-> Please provide some test hints(What platforms did
-> you check it on?  What tests did you run?) regarding this patch.
-
-As mentioned in the original posting[0], the patch was based on code
-investigation.
-
-A backported version of the patch is running on a really old kernel
-(2.6.x) and we haven't found any way to speed up reproduction - it takes
-O(weeks) to hit the issue in the test environment.
-
-[0] https://lkml.org/lkml/2020/5/12/20
-
-[...]
-
