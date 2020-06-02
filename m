@@ -1,52 +1,137 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 2 Jun 2020 14:21:42 +0200
-Subject: [Intel-wired-lan] [PATCH][v2] i40e: fix wrong index in
- i40e_xsk_umem_dma_map
-In-Reply-To: <1591099973-3091-1-git-send-email-lirongqing@baidu.com>
-References: <1591099973-3091-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <CAJ+HfNgOoFecFbA3p7QM=bFwuV1k6895w57yH4EWFtSPNZ_wQg@mail.gmail.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 2 Jun 2020 12:46:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 24/35]
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: error: 'last_offset'
+ undeclared; did you mean 'page_offset'?
+Message-ID: <202006021214.Xhe3hGFQ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2 Jun 2020 at 14:13, Li RongQing <lirongqing@baidu.com> wrote:
->
-> The dma should be unmapped in rollback path from
-> umem->pages[0].dma till umem->pages[i-1].dma which
-> is last dma map address
->
-> Fixes: 0a714186d3c0 "(i40e: add AF_XDP zero-copy Rx support)"
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> ---
-> diff with v1: add description
->
+Hi Alice,
 
-Thanks! I think this should be queued for -stable.
+First bad commit (maybe != root cause):
 
-Acked-by: Bj?rn T?pel <bjorn.topel@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   64b7702c1b131b127b686528c58d41f40eabd92a
+commit: ae94e3af396ba8ebd655f84123bf25c680535003 [24/35] iecm: Add iecm to the kernel build system
+config: sparc-allyesconfig (attached as .config)
+compiler: sparc64-linux-gcc (GCC) 9.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout ae94e3af396ba8ebd655f84123bf25c680535003
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc 
 
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
 
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 0b7d29192b2c..c926438118ea 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -37,9 +37,9 @@ static int i40e_xsk_umem_dma_map(struct i40e_vsi *vsi, struct xdp_umem *umem)
->
->  out_unmap:
->         for (j = 0; j < i; j++) {
-> -               dma_unmap_page_attrs(dev, umem->pages[i].dma, PAGE_SIZE,
-> +               dma_unmap_page_attrs(dev, umem->pages[j].dma, PAGE_SIZE,
->                                      DMA_BIDIRECTIONAL, I40E_RX_DMA_ATTR);
-> -               umem->pages[i].dma = 0;
-> +               umem->pages[j].dma = 0;
->         }
->
->         return -1;
-> --
-> 2.16.2
->
+All errors (new ones prefixed by >>, old ones prefixed by <<):
+
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:84:6: warning: no previous prototype for 'iecm_tx_buf_rel_all' [-Wmissing-prototypes]
+84 | void iecm_tx_buf_rel_all(struct iecm_queue *txq)
+|      ^~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:115:6: warning: no previous prototype for 'iecm_tx_desc_rel' [-Wmissing-prototypes]
+115 | void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
+|      ^~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:136:6: warning: no previous prototype for 'iecm_tx_desc_rel_all' [-Wmissing-prototypes]
+136 | void iecm_tx_desc_rel_all(struct iecm_vport *vport)
+|      ^~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:312:6: warning: no previous prototype for 'iecm_rx_buf_rel_all' [-Wmissing-prototypes]
+312 | void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
+|      ^~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:341:6: warning: no previous prototype for 'iecm_rx_desc_rel' [-Wmissing-prototypes]
+341 | void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
+|      ^~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:371:6: warning: no previous prototype for 'iecm_rx_desc_rel_all' [-Wmissing-prototypes]
+371 | void iecm_rx_desc_rel_all(struct iecm_vport *vport)
+|      ^~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:486:6: warning: no previous prototype for 'iecm_rx_hdr_buf_hw_alloc' [-Wmissing-prototypes]
+486 | bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
+|      ^~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c: In function 'iecm_rx_can_reuse_page':
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: error: 'last_offset' undeclared (first use in this function); did you mean 'page_offset'?
+2510 |  if (rx_buf->page_offset > last_offset)
+|                            ^~~~~~~~~~~
+|                            page_offset
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:2510:28: note: each undeclared identifier is reported only once for each function it appears in
+drivers/net/ethernet/intel/iecm/iecm_txrx.c: At top level:
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3565:5: warning: no previous prototype for 'iecm_vport_splitq_napi_poll' [-Wmissing-prototypes]
+3565 | int iecm_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
+|     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3603:6: warning: no previous prototype for 'iecm_vport_intr_map_vector_to_qs' [-Wmissing-prototypes]
+3603 | void iecm_vport_intr_map_vector_to_qs(struct iecm_vport *vport)
+|      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:3715:5: warning: no previous prototype for 'iecm_vport_intr_alloc' [-Wmissing-prototypes]
+3715 | int iecm_vport_intr_alloc(struct iecm_vport *vport)
+|     ^~~~~~~~~~~~~~~~~~~~~
+In file included from drivers/net/ethernet/intel/include/iecm.h:50,
+from drivers/net/ethernet/intel/iecm/iecm_txrx.c:4:
+drivers/net/ethernet/intel/include/iecm_txrx.h:293:30: warning: 'iecm_rx_ptype_lkup' defined but not used [-Wunused-const-variable=]
+293 | struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
+|                              ^~~~~~~~~~~~~~~~~~
+
+vim +2510 drivers/net/ethernet/intel/iecm/iecm_txrx.c
+
+2be1d169b15846 Alice Michael 2020-05-18  2484  
+2be1d169b15846 Alice Michael 2020-05-18  2485  /**
+2be1d169b15846 Alice Michael 2020-05-18  2486   * iecm_rx_can_reuse_page - Determine if page can be reused for another rx
+2be1d169b15846 Alice Michael 2020-05-18  2487   * @rx_buf: buffer containing the page
+2be1d169b15846 Alice Michael 2020-05-18  2488   *
+2be1d169b15846 Alice Michael 2020-05-18  2489   * If page is reusable, we have a green light for calling iecm_reuse_rx_page,
+2be1d169b15846 Alice Michael 2020-05-18  2490   * which will assign the current buffer to the buffer that next_to_alloc is
+2be1d169b15846 Alice Michael 2020-05-18  2491   * pointing to; otherwise, the dma mapping needs to be destroyed and
+2be1d169b15846 Alice Michael 2020-05-18  2492   * page freed
+2be1d169b15846 Alice Michael 2020-05-18  2493   */
+2be1d169b15846 Alice Michael 2020-05-18  2494  static bool iecm_rx_can_reuse_page(struct iecm_rx_buf *rx_buf)
+2be1d169b15846 Alice Michael 2020-05-18  2495  {
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2496  #if (PAGE_SIZE >= 8192)
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2497  #endif
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2498  	unsigned int pagecnt_bias = rx_buf->pagecnt_bias;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2499  	struct page *page = rx_buf->page;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2500  
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2501  	/* avoid re-using remote pages */
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2502  	if (unlikely(iecm_rx_page_is_reserved(page)))
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2503  		return false;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2504  
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2505  #if (PAGE_SIZE < 8192)
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2506  	/* if we are only owner of page we can reuse it */
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2507  	if (unlikely((page_count(page) - pagecnt_bias) > 1))
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2508  		return false;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2509  #else
+cd5d54ec09c5a0 Alice Michael 2020-05-18 @2510  	if (rx_buf->page_offset > last_offset)
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2511  		return false;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2512  #endif /* PAGE_SIZE < 8192) */
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2513  
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2514  	/* If we have drained the page fragment pool we need to update
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2515  	 * the pagecnt_bias and page count so that we fully restock the
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2516  	 * number of references the driver holds.
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2517  	 */
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2518  	if (unlikely(pagecnt_bias == 1)) {
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2519  		page_ref_add(page, USHRT_MAX - 1);
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2520  		rx_buf->pagecnt_bias = USHRT_MAX;
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2521  	}
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2522  
+cd5d54ec09c5a0 Alice Michael 2020-05-18  2523  	return true;
+2be1d169b15846 Alice Michael 2020-05-18  2524  }
+2be1d169b15846 Alice Michael 2020-05-18  2525  
+
+:::::: The code at line 2510 was first introduced by commit
+:::::: cd5d54ec09c5a085bb73a15f74be2539b4554c60 iecm: Add splitq TX/RX
+
+:::::: TO: Alice Michael <alice.michael@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 62524 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200602/0198943e/attachment-0001.bin>
