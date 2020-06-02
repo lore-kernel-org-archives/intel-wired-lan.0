@@ -1,216 +1,95 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue,  2 Jun 2020 10:50:47 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add initial LTR support
-Message-ID: <20200602075047.19085-1-sasha.neftin@intel.com>
+From: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+Date: Tue, 02 Jun 2020 18:34:25 +0900
+Subject: [Intel-wired-lan] Intel-wired-lan Digest, Vol 268, Issue 43,
+ Replay to message number 6,
+ Test hints request for e1000e: Relax condition to trigger reset for ME
+ workaround patch
+In-Reply-To: <7cdf1300-973e-6950-8146-d0481661b98b@intel.com> (Amir Avivi's
+ message of "Tue, 2 Jun 2020 10:13:00 +0300")
+References: <mailman.9577.1590117676.59095.intel-wired-lan@osuosl.org>
+ <7cdf1300-973e-6950-8146-d0481661b98b@intel.com>
+Message-ID: <87367d7qvy.fsf@kokedama.swc.toshiba.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The LTR message on the PCIe inform the requested latency
-on which the PCIe must become active to the downstream
-PCIe port of the system.
-This patch provide reccommended LTR parameters by i225
-specification.
+Hi Amir,
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_defines.h |  27 ++++++++
- drivers/net/ethernet/intel/igc/igc_i225.c    | 100 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_i225.h    |   1 +
- drivers/net/ethernet/intel/igc/igc_mac.c     |   5 ++
- drivers/net/ethernet/intel/igc/igc_regs.h    |   6 ++
- 5 files changed, 139 insertions(+)
+"Avivi, Amir" <amir.avivi@intel.com> writes:
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index a7baadc49d84..81df6de2b206 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -522,4 +522,31 @@
- #define IGC_EEER_LPI_FC			0x00040000 /* EEER Ena on Flow Cntrl */
- #define IGC_EEE_SU_LPI_CLK_STP		0x00800000 /* EEE LPI Clock Stop */
- 
-+/* LTR defines */
-+#define IGC_LTRC_EEEMS_EN		0x00000020 /* Enable EEE LTR max send */
-+#define IGC_RXPBS_SIZE_I225_MASK	0x0000003F /* Rx packet buffer size */
-+#define IGC_TW_SYSTEM_1000_MASK		0x000000FF
-+/* Minimum time for 100BASE-T where no data will be transmit following move out
-+ * of EEE LPI Tx state
-+ */
-+#define IGC_TW_SYSTEM_100_MASK		0x0000FF00
-+#define IGC_TW_SYSTEM_100_SHIFT		8
-+#define IGC_DMACR_DMAC_EN		0x80000000 /* Enable DMA Coalescing */
-+#define IGC_DMACR_DMACTHR_MASK		0x00FF0000
-+#define IGC_DMACR_DMACTHR_SHIFT		16
-+/* Reg val to set scale to 1024 nsec */
-+#define IGC_LTRMINV_SCALE_1024		2
-+/* Reg val to set scale to 32768 nsec */
-+#define IGC_LTRMINV_SCALE_32768		3
-+/* Reg val to set scale to 1024 nsec */
-+#define IGC_LTRMAXV_SCALE_1024		2
-+/* Reg val to set scale to 32768 nsec */
-+#define IGC_LTRMAXV_SCALE_32768		3
-+#define IGC_LTRMINV_LTRV_MASK		0x000003FF /* LTR minimum value */
-+#define IGC_LTRMAXV_LTRV_MASK		0x000003FF /* LTR maximum value */
-+#define IGC_LTRMINV_LSNP_REQ		0x00008000 /* LTR Snoop Requirement */
-+#define IGC_LTRMINV_SCALE_SHIFT		10
-+#define IGC_LTRMAXV_LSNP_REQ		0x00008000 /* LTR Snoop Requirement */
-+#define IGC_LTRMAXV_SCALE_SHIFT		10
-+
- #endif /* _IGC_DEFINES_H_ */
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
-index c67bfbe92074..aed1be83c252 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.c
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.c
-@@ -544,3 +544,103 @@ s32 igc_set_eee_i225(struct igc_hw *hw, bool adv2p5G, bool adv1G,
- 
- 	return IGC_SUCCESS;
- }
-+
-+/* igc_set_ltr_i225 - Set Latency Tolerance Reporting thresholds.
-+ * @hw: pointer to the HW structure
-+ * @link: bool indicating link status
-+ *
-+ * Set the LTR thresholds based on the link speed (Mbps), EEE, and DMAC
-+ * settings, otherwise specify that there is no LTR requirement.
-+ */
-+s32 igc_set_ltr_i225(struct igc_hw *hw, bool link)
-+{
-+	u16 speed, duplex;
-+	u32 tw_system, ltrc, ltrv, ltr_min, ltr_max, scale_min, scale_max;
-+	s32 size;
-+
-+	/* If we do not have link, LTR thresholds are zero. */
-+	if (link) {
-+		hw->mac.ops.get_speed_and_duplex(hw, &speed, &duplex);
-+
-+		/* Check if using copper interface with EEE enabled or if the
-+		 * link speed is 10 Mbps.
-+		 */
-+		if (hw->dev_spec._base.eee_enable &&
-+		    speed != SPEED_10) {
-+			/* EEE enabled, so send LTRMAX threshold. */
-+			ltrc = rd32(IGC_LTRC) |
-+				IGC_LTRC_EEEMS_EN;
-+			wr32(IGC_LTRC, ltrc);
-+
-+			/* Calculate tw_system (nsec). */
-+			if (speed == SPEED_100) {
-+				tw_system = ((rd32(IGC_EEE_SU) &
-+					     IGC_TW_SYSTEM_100_MASK) >>
-+					     IGC_TW_SYSTEM_100_SHIFT) * 500;
-+			} else {
-+				tw_system = (rd32(IGC_EEE_SU) &
-+					     IGC_TW_SYSTEM_1000_MASK) * 500;
-+				}
-+		} else {
-+			tw_system = 0;
-+			}
-+
-+		/* Get the Rx packet buffer size. */
-+		size = rd32(IGC_RXPBS) &
-+			IGC_RXPBS_SIZE_I225_MASK;
-+
-+		/* Calculations vary based on DMAC settings. */
-+		if (rd32(IGC_DMACR) & IGC_DMACR_DMAC_EN) {
-+			size -= (rd32(IGC_DMACR) &
-+				 IGC_DMACR_DMACTHR_MASK) >>
-+				 IGC_DMACR_DMACTHR_SHIFT;
-+			/* Convert size to bits. */
-+			size *= 1024 * 8;
-+		} else {
-+			/* Convert size to bytes, subtract the MTU, and then
-+			 * convert the size to bits.
-+			 */
-+			size *= 1024;
-+			size *= 8;
-+		}
-+
-+		if (size < 0) {
-+			hw_dbg("Invalid effective Rx buffer size %d\n",
-+			       size);
-+			return -IGC_ERR_CONFIG;
-+		}
-+
-+		/* Calculate the thresholds. Since speed is in Mbps, simplify
-+		 * the calculation by multiplying size/speed by 1000 for result
-+		 * to be in nsec before dividing by the scale in nsec. Set the
-+		 * scale such that the LTR threshold fits in the register.
-+		 */
-+		ltr_min = (1000 * size) / speed;
-+		ltr_max = ltr_min + tw_system;
-+		scale_min = (ltr_min / 1024) < 1024 ? IGC_LTRMINV_SCALE_1024 :
-+			    IGC_LTRMINV_SCALE_32768;
-+		scale_max = (ltr_max / 1024) < 1024 ? IGC_LTRMAXV_SCALE_1024 :
-+			    IGC_LTRMAXV_SCALE_32768;
-+		ltr_min /= scale_min == IGC_LTRMINV_SCALE_1024 ? 1024 : 32768;
-+		ltr_min -= 1;
-+		ltr_max /= scale_max == IGC_LTRMAXV_SCALE_1024 ? 1024 : 32768;
-+		ltr_max -= 1;
-+
-+		/* Only write the LTR thresholds if they differ from before. */
-+		ltrv = rd32(IGC_LTRMINV);
-+		if (ltr_min != (ltrv & IGC_LTRMINV_LTRV_MASK)) {
-+			ltrv = IGC_LTRMINV_LSNP_REQ | ltr_min |
-+			      (scale_min << IGC_LTRMINV_SCALE_SHIFT);
-+			wr32(IGC_LTRMINV, ltrv);
-+		}
-+
-+		ltrv = rd32(IGC_LTRMAXV);
-+		if (ltr_max != (ltrv & IGC_LTRMAXV_LTRV_MASK)) {
-+			ltrv = IGC_LTRMAXV_LSNP_REQ | ltr_max |
-+			      (scale_min << IGC_LTRMAXV_SCALE_SHIFT);
-+			wr32(IGC_LTRMAXV, ltrv);
-+		}
-+	}
-+
-+	return IGC_SUCCESS;
-+}
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.h b/drivers/net/ethernet/intel/igc/igc_i225.h
-index 04759e076a9e..dae47e4f16b0 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.h
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.h
-@@ -11,5 +11,6 @@ s32 igc_init_nvm_params_i225(struct igc_hw *hw);
- bool igc_get_flash_presence_i225(struct igc_hw *hw);
- s32 igc_set_eee_i225(struct igc_hw *hw, bool adv2p5G, bool adv1G,
- 		     bool adv100M);
-+s32 igc_set_ltr_i225(struct igc_hw *hw, bool link);
- 
- #endif
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 410aeb01de5c..bc077f230f17 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -417,6 +417,11 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 		hw_dbg("Error configuring flow control\n");
- 
- out:
-+	/* Now that we are aware of our link settings, we can set the LTR
-+	 * thresholds.
-+	 */
-+	ret_val = igc_set_ltr_i225(hw, link);
-+
- 	return ret_val;
- }
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 75e040a5d46f..97f9b928509f 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -253,6 +253,12 @@
- #define IGC_IPCNFG	0x0E38 /* Internal PHY Configuration */
- #define IGC_EEE_SU	0x0E34 /* EEE Setup */
- 
-+/* LTR registers */
-+#define IGC_LTRC	0x01A0 /* Latency Tolerance Reporting Control */
-+#define IGC_DMACR	0x02508 /* DMA Coalescing Control Register */
-+#define IGC_LTRMINV	0x5BB0 /* LTR Minimum Value */
-+#define IGC_LTRMAXV	0x5BB4 /* LTR Maximum Value */
-+
- /* forward declaration */
- struct igc_hw;
- u32 igc_rd32(struct igc_hw *hw, u32 reg);
--- 
-2.11.0
+[...]
+
+> Subject: [PATCH] e1000e: Relax condition to trigger reset for ME workaround
+>
+> It's an error if the value of the RX/TX tail descriptor does not match
+> what was written. The error condition is true regardless the duration
+> of the interference from ME. But the driver only performs the reset if
+> E1000_ICH_FWSM_PCIM2PCI_COUNT (2000) iterations of 50us delay have
+> transpired. The extra condition can lead to inconsistency between the
+> state of hardware as expected by the driver.
+>
+> Fix this by dropping the check for number of delay iterations.
+>
+> While at it, also make __ew32_prepare() static as it's not used
+> anywhere else.
+>
+> Signed-off-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+> Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Cc: linux-kernel at vger.kernel.org
+> ---
+> Hi Jeff,
+>
+> If there are no further comments please consider merging the patch.
+>
+> Also, should it be marked for backport to stable?
+>
+> Thanks,
+> Punit
+>
+> RFC[0] -> v1:
+> * Dropped return value for __ew32_prepare() as it's not used
+> * Made __ew32_prepare() static
+> * Added tags
+>
+> [0] https://lkml.org/lkml/2020/5/12/02
+>
+>  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 -
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++-------
+>  2 files changed, 5 insertions(+), 8 deletions(-)
+>
+> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+>
+> Thanks for taking the patch for a spin.
+>
+> Jeff, let me know if you're okay to apply the tag or want me to send a
+> new version.
+>
+> Hi Punit,
+> This patch appears to be effecting some legacy code effecting old
+> hardware.
+
+Indeed. The problem under investigation was reported on a machine
+released ~2012 I think.
+
+> We tried applying it but we could not get the driver to run the
+> changed code lines.
+> Please provide some test hints(What platforms did
+> you check it on?  What tests did you run?) regarding this patch.
+
+As mentioned in the original posting[0], the patch was based on code
+investigation.
+
+A backported version of the patch is running on a really old kernel
+(2.6.x) and we haven't found any way to speed up reproduction - it takes
+O(weeks) to hit the issue in the test environment.
+
+[0] https://lkml.org/lkml/2020/5/12/20
+
+[...]
 
