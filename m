@@ -1,71 +1,65 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 03 Jun 2020 13:05:18 -0700
-Subject: [Intel-wired-lan] intel - convert /* fallthrough */ comments one
- day?
-Message-ID: <efc48f182e68e75aad523e02b4e732e6273a3715.camel@perches.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed,  3 Jun 2020 19:41:29 -0700
+Subject: [Intel-wired-lan] [next-queue] ethernet/intel: Convert fallthrough
+ code comments
+Message-ID: <20200604024129.1399871-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hey Jeff,  one day when convenient could you please
-run this attached script to convert all the
-/* fallthrough */ style comments to the newer
-fallthrough; keyword?
+Convert all the remaining 'fall through" code comments to the newer
+'fallthough;' keyword.
 
-It'd help to consolidate the various comments to a
-standardized form.
-
-$ git ls-files -- 'drivers/net/ethernet/intel/*.[ch]' | \
-  xargs perl cvt_fallback.pl
-
-Today the script produces the diff below:
+Suggested-by: Joe Perches <joe@perches.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_hw.c       |  4 +--
- drivers/net/ethernet/intel/e1000/e1000_main.c     |  2 +-
- drivers/net/ethernet/intel/e1000/e1000_param.c    |  2 +-
- drivers/net/ethernet/intel/e1000e/82571.c         |  4 +--
- drivers/net/ethernet/intel/e1000e/ethtool.c       | 11 ++++-----
- drivers/net/ethernet/intel/e1000e/ich8lan.c       | 16 ++++++------
- drivers/net/ethernet/intel/e1000e/netdev.c        | 13 +++++-----
- drivers/net/ethernet/intel/e1000e/param.c         |  2 +-
- drivers/net/ethernet/intel/e1000e/phy.c           |  2 +-
- drivers/net/ethernet/intel/e1000e/ptp.c           |  3 +--
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c  |  4 +--
- drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c      |  8 +++---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c   |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c       |  8 +++---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c     |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c    |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c       |  5 ++--
- drivers/net/ethernet/intel/i40e/i40e_ptp.c        |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c       |  6 ++---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c        |  4 +--
- drivers/net/ethernet/intel/iavf/iavf_txrx.c       |  2 +-
- drivers/net/ethernet/intel/igb/e1000_82575.c      |  4 +--
- drivers/net/ethernet/intel/igb/e1000_nvm.c        |  2 +-
- drivers/net/ethernet/intel/igb/e1000_phy.c        |  4 +--
- drivers/net/ethernet/intel/igb/igb_ethtool.c      |  8 +++---
- drivers/net/ethernet/intel/igb/igb_main.c         | 25 +++++++++----------
- drivers/net/ethernet/intel/igb/igb_ptp.c          |  2 +-
- drivers/net/ethernet/intel/igbvf/netdev.c         |  4 +--
- drivers/net/ethernet/intel/igc/igc_ethtool.c      | 16 +++---------
- drivers/net/ethernet/intel/igc/igc_main.c         |  5 ++--
- drivers/net/ethernet/intel/igc/igc_ptp.c          |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c    |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c    |  6 ++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c   |  5 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 10 ++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 30 +++++++++++------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c      |  4 +--
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    |  4 +--
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c     | 10 ++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c      |  4 +--
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  8 +++---
- drivers/net/ethernet/intel/ixgbevf/vf.c           |  6 ++---
- 43 files changed, 124 insertions(+), 143 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_hw.c   |  4 +--
+ drivers/net/ethernet/intel/e1000/e1000_main.c |  3 +-
+ .../net/ethernet/intel/e1000/e1000_param.c    |  2 +-
+ drivers/net/ethernet/intel/e1000e/82571.c     |  4 +--
+ drivers/net/ethernet/intel/e1000e/ethtool.c   | 11 ++++---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c   | 14 ++++-----
+ drivers/net/ethernet/intel/e1000e/netdev.c    | 30 +++++++++----------
+ drivers/net/ethernet/intel/e1000e/param.c     |  2 +-
+ drivers/net/ethernet/intel/e1000e/phy.c       |  2 +-
+ drivers/net/ethernet/intel/e1000e/ptp.c       |  3 +-
+ .../net/ethernet/intel/fm10k/fm10k_ethtool.c  |  4 +--
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c |  4 +--
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c  |  6 ++--
+ .../net/ethernet/intel/fm10k/fm10k_netdev.c   |  2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c   |  8 ++---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  2 +-
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  6 ++--
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c    |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  6 ++--
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    |  4 +--
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c   |  2 +-
+ drivers/net/ethernet/intel/igb/e1000_82575.c  |  4 +--
+ drivers/net/ethernet/intel/igb/e1000_nvm.c    |  2 +-
+ drivers/net/ethernet/intel/igb/e1000_phy.c    |  4 +--
+ drivers/net/ethernet/intel/igb/igb_ethtool.c  |  8 ++---
+ drivers/net/ethernet/intel/igb/igb_main.c     | 26 ++++++++--------
+ drivers/net/ethernet/intel/igb/igb_ptp.c      |  2 +-
+ drivers/net/ethernet/intel/igbvf/netdev.c     |  4 +--
+ drivers/net/ethernet/intel/igc/igc_ethtool.c  | 16 +++-------
+ drivers/net/ethernet/intel/igc/igc_main.c     |  5 ++--
+ drivers/net/ethernet/intel/igc/igc_ptp.c      |  2 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_82598.c    |  2 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |  6 ++--
+ .../net/ethernet/intel/ixgbe/ixgbe_common.c   |  4 +--
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 10 +++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 30 +++++++++----------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c  |  4 +--
+ .../net/ethernet/intel/ixgbe/ixgbe_sriov.c    |  4 +--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 10 +++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |  4 +--
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 10 +++----
+ drivers/net/ethernet/intel/ixgbevf/vf.c       |  6 ++--
+ 44 files changed, 136 insertions(+), 152 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
 index 623e516a9630..4e7a0810eaeb 100644
@@ -90,10 +84,10 @@ index 623e516a9630..4e7a0810eaeb 100644
  		/* Restore LEDCTL settings */
  		ew32(LEDCTL, hw->ledctl_default);
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index d9fa4600f745..978fc1d3bb2c 100644
+index 266899c0c933..1e6ec081fd9d 100644
 --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
 +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -1143,7 +1143,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -1138,7 +1138,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  				EEPROM_INIT_CONTROL3_PORT_B, 1, &eeprom_data);
  			break;
  		}
@@ -102,6 +96,14 @@ index d9fa4600f745..978fc1d3bb2c 100644
  	default:
  		e1000_read_eeprom(hw,
  			EEPROM_INIT_CONTROL3_PORT_A, 1, &eeprom_data);
+@@ -3154,7 +3154,6 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 				if ((unsigned long)(skb_tail_pointer(skb) - 1)
+ 				    & 4)
+ 					break;
+-				/* fall through */
+ 				pull_size = min((unsigned int)4, skb->data_len);
+ 				if (!__pskb_pull_tail(skb, pull_size)) {
+ 					e_err(drv, "__pskb_pull_tail "
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_param.c b/drivers/net/ethernet/intel/e1000/e1000_param.c
 index d3f29ffe1e47..4d4f5bf1e516 100644
 --- a/drivers/net/ethernet/intel/e1000/e1000_param.c
@@ -138,10 +140,10 @@ index 2c1bab377b2a..88faf05e23ba 100644
  	case e1000_82583:
  		reg_data = er32(GCR);
 diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 1d47e2503072..28ed7ad3b19a 100644
+index 11de79e49661..64f684dc6c7a 100644
 --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
 +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -895,7 +895,6 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
+@@ -893,7 +893,6 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
  	case e1000_pch_lpt:
  	case e1000_pch_spt:
  	case e1000_pch_cnp:
@@ -149,7 +151,7 @@ index 1d47e2503072..28ed7ad3b19a 100644
  	case e1000_pch_tgp:
  	case e1000_pch_adp:
  		mask |= BIT(18);
-@@ -1571,7 +1570,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+@@ -1569,7 +1568,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
  		/* set bit 29 (value of MULR requests is now 0) */
  		tarc0 &= 0xcfffffff;
  		ew32(TARC(0), tarc0);
@@ -158,7 +160,7 @@ index 1d47e2503072..28ed7ad3b19a 100644
  	case e1000_80003es2lan:
  		if (hw->phy.media_type == e1000_media_type_fiber ||
  		    hw->phy.media_type == e1000_media_type_internal_serdes) {
-@@ -1579,7 +1578,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+@@ -1577,7 +1576,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
  			ew32(CTRL_EXT, adapter->tx_fifo_head);
  			adapter->tx_fifo_head = 0;
  		}
@@ -167,7 +169,7 @@ index 1d47e2503072..28ed7ad3b19a 100644
  	case e1000_82571:
  	case e1000_82572:
  		if (hw->phy.media_type == e1000_media_type_fiber ||
-@@ -1589,7 +1588,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+@@ -1587,7 +1586,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
  			usleep_range(10000, 11000);
  			break;
  		}
@@ -176,7 +178,7 @@ index 1d47e2503072..28ed7ad3b19a 100644
  	default:
  		hw->mac.autoneg = 1;
  		if (hw->phy.type == e1000_phy_gg82563)
-@@ -2124,7 +2123,7 @@ static int e1000_get_rxnfc(struct net_device *netdev,
+@@ -2122,7 +2121,7 @@ static int e1000_get_rxnfc(struct net_device *netdev,
  		case TCP_V4_FLOW:
  			if (mrqc & E1000_MRQC_RSS_FIELD_IPV4_TCP)
  				info->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -185,7 +187,7 @@ index 1d47e2503072..28ed7ad3b19a 100644
  		case UDP_V4_FLOW:
  		case SCTP_V4_FLOW:
  		case AH_ESP_V4_FLOW:
-@@ -2135,7 +2134,7 @@ static int e1000_get_rxnfc(struct net_device *netdev,
+@@ -2133,7 +2132,7 @@ static int e1000_get_rxnfc(struct net_device *netdev,
  		case TCP_V6_FLOW:
  			if (mrqc & E1000_MRQC_RSS_FIELD_IPV6_TCP)
  				info->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -195,26 +197,25 @@ index 1d47e2503072..28ed7ad3b19a 100644
  		case SCTP_V6_FLOW:
  		case AH_ESP_V6_FLOW:
 diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index f999cca37a8a..991f2fe36208 100644
+index 9cbd2d6c7da4..8f0abffa6415 100644
 --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
 +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -337,13 +337,11 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 		 * attempts to acknowledge any phy read requests.
+@@ -338,12 +338,12 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
  		 */
  		msleep(50);
--
+ 
 -		/* fall-through */
 +		fallthrough;
  	case e1000_pch2lan:
  		if (e1000_phy_is_accessible_pchlan(hw))
  			break;
--
+ 
 -		/* fall-through */
 +		fallthrough;
  	case e1000_pchlan:
  		if ((hw->mac.type == e1000_pchlan) &&
  		    (fwsm & E1000_ICH_FWSM_FW_VALID))
-@@ -459,7 +457,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
+@@ -459,7 +459,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
  				return ret_val;
  			if ((phy->id != 0) && (phy->id != PHY_REVISION_MASK))
  				break;
@@ -223,7 +224,7 @@ index f999cca37a8a..991f2fe36208 100644
  		case e1000_pch2lan:
  		case e1000_pch_lpt:
  		case e1000_pch_spt:
-@@ -704,7 +702,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
+@@ -704,7 +704,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
  	case e1000_pch2lan:
  		mac->rar_entry_count = E1000_PCH2_RAR_ENTRIES;
  		mac->ops.rar_set = e1000_rar_set_pch2lan;
@@ -232,7 +233,7 @@ index f999cca37a8a..991f2fe36208 100644
  	case e1000_pch_lpt:
  	case e1000_pch_spt:
  	case e1000_pch_cnp:
-@@ -1559,7 +1557,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
+@@ -1559,7 +1559,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
  		ret_val = e1000_k1_workaround_lv(hw);
  		if (ret_val)
  			return ret_val;
@@ -241,7 +242,7 @@ index f999cca37a8a..991f2fe36208 100644
  	case e1000_pchlan:
  		if (hw->phy.type == e1000_phy_82578) {
  			ret_val = e1000_link_stall_workaround_hv(hw);
-@@ -2096,7 +2094,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
+@@ -2096,7 +2096,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
  			sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG;
  			break;
  		}
@@ -250,7 +251,7 @@ index f999cca37a8a..991f2fe36208 100644
  	case e1000_pchlan:
  	case e1000_pch2lan:
  	case e1000_pch_lpt:
-@@ -3189,7 +3187,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
+@@ -3189,7 +3189,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
  			return 0;
  		}
  		e_dbg("Unable to determine valid NVM bank via EEC - reading flash signature\n");
@@ -260,10 +261,10 @@ index f999cca37a8a..991f2fe36208 100644
  		/* set bank to 0 in case flash read fails */
  		*bank = 0;
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index a279f4fa9962..862446c41dae 100644
+index e0867771847f..377f9c0e2e5f 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2111,7 +2111,7 @@ void e1000e_set_interrupt_capability(struct e1000_adapter *adapter)
+@@ -2107,7 +2107,7 @@ void e1000e_set_interrupt_capability(struct e1000_adapter *adapter)
  			e1000e_reset_interrupt_capability(adapter);
  		}
  		adapter->int_mode = E1000E_INT_MODE_MSI;
@@ -272,7 +273,7 @@ index a279f4fa9962..862446c41dae 100644
  	case E1000E_INT_MODE_MSI:
  		if (!pci_enable_msi(adapter->pdev)) {
  			adapter->flags |= FLAG_MSI_ENABLED;
-@@ -2119,7 +2119,7 @@ void e1000e_set_interrupt_capability(struct e1000_adapter *adapter)
+@@ -2115,7 +2115,7 @@ void e1000e_set_interrupt_capability(struct e1000_adapter *adapter)
  			adapter->int_mode = E1000E_INT_MODE_LEGACY;
  			e_err("Failed to initialize MSI interrupts.  Falling back to legacy interrupts.\n");
  		}
@@ -281,7 +282,7 @@ index a279f4fa9962..862446c41dae 100644
  	case E1000E_INT_MODE_LEGACY:
  		/* Don't do anything; this is the system default */
  		break;
-@@ -3177,10 +3177,10 @@ static void e1000_setup_rctl(struct e1000_adapter *adapter)
+@@ -3173,10 +3173,10 @@ static void e1000_setup_rctl(struct e1000_adapter *adapter)
  		switch (adapter->rx_ps_pages) {
  		case 3:
  			psrctl |= PAGE_SIZE << E1000_PSRCTL_BSIZE3_SHIFT;
@@ -294,7 +295,51 @@ index a279f4fa9962..862446c41dae 100644
  		case 1:
  			psrctl |= PAGE_SIZE >> E1000_PSRCTL_BSIZE1_SHIFT;
  			break;
-@@ -4060,7 +4060,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
+@@ -3673,9 +3673,8 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 		is_l2 = true;
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_SYNC:
+-		/* Hardware cannot filter just V2 L4 Sync messages;
+-		 * fall-through to V2 (both L2 and L4) Sync.
+-		 */
++		/* Hardware cannot filter just V2 L4 Sync messages */
++		fallthrough;
+ 	case HWTSTAMP_FILTER_PTP_V2_SYNC:
+ 		/* Also time stamps V2 Path Delay Request/Response. */
+ 		tsync_rx_ctl |= E1000_TSYNCRXCTL_TYPE_L2_L4_V2;
+@@ -3684,9 +3683,8 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 		is_l4 = true;
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
+-		/* Hardware cannot filter just V2 L4 Delay Request messages;
+-		 * fall-through to V2 (both L2 and L4) Delay Request.
+-		 */
++		/* Hardware cannot filter just V2 L4 Delay Request messages */
++		fallthrough;
+ 	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
+ 		/* Also time stamps V2 Path Delay Request/Response. */
+ 		tsync_rx_ctl |= E1000_TSYNCRXCTL_TYPE_L2_L4_V2;
+@@ -3696,9 +3694,8 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_EVENT:
+ 	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
+-		/* Hardware cannot filter just V2 L4 or L2 Event messages;
+-		 * fall-through to all V2 (both L2 and L4) Events.
+-		 */
++		/* Hardware cannot filter just V2 L4 or L2 Event messages */
++		fallthrough;
+ 	case HWTSTAMP_FILTER_PTP_V2_EVENT:
+ 		tsync_rx_ctl |= E1000_TSYNCRXCTL_TYPE_EVENT_V2;
+ 		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
+@@ -3710,6 +3707,7 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 		 * Delay Request messages but not both so fall-through to
+ 		 * time stamp all packets.
+ 		 */
++		fallthrough;
+ 	case HWTSTAMP_FILTER_NTP_ALL:
+ 	case HWTSTAMP_FILTER_ALL:
+ 		is_l2 = true;
+@@ -4056,7 +4054,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
  			fc->low_water = fc->high_water - 8;
  			break;
  		}
@@ -303,20 +348,21 @@ index a279f4fa9962..862446c41dae 100644
  	default:
  		hwm = min(((pba << 10) * 9 / 10),
  			  ((pba << 10) - adapter->max_frame_size));
-@@ -4085,7 +4085,6 @@ void e1000e_reset(struct e1000_adapter *adapter)
+@@ -4081,7 +4079,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
  	case e1000_pch_lpt:
  	case e1000_pch_spt:
  	case e1000_pch_cnp:
 -		/* fall-through */
++		fallthrough;
  	case e1000_pch_tgp:
  	case e1000_pch_adp:
  		fc->refresh_time = 0xFFFF;
-@@ -6764,7 +6763,7 @@ static void __e1000e_disable_aspm(struct pci_dev *pdev, u16 state, int locked)
+@@ -6764,7 +6762,7 @@ static void __e1000e_disable_aspm(struct pci_dev *pdev, u16 state, int locked)
  	case PCIE_LINK_STATE_L0S:
  	case PCIE_LINK_STATE_L0S | PCIE_LINK_STATE_L1:
  		aspm_dis_mask |= PCI_EXP_LNKCTL_ASPM_L0S;
 -		/* fall-through - can't have L1 without L0s */
-+		fallthrough;	/* can't have L1 without L0s */
++		fallthrough; /* can't have L1 without L0s */
  	case PCIE_LINK_STATE_L1:
  		aspm_dis_mask |= PCI_EXP_LNKCTL_ASPM_L1;
  		break;
@@ -368,10 +414,10 @@ index 439fda2f5368..34b988d70488 100644
  	case e1000_82583:
  		adapter->ptp_clock_info.max_adj = 600000000 - 1;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 37fbc646deb9..15bc8fce426a 100644
+index 30ea2b422678..908fefaa6b85 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -694,12 +694,12 @@ static int fm10k_get_rss_hash_opts(struct fm10k_intfc *interface,
+@@ -692,12 +692,12 @@ static int fm10k_get_rss_hash_opts(struct fm10k_intfc *interface,
  	case TCP_V4_FLOW:
  	case TCP_V6_FLOW:
  		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -387,10 +433,10 @@ index 37fbc646deb9..15bc8fce426a 100644
  	case SCTP_V6_FLOW:
  	case AH_ESP_V4_FLOW:
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 17738b0a9873..7dfb80b8f31b 100644
+index 05e9bdb5f4aa..34f1f5350f68 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -859,7 +859,7 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
+@@ -856,7 +856,7 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
  	case IPPROTO_GRE:
  		if (skb->encapsulation)
  			break;
@@ -399,31 +445,38 @@ index 17738b0a9873..7dfb80b8f31b 100644
  	default:
  		if (unlikely(net_ratelimit())) {
  			dev_warn(tx_ring->dev,
+@@ -1554,7 +1554,7 @@ static bool fm10k_set_rss_queues(struct fm10k_intfc *interface)
+  * important, starting with the "most" number of features turned on at once,
+  * and ending with the smallest set of features.  This way large combinations
+  * can be allocated if they're turned on, and smaller combinations are the
+- * fallthrough conditions.
++ * fall through conditions.
+  *
+  **/
+ static void fm10k_set_num_queues(struct fm10k_intfc *interface)
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 75e51f91036c..af849d011058 100644
+index 75e51f91036c..8e2e92bf3cd4 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -966,8 +966,7 @@ static s32 fm10k_mbx_validate_msg_hdr(struct fm10k_mbx_info *mbx)
- 		/* validate that all data has been received */
+@@ -967,7 +967,7 @@ static s32 fm10k_mbx_validate_msg_hdr(struct fm10k_mbx_info *mbx)
  		if (tail != mbx->head)
  			return FM10K_MBX_ERR_TAIL;
--
+ 
 -		/* fall through */
 +		fallthrough;
  	case FM10K_MSG_DATA:
  		/* validate that head is moving correctly */
  		if (!head || (head == FM10K_MSG_HDR_MASK(HEAD)))
-@@ -986,8 +985,7 @@ static s32 fm10k_mbx_validate_msg_hdr(struct fm10k_mbx_info *mbx)
- 		/* validate size is in range and is power of 2 mask */
+@@ -987,7 +987,7 @@ static s32 fm10k_mbx_validate_msg_hdr(struct fm10k_mbx_info *mbx)
  		if ((size < FM10K_VFMBX_MSG_MTU) || (size & (size + 1)))
  			return FM10K_MBX_ERR_SIZE;
--
+ 
 -		/* fall through */
 +		fallthrough;
  	case FM10K_MSG_ERROR:
  		if (!head || (head == FM10K_MSG_HDR_MASK(HEAD)))
  			return FM10K_MBX_ERR_HEAD;
-@@ -1570,7 +1568,7 @@ s32 fm10k_pfvf_mbx_init(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx,
+@@ -1570,7 +1570,7 @@ s32 fm10k_pfvf_mbx_init(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx,
  			mbx->mbmem_reg = FM10K_MBMEM_VF(id, 0);
  			break;
  		}
@@ -487,10 +540,10 @@ index 6a089848c857..c897a2863e4f 100644
  		break;
  	}
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index aa8026b1eb81..705c3d0b3c21 100644
+index 2dfd87f0bdfd..e28a3d1b38cc 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4101,7 +4101,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
+@@ -4099,7 +4099,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
  	switch (fsp->flow_type & ~FLOW_EXT) {
  	case SCTP_V4_FLOW:
  		new_mask &= ~I40E_VERIFY_TAG_MASK;
@@ -500,10 +553,10 @@ index aa8026b1eb81..705c3d0b3c21 100644
  	case UDP_V4_FLOW:
  		tcp_ip4_spec = &fsp->m_u.tcp_ip4_spec;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5d807c8004f8..d069e6bc21ff 100644
+index ac131522ecd3..620ae1e21136 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1817,7 +1817,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+@@ -1808,7 +1808,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
  						       num_tc_qps);
  					break;
  				}
@@ -512,7 +565,7 @@ index 5d807c8004f8..d069e6bc21ff 100644
  			case I40E_VSI_FDIR:
  			case I40E_VSI_SRIOV:
  			case I40E_VSI_VMDQ2:
-@@ -13694,8 +13694,7 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+@@ -13682,8 +13682,7 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
  		/* Setup DCB netlink interface */
  		i40e_dcbnl_setup(vsi);
  #endif /* CONFIG_I40E_DCB */
@@ -522,6 +575,14 @@ index 5d807c8004f8..d069e6bc21ff 100644
  	case I40E_VSI_FDIR:
  		/* set up vectors and rings if needed */
  		ret = i40e_vsi_setup_vectors(vsi);
+@@ -13699,7 +13698,6 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 
+ 		i40e_vsi_reset_stats(vsi);
+ 		break;
+-
+ 	default:
+ 		/* no netdev or rings for the other VSI types */
+ 		break;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
 index 9bf1ad4319f5..ff7b19c6bc73 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
@@ -536,7 +597,7 @@ index 9bf1ad4319f5..ff7b19c6bc73 100644
  	case HWTSTAMP_FILTER_PTP_V2_L2_SYNC:
  	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f9555c847f73..911168a007fb 100644
+index f9555c847f73..7e22a4ef582b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 @@ -1690,7 +1690,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
@@ -557,12 +618,12 @@ index f9555c847f73..911168a007fb 100644
  	case XDP_ABORTED:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
 -		/* fall through -- handle aborts by dropping packet */
-+		fallthrough;	/* handle aborts by dropping packet */
++		fallthrough; /* handle aborts by dropping packet */
  	case XDP_DROP:
  		result = I40E_XDP_CONSUMED;
  		break;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 7276580cbe64..5b0a0a4f5ad0 100644
+index 7276580cbe64..8e489ed54138 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
 @@ -168,10 +168,10 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
@@ -574,7 +635,7 @@ index 7276580cbe64..5b0a0a4f5ad0 100644
  	case XDP_ABORTED:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
 -		/* fallthrough -- handle aborts by dropping packet */
-+		fallthrough;	/* handle aborts by dropping packet */
++		fallthrough; /* handle aborts by dropping packet */
  	case XDP_DROP:
  		result = I40E_XDP_CONSUMED;
  		break;
@@ -592,7 +653,7 @@ index 7a30d5d5ef53..17a405da9d16 100644
  		break;
  	}
 diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 438b42ce2cd9..1ad4bf0f99d2 100644
+index 438b42ce2cd9..a32391e82762 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
 @@ -638,7 +638,7 @@ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
@@ -600,7 +661,7 @@ index 438b42ce2cd9..1ad4bf0f99d2 100644
  			break;
  		}
 -		/* fall through - for I2C based SGMII */
-+		fallthrough;	/* for I2C based SGMII */
++		fallthrough; /* for I2C based SGMII */
  	case E1000_CTRL_EXT_LINK_MODE_PCIE_SERDES:
  		/* read media type from SFP EEPROM */
  		ret_val = igb_set_sfp_media_type_82575(hw);
@@ -649,10 +710,10 @@ index ad2125e5a7f7..8c8eb82e6272 100644
  		break;
  	}
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 2cd003c5ad43..93ceaaa874e3 100644
+index da60e8d2128f..c2cf414d126b 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2518,11 +2518,11 @@ static int igb_get_rss_hash_opts(struct igb_adapter *adapter,
+@@ -2517,11 +2517,11 @@ static int igb_get_rss_hash_opts(struct igb_adapter *adapter,
  	switch (cmd->flow_type) {
  	case TCP_V4_FLOW:
  		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -666,7 +727,7 @@ index 2cd003c5ad43..93ceaaa874e3 100644
  	case SCTP_V4_FLOW:
  	case AH_ESP_V4_FLOW:
  	case AH_V4_FLOW:
-@@ -2532,11 +2532,11 @@ static int igb_get_rss_hash_opts(struct igb_adapter *adapter,
+@@ -2531,11 +2531,11 @@ static int igb_get_rss_hash_opts(struct igb_adapter *adapter,
  		break;
  	case TCP_V6_FLOW:
  		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -681,10 +742,10 @@ index 2cd003c5ad43..93ceaaa874e3 100644
  	case AH_ESP_V6_FLOW:
  	case AH_V6_FLOW:
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8bb3db2cbd41..337e9e2042d5 100644
+index 32fe393eaa22..889abbc3b3e5 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -720,14 +720,13 @@ static void igb_cache_ring_register(struct igb_adapter *adapter)
+@@ -711,14 +711,14 @@ static void igb_cache_ring_register(struct igb_adapter *adapter)
  				adapter->rx_ring[i]->reg_idx = rbase_offset +
  							       Q_IDX_82576(i);
  		}
@@ -697,10 +758,11 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	case e1000_i210:
  	case e1000_i211:
 -		/* Fall through */
++		fallthrough;
  	default:
  		for (; i < adapter->num_rx_queues; i++)
  			adapter->rx_ring[i]->reg_idx = rbase_offset + i;
-@@ -2882,7 +2881,7 @@ void igb_set_fw_version(struct igb_adapter *adapter)
+@@ -2873,7 +2873,7 @@ void igb_set_fw_version(struct igb_adapter *adapter)
  				 fw.invm_img_type);
  			break;
  		}
@@ -709,7 +771,7 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	default:
  		/* if option is rom valid, display its version too */
  		if (fw.or_valid) {
-@@ -3733,13 +3732,13 @@ unsigned int igb_get_max_rss_queues(struct igb_adapter *adapter)
+@@ -3724,13 +3724,13 @@ unsigned int igb_get_max_rss_queues(struct igb_adapter *adapter)
  			max_rss_queues = 1;
  			break;
  		}
@@ -725,7 +787,7 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	case e1000_82580:
  	case e1000_i354:
  	default:
-@@ -4878,14 +4877,14 @@ static int igb_vlan_promisc_enable(struct igb_adapter *adapter)
+@@ -4869,14 +4869,14 @@ static int igb_vlan_promisc_enable(struct igb_adapter *adapter)
  		/* VLAN filtering needed for VLAN prio filter */
  		if (adapter->netdev->features & NETIF_F_NTUPLE)
  			break;
@@ -742,7 +804,7 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	default:
  		return 1;
  	}
-@@ -5165,7 +5164,7 @@ bool igb_has_link(struct igb_adapter *adapter)
+@@ -5156,7 +5156,7 @@ bool igb_has_link(struct igb_adapter *adapter)
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
  			return true;
@@ -751,7 +813,7 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	case e1000_media_type_internal_serdes:
  		hw->mac.ops.check_for_link(hw);
  		link_active = !hw->mac.get_link_status;
-@@ -5825,7 +5824,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
+@@ -5816,7 +5816,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
  	switch (skb->csum_offset) {
  	case offsetof(struct tcphdr, check):
  		type_tucmd = E1000_ADVTXD_TUCMD_L4T_TCP;
@@ -760,7 +822,7 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	case offsetof(struct udphdr, check):
  		break;
  	case offsetof(struct sctphdr, checksum):
-@@ -5837,7 +5836,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
+@@ -5828,7 +5828,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
  			type_tucmd = E1000_ADVTXD_TUCMD_L4T_SCTP;
  			break;
  		}
@@ -769,16 +831,16 @@ index 8bb3db2cbd41..337e9e2042d5 100644
  	default:
  		skb_checksum_help(skb);
  		goto csum_failed;
-@@ -6715,7 +6714,7 @@ static int __igb_notify_dca(struct device *dev, void *data)
+@@ -6706,7 +6706,7 @@ static int __igb_notify_dca(struct device *dev, void *data)
  			igb_setup_dca(adapter);
  			break;
  		}
 -		/* Fall Through - since DCA is disabled. */
-+		fallthrough;	/* since DCA is disabled */
++		fallthrough; /* since DCA is disabled. */
  	case DCA_PROVIDER_REMOVE:
  		if (adapter->flags & IGB_FLAG_DCA_ENABLED) {
  			/* without this a class_device is left
-@@ -9384,13 +9383,13 @@ static void igb_vmm_control(struct igb_adapter *adapter)
+@@ -9375,13 +9375,13 @@ static void igb_vmm_control(struct igb_adapter *adapter)
  		reg = rd32(E1000_DTXCTL);
  		reg |= E1000_DTXCTL_VLAN_ADDED;
  		wr32(E1000_DTXCTL, reg);
@@ -808,10 +870,10 @@ index c39e921757ba..490368d3d03c 100644
  		config->rx_filter = HWTSTAMP_FILTER_NONE;
  		return -ERANGE;
 diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 5b1800c3ba82..715307b79b0b 100644
+index 07740654df5c..97a065928976 100644
 --- a/drivers/net/ethernet/intel/igbvf/netdev.c
 +++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -2093,7 +2093,7 @@ static bool igbvf_tx_csum(struct igbvf_ring *tx_ring, struct sk_buff *skb,
+@@ -2091,7 +2091,7 @@ static bool igbvf_tx_csum(struct igbvf_ring *tx_ring, struct sk_buff *skb,
  	switch (skb->csum_offset) {
  	case offsetof(struct tcphdr, check):
  		type_tucmd = E1000_ADVTXD_TUCMD_L4T_TCP;
@@ -820,7 +882,7 @@ index 5b1800c3ba82..715307b79b0b 100644
  	case offsetof(struct udphdr, check):
  		break;
  	case offsetof(struct sctphdr, checksum):
-@@ -2105,7 +2105,7 @@ static bool igbvf_tx_csum(struct igbvf_ring *tx_ring, struct sk_buff *skb,
+@@ -2103,7 +2103,7 @@ static bool igbvf_tx_csum(struct igbvf_ring *tx_ring, struct sk_buff *skb,
  			type_tucmd = E1000_ADVTXD_TUCMD_L4T_SCTP;
  			break;
  		}
@@ -830,7 +892,7 @@ index 5b1800c3ba82..715307b79b0b 100644
  		skb_checksum_help(skb);
  		goto csum_failed;
 diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index a938ec8db681..e77c660f98d2 100644
+index 149f130b825e..6b264aebbdfe 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
 @@ -1015,37 +1015,29 @@ static int igc_ethtool_get_rss_hash_opts(struct igc_adapter *adapter,
@@ -876,7 +938,7 @@ index a938ec8db681..e77c660f98d2 100644
  		cmd->data |= RXH_IP_SRC | RXH_IP_DST;
  		break;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 6919c50e449a..0eba0c0cf983 100644
+index c767f5326ac9..7a44f62e6900 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
 @@ -980,7 +980,7 @@ static void igc_tx_csum(struct igc_ring *tx_ring, struct igc_tx_buffer *first)
@@ -897,7 +959,7 @@ index 6919c50e449a..0eba0c0cf983 100644
  	default:
  		skb_checksum_help(skb);
  		goto csum_failed;
-@@ -3284,7 +3284,6 @@ static void igc_cache_ring_register(struct igc_adapter *adapter)
+@@ -3285,7 +3285,6 @@ static void igc_cache_ring_register(struct igc_adapter *adapter)
  
  	switch (adapter->hw.mac.type) {
  	case igc_i225:
@@ -963,33 +1025,32 @@ index 109f8de5a1c2..8d3798a32f0e 100644
  		break;
  	default:
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 17357a12cbdc..4116250c2033 100644
+index 17357a12cbdc..62ddb452f862 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -144,8 +144,7 @@ s32 ixgbe_setup_fc_generic(struct ixgbe_hw *hw)
- 		ret_val = hw->mac.ops.prot_autoc_read(hw, &locked, &reg_bp);
+@@ -145,7 +145,7 @@ s32 ixgbe_setup_fc_generic(struct ixgbe_hw *hw)
  		if (ret_val)
  			return ret_val;
--
+ 
 -		/* fall through - only backplane uses autoc */
-+		fallthrough;	/* only backplane uses autoc */
++		fallthrough; /* only backplane uses autoc */
  	case ixgbe_media_type_fiber:
  		reg = IXGBE_READ_REG(hw, IXGBE_PCS1GANA);
  
-@@ -3533,7 +3532,7 @@ void ixgbe_set_rxpba_generic(struct ixgbe_hw *hw,
+@@ -3533,7 +3533,7 @@ void ixgbe_set_rxpba_generic(struct ixgbe_hw *hw,
  		rxpktsize <<= IXGBE_RXPBSIZE_SHIFT;
  		for (; i < (num_pb / 2); i++)
  			IXGBE_WRITE_REG(hw, IXGBE_RXPBSIZE(i), rxpktsize);
 -		/* fall through - configure remaining packet buffers */
-+		fallthrough;	/* configure remaining packet buffers */
++		fallthrough; /* configure remaining packet buffers */
  	case (PBA_STRATEGY_EQUAL):
  		/* Divide the remaining Rx packet buffer evenly among the TCs */
  		rxpktsize = (pbsize / (num_pb - i)) << IXGBE_RXPBSIZE_SHIFT;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index c6bf0a50ee63..6a596c31f26c 100644
+index 5da367cb5c93..8ae2c8c2f6a1 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2509,11 +2509,11 @@ static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
+@@ -2507,11 +2507,11 @@ static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
  	switch (cmd->flow_type) {
  	case TCP_V4_FLOW:
  		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -1003,7 +1064,7 @@ index c6bf0a50ee63..6a596c31f26c 100644
  	case SCTP_V4_FLOW:
  	case AH_ESP_V4_FLOW:
  	case AH_V4_FLOW:
-@@ -2523,11 +2523,11 @@ static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
+@@ -2521,11 +2521,11 @@ static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
  		break;
  	case TCP_V6_FLOW:
  		cmd->data |= RXH_L4_B_0_1 | RXH_L4_B_2_3;
@@ -1017,7 +1078,7 @@ index c6bf0a50ee63..6a596c31f26c 100644
  	case SCTP_V6_FLOW:
  	case AH_ESP_V6_FLOW:
  	case AH_V6_FLOW:
-@@ -2659,7 +2659,7 @@ static int ixgbe_flowspec_to_flow_type(struct ethtool_rx_flow_spec *fsp,
+@@ -2657,7 +2657,7 @@ static int ixgbe_flowspec_to_flow_type(struct ethtool_rx_flow_spec *fsp,
  				*flow_type = IXGBE_ATR_FLOW_TYPE_IPV4;
  				break;
  			}
@@ -1026,20 +1087,33 @@ index c6bf0a50ee63..6a596c31f26c 100644
  		default:
  			return 0;
  		}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index 6c5703cdf062..e67b1a59ecb7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -444,7 +444,7 @@ int ixgbe_fcoe_ddp(struct ixgbe_adapter *adapter,
+ 		ddp->err = (__force u32)ddp_err;
+ 		ddp->sgl = NULL;
+ 		ddp->sgc = 0;
+-		/* fall through */
++		fallthrough;
+ 	/* if DDP length is present pass it through to ULD */
+ 	case cpu_to_le32(IXGBE_RXDADV_STAT_FCSTAT_NODDP):
+ 		/* update length of DDPed data */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f162b8b8f345..a22fd8efd622 100644
+index 03e85def7763..b0283f4d9d3d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1397,7 +1397,7 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+@@ -1395,7 +1395,7 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
  					IXGBE_DCA_CTRL_DCA_MODE_CB2);
  			break;
  		}
 -		/* fall through - DCA is disabled. */
-+		fallthrough;	/* DCA is disabled */
++		fallthrough; /* DCA is disabled. */
  	case DCA_PROVIDER_REMOVE:
  		if (adapter->flags & IXGBE_FLAG_DCA_ENABLED) {
  			dca_remove_requester(dev);
-@@ -2231,10 +2231,10 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+@@ -2229,10 +2229,10 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
  		break;
  	default:
  		bpf_warn_invalid_xdp_action(act);
@@ -1048,11 +1122,11 @@ index f162b8b8f345..a22fd8efd622 100644
  	case XDP_ABORTED:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
 -		/* fallthrough -- handle aborts by dropping packet */
-+		fallthrough;	/* handle aborts by dropping packet */
++		fallthrough; /* handle aborts by dropping packet */
  	case XDP_DROP:
  		result = IXGBE_XDP_CONSUMED;
  		break;
-@@ -3009,7 +3009,7 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+@@ -3012,7 +3012,7 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
  	case ixgbe_mac_82599EB:
  		mask |= IXGBE_EIMS_GPI_SDP1(hw);
  		mask |= IXGBE_EIMS_GPI_SDP2(hw);
@@ -1061,7 +1135,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_X540:
  	case ixgbe_mac_X550:
  	case ixgbe_mac_X550EM_x:
-@@ -3315,7 +3315,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
+@@ -3318,7 +3318,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
  	switch (hw->mac.type) {
  	case ixgbe_mac_82599EB:
  		ixgbe_check_sfp_event(adapter, eicr);
@@ -1070,7 +1144,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_X540:
  	case ixgbe_mac_X550:
  	case ixgbe_mac_X550EM_x:
-@@ -4337,7 +4337,7 @@ static void ixgbe_setup_rdrxctl(struct ixgbe_adapter *adapter)
+@@ -4340,7 +4340,7 @@ static void ixgbe_setup_rdrxctl(struct ixgbe_adapter *adapter)
  	case ixgbe_mac_x550em_a:
  		if (adapter->num_vfs)
  			rdrxctl |= IXGBE_RDRXCTL_PSP;
@@ -1079,7 +1153,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_82599EB:
  	case ixgbe_mac_X540:
  		/* Disable RSC for ACK packets */
-@@ -5887,7 +5887,7 @@ void ixgbe_disable_tx(struct ixgbe_adapter *adapter)
+@@ -5890,7 +5890,7 @@ void ixgbe_disable_tx(struct ixgbe_adapter *adapter)
  		IXGBE_WRITE_REG(hw, IXGBE_DMATXCTL,
  				(IXGBE_READ_REG(hw, IXGBE_DMATXCTL) &
  				 ~IXGBE_DMATXCTL_TE));
@@ -1088,7 +1162,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	default:
  		break;
  	}
-@@ -6339,7 +6339,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+@@ -6342,7 +6342,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
  		default:
  			break;
  		}
@@ -1097,7 +1171,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_X550EM_x:
  #ifdef CONFIG_IXGBE_DCB
  		adapter->flags &= ~IXGBE_FLAG_DCB_CAPABLE;
-@@ -6350,7 +6350,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+@@ -6353,7 +6353,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
  		adapter->fcoe.up = 0;
  #endif /* IXGBE_DCB */
  #endif /* IXGBE_FCOE */
@@ -1106,7 +1180,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_X550:
  		if (hw->mac.type == ixgbe_mac_X550)
  			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
-@@ -7162,7 +7162,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+@@ -7165,7 +7165,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
  		hwstats->o2bspc += IXGBE_READ_REG(hw, IXGBE_O2BSPC);
  		hwstats->b2ospc += IXGBE_READ_REG(hw, IXGBE_B2OSPC);
  		hwstats->b2ogprc += IXGBE_READ_REG(hw, IXGBE_B2OGPRC);
@@ -1115,7 +1189,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case ixgbe_mac_82599EB:
  		for (i = 0; i < 16; i++)
  			adapter->hw_rx_no_dma_resources +=
-@@ -8071,7 +8071,7 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+@@ -8074,7 +8074,7 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
  	switch (skb->csum_offset) {
  	case offsetof(struct tcphdr, check):
  		type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_TCP;
@@ -1124,7 +1198,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	case offsetof(struct udphdr, check):
  		break;
  	case offsetof(struct sctphdr, checksum):
-@@ -8083,7 +8083,7 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
+@@ -8086,7 +8086,7 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
  			type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_SCTP;
  			break;
  		}
@@ -1133,7 +1207,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	default:
  		skb_checksum_help(skb);
  		goto csum_failed;
-@@ -8526,7 +8526,7 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+@@ -8529,7 +8529,7 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
  
  		if (!sb_dev && (adapter->flags & IXGBE_FLAG_FCOE_ENABLED))
  			break;
@@ -1142,7 +1216,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	default:
  		return netdev_pick_tx(dev, skb, sb_dev);
  	}
-@@ -8860,7 +8860,7 @@ static int ixgbe_ioctl(struct net_device *netdev, struct ifreq *req, int cmd)
+@@ -8863,7 +8863,7 @@ static int ixgbe_ioctl(struct net_device *netdev, struct ifreq *req, int cmd)
  	case SIOCGMIIPHY:
  		if (!adapter->hw.phy.ops.read_reg)
  			return -EOPNOTSUPP;
@@ -1151,7 +1225,7 @@ index f162b8b8f345..a22fd8efd622 100644
  	default:
  		return mdio_mii_ioctl(&adapter->hw.phy.mdio, if_mii(req), cmd);
  	}
-@@ -10650,7 +10650,7 @@ bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+@@ -10653,7 +10653,7 @@ bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
  			/* only support first port */
  			if (hw->bus.func != 0)
  				break;
@@ -1254,7 +1328,7 @@ index 9c42f741ed5e..5e339afa682a 100644
  	case IXGBE_DEV_ID_X550EM_X_KX4:
  	case IXGBE_DEV_ID_X550EM_X_XFI:
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index be9d2a8da515..89b0886eb9ae 100644
+index be9d2a8da515..ec7121f352e2 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
 @@ -120,10 +120,10 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
@@ -1266,15 +1340,15 @@ index be9d2a8da515..89b0886eb9ae 100644
  	case XDP_ABORTED:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
 -		/* fallthrough -- handle aborts by dropping packet */
-+		fallthrough;	/* handle aborts by dropping packet */
++		fallthrough; /* handle aborts by dropping packet */
  	case XDP_DROP:
  		result = IXGBE_XDP_CONSUMED;
  		break;
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index a39e2cb384dd..453887462894 100644
+index 635cbc25e2f2..6e9a397db583 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1082,10 +1082,10 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
+@@ -1079,10 +1079,10 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
  		break;
  	default:
  		bpf_warn_invalid_xdp_action(act);
@@ -1283,11 +1357,20 @@ index a39e2cb384dd..453887462894 100644
  	case XDP_ABORTED:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
 -		/* fallthrough -- handle aborts by dropping packet */
-+		fallthrough;	/* handle aborts by dropping packet */
++		fallthrough; /* handle aborts by dropping packet */
  	case XDP_DROP:
  		result = IXGBEVF_XDP_CONSUMED;
  		break;
-@@ -3877,7 +3877,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
+@@ -2602,7 +2602,7 @@ static int ixgbevf_acquire_msix_vectors(struct ixgbevf_adapter *adapter,
+  * important, starting with the "most" number of features turned on at once,
+  * and ending with the smallest set of features.  This way large combinations
+  * can be allocated if they're turned on, and smaller combinations are the
+- * fallthrough conditions.
++ * fall through conditions.
+  *
+  **/
+ static void ixgbevf_set_num_queues(struct ixgbevf_adapter *adapter)
+@@ -3874,7 +3874,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
  	switch (skb->csum_offset) {
  	case offsetof(struct tcphdr, check):
  		type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_TCP;
@@ -1296,7 +1379,7 @@ index a39e2cb384dd..453887462894 100644
  	case offsetof(struct udphdr, check):
  		break;
  	case offsetof(struct sctphdr, checksum):
-@@ -3889,7 +3889,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
+@@ -3886,7 +3886,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
  			type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_SCTP;
  			break;
  		}
@@ -1336,10 +1419,6 @@ index d5ce49636548..bfe6dfcec4ab 100644
  	case ixgbe_mbox_api_14:
  	case ixgbe_mbox_api_13:
  		break;
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: cvt_fallthrough.pl
-Type: application/x-perl
-Size: 5677 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200603/58581f1d/attachment-0001.bin>
+-- 
+2.26.2
+
