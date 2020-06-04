@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed,  3 Jun 2020 19:41:29 -0700
-Subject: [Intel-wired-lan] [next-queue] ethernet/intel: Convert fallthrough
- code comments
-Message-ID: <20200604024129.1399871-1-jeffrey.t.kirsher@intel.com>
+Date: Wed,  3 Jun 2020 20:07:26 -0700
+Subject: [Intel-wired-lan] [next-queue v2] ethernet/intel: Convert
+ fallthrough code comments
+Message-ID: <20200604030726.1573257-1-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -46,7 +46,6 @@ Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
  drivers/net/ethernet/intel/igbvf/netdev.c     |  4 +--
  drivers/net/ethernet/intel/igc/igc_ethtool.c  | 16 +++-------
  drivers/net/ethernet/intel/igc/igc_main.c     |  5 ++--
- drivers/net/ethernet/intel/igc/igc_ptp.c      |  2 +-
  .../net/ethernet/intel/ixgbe/ixgbe_82598.c    |  2 +-
  .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |  6 ++--
  .../net/ethernet/intel/ixgbe/ixgbe_common.c   |  4 +--
@@ -59,7 +58,7 @@ Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  |  4 +--
  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 10 +++----
  drivers/net/ethernet/intel/ixgbevf/vf.c       |  6 ++--
- 44 files changed, 136 insertions(+), 152 deletions(-)
+ 43 files changed, 135 insertions(+), 151 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
 index 623e516a9630..4e7a0810eaeb 100644
@@ -938,7 +937,7 @@ index 149f130b825e..6b264aebbdfe 100644
  		cmd->data |= RXH_IP_SRC | RXH_IP_DST;
  		break;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c767f5326ac9..7a44f62e6900 100644
+index 4412ff573bcd..81296acef874 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
 @@ -980,7 +980,7 @@ static void igc_tx_csum(struct igc_ring *tx_ring, struct igc_tx_buffer *first)
@@ -959,7 +958,7 @@ index c767f5326ac9..7a44f62e6900 100644
  	default:
  		skb_checksum_help(skb);
  		goto csum_failed;
-@@ -3285,7 +3285,6 @@ static void igc_cache_ring_register(struct igc_adapter *adapter)
+@@ -3281,7 +3281,6 @@ static void igc_cache_ring_register(struct igc_adapter *adapter)
  
  	switch (adapter->hw.mac.type) {
  	case igc_i225:
@@ -967,19 +966,6 @@ index c767f5326ac9..7a44f62e6900 100644
  	default:
  		for (; i < adapter->num_rx_queues; i++)
  			adapter->rx_ring[i]->reg_idx = i;
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 0d746f8588c8..c2c9361dd62e 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -353,7 +353,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_ALL;
- 		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		break;
--		/* fall through */
-+		fallthrough;
- 	default:
- 		config->rx_filter = HWTSTAMP_FILTER_NONE;
- 		return -ERANGE;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
 index eee277c1bedf..95c92fe890a1 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
