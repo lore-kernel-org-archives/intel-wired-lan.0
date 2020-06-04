@@ -1,81 +1,113 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed,  3 Jun 2020 17:01:02 -0700
-Subject: [Intel-wired-lan] [PATCH 3/6] igc: Check __IGC_PTP_TX_IN_PROGRESS
- instead of ptp_tx_skb
+Date: Wed,  3 Jun 2020 17:01:05 -0700
+Subject: [Intel-wired-lan] [PATCH 6/6] igc: Fix rx timestamp disabling
 In-Reply-To: <20200604000105.15059-1-andre.guedes@intel.com>
 References: <20200604000105.15059-1-andre.guedes@intel.com>
-Message-ID: <20200604000105.15059-4-andre.guedes@intel.com>
+Message-ID: <20200604000105.15059-7-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The __IGC_PTP_TX_IN_PROGRESS flag indicates we have a pending tx
-timestamp. In some places, instead of checking that flag, we check
-adapter->ptp_tx_skb. This patch fixes those places to use the flag.
+When rx timestamping is enabled, we set the timestamp bit in SRRCTL
+register for each queue, but we don't clear it when disabling. This
+patch fixes igc_ptp_disable_rx_timestamp() accordingly.
 
-Quick note about igc_ptp_tx_hwtstamp() change: when that function is
-called, adapter->ptp_tx_skb is expected to be valid always so we
-WARN_ON_ONCE() in case it is not.
-
-Quick note about igc_ptp_suspend() change: when suspending, we don't
-really need to check if there is a pending timestamp. We can simply
-clear it unconditionally.
+Also, this patch gets rid of igc_ptp_enable_tstamp_rxqueue() and
+igc_ptp_enable_tstamp_all_rxqueues() and move their logic into
+igc_ptp_enable_rx_timestamp() to keep the enable and disable
+helpers symmetric.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 54 ++++++++----------------
+ 1 file changed, 17 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index b1b23c6bf689..e65fdcf966b2 100644
+index 0251e6bedac4..e67d4655b47e 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -404,9 +404,6 @@ void igc_ptp_tx_hang(struct igc_adapter *adapter)
- 	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
- 					      IGC_PTP_TX_TIMEOUT);
- 
--	if (!adapter->ptp_tx_skb)
--		return;
--
- 	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
- 		return;
- 
-@@ -435,6 +432,9 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 	struct igc_hw *hw = &adapter->hw;
- 	u64 regval;
- 
-+	if (WARN_ON_ONCE(!skb))
-+		return;
-+
- 	regval = rd32(IGC_TXSTMPL);
- 	regval |= (u64)rd32(IGC_TXSTMPH) << 32;
- 	igc_ptp_systim_to_hwtstamp(adapter, &shhwtstamps, regval);
-@@ -466,7 +466,7 @@ static void igc_ptp_tx_work(struct work_struct *work)
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 tsynctxctl;
- 
--	if (!adapter->ptp_tx_skb)
-+	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
- 		return;
- 
- 	if (time_is_before_jiffies(adapter->ptp_tx_start +
-@@ -588,11 +588,9 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
- 		return;
- 
- 	cancel_work_sync(&adapter->ptp_tx_work);
--	if (adapter->ptp_tx_skb) {
--		dev_kfree_skb_any(adapter->ptp_tx_skb);
--		adapter->ptp_tx_skb = NULL;
--		clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
--	}
-+	dev_kfree_skb_any(adapter->ptp_tx_skb);
-+	adapter->ptp_tx_skb = NULL;
-+	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+@@ -205,47 +205,20 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+ 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
  }
  
- /**
+-/**
+- * igc_ptp_enable_tstamp_rxqueue - Enable RX timestamp for a queue
+- * @rx_ring: Pointer to RX queue
+- * @timer: Index for timer
+- *
+- * This function enables RX timestamping for a queue, and selects
+- * which 1588 timer will provide the timestamp.
+- */
+-static void igc_ptp_enable_tstamp_rxqueue(struct igc_adapter *adapter,
+-					  struct igc_ring *rx_ring, u8 timer)
+-{
+-	struct igc_hw *hw = &adapter->hw;
+-	int reg_idx = rx_ring->reg_idx;
+-	u32 srrctl = rd32(IGC_SRRCTL(reg_idx));
+-
+-	srrctl |= IGC_SRRCTL_TIMESTAMP;
+-	srrctl |= IGC_SRRCTL_TIMER1SEL(timer);
+-	srrctl |= IGC_SRRCTL_TIMER0SEL(timer);
+-
+-	wr32(IGC_SRRCTL(reg_idx), srrctl);
+-}
+-
+-static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
+-					       u8 timer)
+-{
+-	int i;
+-
+-	for (i = 0; i < adapter->num_rx_queues; i++) {
+-		struct igc_ring *ring = adapter->rx_ring[i];
+-
+-		igc_ptp_enable_tstamp_rxqueue(adapter, ring, timer);
+-	}
+-}
+-
+ static void igc_ptp_disable_rx_timestamp(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 val;
++	int i;
+ 
+ 	wr32(IGC_TSYNCRXCTL, 0);
+ 
++	for (i = 0; i < adapter->num_rx_queues; i++) {
++		val = rd32(IGC_SRRCTL(i));
++		val &= ~IGC_SRRCTL_TIMESTAMP;
++		wr32(IGC_SRRCTL(i), val);
++	}
++
+ 	val = rd32(IGC_RXPBS);
+ 	val &= ~IGC_RXPBS_CFG_TS_EN;
+ 	wr32(IGC_RXPBS, val);
+@@ -255,14 +228,21 @@ static void igc_ptp_enable_rx_timestamp(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 val;
++	int i;
+ 
+ 	val = rd32(IGC_RXPBS);
+ 	val |= IGC_RXPBS_CFG_TS_EN;
+ 	wr32(IGC_RXPBS, val);
+ 
+-	/* FIXME: For now, only support retrieving RX timestamps from timer 0
+-	 */
+-	igc_ptp_enable_tstamp_all_rxqueues(adapter, 0);
++	for (i = 0; i < adapter->num_rx_queues; i++) {
++		val = rd32(IGC_SRRCTL(i));
++		/* FIXME: For now, only support retrieving RX timestamps from
++		 * timer 0.
++		 */
++		val |= IGC_SRRCTL_TIMER1SEL(0) | IGC_SRRCTL_TIMER0SEL(0) |
++		       IGC_SRRCTL_TIMESTAMP;
++		wr32(IGC_SRRCTL(i), val);
++	}
+ 
+ 	val = IGC_TSYNCRXCTL_ENABLED | IGC_TSYNCRXCTL_TYPE_ALL |
+ 	      IGC_TSYNCRXCTL_RXSYNSIG;
 -- 
 2.26.2
 
