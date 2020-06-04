@@ -1,40 +1,50 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 03 Jun 2020 22:13:30 -0700
-Subject: [Intel-wired-lan] [next-queue v2] ethernet/intel: Convert
- fallthrough code comments
-In-Reply-To: <61CC2BC414934749BD9F5BF3D5D94044986E9384@ORSMSX112.amr.corp.intel.com>
-References: <20200604030726.1573257-1-jeffrey.t.kirsher@intel.com>
- <d74c63e48bbc2f437f7d7aad1c0064dac2a47203.camel@perches.com>
- <61CC2BC414934749BD9F5BF3D5D94044986E9384@ORSMSX112.amr.corp.intel.com>
-Message-ID: <d85393e8e5676ffd808923f00bb1396309781e7a.camel@perches.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu,  4 Jun 2020 14:25:16 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add LPI counters
+Message-ID: <20200604112516.44949-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2020-06-04 at 04:10 +0000, Kirsher, Jeffrey T wrote:
-> > -----Original Message-----
-> > From: Joe Perches <joe@perches.com>
-> > Sent: Wednesday, June 3, 2020 20:16
-> > To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> > lan at lists.osuosl.org
-> > Subject: Re: [next-queue v2] ethernet/intel: Convert fallthrough code comments
-> > 
-> > On Wed, 2020-06-03 at 20:07 -0700, Jeff Kirsher wrote:
-> > > Convert all the remaining 'fall through" code comments to the newer
-> > > 'fallthough;' keyword.
-> > 
-> > Maybe write it was scripted and
-> [Kirsher, Jeffrey T] 
-> 
-> Partially scripted, I used your script, but when I did a manual search for ' fall' or ' Fall', I found a few more hits.
+Add EEE TX LPI and EEE RX LPI counters. A EEE TX LPI event
+occurs when the transmitter enters EEE (IEEE 802.3az) LPI
+state. A EEE RX LPI event ocuurs when the receiver detect
+link partner entry into EEE(IEEE 802.3az) LPI state.
 
-Oh, nice.
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_mac.c  | 2 ++
+ drivers/net/ethernet/intel/igc/igc_regs.h | 2 ++
+ 2 files changed, 4 insertions(+)
 
-It's a brainless script.
-Good thing you used yours too.
-
-cheers, Joe
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index bc077f230f17..f3f7717b6233 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -307,6 +307,8 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
+ 	rd32(IGC_ICRXDMTC);
+ 
+ 	rd32(IGC_RPTHC);
++	rd32(IGC_TLPIC);
++	rd32(IGC_RLPIC);
+ 	rd32(IGC_HGPTC);
+ 	rd32(IGC_HGORCL);
+ 	rd32(IGC_HGORCH);
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index d53f49833db5..eb3e8e70501d 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -188,6 +188,8 @@
+ #define IGC_ICTXQEC	0x04118  /* Interrupt Cause Tx Queue Empty Count */
+ #define IGC_ICTXQMTC	0x0411C  /* Interrupt Cause Tx Queue Min Thresh Count */
+ #define IGC_RPTHC	0x04104  /* Rx Packets To Host */
++#define IGC_TLPIC	0x04148  /* EEE Tx LPI Count */
++#define IGC_RLPIC	0x0414C  /* EEE Rx LPI Count */
+ #define IGC_HGPTC	0x04118  /* Host Good Packets Tx Count */
+ #define IGC_RXDMTC	0x04120  /* Rx Descriptor Minimum Threshold Count */
+ #define IGC_HGORCL	0x04128  /* Host Good Octets Received Count Low */
+-- 
+2.11.0
 
