@@ -1,113 +1,138 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed,  3 Jun 2020 17:01:05 -0700
-Subject: [Intel-wired-lan] [PATCH 6/6] igc: Fix rx timestamp disabling
+Date: Wed,  3 Jun 2020 17:01:03 -0700
+Subject: [Intel-wired-lan] [PATCH 4/6] igc: Remove UDP filter setup in PTP
+ code
 In-Reply-To: <20200604000105.15059-1-andre.guedes@intel.com>
 References: <20200604000105.15059-1-andre.guedes@intel.com>
-Message-ID: <20200604000105.15059-7-andre.guedes@intel.com>
+Message-ID: <20200604000105.15059-5-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When rx timestamping is enabled, we set the timestamp bit in SRRCTL
-register for each queue, but we don't clear it when disabling. This
-patch fixes igc_ptp_disable_rx_timestamp() accordingly.
+As implemented in igc_ethtool_get_ts_info(), igc only supports HWTSTAMP_
+FILTER_ALL so any HWTSTAMP_FILTER_* option the user may set falls back to
+HWTSTAMP_FILTER_ALL.
 
-Also, this patch gets rid of igc_ptp_enable_tstamp_rxqueue() and
-igc_ptp_enable_tstamp_all_rxqueues() and move their logic into
-igc_ptp_enable_rx_timestamp() to keep the enable and disable
-helpers symmetric.
+HWTSTAMP_FILTER_ALL is implemented via Rx Time Sync Control (TSYNCRXCTL)
+configuration which timestamps all incoming packets. Configuring an
+UDP filter, in addition to TSYNCRXCTL, doesn't add much so this patch
+removes that code. It also takes this opportunity to remove some
+non-applicable comments.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 54 ++++++++----------------
- 1 file changed, 17 insertions(+), 37 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 51 +-----------------------
+ 1 file changed, 1 insertion(+), 50 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 0251e6bedac4..e67d4655b47e 100644
+index e65fdcf966b2..bdf934377abb 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -205,47 +205,20 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
- 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
- }
- 
--/**
-- * igc_ptp_enable_tstamp_rxqueue - Enable RX timestamp for a queue
-- * @rx_ring: Pointer to RX queue
-- * @timer: Index for timer
+@@ -244,18 +244,7 @@ static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
+  * @adapter: networking device structure
+  * @config: hwtstamp configuration
+  *
+- * Outgoing time stamping can be enabled and disabled. Play nice and
+- * disable it when requested, although it shouldn't case any overhead
+- * when no packet needs it. At most one packet in the queue may be
+- * marked for time stamping, otherwise it would be impossible to tell
+- * for sure to which packet the hardware time stamp belongs.
 - *
-- * This function enables RX timestamping for a queue, and selects
-- * which 1588 timer will provide the timestamp.
-- */
--static void igc_ptp_enable_tstamp_rxqueue(struct igc_adapter *adapter,
--					  struct igc_ring *rx_ring, u8 timer)
--{
--	struct igc_hw *hw = &adapter->hw;
--	int reg_idx = rx_ring->reg_idx;
--	u32 srrctl = rd32(IGC_SRRCTL(reg_idx));
--
--	srrctl |= IGC_SRRCTL_TIMESTAMP;
--	srrctl |= IGC_SRRCTL_TIMER1SEL(timer);
--	srrctl |= IGC_SRRCTL_TIMER0SEL(timer);
--
--	wr32(IGC_SRRCTL(reg_idx), srrctl);
--}
--
--static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
--					       u8 timer)
--{
--	int i;
--
--	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct igc_ring *ring = adapter->rx_ring[i];
--
--		igc_ptp_enable_tstamp_rxqueue(adapter, ring, timer);
--	}
--}
--
- static void igc_ptp_disable_rx_timestamp(struct igc_adapter *adapter)
- {
+- * Incoming time stamping has to be configured via the hardware
+- * filters. Not all combinations are supported, in particular event
+- * type has to be specified. Matching the kind of event packet is
+- * not supported, with the exception of "all V2 events regardless of
+- * level 2 or 4".
+- *
++ * Return: 0 in case of success, negative errno code otherwise.
+  */
+ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 				      struct hwtstamp_config *config)
+@@ -263,8 +252,6 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 	u32 tsync_tx_ctl = IGC_TSYNCTXCTL_ENABLED;
+ 	u32 tsync_rx_ctl = IGC_TSYNCRXCTL_ENABLED;
  	struct igc_hw *hw = &adapter->hw;
- 	u32 val;
-+	int i;
+-	u32 tsync_rx_cfg = 0;
+-	bool is_l4 = false;
+ 	u32 regval;
  
- 	wr32(IGC_TSYNCRXCTL, 0);
+ 	/* reserved for future extensions */
+@@ -285,15 +272,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 		tsync_rx_ctl = 0;
+ 		break;
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_SYNC:
+-		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_L4_V1;
+-		tsync_rx_cfg = IGC_TSYNCRXCFG_PTP_V1_SYNC_MESSAGE;
+-		is_l4 = true;
+-		break;
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ:
+-		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_L4_V1;
+-		tsync_rx_cfg = IGC_TSYNCRXCFG_PTP_V1_DELAY_REQ_MESSAGE;
+-		is_l4 = true;
+-		break;
+ 	case HWTSTAMP_FILTER_PTP_V2_EVENT:
+ 	case HWTSTAMP_FILTER_PTP_V2_L2_EVENT:
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_EVENT:
+@@ -303,32 +282,22 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 	case HWTSTAMP_FILTER_PTP_V2_DELAY_REQ:
+ 	case HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ:
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
+-		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_EVENT_V2;
+-		config->rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
+-		is_l4 = true;
+-		break;
+ 	case HWTSTAMP_FILTER_PTP_V1_L4_EVENT:
+ 	case HWTSTAMP_FILTER_NTP_ALL:
+ 	case HWTSTAMP_FILTER_ALL:
+ 		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_ALL;
+ 		config->rx_filter = HWTSTAMP_FILTER_ALL;
+ 		break;
+-		/* fall through */
+ 	default:
+ 		config->rx_filter = HWTSTAMP_FILTER_NONE;
+ 		return -ERANGE;
+ 	}
  
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		val = rd32(IGC_SRRCTL(i));
-+		val &= ~IGC_SRRCTL_TIMESTAMP;
-+		wr32(IGC_SRRCTL(i), val);
-+	}
-+
- 	val = rd32(IGC_RXPBS);
- 	val &= ~IGC_RXPBS_CFG_TS_EN;
- 	wr32(IGC_RXPBS, val);
-@@ -255,14 +228,21 @@ static void igc_ptp_enable_rx_timestamp(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 val;
-+	int i;
- 
- 	val = rd32(IGC_RXPBS);
- 	val |= IGC_RXPBS_CFG_TS_EN;
- 	wr32(IGC_RXPBS, val);
- 
--	/* FIXME: For now, only support retrieving RX timestamps from timer 0
+-	/* Per-packet timestamping only works if all packets are
+-	 * timestamped, so enable timestamping in all packets as long
+-	 * as one Rx filter was configured.
 -	 */
--	igc_ptp_enable_tstamp_all_rxqueues(adapter, 0);
-+	for (i = 0; i < adapter->num_rx_queues; i++) {
-+		val = rd32(IGC_SRRCTL(i));
-+		/* FIXME: For now, only support retrieving RX timestamps from
-+		 * timer 0.
-+		 */
-+		val |= IGC_SRRCTL_TIMER1SEL(0) | IGC_SRRCTL_TIMER0SEL(0) |
-+		       IGC_SRRCTL_TIMESTAMP;
-+		wr32(IGC_SRRCTL(i), val);
-+	}
+ 	if (tsync_rx_ctl) {
+ 		tsync_rx_ctl = IGC_TSYNCRXCTL_ENABLED;
+ 		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_ALL;
+ 		tsync_rx_ctl |= IGC_TSYNCRXCTL_RXSYNSIG;
+ 		config->rx_filter = HWTSTAMP_FILTER_ALL;
+-		is_l4 = true;
  
- 	val = IGC_TSYNCRXCTL_ENABLED | IGC_TSYNCRXCTL_TYPE_ALL |
- 	      IGC_TSYNCRXCTL_RXSYNSIG;
+ 		if (hw->mac.type == igc_i225) {
+ 			regval = rd32(IGC_RXPBS);
+@@ -359,24 +328,6 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 	regval |= tsync_rx_ctl;
+ 	wr32(IGC_TSYNCRXCTL, regval);
+ 
+-	/* define which PTP packets are time stamped */
+-	wr32(IGC_TSYNCRXCFG, tsync_rx_cfg);
+-
+-	/* L4 Queue Filter[3]: filter by destination port and protocol */
+-	if (is_l4) {
+-		u32 ftqf = (IPPROTO_UDP /* UDP */
+-			    | IGC_FTQF_VF_BP /* VF not compared */
+-			    | IGC_FTQF_1588_TIME_STAMP /* Enable Timestamp */
+-			    | IGC_FTQF_MASK); /* mask all inputs */
+-		ftqf &= ~IGC_FTQF_MASK_PROTO_BP; /* enable protocol check */
+-
+-		wr32(IGC_IMIR(3), htons(PTP_EV_PORT));
+-		wr32(IGC_IMIREXT(3),
+-		     (IGC_IMIREXT_SIZE_BP | IGC_IMIREXT_CTRL_BP));
+-		wr32(IGC_FTQF(3), ftqf);
+-	} else {
+-		wr32(IGC_FTQF(3), IGC_FTQF_MASK);
+-	}
+ 	wrfl();
+ 
+ 	/* clear TX time stamp registers, just to be sure */
 -- 
 2.26.2
 
