@@ -1,177 +1,184 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed,  3 Jun 2020 17:01:04 -0700
-Subject: [Intel-wired-lan] [PATCH 5/6] igc: Refactor
- igc_ptp_set_timestamp_mode()
+Date: Wed,  3 Jun 2020 17:01:00 -0700
+Subject: [Intel-wired-lan] [PATCH 1/6] igc: Clean up rx timestamping logic
 In-Reply-To: <20200604000105.15059-1-andre.guedes@intel.com>
 References: <20200604000105.15059-1-andre.guedes@intel.com>
-Message-ID: <20200604000105.15059-6-andre.guedes@intel.com>
+Message-ID: <20200604000105.15059-2-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Current igc_ptp_set_timestamp_mode() logic is a bit tangled since it
-handles many different hardware configurations in one single place,
-making it harder to follow. This patch untangles that code by breaking
-it into helper functions.
-
-Quick note about the hw->mac.type check which was removed in this
-refactoring: this check it not really needed since igc_i225 is the only
-type supported by the IGC driver.
+Differently from I210, I225 doesn't report rx timestamps via the TS bit
+rx descriptor + RXSTMPL/RXSTMPH registers mechanism. Rx timestamps are
+reported in the packet buffer only, which is implemented by igc_ptp_rx_
+pktstamp(). So this patch removes igc_ptp_rx_rgtstamp() and all code
+related to it, copied from igb driver.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 103 ++++++++++++-----------
- 1 file changed, 53 insertions(+), 50 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h         |  3 --
+ drivers/net/ethernet/intel/igc/igc_defines.h |  2 -
+ drivers/net/ethernet/intel/igc/igc_main.c    | 12 ++----
+ drivers/net/ethernet/intel/igc/igc_ptp.c     | 44 +-------------------
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  2 -
+ 5 files changed, 5 insertions(+), 58 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 9c57afad6afe..3070dfdb7eb4 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -210,8 +210,6 @@ struct igc_adapter {
+ 	struct sk_buff *ptp_tx_skb;
+ 	struct hwtstamp_config tstamp_config;
+ 	unsigned long ptp_tx_start;
+-	unsigned long last_rx_ptp_check;
+-	unsigned long last_rx_timestamp;
+ 	unsigned int ptp_flags;
+ 	/* System time value lock */
+ 	spinlock_t tmreg_lock;
+@@ -549,7 +547,6 @@ void igc_ptp_init(struct igc_adapter *adapter);
+ void igc_ptp_reset(struct igc_adapter *adapter);
+ void igc_ptp_suspend(struct igc_adapter *adapter);
+ void igc_ptp_stop(struct igc_adapter *adapter);
+-void igc_ptp_rx_rgtstamp(struct igc_q_vector *q_vector, struct sk_buff *skb);
+ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+ 			 struct sk_buff *skb);
+ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 81df6de2b206..1c032c1ce4d3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -323,7 +323,6 @@
+ 
+ /* Advanced Receive Descriptor bit definitions */
+ #define IGC_RXDADV_STAT_TSIP	0x08000 /* timestamp in packet */
+-#define IGC_RXDADV_STAT_TS	0x10000 /* Pkt was time stamped */
+ 
+ #define IGC_RXDEXT_STATERR_CE		0x01000000
+ #define IGC_RXDEXT_STATERR_SE		0x02000000
+@@ -384,7 +383,6 @@
+ #define IGC_FTQF_MASK_PROTO_BP	0x10000000
+ 
+ /* Time Sync Receive Control bit definitions */
+-#define IGC_TSYNCRXCTL_VALID		0x00000001  /* Rx timestamp valid */
+ #define IGC_TSYNCRXCTL_TYPE_MASK	0x0000000E  /* Rx type mask */
+ #define IGC_TSYNCRXCTL_TYPE_L2_V2	0x00
+ #define IGC_TSYNCRXCTL_TYPE_L4_V1	0x02
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index c767f5326ac9..4412ff573bcd 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1480,9 +1480,9 @@ static inline void igc_rx_hash(struct igc_ring *ring,
+  * @rx_desc: pointer to the EOP Rx descriptor
+  * @skb: pointer to current skb being populated
+  *
+- * This function checks the ring, descriptor, and packet information in
+- * order to populate the hash, checksum, VLAN, timestamp, protocol, and
+- * other fields within the skb.
++ * This function checks the ring, descriptor, and packet information in order
++ * to populate the hash, checksum, VLAN, protocol, and other fields within the
++ * skb.
+  */
+ static void igc_process_skb_fields(struct igc_ring *rx_ring,
+ 				   union igc_adv_rx_desc *rx_desc,
+@@ -1492,10 +1492,6 @@ static void igc_process_skb_fields(struct igc_ring *rx_ring,
+ 
+ 	igc_rx_checksum(rx_ring, rx_desc, skb);
+ 
+-	if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TS) &&
+-	    !igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP))
+-		igc_ptp_rx_rgtstamp(rx_ring->q_vector, skb);
+-
+ 	skb_record_rx_queue(skb, rx_ring->queue_index);
+ 
+ 	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
+@@ -1976,7 +1972,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 		/* probably a little skewed due to removing CRC */
+ 		total_bytes += skb->len;
+ 
+-		/* populate checksum, timestamp, VLAN, and protocol */
++		/* populate checksum, VLAN, and protocol */
+ 		igc_process_skb_fields(rx_ring, rx_desc, skb);
+ 
+ 		napi_gro_receive(&q_vector->napi, skb);
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index bdf934377abb..0251e6bedac4 100644
+index 0d746f8588c8..82e6c6c962d5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -239,6 +239,54 @@ static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
- 	}
+@@ -205,46 +205,6 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+ 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
  }
  
-+static void igc_ptp_disable_rx_timestamp(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 val;
-+
-+	wr32(IGC_TSYNCRXCTL, 0);
-+
-+	val = rd32(IGC_RXPBS);
-+	val &= ~IGC_RXPBS_CFG_TS_EN;
-+	wr32(IGC_RXPBS, val);
-+}
-+
-+static void igc_ptp_enable_rx_timestamp(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 val;
-+
-+	val = rd32(IGC_RXPBS);
-+	val |= IGC_RXPBS_CFG_TS_EN;
-+	wr32(IGC_RXPBS, val);
-+
-+	/* FIXME: For now, only support retrieving RX timestamps from timer 0
-+	 */
-+	igc_ptp_enable_tstamp_all_rxqueues(adapter, 0);
-+
-+	val = IGC_TSYNCRXCTL_ENABLED | IGC_TSYNCRXCTL_TYPE_ALL |
-+	      IGC_TSYNCRXCTL_RXSYNSIG;
-+	wr32(IGC_TSYNCRXCTL, val);
-+}
-+
-+static void igc_ptp_disable_tx_timestamp(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+
-+	wr32(IGC_TSYNCTXCTL, 0);
-+}
-+
-+static void igc_ptp_enable_tx_timestamp(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+
-+	wr32(IGC_TSYNCTXCTL, IGC_TSYNCTXCTL_ENABLED | IGC_TSYNCTXCTL_TXSYNSIG);
-+
-+	/* Read TXSTMP registers to discard any timestamp previously stored. */
-+	rd32(IGC_TXSTMPL);
-+	rd32(IGC_TXSTMPH);
-+}
-+
- /**
-  * igc_ptp_set_timestamp_mode - setup hardware for timestamping
-  * @adapter: networking device structure
-@@ -249,19 +297,16 @@ static void igc_ptp_enable_tstamp_all_rxqueues(struct igc_adapter *adapter,
- static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 				      struct hwtstamp_config *config)
- {
--	u32 tsync_tx_ctl = IGC_TSYNCTXCTL_ENABLED;
--	u32 tsync_rx_ctl = IGC_TSYNCRXCTL_ENABLED;
+-/**
+- * igc_ptp_rx_rgtstamp - retrieve Rx timestamp stored in register
+- * @q_vector: Pointer to interrupt specific structure
+- * @skb: Buffer containing timestamp and packet
+- *
+- * This function is meant to retrieve a timestamp from the internal registers
+- * of the adapter and store it in the skb.
+- */
+-void igc_ptp_rx_rgtstamp(struct igc_q_vector *q_vector,
+-			 struct sk_buff *skb)
+-{
+-	struct igc_adapter *adapter = q_vector->adapter;
 -	struct igc_hw *hw = &adapter->hw;
--	u32 regval;
+-	u64 regval;
 -
- 	/* reserved for future extensions */
- 	if (config->flags)
- 		return -EINVAL;
- 
- 	switch (config->tx_type) {
- 	case HWTSTAMP_TX_OFF:
--		tsync_tx_ctl = 0;
-+		igc_ptp_disable_tx_timestamp(adapter);
-+		break;
- 	case HWTSTAMP_TX_ON:
-+		igc_ptp_enable_tx_timestamp(adapter);
- 		break;
- 	default:
- 		return -ERANGE;
-@@ -269,7 +314,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 
- 	switch (config->rx_filter) {
- 	case HWTSTAMP_FILTER_NONE:
--		tsync_rx_ctl = 0;
-+		igc_ptp_disable_rx_timestamp(adapter);
- 		break;
- 	case HWTSTAMP_FILTER_PTP_V1_L4_SYNC:
- 	case HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ:
-@@ -285,55 +330,13 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 	case HWTSTAMP_FILTER_PTP_V1_L4_EVENT:
- 	case HWTSTAMP_FILTER_NTP_ALL:
- 	case HWTSTAMP_FILTER_ALL:
--		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_ALL;
-+		igc_ptp_enable_rx_timestamp(adapter);
- 		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		break;
- 	default:
--		config->rx_filter = HWTSTAMP_FILTER_NONE;
- 		return -ERANGE;
+-	/* If this bit is set, then the RX registers contain the time
+-	 * stamp. No other packet will be time stamped until we read
+-	 * these registers, so read the registers to make them
+-	 * available again. Because only one packet can be time
+-	 * stamped at a time, we know that the register values must
+-	 * belong to this one here and therefore we don't need to
+-	 * compare any of the additional attributes stored for it.
+-	 *
+-	 * If nothing went wrong, then it should have a shared
+-	 * tx_flags that we can turn into a skb_shared_hwtstamps.
+-	 */
+-	if (!(rd32(IGC_TSYNCRXCTL) & IGC_TSYNCRXCTL_VALID))
+-		return;
+-
+-	regval = rd32(IGC_RXSTMPL);
+-	regval |= (u64)rd32(IGC_RXSTMPH) << 32;
+-
+-	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
+-
+-	/* Update the last_rx_timestamp timer in order to enable watchdog check
+-	 * for error case of latched timestamp on a dropped packet.
+-	 */
+-	adapter->last_rx_timestamp = jiffies;
+-}
+-
+ /**
+  * igc_ptp_enable_tstamp_rxqueue - Enable RX timestamp for a queue
+  * @rx_ring: Pointer to RX queue
+@@ -419,11 +379,9 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
  	}
+ 	wrfl();
  
--	if (tsync_rx_ctl) {
--		tsync_rx_ctl = IGC_TSYNCRXCTL_ENABLED;
--		tsync_rx_ctl |= IGC_TSYNCRXCTL_TYPE_ALL;
--		tsync_rx_ctl |= IGC_TSYNCRXCTL_RXSYNSIG;
--		config->rx_filter = HWTSTAMP_FILTER_ALL;
--
--		if (hw->mac.type == igc_i225) {
--			regval = rd32(IGC_RXPBS);
--			regval |= IGC_RXPBS_CFG_TS_EN;
--			wr32(IGC_RXPBS, regval);
--
--			/* FIXME: For now, only support retrieving RX
--			 * timestamps from timer 0
--			 */
--			igc_ptp_enable_tstamp_all_rxqueues(adapter, 0);
--		}
--	}
--
--	if (tsync_tx_ctl) {
--		tsync_tx_ctl = IGC_TSYNCTXCTL_ENABLED;
--		tsync_tx_ctl |= IGC_TSYNCTXCTL_TXSYNSIG;
--	}
--
--	/* enable/disable TX */
--	regval = rd32(IGC_TSYNCTXCTL);
--	regval &= ~IGC_TSYNCTXCTL_ENABLED;
--	regval |= tsync_tx_ctl;
--	wr32(IGC_TSYNCTXCTL, regval);
--
--	/* enable/disable RX */
--	regval = rd32(IGC_TSYNCRXCTL);
--	regval &= ~(IGC_TSYNCRXCTL_ENABLED | IGC_TSYNCRXCTL_TYPE_MASK);
--	regval |= tsync_rx_ctl;
--	wr32(IGC_TSYNCRXCTL, regval);
--
--	wrfl();
--
--	/* clear TX time stamp registers, just to be sure */
--	regval = rd32(IGC_TXSTMPL);
--	regval = rd32(IGC_TXSTMPH);
--
+-	/* clear TX/RX time stamp registers, just to be sure */
++	/* clear TX time stamp registers, just to be sure */
+ 	regval = rd32(IGC_TXSTMPL);
+ 	regval = rd32(IGC_TXSTMPH);
+-	regval = rd32(IGC_RXSTMPL);
+-	regval = rd32(IGC_RXSTMPH);
+ 
  	return 0;
  }
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index 97f9b928509f..d53f49833db5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -228,8 +228,6 @@
+ #define IGC_SYSTIMR	0x0B6F8  /* System time register Residue */
+ #define IGC_TIMINCA	0x0B608  /* Increment attributes register - RW */
+ 
+-#define IGC_RXSTMPL	0x0B624  /* Rx timestamp Low - RO */
+-#define IGC_RXSTMPH	0x0B628  /* Rx timestamp High - RO */
+ #define IGC_TXSTMPL	0x0B618  /* Tx timestamp value Low - RO */
+ #define IGC_TXSTMPH	0x0B61C  /* Tx timestamp value High - RO */
  
 -- 
 2.26.2
