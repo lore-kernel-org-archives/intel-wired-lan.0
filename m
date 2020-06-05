@@ -1,105 +1,167 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  5 Jun 2020 10:09:46 -0700
-Subject: [Intel-wired-lan] [PATCH 4/4] iavf: increase reset complete wait
- time
+Date: Fri,  5 Jun 2020 10:09:44 -0700
+Subject: [Intel-wired-lan] [PATCH 2/4] iavf: use appropriate enum for
+ comparison
 In-Reply-To: <20200605170946.23494-1-anthony.l.nguyen@intel.com>
 References: <20200605170946.23494-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200605170946.23494-4-anthony.l.nguyen@intel.com>
+Message-ID: <20200605170946.23494-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-With an increased number of VFs, it's possible to encounter the following
-issue during reset.
+adapter->link_speed has type enum virtchnl_link_speed but our comparisons
+are against enum iavf_aq_link_speed. Though they are, currently, the same
+values, change the comparison to the matching enum virtchnl_link_speed
+since that may not always be the case.
 
-    iavf b8d4:00:02.0: Hardware reset detected
-    iavf b8d4:00:02.0: Reset never finished (0)
-    iavf b8d4:00:02.0: Reset task did not complete, VF disabled
-
-Increase the reset complete wait count to allow for 128 VFs to complete
-reset.
-
-Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h      |  4 ++++
- drivers/net/ethernet/intel/iavf/iavf_main.c | 12 +++++-------
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c  | 17 ++++++-----------
+ drivers/net/ethernet/intel/iavf/iavf_main.c     | 12 ++++++------
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c     | 12 ++++++------
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 12 ++++++------
+ 4 files changed, 24 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 56cd1a39a4b5..8a65525a7c0d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -219,6 +219,10 @@ struct iavf_cloud_filter {
- 	bool add;		/* filter needs to be added */
- };
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 60a3519713d4..86b6288b961e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -291,27 +291,22 @@ static int iavf_get_link_ksettings(struct net_device *netdev,
+ 	}
  
-+#define IAVF_RESET_WAIT_MS 10
-+#define IAVF_RESET_WAIT_DETECTED_COUNT 500
-+#define IAVF_RESET_WAIT_COMPLETE_COUNT 2000
-+
- /* board specific private data structure */
- struct iavf_adapter {
- 	struct work_struct reset_task;
+ 	switch (adapter->link_speed) {
+-	case IAVF_LINK_SPEED_40GB:
++	case VIRTCHNL_LINK_SPEED_40GB:
+ 		cmd->base.speed = SPEED_40000;
+ 		break;
+-	case IAVF_LINK_SPEED_25GB:
+-#ifdef SPEED_25000
++	case VIRTCHNL_LINK_SPEED_25GB:
+ 		cmd->base.speed = SPEED_25000;
+-#else
+-		netdev_info(netdev,
+-			    "Speed is 25G, display not supported by this version of ethtool.\n");
+-#endif
+ 		break;
+-	case IAVF_LINK_SPEED_20GB:
++	case VIRTCHNL_LINK_SPEED_20GB:
+ 		cmd->base.speed = SPEED_20000;
+ 		break;
+-	case IAVF_LINK_SPEED_10GB:
++	case VIRTCHNL_LINK_SPEED_10GB:
+ 		cmd->base.speed = SPEED_10000;
+ 		break;
+-	case IAVF_LINK_SPEED_1GB:
++	case VIRTCHNL_LINK_SPEED_1GB:
+ 		cmd->base.speed = SPEED_1000;
+ 		break;
+-	case IAVF_LINK_SPEED_100MB:
++	case VIRTCHNL_LINK_SPEED_100MB:
+ 		cmd->base.speed = SPEED_100;
+ 		break;
+ 	default:
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 3f3c6260c5df..78bd9e3df3ac 100644
+index 0e2be56081e1..8307274fabc5 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2035,8 +2035,6 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
- 	dev_info(&adapter->pdev->dev, "Reset task did not complete, VF disabled\n");
- }
- 
--#define IAVF_RESET_WAIT_MS 10
--#define IAVF_RESET_WAIT_COUNT 500
- /**
-  * iavf_reset_task - Call-back task to handle hardware reset
-  * @work: pointer to work_struct
-@@ -2090,20 +2088,20 @@ static void iavf_reset_task(struct work_struct *work)
- 	adapter->flags |= IAVF_FLAG_RESET_PENDING;
- 
- 	/* poll until we see the reset actually happen */
--	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
-+	for (i = 0; i < IAVF_RESET_WAIT_DETECTED_COUNT; i++) {
- 		reg_val = rd32(hw, IAVF_VF_ARQLEN1) &
- 			  IAVF_VF_ARQLEN1_ARQENABLE_MASK;
- 		if (!reg_val)
- 			break;
- 		usleep_range(5000, 10000);
- 	}
--	if (i == IAVF_RESET_WAIT_COUNT) {
-+	if (i == IAVF_RESET_WAIT_DETECTED_COUNT) {
- 		dev_info(&adapter->pdev->dev, "Never saw reset\n");
- 		goto continue_reset; /* act like the reset happened */
+@@ -2487,22 +2487,22 @@ static int iavf_validate_tx_bandwidth(struct iavf_adapter *adapter,
  	}
  
- 	/* wait until the reset is complete and the PF is responding to us */
--	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
-+	for (i = 0; i < IAVF_RESET_WAIT_COMPLETE_COUNT; i++) {
- 		/* sleep first to make sure a minimum wait time is met */
- 		msleep(IAVF_RESET_WAIT_MS);
+ 	switch (adapter->link_speed) {
+-	case IAVF_LINK_SPEED_40GB:
++	case VIRTCHNL_LINK_SPEED_40GB:
+ 		speed = 40000;
+ 		break;
+-	case IAVF_LINK_SPEED_25GB:
++	case VIRTCHNL_LINK_SPEED_25GB:
+ 		speed = 25000;
+ 		break;
+-	case IAVF_LINK_SPEED_20GB:
++	case VIRTCHNL_LINK_SPEED_20GB:
+ 		speed = 20000;
+ 		break;
+-	case IAVF_LINK_SPEED_10GB:
++	case VIRTCHNL_LINK_SPEED_10GB:
+ 		speed = 10000;
+ 		break;
+-	case IAVF_LINK_SPEED_1GB:
++	case VIRTCHNL_LINK_SPEED_1GB:
+ 		speed = 1000;
+ 		break;
+-	case IAVF_LINK_SPEED_100MB:
++	case VIRTCHNL_LINK_SPEED_100MB:
+ 		speed = 100;
+ 		break;
+ 	default:
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 17a405da9d16..ca041b39ffda 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -379,19 +379,19 @@ static inline unsigned int iavf_itr_divisor(struct iavf_q_vector *q_vector)
+ 	unsigned int divisor;
  
-@@ -2115,7 +2113,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 	switch (q_vector->adapter->link_speed) {
+-	case IAVF_LINK_SPEED_40GB:
++	case VIRTCHNL_LINK_SPEED_40GB:
+ 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 1024;
+ 		break;
+-	case IAVF_LINK_SPEED_25GB:
+-	case IAVF_LINK_SPEED_20GB:
++	case VIRTCHNL_LINK_SPEED_25GB:
++	case VIRTCHNL_LINK_SPEED_20GB:
+ 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 512;
+ 		break;
+ 	default:
+-	case IAVF_LINK_SPEED_10GB:
++	case VIRTCHNL_LINK_SPEED_10GB:
+ 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 256;
+ 		break;
+-	case IAVF_LINK_SPEED_1GB:
+-	case IAVF_LINK_SPEED_100MB:
++	case VIRTCHNL_LINK_SPEED_1GB:
++	case VIRTCHNL_LINK_SPEED_100MB:
+ 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 32;
+ 		break;
+ 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index ca79bec4ebd9..c4735589a296 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -921,22 +921,22 @@ static void iavf_print_link_message(struct iavf_adapter *adapter)
+ 	}
  
- 	pci_set_master(adapter->pdev);
- 
--	if (i == IAVF_RESET_WAIT_COUNT) {
-+	if (i == IAVF_RESET_WAIT_COMPLETE_COUNT) {
- 		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
- 			reg_val);
- 		iavf_disable_vf(adapter);
-@@ -3418,7 +3416,7 @@ static int iavf_check_reset_complete(struct iavf_hw *hw)
- 	u32 rstat;
- 	int i;
- 
--	for (i = 0; i < 100; i++) {
-+	for (i = 0; i < IAVF_RESET_WAIT_COMPLETE_COUNT; i++) {
- 		rstat = rd32(hw, IAVF_VFGEN_RSTAT) &
- 			     IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if ((rstat == VIRTCHNL_VFR_VFACTIVE) ||
+ 	switch (adapter->link_speed) {
+-	case IAVF_LINK_SPEED_40GB:
++	case VIRTCHNL_LINK_SPEED_40GB:
+ 		link_speed_mbps = SPEED_40000;
+ 		break;
+-	case IAVF_LINK_SPEED_25GB:
++	case VIRTCHNL_LINK_SPEED_25GB:
+ 		link_speed_mbps = SPEED_25000;
+ 		break;
+-	case IAVF_LINK_SPEED_20GB:
++	case VIRTCHNL_LINK_SPEED_20GB:
+ 		link_speed_mbps = SPEED_20000;
+ 		break;
+-	case IAVF_LINK_SPEED_10GB:
++	case VIRTCHNL_LINK_SPEED_10GB:
+ 		link_speed_mbps = SPEED_10000;
+ 		break;
+-	case IAVF_LINK_SPEED_1GB:
++	case VIRTCHNL_LINK_SPEED_1GB:
+ 		link_speed_mbps = SPEED_1000;
+ 		break;
+-	case IAVF_LINK_SPEED_100MB:
++	case VIRTCHNL_LINK_SPEED_100MB:
+ 		link_speed_mbps = SPEED_100;
+ 		break;
+ 	default:
 -- 
 2.20.1
 
