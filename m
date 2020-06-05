@@ -1,67 +1,91 @@
-From: Qian Cai <cai@lca.pw>
-Date: Sat,  6 Jun 2020 16:01:16 -0400
-Subject: [Intel-wired-lan] [PATCH] i40e: silence an UBSAN false positive
-Message-ID: <20200606200116.1398-1-cai@lca.pw>
+From: Alexander E. Patrakov <patrakov@gmail.com>
+Date: Fri, 5 Jun 2020 16:18:48 +0500
+Subject: [Intel-wired-lan] VLAN-aware bridge and i40e driver problem
+Message-ID: <CAN_LGv1uTo2MNso8nT0adWXJ_wGbX5VoiNn9xKoJDR1q04g6FQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-virtchnl_rss_lut.lut is used for the RSS lookup table, but in
-i40e_vc_config_rss_lut(), it is indexed by subscript results in a false
-positive.
+Hello,
 
- UBSAN: array-index-out-of-bounds in drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2983:15
- index 1 is out of range for type 'u8 [1]'
- CPU: 34 PID: 871 Comm: kworker/34:2 Not tainted 5.7.0-next-20200605+ #5
- Hardware name: HPE ProLiant DL385 Gen10/ProLiant DL385 Gen10, BIOS A40 03/09/2018
- Workqueue: i40e i40e_service_task [i40e]
- Call Trace:
-  dump_stack+0xa7/0xea
-  ubsan_epilogue+0x9/0x45
-  __ubsan_handle_out_of_bounds+0x6f/0x80
-  i40e_vc_process_vf_msg+0x457c/0x4660 [i40e]
-  i40e_service_task+0x96c/0x1ab0 [i40e]
-  process_one_work+0x57d/0xbd0
-  worker_thread+0x63/0x5b0
-  kthread+0x20c/0x230
-  ret_from_fork+0x22/0x30
+We have some new servers with this kind of dual-port 40GbE network
+cards, supported by the in-tree i40e driver:
 
-Fixes: d510497b8397 ("i40e: add input validation for virtchnl handlers")
-Signed-off-by: Qian Cai <cai@lca.pw>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+21:00.0 Ethernet controller [0200]: Intel Corporation Ethernet
+Controller XL710 for 40GbE QSFP+ [8086:1583] (rev 02)
+21:00.1 Ethernet controller [0200]: Intel Corporation Ethernet
+Controller XL710 for 40GbE QSFP+ [8086:1583] (rev 02)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 56b9e445732b..d5a959d91ba9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2971,6 +2971,7 @@ static int i40e_vc_config_rss_lut(struct i40e_vf *vf, u8 *msg)
- 	struct i40e_vsi *vsi = NULL;
- 	i40e_status aq_ret = 0;
- 	u16 i;
-+	u8 *lut = vrl->lut;
- 
- 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
- 	    !i40e_vc_isvalid_vsi_id(vf, vrl->vsi_id) ||
-@@ -2980,13 +2981,13 @@ static int i40e_vc_config_rss_lut(struct i40e_vf *vf, u8 *msg)
- 	}
- 
- 	for (i = 0; i < vrl->lut_entries; i++)
--		if (vrl->lut[i] >= vf->num_queue_pairs) {
-+		if (lut[i] >= vf->num_queue_pairs) {
- 			aq_ret = I40E_ERR_PARAM;
- 			goto err;
- 		}
- 
- 	vsi = pf->vsi[vf->lan_vsi_idx];
--	aq_ret = i40e_config_rss(vsi, NULL, vrl->lut, I40E_VF_HLUT_ARRAY_SIZE);
-+	aq_ret = i40e_config_rss(vsi, NULL, lut, I40E_VF_HLUT_ARRAY_SIZE);
- 	/* send the response to the VF */
- err:
- 	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_CONFIG_RSS_LUT,
+On each server, the two network ports (exposed as enp33s0f0 and
+enp33s0f1) are used as slaves of the "bond0" interface, which is
+itself used as a port of a vlan-aware bridge (vmbr0). There are tap
+interfaces for KVM virtual machines that are also in this bridge, and
+assigned to different VLANs as needed. The bond0 interface carries all
+VLANs, and is essentially used as a "trunk port".
+
+This is Proxmox (a Debian-based system), so the VLANs are added to the
+bond0 interface at boot time via the /etc/network/if-up.d/bridgevlan
+script, which runs essentially this:
+
+    port=bond0
+    bridge vlan add dev $port vid 2-4094
+
+And here is why this behaves badly.
+
+The "bridge" command does send the whole "add vids" request as a
+single netlink message, so there are no inefficiencies at this step.
+Then, the bond driver attempts to pass down the VLAN filter down to
+the underlying hardware (i.e. to the i40e driver), and that's where
+things go downhill.
+
+Apparently the driver attempts to add the VIDs to the hardware filter
+one-by-one. And then, after adding 256 VIDs, it hits the hardware
+limit and complains:
+
+    i40e 0000:21:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow
+promiscuous on PF
+
+And then goes on to process the next VID, also noticing that it is
+beyond the hardware limit, and so on. Result: 3839 lines of log spam
+from each network port, and more than 1 minute spent fighting with the
+hardware (i.e. slow boot). After that, VLAN filtering and dispatching
+of packets to VMs are done in software, and done correctly.
+
+In this setup, the hardware VLAN filtering capability of the card is
+useless, because there is actually nothing to filter out from the
+wire. However, the slow boot and the log spam annoy sysadmins here. It
+would have been better if the i40e driver somehow saw beforehand that
+the whole VLAN filtering request is beyond the abilities of the
+hardware, and did not attempt to add, fruitlessly, the VID entries
+one-by-one. After all, on other servers, with "Mellanox Technologies
+MT27700 Family [ConnectX-4] [15b3:1013]" (mlx5_core driver), it takes
+less than 1 second to add these VLANs to bond0. Is it because the
+Mellanox card is somehow better, or is it just a gross inefficiency of
+the i40e driver? Could anyone familiar with the card please try to fix
+the i40e driver?
+
+I have tried to force the VLAN filtering in software, via ethtool:
+
+    ethtool -K enp33s0f0 rx-vlan-filter off
+
+But it doesn't work, because (since at least commit
+b0fe3306432796c8f7adbede8ccd479bb7b53d0a, which adds it to
+netdev->features but not netdev->hw_features) this is not a
+user-changeable option on i40e. Question to the driver maintainers:
+why is it so?
+
+P.S. We have finally found and adopted this workaround:
+
+    ethtool -K bond0 rx-vlan-filter off
+
+...and things work reasonably well: fast boot, no log spam, okay-ish
+performance (14.5 Gbps per CPU core).
+
+P.P.S. I suspect that it would have been better to use macvlan instead
+of the VLAN-aware bridge, but for legacy reasons we can't do that.
+
 -- 
-2.21.0 (Apple Git-122.2)
-
+Alexander E. Patrakov
+CV: http://pc.cd/PLz7
