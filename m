@@ -1,167 +1,61 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  5 Jun 2020 10:09:44 -0700
-Subject: [Intel-wired-lan] [PATCH 2/4] iavf: use appropriate enum for
- comparison
-In-Reply-To: <20200605170946.23494-1-anthony.l.nguyen@intel.com>
-References: <20200605170946.23494-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200605170946.23494-2-anthony.l.nguyen@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun,  7 Jun 2020 11:51:27 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove TCP segmentation TX
+ fail counter
+Message-ID: <20200607085127.29281-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+TCP segmentation TX context fail counter is not
+applicable for i225 devices.
+This patch comes to clean up this counter.
 
-adapter->link_speed has type enum virtchnl_link_speed but our comparisons
-are against enum iavf_aq_link_speed. Though they are, currently, the same
-values, change the comparison to the matching enum virtchnl_link_speed
-since that may not always be the case.
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c  | 17 ++++++-----------
- drivers/net/ethernet/intel/iavf/iavf_main.c     | 12 ++++++------
- drivers/net/ethernet/intel/iavf/iavf_txrx.c     | 12 ++++++------
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 12 ++++++------
- 4 files changed, 24 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_mac.c  | 1 -
+ drivers/net/ethernet/intel/igc/igc_main.c | 1 -
+ drivers/net/ethernet/intel/igc/igc_regs.h | 1 -
+ 3 files changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 60a3519713d4..86b6288b961e 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -291,27 +291,22 @@ static int iavf_get_link_ksettings(struct net_device *netdev,
- 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index f3f7717b6233..9a5e44ef45f4 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -289,7 +289,6 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
+ 	rd32(IGC_TNCRS);
+ 	rd32(IGC_HTDPMC);
+ 	rd32(IGC_TSCTC);
+-	rd32(IGC_TSCTFC);
  
- 	switch (adapter->link_speed) {
--	case IAVF_LINK_SPEED_40GB:
-+	case VIRTCHNL_LINK_SPEED_40GB:
- 		cmd->base.speed = SPEED_40000;
- 		break;
--	case IAVF_LINK_SPEED_25GB:
--#ifdef SPEED_25000
-+	case VIRTCHNL_LINK_SPEED_25GB:
- 		cmd->base.speed = SPEED_25000;
--#else
--		netdev_info(netdev,
--			    "Speed is 25G, display not supported by this version of ethtool.\n");
--#endif
- 		break;
--	case IAVF_LINK_SPEED_20GB:
-+	case VIRTCHNL_LINK_SPEED_20GB:
- 		cmd->base.speed = SPEED_20000;
- 		break;
--	case IAVF_LINK_SPEED_10GB:
-+	case VIRTCHNL_LINK_SPEED_10GB:
- 		cmd->base.speed = SPEED_10000;
- 		break;
--	case IAVF_LINK_SPEED_1GB:
-+	case VIRTCHNL_LINK_SPEED_1GB:
- 		cmd->base.speed = SPEED_1000;
- 		break;
--	case IAVF_LINK_SPEED_100MB:
-+	case VIRTCHNL_LINK_SPEED_100MB:
- 		cmd->base.speed = SPEED_100;
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 0e2be56081e1..8307274fabc5 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2487,22 +2487,22 @@ static int iavf_validate_tx_bandwidth(struct iavf_adapter *adapter,
- 	}
+ 	rd32(IGC_MGTPRC);
+ 	rd32(IGC_MGTPDC);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index b92e7e20ce78..5d70751e8ab3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3740,7 +3740,6 @@ void igc_update_stats(struct igc_adapter *adapter)
+ 	adapter->stats.algnerrc += rd32(IGC_ALGNERRC);
  
- 	switch (adapter->link_speed) {
--	case IAVF_LINK_SPEED_40GB:
-+	case VIRTCHNL_LINK_SPEED_40GB:
- 		speed = 40000;
- 		break;
--	case IAVF_LINK_SPEED_25GB:
-+	case VIRTCHNL_LINK_SPEED_25GB:
- 		speed = 25000;
- 		break;
--	case IAVF_LINK_SPEED_20GB:
-+	case VIRTCHNL_LINK_SPEED_20GB:
- 		speed = 20000;
- 		break;
--	case IAVF_LINK_SPEED_10GB:
-+	case VIRTCHNL_LINK_SPEED_10GB:
- 		speed = 10000;
- 		break;
--	case IAVF_LINK_SPEED_1GB:
-+	case VIRTCHNL_LINK_SPEED_1GB:
- 		speed = 1000;
- 		break;
--	case IAVF_LINK_SPEED_100MB:
-+	case VIRTCHNL_LINK_SPEED_100MB:
- 		speed = 100;
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 17a405da9d16..ca041b39ffda 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -379,19 +379,19 @@ static inline unsigned int iavf_itr_divisor(struct iavf_q_vector *q_vector)
- 	unsigned int divisor;
+ 	adapter->stats.tsctc += rd32(IGC_TSCTC);
+-	adapter->stats.tsctfc += rd32(IGC_TSCTFC);
  
- 	switch (q_vector->adapter->link_speed) {
--	case IAVF_LINK_SPEED_40GB:
-+	case VIRTCHNL_LINK_SPEED_40GB:
- 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 1024;
- 		break;
--	case IAVF_LINK_SPEED_25GB:
--	case IAVF_LINK_SPEED_20GB:
-+	case VIRTCHNL_LINK_SPEED_25GB:
-+	case VIRTCHNL_LINK_SPEED_20GB:
- 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 512;
- 		break;
- 	default:
--	case IAVF_LINK_SPEED_10GB:
-+	case VIRTCHNL_LINK_SPEED_10GB:
- 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 256;
- 		break;
--	case IAVF_LINK_SPEED_1GB:
--	case IAVF_LINK_SPEED_100MB:
-+	case VIRTCHNL_LINK_SPEED_1GB:
-+	case VIRTCHNL_LINK_SPEED_100MB:
- 		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 32;
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index ca79bec4ebd9..c4735589a296 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -921,22 +921,22 @@ static void iavf_print_link_message(struct iavf_adapter *adapter)
- 	}
- 
- 	switch (adapter->link_speed) {
--	case IAVF_LINK_SPEED_40GB:
-+	case VIRTCHNL_LINK_SPEED_40GB:
- 		link_speed_mbps = SPEED_40000;
- 		break;
--	case IAVF_LINK_SPEED_25GB:
-+	case VIRTCHNL_LINK_SPEED_25GB:
- 		link_speed_mbps = SPEED_25000;
- 		break;
--	case IAVF_LINK_SPEED_20GB:
-+	case VIRTCHNL_LINK_SPEED_20GB:
- 		link_speed_mbps = SPEED_20000;
- 		break;
--	case IAVF_LINK_SPEED_10GB:
-+	case VIRTCHNL_LINK_SPEED_10GB:
- 		link_speed_mbps = SPEED_10000;
- 		break;
--	case IAVF_LINK_SPEED_1GB:
-+	case VIRTCHNL_LINK_SPEED_1GB:
- 		link_speed_mbps = SPEED_1000;
- 		break;
--	case IAVF_LINK_SPEED_100MB:
-+	case VIRTCHNL_LINK_SPEED_100MB:
- 		link_speed_mbps = SPEED_100;
- 		break;
- 	default:
+ 	adapter->stats.iac += rd32(IGC_IAC);
+ 	adapter->stats.icrxoc += rd32(IGC_ICRXOC);
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index eb3e8e70501d..1c46cec5a799 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -181,7 +181,6 @@
+ #define IGC_MPTC	0x040F0  /* Multicast Packets Tx Count - R/clr */
+ #define IGC_BPTC	0x040F4  /* Broadcast Packets Tx Count - R/clr */
+ #define IGC_TSCTC	0x040F8  /* TCP Segmentation Context Tx - R/clr */
+-#define IGC_TSCTFC	0x040FC  /* TCP Segmentation Context Tx Fail - R/clr */
+ #define IGC_IAC		0x04100  /* Interrupt Assertion Count */
+ #define IGC_ICTXPTC	0x0410C  /* Interrupt Cause Tx Pkt Timer Expire Count */
+ #define IGC_ICTXATC	0x04110  /* Interrupt Cause Tx Abs Timer Expire Count */
 -- 
-2.20.1
+2.11.0
 
