@@ -1,56 +1,56 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon,  8 Jun 2020 19:05:53 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 260/274] ice: Fix inability to
- set channels when down
-In-Reply-To: <20200608230607.3361041-1-sashal@kernel.org>
-References: <20200608230607.3361041-1-sashal@kernel.org>
-Message-ID: <20200608230607.3361041-260-sashal@kernel.org>
+Date: Mon,  8 Jun 2020 19:16:28 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 035/175] ixgbe: Fix XDP
+ redirect on archs with PAGE_SIZE above 4K
+In-Reply-To: <20200608231848.3366970-1-sashal@kernel.org>
+References: <20200608231848.3366970-1-sashal@kernel.org>
+Message-ID: <20200608231848.3366970-35-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
 
-[ Upstream commit 765dd7a1827c687b782e6ab3dd6daf4d13a4780f ]
+[ Upstream commit 88eb0ee17b2ece64fcf6689a4557a5c2e7a89c4b ]
 
-Currently the driver prevents a user from doing
-modprobe ice
-ethtool -L eth0 combined 5
-ip link set eth0 up
+The ixgbe driver have another memory model when compiled on archs with
+PAGE_SIZE above 4096 bytes. In this mode it doesn't split the page in
+two halves, but instead increment rx_buffer->page_offset by truesize of
+packet (which include headroom and tailroom for skb_shared_info).
 
-The ethtool command fails, because the driver is checking to see if the
-interface is down before allowing the get_channels to proceed (even for
-a set_channels).
+This is done correctly in ixgbe_build_skb(), but in ixgbe_rx_buffer_flip
+which is currently only called on XDP_TX and XDP_REDIRECT, it forgets
+to add the tailroom for skb_shared_info. This breaks XDP_REDIRECT, for
+veth and cpumap.  Fix by adding size of skb_shared_info tailroom.
 
-Remove this check and allow the user to configure the interface
-before bringing it up, which is a much better usability case.
+Maintainers notice: This fix have been queued to Jeff.
 
-Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Fixes: 6453073987ba ("ixgbe: add initial support for xdp redirect")
+Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Link: https://lore.kernel.org/bpf/158945344946.97035.17031588499266605743.stgit at firesoul
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 593fb37bd59e..153e3565e313 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3171,10 +3171,6 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index a26f9fb95ac0..edaa0bffa5c3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2254,7 +2254,8 @@ static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
+ 	rx_buffer->page_offset ^= truesize;
+ #else
+ 	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+-				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
++				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
++				SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
+ 				SKB_DATA_ALIGN(size);
  
--	/* check to see if VSI is active */
--	if (test_bit(__ICE_DOWN, vsi->state))
--		return;
--
- 	/* report maximum channels */
- 	ch->max_rx = ice_get_max_rxq(pf);
- 	ch->max_tx = ice_get_max_txq(pf);
+ 	rx_buffer->page_offset += truesize;
 -- 
 2.25.1
 
