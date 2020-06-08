@@ -1,56 +1,56 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon,  8 Jun 2020 19:02:21 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 048/274] ixgbe: Fix XDP
- redirect on archs with PAGE_SIZE above 4K
+Date: Mon,  8 Jun 2020 19:02:46 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 073/274] ice: Fix memory leak
 In-Reply-To: <20200608230607.3361041-1-sashal@kernel.org>
 References: <20200608230607.3361041-1-sashal@kernel.org>
-Message-ID: <20200608230607.3361041-48-sashal@kernel.org>
+Message-ID: <20200608230607.3361041-73-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesper Dangaard Brouer <brouer@redhat.com>
+From: Surabhi Boob <surabhi.boob@intel.com>
 
-[ Upstream commit 88eb0ee17b2ece64fcf6689a4557a5c2e7a89c4b ]
+[ Upstream commit 1aaef2bc4e0a5ce9e4dd86359e6a0bf52c6aa64f ]
 
-The ixgbe driver have another memory model when compiled on archs with
-PAGE_SIZE above 4096 bytes. In this mode it doesn't split the page in
-two halves, but instead increment rx_buffer->page_offset by truesize of
-packet (which include headroom and tailroom for skb_shared_info).
+Handle memory leak on filter management initialization failure.
 
-This is done correctly in ixgbe_build_skb(), but in ixgbe_rx_buffer_flip
-which is currently only called on XDP_TX and XDP_REDIRECT, it forgets
-to add the tailroom for skb_shared_info. This breaks XDP_REDIRECT, for
-veth and cpumap.  Fix by adding size of skb_shared_info tailroom.
-
-Maintainers notice: This fix have been queued to Jeff.
-
-Fixes: 6453073987ba ("ixgbe: add initial support for xdp redirect")
-Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Signed-off-by: Alexei Starovoitov <ast@kernel.org>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Link: https://lore.kernel.org/bpf/158945344946.97035.17031588499266605743.stgit at firesoul
+Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 718931d951bc..ea6834bae04c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2254,7 +2254,8 @@ static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
- 	rx_buffer->page_offset ^= truesize;
- #else
- 	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
--				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) :
-+				SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
-+				SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
- 				SKB_DATA_ALIGN(size);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 2c0d8fd3d5cd..09b374590ffc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -322,6 +322,7 @@ ice_aq_get_link_info(struct ice_port_info *pi, bool ena_lse,
+ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ {
+ 	struct ice_switch_info *sw;
++	enum ice_status status;
  
- 	rx_buffer->page_offset += truesize;
+ 	hw->switch_info = devm_kzalloc(ice_hw_to_dev(hw),
+ 				       sizeof(*hw->switch_info), GFP_KERNEL);
+@@ -332,7 +333,12 @@ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ 
+ 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
+ 
+-	return ice_init_def_sw_recp(hw);
++	status = ice_init_def_sw_recp(hw);
++	if (status) {
++		devm_kfree(ice_hw_to_dev(hw), hw->switch_info);
++		return status;
++	}
++	return 0;
+ }
+ 
+ /**
 -- 
 2.25.1
 
