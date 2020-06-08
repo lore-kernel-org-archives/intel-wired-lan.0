@@ -1,49 +1,56 @@
-From: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Date: Mon, 8 Jun 2020 23:19:52 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/4] ixgbe_ipsec: become
- aware of when running as a bonding slave
-In-Reply-To: <20200608210058.37352-3-jarod@redhat.com>
-References: <20200608210058.37352-1-jarod@redhat.com>
- <20200608210058.37352-3-jarod@redhat.com>
-Message-ID: <61CC2BC414934749BD9F5BF3D5D94044986EFB8B@ORSMSX112.amr.corp.intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon,  8 Jun 2020 19:16:45 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 052/175] ice: Fix memory leak
+In-Reply-To: <20200608231848.3366970-1-sashal@kernel.org>
+References: <20200608231848.3366970-1-sashal@kernel.org>
+Message-ID: <20200608231848.3366970-52-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Jarod Wilson <jarod@redhat.com>
-> Sent: Monday, June 8, 2020 14:01
-> To: linux-kernel at vger.kernel.org
-> Cc: Jarod Wilson <jarod@redhat.com>; Jay Vosburgh
-> <j.vosburgh@gmail.com>; Veaceslav Falico <vfalico@gmail.com>; Andy
-> Gospodarek <andy@greyhouse.net>; David S. Miller <davem@davemloft.net>;
-> Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Jakub Kicinski
-> <kuba@kernel.org>; Steffen Klassert <steffen.klassert@secunet.com>;
-> Herbert Xu <herbert@gondor.apana.org.au>; netdev at vger.kernel.org; intel-
-> wired-lan at lists.osuosl.org
-> Subject: [PATCH net-next 2/4] ixgbe_ipsec: become aware of when running as
-> a bonding slave
-> 
-> Slave devices in a bond doing hardware encryption also need to be aware that
-> they're slaves, so we operate on the slave instead of the bonding master to do
-> the actual hardware encryption offload bits.
-> 
-> CC: Jay Vosburgh <j.vosburgh@gmail.com>
-> CC: Veaceslav Falico <vfalico@gmail.com>
-> CC: Andy Gospodarek <andy@greyhouse.net>
-> CC: "David S. Miller" <davem@davemloft.net>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: Jakub Kicinski <kuba@kernel.org>
-> CC: Steffen Klassert <steffen.klassert@secunet.com>
-> CC: Herbert Xu <herbert@gondor.apana.org.au>
-> CC: netdev at vger.kernel.org
-> CC: intel-wired-lan at lists.osuosl.org
-> Signed-off-by: Jarod Wilson <jarod@redhat.com> 
+From: Surabhi Boob <surabhi.boob@intel.com>
 
-Acked-by: Jeff Kirsher <Jeffrey.t.kirsher@intel.com>
+[ Upstream commit 1aaef2bc4e0a5ce9e4dd86359e6a0bf52c6aa64f ]
 
-> ---
->  .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    | 39 +++++++++++++++----
->  1 file changed, 31 insertions(+), 8 deletions(-)
+Handle memory leak on filter management initialization failure.
+
+Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 171f0b625407..d68b8aa31b19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -436,6 +436,7 @@ static void ice_init_flex_flds(struct ice_hw *hw, enum ice_rxdid prof_id)
+ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ {
+ 	struct ice_switch_info *sw;
++	enum ice_status status;
+ 
+ 	hw->switch_info = devm_kzalloc(ice_hw_to_dev(hw),
+ 				       sizeof(*hw->switch_info), GFP_KERNEL);
+@@ -446,7 +447,12 @@ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
+ 
+ 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
+ 
+-	return ice_init_def_sw_recp(hw);
++	status = ice_init_def_sw_recp(hw);
++	if (status) {
++		devm_kfree(ice_hw_to_dev(hw), hw->switch_info);
++		return status;
++	}
++	return 0;
+ }
+ 
+ /**
+-- 
+2.25.1
+
