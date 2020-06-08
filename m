@@ -1,72 +1,57 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon,  8 Jun 2020 19:17:03 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 070/175] e1000: Distribute
- switch variables for initialization
+Date: Mon,  8 Jun 2020 19:18:30 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 157/175] ice: fix potential
+ double free in probe unrolling
 In-Reply-To: <20200608231848.3366970-1-sashal@kernel.org>
 References: <20200608231848.3366970-1-sashal@kernel.org>
-Message-ID: <20200608231848.3366970-70-sashal@kernel.org>
+Message-ID: <20200608231848.3366970-157-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Kees Cook <keescook@chromium.org>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-[ Upstream commit a34c7f5156654ebaf7eaace102938be7ff7036cb ]
+[ Upstream commit bc3a024101ca497bea4c69be4054c32a5c349f1d ]
 
-Variables declared in a switch statement before any case statements
-cannot be automatically initialized with compiler instrumentation (as
-they are not part of any execution flow). With GCC's proposed automatic
-stack variable initialization feature, this triggers a warning (and they
-don't get initialized). Clang's automatic stack variable initialization
-(via CONFIG_INIT_STACK_ALL=y) doesn't throw a warning, but it also
-doesn't initialize such variables[1]. Note that these warnings (or silent
-skipping) happen before the dead-store elimination optimization phase,
-so even when the automatic initializations are later elided in favor of
-direct initializations, the warnings remain.
+If ice_init_interrupt_scheme fails, ice_probe will jump to clearing up
+the interrupts. This can lead to some static analysis tools such as the
+compiler sanitizers complaining about double free problems.
 
-To avoid these problems, move such variables into the "case" where
-they're used or lift them up into the main function body.
+Since ice_init_interrupt_scheme already unrolls internally on failure,
+there is no need to call ice_clear_interrupt_scheme when it fails. Add
+a new unroll label and use that instead.
 
-drivers/net/ethernet/intel/e1000/e1000_main.c: In function ?e1000_xmit_frame?:
-drivers/net/ethernet/intel/e1000/e1000_main.c:3143:18: warning: statement will never be executed [-Wswitch-unreachable]
- 3143 |     unsigned int pull_size;
-      |                  ^~~~~~~~~
-
-[1] https://bugs.llvm.org/show_bug.cgi?id=44916
-
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 86493fea56e4..f93ed70709c6 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -3140,8 +3140,9 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
- 		hdr_len = skb_transport_offset(skb) + tcp_hdrlen(skb);
- 		if (skb->data_len && hdr_len == len) {
- 			switch (hw->mac_type) {
-+			case e1000_82544: {
- 				unsigned int pull_size;
--			case e1000_82544:
-+
- 				/* Make sure we have room to chop off 4 bytes,
- 				 * and that the end alignment will work out to
- 				 * this hardware's requirements
-@@ -3162,6 +3163,7 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
- 				}
- 				len = skb_headlen(skb);
- 				break;
-+			}
- 			default:
- 				/* do nothing */
- 				break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 2408f0de95fc..d0ccb7ad447b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2900,7 +2900,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	if (err) {
+ 		dev_err(dev, "ice_init_interrupt_scheme failed: %d\n", err);
+ 		err = -EIO;
+-		goto err_init_interrupt_unroll;
++		goto err_init_vsi_unroll;
+ 	}
+ 
+ 	/* Driver is mostly up */
+@@ -2986,6 +2986,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	ice_free_irq_msix_misc(pf);
+ err_init_interrupt_unroll:
+ 	ice_clear_interrupt_scheme(pf);
++err_init_vsi_unroll:
+ 	devm_kfree(dev, pf->vsi);
+ err_init_pf_unroll:
+ 	ice_deinit_pf(pf);
 -- 
 2.25.1
 
