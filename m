@@ -1,73 +1,121 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon,  8 Jun 2020 18:49:39 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Refactor the
- igc_power_down_link()
-Message-ID: <20200608154939.30699-1-sasha.neftin@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Mon,  8 Jun 2020 17:00:56 -0400
+Subject: [Intel-wired-lan] [PATCH net-next 2/4] ixgbe_ipsec: become aware of
+ when running as a bonding slave
+In-Reply-To: <20200608210058.37352-1-jarod@redhat.com>
+References: <20200608210058.37352-1-jarod@redhat.com>
+Message-ID: <20200608210058.37352-3-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently inplementation of the igc_power_down_link()
-method a bit tangled. This method just called
-igc_power_down_phy_copper-base() method.
-We can just call the igc_power_down_phy_copper_base()
-method directly.
+Slave devices in a bond doing hardware encryption also need to be aware
+that they're slaves, so we operate on the slave instead of the bonding
+master to do the actual hardware encryption offload bits.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+CC: Jay Vosburgh <j.vosburgh@gmail.com>
+CC: Veaceslav Falico <vfalico@gmail.com>
+CC: Andy Gospodarek <andy@greyhouse.net>
+CC: "David S. Miller" <davem@davemloft.net>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: Jakub Kicinski <kuba@kernel.org>
+CC: Steffen Klassert <steffen.klassert@secunet.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>
+CC: netdev at vger.kernel.org
+CC: intel-wired-lan at lists.osuosl.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 16 +++-------------
- 1 file changed, 3 insertions(+), 13 deletions(-)
+ .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    | 39 +++++++++++++++----
+ 1 file changed, 31 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 5d70751e8ab3..af5e1686f7f2 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -61,16 +61,6 @@ enum latency_range {
- 	latency_invalid = 255
- };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 113f6087c7c9..26b0a58a064d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -432,6 +432,9 @@ static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
+ 	char *alg_name = NULL;
+ 	int key_len;
  
--/**
-- * igc_power_down_link - Power down the phy link
-- * @adapter: address of board private structure
-- */
--static void igc_power_down_link(struct igc_adapter *adapter)
--{
--	if (adapter->hw.phy.media_type == igc_media_type_copper)
--		igc_power_down_phy_copper_base(&adapter->hw);
--}
--
- void igc_reset(struct igc_adapter *adapter)
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
+ 	if (!xs->aead) {
+ 		netdev_err(dev, "Unsupported IPsec algorithm\n");
+ 		return -EINVAL;
+@@ -478,8 +481,8 @@ static int ixgbe_ipsec_parse_proto_keys(struct xfrm_state *xs,
+ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
  {
- 	struct net_device *dev = adapter->netdev;
-@@ -106,7 +96,7 @@ void igc_reset(struct igc_adapter *adapter)
- 	igc_set_eee_i225(hw, true, true, true);
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_hw *hw;
+ 	u32 mfval, manc, reg;
+ 	int num_filters = 4;
+ 	bool manc_ipv4;
+@@ -497,6 +500,12 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+ #define BMCIP_V6                 0x3
+ #define BMCIP_MASK               0x3
  
- 	if (!netif_running(adapter->netdev))
--		igc_power_down_link(adapter);
-+		igc_power_down_phy_copper_base(&adapter->hw);
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	hw = &adapter->hw;
++
+ 	manc = IXGBE_READ_REG(hw, IXGBE_MANC);
+ 	manc_ipv4 = !!(manc & MANC_EN_IPV4_FILTER);
+ 	mfval = IXGBE_READ_REG(hw, IXGBE_MFVAL);
+@@ -561,14 +570,21 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ {
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_ipsec *ipsec;
++	struct ixgbe_hw *hw;
+ 	int checked, match, first;
+ 	u16 sa_idx;
+ 	int ret;
+ 	int i;
  
- 	/* Re-enable PTP, where applicable. */
- 	igc_ptp_reset(adapter);
-@@ -4617,7 +4607,7 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- 	igc_free_irq(adapter);
- err_req_irq:
- 	igc_release_hw_control(adapter);
--	igc_power_down_link(adapter);
-+	igc_power_down_phy_copper_base(&adapter->hw);
- 	igc_free_all_rx_resources(adapter);
- err_setup_rx:
- 	igc_free_all_tx_resources(adapter);
-@@ -5316,7 +5306,7 @@ static int __igc_shutdown(struct pci_dev *pdev, bool *enable_wake,
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	ipsec = adapter->ipsec;
++	hw = &adapter->hw;
++
+ 	if (xs->id.proto != IPPROTO_ESP && xs->id.proto != IPPROTO_AH) {
+ 		netdev_err(dev, "Unsupported protocol 0x%04x for ipsec offload\n",
+ 			   xs->id.proto);
+@@ -746,12 +762,19 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ static void ixgbe_ipsec_del_sa(struct xfrm_state *xs)
+ {
+ 	struct net_device *dev = xs->xso.dev;
+-	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	struct ixgbe_ipsec *ipsec = adapter->ipsec;
+-	struct ixgbe_hw *hw = &adapter->hw;
++	struct ixgbe_adapter *adapter;
++	struct ixgbe_ipsec *ipsec;
++	struct ixgbe_hw *hw;
+ 	u32 zerobuf[4] = {0, 0, 0, 0};
+ 	u16 sa_idx;
  
- 	wake = wufc || adapter->en_mng_pt;
- 	if (!wake)
--		igc_power_down_link(adapter);
-+		igc_power_down_phy_copper_base(&adapter->hw);
- 	else
- 		igc_power_up_link(adapter);
- 
++	if (xs->xso.slave_dev)
++		dev = xs->xso.slave_dev;
++
++	adapter = netdev_priv(dev);
++	ipsec = adapter->ipsec;
++	hw = &adapter->hw;
++
+ 	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
+ 		struct rx_sa *rsa;
+ 		u8 ipi;
 -- 
-2.11.0
+2.20.1
 
