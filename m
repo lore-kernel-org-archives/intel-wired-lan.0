@@ -1,8 +1,10 @@
 From: Ciara Loftus <ciara.loftus@intel.com>
-Date: Tue,  9 Jun 2020 13:19:43 +0000
-Subject: [Intel-wired-lan] [PATCH net 1/3] ixgbe: protect ring accesses with
+Date: Tue,  9 Jun 2020 13:19:44 +0000
+Subject: [Intel-wired-lan] [PATCH net 2/3] i40e: protect ring accesses with
  READ- and WRITE_ONCE
-Message-ID: <20200609131945.18373-1-ciara.loftus@intel.com>
+In-Reply-To: <20200609131945.18373-1-ciara.loftus@intel.com>
+References: <20200609131945.18373-1-ciara.loftus@intel.com>
+Message-ID: <20200609131945.18373-2-ciara.loftus@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,97 +17,95 @@ usage when allocating and freeing the rings, to ensure protected access.
 
 Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 12 ++++++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 14 +++++++++++---
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 29 ++++++++++++++-------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index fd9f5d41b594..2e35c5706cf1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -921,7 +921,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 		ring->queue_index = txr_idx;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5d807c8004f8..56ecd6c3f236 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -439,11 +439,15 @@ static void i40e_get_netdev_stats_struct(struct net_device *netdev,
+ 		i40e_get_netdev_stats_struct_tx(ring, stats);
  
- 		/* assign ring to adapter */
--		adapter->tx_ring[txr_idx] = ring;
-+		WRITE_ONCE(adapter->tx_ring[txr_idx], ring);
+ 		if (i40e_enabled_xdp_vsi(vsi)) {
+-			ring++;
++			ring = READ_ONCE(vsi->xdp_rings[i]);
++			if (!ring)
++				continue;
+ 			i40e_get_netdev_stats_struct_tx(ring, stats);
+ 		}
  
- 		/* update count and index */
- 		txr_count--;
-@@ -948,7 +948,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+-		ring++;
++		ring = READ_ONCE(vsi->rx_rings[i]);
++		if (!ring)
++			continue;
+ 		do {
+ 			start   = u64_stats_fetch_begin_irq(&ring->syncp);
+ 			packets = ring->stats.packets;
+@@ -787,6 +791,8 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 	for (q = 0; q < vsi->num_queue_pairs; q++) {
+ 		/* locate Tx ring */
+ 		p = READ_ONCE(vsi->tx_rings[q]);
++		if (!p)
++			continue;
+ 
+ 		do {
+ 			start = u64_stats_fetch_begin_irq(&p->syncp);
+@@ -800,8 +806,11 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 		tx_linearize += p->tx_stats.tx_linearize;
+ 		tx_force_wb += p->tx_stats.tx_force_wb;
+ 
+-		/* Rx queue is part of the same block as Tx queue */
+-		p = &p[1];
++		/* locate Rx ring */
++		p = READ_ONCE(vsi->rx_rings[q]);
++		if (!p)
++			continue;
++
+ 		do {
+ 			start = u64_stats_fetch_begin_irq(&p->syncp);
+ 			packets = p->stats.packets;
+@@ -10824,10 +10833,10 @@ static void i40e_vsi_clear_rings(struct i40e_vsi *vsi)
+ 	if (vsi->tx_rings && vsi->tx_rings[0]) {
+ 		for (i = 0; i < vsi->alloc_queue_pairs; i++) {
+ 			kfree_rcu(vsi->tx_rings[i], rcu);
+-			vsi->tx_rings[i] = NULL;
+-			vsi->rx_rings[i] = NULL;
++			WRITE_ONCE(vsi->tx_rings[i], NULL);
++			WRITE_ONCE(vsi->rx_rings[i], NULL);
+ 			if (vsi->xdp_rings)
+-				vsi->xdp_rings[i] = NULL;
++				WRITE_ONCE(vsi->xdp_rings[i], NULL);
+ 		}
+ 	}
+ }
+@@ -10861,7 +10870,7 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
+ 		if (vsi->back->hw_features & I40E_HW_WB_ON_ITR_CAPABLE)
+ 			ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
+ 		ring->itr_setting = pf->tx_itr_default;
+-		vsi->tx_rings[i] = ring++;
++		WRITE_ONCE(vsi->tx_rings[i], ring++);
+ 
+ 		if (!i40e_enabled_xdp_vsi(vsi))
+ 			goto setup_rx;
+@@ -10879,7 +10888,7 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
+ 			ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
  		set_ring_xdp(ring);
+ 		ring->itr_setting = pf->tx_itr_default;
+-		vsi->xdp_rings[i] = ring++;
++		WRITE_ONCE(vsi->xdp_rings[i], ring++);
  
- 		/* assign ring to adapter */
--		adapter->xdp_ring[xdp_idx] = ring;
-+		WRITE_ONCE(adapter->xdp_ring[xdp_idx], ring);
- 
- 		/* update count and index */
- 		xdp_count--;
-@@ -991,7 +991,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 		ring->queue_index = rxr_idx;
- 
- 		/* assign ring to adapter */
--		adapter->rx_ring[rxr_idx] = ring;
-+		WRITE_ONCE(adapter->rx_ring[rxr_idx], ring);
- 
- 		/* update count and index */
- 		rxr_count--;
-@@ -1020,13 +1020,13 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
- 
- 	ixgbe_for_each_ring(ring, q_vector->tx) {
- 		if (ring_is_xdp(ring))
--			adapter->xdp_ring[ring->queue_index] = NULL;
-+			WRITE_ONCE(adapter->xdp_ring[ring->queue_index], NULL);
- 		else
--			adapter->tx_ring[ring->queue_index] = NULL;
-+			WRITE_ONCE(adapter->tx_ring[ring->queue_index], NULL);
+ setup_rx:
+ 		ring->queue_index = i;
+@@ -10892,7 +10901,7 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
+ 		ring->size = 0;
+ 		ring->dcb_tc = 0;
+ 		ring->itr_setting = pf->rx_itr_default;
+-		vsi->rx_rings[i] = ring;
++		WRITE_ONCE(vsi->rx_rings[i], ring);
  	}
  
- 	ixgbe_for_each_ring(ring, q_vector->rx)
--		adapter->rx_ring[ring->queue_index] = NULL;
-+		WRITE_ONCE(adapter->rx_ring[ring->queue_index], NULL);
- 
- 	adapter->q_vector[v_idx] = NULL;
- 	napi_hash_del(&q_vector->napi);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f162b8b8f345..97a423ecf808 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7051,7 +7051,10 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	}
- 
- 	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
-+		struct ixgbe_ring *rx_ring = READ_ONCE(adapter->rx_ring[i]);
-+
-+		if (!rx_ring)
-+			continue;
- 		non_eop_descs += rx_ring->rx_stats.non_eop_descs;
- 		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
- 		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
-@@ -7072,15 +7075,20 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	packets = 0;
- 	/* gather some stats to the adapter struct that are per queue */
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
--		struct ixgbe_ring *tx_ring = adapter->tx_ring[i];
-+		struct ixgbe_ring *tx_ring = READ_ONCE(adapter->tx_ring[i]);
-+
-+		if (!tx_ring)
-+			continue;
- 		restart_queue += tx_ring->tx_stats.restart_queue;
- 		tx_busy += tx_ring->tx_stats.tx_busy;
- 		bytes += tx_ring->stats.bytes;
- 		packets += tx_ring->stats.packets;
- 	}
- 	for (i = 0; i < adapter->num_xdp_queues; i++) {
--		struct ixgbe_ring *xdp_ring = adapter->xdp_ring[i];
-+		struct ixgbe_ring *xdp_ring = READ_ONCE(adapter->xdp_ring[i]);
- 
-+		if (!xdp_ring)
-+			continue;
- 		restart_queue += xdp_ring->tx_stats.restart_queue;
- 		tx_busy += xdp_ring->tx_stats.tx_busy;
- 		bytes += xdp_ring->stats.bytes;
+ 	return 0;
 -- 
 2.17.1
 
