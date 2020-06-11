@@ -1,68 +1,50 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 11 Jun 2020 20:34:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 5/55]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition
- of 'truesize'
-Message-ID: <202006112015.uFH6leXW%lkp@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 11 Jun 2020 15:41:23 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: silence an UBSAN false positive
+In-Reply-To: <20200606200116.1398-1-cai@lca.pw>
+References: <20200606200116.1398-1-cai@lca.pw>
+Message-ID: <BN6PR1101MB21456AF399BB25055FC8A83F8C800@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   94e8b9f389d896ead02e9633104231fc864da9b0
-commit: 0ca4b678d984828b7cdbd1d585e995f983853483 [5/55] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
-config: sparc-allyesconfig (attached as .config)
-compiler: sparc64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 0ca4b678d984828b7cdbd1d585e995f983853483
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc 
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Qian Cai
+> Sent: Saturday, June 6, 2020 1:01 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Qian Cai
+> <cai@lca.pw>; intel-wired-lan at lists.osuosl.org; davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH] i40e: silence an UBSAN false positive
+> 
+> virtchnl_rss_lut.lut is used for the RSS lookup table, but in
+> i40e_vc_config_rss_lut(), it is indexed by subscript results in a false positive.
+> 
+>  UBSAN: array-index-out-of-bounds in
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2983:15
+>  index 1 is out of range for type 'u8 [1]'
+>  CPU: 34 PID: 871 Comm: kworker/34:2 Not tainted 5.7.0-next-20200605+ #5
+> Hardware name: HPE ProLiant DL385 Gen10/ProLiant DL385 Gen10, BIOS A40
+> 03/09/2018
+>  Workqueue: i40e i40e_service_task [i40e]  Call Trace:
+>   dump_stack+0xa7/0xea
+>   ubsan_epilogue+0x9/0x45
+>   __ubsan_handle_out_of_bounds+0x6f/0x80
+>   i40e_vc_process_vf_msg+0x457c/0x4660 [i40e]
+>   i40e_service_task+0x96c/0x1ab0 [i40e]
+>   process_one_work+0x57d/0xbd0
+>   worker_thread+0x63/0x5b0
+>   kthread+0x20c/0x230
+>   ret_from_fork+0x22/0x30
+> 
+> Fixes: d510497b8397 ("i40e: add input validation for virtchnl handlers")
+> Signed-off-by: Qian Cai <cai@lca.pw>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition of 'truesize'
-2271 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-|               ^~~~~~~~
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2267:15: note: previous definition of 'truesize' was here
-2267 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-|               ^~~~~~~~
-
-vim +/truesize +2271 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  2262	
-  2263	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
-  2264					 struct ixgbe_rx_buffer *rx_buffer,
-  2265					 unsigned int size)
-  2266	{
-  2267		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-  2268	#if (PAGE_SIZE < 8192)
-  2269		rx_buffer->page_offset ^= truesize;
-  2270	#else
-> 2271		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-  2272					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
-  2273					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
-  2274					SKB_DATA_ALIGN(size);
-  2275	
-  2276		rx_buffer->page_offset += truesize;
-  2277	#endif
-  2278	}
-  2279	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 63225 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200611/5f1c7c64/attachment-0001.bin>
