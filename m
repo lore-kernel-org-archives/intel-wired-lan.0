@@ -1,10 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 11 Jun 2020 14:45:00 +0800
+Date: Thu, 11 Jun 2020 15:21:11 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 11/55]
- include/linux/avf/virtchnl.h:809:31: error: enumerator value for
- 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer
- constant
-Message-ID: <202006111456.UnLZL3jq%lkp@intel.com>
+ include/linux/avf/virtchnl.h:872:30: error: enumerator value for
+ 'virtchnl_static_assert_virtchnl_vport' is not an integer constant
+Message-ID: <202006111507.xEY4Qu64%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,281 +13,123 @@ List-ID: <intel-wired-lan.osuosl.org>
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   94e8b9f389d896ead02e9633104231fc864da9b0
 commit: 2498cdba2cbf1af8fa4ff479b981e2e2240e2a46 [11/55] virtchnl: Extend AVF ops
-config: i386-debian-10.3 (attached as .config)
-compiler: gcc-9 (Debian 9.3.0-13) 9.3.0
+config: arm-randconfig-r004-20200611 (attached as .config)
+compiler: arm-linux-gnueabi-gcc (GCC) 9.3.0
 reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
         git checkout 2498cdba2cbf1af8fa4ff479b981e2e2240e2a46
         # save the attached .config to linux build tree
-        make W=1 ARCH=i386 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arm 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
 All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-In file included from drivers/net/ethernet/intel/i40e/i40e_prototype.h:9,
-from drivers/net/ethernet/intel/i40e/i40e.h:40,
-from drivers/net/ethernet/intel/i40e/i40e_main.c:10:
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:891:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:907:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:937:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:952:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:1090:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-|                               ^~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
---
-In file included from drivers/net/ethernet/intel/ice/ice.h:36,
-from drivers/net/ethernet/intel/ice/ice_common.h:7,
-from drivers/net/ethernet/intel/ice/ice_flex_pipe.c:4:
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:891:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:907:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:937:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:952:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:1090:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-|                               ^~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-In file included from drivers/net/ethernet/intel/ice/ice_flex_pipe.c:6:
-drivers/net/ethernet/intel/ice/ice_flex_pipe.c: In function 'ice_free_flow_profs':
-drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-197 | #define ICE_FLOW_ENTRY_HNDL(e) ((u64)e)
-|                                 ^
-drivers/net/ethernet/intel/ice/ice_flex_pipe.c:2922:9: note: in expansion of macro 'ICE_FLOW_ENTRY_HNDL'
-2922 |         ICE_FLOW_ENTRY_HNDL(e));
-|         ^~~~~~~~~~~~~~~~~~~
---
-In file included from drivers/net/ethernet/intel/ice/ice.h:36,
-from drivers/net/ethernet/intel/ice/ice_common.h:7,
-from drivers/net/ethernet/intel/ice/ice_flow.c:4:
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:891:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:907:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:937:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
-|                               ^~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:952:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
-|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                    ^
-include/linux/avf/virtchnl.h:1090:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-| ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
-|                               ^~~~~~~~~~~~~~~~~
-include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
-175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-|                                                     ^
-In file included from drivers/net/ethernet/intel/ice/ice_flow.c:5:
-drivers/net/ethernet/intel/ice/ice_flow.c: In function 'ice_flow_add_entry':
-drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-197 | #define ICE_FLOW_ENTRY_HNDL(e) ((u64)e)
-|                                 ^
-drivers/net/ethernet/intel/ice/ice_flow.c:946:13: note: in expansion of macro 'ICE_FLOW_ENTRY_HNDL'
-946 |  *entry_h = ICE_FLOW_ENTRY_HNDL(e);
-|             ^~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/ice_flow.c: In function 'ice_flow_rem_entry':
-drivers/net/ethernet/intel/ice/ice_flow.h:198:32: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
-198 | #define ICE_FLOW_ENTRY_PTR(h) ((struct ice_flow_entry *)(h))
+|                                                 ^
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:299:32: warning: division by zero [-Wdiv-by-zero]
+299 |  { i40e_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
 |                                ^
-drivers/net/ethernet/intel/ice/ice_flow.c:974:10: note: in expansion of macro 'ICE_FLOW_ENTRY_PTR'
-974 |  entry = ICE_FLOW_ENTRY_PTR(entry_h);
-|          ^~~~~~~~~~~~~~~~~~
---
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:304:34: note: in expansion of macro 'I40E_CHECK_STRUCT_LEN'
+304 | #define I40E_CHECK_CMD_LENGTH(X) I40E_CHECK_STRUCT_LEN(16, X)
+|                                  ^~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:1775:1: note: in expansion of macro 'I40E_CHECK_CMD_LENGTH'
+1775 | I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
+| ^~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:1775:23: error: enumerator value for 'i40e_static_assert_i40e_aqc_get_link_status' is not an integer constant
+1775 | I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
+|                       ^~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:299:49: note: in definition of macro 'I40E_CHECK_STRUCT_LEN'
+299 |  { i40e_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                 ^
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:1775:1: note: in expansion of macro 'I40E_CHECK_CMD_LENGTH'
+1775 | I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
+| ^~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:299:32: warning: division by zero [-Wdiv-by-zero]
+299 |  { i40e_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                ^
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:1914:1: note: in expansion of macro 'I40E_CHECK_STRUCT_LEN'
+1914 | I40E_CHECK_STRUCT_LEN(0x6, i40e_aqc_nvm_config_data_feature);
+| ^~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:1914:28: error: enumerator value for 'i40e_static_assert_i40e_aqc_nvm_config_data_feature' is not an integer constant
+1914 | I40E_CHECK_STRUCT_LEN(0x6, i40e_aqc_nvm_config_data_feature);
+|                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h:299:49: note: in definition of macro 'I40E_CHECK_STRUCT_LEN'
+299 |  { i40e_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                 ^
 In file included from drivers/net/ethernet/intel/i40e/i40e_prototype.h:9,
 from drivers/net/ethernet/intel/i40e/i40e.h:40,
 from drivers/net/ethernet/intel/i40e/i40e_main.c:10:
 include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
 |                                    ^
+include/linux/avf/virtchnl.h:403:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+403 | VIRTCHNL_CHECK_STRUCT_LEN(14, virtchnl_irq_map_info);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:403:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_irq_map_info' is not an integer constant
+403 | VIRTCHNL_CHECK_STRUCT_LEN(14, virtchnl_irq_map_info);
+|                               ^~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:469:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+469 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vlan_filter_list);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:469:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vlan_filter_list' is not an integer constant
+469 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vlan_filter_list);
+|                              ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:525:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+525 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:525:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_key' is not an integer constant
+525 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+|                              ^~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:534:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+534 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:534:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_lut' is not an integer constant
+534 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+|                              ^~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
 include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
 809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
 |                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:872:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+872 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:872:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vport' is not an integer constant
+872 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
+|                              ^~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
 |                                                     ^
@@ -298,7 +139,7 @@ include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 include/linux/avf/virtchnl.h:891:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
 891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
 |                               ^~~~~~~~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
@@ -310,7 +151,7 @@ include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 include/linux/avf/virtchnl.h:907:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
 907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
 |                               ^~~~~~~~~~~~~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
@@ -322,7 +163,7 @@ include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 include/linux/avf/virtchnl.h:937:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
 937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
 |                               ^~~~~~~~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
@@ -334,9 +175,45 @@ include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 include/linux/avf/virtchnl.h:952:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
 952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
 |                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1034:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1034 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1034:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vector_chunks' is not an integer constant
+1034 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
+|                              ^~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1048:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1048 | VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1048:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_alloc_vectors' is not an integer constant
+1048 | VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
+|                              ^~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1068:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1068 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1068:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_lut_v2' is not an integer constant
+1068 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
+|                              ^~~~~~~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
 |                                                     ^
@@ -346,87 +223,213 @@ include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
 include/linux/avf/virtchnl.h:1090:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
 | ^~~~~~~~~~~~~~~~~~~~~~~~~
->> include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
 1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
 |                               ^~~~~~~~~~~~~~~~~
 include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
 175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
 |                                                     ^
-In file included from drivers/net/ethernet/intel/i40e/i40e_trace.h:209,
-from drivers/net/ethernet/intel/i40e/i40e_main.c:20:
-include/trace/define_trace.h:95:42: fatal error: ./i40e_trace.h: No such file or directory
-95 | #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-|                                          ^
-compilation terminated.
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1103:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1103 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_sriov_vfs_info);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1103:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_sriov_vfs_info' is not an integer constant
+1103 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_sriov_vfs_info);
+|                              ^~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+--
+In file included from drivers/net/ethernet/intel/ice/ice.h:36,
+from drivers/net/ethernet/intel/ice/ice_main.c:8:
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:403:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+403 | VIRTCHNL_CHECK_STRUCT_LEN(14, virtchnl_irq_map_info);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:403:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_irq_map_info' is not an integer constant
+403 | VIRTCHNL_CHECK_STRUCT_LEN(14, virtchnl_irq_map_info);
+|                               ^~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:469:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+469 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vlan_filter_list);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:469:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vlan_filter_list' is not an integer constant
+469 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vlan_filter_list);
+|                              ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:525:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+525 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:525:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_key' is not an integer constant
+525 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+|                              ^~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:534:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+534 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:534:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_lut' is not an integer constant
+534 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+|                              ^~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+809 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
+|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:872:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+872 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:872:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vport' is not an integer constant
+872 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
+|                              ^~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:891:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+891 | VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
+|                               ^~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:907:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+907 | VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
+|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:937:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+937 | VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
+|                               ^~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:952:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+952 | VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
+|                               ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1034:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1034 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1034:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_vector_chunks' is not an integer constant
+1034 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
+|                              ^~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1048:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1048 | VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1048:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_alloc_vectors' is not an integer constant
+1048 | VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
+|                              ^~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1068:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1068 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1068:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_lut_v2' is not an integer constant
+1068 | VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
+|                              ^~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1090:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+1090 | VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
+|                               ^~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                    ^
+include/linux/avf/virtchnl.h:1103:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+1103 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_sriov_vfs_info);
+| ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/avf/virtchnl.h:1103:30: error: enumerator value for 'virtchnl_static_assert_virtchnl_sriov_vfs_info' is not an integer constant
+1103 | VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_sriov_vfs_info);
+|                              ^~~~~~~~~~~~~~~~~~~~~~~
+include/linux/avf/virtchnl.h:175:53: note: in definition of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+175 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
+|                                                     ^
 ..
 
-vim +/virtchnl_static_assert_virtchnl_get_capabilities +809 include/linux/avf/virtchnl.h
+vim +/virtchnl_static_assert_virtchnl_vport +872 include/linux/avf/virtchnl.h
 
-   808	
- > 809	VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
-   810	
-   811	/* structure to specify a chunk of contiguous queues */
-   812	struct virtchnl_queue_chunk {
-   813	        enum virtchnl_queue_type type;
-   814	        u16 start_queue_id;
-   815	        u16 num_queues;
-   816	};
-   817	
-   818	VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_chunk);
-   819	
-   820	/* structure to specify several chunks of contiguous queues */
-   821	struct virtchnl_queue_chunks {
-   822	        u16 num_chunks;
-   823	        u16 rsvd;
-   824	        struct virtchnl_queue_chunk chunks[1];
-   825	};
-   826	
-   827	VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_chunks);
-   828	
-   829	/* VIRTCHNL_OP_CREATE_VPORT
-   830	 * PF sends this message to CP to create a vport by filling in the first 8
-   831	 * fields of virtchnl_create_vport structure (vport type, tx, rx queue models
-   832	 * and desired number of queues and vectors). CP responds with the updated
-   833	 * virtchnl_create_vport structure containing the number of assigned queues,
-   834	 * vectors, vport id, max mtu, default mac addr followed by chunks which in turn
-   835	 * will have an array of num_chunks entries of virtchnl_queue_chunk structures.
-   836	 */
-   837	struct virtchnl_create_vport {
-   838	        enum virtchnl_vport_type vport_type;
-   839	        /* single or split */
-   840	        enum virtchnl_queue_model txq_model;
-   841	        /* single or split */
-   842	        enum virtchnl_queue_model rxq_model;
-   843	        u16 num_tx_q;
-   844	        /* valid only if txq_model is split Q */
-   845	        u16 num_tx_complq;
-   846	        u16 num_rx_q;
-   847	        /* valid only if rxq_model is split Q */
-   848	        u16 num_rx_bufq;
-   849	        u16 vport_id;
-   850	        u16 max_mtu;
-   851	        u8 default_mac_addr[ETH_ALEN];
-   852	        enum virtchnl_rss_algorithm rss_algorithm;
-   853	        u16 rss_key_size;
-   854	        u16 rss_lut_size;
-   855	        u16 qset_handle;
-   856	        struct virtchnl_queue_chunks chunks;
-   857	};
-   858	
-   859	VIRTCHNL_CHECK_STRUCT_LEN(56, virtchnl_create_vport);
-   860	
-   861	/* VIRTCHNL_OP_DESTROY_VPORT
-   862	 * VIRTCHNL_OP_ENABLE_VPORT
-   863	 * VIRTCHNL_OP_DISABLE_VPORT
-   864	 * PF sends this message to CP to destroy, enable or disable a vport by filling
-   865	 * in the vport_id in virtchnl_vport structure.
-   866	 * CP responds with the status of the requested operation.
-   867	 */
-   868	struct virtchnl_vport {
-   869	        u16 vport_id;
-   870	};
    871	
-   872	VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
+ > 872	VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
    873	
    874	/* Tx queue config info */
    875	struct virtchnl_txq_info_v2 {
@@ -445,7 +448,7 @@ vim +/virtchnl_static_assert_virtchnl_get_capabilities +809 include/linux/avf/vi
    888	        u16 tx_compl_queue_id;
    889	};
    890	
- > 891	VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
+   891	VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
    892	
    893	/* VIRTCHNL_OP_CONFIG_TX_QUEUES
    894	 * PF sends this message to set up parameters for one or more TX queues.
@@ -461,7 +464,7 @@ vim +/virtchnl_static_assert_virtchnl_get_capabilities +809 include/linux/avf/vi
    904	        struct virtchnl_txq_info_v2 qinfo[1];
    905	};
    906	
- > 907	VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
+   907	VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
    908	
    909	/* Rx queue config info */
    910	struct virtchnl_rxq_info_v2 {
@@ -491,7 +494,7 @@ vim +/virtchnl_static_assert_virtchnl_get_capabilities +809 include/linux/avf/vi
    934	        u16 rx_bufq2_id;
    935	};
    936	
- > 937	VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
+   937	VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
    938	
    939	/* VIRTCHNL_OP_CONFIG_RX_QUEUES
    940	 * PF sends this message to set up parameters for one or more RX queues.
@@ -506,8 +509,124 @@ vim +/virtchnl_static_assert_virtchnl_get_capabilities +809 include/linux/avf/vi
    949	        struct virtchnl_rxq_info_v2 qinfo[1];
    950	};
    951	
- > 952	VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
+   952	VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
    953	
+   954	/* VIRTCHNL_OP_ADD_QUEUES
+   955	 * PF sends this message to request additional TX/RX queues beyond the ones
+   956	 * that were assigned via CREATE_VPORT request. virtchnl_add_queues structure is
+   957	 * used to specify the number of each type of queues.
+   958	 * CP responds with the same structure with the actual number of queues assigned
+   959	 * followed by num_chunks of virtchnl_queue_chunk structures.
+   960	 */
+   961	struct virtchnl_add_queues {
+   962	        u16 vport_id;
+   963	        u16 num_tx_q;
+   964	        u16 num_tx_complq;
+   965	        u16 num_rx_q;
+   966	        u16 num_rx_bufq;
+   967	        struct virtchnl_queue_chunks chunks;
+   968	};
+   969	
+   970	VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_add_queues);
+   971	
+   972	/* VIRTCHNL_OP_ENABLE_QUEUES
+   973	 * VIRTCHNL_OP_DISABLE_QUEUES
+   974	 * VIRTCHNL_OP_DEL_QUEUES
+   975	 * PF sends these messages to enable, disable or delete queues specified in
+   976	 * chunks. PF sends virtchnl_del_ena_dis_queues struct to specify the queues
+   977	 * to be enabled/disabled/deleted. Also applicable to single queue RX or
+   978	 * TX. CP performs requested action and returns status.
+   979	 */
+   980	struct virtchnl_del_ena_dis_queues {
+   981	        u16 vport_id;
+   982	        struct virtchnl_queue_chunks chunks;
+   983	};
+   984	
+   985	VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_del_ena_dis_queues);
+   986	
+   987	/* Virtchannel interrupt throttling rate index */
+   988	enum virtchnl_itr_idx {
+   989	       VIRTCHNL_ITR_IDX_0      = 0,
+   990	       VIRTCHNL_ITR_IDX_1      = 1,
+   991	       VIRTCHNL_ITR_IDX_NO_ITR = 3,
+   992	};
+   993	
+   994	/* Queue to vector mapping */
+   995	struct virtchnl_queue_vector {
+   996	        u16 queue_id;
+   997	        u16 vector_id;
+   998	        enum virtchnl_itr_idx itr_idx;
+   999	        enum virtchnl_queue_type queue_type;
+  1000	};
+  1001	
+  1002	VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_vector);
+  1003	
+  1004	/* VIRTCHNL_OP_MAP_QUEUE_VECTOR
+  1005	 * VIRTCHNL_OP_UNMAP_QUEUE_VECTOR
+  1006	 * PF sends this message to map or unmap queues to vectors and ITR index
+  1007	 * registers. External data buffer contains virtchnl_queue_vector_maps structure
+  1008	 * that contains num_maps of virtchnl_queue_vector structures.
+  1009	 * CP maps the requested queue vector maps after validating the queue and vector
+  1010	 * ids and returns a status code.
+  1011	 */
+  1012	struct virtchnl_queue_vector_maps {
+  1013	       u16 vport_id;
+  1014	       u16 num_maps;
+  1015	       struct virtchnl_queue_vector qv_maps[1];
+  1016	};
+  1017	
+  1018	VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_queue_vector_maps);
+  1019	
+  1020	/* Structure to specify a chunk of contiguous interrupt vectors */
+  1021	 struct virtchnl_vector_chunk {
+  1022	        u16 start_vector_id;
+  1023	        u16 num_vectors;
+  1024	};
+  1025	
+  1026	VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_vector_chunk);
+  1027	
+  1028	/* Structure to specify several chunks of contiguous interrupt vectors */
+  1029	struct virtchnl_vector_chunks {
+  1030	        u16 num_vector_chunks;
+  1031	        struct virtchnl_vector_chunk num_vchunk[1];
+  1032	};
+  1033	
+> 1034	VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
+  1035	
+  1036	/* VIRTCHNL_OP_ALLOC_VECTORS
+  1037	 * PF sends this message to request additional interrupt vectors beyond the
+  1038	 * ones that were assigned via GET_CAPS request. virtchnl_alloc_vectors
+  1039	 * structure is used to specify the number of vectors requested. CP responds
+  1040	 * with the same structure with the actual number of vectors assigned followed
+  1041	 * by virtchnl_vector_chunks structure identifying the vector ids.
+  1042	 */
+  1043	struct virtchnl_alloc_vectors {
+  1044	        u16 num_vectors;
+  1045	        struct virtchnl_vector_chunks vchunks;
+  1046	};
+  1047	
+> 1048	VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
+  1049	
+  1050	/* VIRTCHNL_OP_DEALLOC_VECTORS
+  1051	 * PF sends this message to release the vectors.
+  1052	 * PF sends virtchnl_vector_chunks struct to specify the vectors it is giving
+  1053	 * away. CP performs requested action and returns status.
+  1054	 */
+  1055	
+  1056	/* VIRTCHNL_OP_GET_RSS_LUT
+  1057	 * VIRTCHNL_OP_SET_RSS_LUT
+  1058	 * PF sends this message to get or set RSS lookup table. Only supported if
+  1059	 * both PF and CP drivers set the VIRTCHNL_CAP_RSS bit during configuration
+  1060	 * negotiation. Uses the virtchnl_rss_lut_v2 structure
+  1061	 */
+  1062	struct virtchnl_rss_lut_v2 {
+  1063	        u16 vport_id;
+  1064	        u16 lut_entries;
+  1065	        u16 lut[1]; /* RSS lookup table */
+  1066	};
+  1067	
+> 1068	VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
+  1069	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
@@ -516,6 +635,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 34819 bytes
+Size: 34941 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200611/ee6a1a4c/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200611/b8ccc331/attachment-0001.bin>
