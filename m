@@ -1,9 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 11 Jun 2020 20:16:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 25/55]
- drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No
- such file or directory
-Message-ID: <202006112037.6AV3tkRc%lkp@intel.com>
+Date: Thu, 11 Jun 2020 20:34:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 5/55]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition
+ of 'truesize'
+Message-ID: <202006112015.uFH6leXW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,33 +12,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   94e8b9f389d896ead02e9633104231fc864da9b0
-commit: 6b612487a9abaf469be6e2fe3934250ab849c46a [25/55] idpf: Introduce idpf driver
-config: arc-allyesconfig (attached as .config)
-compiler: arc-elf-gcc (GCC) 9.3.0
+commit: 0ca4b678d984828b7cdbd1d585e995f983853483 [5/55] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
+config: sparc-allyesconfig (attached as .config)
+compiler: sparc64-linux-gcc (GCC) 9.3.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        git checkout 6b612487a9abaf469be6e2fe3934250ab849c46a
+        git checkout 0ca4b678d984828b7cdbd1d585e995f983853483
         # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arc 
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc 
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
 All errors (new ones prefixed by >>, old ones prefixed by <<):
 
-cc1: warning: drivers/net/ethernet/intel/idpf/../include: No such file or directory [-Wmissing-include-dirs]
-In file included from drivers/net/ethernet/intel/idpf/idpf_main.c:8:
->> drivers/net/ethernet/intel/idpf/idpf_dev.h:7:10: fatal error: iecm.h: No such file or directory
-7 | #include "iecm.h"
-|          ^~~~~~~~
-compilation terminated.
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2271:15: error: redefinition of 'truesize'
+2271 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+|               ^~~~~~~~
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2267:15: note: previous definition of 'truesize' was here
+2267 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+|               ^~~~~~~~
 
-vim +7 drivers/net/ethernet/intel/idpf/idpf_dev.h
+vim +/truesize +2271 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 
-     6	
-   > 7	#include "iecm.h"
-     8	
+  2262	
+  2263	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
+  2264					 struct ixgbe_rx_buffer *rx_buffer,
+  2265					 unsigned int size)
+  2266	{
+  2267		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+  2268	#if (PAGE_SIZE < 8192)
+  2269		rx_buffer->page_offset ^= truesize;
+  2270	#else
+> 2271		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+  2272					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
+  2273					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
+  2274					SKB_DATA_ALIGN(size);
+  2275	
+  2276		rx_buffer->page_offset += truesize;
+  2277	#endif
+  2278	}
+  2279	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
@@ -47,6 +63,6 @@ https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
 A non-text attachment was scrubbed...
 Name: .config.gz
 Type: application/gzip
-Size: 63924 bytes
+Size: 63225 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200611/21811d0e/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200611/5f1c7c64/attachment-0001.bin>
