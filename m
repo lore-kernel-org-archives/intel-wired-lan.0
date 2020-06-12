@@ -1,118 +1,50 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 12 Jun 2020 18:02:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 77d32e40da229135848d22fa715dd0694b5b5b41
-Message-ID: <5ee35298.8hmp1CMiQgnSDTPE%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Fri, 12 Jun 2020 13:47:31 +0200
+Subject: [Intel-wired-lan] [PATCH net] i40e: fix crash when Rx descriptor
+ count is changed
+Message-ID: <20200612114731.144630-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 77d32e40da229135848d22fa715dd0694b5b5b41  ice: Fix a couple off by one bugs
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-elapsed time: 489m
+When the AF_XDP buffer allocator was introduced, the Rx SW ring
+"rx_bi" allocation was moved from i40e_setup_rx_descriptors()
+function, and was instead done in the i40e_configure_rx_ring()
+function.
 
-configs tested: 92
-configs skipped: 1
+This broke the ethtool set_ringparam() hook for changing the Rx
+descriptor count, which was relying on i40e_setup_rx_descriptors() to
+handle the alloction.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fix this by adding an explicit i40e_alloc_rx_bi() call to
+i40e_set_ringparam().
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a006-20200612
-i386                 randconfig-a002-20200612
-i386                 randconfig-a001-20200612
-i386                 randconfig-a004-20200612
-i386                 randconfig-a005-20200612
-i386                 randconfig-a003-20200612
-i386                 randconfig-a015-20200612
-i386                 randconfig-a011-20200612
-i386                 randconfig-a014-20200612
-i386                 randconfig-a016-20200612
-i386                 randconfig-a013-20200612
-i386                 randconfig-a012-20200612
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allyesconfig
-um                               allmodconfig
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
+Fixes: be1222b585fd ("i40e: Separate kernel allocated rx_bi rings from AF_XDP rings")
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index aa8026b1eb81..67806b7b2f49 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2070,6 +2070,9 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 			 */
+ 			rx_rings[i].tail = hw->hw_addr + I40E_PRTGEN_STATUS;
+ 			err = i40e_setup_rx_descriptors(&rx_rings[i]);
++			if (err)
++				goto rx_unwind;
++			err = i40e_alloc_rx_bi(&rx_rings[i]);
+ 			if (err)
+ 				goto rx_unwind;
+ 
+
+base-commit: 18dbd4cd9b8c957025cf90a3c50102b31bde14f7
+-- 
+2.25.1
+
