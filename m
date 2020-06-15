@@ -1,60 +1,66 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 15 Jun 2020 21:07:53 +0300
+From: Waiman Long <longman@redhat.com>
+Date: Mon, 15 Jun 2020 14:39:59 -0400
 Subject: [Intel-wired-lan] [PATCH 1/2] mm,
  treewide: Rename kzfree() to kfree_sensitive()
-In-Reply-To: <20200413211550.8307-2-longman@redhat.com>
+In-Reply-To: <20200615180753.GJ4151@kadam>
 References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-2-longman@redhat.com>
-Message-ID: <20200615180753.GJ4151@kadam>
+ <20200413211550.8307-2-longman@redhat.com> <20200615180753.GJ4151@kadam>
+Message-ID: <9d084be2-29a3-7757-9386-20dbaeb5fc24@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
-> diff --git a/mm/slab_common.c b/mm/slab_common.c
-> index 23c7500eea7d..c08bc7eb20bd 100644
-> --- a/mm/slab_common.c
-> +++ b/mm/slab_common.c
-> @@ -1707,17 +1707,17 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
->  EXPORT_SYMBOL(krealloc);
->  
->  /**
-> - * kzfree - like kfree but zero memory
-> + * kfree_sensitive - Clear sensitive information in memory before freeing
->   * @p: object to free memory of
->   *
->   * The memory of the object @p points to is zeroed before freed.
-> - * If @p is %NULL, kzfree() does nothing.
-> + * If @p is %NULL, kfree_sensitive() does nothing.
->   *
->   * Note: this function zeroes the whole allocated buffer which can be a good
->   * deal bigger than the requested buffer size passed to kmalloc(). So be
->   * careful when using this function in performance sensitive code.
->   */
-> -void kzfree(const void *p)
-> +void kfree_sensitive(const void *p)
->  {
->  	size_t ks;
->  	void *mem = (void *)p;
-> @@ -1725,10 +1725,10 @@ void kzfree(const void *p)
->  	if (unlikely(ZERO_OR_NULL_PTR(mem)))
->  		return;
->  	ks = ksize(mem);
-> -	memset(mem, 0, ks);
-> +	memzero_explicit(mem, ks);
-        ^^^^^^^^^^^^^^^^^^^^^^^^^
-This is an unrelated bug fix.  It really needs to be pulled into a
-separate patch by itself and back ported to stable kernels.
+On 6/15/20 2:07 PM, Dan Carpenter wrote:
+> On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
+>> diff --git a/mm/slab_common.c b/mm/slab_common.c
+>> index 23c7500eea7d..c08bc7eb20bd 100644
+>> --- a/mm/slab_common.c
+>> +++ b/mm/slab_common.c
+>> @@ -1707,17 +1707,17 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
+>>   EXPORT_SYMBOL(krealloc);
+>>   
+>>   /**
+>> - * kzfree - like kfree but zero memory
+>> + * kfree_sensitive - Clear sensitive information in memory before freeing
+>>    * @p: object to free memory of
+>>    *
+>>    * The memory of the object @p points to is zeroed before freed.
+>> - * If @p is %NULL, kzfree() does nothing.
+>> + * If @p is %NULL, kfree_sensitive() does nothing.
+>>    *
+>>    * Note: this function zeroes the whole allocated buffer which can be a good
+>>    * deal bigger than the requested buffer size passed to kmalloc(). So be
+>>    * careful when using this function in performance sensitive code.
+>>    */
+>> -void kzfree(const void *p)
+>> +void kfree_sensitive(const void *p)
+>>   {
+>>   	size_t ks;
+>>   	void *mem = (void *)p;
+>> @@ -1725,10 +1725,10 @@ void kzfree(const void *p)
+>>   	if (unlikely(ZERO_OR_NULL_PTR(mem)))
+>>   		return;
+>>   	ks = ksize(mem);
+>> -	memset(mem, 0, ks);
+>> +	memzero_explicit(mem, ks);
+>          ^^^^^^^^^^^^^^^^^^^^^^^^^
+> This is an unrelated bug fix.  It really needs to be pulled into a
+> separate patch by itself and back ported to stable kernels.
+>
+>>   	kfree(mem);
+>>   }
+>> -EXPORT_SYMBOL(kzfree);
+>> +EXPORT_SYMBOL(kfree_sensitive);
+>>   
+>>   /**
+>>    * ksize - get the actual amount of memory allocated for a given object
+> regards,
+> dan carpenter
+>
+Thanks for the suggestion. I will break it out and post a version soon.
 
->  	kfree(mem);
->  }
-> -EXPORT_SYMBOL(kzfree);
-> +EXPORT_SYMBOL(kfree_sensitive);
->  
->  /**
->   * ksize - get the actual amount of memory allocated for a given object
+Cheers,
+Longman
 
-regards,
-dan carpenter
