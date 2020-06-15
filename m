@@ -1,66 +1,51 @@
-From: Waiman Long <longman@redhat.com>
-Date: Mon, 15 Jun 2020 14:39:59 -0400
-Subject: [Intel-wired-lan] [PATCH 1/2] mm,
- treewide: Rename kzfree() to kfree_sensitive()
-In-Reply-To: <20200615180753.GJ4151@kadam>
-References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-2-longman@redhat.com> <20200615180753.GJ4151@kadam>
-Message-ID: <9d084be2-29a3-7757-9386-20dbaeb5fc24@redhat.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Mon, 15 Jun 2020 18:51:27 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Do not wake up the system
+ via WOL if device wakeup is disabled
+In-Reply-To: <9f7ede2e2e8152704258fc11ba3755ae93f50741.1590081982.git.yu.c.chen@intel.com>
+References: <cover.1590081982.git.yu.c.chen@intel.com>
+ <9f7ede2e2e8152704258fc11ba3755ae93f50741.1590081982.git.yu.c.chen@intel.com>
+Message-ID: <SN6PR11MB2896298A90B37CEA0DC5A750BC9C0@SN6PR11MB2896.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/15/20 2:07 PM, Dan Carpenter wrote:
-> On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
->> diff --git a/mm/slab_common.c b/mm/slab_common.c
->> index 23c7500eea7d..c08bc7eb20bd 100644
->> --- a/mm/slab_common.c
->> +++ b/mm/slab_common.c
->> @@ -1707,17 +1707,17 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
->>   EXPORT_SYMBOL(krealloc);
->>   
->>   /**
->> - * kzfree - like kfree but zero memory
->> + * kfree_sensitive - Clear sensitive information in memory before freeing
->>    * @p: object to free memory of
->>    *
->>    * The memory of the object @p points to is zeroed before freed.
->> - * If @p is %NULL, kzfree() does nothing.
->> + * If @p is %NULL, kfree_sensitive() does nothing.
->>    *
->>    * Note: this function zeroes the whole allocated buffer which can be a good
->>    * deal bigger than the requested buffer size passed to kmalloc(). So be
->>    * careful when using this function in performance sensitive code.
->>    */
->> -void kzfree(const void *p)
->> +void kfree_sensitive(const void *p)
->>   {
->>   	size_t ks;
->>   	void *mem = (void *)p;
->> @@ -1725,10 +1725,10 @@ void kzfree(const void *p)
->>   	if (unlikely(ZERO_OR_NULL_PTR(mem)))
->>   		return;
->>   	ks = ksize(mem);
->> -	memset(mem, 0, ks);
->> +	memzero_explicit(mem, ks);
->          ^^^^^^^^^^^^^^^^^^^^^^^^^
-> This is an unrelated bug fix.  It really needs to be pulled into a
-> separate patch by itself and back ported to stable kernels.
->
->>   	kfree(mem);
->>   }
->> -EXPORT_SYMBOL(kzfree);
->> +EXPORT_SYMBOL(kfree_sensitive);
->>   
->>   /**
->>    * ksize - get the actual amount of memory allocated for a given object
-> regards,
-> dan carpenter
->
-Thanks for the suggestion. I will break it out and post a version soon.
+> From: Chen Yu <yu.c.chen@intel.com>
+> Sent: Thursday, May 21, 2020 10:59 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S. Miller
+> <davem@davemloft.net>; Jakub Kicinski <kuba@kernel.org>; Kok, Auke-jan H
+> <auke-jan.h.kok@intel.com>; Jeff Garzik <jeff@garzik.org>
+> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org; Brown, Len <len.brown@intel.com>; Rafael J. Wysocki
+> <rjw@rjwysocki.net>; Shevchenko, Andriy <andriy.shevchenko@intel.com>;
+> Neftin, Sasha <sasha.neftin@intel.com>; Lifshits, Vitaly
+> <vitaly.lifshits@intel.com>; Chen, Yu C <yu.c.chen@intel.com>;
+> Stable at vger.kernel.org
+> Subject: [PATCH 1/2] e1000e: Do not wake up the system via WOL if device
+> wakeup is disabled
+> 
+> Currently the system will be woken up via WOL(Wake On Lan) even if the
+> device wakeup ability has been disabled via sysfs:
+>  cat /sys/devices/pci0000:00/0000:00:1f.6/power/wakeup
+>  disabled
+> 
+> The system should not be woken up if the user has explicitly
+> disabled the wake up ability for this device.
+> 
+> This patch clears the WOL ability of this network device if the
+> user has disabled the wake up ability in sysfs.
+> 
+> Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver")
+> Reported-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: <Stable@vger.kernel.org>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 14 ++++++++++----
+>  1 file changed, 10 insertions(+), 4 deletions(-)
+> 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-Cheers,
-Longman
 
