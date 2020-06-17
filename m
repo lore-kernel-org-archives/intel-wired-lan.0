@@ -1,49 +1,144 @@
-From: Aaron Ma <aaron.ma@canonical.com>
-Date: Wed, 17 Jun 2020 19:12:48 +0800
-Subject: [Intel-wired-lan] [v2][PATCH] e1000e: continue to init phy even
- when failed to disable ULP
-In-Reply-To: <20200616100512.22512-1-aaron.ma@canonical.com>
-References: <20200616100512.22512-1-aaron.ma@canonical.com>
-Message-ID: <20200617111249.20855-1-aaron.ma@canonical.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 17 Jun 2020 19:26:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 8c37258160cd593243cb251b6b44d9b396e59078
+Message-ID: <5ee9fde7.dFyM4CBIMnpaw9oo%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After commit: e086ba2fccd ("e1000e: disable s0ix entry and exit flows
- for ME systems").
-ThinkPad P14s always failed to disable ULP by ME.
-commit: 0c80cdbf33 ("e1000e: Warn if disabling ULP failed")
-break out of init phy:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 8c37258160cd593243cb251b6b44d9b396e59078  i40e: fix crash when Rx descriptor count is changed
 
-error log:
-[   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
-[   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast Packet
-[   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
+elapsed time: 724m
 
-When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
-If continue to init phy like before, it can work as before.
-iperf test result good too.
+configs tested: 118
+configs skipped: 5
 
-Fixes: 0c80cdbf33 ("e1000e: Warn if disabling ULP failed")
-Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+sh                                  defconfig
+xtensa                    xip_kc705_defconfig
+powerpc                      mgcoge_defconfig
+c6x                        evmc6678_defconfig
+arc                           tb10x_defconfig
+powerpc                      pasemi_defconfig
+mips                         bigsur_defconfig
+arm                       cns3420vb_defconfig
+xtensa                              defconfig
+sh                          urquell_defconfig
+mips                           mtx1_defconfig
+mips                       capcella_defconfig
+mips                  mips_paravirt_defconfig
+mips                      pistachio_defconfig
+mips                   sb1250_swarm_defconfig
+mips                           ip28_defconfig
+mips                           ip27_defconfig
+arm                       netwinder_defconfig
+sh                           se7721_defconfig
+m68k                          hp300_defconfig
+powerpc                    mvme5100_defconfig
+sh                          r7785rp_defconfig
+arm                        magician_defconfig
+arm                         ebsa110_defconfig
+powerpc                     mpc512x_defconfig
+sh                        sh7757lcr_defconfig
+arm                           sunxi_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20200615
+i386                 randconfig-a002-20200615
+i386                 randconfig-a001-20200615
+i386                 randconfig-a004-20200615
+i386                 randconfig-a005-20200615
+i386                 randconfig-a003-20200615
+i386                 randconfig-a015-20200617
+i386                 randconfig-a011-20200617
+i386                 randconfig-a014-20200617
+i386                 randconfig-a016-20200617
+i386                 randconfig-a013-20200617
+i386                 randconfig-a012-20200617
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index f999cca37a8a..be7475c5529d 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -303,7 +303,6 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	ret_val = e1000_disable_ulp_lpt_lp(hw, true);
- 	if (ret_val) {
- 		e_warn("Failed to disable ULP\n");
--		goto out;
- 	}
- 
- 	ret_val = hw->phy.ops.acquire(hw);
--- 
-2.26.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
