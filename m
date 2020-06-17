@@ -1,49 +1,38 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 17 Jun 2020 15:01:31 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove checking media type
- during MAC initialization
-Message-ID: <20200617120131.21277-1-sasha.neftin@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 17 Jun 2020 09:28:54 -0700
+Subject: [Intel-wired-lan] [v2][PATCH] e1000e: continue to init phy even
+ when failed to disable ULP
+In-Reply-To: <20200617111249.20855-1-aaron.ma@canonical.com>
+References: <20200616100512.22512-1-aaron.ma@canonical.com>
+ <20200617111249.20855-1-aaron.ma@canonical.com>
+Message-ID: <20200617092854.7be16376@kicinski-fedora-PC1C0HJN>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i225 device support only copper mode.
-There is no point to check media type in the
-igc_config_fc_after_link_up() method.
+On Wed, 17 Jun 2020 19:12:48 +0800 Aaron Ma wrote:
+> After commit: e086ba2fccd ("e1000e: disable s0ix entry and exit flows
+>  for ME systems").
+> ThinkPad P14s always failed to disable ULP by ME.
+> commit: 0c80cdbf33 ("e1000e: Warn if disabling ULP failed")
+> break out of init phy:
+> 
+> error log:
+> [   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
+> [   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast Packet
+> [   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
+> 
+> When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
+> If continue to init phy like before, it can work as before.
+> iperf test result good too.
+> 
+> Fixes: 0c80cdbf33 ("e1000e: Warn if disabling ULP failed")
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_mac.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 9a5e44ef45f4..b47e7b0a6398 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -468,10 +468,8 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 	 * so we had to force link.  In this case, we need to force the
- 	 * configuration of the MAC to match the "fc" parameter.
- 	 */
--	if (mac->autoneg_failed) {
--		if (hw->phy.media_type == igc_media_type_copper)
--			ret_val = igc_force_mac_fc(hw);
--	}
-+	if (mac->autoneg_failed)
-+		ret_val = igc_force_mac_fc(hw);
- 
- 	if (ret_val) {
- 		hw_dbg("Error forcing flow control settings\n");
-@@ -483,7 +481,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 	 * has completed, and if so, how the PHY and link partner has
- 	 * flow control configured.
- 	 */
--	if (hw->phy.media_type == igc_media_type_copper && mac->autoneg) {
-+	if (mac->autoneg) {
- 		/* Read the MII Status Register and check to see if AutoNeg
- 		 * has completed.  We read this twice because this reg has
- 		 * some "sticky" (latched) bits.
--- 
-2.11.0
-
+Fixes tag: Fixes: 0c80cdbf33 ("e1000e: Warn if disabling ULP failed")
+Has these problem(s):
+	- SHA1 should be at least 12 digits long
+	  Can be fixed by setting core.abbrev to 12 (or more) or (for git v2.11
+	  or later) just making sure it is not set (or set to "auto").
