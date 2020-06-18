@@ -1,234 +1,159 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 18 Jun 2020 11:46:11 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ice: implement snapshot for device
- capabilities
-Message-ID: <20200618184611.2641181-1-jacob.e.keller@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 19 Jun 2020 02:54:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ d05833bb02c743e0f21207d817d9109948d8d4f1
+Message-ID: <5eebb85a.4obzV6VXEyf20w8H%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add a new devlink region used for capturing a snapshot of the device
-capabilities buffer which is reported by the firmware over the AdminQ.
-This information can useful in debugging driver and firmware
-interactions.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: d05833bb02c743e0f21207d817d9109948d8d4f1  e1000e: continue to init phy even when failed to disable ULP
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Error/Warning in current branch:
+
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- arc-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+|   `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+|-- i386-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+|   `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+`-- i386-debian-10.3
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+    `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+
+elapsed time: 723m
+
+configs tested: 94
+configs skipped: 3
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+nds32                            alldefconfig
+mips                         tb0287_defconfig
+arm                       mainstone_defconfig
+arm                          collie_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                      chrp32_defconfig
+sh                           se7722_defconfig
+s390                              allnoconfig
+arm                        mvebu_v7_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a011-20200618
+i386                 randconfig-a015-20200618
+i386                 randconfig-a014-20200618
+i386                 randconfig-a013-20200618
+i386                 randconfig-a016-20200618
+i386                 randconfig-a012-20200618
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
 ---
-v2
-* Fixed ice_devlink_destroy_regions to properly release the new region
-
- drivers/net/ethernet/intel/ice/ice.h         |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c  | 66 +++++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_common.h  |  3 +
- drivers/net/ethernet/intel/ice/ice_devlink.c | 59 +++++++++++++++++
- 4 files changed, 115 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index a4cda8212e64..7486d010a619 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -373,6 +373,7 @@ struct ice_pf {
- 	struct devlink_port devlink_port;
- 
- 	struct devlink_region *nvm_region;
-+	struct devlink_region *devcaps_region;
- 
- 	/* OS reserved IRQ details */
- 	struct msix_entry *msix_entries;
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index bce0e1281168..e3cb7bd1ecab 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1823,20 +1823,27 @@ ice_parse_caps(struct ice_hw *hw, void *buf, u32 cap_count,
- }
- 
- /**
-- * ice_aq_discover_caps - query function/device capabilities
-+ * ice_aq_list_caps - query function/device capabilities
-  * @hw: pointer to the HW struct
-- * @buf: a virtual buffer to hold the capabilities
-- * @buf_size: Size of the virtual buffer
-- * @cap_count: cap count needed if AQ err==ENOMEM
-- * @opc: capabilities type to discover - pass in the command opcode
-+ * @buf: a buffer to hold the capabilities
-+ * @buf_size: size of the buffer
-+ * @cap_count: if not NULL, set to the number of capabilities reported
-+ * @opc: capabilities type to discover, device or function
-  * @cd: pointer to command details structure or NULL
-  *
-- * Get the function(0x000a)/device(0x000b) capabilities description from
-- * the firmware.
-+ * Get the function (0x000A) or device (0x000B) capabilities description from
-+ * firmware and store it in the buffer.
-+ *
-+ * If the cap_count pointer is not NULL, then it is set to the number of
-+ * capabilities firmware will report. Note that if the buffer size is too
-+ * small, it is possible the command will return ICE_AQ_ERR_ENOMEM. The
-+ * cap_count will still be updated in this case. It is recommended that the
-+ * buffer size be set to ICE_AQ_MAX_BUF_LEN (the largest possible buffer that
-+ * firmware could return) to avoid this.
-  */
--static enum ice_status
--ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
--		     enum ice_adminq_opc opc, struct ice_sq_cd *cd)
-+enum ice_status
-+ice_aq_list_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
-+		 enum ice_adminq_opc opc, struct ice_sq_cd *cd)
- {
- 	struct ice_aqc_list_caps *cmd;
- 	struct ice_aq_desc desc;
-@@ -1849,12 +1856,43 @@ ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
- 		return ICE_ERR_PARAM;
- 
- 	ice_fill_dflt_direct_cmd_desc(&desc, opc);
--
- 	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
--	if (!status)
--		ice_parse_caps(hw, buf, le32_to_cpu(cmd->count), opc);
--	else if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOMEM)
-+
-+	if (cap_count)
- 		*cap_count = le32_to_cpu(cmd->count);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_discover_caps - query function/device capabilities
-+ * @hw: pointer to the HW struct
-+ * @buf: a virtual buffer to hold the capabilities
-+ * @buf_size: Size of the virtual buffer
-+ * @cap_count: cap count needed if AQ err==ENOMEM
-+ * @opc: capabilities type to discover - pass in the command opcode
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Get the function(0x000a)/device(0x000b) capabilities description from
-+ * the firmware.
-+ *
-+ * NOTE: this function has the side effect of updating the hw->dev_caps or
-+ * hw->func_caps by way of calling ice_parse_caps.
-+ */
-+static enum ice_status
-+ice_aq_discover_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
-+		     enum ice_adminq_opc opc, struct ice_sq_cd *cd)
-+{
-+	u32 local_cap_count = 0;
-+	enum ice_status status;
-+
-+	status = ice_aq_list_caps(hw, buf, buf_size, &local_cap_count,
-+				  opc, cd);
-+	if (!status)
-+		ice_parse_caps(hw, buf, local_cap_count, opc);
-+	else if (hw->adminq.sq_last_status == ICE_AQ_RC_ENOMEM)
-+		*cap_count = local_cap_count;
-+
- 	return status;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 9b9e50d2398b..e72529e9f022 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -87,6 +87,9 @@ enum ice_status
- ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
- 		    struct ice_aqc_get_phy_caps_data *caps,
- 		    struct ice_sq_cd *cd);
-+enum ice_status
-+ice_aq_list_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
-+		 enum ice_adminq_opc opc, struct ice_sq_cd *cd);
- void
- ice_update_phy_type(u64 *phy_type_low, u64 *phy_type_high,
- 		    u16 link_speeds_bitmap);
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index a73d06e06b5d..3ea470e8cfa2 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -397,12 +397,60 @@ static int ice_devlink_nvm_snapshot(struct devlink *devlink,
- 	return 0;
- }
- 
-+/**
-+ * ice_devlink_devcaps_snapshot - Capture snapshot of device capabilities
-+ * @devlink: the devlink instance
-+ * @extack: extended ACK response structure
-+ * @data: on exit points to snapshot data buffer
-+ *
-+ * This function is called in response to the DEVLINK_CMD_REGION_TRIGGER for
-+ * the device-caps devlink region. It captures a snapshot of the device
-+ * capabilities reported by firmware.
-+ *
-+ * @returns zero on success, and updates the data pointer. Returns a non-zero
-+ * error code on failure.
-+ */
-+static int
-+ice_devlink_devcaps_snapshot(struct devlink *devlink,
-+			     struct netlink_ext_ack *extack, u8 **data)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	enum ice_status status;
-+	void *devcaps;
-+
-+	devcaps = vzalloc(ICE_AQ_MAX_BUF_LEN);
-+	if (!devcaps)
-+		return -ENOMEM;
-+
-+	status = ice_aq_list_caps(hw, devcaps, ICE_AQ_MAX_BUF_LEN, NULL,
-+				  ice_aqc_opc_list_dev_caps, NULL);
-+	if (status) {
-+		dev_dbg(dev, "ice_aq_list_caps: failed to read device capabilities, err %d aq_err %d\n",
-+			status, hw->adminq.sq_last_status);
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to read device capabilities");
-+		vfree(devcaps);
-+		return -EIO;
-+	}
-+
-+	*data = (u8 *)devcaps;
-+
-+	return 0;
-+}
-+
- static const struct devlink_region_ops ice_nvm_region_ops = {
- 	.name = "nvm-flash",
- 	.destructor = vfree,
- 	.snapshot = ice_devlink_nvm_snapshot,
- };
- 
-+static const struct devlink_region_ops ice_devcaps_region_ops = {
-+	.name = "device-caps",
-+	.destructor = vfree,
-+	.snapshot = ice_devlink_devcaps_snapshot,
-+};
-+
- /**
-  * ice_devlink_init_regions - Initialize devlink regions
-  * @pf: the PF device structure
-@@ -424,6 +472,15 @@ void ice_devlink_init_regions(struct ice_pf *pf)
- 			PTR_ERR(pf->nvm_region));
- 		pf->nvm_region = NULL;
- 	}
-+
-+	pf->devcaps_region = devlink_region_create(devlink,
-+						   &ice_devcaps_region_ops, 10,
-+						   ICE_AQ_MAX_BUF_LEN);
-+	if (IS_ERR(pf->devcaps_region)) {
-+		dev_err(dev, "failed to create device-caps devlink region, err %ld\n",
-+			PTR_ERR(pf->devcaps_region));
-+		pf->devcaps_region = NULL;
-+	}
- }
- 
- /**
-@@ -436,4 +493,6 @@ void ice_devlink_destroy_regions(struct ice_pf *pf)
- {
- 	if (pf->nvm_region)
- 		devlink_region_destroy(pf->nvm_region);
-+	if (pf->devcaps_region)
-+		devlink_region_destroy(pf->devcaps_region);
- }
--- 
-2.25.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
