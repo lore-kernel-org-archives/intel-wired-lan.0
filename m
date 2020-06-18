@@ -1,49 +1,39 @@
-From: Aaron Ma <aaron.ma@canonical.com>
-Date: Thu, 18 Jun 2020 14:54:53 +0800
-Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even
- when failed to disable ULP
-In-Reply-To: <20200616100512.22512-1-aaron.ma@canonical.com>
-References: <20200616100512.22512-1-aaron.ma@canonical.com>
-Message-ID: <20200618065453.12140-1-aaron.ma@canonical.com>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Thu, 18 Jun 2020 14:19:53 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf: fix error return code in
+ iavf_init_get_resources()
+Message-ID: <20200618141953.29674-1-weiyongjun1@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After 'commit e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
- for ME systems")',
-ThinkPad P14s always failed to disable ULP by ME.
-'commit 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")'
-break out of init phy:
+Fix to return negative error code -ENOMEM from the error handling
+case instead of 0, as done elsewhere in this function.
 
-error log:
-[   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
-[   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast Packet
-[   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
-
-When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
-If continue to init phy like before, it can work as before.
-iperf test result good too.
-
-Fixes: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
-Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+Fixes: b66c7bc1cd4d ("iavf: Refactor init state machine")
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index f999cca37a8a..be7475c5529d 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -303,7 +303,6 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	ret_val = e1000_disable_ulp_lpt_lp(hw, true);
- 	if (ret_val) {
- 		e_warn("Failed to disable ULP\n");
--		goto out;
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index fa82768e5eda..bc83e2d99944 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1863,8 +1863,10 @@ static int iavf_init_get_resources(struct iavf_adapter *adapter)
  
- 	ret_val = hw->phy.ops.acquire(hw);
--- 
-2.26.2
+ 	adapter->rss_key = kzalloc(adapter->rss_key_size, GFP_KERNEL);
+ 	adapter->rss_lut = kzalloc(adapter->rss_lut_size, GFP_KERNEL);
+-	if (!adapter->rss_key || !adapter->rss_lut)
++	if (!adapter->rss_key || !adapter->rss_lut) {
++		err = -ENOMEM;
+ 		goto err_mem;
++	}
+ 	if (RSS_AQ(adapter))
+ 		adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_RSS;
+ 	else
+
+
 
