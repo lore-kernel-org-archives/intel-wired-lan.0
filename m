@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 17 Jun 2020 21:08:00 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 383/388] iavf: fix speed
+Date: Wed, 17 Jun 2020 21:16:30 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 265/266] iavf: fix speed
  reporting over virtchnl
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
-Message-ID: <20200618010805.600873-383-sashal@kernel.org>
+In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
+References: <20200618011631.604574-1-sashal@kernel.org>
+Message-ID: <20200618011631.604574-265-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -55,7 +55,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  4 files changed, 120 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index bcd11b4b29df..2d4ce6fdba1a 100644
+index bd1b1ed323f4..6b9117a350fa 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf.h
 +++ b/drivers/net/ethernet/intel/iavf/iavf.h
 @@ -87,6 +87,10 @@ struct iavf_vsi {
@@ -94,7 +94,7 @@ index bcd11b4b29df..2d4ce6fdba1a 100644
  	struct virtchnl_vsi_resource *vsi_res; /* our LAN VSI */
  	struct virtchnl_version_info pf_version;
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 2c39d46b6138..40a3fc7c5ea5 100644
+index dad3eec8ccd8..758bef02a2a8 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
 @@ -278,7 +278,18 @@ static int iavf_get_link_ksettings(struct net_device *netdev,
@@ -126,7 +126,7 @@ index 2c39d46b6138..40a3fc7c5ea5 100644
  	return 0;
  }
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 2050649848ba..a21ae74bcd1b 100644
+index 8e16be960e96..bacc5fb7eba2 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
 @@ -1756,17 +1756,17 @@ static int iavf_init_get_resources(struct iavf_adapter *adapter)
@@ -188,7 +188,7 @@ index 2050649848ba..a21ae74bcd1b 100644
  		dev_err(&adapter->pdev->dev,
  			"Invalid tx rate specified\n");
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index d58374c2c33d..ca79bec4ebd9 100644
+index 1ab9cb339acb..9655318803b7 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 @@ -139,7 +139,8 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
@@ -201,7 +201,7 @@ index d58374c2c33d..ca79bec4ebd9 100644
  
  	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
  	adapter->aq_required &= ~IAVF_FLAG_AQ_GET_CONFIG;
-@@ -891,6 +892,8 @@ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter)
+@@ -918,6 +919,8 @@ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter)
  	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING, NULL, 0);
  }
  
@@ -210,7 +210,7 @@ index d58374c2c33d..ca79bec4ebd9 100644
  /**
   * iavf_print_link_message - print link up or down
   * @adapter: adapter structure
-@@ -900,37 +903,99 @@ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter)
+@@ -927,37 +930,99 @@ void iavf_disable_vlan_stripping(struct iavf_adapter *adapter)
  static void iavf_print_link_message(struct iavf_adapter *adapter)
  {
  	struct net_device *netdev = adapter->netdev;
@@ -318,7 +318,7 @@ index d58374c2c33d..ca79bec4ebd9 100644
  }
  
  /**
-@@ -1160,12 +1225,11 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+@@ -1187,12 +1252,11 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
  	if (v_opcode == VIRTCHNL_OP_EVENT) {
  		struct virtchnl_pf_event *vpe =
  			(struct virtchnl_pf_event *)msg;
