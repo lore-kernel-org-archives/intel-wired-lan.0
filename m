@@ -1,83 +1,49 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 18 Jun 2020 14:24:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE 15/15]
- drivers/net/ethernet/intel/idpf/idpf_main.c:46:5: warning: no previous
- prototype for 'idpf_probe'
-Message-ID: <202006181433.J5dNOFGw%lkp@intel.com>
+From: Aaron Ma <aaron.ma@canonical.com>
+Date: Thu, 18 Jun 2020 14:45:04 +0800
+Subject: [Intel-wired-lan] [v3][PATCH] e1000e: continue to init phy even
+ when failed to disable ULP
+In-Reply-To: <20200616100512.22512-1-aaron.ma@canonical.com>
+References: <20200616100512.22512-1-aaron.ma@canonical.com>
+Message-ID: <20200618064504.11588-1-aaron.ma@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git 100GbE
-head:   2c89ef0b849b5d1bdba9bcc93a70f52c4752bc23
-commit: 2c89ef0b849b5d1bdba9bcc93a70f52c4752bc23 [15/15] idpf: Introduce idpf driver
-config: alpha-allyesconfig (attached as .config)
-compiler: alpha-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 2c89ef0b849b5d1bdba9bcc93a70f52c4752bc23
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
+After commit: e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
+ for ME systems").
+ThinkPad P14s always failed to disable ULP by ME.
+commit: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
+break out of init phy:
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+error log:
+[   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
+[   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast Packet
+[   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
 
-All warnings (new ones prefixed by >>, old ones prefixed by <<):
+When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
+If continue to init phy like before, it can work as before.
+iperf test result good too.
 
->> drivers/net/ethernet/intel/idpf/idpf_main.c:46:5: warning: no previous prototype for 'idpf_probe' [-Wmissing-prototypes]
-46 | int idpf_probe(struct pci_dev *pdev,
-|     ^~~~~~~~~~
-In file included from include/linux/net/intel/iecm.h:50,
-from drivers/net/ethernet/intel/idpf/idpf_dev.h:7,
-from drivers/net/ethernet/intel/idpf/idpf_main.c:6:
-include/linux/net/intel/iecm_txrx.h:293:30: warning: 'iecm_rx_ptype_lkup' defined but not used [-Wunused-const-variable=]
-293 | struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
-|                              ^~~~~~~~~~~~~~~~~~
-
-vim +/idpf_probe +46 drivers/net/ethernet/intel/idpf/idpf_main.c
-
-    38	
-    39	/**
-    40	 * idpf_probe - Device initialization routine
-    41	 * @pdev: PCI device information struct
-    42	 * @ent: entry in idpf_pci_tbl
-    43	 *
-    44	 * Returns 0 on success, negative on failure
-    45	 */
-  > 46	int idpf_probe(struct pci_dev *pdev,
-    47		       const struct pci_device_id __always_unused *ent)
-    48	{
-    49		struct iecm_adapter *adapter = NULL;
-    50		int err;
-    51	
-    52		err = pcim_enable_device(pdev);
-    53		if (err)
-    54			return err;
-    55	
-    56		adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
-    57		if (!adapter)
-    58			return -ENOMEM;
-    59	
-    60		adapter->dev_ops.reg_ops_init = idpf_reg_ops_init;
-    61	
-    62		err = iecm_probe(pdev, ent, adapter);
-    63		if (err)
-    64			kfree(adapter);
-    65	
-    66		return err;
-    67	}
-    68	
-
+Fixes: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
+Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 65023 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200618/39568e10/attachment-0001.bin>
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index f999cca37a8a..be7475c5529d 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -303,7 +303,6 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
+ 	ret_val = e1000_disable_ulp_lpt_lp(hw, true);
+ 	if (ret_val) {
+ 		e_warn("Failed to disable ULP\n");
+-		goto out;
+ 	}
+ 
+ 	ret_val = hw->phy.ops.acquire(hw);
+-- 
+2.26.2
+
