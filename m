@@ -1,20 +1,20 @@
 From: Aaron Ma <aaron.ma@canonical.com>
-Date: Thu, 18 Jun 2020 14:45:04 +0800
-Subject: [Intel-wired-lan] [v3][PATCH] e1000e: continue to init phy even
+Date: Thu, 18 Jun 2020 14:54:53 +0800
+Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even
  when failed to disable ULP
 In-Reply-To: <20200616100512.22512-1-aaron.ma@canonical.com>
 References: <20200616100512.22512-1-aaron.ma@canonical.com>
-Message-ID: <20200618064504.11588-1-aaron.ma@canonical.com>
+Message-ID: <20200618065453.12140-1-aaron.ma@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After commit: e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
- for ME systems").
+After 'commit e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
+ for ME systems")',
 ThinkPad P14s always failed to disable ULP by ME.
-commit: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
+'commit 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")'
 break out of init phy:
 
 error log:
