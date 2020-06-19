@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 19 Jun 2020 23:35:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 2001d965ca51060c7c6375cb192bb4ceb4276215
-Message-ID: <5eecdb56.zuiWOc2mkYudT25X%lkp@intel.com>
+Date: Sat, 20 Jun 2020 00:28:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ bb7cc422c6da2e57ab0a517b36299462e431075d
+Message-ID: <5eece7c4.JYT3+z0x51NlepDA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 2001d965ca51060c7c6375cb192bb4ceb4276215  i40e: silence an UBSAN false positive
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: bb7cc422c6da2e57ab0a517b36299462e431075d  i40e: fix crash when Rx descriptor count is changed
 
-elapsed time: 724m
+elapsed time: 720m
 
-configs tested: 89
-configs skipped: 41
+configs tested: 80
+configs skipped: 1
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -32,8 +32,8 @@ i386                             allyesconfig
 i386                                defconfig
 i386                              debian-10.3
 i386                              allnoconfig
-ia64                                defconfig
 ia64                             allmodconfig
+ia64                                defconfig
 ia64                              allnoconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
@@ -41,6 +41,12 @@ m68k                              allnoconfig
 m68k                           sun3_defconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
 nds32                               defconfig
 nds32                             allnoconfig
 csky                             allyesconfig
@@ -56,12 +62,6 @@ arc                              allyesconfig
 sh                               allmodconfig
 sh                                allnoconfig
 microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
 mips                             allyesconfig
 mips                              allnoconfig
 mips                             allmodconfig
@@ -69,20 +69,11 @@ parisc                            allnoconfig
 parisc                              defconfig
 parisc                           allyesconfig
 parisc                           allmodconfig
+powerpc                             defconfig
 powerpc                          allyesconfig
 powerpc                          rhel-kconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a014-20200619
-i386                 randconfig-a013-20200619
-i386                 randconfig-a016-20200619
-i386                 randconfig-a011-20200618
-i386                 randconfig-a015-20200618
-i386                 randconfig-a014-20200618
-i386                 randconfig-a013-20200618
-i386                 randconfig-a016-20200618
-i386                 randconfig-a012-20200618
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
@@ -98,9 +89,9 @@ sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                          allmodconfig
 um                                allnoconfig
-um                               allyesconfig
 um                                  defconfig
 um                               allmodconfig
+um                               allyesconfig
 x86_64                               rhel-7.6
 x86_64                    rhel-7.6-kselftests
 x86_64                               rhel-8.3
