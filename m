@@ -1,39 +1,124 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Fri, 19 Jun 2020 12:56:11 -0500
-Subject: [Intel-wired-lan] [PATCH][next] ice: Use struct_size() helper
-Message-ID: <20200619175611.GA27719@embeddedor>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 20 Jun 2020 02:24:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
+ 3995ecbabc6f8019b3a55aeb551eeb9598b8b354
+Message-ID: <5eed02ea.ZFyPsQLIv0r6VVqW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make use of the struct_size() helper instead of an open-coded version
-in order to avoid any potential type mistakes.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
+branch HEAD: 3995ecbabc6f8019b3a55aeb551eeb9598b8b354  i40e: fix crash when Rx descriptor count is changed
 
-This code was detected with the help of Coccinelle and, audited and
-fixed manually.
+elapsed time: 724m
 
-Addresses-KSPP-ID: https://github.com/KSPP/linux/issues/83
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+configs tested: 98
+configs skipped: 1
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200619
+i386                 randconfig-a006-20200619
+i386                 randconfig-a001-20200619
+i386                 randconfig-a004-20200619
+i386                 randconfig-a005-20200619
+i386                 randconfig-a003-20200619
+x86_64               randconfig-a015-20200619
+x86_64               randconfig-a016-20200619
+x86_64               randconfig-a011-20200619
+x86_64               randconfig-a012-20200619
+x86_64               randconfig-a014-20200619
+x86_64               randconfig-a013-20200619
+i386                 randconfig-a011-20200619
+i386                 randconfig-a015-20200619
+i386                 randconfig-a014-20200619
+i386                 randconfig-a013-20200619
+i386                 randconfig-a016-20200619
+i386                 randconfig-a012-20200619
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 4420fc02f7e7..d92c4d70dbcd 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1121,8 +1121,7 @@ static enum ice_status ice_get_pkg_info(struct ice_hw *hw)
- 	u16 size;
- 	u32 i;
- 
--	size = sizeof(*pkg_info) + (sizeof(pkg_info->pkg_info[0]) *
--				    (ICE_PKG_CNT - 1));
-+	size = struct_size(pkg_info, pkg_info, ICE_PKG_CNT - 1);
- 	pkg_info = kzalloc(size, GFP_KERNEL);
- 	if (!pkg_info)
- 		return ICE_ERR_NO_MEMORY;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
