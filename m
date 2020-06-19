@@ -1,106 +1,64 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 20 Jun 2020 00:28:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- bb7cc422c6da2e57ab0a517b36299462e431075d
-Message-ID: <5eece7c4.JYT3+z0x51NlepDA%lkp@intel.com>
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Sat, 20 Jun 2020 01:10:17 +0800
+Subject: [Intel-wired-lan] [PATCH v2 0/5] ice: add Intel DCF mode support
+In-Reply-To: <20200619045711.16055-1-haiyue.wang@intel.com>
+References: <20200619045711.16055-1-haiyue.wang@intel.com>
+Message-ID: <20200619171022.9539-1-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: bb7cc422c6da2e57ab0a517b36299462e431075d  i40e: fix crash when Rx descriptor count is changed
+The iproute2 and ethtool are evolving to expose the NIC hardware capability.
+But these available orchestration methods in Linux kernel are limited in their
+capability to exercise advance functionality in the hardware, since different
+vendors may have different data programming method.
 
-elapsed time: 720m
+Intel Ethernet Adaptive Virtual Function (AVF) is the common hardware interface
+for SR-IOV, it has the defined message format to talks with the PF. 
 
-configs tested: 80
-configs skipped: 1
+To make good use of the advanced functionality like Switch (Binary Classifier),
+The ice PF driver introduces a DCF (Device Config Function) mode to extend the
+AVF feature.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The DCF (Device Config Function) method wraps an raw flow admin queue command in
+a virthcnl message and sends it to the PF to be executed. This is required because
+it doesn't have the privilege level to issue the admin queue commands, so it acts
+as a proxy PF. So that the user can customize the AVF feature, and use their own
+programming language to translate the flow rule management data into ice raw flow,
+these raw flows then can be executed in PF's sandbox.
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allmodconfig
-um                               allyesconfig
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
+And the kernel PF driver fully controls the behavior of DCF for security, like only
+the trusted VF with ID zero can run into DCF mode, and also for being compatible
+with the common AVF feature, the VF needs to advertise and acquire DCF capability
+firstly.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+v2: fix the macro ICE_DCF_VFID definition style issue.
+
+Haiyue Wang (5):
+  ice: add the virtchnl handler for AdminQ command
+  ice: add DCF cap negotiation and state machine
+  ice: support to get the VSI mapping
+  ice: enable DDP package info querying
+  ice: add switch rule management for DCF
+
+ drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_dcf.c      | 848 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcf.h      |  97 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  24 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |  35 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 366 ++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
+ include/linux/avf/virtchnl.h                  |  63 ++
+ 12 files changed, 1421 insertions(+), 34 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
+
+-- 
+2.27.0
+
