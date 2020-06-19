@@ -1,40 +1,20 @@
 From: Jarod Wilson <jarod@redhat.com>
-Date: Fri, 19 Jun 2020 10:31:51 -0400
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/4] bonding: initial support
- for hardware crypto offload
-Message-ID: <20200619143155.20726-1-jarod@redhat.com>
+Date: Fri, 19 Jun 2020 10:31:52 -0400
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/4] xfrm: bail early on slave
+ pass over skb
+In-Reply-To: <20200619143155.20726-1-jarod@redhat.com>
+References: <20200619143155.20726-1-jarod@redhat.com>
+Message-ID: <20200619143155.20726-2-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is an initial functional implementation for doing pass-through of
-hardware encryption from bonding device to capable slaves, in active-backup
-bond setups. This was developed and tested using ixgbe-driven Intel x520
-interfaces with libreswan and a transport mode connection, primarily using
-netperf, with assorted connection failures forced during transmission. The
-failover works quite well in my testing, and overall performance is right
-on par with offload when running on a bare interface, no bond involved.
-
-Caveats: this is ONLY enabled for active-backup, because I'm not sure
-how one would manage multiple offload handles for different devices all
-running at the same time in the same xfrm, and it relies on some minor
-changes to both the xfrm code and slave device driver code to get things
-to behave, and I don't have immediate access to any other hardware that
-could function similarly, but the NIC driver changes are minimal and
-straight-forward enough that I've included what I think ought to be
-enough for mlx5 devices too.
-
-v2: reordered patches, switched (back) to using CONFIG_XFRM_OFFLOAD
-to wrap the code additions and wrapped overlooked additions.
-v3: rebase w/net-next open, add proper cc list to cover letter
-
-Jarod Wilson (4):
-  xfrm: bail early on slave pass over skb
-  ixgbe_ipsec: become aware of when running as a bonding slave
-  mlx5: become aware of when running as a bonding slave
-  bonding: support hardware encryption offload to slaves
+This is prep work for initial support of bonding hardware encryption
+pass-through support. The bonding driver will fill in the slave_dev
+pointer, and we use that to know not to skb_push() again on a given
+skb that was already processed on the bond device.
 
 CC: Jay Vosburgh <j.vosburgh@gmail.com>
 CC: Veaceslav Falico <vfalico@gmail.com>
@@ -47,21 +27,84 @@ CC: Herbert Xu <herbert@gondor.apana.org.au>
 CC: netdev at vger.kernel.org
 CC: intel-wired-lan at lists.osuosl.org
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ include/net/xfrm.h     |  1 +
+ net/xfrm/xfrm_device.c | 34 +++++++++++++++++-----------------
+ 2 files changed, 18 insertions(+), 17 deletions(-)
 
-Jarod Wilson (4):
-  xfrm: bail early on slave pass over skb
-  ixgbe_ipsec: become aware of when running as a bonding slave
-  mlx5: become aware of when running as a bonding slave
-  bonding: support hardware encryption offload to slaves
-
- drivers/net/bonding/bond_main.c               | 127 +++++++++++++++++-
- .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  39 ++++--
- .../mellanox/mlx5/core/en_accel/ipsec.c       |   6 +
- include/net/bonding.h                         |   3 +
- include/net/xfrm.h                            |   1 +
- net/xfrm/xfrm_device.c                        |  34 ++---
- 6 files changed, 183 insertions(+), 27 deletions(-)
-
+diff --git a/include/net/xfrm.h b/include/net/xfrm.h
+index 094fe682f5d7..e20b2b27ec48 100644
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -127,6 +127,7 @@ struct xfrm_state_walk {
+ 
+ struct xfrm_state_offload {
+ 	struct net_device	*dev;
++	struct net_device	*slave_dev;
+ 	unsigned long		offload_handle;
+ 	unsigned int		num_exthdrs;
+ 	u8			flags;
+diff --git a/net/xfrm/xfrm_device.c b/net/xfrm/xfrm_device.c
+index f50d1f97cf8e..b8918fc5248b 100644
+--- a/net/xfrm/xfrm_device.c
++++ b/net/xfrm/xfrm_device.c
+@@ -106,6 +106,7 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
+ 	struct sk_buff *skb2, *nskb, *pskb = NULL;
+ 	netdev_features_t esp_features = features;
+ 	struct xfrm_offload *xo = xfrm_offload(skb);
++	struct net_device *dev = skb->dev;
+ 	struct sec_path *sp;
+ 
+ 	if (!xo)
+@@ -119,6 +120,10 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
+ 	if (xo->flags & XFRM_GRO || x->xso.flags & XFRM_OFFLOAD_INBOUND)
+ 		return skb;
+ 
++	/* This skb was already validated on the master dev */
++	if ((x->xso.dev != dev) && (x->xso.slave_dev == dev))
++		return skb;
++
+ 	local_irq_save(flags);
+ 	sd = this_cpu_ptr(&softnet_data);
+ 	err = !skb_queue_empty(&sd->xfrm_backlog);
+@@ -129,25 +134,20 @@ struct sk_buff *validate_xmit_xfrm(struct sk_buff *skb, netdev_features_t featur
+ 		return skb;
+ 	}
+ 
+-	if (skb_is_gso(skb)) {
+-		struct net_device *dev = skb->dev;
+-
+-		if (unlikely(x->xso.dev != dev)) {
+-			struct sk_buff *segs;
++	if (skb_is_gso(skb) && unlikely(x->xso.dev != dev)) {
++		struct sk_buff *segs;
+ 
+-			/* Packet got rerouted, fixup features and segment it. */
+-			esp_features = esp_features & ~(NETIF_F_HW_ESP
+-							| NETIF_F_GSO_ESP);
++		/* Packet got rerouted, fixup features and segment it. */
++		esp_features = esp_features & ~(NETIF_F_HW_ESP | NETIF_F_GSO_ESP);
+ 
+-			segs = skb_gso_segment(skb, esp_features);
+-			if (IS_ERR(segs)) {
+-				kfree_skb(skb);
+-				atomic_long_inc(&dev->tx_dropped);
+-				return NULL;
+-			} else {
+-				consume_skb(skb);
+-				skb = segs;
+-			}
++		segs = skb_gso_segment(skb, esp_features);
++		if (IS_ERR(segs)) {
++			kfree_skb(skb);
++			atomic_long_inc(&dev->tx_dropped);
++			return NULL;
++		} else {
++			consume_skb(skb);
++			skb = segs;
+ 		}
+ 	}
+ 
 -- 
 2.20.1
 
