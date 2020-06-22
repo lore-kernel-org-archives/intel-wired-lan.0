@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jun 2020 12:00:49 +0200
-Subject: [Intel-wired-lan] [PATCH 04/11] net: devres: rename the release
- callback of devm_register_netdev()
+Date: Mon, 22 Jun 2020 12:00:46 +0200
+Subject: [Intel-wired-lan] [PATCH 01/11] net: ethernet: ixgbe: check the
+ return value of ixgbe_mii_bus_init()
 In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
 References: <20200622100056.10151-1-brgl@bgdev.pl>
-Message-ID: <20200622100056.10151-5-brgl@bgdev.pl>
+Message-ID: <20200622100056.10151-2-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,36 +13,34 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Make it an explicit counterpart to devm_register_netdev() just like we
-do with devm_free_netdev() for better clarity.
+This function may fail. Check its return value and propagate the error
+code.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- net/devres.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/net/devres.c b/net/devres.c
-index 1583ccb207c0..d7aa92243844 100644
---- a/net/devres.c
-+++ b/net/devres.c
-@@ -39,7 +39,7 @@ struct net_device *devm_alloc_etherdev_mqs(struct device *dev, int sizeof_priv,
- }
- EXPORT_SYMBOL(devm_alloc_etherdev_mqs);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index f162b8b8f345..4ec4eeb9736b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -11167,10 +11167,14 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			IXGBE_LINK_SPEED_10GB_FULL | IXGBE_LINK_SPEED_1GB_FULL,
+ 			true);
  
--static void devm_netdev_release(struct device *dev, void *this)
-+static void devm_unregister_netdev(struct device *dev, void *this)
- {
- 	struct net_device_devres *res = this;
+-	ixgbe_mii_bus_init(hw);
++	err = ixgbe_mii_bus_init(hw);
++	if (err)
++		goto err_netdev;
  
-@@ -60,7 +60,7 @@ int devm_register_netdev(struct device *dev, struct net_device *ndev)
- 	struct net_device_devres *dr;
- 	int ret;
+ 	return 0;
  
--	dr = devres_alloc(devm_netdev_release, sizeof(*dr), GFP_KERNEL);
-+	dr = devres_alloc(devm_unregister_netdev, sizeof(*dr), GFP_KERNEL);
- 	if (!dr)
- 		return -ENOMEM;
- 
++err_netdev:
++	unregister_netdev(netdev);
+ err_register:
+ 	ixgbe_release_hw_control(adapter);
+ 	ixgbe_clear_interrupt_scheme(adapter);
 -- 
 2.26.1
 
