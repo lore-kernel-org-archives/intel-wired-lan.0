@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jun 2020 12:00:51 +0200
-Subject: [Intel-wired-lan] [PATCH 06/11] phy: un-inline
- devm_mdiobus_register()
+Date: Mon, 22 Jun 2020 12:00:54 +0200
+Subject: [Intel-wired-lan] [PATCH 09/11] of: mdio: remove the 'extern'
+ keyword from function declarations
 In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
 References: <20200622100056.10151-1-brgl@bgdev.pl>
-Message-ID: <20200622100056.10151-7-brgl@bgdev.pl>
+Message-ID: <20200622100056.10151-10-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,82 +13,64 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Functions should only be static inline if they're very short. This
-devres helper is already over 10 lines and it will grow soon as we'll
-be improving upon its approach. Pull it into mdio_devres.c.
+The 'extern' keyword in headers doesn't have any benefit. Remove them
+all from the of_mdio.h header.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/net/phy/Makefile      |  2 +-
- drivers/net/phy/mdio_devres.c | 18 ++++++++++++++++++
- include/linux/phy.h           | 15 ++-------------
- 3 files changed, 21 insertions(+), 14 deletions(-)
- create mode 100644 drivers/net/phy/mdio_devres.c
+ include/linux/of_mdio.h | 37 ++++++++++++++++++-------------------
+ 1 file changed, 18 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
-index dc9e53b511d6..896afdcac437 100644
---- a/drivers/net/phy/Makefile
-+++ b/drivers/net/phy/Makefile
-@@ -3,7 +3,7 @@
+diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
+index 0f61a4ac6bcf..ba8e157f24ad 100644
+--- a/include/linux/of_mdio.h
++++ b/include/linux/of_mdio.h
+@@ -12,27 +12,26 @@
+ #include <linux/of.h>
  
- libphy-y			:= phy.o phy-c45.o phy-core.o phy_device.o \
- 				   linkmode.o
--mdio-bus-y			+= mdio_bus.o mdio_device.o
-+mdio-bus-y			+= mdio_bus.o mdio_device.o mdio_devres.o
- 
- ifdef CONFIG_MDIO_DEVICE
- obj-y				+= mdio-boardinfo.o
-diff --git a/drivers/net/phy/mdio_devres.c b/drivers/net/phy/mdio_devres.c
-new file mode 100644
-index 000000000000..f0b4b6cfe5e3
---- /dev/null
-+++ b/drivers/net/phy/mdio_devres.c
-@@ -0,0 +1,18 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/phy.h>
-+
-+int __devm_mdiobus_register(struct mii_bus *bus, struct module *owner)
-+{
-+	int ret;
-+
-+	if (!bus->is_managed)
-+		return -EPERM;
-+
-+	ret = __mdiobus_register(bus, owner);
-+	if (!ret)
-+		bus->is_managed_registered = 1;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(__devm_mdiobus_register);
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 8c05d0fb5c00..62149945c5b3 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -313,20 +313,9 @@ static inline struct mii_bus *mdiobus_alloc(void)
- }
- 
- int __mdiobus_register(struct mii_bus *bus, struct module *owner);
-+int __devm_mdiobus_register(struct mii_bus *bus, struct module *owner);
- #define mdiobus_register(bus) __mdiobus_register(bus, THIS_MODULE)
--static inline int devm_mdiobus_register(struct mii_bus *bus)
--{
--	int ret;
+ #if IS_ENABLED(CONFIG_OF_MDIO)
+-extern bool of_mdiobus_child_is_phy(struct device_node *child);
+-extern int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np);
+-extern struct phy_device *of_phy_find_device(struct device_node *phy_np);
+-extern struct phy_device *of_phy_connect(struct net_device *dev,
+-					 struct device_node *phy_np,
+-					 void (*hndlr)(struct net_device *),
+-					 u32 flags, phy_interface_t iface);
+-extern struct phy_device *
++bool of_mdiobus_child_is_phy(struct device_node *child);
++int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np);
++struct phy_device *of_phy_find_device(struct device_node *phy_np);
++struct phy_device *
++of_phy_connect(struct net_device *dev, struct device_node *phy_np,
++	       void (*hndlr)(struct net_device *), u32 flags,
++	       phy_interface_t iface);
++struct phy_device *
+ of_phy_get_and_connect(struct net_device *dev, struct device_node *np,
+ 		       void (*hndlr)(struct net_device *));
+-struct phy_device *of_phy_attach(struct net_device *dev,
+-				 struct device_node *phy_np, u32 flags,
+-				 phy_interface_t iface);
 -
--	if (!bus->is_managed)
--		return -EPERM;
--
--	ret = mdiobus_register(bus);
--	if (!ret)
--		bus->is_managed_registered = 1;
--
--	return ret;
--}
-+#define devm_mdiobus_register(bus) __devm_mdiobus_register(bus, THIS_MODULE)
+-extern struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np);
+-extern int of_phy_register_fixed_link(struct device_node *np);
+-extern void of_phy_deregister_fixed_link(struct device_node *np);
+-extern bool of_phy_is_fixed_link(struct device_node *np);
+-extern int of_mdiobus_phy_device_register(struct mii_bus *mdio,
+-				     struct phy_device *phy,
+-				     struct device_node *child, u32 addr);
++struct phy_device *
++of_phy_attach(struct net_device *dev, struct device_node *phy_np,
++	      u32 flags, phy_interface_t iface);
++
++struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np);
++int of_phy_register_fixed_link(struct device_node *np);
++void of_phy_deregister_fixed_link(struct device_node *np);
++bool of_phy_is_fixed_link(struct device_node *np);
++int of_mdiobus_phy_device_register(struct mii_bus *mdio, struct phy_device *phy,
++				   struct device_node *child, u32 addr);
  
- void mdiobus_unregister(struct mii_bus *bus);
- void mdiobus_free(struct mii_bus *bus);
+ static inline int of_mdio_parse_addr(struct device *dev,
+ 				     const struct device_node *np)
 -- 
 2.26.1
 
