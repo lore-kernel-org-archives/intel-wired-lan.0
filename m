@@ -1,10 +1,7 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jun 2020 12:00:56 +0200
-Subject: [Intel-wired-lan] [PATCH 11/11] net: ethernet: mtk-star-emac: use
- devm_of_mdiobus_register()
-In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
-References: <20200622100056.10151-1-brgl@bgdev.pl>
-Message-ID: <20200622100056.10151-12-brgl@bgdev.pl>
+Date: Mon, 22 Jun 2020 12:00:45 +0200
+Subject: [Intel-wired-lan] [PATCH 00/11] net: improve devres helpers
+Message-ID: <20200622100056.10151-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,51 +10,70 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Shrink the code by using the managed variant of of_mdiobus_register().
+When I first submitted the series adding devm_register_netdev() I was
+told during review that it should check if the underlying struct net_device
+is managed too before proceeding. I initially accepted this as the right
+approach but in the back of my head something seemed wrong about this.
+I started looking around and noticed how devm_mdiobus_register()
+is implemented.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- drivers/net/ethernet/mediatek/mtk_star_emac.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+It turned out that struct mii_bus contains information about whether it's
+managed or not and the release callback of devm_mdiobus_alloc() is responsible
+for calling mdiobus_unregister(). This seems wrong to me as managed structures
+shouldn't care about who manages them. It's devres' code task to correctly undo
+whatever it registers/allocates.
 
-diff --git a/drivers/net/ethernet/mediatek/mtk_star_emac.c b/drivers/net/ethernet/mediatek/mtk_star_emac.c
-index 3e765bdcf9e1..13250553263b 100644
---- a/drivers/net/ethernet/mediatek/mtk_star_emac.c
-+++ b/drivers/net/ethernet/mediatek/mtk_star_emac.c
-@@ -1389,7 +1389,7 @@ static int mtk_star_mdio_init(struct net_device *ndev)
- 	priv->mii->write = mtk_star_mdio_write;
- 	priv->mii->priv = priv;
- 
--	ret = of_mdiobus_register(priv->mii, mdio_node);
-+	ret = devm_of_mdiobus_register(dev, priv->mii, mdio_node);
- 
- out_put_node:
- 	of_node_put(mdio_node);
-@@ -1441,13 +1441,6 @@ static void mtk_star_clk_disable_unprepare(void *data)
- 	clk_bulk_disable_unprepare(MTK_STAR_NCLKS, priv->clks);
- }
- 
--static void mtk_star_mdiobus_unregister(void *data)
--{
--	struct mtk_star_priv *priv = data;
--
--	mdiobus_unregister(priv->mii);
--}
--
- static int mtk_star_probe(struct platform_device *pdev)
- {
- 	struct device_node *of_node;
-@@ -1549,10 +1542,6 @@ static int mtk_star_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	ret = devm_add_action_or_reset(dev, mtk_star_mdiobus_unregister, priv);
--	if (ret)
--		return ret;
--
- 	ret = eth_platform_get_mac_address(dev, ndev->dev_addr);
- 	if (ret || !is_valid_ether_addr(ndev->dev_addr))
- 		eth_hw_addr_random(ndev);
+With this series I propose to make the release callbacks of mdiobus devm
+helpers only release the resources they actually allocate themselves as it the
+standard in devm routines. I also propose to not check whether the structures
+passed to devm_mdiobus_register() and devm_register_netdev() are already
+managed as they could have been allocated over devres as part of bigger
+memory chunk. I see this as an unnecessary limitation.
+
+First two patches aim at removing the only use of devm_mdiobus_free(). It
+modifies the ixgbe driver. I only compile tested it as I don't have the
+relevant hw.
+
+Next two patches relax devm_register_netdev() - we stop checking whether
+struct net_device was registered using devm_etherdev_alloc().
+
+We then document the mdio devres helper that's missing in devres.rst list
+and un-inline the current implementation of devm_mdiobus_register().
+
+Patch 8 re-implements the devres helpers for mdio conforming to common
+devres patterns.
+
+Patches 9 and 10 provide devm_of_mdiobus_register() and the last patch
+adds its first user.
+
+Bartosz Golaszewski (11):
+  net: ethernet: ixgbe: check the return value of ixgbe_mii_bus_init()
+  net: ethernet: ixgbe: don't call devm_mdiobus_free()
+  net: devres: relax devm_register_netdev()
+  net: devres: rename the release callback of devm_register_netdev()
+  Documentation: devres: add missing mdio helper
+  phy: un-inline devm_mdiobus_register()
+  phy: mdio: add kerneldoc for __devm_mdiobus_register()
+  net: phy: don't abuse devres in devm_mdiobus_register()
+  of: mdio: remove the 'extern' keyword from function declarations
+  of: mdio: provide devm_of_mdiobus_register()
+  net: ethernet: mtk-star-emac: use devm_of_mdiobus_register()
+
+ .../driver-api/driver-model/devres.rst        |  3 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  6 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 14 +---
+ drivers/net/ethernet/mediatek/mtk_star_emac.c | 13 +--
+ drivers/net/ethernet/realtek/r8169_main.c     |  2 +-
+ drivers/net/phy/Makefile                      |  2 +-
+ drivers/net/phy/mdio_bus.c                    | 73 ----------------
+ drivers/net/phy/mdio_devres.c                 | 83 +++++++++++++++++++
+ drivers/of/of_mdio.c                          | 43 ++++++++++
+ include/linux/of_mdio.h                       | 40 ++++-----
+ include/linux/phy.h                           | 21 +----
+ net/devres.c                                  | 23 +----
+ 12 files changed, 167 insertions(+), 156 deletions(-)
+ create mode 100644 drivers/net/phy/mdio_devres.c
+
 -- 
 2.26.1
 
