@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jun 2020 12:00:47 +0200
-Subject: [Intel-wired-lan] [PATCH 02/11] net: ethernet: ixgbe: don't call
- devm_mdiobus_free()
+Date: Mon, 22 Jun 2020 12:00:56 +0200
+Subject: [Intel-wired-lan] [PATCH 11/11] net: ethernet: mtk-star-emac: use
+ devm_of_mdiobus_register()
 In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
 References: <20200622100056.10151-1-brgl@bgdev.pl>
-Message-ID: <20200622100056.10151-3-brgl@bgdev.pl>
+Message-ID: <20200622100056.10151-12-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,55 +13,51 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-The idea behind devres is that the release callbacks are called if
-probe fails. As we now check the return value of ixgbe_mii_bus_init(),
-we can drop the call devm_mdiobus_free() in error path as the release
-callback will be called automatically.
+Shrink the code by using the managed variant of of_mdiobus_register().
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/mediatek/mtk_star_emac.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 2fb97967961c..7980d7265e10 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -905,7 +905,6 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
- 	struct pci_dev *pdev = adapter->pdev;
- 	struct device *dev = &adapter->netdev->dev;
- 	struct mii_bus *bus;
--	int err = -ENODEV;
+diff --git a/drivers/net/ethernet/mediatek/mtk_star_emac.c b/drivers/net/ethernet/mediatek/mtk_star_emac.c
+index 3e765bdcf9e1..13250553263b 100644
+--- a/drivers/net/ethernet/mediatek/mtk_star_emac.c
++++ b/drivers/net/ethernet/mediatek/mtk_star_emac.c
+@@ -1389,7 +1389,7 @@ static int mtk_star_mdio_init(struct net_device *ndev)
+ 	priv->mii->write = mtk_star_mdio_write;
+ 	priv->mii->priv = priv;
  
- 	bus = devm_mdiobus_alloc(dev);
- 	if (!bus)
-@@ -923,7 +922,7 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
- 	case IXGBE_DEV_ID_X550EM_A_1G_T:
- 	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
- 		if (!ixgbe_x550em_a_has_mii(hw))
--			goto ixgbe_no_mii_bus;
-+			return -ENODEV;
- 		bus->read = &ixgbe_x550em_a_mii_bus_read;
- 		bus->write = &ixgbe_x550em_a_mii_bus_write;
- 		break;
-@@ -948,15 +947,8 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
- 	 */
- 	hw->phy.mdio.mode_support = MDIO_SUPPORTS_C45 | MDIO_SUPPORTS_C22;
+-	ret = of_mdiobus_register(priv->mii, mdio_node);
++	ret = devm_of_mdiobus_register(dev, priv->mii, mdio_node);
  
--	err = mdiobus_register(bus);
--	if (!err) {
--		adapter->mii_bus = bus;
--		return 0;
--	}
--
--ixgbe_no_mii_bus:
--	devm_mdiobus_free(dev, bus);
--	return err;
-+	adapter->mii_bus = bus;
-+	return mdiobus_register(bus);
+ out_put_node:
+ 	of_node_put(mdio_node);
+@@ -1441,13 +1441,6 @@ static void mtk_star_clk_disable_unprepare(void *data)
+ 	clk_bulk_disable_unprepare(MTK_STAR_NCLKS, priv->clks);
  }
  
- /**
+-static void mtk_star_mdiobus_unregister(void *data)
+-{
+-	struct mtk_star_priv *priv = data;
+-
+-	mdiobus_unregister(priv->mii);
+-}
+-
+ static int mtk_star_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *of_node;
+@@ -1549,10 +1542,6 @@ static int mtk_star_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = devm_add_action_or_reset(dev, mtk_star_mdiobus_unregister, priv);
+-	if (ret)
+-		return ret;
+-
+ 	ret = eth_platform_get_mac_address(dev, ndev->dev_addr);
+ 	if (ret || !is_valid_ether_addr(ndev->dev_addr))
+ 		eth_hw_addr_random(ndev);
 -- 
 2.26.1
 
