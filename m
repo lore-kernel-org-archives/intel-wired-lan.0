@@ -1,12 +1,9 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 22 Jun 2020 20:13:28 +0000
-Subject: [Intel-wired-lan] [PATCH v2 5/5] ice: add switch rule
- management for DCF
-In-Reply-To: <20200619171022.9539-6-haiyue.wang@intel.com>
-References: <20200619045711.16055-1-haiyue.wang@intel.com>
- <20200619171022.9539-1-haiyue.wang@intel.com>
- <20200619171022.9539-6-haiyue.wang@intel.com>
-Message-ID: <BN6PR1101MB21457263930B3EC0DE7A16088C970@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Mon, 22 Jun 2020 20:23:05 +0000
+Subject: [Intel-wired-lan] [PATCH][next] ice: Use struct_size() helper
+In-Reply-To: <20200619175611.GA27719@embeddedor>
+References: <20200619175611.GA27719@embeddedor>
+Message-ID: <BYAPR11MB27429F471B0D17894F6900E4B5970@BYAPR11MB2742.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,44 +12,50 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Haiyue Wang
-> Sent: Friday, June 19, 2020 10:10 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Xiao <xiao.zhang@intel.com>; Xing, Beilei <beilei.xing@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 5/5] ice: add switch rule management
-> for DCF
+> Gustavo A. R. Silva
+> Sent: Friday, June 19, 2020 10:56 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David S. Miller
+> <davem@davemloft.net>; Jakub Kicinski <kuba@kernel.org>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH][next] ice: Use struct_size() helper
 > 
-> The PF shall track all the outstanding switch filters (filter IDs to be
-> precise) added by the DCF.
+> Make use of the struct_size() helper instead of an open-coded version
+> in order to avoid any potential type mistakes.
 > 
-> Upon a VF reset event, the PF shall clear all outstanding switch filters for the
-> given VF. Upon completion of either VF or PF reset, the PF shall skip replay of
-> filters that were added by the DCF. The PF shall however continue to replay
-> the filters that were not added by DCF for the VF(s).
+> This code was detected with the help of Coccinelle and, audited and
+> fixed manually.
 > 
-> If the trust mode of the DCF is taken away without the DCF gracefully
-> relinquishing the DCF functionality (by way appropriate virtchnl message
-> exchanges), then the PF shall remove all switch filters that were added by
-> the DCF. The PF shall transition back from DCF mode to regular mode, the VF
-> shall be treated as any other untrusted VF, and the PF will reset the VF.
-> 
-> If a designated DCF requests AVF functionality from the same VF (VF-ID)
-> without the DCF gracefully relinquishing the DCF functionality first (by way
-> appropriate virtchnl message exchanges), the PF shall remove all the switch
-> filters that were added by the DCF.
-> 
-> Signed-off-by: Xiao Zhang <xiao.zhang@intel.com>
-> Signed-off-by: Beilei Xing <beilei.xing@intel.com>
-> Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+> Addresses-KSPP-ID: https://github.com/KSPP/linux/issues/83
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcf.c      | 713 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_dcf.h      |  41 +
->  drivers/net/ethernet/intel/ice/ice_switch.c   |  24 +-
->  drivers/net/ethernet/intel/ice/ice_switch.h   |  35 +-
->  drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  40 +
->  6 files changed, 829 insertions(+), 33 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+This is already fixed in an in-process patch-set that converts one-element arrays to flexible-arrays
+that Jeff Kirsher has mentioned before and should be pushed shortly.
 
-
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> index 4420fc02f7e7..d92c4d70dbcd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> @@ -1121,8 +1121,7 @@ static enum ice_status ice_get_pkg_info(struct
+> ice_hw *hw)
+>  	u16 size;
+>  	u32 i;
+> 
+> -	size = sizeof(*pkg_info) + (sizeof(pkg_info->pkg_info[0]) *
+> -				    (ICE_PKG_CNT - 1));
+> +	size = struct_size(pkg_info, pkg_info, ICE_PKG_CNT - 1);
+>  	pkg_info = kzalloc(size, GFP_KERNEL);
+>  	if (!pkg_info)
+>  		return ICE_ERR_NO_MEMORY;
+> --
+> 2.27.0
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
