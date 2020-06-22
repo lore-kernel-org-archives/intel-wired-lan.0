@@ -1,68 +1,51 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 22 Jun 2020 10:43:34 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unneeded ICTXQMTC
- register
-Message-ID: <20200622074334.30238-1-sasha.neftin@intel.com>
+From: Ciara Loftus <ciara.loftus@intel.com>
+Date: Mon, 22 Jun 2020 12:46:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 1/3] i40e: add xdp ring
+ statistics to vsi stats
+Message-ID: <20200622124624.18847-1-ciara.loftus@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Tx Queue Min Threshold Count register no applicable for the i225 device.
-This patch comes to clean up it.
+Prior to this, only rx and tx ring statistics were accounted for.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_mac.c  | 1 -
- drivers/net/ethernet/intel/igc/igc_main.c | 1 -
- drivers/net/ethernet/intel/igc/igc_regs.h | 2 --
- 3 files changed, 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 3a618e69514e..f85c8bcd7f70 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -301,7 +301,6 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
- 	rd32(IGC_ICRXATC);
- 	rd32(IGC_ICTXPTC);
- 	rd32(IGC_ICTXATC);
--	rd32(IGC_ICTXQMTC);
- 	rd32(IGC_ICRXDMTC);
- 
- 	rd32(IGC_RPTHC);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 59d75b6e7d64..ca6fa7c3d0a0 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3736,7 +3736,6 @@ void igc_update_stats(struct igc_adapter *adapter)
- 	adapter->stats.icrxatc += rd32(IGC_ICRXATC);
- 	adapter->stats.ictxptc += rd32(IGC_ICTXPTC);
- 	adapter->stats.ictxatc += rd32(IGC_ICTXATC);
--	adapter->stats.ictxqmtc += rd32(IGC_ICTXQMTC);
- 	adapter->stats.icrxdmtc += rd32(IGC_ICRXDMTC);
- 
- 	/* Fill out the OS statistics structure */
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index d6ed1b1ebcbc..23554d39ad18 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -63,7 +63,6 @@
- #define IGC_ICRXATC		0x04108  /* Rx Absolute Timer Expire Count */
- #define IGC_ICTXPTC		0x0410C  /* Tx Packet Timer Expire Count */
- #define IGC_ICTXATC		0x04110  /* Tx Absolute Timer Expire Count */
--#define IGC_ICTXQMTC		0x0411C  /* Tx Queue Min Threshold Count */
- #define IGC_ICRXDMTC		0x04120  /* Rx Descriptor Min Threshold Count */
- #define IGC_ICRXOC		0x04124  /* Receiver Overrun Count */
- 
-@@ -183,7 +182,6 @@
- #define IGC_IAC		0x04100  /* Interrupt Assertion Count */
- #define IGC_ICTXPTC	0x0410C  /* Interrupt Cause Tx Pkt Timer Expire Count */
- #define IGC_ICTXATC	0x04110  /* Interrupt Cause Tx Abs Timer Expire Count */
--#define IGC_ICTXQMTC	0x0411C  /* Interrupt Cause Tx Queue Min Thresh Count */
- #define IGC_RPTHC	0x04104  /* Rx Packets To Host */
- #define IGC_TLPIC	0x04148  /* EEE Tx LPI Count */
- #define IGC_RLPIC	0x0414C  /* EEE Rx LPI Count */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5d807c8004f8..13aef0e51c24 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -811,6 +811,25 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 		rx_p += packets;
+ 		rx_buf += p->rx_stats.alloc_buff_failed;
+ 		rx_page += p->rx_stats.alloc_page_failed;
++
++		if (i40e_enabled_xdp_vsi(vsi)) {
++			/* locate xdp ring */
++			p = READ_ONCE(vsi->xdp_rings[q]);
++			if (!p)
++				continue;
++
++			do {
++				start = u64_stats_fetch_begin_irq(&p->syncp);
++				packets = p->stats.packets;
++				bytes = p->stats.bytes;
++			} while (u64_stats_fetch_retry_irq(&p->syncp, start));
++			tx_b += bytes;
++			tx_p += packets;
++			tx_restart += p->tx_stats.restart_queue;
++			tx_busy += p->tx_stats.tx_busy;
++			tx_linearize += p->tx_stats.tx_linearize;
++			tx_force_wb += p->tx_stats.tx_force_wb;
++		}
+ 	}
+ 	rcu_read_unlock();
+ 	vsi->tx_restart = tx_restart;
 -- 
-2.11.0
+2.17.1
 
