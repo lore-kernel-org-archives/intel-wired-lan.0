@@ -1,17 +1,18 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Mon, 22 Jun 2020 06:21:02 -0700
-Subject: [Intel-wired-lan] [next-queue,v3, 09/14] iecm: Deinit vport
+Date: Mon, 22 Jun 2020 06:21:06 -0700
+Subject: [Intel-wired-lan] [next-queue, v3,
+ 13/14] iecm: Add iecm to the kernel build system
 In-Reply-To: <20200622132107.50889-1-alice.michael@intel.com>
 References: <20200622132107.50889-1-alice.michael@intel.com>
-Message-ID: <20200622132107.50889-10-alice.michael@intel.com>
+Message-ID: <20200622132107.50889-14-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement vport take down and release its queue
-resources.
+This introduces iecm as a module to the kernel, and adds
+relevant documentation.
 
 Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
@@ -24,402 +25,184 @@ Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    |  29 ++-
- drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 218 ++++++++++++++++--
- .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  15 +-
- 3 files changed, 246 insertions(+), 16 deletions(-)
+ .../networking/device_drivers/intel/iecm.rst  | 93 +++++++++++++++++++
+ MAINTAINERS                                   |  2 +
+ drivers/net/ethernet/intel/Kconfig            |  7 ++
+ drivers/net/ethernet/intel/Makefile           |  1 +
+ drivers/net/ethernet/intel/iecm/Makefile      | 19 ++++
+ 5 files changed, 122 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/intel/iecm.rst
+ create mode 100644 drivers/net/ethernet/intel/iecm/Makefile
 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index a51731feedb4..d34834422049 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -366,7 +366,27 @@ struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev)
-  */
- static void iecm_vport_stop(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
+diff --git a/Documentation/networking/device_drivers/intel/iecm.rst b/Documentation/networking/device_drivers/intel/iecm.rst
+new file mode 100644
+index 000000000000..5634e3e65c74
+--- /dev/null
++++ b/Documentation/networking/device_drivers/intel/iecm.rst
+@@ -0,0 +1,93 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
-+	if (adapter->state <= __IECM_DOWN)
-+		return;
-+	adapter->dev_ops.vc_ops.irq_map_unmap(vport, false);
-+	adapter->dev_ops.vc_ops.disable_queues(vport);
-+	/* Normally we ask for queues in create_vport, but if we're changing
-+	 * number of requested queues we do a delete then add instead of
-+	 * deleting and reallocating the vport.
-+	 */
-+	if (test_and_clear_bit(__IECM_DEL_QUEUES,
-+			       vport->adapter->flags))
-+		iecm_send_delete_queues_msg(vport);
-+	netif_carrier_off(vport->netdev);
-+	netif_tx_disable(vport->netdev);
-+	adapter->link_up = false;
-+	iecm_vport_intr_deinit(vport);
-+	iecm_vport_queues_rel(vport);
-+	if (adapter->dev_ops.vc_ops.disable_vport)
-+		adapter->dev_ops.vc_ops.disable_vport(vport);
-+	adapter->state = __IECM_DOWN;
- }
++========================
++Intel Ethernet Common Module
++========================
++
++The Intel Ethernet Common Module is meant to serve as an abstraction layer
++between device specific implementation details and common net device driver
++flows. This library provides several function hooks which allow a device driver
++to specify register addresses, control queue communications, and other device
++specific functionality.  Some functions are required to be implemented while
++others have a default implementation that is used when none is supplied by the
++device driver.  Doing this, a device driver can be written to take advantage
++of existing code while also giving the flexibility to implement device specific
++features.
++
++The common use case for this library is for a network device driver that wants
++specify its own device specific details but also leverage the more common
++code flows found in network device drivers.
++
++Sections in this document:
++	Entry Point
++	Exit Point
++	Register Operations API
++	Virtchnl Operations API
++
++Entry Point
++~~~~~~~~~~~
++The primary entry point to the library is the iecm_probe function.  Prior to
++calling this, device drivers must have allocated an iecm_adapter struct and
++initialized it with the required API functions.  The adapter struct, along with
++the pci_dev struct and the pci_device_id struct, is provided to iecm_probe
++which finalizes device initialization and prepares the device for open.
++
++The iecm_dev_ops struct within the iecm_adapter struct is the primary vehicle
++for passing information from device drivers to the common module.  A dependent
++module must define and assign a reg_ops_init function which will assign the
++respective function pointers to initialize register values (see iecm_reg_ops
++struct).  These are required to be provided by the dependent device driver as
++no suitable default can be assumed for register addresses.
++
++The vc_ops_init function pointer and the related iecm_virtchnl_ops struct are
++optional and should only be necessary for device drivers which use a different
++method/timing for communicating across a mailbox to the hardware.  Within iecm
++is a default interface provided in the case where one is not provided by the
++device driver.
++
++Exit Point
++~~~~~~~~~~
++When the device driver is being prepared to be removed through the pci_driver
++remove callback, it is required for the device driver to call iecm_remove with
++the pci_dev struct provided.  This is required to ensure all resources are
++properly freed and returned to the operating system.
++
++Register Operations API
++~~~~~~~~~~~~~~~~~~~~~~~
++iecm_reg_ops contains three different function pointers relating to initializing
++registers for the specific net device using the library.
++
++ctlq_reg_init relates specifically to setting up registers related to control
++queue/mailbox communications.  Registers that should be defined include: head,
++tail, len, bah, bal, len_mask, len_ena_mask, and head_mask.
++
++vportq_reg_init relates to setting up queue registers.  The tail registers to
++be assigned to the iecm_queue struct for each RX/TX queue.
++
++intr_reg_init relates to any registers needed to setup interrupts.  These
++include registers needed to enable the interrupt and change ITR settings.
++
++If the initialization function finds that one or more required function
++pointers were not provided, an error will be issued and the device will be
++inoperable.
++
++
++Virtchnl Operations API
++~~~~~~~~~~~~~~~~~~~~~~~
++The virtchnl is a conduit between driver and hardware that allows device
++drivers to send and receive control messages to/from hardware.  This is
++optional to be specified as there is a general interface that can be assumed
++when using this library.  However, if a device deviates in some way to
++communicate across the mailbox correctly, this interface is provided to allow
++that.
++
++If vc_ops_init is set in the dev_ops field of the iecm_adapter struct, then it
++is assumed the device driver is using providing it's own interface to do
++virtchnl communications.  While providing vc_ops_init is optional, if it is
++provided, it is required that the device driver provide function pointers for
++those functions in vc_ops, with exception for the enable_vport, disable_vport,
++and destroy_vport functions which may not be required for all devices.
++
++If the initialization function finds that vc_ops_init was defined but one or
++more required function pointers were not provided, an error will be issued and
++the device will be inoperable.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 301330e02bca..102ee1e4aef0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8654,6 +8654,7 @@ F:	Documentation/networking/device_drivers/intel/fm10k.rst
+ F:	Documentation/networking/device_drivers/intel/i40e.rst
+ F:	Documentation/networking/device_drivers/intel/iavf.rst
+ F:	Documentation/networking/device_drivers/intel/ice.rst
++F:	Documentation/networking/device_drivers/intel/iecm.rst
+ F:	Documentation/networking/device_drivers/intel/igb.rst
+ F:	Documentation/networking/device_drivers/intel/igbvf.rst
+ F:	Documentation/networking/device_drivers/intel/ixgb.rst
+@@ -8662,6 +8663,7 @@ F:	Documentation/networking/device_drivers/intel/ixgbevf.rst
+ F:	drivers/net/ethernet/intel/
+ F:	drivers/net/ethernet/intel/*/
+ F:	include/linux/avf/virtchnl.h
++F:	include/linux/net/intel/
  
- /**
-@@ -381,7 +401,11 @@ static void iecm_vport_stop(struct iecm_vport *vport)
-  */
- static int iecm_stop(struct net_device *netdev)
- {
--	/* stub */
-+	struct iecm_netdev_priv *np = netdev_priv(netdev);
-+
-+	iecm_vport_stop(np->vport);
-+
-+	return 0;
- }
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ M:	Maik Broemme <mbroemme@libmpq.org>
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 0b24e0027ca9..4b989a52b949 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -343,4 +343,11 @@ config IGC
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called igc.
  
- /**
-@@ -489,6 +513,7 @@ iecm_vport_alloc(struct iecm_adapter *adapter, int vport_id)
- 
- 	/* fill vport slot in the adapter struct */
- 	adapter->vports[adapter->next_vport] = vport;
++config IECM
++	tristate "Intel(R) Ethernet Common Module Support"
++	default n
++	depends on PCI
++	help
++	 To compile this driver as a module, choose M here. The module
++	 will be called iecm.  MSI-X interrupt support is required
+ endif # NET_VENDOR_INTEL
+diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
+index 3075290063f6..c9eba9cc5087 100644
+--- a/drivers/net/ethernet/intel/Makefile
++++ b/drivers/net/ethernet/intel/Makefile
+@@ -16,3 +16,4 @@ obj-$(CONFIG_IXGB) += ixgb/
+ obj-$(CONFIG_IAVF) += iavf/
+ obj-$(CONFIG_FM10K) += fm10k/
+ obj-$(CONFIG_ICE) += ice/
++obj-$(CONFIG_IECM) += iecm/
+diff --git a/drivers/net/ethernet/intel/iecm/Makefile b/drivers/net/ethernet/intel/iecm/Makefile
+new file mode 100644
+index 000000000000..61c814013582
+--- /dev/null
++++ b/drivers/net/ethernet/intel/iecm/Makefile
+@@ -0,0 +1,19 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2020 Intel Corporation
 +
- 	if (iecm_cfg_netdev(vport))
- 		goto cfg_netdev_fail;
- 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-index 4e5e3d487795..bd358b121773 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-@@ -41,7 +41,23 @@ void iecm_get_stats64(struct net_device *netdev,
-  */
- void iecm_tx_buf_rel(struct iecm_queue *tx_q, struct iecm_tx_buf *tx_buf)
- {
--	/* stub */
-+	if (tx_buf->skb) {
-+		dev_kfree_skb_any(tx_buf->skb);
-+		if (dma_unmap_len(tx_buf, len))
-+			dma_unmap_single(tx_q->dev,
-+					 dma_unmap_addr(tx_buf, dma),
-+					 dma_unmap_len(tx_buf, len),
-+					 DMA_TO_DEVICE);
-+	} else if (dma_unmap_len(tx_buf, len)) {
-+		dma_unmap_page(tx_q->dev,
-+			       dma_unmap_addr(tx_buf, dma),
-+			       dma_unmap_len(tx_buf, len),
-+			       DMA_TO_DEVICE);
-+	}
++#
++# Makefile for the Intel(R) Ethernet Common Module
++#
 +
-+	tx_buf->next_to_watch = NULL;
-+	tx_buf->skb = NULL;
-+	dma_unmap_len_set(tx_buf, len, 0);
- }
- 
- /**
-@@ -50,7 +66,26 @@ void iecm_tx_buf_rel(struct iecm_queue *tx_q, struct iecm_tx_buf *tx_buf)
-  */
- static void iecm_tx_buf_rel_all(struct iecm_queue *txq)
- {
--	/* stub */
-+	u16 i;
++obj-$(CONFIG_IECM) += iecm.o
 +
-+	/* Buffers already cleared, nothing to do */
-+	if (!txq->tx_buf)
-+		return;
-+
-+	/* Free all the Tx buffer sk_buffs */
-+	for (i = 0; i < txq->desc_count; i++)
-+		iecm_tx_buf_rel(txq, &txq->tx_buf[i]);
-+
-+	kfree(txq->tx_buf);
-+	txq->tx_buf = NULL;
-+
-+	if (txq->buf_stack.bufs) {
-+		for (i = 0; i < txq->buf_stack.size; i++) {
-+			iecm_tx_buf_rel(txq, txq->buf_stack.bufs[i]);
-+			kfree(txq->buf_stack.bufs[i]);
-+		}
-+		kfree(txq->buf_stack.bufs);
-+	}
- }
- 
- /**
-@@ -62,7 +97,17 @@ static void iecm_tx_buf_rel_all(struct iecm_queue *txq)
-  */
- static void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
- {
--	/* stub */
-+	if (bufq)
-+		iecm_tx_buf_rel_all(txq);
-+
-+	if (txq->desc_ring) {
-+		dmam_free_coherent(txq->dev, txq->size,
-+				   txq->desc_ring, txq->dma);
-+		txq->desc_ring = NULL;
-+		txq->next_to_alloc = 0;
-+		txq->next_to_use = 0;
-+		txq->next_to_clean = 0;
-+	}
- }
- 
- /**
-@@ -73,7 +118,24 @@ static void iecm_tx_desc_rel(struct iecm_queue *txq, bool bufq)
-  */
- static void iecm_tx_desc_rel_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_queue *txq;
-+	int i, j;
-+
-+	if (!vport->txq_grps)
-+		return;
-+
-+	for (i = 0; i < vport->num_txq_grp; i++) {
-+		for (j = 0; j < vport->txq_grps[i].num_txq; j++) {
-+			if (vport->txq_grps[i].txqs) {
-+				txq = &vport->txq_grps[i].txqs[j];
-+				iecm_tx_desc_rel(txq, true);
-+			}
-+		}
-+		if (iecm_is_queue_model_split(vport->txq_model)) {
-+			txq = vport->txq_grps[i].complq;
-+			iecm_tx_desc_rel(txq, false);
-+		}
-+	}
- }
- 
- /**
-@@ -209,7 +271,21 @@ static enum iecm_status iecm_tx_desc_alloc_all(struct iecm_vport *vport)
- static void iecm_rx_buf_rel(struct iecm_queue *rxq,
- 			    struct iecm_rx_buf *rx_buf)
- {
--	/* stub */
-+	struct device *dev = rxq->dev;
-+
-+	if (!rx_buf->page)
-+		return;
-+
-+	if (rx_buf->skb) {
-+		dev_kfree_skb_any(rx_buf->skb);
-+		rx_buf->skb = NULL;
-+	}
-+
-+	dma_unmap_page(dev, rx_buf->dma, PAGE_SIZE, DMA_FROM_DEVICE);
-+	__free_pages(rx_buf->page, 0);
-+
-+	rx_buf->page = NULL;
-+	rx_buf->page_offset = 0;
- }
- 
- /**
-@@ -218,7 +294,23 @@ static void iecm_rx_buf_rel(struct iecm_queue *rxq,
-  */
- static void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
- {
--	/* stub */
-+	u16 i;
-+
-+	/* queue already cleared, nothing to do */
-+	if (!rxq->rx_buf.buf)
-+		return;
-+
-+	/* Free all the bufs allocated and given to HW on Rx queue */
-+	for (i = 0; i < rxq->desc_count; i++) {
-+		iecm_rx_buf_rel(rxq, &rxq->rx_buf.buf[i]);
-+		if (rxq->rx_hsplit_en)
-+			iecm_rx_buf_rel(rxq, &rxq->rx_buf.hdr_buf[i]);
-+	}
-+
-+	kfree(rxq->rx_buf.buf);
-+	rxq->rx_buf.buf = NULL;
-+	kfree(rxq->rx_buf.hdr_buf);
-+	rxq->rx_buf.hdr_buf = NULL;
- }
- 
- /**
-@@ -232,7 +324,25 @@ static void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
- static void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
- 			     enum virtchnl_queue_model q_model)
- {
--	/* stub */
-+	if (!rxq)
-+		return;
-+
-+	if (!bufq && iecm_is_queue_model_split(q_model) && rxq->skb) {
-+		dev_kfree_skb_any(rxq->skb);
-+		rxq->skb = NULL;
-+	}
-+
-+	if (bufq || !iecm_is_queue_model_split(q_model))
-+		iecm_rx_buf_rel_all(rxq);
-+
-+	if (rxq->desc_ring) {
-+		dmam_free_coherent(rxq->dev, rxq->size,
-+				   rxq->desc_ring, rxq->dma);
-+		rxq->desc_ring = NULL;
-+		rxq->next_to_alloc = 0;
-+		rxq->next_to_clean = 0;
-+		rxq->next_to_use = 0;
-+	}
- }
- 
- /**
-@@ -243,7 +353,49 @@ static void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq,
-  */
- static void iecm_rx_desc_rel_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_rxq_group *rx_qgrp;
-+	struct iecm_queue *q;
-+	int i, j, num_rxq;
-+
-+	if (!vport->rxq_grps)
-+		return;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		rx_qgrp = &vport->rxq_grps[i];
-+
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			if (rx_qgrp->splitq.rxq_sets) {
-+				num_rxq = rx_qgrp->splitq.num_rxq_sets;
-+				for (j = 0; j < num_rxq; j++) {
-+					q = &rx_qgrp->splitq.rxq_sets[j].rxq;
-+					iecm_rx_desc_rel(q, false,
-+							 vport->rxq_model);
-+				}
-+			}
-+
-+			if (!rx_qgrp->splitq.bufq_sets)
-+				continue;
-+			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
-+				struct iecm_bufq_set *bufq_set =
-+					&rx_qgrp->splitq.bufq_sets[j];
-+
-+				q = &bufq_set->bufq;
-+				iecm_rx_desc_rel(q, true, vport->rxq_model);
-+				if (!bufq_set->refillqs)
-+					continue;
-+				kfree(bufq_set->refillqs);
-+				bufq_set->refillqs = NULL;
-+			}
-+		} else {
-+			if (rx_qgrp->singleq.rxqs) {
-+				for (j = 0; j < rx_qgrp->singleq.num_rxq; j++) {
-+					q = &rx_qgrp->singleq.rxqs[j];
-+					iecm_rx_desc_rel(q, false,
-+							 vport->rxq_model);
-+				}
-+			}
-+		}
-+	}
- }
- 
- /**
-@@ -570,7 +722,18 @@ static enum iecm_status iecm_rx_desc_alloc_all(struct iecm_vport *vport)
-  */
- static void iecm_txq_group_rel(struct iecm_vport *vport)
- {
--	/* stub */
-+	if (vport->txq_grps) {
-+		int i;
-+
-+		for (i = 0; i < vport->num_txq_grp; i++) {
-+			kfree(vport->txq_grps[i].txqs);
-+			vport->txq_grps[i].txqs = NULL;
-+			kfree(vport->txq_grps[i].complq);
-+			vport->txq_grps[i].complq = NULL;
-+		}
-+		kfree(vport->txq_grps);
-+		vport->txq_grps = NULL;
-+	}
- }
- 
- /**
-@@ -579,7 +742,25 @@ static void iecm_txq_group_rel(struct iecm_vport *vport)
-  */
- static void iecm_rxq_group_rel(struct iecm_vport *vport)
- {
--	/* stub */
-+	if (vport->rxq_grps) {
-+		int i;
-+
-+		for (i = 0; i < vport->num_rxq_grp; i++) {
-+			struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
-+
-+			if (iecm_is_queue_model_split(vport->rxq_model)) {
-+				kfree(rx_qgrp->splitq.rxq_sets);
-+				rx_qgrp->splitq.rxq_sets = NULL;
-+				kfree(rx_qgrp->splitq.bufq_sets);
-+				rx_qgrp->splitq.bufq_sets = NULL;
-+			} else {
-+				kfree(rx_qgrp->singleq.rxqs);
-+				vport->rxq_grps[i].singleq.rxqs = NULL;
-+			}
-+		}
-+		kfree(vport->rxq_grps);
-+		vport->rxq_grps = NULL;
-+	}
- }
- 
- /**
-@@ -588,7 +769,8 @@ static void iecm_rxq_group_rel(struct iecm_vport *vport)
-  */
- static void iecm_vport_queue_grp_rel_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	iecm_txq_group_rel(vport);
-+	iecm_rxq_group_rel(vport);
- }
- 
- /**
-@@ -599,7 +781,12 @@ static void iecm_vport_queue_grp_rel_all(struct iecm_vport *vport)
-  */
- void iecm_vport_queues_rel(struct iecm_vport *vport)
- {
--	/* stub */
-+	iecm_tx_desc_rel_all(vport);
-+	iecm_rx_desc_rel_all(vport);
-+	iecm_vport_queue_grp_rel_all(vport);
-+
-+	kfree(vport->txqs);
-+	vport->txqs = NULL;
- }
- 
- /**
-@@ -2578,5 +2765,10 @@ int iecm_init_rss(struct iecm_vport *vport)
-  */
- void iecm_deinit_rss(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+
-+	kfree(adapter->rss_data.rss_key);
-+	adapter->rss_data.rss_key = NULL;
-+	kfree(adapter->rss_data.rss_lut);
-+	adapter->rss_data.rss_lut = NULL;
- }
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-index 484f916fa1a0..ba58b3fdc2e9 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-@@ -717,7 +717,20 @@ iecm_send_enable_vport_msg(struct iecm_vport *vport)
- enum iecm_status
- iecm_send_disable_vport_msg(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct virtchnl_vport v_id;
-+	enum iecm_status err;
-+
-+	v_id.vport_id = vport->vport_id;
-+
-+	err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_DISABLE_VPORT,
-+			       sizeof(v_id), (u8 *)&v_id);
-+
-+	if (!err)
-+		err = iecm_wait_for_event(adapter, IECM_VC_DIS_VPORT,
-+					  IECM_VC_DIS_VPORT_ERR);
-+
-+	return err;
- }
- 
- /**
++iecm-y := \
++	iecm_lib.o \
++	iecm_virtchnl.o \
++	iecm_txrx.o \
++	iecm_singleq_txrx.o \
++	iecm_ethtool.o \
++	iecm_controlq.o \
++	iecm_osdep.o \
++	iecm_controlq_setup.o \
++	iecm_main.o
 -- 
 2.21.0
 
