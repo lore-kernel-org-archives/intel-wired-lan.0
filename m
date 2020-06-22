@@ -1,162 +1,33 @@
-From: Ciara Loftus <ciara.loftus@intel.com>
-Date: Mon, 22 Jun 2020 12:46:24 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] i40e: introduce new dump
- desc xdp command
-In-Reply-To: <20200622124624.18847-1-ciara.loftus@intel.com>
-References: <20200622124624.18847-1-ciara.loftus@intel.com>
-Message-ID: <20200622124624.18847-3-ciara.loftus@intel.com>
+From: Magnus Karlsson <magnus.karlsson@intel.com>
+Date: Mon, 22 Jun 2020 15:21:21 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 0/2] i40e: improve AF_XDP
+ performance
+Message-ID: <1592832083-23249-1-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Interfaces already exist for dumping rx and tx descriptor information.
-Introduce another for doing the same for xdp descriptors.
+This small series improves AF_XDP performance for the i40e NIC. The
+first patch optimizes the Tx completion path for AF_XDP and the second
+one removes a division in the data path for the normal SKB path, XDP
+as well as AF_XDP. Overall, the throughput of the l2fwd application in
+xpdsock improves with around 4% on my machine.
 
-Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
----
- .../net/ethernet/intel/i40e/i40e_debugfs.c    | 59 +++++++++++++++----
- 1 file changed, 48 insertions(+), 11 deletions(-)
+This patch has been applied against commit 29a720c1042f ("Merge branch
+'Marvell-mvpp2-improvements'")
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 1c8285fce33f..3eb9ac7bd97d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -10,6 +10,12 @@
- 
- static struct dentry *i40e_dbg_root;
- 
-+enum ring_type {
-+	RING_TYPE_RX,
-+	RING_TYPE_TX,
-+	RING_TYPE_XDP
-+};
-+
- /**
-  * i40e_dbg_find_vsi - searches for the vsi with the given seid
-  * @pf: the PF structure to search for the vsi
-@@ -530,11 +536,12 @@ static void i40e_dbg_dump_aq_desc(struct i40e_pf *pf)
-  * @ring_id: ring id entered by user
-  * @desc_n: descriptor number entered by user
-  * @pf: the i40e_pf created in command write
-- * @is_rx_ring: true if rx, false if tx
-+ * @ring_type: enum describing whether ring is RX, TX or XDP
-  **/
- static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
--			       struct i40e_pf *pf, bool is_rx_ring)
-+			       struct i40e_pf *pf, enum ring_type type)
- {
-+	bool is_rx_ring = type == RING_TYPE_RX;
- 	struct i40e_tx_desc *txd;
- 	union i40e_rx_desc *rxd;
- 	struct i40e_ring *ring;
-@@ -546,6 +553,10 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
- 		dev_info(&pf->pdev->dev, "vsi %d not found\n", vsi_seid);
- 		return;
- 	}
-+	if (type == RING_TYPE_XDP && !i40e_enabled_xdp_vsi(vsi)) {
-+		dev_info(&pf->pdev->dev, "xdp not enabled on vsi %d\n", vsi_seid);
-+		return;
-+	}
- 	if (ring_id >= vsi->num_queue_pairs || ring_id < 0) {
- 		dev_info(&pf->pdev->dev, "ring %d not found\n", ring_id);
- 		return;
-@@ -557,15 +568,32 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
- 		return;
- 	}
- 
--	ring = kmemdup(is_rx_ring
--		       ? vsi->rx_rings[ring_id] : vsi->tx_rings[ring_id],
--		       sizeof(*ring), GFP_KERNEL);
-+	switch (type) {
-+	case RING_TYPE_RX:
-+		ring = kmemdup(vsi->rx_rings[ring_id], sizeof(*ring), GFP_KERNEL);
-+		break;
-+	case RING_TYPE_TX:
-+		ring = kmemdup(vsi->tx_rings[ring_id], sizeof(*ring), GFP_KERNEL);
-+		break;
-+	case RING_TYPE_XDP:
-+		ring = kmemdup(vsi->xdp_rings[ring_id], sizeof(*ring), GFP_KERNEL);
-+		break;
-+	}
- 	if (!ring)
- 		return;
- 
- 	if (cnt == 2) {
--		dev_info(&pf->pdev->dev, "vsi = %02i %s ring = %02i\n",
--			 vsi_seid, is_rx_ring ? "rx" : "tx", ring_id);
-+		switch (type) {
-+		case RING_TYPE_RX:
-+			dev_info(&pf->pdev->dev, "vsi = %02i rx ring = %02i\n", vsi_seid, ring_id);
-+			break;
-+		case RING_TYPE_TX:
-+			dev_info(&pf->pdev->dev, "vsi = %02i tx ring = %02i\n", vsi_seid, ring_id);
-+			break;
-+		case RING_TYPE_XDP:
-+			dev_info(&pf->pdev->dev, "vsi = %02i xdp ring = %02i\n", vsi_seid, ring_id);
-+			break;
-+		}
- 		for (i = 0; i < ring->count; i++) {
- 			if (!is_rx_ring) {
- 				txd = I40E_TX_DESC(ring, i);
-@@ -603,7 +631,7 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
- 				 rxd->read.rsvd1, rxd->read.rsvd2);
- 		}
- 	} else {
--		dev_info(&pf->pdev->dev, "dump desc rx/tx <vsi_seid> <ring_id> [<desc_n>]\n");
-+		dev_info(&pf->pdev->dev, "dump desc rx/tx/xdp <vsi_seid> <ring_id> [<desc_n>]\n");
- 	}
- 
- out:
-@@ -961,13 +989,19 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 				cnt = sscanf(&cmd_buf[12], "%i %i %i",
- 					     &vsi_seid, &ring_id, &desc_n);
- 				i40e_dbg_dump_desc(cnt, vsi_seid, ring_id,
--						   desc_n, pf, true);
-+						   desc_n, pf, RING_TYPE_RX);
- 			} else if (strncmp(&cmd_buf[10], "tx", 2)
- 					== 0) {
- 				cnt = sscanf(&cmd_buf[12], "%i %i %i",
- 					     &vsi_seid, &ring_id, &desc_n);
- 				i40e_dbg_dump_desc(cnt, vsi_seid, ring_id,
--						   desc_n, pf, false);
-+						   desc_n, pf, RING_TYPE_TX);
-+			} else if (strncmp(&cmd_buf[10], "xdp", 3)
-+					== 0) {
-+				cnt = sscanf(&cmd_buf[13], "%i %i %i",
-+					     &vsi_seid, &ring_id, &desc_n);
-+				i40e_dbg_dump_desc(cnt, vsi_seid, ring_id,
-+						   desc_n, pf, RING_TYPE_XDP);
- 			} else if (strncmp(&cmd_buf[10], "aq", 2) == 0) {
- 				i40e_dbg_dump_aq_desc(pf);
- 			} else {
-@@ -975,6 +1009,8 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 					 "dump desc tx <vsi_seid> <ring_id> [<desc_n>]\n");
- 				dev_info(&pf->pdev->dev,
- 					 "dump desc rx <vsi_seid> <ring_id> [<desc_n>]\n");
-+				dev_info(&pf->pdev->dev,
-+					 "dump desc xdp <vsi_seid> <ring_id> [<desc_n>]\n");
- 				dev_info(&pf->pdev->dev, "dump desc aq\n");
- 			}
- 		} else if (strncmp(&cmd_buf[5], "reset stats", 11) == 0) {
-@@ -1145,7 +1181,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 			buff = NULL;
- 		} else {
- 			dev_info(&pf->pdev->dev,
--				 "dump desc tx <vsi_seid> <ring_id> [<desc_n>], dump desc rx <vsi_seid> <ring_id> [<desc_n>],\n");
-+				 "dump desc tx <vsi_seid> <ring_id> [<desc_n>], dump desc rx <vsi_seid> <ring_id> [<desc_n>], dump desc xdp <vsi_seid> <ring_id> [<desc_n>],\n");
- 			dev_info(&pf->pdev->dev, "dump switch\n");
- 			dev_info(&pf->pdev->dev, "dump vsi [seid]\n");
- 			dev_info(&pf->pdev->dev, "dump reset stats\n");
-@@ -1561,6 +1597,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		dev_info(&pf->pdev->dev, "  dump vsi [seid]\n");
- 		dev_info(&pf->pdev->dev, "  dump desc tx <vsi_seid> <ring_id> [<desc_n>]\n");
- 		dev_info(&pf->pdev->dev, "  dump desc rx <vsi_seid> <ring_id> [<desc_n>]\n");
-+		dev_info(&pf->pdev->dev, "  dump desc xdp <vsi_seid> <ring_id> [<desc_n>]\n");
- 		dev_info(&pf->pdev->dev, "  dump desc aq\n");
- 		dev_info(&pf->pdev->dev, "  dump reset stats\n");
- 		dev_info(&pf->pdev->dev, "  dump debug fwdata <cluster_id> <table_id> <index>\n");
--- 
-2.17.1
+Thanks: Magnus
 
+Magnus Karlsson (2):
+  i40e: optimize AF_XDP Tx completion path
+  i40e: eliminate division in napi_poll data path
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 15 +++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 34 ++++++++++++++++-------------
+ 3 files changed, 31 insertions(+), 19 deletions(-)
+
+--
+2.7.4
