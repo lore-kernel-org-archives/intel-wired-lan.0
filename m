@@ -1,38 +1,31 @@
-From: David Miller <davem@davemloft.net>
-Date: Mon, 22 Jun 2020 15:39:13 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/4] bonding: initial
- support for hardware crypto offload
-In-Reply-To: <20200619143155.20726-1-jarod@redhat.com>
-References: <20200619143155.20726-1-jarod@redhat.com>
-Message-ID: <20200622.153913.2174708105885098663.davem@davemloft.net>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 22 Jun 2020 15:49:43 -0700
+Subject: [Intel-wired-lan] [PATCH 03/11] net: devres: relax
+ devm_register_netdev()
+In-Reply-To: <20200622100056.10151-4-brgl@bgdev.pl>
+References: <20200622100056.10151-1-brgl@bgdev.pl>
+ <20200622100056.10151-4-brgl@bgdev.pl>
+Message-ID: <20200622154943.02782b5a@kicinski-fedora-PC1C0HJN>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jarod Wilson <jarod@redhat.com>
-Date: Fri, 19 Jun 2020 10:31:51 -0400
-
-> This is an initial functional implementation for doing pass-through of
-> hardware encryption from bonding device to capable slaves, in active-backup
-> bond setups. This was developed and tested using ixgbe-driven Intel x520
-> interfaces with libreswan and a transport mode connection, primarily using
-> netperf, with assorted connection failures forced during transmission. The
-> failover works quite well in my testing, and overall performance is right
-> on par with offload when running on a bare interface, no bond involved.
+On Mon, 22 Jun 2020 12:00:48 +0200 Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > 
-> Caveats: this is ONLY enabled for active-backup, because I'm not sure
-> how one would manage multiple offload handles for different devices all
-> running at the same time in the same xfrm, and it relies on some minor
-> changes to both the xfrm code and slave device driver code to get things
-> to behave, and I don't have immediate access to any other hardware that
-> could function similarly, but the NIC driver changes are minimal and
-> straight-forward enough that I've included what I think ought to be
-> enough for mlx5 devices too.
+> This devres helper registers a release callback that only unregisters
+> the net_device. It works perfectly fine with netdev structs that are
+> not managed on their own. There's no reason to check this - drop the
+> warning.
 > 
-> v2: reordered patches, switched (back) to using CONFIG_XFRM_OFFLOAD
-> to wrap the code additions and wrapped overlooked additions.
-> v3: rebase w/net-next open, add proper cc list to cover letter
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Series applied, thanks.
+I think the reasoning for this suggestion was to catch possible UAF
+errors. The netdev doesn't necessarily has to be from devm_alloc_* 
+but it has to be part of devm-ed memory or memory which is freed 
+after driver's remove callback.
+
+Are there cases in practice where you've seen the netdev not being
+devm allocated?
