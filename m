@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jun 2020 12:00:55 +0200
-Subject: [Intel-wired-lan] [PATCH 10/11] of: mdio: provide
- devm_of_mdiobus_register()
+Date: Mon, 22 Jun 2020 12:00:47 +0200
+Subject: [Intel-wired-lan] [PATCH 02/11] net: ethernet: ixgbe: don't call
+ devm_mdiobus_free()
 In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
 References: <20200622100056.10151-1-brgl@bgdev.pl>
-Message-ID: <20200622100056.10151-11-brgl@bgdev.pl>
+Message-ID: <20200622100056.10151-3-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,105 +13,55 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Implement a managed variant of of_mdiobus_register(). We need to
-reimplement the devres structure and the release callback because we
-can't put this function in drivers/net/phy/mdio_devres.c or we'd hit
-circular dependencies between module symbols. We also don't want to
-build this bit if OF is not selected in Kconfig.
+The idea behind devres is that the release callbacks are called if
+probe fails. As we now check the return value of ixgbe_mii_bus_init(),
+we can drop the call devm_mdiobus_free() in error path as the release
+callback will be called automatically.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- .../driver-api/driver-model/devres.rst        |  1 +
- drivers/of/of_mdio.c                          | 43 +++++++++++++++++++
- include/linux/of_mdio.h                       |  3 ++
- 3 files changed, 47 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/driver-api/driver-model/devres.rst b/Documentation/driver-api/driver-model/devres.rst
-index e0333d66a7f4..eaaaafc21134 100644
---- a/Documentation/driver-api/driver-model/devres.rst
-+++ b/Documentation/driver-api/driver-model/devres.rst
-@@ -343,6 +343,7 @@ MDIO
-   devm_mdiobus_alloc()
-   devm_mdiobus_alloc_size()
-   devm_mdiobus_register()
-+  devm_of_mdiobus_register()
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 2fb97967961c..7980d7265e10 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -905,7 +905,6 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct device *dev = &adapter->netdev->dev;
+ 	struct mii_bus *bus;
+-	int err = -ENODEV;
  
- MEM
-   devm_free_pages()
-diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-index a04afe79529c..83e98c6ec96b 100644
---- a/drivers/of/of_mdio.c
-+++ b/drivers/of/of_mdio.c
-@@ -330,6 +330,49 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
+ 	bus = devm_mdiobus_alloc(dev);
+ 	if (!bus)
+@@ -923,7 +922,7 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
+ 	case IXGBE_DEV_ID_X550EM_A_1G_T:
+ 	case IXGBE_DEV_ID_X550EM_A_1G_T_L:
+ 		if (!ixgbe_x550em_a_has_mii(hw))
+-			goto ixgbe_no_mii_bus;
++			return -ENODEV;
+ 		bus->read = &ixgbe_x550em_a_mii_bus_read;
+ 		bus->write = &ixgbe_x550em_a_mii_bus_write;
+ 		break;
+@@ -948,15 +947,8 @@ s32 ixgbe_mii_bus_init(struct ixgbe_hw *hw)
+ 	 */
+ 	hw->phy.mdio.mode_support = MDIO_SUPPORTS_C45 | MDIO_SUPPORTS_C22;
+ 
+-	err = mdiobus_register(bus);
+-	if (!err) {
+-		adapter->mii_bus = bus;
+-		return 0;
+-	}
+-
+-ixgbe_no_mii_bus:
+-	devm_mdiobus_free(dev, bus);
+-	return err;
++	adapter->mii_bus = bus;
++	return mdiobus_register(bus);
  }
- EXPORT_SYMBOL(of_mdiobus_register);
  
-+/* This duplicates the devres code from drivers/net/phy/mdio_devres.c but
-+ * if we put devm_of_mdiobus_register() over there we'd hit circular symbol
-+ * dependencies between the libphy and of_mdio modules.
-+ */
-+struct mdiobus_devres {
-+	struct mii_bus *mii;
-+};
-+
-+static void devm_mdiobus_unregister(struct device *dev, void *this)
-+{
-+	struct mdiobus_devres *dr = this;
-+
-+	mdiobus_unregister(dr->mii);
-+}
-+
-+/**
-+ * devm_of_mdiobus_register - Resource managed variant of of_mdiobus_register()
-+ * @dev:	Device to register mii_bus for
-+ * @mdio:	MII bus structure to register
-+ * @np:		Device node to parse
-+ */
-+int devm_of_mdiobus_register(struct device *dev, struct mii_bus *mdio,
-+			     struct device_node *np)
-+{
-+	struct mdiobus_devres *dr;
-+	int ret;
-+
-+	dr = devres_alloc(devm_mdiobus_unregister, sizeof(*dr), GFP_KERNEL);
-+	if (!dr)
-+		return -ENOMEM;
-+
-+	ret = of_mdiobus_register(mdio, np);
-+	if (ret) {
-+		devres_free(dr);
-+		return ret;
-+	}
-+
-+	dr->mii = mdio;
-+	devres_add(dev, dr);
-+	return 0;
-+}
-+EXPORT_SYMBOL(devm_of_mdiobus_register);
-+
  /**
-  * of_phy_find_device - Give a PHY node, find the phy_device
-  * @phy_np: Pointer to the phy's device tree node
-diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
-index ba8e157f24ad..1efb88d9f892 100644
---- a/include/linux/of_mdio.h
-+++ b/include/linux/of_mdio.h
-@@ -8,12 +8,15 @@
- #ifndef __LINUX_OF_MDIO_H
- #define __LINUX_OF_MDIO_H
- 
-+#include <linux/device.h>
- #include <linux/phy.h>
- #include <linux/of.h>
- 
- #if IS_ENABLED(CONFIG_OF_MDIO)
- bool of_mdiobus_child_is_phy(struct device_node *child);
- int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np);
-+int devm_of_mdiobus_register(struct device *dev, struct mii_bus *mdio,
-+			     struct device_node *np);
- struct phy_device *of_phy_find_device(struct device_node *phy_np);
- struct phy_device *
- of_phy_connect(struct net_device *dev, struct device_node *phy_np,
 -- 
 2.26.1
 
