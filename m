@@ -1,52 +1,43 @@
-From: Magnus Karlsson <magnus.karlsson@intel.com>
-Date: Mon, 22 Jun 2020 15:21:23 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] i40e: eliminate division in
- napi_poll data path
-In-Reply-To: <1592832083-23249-1-git-send-email-magnus.karlsson@intel.com>
-References: <1592832083-23249-1-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <1592832083-23249-3-git-send-email-magnus.karlsson@intel.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jun 2020 12:00:52 +0200
+Subject: [Intel-wired-lan] [PATCH 07/11] phy: mdio: add kerneldoc for
+ __devm_mdiobus_register()
+In-Reply-To: <20200622100056.10151-1-brgl@bgdev.pl>
+References: <20200622100056.10151-1-brgl@bgdev.pl>
+Message-ID: <20200622100056.10151-8-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Eliminate a division in the napi_poll data path. This division is
-executed even though it is only needed in the rare case when there are
-not enough interrupt lines so they have to be shared between queue
-pairs. Instead, just test for this case and only execute the division
-if needed. The code has been lifted from the ice driver.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+This function is not documented. Add a short kerneldoc description.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/phy/mdio_devres.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 0ce9d1e..da73a7d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2595,10 +2595,16 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 	if (budget <= 0)
- 		goto tx_only;
+diff --git a/drivers/net/phy/mdio_devres.c b/drivers/net/phy/mdio_devres.c
+index f0b4b6cfe5e3..3ee887733d4a 100644
+--- a/drivers/net/phy/mdio_devres.c
++++ b/drivers/net/phy/mdio_devres.c
+@@ -2,6 +2,13 @@
  
--	/* We attempt to distribute budget to each Rx queue fairly, but don't
--	 * allow the budget to go below 1 because that would exit polling early.
--	 */
--	budget_per_ring = max(budget/q_vector->num_ringpairs, 1);
-+	/* normally we have 1 Rx ring per q_vector */
-+	if (unlikely(q_vector->num_ringpairs > 1))
-+		/* We attempt to distribute budget to each Rx queue fairly, but
-+		 * don't allow the budget to go below 1 because that would exit
-+		 * polling early.
-+		 */
-+		budget_per_ring = max_t(int, budget / q_vector->num_ringpairs, 1);
-+	else
-+		/* Max of 1 Rx ring in this q_vector so give it the budget */
-+		budget_per_ring = budget;
+ #include <linux/phy.h>
  
- 	i40e_for_each_ring(ring, q_vector->rx) {
- 		int cleaned = ring->xsk_umem ?
++/**
++ * __devm_mdiobus_register - Resource-managed variant of mdiobus_register()
++ * @bus:	MII bus structure to register
++ * @owner:	Owning module
++ *
++ * Returns 0 on success, negative error number on failure.
++ */
+ int __devm_mdiobus_register(struct mii_bus *bus, struct module *owner)
+ {
+ 	int ret;
 -- 
-2.7.4
+2.26.1
 
