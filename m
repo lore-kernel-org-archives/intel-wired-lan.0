@@ -1,58 +1,115 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 23 Jun 2020 13:16:28 -0700
-Subject: [Intel-wired-lan] [PATCH 03/11] net: devres: relax
- devm_register_netdev()
-In-Reply-To: <CAMRc=MfF1RbQCJ62QhscFLu1HKYRc9M-2SMep1_vTJ2xhKjLAA@mail.gmail.com>
-References: <20200622100056.10151-1-brgl@bgdev.pl>
- <20200622100056.10151-4-brgl@bgdev.pl>
- <20200622154943.02782b5a@kicinski-fedora-PC1C0HJN>
- <CAMRc=MfF1RbQCJ62QhscFLu1HKYRc9M-2SMep1_vTJ2xhKjLAA@mail.gmail.com>
-Message-ID: <20200623131628.232ec75e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Tue, 23 Jun 2020 08:43:19 -0700
+Subject: [Intel-wired-lan] [next-queue,v4, 00/14]
+Message-ID: <20200623154333.55166-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 23 Jun 2020 11:12:24 +0200 Bartosz Golaszewski wrote:
-> wt., 23 cze 2020 o 00:49 Jakub Kicinski <kuba@kernel.org> napisa?(a):
-> > On Mon, 22 Jun 2020 12:00:48 +0200 Bartosz Golaszewski wrote:  
-> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > >
-> > > This devres helper registers a release callback that only unregisters
-> > > the net_device. It works perfectly fine with netdev structs that are
-> > > not managed on their own. There's no reason to check this - drop the
-> > > warning.
-> > >
-> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>  
-> >
-> > I think the reasoning for this suggestion was to catch possible UAF
-> > errors. The netdev doesn't necessarily has to be from devm_alloc_*
-> > but it has to be part of devm-ed memory or memory which is freed
-> > after driver's remove callback.
-> >  
-> 
-> Yes I understand that UAF was the concern here, but this limitation is
-> unnecessary. In its current form devm_register_netdev() only works for
-> struct net_device allocated with devm_alloc_etherdev(). Meanwhile
-> calling alloc_netdev() (which doesn't have its devm counterpart yet -
-> I may look into it shortly),
+This series introduces both the Intel Ethernet Common Module and the 
+Intel Data Plane Function.  The patches also incorporate extended 
+features and functionality added in the virtchnl.h file.
+ 
+The format of the series flow is to add the data set, then introduce 
+function stubs and finally introduce pieces in large cohesive subjects or
+functionality. This is to allow for more in depth understanding and review
+of the bigger picture as the series is reviewed.
+ 
+Currently this is common layer (iecm) is initially only being used by 
+only the idpf driver (PF driver for SmartNIC).  However, the plan is 
+to eventually switch our iavf driver along with future drivers to use 
+this common module.  The hope is to better enable code sharing going 
+forward as well as support other developers writing drivers for our 
+hardware
 
-If resource managed alloc_netdev() is needed devm_alloc_netdev() can
-be created, and even reuse devm_free_netdev() so no changes to the
-warning are even necessary for such extension.
+V3 -- Addresses comments from the original series.  This inncludes removing
+      the iecm_ctlq_err in iecm_ctlq_api.h, the private flags and duplicated
+      checks, and cleaning up the clamps in iecm_ethtool.c.  We also added
+      the supported_coalesce_params flags in iecm_ethtool.c.  Finally, we
+      got the headers cleaned up and addressed mismatching types from calls
+      to cpu_to_le to match the types (this fixes C=2 W=1 errors that were
+      reported).
 
-> then registering a devm action with devm_add_action_or_reset() which
-> would free this memory is a perfectly fine use case. This patch would
-> make it possible.
+V4 -- Missed static in idpf_main.c on idpf_probe
 
-alloc_netdev() + devm_add_action makes no sense in the upstream kernel,
-just add the appropriate helper, we care little about out of tree code.
+Alan Brady (1):
+  idpf: Introduce idpf driver
+ 
+Alice Michael (14):
+  virtchnl: Extend AVF ops
+  iecm: Add framework set of header files
+  iecm: Add TX/RX header files
+  iecm: Common module introduction and function stubs
+  iecm: Add basic netdevice functionality
+  iecm: Implement mailbox functionality
+  iecm: Implement virtchnl commands
+  iecm: Implement vector allocation
+  iecm: Init and allocate vport
+  iecm: Deinit vport
+  iecm: Add splitq TX/RX
+  iecm: Add singleq TX/RX
+  iecm: Add ethtool
+  iecm: Add iecm to the kernel build system
 
-> > Are there cases in practice where you've seen the netdev not being
-> > devm allocated?  
-> 
-> As I said above - alloc_netdev() used by wireless, can, usb etc.
-> drivers doesn't have a devres variant.
+ .../networking/device_drivers/intel/idpf.rst  |   47 +
+ .../networking/device_drivers/intel/iecm.rst  |   93 +
+ MAINTAINERS                                   |    3 +
+ drivers/net/ethernet/intel/Kconfig            |   15 +
+ drivers/net/ethernet/intel/Makefile           |    2 +
+ drivers/net/ethernet/intel/idpf/Makefile      |   12 +
+ drivers/net/ethernet/intel/idpf/idpf_dev.h    |   17 +
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |   10 +
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |  136 +
+ drivers/net/ethernet/intel/idpf/idpf_reg.c    |  152 +
+ drivers/net/ethernet/intel/iecm/Makefile      |   19 +
+ .../net/ethernet/intel/iecm/iecm_controlq.c   |  669 +++
+ .../ethernet/intel/iecm/iecm_controlq_setup.c |  177 +
+ .../net/ethernet/intel/iecm/iecm_ethtool.c    | 1064 +++++
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    | 1093 +++++
+ drivers/net/ethernet/intel/iecm/iecm_main.c   |   50 +
+ drivers/net/ethernet/intel/iecm/iecm_osdep.c  |   28 +
+ .../ethernet/intel/iecm/iecm_singleq_txrx.c   |  892 ++++
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 3961 +++++++++++++++++
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   | 2262 ++++++++++
+ include/linux/net/intel/iecm.h                |  433 ++
+ include/linux/net/intel/iecm_alloc.h          |   29 +
+ include/linux/net/intel/iecm_controlq.h       |   95 +
+ include/linux/net/intel/iecm_controlq_api.h   |  188 +
+ include/linux/net/intel/iecm_lan_pf_regs.h    |  120 +
+ include/linux/net/intel/iecm_lan_txrx.h       |  636 +++
+ include/linux/net/intel/iecm_osdep.h          |   24 +
+ include/linux/net/intel/iecm_txrx.h           |  581 +++
+ include/linux/net/intel/iecm_type.h           |   47 +
+ 29 files changed, 12855 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/intel/idpf.rst
+ create mode 100644 Documentation/networking/device_drivers/intel/iecm.rst
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_reg.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/Makefile
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_controlq.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_lib.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_main.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_osdep.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+ create mode 100644 include/linux/net/intel/iecm.h
+ create mode 100644 include/linux/net/intel/iecm_alloc.h
+ create mode 100644 include/linux/net/intel/iecm_controlq.h
+ create mode 100644 include/linux/net/intel/iecm_controlq_api.h
+ create mode 100644 include/linux/net/intel/iecm_lan_pf_regs.h
+ create mode 100644 include/linux/net/intel/iecm_lan_txrx.h
+ create mode 100644 include/linux/net/intel/iecm_osdep.h
+ create mode 100644 include/linux/net/intel/iecm_txrx.h
+ create mode 100644 include/linux/net/intel/iecm_type.h
 
+-- 
+2.21.0
 
