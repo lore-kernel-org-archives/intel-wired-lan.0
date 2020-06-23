@@ -1,191 +1,144 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Tue, 23 Jun 2020 07:02:35 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] i40e: optimize AF_XDP Tx
- completion path
-In-Reply-To: <57effc14-afed-51c8-9926-686d1cdea803@intel.com>
-References: <1592832083-23249-1-git-send-email-magnus.karlsson@intel.com>
- <1592832083-23249-2-git-send-email-magnus.karlsson@intel.com>
- <57effc14-afed-51c8-9926-686d1cdea803@intel.com>
-Message-ID: <CAJ8uoz1jNy==6qw8Yjx5C8wwHORE8RkcXmhuih0xcwnhpb=Fqg@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 23 Jun 2020 15:41:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 941a98df2638c216be175cd4d9a7e6eea876f38b
+Message-ID: <5ef1b235.Y8pgZFe5pmZ6kOGV%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 23, 2020 at 3:00 AM Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
->
->
->
-> On 6/22/2020 6:21 AM, Magnus Karlsson wrote:
-> > Improve the performance of the AF_XDP zero-copy Tx completion
-> > path. When there are no XDP buffers being sent using XDP_TX or
-> > XDP_REDIRECT, we do not have go through the SW ring to clean up any
-> > entries since the AF_XDP path does not use these. In these cases, just
-> > fast forward the next-to-use counter and skip going through the SW
-> > ring. The limit on the maximum number of entries to complete is also
-> > removed since the algorithm is now O(1). To simplify the code path, the
-> > maximum number of entries to complete for the XDP path is therefore
-> > also increased from 256 to 512 (the default number of Tx HW
-> > descriptors). This should be fine since the completion in the XDP path
-> > is faster than in the SKB path that has 256 as the maximum number.
-> >
-> > This patch provides around 4% throughput improvement for the l2fwd
-> > application in xdpsock on my machine.
-> >
-> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/i40e/i40e_txrx.c |  1 +
-> >   drivers/net/ethernet/intel/i40e/i40e_txrx.h |  1 +
-> >   drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 34 ++++++++++++++++-------------
-> >   3 files changed, 21 insertions(+), 15 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > index f9555c8..0ce9d1e 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > @@ -3538,6 +3538,7 @@ static int i40e_xmit_xdp_ring(struct xdp_frame *xdpf,
-> >        */
-> >       smp_wmb();
-> >
-> > +     xdp_ring->xdp_tx_active++;
-> >       i++;
-> >       if (i == xdp_ring->count)
-> >               i = 0;
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > index 5c25597..c16fcd9 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > @@ -371,6 +371,7 @@ struct i40e_ring {
-> >       /* used in interrupt processing */
-> >       u16 next_to_use;
-> >       u16 next_to_clean;
-> > +     u16 xdp_tx_active;
-> >
-> >       u8 atr_sample_rate;
-> >       u8 atr_count;
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > index 7276580..c8cd6a6 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > @@ -378,6 +378,7 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
-> >    **/
-> >   static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
-> >   {
-> > +     unsigned int sent_frames = 0, total_bytes = 0;
-> >       struct i40e_tx_desc *tx_desc = NULL;
-> >       struct i40e_tx_buffer *tx_bi;
-> >       bool work_done = true;
-> > @@ -408,6 +409,9 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
-> >                                  | I40E_TX_DESC_CMD_EOP,
-> >                                  0, desc.len, 0);
-> >
-> > +             sent_frames++;
-> > +             total_bytes += tx_bi->bytecount;
-> > +
-> >               xdp_ring->next_to_use++;
-> >               if (xdp_ring->next_to_use == xdp_ring->count)
-> >                       xdp_ring->next_to_use = 0;
-> > @@ -420,6 +424,7 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
-> >               i40e_xdp_ring_update_tail(xdp_ring);
-> >
-> >               xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
-> > +             i40e_update_tx_stats(xdp_ring, sent_frames, total_bytes);
-> >       }
-> >
-> >       return !!budget && work_done;
-> > @@ -434,6 +439,7 @@ static void i40e_clean_xdp_tx_buffer(struct i40e_ring *tx_ring,
-> >                                    struct i40e_tx_buffer *tx_bi)
-> >   {
-> >       xdp_return_frame(tx_bi->xdpf);
-> > +     tx_ring->xdp_tx_active--;
-> >       dma_unmap_single(tx_ring->dev,
-> >                        dma_unmap_addr(tx_bi, dma),
-> >                        dma_unmap_len(tx_bi, len), DMA_TO_DEVICE);
-> > @@ -450,24 +456,23 @@ static void i40e_clean_xdp_tx_buffer(struct i40e_ring *tx_ring,
-> >   bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
-> >                          struct i40e_ring *tx_ring, int napi_budget)
->
-> napi_budget is not used. so the 3rd arg can be removed
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 941a98df2638c216be175cd4d9a7e6eea876f38b  ice: Fix a couple off by one bugs
 
-Thanks Sridhar. You are correct on all accounts in this mail. Will fix
-and send a v2.
+elapsed time: 724m
 
-/Magnus
+configs tested: 118
+configs skipped: 8
 
-> >   {
-> > -     unsigned int ntc, total_bytes = 0, budget = vsi->work_limit;
-> > -     u32 i, completed_frames, frames_ready, xsk_frames = 0;
-> > +     unsigned int ntc, budget = vsi->work_limit;
-> >       struct xdp_umem *umem = tx_ring->xsk_umem;
-> > +     u32 i, completed_frames, xsk_frames = 0;
-> >       u32 head_idx = i40e_get_head(tx_ring);
-> >       bool work_done = true, xmit_done;
->
-> work_done is no longer required
->
-> >       struct i40e_tx_buffer *tx_bi;
-> >
-> >       if (head_idx < tx_ring->next_to_clean)
-> >               head_idx += tx_ring->count;
-> > -     frames_ready = head_idx - tx_ring->next_to_clean;
-> > +     completed_frames = head_idx - tx_ring->next_to_clean;
-> >
-> > -     if (frames_ready == 0) {
-> > +     if (completed_frames == 0)
-> >               goto out_xmit;
-> > -     } else if (frames_ready > budget) {
-> > -             completed_frames = budget;
-> > -             work_done = false;
-> > -     } else {
-> > -             completed_frames = frames_ready;
-> > +
-> > +     if (likely(!tx_ring->xdp_tx_active)) {
-> > +             xsk_frames = completed_frames;
-> > +             goto skip;
-> >       }
-> >
-> >       ntc = tx_ring->next_to_clean;
-> > @@ -475,18 +480,18 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
-> >       for (i = 0; i < completed_frames; i++) {
-> >               tx_bi = &tx_ring->tx_bi[ntc];
-> >
-> > -             if (tx_bi->xdpf)
-> > +             if (tx_bi->xdpf) {
-> >                       i40e_clean_xdp_tx_buffer(tx_ring, tx_bi);
-> > -             else
-> > +                     tx_bi->xdpf = NULL;
-> > +             } else {
-> >                       xsk_frames++;
-> > -
-> > -             tx_bi->xdpf = NULL;
-> > -             total_bytes += tx_bi->bytecount;
-> > +             }
-> >
-> >               if (++ntc >= tx_ring->count)
-> >                       ntc = 0;
-> >       }
-> >
-> > +skip:
-> >       tx_ring->next_to_clean += completed_frames;
-> >       if (unlikely(tx_ring->next_to_clean >= tx_ring->count))
-> >               tx_ring->next_to_clean -= tx_ring->count;
-> > @@ -495,7 +500,6 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi,
-> >               xsk_umem_complete_tx(umem, xsk_frames);
-> >
-> >       i40e_arm_wb(tx_ring, vsi, budget);
->
-> I guess budget here should be replaced with completed_frames
->
-> > -     i40e_update_tx_stats(tx_ring, completed_frames, total_bytes);
-> >
-> >   out_xmit:
-> >       if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem))
->
->
-> >
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+mips                malta_kvm_guest_defconfig
+sh                          rsk7203_defconfig
+arc                         haps_hs_defconfig
+xtensa                          iss_defconfig
+arm                          lpd270_defconfig
+arm                         s3c6400_defconfig
+xtensa                           alldefconfig
+sh                  sh7785lcr_32bit_defconfig
+arm                           h3600_defconfig
+sh                          sdk7780_defconfig
+x86_64                              defconfig
+xtensa                    xip_kc705_defconfig
+arm                        keystone_defconfig
+arm                       versatile_defconfig
+m68k                            mac_defconfig
+sh                           sh2007_defconfig
+mips                        omega2p_defconfig
+powerpc                          g5_defconfig
+c6x                         dsk6455_defconfig
+arm                          tango4_defconfig
+powerpc                      ppc44x_defconfig
+m68k                             allyesconfig
+arm                          gemini_defconfig
+powerpc                 mpc8272_ads_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+sh                          rsk7264_defconfig
+mips                          malta_defconfig
+sparc64                             defconfig
+mips                    maltaup_xpa_defconfig
+alpha                               defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20200622
+i386                 randconfig-a002-20200622
+i386                 randconfig-a003-20200622
+i386                 randconfig-a001-20200622
+i386                 randconfig-a005-20200622
+i386                 randconfig-a004-20200622
+i386                 randconfig-a016-20200622
+i386                 randconfig-a012-20200622
+i386                 randconfig-a014-20200622
+i386                 randconfig-a015-20200622
+i386                 randconfig-a011-20200622
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                                  defconfig
+um                               allyesconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
