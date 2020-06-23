@@ -1,18 +1,17 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Tue, 23 Jun 2020 08:43:20 -0700
+Date: Tue, 23 Jun 2020 08:43:24 -0700
 Subject: [Intel-wired-lan] [net-next, v4,
- 01/14] iecm: Add framework set of header files
+ 05/14] iecm: Implement mailbox functionality
 In-Reply-To: <20200623154333.55166-1-alice.michael@intel.com>
 References: <20200623154333.55166-1-alice.michael@intel.com>
-Message-ID: <20200623154333.55166-2-alice.michael@intel.com>
+Message-ID: <20200623154333.55166-6-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduces the framework of data for the driver common
-module.
+Implement mailbox setup, take down, and commands.
 
 Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
@@ -25,872 +24,1344 @@ Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- include/linux/net/intel/iecm.h              | 433 ++++++++++++++++++++
- include/linux/net/intel/iecm_alloc.h        |  29 ++
- include/linux/net/intel/iecm_controlq.h     |  95 +++++
- include/linux/net/intel/iecm_controlq_api.h | 188 +++++++++
- include/linux/net/intel/iecm_osdep.h        |  24 ++
- include/linux/net/intel/iecm_type.h         |  47 +++
- 6 files changed, 816 insertions(+)
- create mode 100644 include/linux/net/intel/iecm.h
- create mode 100644 include/linux/net/intel/iecm_alloc.h
- create mode 100644 include/linux/net/intel/iecm_controlq.h
- create mode 100644 include/linux/net/intel/iecm_controlq_api.h
- create mode 100644 include/linux/net/intel/iecm_osdep.h
- create mode 100644 include/linux/net/intel/iecm_type.h
+ .../net/ethernet/intel/iecm/iecm_controlq.c   | 497 +++++++++++++++++-
+ .../ethernet/intel/iecm/iecm_controlq_setup.c | 105 +++-
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    |  71 ++-
+ drivers/net/ethernet/intel/iecm/iecm_osdep.c  |  17 +-
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   | 427 ++++++++++++++-
+ 5 files changed, 1088 insertions(+), 29 deletions(-)
 
-diff --git a/include/linux/net/intel/iecm.h b/include/linux/net/intel/iecm.h
-new file mode 100644
-index 000000000000..f785e7c26f1f
---- /dev/null
-+++ b/include/linux/net/intel/iecm.h
-@@ -0,0 +1,433 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Copyright (C) 2020 Intel Corporation */
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_controlq.c b/drivers/net/ethernet/intel/iecm/iecm_controlq.c
+index 85ae216e8350..1ce5f4d4c348 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_controlq.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_controlq.c
+@@ -14,7 +14,15 @@ static void
+ iecm_ctlq_setup_regs(struct iecm_ctlq_info *cq,
+ 		     struct iecm_ctlq_create_info *q_create_info)
+ {
+-	/* stub */
++	/* set head and tail registers in our local struct */
++	cq->reg.head = q_create_info->reg.head;
++	cq->reg.tail = q_create_info->reg.tail;
++	cq->reg.len = q_create_info->reg.len;
++	cq->reg.bah = q_create_info->reg.bah;
++	cq->reg.bal = q_create_info->reg.bal;
++	cq->reg.len_mask = q_create_info->reg.len_mask;
++	cq->reg.len_ena_mask = q_create_info->reg.len_ena_mask;
++	cq->reg.head_mask = q_create_info->reg.head_mask;
+ }
+ 
+ /**
+@@ -30,7 +38,32 @@ static enum iecm_status iecm_ctlq_init_regs(struct iecm_hw *hw,
+ 					    struct iecm_ctlq_info *cq,
+ 					    bool is_rxq)
+ {
+-	/* stub */
++	u32 reg = 0;
 +
-+#ifndef _IECM_H_
-+#define _IECM_H_
++	if (is_rxq)
++		/* Update tail to post pre-allocated buffers for Rx queues */
++		wr32(hw, cq->reg.tail, (u32)(cq->ring_size - 1));
++	else
++		wr32(hw, cq->reg.tail, 0);
 +
-+#include <linux/aer.h>
-+#include <linux/bitmap.h>
-+#include <linux/compiler.h>
-+#include <linux/cpumask.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/errno.h>
-+#include <linux/etherdevice.h>
-+#include <linux/ethtool.h>
-+#include <linux/if_bridge.h>
-+#include <linux/if_vlan.h>
-+#include <linux/interrupt.h>
-+#include <linux/ip.h>
-+#include <linux/ipv6.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
-+#include <linux/log2.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/netdevice.h>
-+#include <linux/pci.h>
-+#include <linux/pkt_sched.h>
-+#include <linux/rtnetlink.h>
-+#include <linux/sctp.h>
-+#include <linux/skbuff.h>
-+#include <linux/string.h>
-+#include <linux/timer.h>
-+#include <linux/types.h>
-+#include <linux/workqueue.h>
-+#include <net/tcp.h>
-+#include <net/ipv6.h>
-+#include <net/ip6_checksum.h>
-+#include <linux/prefetch.h>
-+#include <net/pkt_sched.h>
++	/* For non-Mailbox control queues only TAIL need to be set */
++	if (cq->q_id != -1)
++		return 0;
 +
-+#include <net/gre.h>
-+#include <net/udp_tunnel.h>
-+#include <linux/avf/virtchnl.h>
++	/* Clear Head for both send or receive */
++	wr32(hw, cq->reg.head, 0);
 +
-+#include <linux/net/intel/iecm_osdep.h>
-+#include <linux/net/intel/iecm_controlq_api.h>
-+#include <linux/net/intel/iecm_lan_txrx.h>
++	/* set starting point */
++	wr32(hw, cq->reg.bal, IECM_LO_DWORD(cq->desc_ring.pa));
++	wr32(hw, cq->reg.bah, IECM_HI_DWORD(cq->desc_ring.pa));
++	wr32(hw, cq->reg.len, (cq->ring_size | cq->reg.len_ena_mask));
 +
-+#include <linux/net/intel/iecm_txrx.h>
-+#include <linux/net/intel/iecm_type.h>
++	/* Check one register to verify that config was applied */
++	reg = rd32(hw, cq->reg.bah);
++	if (reg != IECM_HI_DWORD(cq->desc_ring.pa))
++		return IECM_ERR_CTLQ_ERROR;
 +
-+extern const char iecm_drv_ver[];
-+extern char iecm_drv_name[];
-+extern int debug;
-+
-+#define IECM_BAR0	0
-+#define IECM_NO_FREE_SLOT	0xffff
-+
-+/* Default Mailbox settings */
-+#define IECM_DFLT_MBX_BUF_SIZE	(1 * 1024)
-+#define IECM_NUM_QCTX_PER_MSG	3
-+#define IECM_DFLT_MBX_Q_LEN	64
-+#define IECM_DFLT_MBX_ID	-1
-+/* maximum number of times to try before resetting mailbox */
-+#define IECM_MB_MAX_ERR	20
-+
-+#define IECM_MAX_NUM_VPORTS	1
-+
-+/* default message levels */
-+#define IECM_DFLT_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
-+
-+/* Forward declaration */
-+struct iecm_adapter;
-+
-+enum iecm_state {
-+	__IECM_STARTUP,
-+	__IECM_VER_CHECK,
-+	__IECM_GET_RES,
-+	__IECM_GET_CAPS,
-+	__IECM_GET_DFLT_VPORT_PARAMS,
-+	__IECM_INIT_SW,
-+	__IECM_DOWN,
-+	__IECM_UP,
-+	__IECM_REMOVE,
-+	__IECM_STATE_LAST /* this member MUST be last */
-+};
-+
-+enum iecm_flags {
-+	/* Soft reset causes */
-+	__IECM_SR_Q_CHANGE, /* Soft reset to do queue change */
-+	__IECM_SR_Q_DESC_CHANGE,
-+	__IECM_SR_Q_SCH_CHANGE, /* Scheduling mode change in queue context */
-+	__IECM_SR_MTU_CHANGE,
-+	__IECM_SR_TC_CHANGE,
-+	/* Hard reset causes */
-+	__IECM_HR_FUNC_RESET, /* Hard reset when txrx timeout */
-+	__IECM_HR_CORE_RESET, /* when reset event is received on virtchannel */
-+	__IECM_HR_DRV_LOAD, /* Set on driver load for a clean HW */
-+	/* Generic bits to share a message */
-+	__IECM_DEL_QUEUES,
-+	__IECM_UP_REQUESTED, /* Set if open to be called explicitly by driver */
-+	/* Mailbox interrupt event */
-+	__IECM_MB_INTR_MODE,
-+	__IECM_MB_INTR_TRIGGER,
-+	/* must be last */
-+	__IECM_FLAGS_NBITS,
-+};
-+
-+struct iecm_netdev_priv {
-+	struct iecm_vport *vport;
-+};
-+
-+struct iecm_reset_reg {
-+	u32 rstat;
-+	u32 rstat_m;
-+};
-+
-+/* product specific register API */
-+struct iecm_reg_ops {
-+	void (*ctlq_reg_init)(struct iecm_ctlq_create_info *cq);
-+	void (*vportq_reg_init)(struct iecm_vport *vport);
-+	void (*intr_reg_init)(struct iecm_vport *vport);
-+	void (*mb_intr_reg_init)(struct iecm_adapter *adapter);
-+	void (*reset_reg_init)(struct iecm_reset_reg *reset_reg);
-+	void (*trigger_reset)(struct iecm_adapter *adapter,
-+			      enum iecm_flags trig_cause);
-+};
-+
-+struct iecm_virtchnl_ops {
-+	int (*core_init)(struct iecm_adapter *adapter, int *vport_id);
-+	void (*vport_init)(struct iecm_vport *vport, int vport_id);
-+	enum iecm_status (*vport_queue_ids_init)(struct iecm_vport *vport);
-+	enum iecm_status (*get_caps)(struct iecm_adapter *adapter);
-+	enum iecm_status (*config_queues)(struct iecm_vport *vport);
-+	enum iecm_status (*enable_queues)(struct iecm_vport *vport);
-+	enum iecm_status (*disable_queues)(struct iecm_vport *vport);
-+	enum iecm_status (*irq_map_unmap)(struct iecm_vport *vport, bool map);
-+	enum iecm_status (*enable_vport)(struct iecm_vport *vport);
-+	enum iecm_status (*disable_vport)(struct iecm_vport *vport);
-+	enum iecm_status (*destroy_vport)(struct iecm_vport *vport);
-+	enum iecm_status (*get_ptype)(struct iecm_vport *vport);
-+	enum iecm_status (*get_set_rss_lut)(struct iecm_vport *vport, bool get);
-+	enum iecm_status (*get_set_rss_hash)(struct iecm_vport *vport,
-+					     bool get);
-+	enum iecm_status (*adjust_qs)(struct iecm_vport *vport);
-+	enum iecm_status (*recv_mbx_msg)(struct iecm_adapter *adapter,
-+					 void *msg, int msg_size,
-+					 struct iecm_ctlq_msg *ctlq_msg,
-+					 bool *work_done);
-+	enum iecm_status (*alloc_vectors)(struct iecm_adapter *adapter,
-+					  u16 num_vectors);
-+	enum iecm_status (*dealloc_vectors)(struct iecm_adapter *adapter);
-+	bool (*is_cap_ena)(struct iecm_adapter *adapter, u64 flag);
-+};
-+
-+struct iecm_dev_ops {
-+	void (*reg_ops_init)(struct iecm_adapter *adapter);
-+	void (*vc_ops_init)(struct iecm_adapter *adapter);
-+	void (*crc_enable)(u64 *td_cmd);
-+	struct iecm_reg_ops reg_ops;
-+	struct iecm_virtchnl_ops vc_ops;
-+};
-+
-+/* vport specific data structure */
-+
-+enum  iecm_vport_vc_state {
-+	IECM_VC_ENA_VPORT,
-+	IECM_VC_ENA_VPORT_ERR,
-+	IECM_VC_DIS_VPORT,
-+	IECM_VC_DIS_VPORT_ERR,
-+	IECM_VC_DESTROY_VPORT,
-+	IECM_VC_DESTROY_VPORT_ERR,
-+	IECM_VC_CONFIG_TXQ,
-+	IECM_VC_CONFIG_TXQ_ERR,
-+	IECM_VC_CONFIG_RXQ,
-+	IECM_VC_CONFIG_RXQ_ERR,
-+	IECM_VC_CONFIG_Q,
-+	IECM_VC_CONFIG_Q_ERR,
-+	IECM_VC_ENA_QUEUES,
-+	IECM_VC_ENA_QUEUES_ERR,
-+	IECM_VC_DIS_QUEUES,
-+	IECM_VC_DIS_QUEUES_ERR,
-+	IECM_VC_MAP_IRQ,
-+	IECM_VC_MAP_IRQ_ERR,
-+	IECM_VC_UNMAP_IRQ,
-+	IECM_VC_UNMAP_IRQ_ERR,
-+	IECM_VC_ADD_QUEUES,
-+	IECM_VC_ADD_QUEUES_ERR,
-+	IECM_VC_DEL_QUEUES,
-+	IECM_VC_DEL_QUEUES_ERR,
-+	IECM_VC_ALLOC_VECTORS,
-+	IECM_VC_ALLOC_VECTORS_ERR,
-+	IECM_VC_DEALLOC_VECTORS,
-+	IECM_VC_DEALLOC_VECTORS_ERR,
-+	IECM_VC_CREATE_VFS,
-+	IECM_VC_CREATE_VFS_ERR,
-+	IECM_VC_DESTROY_VFS,
-+	IECM_VC_DESTROY_VFS_ERR,
-+	IECM_VC_GET_RSS_HASH,
-+	IECM_VC_GET_RSS_HASH_ERR,
-+	IECM_VC_SET_RSS_HASH,
-+	IECM_VC_SET_RSS_HASH_ERR,
-+	IECM_VC_GET_RSS_LUT,
-+	IECM_VC_GET_RSS_LUT_ERR,
-+	IECM_VC_SET_RSS_LUT,
-+	IECM_VC_SET_RSS_LUT_ERR,
-+	IECM_VC_GET_RSS_KEY,
-+	IECM_VC_GET_RSS_KEY_ERR,
-+	IECM_VC_CONFIG_RSS_KEY,
-+	IECM_VC_CONFIG_RSS_KEY_ERR,
-+	IECM_VC_GET_STATS,
-+	IECM_VC_GET_STATS_ERR,
-+	IECM_VC_NBITS
-+};
-+
-+enum iecm_vport_flags {
-+	__IECM_VPORT_SW_MARKER,
-+	__IECM_VPORT_FLAGS_NBITS,
-+};
-+
-+struct iecm_vport {
-+	/* TX */
-+	unsigned int num_txq;
-+	unsigned int num_complq;
-+	/* It makes more sense for descriptor count to be part of only iecm
-+	 * queue structure. But when user changes the count via ethtool, driver
-+	 * has to store that value somewhere other than queue structure as the
-+	 * queues will be freed and allocated again.
-+	 */
-+	unsigned int txq_desc_count;
-+	unsigned int complq_desc_count;
-+	unsigned int compln_clean_budget;
-+	unsigned int num_txq_grp;
-+	struct iecm_txq_group *txq_grps;
-+	enum virtchnl_queue_model txq_model;
-+	/* Used only in hotpath to get to the right queue very fast */
-+	struct iecm_queue **txqs;
-+	wait_queue_head_t sw_marker_wq;
-+	DECLARE_BITMAP(flags, __IECM_VPORT_FLAGS_NBITS);
-+
-+	/* RX */
-+	unsigned int num_rxq;
-+	unsigned int num_bufq;
-+	unsigned int rxq_desc_count;
-+	unsigned int bufq_desc_count;
-+	unsigned int num_rxq_grp;
-+	struct iecm_rxq_group *rxq_grps;
-+	enum virtchnl_queue_model rxq_model;
-+	struct iecm_rx_ptype_decoded rx_ptype_lkup[IECM_RX_MAX_PTYPE];
-+
-+	struct iecm_adapter *adapter;
-+	struct net_device *netdev;
-+	u16 vport_type;
-+	u16 vport_id;
-+	u16 idx;		 /* software index in adapter vports struct */
-+	struct rtnl_link_stats64 netstats;
-+
-+	/* handler for hard interrupt */
-+	irqreturn_t (*irq_q_handler)(int irq, void *data);
-+	struct iecm_q_vector *q_vectors;	/* q vector array */
-+	u16 num_q_vectors;
-+	u16 q_vector_base;
-+	u16 max_mtu;
-+	u8 default_mac_addr[ETH_ALEN];
-+	u16 qset_handle;
-+	/* Duplicated in queue structure for performance reasons */
-+	enum iecm_rx_hsplit rx_hsplit_en;
-+};
-+
-+/* User defined configuration values */
-+struct iecm_user_config_data {
-+	u32 num_req_qs; /* user requested queues through ethtool */
-+	u32 num_req_txq_desc;
-+	u32 num_req_rxq_desc;
-+	void *req_qs_chunks;
-+};
-+
-+struct iecm_rss_data {
-+	u64 rss_hash;
-+	u16 rss_key_size;
-+	u8 *rss_key;
-+	u16 rss_lut_size;
-+	u8 *rss_lut;
-+};
-+
-+struct iecm_adapter {
-+	struct pci_dev *pdev;
-+
-+	u32 tx_timeout_count;
-+	u32 msg_enable;
-+	enum iecm_state state;
-+	DECLARE_BITMAP(flags, __IECM_FLAGS_NBITS);
-+	struct mutex reset_lock; /* lock to protect reset flows */
-+	struct iecm_reset_reg reset_reg;
-+	struct iecm_hw hw;
-+
-+	u16 num_req_msix;
-+	u16 num_msix_entries;
-+	struct msix_entry *msix_entries;
-+	struct virtchnl_alloc_vectors *req_vec_chunks;
-+	struct iecm_q_vector mb_vector;
-+	/* handler for hard interrupt for mailbox*/
-+	irqreturn_t (*irq_mb_handler)(int irq, void *data);
-+
-+	/* vport structs */
-+	struct iecm_vport **vports;	/* vports created by the driver */
-+	u16 num_alloc_vport;
-+	u16 next_vport;		/* Next free slot in pf->vport[] - 0-based! */
-+	struct mutex sw_mutex;	/* lock to protect vport alloc flow */
-+
-+	struct delayed_work init_task; /* delayed init task */
-+	struct workqueue_struct *init_wq;
-+	u32 mb_wait_count;
-+	struct delayed_work serv_task; /* delayed service task */
-+	struct workqueue_struct *serv_wq;
-+	struct delayed_work stats_task; /* delayed statistics task */
-+	struct workqueue_struct *stats_wq;
-+	struct delayed_work vc_event_task; /* delayed virtchannel event task */
-+	struct workqueue_struct *vc_event_wq;
-+	/* Store the resources data received from control plane */
-+	void **vport_params_reqd;
-+	void **vport_params_recvd;
-+	/* User set parameters */
-+	struct iecm_user_config_data config_data;
-+	void *caps;
-+	wait_queue_head_t vchnl_wq;
-+	DECLARE_BITMAP(vc_state, IECM_VC_NBITS);
-+	struct mutex vc_msg_lock;	/* lock to protect vc_msg flow */
-+	char vc_msg[IECM_DFLT_MBX_BUF_SIZE];
-+	struct iecm_rss_data rss_data;
-+	struct iecm_dev_ops dev_ops;
-+	enum virtchnl_link_speed link_speed;
-+	bool link_up;
-+};
-+
-+/**
-+ * iecm_is_queue_model_split - check if queue model is split
-+ * @q_model: queue model single or split
-+ *
-+ * Returns true if queue model is split else false
-+ */
-+static inline int iecm_is_queue_model_split(enum virtchnl_queue_model q_model)
-+{
-+	return (q_model == VIRTCHNL_QUEUE_MODEL_SPLIT);
-+}
-+
-+/**
-+ * iecm_is_cap_ena - Determine if HW capability is supported
-+ * @adapter: private data struct
-+ * @flag: Feature flag to check
-+ */
-+static inline bool iecm_is_cap_ena(struct iecm_adapter *adapter, u64 flag)
-+{
-+	return adapter->dev_ops.vc_ops.is_cap_ena(adapter, flag);
-+}
-+
-+/**
-+ * iecm_is_feature_ena - Determine if a particular feature is enabled
-+ * @vport: vport to check
-+ * @feature: netdev flag to check
-+ *
-+ * Returns true or false if a particular feature is enabled.
-+ */
-+static inline bool iecm_is_feature_ena(struct iecm_vport *vport,
-+				       netdev_features_t feature)
-+{
-+	return vport->netdev->features & feature;
-+}
-+
-+/**
-+ * iecm_rx_offset - Return expected offset into page to access data
-+ * @rx_q: queue we are requesting offset of
-+ *
-+ * Returns the offset value for queue into the data buffer.
-+ */
-+static inline unsigned int
-+iecm_rx_offset(struct iecm_queue __maybe_unused *rx_q)
-+{
 +	return 0;
-+}
+ }
+ 
+ /**
+@@ -42,7 +75,30 @@ static enum iecm_status iecm_ctlq_init_regs(struct iecm_hw *hw,
+  */
+ static void iecm_ctlq_init_rxq_bufs(struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	int i = 0;
 +
-+int iecm_probe(struct pci_dev *pdev,
-+	       const struct pci_device_id __always_unused *ent,
-+	       struct iecm_adapter *adapter);
-+void iecm_remove(struct pci_dev *pdev);
-+void iecm_shutdown(struct pci_dev *pdev);
-+enum iecm_status iecm_vport_adjust_qs(struct iecm_vport *vport);
-+enum iecm_status
-+iecm_ctlq_reg_init(struct iecm_ctlq_create_info *cq, int num_q);
-+enum iecm_status iecm_init_dflt_mbx(struct iecm_adapter *adapter);
-+void iecm_deinit_dflt_mbx(struct iecm_adapter *adapter);
-+void iecm_vc_ops_init(struct iecm_adapter *adapter);
-+int iecm_vc_core_init(struct iecm_adapter *adapter, int *vport_id);
-+enum iecm_status
-+iecm_wait_for_event(struct iecm_adapter *adapter,
-+		    enum iecm_vport_vc_state state,
-+		    enum iecm_vport_vc_state err_check);
-+enum iecm_status iecm_send_get_caps_msg(struct iecm_adapter *adapter);
-+enum iecm_status iecm_send_delete_queues_msg(struct iecm_vport *vport);
-+enum iecm_status
-+iecm_send_add_queues_msg(struct iecm_vport *vport, u16 num_tx_q,
-+			 u16 num_complq, u16 num_rx_q, u16 num_rx_bufq);
-+enum iecm_status iecm_initiate_soft_reset(struct iecm_vport *vport,
-+					  enum iecm_flags reset_cause);
-+enum iecm_status iecm_send_config_tx_queues_msg(struct iecm_vport *vport);
-+enum iecm_status iecm_send_config_rx_queues_msg(struct iecm_vport *vport);
-+enum iecm_status iecm_send_enable_vport_msg(struct iecm_vport *vport);
-+enum iecm_status iecm_send_disable_vport_msg(struct iecm_vport *vport);
-+enum iecm_status iecm_send_destroy_vport_msg(struct iecm_vport *vport);
-+enum iecm_status iecm_send_get_rx_ptype_msg(struct iecm_vport *vport);
-+enum iecm_status
-+iecm_send_get_set_rss_key_msg(struct iecm_vport *vport, bool get);
-+enum iecm_status
-+iecm_send_get_set_rss_lut_msg(struct iecm_vport *vport, bool get);
-+enum iecm_status
-+iecm_send_get_set_rss_hash_msg(struct iecm_vport *vport, bool get);
-+int iecm_vport_params_buf_alloc(struct iecm_adapter *adapter);
-+void iecm_vport_params_buf_rel(struct iecm_adapter *adapter);
-+struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev);
-+struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev);
-+enum iecm_status iecm_send_get_stats_msg(struct iecm_vport *vport);
-+int iecm_vport_get_vec_ids(u16 *vecids, int num_vecids,
-+			   struct virtchnl_vector_chunks *chunks);
-+enum iecm_status
-+iecm_recv_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
-+		 void *msg, int msg_size);
-+enum iecm_status
-+iecm_send_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
-+		 u16 msg_size, u8 *msg);
-+void iecm_set_ethtool_ops(struct net_device *netdev);
-+void iecm_vport_set_hsplit(struct iecm_vport *vport, struct bpf_prog *prog);
-+#endif /* !_IECM_H_ */
-diff --git a/include/linux/net/intel/iecm_alloc.h b/include/linux/net/intel/iecm_alloc.h
-new file mode 100644
-index 000000000000..fd13bf085663
---- /dev/null
-+++ b/include/linux/net/intel/iecm_alloc.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
++	for (i = 0; i < cq->ring_size; i++) {
++		struct iecm_ctlq_desc *desc = IECM_CTLQ_DESC(cq, i);
++		struct iecm_dma_mem *bi = cq->bi.rx_buff[i];
 +
-+#ifndef _IECM_ALLOC_H_
-+#define _IECM_ALLOC_H_
++		/* No buffer to post to descriptor, continue */
++		if (!bi)
++			continue;
 +
-+/* Memory types */
-+enum iecm_memset_type {
-+	IECM_NONDMA_MEM = 0,
-+	IECM_DMA_MEM
-+};
++		desc->flags =
++			cpu_to_le16(IECM_CTLQ_FLAG_BUF | IECM_CTLQ_FLAG_RD);
++		desc->opcode = 0;
++		desc->datalen = (__le16)cpu_to_le16(bi->size);
++		desc->ret_val = 0;
++		desc->cookie_high = 0;
++		desc->cookie_low = 0;
++		desc->params.indirect.addr_high =
++			cpu_to_le32(IECM_HI_DWORD(bi->pa));
++		desc->params.indirect.addr_low =
++			cpu_to_le32(IECM_LO_DWORD(bi->pa));
++		desc->params.indirect.param0 = 0;
++		desc->params.indirect.param1 = 0;
++	}
+ }
+ 
+ /**
+@@ -54,7 +110,20 @@ static void iecm_ctlq_init_rxq_bufs(struct iecm_ctlq_info *cq)
+  */
+ static void iecm_ctlq_shutdown(struct iecm_hw *hw, struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	mutex_lock(&cq->cq_lock);
 +
-+/* Memcpy types */
-+enum iecm_memcpy_type {
-+	IECM_NONDMA_TO_NONDMA = 0,
-+	IECM_NONDMA_TO_DMA,
-+	IECM_DMA_TO_DMA,
-+	IECM_DMA_TO_NONDMA
-+};
++	if (!cq->ring_size)
++		goto shutdown_sq_out;
 +
-+struct iecm_hw;
-+struct iecm_dma_mem;
++	/* free ring buffers and the ring itself */
++	iecm_ctlq_dealloc_ring_res(hw, cq);
 +
-+/* prototype for functions used for dynamic memory allocation */
-+void *iecm_alloc_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem,
-+			 u64 size);
-+void iecm_free_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem);
++	/* Set ring_size to 0 to indicate uninitialized queue */
++	cq->ring_size = 0;
 +
-+#endif /* _IECM_ALLOC_H_ */
-diff --git a/include/linux/net/intel/iecm_controlq.h b/include/linux/net/intel/iecm_controlq.h
-new file mode 100644
-index 000000000000..4cba637042cd
---- /dev/null
-+++ b/include/linux/net/intel/iecm_controlq.h
-@@ -0,0 +1,95 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
++shutdown_sq_out:
++	mutex_unlock(&cq->cq_lock);
++	mutex_destroy(&cq->cq_lock);
+ }
+ 
+ /**
+@@ -73,7 +142,74 @@ enum iecm_status iecm_ctlq_add(struct iecm_hw *hw,
+ 			       struct iecm_ctlq_create_info *qinfo,
+ 			       struct iecm_ctlq_info **cq)
+ {
+-	/* stub */
++	enum iecm_status status = 0;
++	bool is_rxq = false;
 +
-+#ifndef _IECM_CONTROLQ_H_
-+#define _IECM_CONTROLQ_H_
++	if (!qinfo->len || !qinfo->buf_size ||
++	    qinfo->len > IECM_CTLQ_MAX_RING_SIZE ||
++	    qinfo->buf_size > IECM_CTLQ_MAX_BUF_LEN)
++		return IECM_ERR_CFG;
 +
-+#include <linux/net/intel/iecm_controlq_api.h>
++	*cq = kcalloc(1, sizeof(struct iecm_ctlq_info), GFP_KERNEL);
++	if (!(*cq))
++		return IECM_ERR_NO_MEMORY;
 +
-+/* Maximum buffer lengths for all control queue types */
-+#define IECM_CTLQ_MAX_RING_SIZE	1024
-+#define IECM_CTLQ_MAX_BUF_LEN	4096
++	(*cq)->cq_type = qinfo->type;
++	(*cq)->q_id = qinfo->id;
++	(*cq)->buf_size = qinfo->buf_size;
++	(*cq)->ring_size = qinfo->len;
 +
-+#define IECM_CTLQ_DESC(R, i) \
-+	(&(((struct iecm_ctlq_desc *)((R)->desc_ring.va))[i]))
++	(*cq)->next_to_use = 0;
++	(*cq)->next_to_clean = 0;
++	(*cq)->next_to_post = (*cq)->ring_size - 1;
 +
-+#define IECM_CTLQ_DESC_UNUSED(R) \
-+	(u16)((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->ring_size) + \
-+	      (R)->next_to_clean - (R)->next_to_use - 1)
++	switch (qinfo->type) {
++	case IECM_CTLQ_TYPE_MAILBOX_RX:
++		is_rxq = true;
++		fallthrough;
++	case IECM_CTLQ_TYPE_MAILBOX_TX:
++		status = iecm_ctlq_alloc_ring_res(hw, *cq);
++		break;
++	default:
++		status = IECM_ERR_PARAM;
++		break;
++	}
 +
-+/* Data type manipulation macros. */
-+#define IECM_HI_DWORD(x)	((u32)((((x) >> 16) >> 16) & 0xFFFFFFFF))
-+#define IECM_LO_DWORD(x)	((u32)((x) & 0xFFFFFFFF))
-+#define IECM_HI_WORD(x)		((u16)(((x) >> 16) & 0xFFFF))
-+#define IECM_LO_WORD(x)		((u16)((x) & 0xFFFF))
++	if (status)
++		goto init_free_q;
 +
-+/* Control Queue default settings */
-+#define IECM_CTRL_SQ_CMD_TIMEOUT	250  /* msecs */
++	if (is_rxq) {
++		iecm_ctlq_init_rxq_bufs(*cq);
++	} else {
++		/* Allocate the array of msg pointers for TX queues */
++		(*cq)->bi.tx_msg = kcalloc(qinfo->len,
++					   sizeof(struct iecm_ctlq_msg *),
++					   GFP_KERNEL);
++		if (!(*cq)->bi.tx_msg) {
++			status = IECM_ERR_NO_MEMORY;
++			goto init_dealloc_q_mem;
++		}
++	}
 +
-+struct iecm_ctlq_desc {
-+	__le16	flags;
-+	__le16	opcode;
-+	__le16	datalen;	/* 0 for direct commands */
-+	union {
-+		__le16 ret_val;
-+		__le16 pfid_vfid;
-+#define IECM_CTLQ_DESC_VF_ID_S	0
-+#define IECM_CTLQ_DESC_VF_ID_M	(0x3FF << IECM_CTLQ_DESC_VF_ID_S)
-+#define IECM_CTLQ_DESC_PF_ID_S	10
-+#define IECM_CTLQ_DESC_PF_ID_M	(0x3F << IECM_CTLQ_DESC_PF_ID_S)
-+	};
-+	__le32 cookie_high;
-+	__le32 cookie_low;
-+	union {
-+		struct {
-+			__le32 param0;
-+			__le32 param1;
-+			__le32 param2;
-+			__le32 param3;
-+		} direct;
-+		struct {
-+			__le32 param0;
-+			__le32 param1;
-+			__le32 addr_high;
-+			__le32 addr_low;
-+		} indirect;
-+		u8 raw[16];
-+	} params;
-+};
++	iecm_ctlq_setup_regs(*cq, qinfo);
 +
-+/* Flags sub-structure
-+ * |0  |1  |2  |3  |4  |5  |6  |7  |8  |9  |10 |11 |12 |13 |14 |15 |
-+ * |DD |CMP|ERR|  * RSV *  |FTYPE  | *RSV* |RD |VFC|BUF|  * RSV *  |
-+ */
-+/* command flags and offsets */
-+#define IECM_CTLQ_FLAG_DD_S	0
-+#define IECM_CTLQ_FLAG_CMP_S	1
-+#define IECM_CTLQ_FLAG_ERR_S	2
-+#define IECM_CTLQ_FLAG_FTYPE_S	6
-+#define IECM_CTLQ_FLAG_RD_S	10
-+#define IECM_CTLQ_FLAG_VFC_S	11
-+#define IECM_CTLQ_FLAG_BUF_S	12
++	status = iecm_ctlq_init_regs(hw, *cq, is_rxq);
++	if (status)
++		goto init_dealloc_q_mem;
 +
-+#define IECM_CTLQ_FLAG_DD	BIT(IECM_CTLQ_FLAG_DD_S)	/* 0x1 */
-+#define IECM_CTLQ_FLAG_CMP	BIT(IECM_CTLQ_FLAG_CMP_S)	/* 0x2 */
-+#define IECM_CTLQ_FLAG_ERR	BIT(IECM_CTLQ_FLAG_ERR_S)	/* 0x4 */
-+#define IECM_CTLQ_FLAG_FTYPE_VM	BIT(IECM_CTLQ_FLAG_FTYPE_S)	/* 0x40 */
-+#define IECM_CTLQ_FLAG_FTYPE_PF	BIT(IECM_CTLQ_FLAG_FTYPE_S + 1)	/* 0x80 */
-+#define IECM_CTLQ_FLAG_RD	BIT(IECM_CTLQ_FLAG_RD_S)	/* 0x400 */
-+#define IECM_CTLQ_FLAG_VFC	BIT(IECM_CTLQ_FLAG_VFC_S)	/* 0x800 */
-+#define IECM_CTLQ_FLAG_BUF	BIT(IECM_CTLQ_FLAG_BUF_S)	/* 0x1000 */
++	mutex_init(&(*cq)->cq_lock);
 +
-+struct iecm_mbxq_desc {
-+	u8 pad[8];		/* CTLQ flags/opcode/len/retval fields */
-+	u32 chnl_opcode;	/* avoid confusion with desc->opcode */
-+	u32 chnl_retval;	/* ditto for desc->retval */
-+	u32 pf_vf_id;		/* used by CP when sending to PF */
-+};
++	list_add(&(*cq)->cq_list, &hw->cq_list_head);
 +
-+enum iecm_status
-+iecm_ctlq_alloc_ring_res(struct iecm_hw *hw,
-+			 struct iecm_ctlq_info *cq);
++	return status;
 +
-+void iecm_ctlq_dealloc_ring_res(struct iecm_hw *hw, struct iecm_ctlq_info *cq);
++init_dealloc_q_mem:
++	/* free ring buffers and the ring itself */
++	iecm_ctlq_dealloc_ring_res(hw, *cq);
++init_free_q:
++	kfree(*cq);
 +
-+#endif /* _IECM_CONTROLQ_H_ */
-diff --git a/include/linux/net/intel/iecm_controlq_api.h b/include/linux/net/intel/iecm_controlq_api.h
-new file mode 100644
-index 000000000000..33e3cb3878fc
---- /dev/null
-+++ b/include/linux/net/intel/iecm_controlq_api.h
-@@ -0,0 +1,188 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
++	return status;
+ }
+ 
+ /**
+@@ -84,7 +220,9 @@ enum iecm_status iecm_ctlq_add(struct iecm_hw *hw,
+ void iecm_ctlq_remove(struct iecm_hw *hw,
+ 		      struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	list_del(&cq->cq_list);
++	iecm_ctlq_shutdown(hw, cq);
++	kfree(cq);
+ }
+ 
+ /**
+@@ -101,7 +239,27 @@ void iecm_ctlq_remove(struct iecm_hw *hw,
+ enum iecm_status iecm_ctlq_init(struct iecm_hw *hw, u8 num_q,
+ 				struct iecm_ctlq_create_info *q_info)
+ {
+-	/* stub */
++	struct iecm_ctlq_info *cq = NULL, *tmp = NULL;
++	enum iecm_status ret_code = 0;
++	int i = 0;
 +
-+#ifndef _IECM_CONTROLQ_API_H_
-+#define _IECM_CONTROLQ_API_H_
++	INIT_LIST_HEAD(&hw->cq_list_head);
 +
-+/* Error Codes */
-+enum iecm_status {
-+	IECM_SUCCESS				= 0,
++	for (i = 0; i < num_q; i++) {
++		struct iecm_ctlq_create_info *qinfo = q_info + i;
 +
-+	/* Reserve range -1..-49 for generic codes */
-+	IECM_ERR_PARAM				= -1,
-+	IECM_ERR_NOT_IMPL			= -2,
-+	IECM_ERR_NOT_READY			= -3,
-+	IECM_ERR_BAD_PTR			= -5,
-+	IECM_ERR_INVAL_SIZE			= -6,
-+	IECM_ERR_DEVICE_NOT_SUPPORTED		= -8,
-+	IECM_ERR_FW_API_VER			= -9,
-+	IECM_ERR_NO_MEMORY			= -10,
-+	IECM_ERR_CFG				= -11,
-+	IECM_ERR_OUT_OF_RANGE			= -12,
-+	IECM_ERR_ALREADY_EXISTS			= -13,
-+	IECM_ERR_DOES_NOT_EXIST			= -14,
-+	IECM_ERR_IN_USE				= -15,
-+	IECM_ERR_MAX_LIMIT			= -16,
-+	IECM_ERR_RESET_ONGOING			= -17,
++		ret_code = iecm_ctlq_add(hw, qinfo, &cq);
++		if (ret_code)
++			goto init_destroy_qs;
++	}
 +
-+	/* Reserve range -100..-109 for CRQ/CSQ specific error codes */
-+	IECM_ERR_CTLQ_ERROR			= -100,
-+	IECM_ERR_CTLQ_TIMEOUT			= -101,
-+	IECM_ERR_CTLQ_FULL			= -102,
-+	IECM_ERR_CTLQ_NO_WORK			= -103,
-+	IECM_ERR_CTLQ_EMPTY			= -104,
-+};
++	return ret_code;
 +
-+/* Used for queue init, response and events */
-+enum iecm_ctlq_type {
-+	IECM_CTLQ_TYPE_MAILBOX_TX	= 0,
-+	IECM_CTLQ_TYPE_MAILBOX_RX	= 1,
-+	IECM_CTLQ_TYPE_CONFIG_TX	= 2,
-+	IECM_CTLQ_TYPE_CONFIG_RX	= 3,
-+	IECM_CTLQ_TYPE_EVENT_RX		= 4,
-+	IECM_CTLQ_TYPE_RDMA_TX		= 5,
-+	IECM_CTLQ_TYPE_RDMA_RX		= 6,
-+	IECM_CTLQ_TYPE_RDMA_COMPL	= 7
-+};
++init_destroy_qs:
++	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list)
++		iecm_ctlq_remove(hw, cq);
 +
-+/* Generic Control Queue Structures */
++	return ret_code;
+ }
+ 
+ /**
+@@ -110,7 +268,13 @@ enum iecm_status iecm_ctlq_init(struct iecm_hw *hw, u8 num_q,
+  */
+ enum iecm_status iecm_ctlq_deinit(struct iecm_hw *hw)
+ {
+-	/* stub */
++	struct iecm_ctlq_info *cq = NULL, *tmp = NULL;
++	enum iecm_status ret_code = 0;
 +
-+struct iecm_ctlq_reg {
-+	/* used for queue tracking */
-+	u32 head;
-+	u32 tail;
-+	/* Below applies only to default mb (if present) */
-+	u32 len;
-+	u32 bah;
-+	u32 bal;
-+	u32 len_mask;
-+	u32 len_ena_mask;
-+	u32 head_mask;
-+};
++	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list)
++		iecm_ctlq_remove(hw, cq);
 +
-+/* Generic queue msg structure */
-+struct iecm_ctlq_msg {
-+	u16 vmvf_type; /* represents the source of the message on recv */
-+#define IECM_VMVF_TYPE_VF 0
-+#define IECM_VMVF_TYPE_VM 1
-+#define IECM_VMVF_TYPE_PF 2
-+	u16 opcode;
-+	u16 data_len;	/* data_len = 0 when no payload is attached */
-+	union {
-+		u16 func_id;	/* when sending a message */
-+		u16 status;	/* when receiving a message */
-+	};
-+	union {
-+		struct {
-+			u32 chnl_retval;
-+			u32 chnl_opcode;
-+		} mbx;
-+	} cookie;
-+	union {
-+#define IECM_DIRECT_CTX_SIZE	16
-+#define IECM_INDIRECT_CTX_SIZE	8
-+		/* 16 bytes of context can be provided or 8 bytes of context
-+		 * plus the address of a DMA buffer
-+		 */
-+		u8 direct[IECM_DIRECT_CTX_SIZE];
-+		struct {
-+			u8 context[IECM_INDIRECT_CTX_SIZE];
-+			struct iecm_dma_mem *payload;
-+		} indirect;
-+	} ctx;
-+};
++	return ret_code;
+ }
+ 
+ /**
+@@ -130,7 +294,79 @@ enum iecm_status iecm_ctlq_send(struct iecm_hw *hw,
+ 				u16 num_q_msg,
+ 				struct iecm_ctlq_msg q_msg[])
+ {
+-	/* stub */
++	enum iecm_status status = 0;
++	struct iecm_ctlq_desc *desc;
++	int num_desc_avail = 0;
++	int i = 0;
 +
-+/* Generic queue info structures */
-+/* MB, CONFIG and EVENT q do not have extended info */
-+struct iecm_ctlq_create_info {
-+	enum iecm_ctlq_type type;
-+	/* absolute queue offset passed as input
-+	 * -1 for default mailbox if present
++	if (!cq || !cq->ring_size)
++		return IECM_ERR_CTLQ_EMPTY;
++
++	mutex_lock(&cq->cq_lock);
++
++	/* Ensure there are enough descriptors to send all messages */
++	num_desc_avail = IECM_CTLQ_DESC_UNUSED(cq);
++	if (num_desc_avail == 0 || num_desc_avail < num_q_msg) {
++		status = IECM_ERR_CTLQ_FULL;
++		goto sq_send_command_out;
++	}
++
++	for (i = 0; i < num_q_msg; i++) {
++		struct iecm_ctlq_msg *msg = &q_msg[i];
++		u64 msg_cookie;
++
++		desc = IECM_CTLQ_DESC(cq, cq->next_to_use);
++
++		desc->opcode = cpu_to_le16(msg->opcode);
++		desc->pfid_vfid = cpu_to_le16(msg->func_id);
++
++		msg_cookie = *(u64 *)&msg->cookie;
++		desc->cookie_high =
++			cpu_to_le32(IECM_HI_DWORD(msg_cookie));
++		desc->cookie_low =
++			cpu_to_le32(IECM_LO_DWORD(msg_cookie));
++
++		if (msg->data_len) {
++			struct iecm_dma_mem *buff = msg->ctx.indirect.payload;
++
++			desc->datalen = cpu_to_le16(msg->data_len);
++			desc->flags |= cpu_to_le16(IECM_CTLQ_FLAG_BUF);
++			desc->flags |= cpu_to_le16(IECM_CTLQ_FLAG_RD);
++
++			/* Update the address values in the desc with the pa
++			 * value for respective buffer
++			 */
++			desc->params.indirect.addr_high =
++				cpu_to_le32(IECM_HI_DWORD(buff->pa));
++			desc->params.indirect.addr_low =
++				cpu_to_le32(IECM_LO_DWORD(buff->pa));
++
++			memcpy(&desc->params, msg->ctx.indirect.context,
++			       IECM_INDIRECT_CTX_SIZE);
++		} else {
++			memcpy(&desc->params, msg->ctx.direct,
++			       IECM_DIRECT_CTX_SIZE);
++		}
++
++		/* Store buffer info */
++		cq->bi.tx_msg[cq->next_to_use] = msg;
++
++		(cq->next_to_use)++;
++		if (cq->next_to_use == cq->ring_size)
++			cq->next_to_use = 0;
++	}
++
++	/* Force memory write to complete before letting hardware
++	 * know that there are new descriptors to fetch.
 +	 */
-+	int id;
-+	u16 len; /* Queue length passed as input */
-+	u16 buf_size; /* buffer size passed as input */
-+	u64 base_address; /* output, HPA of the Queue start  */
-+	struct iecm_ctlq_reg reg; /* registers accessed by ctlqs */
++	iecm_wmb();
 +
-+	int ext_info_size;
-+	void *ext_info; /* Specific to q type */
-+};
++	wr32(hw, cq->reg.tail, cq->next_to_use);
 +
-+/* Control Queue information */
-+struct iecm_ctlq_info {
-+	struct list_head cq_list;
++sq_send_command_out:
++	mutex_unlock(&cq->cq_lock);
 +
-+	enum iecm_ctlq_type cq_type;
-+	int q_id;
-+	struct mutex cq_lock;		/* queue lock */
++	return status;
+ }
+ 
+ /**
+@@ -152,7 +388,58 @@ enum iecm_status iecm_ctlq_clean_sq(struct iecm_ctlq_info *cq,
+ 				    u16 *clean_count,
+ 				    struct iecm_ctlq_msg *msg_status[])
+ {
+-	/* stub */
++	enum iecm_status ret = 0;
++	struct iecm_ctlq_desc *desc;
++	u16 i = 0, num_to_clean;
++	u16 ntc, desc_err;
 +
-+	/* used for interrupt processing */
-+	u16 next_to_use;
-+	u16 next_to_clean;
++	if (!cq || !cq->ring_size)
++		return IECM_ERR_CTLQ_EMPTY;
 +
-+	/* starting descriptor to post buffers to after recev */
-+	u16 next_to_post;
-+	struct iecm_dma_mem desc_ring;	/* descriptor ring memory */
++	if (*clean_count == 0)
++		return 0;
++	else if (*clean_count > cq->ring_size)
++		return IECM_ERR_PARAM;
 +
-+	union {
-+		struct iecm_dma_mem **rx_buff;
-+		struct iecm_ctlq_msg **tx_msg;
-+	} bi;
++	mutex_lock(&cq->cq_lock);
 +
-+	u16 buf_size;			/* queue buffer size */
-+	u16 ring_size;			/* Number of descriptors */
-+	struct iecm_ctlq_reg reg;	/* registers accessed by ctlqs */
-+};
++	ntc = cq->next_to_clean;
 +
-+/* PF/VF mailbox commands */
-+enum iecm_mbx_opc {
-+	iecm_mbq_opc_send_msg_to_cp		= 0x0801,
-+	iecm_mbq_opc_send_msg_to_vf		= 0x0802,
-+	iecm_mbq_opc_send_msg_to_pf		= 0x0803,
-+};
++	num_to_clean = *clean_count;
 +
-+/* API supported for control queue management */
++	for (i = 0; i < num_to_clean; i++) {
++		/* Fetch next descriptor and check if marked as done */
++		desc = IECM_CTLQ_DESC(cq, ntc);
++		if (!(le16_to_cpu(desc->flags) & IECM_CTLQ_FLAG_DD))
++			break;
 +
-+/* Will init all required q including default mb.  "q_info" is an array of
-+ * create_info structs equal to the number of control queues to be created.
-+ */
-+enum iecm_status iecm_ctlq_init(struct iecm_hw *hw, u8 num_q,
-+				struct iecm_ctlq_create_info *q_info);
++		desc_err = le16_to_cpu(desc->ret_val);
++		if (desc_err) {
++			/* strip off FW internal code */
++			desc_err &= 0xff;
++		}
 +
-+/* Allocate and initialize a single control queue, which will be added to the
-+ * control queue list; returns a handle to the created control queue
-+ */
-+enum iecm_status iecm_ctlq_add(struct iecm_hw *hw,
-+			       struct iecm_ctlq_create_info *qinfo,
-+			       struct iecm_ctlq_info **cq);
-+/* Deinitialize and deallocate a single control queue */
-+void iecm_ctlq_remove(struct iecm_hw *hw,
-+		      struct iecm_ctlq_info *cq);
++		msg_status[i] = cq->bi.tx_msg[ntc];
++		msg_status[i]->status = desc_err;
 +
-+/* Sends messages to HW and will also free the buffer*/
-+enum iecm_status iecm_ctlq_send(struct iecm_hw *hw,
-+				struct iecm_ctlq_info *cq,
-+				u16 num_q_msg,
-+				struct iecm_ctlq_msg q_msg[]);
++		cq->bi.tx_msg[ntc] = NULL;
 +
-+/* Receives messages and called by interrupt handler/polling
-+ * initiated by app/process. Also caller is supposed to free the buffers
-+ */
-+enum iecm_status iecm_ctlq_recv(struct iecm_ctlq_info *cq,
-+				u16 *num_q_msg, struct iecm_ctlq_msg *q_msg);
-+/* Reclaims send descriptors on HW write back */
-+enum iecm_status iecm_ctlq_clean_sq(struct iecm_ctlq_info *cq,
-+				    u16 *clean_count,
-+				    struct iecm_ctlq_msg *msg_status[]);
++		/* Zero out any stale data */
++		memset(desc, 0, sizeof(*desc));
 +
-+/* Indicate RX buffers are done being processed */
-+enum iecm_status iecm_ctlq_post_rx_buffs(struct iecm_hw *hw,
-+					 struct iecm_ctlq_info *cq,
-+					 u16 *buff_count,
-+					 struct iecm_dma_mem **buffs);
++		ntc++;
++		if (ntc == cq->ring_size)
++			ntc = 0;
++	}
 +
-+/* Will destroy all q including the default mb */
-+enum iecm_status iecm_ctlq_deinit(struct iecm_hw *hw);
++	cq->next_to_clean = ntc;
 +
-+#endif /* _IECM_CONTROLQ_API_H_ */
-diff --git a/include/linux/net/intel/iecm_osdep.h b/include/linux/net/intel/iecm_osdep.h
-new file mode 100644
-index 000000000000..33e01582f516
---- /dev/null
-+++ b/include/linux/net/intel/iecm_osdep.h
-@@ -0,0 +1,24 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
++	mutex_unlock(&cq->cq_lock);
 +
-+#ifndef _IECM_OSDEP_H_
-+#define _IECM_OSDEP_H_
++	/* Return number of descriptors actually cleaned */
++	*clean_count = i;
 +
-+#include <linux/bitops.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/net/intel/iecm_alloc.h>
++	return ret;
+ }
+ 
+ /**
+@@ -175,7 +462,111 @@ enum iecm_status iecm_ctlq_post_rx_buffs(struct iecm_hw *hw,
+ 					 u16 *buff_count,
+ 					 struct iecm_dma_mem **buffs)
+ {
+-	/* stub */
++	enum iecm_status status = 0;
++	struct iecm_ctlq_desc *desc;
++	u16 ntp = cq->next_to_post;
++	bool buffs_avail = false;
++	u16 tbp = ntp + 1;
++	int i = 0;
 +
-+#define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
-+#define rd32(a, reg)		readl((a)->hw_addr + (reg))
-+#define wr64(a, reg, value)	writeq((value), ((a)->hw_addr + (reg)))
-+#define rd64(a, reg)		readq((a)->hw_addr + (reg))
++	if (*buff_count > cq->ring_size)
++		return IECM_ERR_PARAM;
 +
-+struct iecm_dma_mem {
-+	void *va;
-+	dma_addr_t pa;
-+	size_t size;
-+};
++	if (*buff_count > 0)
++		buffs_avail = true;
 +
-+#define iecm_wmb() wmb() /* memory barrier */
-+#endif /* _IECM_OSDEP_H_ */
-diff --git a/include/linux/net/intel/iecm_type.h b/include/linux/net/intel/iecm_type.h
-new file mode 100644
-index 000000000000..d534b0a18f27
---- /dev/null
-+++ b/include/linux/net/intel/iecm_type.h
-@@ -0,0 +1,47 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
++	mutex_lock(&cq->cq_lock);
 +
-+#ifndef _IECM_TYPE_H_
-+#define _IECM_TYPE_H_
++	if (tbp >= cq->ring_size)
++		tbp = 0;
 +
-+#include <linux/if_ether.h>
-+#include <linux/net/intel/iecm_osdep.h>
-+#include <linux/net/intel/iecm_alloc.h>
-+#include <linux/net/intel/iecm_controlq.h>
++	if (tbp == cq->next_to_clean)
++		/* Nothing to do */
++		goto post_buffs_out;
 +
-+#define MAKEMASK(m, s)	((m) << (s))
++	/* Post buffers for as many as provided or up until the last one used */
++	while (ntp != cq->next_to_clean) {
++		desc = IECM_CTLQ_DESC(cq, ntp);
 +
-+/* Bus parameters */
-+struct iecm_bus_info {
-+	u16 func;
-+	u16 device;
-+	u16 bus_id;
-+};
++		if (!cq->bi.rx_buff[ntp]) {
++			if (!buffs_avail) {
++				/* If the caller hasn't given us any buffers or
++				 * there are none left, search the ring itself
++				 * for an available buffer to move to this
++				 * entry starting at the next entry in the ring
++				 */
++				tbp = ntp + 1;
 +
-+/* Define the APF hardware struct to replace other control structs as needed
-+ * Align to ctlq_hw_info
-+ */
-+struct iecm_hw {
-+	u8 __iomem* hw_addr;
-+	u64 hw_addr_len;
-+	void *back;
++				/* Wrap ring if necessary */
++				if (tbp >= cq->ring_size)
++					tbp = 0;
 +
-+	/* control queue - send and receive */
-+	struct iecm_ctlq_info *asq;
-+	struct iecm_ctlq_info *arq;
++				while (tbp != cq->next_to_clean) {
++					if (cq->bi.rx_buff[tbp]) {
++						cq->bi.rx_buff[ntp] =
++							cq->bi.rx_buff[tbp];
++						cq->bi.rx_buff[tbp] = NULL;
 +
-+	/* subsystem structs */
-+	struct iecm_bus_info bus;
++						/* Found a buffer, no need to
++						 * search anymore
++						 */
++						break;
++					}
 +
-+	/* pci info */
-+	u16 device_id;
-+	u16 vendor_id;
-+	u16 subsystem_device_id;
-+	u16 subsystem_vendor_id;
-+	u8 revision_id;
-+	bool adapter_stopped;
++					/* Wrap ring if necessary */
++					tbp++;
++					if (tbp >= cq->ring_size)
++						tbp = 0;
++				}
 +
-+	struct list_head cq_list_head;
-+};
++				if (tbp == cq->next_to_clean)
++					goto post_buffs_out;
++			} else {
++				/* Give back pointer to DMA buffer */
++				cq->bi.rx_buff[ntp] = buffs[i];
++				i++;
 +
-+#endif /* _IECM_TYPE_H_ */
++				if (i >= *buff_count)
++					buffs_avail = false;
++			}
++		}
++
++		desc->flags =
++			cpu_to_le16(IECM_CTLQ_FLAG_BUF | IECM_CTLQ_FLAG_RD);
++
++		/* Post buffers to descriptor */
++		desc->datalen = cpu_to_le16(cq->bi.rx_buff[ntp]->size);
++		desc->params.indirect.addr_high =
++			cpu_to_le32(IECM_HI_DWORD(cq->bi.rx_buff[ntp]->pa));
++		desc->params.indirect.addr_low =
++			cpu_to_le32(IECM_LO_DWORD(cq->bi.rx_buff[ntp]->pa));
++
++		ntp++;
++		if (ntp == cq->ring_size)
++			ntp = 0;
++	}
++
++post_buffs_out:
++	/* Only update tail if buffers were actually posted */
++	if (cq->next_to_post != ntp) {
++		if (ntp)
++			/* Update next_to_post to ntp - 1 since current ntp
++			 * will not have a buffer
++			 */
++			cq->next_to_post = ntp - 1;
++		else
++			/* Wrap to end of end ring since current ntp is 0 */
++			cq->next_to_post = cq->ring_size - 1;
++
++		wr32(hw, cq->reg.tail, cq->next_to_post);
++	}
++
++	mutex_unlock(&cq->cq_lock);
++
++	/* return the number of buffers that were not posted */
++	*buff_count = *buff_count - i;
++
++	return status;
+ }
+ 
+ /**
+@@ -192,5 +583,87 @@ enum iecm_status iecm_ctlq_post_rx_buffs(struct iecm_hw *hw,
+ enum iecm_status iecm_ctlq_recv(struct iecm_ctlq_info *cq,
+ 				u16 *num_q_msg, struct iecm_ctlq_msg *q_msg)
+ {
+-	/* stub */
++	u16 num_to_clean, ntc, ret_val, flags;
++	enum iecm_status ret_code = 0;
++	struct iecm_ctlq_desc *desc;
++	u16 i = 0;
++
++	if (!cq || !cq->ring_size)
++		return IECM_ERR_CTLQ_EMPTY;
++
++	if (*num_q_msg == 0)
++		return 0;
++	else if (*num_q_msg > cq->ring_size)
++		return IECM_ERR_PARAM;
++
++	/* take the lock before we start messing with the ring */
++	mutex_lock(&cq->cq_lock);
++
++	ntc = cq->next_to_clean;
++
++	num_to_clean = *num_q_msg;
++
++	for (i = 0; i < num_to_clean; i++) {
++		u64 msg_cookie;
++
++		/* Fetch next descriptor and check if marked as done */
++		desc = IECM_CTLQ_DESC(cq, ntc);
++		flags = le16_to_cpu(desc->flags);
++
++		if (!(flags & IECM_CTLQ_FLAG_DD))
++			break;
++
++		ret_val = le16_to_cpu(desc->ret_val);
++
++		q_msg[i].vmvf_type = (flags &
++				      (IECM_CTLQ_FLAG_FTYPE_VM |
++				       IECM_CTLQ_FLAG_FTYPE_PF)) >>
++				      IECM_CTLQ_FLAG_FTYPE_S;
++
++		if (flags & IECM_CTLQ_FLAG_ERR)
++			ret_code = IECM_ERR_CTLQ_ERROR;
++
++		msg_cookie = (u64)le32_to_cpu(desc->cookie_high) << 32;
++		msg_cookie |= (u64)le32_to_cpu(desc->cookie_low);
++		memcpy(&q_msg[i].cookie, &msg_cookie, sizeof(u64));
++
++		q_msg[i].opcode = le16_to_cpu(desc->opcode);
++		q_msg[i].data_len = le16_to_cpu(desc->datalen);
++		q_msg[i].status = ret_val;
++
++		if (desc->datalen) {
++			memcpy(q_msg[i].ctx.indirect.context,
++			       &desc->params.indirect, IECM_INDIRECT_CTX_SIZE);
++
++			/* Assign pointer to DMA buffer to ctlq_msg array
++			 * to be given to upper layer
++			 */
++			q_msg[i].ctx.indirect.payload = cq->bi.rx_buff[ntc];
++
++			/* Zero out pointer to DMA buffer info;
++			 * will be repopulated by post buffers API
++			 */
++			cq->bi.rx_buff[ntc] = NULL;
++		} else {
++			memcpy(q_msg[i].ctx.direct, desc->params.raw,
++			       IECM_DIRECT_CTX_SIZE);
++		}
++
++		/* Zero out stale data in descriptor */
++		memset(desc, 0, sizeof(struct iecm_ctlq_desc));
++
++		ntc++;
++		if (ntc == cq->ring_size)
++			ntc = 0;
++	};
++
++	cq->next_to_clean = ntc;
++
++	mutex_unlock(&cq->cq_lock);
++
++	*num_q_msg = i;
++	if (*num_q_msg == 0)
++		ret_code = IECM_ERR_CTLQ_NO_WORK;
++
++	return ret_code;
+ }
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c b/drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c
+index 2fd6e3d15a1a..f230f2044a48 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c
+@@ -13,7 +13,13 @@ static enum iecm_status
+ iecm_ctlq_alloc_desc_ring(struct iecm_hw *hw,
+ 			  struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	size_t size = cq->ring_size * sizeof(struct iecm_ctlq_desc);
++
++	cq->desc_ring.va = iecm_alloc_dma_mem(hw, &cq->desc_ring, size);
++	if (!cq->desc_ring.va)
++		return IECM_ERR_NO_MEMORY;
++
++	return 0;
+ }
+ 
+ /**
+@@ -27,7 +33,52 @@ iecm_ctlq_alloc_desc_ring(struct iecm_hw *hw,
+ static enum iecm_status iecm_ctlq_alloc_bufs(struct iecm_hw *hw,
+ 					     struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	int i = 0;
++
++	/* Do not allocate DMA buffers for transmit queues */
++	if (cq->cq_type == IECM_CTLQ_TYPE_MAILBOX_TX)
++		return 0;
++
++	/* We'll be allocating the buffer info memory first, then we can
++	 * allocate the mapped buffers for the event processing
++	 */
++	cq->bi.rx_buff = kcalloc(cq->ring_size, sizeof(struct iecm_dma_mem *),
++				 GFP_KERNEL);
++	if (!cq->bi.rx_buff)
++		return IECM_ERR_NO_MEMORY;
++
++	/* allocate the mapped buffers (except for the last one) */
++	for (i = 0; i < cq->ring_size - 1; i++) {
++		struct iecm_dma_mem *bi;
++		int num = 1; /* number of iecm_dma_mem to be allocated */
++
++		cq->bi.rx_buff[i] = kcalloc(num, sizeof(struct iecm_dma_mem),
++					    GFP_KERNEL);
++		if (!cq->bi.rx_buff[i])
++			goto unwind_alloc_cq_bufs;
++
++		bi = cq->bi.rx_buff[i];
++
++		bi->va = iecm_alloc_dma_mem(hw, bi, cq->buf_size);
++		if (!bi->va) {
++			/* unwind will not free the failed entry */
++			kfree(cq->bi.rx_buff[i]);
++			goto unwind_alloc_cq_bufs;
++		}
++	}
++
++	return 0;
++
++unwind_alloc_cq_bufs:
++	/* don't try to free the one that failed... */
++	i--;
++	for (; i >= 0; i--) {
++		iecm_free_dma_mem(hw, cq->bi.rx_buff[i]);
++		kfree(cq->bi.rx_buff[i]);
++	}
++	kfree(cq->bi.rx_buff);
++
++	return IECM_ERR_NO_MEMORY;
+ }
+ 
+ /**
+@@ -41,7 +92,7 @@ static enum iecm_status iecm_ctlq_alloc_bufs(struct iecm_hw *hw,
+ static void iecm_ctlq_free_desc_ring(struct iecm_hw *hw,
+ 				     struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	iecm_free_dma_mem(hw, &cq->desc_ring);
+ }
+ 
+ /**
+@@ -54,7 +105,26 @@ static void iecm_ctlq_free_desc_ring(struct iecm_hw *hw,
+  */
+ static void iecm_ctlq_free_bufs(struct iecm_hw *hw, struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	void *bi;
++
++	if (cq->cq_type == IECM_CTLQ_TYPE_MAILBOX_RX) {
++		int i;
++
++		/* free DMA buffers for Rx queues*/
++		for (i = 0; i < cq->ring_size; i++) {
++			if (cq->bi.rx_buff[i]) {
++				iecm_free_dma_mem(hw, cq->bi.rx_buff[i]);
++				kfree(cq->bi.rx_buff[i]);
++			}
++		}
++
++		bi = (void *)cq->bi.rx_buff;
++	} else {
++		bi = (void *)cq->bi.tx_msg;
++	}
++
++	/* free the buffer header */
++	kfree(bi);
+ }
+ 
+ /**
+@@ -66,7 +136,9 @@ static void iecm_ctlq_free_bufs(struct iecm_hw *hw, struct iecm_ctlq_info *cq)
+  */
+ void iecm_ctlq_dealloc_ring_res(struct iecm_hw *hw, struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	/* free ring buffers and the ring itself */
++	iecm_ctlq_free_bufs(hw, cq);
++	iecm_ctlq_free_desc_ring(hw, cq);
+ }
+ 
+ /**
+@@ -80,5 +152,26 @@ void iecm_ctlq_dealloc_ring_res(struct iecm_hw *hw, struct iecm_ctlq_info *cq)
+ enum iecm_status iecm_ctlq_alloc_ring_res(struct iecm_hw *hw,
+ 					  struct iecm_ctlq_info *cq)
+ {
+-	/* stub */
++	enum iecm_status ret_code;
++
++	/* verify input for valid configuration */
++	if (!cq->ring_size || !cq->buf_size)
++		return IECM_ERR_CFG;
++
++	/* allocate the ring memory */
++	ret_code = iecm_ctlq_alloc_desc_ring(hw, cq);
++	if (ret_code)
++		return ret_code;
++
++	/* allocate buffers in the rings */
++	ret_code = iecm_ctlq_alloc_bufs(hw, cq);
++	if (ret_code)
++		goto iecm_init_cq_free_ring;
++
++	/* success! */
++	return 0;
++
++iecm_init_cq_free_ring:
++	iecm_free_dma_mem(hw, &cq->desc_ring);
++	return ret_code;
+ }
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+index 9aa944430187..afceab24aeda 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
+@@ -163,7 +163,76 @@ static int iecm_intr_req(struct iecm_adapter *adapter)
+  */
+ static int iecm_cfg_netdev(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	netdev_features_t dflt_features;
++	netdev_features_t offloads = 0;
++	struct iecm_netdev_priv *np;
++	struct net_device *netdev;
++	int err;
++
++	netdev = alloc_etherdev_mqs(sizeof(struct iecm_netdev_priv),
++				    IECM_MAX_Q, IECM_MAX_Q);
++	if (!netdev)
++		return -ENOMEM;
++	vport->netdev = netdev;
++	np = netdev_priv(netdev);
++	np->vport = vport;
++
++	if (!is_valid_ether_addr(vport->default_mac_addr)) {
++		eth_hw_addr_random(netdev);
++		ether_addr_copy(vport->default_mac_addr, netdev->dev_addr);
++	} else {
++		ether_addr_copy(netdev->dev_addr, vport->default_mac_addr);
++		ether_addr_copy(netdev->perm_addr, vport->default_mac_addr);
++	}
++
++	/* assign netdev_ops */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		netdev->netdev_ops = &iecm_netdev_ops_splitq;
++	else
++		netdev->netdev_ops = &iecm_netdev_ops_singleq;
++
++	/* setup watchdog timeout value to be 5 second */
++	netdev->watchdog_timeo = 5 * HZ;
++
++	/* configure default MTU size */
++	netdev->min_mtu = ETH_MIN_MTU;
++	netdev->max_mtu = vport->max_mtu;
++
++	dflt_features = NETIF_F_SG	|
++			NETIF_F_HIGHDMA	|
++			NETIF_F_RXHASH;
++
++	if (iecm_is_cap_ena(adapter, VIRTCHNL_CAP_STATELESS_OFFLOADS)) {
++		dflt_features |=
++			NETIF_F_RXCSUM |
++			NETIF_F_IP_CSUM |
++			NETIF_F_IPV6_CSUM |
++			0;
++		offloads |= NETIF_F_TSO |
++			    NETIF_F_TSO6;
++	}
++	if (iecm_is_cap_ena(adapter, VIRTCHNL_CAP_UDP_SEG_OFFLOAD))
++		offloads |= NETIF_F_GSO_UDP_L4;
++
++	netdev->features |= dflt_features;
++	netdev->hw_features |= dflt_features | offloads;
++	netdev->hw_enc_features |= dflt_features | offloads;
++
++	iecm_set_ethtool_ops(netdev);
++	SET_NETDEV_DEV(netdev, &adapter->pdev->dev);
++
++	err = register_netdev(netdev);
++	if (err)
++		return err;
++
++	/* carrier off on init to avoid Tx hangs */
++	netif_carrier_off(netdev);
++
++	/* make sure transmit queues start off as stopped */
++	netif_tx_stop_all_queues(netdev);
++
++	return 0;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_osdep.c b/drivers/net/ethernet/intel/iecm/iecm_osdep.c
+index d0534df357d0..be5dbe1d23b2 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_osdep.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_osdep.c
+@@ -6,10 +6,23 @@
+ 
+ void *iecm_alloc_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem, u64 size)
+ {
+-	/* stub */
++	size_t sz = ALIGN(size, 4096);
++	struct iecm_adapter *pf = hw->back;
++
++	mem->va = dma_alloc_coherent(&pf->pdev->dev, sz,
++				     &mem->pa, GFP_KERNEL | __GFP_ZERO);
++	mem->size = size;
++
++	return mem->va;
+ }
+ 
+ void iecm_free_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem)
+ {
+-	/* stub */
++	struct iecm_adapter *pf = hw->back;
++
++	dma_free_coherent(&pf->pdev->dev, mem->size,
++			  mem->va, mem->pa);
++	mem->size = 0;
++	mem->va = NULL;
++	mem->pa = 0;
+ }
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+index 6fa441e34e21..c5061778ce74 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+@@ -39,7 +39,42 @@ struct iecm_rx_ptype_decoded iecm_rx_ptype_lkup[IECM_RX_SUPP_PTYPE] = {
+  */
+ static void iecm_recv_event_msg(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	enum virtchnl_link_speed link_speed;
++	struct virtchnl_pf_event *vpe;
++
++	vpe = (struct virtchnl_pf_event *)vport->adapter->vc_msg;
++
++	switch (vpe->event) {
++	case VIRTCHNL_EVENT_LINK_CHANGE:
++		link_speed = vpe->event_data.link_event.link_speed;
++		adapter->link_speed = link_speed;
++		if (adapter->link_up !=
++		    vpe->event_data.link_event.link_status) {
++			adapter->link_up =
++				vpe->event_data.link_event.link_status;
++			if (adapter->link_up) {
++				netif_tx_start_all_queues(vport->netdev);
++				netif_carrier_on(vport->netdev);
++			} else {
++				netif_tx_stop_all_queues(vport->netdev);
++				netif_carrier_off(vport->netdev);
++			}
++		}
++		break;
++	case VIRTCHNL_EVENT_RESET_IMPENDING:
++			mutex_lock(&adapter->reset_lock);
++			set_bit(__IECM_HR_CORE_RESET, adapter->flags);
++			queue_delayed_work(adapter->vc_event_wq,
++					   &adapter->vc_event_task,
++					   msecs_to_jiffies(10));
++		break;
++	default:
++		dev_err(&vport->adapter->pdev->dev,
++			"Unknown event %d from PF\n", vpe->event);
++		break;
++	}
++	mutex_unlock(&vport->adapter->vc_msg_lock);
+ }
+ 
+ /**
+@@ -53,7 +88,34 @@ static void iecm_recv_event_msg(struct iecm_vport *vport)
+ static enum iecm_status
+ iecm_mb_clean(struct iecm_adapter *adapter)
+ {
+-	/* stub */
++	enum iecm_status err = 0;
++	u16 num_q_msg = IECM_DFLT_MBX_Q_LEN;
++	struct iecm_ctlq_msg **q_msg;
++	struct iecm_dma_mem *dma_mem;
++	u16 i;
++
++	q_msg = kcalloc(num_q_msg, sizeof(struct iecm_ctlq_msg *), GFP_KERNEL);
++	if (!q_msg) {
++		err = IECM_ERR_NO_MEMORY;
++		goto error;
++	}
++
++	err = iecm_ctlq_clean_sq(adapter->hw.asq, &num_q_msg,
++				 q_msg);
++	if (err)
++		goto error;
++
++	for (i = 0; i < num_q_msg; i++) {
++		dma_mem = q_msg[i]->ctx.indirect.payload;
++		if (dma_mem)
++			dmam_free_coherent(&adapter->pdev->dev, dma_mem->size,
++					   dma_mem->va, dma_mem->pa);
++		kfree(q_msg[i]);
++	}
++	kfree(q_msg);
++
++error:
++	return err;
+ }
+ 
+ /**
+@@ -71,7 +133,56 @@ enum iecm_status
+ iecm_send_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
+ 		 u16 msg_size, u8 *msg)
+ {
+-	/* stub */
++	enum iecm_status err = 0;
++	struct iecm_ctlq_msg *ctlq_msg;
++	struct iecm_dma_mem *dma_mem;
++
++	err = iecm_mb_clean(adapter);
++	if (err)
++		goto err;
++
++	ctlq_msg = kzalloc(sizeof(struct iecm_ctlq_msg), GFP_KERNEL);
++	if (!ctlq_msg) {
++		err = IECM_ERR_NO_MEMORY;
++		goto err;
++	}
++
++	dma_mem = kzalloc(sizeof(struct iecm_dma_mem), GFP_KERNEL);
++	if (!dma_mem) {
++		err = IECM_ERR_NO_MEMORY;
++		goto dma_mem_error;
++	}
++
++	memset(ctlq_msg, 0, sizeof(struct iecm_ctlq_msg));
++	ctlq_msg->opcode = iecm_mbq_opc_send_msg_to_cp;
++	ctlq_msg->func_id = 0;
++	ctlq_msg->data_len = msg_size;
++	ctlq_msg->cookie.mbx.chnl_opcode = op;
++	ctlq_msg->cookie.mbx.chnl_retval = VIRTCHNL_STATUS_SUCCESS;
++	dma_mem->size = IECM_DFLT_MBX_BUF_SIZE;
++	dma_mem->va = dmam_alloc_coherent(&adapter->pdev->dev, dma_mem->size,
++					  &dma_mem->pa, GFP_KERNEL);
++	if (!dma_mem->va) {
++		err = IECM_ERR_NO_MEMORY;
++		goto dma_alloc_error;
++	}
++	memcpy(dma_mem->va, msg, msg_size);
++	ctlq_msg->ctx.indirect.payload = dma_mem;
++
++	err = iecm_ctlq_send(&adapter->hw, adapter->hw.asq, 1, ctlq_msg);
++	if (err)
++		goto send_error;
++
++	return err;
++send_error:
++	dmam_free_coherent(&adapter->pdev->dev, dma_mem->size, dma_mem->va,
++			   dma_mem->pa);
++dma_alloc_error:
++	kfree(dma_mem);
++dma_mem_error:
++	kfree(ctlq_msg);
++err:
++	return err;
+ }
+ EXPORT_SYMBOL(iecm_send_mb_msg);
+ 
+@@ -88,7 +199,265 @@ enum iecm_status
+ iecm_recv_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
+ 		 void *msg, int msg_size)
+ {
+-	/* stub */
++	enum iecm_status status = 0;
++	struct iecm_ctlq_msg ctlq_msg;
++	struct iecm_dma_mem *dma_mem;
++	struct iecm_vport *vport;
++	bool work_done = false;
++	int payload_size = 0;
++	int num_retry = 10;
++	u16 num_q_msg;
++
++	vport = adapter->vports[0];
++	while (1) {
++		/* Try to get one message */
++		num_q_msg = 1;
++		dma_mem = NULL;
++		status = iecm_ctlq_recv(adapter->hw.arq,
++					&num_q_msg, &ctlq_msg);
++		/* If no message then decide if we have to retry based on
++		 * opcode
++		 */
++		if (status || !num_q_msg) {
++			if (op && num_retry--) {
++				msleep(20);
++				continue;
++			} else {
++				break;
++			}
++		}
++
++		/* If we are here a message is received. Check if we are looking
++		 * for a specific message based on opcode. If it is different
++		 * ignore and post buffers
++		 */
++		if (op && ctlq_msg.cookie.mbx.chnl_opcode != op)
++			goto post_buffs;
++
++		if (ctlq_msg.data_len)
++			payload_size = ctlq_msg.ctx.indirect.payload->size;
++
++		/* All conditions are met. Either a message requested is
++		 * received or we received a message to be processed
++		 */
++		switch (ctlq_msg.cookie.mbx.chnl_opcode) {
++		case VIRTCHNL_OP_VERSION:
++		case VIRTCHNL_OP_GET_CAPS:
++		case VIRTCHNL_OP_CREATE_VPORT:
++			if (msg)
++				memcpy(msg, ctlq_msg.ctx.indirect.payload->va,
++				       min_t(int,
++					     payload_size, msg_size));
++			work_done = true;
++			break;
++		case VIRTCHNL_OP_ENABLE_VPORT:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_ENA_VPORT_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_ENA_VPORT, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_DISABLE_VPORT:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_DIS_VPORT_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_DIS_VPORT, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_DESTROY_VPORT:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_DESTROY_VPORT_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_DESTROY_VPORT, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_CONFIG_TX_QUEUES:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_CONFIG_TXQ_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_CONFIG_TXQ, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_CONFIG_RX_QUEUES:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_CONFIG_RXQ_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_CONFIG_RXQ, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_ENABLE_QUEUES_V2:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_ENA_QUEUES_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_ENA_QUEUES, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_DISABLE_QUEUES_V2:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_DIS_QUEUES_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_DIS_QUEUES, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_ADD_QUEUES:
++			if (ctlq_msg.cookie.mbx.chnl_retval) {
++				set_bit(IECM_VC_ADD_QUEUES_ERR,
++					adapter->vc_state);
++			} else {
++				mutex_lock(&adapter->vc_msg_lock);
++				memcpy(adapter->vc_msg,
++				       ctlq_msg.ctx.indirect.payload->va,
++				       min((int)
++					   ctlq_msg.ctx.indirect.payload->size,
++					   IECM_DFLT_MBX_BUF_SIZE));
++			}
++			set_bit(IECM_VC_ADD_QUEUES, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_DEL_QUEUES:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_DEL_QUEUES_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_DEL_QUEUES, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_MAP_QUEUE_VECTOR:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_MAP_IRQ_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_MAP_IRQ, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_UNMAP_QUEUE_VECTOR:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_UNMAP_IRQ_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_UNMAP_IRQ, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_GET_STATS:
++			if (ctlq_msg.cookie.mbx.chnl_retval) {
++				set_bit(IECM_VC_GET_STATS_ERR,
++					adapter->vc_state);
++			} else {
++				mutex_lock(&adapter->vc_msg_lock);
++				memcpy(adapter->vc_msg,
++				       ctlq_msg.ctx.indirect.payload->va,
++				       min_t(int,
++					     payload_size,
++					     IECM_DFLT_MBX_BUF_SIZE));
++			}
++			set_bit(IECM_VC_GET_STATS, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_GET_RSS_HASH:
++			if (ctlq_msg.cookie.mbx.chnl_retval) {
++				set_bit(IECM_VC_GET_RSS_HASH_ERR,
++					adapter->vc_state);
++			} else {
++				mutex_lock(&adapter->vc_msg_lock);
++				memcpy(adapter->vc_msg,
++				       ctlq_msg.ctx.indirect.payload->va,
++				       min_t(int,
++					     payload_size,
++					     IECM_DFLT_MBX_BUF_SIZE));
++			}
++			set_bit(IECM_VC_GET_RSS_HASH, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_SET_RSS_HASH:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_SET_RSS_HASH_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_SET_RSS_HASH, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_GET_RSS_LUT:
++			if (ctlq_msg.cookie.mbx.chnl_retval) {
++				set_bit(IECM_VC_GET_RSS_LUT_ERR,
++					adapter->vc_state);
++			} else {
++				mutex_lock(&adapter->vc_msg_lock);
++				memcpy(adapter->vc_msg,
++				       ctlq_msg.ctx.indirect.payload->va,
++				       min_t(int,
++					     payload_size,
++					     IECM_DFLT_MBX_BUF_SIZE));
++			}
++			set_bit(IECM_VC_GET_RSS_LUT, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_SET_RSS_LUT:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_SET_RSS_LUT_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_SET_RSS_LUT, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_GET_RSS_KEY:
++			if (ctlq_msg.cookie.mbx.chnl_retval) {
++				set_bit(IECM_VC_GET_RSS_KEY_ERR,
++					adapter->vc_state);
++			} else {
++				mutex_lock(&adapter->vc_msg_lock);
++				memcpy(adapter->vc_msg,
++				       ctlq_msg.ctx.indirect.payload->va,
++				       min_t(int,
++					     payload_size,
++					     IECM_DFLT_MBX_BUF_SIZE));
++			}
++			set_bit(IECM_VC_GET_RSS_KEY, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_CONFIG_RSS_KEY:
++			if (ctlq_msg.cookie.mbx.chnl_retval)
++				set_bit(IECM_VC_CONFIG_RSS_KEY_ERR,
++					adapter->vc_state);
++			set_bit(IECM_VC_CONFIG_RSS_KEY, adapter->vc_state);
++			wake_up(&adapter->vchnl_wq);
++			break;
++		case VIRTCHNL_OP_EVENT:
++			mutex_lock(&adapter->vc_msg_lock);
++			memcpy(adapter->vc_msg,
++			       ctlq_msg.ctx.indirect.payload->va,
++			       min_t(int,
++				     payload_size,
++				     IECM_DFLT_MBX_BUF_SIZE));
++			iecm_recv_event_msg(vport);
++			break;
++		default:
++			if (adapter->dev_ops.vc_ops.recv_mbx_msg)
++				status =
++				adapter->dev_ops.vc_ops.recv_mbx_msg(adapter,
++								   msg,
++								   msg_size,
++								   &ctlq_msg,
++								   &work_done);
++			else
++				dev_warn(&adapter->pdev->dev,
++					 "Unhandled virtchnl response %d\n",
++					 ctlq_msg.cookie.mbx.chnl_opcode);
++			break;
++		} /* switch v_opcode */
++post_buffs:
++		if (ctlq_msg.data_len)
++			dma_mem = ctlq_msg.ctx.indirect.payload;
++		else
++			num_q_msg = 0;
++
++		status = iecm_ctlq_post_rx_buffs(&adapter->hw, adapter->hw.arq,
++						 &num_q_msg,
++						 &dma_mem);
++		/* If post failed clear the only buffer we supplied */
++		if (status && dma_mem)
++			dmam_free_coherent(&adapter->pdev->dev, dma_mem->size,
++					   dma_mem->va, dma_mem->pa);
++		/* Applies only if we are looking for a specific opcode */
++		if (work_done)
++			break;
++	}
++
++	return status;
+ }
+ EXPORT_SYMBOL(iecm_recv_mb_msg);
+ 
+@@ -186,7 +555,27 @@ iecm_wait_for_event(struct iecm_adapter *adapter,
+ 		    enum iecm_vport_vc_state state,
+ 		    enum iecm_vport_vc_state err_check)
+ {
+-	/* stub */
++	enum iecm_status status;
++	int event;
++
++	event = wait_event_timeout(adapter->vchnl_wq,
++				   test_and_clear_bit(state, adapter->vc_state),
++				   msecs_to_jiffies(500));
++	if (event) {
++		if (test_and_clear_bit(err_check, adapter->vc_state)) {
++			dev_err(&adapter->pdev->dev,
++				"VC response error %d", err_check);
++			status = IECM_ERR_CFG;
++		} else {
++			status = 0;
++		}
++	} else {
++		/* Timeout occurred */
++		status = IECM_ERR_NOT_READY;
++		dev_err(&adapter->pdev->dev, "VC timeout, state = %u", state);
++	}
++
++	return status;
+ }
+ EXPORT_SYMBOL(iecm_wait_for_event);
+ 
+@@ -426,7 +815,14 @@ enum iecm_status iecm_send_get_rx_ptype_msg(struct iecm_vport *vport)
+ static struct iecm_ctlq_info *iecm_find_ctlq(struct iecm_hw *hw,
+ 					     enum iecm_ctlq_type type, int id)
+ {
+-	/* stub */
++	struct iecm_ctlq_info *cq, *tmp;
++
++	list_for_each_entry_safe(cq, tmp, &hw->cq_list_head, cq_list) {
++		if (cq->q_id == id && cq->cq_type == type)
++			return cq;
++	}
++
++	return NULL;
+ }
+ 
+ /**
+@@ -435,7 +831,8 @@ static struct iecm_ctlq_info *iecm_find_ctlq(struct iecm_hw *hw,
+  */
+ void iecm_deinit_dflt_mbx(struct iecm_adapter *adapter)
+ {
+-	/* stub */
++	cancel_delayed_work_sync(&adapter->init_task);
++	iecm_ctlq_deinit(&adapter->hw);
+ }
+ 
+ /**
+@@ -497,7 +894,21 @@ enum iecm_status iecm_init_dflt_mbx(struct iecm_adapter *adapter)
+  */
+ int iecm_vport_params_buf_alloc(struct iecm_adapter *adapter)
+ {
+-	/* stub */
++	adapter->vport_params_reqd = kcalloc(IECM_MAX_NUM_VPORTS,
++					     sizeof(*adapter->vport_params_reqd),
++					     GFP_KERNEL);
++	if (!adapter->vport_params_reqd)
++		return -ENOMEM;
++
++	adapter->vport_params_recvd = kcalloc(IECM_MAX_NUM_VPORTS,
++					      sizeof(*adapter->vport_params_recvd),
++					      GFP_KERNEL);
++	if (!adapter->vport_params_recvd) {
++		kfree(adapter->vport_params_reqd);
++		return -ENOMEM;
++	}
++
++	return 0;
+ }
+ 
+ /**
 -- 
 2.21.0
 
