@@ -1,48 +1,41 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 23 Jun 2020 11:18:00 +0200
-Subject: [Intel-wired-lan] Fw: [Bug 208275] New: kernel hang
- occasionally while running the sample of xdpsock
-In-Reply-To: <CAPydje_AdWjOoS4AJ5BMyFYLEsNciyNv_8YwkEMbO2B+Co0DfA@mail.gmail.com>
-References: <20200622090824.41cff8a3@hermes.lan>
- <CAJ+HfNhhpZoeoZC5gS93Lbc5GvDUO9m0RrKNFU=kU0v+AXe=ig@mail.gmail.com>
- <CAJ+HfNgG4dBTf7Ei2CmuedQLnv-nOqpf4Nuep+FB9Oxob+zhdA@mail.gmail.com>
- <CAPydje_AdWjOoS4AJ5BMyFYLEsNciyNv_8YwkEMbO2B+Co0DfA@mail.gmail.com>
-Message-ID: <CAJ+HfNjOUsJAOMmz6wq3zoxRQ5HtBjFzkJ64eCWiPWxkFWDGnQ@mail.gmail.com>
+From: Magnus Karlsson <magnus.karlsson@intel.com>
+Date: Tue, 23 Jun 2020 11:44:15 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/3] i40e: improve AF_XDP
+ performance
+Message-ID: <1592905458-850-1-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 23 Jun 2020 at 05:45, Yahui Chen <goodluckwillcomesoon@gmail.com> wrote:
->
-> Hi, Bjorn, Thank your response.
-> Could you describe it more clearly? I can not get it exactly.
-> Thx.
->
+This small series improves AF_XDP performance for the i40e NIC. The
+first patch optimizes the Tx completion path for AF_XDP. The second
+one removes a division in the data path for the normal SKB path, XDP
+as well as AF_XDP. Finally, the third one moves the test of a full Tx
+ring to outside the send loop. Overall, the throughput of the l2fwd
+application in xpdsock improves with around 8% on my machine.
 
-When XDP is enabled, the ixgbe NIC does a (somewhat heavy)
-reconfiguration. During the reconfiguration, for some reason, the
-rx_buffer->page is NULL in the following call chain:
-  ixgbe_down()->ixgbe_clean_all_rx_rings()->ixgbe_clean_rx_ring()->__page_frag_cache_drain()
+v1->v2:
+* Removed unnecessary variables in i40e_clean_xdp_tx_irq [Sridhar]
+* Added one further optimization to Tx path in a new patch [Sridhar]
+* Fixed two API documentation warnings with make W=1
 
-This results in that when __page_frag_cache_drain() want to touch the
-reference counter, you get a NULL pointer dereference.
+This patch has been applied against commit 8af7b4525acf ("Merge branch
+'net-atlantic-additional-A2-features'")
 
-[277994.329145] BUG: kernel NULL pointer dereference, address: 0000000000000034
-...
-[277994.329428] RIP: 0010:__page_frag_cache_drain+0x5/0x40
-[277994.329463] Code: d2 ff ff 31 f6 84 c0 74 04 0f b6 73 51 48 89 df
-e8 70 ff ff ff eb dc 48 83 eb 01 eb d0 0f 1f 84 00 00 00 00 00 0f 1f
-44 00 00 <f0> 29 77 34 74 01 c3 48 8b 07 55 48 89 e5 a9 00 00 01 00 74
-0f 0f
+Thanks: Magnus
 
-2a:*    f0 29 77 34              lock sub %esi,0x34(%rdi)        <--
-trapping instruction
+Magnus Karlsson (3):
+  i40e: optimize AF_XDP Tx completion path
+  i40e: eliminate division in napi_poll data path
+  i40e: move check of full Tx ring to outside of send loop
 
-I tried to reproduce the issue, but without success so far. I'll keep
-looking for the bug. Hopefully someone from Intel with better insight
-into ixgbe can help!
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 17 ++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 57 +++++++++++++----------------
+ drivers/net/ethernet/intel/i40e/i40e_xsk.h  |  3 +-
+ 4 files changed, 39 insertions(+), 39 deletions(-)
 
-
-Bj?rn
+--
+2.7.4
