@@ -1,144 +1,48 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 23 Jun 2020 15:41:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 941a98df2638c216be175cd4d9a7e6eea876f38b
-Message-ID: <5ef1b235.Y8pgZFe5pmZ6kOGV%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 23 Jun 2020 11:18:00 +0200
+Subject: [Intel-wired-lan] Fw: [Bug 208275] New: kernel hang
+ occasionally while running the sample of xdpsock
+In-Reply-To: <CAPydje_AdWjOoS4AJ5BMyFYLEsNciyNv_8YwkEMbO2B+Co0DfA@mail.gmail.com>
+References: <20200622090824.41cff8a3@hermes.lan>
+ <CAJ+HfNhhpZoeoZC5gS93Lbc5GvDUO9m0RrKNFU=kU0v+AXe=ig@mail.gmail.com>
+ <CAJ+HfNgG4dBTf7Ei2CmuedQLnv-nOqpf4Nuep+FB9Oxob+zhdA@mail.gmail.com>
+ <CAPydje_AdWjOoS4AJ5BMyFYLEsNciyNv_8YwkEMbO2B+Co0DfA@mail.gmail.com>
+Message-ID: <CAJ+HfNjOUsJAOMmz6wq3zoxRQ5HtBjFzkJ64eCWiPWxkFWDGnQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 941a98df2638c216be175cd4d9a7e6eea876f38b  ice: Fix a couple off by one bugs
+On Tue, 23 Jun 2020 at 05:45, Yahui Chen <goodluckwillcomesoon@gmail.com> wrote:
+>
+> Hi, Bjorn, Thank your response.
+> Could you describe it more clearly? I can not get it exactly.
+> Thx.
+>
 
-elapsed time: 724m
+When XDP is enabled, the ixgbe NIC does a (somewhat heavy)
+reconfiguration. During the reconfiguration, for some reason, the
+rx_buffer->page is NULL in the following call chain:
+  ixgbe_down()->ixgbe_clean_all_rx_rings()->ixgbe_clean_rx_ring()->__page_frag_cache_drain()
 
-configs tested: 118
-configs skipped: 8
+This results in that when __page_frag_cache_drain() want to touch the
+reference counter, you get a NULL pointer dereference.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+[277994.329145] BUG: kernel NULL pointer dereference, address: 0000000000000034
+...
+[277994.329428] RIP: 0010:__page_frag_cache_drain+0x5/0x40
+[277994.329463] Code: d2 ff ff 31 f6 84 c0 74 04 0f b6 73 51 48 89 df
+e8 70 ff ff ff eb dc 48 83 eb 01 eb d0 0f 1f 84 00 00 00 00 00 0f 1f
+44 00 00 <f0> 29 77 34 74 01 c3 48 8b 07 55 48 89 e5 a9 00 00 01 00 74
+0f 0f
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-mips                malta_kvm_guest_defconfig
-sh                          rsk7203_defconfig
-arc                         haps_hs_defconfig
-xtensa                          iss_defconfig
-arm                          lpd270_defconfig
-arm                         s3c6400_defconfig
-xtensa                           alldefconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                           h3600_defconfig
-sh                          sdk7780_defconfig
-x86_64                              defconfig
-xtensa                    xip_kc705_defconfig
-arm                        keystone_defconfig
-arm                       versatile_defconfig
-m68k                            mac_defconfig
-sh                           sh2007_defconfig
-mips                        omega2p_defconfig
-powerpc                          g5_defconfig
-c6x                         dsk6455_defconfig
-arm                          tango4_defconfig
-powerpc                      ppc44x_defconfig
-m68k                             allyesconfig
-arm                          gemini_defconfig
-powerpc                 mpc8272_ads_defconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-sh                          rsk7264_defconfig
-mips                          malta_defconfig
-sparc64                             defconfig
-mips                    maltaup_xpa_defconfig
-alpha                               defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a006-20200622
-i386                 randconfig-a002-20200622
-i386                 randconfig-a003-20200622
-i386                 randconfig-a001-20200622
-i386                 randconfig-a005-20200622
-i386                 randconfig-a004-20200622
-i386                 randconfig-a016-20200622
-i386                 randconfig-a012-20200622
-i386                 randconfig-a014-20200622
-i386                 randconfig-a015-20200622
-i386                 randconfig-a011-20200622
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allyesconfig
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
+2a:*    f0 29 77 34              lock sub %esi,0x34(%rdi)        <--
+trapping instruction
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+I tried to reproduce the issue, but without success so far. I'll keep
+looking for the bug. Hopefully someone from Intel with better insight
+into ixgbe can help!
+
+
+Bj?rn
