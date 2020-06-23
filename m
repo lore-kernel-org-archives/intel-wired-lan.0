@@ -1,52 +1,102 @@
 From: Magnus Karlsson <magnus.karlsson@intel.com>
-Date: Tue, 23 Jun 2020 11:44:17 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: eliminate division
- in napi_poll data path
+Date: Tue, 23 Jun 2020 11:44:18 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e: move check of full
+ Tx ring to outside of send loop
 In-Reply-To: <1592905458-850-1-git-send-email-magnus.karlsson@intel.com>
 References: <1592905458-850-1-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <1592905458-850-3-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <1592905458-850-4-git-send-email-magnus.karlsson@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Eliminate a division in the napi_poll data path. This division is
-executed even though it is only needed in the rare case when there are
-not enough interrupt lines so they have to be shared between queue
-pairs. Instead, just test for this case and only execute the division
-if needed. The code has been lifted from the ice driver.
+Move the check if the Hw Tx ring is full to outside the send
+loop. Currently it is checked for every single descriptor that we
+send. Instead, tell the send loop to only process a maximum number of
+packets equal to the number of available slots in the Tx ring. This
+way, we can remove the check inside the send loop to and gain some
+performance.
 
+Suggested-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 9334abd..60fa102 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2595,10 +2595,16 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 	if (budget <= 0)
- 		goto tx_only;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 86635f5..081783a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -381,17 +381,10 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ 	unsigned int sent_frames = 0, total_bytes = 0;
+ 	struct i40e_tx_desc *tx_desc = NULL;
+ 	struct i40e_tx_buffer *tx_bi;
+-	bool work_done = true;
+ 	struct xdp_desc desc;
+ 	dma_addr_t dma;
  
--	/* We attempt to distribute budget to each Rx queue fairly, but don't
--	 * allow the budget to go below 1 because that would exit polling early.
--	 */
--	budget_per_ring = max(budget/q_vector->num_ringpairs, 1);
-+	/* normally we have 1 Rx ring per q_vector */
-+	if (unlikely(q_vector->num_ringpairs > 1))
-+		/* We attempt to distribute budget to each Rx queue fairly, but
-+		 * don't allow the budget to go below 1 because that would exit
-+		 * polling early.
-+		 */
-+		budget_per_ring = max_t(int, budget / q_vector->num_ringpairs, 1);
-+	else
-+		/* Max of 1 Rx ring in this q_vector so give it the budget */
-+		budget_per_ring = budget;
+ 	while (budget-- > 0) {
+-		if (!unlikely(I40E_DESC_UNUSED(xdp_ring))) {
+-			xdp_ring->tx_stats.tx_busy++;
+-			work_done = false;
+-			break;
+-		}
+-
+ 		if (!xsk_umem_consume_tx(xdp_ring->xsk_umem, &desc))
+ 			break;
  
- 	i40e_for_each_ring(ring, q_vector->rx) {
- 		int cleaned = ring->xsk_umem ?
+@@ -427,7 +420,7 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ 		i40e_update_tx_stats(xdp_ring, sent_frames, total_bytes);
+ 	}
+ 
+-	return !!budget && work_done;
++	return !!budget;
+ }
+ 
+ /**
+@@ -448,19 +441,18 @@ static void i40e_clean_xdp_tx_buffer(struct i40e_ring *tx_ring,
+ 
+ /**
+  * i40e_clean_xdp_tx_irq - Completes AF_XDP entries, and cleans XDP entries
++ * @vsi: Current VSI
+  * @tx_ring: XDP Tx ring
+- * @tx_bi: Tx buffer info to clean
+  *
+  * Returns true if cleanup/tranmission is done.
+  **/
+ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi, struct i40e_ring *tx_ring)
+ {
+-	unsigned int ntc, budget = vsi->work_limit;
+ 	struct xdp_umem *umem = tx_ring->xsk_umem;
+ 	u32 i, completed_frames, xsk_frames = 0;
+ 	u32 head_idx = i40e_get_head(tx_ring);
+ 	struct i40e_tx_buffer *tx_bi;
+-	bool xmit_done;
++	unsigned int ntc;
+ 
+ 	if (head_idx < tx_ring->next_to_clean)
+ 		head_idx += tx_ring->count;
+@@ -504,9 +496,7 @@ bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi, struct i40e_ring *tx_ring)
+ 	if (xsk_umem_uses_need_wakeup(tx_ring->xsk_umem))
+ 		xsk_set_tx_need_wakeup(tx_ring->xsk_umem);
+ 
+-	xmit_done = i40e_xmit_zc(tx_ring, budget);
+-
+-	return xmit_done;
++	return i40e_xmit_zc(tx_ring, I40E_DESC_UNUSED(tx_ring));
+ }
+ 
+ /**
+@@ -570,7 +560,7 @@ void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring)
+ 
+ /**
+  * i40e_xsk_clean_xdp_ring - Clean the XDP Tx ring on shutdown
+- * @xdp_ring: XDP Tx ring
++ * @tx_ring: XDP Tx ring
+  **/
+ void i40e_xsk_clean_tx_ring(struct i40e_ring *tx_ring)
+ {
 -- 
 2.7.4
 
