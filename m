@@ -1,12 +1,12 @@
 From: Lu, Nannan <nannan.lu@intel.com>
-Date: Wed, 24 Jun 2020 07:29:08 +0000
-Subject: [Intel-wired-lan] [PATCH v3 1/5] ice: add the virtchnl handler
- for AdminQ command
-In-Reply-To: <20200624020801.104003-2-haiyue.wang@intel.com>
+Date: Wed, 24 Jun 2020 07:30:17 +0000
+Subject: [Intel-wired-lan] [PATCH v3 4/5] ice: enable DDP package info
+ querying
+In-Reply-To: <20200624020801.104003-5-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200624020801.104003-1-haiyue.wang@intel.com>
- <20200624020801.104003-2-haiyue.wang@intel.com>
-Message-ID: <DM6PR11MB3900BEDF95B60D0DED711A48F8950@DM6PR11MB3900.namprd11.prod.outlook.com>
+ <20200624020801.104003-5-haiyue.wang@intel.com>
+Message-ID: <DM6PR11MB3900E05ADBFB870DC6277859F8950@DM6PR11MB3900.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,34 +18,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Haiyue Wang
 > Sent: Wednesday, June 24, 2020 10:08 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3 1/5] ice: add the virtchnl handler for
-> AdminQ command
+> Cc: Xu, Ting <ting.xu@intel.com>; Rong, Leyi <leyi.rong@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v3 4/5] ice: enable DDP package info querying
 > 
-> The DCF (Device Config Function) is a named trust VF (alway with ID 0, single
-> entity per PF port) that can act as a sole controlling entity to exercise advance
-> functionality such as adding switch rules for the rest of VFs.
+> Since the firmware doesn't support reading the DDP package data that PF is
+> using. The DCF has to find the PF's DDP package file directly.
 > 
-> To achieve this approach, this VF is permitted to send some basic AdminQ
-> commands to the PF through virtual channel (mailbox), then the PF driver sends
-> these commands to the firmware, and returns the response to the VF again
-> through virtual channel.
+> For searching the right DDP package that the PF uses, the DCF needs the DDP
+> package characteristic information such as the PF's device serial number which is
+> used to find the package loading path, and the exact DDP track ID, package
+> name, version.
 > 
-> The AdminQ command from DCF is split into two parts: one is the AdminQ
-> descriptor, the other is the buffer (the descriptor has BUF flag set).
-> These two parts should be sent in order, so that the PF can handle them
-> correctly.
+> Only with the matched DDP package, the DCF can get the right metadata to
+> create switch rules etc.
 > 
+> Signed-off-by: Leyi Rong <leyi.rong@intel.com>
+> Signed-off-by: Ting Xu <ting.xu@intel.com>
 > Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile       |   2 +-
->  drivers/net/ethernet/intel/ice/ice.h          |   2 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
->  drivers/net/ethernet/intel/ice/ice_dcf.c      |  49 +++++++
->  drivers/net/ethernet/intel/ice/ice_dcf.h      |  20 +++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 130 ++++++++++++++++++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
->  include/linux/avf/virtchnl.h                  |  10 ++
->  8 files changed, 219 insertions(+), 1 deletion(-)  create mode 100644
+>  drivers/net/ethernet/intel/ice/ice_dcf.h      |  6 +++
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 52 +++++++++++++++++++
+>  include/linux/avf/virtchnl.h                  | 23 ++++++++
+>  4 files changed, 83 insertions(+)
 > 
 
 Tested-by: Nannan Lu <nannan.lu@intel.com>
