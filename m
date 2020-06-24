@@ -1,12 +1,12 @@
 From: Lu, Nannan <nannan.lu@intel.com>
-Date: Wed, 24 Jun 2020 07:30:17 +0000
+Date: Wed, 24 Jun 2020 07:30:39 +0000
 Subject: [Intel-wired-lan] [PATCH v3 4/5] ice: enable DDP package info
  querying
 In-Reply-To: <20200624020801.104003-5-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200624020801.104003-1-haiyue.wang@intel.com>
  <20200624020801.104003-5-haiyue.wang@intel.com>
-Message-ID: <DM6PR11MB3900E05ADBFB870DC6277859F8950@DM6PR11MB3900.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB3900D1118953EE8B313D80F0F8950@DM6PR11MB3900.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
