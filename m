@@ -1,89 +1,24 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 24 Jun 2020 19:47:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD REGRESSION
- a9ce8ef80a26ae6dabd0a77dac5de045072d81d6
-Message-ID: <5ef33d45.OVaf1YXQI4zfDM20%lkp@intel.com>
+Date: Wed, 24 Jun 2020 22:54:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
+ dc6cfe5d9f4441deec424e658609f9ab9634c3af
+Message-ID: <5ef3692a.ElQJ/WKwyobRzgZM%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: a9ce8ef80a26ae6dabd0a77dac5de045072d81d6  idpf: Introduce idpf driver
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+branch HEAD: dc6cfe5d9f4441deec424e658609f9ab9634c3af  i40e: Remove scheduling while atomic possibility
 
-Error/Warning in current branch:
+elapsed time: 720m
 
-drivers/net/ethernet/intel/idpf/idpf_main.c:46:5: warning: no previous prototype for 'idpf_probe' [-Wmissing-prototypes]
-include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+configs tested: 112
+configs skipped: 3
 
-Error/Warning ids grouped by kconfigs:
-
-recent_errors
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- arc-allyesconfig
-|   |-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- arm-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- arm-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- arm64-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- arm64-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- i386-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-debian-10.3
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- microblaze-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- mips-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- mips-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- riscv-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- riscv-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- s390-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- s390-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- sparc-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- sparc64-allmodconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-|-- sparc64-allyesconfig
-|   `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-`-- xtensa-allyesconfig
-    `-- drivers-net-ethernet-intel-idpf-idpf_main.c:warning:no-previous-prototype-for-idpf_probe
-
-elapsed time: 722m
-
-configs tested: 92
-configs skipped: 2
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 arm                                 defconfig
 arm                              allyesconfig
@@ -93,14 +28,27 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm64                            allmodconfig
 arm64                             allnoconfig
-powerpc                      mgcoge_defconfig
-sh                ecovec24-romimage_defconfig
-arm                        mvebu_v7_defconfig
-arm                        multi_v5_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                          allyesconfig
-s390                              allnoconfig
-mips                        qi_lb60_defconfig
+mips                      fuloong2e_defconfig
+arm                           sama5_defconfig
+arm                           h5000_defconfig
+h8300                    h8300h-sim_defconfig
+arm                           sunxi_defconfig
+sh                         ap325rxa_defconfig
+sh                             espt_defconfig
+x86_64                              defconfig
+sparc                       sparc32_defconfig
+powerpc                mpc7448_hpc2_defconfig
+mips                      loongson3_defconfig
+riscv                    nommu_k210_defconfig
+arm                        clps711x_defconfig
+parisc                              defconfig
+sh                     sh7710voipgw_defconfig
+arm                            mps2_defconfig
+mips                        omega2p_defconfig
+arm                      footbridge_defconfig
+xtensa                       common_defconfig
+arm                          pxa910_defconfig
+mips                 decstation_r4k_defconfig
 i386                              allnoconfig
 i386                             allyesconfig
 i386                                defconfig
@@ -120,12 +68,6 @@ csky                             allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
 h8300                            allmodconfig
@@ -135,14 +77,20 @@ arc                              allyesconfig
 sh                               allmodconfig
 sh                                allnoconfig
 microblaze                        allnoconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
 mips                             allyesconfig
 mips                              allnoconfig
 mips                             allmodconfig
 parisc                            allnoconfig
-parisc                              defconfig
 parisc                           allyesconfig
 parisc                           allmodconfig
 powerpc                             defconfig
+powerpc                          allyesconfig
 powerpc                          rhel-kconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
@@ -152,11 +100,18 @@ i386                 randconfig-a003-20200624
 i386                 randconfig-a001-20200624
 i386                 randconfig-a005-20200624
 i386                 randconfig-a004-20200624
+i386                 randconfig-a013-20200624
+i386                 randconfig-a016-20200624
+i386                 randconfig-a012-20200624
+i386                 randconfig-a014-20200624
+i386                 randconfig-a011-20200624
+i386                 randconfig-a015-20200624
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                            allmodconfig
 s390                             allyesconfig
+s390                              allnoconfig
 s390                             allmodconfig
 s390                                defconfig
 sparc                            allyesconfig
