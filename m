@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 25 Jun 2020 17:01:37 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: add xdp ring
- statistics to dump vsi debug output
-In-Reply-To: <20200623130657.5668-2-ciara.loftus@intel.com>
+Date: Thu, 25 Jun 2020 17:02:14 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e: introduce new
+ dump desc xdp command
+In-Reply-To: <20200623130657.5668-3-ciara.loftus@intel.com>
 References: <20200623130657.5668-1-ciara.loftus@intel.com>
- <20200623130657.5668-2-ciara.loftus@intel.com>
-Message-ID: <BN6PR1101MB214566D9A528A8835E4476238C920@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200623130657.5668-3-ciara.loftus@intel.com>
+Message-ID: <BN6PR1101MB2145A782155EA3C3A18F03D58C920@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,16 +19,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: netdev at vger.kernel.org; Karlsson, Magnus
 > <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: add xdp ring statistics
-> to dump vsi debug output
+> Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e: introduce new dump
+> desc xdp command
 > 
-> Prior to this, only the rx and tx ring statistics were dumped. The xdp ring
-> statistics are now dumped as well.
+> Interfaces already exist for dumping rx and tx descriptor information.
+> Introduce another for doing the same for xdp descriptors.
 > 
 > Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
 > ---
->  .../net/ethernet/intel/i40e/i40e_debugfs.c    | 41 +++++++++++++++++++
->  1 file changed, 41 insertions(+)
+> v1 -> v2:
+>  - Fix variable name in description of dump_desc function
+> 
+>  .../net/ethernet/intel/i40e/i40e_debugfs.c    | 59 +++++++++++++++----
+>  1 file changed, 48 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
