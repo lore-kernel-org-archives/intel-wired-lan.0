@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 25 Jun 2020 17:03:43 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: eliminate
- division in napi_poll data path
-In-Reply-To: <1592905458-850-3-git-send-email-magnus.karlsson@intel.com>
+Date: Thu, 25 Jun 2020 17:04:23 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e: move check of
+ full Tx ring to outside of send loop
+In-Reply-To: <1592905458-850-4-git-send-email-magnus.karlsson@intel.com>
 References: <1592905458-850-1-git-send-email-magnus.karlsson@intel.com>
- <1592905458-850-3-git-send-email-magnus.karlsson@intel.com>
-Message-ID: <BN6PR1101MB2145FF352A257C2E96089FC08C920@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <1592905458-850-4-git-send-email-magnus.karlsson@intel.com>
+Message-ID: <BN6PR1101MB2145E97EE9FE44B7BA49F75D8C920@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,19 +22,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > <sridhar.samudrala@intel.com>
 > Cc: maciejromanfijalkowski at gmail.com; Fijalkowski, Maciej
 > <maciej.fijalkowski@intel.com>; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: eliminate division in
-> napi_poll data path
+> Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e: move check of full Tx
+> ring to outside of send loop
 > 
-> Eliminate a division in the napi_poll data path. This division is executed even
-> though it is only needed in the rare case when there are not enough
-> interrupt lines so they have to be shared between queue pairs. Instead, just
-> test for this case and only execute the division if needed. The code has been
-> lifted from the ice driver.
+> Move the check if the Hw Tx ring is full to outside the send loop. Currently it
+> is checked for every single descriptor that we send. Instead, tell the send
+> loop to only process a maximum number of packets equal to the number of
+> available slots in the Tx ring. This way, we can remove the check inside the
+> send loop to and gain some performance.
 > 
+> Suggested-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 20 +++++---------------
+>  1 file changed, 5 insertions(+), 15 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
