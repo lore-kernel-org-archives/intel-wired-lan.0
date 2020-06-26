@@ -1,55 +1,71 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 25 Jun 2020 22:21:41 -0700
-Subject: [Intel-wired-lan] [next-queue] ixgbe: Cleanup unneeded delay in
- ethtool test
-Message-ID: <20200626052141.1310945-1-jeffrey.t.kirsher@intel.com>
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Fri, 26 Jun 2020 16:16:34 +0800
+Subject: [Intel-wired-lan] [net-next, v5 0/5] ice: add Intel DCF mode support
+In-Reply-To: <20200619045711.16055-1-haiyue.wang@intel.com>
+References: <20200619045711.16055-1-haiyue.wang@intel.com>
+Message-ID: <20200626081639.86278-1-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There is a 4 seconds delay in ixgbe_diag_test() that is holding up other
-ioctls such as SIOCGIFCONF that Oracle database applications use.
-One of Oracle's product runs "ethtool -t ethX online" periodically for
-system monitoring and that is impacting database applications that use
-SIOCGIFCONF at that same time.
+The iproute2 and ethtool are evolving to expose the NIC hardware capability.
+But these available orchestration methods in Linux kernel are limited in their
+capability to exercise advance functionality in the hardware, since different
+vendors may have different data programming method.
 
-This 4 second delay was needed in out early 1GbE parts to give the PHY
-time to recover from a reset.  This code was carried forward to the 10 GbE
-driver even it was not needed for the supported PHYs in the ixgbe driver.
+Intel Ethernet Adaptive Virtual Function (AVF) is the common hardware interface
+for SR-IOV, it has the defined message format to talks with the PF. 
 
-CC: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-CC: Jack Vogel <jack.vogel@oracle.com>
-Reported-by: Venkat Venkatsubra <venkat.x.venkatsubra@oracle.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+To make good use of the advanced functionality like Switch (Binary Classifier),
+The ice PF driver introduces a DCF (Device Config Function) mode to extend the
+AVF feature.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index c4e4aa33c91d..121a3a3a76b6 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2156,7 +2156,7 @@ static void ixgbe_diag_test(struct net_device *netdev,
- 					eth_test->flags |= ETH_TEST_FL_FAILED;
- 					clear_bit(__IXGBE_TESTING,
- 						  &adapter->state);
--					goto skip_ol_tests;
-+					return;
- 				}
- 			}
- 		}
-@@ -2228,9 +2228,6 @@ static void ixgbe_diag_test(struct net_device *netdev,
- 
- 		clear_bit(__IXGBE_TESTING, &adapter->state);
- 	}
--
--skip_ol_tests:
--	msleep_interruptible(4 * 1000);
- }
- 
- static int ixgbe_wol_exclusion(struct ixgbe_adapter *adapter,
+The DCF (Device Config Function) method wraps an raw flow admin queue command in
+a virthcnl message and sends it to the PF to be executed. This is required because
+it doesn't have the privilege level to issue the admin queue commands, so it acts
+as a proxy PF. So that the user can customize the AVF feature, and use their own
+programming language to translate the flow rule management data into ice raw flow,
+these raw flows then can be executed in PF's sandbox.
+
+And the kernel PF driver fully controls the behavior of DCF for security, like only
+the trusted VF with ID zero can run into DCF mode, and also for being compatible
+with the common AVF feature, the VF needs to advertise and acquire DCF capability
+firstly.
+
+v5: update the prefix with 'net-next'.
+
+v4: Mirror commit message update.
+
+v3: Remove the unused function, and control the ice_aq_sw_rules scope by CONFIG_PCI_IOV.
+    Capitalize all abbreviations.
+
+v2: fix the macro ICE_DCF_VFID definition style issue.
+
+Haiyue Wang (5):
+  ice: add the virtchnl handler for AdminQ command
+  ice: add DCF cap negotiation and state machine
+  ice: support to get the VSI mapping
+  ice: enable DDP package info querying
+  ice: add switch rule management for DCF
+
+ drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_dcf.c      | 839 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcf.h      |  91 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  27 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |  37 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 366 ++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
+ include/linux/avf/virtchnl.h                  |  63 ++
+ 12 files changed, 1411 insertions(+), 34 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
+
 -- 
-2.26.2
+2.27.0
 
