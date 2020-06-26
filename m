@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 26 Jun 2020 15:48:22 +0000
-Subject: [Intel-wired-lan] [next-queue] ixgbe: Cleanup unneeded delay in
- ethtool test
-In-Reply-To: <20200626052141.1310945-1-jeffrey.t.kirsher@intel.com>
-References: <20200626052141.1310945-1-jeffrey.t.kirsher@intel.com>
-Message-ID: <DM5PR1101MB2154A1E21C3A9BB19E9495E68C930@DM5PR1101MB2154.namprd11.prod.outlook.com>
+Date: Fri, 26 Jun 2020 15:49:35 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf: Fix updating statistics
+In-Reply-To: <20200624160422.58874-1-anthony.l.nguyen@intel.com>
+References: <20200624160422.58874-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM5PR1101MB2154C72E8B46F2C577B81F018C930@DM5PR1101MB2154.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,32 +12,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jeff Kirsher
-> Sent: Thursday, June 25, 2020 10:22 PM
+> Tony Nguyen
+> Sent: Wednesday, June 24, 2020 9:04 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Jack Vogel
-> <jack.vogel@oracle.com>; Venkat Venkatsubra
-> <venkat.x.venkatsubra@oracle.com>
-> Subject: [Intel-wired-lan] [next-queue] ixgbe: Cleanup unneeded delay in
-> ethtool test
+> Subject: [Intel-wired-lan] [PATCH] iavf: Fix updating statistics
 > 
-> There is a 4 seconds delay in ixgbe_diag_test() that is holding up other ioctls
-> such as SIOCGIFCONF that Oracle database applications use.
-> One of Oracle's product runs "ethtool -t ethX online" periodically for system
-> monitoring and that is impacting database applications that use SIOCGIFCONF
-> at that same time.
+> Commit bac8486116b0 ("iavf: Refactor the watchdog state machine")
+> inverted the logic for when to update statistics. Statistics should be updated
+> when no other commands are pending, instead they were only requested
+> when a command was processed. iavf_request_stats() would see a pending
+> request and not request statistics to be updated. This caused statistics to
+> never be updated; fix the logic.
 > 
-> This 4 second delay was needed in out early 1GbE parts to give the PHY time
-> to recover from a reset.  This code was carried forward to the 10 GbE driver
-> even it was not needed for the supported PHYs in the ixgbe driver.
-> 
-> CC: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> CC: Jack Vogel <jack.vogel@oracle.com>
-> Reported-by: Venkat Venkatsubra <venkat.x.venkatsubra@oracle.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Fixes: bac8486116b0 ("iavf: Refactor the watchdog state machine")
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
