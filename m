@@ -1,33 +1,69 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 27 Jun 2020 03:18:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 37d318d7805f25b672bfd74fc694f19a2ee9665d
-Message-ID: <5ef64a02.t3wxleSUA5J3pdAZ%lkp@intel.com>
+Date: Sat, 27 Jun 2020 03:18:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ cd0cd9d8648de9f6e55ba5fe84d3656f7608dc49
+Message-ID: <5ef649fa.p7LAWjyG40CiC+k7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 37d318d7805f25b672bfd74fc694f19a2ee9665d  i40e: Remove scheduling while atomic possibility
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: cd0cd9d8648de9f6e55ba5fe84d3656f7608dc49  ixgbe: Cleanup unneeded delay in ethtool test
+
+Error/Warning in current branch:
+
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:2508:28: error: 'last_offset' undeclared (first use in this function); did you mean 'page_offset'?
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:175:36: warning: division by zero [-Wdiv-by-zero]
+include/linux/avf/virtchnl.h:809:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- alpha-allyesconfig
+|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- arc-allyesconfig
+|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
+|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+|   `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+|-- ia64-allmodconfig
+|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allyesconfig
+|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- powerpc-defconfig
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
 
 elapsed time: 720m
 
-configs tested: 114
+configs tested: 97
 configs skipped: 5
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
+arm64                            allyesconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm64                               defconfig
 arm                                 defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
 arc                     haps_hs_smp_defconfig
 powerpc                          g5_defconfig
 mips                        jmr3927_defconfig
@@ -47,10 +83,10 @@ sh                           se7724_defconfig
 mips                     loongson1b_defconfig
 parisc                            allnoconfig
 arm                            lart_defconfig
-i386                                defconfig
-i386                              debian-10.3
 i386                              allnoconfig
 i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                              allnoconfig
@@ -91,23 +127,6 @@ powerpc                          allyesconfig
 powerpc                          rhel-kconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-i386                 randconfig-a002-20200624
-i386                 randconfig-a006-20200624
-i386                 randconfig-a003-20200624
-i386                 randconfig-a001-20200624
-i386                 randconfig-a005-20200624
-i386                 randconfig-a004-20200624
-i386                 randconfig-a013-20200624
-i386                 randconfig-a016-20200624
-i386                 randconfig-a012-20200624
-i386                 randconfig-a011-20200624
-i386                 randconfig-a015-20200624
-x86_64               randconfig-a004-20200624
-x86_64               randconfig-a002-20200624
-x86_64               randconfig-a003-20200624
-x86_64               randconfig-a005-20200624
-x86_64               randconfig-a001-20200624
-x86_64               randconfig-a006-20200624
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
