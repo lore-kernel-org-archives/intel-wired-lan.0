@@ -1,371 +1,187 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Fri, 26 Jun 2020 16:16:36 +0800
+Date: Fri, 26 Jun 2020 16:16:38 +0800
 Subject: [Intel-wired-lan] [net-next,
- v5 2/5] ice: add DCF cap negotiation and state machine
+ v5 4/5] ice: enable DDP package info querying
 In-Reply-To: <20200626081639.86278-1-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200626081639.86278-1-haiyue.wang@intel.com>
-Message-ID: <20200626081639.86278-3-haiyue.wang@intel.com>
+Message-ID: <20200626081639.86278-5-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The trust VF0 needs to negotiate the DCF capability firstly. Then the PF
-driver may allow this VF to enter into DCF "ON" state if various checks
-are passed. In DCF "ON" state, the VF0 can send the AdminQ command to do
-advanced switch rules creation for other VFs.
+Since the firmware doesn't support reading the DDP package data that PF
+is using. The DCF has to find the PF's DDP package file directly.
 
-If one of the VFs resets, its hardware VSI number may be changed, so the
-VF0 will enter into the DCF "BUSY" state immediately to avoid adding the
-wrong rule. After the reset is done, the DCF state is changed to "PAUSE"
-mode, and a DCF_VSI_MAP_UPDATE event will be sent to the VF0. This event
-notifies the VF0 to restart negotiating the DCF capability again.
+For searching the right DDP package that the PF uses, the DCF needs the
+DDP package characteristic information such as the PF's device serial
+number which is used to find the package loading path, and the exact DDP
+track ID, package name, version.
 
-Also the VF0 can exits the DCF service gracefully by issuing the virtual
-channel command OP_DCF_DISABLE.
+Only with the matched DDP package, the DCF can get the right metadata to
+create switch rules etc.
 
-The system administrator can disable the DCF service by changing the
-trust mode to untrusted.
-
-Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
+Signed-off-by: Leyi Rong <leyi.rong@intel.com>
+Signed-off-by: Ting Xu <ting.xu@intel.com>
 Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 Tested-by: Nannan Lu <nannan.lu@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcf.c      | 77 +++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcf.h      | 24 ++++++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 85 ++++++++++++++++++-
- include/linux/avf/virtchnl.h                  |  9 ++
- 4 files changed, 194 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_dcf.h      |  6 +++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 52 +++++++++++++++++++
+ include/linux/avf/virtchnl.h                  | 23 ++++++++
+ 4 files changed, 83 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcf.c b/drivers/net/ethernet/intel/ice/ice_dcf.c
-index cbe60a0cb2d2..e7d37735aaa5 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcf.c
-@@ -47,3 +47,80 @@ bool ice_dcf_aq_cmd_permitted(struct ice_aq_desc *desc)
- 
- 	return false;
- }
-+
-+/**
-+ * ice_check_dcf_allowed - check if DCF is allowed based on various checks
-+ * @vf: pointer to the VF to check
-+ */
-+bool ice_check_dcf_allowed(struct ice_vf *vf)
-+{
-+	struct ice_pf *pf = vf->pf;
-+	struct device *dev;
-+
-+	dev = ice_pf_to_dev(pf);
-+
-+	if (vf->vf_id != ICE_DCF_VFID) {
-+		dev_err(dev, "VF %d requested DCF capability, but only VF %d is allowed to request DCF capability\n",
-+			vf->vf_id, ICE_DCF_VFID);
-+		return false;
-+	}
-+
-+	if (!vf->trusted) {
-+		dev_err(dev, "VF needs to be trusted to configure DCF capability\n");
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_vf_is_dcf - helper to check if the assigned VF is a DCF
-+ * @vf: the assigned VF to be checked
-+ */
-+bool ice_is_vf_dcf(struct ice_vf *vf)
-+{
-+	return vf == vf->pf->dcf.vf;
-+}
-+
-+/**
-+ * ice_dcf_get_state - Get DCF state of the associated PF
-+ * @pf: PF instance
-+ */
-+enum ice_dcf_state ice_dcf_get_state(struct ice_pf *pf)
-+{
-+	return pf->dcf.vf ? pf->dcf.state : ICE_DCF_STATE_OFF;
-+}
-+
-+/**
-+ * ice_dcf_state_str - convert DCF state code to a string
-+ * @state: the DCF state code to convert
-+ */
-+static const char *ice_dcf_state_str(enum ice_dcf_state state)
-+{
-+	switch (state) {
-+	case ICE_DCF_STATE_OFF:
-+		return "ICE_DCF_STATE_OFF";
-+	case ICE_DCF_STATE_ON:
-+		return "ICE_DCF_STATE_ON";
-+	case ICE_DCF_STATE_BUSY:
-+		return "ICE_DCF_STATE_BUSY";
-+	case ICE_DCF_STATE_PAUSE:
-+		return "ICE_DCF_STATE_PAUSE";
-+	}
-+
-+	return "ICE_DCF_STATE_UNKNOWN";
-+}
-+
-+/**
-+ * ice_dcf_set_state - Set DCF state for the associated PF
-+ * @pf: PF instance
-+ * @state: new DCF state
-+ */
-+void ice_dcf_set_state(struct ice_pf *pf, enum ice_dcf_state state)
-+{
-+	dev_dbg(ice_pf_to_dev(pf), "DCF state is changing from %s to %s\n",
-+		ice_dcf_state_str(pf->dcf.state),
-+		ice_dcf_state_str(state));
-+
-+	pf->dcf.state = state;
-+}
 diff --git a/drivers/net/ethernet/intel/ice/ice_dcf.h b/drivers/net/ethernet/intel/ice/ice_dcf.h
-index 9edb2d5d9d8f..1dabcca6f753 100644
+index 1dabcca6f753..1ca228f89a19 100644
 --- a/drivers/net/ethernet/intel/ice/ice_dcf.h
 +++ b/drivers/net/ethernet/intel/ice/ice_dcf.h
-@@ -4,7 +4,27 @@
- #ifndef _ICE_DCF_H_
- #define _ICE_DCF_H_
- 
-+struct ice_vf;
-+struct ice_pf;
+@@ -32,6 +32,12 @@ struct ice_dcf {
+ 	struct ice_aq_desc aq_desc;
+ 	u8 aq_desc_received;
+ 	unsigned long aq_desc_expires;
 +
-+#define ICE_DCF_VFID	0
-+
-+/* DCF mode states */
-+enum ice_dcf_state {
-+	/* DCF mode is fully off */
-+	ICE_DCF_STATE_OFF = 0,
-+	/* Process is live, acquired capability to send DCF CMD */
-+	ICE_DCF_STATE_ON,
-+	/* Kernel is busy, deny DCF CMD */
-+	ICE_DCF_STATE_BUSY,
-+	/* Kernel is ready for Process to Re-establish, deny DCF CMD */
-+	ICE_DCF_STATE_PAUSE,
-+};
-+
- struct ice_dcf {
-+	struct ice_vf *vf;
-+	enum ice_dcf_state state;
-+
- 	/* Handle the AdminQ command between the DCF (Device Config Function)
- 	 * and the firmware.
- 	 */
-@@ -16,5 +36,9 @@ struct ice_dcf {
++	/* Save the current Device Serial Number when searching the package
++	 * path for later query.
++	 */
++#define ICE_DSN_NUM_LEN 8
++	u8 dsn[ICE_DSN_NUM_LEN];
+ };
  
  #ifdef CONFIG_PCI_IOV
- bool ice_dcf_aq_cmd_permitted(struct ice_aq_desc *desc);
-+bool ice_check_dcf_allowed(struct ice_vf *vf);
-+bool ice_is_vf_dcf(struct ice_vf *vf);
-+enum ice_dcf_state ice_dcf_get_state(struct ice_pf *pf);
-+void ice_dcf_set_state(struct ice_pf *pf, enum ice_dcf_state state);
- #endif /* CONFIG_PCI_IOV */
- #endif /* _ICE_DCF_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index ca0d4dd5953c..622b16efae0b 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -360,6 +360,11 @@ void ice_free_vfs(struct ice_pf *pf)
- 	else
- 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a1cef089201a..983b5e21b436 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3243,6 +3243,8 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
+ 	snprintf(opt_fw_filename, NAME_MAX, "%sice-%016llx.pkg",
+ 		 ICE_DDP_PKG_PATH, dsn);
  
-+	if (ice_dcf_get_state(pf) != ICE_DCF_STATE_OFF) {
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_OFF);
-+		pf->dcf.vf = NULL;
-+	}
++	memcpy(pf->dcf.dsn, &dsn, sizeof(pf->dcf.dsn));
 +
- 	/* Avoid wait time by stopping all VFs at the same time */
- 	ice_for_each_vf(pf, i)
- 		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
-@@ -1285,6 +1290,9 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
- 	ice_trigger_vf_reset(vf, is_vflr, false);
- 
-+	if (ice_dcf_get_state(pf) == ICE_DCF_STATE_ON)
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_BUSY);
-+
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
-@@ -1340,6 +1348,21 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	ice_vf_rebuild_vsi_with_release(vf);
- 	ice_vf_post_vsi_rebuild(vf);
- 
-+	if (ice_dcf_get_state(pf) == ICE_DCF_STATE_BUSY) {
-+		struct virtchnl_pf_event pfe = { 0 };
-+
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_PAUSE);
-+
-+		pfe.event = VIRTCHNL_EVENT_DCF_VSI_MAP_UPDATE;
-+		pfe.event_data.vf_vsi_map.vf_id = vf->vf_id;
-+		pfe.event_data.vf_vsi_map.vsi_id = vf->lan_vsi_num;
-+
-+		ice_aq_send_msg_to_vf(&pf->hw, ICE_DCF_VFID,
-+				      VIRTCHNL_OP_EVENT,
-+				      VIRTCHNL_STATUS_SUCCESS,
-+				      (u8 *)&pfe, sizeof(pfe), NULL);
-+	}
-+
- 	return true;
+ 	return opt_fw_filename;
  }
  
-@@ -1977,6 +2000,24 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 	if (vf->driver_caps & VIRTCHNL_VF_CAP_ADV_LINK_SPEED)
- 		vfres->vf_cap_flags |= VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
- 
-+	/* Negotiate DCF capability. */
-+	if (vf->driver_caps & VIRTCHNL_VF_CAP_DCF) {
-+		if (!ice_check_dcf_allowed(vf)) {
-+			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+			goto err;
-+		}
-+		vfres->vf_cap_flags |= VIRTCHNL_VF_CAP_DCF;
-+		pf->dcf.vf = vf;
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_ON);
-+		dev_info(ice_pf_to_dev(pf), "Grant request for DCF functionality to VF%d\n",
-+			 ICE_DCF_VFID);
-+	} else if (ice_is_vf_dcf(vf) &&
-+		   ice_dcf_get_state(pf) != ICE_DCF_STATE_OFF) {
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_OFF);
-+		pf->dcf.vf = NULL;
-+		ice_reset_vf(vf, false);
-+	}
-+
- 	vfres->num_vsis = 1;
- 	/* Tx and Rx queue are equal for VF */
- 	vfres->num_queue_pairs = vsi->num_txq;
-@@ -3726,6 +3767,9 @@ static int ice_vc_dcf_cmd_desc_msg(struct ice_vf *vf, u8 *msg, u16 len)
- 	struct ice_aq_desc *aq_desc = (struct ice_aq_desc *)msg;
- 	struct ice_pf *pf = vf->pf;
- 
-+	if (!ice_is_vf_dcf(vf) || ice_dcf_get_state(pf) != ICE_DCF_STATE_ON)
-+		goto err;
-+
- 	if (len != sizeof(*aq_desc) || !ice_dcf_aq_cmd_permitted(aq_desc)) {
- 		/* In case to avoid the VIRTCHNL_OP_DCF_CMD_DESC message with
- 		 * the ICE_AQ_FLAG_BUF set followed by another bad message
-@@ -3763,7 +3807,8 @@ static int ice_vc_dcf_cmd_buff_msg(struct ice_vf *vf, u8 *msg, u16 len)
- {
- 	struct ice_pf *pf = vf->pf;
- 
--	if (!len || !pf->dcf.aq_desc_received ||
-+	if (!ice_is_vf_dcf(vf) || ice_dcf_get_state(pf) != ICE_DCF_STATE_ON ||
-+	    !len || !pf->dcf.aq_desc_received ||
- 	    time_is_before_jiffies(pf->dcf.aq_desc_expires))
- 		goto err;
- 
-@@ -3775,6 +3820,34 @@ static int ice_vc_dcf_cmd_buff_msg(struct ice_vf *vf, u8 *msg, u16 len)
- 				     VIRTCHNL_STATUS_ERR_PARAM, NULL, 0);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 2584c3f199e3..919f1cec784e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -3906,6 +3906,55 @@ static int ice_vc_dcf_get_vsi_map(struct ice_vf *vf)
+ 	return ret;
  }
  
 +/**
-+ * ice_vc_dis_dcf_cap - disable DCF capability for the VF
-+ * @vf: pointer to the VF
++ * ice_vc_dcf_query_pkg_info - query DDP package info from PF
++ * @vf: pointer to VF info
++ *
++ * Called from VF to query DDP package information loaded in PF,
++ * including track ID, package name, version and device serial
++ * number.
 + */
-+static int ice_vc_dis_dcf_cap(struct ice_vf *vf)
++static int ice_vc_dcf_query_pkg_info(struct ice_vf *vf)
 +{
 +	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
++	struct virtchnl_pkg_info *pkg_info = NULL;
++	struct ice_hw *hw = &vf->pf->hw;
++	struct ice_pf *pf = vf->pf;
++	int len = 0;
++	int ret;
 +
 +	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
 +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
 +		goto err;
 +	}
 +
-+	if (!ice_is_vf_dcf(vf)) {
++	if (!ice_is_vf_dcf(vf) || ice_dcf_get_state(pf) != ICE_DCF_STATE_ON) {
 +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
 +		goto err;
 +	}
 +
-+	if (vf->driver_caps & VIRTCHNL_VF_CAP_DCF) {
-+		vf->driver_caps &= ~VIRTCHNL_VF_CAP_DCF;
-+		ice_dcf_set_state(vf->pf, ICE_DCF_STATE_OFF);
-+		vf->pf->dcf.vf = NULL;
++	len = sizeof(struct virtchnl_pkg_info);
++	pkg_info = kzalloc(len, GFP_KERNEL);
++	if (!pkg_info) {
++		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
++		len = 0;
++		goto err;
 +	}
++
++	pkg_info->track_id = hw->active_track_id;
++	memcpy(&pkg_info->pkg_ver, &hw->active_pkg_ver,
++	       sizeof(pkg_info->pkg_ver));
++	memcpy(pkg_info->pkg_name, hw->active_pkg_name,
++	       sizeof(pkg_info->pkg_name));
++	memcpy(pkg_info->dsn, pf->dcf.dsn, sizeof(pkg_info->dsn));
++
 +err:
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_DISABLE,
-+				     v_ret, NULL, 0);
++	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_GET_PKG_INFO,
++				    v_ret, (u8 *)pkg_info, len);
++	kfree(pkg_info);
++	return ret;
 +}
 +
  /**
   * ice_vc_process_vf_msg - Process request from VF
   * @pf: pointer to the PF structure
-@@ -3891,6 +3964,9 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	case VIRTCHNL_OP_DCF_CMD_BUFF:
- 		err = ice_vc_dcf_cmd_buff_msg(vf, msg, msglen);
+@@ -4028,6 +4077,9 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
+ 		err = ice_vc_dcf_get_vsi_map(vf);
  		break;
-+	case VIRTCHNL_OP_DCF_DISABLE:
-+		err = ice_vc_dis_dcf_cap(vf);
++	case VIRTCHNL_OP_DCF_GET_PKG_INFO:
++		err = ice_vc_dcf_query_pkg_info(vf);
 +		break;
  	case VIRTCHNL_OP_UNKNOWN:
  	default:
  		dev_err(dev, "Unsupported opcode %d from VF %d\n", v_opcode,
-@@ -4067,6 +4143,13 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- 	if (trusted == vf->trusted)
- 		return 0;
- 
-+	if (ice_is_vf_dcf(vf) && !trusted &&
-+	    ice_dcf_get_state(pf) != ICE_DCF_STATE_OFF) {
-+		ice_dcf_set_state(pf, ICE_DCF_STATE_OFF);
-+		pf->dcf.vf = NULL;
-+		vf->driver_caps &= ~VIRTCHNL_VF_CAP_DCF;
-+	}
-+
- 	vf->trusted = trusted;
- 	ice_vc_reset_vf(vf);
- 	dev_info(ice_pf_to_dev(pf), "VF %u is now %strusted\n",
 diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index fa9a3a047dd4..e219cafabccd 100644
+index ef07cff40662..b14ff350469b 100644
 --- a/include/linux/avf/virtchnl.h
 +++ b/include/linux/avf/virtchnl.h
-@@ -139,6 +139,7 @@ enum virtchnl_ops {
- 	/* opcode 34, 35, 36, 37 and 38 are reserved */
- 	VIRTCHNL_OP_DCF_CMD_DESC = 39,
+@@ -141,6 +141,7 @@ enum virtchnl_ops {
  	VIRTCHNL_OP_DCF_CMD_BUFF = 40,
-+	VIRTCHNL_OP_DCF_DISABLE = 41,
+ 	VIRTCHNL_OP_DCF_DISABLE = 41,
+ 	VIRTCHNL_OP_DCF_GET_VSI_MAP = 42,
++	VIRTCHNL_OP_DCF_GET_PKG_INFO = 43,
  	/* New major set of opcodes introduced and so leaving room for
  	 * old misc opcodes to be added in future. Also these opcodes may only
  	 * be used if both the PF and VF have successfully negotiated the
-@@ -278,6 +279,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
- #define VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM		0X00200000
- #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
- #define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
-+#define VIRTCHNL_VF_CAP_DCF			0X40000000
+@@ -647,6 +648,27 @@ struct virtchnl_dcf_vsi_map {
  
- /* Define below the capability flags that are not offloads */
- #define VIRTCHNL_VF_CAP_ADV_LINK_SPEED		0x00000080
-@@ -635,6 +637,7 @@ enum virtchnl_event_codes {
- 	VIRTCHNL_EVENT_LINK_CHANGE,
- 	VIRTCHNL_EVENT_RESET_IMPENDING,
- 	VIRTCHNL_EVENT_PF_DRIVER_CLOSE,
-+	VIRTCHNL_EVENT_DCF_VSI_MAP_UPDATE,
- };
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_dcf_vsi_map);
  
- #define PF_EVENT_SEVERITY_INFO		0
-@@ -661,6 +664,10 @@ struct virtchnl_pf_event {
- 			u8 link_status;
- 			u8 pad[3];
- 		} link_event_adv;
-+		struct {
-+			u16 vf_id;
-+			u16 vsi_id;
-+		} vf_vsi_map;
- 	} event_data;
- 
- 	int severity;
-@@ -1272,6 +1279,8 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 		 */
- 		valid_len = msglen;
++#define PKG_NAME_SIZE	32
++#define DSN_SIZE	8
++
++struct pkg_version {
++	u8 major;
++	u8 minor;
++	u8 update;
++	u8 draft;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(4, pkg_version);
++
++struct virtchnl_pkg_info {
++	struct pkg_version pkg_ver;
++	u32 track_id;
++	char pkg_name[PKG_NAME_SIZE];
++	u8 dsn[DSN_SIZE];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_pkg_info);
++
+ /* VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+@@ -1301,6 +1323,7 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
  		break;
-+	case VIRTCHNL_OP_DCF_DISABLE:
-+		break;
+ 	case VIRTCHNL_OP_DCF_DISABLE:
+ 	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
++	case VIRTCHNL_OP_DCF_GET_PKG_INFO:
+ 		break;
  	case VIRTCHNL_OP_GET_CAPS:
  		valid_len = sizeof(struct virtchnl_get_capabilities);
- 		break;
 -- 
 2.27.0
 
