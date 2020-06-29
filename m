@@ -1,91 +1,150 @@
-From: Alexander E. Patrakov <patrakov@gmail.com>
-Date: Fri, 5 Jun 2020 16:18:48 +0500
-Subject: [Intel-wired-lan] VLAN-aware bridge and i40e driver problem
-Message-ID: <CAN_LGv1uTo2MNso8nT0adWXJ_wGbX5VoiNn9xKoJDR1q04g6FQ@mail.gmail.com>
+From: Sven Auhagen <sven.auhagen@voleatech.de>
+Date: Mon, 29 Jun 2020 06:31:43 +0200
+Subject: [Intel-wired-lan] [PATCH 1/1] igb: add XDP support
+In-Reply-To: <20200626094646.GI2549@kadam>
+References: <20200625155014.6zwfoqqyhsvwu2gc@SvensMacBookAir.sven.lan>
+ <20200626094646.GI2549@kadam>
+Message-ID: <20200629043143.iz4lxav66ksmqbp3@SvensMacBookAir.sven.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+On Fri, Jun 26, 2020 at 12:46:46PM +0300, Dan Carpenter wrote:
+> Hi Sven,
+> 
+> url:    https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2F0day-ci%2Flinux%2Fcommits%2FSven-Auhagen%2Figb-add-XDP-support%2F20200626-052800&amp;data=02%7C01%7Csven.auhagen%40voleatech.de%7C3bcb90371c2246b3a93308d819b5e47c%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637287616579607917&amp;sdata=t4zUCM7uqCg7Mm7JUrBTz1V6wI7Mc%2BuU2a4qTy4cNeo%3D&amp;reserved=0
+> base:    48778464bb7d346b47157d21ffde2af6b2d39110
+> config: x86_64-randconfig-m001-20200624 (attached as .config)
+> compiler: gcc-9 (Debian 9.3.0-13) 9.3.0
+> 
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> New smatch warnings:
+> drivers/net/ethernet/intel/igb/igb_main.c:8776 igb_clean_rx_irq() error: 'skb' dereferencing possible ERR_PTR()
+> 
+> # https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2F0day-ci%2Flinux%2Fcommit%2Fa15be27894f18e2bdb3b0958b1132af85e34e61c&amp;data=02%7C01%7Csven.auhagen%40voleatech.de%7C3bcb90371c2246b3a93308d819b5e47c%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637287616579607917&amp;sdata=tHk3XMaTx%2BMS0ISFCKrlOt%2FeQr4CfD5pV3IST6mAzGA%3D&amp;reserved=0
+> git remote add linux-review https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2F0day-ci%2Flinux&amp;data=02%7C01%7Csven.auhagen%40voleatech.de%7C3bcb90371c2246b3a93308d819b5e47c%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637287616579607917&amp;sdata=mD5sv2qwST26MvYHD2oQE8P98NDC1AaUsbIzaZC1kPI%3D&amp;reserved=0
+> git remote update linux-review
+> git checkout a15be27894f18e2bdb3b0958b1132af85e34e61c
+> vim +/skb +8776 drivers/net/ethernet/intel/igb/igb_main.c
+> 
+> 57ba34c9b068f3 drivers/net/ethernet/intel/igb/igb_main.c Eric W. Biederman 2014-03-14  8697  	while (likely(total_packets < budget)) {
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8698  		union e1000_adv_rx_desc *rx_desc;
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8699  		struct igb_rx_buffer *rx_buffer;
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8700  		unsigned int size;
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8701  
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8702  		/* return some buffers to hardware, one at a time is too slow */
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8703  		if (cleaned_count >= IGB_RX_BUFFER_WRITE) {
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8704  			igb_alloc_rx_buffers(rx_ring, cleaned_count);
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8705  			cleaned_count = 0;
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8706  		}
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8707  
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8708  		rx_desc = IGB_RX_DESC(rx_ring, rx_ring->next_to_clean);
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8709  		size = le16_to_cpu(rx_desc->wb.upper.length);
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8710  		if (!size)
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8711  			break;
+> 9d5c824399dea8 drivers/net/igb/igb_main.c                Auke Kok          2008-01-24  8712  
+> 74e238eada5735 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2013-02-02  8713  		/* This memory barrier is needed to keep us from reading
+> 74e238eada5735 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2013-02-02  8714  		 * any other fields out of the rx_desc until we know the
+> 124b74c18e0e31 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2014-12-11  8715  		 * descriptor has been written back
+> 74e238eada5735 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2013-02-02  8716  		 */
+> 124b74c18e0e31 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2014-12-11  8717  		dma_rmb();
+> 74e238eada5735 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2013-02-02  8718  
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8719  		rx_buffer = igb_get_rx_buffer(rx_ring, size);
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8720  
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8721  		/* retrieve a buffer from the ring */
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8722  		if (!skb) {
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8723  			xdp.data = page_address(rx_buffer->page) +
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8724  				   rx_buffer->page_offset;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8725  			xdp.data_meta = xdp.data;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8726  			xdp.data_hard_start = xdp.data -
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8727  					      igb_rx_offset(rx_ring);
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8728  			xdp.data_end = xdp.data + size;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8729  #if (PAGE_SIZE > 4096)
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8730  			/* At larger PAGE_SIZE, frame_sz depend on len size */
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8731  			xdp.frame_sz = igb_rx_frame_truesize(rx_ring, size);
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8732  #endif
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8733  			skb = igb_run_xdp(adapter, rx_ring, &xdp);
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8734  		}
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8735  
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8736  		if (IS_ERR(skb)) {
+>                                                                                                                    ^^^
+> This is an error pointer.
+> 
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8737  			unsigned int xdp_res = -PTR_ERR(skb);
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8738  
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8739  			if (xdp_res & (IGB_XDP_TX | IGB_XDP_REDIR)) {
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8740  				xdp_xmit |= xdp_res;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8741  				igb_rx_buffer_flip(rx_ring, rx_buffer, size);
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8742  			} else {
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8743  				rx_buffer->pagecnt_bias++;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8744  			}
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8745  			total_packets++;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8746  			total_bytes += size;
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8747  		} else if (skb)
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8748  			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
+> b1bb2eb0a0deb0 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8749  		else if (ring_uses_build_skb(rx_ring))
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8750  			skb = igb_build_skb(rx_ring, rx_buffer, &xdp, rx_desc);
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8751  		else
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8752  			skb = igb_construct_skb(rx_ring, rx_buffer,
+> a15be27894f18e drivers/net/ethernet/intel/igb/igb_main.c Sven Auhagen      2020-06-25  8753  						&xdp, rx_desc);
+> 9d5c824399dea8 drivers/net/igb/igb_main.c                Auke Kok          2008-01-24  8754  
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8755  		/* exit if we failed to retrieve a buffer */
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8756  		if (!skb) {
+>                                                                                                             ^^^^
+> Should this be an IS_ERR_OR_NULL() check?
+> 
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8757  			rx_ring->rx_stats.alloc_failed++;
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8758  			rx_buffer->pagecnt_bias++;
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8759  			break;
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8760  		}
+> cbc8e55f6fdae2 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8761  
+> e014272672b964 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2017-02-06  8762  		igb_put_rx_buffer(rx_ring, rx_buffer);
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8763  		cleaned_count++;
+> 9d5c824399dea8 drivers/net/igb/igb_main.c                Auke Kok          2008-01-24  8764  
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8765  		/* fetch next buffer in frame if non-eop */
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8766  		if (igb_is_non_eop(rx_ring, rx_desc))
+> 2e334eee9bef61 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8767  			continue;
+> 44390ca6cb3d4d drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2011-08-26  8768  
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8769  		/* verify the packet layout is correct */
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8770  		if (igb_cleanup_headers(rx_ring, rx_desc, skb)) {
+>                                                                                                                                                   ^^^
+> Dereferenced inside the function call.
 
-We have some new servers with this kind of dual-port 40GbE network
-cards, supported by the in-tree i40e driver:
+Hi Dan,
 
-21:00.0 Ethernet controller [0200]: Intel Corporation Ethernet
-Controller XL710 for 40GbE QSFP+ [8086:1583] (rev 02)
-21:00.1 Ethernet controller [0200]: Intel Corporation Ethernet
-Controller XL710 for 40GbE QSFP+ [8086:1583] (rev 02)
+I double checked and this is actually correct the way it is.
+!skb is only the error case if the alloc of the skb did not work.
+The function igb_cleanup_headers has a check for the PTR Error:
 
-On each server, the two network ports (exposed as enp33s0f0 and
-enp33s0f1) are used as slaves of the "bond0" interface, which is
-itself used as a port of a vlan-aware bridge (vmbr0). There are tap
-interfaces for KVM virtual machines that are also in this bridge, and
-assigned to different VLANs as needed. The bond0 interface carries all
-VLANs, and is essentially used as a "trunk port".
+/* XDP packets use error pointer so abort at this point */
+	if (IS_ERR(skb))
+		return true;
 
-This is Proxmox (a Debian-based system), so the VLANs are added to the
-bond0 interface at boot time via the /etc/network/if-up.d/bridgevlan
-script, which runs essentially this:
+which also leads to the continue statement in the if to go 
+to the next packet.
+The pointer error in XDP means the packet was consumed and
+is not XDP PASS.
 
-    port=bond0
-    bridge vlan add dev $port vid 2-4094
+Best
+Sven
+> 
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8771  			skb = NULL;
+> 1a1c225b946303 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8772  			continue;
+> 9d5c824399dea8 drivers/net/igb/igb_main.c                Auke Kok          2008-01-24  8773  		}
+> 9d5c824399dea8 drivers/net/igb/igb_main.c                Auke Kok          2008-01-24  8774  
+> db2ee5bdf5c833 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8775  		/* probably a little skewed due to removing CRC */
+> 3ceb90fd489885 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2011-08-26 @8776  		total_bytes += skb->len;
+> 3ceb90fd489885 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2011-08-26  8777  
+> db2ee5bdf5c833 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8778  		/* populate checksum, timestamp, VLAN, and protocol */
+> db2ee5bdf5c833 drivers/net/ethernet/intel/igb/igb_main.c Alexander Duyck   2012-09-25  8779  		igb_process_skb_fields(rx_ring, rx_desc, skb);
+> 
+> ---
+> 0-DAY CI Kernel Test Service, Intel Corporation
+> https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Flists.01.org%2Fhyperkitty%2Flist%2Fkbuild-all%40lists.01.org&amp;data=02%7C01%7Csven.auhagen%40voleatech.de%7C3bcb90371c2246b3a93308d819b5e47c%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637287616579607917&amp;sdata=9SZt5bLDXm9ji1t5b6ZbFUdBrNe0TULd48qXAyRHcmU%3D&amp;reserved=0
 
-And here is why this behaves badly.
 
-The "bridge" command does send the whole "add vids" request as a
-single netlink message, so there are no inefficiencies at this step.
-Then, the bond driver attempts to pass down the VLAN filter down to
-the underlying hardware (i.e. to the i40e driver), and that's where
-things go downhill.
-
-Apparently the driver attempts to add the VIDs to the hardware filter
-one-by-one. And then, after adding 256 VIDs, it hits the hardware
-limit and complains:
-
-    i40e 0000:21:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow
-promiscuous on PF
-
-And then goes on to process the next VID, also noticing that it is
-beyond the hardware limit, and so on. Result: 3839 lines of log spam
-from each network port, and more than 1 minute spent fighting with the
-hardware (i.e. slow boot). After that, VLAN filtering and dispatching
-of packets to VMs are done in software, and done correctly.
-
-In this setup, the hardware VLAN filtering capability of the card is
-useless, because there is actually nothing to filter out from the
-wire. However, the slow boot and the log spam annoy sysadmins here. It
-would have been better if the i40e driver somehow saw beforehand that
-the whole VLAN filtering request is beyond the abilities of the
-hardware, and did not attempt to add, fruitlessly, the VID entries
-one-by-one. After all, on other servers, with "Mellanox Technologies
-MT27700 Family [ConnectX-4] [15b3:1013]" (mlx5_core driver), it takes
-less than 1 second to add these VLANs to bond0. Is it because the
-Mellanox card is somehow better, or is it just a gross inefficiency of
-the i40e driver? Could anyone familiar with the card please try to fix
-the i40e driver?
-
-I have tried to force the VLAN filtering in software, via ethtool:
-
-    ethtool -K enp33s0f0 rx-vlan-filter off
-
-But it doesn't work, because (since at least commit
-b0fe3306432796c8f7adbede8ccd479bb7b53d0a, which adds it to
-netdev->features but not netdev->hw_features) this is not a
-user-changeable option on i40e. Question to the driver maintainers:
-why is it so?
-
-P.S. We have finally found and adopted this workaround:
-
-    ethtool -K bond0 rx-vlan-filter off
-
-...and things work reasonably well: fast boot, no log spam, okay-ish
-performance (14.5 Gbps per CPU core).
-
-P.P.S. I suspect that it would have been better to use macvlan instead
-of the VLAN-aware bridge, but for legacy reasons we can't do that.
-
--- 
-Alexander E. Patrakov
-CV: http://pc.cd/PLz7
