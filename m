@@ -1,130 +1,122 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 29 Jun 2020 14:59:39 +0530
-Subject: [Intel-wired-lan] [PATCH v1 1/5] iavf: use generic power management
+Date: Mon, 29 Jun 2020 14:59:40 +0530
+Subject: [Intel-wired-lan] [PATCH v1 2/5] igbvf: netdev: use generic power
+ management
 In-Reply-To: <20200629092943.227910-1-vaibhavgupta40@gmail.com>
 References: <20200629092943.227910-1-vaibhavgupta40@gmail.com>
-Message-ID: <20200629092943.227910-2-vaibhavgupta40@gmail.com>
+Message-ID: <20200629092943.227910-3-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With the support of generic PM callbacks, drivers no longer need to use
-legacy .suspend() and .resume() in which they had to maintain PCI states
-changes and device's power state themselves. The required operations are
-done by PCI core.
+Remove legacy PM callbacks and use generic operations. With legacy code,
+drivers were responsible for handling PCI PM operations like
+pci_save_state(). In generic code, all these hre andled by PCI core.
 
-PCI drivers are not expected to invoke PCI helper functions like
-pci_save/restore_state(), pci_enable/disable_device(),
-pci_set_power_state(), etc. Their tasks are completed by PCI core itself.
+The generic suspend() and resume() are called at the same point the legacy
+ones were called. Thus, it does not affect the normal functioning of the
+driver.
+
+__maybe_unused attribute is used with .resume() but not with .suspend(), as
+.suspend() is calleb by .shutdown().
 
 Compile-tested only.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 45 ++++++---------------
- 1 file changed, 12 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/igbvf/netdev.c | 37 +++++------------------
+ 1 file changed, 8 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index fa82768e5eda..93fa0884ca69 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3772,7 +3772,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	return err;
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 5b1800c3ba82..76285724b1f3 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -2459,13 +2459,10 @@ static int igbvf_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+ 	}
  }
  
--#ifdef CONFIG_PM
- /**
-  * iavf_suspend - Power management suspend routine
-  * @pdev: PCI device information struct
-@@ -3780,11 +3779,10 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-  *
-  * Called when the system (VM) is entering sleep/suspend.
-  **/
--static int iavf_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int __maybe_unused iavf_suspend(struct device *dev_d)
+-static int igbvf_suspend(struct pci_dev *pdev, pm_message_t state)
++static int igbvf_suspend(struct device *dev_d)
  {
 -	struct net_device *netdev = pci_get_drvdata(pdev);
 +	struct net_device *netdev = dev_get_drvdata(dev_d);
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	struct igbvf_adapter *adapter = netdev_priv(netdev);
+-#ifdef CONFIG_PM
 -	int retval = 0;
+-#endif
  
  	netif_device_detach(netdev);
  
-@@ -3802,12 +3800,6 @@ static int iavf_suspend(struct pci_dev *pdev, pm_message_t state)
+@@ -2475,31 +2472,16 @@ static int igbvf_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		igbvf_free_irq(adapter);
+ 	}
  
- 	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- 
+-#ifdef CONFIG_PM
 -	retval = pci_save_state(pdev);
 -	if (retval)
 -		return retval;
+-#endif
 -
 -	pci_disable_device(pdev);
 -
  	return 0;
  }
  
-@@ -3817,24 +3809,13 @@ static int iavf_suspend(struct pci_dev *pdev, pm_message_t state)
-  *
-  * Called when the system (VM) is resumed from sleep/suspend.
-  **/
--static int iavf_resume(struct pci_dev *pdev)
-+static int __maybe_unused iavf_resume(struct device *dev_d)
+-#ifdef CONFIG_PM
+-static int igbvf_resume(struct pci_dev *pdev)
++static int __maybe_unused igbvf_resume(struct device *dev_d)
  {
 +	struct pci_dev *pdev = to_pci_dev(dev_d);
- 	struct iavf_adapter *adapter = pci_get_drvdata(pdev);
- 	struct net_device *netdev = adapter->netdev;
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct igbvf_adapter *adapter = netdev_priv(netdev);
  	u32 err;
  
--	pci_set_power_state(pdev, PCI_D0);
 -	pci_restore_state(pdev);
--	/* pci_restore_state clears dev->state_saved so call
--	 * pci_save_state to restore it.
--	 */
--	pci_save_state(pdev);
--
 -	err = pci_enable_device_mem(pdev);
 -	if (err) {
--		dev_err(&pdev->dev, "Cannot enable PCI device from suspend.\n");
+-		dev_err(&pdev->dev, "Cannot enable PCI device from suspend\n");
 -		return err;
 -	}
+-
  	pci_set_master(pdev);
  
- 	rtnl_lock();
-@@ -3858,7 +3839,6 @@ static int iavf_resume(struct pci_dev *pdev)
- 	return err;
- }
+ 	if (netif_running(netdev)) {
+@@ -2517,11 +2499,10 @@ static int igbvf_resume(struct pci_dev *pdev)
  
--#endif /* CONFIG_PM */
- /**
-  * iavf_remove - Device Removal Routine
-  * @pdev: PCI device information struct
-@@ -3960,16 +3940,15 @@ static void iavf_remove(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
+ 	return 0;
  }
- 
-+static SIMPLE_DEV_PM_OPS(iavf_pm_ops, iavf_suspend, iavf_resume);
-+
- static struct pci_driver iavf_driver = {
--	.name     = iavf_driver_name,
--	.id_table = iavf_pci_tbl,
--	.probe    = iavf_probe,
--	.remove   = iavf_remove,
--#ifdef CONFIG_PM
--	.suspend  = iavf_suspend,
--	.resume   = iavf_resume,
 -#endif
--	.shutdown = iavf_shutdown,
-+	.name      = iavf_driver_name,
-+	.id_table  = iavf_pci_tbl,
-+	.probe     = iavf_probe,
-+	.remove    = iavf_remove,
-+	.driver.pm = &iavf_pm_ops,
-+	.shutdown  = iavf_shutdown,
- };
  
- /**
+ static void igbvf_shutdown(struct pci_dev *pdev)
+ {
+-	igbvf_suspend(pdev, PMSG_SUSPEND);
++	igbvf_suspend(&pdev->dev);
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+@@ -2962,17 +2943,15 @@ static const struct pci_device_id igbvf_pci_tbl[] = {
+ };
+ MODULE_DEVICE_TABLE(pci, igbvf_pci_tbl);
+ 
++static SIMPLE_DEV_PM_OPS(igbvf_pm_ops, igbvf_suspend, igbvf_resume);
++
+ /* PCI Device API Driver */
+ static struct pci_driver igbvf_driver = {
+ 	.name		= igbvf_driver_name,
+ 	.id_table	= igbvf_pci_tbl,
+ 	.probe		= igbvf_probe,
+ 	.remove		= igbvf_remove,
+-#ifdef CONFIG_PM
+-	/* Power Management Hooks */
+-	.suspend	= igbvf_suspend,
+-	.resume		= igbvf_resume,
+-#endif
++	.driver.pm	= &igbvf_pm_ops,
+ 	.shutdown	= igbvf_shutdown,
+ 	.err_handler	= &igbvf_err_handler
+ };
 -- 
 2.27.0
 
