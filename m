@@ -1,65 +1,35 @@
-From: Li RongQing <lirongqing@baidu.com>
-Date: Wed,  1 Jul 2020 16:54:53 +0800
-Subject: [Intel-wired-lan] [PATCH] i40e: not compute affinity_mask for IRQ
-Message-ID: <1593593693-31299-1-git-send-email-lirongqing@baidu.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed,  1 Jul 2020 14:30:43 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove ledctl_ fields from
+ the mac_info structure
+Message-ID: <20200701113043.9053-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After commit 759dc4a7e605 ("i40e: initialize our affinity_mask
-based on cpu_possible_mask"), NAPI IRQ affinity_mask is bind to
-all possible cpus, not a fixed cpu
+LED control currently not implemented.
 
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_hw.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5d807c8004f8..a63548cb022d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11156,11 +11156,10 @@ static int i40e_init_msix(struct i40e_pf *pf)
-  * i40e_vsi_alloc_q_vector - Allocate memory for a single interrupt vector
-  * @vsi: the VSI being configured
-  * @v_idx: index of the vector in the vsi struct
-- * @cpu: cpu to be used on affinity_mask
-  *
-  * We allocate one q_vector.  If allocation fails we return -ENOMEM.
-  **/
--static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx, int cpu)
-+static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
- {
- 	struct i40e_q_vector *q_vector;
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 2ab7d9fab6af..8066749a55d0 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -83,9 +83,6 @@ struct igc_mac_info {
+ 	enum igc_mac_type type;
  
-@@ -11193,7 +11192,7 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx, int cpu)
- static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = vsi->back;
--	int err, v_idx, num_q_vectors, current_cpu;
-+	int err, v_idx, num_q_vectors;
- 
- 	/* if not MSIX, give the one vector only to the LAN VSI */
- 	if (pf->flags & I40E_FLAG_MSIX_ENABLED)
-@@ -11203,15 +11202,10 @@ static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
- 	else
- 		return -EINVAL;
- 
--	current_cpu = cpumask_first(cpu_online_mask);
--
- 	for (v_idx = 0; v_idx < num_q_vectors; v_idx++) {
--		err = i40e_vsi_alloc_q_vector(vsi, v_idx, current_cpu);
-+		err = i40e_vsi_alloc_q_vector(vsi, v_idx);
- 		if (err)
- 			goto err_out;
--		current_cpu = cpumask_next(current_cpu, cpu_online_mask);
--		if (unlikely(current_cpu >= nr_cpu_ids))
--			current_cpu = cpumask_first(cpu_online_mask);
- 	}
- 
- 	return 0;
+ 	u32 collision_delta;
+-	u32 ledctl_default;
+-	u32 ledctl_mode1;
+-	u32 ledctl_mode2;
+ 	u32 mc_filter_type;
+ 	u32 tx_packet_delta;
+ 	u32 txcw;
 -- 
-2.16.2
+2.11.0
 
