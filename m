@@ -1,358 +1,186 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Wed,  1 Jul 2020 09:25:53 +0800
+Date: Wed,  1 Jul 2020 09:25:56 +0800
 Subject: [Intel-wired-lan] [net-next,
- v7 1/5] ice: add the virtchnl handler for AdminQ command
+ v7 4/5] ice: enable DDP package info querying
 In-Reply-To: <20200701012557.40234-1-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200701012557.40234-1-haiyue.wang@intel.com>
-Message-ID: <20200701012557.40234-2-haiyue.wang@intel.com>
+Message-ID: <20200701012557.40234-5-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The DCF (Device Config Function) is a named trust VF (alway with ID 0,
-single entity per PF port) that can act as a sole controlling entity to
-exercise advance functionality such as adding switch rules for the rest
-of VFs.
+Since the firmware doesn't support reading the DDP package data that PF
+is using. The DCF has to find the PF's DDP package file directly.
 
-To achieve this approach, this VF is permitted to send some basic AdminQ
-commands to the PF through virtual channel (mailbox), then the PF driver
-sends these commands to the firmware, and returns the response to the VF
-again through virtual channel.
+For searching the right DDP package that the PF uses, the DCF needs the
+DDP package characteristic information such as the PF's device serial
+number which is used to find the package loading path, and the exact DDP
+track ID, package name, version.
 
-The AdminQ command from DCF is split into two parts: one is the AdminQ
-descriptor, the other is the buffer (the descriptor has BUF flag set).
-These two parts should be sent in order, so that the PF can handle them
-correctly.
+Only with the matched DDP package, the DCF can get the right metadata to
+create switch rules etc.
 
+Signed-off-by: Leyi Rong <leyi.rong@intel.com>
+Signed-off-by: Ting Xu <ting.xu@intel.com>
 Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
- drivers/net/ethernet/intel/ice/ice_dcf.c      |  49 +++++++
- drivers/net/ethernet/intel/ice/ice_dcf.h      |  20 +++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 130 ++++++++++++++++++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
- include/linux/avf/virtchnl.h                  |  10 ++
- 8 files changed, 219 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
+ drivers/net/ethernet/intel/ice/ice_dcf.h      |  6 +++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 52 +++++++++++++++++++
+ include/linux/avf/virtchnl.h                  | 23 ++++++++
+ 4 files changed, 83 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 980bbcc64b4b..eb83b5fe11c3 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -24,7 +24,7 @@ ice-y := ice_main.o	\
- 	 ice_flow.o	\
- 	 ice_devlink.o	\
- 	 ice_ethtool.o
--ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o
-+ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_dcf.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
- ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 7486d010a619..a6e419a3f547 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -435,6 +435,8 @@ struct ice_pf {
- 	u32 tx_timeout_recovery_level;
- 	char int_name[ICE_INT_NAME_STR_LEN];
- 	u32 sw_int_count;
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcf.h b/drivers/net/ethernet/intel/ice/ice_dcf.h
+index 1dabcca6f753..1ca228f89a19 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcf.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcf.h
+@@ -32,6 +32,12 @@ struct ice_dcf {
+ 	struct ice_aq_desc aq_desc;
+ 	u8 aq_desc_received;
+ 	unsigned long aq_desc_expires;
 +
-+	struct ice_dcf dcf;
++	/* Save the current Device Serial Number when searching the package
++	 * path for later query.
++	 */
++#define ICE_DSN_NUM_LEN 8
++	u8 dsn[ICE_DSN_NUM_LEN];
  };
  
- struct ice_netdev_priv {
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 99c39249613a..89b91ccaf533 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1830,6 +1830,12 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_update_vsi				= 0x0211,
- 	ice_aqc_opc_free_vsi				= 0x0213,
+ #ifdef CONFIG_PCI_IOV
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a1cef089201a..983b5e21b436 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3243,6 +3243,8 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
+ 	snprintf(opt_fw_filename, NAME_MAX, "%sice-%016llx.pkg",
+ 		 ICE_DDP_PKG_PATH, dsn);
  
-+	/* recipe commands */
-+	ice_aqc_opc_add_recipe				= 0x0290,
-+	ice_aqc_opc_recipe_to_profile			= 0x0291,
-+	ice_aqc_opc_get_recipe				= 0x0292,
-+	ice_aqc_opc_get_recipe_to_profile		= 0x0293,
++	memcpy(pf->dcf.dsn, &dsn, sizeof(pf->dcf.dsn));
 +
- 	/* switch rules population commands */
- 	ice_aqc_opc_add_sw_rules			= 0x02A0,
- 	ice_aqc_opc_update_sw_rules			= 0x02A1,
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcf.c b/drivers/net/ethernet/intel/ice/ice_dcf.c
-new file mode 100644
-index 000000000000..cbe60a0cb2d2
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_dcf.c
-@@ -0,0 +1,49 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2018-2020, Intel Corporation. */
-+
-+#include "ice.h"
-+
-+static const enum ice_adminq_opc aqc_permitted_tbl[] = {
-+	/* Generic Firmware Admin commands */
-+	ice_aqc_opc_get_ver,
-+	ice_aqc_opc_req_res,
-+	ice_aqc_opc_release_res,
-+	ice_aqc_opc_list_func_caps,
-+	ice_aqc_opc_list_dev_caps,
-+
-+	/* Package Configuration Admin Commands */
-+	ice_aqc_opc_update_pkg,
-+	ice_aqc_opc_get_pkg_info_list,
-+
-+	/* PHY commands */
-+	ice_aqc_opc_get_phy_caps,
-+	ice_aqc_opc_get_link_status,
-+
-+	/* Switch Block */
-+	ice_aqc_opc_get_sw_cfg,
-+	ice_aqc_opc_alloc_res,
-+	ice_aqc_opc_free_res,
-+	ice_aqc_opc_add_recipe,
-+	ice_aqc_opc_recipe_to_profile,
-+	ice_aqc_opc_get_recipe,
-+	ice_aqc_opc_get_recipe_to_profile,
-+	ice_aqc_opc_add_sw_rules,
-+	ice_aqc_opc_update_sw_rules,
-+	ice_aqc_opc_remove_sw_rules,
-+};
-+
-+/**
-+ * ice_dcf_aq_cmd_permitted - validate the AdminQ command permitted or not
-+ * @desc: descriptor describing the command
-+ */
-+bool ice_dcf_aq_cmd_permitted(struct ice_aq_desc *desc)
-+{
-+	u16 opc = le16_to_cpu(desc->opcode);
-+	unsigned int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(aqc_permitted_tbl); i++)
-+		if (opc == aqc_permitted_tbl[i])
-+			return true;
-+
-+	return false;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcf.h b/drivers/net/ethernet/intel/ice/ice_dcf.h
-new file mode 100644
-index 000000000000..9edb2d5d9d8f
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_dcf.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2018-2020, Intel Corporation. */
-+
-+#ifndef _ICE_DCF_H_
-+#define _ICE_DCF_H_
-+
-+struct ice_dcf {
-+	/* Handle the AdminQ command between the DCF (Device Config Function)
-+	 * and the firmware.
-+	 */
-+#define ICE_DCF_AQ_DESC_TIMEOUT	(HZ / 10)
-+	struct ice_aq_desc aq_desc;
-+	u8 aq_desc_received;
-+	unsigned long aq_desc_expires;
-+};
-+
-+#ifdef CONFIG_PCI_IOV
-+bool ice_dcf_aq_cmd_permitted(struct ice_aq_desc *desc);
-+#endif /* CONFIG_PCI_IOV */
-+#endif /* _ICE_DCF_H_ */
+ 	return opt_fw_filename;
+ }
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a368a89b25f3..ca0d4dd5953c 100644
+index 2584c3f199e3..919f1cec784e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -3651,6 +3651,130 @@ static int ice_vf_init_vlan_stripping(struct ice_vf *vf)
- 		return ice_vsi_manage_vlan_stripping(vsi, false);
+@@ -3906,6 +3906,55 @@ static int ice_vc_dcf_get_vsi_map(struct ice_vf *vf)
+ 	return ret;
  }
  
 +/**
-+ * ice_dcf_handle_aq_cmd - handle the AdminQ command from DCF to FW
-+ * @vf: pointer to the VF info
-+ * @aq_desc: the AdminQ command descriptor
-+ * @aq_buf: the AdminQ command buffer if aq_buf_size is non-zero
-+ * @aq_buf_size: the AdminQ command buffer size
++ * ice_vc_dcf_query_pkg_info - query DDP package info from PF
++ * @vf: pointer to VF info
 + *
-+ * The VF splits the AdminQ command into two parts: one is the descriptor of
-+ * AdminQ command, the other is the buffer of AdminQ command (the descriptor
-+ * has BUF flag set). When both of them are received by PF, this function will
-+ * forward them to firmware once to get the AdminQ's response. And also, the
-+ * filled descriptor and buffer of the response will be sent back to VF one by
-+ * one through the virtchnl.
++ * Called from VF to query DDP package information loaded in PF,
++ * including track ID, package name, version and device serial
++ * number.
 + */
-+static int
-+ice_dcf_handle_aq_cmd(struct ice_vf *vf, struct ice_aq_desc *aq_desc,
-+		      u8 *aq_buf, u16 aq_buf_size)
++static int ice_vc_dcf_query_pkg_info(struct ice_vf *vf)
 +{
 +	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
++	struct virtchnl_pkg_info *pkg_info = NULL;
++	struct ice_hw *hw = &vf->pf->hw;
 +	struct ice_pf *pf = vf->pf;
-+	enum virtchnl_ops v_op;
-+	enum ice_status aq_ret;
-+	u16 v_msg_len = 0;
-+	u8 *v_msg = NULL;
++	int len = 0;
 +	int ret;
 +
-+	pf->dcf.aq_desc_received = false;
-+
-+	if ((aq_buf && !aq_buf_size) || (!aq_buf && aq_buf_size))
-+		return -EINVAL;
-+
-+	aq_ret = ice_aq_send_cmd(&pf->hw, aq_desc, aq_buf, aq_buf_size, NULL);
-+	/* It needs to send back the AQ response message if ICE_ERR_AQ_ERROR
-+	 * returns, some AdminQ handlers will use the error code filled by FW
-+	 * to do exception handling.
-+	 */
-+	if (aq_ret && aq_ret != ICE_ERR_AQ_ERROR) {
-+		v_ret = VIRTCHNL_STATUS_ERR_ADMIN_QUEUE_ERROR;
-+		v_op = VIRTCHNL_OP_DCF_CMD_DESC;
++	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
 +		goto err;
 +	}
 +
-+	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_CMD_DESC, v_ret,
-+				    (u8 *)aq_desc, sizeof(*aq_desc));
-+	/* Bail out so we don't send the VIRTCHNL_OP_DCF_CMD_BUFF message
-+	 * below if failure happens or no AdminQ command buffer.
-+	 */
-+	if (ret || !aq_buf_size)
-+		return ret;
-+
-+	v_op = VIRTCHNL_OP_DCF_CMD_BUFF;
-+	v_msg_len = le16_to_cpu(aq_desc->datalen);
-+
-+	/* buffer is not updated if data length exceeds buffer size */
-+	if (v_msg_len > aq_buf_size)
-+		v_msg_len = 0;
-+	else if (v_msg_len)
-+		v_msg = aq_buf;
-+
-+	/* send the response back to the VF */
-+err:
-+	return ice_vc_send_msg_to_vf(vf, v_op, v_ret, v_msg, v_msg_len);
-+}
-+
-+/**
-+ * ice_vc_dcf_cmd_desc_msg - handle the DCF AdminQ command descriptor
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer which holds the command descriptor
-+ * @len: length of the message
-+ */
-+static int ice_vc_dcf_cmd_desc_msg(struct ice_vf *vf, u8 *msg, u16 len)
-+{
-+	struct ice_aq_desc *aq_desc = (struct ice_aq_desc *)msg;
-+	struct ice_pf *pf = vf->pf;
-+
-+	if (len != sizeof(*aq_desc) || !ice_dcf_aq_cmd_permitted(aq_desc)) {
-+		/* In case to avoid the VIRTCHNL_OP_DCF_CMD_DESC message with
-+		 * the ICE_AQ_FLAG_BUF set followed by another bad message
-+		 * VIRTCHNL_OP_DCF_CMD_DESC.
-+		 */
-+		pf->dcf.aq_desc_received = false;
++	if (!ice_is_vf_dcf(vf) || ice_dcf_get_state(pf) != ICE_DCF_STATE_ON) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
 +		goto err;
 +	}
 +
-+	/* The AdminQ descriptor needs to be stored for use when the followed
-+	 * VIRTCHNL_OP_DCF_CMD_BUFF is received.
-+	 */
-+	if (aq_desc->flags & cpu_to_le16(ICE_AQ_FLAG_BUF)) {
-+		pf->dcf.aq_desc = *aq_desc;
-+		pf->dcf.aq_desc_received = true;
-+		pf->dcf.aq_desc_expires = jiffies + ICE_DCF_AQ_DESC_TIMEOUT;
-+		return 0;
++	len = sizeof(struct virtchnl_pkg_info);
++	pkg_info = kzalloc(len, GFP_KERNEL);
++	if (!pkg_info) {
++		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
++		len = 0;
++		goto err;
 +	}
 +
-+	return ice_dcf_handle_aq_cmd(vf, aq_desc, NULL, 0);
++	pkg_info->track_id = hw->active_track_id;
++	memcpy(&pkg_info->pkg_ver, &hw->active_pkg_ver,
++	       sizeof(pkg_info->pkg_ver));
++	memcpy(pkg_info->pkg_name, hw->active_pkg_name,
++	       sizeof(pkg_info->pkg_name));
++	memcpy(pkg_info->dsn, pf->dcf.dsn, sizeof(pkg_info->dsn));
 +
-+	/* send the response back to the VF */
 +err:
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_CMD_DESC,
-+				     VIRTCHNL_STATUS_ERR_PARAM, NULL, 0);
-+}
-+
-+/**
-+ * ice_vc_dcf_cmd_buff_msg - handle the DCF AdminQ command buffer
-+ * @vf: pointer to the VF info
-+ * @msg: pointer to the msg buffer which holds the command buffer
-+ * @len: length of the message
-+ */
-+static int ice_vc_dcf_cmd_buff_msg(struct ice_vf *vf, u8 *msg, u16 len)
-+{
-+	struct ice_pf *pf = vf->pf;
-+
-+	if (!len || !pf->dcf.aq_desc_received ||
-+	    time_is_before_jiffies(pf->dcf.aq_desc_expires))
-+		goto err;
-+
-+	return ice_dcf_handle_aq_cmd(vf, &pf->dcf.aq_desc, msg, len);
-+
-+	/* send the response back to the VF */
-+err:
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_CMD_BUFF,
-+				     VIRTCHNL_STATUS_ERR_PARAM, NULL, 0);
++	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_GET_PKG_INFO,
++				    v_ret, (u8 *)pkg_info, len);
++	kfree(pkg_info);
++	return ret;
 +}
 +
  /**
   * ice_vc_process_vf_msg - Process request from VF
   * @pf: pointer to the PF structure
-@@ -3761,6 +3885,12 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
- 		err = ice_vc_dis_vlan_stripping(vf);
+@@ -4028,6 +4077,9 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
+ 		err = ice_vc_dcf_get_vsi_map(vf);
  		break;
-+	case VIRTCHNL_OP_DCF_CMD_DESC:
-+		err = ice_vc_dcf_cmd_desc_msg(vf, msg, msglen);
-+		break;
-+	case VIRTCHNL_OP_DCF_CMD_BUFF:
-+		err = ice_vc_dcf_cmd_buff_msg(vf, msg, msglen);
++	case VIRTCHNL_OP_DCF_GET_PKG_INFO:
++		err = ice_vc_dcf_query_pkg_info(vf);
 +		break;
  	case VIRTCHNL_OP_UNKNOWN:
  	default:
  		dev_err(dev, "Unsupported opcode %d from VF %d\n", v_opcode,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 67aa9110fdd1..4a257415f6a5 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -4,6 +4,7 @@
- #ifndef _ICE_VIRTCHNL_PF_H_
- #define _ICE_VIRTCHNL_PF_H_
- #include "ice.h"
-+#include "ice_dcf.h"
- 
- /* Restrict number of MAC Addr and VLAN that non-trusted VF can programmed */
- #define ICE_MAX_VLAN_PER_VF		8
 diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index a13690c3cc94..fa9a3a047dd4 100644
+index ef07cff40662..b14ff350469b 100644
 --- a/include/linux/avf/virtchnl.h
 +++ b/include/linux/avf/virtchnl.h
-@@ -136,6 +136,9 @@ enum virtchnl_ops {
- 	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
- 	VIRTCHNL_OP_ADD_CLOUD_FILTER = 32,
- 	VIRTCHNL_OP_DEL_CLOUD_FILTER = 33,
-+	/* opcode 34, 35, 36, 37 and 38 are reserved */
-+	VIRTCHNL_OP_DCF_CMD_DESC = 39,
-+	VIRTCHNL_OP_DCF_CMD_BUFF = 40,
+@@ -141,6 +141,7 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_DCF_CMD_BUFF = 40,
+ 	VIRTCHNL_OP_DCF_DISABLE = 41,
+ 	VIRTCHNL_OP_DCF_GET_VSI_MAP = 42,
++	VIRTCHNL_OP_DCF_GET_PKG_INFO = 43,
  	/* New major set of opcodes introduced and so leaving room for
  	 * old misc opcodes to be added in future. Also these opcodes may only
  	 * be used if both the PF and VF have successfully negotiated the
-@@ -1262,6 +1265,13 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 	case VIRTCHNL_OP_DEL_CLOUD_FILTER:
- 		valid_len = sizeof(struct virtchnl_filter);
+@@ -647,6 +648,27 @@ struct virtchnl_dcf_vsi_map {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_dcf_vsi_map);
+ 
++#define PKG_NAME_SIZE	32
++#define DSN_SIZE	8
++
++struct pkg_version {
++	u8 major;
++	u8 minor;
++	u8 update;
++	u8 draft;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(4, pkg_version);
++
++struct virtchnl_pkg_info {
++	struct pkg_version pkg_ver;
++	u32 track_id;
++	char pkg_name[PKG_NAME_SIZE];
++	u8 dsn[DSN_SIZE];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_pkg_info);
++
+ /* VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+@@ -1301,6 +1323,7 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
  		break;
-+	case VIRTCHNL_OP_DCF_CMD_DESC:
-+	case VIRTCHNL_OP_DCF_CMD_BUFF:
-+		/* These two opcodes are specific to handle the AdminQ command,
-+		 * so the validation needs to be done in PF's context.
-+		 */
-+		valid_len = msglen;
-+		break;
+ 	case VIRTCHNL_OP_DCF_DISABLE:
+ 	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
++	case VIRTCHNL_OP_DCF_GET_PKG_INFO:
+ 		break;
  	case VIRTCHNL_OP_GET_CAPS:
  		valid_len = sizeof(struct virtchnl_get_capabilities);
- 		break;
 -- 
 2.27.0
 
