@@ -1,162 +1,75 @@
-From: Alexander A. Klimov <grandmaster@al2klimov.de>
-Date: Sun, 19 Jul 2020 17:48:36 +0200
-Subject: [Intel-wired-lan] [PATCH for v5.9] Documentation: intel: Replace
- HTTP links with HTTPS ones
-Message-ID: <20200719154836.59873-1-grandmaster@al2klimov.de>
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Wed,  1 Jul 2020 09:25:52 +0800
+Subject: [Intel-wired-lan] [net-next, v7 0/5] ice: add Intel DCF mode support
+In-Reply-To: <20200619045711.16055-1-haiyue.wang@intel.com>
+References: <20200619045711.16055-1-haiyue.wang@intel.com>
+Message-ID: <20200701012557.40234-1-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rationale:
-Reduces attack surface on kernel devs opening the links for MITM
-as HTTPS traffic is much harder to manipulate.
+The iproute2 and ethtool are evolving to expose the NIC hardware capability.
+But these available orchestration methods in Linux kernel are limited in their
+capability to exercise advance functionality in the hardware, since different
+vendors may have different data programming method.
 
-Deterministic algorithm:
-For each file:
-  If not .svg:
-    For each line:
-      If doesn't contain `\bxmlns\b`:
-        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
-	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
-            If both the HTTP and HTTPS versions
-            return 200 OK and serve the same content:
-              Replace HTTP with HTTPS.
+Intel Ethernet Adaptive Virtual Function (AVF) is the common hardware interface
+for SR-IOV, it has the defined message format to talks with the PF. 
 
-Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
----
- Continuing my work started at 93431e0607e5.
- See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
- (Actually letting a shell for loop submit all this stuff for me.)
+To make good use of the advanced functionality like Switch (Binary Classifier),
+The ice PF driver introduces a DCF (Device Config Function) mode to extend the
+AVF feature.
 
- If there are any URLs to be removed completely
- or at least not (just) HTTPSified:
- Just clearly say so and I'll *undo my change*.
- See also: https://lkml.org/lkml/2020/6/27/64
+The DCF (Device Config Function) method wraps an raw flow admin queue command in
+a virthcnl message and sends it to the PF to be executed. This is required because
+it doesn't have the privilege level to issue the admin queue commands, so it acts
+as a proxy PF. So that the user can customize the AVF feature, and use their own
+programming language to translate the flow rule management data into ice raw flow,
+these raw flows then can be executed in PF's sandbox.
 
- If there are any valid, but yet not changed URLs:
- See: https://lkml.org/lkml/2020/6/26/837
+And the kernel PF driver fully controls the behavior of DCF for security, like only
+the trusted VF with ID zero can run into DCF mode, and also for being compatible
+with the common AVF feature, the VF needs to advertise and acquire DCF capability
+firstly.
 
- If you apply the patch, please let me know.
+v7: Remove the CONFIG_PCI_IOV for function 'ice_aq_sw_rules'.
 
- Sorry again to all maintainers who complained about subject lines.
- Now I realized that you want an actually perfect prefixes,
- not just subsystem ones.
- I tried my best...
- And yes, *I could* (at least half-)automate it.
- Impossible is nothing! :)
+v6: Rebase with the new commit for ice_switch.c/h.
 
+v5: Update the prefix with 'net-next'.
 
- Documentation/networking/device_drivers/intel/e100.rst  | 4 ++--
- Documentation/networking/device_drivers/intel/e1000.rst | 2 +-
- Documentation/networking/device_drivers/intel/fm10k.rst | 2 +-
- Documentation/networking/device_drivers/intel/iavf.rst  | 2 +-
- Documentation/networking/device_drivers/intel/igb.rst   | 2 +-
- Documentation/networking/device_drivers/intel/igbvf.rst | 2 +-
- Documentation/networking/device_drivers/intel/ixgb.rst  | 2 +-
- 7 files changed, 8 insertions(+), 8 deletions(-)
+v4: Mirror commit message update.
 
-diff --git a/Documentation/networking/device_drivers/intel/e100.rst b/Documentation/networking/device_drivers/intel/e100.rst
-index 3ac21e7119a7..3d4a9ba21946 100644
---- a/Documentation/networking/device_drivers/intel/e100.rst
-+++ b/Documentation/networking/device_drivers/intel/e100.rst
-@@ -41,7 +41,7 @@ Identifying Your Adapter
- 
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- Driver Configuration Parameters
- ===============================
-@@ -179,7 +179,7 @@ filtering by
- Support
- =======
- For general information, go to the Intel support website at:
--http://www.intel.com/support/
-+https://www.intel.com/support/
- 
- or the Intel Wired Networking project hosted by Sourceforge at:
- http://sourceforge.net/projects/e1000
-diff --git a/Documentation/networking/device_drivers/intel/e1000.rst b/Documentation/networking/device_drivers/intel/e1000.rst
-index 4aaae0f7d6ba..9d99ff15d737 100644
---- a/Documentation/networking/device_drivers/intel/e1000.rst
-+++ b/Documentation/networking/device_drivers/intel/e1000.rst
-@@ -44,7 +44,7 @@ NOTES:
-         For more information about the InterruptThrottleRate,
-         RxIntDelay, TxIntDelay, RxAbsIntDelay, and TxAbsIntDelay
-         parameters, see the application note at:
--        http://www.intel.com/design/network/applnots/ap450.htm
-+        https://www.intel.com/design/network/applnots/ap450.htm
- 
- AutoNeg
- -------
-diff --git a/Documentation/networking/device_drivers/intel/fm10k.rst b/Documentation/networking/device_drivers/intel/fm10k.rst
-index 4d279e64e221..9258ef6f515c 100644
---- a/Documentation/networking/device_drivers/intel/fm10k.rst
-+++ b/Documentation/networking/device_drivers/intel/fm10k.rst
-@@ -22,7 +22,7 @@ Ethernet Multi-host Controller.
- 
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Flow Control
-diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
-index 84ac7e75f363..52e037b11c97 100644
---- a/Documentation/networking/device_drivers/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/intel/iavf.rst
-@@ -43,7 +43,7 @@ device.
- 
- For information on how to identify your adapter, and for the latest NVM/FW
- images and Intel network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Additional Features and Configurations
-diff --git a/Documentation/networking/device_drivers/intel/igb.rst b/Documentation/networking/device_drivers/intel/igb.rst
-index 87e560fe5eaa..d46289e182cf 100644
---- a/Documentation/networking/device_drivers/intel/igb.rst
-+++ b/Documentation/networking/device_drivers/intel/igb.rst
-@@ -20,7 +20,7 @@ Identifying Your Adapter
- ========================
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Command Line Parameters
-diff --git a/Documentation/networking/device_drivers/intel/igbvf.rst b/Documentation/networking/device_drivers/intel/igbvf.rst
-index 557fc020ef31..40fa210c5e14 100644
---- a/Documentation/networking/device_drivers/intel/igbvf.rst
-+++ b/Documentation/networking/device_drivers/intel/igbvf.rst
-@@ -35,7 +35,7 @@ Identifying Your Adapter
- ========================
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Additional Features and Configurations
-diff --git a/Documentation/networking/device_drivers/intel/ixgb.rst b/Documentation/networking/device_drivers/intel/ixgb.rst
-index ab624f1a44a8..c6a233e68ad6 100644
---- a/Documentation/networking/device_drivers/intel/ixgb.rst
-+++ b/Documentation/networking/device_drivers/intel/ixgb.rst
-@@ -203,7 +203,7 @@ With the 10 Gigabit server adapters, the default Linux configuration will
- very likely limit the total available throughput artificially.  There is a set
- of configuration changes that, when applied together, will increase the ability
- of Linux to transmit and receive data.  The following enhancements were
--originally acquired from settings published at http://www.spec.org/web99/ for
-+originally acquired from settings published at https://www.spec.org/web99/ for
- various submitted results using Linux.
- 
- NOTE:
+v3: Remove the unused function, and control the ice_aq_sw_rules scope by CONFIG_PCI_IOV.
+    Capitalize all abbreviations.
+
+v2: Fix the macro ICE_DCF_VFID definition style issue.
+
+Haiyue Wang (5):
+  ice: add the virtchnl handler for AdminQ command
+  ice: add DCF cap negotiation and state machine
+  ice: support to get the VSI mapping
+  ice: enable DDP package info querying
+  ice: add switch rule management for DCF
+
+ drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_dcf.c      | 839 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dcf.h      |  91 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  16 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |  27 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 366 ++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
+ include/linux/avf/virtchnl.h                  |  63 ++
+ 12 files changed, 1398 insertions(+), 26 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
+
 -- 
 2.27.0
 
