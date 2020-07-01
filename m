@@ -1,35 +1,54 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  1 Jul 2020 14:30:43 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove ledctl_ fields from
- the mac_info structure
-Message-ID: <20200701113043.9053-1-sasha.neftin@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 1 Jul 2020 16:46:25 +0000
+Subject: [Intel-wired-lan] [net-next,
+ v7 1/5] ice: add the virtchnl handler for AdminQ command
+In-Reply-To: <20200701012557.40234-2-haiyue.wang@intel.com>
+References: <20200619045711.16055-1-haiyue.wang@intel.com>
+ <20200701012557.40234-1-haiyue.wang@intel.com>
+ <20200701012557.40234-2-haiyue.wang@intel.com>
+Message-ID: <BN6PR1101MB214580C8EECA0D5BF0C7F9B38C6C0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-LED control currently not implemented.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Haiyue Wang
+> Sent: Tuesday, June 30, 2020 6:26 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net-next, v7 1/5] ice: add the virtchnl handler for
+> AdminQ command
+> 
+> The DCF (Device Config Function) is a named trust VF (alway with ID 0, single
+> entity per PF port) that can act as a sole controlling entity to exercise advance
+> functionality such as adding switch rules for the rest of VFs.
+> 
+> To achieve this approach, this VF is permitted to send some basic AdminQ
+> commands to the PF through virtual channel (mailbox), then the PF driver
+> sends these commands to the firmware, and returns the response to the VF
+> again through virtual channel.
+> 
+> The AdminQ command from DCF is split into two parts: one is the AdminQ
+> descriptor, the other is the buffer (the descriptor has BUF flag set).
+> These two parts should be sent in order, so that the PF can handle them
+> correctly.
+> 
+> Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+>  drivers/net/ethernet/intel/ice/ice.h          |   2 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
+>  drivers/net/ethernet/intel/ice/ice_dcf.c      |  49 +++++++
+>  drivers/net/ethernet/intel/ice/ice_dcf.h      |  20 +++
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 130 ++++++++++++++++++
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
+>  include/linux/avf/virtchnl.h                  |  10 ++
+>  8 files changed, 219 insertions(+), 1 deletion(-)  create mode 100644
+> drivers/net/ethernet/intel/ice/ice_dcf.c
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_hw.h | 3 ---
- 1 file changed, 3 deletions(-)
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 2ab7d9fab6af..8066749a55d0 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -83,9 +83,6 @@ struct igc_mac_info {
- 	enum igc_mac_type type;
- 
- 	u32 collision_delta;
--	u32 ledctl_default;
--	u32 ledctl_mode1;
--	u32 ledctl_mode2;
- 	u32 mc_filter_type;
- 	u32 tx_packet_delta;
- 	u32 txcw;
--- 
-2.11.0
 
