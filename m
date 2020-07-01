@@ -1,12 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 1 Jul 2020 16:48:28 +0000
-Subject: [Intel-wired-lan] [net-next,
- v7 5/5] ice: add switch rule management for DCF
-In-Reply-To: <20200701012557.40234-6-haiyue.wang@intel.com>
-References: <20200619045711.16055-1-haiyue.wang@intel.com>
- <20200701012557.40234-1-haiyue.wang@intel.com>
- <20200701012557.40234-6-haiyue.wang@intel.com>
-Message-ID: <BN6PR1101MB21452B9484A906D4E76D5EBC8C6C0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+Date: Wed, 1 Jul 2020 16:55:56 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] ice: avoid unnecessary
+ single-member variable-length structs
+In-Reply-To: <20200630002746.64140-1-anthony.l.nguyen@intel.com>
+References: <20200630002746.64140-1-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB214500D41C86C0815DB21D038C6C0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,43 +13,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Haiyue Wang
-> Sent: Tuesday, June 30, 2020 6:26 PM
+> Tony Nguyen
+> Sent: Monday, June 29, 2020 5:28 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Xiao <xiao.zhang@intel.com>; Xing, Beilei <beilei.xing@intel.com>
-> Subject: [Intel-wired-lan] [net-next, v7 5/5] ice: add switch rule management
-> for DCF
+> Subject: [Intel-wired-lan] [PATCH 1/2] ice: avoid unnecessary single-member
+> variable-length structs
 > 
-> The PF shall track all the outstanding switch filters (filter IDs to be
-> precise) added by the DCF.
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> Upon a VF reset event, the PF shall clear all outstanding switch filters for the
-> given VF. Upon completion of either VF or PF reset, the PF shall skip replay of
-> filters that were added by the DCF. The PF shall however continue to replay
-> the filters that were not added by DCF for the VF(s).
+> There are a number of structures that consist of a one-element array as the
+> only struct member.  Some of those are unused so remove them. Others are
+> used to index into a buffer/array consisting of a variable number of a
+> different data or structure type.  Those are unnecessary since we can use
+> simple pointer arithmetic or index directly into the buffer to access individual
+> elements of the buffer/array.
 > 
-> If the trust mode of the DCF is taken away without the DCF gracefully
-> relinquishing the DCF functionality (by way appropriate virtchnl message
-> exchanges), then the PF shall remove all switch filters that were added by
-> the DCF. The PF shall transition back from DCF mode to regular mode, the VF
-> shall be treated as any other untrusted VF, and the PF will reset the VF.
+> Additional code cleanups were done near areas affected by this change.
 > 
-> If a designated DCF requests AVF functionality from the same VF (VF-ID)
-> without the DCF gracefully relinquishing the DCF functionality first (by way
-> appropriate virtchnl message exchanges), the PF shall remove all the switch
-> filters that were added by the DCF.
-> 
-> Signed-off-by: Xiao Zhang <xiao.zhang@intel.com>
-> Signed-off-by: Beilei Xing <beilei.xing@intel.com>
-> Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcf.c      | 713 ++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_dcf.h      |  41 +
->  drivers/net/ethernet/intel/ice/ice_switch.c   |  16 +-
->  drivers/net/ethernet/intel/ice/ice_switch.h   |  27 +-
->  drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  40 +
->  6 files changed, 821 insertions(+), 25 deletions(-)
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 39 +-----------
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 29 ++++-----
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_dcb.c      |  4 +-
+>  drivers/net/ethernet/intel/ice/ice_sched.c    | 61 ++++++++-----------
+>  drivers/net/ethernet/intel/ice/ice_sched.h    |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_switch.c   | 14 ++---
+>  7 files changed, 51 insertions(+), 100 deletions(-)
+
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
