@@ -1,44 +1,117 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 01 Jul 2020 15:53:48 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH net-next] bonding: allow xfrm offload
- setup post-module-load
-In-Reply-To: <20200630184941.65165-1-jarod@redhat.com>
-References: <20200630184941.65165-1-jarod@redhat.com>
-Message-ID: <20200701.155348.853858023908987046.davem@davemloft.net>
+From: Paul Stewart <pstew@google.com>
+Date: Wed, 1 Jul 2020 16:05:45 -0700
+Subject: [Intel-wired-lan] ixgbe-x550 link detection after boot
+In-Reply-To: <BYAPR11MB3606EAFBC4331FB21C14AEE4EF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
+References: <CAMcMvsjtsz3A+f-wA4yS7w+3dTaKO9tgCjeWPz_eAC5rMRHTNw@mail.gmail.com>
+ <BYAPR11MB3606500178A5979CDCF5BCCAEF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <BYAPR11MB3606EAFBC4331FB21C14AEE4EF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
+Message-ID: <CAMcMvsh2DGng_TEzWEvizL0i=7_sh4X3qSUBkMc34oHkCFw9pA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jarod Wilson <jarod@redhat.com>
-Date: Tue, 30 Jun 2020 14:49:41 -0400
+Yes, I wouldn't be happy with half-duplex either.  It's not what I had in
+mind.  I don't know what exactly a "PHY" counts as in this setup -- we're
+talking about a backplane link -- SGMII to SGMII.   Both SGMII partners are
+"happy" at least to the extent that they're both driving their respective
+lanes.  It's just that the Intel side doesn't seem to be able to update its
+state, or however the firmware on the adapter is configured doesn't have it
+re-assessing its state.
 
-> At the moment, bonding xfrm crypto offload can only be set up if the bonding
-> module is loaded with active-backup mode already set. We need to be able to
-> make this work with bonds set to AB after the bonding driver has already
-> been loaded.
-> 
-> So what's done here is:
-> 
-> 1) move #define BOND_XFRM_FEATURES to net/bonding.h so it can be used
-> by both bond_main.c and bond_options.c
-> 2) set BOND_XFRM_FEATURES in bond_dev->hw_features universally, rather than
-> only when loading in AB mode
-> 3) wire up xfrmdev_ops universally too
-> 4) disable BOND_XFRM_FEATURES in bond_dev->features if not AB
-> 5) exit early (non-AB case) from bond_ipsec_offload_ok, to prevent a
-> performance hit from traversing into the underlying drivers
-> 5) toggle BOND_XFRM_FEATURES in bond_dev->wanted_features and call
-> netdev_change_features() from bond_option_mode_set()
-> 
-> In my local testing, I can change bonding modes back and forth on the fly,
-> have hardware offload work when I'm in AB, and see no performance penalty
-> to non-AB software encryption, despite having xfrm bits all wired up for
-> all modes now.
-> 
-> Fixes: 18cb261afd7b ("bonding: support hardware encryption offload to slaves")
-> Reported-by: Huy Nguyen <huyn@mellanox.com>
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+As to Denverton: Literally speaking this is a CongaTec B7AC
+system-on-module.  Atom(TM) CPU C3708.
 
-Applied, thanks.
+On Wed, Jul 1, 2020 at 3:20 PM Fujinaka, Todd <todd.fujinaka@intel.com>
+wrote:
+
+> The response I got is ?can?t do half duplex so the PHY could be happy but
+> the SGMII wont?. Put it in the actual bug tracker?.
+>
+>
+>
+> I think the best course of action is for you to contact your factory
+> support. Or if you got this retail to contact support at intel.com.
+>
+>
+>
+> ?
+>
+>
+>
+> Oh, I looked, Mr. Bloom, and I think this is probably a ?clone to lan
+> tenant and assign to the QV team? sort of thing. I?m not sure if it?s QV
+> Maciej Bucio or Tools Kamil Bednarski.
+>
+>
+>
+> *Todd Fujinaka*
+>
+> Software Application Engineer
+>
+> Data Center Group
+>
+> Intel Corporation
+>
+> *todd.fujinaka at intel.com <todd.fujinaka@intel.com>*
+>
+>
+>
+> *From:* Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> *On Behalf
+> Of *Fujinaka, Todd
+> *Sent:* Wednesday, July 1, 2020 3:03 PM
+> *To:* Paul Stewart <pstew@google.com>; intel-wired-lan at lists.osuosl.org
+> *Subject:* Re: [Intel-wired-lan] ixgbe-x550 link detection after boot
+>
+>
+>
+> That doesn?t sound right. Denverton is x553. But I don?t generally do SOC
+> so let me try to get someone else to look at this.
+>
+>
+>
+> *Todd Fujinaka*
+>
+> Software Application Engineer
+>
+> Data Center Group
+>
+> Intel Corporation
+>
+> *todd.fujinaka at intel.com <todd.fujinaka@intel.com>*
+>
+>
+>
+> *From:* Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> *On Behalf
+> Of *Paul Stewart
+> *Sent:* Wednesday, July 1, 2020 2:09 PM
+> *To:* intel-wired-lan at lists.osuosl.org
+> *Subject:* [Intel-wired-lan] ixgbe-x550 link detection after boot
+>
+>
+>
+> Hi there.  I have a system with a Denverton based chipset which has a
+> built-in 4 ports of 10GBE.  It's properly configured to enumerate
+> as 8086:15c6 (IXGBE_DEV_ID_X550EM_A_SGMII).  It also successfully detects
+> link to its backplane partner with the stock ixgbe driver, but only if that
+> partner is up and running before the driver starts up.  If the Denverton
+> chipset comes up first, nothing I've tried so far as succeeded in having
+> the chipset detect link.  I've tried the normal "ifconfig down/up",
+> "ethtool -A eth1 autoneg off" etc, but nothing so far seems to do as much
+> as just rebooting the system.  Are there any hints as to how I can get this
+> going?  I've also tried "hw->mac.ops.reset_hw(hw)" and calling
+> "hw->mac.ops.setup_link()" again from the kernel and that surprisingly
+> didn't work either, so I'm getting curious as to what can get the system to
+> re-evaluate link state.  It's really true that the Links status register
+> does not mark the link as up (as shown by ethtool -d).
+>
+>
+>
+> If it's of any consequence the SGMII link partner is a Marvell 88E1512.
+> MDIO is not connected.  For its part, the Marvell part detects link from
+> the Denverton whether or not that understanding is reciprocal.
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200701/14bb6d1e/attachment-0001.html>
