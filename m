@@ -1,49 +1,31 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 1 Jul 2020 16:59:47 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/5] iavf: use generic power
- management
-In-Reply-To: <20200629092943.227910-2-vaibhavgupta40@gmail.com>
-References: <20200629092943.227910-1-vaibhavgupta40@gmail.com>
- <20200629092943.227910-2-vaibhavgupta40@gmail.com>
-Message-ID: <BN6PR1101MB21456FB6DC435BF22390B8478C6C0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Paul Stewart <pstew@google.com>
+Date: Wed, 1 Jul 2020 14:09:05 -0700
+Subject: [Intel-wired-lan] ixgbe-x550 link detection after boot
+Message-ID: <CAMcMvsjtsz3A+f-wA4yS7w+3dTaKO9tgCjeWPz_eAC5rMRHTNw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Vaibhav Gupta
-> Sent: Monday, June 29, 2020 2:30 AM
-> To: Bjorn Helgaas <helgaas@kernel.org>; Bjorn Helgaas
-> <bhelgaas@google.com>; bjorn at helgaas.com; Vaibhav Gupta
-> <vaibhav.varodek@gmail.com>; David S. Miller <davem@davemloft.net>;
-> Jakub Kicinski <kuba@kernel.org>; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>; netdev at vger.kernel.org;
-> linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
-> skhan at linuxfoundation.org; linux-kernel-
-> mentees at lists.linuxfoundation.org
-> Subject: [Intel-wired-lan] [PATCH v1 1/5] iavf: use generic power
-> management
-> 
-> With the support of generic PM callbacks, drivers no longer need to use
-> legacy .suspend() and .resume() in which they had to maintain PCI states
-> changes and device's power state themselves. The required operations are
-> done by PCI core.
-> 
-> PCI drivers are not expected to invoke PCI helper functions like
-> pci_save/restore_state(), pci_enable/disable_device(),
-> pci_set_power_state(), etc. Their tasks are completed by PCI core itself.
-> 
-> Compile-tested only.
-> 
-> Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 45 ++++++---------------
->  1 file changed, 12 insertions(+), 33 deletions(-)
+Hi there.  I have a system with a Denverton based chipset which has a
+built-in 4 ports of 10GBE.  It's properly configured to enumerate
+as 8086:15c6 (IXGBE_DEV_ID_X550EM_A_SGMII).  It also successfully detects
+link to its backplane partner with the stock ixgbe driver, but only if that
+partner is up and running before the driver starts up.  If the Denverton
+chipset comes up first, nothing I've tried so far as succeeded in having
+the chipset detect link.  I've tried the normal "ifconfig down/up",
+"ethtool -A eth1 autoneg off" etc, but nothing so far seems to do as much
+as just rebooting the system.  Are there any hints as to how I can get this
+going?  I've also tried "hw->mac.ops.reset_hw(hw)" and calling
+"hw->mac.ops.setup_link()" again from the kernel and that surprisingly
+didn't work either, so I'm getting curious as to what can get the system to
+re-evaluate link state.  It's really true that the Links status register
+does not mark the link as up (as shown by ethtool -d).
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+If it's of any consequence the SGMII link partner is a Marvell 88E1512.
+MDIO is not connected.  For its part, the Marvell part detects link from
+the Denverton whether or not that understanding is reciprocal.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200701/279fca6d/attachment.html>
