@@ -1,75 +1,152 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Wed,  1 Jul 2020 09:25:52 +0800
-Subject: [Intel-wired-lan] [net-next, v7 0/5] ice: add Intel DCF mode support
-In-Reply-To: <20200619045711.16055-1-haiyue.wang@intel.com>
+Date: Wed,  1 Jul 2020 09:25:55 +0800
+Subject: [Intel-wired-lan] [net-next,
+ v7 3/5] ice: support to get the VSI mapping
+In-Reply-To: <20200701012557.40234-1-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
-Message-ID: <20200701012557.40234-1-haiyue.wang@intel.com>
+ <20200701012557.40234-1-haiyue.wang@intel.com>
+Message-ID: <20200701012557.40234-4-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The iproute2 and ethtool are evolving to expose the NIC hardware capability.
-But these available orchestration methods in Linux kernel are limited in their
-capability to exercise advance functionality in the hardware, since different
-vendors may have different data programming method.
+The DCF needs the mapping information of the VF ID to logical hardware
+VSI ID, so that it can create the switch flow rules for other VFs.
 
-Intel Ethernet Adaptive Virtual Function (AVF) is the common hardware interface
-for SR-IOV, it has the defined message format to talks with the PF. 
+Signed-off-by: Beilei Xing <beilei.xing@intel.com>
+Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 61 +++++++++++++++++++
+ include/linux/avf/virtchnl.h                  | 21 +++++++
+ 2 files changed, 82 insertions(+)
 
-To make good use of the advanced functionality like Switch (Binary Classifier),
-The ice PF driver introduces a DCF (Device Config Function) mode to extend the
-AVF feature.
-
-The DCF (Device Config Function) method wraps an raw flow admin queue command in
-a virthcnl message and sends it to the PF to be executed. This is required because
-it doesn't have the privilege level to issue the admin queue commands, so it acts
-as a proxy PF. So that the user can customize the AVF feature, and use their own
-programming language to translate the flow rule management data into ice raw flow,
-these raw flows then can be executed in PF's sandbox.
-
-And the kernel PF driver fully controls the behavior of DCF for security, like only
-the trusted VF with ID zero can run into DCF mode, and also for being compatible
-with the common AVF feature, the VF needs to advertise and acquire DCF capability
-firstly.
-
-v7: Remove the CONFIG_PCI_IOV for function 'ice_aq_sw_rules'.
-
-v6: Rebase with the new commit for ice_switch.c/h.
-
-v5: Update the prefix with 'net-next'.
-
-v4: Mirror commit message update.
-
-v3: Remove the unused function, and control the ice_aq_sw_rules scope by CONFIG_PCI_IOV.
-    Capitalize all abbreviations.
-
-v2: Fix the macro ICE_DCF_VFID definition style issue.
-
-Haiyue Wang (5):
-  ice: add the virtchnl handler for AdminQ command
-  ice: add DCF cap negotiation and state machine
-  ice: support to get the VSI mapping
-  ice: enable DDP package info querying
-  ice: add switch rule management for DCF
-
- drivers/net/ethernet/intel/ice/Makefile       |   2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +
- drivers/net/ethernet/intel/ice/ice_dcf.c      | 839 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_dcf.h      |  91 ++
- drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
- drivers/net/ethernet/intel/ice/ice_switch.c   |  16 +-
- drivers/net/ethernet/intel/ice/ice_switch.h   |  27 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 366 ++++++++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
- include/linux/avf/virtchnl.h                  |  63 ++
- 12 files changed, 1398 insertions(+), 26 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_dcf.h
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 622b16efae0b..2584c3f199e3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -3848,6 +3848,64 @@ static int ice_vc_dis_dcf_cap(struct ice_vf *vf)
+ 				     v_ret, NULL, 0);
+ }
+ 
++/**
++ * ice_vc_dcf_get_vsi_map - get VSI mapping table
++ * @vf: pointer to the VF info
++ */
++static int ice_vc_dcf_get_vsi_map(struct ice_vf *vf)
++{
++	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
++	struct virtchnl_dcf_vsi_map *vsi_map = NULL;
++	struct ice_pf *pf = vf->pf;
++	struct ice_vsi *pf_vsi;
++	u16 len = 0;
++	int vf_id;
++	int ret;
++
++	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto err;
++	}
++
++	if (!ice_is_vf_dcf(vf) || ice_dcf_get_state(pf) != ICE_DCF_STATE_ON) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		goto err;
++	}
++
++	len = struct_size(vsi_map, vf_vsi, pf->num_alloc_vfs - 1);
++	vsi_map = kzalloc(len, GFP_KERNEL);
++	if (!vsi_map) {
++		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
++		len = 0;
++		goto err;
++	}
++
++	pf_vsi = ice_get_main_vsi(pf);
++	if (!pf_vsi) {
++		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++		len = 0;
++		goto err;
++	}
++
++	vsi_map->pf_vsi = pf_vsi->vsi_num;
++	vsi_map->num_vfs = pf->num_alloc_vfs;
++
++	ice_for_each_vf(pf, vf_id) {
++		struct ice_vf *tmp_vf = &pf->vf[vf_id];
++
++		if (!ice_is_vf_disabled(tmp_vf) &&
++		    test_bit(ICE_VF_STATE_INIT, tmp_vf->vf_states))
++			vsi_map->vf_vsi[vf_id] = tmp_vf->lan_vsi_num |
++				VIRTCHNL_DCF_VF_VSI_VALID;
++	}
++
++err:
++	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DCF_GET_VSI_MAP, v_ret,
++				    (u8 *)vsi_map, len);
++	kfree(vsi_map);
++	return ret;
++}
++
+ /**
+  * ice_vc_process_vf_msg - Process request from VF
+  * @pf: pointer to the PF structure
+@@ -3967,6 +4025,9 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	case VIRTCHNL_OP_DCF_DISABLE:
+ 		err = ice_vc_dis_dcf_cap(vf);
+ 		break;
++	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
++		err = ice_vc_dcf_get_vsi_map(vf);
++		break;
+ 	case VIRTCHNL_OP_UNKNOWN:
+ 	default:
+ 		dev_err(dev, "Unsupported opcode %d from VF %d\n", v_opcode,
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index e219cafabccd..ef07cff40662 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -140,6 +140,7 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_DCF_CMD_DESC = 39,
+ 	VIRTCHNL_OP_DCF_CMD_BUFF = 40,
+ 	VIRTCHNL_OP_DCF_DISABLE = 41,
++	VIRTCHNL_OP_DCF_GET_VSI_MAP = 42,
+ 	/* New major set of opcodes introduced and so leaving room for
+ 	 * old misc opcodes to be added in future. Also these opcodes may only
+ 	 * be used if both the PF and VF have successfully negotiated the
+@@ -627,6 +628,25 @@ struct virtchnl_filter {
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(272, virtchnl_filter);
+ 
++/* VIRTCHNL_OP_DCF_GET_VSI_MAP
++ * VF sends this message to get VSI mapping table.
++ * PF responds with an indirect message containing VF's
++ * HW VSI IDs.
++ * The index of vf_vsi array is the logical VF ID, the
++ * value of vf_vsi array is the VF's HW VSI ID with its
++ * valid configuration.
++ */
++struct virtchnl_dcf_vsi_map {
++	u16 pf_vsi;	/* PF's HW VSI ID */
++	u16 num_vfs;	/* The actual number of VFs allocated */
++#define VIRTCHNL_DCF_VF_VSI_ID_S	0
++#define VIRTCHNL_DCF_VF_VSI_ID_M	(0xFFF << VIRTCHNL_DCF_VF_VSI_ID_S)
++#define VIRTCHNL_DCF_VF_VSI_VALID	BIT(15)
++	u16 vf_vsi[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_dcf_vsi_map);
++
+ /* VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+@@ -1280,6 +1300,7 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 		valid_len = msglen;
+ 		break;
+ 	case VIRTCHNL_OP_DCF_DISABLE:
++	case VIRTCHNL_OP_DCF_GET_VSI_MAP:
+ 		break;
+ 	case VIRTCHNL_OP_GET_CAPS:
+ 		valid_len = sizeof(struct virtchnl_get_capabilities);
 -- 
 2.27.0
 
