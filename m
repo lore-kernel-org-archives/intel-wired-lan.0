@@ -1,25 +1,146 @@
-From: Li,Rongqing <lirongqing@baidu.com>
-Date: Thu, 2 Jul 2020 09:17:49 +0000
-Subject: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be called
- for redirected xsk copy mode
-Message-ID: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Thu, 2 Jul 2020 21:12:23 +0800
+Subject: [Intel-wired-lan] [e1000e] e86e383f28: suspend-stress.fail
+In-Reply-To: <489156ef4d028d210ec03b7b02413e000fec2eaf.camel@intel.com>
+References: <20200521052753.GB12456@shao2-debian>
+ <5A1631F8-259E-4897-BE52-0F5DB406E44F@canonical.com>
+ <489156ef4d028d210ec03b7b02413e000fec2eaf.camel@intel.com>
+Message-ID: <01DBC003-008F-470C-A228-029F34631305@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi:
 
-i40e_rx_buffer_flip to xsk copy mode can lead to data corruption, like the following flow:
 
-1. first skb is not for xsk, and forwarded to another device or socket queue
-2. seconds skb is for xsk, copy data to xsk memory, and page of skb->data is released
-3. rx_buff is reusable since only first skb is in it, but i40e_rx_buffer_flip will make that page_offset is set to first skb data
-4. then reuse rx buffer, first skb which still is living will be corrupted.
+> On Jul 2, 2020, at 20:20, Zhang Rui <rui.zhang@intel.com> wrote:
+> 
+> Hi, all,
+> 
+> This patch has been shipped in 5.8-rc1 with its upstream commit id
+> 0c80cdbf3320. And we observed big drop of suspend quality.
+> 
+> Previously, we have run into this "e1000e Hardware Error" issue,
+> occasionally. But now, on a NUC I have, system suspend-to-mem fails within 10 suspend  cycles in most cases, but won't work again until a reboot.
+> https://bugzilla.kernel.org/show_bug.cgi?id=205015
+> 
+> IMO, this is a regression, and we need to find a way to fix it.
 
--Li RongQing
+Should be fixed by https://lore.kernel.org/lkml/20200618065453.12140-1-aaron.ma at canonical.com/
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200702/810347e7/attachment.html>
+Kai-Heng
+
+> 
+> thanks,
+> rui
+> 
+> 
+> On Sat, 2020-05-23 at 20:20 +0800, Kai-Heng Feng wrote:
+>> [+Cc intel-wired-lan]
+>> 
+>>> On May 21, 2020, at 13:27, kernel test robot <rong.a.chen@intel.com
+>>>> wrote:
+>>> 
+>>> Greeting,
+>>> 
+>>> FYI, we noticed the following commit (built with gcc-7):
+>>> 
+>>> commit: e86e383f2854234129c66e90f84ac2c74b2b1828 ("e1000e: Warn if
+>>> disabling ULP failed")
+>>> 
+> https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git
+>>> dev-queue
+>> 
+>> kern  :warn  : [  240.884667] e1000e 0000:00:19.0 eth0: Failed to
+>> disable ULP
+>> kern  :info  : [  241.896122] asix 2-3:1.0 eth1: link up, 100Mbps,
+>> full-duplex, lpa 0xC1E1
+>> kern  :err   : [  242.269348] e1000e 0000:00:19.0 eth0: Hardware
+>> Error
+>> kern  :info  : [  242.772702] e1000e 0000:00:19.0:
+>> pci_pm_resume+0x0/0x80 returned 0 after 2985422 usecs
+>> 
+>> So the patch does catch issues previously ignored.
+>> 
+>> I wonder what's the next move, maybe increase the ULP timeout again?
+>> 
+>> Kai-Heng
+>> 
+>>> in testcase: suspend-stress
+>>> with following parameters:
+>>> 
+>>> 	mode: mem
+>>> 	iterations: 10
+>>> 
+>>> 
+>>> 
+>>> on test machine: 4 threads Broadwell with 8G memory
+>>> 
+>>> caused below changes (please refer to attached dmesg/kmsg for
+>>> entire log/backtrace):
+>>> 
+>>> 
+>>> 
+>>> 
+>>> If you fix the issue, kindly add following tag
+>>> Reported-by: kernel test robot <rong.a.chen@intel.com>
+>>> 
+>>> SUSPEND RESUME TEST STARTED
+>>> Suspend to mem 1/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-1/10
+>>> -O /dev/null
+>>> Done
+>>> Sleep for 10 seconds
+>>> Suspend to mem 2/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-2/10
+>>> -O /dev/null
+>>> Done
+>>> Sleep for 10 seconds
+>>> Suspend to mem 3/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-3/10
+>>> -O /dev/null
+>>> Done
+>>> Sleep for 10 seconds
+>>> Suspend to mem 4/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-4/10
+>>> -O /dev/null
+>>> Done
+>>> Sleep for 10 seconds
+>>> Suspend to mem 5/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-5/10
+>>> -O /dev/null
+>>> Done
+>>> Sleep for 10 seconds
+>>> Suspend to mem 6/10:
+>>> /usr/bin/wget -q --timeout=1800 --tries=1 --local-encoding=UTF-8 
+>>> http://inn:80/~lkp/cgi-bin/lkp-jobfile-append-var?job_file=/lkp/jobs/scheduled/lkp-bdw-nuc1/suspend-stress-10-mem-debian-x86_64-20180403.cgz-e86e383f2854234129c66e90f84ac2c74b2b1828-20200517-66267-13fgkna-8.yaml&job_state=suspending-6/10
+>>> -O /dev/null
+>>> Failed
+>>> 
+>>> 
+>>> 
+>>> To reproduce:
+>>> 
+>>>       git clone https://github.com/intel/lkp-tests.git
+>>>       cd lkp-tests
+>>>       bin/lkp install job.yaml  # job file is attached in this
+>>> email
+>>>       bin/lkp run     job.yaml
+>>> 
+>>> 
+>>> 
+>>> Thanks,
+>>> Rong Chen
+>>> 
+>>> <config-5.7.0-rc4-01618-ge86e383f28542><job-
+>>> script.txt><kmsg.xz><suspend-stress.txt><job.yaml>
+>> 
+>> 
+> 
+
