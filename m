@@ -1,117 +1,120 @@
-From: Paul Stewart <pstew@google.com>
-Date: Wed, 1 Jul 2020 16:05:45 -0700
-Subject: [Intel-wired-lan] ixgbe-x550 link detection after boot
-In-Reply-To: <BYAPR11MB3606EAFBC4331FB21C14AEE4EF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
-References: <CAMcMvsjtsz3A+f-wA4yS7w+3dTaKO9tgCjeWPz_eAC5rMRHTNw@mail.gmail.com>
- <BYAPR11MB3606500178A5979CDCF5BCCAEF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
- <BYAPR11MB3606EAFBC4331FB21C14AEE4EF6C0@BYAPR11MB3606.namprd11.prod.outlook.com>
-Message-ID: <CAMcMvsh2DGng_TEzWEvizL0i=7_sh4X3qSUBkMc34oHkCFw9pA@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed,  1 Jul 2020 21:21:34 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 25/53] ixgbe: protect ring
+ accesses with READ- and WRITE_ONCE
+In-Reply-To: <20200702012202.2700645-1-sashal@kernel.org>
+References: <20200702012202.2700645-1-sashal@kernel.org>
+Message-ID: <20200702012202.2700645-25-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Yes, I wouldn't be happy with half-duplex either.  It's not what I had in
-mind.  I don't know what exactly a "PHY" counts as in this setup -- we're
-talking about a backplane link -- SGMII to SGMII.   Both SGMII partners are
-"happy" at least to the extent that they're both driving their respective
-lanes.  It's just that the Intel side doesn't seem to be able to update its
-state, or however the firmware on the adapter is configured doesn't have it
-re-assessing its state.
+From: Ciara Loftus <ciara.loftus@intel.com>
 
-As to Denverton: Literally speaking this is a CongaTec B7AC
-system-on-module.  Atom(TM) CPU C3708.
+[ Upstream commit f140ad9fe2ae16f385f8fe4dc9cf67bb4c51d794 ]
 
-On Wed, Jul 1, 2020 at 3:20 PM Fujinaka, Todd <todd.fujinaka@intel.com>
-wrote:
+READ_ONCE should be used when reading rings prior to accessing the
+statistics pointer. Introduce this as well as the corresponding WRITE_ONCE
+usage when allocating and freeing the rings, to ensure protected access.
 
-> The response I got is ?can?t do half duplex so the PHY could be happy but
-> the SGMII wont?. Put it in the actual bug tracker?.
->
->
->
-> I think the best course of action is for you to contact your factory
-> support. Or if you got this retail to contact support at intel.com.
->
->
->
-> ?
->
->
->
-> Oh, I looked, Mr. Bloom, and I think this is probably a ?clone to lan
-> tenant and assign to the QV team? sort of thing. I?m not sure if it?s QV
-> Maciej Bucio or Tools Kamil Bednarski.
->
->
->
-> *Todd Fujinaka*
->
-> Software Application Engineer
->
-> Data Center Group
->
-> Intel Corporation
->
-> *todd.fujinaka at intel.com <todd.fujinaka@intel.com>*
->
->
->
-> *From:* Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> *On Behalf
-> Of *Fujinaka, Todd
-> *Sent:* Wednesday, July 1, 2020 3:03 PM
-> *To:* Paul Stewart <pstew@google.com>; intel-wired-lan at lists.osuosl.org
-> *Subject:* Re: [Intel-wired-lan] ixgbe-x550 link detection after boot
->
->
->
-> That doesn?t sound right. Denverton is x553. But I don?t generally do SOC
-> so let me try to get someone else to look at this.
->
->
->
-> *Todd Fujinaka*
->
-> Software Application Engineer
->
-> Data Center Group
->
-> Intel Corporation
->
-> *todd.fujinaka at intel.com <todd.fujinaka@intel.com>*
->
->
->
-> *From:* Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> *On Behalf
-> Of *Paul Stewart
-> *Sent:* Wednesday, July 1, 2020 2:09 PM
-> *To:* intel-wired-lan at lists.osuosl.org
-> *Subject:* [Intel-wired-lan] ixgbe-x550 link detection after boot
->
->
->
-> Hi there.  I have a system with a Denverton based chipset which has a
-> built-in 4 ports of 10GBE.  It's properly configured to enumerate
-> as 8086:15c6 (IXGBE_DEV_ID_X550EM_A_SGMII).  It also successfully detects
-> link to its backplane partner with the stock ixgbe driver, but only if that
-> partner is up and running before the driver starts up.  If the Denverton
-> chipset comes up first, nothing I've tried so far as succeeded in having
-> the chipset detect link.  I've tried the normal "ifconfig down/up",
-> "ethtool -A eth1 autoneg off" etc, but nothing so far seems to do as much
-> as just rebooting the system.  Are there any hints as to how I can get this
-> going?  I've also tried "hw->mac.ops.reset_hw(hw)" and calling
-> "hw->mac.ops.setup_link()" again from the kernel and that surprisingly
-> didn't work either, so I'm getting curious as to what can get the system to
-> re-evaluate link state.  It's really true that the Links status register
-> does not mark the link as up (as shown by ethtool -d).
->
->
->
-> If it's of any consequence the SGMII link partner is a Marvell 88E1512.
-> MDIO is not connected.  For its part, the Marvell part detects link from
-> the Denverton whether or not that understanding is reciprocal.
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200701/14bb6d1e/attachment-0001.html>
+Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 12 ++++++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 14 +++++++++++---
+ 2 files changed, 17 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index fd9f5d41b5942..2e35c5706cf10 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -921,7 +921,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 		ring->queue_index = txr_idx;
+ 
+ 		/* assign ring to adapter */
+-		adapter->tx_ring[txr_idx] = ring;
++		WRITE_ONCE(adapter->tx_ring[txr_idx], ring);
+ 
+ 		/* update count and index */
+ 		txr_count--;
+@@ -948,7 +948,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 		set_ring_xdp(ring);
+ 
+ 		/* assign ring to adapter */
+-		adapter->xdp_ring[xdp_idx] = ring;
++		WRITE_ONCE(adapter->xdp_ring[xdp_idx], ring);
+ 
+ 		/* update count and index */
+ 		xdp_count--;
+@@ -991,7 +991,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 		ring->queue_index = rxr_idx;
+ 
+ 		/* assign ring to adapter */
+-		adapter->rx_ring[rxr_idx] = ring;
++		WRITE_ONCE(adapter->rx_ring[rxr_idx], ring);
+ 
+ 		/* update count and index */
+ 		rxr_count--;
+@@ -1020,13 +1020,13 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
+ 
+ 	ixgbe_for_each_ring(ring, q_vector->tx) {
+ 		if (ring_is_xdp(ring))
+-			adapter->xdp_ring[ring->queue_index] = NULL;
++			WRITE_ONCE(adapter->xdp_ring[ring->queue_index], NULL);
+ 		else
+-			adapter->tx_ring[ring->queue_index] = NULL;
++			WRITE_ONCE(adapter->tx_ring[ring->queue_index], NULL);
+ 	}
+ 
+ 	ixgbe_for_each_ring(ring, q_vector->rx)
+-		adapter->rx_ring[ring->queue_index] = NULL;
++		WRITE_ONCE(adapter->rx_ring[ring->queue_index], NULL);
+ 
+ 	adapter->q_vector[v_idx] = NULL;
+ 	napi_hash_del(&q_vector->napi);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index ea6834bae04c0..a32a072761aa2 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7065,7 +7065,10 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	}
+ 
+ 	for (i = 0; i < adapter->num_rx_queues; i++) {
+-		struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
++		struct ixgbe_ring *rx_ring = READ_ONCE(adapter->rx_ring[i]);
++
++		if (!rx_ring)
++			continue;
+ 		non_eop_descs += rx_ring->rx_stats.non_eop_descs;
+ 		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
+ 		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
+@@ -7086,15 +7089,20 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	packets = 0;
+ 	/* gather some stats to the adapter struct that are per queue */
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+-		struct ixgbe_ring *tx_ring = adapter->tx_ring[i];
++		struct ixgbe_ring *tx_ring = READ_ONCE(adapter->tx_ring[i]);
++
++		if (!tx_ring)
++			continue;
+ 		restart_queue += tx_ring->tx_stats.restart_queue;
+ 		tx_busy += tx_ring->tx_stats.tx_busy;
+ 		bytes += tx_ring->stats.bytes;
+ 		packets += tx_ring->stats.packets;
+ 	}
+ 	for (i = 0; i < adapter->num_xdp_queues; i++) {
+-		struct ixgbe_ring *xdp_ring = adapter->xdp_ring[i];
++		struct ixgbe_ring *xdp_ring = READ_ONCE(adapter->xdp_ring[i]);
+ 
++		if (!xdp_ring)
++			continue;
+ 		restart_queue += xdp_ring->tx_stats.restart_queue;
+ 		tx_busy += xdp_ring->tx_stats.tx_busy;
+ 		bytes += xdp_ring->stats.bytes;
+-- 
+2.25.1
+
