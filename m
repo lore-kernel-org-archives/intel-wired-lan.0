@@ -1,120 +1,37 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed,  1 Jul 2020 21:26:40 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 08/17] ixgbe: protect ring
- accesses with READ- and WRITE_ONCE
-In-Reply-To: <20200702012649.2701799-1-sashal@kernel.org>
-References: <20200702012649.2701799-1-sashal@kernel.org>
-Message-ID: <20200702012649.2701799-8-sashal@kernel.org>
+From: Li RongQing <lirongqing@baidu.com>
+Date: Thu,  2 Jul 2020 14:38:05 +0800
+Subject: [Intel-wired-lan] [PATCH][net-next] i40e: prefetch struct page of
+ rx buffer conditionally
+Message-ID: <1593671885-30822-1-git-send-email-lirongqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ciara Loftus <ciara.loftus@intel.com>
+page_address() accesses struct page only when WANT_PAGE_VIRTUAL
+or HASHED_PAGE_VIRTUAL is defined, otherwise it returns address
+based on offset, so we prefetch it conditionally
 
-[ Upstream commit f140ad9fe2ae16f385f8fe4dc9cf67bb4c51d794 ]
-
-READ_ONCE should be used when reading rings prior to accessing the
-statistics pointer. Introduce this as well as the corresponding WRITE_ONCE
-usage when allocating and freeing the rings, to ensure protected access.
-
-Signed-off-by: Ciara Loftus <ciara.loftus@intel.com>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 12 ++++++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 14 +++++++++++---
- 2 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index f1bfae0c41d0c..3cf8b3ea43b08 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -917,7 +917,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 			ring->queue_index = txr_idx;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index f9555c847f73..b3836092c327 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1953,7 +1953,9 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
+ 	struct i40e_rx_buffer *rx_buffer;
  
- 		/* assign ring to adapter */
--		adapter->tx_ring[txr_idx] = ring;
-+		WRITE_ONCE(adapter->tx_ring[txr_idx], ring);
+ 	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
++#if defined(WANT_PAGE_VIRTUAL) || defined(HASHED_PAGE_VIRTUAL)
+ 	prefetchw(rx_buffer->page);
++#endif
  
- 		/* update count and index */
- 		txr_count--;
-@@ -944,7 +944,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 		set_ring_xdp(ring);
- 
- 		/* assign ring to adapter */
--		adapter->xdp_ring[xdp_idx] = ring;
-+		WRITE_ONCE(adapter->xdp_ring[xdp_idx], ring);
- 
- 		/* update count and index */
- 		xdp_count--;
-@@ -991,7 +991,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 			ring->queue_index = rxr_idx;
- 
- 		/* assign ring to adapter */
--		adapter->rx_ring[rxr_idx] = ring;
-+		WRITE_ONCE(adapter->rx_ring[rxr_idx], ring);
- 
- 		/* update count and index */
- 		rxr_count--;
-@@ -1020,13 +1020,13 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
- 
- 	ixgbe_for_each_ring(ring, q_vector->tx) {
- 		if (ring_is_xdp(ring))
--			adapter->xdp_ring[ring->queue_index] = NULL;
-+			WRITE_ONCE(adapter->xdp_ring[ring->queue_index], NULL);
- 		else
--			adapter->tx_ring[ring->queue_index] = NULL;
-+			WRITE_ONCE(adapter->tx_ring[ring->queue_index], NULL);
- 	}
- 
- 	ixgbe_for_each_ring(ring, q_vector->rx)
--		adapter->rx_ring[ring->queue_index] = NULL;
-+		WRITE_ONCE(adapter->rx_ring[ring->queue_index], NULL);
- 
- 	adapter->q_vector[v_idx] = NULL;
- 	napi_hash_del(&q_vector->napi);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 64ee45b6680a0..9c3fa0b555519 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6842,7 +6842,10 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	}
- 
- 	for (i = 0; i < adapter->num_rx_queues; i++) {
--		struct ixgbe_ring *rx_ring = adapter->rx_ring[i];
-+		struct ixgbe_ring *rx_ring = READ_ONCE(adapter->rx_ring[i]);
-+
-+		if (!rx_ring)
-+			continue;
- 		non_eop_descs += rx_ring->rx_stats.non_eop_descs;
- 		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
- 		alloc_rx_buff_failed += rx_ring->rx_stats.alloc_rx_buff_failed;
-@@ -6861,15 +6864,20 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	packets = 0;
- 	/* gather some stats to the adapter struct that are per queue */
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
--		struct ixgbe_ring *tx_ring = adapter->tx_ring[i];
-+		struct ixgbe_ring *tx_ring = READ_ONCE(adapter->tx_ring[i]);
-+
-+		if (!tx_ring)
-+			continue;
- 		restart_queue += tx_ring->tx_stats.restart_queue;
- 		tx_busy += tx_ring->tx_stats.tx_busy;
- 		bytes += tx_ring->stats.bytes;
- 		packets += tx_ring->stats.packets;
- 	}
- 	for (i = 0; i < adapter->num_xdp_queues; i++) {
--		struct ixgbe_ring *xdp_ring = adapter->xdp_ring[i];
-+		struct ixgbe_ring *xdp_ring = READ_ONCE(adapter->xdp_ring[i]);
- 
-+		if (!xdp_ring)
-+			continue;
- 		restart_queue += xdp_ring->tx_stats.restart_queue;
- 		tx_busy += xdp_ring->tx_stats.tx_busy;
- 		bytes += xdp_ring->stats.bytes;
+ 	/* we are reusing so sync this buffer for CPU use */
+ 	dma_sync_single_range_for_cpu(rx_ring->dev,
 -- 
-2.25.1
+2.16.2
 
