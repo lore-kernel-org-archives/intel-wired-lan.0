@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed,  1 Jul 2020 21:25:59 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 11/27] ixgbe: protect ring
+Date: Wed,  1 Jul 2020 21:26:40 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 08/17] ixgbe: protect ring
  accesses with READ- and WRITE_ONCE
-In-Reply-To: <20200702012615.2701532-1-sashal@kernel.org>
-References: <20200702012615.2701532-1-sashal@kernel.org>
-Message-ID: <20200702012615.2701532-11-sashal@kernel.org>
+In-Reply-To: <20200702012649.2701799-1-sashal@kernel.org>
+References: <20200702012649.2701799-1-sashal@kernel.org>
+Message-ID: <20200702012649.2701799-8-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,11 +29,11 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 17 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index d361f570ca37b..952630cb882c2 100644
+index f1bfae0c41d0c..3cf8b3ea43b08 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -923,7 +923,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 		ring->queue_index = txr_idx;
+@@ -917,7 +917,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 			ring->queue_index = txr_idx;
  
  		/* assign ring to adapter */
 -		adapter->tx_ring[txr_idx] = ring;
@@ -41,7 +41,7 @@ index d361f570ca37b..952630cb882c2 100644
  
  		/* update count and index */
  		txr_count--;
-@@ -950,7 +950,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+@@ -944,7 +944,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
  		set_ring_xdp(ring);
  
  		/* assign ring to adapter */
@@ -50,8 +50,8 @@ index d361f570ca37b..952630cb882c2 100644
  
  		/* update count and index */
  		xdp_count--;
-@@ -993,7 +993,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 		ring->queue_index = rxr_idx;
+@@ -991,7 +991,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 			ring->queue_index = rxr_idx;
  
  		/* assign ring to adapter */
 -		adapter->rx_ring[rxr_idx] = ring;
@@ -59,7 +59,7 @@ index d361f570ca37b..952630cb882c2 100644
  
  		/* update count and index */
  		rxr_count--;
-@@ -1022,13 +1022,13 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
+@@ -1020,13 +1020,13 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
  
  	ixgbe_for_each_ring(ring, q_vector->tx) {
  		if (ring_is_xdp(ring))
@@ -77,10 +77,10 @@ index d361f570ca37b..952630cb882c2 100644
  	adapter->q_vector[v_idx] = NULL;
  	napi_hash_del(&q_vector->napi);
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 7d723b70fcf6d..4243ff4ec4b1d 100644
+index 64ee45b6680a0..9c3fa0b555519 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7005,7 +7005,10 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+@@ -6842,7 +6842,10 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
  	}
  
  	for (i = 0; i < adapter->num_rx_queues; i++) {
@@ -90,9 +90,9 @@ index 7d723b70fcf6d..4243ff4ec4b1d 100644
 +		if (!rx_ring)
 +			continue;
  		non_eop_descs += rx_ring->rx_stats.non_eop_descs;
- 		alloc_rx_page += rx_ring->rx_stats.alloc_rx_page;
  		alloc_rx_page_failed += rx_ring->rx_stats.alloc_rx_page_failed;
-@@ -7026,15 +7029,20 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 		alloc_rx_buff_failed += rx_ring->rx_stats.alloc_rx_buff_failed;
+@@ -6861,15 +6864,20 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
  	packets = 0;
  	/* gather some stats to the adapter struct that are per queue */
  	for (i = 0; i < adapter->num_tx_queues; i++) {
