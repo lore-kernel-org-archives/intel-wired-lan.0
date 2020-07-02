@@ -1,344 +1,218 @@
 From: Qi Zhang <qi.z.zhang@intel.com>
-Date: Fri,  3 Jul 2020 06:58:00 +0800
-Subject: [Intel-wired-lan] [PATCH S48 v3 09/14] ice: Add support for per VF
- ctrl VSI enabling
+Date: Fri,  3 Jul 2020 06:58:02 +0800
+Subject: [Intel-wired-lan] [PATCH S48 v3 11/14] ice: Add non-IP Layer2
+ protocol FDIR filter for AVF
 In-Reply-To: <20200702225805.32167-1-qi.z.zhang@intel.com>
 References: <20200702225805.32167-1-qi.z.zhang@intel.com>
-Message-ID: <20200702225805.32167-10-qi.z.zhang@intel.com>
+Message-ID: <20200702225805.32167-12-qi.z.zhang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We are going to enable FDIR configure for AVF through virtual channel.
-The first step is to add helper functions to support control VSI setup.
-A control VSI will be allocated for a VF when AVF creates its
-first FDIR rule through ice_vf_ctrl_vsi_setup().
-The patch will also allocate FDIR rule space for VF's control VSI.
-If a VF asks for flow director rules, then those should come entirely
-from the best effort pool and not from the guaranteed pool. The patch
-allow a VF VSI to have only space in the best effort rules.
+Add new filter type that allow forward non-IP Ethernet packets base on its
+ethertype. The filter is only enabled when COMMS DDP package is loaded.
 
-Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
 Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h             |  4 +-
- drivers/net/ethernet/intel/ice/ice_lib.c         | 64 +++++++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_main.c        |  9 +++-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 62 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  2 +
- 5 files changed, 130 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_fdir.c          | 11 +++++++
+ drivers/net/ethernet/intel/ice/ice_fdir.h          |  1 +
+ drivers/net/ethernet/intel/ice/ice_flow.c          | 17 +++++++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h          |  1 +
+ drivers/net/ethernet/intel/ice/ice_type.h          |  1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 38 ++++++++++++++++++++--
+ 6 files changed, 65 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 5fde85c70e2e..f3b8b694b0a0 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -68,7 +68,7 @@
- #define ICE_AQ_LEN		64
- #define ICE_MBXSQ_LEN		64
- #define ICE_MIN_MSIX		2
--#define ICE_FDIR_MSIX		1
-+#define ICE_FDIR_MSIX		2
- #define ICE_NO_VSI		0xffff
- #define ICE_VSI_MAP_CONTIG	0
- #define ICE_VSI_MAP_SCATTER	1
-@@ -79,6 +79,8 @@
- #define ICE_MAX_LG_RSS_QS	256
- #define ICE_RES_VALID_BIT	0x8000
- #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
-+/* All VF control VSIs share the same irq, so assign a unique ID for them */
-+#define ICE_RES_VF_CTRL_VEC_ID	(ICE_RES_MISC_VEC_ID - 1)
- #define ICE_INVAL_Q_INDEX	0xffff
- #define ICE_INVAL_VFID		256
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+index d97d9197135d..6055a13488b6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+@@ -40,6 +40,12 @@ static const u8 ice_fdir_ipv4_pkt[] = {
+ 	0x00, 0x00
+ };
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 2e3a39cea2c0..267a5e835ef0 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -332,6 +332,9 @@ int ice_vsi_clear(struct ice_vsi *vsi)
- 	pf->vsi[vsi->idx] = NULL;
- 	if (vsi->idx < pf->next_vsi && vsi->type != ICE_VSI_CTRL)
- 		pf->next_vsi = vsi->idx;
-+	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL &&
-+	    vsi->vf_id != ICE_INVAL_VFID)
-+		pf->next_vsi = vsi->idx;
- 
- 	ice_vsi_free_arrays(vsi);
- 	mutex_unlock(&pf->sw_mutex);
-@@ -443,8 +446,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
- 		goto unlock_pf;
- 	}
- 
--	if (vsi->type == ICE_VSI_CTRL) {
--		/* Use the last VSI slot as the index for the control VSI */
-+	if (vsi->type == ICE_VSI_CTRL && vf_id == ICE_INVAL_VFID) {
-+		/* Use the last VSI slot as the index for PF control VSI */
- 		vsi->idx = pf->num_alloc_vsi - 1;
- 		pf->ctrl_vsi_idx = vsi->idx;
- 		pf->vsi[vsi->idx] = vsi;
-@@ -457,6 +460,9 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
- 		pf->next_vsi = ice_get_free_slot(pf->vsi, pf->num_alloc_vsi,
- 						 pf->next_vsi);
- 	}
++static const u8 ice_fdir_non_ip_l2_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++};
 +
-+	if (vsi->type == ICE_VSI_CTRL && vf_id != ICE_INVAL_VFID)
-+		pf->vf[vf_id].ctrl_vsi_idx = vsi->idx;
- 	goto unlock_pf;
+ static const u8 ice_fdir_tcpv6_pkt[] = {
+ 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
+@@ -239,6 +245,11 @@ static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
+ 		sizeof(ice_fdir_ip4_tun_pkt), ice_fdir_ip4_tun_pkt,
+ 	},
+ 	{
++		ICE_FLTR_PTYPE_NON_IP_L2,
++		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
++		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
++	},
++	{
+ 		ICE_FLTR_PTYPE_NONF_IPV6_TCP,
+ 		sizeof(ice_fdir_tcpv6_pkt), ice_fdir_tcpv6_pkt,
+ 		sizeof(ice_fdir_tcp6_tun_pkt), ice_fdir_tcp6_tun_pkt,
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
+index 6b7d8ccd39b7..a46449f23720 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.h
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
+@@ -108,6 +108,7 @@ struct ice_fdir_v6 {
  
- err_rings:
-@@ -495,7 +501,7 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
- 	if (!b_val)
- 		return -EPERM;
+ struct ice_fdir_extra {
+ 	u8 dst_mac[ETH_ALEN];	/* dest MAC address */
++	__be16 ether_type;      /* for NON_IP_L2 */
+ 	u32 usr_def[2];		/* user data */
+ 	__be16 vlan_type;	/* VLAN ethertype */
+ 	__be16 vlan_tag;	/* VLAN tag info */
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 1bb7e98d9703..9277b3ae02ee 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -571,6 +571,17 @@ static const u32 ice_ptypes_nat_t_esp[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
  
--	if (vsi->type != ICE_VSI_PF)
-+	if (!(vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_VF))
- 		return -EPERM;
- 
- 	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
-@@ -506,6 +512,13 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
- 	/* each VSI gets same "best_effort" quota */
- 	vsi->num_bfltr = b_val;
- 
-+	if (vsi->type == ICE_VSI_VF) {
-+		vsi->num_gfltr = 0;
++static const u32 ice_ptypes_mac_non_ip_ofos[] = {
++	0x00000846, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00400000, 0x03FFF000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
 +
-+		/* each VSI gets same "best_effort" quota */
-+		vsi->num_bfltr = b_val;
-+	}
-+
- 	return 0;
- }
- 
-@@ -845,7 +858,8 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	u8 dflt_q_group, dflt_q_prio;
- 	u16 dflt_q, report_q, val;
- 
--	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL)
-+	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL &&
-+	    vsi->type != ICE_VSI_VF)
- 		return;
- 
- 	val = ICE_AQ_VSI_PROP_FLOW_DIR_VALID;
-@@ -1168,7 +1182,24 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
- 
- 	num_q_vectors = vsi->num_q_vectors;
- 	/* reserve slots from OS requested IRQs */
--	base = ice_get_res(pf, pf->irq_tracker, num_q_vectors, vsi->idx);
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
-+		struct ice_vf *vf;
-+		int i;
-+
-+		ice_for_each_vf(pf, i) {
-+			vf = &pf->vf[i];
-+			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI) {
-+				base = pf->vsi[vf->ctrl_vsi_idx]->base_vector;
-+				break;
-+			}
-+		}
-+		if (i == pf->num_alloc_vfs)
-+			base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
-+					   ICE_RES_VF_CTRL_VEC_ID);
-+	} else {
-+		base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
-+				   vsi->idx);
-+	}
- 
- 	if (base < 0) {
- 		dev_err(dev, "%d MSI-X interrupts available. %s %d failed to get %d MSI-X vectors\n",
-@@ -2127,7 +2158,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	struct ice_vsi *vsi;
- 	int ret, i;
- 
--	if (vsi_type == ICE_VSI_VF)
-+	if (vsi_type == ICE_VSI_VF || vsi_type == ICE_VSI_CTRL)
- 		vsi = ice_vsi_alloc(pf, vsi_type, vf_id);
- 	else
- 		vsi = ice_vsi_alloc(pf, vsi_type, ICE_INVAL_VFID);
-@@ -2142,7 +2173,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	if (vsi->type == ICE_VSI_PF)
- 		vsi->ethtype = ETH_P_PAUSE;
- 
--	if (vsi->type == ICE_VSI_VF)
-+	if (vsi->type == ICE_VSI_VF || vsi->type == ICE_VSI_CTRL)
- 		vsi->vf_id = vf_id;
- 
- 	ice_alloc_fd_res(vsi);
-@@ -2583,7 +2614,24 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * many interrupts each VF needs. SR-IOV MSIX resources are also
- 	 * cleared in the same manner.
- 	 */
--	if (vsi->type != ICE_VSI_VF) {
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
-+		struct ice_vf *vf;
-+		int i;
-+
-+		ice_for_each_vf(pf, i) {
-+			vf = &pf->vf[i];
-+			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI)
-+				break;
-+		}
-+		if (i == pf->num_alloc_vfs) {
-+			/* No other VFs left that have control VSI, reclaim SW
-+			 * interrupts back to the common pool
-+			 */
-+			ice_free_res(pf->irq_tracker, vsi->base_vector,
-+				     ICE_RES_VF_CTRL_VEC_ID);
-+			pf->num_avail_sw_msix += vsi->num_q_vectors;
-+		}
-+	} else if (vsi->type != ICE_VSI_VF) {
- 		/* reclaim SW interrupts back to the common pool */
- 		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
- 		pf->num_avail_sw_msix += vsi->num_q_vectors;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 983b5e21b436..8afd33bdd637 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1630,8 +1630,13 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
- 			/* skip this unused q_vector */
- 			continue;
+ /* Manage parameters and info. used during the creation of a flow profile */
+ struct ice_flow_prof_params {
+ 	enum ice_block blk;
+@@ -762,7 +773,11 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				   ICE_FLOW_PTYPE_MAX);
  		}
--		err = devm_request_irq(dev, irq_num, vsi->irq_handler, 0,
--				       q_vector->name, q_vector);
-+		if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID)
-+			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
-+					       IRQF_SHARED, q_vector->name,
-+					       q_vector);
-+		else
-+			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
-+					       0, q_vector->name, q_vector);
- 		if (err) {
- 			netdev_err(vsi->netdev, "MSIX request_irq failed, error: %d\n",
- 				   err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index bc80440151b7..ddd6062c5b8b 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -442,6 +442,25 @@ static void ice_vf_vsi_release(struct ice_vf *vf)
- }
  
- /**
-+ * ice_vf_ctrl_invalidate_vsi - invalidate ctrl_vsi_idx to remove VSI access
-+ * @vf: VF that control VSI is being invalidated on
-+ */
-+static void ice_vf_ctrl_invalidate_vsi(struct ice_vf *vf)
-+{
-+	vf->ctrl_vsi_idx = ICE_NO_VSI;
-+}
-+
-+/**
-+ * ice_vf_ctrl_vsi_release - invalidate the VF's control VSI after freeing it
-+ * @vf: VF that control VSI is being released on
-+ */
-+static void ice_vf_ctrl_vsi_release(struct ice_vf *vf)
-+{
-+	ice_vsi_release(vf->pf->vsi[vf->ctrl_vsi_idx]);
-+	ice_vf_ctrl_invalidate_vsi(vf);
-+}
-+
-+/**
-  * ice_free_vf_res - Free a VF's resources
-  * @vf: pointer to the VF info
-  */
-@@ -454,6 +473,9 @@ static void ice_free_vf_res(struct ice_vf *vf)
- 	 * accessing the VF's VSI after it's freed or invalidated.
+-		if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
++		if (hdrs & ICE_FLOW_SEG_HDR_ETH_NON_IP) {
++			src = (const unsigned long *)ice_ptypes_mac_non_ip_ofos;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
+ 			src = (const unsigned long *)ice_ptypes_pppoe;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index 46b9fbb3dbe7..26c42fada9f9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -138,6 +138,7 @@ enum ice_flow_seg_hdr {
+ 	ICE_FLOW_SEG_HDR_ESP		= 0x00100000,
+ 	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
+ 	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
++	ICE_FLOW_SEG_HDR_ETH_NON_IP	= 0x00800000,
+ 	/* The following is an additive bit for ICE_FLOW_SEG_HDR_IPV4 and
+ 	 * ICE_FLOW_SEG_HDR_IPV6 which include the IPV4 other PTYPEs
  	 */
- 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
-+	/* free VF control VSI */
-+	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+		ice_vf_ctrl_vsi_release(vf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index c2eff68d5469..f58824834342 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -170,6 +170,7 @@ enum ice_fltr_ptype {
+ 	ICE_FLTR_PTYPE_NONF_IPV4_TCP,
+ 	ICE_FLTR_PTYPE_NONF_IPV4_SCTP,
+ 	ICE_FLTR_PTYPE_NONF_IPV4_OTHER,
++	ICE_FLTR_PTYPE_NON_IP_L2,
+ 	ICE_FLTR_PTYPE_FRAG_IPV4,
+ 	ICE_FLTR_PTYPE_NONF_IPV6_UDP,
+ 	ICE_FLTR_PTYPE_NONF_IPV6_TCP,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+index 53194e26a3cf..62937b86a212 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+@@ -27,6 +27,11 @@ struct virtchnl_fdir_fltr_conf {
+ 	struct ice_fdir_fltr input;
+ };
  
- 	/* free VSI and disconnect it from the parent uplink */
- 	if (vf->lan_vsi_idx != ICE_NO_VSI) {
-@@ -806,6 +828,29 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
- }
++static enum virtchnl_proto_hdr_type vc_pattern_ether[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
++
+ static enum virtchnl_proto_hdr_type vc_pattern_ipv4[] = {
+ 	VIRTCHNL_PROTO_HDR_ETH,
+ 	VIRTCHNL_PROTO_HDR_IPV4,
+@@ -87,7 +92,7 @@ struct virtchnl_fdir_pattern_match_item {
+ 	u64 *meta;
+ };
  
- /**
-+ * ice_vf_ctrl_vsi_setup - Set up a VF control VSI
-+ * @vf: VF to setup control VSI for
-+ *
-+ * Returns pointer to the successfully allocated VSI struct on success,
-+ * otherwise returns NULL on failure.
-+ */
-+struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf)
-+{
-+	struct ice_port_info *pi = ice_vf_get_port_info(vf);
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_vsi *vsi;
+-static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
++static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_os[] = {
+ 	{vc_pattern_ipv4,                     0,         NULL},
+ 	{vc_pattern_ipv4_tcp,                 0,         NULL},
+ 	{vc_pattern_ipv4_udp,                 0,         NULL},
+@@ -98,6 +103,18 @@ static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
+ 	{vc_pattern_ipv6_sctp,                0,         NULL},
+ };
+ 
++static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_comms[] = {
++	{vc_pattern_ipv4,                     0,         NULL},
++	{vc_pattern_ipv4_tcp,                 0,         NULL},
++	{vc_pattern_ipv4_udp,                 0,         NULL},
++	{vc_pattern_ipv4_sctp,                0,         NULL},
++	{vc_pattern_ipv6,                     0,         NULL},
++	{vc_pattern_ipv6_tcp,                 0,         NULL},
++	{vc_pattern_ipv6_udp,                 0,         NULL},
++	{vc_pattern_ipv6_sctp,                0,         NULL},
++	{vc_pattern_ether,                    0,         NULL},
++};
 +
-+	vsi = ice_vsi_setup(pf, pi, ICE_VSI_CTRL, vf->vf_id);
-+
-+	if (!vsi) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to create VF control VSI\n");
-+		ice_vf_ctrl_invalidate_vsi(vf);
+ struct virtchnl_fdir_inset_map {
+ 	enum virtchnl_proto_hdr_field field;
+ 	enum ice_flow_field fld;
+@@ -372,6 +389,9 @@ ice_vc_fdir_set_flow_hdr(struct ice_vf *vf,
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
+ 
+ 	switch (flow) {
++	case ICE_FLTR_PTYPE_NON_IP_L2:
++		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_ETH_NON_IP);
++		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
+ 		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 |
+ 				  ICE_FLOW_SEG_HDR_IPV_OTHER);
+@@ -712,8 +732,14 @@ ice_vc_fdir_get_pattern(struct ice_vf *vf, int *len)
+ 	struct ice_hw *hw;
+ 
+ 	hw = &pf->hw;
+-	item = vc_fdir_pattern;
+-	*len = ARRAY_SIZE(vc_fdir_pattern);
++	if (!strncmp(hw->active_pkg_name, "ICE COMMS Package",
++		     sizeof(hw->active_pkg_name))) {
++		item = vc_fdir_pattern_comms;
++		*len = ARRAY_SIZE(vc_fdir_pattern_comms);
++	} else {
++		item = vc_fdir_pattern_os;
++		*len = ARRAY_SIZE(vc_fdir_pattern_os);
 +	}
-+
-+	return vsi;
-+}
-+
-+/**
-  * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
-  * @pf: pointer to PF structure
-  * @vf: pointer to VF that the first MSIX vector index is being calculated for
-@@ -1467,6 +1512,12 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	ice_for_each_vf(pf, v) {
- 		vf = &pf->vf[v];
  
-+		/* clean VF control VSI when resetting VFs since it should be
-+		 * setup only when iAVF creates its first FDIR rule.
-+		 */
-+		if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+			ice_vf_ctrl_invalidate_vsi(vf);
-+
- 		ice_vf_pre_vsi_rebuild(vf);
- 		ice_vf_rebuild_vsi(vf);
- 		ice_vf_post_vsi_rebuild(vf);
-@@ -1588,6 +1639,12 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 			dev_err(dev, "disabling promiscuous mode failed\n");
- 	}
- 
-+	/* clean VF control VSI when resetting VF since it should be setup
-+	 * only when iAVF creates its first FDIR rule.
-+	 */
-+	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+		ice_vf_ctrl_vsi_release(vf);
-+
- 	ice_vf_pre_vsi_rebuild(vf);
- 	ice_vf_rebuild_vsi_with_release(vf);
- 	ice_vf_post_vsi_rebuild(vf);
-@@ -1778,6 +1835,11 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
- 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
- 		vf->spoofchk = true;
- 		vf->num_vf_qs = pf->num_qps_per_vf;
-+
-+		/* ctrl_vsi_idx will be set to a valid value only when iAVF
-+		 * creates its first fdir rule.
-+		 */
-+		ice_vf_ctrl_invalidate_vsi(vf);
- 	}
+ 	return item;
  }
+@@ -775,10 +801,16 @@ ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
+ 		struct ipv6hdr *ip6h;
+ 		struct udphdr *udph;
+ 		struct tcphdr *tcph;
++		struct ethhdr *eth;
+ 		struct iphdr *iph;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 25dcdd86d663..61e7daf7861e 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -73,6 +73,7 @@ struct ice_vf {
- 
- 	u16 vf_id;			/* VF ID in the PF space */
- 	u16 lan_vsi_idx;		/* index into PF struct */
-+	u16 ctrl_vsi_idx;
- 	/* first vector index of this VF in the PF space */
- 	int first_vector_idx;
- 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
-@@ -140,6 +141,7 @@ void
- ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event);
- void ice_print_vfs_mdd_events(struct ice_pf *pf);
- void ice_print_vf_rx_mdd_event(struct ice_vf *vf);
-+struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf);
- #else /* CONFIG_PCI_IOV */
- #define ice_process_vflr_event(pf) do {} while (0)
- #define ice_free_vfs(pf) do {} while (0)
+ 		switch (hdr->type) {
+ 		case VIRTCHNL_PROTO_HDR_ETH:
++			eth = (struct ethhdr *)hdr->buffer;
++			input->flow_type = ICE_FLTR_PTYPE_NON_IP_L2;
++
++			if (hdr->field_selector)
++				input->ext_data.ether_type = eth->h_proto;
+ 			break;
+ 		case VIRTCHNL_PROTO_HDR_IPV4:
+ 			iph = (struct iphdr *)hdr->buffer;
 -- 
 2.13.6
 
