@@ -1,130 +1,46 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 06 Jul 2020 09:14:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
- f637471d33a7a786c455877361e70e0b2da3c56a
-Message-ID: <5f027af5.pIUy492lcpcw2fE4%lkp@intel.com>
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+Date: Mon, 6 Jul 2020 08:13:00 +0200
+Subject: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be
+ called for redirected xsk copy mode
+In-Reply-To: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
+References: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
+Message-ID: <CAJ8uoz08pyWR43K_zhp6PsDLi0KE=y_4QTs-a7kBA-jkRQksaw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
-branch HEAD: f637471d33a7a786c455877361e70e0b2da3c56a  igc: Remove checking media type during MAC initialization
+Thank you RongQing for reporting this. I will take a look at it and
+produce a patch.
 
-elapsed time: 8579m
+/Magnus
 
-configs tested: 104
-configs skipped: 1
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20200701
-i386                 randconfig-a001-20200701
-i386                 randconfig-a006-20200701
-i386                 randconfig-a005-20200701
-i386                 randconfig-a004-20200701
-i386                 randconfig-a003-20200701
-i386                 randconfig-a002-20200703
-i386                 randconfig-a001-20200703
-i386                 randconfig-a006-20200703
-i386                 randconfig-a005-20200703
-i386                 randconfig-a004-20200703
-i386                 randconfig-a003-20200703
-i386                 randconfig-a011-20200701
-i386                 randconfig-a015-20200701
-i386                 randconfig-a014-20200701
-i386                 randconfig-a016-20200701
-i386                 randconfig-a012-20200701
-i386                 randconfig-a013-20200701
-i386                 randconfig-a011-20200630
-i386                 randconfig-a016-20200630
-i386                 randconfig-a015-20200630
-i386                 randconfig-a012-20200630
-i386                 randconfig-a014-20200630
-i386                 randconfig-a013-20200630
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                                allnoconfig
-um                                  defconfig
-um                               allmodconfig
-um                               allyesconfig
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+On Thu, Jul 2, 2020 at 11:33 AM Li,Rongqing <lirongqing@baidu.com> wrote:
+>
+> Hi:
+>
+>
+>
+> i40e_rx_buffer_flip to xsk copy mode can lead to data corruption, like the following flow:
+>
+>
+>
+> 1. first skb is not for xsk, and forwarded to another device or socket queue
+>
+> 2. seconds skb is for xsk, copy data to xsk memory, and page of skb->data is released
+>
+> 3. rx_buff is reusable since only first skb is in it, but i40e_rx_buffer_flip will make that page_offset is set to first skb data
+>
+> 4. then reuse rx buffer, first skb which still is living will be corrupted.
+>
+>
+>
+> -Li RongQing
+>
+>
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
