@@ -1,8 +1,8 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  8 Jul 2020 09:53:14 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Clean up the _hw_stats
+Date: Wed,  8 Jul 2020 10:08:58 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Clean up the _hw_stats
  structure
-Message-ID: <20200708065314.27514-1-sasha.neftin@intel.com>
+Message-ID: <20200708070858.6424-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,24 +10,27 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 Remove icrxptc, icrxatc, ictxptc, ictxatc, ictxqec, ictxqmtc,
-icrxdmtc and icrxoc fields from the _hw_stats structure.
-Accordance to the i225 device specification these fields not
-in use.
+icrxdmtc, icrxoc, cbrdpc, cbrmpc and htcbdpc fields from
+the _hw_stats structure. Accordance to the i225 device
+specification these fields not in use.
 This patch come to clean up the driver code.
+
+v1 -> v2:
+minor complete
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h   | 8 --------
- drivers/net/ethernet/intel/igc/igc_mac.c  | 3 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 2 --
- drivers/net/ethernet/intel/igc/igc_regs.h | 2 --
- 4 files changed, 15 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_hw.h   | 12 ------------
+ drivers/net/ethernet/intel/igc/igc_mac.c  |  3 ---
+ drivers/net/ethernet/intel/igc/igc_main.c |  2 --
+ drivers/net/ethernet/intel/igc/igc_regs.h |  2 --
+ 4 files changed, 19 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 24412a6c2289..79e05b8c551e 100644
+index 24412a6c2289..b9fe51b91c47 100644
 --- a/drivers/net/ethernet/intel/igc/igc_hw.h
 +++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -268,14 +268,6 @@ struct igc_hw_stats {
+@@ -268,21 +268,9 @@ struct igc_hw_stats {
  	u64 tsctc;
  	u64 tsctfc;
  	u64 iac;
@@ -39,9 +42,16 @@ index 24412a6c2289..79e05b8c551e 100644
 -	u64 ictxqmtc;
 -	u64 icrxdmtc;
 -	u64 icrxoc;
- 	u64 cbtmpc;
+-	u64 cbtmpc;
  	u64 htdpmc;
- 	u64 cbrdpc;
+-	u64 cbrdpc;
+-	u64 cbrmpc;
+ 	u64 rpthc;
+ 	u64 hgptc;
+-	u64 htcbdpc;
+ 	u64 hgorc;
+ 	u64 hgotc;
+ 	u64 lenerrs;
 diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
 index 02bbb8ac4f68..674b8ad21fea 100644
 --- a/drivers/net/ethernet/intel/igc/igc_mac.c
