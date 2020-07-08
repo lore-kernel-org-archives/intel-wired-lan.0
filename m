@@ -1,97 +1,161 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  8 Jul 2020 10:08:58 +0300
-Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Clean up the _hw_stats
- structure
-Message-ID: <20200708070858.6424-1-sasha.neftin@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 08 Jul 2020 15:47:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 9586062564a3da682d6373031ff8abe4c5b1883e
+Message-ID: <5f057a02.Yurn7Y4vHCEAGLn1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove icrxptc, icrxatc, ictxptc, ictxatc, ictxqec, ictxqmtc,
-icrxdmtc, icrxoc, cbrdpc, cbrmpc and htcbdpc fields from
-the _hw_stats structure. Accordance to the i225 device
-specification these fields not in use.
-This patch come to clean up the driver code.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 9586062564a3da682d6373031ff8abe4c5b1883e  igb: reinit_locked() should be called with rtnl_lock
 
-v1 -> v2:
-minor complete
+Error/Warning in current branch:
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+include/linux/avf/virtchnl.h:1004:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1142:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:181:36: warning: division by zero [-Wdiv-by-zero]
+include/linux/avf/virtchnl.h:861:1: note: in expansion of macro 'VIRTCHNL_CHECK_STRUCT_LEN'
+include/linux/avf/virtchnl.h:861:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:943:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:959:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:989:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- i386-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+|   `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+|-- i386-debian-10.3
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:note:in-expansion-of-macro-VIRTCHNL_CHECK_STRUCT_LEN
+|   `-- include-linux-avf-virtchnl.h:warning:division-by-zero
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- sparc64-randconfig-r026-20200707
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+
+elapsed time: 723m
+
+configs tested: 94
+configs skipped: 2
+
+arm                                 defconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                              allyesconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+nios2                               defconfig
+powerpc                     pq2fads_defconfig
+mips                     decstation_defconfig
+powerpc                      ppc40x_defconfig
+sh                                allnoconfig
+arm                         nhk8815_defconfig
+s390                       zfcpdump_defconfig
+nios2                            alldefconfig
+sh                          r7785rp_defconfig
+arm                        trizeps4_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a001-20200707
+i386                 randconfig-a002-20200707
+i386                 randconfig-a006-20200707
+i386                 randconfig-a004-20200707
+i386                 randconfig-a005-20200707
+i386                 randconfig-a003-20200707
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                                allnoconfig
+um                                  defconfig
+um                               allmodconfig
+um                               allyesconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h   | 12 ------------
- drivers/net/ethernet/intel/igc/igc_mac.c  |  3 ---
- drivers/net/ethernet/intel/igc/igc_main.c |  2 --
- drivers/net/ethernet/intel/igc/igc_regs.h |  2 --
- 4 files changed, 19 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 24412a6c2289..b9fe51b91c47 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -268,21 +268,9 @@ struct igc_hw_stats {
- 	u64 tsctc;
- 	u64 tsctfc;
- 	u64 iac;
--	u64 icrxptc;
--	u64 icrxatc;
--	u64 ictxptc;
--	u64 ictxatc;
--	u64 ictxqec;
--	u64 ictxqmtc;
--	u64 icrxdmtc;
--	u64 icrxoc;
--	u64 cbtmpc;
- 	u64 htdpmc;
--	u64 cbrdpc;
--	u64 cbrmpc;
- 	u64 rpthc;
- 	u64 hgptc;
--	u64 htcbdpc;
- 	u64 hgorc;
- 	u64 hgotc;
- 	u64 lenerrs;
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 02bbb8ac4f68..674b8ad21fea 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -296,9 +296,6 @@ void igc_clear_hw_cntrs_base(struct igc_hw *hw)
- 
- 	rd32(IGC_IAC);
- 
--	rd32(IGC_ICTXPTC);
--	rd32(IGC_ICTXATC);
--
- 	rd32(IGC_RPTHC);
- 	rd32(IGC_TLPIC);
- 	rd32(IGC_RLPIC);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index db3cbb5de128..ab5b302d6655 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3731,8 +3731,6 @@ void igc_update_stats(struct igc_adapter *adapter)
- 	adapter->stats.tsctc += rd32(IGC_TSCTC);
- 
- 	adapter->stats.iac += rd32(IGC_IAC);
--	adapter->stats.ictxptc += rd32(IGC_ICTXPTC);
--	adapter->stats.ictxatc += rd32(IGC_ICTXATC);
- 
- 	/* Fill out the OS statistics structure */
- 	net_stats->multicast = adapter->stats.mprc;
-diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 5ff3316717c7..b52dd9d737e8 100644
---- a/drivers/net/ethernet/intel/igc/igc_regs.h
-+++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -172,8 +172,6 @@
- #define IGC_BPTC	0x040F4  /* Broadcast Packets Tx Count - R/clr */
- #define IGC_TSCTC	0x040F8  /* TCP Segmentation Context Tx - R/clr */
- #define IGC_IAC		0x04100  /* Interrupt Assertion Count */
--#define IGC_ICTXPTC	0x0410C  /* Interrupt Cause Tx Pkt Timer Expire Count */
--#define IGC_ICTXATC	0x04110  /* Interrupt Cause Tx Abs Timer Expire Count */
- #define IGC_RPTHC	0x04104  /* Rx Packets To Host */
- #define IGC_TLPIC	0x04148  /* EEE Tx LPI Count */
- #define IGC_RLPIC	0x0414C  /* EEE Rx LPI Count */
--- 
-2.11.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
