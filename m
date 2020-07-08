@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 8 Jul 2020 20:44:30 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 3/4] i40e,
- xsk: increase budget for AF_XDP path
-In-Reply-To: <20200702153730.575738-4-bjorn.topel@gmail.com>
+Date: Wed, 8 Jul 2020 20:45:01 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 4/4] i40e,
+ xsk: move buffer allocation out of the Rx processing loop
+In-Reply-To: <20200702153730.575738-5-bjorn.topel@gmail.com>
 References: <20200702153730.575738-1-bjorn.topel@gmail.com>
- <20200702153730.575738-4-bjorn.topel@gmail.com>
-Message-ID: <BN6PR1101MB2145C84FFB906F0FA2692D488C670@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200702153730.575738-5-bjorn.topel@gmail.com>
+Message-ID: <BN6PR1101MB214588230CD9820C8AAF3C298C670@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,30 +15,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Bj?rn T?pel
-> Sent: Thursday, July 2, 2020 8:37 AM
+> Sent: Thursday, July 2, 2020 8:38 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: netdev at vger.kernel.org; bpf at vger.kernel.org; Topel, Bjorn
 > <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next 3/4] i40e, xsk: increase budget for
-> AF_XDP path
+> Subject: [Intel-wired-lan] [PATCH net-next 4/4] i40e, xsk: move buffer
+> allocation out of the Rx processing loop
 > 
 > From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> The napi_budget, meaning the number of received packets that are allowed
-> to be processed for each napi invocation, takes into consideration that each
-> received packet is aimed for the kernel networking stack.
+> Instead of checking in each iteration of the Rx packet processing loop, move
+> the allocation out of the loop and do it once for each napi activation.
 > 
-> That is not the case for the AF_XDP receive path, where the cost of each
-> packet is significantly less. Therefore, this commit disregards the napi budget
-> and increases it to 256. Processing 256 packets targeted for AF_XDP is still less
-> work than 64 (napi budget) packets going to the kernel networking stack.
-> 
-> The performance for the rx_drop scenario is up 7%.
+> For AF_XDP the rx_drop benchmark was improved by 6%.
 > 
 > Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
