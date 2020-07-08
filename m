@@ -1,33 +1,31 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 8 Jul 2020 20:46:53 +0000
-Subject: [Intel-wired-lan] [PATCH][net-next] i40e: prefetch struct page
- of rx buffer conditionally
-In-Reply-To: <1593671885-30822-1-git-send-email-lirongqing@baidu.com>
-References: <1593671885-30822-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <BN6PR1101MB214501BA0231A0EF89CD66C78C670@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: David Miller <davem@davemloft.net>
+Date: Wed, 08 Jul 2020 15:37:29 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH net-next] bonding: deal with xfrm
+ state in all modes and add more error-checking
+In-Reply-To: <20200708174631.15286-1-jarod@redhat.com>
+References: <20200708174631.15286-1-jarod@redhat.com>
+Message-ID: <20200708.153729.1570943134510183928.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Li
-> RongQing
-> Sent: Wednesday, July 1, 2020 11:38 PM
-> To: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH][net-next] i40e: prefetch struct page of rx
-> buffer conditionally
+From: Jarod Wilson <jarod@redhat.com>
+Date: Wed,  8 Jul 2020 13:46:31 -0400
+
+> It's possible that device removal happens when the bond is in non-AB mode,
+> and addition happens in AB mode, so bond_ipsec_del_sa() never gets called,
+> which leaves security associations in an odd state if bond_ipsec_add_sa()
+> then gets called after switching the bond into AB. Just call add and
+> delete universally for all modes to keep things consistent.
 > 
-> page_address() accesses struct page only when WANT_PAGE_VIRTUAL or
-> HASHED_PAGE_VIRTUAL is defined, otherwise it returns address based on
-> offset, so we prefetch it conditionally
+> However, it's also possible that this code gets called when the system is
+> shutting down, and the xfrm subsystem has already been disconnected from
+> the bond device, so we need to do some error-checking and bail, lest we
+> hit a null ptr deref.
 > 
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 ++
->  1 file changed, 2 insertions(+)
+> Fixes: a3b658cfb664 ("bonding: allow xfrm offload setup post-module-load")
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+Applied, thanks Jarod.
