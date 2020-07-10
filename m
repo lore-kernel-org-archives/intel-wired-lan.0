@@ -1,12 +1,12 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 10 Jul 2020 19:22:30 +0000
+Date: Fri, 10 Jul 2020 19:22:52 +0000
 Subject: [Intel-wired-lan] [net-next,
- v8 2/5] ice: add DCF cap negotiation and state machine
-In-Reply-To: <20200710015421.92122-3-haiyue.wang@intel.com>
+ v8 3/5] ice: support to get the VSI mapping
+In-Reply-To: <20200710015421.92122-4-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200710015421.92122-1-haiyue.wang@intel.com>
- <20200710015421.92122-3-haiyue.wang@intel.com>
-Message-ID: <BN6PR1101MB2145C9BC228C029400733F3A8C650@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200710015421.92122-4-haiyue.wang@intel.com>
+Message-ID: <BN6PR1101MB2145C868D39B7A4171F93B3B8C650@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,35 +18,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Haiyue Wang
 > Sent: Thursday, July 9, 2020 6:54 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Li, Xiaoyun <xiaoyun.li@intel.com>
-> Subject: [Intel-wired-lan] [net-next, v8 2/5] ice: add DCF cap negotiation and
-> state machine
+> Cc: Xing, Beilei <beilei.xing@intel.com>
+> Subject: [Intel-wired-lan] [net-next, v8 3/5] ice: support to get the VSI
+> mapping
 > 
-> The trust VF0 needs to negotiate the DCF capability firstly. Then the PF driver
-> may allow this VF to enter into DCF "ON" state if various checks are passed.
-> In DCF "ON" state, the VF0 can send the AdminQ command to do advanced
-> switch rules creation for other VFs.
+> The DCF needs the mapping information of the VF ID to logical hardware VSI
+> ID, so that it can create the switch flow rules for other VFs.
 > 
-> If one of the VFs resets, its hardware VSI number may be changed, so the
-> VF0 will enter into the DCF "BUSY" state immediately to avoid adding the
-> wrong rule. After the reset is done, the DCF state is changed to "PAUSE"
-> mode, and a DCF_VSI_MAP_UPDATE event will be sent to the VF0. This
-> event notifies the VF0 to restart negotiating the DCF capability again.
-> 
-> Also the VF0 can exits the DCF service gracefully by issuing the virtual channel
-> command OP_DCF_DISABLE.
-> 
-> The system administrator can disable the DCF service by changing the trust
-> mode to untrusted.
-> 
-> Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
+> Signed-off-by: Beilei Xing <beilei.xing@intel.com>
 > Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcf.c      | 77 +++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_dcf.h      | 24 ++++++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 85 ++++++++++++++++++-
->  include/linux/avf/virtchnl.h                  |  9 ++
->  4 files changed, 194 insertions(+), 1 deletion(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 61 +++++++++++++++++++
+>  include/linux/avf/virtchnl.h                  | 21 +++++++
+>  2 files changed, 82 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
