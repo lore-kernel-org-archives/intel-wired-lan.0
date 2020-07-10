@@ -1,12 +1,12 @@
 From: Lu, Nannan <nannan.lu@intel.com>
-Date: Fri, 10 Jul 2020 03:18:13 +0000
+Date: Fri, 10 Jul 2020 03:19:09 +0000
 Subject: [Intel-wired-lan] [net-next,
- v8 4/5] ice: enable DDP package info querying
-In-Reply-To: <20200710015421.92122-5-haiyue.wang@intel.com>
+ v8 5/5] ice: add switch rule management for DCF
+In-Reply-To: <20200710015421.92122-6-haiyue.wang@intel.com>
 References: <20200619045711.16055-1-haiyue.wang@intel.com>
  <20200710015421.92122-1-haiyue.wang@intel.com>
- <20200710015421.92122-5-haiyue.wang@intel.com>
-Message-ID: <DM6PR11MB39008A8F6F2B972D4EF05A6DF8650@DM6PR11MB3900.namprd11.prod.outlook.com>
+ <20200710015421.92122-6-haiyue.wang@intel.com>
+Message-ID: <DM6PR11MB39000E9DE7A421D3B8C319FEF8650@DM6PR11MB3900.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,30 +18,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Haiyue Wang
 > Sent: Friday, July 10, 2020 9:54 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Xu, Ting <ting.xu@intel.com>; Rong, Leyi <leyi.rong@intel.com>
-> Subject: [Intel-wired-lan] [net-next, v8 4/5] ice: enable DDP package info
-> querying
+> Cc: Zhang, Xiao <xiao.zhang@intel.com>; Xing, Beilei <beilei.xing@intel.com>
+> Subject: [Intel-wired-lan] [net-next, v8 5/5] ice: add switch rule management for
+> DCF
 > 
-> Since the firmware doesn't support reading the DDP package data that PF is
-> using. The DCF has to find the PF's DDP package file directly.
+> The PF shall track all the outstanding switch filters (filter IDs to be
+> precise) added by the DCF.
 > 
-> For searching the right DDP package that the PF uses, the DCF needs the DDP
-> package characteristic information such as the PF's device serial number which is
-> used to find the package loading path, and the exact DDP track ID, package
-> name, version.
+> Upon a VF reset event, the PF shall clear all outstanding switch filters for the
+> given VF. Upon completion of either VF or PF reset, the PF shall skip replay of
+> filters that were added by the DCF. The PF shall however continue to replay the
+> filters that were not added by DCF for the VF(s).
 > 
-> Only with the matched DDP package, the DCF can get the right metadata to
-> create switch rules etc.
+> If the trust mode of the DCF is taken away without the DCF gracefully
+> relinquishing the DCF functionality (by way appropriate virtchnl message
+> exchanges), then the PF shall remove all switch filters that were added by the
+> DCF. The PF shall transition back from DCF mode to regular mode, the VF shall
+> be treated as any other untrusted VF, and the PF will reset the VF.
 > 
-> Signed-off-by: Leyi Rong <leyi.rong@intel.com>
-> Signed-off-by: Ting Xu <ting.xu@intel.com>
+> If a designated DCF requests AVF functionality from the same VF (VF-ID) without
+> the DCF gracefully relinquishing the DCF functionality first (by way appropriate
+> virtchnl message exchanges), the PF shall remove all the switch filters that were
+> added by the DCF.
+> 
+> Signed-off-by: Xiao Zhang <xiao.zhang@intel.com>
+> Signed-off-by: Beilei Xing <beilei.xing@intel.com>
 > Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_dcf.h      |  6 +++
->  drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 52 +++++++++++++++++++
->  include/linux/avf/virtchnl.h                  | 23 ++++++++
->  4 files changed, 83 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_dcf.c      | 707 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_dcf.h      |  41 +
+>  drivers/net/ethernet/intel/ice/ice_switch.c   |  16 +-
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |  27 +-
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   9 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  40 +
+>  6 files changed, 815 insertions(+), 25 deletions(-)
 > 
 
 Tested-by: Nannan Lu <nannan.lu@intel.com>
