@@ -1,891 +1,444 @@
 From: Qi Zhang <qi.z.zhang@intel.com>
-Date: Fri, 10 Jul 2020 09:06:31 +0800
-Subject: [Intel-wired-lan] [PATCH S48 v5 03/16] ice: Support non word
- aligned input set field
+Date: Fri, 10 Jul 2020 09:06:33 +0800
+Subject: [Intel-wired-lan] [PATCH S48 v5 05/16] ice: Support to separate
+ GTP-U uplink and downlink
 In-Reply-To: <20200710010644.33817-1-qi.z.zhang@intel.com>
 References: <20200710010644.33817-1-qi.z.zhang@intel.com>
-Message-ID: <20200710010644.33817-4-qi.z.zhang@intel.com>
+Message-ID: <20200710010644.33817-6-qi.z.zhang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To support FDIR / RSS input set with protocol field like DSCP,
-TTL, PROT, etc. which is not word aligned, we need to enable field
-vector masking.
+To apply different input set for GTP-U packet with or without extend
+header as well as GTP-U uplink and downlink, we need to add TCAM mask
+matching capability. This allows comprehending different PTYPE
+attributes by examining flags from the parser. Using this method,
+different profiles can be used by examining flag values from the parser.
 
 Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c  | 419 +++++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_flex_pipe.h  |   2 +-
- drivers/net/ethernet/intel/ice/ice_flex_type.h  |  17 +
- drivers/net/ethernet/intel/ice/ice_flow.c       | 122 ++++++-
- drivers/net/ethernet/intel/ice/ice_flow.h       |   7 +
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |  16 +
- 6 files changed, 557 insertions(+), 26 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 102 ++++++++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.h |   1 +
+ drivers/net/ethernet/intel/ice/ice_flex_type.h |  61 +++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_flow.c      |  88 ++++++++++++++++++++-
+ 4 files changed, 242 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 3c217e51b27e..a8750e7e1546 100644
+index a8750e7e1546..7940caf3441a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
 +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -2407,18 +2407,82 @@ ice_vsig_add_mv_vsi(struct ice_hw *hw, enum ice_block blk, u16 vsi, u16 vsig)
- }
- 
- /**
-- * ice_find_prof_id - find profile ID for a given field vector
-+ * ice_prof_has_mask_idx - determine if profile index masking is identical
-+ * @hw: pointer to the hardware structure
-+ * @blk: HW block
-+ * @prof: profile to check
-+ * @idx: profile index to check
-+ * @mask: mask to match
-+ */
-+static bool
-+ice_prof_has_mask_idx(struct ice_hw *hw, enum ice_block blk, u8 prof, u16 idx,
-+		      u16 mask)
-+{
-+	bool expect_no_mask = false;
-+	bool found = false;
-+	bool match = false;
-+	u16 i;
-+
-+	/* If mask is 0x0000 or 0xffff, then there is no masking */
-+	if (mask == 0 || mask == 0xffff)
-+		expect_no_mask = true;
-+
-+	/* Scan the enabled masks on this profile, for the specified idx */
-+	for (i = hw->blk[blk].masks.first; i < hw->blk[blk].masks.first +
-+	     hw->blk[blk].masks.count; i++)
-+		if (hw->blk[blk].es.mask_ena[prof] & BIT(i))
-+			if (hw->blk[blk].masks.masks[i].in_use &&
-+			    hw->blk[blk].masks.masks[i].idx == idx) {
-+				found = true;
-+				if (hw->blk[blk].masks.masks[i].mask == mask)
-+					match = true;
-+				break;
-+			}
-+
-+	if (expect_no_mask) {
-+		if (found)
-+			return false;
-+	} else {
-+		if (!match)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_prof_has_mask - determine if profile masking is identical
-+ * @hw: pointer to the hardware structure
-+ * @blk: HW block
-+ * @prof: profile to check
-+ * @masks: masks to match
-+ */
-+static bool
-+ice_prof_has_mask(struct ice_hw *hw, enum ice_block blk, u8 prof, u16 *masks)
-+{
-+	u16 i;
-+
-+	/* es->mask_ena[prof] will have the mask */
-+	for (i = 0; i < hw->blk[blk].es.fvw; i++)
-+		if (!ice_prof_has_mask_idx(hw, blk, prof, i, masks[i]))
-+			return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_find_prof_id_with_mask - find profile ID for a given field vector
-  * @hw: pointer to the hardware structure
-  * @blk: HW block
-  * @fv: field vector to search for
-+ * @masks: masks for fv
-  * @prof_id: receives the profile ID
+@@ -2552,20 +2552,22 @@ static bool ice_tcam_ent_rsrc_type(enum ice_block blk, u16 *rsrc_type)
+  * ice_alloc_tcam_ent - allocate hardware TCAM entry
+  * @hw: pointer to the HW struct
+  * @blk: the block to allocate the TCAM for
++ * @btm: true to allocate from bottom of table, false to allocate from top
+  * @tcam_idx: pointer to variable to receive the TCAM entry
+  *
+  * This function allocates a new entry in a Profile ID TCAM for a specific
+  * block.
   */
  static enum ice_status
--ice_find_prof_id(struct ice_hw *hw, enum ice_block blk,
--		 struct ice_fv_word *fv, u8 *prof_id)
-+ice_find_prof_id_with_mask(struct ice_hw *hw, enum ice_block blk,
-+			   struct ice_fv_word *fv, u16 *masks, u8 *prof_id)
+-ice_alloc_tcam_ent(struct ice_hw *hw, enum ice_block blk, u16 *tcam_idx)
++ice_alloc_tcam_ent(struct ice_hw *hw, enum ice_block blk, bool btm,
++		   u16 *tcam_idx)
  {
- 	struct ice_es *es = &hw->blk[blk].es;
--	u16 off;
- 	u8 i;
+ 	u16 res_type;
  
- 	/* For FD, we don't want to re-use a existed profile with the same
-@@ -2428,11 +2492,15 @@ ice_find_prof_id(struct ice_hw *hw, enum ice_block blk,
- 		return ICE_ERR_DOES_NOT_EXIST;
+ 	if (!ice_tcam_ent_rsrc_type(blk, &res_type))
+ 		return ICE_ERR_PARAM;
  
- 	for (i = 0; i < (u8)es->count; i++) {
--		off = i * es->fvw;
-+		u16 off = i * es->fvw;
- 
- 		if (memcmp(&es->t[off], fv, es->fvw * sizeof(*fv)))
- 			continue;
- 
-+		/* check if masks settings are the same for this profile */
-+		if (masks && !ice_prof_has_mask(hw, blk, i, masks))
-+			continue;
-+
- 		*prof_id = i;
- 		return 0;
- 	}
-@@ -2583,6 +2651,330 @@ ice_prof_inc_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
+-	return ice_alloc_hw_res(hw, res_type, 1, true, tcam_idx);
++	return ice_alloc_hw_res(hw, res_type, 1, btm, tcam_idx);
  }
  
  /**
-+ * ice_write_prof_mask_reg - write profile mask register
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @mask_idx: mask index
-+ * @idx: index of the FV which will use the mask
-+ * @mask: the 16-bit mask
+@@ -4153,12 +4155,67 @@ ice_update_fd_swap(struct ice_hw *hw, u16 prof_id, struct ice_fv_word *es)
+ 	return 0;
+ }
+ 
++/* The entries here needs to match the order of enum ice_ptype_attrib */
++static const struct ice_ptype_attrib_info ice_ptype_attributes[] = {
++	{ ICE_GTP_PDU_EH,	ICE_GTP_PDU_FLAG_MASK },
++	{ ICE_GTP_SESSION,	ICE_GTP_FLAGS_MASK },
++	{ ICE_GTP_DOWNLINK,	ICE_GTP_FLAGS_MASK },
++	{ ICE_GTP_UPLINK,	ICE_GTP_FLAGS_MASK },
++};
++
++/**
++ * ice_get_ptype_attrib_info - get ptype attribute information
++ * @type: attribute type
++ * @info: pointer to variable to the attribute information
 + */
 +static void
-+ice_write_prof_mask_reg(struct ice_hw *hw, enum ice_block blk, u16 mask_idx,
-+			u16 idx, u16 mask)
++ice_get_ptype_attrib_info(enum ice_ptype_attrib_type type,
++			  struct ice_ptype_attrib_info *info)
 +{
-+	u32 offset;
-+	u32 val;
-+
-+	switch (blk) {
-+	case ICE_BLK_RSS:
-+		offset = GLQF_HMASK(mask_idx);
-+		val = (idx << GLQF_HMASK_MSK_INDEX_S) & GLQF_HMASK_MSK_INDEX_M;
-+		val |= (mask << GLQF_HMASK_MASK_S) & GLQF_HMASK_MASK_M;
-+		break;
-+	case ICE_BLK_FD:
-+		offset = GLQF_FDMASK(mask_idx);
-+		val = (idx << GLQF_FDMASK_MSK_INDEX_S) & GLQF_FDMASK_MSK_INDEX_M;
-+		val |= (mask << GLQF_FDMASK_MASK_S) & GLQF_FDMASK_MASK_M;
-+		break;
-+	default:
-+		ice_debug(hw, ICE_DBG_PKG, "No profile masks for block %d\n",
-+			  blk);
-+		return;
-+	}
-+
-+	wr32(hw, offset, val);
-+	ice_debug(hw, ICE_DBG_PKG, "write mask, blk %d (%d): %x = %x\n",
-+		  blk, idx, offset, val);
++	*info = ice_ptype_attributes[type];
 +}
 +
 +/**
-+ * ice_write_prof_mask_enable_res - write profile mask enable register
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @prof_id: profile ID
-+ * @enable_mask: enable mask
-+ */
-+static void
-+ice_write_prof_mask_enable_res(struct ice_hw *hw, enum ice_block blk,
-+			       u16 prof_id, u32 enable_mask)
-+{
-+	u32 offset;
-+
-+	switch (blk) {
-+	case ICE_BLK_RSS:
-+		offset = GLQF_HMASK_SEL(prof_id);
-+		break;
-+	case ICE_BLK_FD:
-+		offset = GLQF_FDMASK_SEL(prof_id);
-+		break;
-+	default:
-+		ice_debug(hw, ICE_DBG_PKG, "No profile masks for block %d\n",
-+			  blk);
-+		return;
-+	}
-+
-+	wr32(hw, offset, enable_mask);
-+	ice_debug(hw, ICE_DBG_PKG, "write mask enable, blk %d (%d): %x = %x\n",
-+		  blk, prof_id, offset, enable_mask);
-+}
-+
-+/**
-+ * ice_init_prof_masks - initial prof masks
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ */
-+static void ice_init_prof_masks(struct ice_hw *hw, enum ice_block blk)
-+{
-+	u16 per_pf;
-+	u16 i;
-+
-+	mutex_init(&hw->blk[blk].masks.lock);
-+
-+	per_pf = ICE_PROF_MASK_COUNT / hw->dev_caps.num_funcs;
-+
-+	hw->blk[blk].masks.count = per_pf;
-+	hw->blk[blk].masks.first = hw->pf_id * per_pf;
-+
-+	memset(hw->blk[blk].masks.masks, 0, sizeof(hw->blk[blk].masks.masks));
-+
-+	for (i = hw->blk[blk].masks.first;
-+	     i < hw->blk[blk].masks.first + hw->blk[blk].masks.count; i++)
-+		ice_write_prof_mask_reg(hw, blk, i, 0, 0);
-+}
-+
-+/**
-+ * ice_init_all_prof_masks - initialize all prof masks
-+ * @hw: pointer to the HW struct
-+ */
-+static void ice_init_all_prof_masks(struct ice_hw *hw)
-+{
-+	ice_init_prof_masks(hw, ICE_BLK_RSS);
-+	ice_init_prof_masks(hw, ICE_BLK_FD);
-+}
-+
-+/**
-+ * ice_alloc_prof_mask - allocate profile mask
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @idx: index of FV which will use the mask
-+ * @mask: the 16-bit mask
-+ * @mask_idx: variable to receive the mask index
++ * ice_add_prof_attrib - add any PTG with attributes to profile
++ * @prof: pointer to the profile to which PTG entries will be added
++ * @ptg: PTG to be added
++ * @ptype: PTYPE that needs to be looked up
++ * @attr: array of attributes that will be considered
++ * @attr_cnt: number of elements in the attribute array
 + */
 +static enum ice_status
-+ice_alloc_prof_mask(struct ice_hw *hw, enum ice_block blk, u16 idx, u16 mask,
-+		    u16 *mask_idx)
++ice_add_prof_attrib(struct ice_prof_map *prof, u8 ptg, u16 ptype,
++		    const struct ice_ptype_attributes *attr, u16 attr_cnt)
 +{
-+	bool found_unused = false, found_copy = false;
-+	enum ice_status status = ICE_ERR_MAX_LIMIT;
-+	u16 unused_idx = 0, copy_idx = 0;
++	bool found = false;
 +	u16 i;
 +
-+	if (blk != ICE_BLK_RSS && blk != ICE_BLK_FD)
-+		return ICE_ERR_PARAM;
++	for (i = 0; i < attr_cnt; i++)
++		if (attr[i].ptype == ptype) {
++			found = true;
 +
-+	mutex_lock(&hw->blk[blk].masks.lock);
++			prof->ptg[prof->ptg_cnt] = ptg;
++			ice_get_ptype_attrib_info(attr[i].attrib,
++						  &prof->attr[prof->ptg_cnt]);
 +
-+	for (i = hw->blk[blk].masks.first;
-+	     i < hw->blk[blk].masks.first + hw->blk[blk].masks.count; i++)
-+		if (hw->blk[blk].masks.masks[i].in_use) {
-+			/* if mask is in use and it exactly duplicates the
-+			 * desired mask and index, then in can be reused
-+			 */
-+			if (hw->blk[blk].masks.masks[i].mask == mask &&
-+			    hw->blk[blk].masks.masks[i].idx == idx) {
-+				found_copy = true;
-+				copy_idx = i;
-+				break;
-+			}
-+		} else {
-+			/* save off unused index, but keep searching in case
-+			 * there is an exact match later on
-+			 */
-+			if (!found_unused) {
-+				found_unused = true;
-+				unused_idx = i;
-+			}
++			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
++				return ICE_ERR_MAX_LIMIT;
 +		}
 +
-+	if (found_copy)
-+		i = copy_idx;
-+	else if (found_unused)
-+		i = unused_idx;
-+	else
-+		goto err_ice_alloc_prof_mask;
-+
-+	/* update mask for a new entry */
-+	if (found_unused) {
-+		hw->blk[blk].masks.masks[i].in_use = true;
-+		hw->blk[blk].masks.masks[i].mask = mask;
-+		hw->blk[blk].masks.masks[i].idx = idx;
-+		hw->blk[blk].masks.masks[i].ref = 0;
-+		ice_write_prof_mask_reg(hw, blk, i, idx, mask);
-+	}
-+
-+	hw->blk[blk].masks.masks[i].ref++;
-+	*mask_idx = i;
-+	status = 0;
-+
-+err_ice_alloc_prof_mask:
-+	mutex_unlock(&hw->blk[blk].masks.lock);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_free_prof_mask - free profile mask
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @mask_idx: index of mask
-+ */
-+static enum ice_status
-+ice_free_prof_mask(struct ice_hw *hw, enum ice_block blk, u16 mask_idx)
-+{
-+	if (blk != ICE_BLK_RSS && blk != ICE_BLK_FD)
-+		return ICE_ERR_PARAM;
-+
-+	if (!(mask_idx >= hw->blk[blk].masks.first &&
-+	      mask_idx < hw->blk[blk].masks.first + hw->blk[blk].masks.count))
++	if (!found)
 +		return ICE_ERR_DOES_NOT_EXIST;
 +
-+	mutex_lock(&hw->blk[blk].masks.lock);
-+
-+	if (!hw->blk[blk].masks.masks[mask_idx].in_use)
-+		goto exit_ice_free_prof_mask;
-+
-+	if (hw->blk[blk].masks.masks[mask_idx].ref > 1) {
-+		hw->blk[blk].masks.masks[mask_idx].ref--;
-+		goto exit_ice_free_prof_mask;
-+	}
-+
-+	/* remove mask */
-+	hw->blk[blk].masks.masks[mask_idx].in_use = false;
-+	hw->blk[blk].masks.masks[mask_idx].mask = 0;
-+	hw->blk[blk].masks.masks[mask_idx].idx = 0;
-+
-+	/* update mask as unused entry */
-+	ice_debug(hw, ICE_DBG_PKG, "Free mask, blk %d, mask %d\n", blk,
-+		  mask_idx);
-+	ice_write_prof_mask_reg(hw, blk, mask_idx, 0, 0);
-+
-+exit_ice_free_prof_mask:
-+	mutex_unlock(&hw->blk[blk].masks.lock);
-+
 +	return 0;
 +}
 +
-+/**
-+ * ice_free_prof_masks - free all profile masks for a profile
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @prof_id: profile ID
-+ */
-+static enum ice_status
-+ice_free_prof_masks(struct ice_hw *hw, enum ice_block blk, u16 prof_id)
-+{
-+	u32 mask_bm;
-+	u16 i;
-+
-+	if (blk != ICE_BLK_RSS && blk != ICE_BLK_FD)
-+		return ICE_ERR_PARAM;
-+
-+	mask_bm = hw->blk[blk].es.mask_ena[prof_id];
-+	for (i = 0; i < BITS_PER_BYTE * sizeof(mask_bm); i++)
-+		if (mask_bm & BIT(i))
-+			ice_free_prof_mask(hw, blk, i);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_shutdown_prof_masks - releases lock for masking
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ *
-+ * This should be called before unloading the driver
-+ */
-+static void ice_shutdown_prof_masks(struct ice_hw *hw, enum ice_block blk)
-+{
-+	u16 i;
-+
-+	mutex_lock(&hw->blk[blk].masks.lock);
-+
-+	for (i = hw->blk[blk].masks.first;
-+	     i < hw->blk[blk].masks.first + hw->blk[blk].masks.count; i++) {
-+		ice_write_prof_mask_reg(hw, blk, i, 0, 0);
-+
-+		hw->blk[blk].masks.masks[i].in_use = false;
-+		hw->blk[blk].masks.masks[i].idx = 0;
-+		hw->blk[blk].masks.masks[i].mask = 0;
-+	}
-+
-+	mutex_unlock(&hw->blk[blk].masks.lock);
-+	mutex_destroy(&hw->blk[blk].masks.lock);
-+}
-+
-+/**
-+ * ice_shutdown_all_prof_masks - releases all locks for masking
-+ * @hw: pointer to the HW struct
-+ *
-+ * This should be called before unloading the driver
-+ */
-+static void ice_shutdown_all_prof_masks(struct ice_hw *hw)
-+{
-+	ice_shutdown_prof_masks(hw, ICE_BLK_RSS);
-+	ice_shutdown_prof_masks(hw, ICE_BLK_FD);
-+}
-+
-+/**
-+ * ice_update_prof_masking - set registers according to masking
-+ * @hw: pointer to the HW struct
-+ * @blk: hardware block
-+ * @prof_id: profile ID
-+ * @masks: masks
-+ */
-+static enum ice_status
-+ice_update_prof_masking(struct ice_hw *hw, enum ice_block blk, u16 prof_id,
-+			u16 *masks)
-+{
-+	bool err = false;
-+	u32 ena_mask = 0;
-+	u16 idx;
-+	u16 i;
-+
-+	/* Only support FD and RSS masking, otherwise nothing to be done */
-+	if (blk != ICE_BLK_RSS && blk != ICE_BLK_FD)
-+		return 0;
-+
-+	for (i = 0; i < hw->blk[blk].es.fvw; i++)
-+		if (masks[i] && masks[i] != 0xFFFF) {
-+			if (!ice_alloc_prof_mask(hw, blk, i, masks[i], &idx)) {
-+				ena_mask |= BIT(idx);
-+			} else {
-+				/* not enough bitmaps */
-+				err = true;
-+				break;
-+			}
-+		}
-+
-+	if (err) {
-+		/* free any bitmaps we have allocated */
-+		for (i = 0; i < BITS_PER_BYTE * sizeof(ena_mask); i++)
-+			if (ena_mask & BIT(i))
-+				ice_free_prof_mask(hw, blk, i);
-+
-+		return ICE_ERR_OUT_OF_RANGE;
-+	}
-+
-+	/* enable the masks for this profile */
-+	ice_write_prof_mask_enable_res(hw, blk, prof_id, ena_mask);
-+
-+	/* store enabled masks with profile so that they can be freed later */
-+	hw->blk[blk].es.mask_ena[prof_id] = ena_mask;
-+
-+	return 0;
-+}
-+
-+/**
-  * ice_write_es - write an extraction sequence to hardware
+ /**
+  * ice_add_prof - add profile
   * @hw: pointer to the HW struct
-  * @blk: the block in which to write the extraction sequence
-@@ -2621,6 +3013,7 @@ ice_prof_dec_ref(struct ice_hw *hw, enum ice_block blk, u8 prof_id)
- 	if (hw->blk[blk].es.ref_count[prof_id] > 0) {
- 		if (!--hw->blk[blk].es.ref_count[prof_id]) {
- 			ice_write_es(hw, blk, prof_id, NULL);
-+			ice_free_prof_masks(hw, blk, prof_id);
- 			return ice_free_prof_id(hw, blk, prof_id);
- 		}
- 	}
-@@ -2981,6 +3374,7 @@ void ice_free_hw_tbls(struct ice_hw *hw)
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].es.t);
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].es.ref_count);
- 		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].es.written);
-+		devm_kfree(ice_hw_to_dev(hw), hw->blk[i].es.mask_ena);
- 	}
- 
- 	list_for_each_entry_safe(r, rt, &hw->rss_list_head, l_entry) {
-@@ -2988,6 +3382,7 @@ void ice_free_hw_tbls(struct ice_hw *hw)
- 		devm_kfree(ice_hw_to_dev(hw), r);
- 	}
- 	mutex_destroy(&hw->rss_locks);
-+	ice_shutdown_all_prof_masks(hw);
- 	memset(hw->blk, 0, sizeof(hw->blk));
- }
- 
-@@ -3041,6 +3436,7 @@ void ice_clear_hw_tbls(struct ice_hw *hw)
- 		memset(es->t, 0, es->count * sizeof(*es->t));
- 		memset(es->ref_count, 0, es->count * sizeof(*es->ref_count));
- 		memset(es->written, 0, es->count * sizeof(*es->written));
-+		memset(es->mask_ena, 0, es->count * sizeof(*es->mask_ena));
- 	}
- }
- 
-@@ -3054,6 +3450,7 @@ enum ice_status ice_init_hw_tbls(struct ice_hw *hw)
- 
- 	mutex_init(&hw->rss_locks);
- 	INIT_LIST_HEAD(&hw->rss_list_head);
-+	ice_init_all_prof_masks(hw);
- 	for (i = 0; i < ICE_BLK_COUNT; i++) {
- 		struct ice_prof_redir *prof_redir = &hw->blk[i].prof_redir;
- 		struct ice_prof_tcam *prof = &hw->blk[i].prof;
-@@ -3152,6 +3549,8 @@ enum ice_status ice_init_hw_tbls(struct ice_hw *hw)
- 
- 		es->written = devm_kcalloc(ice_hw_to_dev(hw), es->count,
- 					   sizeof(*es->written), GFP_KERNEL);
-+		es->mask_ena = devm_kcalloc(ice_hw_to_dev(hw), es->count,
-+					    sizeof(*es->mask_ena), GFP_KERNEL);
- 		if (!es->ref_count)
- 			goto err;
- 	}
-@@ -3761,15 +4160,16 @@ ice_update_fd_swap(struct ice_hw *hw, u16 prof_id, struct ice_fv_word *es)
+  * @blk: hardware block
   * @id: profile tracking ID
   * @ptypes: array of bitmaps indicating ptypes (ICE_FLOW_PTYPE_MAX bits)
++ * @attr: array of attributes
++ * @attr_cnt: number of elements in attrib array
   * @es: extraction sequence (length of array is determined by the block)
-+ * @masks: mask for extraction sequence
+  * @masks: mask for extraction sequence
   *
-- * This function registers a profile, which matches a set of PTGs with a
-+ * This function registers a profile, which matches a set of PTYPES with a
-  * particular extraction sequence. While the hardware profile is allocated
-  * it will not be written until the first call to ice_add_flow that specifies
-  * the ID value used here.
+@@ -4169,6 +4226,7 @@ ice_update_fd_swap(struct ice_hw *hw, u16 prof_id, struct ice_fv_word *es)
   */
  enum ice_status
  ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
--	     struct ice_fv_word *es)
-+	     struct ice_fv_word *es, u16 *masks)
++	     const struct ice_ptype_attributes *attr, u16 attr_cnt,
+ 	     struct ice_fv_word *es, u16 *masks)
  {
  	u32 bytes = DIV_ROUND_UP(ICE_FLOW_PTYPE_MAX, BITS_PER_BYTE);
- 	DECLARE_BITMAP(ptgs_used, ICE_XLT1_CNT);
-@@ -3783,7 +4183,7 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
- 	mutex_lock(&hw->blk[blk].es.prof_map_lock);
+@@ -4253,10 +4311,25 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
+ 				continue;
  
- 	/* search for existing profile */
--	status = ice_find_prof_id(hw, blk, es, &prof_id);
-+	status = ice_find_prof_id_with_mask(hw, blk, es, masks, &prof_id);
- 	if (status) {
- 		/* allocate profile ID */
- 		status = ice_alloc_prof_id(hw, blk, &prof_id);
-@@ -3801,6 +4201,9 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
- 			if (status)
- 				goto err_ice_add_prof;
- 		}
-+		status = ice_update_prof_masking(hw, blk, prof_id, masks);
-+		if (status)
-+			goto err_ice_add_prof;
+ 			set_bit(ptg, ptgs_used);
+-			prof->ptg[prof->ptg_cnt] = ptg;
+-
+-			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
++			/* Check to see there are any attributes for
++			 * this ptype, and add them if found.
++			 */
++			status = ice_add_prof_attrib(prof, ptg, ptype,
++						     attr, attr_cnt);
++			if (status == ICE_ERR_MAX_LIMIT)
+ 				break;
++			if (status) {
++				/* This is simple a ptype/PTG with no
++				 * attribute
++				 */
++				prof->ptg[prof->ptg_cnt] = ptg;
++				prof->attr[prof->ptg_cnt].flags = 0;
++				prof->attr[prof->ptg_cnt].mask = 0;
++
++				if (++prof->ptg_cnt >=
++				    ICE_MAX_PTG_PER_PROFILE)
++					break;
++			}
  
- 		/* and write new es */
- 		ice_write_es(hw, blk, prof_id, es);
+ 			/* nothing left in byte, then exit */
+ 			m = ~(u8)((1 << (bit + 1)) - 1);
+@@ -4779,7 +4852,12 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 	}
+ 
+ 	/* for re-enabling, reallocate a TCAM */
+-	status = ice_alloc_tcam_ent(hw, blk, &tcam->tcam_idx);
++	/* for entries with empty attribute masks, allocate entry from
++	 * the bottom of the TCAM table; otherwise, allocate from the
++	 * top of the table in order to give it higher priority
++	 */
++	status = ice_alloc_tcam_ent(hw, blk, tcam->attr.mask == 0,
++				    &tcam->tcam_idx);
+ 	if (status)
+ 		return status;
+ 
+@@ -4789,8 +4867,8 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
+ 		return ICE_ERR_NO_MEMORY;
+ 
+ 	status = ice_tcam_write_entry(hw, blk, tcam->tcam_idx, tcam->prof_id,
+-				      tcam->ptg, vsig, 0, 0, vl_msk, dc_msk,
+-				      nm_msk);
++				      tcam->ptg, vsig, 0, tcam->attr.flags,
++				      vl_msk, dc_msk, nm_msk);
+ 	if (status)
+ 		goto err_ice_prof_tcam_ena_dis;
+ 
+@@ -4933,7 +5011,12 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
+ 			goto err_ice_add_prof_id_vsig;
+ 
+ 		/* allocate the TCAM entry index */
+-		status = ice_alloc_tcam_ent(hw, blk, &tcam_idx);
++		/* for entries with empty attribute masks, allocate entry from
++		 * the bottom of the TCAM table; otherwise, allocate from the
++		 * top of the table in order to give it higher priority
++		 */
++		status = ice_alloc_tcam_ent(hw, blk, map->attr[i].mask == 0,
++					    &tcam_idx);
+ 		if (status) {
+ 			devm_kfree(ice_hw_to_dev(hw), p);
+ 			goto err_ice_add_prof_id_vsig;
+@@ -4942,6 +5025,7 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
+ 		t->tcam[i].ptg = map->ptg[i];
+ 		t->tcam[i].prof_id = map->prof_id;
+ 		t->tcam[i].tcam_idx = tcam_idx;
++		t->tcam[i].attr = map->attr[i];
+ 		t->tcam[i].in_use = true;
+ 
+ 		p->type = ICE_TCAM_ADD;
 diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 568ea519af51..ea3f3ef5994a 100644
+index ea3f3ef5994a..7c88af314949 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
 +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -28,7 +28,7 @@ bool ice_tunnel_port_in_use(struct ice_hw *hw, u16 port, u16 *index);
+@@ -28,6 +28,7 @@ bool ice_tunnel_port_in_use(struct ice_hw *hw, u16 port, u16 *index);
  
  enum ice_status
  ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
--	     struct ice_fv_word *es);
-+	     struct ice_fv_word *es, u16 *masks);
++	     const struct ice_ptype_attributes *attr, u16 attr_cnt,
+ 	     struct ice_fv_word *es, u16 *masks);
  enum ice_status
  ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
- enum ice_status
 diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-index c1c99a267a98..0cfeedc0805f 100644
+index 0cfeedc0805f..c7913d4a211d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -336,6 +336,7 @@ struct ice_es {
- 	u16 count;
- 	u16 fvw;
- 	u16 *ref_count;
-+	u32 *mask_ena;
- 	struct list_head prof_map;
- 	struct ice_fv_word *t;
- 	struct mutex prof_map_lock;	/* protect access to profiles list */
-@@ -479,6 +480,21 @@ struct ice_prof_redir {
- 	u16 count;
+@@ -190,6 +190,64 @@ enum ice_sect {
+ 	ICE_SECT_COUNT
  };
  
-+struct ice_mask {
-+	u16 mask;	/* 16-bit mask */
-+	u16 idx;	/* index */
-+	u16 ref;	/* reference count */
-+	u8 in_use;	/* non-zero if used */
++#define ICE_MAC_IPV4_GTPU_IPV4_FRAG	331
++#define ICE_MAC_IPV4_GTPU_IPV4_PAY	332
++#define ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY	333
++#define ICE_MAC_IPV4_GTPU_IPV4_TCP	334
++#define ICE_MAC_IPV4_GTPU_IPV4_ICMP	335
++#define ICE_MAC_IPV6_GTPU_IPV4_FRAG	336
++#define ICE_MAC_IPV6_GTPU_IPV4_PAY	337
++#define ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY	338
++#define ICE_MAC_IPV6_GTPU_IPV4_TCP	339
++#define ICE_MAC_IPV6_GTPU_IPV4_ICMP	340
++#define ICE_MAC_IPV4_GTPU_IPV6_FRAG	341
++#define ICE_MAC_IPV4_GTPU_IPV6_PAY	342
++#define ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY	343
++#define ICE_MAC_IPV4_GTPU_IPV6_TCP	344
++#define ICE_MAC_IPV4_GTPU_IPV6_ICMPV6	345
++#define ICE_MAC_IPV6_GTPU_IPV6_FRAG	346
++#define ICE_MAC_IPV6_GTPU_IPV6_PAY	347
++#define ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY	348
++#define ICE_MAC_IPV6_GTPU_IPV6_TCP	349
++#define ICE_MAC_IPV6_GTPU_IPV6_ICMPV6	350
++
++/* Attributes that can modify PTYPE definitions.
++ *
++ * These values will represent special attributes for PTYPES, which will
++ * resolve into metadata packet flags definitions that can be used in the TCAM
++ * for identifying a PTYPE with specific characteristics.
++ */
++enum ice_ptype_attrib_type {
++	/* GTP PTYPES */
++	ICE_PTYPE_ATTR_GTP_PDU_EH,
++	ICE_PTYPE_ATTR_GTP_SESSION,
++	ICE_PTYPE_ATTR_GTP_DOWNLINK,
++	ICE_PTYPE_ATTR_GTP_UPLINK,
 +};
 +
-+struct ice_masks {
-+	struct mutex lock;  /* lock to protect this structure */
-+	u16 first;	/* first mask owned by the PF */
-+	u16 count;	/* number of masks owned by the PF */
-+#define ICE_PROF_MASK_COUNT 32
-+	struct ice_mask masks[ICE_PROF_MASK_COUNT];
++struct ice_ptype_attrib_info {
++	u16 flags;
++	u16 mask;
 +};
 +
- /* Tables per block */
- struct ice_blk_info {
- 	struct ice_xlt1 xlt1;
-@@ -486,6 +502,7 @@ struct ice_blk_info {
- 	struct ice_prof_tcam prof;
- 	struct ice_prof_redir prof_redir;
- 	struct ice_es es;
-+	struct ice_masks masks;
- 	u8 overwrite; /* set to true to allow overwrite of table entries */
- 	u8 is_list_init;
++/* TCAM flag definitions */
++#define ICE_GTP_PDU			BIT(14)
++#define ICE_GTP_PDU_LINK		BIT(13)
++
++/* GTP attributes */
++#define ICE_GTP_PDU_FLAG_MASK		(ICE_GTP_PDU)
++#define ICE_GTP_PDU_EH			ICE_GTP_PDU
++
++#define ICE_GTP_FLAGS_MASK		(ICE_GTP_PDU | ICE_GTP_PDU_LINK)
++#define ICE_GTP_SESSION			0
++#define ICE_GTP_DOWNLINK		ICE_GTP_PDU
++#define ICE_GTP_UPLINK			(ICE_GTP_PDU | ICE_GTP_PDU_LINK)
++
++struct ice_ptype_attributes {
++	u16 ptype;
++	enum ice_ptype_attrib_type attrib;
++};
++
+ /* package labels */
+ struct ice_label {
+ 	__le16 value;
+@@ -374,12 +432,14 @@ struct ice_prof_map {
+ 	u8 prof_id;
+ 	u8 ptg_cnt;
+ 	u8 ptg[ICE_MAX_PTG_PER_PROFILE];
++	struct ice_ptype_attrib_info attr[ICE_MAX_PTG_PER_PROFILE];
  };
+ 
+ #define ICE_INVALID_TCAM	0xFFFF
+ 
+ struct ice_tcam_inf {
+ 	u16 tcam_idx;
++	struct ice_ptype_attrib_info attr;
+ 	u8 ptg;
+ 	u8 prof_id;
+ 	u8 in_use;
+@@ -531,6 +591,7 @@ struct ice_chs_chg {
+ 	u16 vsig;
+ 	u16 orig_vsig;
+ 	u16 tcam_idx;
++	struct ice_ptype_attrib_info attr;
+ };
+ 
+ #define ICE_FLOW_PTYPE_MAX		ICE_XLT1_CNT
 diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 07baeb2ddca7..ac127329d18a 100644
+index ee1d0761a22d..c7c1d4aec99e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flow.c
 +++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -9,12 +9,21 @@ struct ice_flow_field_info {
- 	enum ice_flow_seg_hdr hdr;
- 	s16 off;	/* Offset from start of a protocol header, in bits */
- 	u16 size;	/* Size of fields in bits */
-+	u16 mask;	/* 16-bit mask for field */
+@@ -330,6 +330,76 @@ static const u32 ice_ptypes_gtpc_tid[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
  };
  
- #define ICE_FLOW_FLD_INFO(_hdr, _offset_bytes, _size_bytes) { \
- 	.hdr = _hdr, \
- 	.off = (_offset_bytes) * BITS_PER_BYTE, \
- 	.size = (_size_bytes) * BITS_PER_BYTE, \
-+	.mask = 0, \
-+}
++/* Packet types for GTPU */
++static const struct ice_ptype_attributes ice_attr_gtpu_eh[] = {
++	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
++	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_PDU_EH },
++};
 +
-+#define ICE_FLOW_FLD_INFO_MSK(_hdr, _offset_bytes, _size_bytes, _mask) { \
-+	.hdr = _hdr, \
-+	.off = (_offset_bytes) * BITS_PER_BYTE, \
-+	.size = (_size_bytes) * BITS_PER_BYTE, \
-+	.mask = _mask, \
- }
- 
- /* Table containing properties of supported protocol header fields */
-@@ -32,6 +41,18 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
- 	/* ICE_FLOW_FIELD_IDX_ETH_TYPE */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_ETH, 0, sizeof(__be16)),
- 	/* IPv4 / IPv6 */
-+	/* ICE_FLOW_FIELD_IDX_IPV4_DSCP */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_IPV4, 0, 1, 0x00fc),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_DSCP */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_IPV6, 0, 1, 0x0ff0),
-+	/* ICE_FLOW_FIELD_IDX_IPV4_TTL */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_NONE, 8, 1, 0xff00),
-+	/* ICE_FLOW_FIELD_IDX_IPV4_PROT */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_NONE, 8, 1, 0x00ff),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_TTL */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_NONE, 6, 1, 0x00ff),
-+	/* ICE_FLOW_FIELD_IDX_IPV6_PROT */
-+	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_NONE, 6, 1, 0xff00),
- 	/* ICE_FLOW_FIELD_IDX_IPV4_SA */
- 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_IPV4, 12, sizeof(struct in_addr)),
- 	/* ICE_FLOW_FIELD_IDX_IPV4_DA */
-@@ -260,6 +281,8 @@ struct ice_flow_prof_params {
++static const struct ice_ptype_attributes ice_attr_gtpu_down[] = {
++	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_DOWNLINK },
++};
++
++static const struct ice_ptype_attributes ice_attr_gtpu_up[] = {
++	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
++	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_UPLINK },
++};
++
+ static const u32 ice_ptypes_gtpu[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -436,6 +506,9 @@ struct ice_flow_prof_params {
  	 * This will give us the direction flags.
  	 */
  	struct ice_fv_word es[ICE_MAX_FV_WORDS];
-+
-+	u16 mask[ICE_MAX_FV_WORDS];
++	/* attributes can be used to add attributes to a particular PTYPE */
++	const struct ice_ptype_attributes *attr;
++	u16 attr_cnt;
+ 
+ 	u16 mask[ICE_MAX_FV_WORDS];
  	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
- };
- 
-@@ -434,6 +457,7 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
-  * @params: information about the flow to be processed
-  * @seg: packet segment index of the field to be extracted
-  * @fld: ID of field to be extracted
-+ * @match: bit field of all fields
-  *
-  * This function determines the protocol ID, offset, and size of the given
-  * field. It then allocates one or more extraction sequence entries for the
-@@ -441,12 +465,15 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
-  */
- static enum ice_status
- ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
--		    u8 seg, enum ice_flow_field fld)
-+		    u8 seg, enum ice_flow_field fld, u64 match)
- {
-+	enum ice_flow_field sib = ICE_FLOW_FIELD_IDX_MAX;
- 	enum ice_prot_id prot_id = ICE_PROT_ID_INVAL;
- 	u8 fv_words = hw->blk[params->blk].es.fvw;
- 	struct ice_flow_fld_info *flds;
- 	u16 cnt, ese_bits, i;
-+	u16 sib_mask = 0;
-+	u16 mask;
- 	u16 off;
- 
- 	flds = params->prof->segs[seg].fields;
-@@ -461,6 +488,50 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
- 	case ICE_FLOW_FIELD_IDX_ETH_TYPE:
- 		prot_id = seg == 0 ? ICE_PROT_ETYPE_OL : ICE_PROT_ETYPE_IL;
- 		break;
-+	case ICE_FLOW_FIELD_IDX_IPV4_DSCP:
-+		prot_id = seg == 0 ? ICE_PROT_IPV4_OF_OR_S : ICE_PROT_IPV4_IL;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_IPV6_DSCP:
-+		prot_id = seg == 0 ? ICE_PROT_IPV6_OF_OR_S : ICE_PROT_IPV6_IL;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_IPV4_TTL:
-+	case ICE_FLOW_FIELD_IDX_IPV4_PROT:
-+		prot_id = seg == 0 ? ICE_PROT_IPV4_OF_OR_S : ICE_PROT_IPV4_IL;
+@@ -631,14 +704,26 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 			src = (const unsigned long *)ice_ptypes_gtpu;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
 +
-+		/* TTL and PROT share the same extraction seq. entry.
-+		 * Each is considered a sibling to the other in terms of sharing
-+		 * the same extraction sequence entry.
-+		 */
-+		if (fld == ICE_FLOW_FIELD_IDX_IPV4_TTL)
-+			sib = ICE_FLOW_FIELD_IDX_IPV4_PROT;
-+		else if (fld == ICE_FLOW_FIELD_IDX_IPV4_PROT)
-+			sib = ICE_FLOW_FIELD_IDX_IPV4_TTL;
++			/* Attributes for GTP packet with downlink */
++			params->attr = ice_attr_gtpu_down;
++			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_down);
+ 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_UP) {
+ 			src = (const unsigned long *)ice_ptypes_gtpu;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
 +
-+		/* If the sibling field is also included, that field's
-+		 * mask needs to be included.
-+		 */
-+		if (match & BIT(sib))
-+			sib_mask = ice_flds_info[sib].mask;
-+		break;
-+	case ICE_FLOW_FIELD_IDX_IPV6_TTL:
-+	case ICE_FLOW_FIELD_IDX_IPV6_PROT:
-+		prot_id = seg == 0 ? ICE_PROT_IPV6_OF_OR_S : ICE_PROT_IPV6_IL;
++			/* Attributes for GTP packet with uplink */
++			params->attr = ice_attr_gtpu_up;
++			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_up);
+ 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_EH) {
+ 			src = (const unsigned long *)ice_ptypes_gtpu;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
 +
-+		/* TTL and PROT share the same extraction seq. entry.
-+		 * Each is considered a sibling to the other in terms of sharing
-+		 * the same extraction sequence entry.
-+		 */
-+		if (fld == ICE_FLOW_FIELD_IDX_IPV6_TTL)
-+			sib = ICE_FLOW_FIELD_IDX_IPV6_PROT;
-+		else if (fld == ICE_FLOW_FIELD_IDX_IPV6_PROT)
-+			sib = ICE_FLOW_FIELD_IDX_IPV6_TTL;
-+
-+		/* If the sibling field is also included, that field's
-+		 * mask needs to be included.
-+		 */
-+		if (match & BIT(sib))
-+			sib_mask = ice_flds_info[sib].mask;
-+		break;
- 	case ICE_FLOW_FIELD_IDX_IPV4_SA:
- 	case ICE_FLOW_FIELD_IDX_IPV4_DA:
- 		prot_id = seg == 0 ? ICE_PROT_IPV4_OF_OR_S : ICE_PROT_IPV4_IL;
-@@ -494,6 +565,9 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
- 		/* ICMP type and code share the same extraction seq. entry */
- 		prot_id = (params->prof->segs[seg].hdrs & ICE_FLOW_SEG_HDR_IPV4) ?
- 				ICE_PROT_ICMP_IL : ICE_PROT_ICMPV6_IL;
-+		sib = fld == ICE_FLOW_FIELD_IDX_ICMP_TYPE ?
-+			ICE_FLOW_FIELD_IDX_ICMP_CODE :
-+			ICE_FLOW_FIELD_IDX_ICMP_TYPE;
- 		break;
- 	case ICE_FLOW_FIELD_IDX_GRE_KEYID:
- 		prot_id = ICE_PROT_GRE_OF;
-@@ -512,6 +586,7 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
- 		ICE_FLOW_FV_EXTRACT_SZ;
- 	flds[fld].xtrct.disp = (u8)(ice_flds_info[fld].off % ese_bits);
- 	flds[fld].xtrct.idx = params->es_cnt;
-+	flds[fld].xtrct.mask = ice_flds_info[fld].mask;
- 
- 	/* Adjust the next field-entry index after accommodating the number of
- 	 * entries this field consumes
-@@ -521,24 +596,34 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
- 
- 	/* Fill in the extraction sequence entries needed for this field */
- 	off = flds[fld].xtrct.off;
-+	mask = flds[fld].xtrct.mask;
- 	for (i = 0; i < cnt; i++) {
--		u8 idx;
--
--		/* Make sure the number of extraction sequence required
--		 * does not exceed the block's capability
-+		/* Only consume an extraction sequence entry if there is no
-+		 * sibling field associated with this field or the sibling entry
-+		 * already extracts the word shared with this field.
- 		 */
--		if (params->es_cnt >= fv_words)
--			return ICE_ERR_MAX_LIMIT;
-+		if (sib == ICE_FLOW_FIELD_IDX_MAX ||
-+		    flds[sib].xtrct.prot_id == ICE_PROT_ID_INVAL ||
-+		    flds[sib].xtrct.off != off) {
-+			u8 idx;
- 
--		/* some blocks require a reversed field vector layout */
--		if (hw->blk[params->blk].es.reverse)
--			idx = fv_words - params->es_cnt - 1;
--		else
--			idx = params->es_cnt;
-+			/* Make sure the number of extraction sequence required
-+			 * does not exceed the block's capability
-+			 */
-+			if (params->es_cnt >= fv_words)
-+				return ICE_ERR_MAX_LIMIT;
- 
--		params->es[idx].prot_id = prot_id;
--		params->es[idx].off = off;
--		params->es_cnt++;
-+			/* some blocks require a reversed field vector layout */
-+			if (hw->blk[params->blk].es.reverse)
-+				idx = fv_words - params->es_cnt - 1;
-+			else
-+				idx = params->es_cnt;
-+
-+			params->es[idx].prot_id = prot_id;
-+			params->es[idx].off = off;
-+			params->mask[idx] = mask | sib_mask;
-+			params->es_cnt++;
-+		}
- 
- 		off += ICE_FLOW_FV_EXTRACT_SZ;
- 	}
-@@ -638,14 +723,16 @@ ice_flow_create_xtrct_seq(struct ice_hw *hw,
- 	u8 i;
- 
- 	for (i = 0; i < prof->segs_cnt; i++) {
-+		u64 match = params->prof->segs[i].match;
- 		u8 j;
- 
- 		for_each_set_bit(j, (unsigned long *)&prof->segs[i].match,
- 				 ICE_FLOW_FIELD_IDX_MAX) {
- 			status = ice_flow_xtract_fld(hw, params, i,
--						     (enum ice_flow_field)j);
-+						     (enum ice_flow_field)j, match);
- 			if (status)
- 				return status;
-+			match &= ~BIT_ULL(j);
- 		}
- 
- 		/* Process raw matching bytes */
-@@ -851,7 +938,8 @@ ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
- 	}
++			/* Attributes for GTP packet with Extension Header */
++			params->attr = ice_attr_gtpu_eh;
++			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_eh);
+ 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_IP) {
+ 			src = (const unsigned long *)ice_ptypes_gtpu;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+@@ -1198,7 +1283,8 @@ ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
  
  	/* Add a HW profile for this flow profile */
--	status = ice_add_prof(hw, blk, prof_id, (u8 *)params.ptypes, params.es);
-+	status = ice_add_prof(hw, blk, prof_id, (u8 *)params.ptypes,
-+			      params.es, params.mask);
+ 	status = ice_add_prof(hw, blk, prof_id, (u8 *)params.ptypes,
+-			      params.es, params.mask);
++			      params.attr, params.attr_cnt, params.es,
++			      params.mask);
  	if (status) {
  		ice_debug(hw, ICE_DBG_FLOW, "Error adding a HW flow profile\n");
  		goto out;
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 234f8f5c99cf..9eaafd5e50e0 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -58,6 +58,12 @@ enum ice_flow_field {
- 	ICE_FLOW_FIELD_IDX_C_VLAN,
- 	ICE_FLOW_FIELD_IDX_ETH_TYPE,
- 	/* L3 */
-+	ICE_FLOW_FIELD_IDX_IPV4_DSCP,
-+	ICE_FLOW_FIELD_IDX_IPV6_DSCP,
-+	ICE_FLOW_FIELD_IDX_IPV4_TTL,
-+	ICE_FLOW_FIELD_IDX_IPV4_PROT,
-+	ICE_FLOW_FIELD_IDX_IPV6_TTL,
-+	ICE_FLOW_FIELD_IDX_IPV6_PROT,
- 	ICE_FLOW_FIELD_IDX_IPV4_SA,
- 	ICE_FLOW_FIELD_IDX_IPV4_DA,
- 	ICE_FLOW_FIELD_IDX_IPV6_SA,
-@@ -158,6 +164,7 @@ struct ice_flow_seg_xtrct {
- 	u16 off;	/* Starting offset of the field in header in bytes */
- 	u8 idx;		/* Index of FV entry used */
- 	u8 disp;	/* Displacement of field in bits fr. FV entry's start */
-+	u16 mask;	/* Mask for field */
- };
- 
- enum ice_flow_fld_match_type {
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index bb1cc372ee95..07a9b70c2751 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -306,8 +306,24 @@
- #define GLQF_FD_SIZE_FD_BSIZE_S			16
- #define GLQF_FD_SIZE_FD_BSIZE_M			ICE_M(0x7FFF, 16)
- #define GLQF_FDINSET(_i, _j)			(0x00412000 + ((_i) * 4 + (_j) * 512))
-+#define GLQF_FDMASK(_i)				(0x00410800 + ((_i) * 4))
-+#define GLQF_FDMASK_MAX_INDEX			31
-+#define GLQF_FDMASK_MSK_INDEX_S			0
-+#define GLQF_FDMASK_MSK_INDEX_M			ICE_M(0x1F, 0)
-+#define GLQF_FDMASK_MASK_S			16
-+#define GLQF_FDMASK_MASK_M			ICE_M(0xFFFF, 16)
- #define GLQF_FDMASK_SEL(_i)			(0x00410400 + ((_i) * 4))
- #define GLQF_FDSWAP(_i, _j)			(0x00413000 + ((_i) * 4 + (_j) * 512))
-+#define GLQF_HMASK(_i)				(0x0040FC00 + ((_i) * 4))
-+#define GLQF_HMASK_MAX_INDEX			31
-+#define GLQF_HMASK_MSK_INDEX_S			0
-+#define GLQF_HMASK_MSK_INDEX_M			ICE_M(0x1F, 0)
-+#define GLQF_HMASK_MASK_S			16
-+#define GLQF_HMASK_MASK_M			ICE_M(0xFFFF, 16)
-+#define GLQF_HMASK_SEL(_i)			(0x00410000 + ((_i) * 4))
-+#define GLQF_HMASK_SEL_MAX_INDEX		127
-+#define GLQF_HMASK_SEL_MASK_SEL_S		0
-+#define GLQF_HMASK_SEL_MASK_SEL_M
- #define PFQF_FD_ENA				0x0043A000
- #define PFQF_FD_ENA_FD_ENA_M			BIT(0)
- #define PFQF_FD_SIZE				0x00460100
 -- 
 2.13.6
 
