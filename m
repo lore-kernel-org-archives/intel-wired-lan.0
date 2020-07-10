@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 10 Jul 2020 21:27:49 +0000
-Subject: [Intel-wired-lan] [PATCH S48 v5 05/16] ice: Support to separate
- GTP-U uplink and downlink
-In-Reply-To: <20200710010644.33817-6-qi.z.zhang@intel.com>
+Date: Fri, 10 Jul 2020 21:28:40 +0000
+Subject: [Intel-wired-lan] [PATCH S48 v5 14/16] ice: Add GTPU FDIR
+ filter for AVF
+In-Reply-To: <20200710010644.33817-15-qi.z.zhang@intel.com>
 References: <20200710010644.33817-1-qi.z.zhang@intel.com>
- <20200710010644.33817-6-qi.z.zhang@intel.com>
-Message-ID: <BN6PR1101MB21452293B7BB4D6412E5D3D98C650@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200710010644.33817-15-qi.z.zhang@intel.com>
+Message-ID: <BN6PR1101MB2145BAC53B1497F559ACB24C8C650@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,24 +18,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Thursday, July 9, 2020 6:07 PM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Zhang, Qi Z <qi.z.zhang@intel.com>
-> Subject: [Intel-wired-lan] [PATCH S48 v5 05/16] ice: Support to separate GTP-
-> U uplink and downlink
+> Subject: [Intel-wired-lan] [PATCH S48 v5 14/16] ice: Add GTPU FDIR filter for
+> AVF
 > 
-> To apply different input set for GTP-U packet with or without extend header
-> as well as GTP-U uplink and downlink, we need to add TCAM mask matching
-> capability. This allows comprehending different PTYPE attributes by
-> examining flags from the parser. Using this method, different profiles can be
-> used by examining flag values from the parser.
+> Add new FDIR filter type to forward GTPU packets by matching TEID or QFI.
+> The filter is only enabled when COMMS DDP package is downloaded.
 > 
-> Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+> Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 102
-> ++++++++++++++++++++++---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.h |   1 +
->  drivers/net/ethernet/intel/ice/ice_flex_type.h |  61 +++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_flow.c      |  88 ++++++++++++++++++++-
->  4 files changed, 242 insertions(+), 10 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_fdir.h          | 21 ++++++
+>  drivers/net/ethernet/intel/ice/ice_type.h          |  4 ++
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 74
+> ++++++++++++++++++++++
+>  3 files changed, 99 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
