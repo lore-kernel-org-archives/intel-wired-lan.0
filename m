@@ -1,38 +1,26 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 10 Jul 2020 21:30:47 +0000
-Subject: [Intel-wired-lan] [PATCH S48 v5 02/16] ice: Add more basic
- protocol support for flow filter
-In-Reply-To: <20200710010644.33817-3-qi.z.zhang@intel.com>
-References: <20200710010644.33817-1-qi.z.zhang@intel.com>
- <20200710010644.33817-3-qi.z.zhang@intel.com>
-Message-ID: <BN6PR1101MB21453C3B02D4B25F0E12C0978C650@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Sat, 11 Jul 2020 11:14:21 -0700
+Subject: [Intel-wired-lan] [PATCH] xsk: ixgbe: solve the soft interrupt
+ 100% CPU usage when xdp rx traffic congestion
+In-Reply-To: <1594462239-19596-1-git-send-email-goodluckwillcomesoon@gmail.com>
+References: <1594462239-19596-1-git-send-email-goodluckwillcomesoon@gmail.com>
+Message-ID: <20200711111421.0db76fa9@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Qi
-> Zhang
-> Sent: Thursday, July 9, 2020 6:07 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Qi Z <qi.z.zhang@intel.com>
-> Subject: [Intel-wired-lan] [PATCH S48 v5 02/16] ice: Add more basic protocol
-> support for flow filter
-> 
-> Add more protocol and field support for flow filter include:
-> ETH, VLAN, ICMP, ARP and TCP flag.
-> 
-> Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
-> Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_flow.c          | 181
-> ++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_flow.h          |  20 +++
->  drivers/net/ethernet/intel/ice/ice_protocol_type.h |   6 +
->  3 files changed, 201 insertions(+), 6 deletions(-)
+On Sat, 11 Jul 2020 18:10:38 +0800 Yahui Chen wrote:
+> 2. If the wakeup mechanism is used, that is, use the
+> `XDP_UMEM_USES_NEED_WAKEUP` flag. This method takes advantage of the
+> interrupt delay function of ixgbe skillfully, thus solving the problem
+> that the si CPU is always 100%. However, it will cause other problems.
+> The port-level flow control will be triggered on 82599, and the pause
+> frame will be sent to the upstream sender. This will affect the other
+> packet receiving queues of the network card, resulting in the packet
+> receiving rate of all queues dropping to 10Kpps.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+To me the current behavior sounds correct.. if you don't want pause
+frames to be generated you have to disable them completely. The point 
+of pause frames is to prevent drops.
