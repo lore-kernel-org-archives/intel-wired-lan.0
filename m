@@ -1,46 +1,57 @@
-From: Yahui Chen <goodluckwillcomesoon@gmail.com>
-Date: Mon, 13 Jul 2020 10:55:36 +0800
-Subject: [Intel-wired-lan] [PATCH] xsk: ixgbe: solve the soft interrupt
- 100% CPU usage when xdp rx traffic congestion
-In-Reply-To: <20200711111421.0db76fa9@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <1594462239-19596-1-git-send-email-goodluckwillcomesoon@gmail.com>
- <20200711111421.0db76fa9@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <CAPydje9rv2cR2YZvOcYT_w4E7cvERi0cEbs7hiwLKk4Bqhk+RA@mail.gmail.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 13 Jul 2020 13:53:08 -0700
+Subject: [Intel-wired-lan] [PATCH S50 05/15] ice: return correct error code
+ from ice_aq_sw_rules
+In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
+References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-xdp skb-mode does not have this problem because `ixgbe_alloc_rx_buffers`
-always returns success and can always get the DMA address for packets. I
-think drv-mode should do the same.
+From: Kiran Patil <kiran.patil@intel.com>
 
-If the drv-mode app does not use the wakeup flag, the xdp queue's soft
-interrupt handles fewer packets but may occupy 100% of the CPU,
-according to the analysis of the previous email.
+Return ICE_ERR_DOES_NOT_EXIST return code if admin command error code is
+ICE_AQ_RC_ENOENT (not exist). ice_aq_sw_rules is used when switch
+rule is getting added/deleted/updated. In case of delete/update
+switch rule, admin command can return ICE_AQ_RC_ENOENT error code
+if such rule does not exist, hence return ICE_ERR_DOES_NOT_EXIST error
+code from ice_aq_sw_rule, so that caller of this function can decide
+how to handle ICE_ERR_DOES_NOT_EXIST.
 
-If the user APP uses the wakeup flag, it maybe seriously affect other
-queues just because the APP is not processing the packet fast enough.
-In extreme cases, the APP can no longer receive packets, and port-level
-flow control will cause no packets to be received in all queues of the
-network card.
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_switch.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-As a result, the user needs to explicitly turn off flow control of network
-card, which is unfriendly to users.
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index ee434b8d794d..cd23c15d6579 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -481,6 +481,7 @@ ice_aq_sw_rules(struct ice_hw *hw, void *rule_list, u16 rule_list_sz,
+ 		u8 num_rules, enum ice_adminq_opc opc, struct ice_sq_cd *cd)
+ {
+ 	struct ice_aq_desc desc;
++	enum ice_status status;
+ 
+ 	if (opc != ice_aqc_opc_add_sw_rules &&
+ 	    opc != ice_aqc_opc_update_sw_rules &&
+@@ -492,7 +493,12 @@ ice_aq_sw_rules(struct ice_hw *hw, void *rule_list, u16 rule_list_sz,
+ 	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
+ 	desc.params.sw_rules.num_rules_fltr_entry_index =
+ 		cpu_to_le16(num_rules);
+-	return ice_aq_send_cmd(hw, &desc, rule_list, rule_list_sz, cd);
++	status = ice_aq_send_cmd(hw, &desc, rule_list, rule_list_sz, cd);
++	if (opc != ice_aqc_opc_add_sw_rules &&
++	    hw->adminq.sq_last_status == ICE_AQ_RC_ENOENT)
++		status = ICE_ERR_DOES_NOT_EXIST;
++
++	return status;
+ }
+ 
+ /* ice_init_port_info - Initialize port_info with switch configuration data
+-- 
+2.20.1
 
-Jakub Kicinski <kuba@kernel.org> ?2020?7?12??? ??2:14???
->
-> On Sat, 11 Jul 2020 18:10:38 +0800 Yahui Chen wrote:
-> > 2. If the wakeup mechanism is used, that is, use the
-> > `XDP_UMEM_USES_NEED_WAKEUP` flag. This method takes advantage of the
-> > interrupt delay function of ixgbe skillfully, thus solving the problem
-> > that the si CPU is always 100%. However, it will cause other problems.
-> > The port-level flow control will be triggered on 82599, and the pause
-> > frame will be sent to the upstream sender. This will affect the other
-> > packet receiving queues of the network card, resulting in the packet
-> > receiving rate of all queues dropping to 10Kpps.
->
-> To me the current behavior sounds correct.. if you don't want pause
-> frames to be generated you have to disable them completely. The point
-> of pause frames is to prevent drops.
