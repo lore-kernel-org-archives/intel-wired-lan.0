@@ -1,53 +1,46 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:05 -0700
-Subject: [Intel-wired-lan] [PATCH S50 02/15] ice: Fix link broken after
- GLOBR reset
+Date: Mon, 13 Jul 2020 13:53:18 -0700
+Subject: [Intel-wired-lan] [PATCH S50 15/15] ice: fix unused parameter
+ warning
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-2-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-15-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+Depending on PAGE_SIZE, the following unused parameter warning can be
+reported:
 
-After a GLOBR, the link was broken so that a link
-up situation was being seen as a link down.
+drivers/net/ethernet/intel/ice/ice_txrx.c: In function ?ice_rx_frame_truesize?:
+drivers/net/ethernet/intel/ice/ice_txrx.c:513:21: warning: unused parameter ?size? [-Wunused-parameter]
+        unsigned int size)
 
-The problem was that the rebuild process was updating
-the port_info link status without doing any of the
-other things that need to be done when link changes.
+The 'size' variable is used only when PAGE_SIZE >= 8192. Add __maybe_unused to
+to remove the warning.
 
-This was causing the port_info struct to have current
-"UP" information so that any further UP interrupts
-were skipped as redundant.
-
-The rebuild flow should *not* be updating the port_info
-struct link information, so eliminate this and leave
-it to the link event handling code.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3024fff6ca1d..6b5185a0aa04 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5768,10 +5768,6 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	if (err)
- 		goto err_sched_init_port;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 0aaed92f807f..909d56b28358 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -509,8 +509,8 @@ static unsigned int ice_rx_offset(struct ice_ring *rx_ring)
+ 	return 0;
+ }
  
--	err = ice_update_link_info(hw->port_info);
--	if (err)
--		dev_err(dev, "Get link status error %d\n", err);
--
- 	/* start misc vector */
- 	err = ice_req_irq_msix_misc(pf);
- 	if (err) {
+-static unsigned int ice_rx_frame_truesize(struct ice_ring *rx_ring,
+-					  unsigned int size)
++static unsigned int
++ice_rx_frame_truesize(struct ice_ring *rx_ring, unsigned int __maybe_unused size)
+ {
+ 	unsigned int truesize;
+ 
 -- 
 2.20.1
 
