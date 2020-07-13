@@ -1,7 +1,7 @@
 From: Sven Auhagen <sven.auhagen@voleatech.de>
-Date: Mon, 13 Jul 2020 10:56:30 +0200
-Subject: [Intel-wired-lan] [PATCH 1/1 v4] igb: add XDP support
-Message-ID: <20200713085630.rr5i5e27batwup4p@SvensMacbookPro.hq.voleatech.com>
+Date: Mon, 13 Jul 2020 11:05:49 +0200
+Subject: [Intel-wired-lan] [PATCH 1/1 v5] igb: add XDP support
+Message-ID: <20200713090549.b7dive4cmtm4o7dq@SvensMacbookPro.hq.voleatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -36,7 +36,9 @@ on older Intel Atom CPU.
 
 Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
 ---
-v4: 
+v5: resubmission with function names in patch
+
+v4:
 * use HARD_TX_LOCK in XDP xmit
 * do not pass adapter to igb_setup_rx_resources
 * account for timestamp in frame size
@@ -46,11 +48,13 @@ v3: igb_xdp_ring_update_tail should be static
 v2: original did not apply to my dev-queue branch, so fixed the
     conflicts in the patch
 
- drivers/net/ethernet/intel/igb/igb.h         |  87 +++-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   8 +-
- drivers/net/ethernet/intel/igb/igb_main.c    | 471 +++++++++++++++++--
- 3 files changed, 515 insertions(+), 51 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h         |  81 +++-
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |   4 +
+ drivers/net/ethernet/intel/igb/igb_main.c    | 444 +++++++++++++++++--
+ 3 files changed, 491 insertions(+), 38 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 0c9282e2aaec..ce814a560129 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
 @@ -19,6 +19,8 @@
@@ -62,7 +66,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  struct igb_adapter;
  
  #define E1000_PCS_CFG_IGN_SD	1
-@@ -79,6 +81,12 @@
+@@ -79,6 +81,12 @@ struct igb_adapter;
  #define IGB_I210_RX_LATENCY_100		2213
  #define IGB_I210_RX_LATENCY_1000	448
  
@@ -75,7 +79,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  struct vf_data_storage {
  	unsigned char vf_mac_addresses[ETH_ALEN];
  	u16 vf_mc_hashes[IGB_MAX_VF_MC_ENTRIES];
-@@ -132,17 +140,63 @@
+@@ -132,17 +140,63 @@ struct vf_mac_filter {
  
  /* Supported Rx Buffer Sizes */
  #define IGB_RXBUFFER_256	256
@@ -143,7 +147,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  #endif
  
  /* How many Rx Buffers do we bundle into one write to the hardware ? */
-@@ -194,13 +248,22 @@
+@@ -194,13 +248,22 @@ enum igb_tx_flags {
  #define IGB_SFF_ADDRESSING_MODE		0x4
  #define IGB_SFF_8472_UNSUP		0x00
  
@@ -167,7 +171,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	unsigned int bytecount;
  	u16 gso_segs;
  	__be16 protocol;
-@@ -248,6 +311,7 @@
+@@ -248,6 +311,7 @@ struct igb_ring_container {
  struct igb_ring {
  	struct igb_q_vector *q_vector;	/* backlink to q_vector */
  	struct net_device *netdev;	/* back pointer to net_device */
@@ -175,7 +179,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	struct device *dev;		/* device pointer for dma mapping */
  	union {				/* array of buffer info structs */
  		struct igb_tx_buffer *tx_buffer_info;
-@@ -288,6 +352,7 @@
+@@ -288,6 +352,7 @@ struct igb_ring {
  			struct u64_stats_sync rx_syncp;
  		};
  	};
@@ -183,7 +187,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  } ____cacheline_internodealigned_in_smp;
  
  struct igb_q_vector {
-@@ -339,7 +404,7 @@
+@@ -339,7 +404,7 @@ static inline unsigned int igb_rx_bufsz(struct igb_ring *ring)
  		return IGB_RXBUFFER_3072;
  
  	if (ring_uses_build_skb(ring))
@@ -192,7 +196,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  #endif
  	return IGB_RXBUFFER_2048;
  }
-@@ -467,6 +532,7 @@
+@@ -467,6 +532,7 @@ struct igb_adapter {
  	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
  
  	struct net_device *netdev;
@@ -200,7 +204,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  
  	unsigned long state;
  	unsigned int flags;
-@@ -644,6 +710,9 @@
+@@ -644,6 +710,9 @@ enum igb_boards {
  extern char igb_driver_name[];
  extern char igb_driver_version[];
  
@@ -210,9 +214,11 @@ v2: original did not apply to my dev-queue branch, so fixed the
  int igb_open(struct net_device *netdev);
  int igb_close(struct net_device *netdev);
  int igb_up(struct igb_adapter *);
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 2cd003c5ad43..eaa712a6d859 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -962,6 +962,10 @@
+@@ -962,6 +962,10 @@ static int igb_set_ringparam(struct net_device *netdev,
  			memcpy(&temp_ring[i], adapter->rx_ring[i],
  			       sizeof(struct igb_ring));
  
@@ -223,6 +229,8 @@ v2: original did not apply to my dev-queue branch, so fixed the
  			temp_ring[i].count = new_rx_count;
  			err = igb_setup_rx_resources(&temp_ring[i]);
  			if (err) {
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8bb3db2cbd41..ee33f19843a8 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
 @@ -30,6 +30,8 @@
@@ -234,7 +242,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  #include <linux/pm_runtime.h>
  #include <linux/etherdevice.h>
  #ifdef CONFIG_IGB_DCA
-@@ -2834,6 +2836,153 @@
+@@ -2834,6 +2836,153 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
  	}
  }
  
@@ -388,7 +396,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  static const struct net_device_ops igb_netdev_ops = {
  	.ndo_open		= igb_open,
  	.ndo_stop		= igb_close,
-@@ -2858,6 +3007,8 @@
+@@ -2858,6 +3007,8 @@ static const struct net_device_ops igb_netdev_ops = {
  	.ndo_fdb_add		= igb_ndo_fdb_add,
  	.ndo_features_check	= igb_features_check,
  	.ndo_setup_tc		= igb_setup_tc,
@@ -397,7 +405,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  };
  
  /**
-@@ -4188,6 +4339,7 @@
+@@ -4188,6 +4339,7 @@ static void igb_configure_tx(struct igb_adapter *adapter)
   **/
  int igb_setup_rx_resources(struct igb_ring *rx_ring)
  {
@@ -405,7 +413,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	struct device *dev = rx_ring->dev;
  	int size;
  
-@@ -4210,6 +4362,13 @@
+@@ -4210,6 +4362,13 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
  	rx_ring->next_to_clean = 0;
  	rx_ring->next_to_use = 0;
  
@@ -419,7 +427,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	return 0;
  
  err:
-@@ -4514,6 +4673,10 @@
+@@ -4514,6 +4673,10 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
  	int reg_idx = ring->reg_idx;
  	u32 rxdctl = 0;
  
@@ -430,7 +438,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	/* disable the queue */
  	wr32(E1000_RXDCTL(reg_idx), 0);
  
-@@ -4718,6 +4881,8 @@
+@@ -4718,6 +4881,8 @@ void igb_free_rx_resources(struct igb_ring *rx_ring)
  {
  	igb_clean_rx_ring(rx_ring);
  
@@ -439,7 +447,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	vfree(rx_ring->rx_buffer_info);
  	rx_ring->rx_buffer_info = NULL;
  
-@@ -6087,6 +6252,80 @@
+@@ -6087,6 +6252,80 @@ static int igb_tx_map(struct igb_ring *tx_ring,
  	return -1;
  }
  
@@ -520,7 +528,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
  				struct igb_ring *tx_ring)
  {
-@@ -6115,6 +6354,7 @@
+@@ -6115,6 +6354,7 @@ netdev_tx_t igb_xmit_frame_ring(struct sk_buff *skb,
  
  	/* record the location of the first descriptor for this packet */
  	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
@@ -528,7 +536,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	first->skb = skb;
  	first->bytecount = skb->len;
  	first->gso_segs = 1;
-@@ -6257,6 +6497,19 @@
+@@ -6257,6 +6497,19 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
  	struct igb_adapter *adapter = netdev_priv(netdev);
  	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
  
@@ -548,7 +556,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	/* adjust max frame to be at least the size of a standard frame */
  	if (max_frame < (ETH_FRAME_LEN + ETH_FCS_LEN))
  		max_frame = ETH_FRAME_LEN + ETH_FCS_LEN;
-@@ -7810,7 +8063,10 @@
+@@ -7810,7 +8063,10 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
  		total_packets += tx_buffer->gso_segs;
  
  		/* free the skb */
@@ -560,7 +568,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  
  		/* unmap skb header data */
  		dma_unmap_single(tx_ring->dev,
-@@ -7863,6 +8119,7 @@
+@@ -7863,6 +8119,7 @@ static bool igb_clean_tx_irq(struct igb_q_vector *q_vector, int napi_budget)
  				  total_packets, total_bytes);
  	i += tx_ring->count;
  	tx_ring->next_to_clean = i;
@@ -568,7 +576,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	u64_stats_update_begin(&tx_ring->tx_syncp);
  	tx_ring->tx_stats.bytes += total_bytes;
  	tx_ring->tx_stats.packets += total_packets;
-@@ -7994,8 +8251,8 @@
+@@ -7994,8 +8251,8 @@ static bool igb_can_reuse_rx_page(struct igb_rx_buffer *rx_buffer)
  	 * the pagecnt_bias and page count so that we fully restock the
  	 * number of references the driver holds.
  	 */
@@ -579,7 +587,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  		rx_buffer->pagecnt_bias = USHRT_MAX;
  	}
  
-@@ -8034,22 +8291,23 @@
+@@ -8034,22 +8291,23 @@ static void igb_add_rx_frag(struct igb_ring *rx_ring,
  
  static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
  					 struct igb_rx_buffer *rx_buffer,
@@ -609,7 +617,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  #endif
  
  	/* allocate a skb to store the frags */
-@@ -8058,24 +8316,24 @@
+@@ -8058,24 +8316,24 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
  		return NULL;
  
  	if (unlikely(igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))) {
@@ -639,7 +647,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  				size, truesize);
  #if (PAGE_SIZE < 8192)
  		rx_buffer->page_offset ^= truesize;
-@@ -8091,32 +8349,32 @@
+@@ -8091,32 +8349,32 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
  
  static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
  				     struct igb_rx_buffer *rx_buffer,
@@ -681,7 +689,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  
  	/* pull timestamp out of packet data */
  	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-@@ -8134,6 +8392,79 @@
+@@ -8134,6 +8392,79 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
  	return skb;
  }
  
@@ -761,7 +769,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  static inline void igb_rx_checksum(struct igb_ring *ring,
  				   union e1000_adv_rx_desc *rx_desc,
  				   struct sk_buff *skb)
-@@ -8230,6 +8561,10 @@
+@@ -8230,6 +8561,10 @@ static bool igb_cleanup_headers(struct igb_ring *rx_ring,
  				union e1000_adv_rx_desc *rx_desc,
  				struct sk_buff *skb)
  {
@@ -772,7 +780,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	if (unlikely((igb_test_staterr(rx_desc,
  				       E1000_RXDEXT_ERR_FRAME_ERR_MASK)))) {
  		struct net_device *netdev = rx_ring->netdev;
-@@ -8288,6 +8623,11 @@
+@@ -8288,6 +8623,11 @@ static void igb_process_skb_fields(struct igb_ring *rx_ring,
  	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
  }
  
@@ -784,7 +792,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  static struct igb_rx_buffer *igb_get_rx_buffer(struct igb_ring *rx_ring,
  					       const unsigned int size)
  {
-@@ -8332,9 +8672,19 @@
+@@ -8332,9 +8672,19 @@ static void igb_put_rx_buffer(struct igb_ring *rx_ring,
  static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
  {
  	struct igb_ring *rx_ring = q_vector->rx.ring;
@@ -804,7 +812,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  
  	while (likely(total_packets < budget)) {
  		union e1000_adv_rx_desc *rx_desc;
-@@ -8361,13 +8711,38 @@
+@@ -8361,13 +8711,38 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
  		rx_buffer = igb_get_rx_buffer(rx_ring, size);
  
  		/* retrieve a buffer from the ring */
@@ -846,7 +854,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  
  		/* exit if we failed to retrieve a buffer */
  		if (!skb) {
-@@ -8407,6 +8782,15 @@
+@@ -8407,6 +8782,15 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
  	/* place incomplete frames back on ring for completion */
  	rx_ring->skb = skb;
  
@@ -862,7 +870,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  	u64_stats_update_begin(&rx_ring->rx_syncp);
  	rx_ring->rx_stats.packets += total_packets;
  	rx_ring->rx_stats.bytes += total_bytes;
-@@ -8420,11 +8804,6 @@
+@@ -8420,11 +8804,6 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
  	return total_packets;
  }
  
@@ -874,7 +882,7 @@ v2: original did not apply to my dev-queue branch, so fixed the
  static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
  				  struct igb_rx_buffer *bi)
  {
-@@ -8461,7 +8840,8 @@
+@@ -8461,7 +8840,8 @@ static bool igb_alloc_mapped_page(struct igb_ring *rx_ring,
  	bi->dma = dma;
  	bi->page = page;
  	bi->page_offset = igb_rx_offset(rx_ring);
@@ -886,3 +894,4 @@ v2: original did not apply to my dev-queue branch, so fixed the
  }
 -- 
 2.20.1
+
