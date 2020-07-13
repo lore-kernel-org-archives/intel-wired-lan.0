@@ -1,68 +1,40 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:06 -0700
-Subject: [Intel-wired-lan] [PATCH S50 03/15] ice: fix link event handling
- timing
+Date: Mon, 13 Jul 2020 13:53:17 -0700
+Subject: [Intel-wired-lan] [PATCH S50 14/15] ice: disable no longer needed
+ workaround for FW logging
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-3-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-14-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Ben Shelton <benjamin.h.shelton@intel.com>
 
-When the driver experiences a link event (especially link up)
-there can be multiple events generated. Some of these are
-link fault and still have a state of DOWN set.  The problem
-happens when the link comes UP during the PF driver handling
-one of the LINK DOWN events.  The status of the link is updated
-and is now seen as UP, so when the actual LINK UP event comes,
-the port information has already been updated to be seen as UP,
-even though none of the UP activities have been completed.
+For the FW logging info AQ command, we currently set the ICE_AQ_FLAG_RD
+in order to work around a FW issue. This issue has been fixed so remove the
+workaround.
 
-After the link information has been updated in the link
-handler and evaluated for MEDIA PRESENT, if the state
-of the link has been changed to UP, treat the DOWN event
-as an UP event since the link is now UP.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 2 +-
- drivers/net/ethernet/intel/ice/ice_main.c    | 6 ++++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 3b3a2789eb55..36abd6b7280c 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -463,7 +463,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
- 		}
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index d1d827a69271..63cff81d234f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -611,8 +611,6 @@ static enum ice_status ice_get_fw_log_cfg(struct ice_hw *hw)
  
--	dev_info(dev, "DCB restored after reset\n");
-+	dev_info(dev, "DCB info restored\n");
- 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
- 	if (ret) {
- 		dev_err(dev, "Query Port ETS failed\n");
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 6b5185a0aa04..5940c16d0747 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -894,6 +894,12 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 		dev_dbg(dev, "Failed to update link status and re-enable link events for port %d\n",
- 			pi->lport);
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging_info);
  
-+	/* Check if the link state is up after updating link info, and treat
-+	 * this event as an UP event since the link is actually UP now.
-+	 */
-+	if (phy_info->link_info.link_info & ICE_AQ_LINK_UP)
-+		link_up = true;
-+
- 	vsi = ice_get_main_vsi(pf);
- 	if (!vsi || !vsi->port_info)
- 		return -EINVAL;
+-	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
+-
+ 	status = ice_aq_send_cmd(hw, &desc, config, size, NULL);
+ 	if (!status) {
+ 		u16 i;
 -- 
 2.20.1
 
