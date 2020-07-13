@@ -1,51 +1,126 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:09 -0700
-Subject: [Intel-wired-lan] [PATCH S50 06/15] ice: fix overwriting TX/RX
- descriptor values when rebuilding VSI
+Date: Mon, 13 Jul 2020 13:53:12 -0700
+Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues evenly
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-6-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+From: Victor Raj <victor.raj@intel.com>
 
-If a user sets the value of the TX or RX descriptors to some non-default
-value using 'ethtool -G' then we need to not overwrite the values when
-we rebuild the VSI. The VSI rebuild could happen as a result of a user
-setting the number of queues via the 'ethtool -L' command. Fix this by
-checking to see if the value we have stored is non-zero and if it is
-then don't change the value.
+Distribute the Tx queues evenly across all queue groups. This will
+help the queues to get more equal sharing among the queues when all
+are in use.
 
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+In the previous algorithm, the next queue group node will be picked up
+only after the previous one filled with max children.
+For example: if VSI is configured with 9 queues, the first 8 queues
+will be assigned to queue group 1 and the 9th queue will be assigned to
+queue group 2.
+
+The 2 queue groups split the bandwidth between them equally (50:50).
+The first queue group node will share the 50% bandwidth with all of
+its children (8 queues). And the second queue group node will share
+the entire 50% bandwidth with its only children.
+
+The new algorithm will fix this issue.
+
+Signed-off-by: Victor Raj <victor.raj@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 55 ++++++++++++++++++++--
+ 1 file changed, 51 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 01d742400f7f..aa77bedb61e4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -127,8 +127,14 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- 	case ICE_VSI_PF:
- 	case ICE_VSI_CTRL:
- 	case ICE_VSI_LB:
--		vsi->num_rx_desc = ICE_DFLT_NUM_RX_DESC;
--		vsi->num_tx_desc = ICE_DFLT_NUM_TX_DESC;
-+		/* a user could change the values of num_[tr]x_desc using
-+		 * ethtool -G so we should keep those values instead of
-+		 * overwriting them with the defaults.
-+		 */
-+		if (!vsi->num_rx_desc)
-+			vsi->num_rx_desc = ICE_DFLT_NUM_RX_DESC;
-+		if (!vsi->num_tx_desc)
-+			vsi->num_tx_desc = ICE_DFLT_NUM_TX_DESC;
- 		break;
- 	default:
- 		dev_dbg(ice_pf_to_dev(vsi->back), "Not setting number of Tx/Rx descriptors for VSI type %d\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index ac5b05bb978f..355f727563e4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1275,6 +1275,53 @@ ice_sched_find_node_in_subtree(struct ice_hw *hw, struct ice_sched_node *base,
+ 	return false;
+ }
+ 
++/**
++ * ice_sched_get_free_qgrp - Scan all queue group siblings and find a free node
++ * @pi: port information structure
++ * @vsi_node: software VSI handle
++ * @qgrp_node: first queue group node identified for scanning
++ * @owner: LAN or RDMA
++ *
++ * This function retrieves a free LAN or RDMA queue group node by scanning
++ * qgrp_node and its siblings for the queue group with the fewest number
++ * of queues currently assigned.
++ */
++static struct ice_sched_node *
++ice_sched_get_free_qgrp(struct ice_port_info *pi,
++			struct ice_sched_node *vsi_node,
++			struct ice_sched_node *qgrp_node, u8 owner)
++{
++	struct ice_sched_node *min_qgrp;
++	u8 min_children;
++
++	if (!qgrp_node)
++		return qgrp_node;
++	min_children = qgrp_node->num_children;
++	if (!min_children)
++		return qgrp_node;
++	min_qgrp = qgrp_node;
++	/* scan all queue groups until find a node which has less than the
++	 * minimum number of children. This way all queue group nodes get
++	 * equal number of shares and active. The bandwidth will be equally
++	 * distributed across all queues.
++	 */
++	while (qgrp_node) {
++		/* make sure the qgroup node is part of the VSI subtree */
++		if (ice_sched_find_node_in_subtree(pi->hw, vsi_node, qgrp_node))
++			if (qgrp_node->num_children < min_children &&
++			    qgrp_node->owner == owner) {
++				/* replace the new min queue group node */
++				min_qgrp = qgrp_node;
++				min_children = min_qgrp->num_children;
++				/* break if it has no children, */
++				if (!min_children)
++					break;
++			}
++		qgrp_node = qgrp_node->sibling;
++	}
++	return min_qgrp;
++}
++
+ /**
+  * ice_sched_get_free_qparent - Get a free LAN or RDMA queue group node
+  * @pi: port information structure
+@@ -1288,7 +1335,7 @@ struct ice_sched_node *
+ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 			   u8 owner)
+ {
+-	struct ice_sched_node *vsi_node, *qgrp_node = NULL;
++	struct ice_sched_node *vsi_node, *qgrp_node;
+ 	struct ice_vsi_ctx *vsi_ctx;
+ 	u16 max_children;
+ 	u8 qgrp_layer;
+@@ -1302,7 +1349,7 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 	vsi_node = vsi_ctx->sched.vsi_node[tc];
+ 	/* validate invalid VSI ID */
+ 	if (!vsi_node)
+-		goto lan_q_exit;
++		return NULL;
+ 
+ 	/* get the first queue group node from VSI sub-tree */
+ 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
+@@ -1315,8 +1362,8 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 		qgrp_node = qgrp_node->sibling;
+ 	}
+ 
+-lan_q_exit:
+-	return qgrp_node;
++	/* Select the best queue group */
++	return ice_sched_get_free_qgrp(pi, vsi_node, qgrp_node, owner);
+ }
+ 
+ /**
 -- 
 2.20.1
 
