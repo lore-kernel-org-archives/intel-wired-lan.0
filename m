@@ -1,80 +1,68 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:15 -0700
-Subject: [Intel-wired-lan] [PATCH S50 12/15] ice: cleanup VSI on probe fail
+Date: Mon, 13 Jul 2020 13:53:06 -0700
+Subject: [Intel-wired-lan] [PATCH S50 03/15] ice: fix link event handling
+ timing
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-12-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Marcin Szycik <marcin.szycik@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-As part of ice_setup_pf_sw() a PF VSI is setup; release the VSI in case of
-failure.
+When the driver experiences a link event (especially link up)
+there can be multiple events generated. Some of these are
+link fault and still have a state of DOWN set.  The problem
+happens when the link comes UP during the PF driver handling
+one of the LINK DOWN events.  The status of the link is updated
+and is now seen as UP, so when the actual LINK UP event comes,
+the port information has already been updated to be seen as UP,
+even though none of the UP activities have been completed.
 
-Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+After the link information has been updated in the link
+handler and evaluated for MEDIA PRESENT, if the state
+of the link has been changed to UP, treat the DOWN event
+as an UP event since the link is now UP.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c    | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 3b3a2789eb55..36abd6b7280c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -463,7 +463,7 @@ void ice_dcb_rebuild(struct ice_pf *pf)
+ 		}
+ 	}
+ 
+-	dev_info(dev, "DCB restored after reset\n");
++	dev_info(dev, "DCB info restored\n");
+ 	ret = ice_query_port_ets(pf->hw.port_info, &buf, sizeof(buf), NULL);
+ 	if (ret) {
+ 		dev_err(dev, "Query Port ETS failed\n");
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e6d758aa9a2f..840e35e5f6f3 100644
+index 6b5185a0aa04..5940c16d0747 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3991,7 +3991,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	if (err) {
- 		dev_err(dev, "probe failed sending driver version %s. error: %d\n",
- 			UTS_RELEASE, err);
--		goto err_alloc_sw_unroll;
-+		goto err_send_version_unroll;
- 	}
+@@ -894,6 +894,12 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
+ 		dev_dbg(dev, "Failed to update link status and re-enable link events for port %d\n",
+ 			pi->lport);
  
- 	/* since everything is good, start the service timer */
-@@ -4000,19 +4000,19 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	err = ice_init_link_events(pf->hw.port_info);
- 	if (err) {
- 		dev_err(dev, "ice_init_link_events failed: %d\n", err);
--		goto err_alloc_sw_unroll;
-+		goto err_send_version_unroll;
- 	}
- 
- 	err = ice_init_nvm_phy_type(pf->hw.port_info);
- 	if (err) {
- 		dev_err(dev, "ice_init_nvm_phy_type failed: %d\n", err);
--		goto err_alloc_sw_unroll;
-+		goto err_send_version_unroll;
- 	}
- 
- 	err = ice_update_link_info(pf->hw.port_info);
- 	if (err) {
- 		dev_err(dev, "ice_update_link_info failed: %d\n", err);
--		goto err_alloc_sw_unroll;
-+		goto err_send_version_unroll;
- 	}
- 
- 	ice_init_link_dflt_override(pf->hw.port_info);
-@@ -4023,7 +4023,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		err = ice_init_phy_user_cfg(pf->hw.port_info);
- 		if (err) {
- 			dev_err(dev, "ice_init_phy_user_cfg failed: %d\n", err);
--			goto err_alloc_sw_unroll;
-+			goto err_send_version_unroll;
- 		}
- 
- 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
-@@ -4077,6 +4077,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	clear_bit(__ICE_DOWN, pf->state);
- 	return 0;
- 
-+err_send_version_unroll:
-+	ice_vsi_release_all(pf);
- err_alloc_sw_unroll:
- 	ice_devlink_destroy_port(pf);
- 	set_bit(__ICE_SERVICE_DIS, pf->state);
++	/* Check if the link state is up after updating link info, and treat
++	 * this event as an UP event since the link is actually UP now.
++	 */
++	if (phy_info->link_info.link_info & ICE_AQ_LINK_UP)
++		link_up = true;
++
+ 	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi || !vsi->port_info)
+ 		return -EINVAL;
 -- 
 2.20.1
 
