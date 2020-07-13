@@ -1,76 +1,80 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:13 -0700
-Subject: [Intel-wired-lan] [PATCH S50 10/15] ice: need_wakeup flag might not
- be set for Tx
+Date: Mon, 13 Jul 2020 13:53:15 -0700
+Subject: [Intel-wired-lan] [PATCH S50 12/15] ice: cleanup VSI on probe fail
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-10-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+From: Marcin Szycik <marcin.szycik@intel.com>
 
-This is a port of i40e commit 705639572e8c ("i40e: need_wakeup flag might
-not be set for Tx").
+As part of ice_setup_pf_sw() a PF VSI is setup; release the VSI in case of
+failure.
 
-Quoting the original commit message:
-
-"The need_wakeup flag for Tx might not be set for AF_XDP sockets that
-are only used to send packets. This happens if there is at least one
-outstanding packet that has not been completed by the hardware and we
-get that corresponding completion (which will not generate an interrupt
-since interrupts are disabled in the napi poll loop) between the time we
-stopped processing the Tx completions and interrupts are enabled again.
-In this case, the need_wakeup flag will have been cleared at the end of
-the Tx completion processing as we believe we will get an interrupt from
-the outstanding completion at a later point in time. But if this
-completion interrupt occurs before interrupts are enable, we lose it and
-should at that point really have set the need_wakeup flag since there
-are no more outstanding completions that can generate an interrupt to
-continue the processing. When this happens, user space will see a Tx
-queue need_wakeup of 0 and skip issuing a syscall, which means will
-never get into the Tx processing again and we have a deadlock."
-
-As a result, packet processing stops. This patch introduces a fix for
-this issue, by always setting the need_wakeup flag at the end of an
-interrupt processing. This ensures that the deadlock will not happen.
-
-Signed-off-by: Krzysztof Kazimierczak <krzysztof.kazimierczak@intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 6badfd62dc63..87862918bc7a 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -706,8 +706,6 @@ static bool ice_xmit_zc(struct ice_ring *xdp_ring, int budget)
- 	if (tx_desc) {
- 		ice_xdp_ring_update_tail(xdp_ring);
- 		xsk_umem_consume_tx_done(xdp_ring->xsk_umem);
--		if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem))
--			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e6d758aa9a2f..840e35e5f6f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3991,7 +3991,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	if (err) {
+ 		dev_err(dev, "probe failed sending driver version %s. error: %d\n",
+ 			UTS_RELEASE, err);
+-		goto err_alloc_sw_unroll;
++		goto err_send_version_unroll;
  	}
  
- 	return budget > 0 && work_done;
-@@ -783,12 +781,8 @@ bool ice_clean_tx_irq_zc(struct ice_ring *xdp_ring, int budget)
- 	if (xsk_frames)
- 		xsk_umem_complete_tx(xdp_ring->xsk_umem, xsk_frames);
+ 	/* since everything is good, start the service timer */
+@@ -4000,19 +4000,19 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	err = ice_init_link_events(pf->hw.port_info);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_link_events failed: %d\n", err);
+-		goto err_alloc_sw_unroll;
++		goto err_send_version_unroll;
+ 	}
  
--	if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem)) {
--		if (xdp_ring->next_to_clean == xdp_ring->next_to_use)
--			xsk_set_tx_need_wakeup(xdp_ring->xsk_umem);
--		else
--			xsk_clear_tx_need_wakeup(xdp_ring->xsk_umem);
--	}
-+	if (xsk_umem_uses_need_wakeup(xdp_ring->xsk_umem))
-+		xsk_set_tx_need_wakeup(xdp_ring->xsk_umem);
+ 	err = ice_init_nvm_phy_type(pf->hw.port_info);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_nvm_phy_type failed: %d\n", err);
+-		goto err_alloc_sw_unroll;
++		goto err_send_version_unroll;
+ 	}
  
- 	ice_update_tx_ring_stats(xdp_ring, total_packets, total_bytes);
- 	xmit_done = ice_xmit_zc(xdp_ring, ICE_DFLT_IRQ_WORK);
+ 	err = ice_update_link_info(pf->hw.port_info);
+ 	if (err) {
+ 		dev_err(dev, "ice_update_link_info failed: %d\n", err);
+-		goto err_alloc_sw_unroll;
++		goto err_send_version_unroll;
+ 	}
+ 
+ 	ice_init_link_dflt_override(pf->hw.port_info);
+@@ -4023,7 +4023,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		err = ice_init_phy_user_cfg(pf->hw.port_info);
+ 		if (err) {
+ 			dev_err(dev, "ice_init_phy_user_cfg failed: %d\n", err);
+-			goto err_alloc_sw_unroll;
++			goto err_send_version_unroll;
+ 		}
+ 
+ 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
+@@ -4077,6 +4077,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	clear_bit(__ICE_DOWN, pf->state);
+ 	return 0;
+ 
++err_send_version_unroll:
++	ice_vsi_release_all(pf);
+ err_alloc_sw_unroll:
+ 	ice_devlink_destroy_port(pf);
+ 	set_bit(__ICE_SERVICE_DIS, pf->state);
 -- 
 2.20.1
 
