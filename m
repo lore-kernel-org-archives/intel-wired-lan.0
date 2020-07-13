@@ -1,126 +1,108 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:12 -0700
-Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues evenly
+Date: Mon, 13 Jul 2020 13:53:14 -0700
+Subject: [Intel-wired-lan] [PATCH S50 11/15] ice: Allow all VLANs in safe
+ mode
 In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-9-anthony.l.nguyen@intel.com>
+Message-ID: <20200713205318.32425-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Victor Raj <victor.raj@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Distribute the Tx queues evenly across all queue groups. This will
-help the queues to get more equal sharing among the queues when all
-are in use.
+Currently the PF VSI's context parameters are left in a bad state when
+going into safe mode. This is causing VLAN traffic to not pass. Fix this
+by configuring the PF VSI to allow all VLAN tagged traffic.
 
-In the previous algorithm, the next queue group node will be picked up
-only after the previous one filled with max children.
-For example: if VSI is configured with 9 queues, the first 8 queues
-will be assigned to queue group 1 and the 9th queue will be assigned to
-queue group 2.
+Also, remove redundant comment explaining the safe mode flow in
+ice_probe().
 
-The 2 queue groups split the bandwidth between them equally (50:50).
-The first queue group node will share the 50% bandwidth with all of
-its children (8 queues). And the second queue group node will share
-the entire 50% bandwidth with its only children.
-
-The new algorithm will fix this issue.
-
-Signed-off-by: Victor Raj <victor.raj@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 55 ++++++++++++++++++++--
- 1 file changed, 51 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 59 ++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index ac5b05bb978f..355f727563e4 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1275,6 +1275,53 @@ ice_sched_find_node_in_subtree(struct ice_hw *hw, struct ice_sched_node *base,
- 	return false;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a7b6502f1b4e..e6d758aa9a2f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3438,6 +3438,60 @@ int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx)
+ 	return err;
  }
  
 +/**
-+ * ice_sched_get_free_qgrp - Scan all queue group siblings and find a free node
-+ * @pi: port information structure
-+ * @vsi_node: software VSI handle
-+ * @qgrp_node: first queue group node identified for scanning
-+ * @owner: LAN or RDMA
++ * ice_set_safe_mode_vlan_cfg - configure PF VSI to allow all VLANs in safe mode
++ * @pf: PF to configure
 + *
-+ * This function retrieves a free LAN or RDMA queue group node by scanning
-+ * qgrp_node and its siblings for the queue group with the fewest number
-+ * of queues currently assigned.
++ * No VLAN offloads/filtering are advertised in safe mode so make sure the PF
++ * VSI can still Tx/Rx VLAN tagged packets.
 + */
-+static struct ice_sched_node *
-+ice_sched_get_free_qgrp(struct ice_port_info *pi,
-+			struct ice_sched_node *vsi_node,
-+			struct ice_sched_node *qgrp_node, u8 owner)
++static void ice_set_safe_mode_vlan_cfg(struct ice_pf *pf)
 +{
-+	struct ice_sched_node *min_qgrp;
-+	u8 min_children;
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
++	struct ice_vsi_ctx *ctxt;
++	enum ice_status status;
++	struct ice_hw *hw;
 +
-+	if (!qgrp_node)
-+		return qgrp_node;
-+	min_children = qgrp_node->num_children;
-+	if (!min_children)
-+		return qgrp_node;
-+	min_qgrp = qgrp_node;
-+	/* scan all queue groups until find a node which has less than the
-+	 * minimum number of children. This way all queue group nodes get
-+	 * equal number of shares and active. The bandwidth will be equally
-+	 * distributed across all queues.
-+	 */
-+	while (qgrp_node) {
-+		/* make sure the qgroup node is part of the VSI subtree */
-+		if (ice_sched_find_node_in_subtree(pi->hw, vsi_node, qgrp_node))
-+			if (qgrp_node->num_children < min_children &&
-+			    qgrp_node->owner == owner) {
-+				/* replace the new min queue group node */
-+				min_qgrp = qgrp_node;
-+				min_children = min_qgrp->num_children;
-+				/* break if it has no children, */
-+				if (!min_children)
-+					break;
-+			}
-+		qgrp_node = qgrp_node->sibling;
++	if (!vsi)
++		return;
++
++	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
++	if (!ctxt)
++		return;
++
++	hw = &pf->hw;
++	ctxt->info = vsi->info;
++
++	ctxt->info.valid_sections =
++		cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID |
++			    ICE_AQ_VSI_PROP_SECURITY_VALID |
++			    ICE_AQ_VSI_PROP_SW_VALID);
++
++	/* disable VLAN anti-spoof */
++	ctxt->info.sec_flags &= ~(ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++				  ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
++
++	/* disable VLAN pruning and keep all other settings */
++	ctxt->info.sw_flags2 &= ~ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
++
++	/* allow all VLANs on Tx and don't strip on Rx */
++	ctxt->info.vlan_flags = ICE_AQ_VSI_VLAN_MODE_ALL |
++		ICE_AQ_VSI_VLAN_EMOD_NOTHING;
++
++	status = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
++	if (status) {
++		dev_err(ice_pf_to_dev(vsi->back), "Failed to update VSI for safe mode VLANs, err %s aq_err %s\n",
++			ice_stat_str(status),
++			ice_aq_str(hw->adminq.sq_last_status));
++	} else {
++		vsi->info.sec_flags = ctxt->info.sec_flags;
++		vsi->info.sw_flags2 = ctxt->info.sw_flags2;
++		vsi->info.vlan_flags = ctxt->info.vlan_flags;
 +	}
-+	return min_qgrp;
++
++	kfree(ctxt);
 +}
 +
  /**
-  * ice_sched_get_free_qparent - Get a free LAN or RDMA queue group node
-  * @pi: port information structure
-@@ -1288,7 +1335,7 @@ struct ice_sched_node *
- ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 			   u8 owner)
- {
--	struct ice_sched_node *vsi_node, *qgrp_node = NULL;
-+	struct ice_sched_node *vsi_node, *qgrp_node;
- 	struct ice_vsi_ctx *vsi_ctx;
- 	u16 max_children;
- 	u8 qgrp_layer;
-@@ -1302,7 +1349,7 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 	vsi_node = vsi_ctx->sched.vsi_node[tc];
- 	/* validate invalid VSI ID */
- 	if (!vsi_node)
--		goto lan_q_exit;
-+		return NULL;
+  * ice_log_pkg_init - log result of DDP package load
+  * @hw: pointer to hardware info
+@@ -3996,9 +4050,10 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	/* Disable WoL at init, wait for user to enable */
+ 	device_set_wakeup_enable(dev, false);
  
- 	/* get the first queue group node from VSI sub-tree */
- 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
-@@ -1315,8 +1362,8 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 		qgrp_node = qgrp_node->sibling;
- 	}
+-	/* If no DDP driven features have to be setup, we are done with probe */
+-	if (ice_is_safe_mode(pf))
++	if (ice_is_safe_mode(pf)) {
++		ice_set_safe_mode_vlan_cfg(pf);
+ 		goto probe_done;
++	}
  
--lan_q_exit:
--	return qgrp_node;
-+	/* Select the best queue group */
-+	return ice_sched_get_free_qgrp(pi, vsi_node, qgrp_node, owner);
- }
+ 	/* initialize DDP driven features */
  
- /**
 -- 
 2.20.1
 
