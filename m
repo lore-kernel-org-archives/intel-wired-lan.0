@@ -1,50 +1,204 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Jul 2020 13:53:16 -0700
-Subject: [Intel-wired-lan] [PATCH S50 13/15] ice: reduce scope of variable
-In-Reply-To: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200713205318.32425-13-anthony.l.nguyen@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 14 Jul 2020 18:33:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ e46f5563db23f076cc6e1f0643884b04278fa11a
+Message-ID: <5f0d8a0e.Db7REOHk+Hi8g99C%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: e46f5563db23f076cc6e1f0643884b04278fa11a  ice: add 1G SGMII PHY type
 
-The scope of the macro local variable 'i' can be reduced.  Do so to avoid
-static analysis tools from complaining.
+Error/Warning in current branch:
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+include/linux/avf/virtchnl.h:1153:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:1235:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1251:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1281:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1296:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1434:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- alpha-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- arc-randconfig-r026-20200713
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-allmodconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- microblaze-randconfig-s031-20200713
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- powerpc-powernv_defconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- sparc64-allyesconfig
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+
+elapsed time: 1115m
+
+configs tested: 128
+configs skipped: 9
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+mips                         tb0287_defconfig
+arm64                            alldefconfig
+arm                        mini2440_defconfig
+arm                            hisi_defconfig
+powerpc                      ppc40x_defconfig
+sh                         ap325rxa_defconfig
+powerpc                     powernv_defconfig
+mips                         tb0219_defconfig
+powerpc                     pq2fads_defconfig
+arm                         bcm2835_defconfig
+sh                             espt_defconfig
+ia64                        generic_defconfig
+sh                 kfr2r09-romimage_defconfig
+nds32                             allnoconfig
+m68k                        m5407c3_defconfig
+arm                       aspeed_g5_defconfig
+x86_64                           alldefconfig
+arm                          tango4_defconfig
+powerpc                      mgcoge_defconfig
+sh                         apsh4a3a_defconfig
+m68k                        mvme16x_defconfig
+arc                            hsdk_defconfig
+arm                           h5000_defconfig
+arm                          collie_defconfig
+arm                    vt8500_v6_v7_defconfig
+powerpc                     mpc5200_defconfig
+arm                           sama5_defconfig
+mips                              allnoconfig
+sh                        apsh4ad0a_defconfig
+arm                         cm_x300_defconfig
+i386                             alldefconfig
+arm                             rpc_defconfig
+ia64                         bigsur_defconfig
+m68k                        stmark2_defconfig
+parisc                           alldefconfig
+ia64                      gensparse_defconfig
+sh                           se7721_defconfig
+arm                     am200epdkit_defconfig
+xtensa                       common_defconfig
+i386                              allnoconfig
+mips                         bigsur_defconfig
+mips                           mtx1_defconfig
+sh                          sdk7786_defconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20200713
+i386                 randconfig-a005-20200713
+i386                 randconfig-a006-20200713
+i386                 randconfig-a002-20200713
+i386                 randconfig-a003-20200713
+i386                 randconfig-a004-20200713
+x86_64               randconfig-a012-20200714
+x86_64               randconfig-a011-20200714
+x86_64               randconfig-a016-20200714
+x86_64               randconfig-a014-20200714
+x86_64               randconfig-a013-20200714
+x86_64               randconfig-a015-20200714
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+sparc64                             defconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
 ---
- drivers/net/ethernet/intel/ice/ice_controlq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
-index 1e18021aa073..1f46a7828be8 100644
---- a/drivers/net/ethernet/intel/ice/ice_controlq.c
-+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
-@@ -312,9 +312,10 @@ ice_cfg_rq_regs(struct ice_hw *hw, struct ice_ctl_q_info *cq)
- 
- #define ICE_FREE_CQ_BUFS(hw, qi, ring)					\
- do {									\
--	int i;								\
- 	/* free descriptors */						\
--	if ((qi)->ring.r.ring##_bi)					\
-+	if ((qi)->ring.r.ring##_bi) {					\
-+		int i;							\
-+									\
- 		for (i = 0; i < (qi)->num_##ring##_entries; i++)	\
- 			if ((qi)->ring.r.ring##_bi[i].pa) {		\
- 				dmam_free_coherent(ice_hw_to_dev(hw),	\
-@@ -325,6 +326,7 @@ do {									\
- 					(qi)->ring.r.ring##_bi[i].pa = 0;\
- 					(qi)->ring.r.ring##_bi[i].size = 0;\
- 		}							\
-+	}								\
- 	/* free the buffer info list */					\
- 	if ((qi)->ring.cmd_buf)						\
- 		devm_kfree(ice_hw_to_dev(hw), (qi)->ring.cmd_buf);	\
--- 
-2.20.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
