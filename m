@@ -1,47 +1,44 @@
-From: Li,Rongqing <lirongqing@baidu.com>
-Date: Tue, 14 Jul 2020 11:05:37 +0000
-Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgW2J1ZyA/XSBpNDBlX3J4X2J1?=
- =?utf-8?q?ffer=5Fflip_should_not_be_called_for_redirected_xsk_copy_mode?=
-References: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
- <CAJ8uoz08pyWR43K_zhp6PsDLi0KE=y_4QTs-a7kBA-jkRQksaw@mail.gmail.com> 
-Message-ID: <7aac955840df438e99e6681b0ae5b5b8@baidu.com>
+From: Suraj Upadhyay <usuraj35@gmail.com>
+Date: Wed, 15 Jul 2020 01:10:35 +0530
+Subject: [Intel-wired-lan] [PATCH 1/4] e1000/e1000_ethtool.c: Remove
+ unnecessary usages of memset
+Message-ID: <20200714194035.GA21382@blackclown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Replace memsets of 1 byte with simple assignments.
+Issue reported by checkpatch.pl.
 
+Signed-off-by: Suraj Upadhyay <usuraj35@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> -----????-----
-> ???: Li,Rongqing
-> ????: 2020?7?6? 14:38
-> ???: 'Magnus Karlsson' <magnus.karlsson@gmail.com>
-> ??: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel
-> <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>;
-> Netdev <netdev@vger.kernel.org>
-> ??: ??: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be called
-> for redirected xsk copy mode
-> 
-> 
-> 
-> > -----????-----
-> > ???: Magnus Karlsson [mailto:magnus.karlsson at gmail.com]
-> > ????: 2020?7?6? 14:13
-> > ???: Li,Rongqing <lirongqing@baidu.com>
-> > ??: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel
-> > <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>;
-> > Netdev <netdev@vger.kernel.org>
-> > ??: Re: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be
-> > called for redirected xsk copy mode
-> >
-> > Thank you RongQing for reporting this. I will take a look at it and
-> > produce a patch.
-> >
-> > /Magnus
-> 
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index 0b4196d2cdd4..f976e9daa3d8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -1356,8 +1356,8 @@ static void e1000_create_lbtest_frame(struct sk_buff *skb,
+ 	memset(skb->data, 0xFF, frame_size);
+ 	frame_size &= ~1;
+ 	memset(&skb->data[frame_size / 2], 0xAA, frame_size / 2 - 1);
+-	memset(&skb->data[frame_size / 2 + 10], 0xBE, 1);
+-	memset(&skb->data[frame_size / 2 + 12], 0xAF, 1);
++	skb->data[frame_size / 2 + 10] = 0xBE;
++	skb->data[frame_size / 2 + 12] = 0xAF;
+ }
+ 
+ static int e1000_check_lbtest_frame(const unsigned char *data,
+-- 
+2.17.1
 
-Ping
-
-
--Li
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200715/8bf0e2df/attachment.asc>
