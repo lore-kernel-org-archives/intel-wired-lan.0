@@ -1,21 +1,22 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 15 Jul 2020 04:52:11 -0700
-Subject: [Intel-wired-lan] [net-next,
- V6 01/14] iecm: Add framework set of header files
+Date: Wed, 15 Jul 2020 04:52:24 -0700
+Subject: [Intel-wired-lan] [net-next,V6 14/14] idpf: Introduce idpf driver
 In-Reply-To: <20200715115224.63154-1-alice.michael@intel.com>
 References: <20200715115224.63154-1-alice.michael@intel.com>
-Message-ID: <20200715115224.63154-2-alice.michael@intel.com>
+Message-ID: <20200715115224.63154-15-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduces the framework of data for the driver common
-module.
+From: Alan Brady <alan.brady@intel.com>
 
-Signed-off-by: Alice Michael <alice.michael@intel.com>
+Utilizes the Intel Ethernet Common Module and provides
+a device specific implementation for data plane devices.
+
 Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
@@ -23,871 +24,465 @@ Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 Reviewed-by: Donald Skidmore <donald.c.skidmore@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Reported-by: kbuild test robot <lkp@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- include/linux/net/intel/iecm.h              | 430 ++++++++++++++++++++
- include/linux/net/intel/iecm_alloc.h        |  29 ++
- include/linux/net/intel/iecm_controlq.h     |  95 +++++
- include/linux/net/intel/iecm_controlq_api.h | 188 +++++++++
- include/linux/net/intel/iecm_osdep.h        |  24 ++
- include/linux/net/intel/iecm_type.h         |  47 +++
- 6 files changed, 813 insertions(+)
- create mode 100644 include/linux/net/intel/iecm.h
- create mode 100644 include/linux/net/intel/iecm_alloc.h
- create mode 100644 include/linux/net/intel/iecm_controlq.h
- create mode 100644 include/linux/net/intel/iecm_controlq_api.h
- create mode 100644 include/linux/net/intel/iecm_osdep.h
- create mode 100644 include/linux/net/intel/iecm_type.h
+ .../device_drivers/ethernet/intel/idpf.rst    |  47 ++++++
+ drivers/net/ethernet/intel/Kconfig            |  11 ++
+ drivers/net/ethernet/intel/Makefile           |   1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |  12 ++
+ drivers/net/ethernet/intel/idpf/idpf_dev.h    |  17 ++
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |  10 ++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 137 ++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_reg.c    | 152 ++++++++++++++++++
+ 8 files changed, 387 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/ethernet/intel/idpf.rst
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_reg.c
 
-diff --git a/include/linux/net/intel/iecm.h b/include/linux/net/intel/iecm.h
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/idpf.rst b/Documentation/networking/device_drivers/ethernet/intel/idpf.rst
 new file mode 100644
-index 000000000000..1d135d5fba94
+index 000000000000..973fa9613428
 --- /dev/null
-+++ b/include/linux/net/intel/iecm.h
-@@ -0,0 +1,430 @@
++++ b/Documentation/networking/device_drivers/ethernet/intel/idpf.rst
+@@ -0,0 +1,47 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++==================================================================
++Linux Base Driver for the Intel(R) Smart Network Adapter Family Series
++==================================================================
++
++Intel idpf Linux driver.
++Copyright(c) 2020 Intel Corporation.
++
++Contents
++========
++
++- Enabling the driver
++- Support
++
++The driver in this release supports Intel's Smart Network Adapter Family Series
++of products. For more information, visit Intel's support page at
++https://support.intel.com.
++
++Enabling the driver
++===================
++The driver is enabled via the standard kernel configuration system,
++using the make command::
++
++  make oldconfig/menuconfig/etc.
++
++The driver is located in the menu structure at:
++
++  -> Device Drivers
++    -> Network device support (NETDEVICES [=y])
++      -> Ethernet driver support
++        -> Intel devices
++          -> Intel(R) Smart Network Adapter Family Series Support
++
++Support
++=======
++For general information, go to the Intel support website at:
++
++https://www.intel.com/support/
++
++or the Intel Wired Networking project hosted by Sourceforge at:
++
++https://sourceforge.net/projects/e1000
++
++If an issue is identified with the released source code on a supported kernel
++with a supported adapter, email the specific information related to the issue
++to e1000-devel at lists.sf.net.
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index db200ff7fb98..c99fe92d4b3c 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -352,4 +352,15 @@ config IECM
+ 
+ 	  More specific information on configuring the driver is in
+ 	  <file:Documentation/networking/device_drivers/ethernet/intel/iecm.rst>.
++
++config IDPF
++	tristate "Intel(R) Data Plane Function Support"
++	default n
++	depends on PCI
++	help
++	 To compile this driver as a module, choose M here. The module
++	 will be called idpf.
++
++	 More specific information on configuring the driver is in
++	  <file:Documentation/networking/device_drivers/ethernet/intel/idpf.rst>.
+ endif # NET_VENDOR_INTEL
+diff --git a/drivers/net/ethernet/intel/Makefile b/drivers/net/ethernet/intel/Makefile
+index c9eba9cc5087..3786c2269f3d 100644
+--- a/drivers/net/ethernet/intel/Makefile
++++ b/drivers/net/ethernet/intel/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_IAVF) += iavf/
+ obj-$(CONFIG_FM10K) += fm10k/
+ obj-$(CONFIG_ICE) += ice/
+ obj-$(CONFIG_IECM) += iecm/
++obj-$(CONFIG_IDPF) += idpf/
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+new file mode 100644
+index 000000000000..ac6cac6c6360
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -0,0 +1,12 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2020 Intel Corporation
++
++#
++# Makefile for the Intel(R) Data Plane Function Linux Driver
++#
++
++obj-$(CONFIG_IDPF) += idpf.o
++
++idpf-y := \
++	idpf_main.o \
++	idpf_reg.o
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.h b/drivers/net/ethernet/intel/idpf/idpf_dev.h
+new file mode 100644
+index 000000000000..1da33f5120a2
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_dev.h
+@@ -0,0 +1,17 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/* Copyright (C) 2020 Intel Corporation */
 +
-+#ifndef _IECM_H_
-+#define _IECM_H_
++#ifndef _IDPF_DEV_H_
++#define _IDPF_DEV_H_
 +
-+#include <linux/aer.h>
-+#include <linux/bitmap.h>
-+#include <linux/compiler.h>
-+#include <linux/cpumask.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/errno.h>
-+#include <linux/etherdevice.h>
-+#include <linux/ethtool.h>
-+#include <linux/if_bridge.h>
-+#include <linux/if_vlan.h>
-+#include <linux/interrupt.h>
-+#include <linux/ip.h>
-+#include <linux/ipv6.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
-+#include <linux/log2.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/netdevice.h>
-+#include <linux/pci.h>
-+#include <linux/pkt_sched.h>
-+#include <linux/rtnetlink.h>
-+#include <linux/sctp.h>
-+#include <linux/skbuff.h>
-+#include <linux/string.h>
-+#include <linux/timer.h>
-+#include <linux/types.h>
-+#include <linux/workqueue.h>
-+#include <net/tcp.h>
-+#include <net/ipv6.h>
-+#include <net/ip6_checksum.h>
-+#include <linux/prefetch.h>
-+#include <net/pkt_sched.h>
++#include <linux/net/intel/iecm.h>
 +
-+#include <net/gre.h>
-+#include <net/udp_tunnel.h>
-+#include <linux/avf/virtchnl.h>
++void idpf_intr_reg_init(struct iecm_vport *vport);
++void idpf_mb_intr_reg_init(struct iecm_adapter *adapter);
++void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg);
++void idpf_trigger_reset(struct iecm_adapter *adapter,
++			enum iecm_flags trig_cause);
++void idpf_vportq_reg_init(struct iecm_vport *vport);
++void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq);
 +
-+#include <linux/net/intel/iecm_osdep.h>
-+#include <linux/net/intel/iecm_controlq_api.h>
-+#include <linux/net/intel/iecm_lan_txrx.h>
++#endif /* _IDPF_DEV_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_devids.h b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+new file mode 100644
+index 000000000000..ee373a04cb20
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2020 Intel Corporation */
 +
-+#include <linux/net/intel/iecm_txrx.h>
-+#include <linux/net/intel/iecm_type.h>
++#ifndef _IDPF_DEVIDS_H_
++#define _IDPF_DEVIDS_H_
 +
-+extern const char iecm_drv_ver[];
-+extern char iecm_drv_name[];
++/* Device IDs */
++#define IDPF_DEV_ID_PF			0x1452
 +
-+#define IECM_BAR0	0
-+#define IECM_NO_FREE_SLOT	0xffff
++#endif /* _IDPF_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+new file mode 100644
+index 000000000000..b0197bd995a3
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -0,0 +1,137 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2020 Intel Corporation */
 +
-+/* Default Mailbox settings */
-+#define IECM_DFLT_MBX_BUF_SIZE	(1 * 1024)
-+#define IECM_NUM_QCTX_PER_MSG	3
-+#define IECM_DFLT_MBX_Q_LEN	64
-+#define IECM_DFLT_MBX_ID	-1
-+/* maximum number of times to try before resetting mailbox */
-+#define IECM_MB_MAX_ERR	20
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+#define IECM_MAX_NUM_VPORTS	1
++#include "idpf_dev.h"
++#include "idpf_devids.h"
 +
-+/* available message levels */
-+#define IECM_AVAIL_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
++#define DRV_SUMMARY	"Intel(R) Data Plane Function Linux Driver"
++static const char idpf_driver_string[] = DRV_SUMMARY;
++static const char idpf_copyright[] = "Copyright (c) 2020, Intel Corporation.";
 +
-+/* Forward declaration */
-+struct iecm_adapter;
++MODULE_DESCRIPTION(DRV_SUMMARY);
++MODULE_LICENSE("GPL v2");
 +
-+enum iecm_state {
-+	__IECM_STARTUP,
-+	__IECM_VER_CHECK,
-+	__IECM_GET_RES,
-+	__IECM_GET_CAPS,
-+	__IECM_GET_DFLT_VPORT_PARAMS,
-+	__IECM_INIT_SW,
-+	__IECM_DOWN,
-+	__IECM_UP,
-+	__IECM_REMOVE,
-+	__IECM_STATE_LAST /* this member MUST be last */
-+};
-+
-+enum iecm_flags {
-+	/* Soft reset causes */
-+	__IECM_SR_Q_CHANGE, /* Soft reset to do queue change */
-+	__IECM_SR_Q_DESC_CHANGE,
-+	__IECM_SR_Q_SCH_CHANGE, /* Scheduling mode change in queue context */
-+	__IECM_SR_MTU_CHANGE,
-+	__IECM_SR_TC_CHANGE,
-+	/* Hard reset causes */
-+	__IECM_HR_FUNC_RESET, /* Hard reset when txrx timeout */
-+	__IECM_HR_CORE_RESET, /* when reset event is received on virtchannel */
-+	__IECM_HR_DRV_LOAD, /* Set on driver load for a clean HW */
-+	/* Generic bits to share a message */
-+	__IECM_DEL_QUEUES,
-+	__IECM_UP_REQUESTED, /* Set if open to be called explicitly by driver */
-+	/* Mailbox interrupt event */
-+	__IECM_MB_INTR_MODE,
-+	__IECM_MB_INTR_TRIGGER,
-+	/* must be last */
-+	__IECM_FLAGS_NBITS,
-+};
-+
-+struct iecm_netdev_priv {
-+	struct iecm_vport *vport;
-+};
-+
-+struct iecm_reset_reg {
-+	u32 rstat;
-+	u32 rstat_m;
-+};
-+
-+/* product specific register API */
-+struct iecm_reg_ops {
-+	void (*ctlq_reg_init)(struct iecm_ctlq_create_info *cq);
-+	void (*vportq_reg_init)(struct iecm_vport *vport);
-+	void (*intr_reg_init)(struct iecm_vport *vport);
-+	void (*mb_intr_reg_init)(struct iecm_adapter *adapter);
-+	void (*reset_reg_init)(struct iecm_reset_reg *reset_reg);
-+	void (*trigger_reset)(struct iecm_adapter *adapter,
-+			      enum iecm_flags trig_cause);
-+};
-+
-+struct iecm_virtchnl_ops {
-+	int (*core_init)(struct iecm_adapter *adapter, int *vport_id);
-+	void (*vport_init)(struct iecm_vport *vport, int vport_id);
-+	int (*vport_queue_ids_init)(struct iecm_vport *vport);
-+	int (*get_caps)(struct iecm_adapter *adapter);
-+	int (*config_queues)(struct iecm_vport *vport);
-+	int (*enable_queues)(struct iecm_vport *vport);
-+	int (*disable_queues)(struct iecm_vport *vport);
-+	int (*irq_map_unmap)(struct iecm_vport *vport, bool map);
-+	int (*enable_vport)(struct iecm_vport *vport);
-+	int (*disable_vport)(struct iecm_vport *vport);
-+	int (*destroy_vport)(struct iecm_vport *vport);
-+	int (*get_ptype)(struct iecm_vport *vport);
-+	int (*get_set_rss_lut)(struct iecm_vport *vport, bool get);
-+	int (*get_set_rss_hash)(struct iecm_vport *vport, bool get);
-+	int (*adjust_qs)(struct iecm_vport *vport);
-+	int (*recv_mbx_msg)(struct iecm_adapter *adapter,
-+			    void *msg, int msg_size,
-+			    struct iecm_ctlq_msg *ctlq_msg, bool *work_done);
-+	bool (*is_cap_ena)(struct iecm_adapter *adapter, u64 flag);
-+};
-+
-+struct iecm_dev_ops {
-+	void (*reg_ops_init)(struct iecm_adapter *adapter);
-+	void (*vc_ops_init)(struct iecm_adapter *adapter);
-+	void (*crc_enable)(u64 *td_cmd);
-+	struct iecm_reg_ops reg_ops;
-+	struct iecm_virtchnl_ops vc_ops;
-+};
-+
-+/* vport specific data structure */
-+
-+enum  iecm_vport_vc_state {
-+	IECM_VC_ENA_VPORT,
-+	IECM_VC_ENA_VPORT_ERR,
-+	IECM_VC_DIS_VPORT,
-+	IECM_VC_DIS_VPORT_ERR,
-+	IECM_VC_DESTROY_VPORT,
-+	IECM_VC_DESTROY_VPORT_ERR,
-+	IECM_VC_CONFIG_TXQ,
-+	IECM_VC_CONFIG_TXQ_ERR,
-+	IECM_VC_CONFIG_RXQ,
-+	IECM_VC_CONFIG_RXQ_ERR,
-+	IECM_VC_CONFIG_Q,
-+	IECM_VC_CONFIG_Q_ERR,
-+	IECM_VC_ENA_QUEUES,
-+	IECM_VC_ENA_QUEUES_ERR,
-+	IECM_VC_DIS_QUEUES,
-+	IECM_VC_DIS_QUEUES_ERR,
-+	IECM_VC_MAP_IRQ,
-+	IECM_VC_MAP_IRQ_ERR,
-+	IECM_VC_UNMAP_IRQ,
-+	IECM_VC_UNMAP_IRQ_ERR,
-+	IECM_VC_ADD_QUEUES,
-+	IECM_VC_ADD_QUEUES_ERR,
-+	IECM_VC_DEL_QUEUES,
-+	IECM_VC_DEL_QUEUES_ERR,
-+	IECM_VC_ALLOC_VECTORS,
-+	IECM_VC_ALLOC_VECTORS_ERR,
-+	IECM_VC_DEALLOC_VECTORS,
-+	IECM_VC_DEALLOC_VECTORS_ERR,
-+	IECM_VC_CREATE_VFS,
-+	IECM_VC_CREATE_VFS_ERR,
-+	IECM_VC_DESTROY_VFS,
-+	IECM_VC_DESTROY_VFS_ERR,
-+	IECM_VC_GET_RSS_HASH,
-+	IECM_VC_GET_RSS_HASH_ERR,
-+	IECM_VC_SET_RSS_HASH,
-+	IECM_VC_SET_RSS_HASH_ERR,
-+	IECM_VC_GET_RSS_LUT,
-+	IECM_VC_GET_RSS_LUT_ERR,
-+	IECM_VC_SET_RSS_LUT,
-+	IECM_VC_SET_RSS_LUT_ERR,
-+	IECM_VC_GET_RSS_KEY,
-+	IECM_VC_GET_RSS_KEY_ERR,
-+	IECM_VC_CONFIG_RSS_KEY,
-+	IECM_VC_CONFIG_RSS_KEY_ERR,
-+	IECM_VC_GET_STATS,
-+	IECM_VC_GET_STATS_ERR,
-+	IECM_VC_NBITS
-+};
-+
-+enum iecm_vport_flags {
-+	__IECM_VPORT_SW_MARKER,
-+	__IECM_VPORT_FLAGS_NBITS,
-+};
-+
-+struct iecm_vport {
-+	/* TX */
-+	unsigned int num_txq;
-+	unsigned int num_complq;
-+	/* It makes more sense for descriptor count to be part of only iecm
-+	 * queue structure. But when user changes the count via ethtool, driver
-+	 * has to store that value somewhere other than queue structure as the
-+	 * queues will be freed and allocated again.
-+	 */
-+	unsigned int txq_desc_count;
-+	unsigned int complq_desc_count;
-+	unsigned int compln_clean_budget;
-+	unsigned int num_txq_grp;
-+	struct iecm_txq_group *txq_grps;
-+	enum virtchnl_queue_model txq_model;
-+	/* Used only in hotpath to get to the right queue very fast */
-+	struct iecm_queue **txqs;
-+	wait_queue_head_t sw_marker_wq;
-+	DECLARE_BITMAP(flags, __IECM_VPORT_FLAGS_NBITS);
-+
-+	/* RX */
-+	unsigned int num_rxq;
-+	unsigned int num_bufq;
-+	unsigned int rxq_desc_count;
-+	unsigned int bufq_desc_count;
-+	unsigned int num_rxq_grp;
-+	struct iecm_rxq_group *rxq_grps;
-+	enum virtchnl_queue_model rxq_model;
-+	struct iecm_rx_ptype_decoded rx_ptype_lkup[IECM_RX_MAX_PTYPE];
-+
-+	struct iecm_adapter *adapter;
-+	struct net_device *netdev;
-+	u16 vport_type;
-+	u16 vport_id;
-+	u16 idx;		 /* software index in adapter vports struct */
-+	struct rtnl_link_stats64 netstats;
-+
-+	/* handler for hard interrupt */
-+	irqreturn_t (*irq_q_handler)(int irq, void *data);
-+	struct iecm_q_vector *q_vectors;	/* q vector array */
-+	u16 num_q_vectors;
-+	u16 q_vector_base;
-+	u16 max_mtu;
-+	u8 default_mac_addr[ETH_ALEN];
-+	u16 qset_handle;
-+	/* Duplicated in queue structure for performance reasons */
-+	enum iecm_rx_hsplit rx_hsplit_en;
-+};
-+
-+/* User defined configuration values */
-+struct iecm_user_config_data {
-+	u32 num_req_qs; /* user requested queues through ethtool */
-+	u32 num_req_txq_desc;
-+	u32 num_req_rxq_desc;
-+	void *req_qs_chunks;
-+};
-+
-+struct iecm_rss_data {
-+	u64 rss_hash;
-+	u16 rss_key_size;
-+	u8 *rss_key;
-+	u16 rss_lut_size;
-+	u8 *rss_lut;
-+};
-+
-+struct iecm_adapter {
-+	struct pci_dev *pdev;
-+
-+	u32 tx_timeout_count;
-+	u32 msg_enable;
-+	enum iecm_state state;
-+	DECLARE_BITMAP(flags, __IECM_FLAGS_NBITS);
-+	struct mutex reset_lock; /* lock to protect reset flows */
-+	struct iecm_reset_reg reset_reg;
-+	struct iecm_hw hw;
-+
-+	u16 num_req_msix;
-+	u16 num_msix_entries;
-+	struct msix_entry *msix_entries;
-+	struct virtchnl_alloc_vectors *req_vec_chunks;
-+	struct iecm_q_vector mb_vector;
-+	/* handler for hard interrupt for mailbox*/
-+	irqreturn_t (*irq_mb_handler)(int irq, void *data);
-+
-+	/* vport structs */
-+	struct iecm_vport **vports;	/* vports created by the driver */
-+	u16 num_alloc_vport;
-+	u16 next_vport;		/* Next free slot in pf->vport[] - 0-based! */
-+	struct mutex sw_mutex;	/* lock to protect vport alloc flow */
-+
-+	struct delayed_work init_task; /* delayed init task */
-+	struct workqueue_struct *init_wq;
-+	u32 mb_wait_count;
-+	struct delayed_work serv_task; /* delayed service task */
-+	struct workqueue_struct *serv_wq;
-+	struct delayed_work stats_task; /* delayed statistics task */
-+	struct workqueue_struct *stats_wq;
-+	struct delayed_work vc_event_task; /* delayed virtchannel event task */
-+	struct workqueue_struct *vc_event_wq;
-+	/* Store the resources data received from control plane */
-+	void **vport_params_reqd;
-+	void **vport_params_recvd;
-+	/* User set parameters */
-+	struct iecm_user_config_data config_data;
-+	void *caps;
-+	wait_queue_head_t vchnl_wq;
-+	DECLARE_BITMAP(vc_state, IECM_VC_NBITS);
-+	struct mutex vc_msg_lock;	/* lock to protect vc_msg flow */
-+	char vc_msg[IECM_DFLT_MBX_BUF_SIZE];
-+	struct iecm_rss_data rss_data;
-+	struct iecm_dev_ops dev_ops;
-+	enum virtchnl_link_speed link_speed;
-+	bool link_up;
-+	int debug_msk; /* netif messaging level */
-+};
++/* available messaging levels are described by IECM_AVAIL_NETIF_M */
++static int debug = -1;
++module_param(debug, int, 0644);
++#ifndef CONFIG_DYNAMIC_DEBUG
++MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXXXXX)");
++#else
++MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
++#endif /* !CONFIG_DYNAMIC_DEBUG */
 +
 +/**
-+ * iecm_is_queue_model_split - check if queue model is split
-+ * @q_model: queue model single or split
++ * idpf_reg_ops_init - Initialize register API function pointers
++ * @adapter: Driver specific private structure
++ */
++static void idpf_reg_ops_init(struct iecm_adapter *adapter)
++{
++	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_ctlq_reg_init;
++	adapter->dev_ops.reg_ops.vportq_reg_init = idpf_vportq_reg_init;
++	adapter->dev_ops.reg_ops.intr_reg_init = idpf_intr_reg_init;
++	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
++	adapter->dev_ops.reg_ops.reset_reg_init = idpf_reset_reg_init;
++	adapter->dev_ops.reg_ops.trigger_reset = idpf_trigger_reset;
++}
++
++/**
++ * idpf_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in idpf_pci_tbl
 + *
-+ * Returns true if queue model is split else false
++ * Returns 0 on success, negative on failure
 + */
-+static inline int iecm_is_queue_model_split(enum virtchnl_queue_model q_model)
++static int idpf_probe(struct pci_dev *pdev,
++		      const struct pci_device_id __always_unused *ent)
 +{
-+	return (q_model == VIRTCHNL_QUEUE_MODEL_SPLIT);
++	struct iecm_adapter *adapter = NULL;
++	int err;
++
++	err = pcim_enable_device(pdev);
++	if (err)
++		return err;
++
++	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
++	if (!adapter)
++		return -ENOMEM;
++
++	adapter->dev_ops.reg_ops_init = idpf_reg_ops_init;
++	adapter->debug_msk = debug;
++
++	err = iecm_probe(pdev, ent, adapter);
++	if (err)
++		kfree(adapter);
++
++	return err;
 +}
 +
 +/**
-+ * iecm_is_cap_ena - Determine if HW capability is supported
-+ * @adapter: private data struct
-+ * @flag: Feature flag to check
++ * idpf_remove - Device removal routine
++ * @pdev: PCI device information struct
 + */
-+static inline bool iecm_is_cap_ena(struct iecm_adapter *adapter, u64 flag)
++static void idpf_remove(struct pci_dev *pdev)
 +{
-+	return adapter->dev_ops.vc_ops.is_cap_ena(adapter, flag);
++	struct iecm_adapter *adapter = pci_get_drvdata(pdev);
++
++	iecm_remove(pdev);
++	kfree(adapter);
 +}
 +
-+/**
-+ * iecm_is_feature_ena - Determine if a particular feature is enabled
-+ * @vport: vport to check
-+ * @feature: netdev flag to check
++/* idpf_pci_tbl - PCI Dev idpf ID Table
 + *
-+ * Returns true or false if a particular feature is enabled.
++ * Wildcard entries (PCI_ANY_ID) should come last
++ * Last entry must be all 0s
++ *
++ * { Vendor ID, Deviecm ID, SubVendor ID, SubDevice ID,
++ *   Class, Class Mask, private data (not used) }
 + */
-+static inline bool iecm_is_feature_ena(struct iecm_vport *vport,
-+				       netdev_features_t feature)
++static const struct pci_device_id idpf_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_PF), 0 },
++	/* required last entry */
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, idpf_pci_tbl);
++
++static struct pci_driver idpf_driver = {
++	.name = KBUILD_MODNAME,
++	.id_table = idpf_pci_tbl,
++	.probe = idpf_probe,
++	.remove = idpf_remove,
++	.shutdown = iecm_shutdown,
++};
++
++/**
++ * idpf_module_init - Driver registration routine
++ *
++ * idpf_module_init is the first routine called when the driver is
++ * loaded. All it does is register with the PCI subsystem.
++ */
++static int __init idpf_module_init(void)
 +{
-+	return vport->netdev->features & feature;
++	int status;
++
++	pr_info("%s", idpf_driver_string);
++	pr_info("%s\n", idpf_copyright);
++
++	status = pci_register_driver(&idpf_driver);
++	if (status)
++		pr_err("failed to register pci driver, err %d\n", status);
++
++	return status;
++}
++module_init(idpf_module_init);
++
++/**
++ * idpf_module_exit - Driver exit cleanup routine
++ *
++ * idpf_module_exit is called just before the driver is removed
++ * from memory.
++ */
++static void __exit idpf_module_exit(void)
++{
++	pci_unregister_driver(&idpf_driver);
++	pr_info("module unloaded\n");
++}
++module_exit(idpf_module_exit);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_reg.c b/drivers/net/ethernet/intel/idpf/idpf_reg.c
+new file mode 100644
+index 000000000000..21d5c420e626
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_reg.c
+@@ -0,0 +1,152 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2020 Intel Corporation */
++
++#include "idpf_dev.h"
++#include <linux/net/intel/iecm_lan_pf_regs.h>
++
++/**
++ * idpf_ctlq_reg_init - initialize default mailbox registers
++ * @cq: pointer to the array of create control queues
++ */
++void idpf_ctlq_reg_init(struct iecm_ctlq_create_info *cq)
++{
++	int i;
++
++#define NUM_Q 2
++	for (i = 0; i < NUM_Q; i++) {
++		struct iecm_ctlq_create_info *ccq = cq + i;
++
++		switch (ccq->type) {
++		case IECM_CTLQ_TYPE_MAILBOX_TX:
++			/* set head and tail registers in our local struct */
++			ccq->reg.head = PF_FW_ATQH;
++			ccq->reg.tail = PF_FW_ATQT;
++			ccq->reg.len = PF_FW_ATQLEN;
++			ccq->reg.bah = PF_FW_ATQBAH;
++			ccq->reg.bal = PF_FW_ATQBAL;
++			ccq->reg.len_mask = PF_FW_ATQLEN_ATQLEN_M;
++			ccq->reg.len_ena_mask = PF_FW_ATQLEN_ATQENABLE_M;
++			ccq->reg.head_mask = PF_FW_ATQH_ATQH_M;
++			break;
++		case IECM_CTLQ_TYPE_MAILBOX_RX:
++			/* set head and tail registers in our local struct */
++			ccq->reg.head = PF_FW_ARQH;
++			ccq->reg.tail = PF_FW_ARQT;
++			ccq->reg.len = PF_FW_ARQLEN;
++			ccq->reg.bah = PF_FW_ARQBAH;
++			ccq->reg.bal = PF_FW_ARQBAL;
++			ccq->reg.len_mask = PF_FW_ARQLEN_ARQLEN_M;
++			ccq->reg.len_ena_mask = PF_FW_ARQLEN_ARQENABLE_M;
++			ccq->reg.head_mask = PF_FW_ARQH_ARQH_M;
++			break;
++		default:
++			break;
++		}
++	}
 +}
 +
 +/**
-+ * iecm_rx_offset - Return expected offset into page to access data
-+ * @rx_q: queue we are requesting offset of
-+ *
-+ * Returns the offset value for queue into the data buffer.
++ * idpf_vportq_reg_init - Initialize tail registers
++ * @vport: virtual port structure
 + */
-+static inline unsigned int
-+iecm_rx_offset(struct iecm_queue __maybe_unused *rx_q)
++void idpf_vportq_reg_init(struct iecm_vport *vport)
 +{
-+	return 0;
++	struct iecm_hw *hw = &vport->adapter->hw;
++	struct iecm_queue *q;
++	int i, j;
++
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		int num_txq = vport->txq_grps[i].num_txq;
++
++		for (j = 0; j < num_txq; j++) {
++			q = &vport->txq_grps[i].txqs[j];
++			q->tail = hw->hw_addr + PF_QTX_COMM_DBELL(q->q_id);
++		}
++	}
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rxq_grp = &vport->rxq_grps[i];
++		int num_rxq;
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				q = &rxq_grp->splitq.bufq_sets[j].bufq;
++				q->tail = hw->hw_addr +
++					  PF_QRX_BUFFQ_TAIL(q->q_id);
++			}
++
++			num_rxq = rxq_grp->splitq.num_rxq_sets;
++		} else {
++			num_rxq = rxq_grp->singleq.num_rxq;
++		}
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model))
++				q = &rxq_grp->splitq.rxq_sets[j].rxq;
++			else
++				q = &rxq_grp->singleq.rxqs[j];
++			q->tail = hw->hw_addr + PF_QRX_TAIL(q->q_id);
++		}
++	}
 +}
 +
-+int iecm_probe(struct pci_dev *pdev,
-+	       const struct pci_device_id __always_unused *ent,
-+	       struct iecm_adapter *adapter);
-+void iecm_remove(struct pci_dev *pdev);
-+void iecm_shutdown(struct pci_dev *pdev);
-+int iecm_vport_adjust_qs(struct iecm_vport *vport);
-+int iecm_ctlq_reg_init(struct iecm_ctlq_create_info *cq, int num_q);
-+int iecm_init_dflt_mbx(struct iecm_adapter *adapter);
-+void iecm_deinit_dflt_mbx(struct iecm_adapter *adapter);
-+void iecm_vc_ops_init(struct iecm_adapter *adapter);
-+int iecm_vc_core_init(struct iecm_adapter *adapter, int *vport_id);
-+enum iecm_status
-+iecm_wait_for_event(struct iecm_adapter *adapter,
-+		    enum iecm_vport_vc_state state,
-+		    enum iecm_vport_vc_state err_check);
-+int iecm_wait_for_event(struct iecm_adapter *adapter,
-+			enum iecm_vport_vc_state state,
-+			enum iecm_vport_vc_state err_check);
-+int iecm_send_get_caps_msg(struct iecm_adapter *adapter);
-+int iecm_send_delete_queues_msg(struct iecm_vport *vport);
-+int iecm_send_add_queues_msg(struct iecm_vport *vport, u16 num_tx_q,
-+			     u16 num_complq, u16 num_rx_q, u16 num_rx_bufq);
-+int iecm_initiate_soft_reset(struct iecm_vport *vport,
-+			     enum iecm_flags reset_cause);
-+int iecm_send_config_tx_queues_msg(struct iecm_vport *vport);
-+int iecm_send_config_rx_queues_msg(struct iecm_vport *vport);
-+int iecm_send_enable_vport_msg(struct iecm_vport *vport);
-+int iecm_send_disable_vport_msg(struct iecm_vport *vport);
-+int iecm_send_destroy_vport_msg(struct iecm_vport *vport);
-+int iecm_send_get_rx_ptype_msg(struct iecm_vport *vport);
-+int iecm_send_get_set_rss_key_msg(struct iecm_vport *vport, bool get);
-+int iecm_send_get_set_rss_lut_msg(struct iecm_vport *vport, bool get);
-+int iecm_send_get_set_rss_hash_msg(struct iecm_vport *vport, bool get);
-+int iecm_send_dealloc_vectors_msg(struct iecm_adapter *adapter);
-+int iecm_send_alloc_vectors_msg(struct iecm_adapter *adapter, u16 num_vectors);
-+int iecm_send_enable_strip_vlan_msg(struct iecm_vport *vport);
-+int iecm_send_disable_strip_vlan_msg(struct iecm_vport *vport);
-+int iecm_vport_params_buf_alloc(struct iecm_adapter *adapter);
-+void iecm_vport_params_buf_rel(struct iecm_adapter *adapter);
-+struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev);
-+struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev);
-+int iecm_send_get_stats_msg(struct iecm_vport *vport);
-+int iecm_vport_get_vec_ids(u16 *vecids, int num_vecids,
-+			   struct virtchnl_vector_chunks *chunks);
-+int iecm_recv_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
-+		     void *msg, int msg_size);
-+int iecm_send_mb_msg(struct iecm_adapter *adapter, enum virtchnl_ops op,
-+		     u16 msg_size, u8 *msg);
-+void iecm_set_ethtool_ops(struct net_device *netdev);
-+void iecm_vport_set_hsplit(struct iecm_vport *vport, struct bpf_prog *prog);
-+void iecm_vport_intr_rel(struct iecm_vport *vport);
-+int iecm_vport_intr_alloc(struct iecm_vport *vport);
-+#endif /* !_IECM_H_ */
-diff --git a/include/linux/net/intel/iecm_alloc.h b/include/linux/net/intel/iecm_alloc.h
-new file mode 100644
-index 000000000000..fd13bf085663
---- /dev/null
-+++ b/include/linux/net/intel/iecm_alloc.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#ifndef _IECM_ALLOC_H_
-+#define _IECM_ALLOC_H_
-+
-+/* Memory types */
-+enum iecm_memset_type {
-+	IECM_NONDMA_MEM = 0,
-+	IECM_DMA_MEM
-+};
-+
-+/* Memcpy types */
-+enum iecm_memcpy_type {
-+	IECM_NONDMA_TO_NONDMA = 0,
-+	IECM_NONDMA_TO_DMA,
-+	IECM_DMA_TO_DMA,
-+	IECM_DMA_TO_NONDMA
-+};
-+
-+struct iecm_hw;
-+struct iecm_dma_mem;
-+
-+/* prototype for functions used for dynamic memory allocation */
-+void *iecm_alloc_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem,
-+			 u64 size);
-+void iecm_free_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem);
-+
-+#endif /* _IECM_ALLOC_H_ */
-diff --git a/include/linux/net/intel/iecm_controlq.h b/include/linux/net/intel/iecm_controlq.h
-new file mode 100644
-index 000000000000..4cba637042cd
---- /dev/null
-+++ b/include/linux/net/intel/iecm_controlq.h
-@@ -0,0 +1,95 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#ifndef _IECM_CONTROLQ_H_
-+#define _IECM_CONTROLQ_H_
-+
-+#include <linux/net/intel/iecm_controlq_api.h>
-+
-+/* Maximum buffer lengths for all control queue types */
-+#define IECM_CTLQ_MAX_RING_SIZE	1024
-+#define IECM_CTLQ_MAX_BUF_LEN	4096
-+
-+#define IECM_CTLQ_DESC(R, i) \
-+	(&(((struct iecm_ctlq_desc *)((R)->desc_ring.va))[i]))
-+
-+#define IECM_CTLQ_DESC_UNUSED(R) \
-+	(u16)((((R)->next_to_clean > (R)->next_to_use) ? 0 : (R)->ring_size) + \
-+	      (R)->next_to_clean - (R)->next_to_use - 1)
-+
-+/* Data type manipulation macros. */
-+#define IECM_HI_DWORD(x)	((u32)((((x) >> 16) >> 16) & 0xFFFFFFFF))
-+#define IECM_LO_DWORD(x)	((u32)((x) & 0xFFFFFFFF))
-+#define IECM_HI_WORD(x)		((u16)(((x) >> 16) & 0xFFFF))
-+#define IECM_LO_WORD(x)		((u16)((x) & 0xFFFF))
-+
-+/* Control Queue default settings */
-+#define IECM_CTRL_SQ_CMD_TIMEOUT	250  /* msecs */
-+
-+struct iecm_ctlq_desc {
-+	__le16	flags;
-+	__le16	opcode;
-+	__le16	datalen;	/* 0 for direct commands */
-+	union {
-+		__le16 ret_val;
-+		__le16 pfid_vfid;
-+#define IECM_CTLQ_DESC_VF_ID_S	0
-+#define IECM_CTLQ_DESC_VF_ID_M	(0x3FF << IECM_CTLQ_DESC_VF_ID_S)
-+#define IECM_CTLQ_DESC_PF_ID_S	10
-+#define IECM_CTLQ_DESC_PF_ID_M	(0x3F << IECM_CTLQ_DESC_PF_ID_S)
-+	};
-+	__le32 cookie_high;
-+	__le32 cookie_low;
-+	union {
-+		struct {
-+			__le32 param0;
-+			__le32 param1;
-+			__le32 param2;
-+			__le32 param3;
-+		} direct;
-+		struct {
-+			__le32 param0;
-+			__le32 param1;
-+			__le32 addr_high;
-+			__le32 addr_low;
-+		} indirect;
-+		u8 raw[16];
-+	} params;
-+};
-+
-+/* Flags sub-structure
-+ * |0  |1  |2  |3  |4  |5  |6  |7  |8  |9  |10 |11 |12 |13 |14 |15 |
-+ * |DD |CMP|ERR|  * RSV *  |FTYPE  | *RSV* |RD |VFC|BUF|  * RSV *  |
++/**
++ * idpf_mb_intr_reg_init - Initialize mailbox interrupt register
++ * @adapter: adapter structure
 + */
-+/* command flags and offsets */
-+#define IECM_CTLQ_FLAG_DD_S	0
-+#define IECM_CTLQ_FLAG_CMP_S	1
-+#define IECM_CTLQ_FLAG_ERR_S	2
-+#define IECM_CTLQ_FLAG_FTYPE_S	6
-+#define IECM_CTLQ_FLAG_RD_S	10
-+#define IECM_CTLQ_FLAG_VFC_S	11
-+#define IECM_CTLQ_FLAG_BUF_S	12
++void idpf_mb_intr_reg_init(struct iecm_adapter *adapter)
++{
++	struct iecm_intr_reg *intr = &adapter->mb_vector.intr_reg;
++	int vidx;
 +
-+#define IECM_CTLQ_FLAG_DD	BIT(IECM_CTLQ_FLAG_DD_S)	/* 0x1 */
-+#define IECM_CTLQ_FLAG_CMP	BIT(IECM_CTLQ_FLAG_CMP_S)	/* 0x2 */
-+#define IECM_CTLQ_FLAG_ERR	BIT(IECM_CTLQ_FLAG_ERR_S)	/* 0x4 */
-+#define IECM_CTLQ_FLAG_FTYPE_VM	BIT(IECM_CTLQ_FLAG_FTYPE_S)	/* 0x40 */
-+#define IECM_CTLQ_FLAG_FTYPE_PF	BIT(IECM_CTLQ_FLAG_FTYPE_S + 1)	/* 0x80 */
-+#define IECM_CTLQ_FLAG_RD	BIT(IECM_CTLQ_FLAG_RD_S)	/* 0x400 */
-+#define IECM_CTLQ_FLAG_VFC	BIT(IECM_CTLQ_FLAG_VFC_S)	/* 0x800 */
-+#define IECM_CTLQ_FLAG_BUF	BIT(IECM_CTLQ_FLAG_BUF_S)	/* 0x1000 */
++	vidx = adapter->mb_vector.v_idx;
++	intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
++	intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
++	intr->dyn_ctl_itridx_m = 0x3 << PF_GLINT_DYN_CTL_ITR_INDX_S;
++}
 +
-+struct iecm_mbxq_desc {
-+	u8 pad[8];		/* CTLQ flags/opcode/len/retval fields */
-+	u32 chnl_opcode;	/* avoid confusion with desc->opcode */
-+	u32 chnl_retval;	/* ditto for desc->retval */
-+	u32 pf_vf_id;		/* used by CP when sending to PF */
-+};
-+
-+enum iecm_status
-+iecm_ctlq_alloc_ring_res(struct iecm_hw *hw,
-+			 struct iecm_ctlq_info *cq);
-+
-+void iecm_ctlq_dealloc_ring_res(struct iecm_hw *hw, struct iecm_ctlq_info *cq);
-+
-+#endif /* _IECM_CONTROLQ_H_ */
-diff --git a/include/linux/net/intel/iecm_controlq_api.h b/include/linux/net/intel/iecm_controlq_api.h
-new file mode 100644
-index 000000000000..33e3cb3878fc
---- /dev/null
-+++ b/include/linux/net/intel/iecm_controlq_api.h
-@@ -0,0 +1,188 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#ifndef _IECM_CONTROLQ_API_H_
-+#define _IECM_CONTROLQ_API_H_
-+
-+/* Error Codes */
-+enum iecm_status {
-+	IECM_SUCCESS				= 0,
-+
-+	/* Reserve range -1..-49 for generic codes */
-+	IECM_ERR_PARAM				= -1,
-+	IECM_ERR_NOT_IMPL			= -2,
-+	IECM_ERR_NOT_READY			= -3,
-+	IECM_ERR_BAD_PTR			= -5,
-+	IECM_ERR_INVAL_SIZE			= -6,
-+	IECM_ERR_DEVICE_NOT_SUPPORTED		= -8,
-+	IECM_ERR_FW_API_VER			= -9,
-+	IECM_ERR_NO_MEMORY			= -10,
-+	IECM_ERR_CFG				= -11,
-+	IECM_ERR_OUT_OF_RANGE			= -12,
-+	IECM_ERR_ALREADY_EXISTS			= -13,
-+	IECM_ERR_DOES_NOT_EXIST			= -14,
-+	IECM_ERR_IN_USE				= -15,
-+	IECM_ERR_MAX_LIMIT			= -16,
-+	IECM_ERR_RESET_ONGOING			= -17,
-+
-+	/* Reserve range -100..-109 for CRQ/CSQ specific error codes */
-+	IECM_ERR_CTLQ_ERROR			= -100,
-+	IECM_ERR_CTLQ_TIMEOUT			= -101,
-+	IECM_ERR_CTLQ_FULL			= -102,
-+	IECM_ERR_CTLQ_NO_WORK			= -103,
-+	IECM_ERR_CTLQ_EMPTY			= -104,
-+};
-+
-+/* Used for queue init, response and events */
-+enum iecm_ctlq_type {
-+	IECM_CTLQ_TYPE_MAILBOX_TX	= 0,
-+	IECM_CTLQ_TYPE_MAILBOX_RX	= 1,
-+	IECM_CTLQ_TYPE_CONFIG_TX	= 2,
-+	IECM_CTLQ_TYPE_CONFIG_RX	= 3,
-+	IECM_CTLQ_TYPE_EVENT_RX		= 4,
-+	IECM_CTLQ_TYPE_RDMA_TX		= 5,
-+	IECM_CTLQ_TYPE_RDMA_RX		= 6,
-+	IECM_CTLQ_TYPE_RDMA_COMPL	= 7
-+};
-+
-+/* Generic Control Queue Structures */
-+
-+struct iecm_ctlq_reg {
-+	/* used for queue tracking */
-+	u32 head;
-+	u32 tail;
-+	/* Below applies only to default mb (if present) */
-+	u32 len;
-+	u32 bah;
-+	u32 bal;
-+	u32 len_mask;
-+	u32 len_ena_mask;
-+	u32 head_mask;
-+};
-+
-+/* Generic queue msg structure */
-+struct iecm_ctlq_msg {
-+	u16 vmvf_type; /* represents the source of the message on recv */
-+#define IECM_VMVF_TYPE_VF 0
-+#define IECM_VMVF_TYPE_VM 1
-+#define IECM_VMVF_TYPE_PF 2
-+	u16 opcode;
-+	u16 data_len;	/* data_len = 0 when no payload is attached */
-+	union {
-+		u16 func_id;	/* when sending a message */
-+		u16 status;	/* when receiving a message */
-+	};
-+	union {
-+		struct {
-+			u32 chnl_retval;
-+			u32 chnl_opcode;
-+		} mbx;
-+	} cookie;
-+	union {
-+#define IECM_DIRECT_CTX_SIZE	16
-+#define IECM_INDIRECT_CTX_SIZE	8
-+		/* 16 bytes of context can be provided or 8 bytes of context
-+		 * plus the address of a DMA buffer
-+		 */
-+		u8 direct[IECM_DIRECT_CTX_SIZE];
-+		struct {
-+			u8 context[IECM_INDIRECT_CTX_SIZE];
-+			struct iecm_dma_mem *payload;
-+		} indirect;
-+	} ctx;
-+};
-+
-+/* Generic queue info structures */
-+/* MB, CONFIG and EVENT q do not have extended info */
-+struct iecm_ctlq_create_info {
-+	enum iecm_ctlq_type type;
-+	/* absolute queue offset passed as input
-+	 * -1 for default mailbox if present
-+	 */
-+	int id;
-+	u16 len; /* Queue length passed as input */
-+	u16 buf_size; /* buffer size passed as input */
-+	u64 base_address; /* output, HPA of the Queue start  */
-+	struct iecm_ctlq_reg reg; /* registers accessed by ctlqs */
-+
-+	int ext_info_size;
-+	void *ext_info; /* Specific to q type */
-+};
-+
-+/* Control Queue information */
-+struct iecm_ctlq_info {
-+	struct list_head cq_list;
-+
-+	enum iecm_ctlq_type cq_type;
-+	int q_id;
-+	struct mutex cq_lock;		/* queue lock */
-+
-+	/* used for interrupt processing */
-+	u16 next_to_use;
-+	u16 next_to_clean;
-+
-+	/* starting descriptor to post buffers to after recev */
-+	u16 next_to_post;
-+	struct iecm_dma_mem desc_ring;	/* descriptor ring memory */
-+
-+	union {
-+		struct iecm_dma_mem **rx_buff;
-+		struct iecm_ctlq_msg **tx_msg;
-+	} bi;
-+
-+	u16 buf_size;			/* queue buffer size */
-+	u16 ring_size;			/* Number of descriptors */
-+	struct iecm_ctlq_reg reg;	/* registers accessed by ctlqs */
-+};
-+
-+/* PF/VF mailbox commands */
-+enum iecm_mbx_opc {
-+	iecm_mbq_opc_send_msg_to_cp		= 0x0801,
-+	iecm_mbq_opc_send_msg_to_vf		= 0x0802,
-+	iecm_mbq_opc_send_msg_to_pf		= 0x0803,
-+};
-+
-+/* API supported for control queue management */
-+
-+/* Will init all required q including default mb.  "q_info" is an array of
-+ * create_info structs equal to the number of control queues to be created.
++/**
++ * idpf_intr_reg_init - Initialize interrupt registers
++ * @vport: virtual port structure
 + */
-+enum iecm_status iecm_ctlq_init(struct iecm_hw *hw, u8 num_q,
-+				struct iecm_ctlq_create_info *q_info);
++void idpf_intr_reg_init(struct iecm_vport *vport)
++{
++	int q_idx;
 +
-+/* Allocate and initialize a single control queue, which will be added to the
-+ * control queue list; returns a handle to the created control queue
++	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
++		struct iecm_q_vector *q_vector = &vport->q_vectors[q_idx];
++		struct iecm_intr_reg *intr = &q_vector->intr_reg;
++		u32 vidx = q_vector->v_idx;
++
++		intr->dyn_ctl = PF_GLINT_DYN_CTL(vidx);
++		intr->dyn_ctl_clrpba_m = PF_GLINT_DYN_CTL_CLEARPBA_M;
++		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
++		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
++		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
++		intr->itr = PF_GLINT_ITR(VIRTCHNL_ITR_IDX_0, vidx);
++	}
++}
++
++/**
++ * idpf_reset_reg_init - Initialize reset registers
++ * @reset_reg: struct to be filled in with reset registers
 + */
-+enum iecm_status iecm_ctlq_add(struct iecm_hw *hw,
-+			       struct iecm_ctlq_create_info *qinfo,
-+			       struct iecm_ctlq_info **cq);
-+/* Deinitialize and deallocate a single control queue */
-+void iecm_ctlq_remove(struct iecm_hw *hw,
-+		      struct iecm_ctlq_info *cq);
++void idpf_reset_reg_init(struct iecm_reset_reg *reset_reg)
++{
++	reset_reg->rstat = PFGEN_RSTAT;
++	reset_reg->rstat_m = PFGEN_RSTAT_PFR_STATE_M;
++}
 +
-+/* Sends messages to HW and will also free the buffer*/
-+enum iecm_status iecm_ctlq_send(struct iecm_hw *hw,
-+				struct iecm_ctlq_info *cq,
-+				u16 num_q_msg,
-+				struct iecm_ctlq_msg q_msg[]);
-+
-+/* Receives messages and called by interrupt handler/polling
-+ * initiated by app/process. Also caller is supposed to free the buffers
++/**
++ * idpf_trigger_reset - trigger reset
++ * @adapter: Driver specific private structure
++ * @trig_cause: Reason to trigger a reset
 + */
-+enum iecm_status iecm_ctlq_recv(struct iecm_ctlq_info *cq,
-+				u16 *num_q_msg, struct iecm_ctlq_msg *q_msg);
-+/* Reclaims send descriptors on HW write back */
-+enum iecm_status iecm_ctlq_clean_sq(struct iecm_ctlq_info *cq,
-+				    u16 *clean_count,
-+				    struct iecm_ctlq_msg *msg_status[]);
++void idpf_trigger_reset(struct iecm_adapter *adapter,
++			enum iecm_flags __always_unused trig_cause)
++{
++	u32 reset_reg;
 +
-+/* Indicate RX buffers are done being processed */
-+enum iecm_status iecm_ctlq_post_rx_buffs(struct iecm_hw *hw,
-+					 struct iecm_ctlq_info *cq,
-+					 u16 *buff_count,
-+					 struct iecm_dma_mem **buffs);
-+
-+/* Will destroy all q including the default mb */
-+enum iecm_status iecm_ctlq_deinit(struct iecm_hw *hw);
-+
-+#endif /* _IECM_CONTROLQ_API_H_ */
-diff --git a/include/linux/net/intel/iecm_osdep.h b/include/linux/net/intel/iecm_osdep.h
-new file mode 100644
-index 000000000000..33e01582f516
---- /dev/null
-+++ b/include/linux/net/intel/iecm_osdep.h
-@@ -0,0 +1,24 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#ifndef _IECM_OSDEP_H_
-+#define _IECM_OSDEP_H_
-+
-+#include <linux/bitops.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/net/intel/iecm_alloc.h>
-+
-+#define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
-+#define rd32(a, reg)		readl((a)->hw_addr + (reg))
-+#define wr64(a, reg, value)	writeq((value), ((a)->hw_addr + (reg)))
-+#define rd64(a, reg)		readq((a)->hw_addr + (reg))
-+
-+struct iecm_dma_mem {
-+	void *va;
-+	dma_addr_t pa;
-+	size_t size;
-+};
-+
-+#define iecm_wmb() wmb() /* memory barrier */
-+#endif /* _IECM_OSDEP_H_ */
-diff --git a/include/linux/net/intel/iecm_type.h b/include/linux/net/intel/iecm_type.h
-new file mode 100644
-index 000000000000..ea7781dd288f
---- /dev/null
-+++ b/include/linux/net/intel/iecm_type.h
-@@ -0,0 +1,47 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (c) 2020, Intel Corporation. */
-+
-+#ifndef _IECM_TYPE_H_
-+#define _IECM_TYPE_H_
-+
-+#include <linux/if_ether.h>
-+#include <linux/net/intel/iecm_osdep.h>
-+#include <linux/net/intel/iecm_alloc.h>
-+#include <linux/net/intel/iecm_controlq.h>
-+
-+#define MAKEMASK(m, s)	((m) << (s))
-+
-+/* Bus parameters */
-+struct iecm_bus_info {
-+	u16 func;
-+	u16 device;
-+	u16 bus_id;
-+};
-+
-+/* Define the APF hardware struct to replace other control structs as needed
-+ * Align to ctlq_hw_info
-+ */
-+struct iecm_hw {
-+	u8 __iomem *hw_addr;
-+	u64 hw_addr_len;
-+	void *back;
-+
-+	/* control queue - send and receive */
-+	struct iecm_ctlq_info *asq;
-+	struct iecm_ctlq_info *arq;
-+
-+	/* subsystem structs */
-+	struct iecm_bus_info bus;
-+
-+	/* pci info */
-+	u16 device_id;
-+	u16 vendor_id;
-+	u16 subsystem_device_id;
-+	u16 subsystem_vendor_id;
-+	u8 revision_id;
-+	bool adapter_stopped;
-+
-+	struct list_head cq_list_head;
-+};
-+
-+#endif /* _IECM_TYPE_H_ */
++	reset_reg = rd32(&adapter->hw, PFGEN_CTRL);
++	wr32(&adapter->hw, PFGEN_CTRL, (reset_reg | PFGEN_CTRL_PFSWR));
++}
 -- 
 2.21.0
 
