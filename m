@@ -1,98 +1,124 @@
-From: Ian Kumlien <ian.kumlien@gmail.com>
-Date: Wed, 15 Jul 2020 22:05:58 +0200
-Subject: [Intel-wired-lan] NAT performance issue 944mbit -> ~40mbit
-In-Reply-To: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
-References: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
-Message-ID: <CAA85sZua6Q8UR7TfCGO0bV=VU0gKtqj-8o_mqH38RpKrwYZGtg@mail.gmail.com>
+From: Alice Michael <alice.michael@intel.com>
+Date: Wed, 15 Jul 2020 04:52:10 -0700
+Subject: [Intel-wired-lan] [next-queue,V6, 00/14]
+Message-ID: <20200715115224.63154-1-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After a  lot of debugging it turns out that the bug is in igb...
+This series introduces both the Intel Ethernet Common Module and the 
+Intel Data Plane Function.  The patches also incorporate extended 
+features and functionality added in the virtchnl.h file.
+ 
+The format of the series flow is to add the data set, then introduce 
+function stubs and finally introduce pieces in large cohesive subjects or
+functionality. This is to allow for more in depth understanding and review
+of the bigger picture as the series is reviewed.
+ 
+Currently this is common layer (iecm) is initially only being used by 
+only the idpf driver (PF driver for SmartNIC).  However, the plan is 
+to eventually switch our iavf driver along with future drivers to use 
+this common module.  The hope is to better enable code sharing going 
+forward as well as support other developers writing drivers for our 
+hardware
 
-driver: igb
-version: 5.6.0-k
-firmware-version:  0. 6-1
+V3 -- Addresses comments from the original series.  This inncludes removing
+      the iecm_ctlq_err in iecm_ctlq_api.h, the private flags and duplicated
+      checks, and cleaning up the clamps in iecm_ethtool.c.  We also added
+      the supported_coalesce_params flags in iecm_ethtool.c.  Finally, we
+      got the headers cleaned up and addressed mismatching types from calls
+      to cpu_to_le to match the types (this fixes C=2 W=1 errors that were
+      reported).
 
-03:00.0 Ethernet controller: Intel Corporation I211 Gigabit Network
-Connection (rev 03)
+V4 -- Missed static in idpf_main.c on idpf_probe
 
-It's interesting that it only seems to happen on longer links... Any clues?
+V5 -- updated location of documentation, refactored soft reset path to take
+      memory allocation into account, refactored ethtool stats to not use
+      VA_ARGS, *greatly* reduced use of iecm_status enum, aligned use of
+      periods in debug statements, refactored to reduce line indentats.
 
-On Sat, Jul 11, 2020 at 5:53 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
->
-> Hi,
->
-> I first detected this with 5.7.6 but it seems to apply as far back as 5.6.1...
-> (so, 5.7.8 client -> nat (5.6.1 -> 5.8-rc4 -> server 5.7.7)
->
-> It seems to me that the window size doesn't advance, so i did revert
-> the tcp: grow window for OOO packets only for SACK flows [1]
-> but it did no difference...
->
-> I have a 384 MB tcpdump of a iperf3 session that starts low and then
-> actually starts to get the bandwidth...
-> I do use BBR - I have tried with cubic... it didn't help  - the NAT
-> machine does use fq but changing it doesn't seem to yield any other
-> results.
->
-> Doing -P10 gives you the bandwith and can sometimes break the
-> stalemate but you'll end up back with the lower transfer speed again.
-> (it only seems to apply to NAT - the machine is a: A2SDi-12C-HLN4F and
-> has handled this without problems in the past...)
->
->
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=v5.7.8&id=bf780119617797b5690e999e59a64ad79a572374
->
-> First iperf3 as a reference:
-> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> [  5]   0.00-1.00   sec   113 MBytes   945 Mbits/sec    0    814 KBytes
-> [  5]   1.00-2.00   sec   109 MBytes   912 Mbits/sec    0    806 KBytes
-> [  5]   2.00-3.00   sec   112 MBytes   944 Mbits/sec   31    792 KBytes
-> [  5]   3.00-4.00   sec   101 MBytes   849 Mbits/sec   31   1.18 MBytes
-> [  5]   4.00-5.00   sec   108 MBytes   902 Mbits/sec    0    783 KBytes
-> [  5]   5.00-6.00   sec   111 MBytes   933 Mbits/sec   31    778 KBytes
-> [  5]   6.00-7.00   sec   111 MBytes   933 Mbits/sec   93    772 KBytes
-> [  5]   7.00-8.00   sec   112 MBytes   944 Mbits/sec    0    778 KBytes
-> [  5]   8.00-9.00   sec   111 MBytes   933 Mbits/sec   60    778 KBytes
-> [  5]   9.00-10.00  sec   111 MBytes   933 Mbits/sec   92    814 KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bitrate         Retr
-> [  5]   0.00-10.00  sec  1.07 GBytes   923 Mbits/sec  338             sender
-> [  5]   0.00-10.01  sec  1.07 GBytes   919 Mbits/sec                  receiver
->
-> After that:
-> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> [  5]   0.00-1.00   sec  4.77 MBytes  40.0 Mbits/sec    0   42.4 KBytes
-> [  5]   1.00-2.00   sec  4.10 MBytes  34.4 Mbits/sec    0   84.8 KBytes
-> [  5]   2.00-3.00   sec  4.60 MBytes  38.6 Mbits/sec    0   87.7 KBytes
-> [  5]   3.00-4.00   sec  4.23 MBytes  35.4 Mbits/sec    0   42.4 KBytes
-> [  5]   4.00-5.00   sec  4.23 MBytes  35.4 Mbits/sec    0   42.4 KBytes
-> [  5]   5.00-6.00   sec  4.47 MBytes  37.5 Mbits/sec    0   76.4 KBytes
-> [  5]   6.00-7.00   sec  5.47 MBytes  45.9 Mbits/sec    0   67.9 KBytes
-> [  5]   7.00-8.00   sec  4.66 MBytes  39.1 Mbits/sec    0   67.9 KBytes
-> [  5]   8.00-9.00   sec  4.35 MBytes  36.5 Mbits/sec    0   82.0 KBytes
-> [  5]   9.00-10.00  sec  4.66 MBytes  39.1 Mbits/sec    0    139 KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bitrate         Retr
-> [  5]   0.00-10.00  sec  45.5 MBytes  38.2 Mbits/sec    0             sender
-> [  5]   0.00-10.00  sec  45.0 MBytes  37.8 Mbits/sec                  receiver
->
-> You even get some:
-> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> [  5]   0.00-1.00   sec  5.38 MBytes  45.2 Mbits/sec    0   42.4 KBytes
-> [  5]   1.00-2.00   sec  7.08 MBytes  59.4 Mbits/sec    0    535 KBytes
-> [  5]   2.00-3.00   sec   108 MBytes   907 Mbits/sec    0    778 KBytes
-> [  5]   3.00-4.00   sec   111 MBytes   933 Mbits/sec    0    814 KBytes
-> [  5]   4.00-5.00   sec  91.2 MBytes   765 Mbits/sec    0    829 KBytes
-> [  5]   5.00-6.00   sec   111 MBytes   933 Mbits/sec    0    783 KBytes
-> [  5]   6.00-7.00   sec   111 MBytes   933 Mbits/sec    0    769 KBytes
-> [  5]   7.00-8.00   sec   111 MBytes   933 Mbits/sec    0    778 KBytes
-> [  5]   8.00-9.00   sec   112 MBytes   944 Mbits/sec    0    809 KBytes
-> [  5]   9.00-10.00  sec   110 MBytes   923 Mbits/sec    0    823 KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bitrate         Retr
-> [  5]   0.00-10.00  sec   879 MBytes   738 Mbits/sec    0             sender
-> [  5]   0.00-10.00  sec   875 MBytes   734 Mbits/sec                  receiver
+V6 -- Missing local variable put into iecm_rx_can_reuse_page, and cleaned
+      up spacing issue that no longer triggers checkpatch due to Linus'
+      recent patch for column spacing.
+
+Alan Brady (1):
+  idpf: Introduce idpf driver
+ 
+Alice Michael (14):
+  virtchnl: Extend AVF ops
+  iecm: Add framework set of header files
+  iecm: Add TX/RX header files
+  iecm: Common module introduction and function stubs
+  iecm: Add basic netdevice functionality
+  iecm: Implement mailbox functionality
+  iecm: Implement virtchnl commands
+  iecm: Implement vector allocation
+  iecm: Init and allocate vport
+  iecm: Deinit vport
+  iecm: Add splitq TX/RX
+  iecm: Add singleq TX/RX
+  iecm: Add ethtool
+  iecm: Add iecm to the kernel build system
+
+ .../networking/device_drivers/intel/idpf.rst  |   47 +
+ .../networking/device_drivers/intel/iecm.rst  |   93 +
+ MAINTAINERS                                   |    3 +
+ drivers/net/ethernet/intel/Kconfig            |   15 +
+ drivers/net/ethernet/intel/Makefile           |    2 +
+ drivers/net/ethernet/intel/idpf/Makefile      |   12 +
+ drivers/net/ethernet/intel/idpf/idpf_dev.h    |   17 +
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |   10 +
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |  136 +
+ drivers/net/ethernet/intel/idpf/idpf_reg.c    |  152 +
+ drivers/net/ethernet/intel/iecm/Makefile      |   19 +
+ .../net/ethernet/intel/iecm/iecm_controlq.c   |  669 +++
+ .../ethernet/intel/iecm/iecm_controlq_setup.c |  177 +
+ .../net/ethernet/intel/iecm/iecm_ethtool.c    | 1064 +++++
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    | 1093 +++++
+ drivers/net/ethernet/intel/iecm/iecm_main.c   |   50 +
+ drivers/net/ethernet/intel/iecm/iecm_osdep.c  |   28 +
+ .../ethernet/intel/iecm/iecm_singleq_txrx.c   |  892 ++++
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 3961 +++++++++++++++++
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   | 2262 ++++++++++
+ include/linux/net/intel/iecm.h                |  433 ++
+ include/linux/net/intel/iecm_alloc.h          |   29 +
+ include/linux/net/intel/iecm_controlq.h       |   95 +
+ include/linux/net/intel/iecm_controlq_api.h   |  188 +
+ include/linux/net/intel/iecm_lan_pf_regs.h    |  120 +
+ include/linux/net/intel/iecm_lan_txrx.h       |  636 +++
+ include/linux/net/intel/iecm_osdep.h          |   24 +
+ include/linux/net/intel/iecm_txrx.h           |  581 +++
+ include/linux/net/intel/iecm_type.h           |   47 +
+ 29 files changed, 12855 insertions(+)
+ create mode 100644 Documentation/networking/device_drivers/intel/idpf.rst
+ create mode 100644 Documentation/networking/device_drivers/intel/iecm.rst
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_reg.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/Makefile
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_controlq.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_controlq_setup.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_lib.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_main.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_osdep.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_singleq_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+ create mode 100644 include/linux/net/intel/iecm.h
+ create mode 100644 include/linux/net/intel/iecm_alloc.h
+ create mode 100644 include/linux/net/intel/iecm_controlq.h
+ create mode 100644 include/linux/net/intel/iecm_controlq_api.h
+ create mode 100644 include/linux/net/intel/iecm_lan_pf_regs.h
+ create mode 100644 include/linux/net/intel/iecm_lan_txrx.h
+ create mode 100644 include/linux/net/intel/iecm_osdep.h
+ create mode 100644 include/linux/net/intel/iecm_txrx.h
+ create mode 100644 include/linux/net/intel/iecm_type.h
+
+-- 
+2.21.0
+
