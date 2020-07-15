@@ -1,187 +1,98 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 15 Jul 2020 23:29:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 0499ed813d995f0a1b97e5e59ff7fd864d8ffb62
-Message-ID: <5f0f20bc.3YNFyVPKesdIqprV%lkp@intel.com>
+From: Ian Kumlien <ian.kumlien@gmail.com>
+Date: Wed, 15 Jul 2020 22:05:58 +0200
+Subject: [Intel-wired-lan] NAT performance issue 944mbit -> ~40mbit
+In-Reply-To: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
+References: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
+Message-ID: <CAA85sZua6Q8UR7TfCGO0bV=VU0gKtqj-8o_mqH38RpKrwYZGtg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 0499ed813d995f0a1b97e5e59ff7fd864d8ffb62  idpf: Introduce idpf driver
+After a  lot of debugging it turns out that the bug is in igb...
 
-Error/Warning in current branch:
+driver: igb
+version: 5.6.0-k
+firmware-version:  0. 6-1
 
-drivers/net/ethernet/intel/iecm/iecm_txrx.c:2462:28: error: 'last_offset' undeclared (first use in this function); did you mean 'page_offset'?
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
-include/linux/avf/virtchnl.h:1153:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:1235:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1251:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1281:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1296:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1434:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+03:00.0 Ethernet controller: Intel Corporation I211 Gigabit Network
+Connection (rev 03)
 
-Error/Warning ids grouped by kconfigs:
+It's interesting that it only seems to happen on longer links... Any clues?
 
-recent_errors
-|-- alpha-allyesconfig
-|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- alpha-randconfig-s031-20200714
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- i386-allmodconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-debian-10.3
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-randconfig-r034-20200714
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- powerpc-defconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc-allyesconfig
-|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc64-allmodconfig
-|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-`-- sparc64-allyesconfig
-    |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:last_offset-undeclared-(first-use-in-this-function)
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-
-elapsed time: 810m
-
-configs tested: 108
-configs skipped: 12
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-h8300                     edosk2674_defconfig
-sh                          polaris_defconfig
-mips                           xway_defconfig
-xtensa                          iss_defconfig
-powerpc                      pmac32_defconfig
-mips                      maltaaprp_defconfig
-sh                           se7206_defconfig
-mips                malta_qemu_32r6_defconfig
-sparc64                             defconfig
-mips                      pistachio_defconfig
-powerpc                       maple_defconfig
-arm                          badge4_defconfig
-microblaze                          defconfig
-xtensa                generic_kc705_defconfig
-mips                           ip27_defconfig
-mips                  mips_paravirt_defconfig
-c6x                        evmc6474_defconfig
-powerpc                      pasemi_defconfig
-m68k                         amcore_defconfig
-sh                        dreamcast_defconfig
-openrisc                         alldefconfig
-m68k                        m5407c3_defconfig
-arm                          ep93xx_defconfig
-powerpc                             defconfig
-ia64                              allnoconfig
-arm                          pxa168_defconfig
-sh                        sh7785lcr_defconfig
-m68k                          multi_defconfig
-mips                      fuloong2e_defconfig
-sh                          r7780mp_defconfig
-ia64                                defconfig
-powerpc                      ppc6xx_defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a016-20200715
-i386                 randconfig-a011-20200715
-i386                 randconfig-a015-20200715
-i386                 randconfig-a012-20200715
-i386                 randconfig-a013-20200715
-i386                 randconfig-a014-20200715
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+On Sat, Jul 11, 2020 at 5:53 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
+>
+> Hi,
+>
+> I first detected this with 5.7.6 but it seems to apply as far back as 5.6.1...
+> (so, 5.7.8 client -> nat (5.6.1 -> 5.8-rc4 -> server 5.7.7)
+>
+> It seems to me that the window size doesn't advance, so i did revert
+> the tcp: grow window for OOO packets only for SACK flows [1]
+> but it did no difference...
+>
+> I have a 384 MB tcpdump of a iperf3 session that starts low and then
+> actually starts to get the bandwidth...
+> I do use BBR - I have tried with cubic... it didn't help  - the NAT
+> machine does use fq but changing it doesn't seem to yield any other
+> results.
+>
+> Doing -P10 gives you the bandwith and can sometimes break the
+> stalemate but you'll end up back with the lower transfer speed again.
+> (it only seems to apply to NAT - the machine is a: A2SDi-12C-HLN4F and
+> has handled this without problems in the past...)
+>
+>
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?h=v5.7.8&id=bf780119617797b5690e999e59a64ad79a572374
+>
+> First iperf3 as a reference:
+> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+> [  5]   0.00-1.00   sec   113 MBytes   945 Mbits/sec    0    814 KBytes
+> [  5]   1.00-2.00   sec   109 MBytes   912 Mbits/sec    0    806 KBytes
+> [  5]   2.00-3.00   sec   112 MBytes   944 Mbits/sec   31    792 KBytes
+> [  5]   3.00-4.00   sec   101 MBytes   849 Mbits/sec   31   1.18 MBytes
+> [  5]   4.00-5.00   sec   108 MBytes   902 Mbits/sec    0    783 KBytes
+> [  5]   5.00-6.00   sec   111 MBytes   933 Mbits/sec   31    778 KBytes
+> [  5]   6.00-7.00   sec   111 MBytes   933 Mbits/sec   93    772 KBytes
+> [  5]   7.00-8.00   sec   112 MBytes   944 Mbits/sec    0    778 KBytes
+> [  5]   8.00-9.00   sec   111 MBytes   933 Mbits/sec   60    778 KBytes
+> [  5]   9.00-10.00  sec   111 MBytes   933 Mbits/sec   92    814 KBytes
+> - - - - - - - - - - - - - - - - - - - - - - - - -
+> [ ID] Interval           Transfer     Bitrate         Retr
+> [  5]   0.00-10.00  sec  1.07 GBytes   923 Mbits/sec  338             sender
+> [  5]   0.00-10.01  sec  1.07 GBytes   919 Mbits/sec                  receiver
+>
+> After that:
+> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+> [  5]   0.00-1.00   sec  4.77 MBytes  40.0 Mbits/sec    0   42.4 KBytes
+> [  5]   1.00-2.00   sec  4.10 MBytes  34.4 Mbits/sec    0   84.8 KBytes
+> [  5]   2.00-3.00   sec  4.60 MBytes  38.6 Mbits/sec    0   87.7 KBytes
+> [  5]   3.00-4.00   sec  4.23 MBytes  35.4 Mbits/sec    0   42.4 KBytes
+> [  5]   4.00-5.00   sec  4.23 MBytes  35.4 Mbits/sec    0   42.4 KBytes
+> [  5]   5.00-6.00   sec  4.47 MBytes  37.5 Mbits/sec    0   76.4 KBytes
+> [  5]   6.00-7.00   sec  5.47 MBytes  45.9 Mbits/sec    0   67.9 KBytes
+> [  5]   7.00-8.00   sec  4.66 MBytes  39.1 Mbits/sec    0   67.9 KBytes
+> [  5]   8.00-9.00   sec  4.35 MBytes  36.5 Mbits/sec    0   82.0 KBytes
+> [  5]   9.00-10.00  sec  4.66 MBytes  39.1 Mbits/sec    0    139 KBytes
+> - - - - - - - - - - - - - - - - - - - - - - - -
+> [ ID] Interval           Transfer     Bitrate         Retr
+> [  5]   0.00-10.00  sec  45.5 MBytes  38.2 Mbits/sec    0             sender
+> [  5]   0.00-10.00  sec  45.0 MBytes  37.8 Mbits/sec                  receiver
+>
+> You even get some:
+> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+> [  5]   0.00-1.00   sec  5.38 MBytes  45.2 Mbits/sec    0   42.4 KBytes
+> [  5]   1.00-2.00   sec  7.08 MBytes  59.4 Mbits/sec    0    535 KBytes
+> [  5]   2.00-3.00   sec   108 MBytes   907 Mbits/sec    0    778 KBytes
+> [  5]   3.00-4.00   sec   111 MBytes   933 Mbits/sec    0    814 KBytes
+> [  5]   4.00-5.00   sec  91.2 MBytes   765 Mbits/sec    0    829 KBytes
+> [  5]   5.00-6.00   sec   111 MBytes   933 Mbits/sec    0    783 KBytes
+> [  5]   6.00-7.00   sec   111 MBytes   933 Mbits/sec    0    769 KBytes
+> [  5]   7.00-8.00   sec   111 MBytes   933 Mbits/sec    0    778 KBytes
+> [  5]   8.00-9.00   sec   112 MBytes   944 Mbits/sec    0    809 KBytes
+> [  5]   9.00-10.00  sec   110 MBytes   923 Mbits/sec    0    823 KBytes
+> - - - - - - - - - - - - - - - - - - - - - - - - -
+> [ ID] Interval           Transfer     Bitrate         Retr
+> [  5]   0.00-10.00  sec   879 MBytes   738 Mbits/sec    0             sender
+> [  5]   0.00-10.00  sec   875 MBytes   734 Mbits/sec                  receiver
