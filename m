@@ -1,75 +1,40 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 16 Jul 2020 19:29:03 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Do not use link uninitialized in
- igc_check_for_copper_link
-In-Reply-To: <20200716044934.152364-1-natechancellor@gmail.com>
-References: <20200716044934.152364-1-natechancellor@gmail.com>
-Message-ID: <cdfec63a-e51f-e1a6-aa60-6ca949338306@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 16 Jul 2020 17:45:51 +0000
+Subject: [Intel-wired-lan] [PATCH S50 05/15] ice: return correct error
+ code from ice_aq_sw_rules
+In-Reply-To: <20200713205318.32425-5-anthony.l.nguyen@intel.com>
+References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
+ <20200713205318.32425-5-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB21452BF5A905E918F70F34C38C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/16/2020 07:49, Nathan Chancellor wrote:
-> Clang warns:
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Monday, July 13, 2020 1:53 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S50 05/15] ice: return correct error code
+> from ice_aq_sw_rules
 > 
-Hello Nathan,
-Thanks for tracking our code.Please, look at 
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200709073416.14126-1-sasha.neftin at intel.com/ 
-- I hope this patch already address this Clang warns - please, let me know.
-> drivers/net/ethernet/intel/igc/igc_mac.c:374:6: warning: variable 'link'
-> is used uninitialized whenever 'if' condition is true
-> [-Wsometimes-uninitialized]
->          if (!mac->get_link_status) {
->              ^~~~~~~~~~~~~~~~~~~~~
-> drivers/net/ethernet/intel/igc/igc_mac.c:424:33: note: uninitialized use
-> occurs here
->          ret_val = igc_set_ltr_i225(hw, link);
->                                         ^~~~
-> drivers/net/ethernet/intel/igc/igc_mac.c:374:2: note: remove the 'if' if
-> its condition is always false
->          if (!mac->get_link_status) {
->          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> drivers/net/ethernet/intel/igc/igc_mac.c:367:11: note: initialize the
-> variable 'link' to silence this warning
->          bool link;
->                   ^
->                    = 0
-> 1 warning generated.
+> From: Kiran Patil <kiran.patil@intel.com>
 > 
-> It is not wrong, link is only uninitialized after this through
-> igc_phy_has_link. Presumably, if we skip the majority of this function
-> when get_link_status is false, we should skip calling igc_set_ltr_i225
-> as well. Just directly return 0 in this case, rather than bothering with
-> adding another label or initializing link in the if statement.
+> Return ICE_ERR_DOES_NOT_EXIST return code if admin command error code
+> is ICE_AQ_RC_ENOENT (not exist). ice_aq_sw_rules is used when switch rule
+> is getting added/deleted/updated. In case of delete/update switch rule,
+> admin command can return ICE_AQ_RC_ENOENT error code if such rule does
+> not exist, hence return ICE_ERR_DOES_NOT_EXIST error code from
+> ice_aq_sw_rule, so that caller of this function can decide how to handle
+> ICE_ERR_DOES_NOT_EXIST.
 > 
-> Fixes: 707abf069548 ("igc: Add initial LTR support")
-> Link: https://github.com/ClangBuiltLinux/linux/issues/1095
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_mac.c | 6 ++----
->   1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-> index b47e7b0a6398..26e3c56a4a8b 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_mac.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-> @@ -371,10 +371,8 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
->   	 * get_link_status flag is set upon receiving a Link Status
->   	 * Change or Rx Sequence Error interrupt.
->   	 */
-> -	if (!mac->get_link_status) {
-> -		ret_val = 0;
-> -		goto out;
-> -	}
-> +	if (!mac->get_link_status)
-> +		return 0;
->   
->   	/* First we want to see if the MII Status Register reports
->   	 * link.  If so, then we want to get the current speed/duplex
-> 
-> base-commit: ca0e494af5edb59002665bf12871e94b4163a257
-> 
-Thanks,
-Sasha
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+
