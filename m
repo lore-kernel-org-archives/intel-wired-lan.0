@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Jul 2020 17:48:03 +0000
-Subject: [Intel-wired-lan] [PATCH S50 15/15] ice: fix unused parameter
- warning
-In-Reply-To: <20200713205318.32425-15-anthony.l.nguyen@intel.com>
+Date: Thu, 16 Jul 2020 17:48:37 +0000
+Subject: [Intel-wired-lan] [PATCH S50 14/15] ice: disable no longer
+ needed workaround for FW logging
+In-Reply-To: <20200713205318.32425-14-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
- <20200713205318.32425-15-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB21455578554800942CF46D568C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200713205318.32425-14-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB2145494CA6676E7DF6160C788C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Monday, July 13, 2020 1:53 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S50 15/15] ice: fix unused parameter
-> warning
+> Subject: [Intel-wired-lan] [PATCH S50 14/15] ice: disable no longer needed
+> workaround for FW logging
 > 
-> Depending on PAGE_SIZE, the following unused parameter warning can be
-> reported:
+> From: Ben Shelton <benjamin.h.shelton@intel.com>
 > 
-> drivers/net/ethernet/intel/ice/ice_txrx.c: In function
-> ?ice_rx_frame_truesize?:
-> drivers/net/ethernet/intel/ice/ice_txrx.c:513:21: warning: unused
-> parameter ?size? [-Wunused-parameter]
->         unsigned int size)
+> For the FW logging info AQ command, we currently set the ICE_AQ_FLAG_RD
+> in order to work around a FW issue. This issue has been fixed so remove the
+> workaround.
 > 
-> The 'size' variable is used only when PAGE_SIZE >= 8192. Add
-> __maybe_unused to to remove the warning.
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 2 --
+>  1 file changed, 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
