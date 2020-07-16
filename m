@@ -1,344 +1,402 @@
 From: Qi Zhang <qi.z.zhang@intel.com>
-Date: Thu, 16 Jul 2020 21:39:31 +0800
-Subject: [Intel-wired-lan] [PATCH S48 v6 09/16] ice: Add support for per VF
- ctrl VSI enabling
+Date: Thu, 16 Jul 2020 21:39:33 +0800
+Subject: [Intel-wired-lan] [PATCH S48 v6 11/16] ice: Add FDIR pattern action
+ parser for VF
 In-Reply-To: <20200716133938.46921-1-qi.z.zhang@intel.com>
 References: <20200716133938.46921-1-qi.z.zhang@intel.com>
-Message-ID: <20200716133938.46921-10-qi.z.zhang@intel.com>
+Message-ID: <20200716133938.46921-12-qi.z.zhang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We are going to enable FDIR configure for AVF through virtual channel.
-The first step is to add helper functions to support control VSI setup.
-A control VSI will be allocated for a VF when AVF creates its
-first FDIR rule through ice_vf_ctrl_vsi_setup().
-The patch will also allocate FDIR rule space for VF's control VSI.
-If a VF asks for flow director rules, then those should come entirely
-from the best effort pool and not from the guaranteed pool. The patch
-allow a VF VSI to have only space in the best effort rules.
+Add basic FDIR flow list and pattern / action parse functions for VF.
 
-Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
 Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h             |  4 +-
- drivers/net/ethernet/intel/ice/ice_lib.c         | 64 +++++++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_main.c        |  9 +++-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 62 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  2 +
- 5 files changed, 130 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 353 ++++++++++++++++++++-
+ 1 file changed, 351 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 4ac88cfed6d3..72abeb2e4f00 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -68,7 +68,7 @@
- #define ICE_AQ_LEN		64
- #define ICE_MBXSQ_LEN		64
- #define ICE_MIN_MSIX		2
--#define ICE_FDIR_MSIX		1
-+#define ICE_FDIR_MSIX		2
- #define ICE_NO_VSI		0xffff
- #define ICE_VSI_MAP_CONTIG	0
- #define ICE_VSI_MAP_SCATTER	1
-@@ -79,6 +79,8 @@
- #define ICE_MAX_LG_RSS_QS	256
- #define ICE_RES_VALID_BIT	0x8000
- #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
-+/* All VF control VSIs share the same IRQ, so assign a unique ID for them */
-+#define ICE_RES_VF_CTRL_VEC_ID	(ICE_RES_MISC_VEC_ID - 1)
- #define ICE_INVAL_Q_INDEX	0xffff
- #define ICE_INVAL_VFID		256
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+index 98d70e51456d..de6ec56223e8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+@@ -27,6 +27,77 @@ struct virtchnl_fdir_fltr_conf {
+ 	struct ice_fdir_fltr input;
+ };
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 8a4c7b8b95df..340dab5569f2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -332,6 +332,9 @@ int ice_vsi_clear(struct ice_vsi *vsi)
- 	pf->vsi[vsi->idx] = NULL;
- 	if (vsi->idx < pf->next_vsi && vsi->type != ICE_VSI_CTRL)
- 		pf->next_vsi = vsi->idx;
-+	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL &&
-+	    vsi->vf_id != ICE_INVAL_VFID)
-+		pf->next_vsi = vsi->idx;
- 
- 	ice_vsi_free_arrays(vsi);
- 	mutex_unlock(&pf->sw_mutex);
-@@ -443,8 +446,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
- 		goto unlock_pf;
- 	}
- 
--	if (vsi->type == ICE_VSI_CTRL) {
--		/* Use the last VSI slot as the index for the control VSI */
-+	if (vsi->type == ICE_VSI_CTRL && vf_id == ICE_INVAL_VFID) {
-+		/* Use the last VSI slot as the index for PF control VSI */
- 		vsi->idx = pf->num_alloc_vsi - 1;
- 		pf->ctrl_vsi_idx = vsi->idx;
- 		pf->vsi[vsi->idx] = vsi;
-@@ -457,6 +460,9 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
- 		pf->next_vsi = ice_get_free_slot(pf->vsi, pf->num_alloc_vsi,
- 						 pf->next_vsi);
- 	}
++static enum virtchnl_proto_hdr_type vc_pattern_ipv4[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV4,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
 +
-+	if (vsi->type == ICE_VSI_CTRL && vf_id != ICE_INVAL_VFID)
-+		pf->vf[vf_id].ctrl_vsi_idx = vsi->idx;
- 	goto unlock_pf;
- 
- err_rings:
-@@ -495,7 +501,7 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
- 	if (!b_val)
- 		return -EPERM;
- 
--	if (vsi->type != ICE_VSI_PF)
-+	if (!(vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_VF))
- 		return -EPERM;
- 
- 	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
-@@ -506,6 +512,13 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
- 	/* each VSI gets same "best_effort" quota */
- 	vsi->num_bfltr = b_val;
- 
-+	if (vsi->type == ICE_VSI_VF) {
-+		vsi->num_gfltr = 0;
++static enum virtchnl_proto_hdr_type vc_pattern_ipv4_tcp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV4,
++	VIRTCHNL_PROTO_HDR_TCP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
 +
-+		/* each VSI gets same "best_effort" quota */
-+		vsi->num_bfltr = b_val;
-+	}
++static enum virtchnl_proto_hdr_type vc_pattern_ipv4_udp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV4,
++	VIRTCHNL_PROTO_HDR_UDP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
 +
- 	return 0;
- }
- 
-@@ -845,7 +858,8 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	u8 dflt_q_group, dflt_q_prio;
- 	u16 dflt_q, report_q, val;
- 
--	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL)
-+	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL &&
-+	    vsi->type != ICE_VSI_VF)
- 		return;
- 
- 	val = ICE_AQ_VSI_PROP_FLOW_DIR_VALID;
-@@ -1168,7 +1182,24 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
- 
- 	num_q_vectors = vsi->num_q_vectors;
- 	/* reserve slots from OS requested IRQs */
--	base = ice_get_res(pf, pf->irq_tracker, num_q_vectors, vsi->idx);
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
-+		struct ice_vf *vf;
-+		int i;
++static enum virtchnl_proto_hdr_type vc_pattern_ipv4_sctp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV4,
++	VIRTCHNL_PROTO_HDR_SCTP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
 +
-+		ice_for_each_vf(pf, i) {
-+			vf = &pf->vf[i];
-+			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI) {
-+				base = pf->vsi[vf->ctrl_vsi_idx]->base_vector;
-+				break;
-+			}
-+		}
-+		if (i == pf->num_alloc_vfs)
-+			base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
-+					   ICE_RES_VF_CTRL_VEC_ID);
-+	} else {
-+		base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
-+				   vsi->idx);
-+	}
- 
- 	if (base < 0) {
- 		dev_err(dev, "%d MSI-X interrupts available. %s %d failed to get %d MSI-X vectors\n",
-@@ -2127,7 +2158,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	struct ice_vsi *vsi;
- 	int ret, i;
- 
--	if (vsi_type == ICE_VSI_VF)
-+	if (vsi_type == ICE_VSI_VF || vsi_type == ICE_VSI_CTRL)
- 		vsi = ice_vsi_alloc(pf, vsi_type, vf_id);
- 	else
- 		vsi = ice_vsi_alloc(pf, vsi_type, ICE_INVAL_VFID);
-@@ -2142,7 +2173,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	if (vsi->type == ICE_VSI_PF)
- 		vsi->ethtype = ETH_P_PAUSE;
- 
--	if (vsi->type == ICE_VSI_VF)
-+	if (vsi->type == ICE_VSI_VF || vsi->type == ICE_VSI_CTRL)
- 		vsi->vf_id = vf_id;
- 
- 	ice_alloc_fd_res(vsi);
-@@ -2583,7 +2614,24 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * many interrupts each VF needs. SR-IOV MSIX resources are also
- 	 * cleared in the same manner.
- 	 */
--	if (vsi->type != ICE_VSI_VF) {
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
-+		struct ice_vf *vf;
-+		int i;
++static enum virtchnl_proto_hdr_type vc_pattern_ipv6[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV6,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
 +
-+		ice_for_each_vf(pf, i) {
-+			vf = &pf->vf[i];
-+			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI)
-+				break;
-+		}
-+		if (i == pf->num_alloc_vfs) {
-+			/* No other VFs left that have control VSI, reclaim SW
-+			 * interrupts back to the common pool
-+			 */
-+			ice_free_res(pf->irq_tracker, vsi->base_vector,
-+				     ICE_RES_VF_CTRL_VEC_ID);
-+			pf->num_avail_sw_msix += vsi->num_q_vectors;
-+		}
-+	} else if (vsi->type != ICE_VSI_VF) {
- 		/* reclaim SW interrupts back to the common pool */
- 		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
- 		pf->num_avail_sw_msix += vsi->num_q_vectors;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a1cef089201a..3d57e2e8b179 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1630,8 +1630,13 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
- 			/* skip this unused q_vector */
- 			continue;
- 		}
--		err = devm_request_irq(dev, irq_num, vsi->irq_handler, 0,
--				       q_vector->name, q_vector);
-+		if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID)
-+			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
-+					       IRQF_SHARED, q_vector->name,
-+					       q_vector);
-+		else
-+			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
-+					       0, q_vector->name, q_vector);
- 		if (err) {
- 			netdev_err(vsi->netdev, "MSIX request_irq failed, error: %d\n",
- 				   err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 0d82122783ec..188f60918c43 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -442,6 +442,25 @@ static void ice_vf_vsi_release(struct ice_vf *vf)
++static enum virtchnl_proto_hdr_type vc_pattern_ipv6_tcp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV6,
++	VIRTCHNL_PROTO_HDR_TCP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
++
++static enum virtchnl_proto_hdr_type vc_pattern_ipv6_udp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV6,
++	VIRTCHNL_PROTO_HDR_UDP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
++
++static enum virtchnl_proto_hdr_type vc_pattern_ipv6_sctp[] = {
++	VIRTCHNL_PROTO_HDR_ETH,
++	VIRTCHNL_PROTO_HDR_IPV6,
++	VIRTCHNL_PROTO_HDR_SCTP,
++	VIRTCHNL_PROTO_HDR_NONE,
++};
++
++struct virtchnl_fdir_pattern_match_item {
++	enum virtchnl_proto_hdr_type *list;
++	u64 input_set;
++	u64 *meta;
++};
++
++static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
++	{vc_pattern_ipv4,                     0,         NULL},
++	{vc_pattern_ipv4_tcp,                 0,         NULL},
++	{vc_pattern_ipv4_udp,                 0,         NULL},
++	{vc_pattern_ipv4_sctp,                0,         NULL},
++	{vc_pattern_ipv6,                     0,         NULL},
++	{vc_pattern_ipv6_tcp,                 0,         NULL},
++	{vc_pattern_ipv6_udp,                 0,         NULL},
++	{vc_pattern_ipv6_sctp,                0,         NULL},
++};
++
+ struct virtchnl_fdir_inset_map {
+ 	enum virtchnl_proto_hdr_field field;
+ 	enum ice_flow_field fld;
+@@ -600,6 +671,275 @@ ice_vc_fdir_config_input_set(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
  }
  
  /**
-+ * ice_vf_ctrl_invalidate_vsi - invalidate ctrl_vsi_idx to remove VSI access
-+ * @vf: VF that control VSI is being invalidated on
-+ */
-+static void ice_vf_ctrl_invalidate_vsi(struct ice_vf *vf)
-+{
-+	vf->ctrl_vsi_idx = ICE_NO_VSI;
-+}
-+
-+/**
-+ * ice_vf_ctrl_vsi_release - invalidate the VF's control VSI after freeing it
-+ * @vf: VF that control VSI is being released on
-+ */
-+static void ice_vf_ctrl_vsi_release(struct ice_vf *vf)
-+{
-+	ice_vsi_release(vf->pf->vsi[vf->ctrl_vsi_idx]);
-+	ice_vf_ctrl_invalidate_vsi(vf);
-+}
-+
-+/**
-  * ice_free_vf_res - Free a VF's resources
-  * @vf: pointer to the VF info
-  */
-@@ -454,6 +473,9 @@ static void ice_free_vf_res(struct ice_vf *vf)
- 	 * accessing the VF's VSI after it's freed or invalidated.
- 	 */
- 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
-+	/* free VF control VSI */
-+	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+		ice_vf_ctrl_vsi_release(vf);
- 
- 	/* free VSI and disconnect it from the parent uplink */
- 	if (vf->lan_vsi_idx != ICE_NO_VSI) {
-@@ -800,6 +822,29 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
- }
- 
- /**
-+ * ice_vf_ctrl_vsi_setup - Set up a VF control VSI
-+ * @vf: VF to setup control VSI for
++ * ice_vc_fdir_match_pattern
++ * @fltr: virtual channel add cmd buffer
++ * @type: virtual channel protocol filter header type
 + *
-+ * Returns pointer to the successfully allocated VSI struct on success,
-+ * otherwise returns NULL on failure.
++ * Matching the header type by comparing fltr and type's value.
++ *
++ * Return: true on success, and false on error.
 + */
-+struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf)
++static bool
++ice_vc_fdir_match_pattern(struct virtchnl_fdir_add *fltr,
++			  enum virtchnl_proto_hdr_type *type)
 +{
-+	struct ice_port_info *pi = ice_vf_get_port_info(vf);
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_vsi *vsi;
++	struct virtchnl_proto_hdrs *proto = &fltr->rule_cfg.proto_hdrs;
++	int i = 0;
 +
-+	vsi = ice_vsi_setup(pf, pi, ICE_VSI_CTRL, vf->vf_id);
-+
-+	if (!vsi) {
-+		dev_err(ice_pf_to_dev(pf), "Failed to create VF control VSI\n");
-+		ice_vf_ctrl_invalidate_vsi(vf);
++	while ((i < proto->count) &&
++	       (*type == proto->proto_hdr[i].type) &&
++	       (*type != VIRTCHNL_PROTO_HDR_NONE)) {
++		type++;
++		i++;
 +	}
 +
-+	return vsi;
++	return ((i == proto->count) &&
++		(*type == VIRTCHNL_PROTO_HDR_NONE));
 +}
 +
 +/**
-  * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
-  * @pf: pointer to PF structure
-  * @vf: pointer to VF that the first MSIX vector index is being calculated for
-@@ -1458,6 +1503,12 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	ice_for_each_vf(pf, v) {
- 		vf = &pf->vf[v];
- 
-+		/* clean VF control VSI when resetting VFs since it should be
-+		 * setup only when iAVF creates its first FDIR rule.
-+		 */
-+		if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+			ice_vf_ctrl_invalidate_vsi(vf);
++ * ice_vc_fdir_get_pattern - get while list pattern
++ * @vf: pointer to the VF info
++ * @len: filter list length
++ *
++ * Return: pointer to allowed filter list
++ */
++static const struct virtchnl_fdir_pattern_match_item *
++ice_vc_fdir_get_pattern(struct ice_vf *vf, int *len)
++{
++	const struct virtchnl_fdir_pattern_match_item *item;
++	struct ice_pf *pf = vf->pf;
++	struct ice_hw *hw;
 +
- 		ice_vf_pre_vsi_rebuild(vf);
- 		ice_vf_rebuild_vsi(vf);
- 		ice_vf_post_vsi_rebuild(vf);
-@@ -1576,6 +1627,12 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 			dev_err(dev, "disabling promiscuous mode failed\n");
- 	}
- 
-+	/* clean VF control VSI when resetting VF since it should be setup
-+	 * only when iAVF creates its first FDIR rule.
-+	 */
-+	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
-+		ice_vf_ctrl_vsi_release(vf);
++	hw = &pf->hw;
++	item = vc_fdir_pattern;
++	*len = ARRAY_SIZE(vc_fdir_pattern);
 +
- 	ice_vf_pre_vsi_rebuild(vf);
- 	ice_vf_rebuild_vsi_with_release(vf);
- 	ice_vf_post_vsi_rebuild(vf);
-@@ -1751,6 +1808,11 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
- 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
- 		vf->spoofchk = true;
- 		vf->num_vf_qs = pf->num_qps_per_vf;
++	return item;
++}
 +
-+		/* ctrl_vsi_idx will be set to a valid value only when iAVF
-+		 * creates its first fdir rule.
-+		 */
-+		ice_vf_ctrl_invalidate_vsi(vf);
- 	}
++/**
++ * ice_vc_fdir_search_pattern
++ * @vf: pointer to the VF info
++ * @fltr: virtual channel add cmd buffer
++ *
++ * Search for matched pattern from supported pattern list
++ *
++ * Return: 0 on success, and other on error.
++ */
++static int
++ice_vc_fdir_search_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr)
++{
++	const struct virtchnl_fdir_pattern_match_item *pattern;
++	int len, i;
++
++	pattern = ice_vc_fdir_get_pattern(vf, &len);
++
++	for (i = 0; i < len; i++)
++		if (ice_vc_fdir_match_pattern(fltr, pattern[i].list))
++			return 0;
++
++	return -EINVAL;
++}
++
++/**
++ * ice_vc_fdir_parse_pattern
++ * @vf: pointer to the VF info
++ * @fltr: virtual channel add cmd buffer
++ * @conf: FDIR configuration for each filter
++ *
++ * Parse the virtual channel filter's pattern and store them into conf
++ *
++ * Return: 0 on success, and other on error.
++ */
++static int
++ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
++			  struct virtchnl_fdir_fltr_conf *conf)
++{
++	struct virtchnl_proto_hdrs *proto = &fltr->rule_cfg.proto_hdrs;
++	enum virtchnl_proto_hdr_type l3 = VIRTCHNL_PROTO_HDR_NONE;
++	enum virtchnl_proto_hdr_type l4 = VIRTCHNL_PROTO_HDR_NONE;
++	struct device *dev = ice_pf_to_dev(vf->pf);
++	struct ice_fdir_fltr *input = &conf->input;
++	int i;
++
++	if (proto->count > VIRTCHNL_MAX_NUM_PROTO_HDRS) {
++		dev_dbg(dev, "Invalid protocol count:0x%x for VF %d\n",
++			proto->count, vf->vf_id);
++		return -EINVAL;
++	}
++
++	for (i = 0; i < proto->count; i++) {
++		struct virtchnl_proto_hdr *hdr = &proto->proto_hdr[i];
++		struct sctphdr *sctph;
++		struct ipv6hdr *ip6h;
++		struct udphdr *udph;
++		struct tcphdr *tcph;
++		struct iphdr *iph;
++
++		switch (hdr->type) {
++		case VIRTCHNL_PROTO_HDR_ETH:
++			break;
++		case VIRTCHNL_PROTO_HDR_IPV4:
++			iph = (struct iphdr *)hdr->buffer;
++			l3 = VIRTCHNL_PROTO_HDR_IPV4;
++			input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_OTHER;
++
++			if (hdr->field_selector) {
++				input->ip.v4.src_ip = iph->saddr;
++				input->ip.v4.dst_ip = iph->daddr;
++				input->ip.v4.tos = iph->tos;
++				input->ip.v4.proto = iph->protocol;
++			}
++			break;
++		case VIRTCHNL_PROTO_HDR_IPV6:
++			ip6h = (struct ipv6hdr *)hdr->buffer;
++			l3 = VIRTCHNL_PROTO_HDR_IPV6;
++			input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_OTHER;
++
++			if (hdr->field_selector) {
++				memcpy(input->ip.v6.src_ip,
++				       ip6h->saddr.in6_u.u6_addr8,
++				       sizeof(ip6h->saddr));
++				memcpy(input->ip.v6.dst_ip,
++				       ip6h->daddr.in6_u.u6_addr8,
++				       sizeof(ip6h->daddr));
++				input->ip.v6.tc = ((u8)(ip6h->priority) << 4) |
++						  (ip6h->flow_lbl[0] >> 4);
++				input->ip.v6.proto = ip6h->nexthdr;
++			}
++			break;
++		case VIRTCHNL_PROTO_HDR_TCP:
++			tcph = (struct tcphdr *)hdr->buffer;
++			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
++				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_TCP;
++			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
++				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_TCP;
++
++			if (hdr->field_selector) {
++				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
++					input->ip.v4.src_port = tcph->source;
++					input->ip.v4.dst_port = tcph->dest;
++				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
++					input->ip.v6.src_port = tcph->source;
++					input->ip.v6.dst_port = tcph->dest;
++				}
++			}
++			break;
++		case VIRTCHNL_PROTO_HDR_UDP:
++			udph = (struct udphdr *)hdr->buffer;
++			l4 = VIRTCHNL_PROTO_HDR_UDP;
++			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
++				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_UDP;
++			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
++				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_UDP;
++
++			if (hdr->field_selector) {
++				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
++					input->ip.v4.src_port = udph->source;
++					input->ip.v4.dst_port = udph->dest;
++				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
++					input->ip.v6.src_port = udph->source;
++					input->ip.v6.dst_port = udph->dest;
++				}
++			}
++			break;
++		case VIRTCHNL_PROTO_HDR_SCTP:
++			sctph = (struct sctphdr *)hdr->buffer;
++			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
++				input->flow_type =
++					ICE_FLTR_PTYPE_NONF_IPV4_SCTP;
++			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
++				input->flow_type =
++					ICE_FLTR_PTYPE_NONF_IPV6_SCTP;
++
++			if (hdr->field_selector) {
++				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
++					input->ip.v4.src_port = sctph->source;
++					input->ip.v4.dst_port = sctph->dest;
++				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
++					input->ip.v6.src_port = sctph->source;
++					input->ip.v6.dst_port = sctph->dest;
++				}
++			}
++			break;
++		default:
++			dev_dbg(dev, "Invalid header type 0x:%x for VF %d\n",
++				hdr->type, vf->vf_id);
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * ice_vc_fdir_parse_action
++ * @vf: pointer to the VF info
++ * @fltr: virtual channel add cmd buffer
++ * @conf: FDIR configuration for each filter
++ *
++ * Parse the virtual channel filter's action and store them into conf
++ *
++ * Return: 0 on success, and other on error.
++ */
++static int
++ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
++			 struct virtchnl_fdir_fltr_conf *conf)
++{
++	struct virtchnl_filter_action_set *as = &fltr->rule_cfg.action_set;
++	struct device *dev = ice_pf_to_dev(vf->pf);
++	struct ice_fdir_fltr *input = &conf->input;
++	u32 dest_num = 0;
++	u32 mark_num = 0;
++	int i;
++
++	if (as->count > VIRTCHNL_MAX_NUM_ACTIONS) {
++		dev_dbg(dev, "Invalid action numbers:0x%x for VF %d\n",
++			as->count, vf->vf_id);
++		return -EINVAL;
++	}
++
++	for (i = 0; i < as->count; i++) {
++		struct virtchnl_filter_action *action = &as->actions[i];
++
++		switch (action->type) {
++		case VIRTCHNL_ACTION_DROP:
++			dest_num++;
++			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DROP_PKT;
++			break;
++		case VIRTCHNL_ACTION_QUEUE:
++			dest_num++;
++			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QINDEX;
++			input->q_index = action->act_conf.queue.index;
++			break;
++		case VIRTCHNL_ACTION_MARK:
++			mark_num++;
++			input->fltr_id = action->act_conf.mark_id;
++			input->fdid_prio = ICE_FXD_FLTR_QW1_FDID_PRI_THREE;
++			break;
++		default:
++			dev_dbg(dev, "Invalid action type:0x%x for VF %d\n",
++				action->type, vf->vf_id);
++			return -EINVAL;
++		}
++	}
++
++	if (dest_num == 0 || dest_num >= 2) {
++		dev_dbg(dev, "Invalid destination action for VF %d\n",
++			vf->vf_id);
++		return -EINVAL;
++	}
++
++	if (mark_num >= 2) {
++		dev_dbg(dev, "Too many mark actions for VF %d\n", vf->vf_id);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++/**
+  * ice_vc_validate_fdir_fltr - validate the virtual channel filter
+  * @vf: pointer to the VF info
+  * @fltr: virtual channel add cmd buffer
+@@ -611,8 +951,17 @@ static int
+ ice_vc_validate_fdir_fltr(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
+ 			  struct virtchnl_fdir_fltr_conf *conf)
+ {
+-	/* Todo: rule validation */
+-	return -EINVAL;
++	int ret;
++
++	ret = ice_vc_fdir_search_pattern(vf, fltr);
++	if (ret)
++		return ret;
++
++	ret = ice_vc_fdir_parse_pattern(vf, fltr, conf);
++	if (ret)
++		return ret;
++
++	return ice_vc_fdir_parse_action(vf, fltr, conf);
  }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index ca33263bfbf0..841d2d581d95 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -72,6 +72,7 @@ struct ice_vf {
- 
- 	u16 vf_id;			/* VF ID in the PF space */
- 	u16 lan_vsi_idx;		/* index into PF struct */
-+	u16 ctrl_vsi_idx;
- 	/* first vector index of this VF in the PF space */
- 	int first_vector_idx;
- 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
-@@ -139,6 +140,7 @@ void
- ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event);
- void ice_print_vfs_mdd_events(struct ice_pf *pf);
- void ice_print_vf_rx_mdd_event(struct ice_vf *vf);
-+struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf);
- #else /* CONFIG_PCI_IOV */
- #define ice_process_vflr_event(pf) do {} while (0)
- #define ice_free_vfs(pf) do {} while (0)
+ /**
 -- 
 2.13.6
 
