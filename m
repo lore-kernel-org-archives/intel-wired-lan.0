@@ -1,68 +1,43 @@
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Wed, 15 Jul 2020 21:49:34 -0700
-Subject: [Intel-wired-lan] [PATCH] igc: Do not use link uninitialized in
- igc_check_for_copper_link
-Message-ID: <20200716044934.152364-1-natechancellor@gmail.com>
+From: Li,Rongqing <lirongqing@baidu.com>
+Date: Thu, 16 Jul 2020 05:33:31 +0000
+Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgW2J1ZyA/XSBpNDBlX3J4X2J1?=
+ =?utf-8?q?ffer=5Fflip_should_not_be_called_for_redirected_xsk_copy_mode?=
+In-Reply-To: <CAJ8uoz3Qrh7gTtsOPiz=Z_vHEk+ZoC35cEZ1audDNu5G5pogZg@mail.gmail.com>
+References: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
+ <CAJ8uoz08pyWR43K_zhp6PsDLi0KE=y_4QTs-a7kBA-jkRQksaw@mail.gmail.com>
+ <7aac955840df438e99e6681b0ae5b5b8@baidu.com>
+ <CAJ8uoz3Qrh7gTtsOPiz=Z_vHEk+ZoC35cEZ1audDNu5G5pogZg@mail.gmail.com>
+Message-ID: <8c3ad8e1f3484d79a09b77170abb5d3f@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clang warns:
+> > > >
+> > > > Thank you RongQing for reporting this. I will take a look at it
+> > > > and produce a patch.
+> > > >
+> > > > /Magnus
+> > >
+> >
+> > Ping
+> 
+> My apologies RongQing, but it is taking longer than expected due to key people
+> being on vacation during this summer period. We are debating weather the
+> simple fix you provided covers all cases.
+> Hopefully it does, but we just want to make sure. The fix is needed in four
+> drivers: the ones you mention plus ice.
+> 
+> /Magnus
 
-drivers/net/ethernet/intel/igc/igc_mac.c:374:6: warning: variable 'link'
-is used uninitialized whenever 'if' condition is true
-[-Wsometimes-uninitialized]
-        if (!mac->get_link_status) {
-            ^~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/igc/igc_mac.c:424:33: note: uninitialized use
-occurs here
-        ret_val = igc_set_ltr_i225(hw, link);
-                                       ^~~~
-drivers/net/ethernet/intel/igc/igc_mac.c:374:2: note: remove the 'if' if
-its condition is always false
-        if (!mac->get_link_status) {
-        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/igc/igc_mac.c:367:11: note: initialize the
-variable 'link' to silence this warning
-        bool link;
-                 ^
-                  = 0
-1 warning generated.
+If my RFC patch is suitable for this bug, I will resend it.
 
-It is not wrong, link is only uninitialized after this through
-igc_phy_has_link. Presumably, if we skip the majority of this function
-when get_link_status is false, we should skip calling igc_set_ltr_i225
-as well. Just directly return 0 in this case, rather than bothering with
-adding another label or initializing link in the if statement.
+should I send four patches for four drivers, or should I send one patch for them?
 
-Fixes: 707abf069548 ("igc: Add initial LTR support")
-Link: https://github.com/ClangBuiltLinux/linux/issues/1095
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/net/ethernet/intel/igc/igc_mac.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index b47e7b0a6398..26e3c56a4a8b 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -371,10 +371,8 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
- 	 * get_link_status flag is set upon receiving a Link Status
- 	 * Change or Rx Sequence Error interrupt.
- 	 */
--	if (!mac->get_link_status) {
--		ret_val = 0;
--		goto out;
--	}
-+	if (!mac->get_link_status)
-+		return 0;
- 
- 	/* First we want to see if the MII Status Register reports
- 	 * link.  If so, then we want to get the current speed/duplex
+Thanks
 
-base-commit: ca0e494af5edb59002665bf12871e94b4163a257
--- 
-2.28.0.rc0
+-Li
+
 
