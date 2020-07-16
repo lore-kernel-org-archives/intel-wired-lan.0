@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Jul 2020 17:49:46 +0000
-Subject: [Intel-wired-lan] [PATCH S50 06/15] ice: fix overwriting TX/RX
- descriptor values when rebuilding VSI
-In-Reply-To: <20200713205318.32425-6-anthony.l.nguyen@intel.com>
+Date: Thu, 16 Jul 2020 17:50:04 +0000
+Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues
+ evenly
+In-Reply-To: <20200713205318.32425-9-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
- <20200713205318.32425-6-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB21456A6B89E7E6191124FBDE8C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200713205318.32425-9-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB21450B9DAFEE1DC1B8EB7DB38C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Monday, July 13, 2020 1:53 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S50 06/15] ice: fix overwriting TX/RX
-> descriptor values when rebuilding VSI
+> Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues evenly
 > 
-> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> From: Victor Raj <victor.raj@intel.com>
 > 
-> If a user sets the value of the TX or RX descriptors to some non-default value
-> using 'ethtool -G' then we need to not overwrite the values when we rebuild
-> the VSI. The VSI rebuild could happen as a result of a user setting the number
-> of queues via the 'ethtool -L' command. Fix this by checking to see if the
-> value we have stored is non-zero and if it is then don't change the value.
+> Distribute the Tx queues evenly across all queue groups. This will help the
+> queues to get more equal sharing among the queues when all are in use.
 > 
-> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> In the previous algorithm, the next queue group node will be picked up only
+> after the previous one filled with max children.
+> For example: if VSI is configured with 9 queues, the first 8 queues will be
+> assigned to queue group 1 and the 9th queue will be assigned to queue
+> group 2.
+> 
+> The 2 queue groups split the bandwidth between them equally (50:50).
+> The first queue group node will share the 50% bandwidth with all of its
+> children (8 queues). And the second queue group node will share the entire
+> 50% bandwidth with its only children.
+> 
+> The new algorithm will fix this issue.
+> 
+> Signed-off-by: Victor Raj <victor.raj@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_sched.c | 55 ++++++++++++++++++++--
+>  1 file changed, 51 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
