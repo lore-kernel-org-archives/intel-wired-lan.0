@@ -1,47 +1,48 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Jul 2020 17:50:04 +0000
-Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues
- evenly
-In-Reply-To: <20200713205318.32425-9-anthony.l.nguyen@intel.com>
-References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
- <20200713205318.32425-9-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB21450B9DAFEE1DC1B8EB7DB38C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 16 Jul 2020 18:08:52 +0000
+Subject: [Intel-wired-lan] [PATCH v1 2/5] igbvf: netdev: use generic
+ power management
+In-Reply-To: <20200629092943.227910-3-vaibhavgupta40@gmail.com>
+References: <20200629092943.227910-1-vaibhavgupta40@gmail.com>
+ <20200629092943.227910-3-vaibhavgupta40@gmail.com>
+Message-ID: <DM6PR11MB28906BCEB8DF7B0F7B6C7B1ABC7F0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Monday, July 13, 2020 1:53 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S50 09/15] ice: distribute Tx queues evenly
+> Vaibhav Gupta
+> Sent: Monday, June 29, 2020 2:30 AM
+> To: Bjorn Helgaas <helgaas@kernel.org>; Bjorn Helgaas
+> <bhelgaas@google.com>; bjorn at helgaas.com; Vaibhav Gupta
+> <vaibhav.varodek@gmail.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>; netdev at vger.kernel.org;
+> linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> skhan at linuxfoundation.org; linux-kernel-mentees at lists.linuxfoundation.org
+> Subject: [Intel-wired-lan] [PATCH v1 2/5] igbvf: netdev: use generic power
+> management
 > 
-> From: Victor Raj <victor.raj@intel.com>
+> Remove legacy PM callbacks and use generic operations. With legacy code,
+> drivers were responsible for handling PCI PM operations like
+> pci_save_state(). In generic code, all these hre andled by PCI core.
 > 
-> Distribute the Tx queues evenly across all queue groups. This will help the
-> queues to get more equal sharing among the queues when all are in use.
+> The generic suspend() and resume() are called at the same point the legacy
+> ones were called. Thus, it does not affect the normal functioning of the
+> driver.
 > 
-> In the previous algorithm, the next queue group node will be picked up only
-> after the previous one filled with max children.
-> For example: if VSI is configured with 9 queues, the first 8 queues will be
-> assigned to queue group 1 and the 9th queue will be assigned to queue
-> group 2.
+> __maybe_unused attribute is used with .resume() but not with .suspend(), as
+> .suspend() is calleb by .shutdown().
 > 
-> The 2 queue groups split the bandwidth between them equally (50:50).
-> The first queue group node will share the 50% bandwidth with all of its
-> children (8 queues). And the second queue group node will share the entire
-> 50% bandwidth with its only children.
+> Compile-tested only.
 > 
-> The new algorithm will fix this issue.
-> 
-> Signed-off-by: Victor Raj <victor.raj@intel.com>
+> Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sched.c | 55 ++++++++++++++++++++--
->  1 file changed, 51 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/igbvf/netdev.c | 37 +++++------------------
+>  1 file changed, 8 insertions(+), 29 deletions(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
