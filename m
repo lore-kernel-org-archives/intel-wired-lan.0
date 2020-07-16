@@ -1,59 +1,68 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Thu, 16 Jul 2020 06:39:20 +0200
-Subject: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be
- called for redirected xsk copy mode
-In-Reply-To: <7aac955840df438e99e6681b0ae5b5b8@baidu.com>
-References: <2863b548da1d4c369bbd9d6ceb337a24@baidu.com>
- <CAJ8uoz08pyWR43K_zhp6PsDLi0KE=y_4QTs-a7kBA-jkRQksaw@mail.gmail.com>
- <7aac955840df438e99e6681b0ae5b5b8@baidu.com>
-Message-ID: <CAJ8uoz3Qrh7gTtsOPiz=Z_vHEk+ZoC35cEZ1audDNu5G5pogZg@mail.gmail.com>
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Wed, 15 Jul 2020 21:49:34 -0700
+Subject: [Intel-wired-lan] [PATCH] igc: Do not use link uninitialized in
+ igc_check_for_copper_link
+Message-ID: <20200716044934.152364-1-natechancellor@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jul 14, 2020 at 1:05 PM Li,Rongqing <lirongqing@baidu.com> wrote:
->
->
->
-> > -----????-----
-> > ???: Li,Rongqing
-> > ????: 2020?7?6? 14:38
-> > ???: 'Magnus Karlsson' <magnus.karlsson@gmail.com>
-> > ??: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel
-> > <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>;
-> > Netdev <netdev@vger.kernel.org>
-> > ??: ??: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be called
-> > for redirected xsk copy mode
-> >
-> >
-> >
-> > > -----????-----
-> > > ???: Magnus Karlsson [mailto:magnus.karlsson at gmail.com]
-> > > ????: 2020?7?6? 14:13
-> > > ???: Li,Rongqing <lirongqing@baidu.com>
-> > > ??: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel
-> > > <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>;
-> > > Netdev <netdev@vger.kernel.org>
-> > > ??: Re: [Intel-wired-lan] [bug ?] i40e_rx_buffer_flip should not be
-> > > called for redirected xsk copy mode
-> > >
-> > > Thank you RongQing for reporting this. I will take a look at it and
-> > > produce a patch.
-> > >
-> > > /Magnus
-> >
->
-> Ping
+Clang warns:
 
-My apologies RongQing, but it is taking longer than expected due to
-key people being on vacation during this summer period. We are
-debating weather the simple fix you provided covers all cases.
-Hopefully it does, but we just want to make sure. The fix is needed in
-four drivers: the ones you mention plus ice.
+drivers/net/ethernet/intel/igc/igc_mac.c:374:6: warning: variable 'link'
+is used uninitialized whenever 'if' condition is true
+[-Wsometimes-uninitialized]
+        if (!mac->get_link_status) {
+            ^~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/igc/igc_mac.c:424:33: note: uninitialized use
+occurs here
+        ret_val = igc_set_ltr_i225(hw, link);
+                                       ^~~~
+drivers/net/ethernet/intel/igc/igc_mac.c:374:2: note: remove the 'if' if
+its condition is always false
+        if (!mac->get_link_status) {
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/igc/igc_mac.c:367:11: note: initialize the
+variable 'link' to silence this warning
+        bool link;
+                 ^
+                  = 0
+1 warning generated.
 
-/Magnus
+It is not wrong, link is only uninitialized after this through
+igc_phy_has_link. Presumably, if we skip the majority of this function
+when get_link_status is false, we should skip calling igc_set_ltr_i225
+as well. Just directly return 0 in this case, rather than bothering with
+adding another label or initializing link in the if statement.
 
->
-> -Li
+Fixes: 707abf069548 ("igc: Add initial LTR support")
+Link: https://github.com/ClangBuiltLinux/linux/issues/1095
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
+ drivers/net/ethernet/intel/igc/igc_mac.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index b47e7b0a6398..26e3c56a4a8b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -371,10 +371,8 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
+ 	 * get_link_status flag is set upon receiving a Link Status
+ 	 * Change or Rx Sequence Error interrupt.
+ 	 */
+-	if (!mac->get_link_status) {
+-		ret_val = 0;
+-		goto out;
+-	}
++	if (!mac->get_link_status)
++		return 0;
+ 
+ 	/* First we want to see if the MII Status Register reports
+ 	 * link.  If so, then we want to get the current speed/duplex
+
+base-commit: ca0e494af5edb59002665bf12871e94b4163a257
+-- 
+2.28.0.rc0
+
