@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 16 Jul 2020 17:46:28 +0000
-Subject: [Intel-wired-lan] [PATCH S50 04/15] ice: restore VF MSI-X state
- during PCI reset
-In-Reply-To: <20200713205318.32425-4-anthony.l.nguyen@intel.com>
+Date: Thu, 16 Jul 2020 17:46:47 +0000
+Subject: [Intel-wired-lan] [PATCH S50 03/15] ice: fix link event
+ handling timing
+In-Reply-To: <20200713205318.32425-3-anthony.l.nguyen@intel.com>
 References: <20200713205318.32425-1-anthony.l.nguyen@intel.com>
- <20200713205318.32425-4-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145D228AACB811B27C9D9C38C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200713205318.32425-3-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB21452308030BA479EF9B68FF8C7F0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Monday, July 13, 2020 1:53 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S50 04/15] ice: restore VF MSI-X state
-> during PCI reset
+> Subject: [Intel-wired-lan] [PATCH S50 03/15] ice: fix link event handling timing
 > 
-> From: Nick Nunley <nicholas.d.nunley@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> During a PCI FLR the MSI-X Enable flag in the VF PCI MSI-X capability register
-> will be cleared. This can lead to issues when a VF is assigned to a VM because
-> in these cases the VF driver receives no indication of the PF PCI error/reset
-> and additionally it is incapable of restoring the cleared flag in the hypervisor
-> configuration space without fully reinitializing the driver interrupt
-> functionality.
+> When the driver experiences a link event (especially link up) there can be
+> multiple events generated. Some of these are link fault and still have a state
+> of DOWN set.  The problem happens when the link comes UP during the PF
+> driver handling one of the LINK DOWN events.  The status of the link is
+> updated and is now seen as UP, so when the actual LINK UP event comes,
+> the port information has already been updated to be seen as UP, even
+> though none of the UP activities have been completed.
 > 
-> Since the VF driver is unable to easily resolve this condition on its own,
-> restore the VF MSI-X flag during the PF PCI reset handling.
+> After the link information has been updated in the link handler and
+> evaluated for MEDIA PRESENT, if the state of the link has been changed to
+> UP, treat the DOWN event as an UP event since the link is now UP.
 > 
-> Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c     |  2 ++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 30 +++++++++++++++++++
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  2 ++
->  3 files changed, 34 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c    | 6 ++++++
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
