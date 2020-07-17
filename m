@@ -1,143 +1,269 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 17 Jul 2020 13:00:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- d9c0d628df90f16c075d72cc3c6ba87d247934e7
-Message-ID: <5f113067.vz09wvfnhV2S6ypN%lkp@intel.com>
+From: Shangshu Qian <qianshangshu_1997@outlook.com>
+Date: Fri, 17 Jul 2020 03:28:04 +0000
+Subject: [Intel-wired-lan] PROBLEM: [e1000e] 10% throughput drop on I219-LM
+ after the buffer overrun fix even with TSO&GSO disabled
+Message-ID: <SJ0PR07MB7584B6DC5998006092D4D8859C7C0@SJ0PR07MB7584.namprd07.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: d9c0d628df90f16c075d72cc3c6ba87d247934e7  idpf: Introduce idpf driver
+[1.] One line summary of the problem:
 
-Error/Warning in current branch:
+[e1000e] 10% throughput drop on I219-LM after the buffer overrun fix even with TSO&GSO disabled
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
-include/linux/avf/virtchnl.h:1153:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:1235:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1251:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1281:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1296:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1434:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+[2.] Full description of the problem/report:
 
-Error/Warning ids grouped by kconfigs:
+With e1000e 3.6.2-k and 3.8.4-NAPI driver, which include the fix for the buffer overrun problem (https://github.com/torvalds/linux/commit/b10effb92e272051dd1ec0d7be56bf9ca85ab927, discussion: https://www.spinics.net/lists/netdev/msg460589.html), I219-LM network card have a 10% throughput drop in the iperf3 test (with TSO and GSO disabled) compared with the driver without such patch, and the client is initiating the stream in such test (iperf3 client mode without -R option). If the server is initiating the stream (with -R option in iperf3 client mode), the performance is not impacted.
 
-recent_errors
-|-- alpha-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- arc-allyesconfig
-|   |-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- ia64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- powerpc-defconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-`-- sparc64-allyesconfig
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+That is to say, disabling TSO and GSO as suggested in that patch still have performance impact on the TCP stream, and the throughput drops about 10%.
 
-elapsed time: 783m
+I tried to rollback the patch introduced to fix the buffer overrun problem in the 3.8.4-NAPI driver, with TSO and GSO enabled, iperf3 test still cannot max out my 1Gbps uplink. However, with TSO and GSO disabled, 1Gbps uplink can be fully saturated.
 
-configs tested: 80
-configs skipped: 1
+I'll attach iperf3 test results for all these situations later in this email.
 
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a012-20200716
-x86_64               randconfig-a011-20200716
-x86_64               randconfig-a016-20200716
-x86_64               randconfig-a014-20200716
-x86_64               randconfig-a013-20200716
-x86_64               randconfig-a015-20200716
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
+[3.] Keywords
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Network driver, e1000e
+
+[4.] Kernel information
+[4.1.] Kernel version (from /proc/version):
+
+Linux version 5.4.0-31-generic (buildd at lgw01-amd64-059) (gcc version 9.3.0 (Ubuntu 9.3.0-10ubuntu2)) #35-Ubuntu SMP Thu May 7 20:20:34 UTC 2020
+
+[4.2.] Kernel .config file:
+
+https://kernel.ubuntu.com/~kernel-ppa/config/focal/linux/5.4.0-31.35/amd64-config.flavour.generic
+
+[5.] Most recent kernel version which did not have the bug:
+
+V4.14.2
+
+[6.] Environment
+
+00:1f.6 Ethernet controller: Intel Corporation Ethernet Connection (2) I219-LM (rev 31)
+
+driver: e1000e
+version: 3.2.6-k
+firmware-version: 0.8-4
+expansion-rom-version:
+bus-info: 0000:00:1f.6
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: no
+
+iperf3:
+iperf 3.7 (cJSON 1.5.2)
+Linux Hetzner 5.4.0-31-generic #35-Ubuntu SMP Thu May 7 20:20:34 UTC 2020 x86_64
+Optional features available: CPU affinity setting, IPv6 flow label, SCTP, TCP congestion algorithm setting, sendfile / zerocopy, socket pacing, authentication
+
+[X.] Other notes, patches, fixes, workarounds:
+
+3.6.2-k w/ TSO & GSO
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   120 MBytes   101 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   119 MBytes  99.4 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   120 MBytes   101 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   119 MBytes  99.4 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   120 MBytes   101 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   119 MBytes  99.4 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   120 MBytes   101 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   119 MBytes  99.5 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   120 MBytes   101 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   119 MBytes  99.5 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec   601 MBytes   504 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec   594 MBytes   497 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.02  sec   351 MBytes   293 Mbits/sec  134             sender
+[  5]   0.00-10.00  sec   344 MBytes   289 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   204 MBytes   171 Mbits/sec  331             sender
+[  7]   0.00-10.00  sec   201 MBytes   168 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   174 MBytes   146 Mbits/sec  226             sender
+[  9]   0.00-10.00  sec   171 MBytes   144 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   177 MBytes   148 Mbits/sec  226             sender
+[ 11]   0.00-10.00  sec   173 MBytes   145 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   164 MBytes   138 Mbits/sec  229             sender
+[ 13]   0.00-10.00  sec   161 MBytes   135 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.04 GBytes   896 Mbits/sec  1146             sender
+[SUM]   0.00-10.00  sec  1.03 GBytes   881 Mbits/sec                  receiver
+
+3.6.2-k w/o TSO & GSO
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   190 MBytes   159 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   188 MBytes   157 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   190 MBytes   160 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   188 MBytes   157 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   191 MBytes   160 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   188 MBytes   158 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   190 MBytes   160 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   188 MBytes   158 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   191 MBytes   160 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   188 MBytes   157 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec   953 MBytes   799 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec   940 MBytes   787 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.02  sec   256 MBytes   214 Mbits/sec  128             sender
+[  5]   0.00-10.00  sec   252 MBytes   211 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   238 MBytes   199 Mbits/sec  119             sender
+[  7]   0.00-10.00  sec   234 MBytes   196 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   166 MBytes   139 Mbits/sec  207             sender
+[  9]   0.00-10.00  sec   162 MBytes   136 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   222 MBytes   186 Mbits/sec  316             sender
+[ 11]   0.00-10.00  sec   219 MBytes   184 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   225 MBytes   189 Mbits/sec  138             sender
+[ 13]   0.00-10.00  sec   222 MBytes   186 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.08 GBytes   927 Mbits/sec  908             sender
+[SUM]   0.00-10.00  sec  1.06 GBytes   913 Mbits/sec                  receiver
+
+3.8.4-NAPI w/ TSO & GSO
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   120 MBytes   100 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   117 MBytes  97.5 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   115 MBytes  96.4 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   114 MBytes  95.1 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   118 MBytes  98.9 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   117 MBytes  97.6 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   118 MBytes  99.3 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   117 MBytes  97.5 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   118 MBytes  99.3 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   116 MBytes  97.5 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec   589 MBytes   494 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec   580 MBytes   485 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.02  sec   289 MBytes   241 Mbits/sec  187             sender
+[  5]   0.00-10.00  sec   282 MBytes   236 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   355 MBytes   297 Mbits/sec  324             sender
+[  7]   0.00-10.00  sec   350 MBytes   293 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   144 MBytes   121 Mbits/sec  239             sender
+[  9]   0.00-10.00  sec   141 MBytes   118 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   136 MBytes   113 Mbits/sec  286             sender
+[ 11]   0.00-10.00  sec   133 MBytes   111 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   188 MBytes   157 Mbits/sec  156             sender
+[ 13]   0.00-10.00  sec   185 MBytes   155 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.09 GBytes   930 Mbits/sec  1192             sender
+[SUM]   0.00-10.00  sec  1.06 GBytes   914 Mbits/sec                  receiver
+
+3.8.4-NAPI w/o TSO & GSO
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   194 MBytes   163 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   192 MBytes   160 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   194 MBytes   163 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   192 MBytes   160 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   195 MBytes   163 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   192 MBytes   160 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   195 MBytes   163 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   192 MBytes   160 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   195 MBytes   163 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   192 MBytes   161 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec   973 MBytes   816 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec   958 MBytes   802 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.02  sec   499 MBytes   418 Mbits/sec  1208             sender
+[  5]   0.00-10.00  sec   487 MBytes   409 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   149 MBytes   125 Mbits/sec  262             sender
+[  7]   0.00-10.00  sec   146 MBytes   122 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   158 MBytes   132 Mbits/sec  199             sender
+[  9]   0.00-10.00  sec   154 MBytes   129 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   179 MBytes   149 Mbits/sec  209             sender
+[ 11]   0.00-10.00  sec   175 MBytes   147 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   128 MBytes   107 Mbits/sec  386             sender
+[ 13]   0.00-10.00  sec   125 MBytes   105 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.09 GBytes   931 Mbits/sec  2264             sender
+[SUM]   0.00-10.00  sec  1.06 GBytes   912 Mbits/sec                  receiver
+
+3.8.4-NAPI w/ TSO & GSO (Without buffer overrun patch)
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   204 MBytes   171 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   201 MBytes   169 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   203 MBytes   170 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   201 MBytes   168 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   205 MBytes   172 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   202 MBytes   169 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   204 MBytes   171 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   201 MBytes   169 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   204 MBytes   171 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   200 MBytes   168 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec  1019 MBytes   855 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec  1006 MBytes   842 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[  5]   0.00-10.02  sec   281 MBytes   235 Mbits/sec  128             sender
+[  5]   0.00-10.00  sec   277 MBytes   232 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   267 MBytes   223 Mbits/sec  154             sender
+[  7]   0.00-10.00  sec   263 MBytes   221 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   170 MBytes   142 Mbits/sec  154             sender
+[  9]   0.00-10.00  sec   166 MBytes   139 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   161 MBytes   135 Mbits/sec  211             sender
+[ 11]   0.00-10.00  sec   158 MBytes   132 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   219 MBytes   183 Mbits/sec  116             sender
+[ 13]   0.00-10.00  sec   216 MBytes   181 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.07 GBytes   919 Mbits/sec  763             sender
+[SUM]   0.00-10.00  sec  1.05 GBytes   906 Mbits/sec                  receiver
+
+3.8.4-NAPI w/o TSO & GSO (Without buffer overrun patch)
+
+iperf3 -c bouygues.iperf.fr -d -P 5
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec   220 MBytes   184 Mbits/sec    0             sender
+[  5]   0.00-10.02  sec   218 MBytes   182 Mbits/sec                  receiver
+[  7]   0.00-10.00  sec   220 MBytes   185 Mbits/sec    0             sender
+[  7]   0.00-10.02  sec   217 MBytes   182 Mbits/sec                  receiver
+[  9]   0.00-10.00  sec   216 MBytes   182 Mbits/sec    0             sender
+[  9]   0.00-10.02  sec   213 MBytes   179 Mbits/sec                  receiver
+[ 11]   0.00-10.00  sec   220 MBytes   185 Mbits/sec    0             sender
+[ 11]   0.00-10.02  sec   218 MBytes   182 Mbits/sec                  receiver
+[ 13]   0.00-10.00  sec   221 MBytes   185 Mbits/sec    0             sender
+[ 13]   0.00-10.02  sec   218 MBytes   182 Mbits/sec                  receiver
+[SUM]   0.00-10.00  sec  1.07 GBytes   920 Mbits/sec    0             sender
+[SUM]   0.00-10.02  sec  1.06 GBytes   907 Mbits/sec                  receiver
+
+iperf3 -c bouygues.iperf.fr -d -P 5 -R
+
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.02  sec   259 MBytes   217 Mbits/sec   67             sender
+[  5]   0.00-10.00  sec   255 MBytes   214 Mbits/sec                  receiver
+[  7]   0.00-10.02  sec   256 MBytes   214 Mbits/sec  168             sender
+[  7]   0.00-10.00  sec   252 MBytes   212 Mbits/sec                  receiver
+[  9]   0.00-10.02  sec   260 MBytes   217 Mbits/sec  189             sender
+[  9]   0.00-10.00  sec   256 MBytes   215 Mbits/sec                  receiver
+[ 11]   0.00-10.02  sec   165 MBytes   138 Mbits/sec  237             sender
+[ 11]   0.00-10.00  sec   161 MBytes   135 Mbits/sec                  receiver
+[ 13]   0.00-10.02  sec   172 MBytes   144 Mbits/sec  220             sender
+[ 13]   0.00-10.00  sec   169 MBytes   142 Mbits/sec                  receiver
+[SUM]   0.00-10.02  sec  1.08 GBytes   930 Mbits/sec  881             sender
+[SUM]   0.00-10.00  sec  1.07 GBytes   917 Mbits/sec                  receiver
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200717/12cf5348/attachment-0001.html>
