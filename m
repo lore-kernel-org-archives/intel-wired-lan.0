@@ -1,356 +1,165 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sat, 18 Jul 2020 13:55:46 +0200
-Subject: [Intel-wired-lan] [PATCH] e100: switch from 'pci_' to 'dma_' API
-Message-ID: <20200718115546.358240-1-christophe.jaillet@wanadoo.fr>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 18 Jul 2020 22:13:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ ad6bec45756329c9f9bfe97f015a89fc68479391
+Message-ID: <5f1303a5.6HtifHHP6xFldz9r%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The wrappers in include/linux/pci-dma-compat.h should go away.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ad6bec45756329c9f9bfe97f015a89fc68479391  ice/xdp: not adjust rx buffer for copy mode xdp
 
-The patch has been generated with the coccinelle script below and has been
-hand modified to replace GFP_ with a correct flag.
-It has been compile tested.
+Error/Warning in current branch:
 
-When memory is allocated in 'e100_alloc()', GFP_KERNEL can be used because
-it is only called from the probe function and no lock is acquired.
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+include/linux/avf/virtchnl.h:1153:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:1235:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1251:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1281:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1296:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1434:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
 
+Error/Warning ids grouped by kconfigs:
 
-@@
-@@
--    PCI_DMA_BIDIRECTIONAL
-+    DMA_BIDIRECTIONAL
+recent_errors
+|-- alpha-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- arm-randconfig-c022-20200717
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-debian-10.3
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- powerpc-defconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- sparc64-allyesconfig
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
 
-@@
-@@
--    PCI_DMA_TODEVICE
-+    DMA_TO_DEVICE
+elapsed time: 724m
 
-@@
-@@
--    PCI_DMA_FROMDEVICE
-+    DMA_FROM_DEVICE
+configs tested: 89
+configs skipped: 1
 
-@@
-@@
--    PCI_DMA_NONE
-+    DMA_NONE
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+powerpc                      ppc64e_defconfig
+arm                           viper_defconfig
+ia64                             alldefconfig
+sh                           se7721_defconfig
+h8300                            allyesconfig
+powerpc                 linkstation_defconfig
+sparc                       sparc32_defconfig
+arm                          badge4_defconfig
+powerpc                      pmac32_defconfig
+riscv                          rv32_defconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a016-20200717
+i386                 randconfig-a011-20200717
+i386                 randconfig-a015-20200717
+i386                 randconfig-a012-20200717
+i386                 randconfig-a013-20200717
+i386                 randconfig-a014-20200717
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                                    lkp
+x86_64                              fedora-25
 
-@@
-expression e1, e2, e3;
-@@
--    pci_alloc_consistent(e1, e2, e3)
-+    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-
-@@
-expression e1, e2, e3;
-@@
--    pci_zalloc_consistent(e1, e2, e3)
-+    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_free_consistent(e1, e2, e3, e4)
-+    dma_free_coherent(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_map_single(e1, e2, e3, e4)
-+    dma_map_single(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_unmap_single(e1, e2, e3, e4)
-+    dma_unmap_single(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4, e5;
-@@
--    pci_map_page(e1, e2, e3, e4, e5)
-+    dma_map_page(&e1->dev, e2, e3, e4, e5)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_unmap_page(e1, e2, e3, e4)
-+    dma_unmap_page(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_map_sg(e1, e2, e3, e4)
-+    dma_map_sg(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_unmap_sg(e1, e2, e3, e4)
-+    dma_unmap_sg(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_dma_sync_single_for_cpu(e1, e2, e3, e4)
-+    dma_sync_single_for_cpu(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_dma_sync_single_for_device(e1, e2, e3, e4)
-+    dma_sync_single_for_device(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_dma_sync_sg_for_cpu(e1, e2, e3, e4)
-+    dma_sync_sg_for_cpu(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2, e3, e4;
-@@
--    pci_dma_sync_sg_for_device(e1, e2, e3, e4)
-+    dma_sync_sg_for_device(&e1->dev, e2, e3, e4)
-
-@@
-expression e1, e2;
-@@
--    pci_dma_mapping_error(e1, e2)
-+    dma_mapping_error(&e1->dev, e2)
-
-@@
-expression e1, e2;
-@@
--    pci_set_dma_mask(e1, e2)
-+    dma_set_mask(&e1->dev, e2)
-
-@@
-expression e1, e2;
-@@
--    pci_set_consistent_dma_mask(e1, e2)
-+    dma_set_coherent_mask(&e1->dev, e2)
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
-If needed, see post from Christoph Hellwig on the kernel-janitors ML:
-   https://marc.info/?l=kernel-janitors&m=158745678307186&w=4
----
- drivers/net/ethernet/intel/e100.c | 92 ++++++++++++++++---------------
- 1 file changed, 49 insertions(+), 43 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 91c64f91a835..ec6b1024cd8a 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -1739,10 +1739,10 @@ static int e100_xmit_prepare(struct nic *nic, struct cb *cb,
- 	dma_addr_t dma_addr;
- 	cb->command = nic->tx_command;
- 
--	dma_addr = pci_map_single(nic->pdev,
--				  skb->data, skb->len, PCI_DMA_TODEVICE);
-+	dma_addr = dma_map_single(&nic->pdev->dev, skb->data, skb->len,
-+				  DMA_TO_DEVICE);
- 	/* If we can't map the skb, have the upper layer try later */
--	if (pci_dma_mapping_error(nic->pdev, dma_addr)) {
-+	if (dma_mapping_error(&nic->pdev->dev, dma_addr)) {
- 		dev_kfree_skb_any(skb);
- 		skb = NULL;
- 		return -ENOMEM;
-@@ -1828,10 +1828,10 @@ static int e100_tx_clean(struct nic *nic)
- 			dev->stats.tx_packets++;
- 			dev->stats.tx_bytes += cb->skb->len;
- 
--			pci_unmap_single(nic->pdev,
--				le32_to_cpu(cb->u.tcb.tbd.buf_addr),
--				le16_to_cpu(cb->u.tcb.tbd.size),
--				PCI_DMA_TODEVICE);
-+			dma_unmap_single(&nic->pdev->dev,
-+					 le32_to_cpu(cb->u.tcb.tbd.buf_addr),
-+					 le16_to_cpu(cb->u.tcb.tbd.size),
-+					 DMA_TO_DEVICE);
- 			dev_kfree_skb_any(cb->skb);
- 			cb->skb = NULL;
- 			tx_cleaned = 1;
-@@ -1855,10 +1855,10 @@ static void e100_clean_cbs(struct nic *nic)
- 		while (nic->cbs_avail != nic->params.cbs.count) {
- 			struct cb *cb = nic->cb_to_clean;
- 			if (cb->skb) {
--				pci_unmap_single(nic->pdev,
--					le32_to_cpu(cb->u.tcb.tbd.buf_addr),
--					le16_to_cpu(cb->u.tcb.tbd.size),
--					PCI_DMA_TODEVICE);
-+				dma_unmap_single(&nic->pdev->dev,
-+						 le32_to_cpu(cb->u.tcb.tbd.buf_addr),
-+						 le16_to_cpu(cb->u.tcb.tbd.size),
-+						 DMA_TO_DEVICE);
- 				dev_kfree_skb(cb->skb);
- 			}
- 			nic->cb_to_clean = nic->cb_to_clean->next;
-@@ -1925,10 +1925,10 @@ static int e100_rx_alloc_skb(struct nic *nic, struct rx *rx)
- 
- 	/* Init, and map the RFD. */
- 	skb_copy_to_linear_data(rx->skb, &nic->blank_rfd, sizeof(struct rfd));
--	rx->dma_addr = pci_map_single(nic->pdev, rx->skb->data,
--		RFD_BUF_LEN, PCI_DMA_BIDIRECTIONAL);
-+	rx->dma_addr = dma_map_single(&nic->pdev->dev, rx->skb->data,
-+				      RFD_BUF_LEN, DMA_BIDIRECTIONAL);
- 
--	if (pci_dma_mapping_error(nic->pdev, rx->dma_addr)) {
-+	if (dma_mapping_error(&nic->pdev->dev, rx->dma_addr)) {
- 		dev_kfree_skb_any(rx->skb);
- 		rx->skb = NULL;
- 		rx->dma_addr = 0;
-@@ -1941,8 +1941,10 @@ static int e100_rx_alloc_skb(struct nic *nic, struct rx *rx)
- 	if (rx->prev->skb) {
- 		struct rfd *prev_rfd = (struct rfd *)rx->prev->skb->data;
- 		put_unaligned_le32(rx->dma_addr, &prev_rfd->link);
--		pci_dma_sync_single_for_device(nic->pdev, rx->prev->dma_addr,
--			sizeof(struct rfd), PCI_DMA_BIDIRECTIONAL);
-+		dma_sync_single_for_device(&nic->pdev->dev,
-+					   rx->prev->dma_addr,
-+					   sizeof(struct rfd),
-+					   DMA_BIDIRECTIONAL);
- 	}
- 
- 	return 0;
-@@ -1961,8 +1963,8 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 		return -EAGAIN;
- 
- 	/* Need to sync before taking a peek at cb_complete bit */
--	pci_dma_sync_single_for_cpu(nic->pdev, rx->dma_addr,
--		sizeof(struct rfd), PCI_DMA_BIDIRECTIONAL);
-+	dma_sync_single_for_cpu(&nic->pdev->dev, rx->dma_addr,
-+				sizeof(struct rfd), DMA_BIDIRECTIONAL);
- 	rfd_status = le16_to_cpu(rfd->status);
- 
- 	netif_printk(nic, rx_status, KERN_DEBUG, nic->netdev,
-@@ -1981,9 +1983,9 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 
- 			if (ioread8(&nic->csr->scb.status) & rus_no_res)
- 				nic->ru_running = RU_SUSPENDED;
--		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
--					       sizeof(struct rfd),
--					       PCI_DMA_FROMDEVICE);
-+		dma_sync_single_for_device(&nic->pdev->dev, rx->dma_addr,
-+					   sizeof(struct rfd),
-+					   DMA_FROM_DEVICE);
- 		return -ENODATA;
- 	}
- 
-@@ -1995,8 +1997,8 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 		actual_size = RFD_BUF_LEN - sizeof(struct rfd);
- 
- 	/* Get data */
--	pci_unmap_single(nic->pdev, rx->dma_addr,
--		RFD_BUF_LEN, PCI_DMA_BIDIRECTIONAL);
-+	dma_unmap_single(&nic->pdev->dev, rx->dma_addr, RFD_BUF_LEN,
-+			 DMA_BIDIRECTIONAL);
- 
- 	/* If this buffer has the el bit, but we think the receiver
- 	 * is still running, check to see if it really stopped while
-@@ -2097,22 +2099,25 @@ static void e100_rx_clean(struct nic *nic, unsigned int *work_done,
- 			(struct rfd *)new_before_last_rx->skb->data;
- 		new_before_last_rfd->size = 0;
- 		new_before_last_rfd->command |= cpu_to_le16(cb_el);
--		pci_dma_sync_single_for_device(nic->pdev,
--			new_before_last_rx->dma_addr, sizeof(struct rfd),
--			PCI_DMA_BIDIRECTIONAL);
-+		dma_sync_single_for_device(&nic->pdev->dev,
-+					   new_before_last_rx->dma_addr,
-+					   sizeof(struct rfd),
-+					   DMA_BIDIRECTIONAL);
- 
- 		/* Now that we have a new stopping point, we can clear the old
- 		 * stopping point.  We must sync twice to get the proper
- 		 * ordering on the hardware side of things. */
- 		old_before_last_rfd->command &= ~cpu_to_le16(cb_el);
--		pci_dma_sync_single_for_device(nic->pdev,
--			old_before_last_rx->dma_addr, sizeof(struct rfd),
--			PCI_DMA_BIDIRECTIONAL);
-+		dma_sync_single_for_device(&nic->pdev->dev,
-+					   old_before_last_rx->dma_addr,
-+					   sizeof(struct rfd),
-+					   DMA_BIDIRECTIONAL);
- 		old_before_last_rfd->size = cpu_to_le16(VLAN_ETH_FRAME_LEN
- 							+ ETH_FCS_LEN);
--		pci_dma_sync_single_for_device(nic->pdev,
--			old_before_last_rx->dma_addr, sizeof(struct rfd),
--			PCI_DMA_BIDIRECTIONAL);
-+		dma_sync_single_for_device(&nic->pdev->dev,
-+					   old_before_last_rx->dma_addr,
-+					   sizeof(struct rfd),
-+					   DMA_BIDIRECTIONAL);
- 	}
- 
- 	if (restart_required) {
-@@ -2134,8 +2139,9 @@ static void e100_rx_clean_list(struct nic *nic)
- 	if (nic->rxs) {
- 		for (rx = nic->rxs, i = 0; i < count; rx++, i++) {
- 			if (rx->skb) {
--				pci_unmap_single(nic->pdev, rx->dma_addr,
--					RFD_BUF_LEN, PCI_DMA_BIDIRECTIONAL);
-+				dma_unmap_single(&nic->pdev->dev,
-+						 rx->dma_addr, RFD_BUF_LEN,
-+						 DMA_BIDIRECTIONAL);
- 				dev_kfree_skb(rx->skb);
- 			}
- 		}
-@@ -2177,8 +2183,8 @@ static int e100_rx_alloc_list(struct nic *nic)
- 	before_last = (struct rfd *)rx->skb->data;
- 	before_last->command |= cpu_to_le16(cb_el);
- 	before_last->size = 0;
--	pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
--		sizeof(struct rfd), PCI_DMA_BIDIRECTIONAL);
-+	dma_sync_single_for_device(&nic->pdev->dev, rx->dma_addr,
-+				   sizeof(struct rfd), DMA_BIDIRECTIONAL);
- 
- 	nic->rx_to_use = nic->rx_to_clean = nic->rxs;
- 	nic->ru_running = RU_SUSPENDED;
-@@ -2377,8 +2383,8 @@ static int e100_loopback_test(struct nic *nic, enum loopback loopback_mode)
- 
- 	msleep(10);
- 
--	pci_dma_sync_single_for_cpu(nic->pdev, nic->rx_to_clean->dma_addr,
--			RFD_BUF_LEN, PCI_DMA_BIDIRECTIONAL);
-+	dma_sync_single_for_cpu(&nic->pdev->dev, nic->rx_to_clean->dma_addr,
-+				RFD_BUF_LEN, DMA_BIDIRECTIONAL);
- 
- 	if (memcmp(nic->rx_to_clean->skb->data + sizeof(struct rfd),
- 	   skb->data, ETH_DATA_LEN))
-@@ -2751,16 +2757,16 @@ static int e100_do_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
- 
- static int e100_alloc(struct nic *nic)
- {
--	nic->mem = pci_alloc_consistent(nic->pdev, sizeof(struct mem),
--		&nic->dma_addr);
-+	nic->mem = dma_alloc_coherent(&nic->pdev->dev, sizeof(struct mem),
-+				      &nic->dma_addr, GFP_KERNEL);
- 	return nic->mem ? 0 : -ENOMEM;
- }
- 
- static void e100_free(struct nic *nic)
- {
- 	if (nic->mem) {
--		pci_free_consistent(nic->pdev, sizeof(struct mem),
--			nic->mem, nic->dma_addr);
-+		dma_free_coherent(&nic->pdev->dev, sizeof(struct mem),
-+				  nic->mem, nic->dma_addr);
- 		nic->mem = NULL;
- 	}
- }
-@@ -2853,7 +2859,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_out_disable_pdev;
- 	}
- 
--	if ((err = pci_set_dma_mask(pdev, DMA_BIT_MASK(32)))) {
-+	if ((err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32)))) {
- 		netif_err(nic, probe, nic->netdev, "No usable DMA configuration, aborting\n");
- 		goto err_out_free_res;
- 	}
--- 
-2.25.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
