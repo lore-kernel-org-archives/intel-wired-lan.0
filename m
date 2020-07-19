@@ -1,165 +1,90 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 18 Jul 2020 22:13:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- ad6bec45756329c9f9bfe97f015a89fc68479391
-Message-ID: <5f1303a5.6HtifHHP6xFldz9r%lkp@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 19 Jul 2020 08:34:12 +0300
+Subject: [Intel-wired-lan] [PATCH] igc: Do not use link uninitialized in
+ igc_check_for_copper_link
+In-Reply-To: <20200717021235.GA4098394@ubuntu-n2-xlarge-x86>
+References: <20200716044934.152364-1-natechancellor@gmail.com>
+ <cdfec63a-e51f-e1a6-aa60-6ca949338306@intel.com>
+ <20200717021235.GA4098394@ubuntu-n2-xlarge-x86>
+Message-ID: <96131050-57e4-934a-3d9a-a285f234e633@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: ad6bec45756329c9f9bfe97f015a89fc68479391  ice/xdp: not adjust rx buffer for copy mode xdp
+On 7/17/2020 05:12, Nathan Chancellor wrote:
+> On Thu, Jul 16, 2020 at 07:29:03PM +0300, Neftin, Sasha wrote:
+>> On 7/16/2020 07:49, Nathan Chancellor wrote:
+>>> Clang warns:
+>>>
+>> Hello Nathan,
+>> Thanks for tracking our code.Please, look at https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200709073416.14126-1-sasha.neftin at intel.com/
+>> - I hope this patch already address this Clang warns - please, let me know.
+> 
+> I have not explicitly tested it but it seems obvious that it will. Let's
+> go with that.
+> 
+Good Nathan, let's go with my 
+https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200709073416.14126-1-sasha.neftin at intel.com/ 
+and let me know if warning still generated.
+Thanks,
+Sasha
+> Cheers,
+> Nathan
+> 
+>>> drivers/net/ethernet/intel/igc/igc_mac.c:374:6: warning: variable 'link'
+>>> is used uninitialized whenever 'if' condition is true
+>>> [-Wsometimes-uninitialized]
+>>>           if (!mac->get_link_status) {
+>>>               ^~~~~~~~~~~~~~~~~~~~~
+>>> drivers/net/ethernet/intel/igc/igc_mac.c:424:33: note: uninitialized use
+>>> occurs here
+>>>           ret_val = igc_set_ltr_i225(hw, link);
+>>>                                          ^~~~
+>>> drivers/net/ethernet/intel/igc/igc_mac.c:374:2: note: remove the 'if' if
+>>> its condition is always false
+>>>           if (!mac->get_link_status) {
+>>>           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>> drivers/net/ethernet/intel/igc/igc_mac.c:367:11: note: initialize the
+>>> variable 'link' to silence this warning
+>>>           bool link;
+>>>                    ^
+>>>                     = 0
+>>> 1 warning generated.
+>>>
+>>> It is not wrong, link is only uninitialized after this through
+>>> igc_phy_has_link. Presumably, if we skip the majority of this function
+>>> when get_link_status is false, we should skip calling igc_set_ltr_i225
+>>> as well. Just directly return 0 in this case, rather than bothering with
+>>> adding another label or initializing link in the if statement.
+>>>
+>>> Fixes: 707abf069548 ("igc: Add initial LTR support")
+>>> Link: https://github.com/ClangBuiltLinux/linux/issues/1095
+>>> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+>>> ---
+>>>    drivers/net/ethernet/intel/igc/igc_mac.c | 6 ++----
+>>>    1 file changed, 2 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+>>> index b47e7b0a6398..26e3c56a4a8b 100644
+>>> --- a/drivers/net/ethernet/intel/igc/igc_mac.c
+>>> +++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+>>> @@ -371,10 +371,8 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
+>>>    	 * get_link_status flag is set upon receiving a Link Status
+>>>    	 * Change or Rx Sequence Error interrupt.
+>>>    	 */
+>>> -	if (!mac->get_link_status) {
+>>> -		ret_val = 0;
+>>> -		goto out;
+>>> -	}
+>>> +	if (!mac->get_link_status)
+>>> +		return 0;
+>>>    	/* First we want to see if the MII Status Register reports
+>>>    	 * link.  If so, then we want to get the current speed/duplex
+>>>
+>>> base-commit: ca0e494af5edb59002665bf12871e94b4163a257
+>>>
+>> Thanks,
+>> Sasha
 
-Error/Warning in current branch:
-
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
-include/linux/avf/virtchnl.h:1153:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:1235:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1251:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1281:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1296:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1434:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-
-Error/Warning ids grouped by kconfigs:
-
-recent_errors
-|-- alpha-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- arm-randconfig-c022-20200717
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-debian-10.3
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- ia64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- powerpc-defconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- sparc64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-`-- sparc64-allyesconfig
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-
-elapsed time: 724m
-
-configs tested: 89
-configs skipped: 1
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-powerpc                      ppc64e_defconfig
-arm                           viper_defconfig
-ia64                             alldefconfig
-sh                           se7721_defconfig
-h8300                            allyesconfig
-powerpc                 linkstation_defconfig
-sparc                       sparc32_defconfig
-arm                          badge4_defconfig
-powerpc                      pmac32_defconfig
-riscv                          rv32_defconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a016-20200717
-i386                 randconfig-a011-20200717
-i386                 randconfig-a015-20200717
-i386                 randconfig-a012-20200717
-i386                 randconfig-a013-20200717
-i386                 randconfig-a014-20200717
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                              fedora-25
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
