@@ -1,90 +1,162 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 19 Jul 2020 08:34:12 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Do not use link uninitialized in
- igc_check_for_copper_link
-In-Reply-To: <20200717021235.GA4098394@ubuntu-n2-xlarge-x86>
-References: <20200716044934.152364-1-natechancellor@gmail.com>
- <cdfec63a-e51f-e1a6-aa60-6ca949338306@intel.com>
- <20200717021235.GA4098394@ubuntu-n2-xlarge-x86>
-Message-ID: <96131050-57e4-934a-3d9a-a285f234e633@intel.com>
+From: Alexander A. Klimov <grandmaster@al2klimov.de>
+Date: Sun, 19 Jul 2020 17:48:36 +0200
+Subject: [Intel-wired-lan] [PATCH for v5.9] Documentation: intel: Replace
+ HTTP links with HTTPS ones
+Message-ID: <20200719154836.59873-1-grandmaster@al2klimov.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/17/2020 05:12, Nathan Chancellor wrote:
-> On Thu, Jul 16, 2020 at 07:29:03PM +0300, Neftin, Sasha wrote:
->> On 7/16/2020 07:49, Nathan Chancellor wrote:
->>> Clang warns:
->>>
->> Hello Nathan,
->> Thanks for tracking our code.Please, look at https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200709073416.14126-1-sasha.neftin at intel.com/
->> - I hope this patch already address this Clang warns - please, let me know.
-> 
-> I have not explicitly tested it but it seems obvious that it will. Let's
-> go with that.
-> 
-Good Nathan, let's go with my 
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200709073416.14126-1-sasha.neftin at intel.com/ 
-and let me know if warning still generated.
-Thanks,
-Sasha
-> Cheers,
-> Nathan
-> 
->>> drivers/net/ethernet/intel/igc/igc_mac.c:374:6: warning: variable 'link'
->>> is used uninitialized whenever 'if' condition is true
->>> [-Wsometimes-uninitialized]
->>>           if (!mac->get_link_status) {
->>>               ^~~~~~~~~~~~~~~~~~~~~
->>> drivers/net/ethernet/intel/igc/igc_mac.c:424:33: note: uninitialized use
->>> occurs here
->>>           ret_val = igc_set_ltr_i225(hw, link);
->>>                                          ^~~~
->>> drivers/net/ethernet/intel/igc/igc_mac.c:374:2: note: remove the 'if' if
->>> its condition is always false
->>>           if (!mac->get_link_status) {
->>>           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>> drivers/net/ethernet/intel/igc/igc_mac.c:367:11: note: initialize the
->>> variable 'link' to silence this warning
->>>           bool link;
->>>                    ^
->>>                     = 0
->>> 1 warning generated.
->>>
->>> It is not wrong, link is only uninitialized after this through
->>> igc_phy_has_link. Presumably, if we skip the majority of this function
->>> when get_link_status is false, we should skip calling igc_set_ltr_i225
->>> as well. Just directly return 0 in this case, rather than bothering with
->>> adding another label or initializing link in the if statement.
->>>
->>> Fixes: 707abf069548 ("igc: Add initial LTR support")
->>> Link: https://github.com/ClangBuiltLinux/linux/issues/1095
->>> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
->>> ---
->>>    drivers/net/ethernet/intel/igc/igc_mac.c | 6 ++----
->>>    1 file changed, 2 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
->>> index b47e7b0a6398..26e3c56a4a8b 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_mac.c
->>> +++ b/drivers/net/ethernet/intel/igc/igc_mac.c
->>> @@ -371,10 +371,8 @@ s32 igc_check_for_copper_link(struct igc_hw *hw)
->>>    	 * get_link_status flag is set upon receiving a Link Status
->>>    	 * Change or Rx Sequence Error interrupt.
->>>    	 */
->>> -	if (!mac->get_link_status) {
->>> -		ret_val = 0;
->>> -		goto out;
->>> -	}
->>> +	if (!mac->get_link_status)
->>> +		return 0;
->>>    	/* First we want to see if the MII Status Register reports
->>>    	 * link.  If so, then we want to get the current speed/duplex
->>>
->>> base-commit: ca0e494af5edb59002665bf12871e94b4163a257
->>>
->> Thanks,
->> Sasha
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
+
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
+
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ Continuing my work started at 93431e0607e5.
+ See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
+ (Actually letting a shell for loop submit all this stuff for me.)
+
+ If there are any URLs to be removed completely
+ or at least not (just) HTTPSified:
+ Just clearly say so and I'll *undo my change*.
+ See also: https://lkml.org/lkml/2020/6/27/64
+
+ If there are any valid, but yet not changed URLs:
+ See: https://lkml.org/lkml/2020/6/26/837
+
+ If you apply the patch, please let me know.
+
+ Sorry again to all maintainers who complained about subject lines.
+ Now I realized that you want an actually perfect prefixes,
+ not just subsystem ones.
+ I tried my best...
+ And yes, *I could* (at least half-)automate it.
+ Impossible is nothing! :)
+
+
+ Documentation/networking/device_drivers/intel/e100.rst  | 4 ++--
+ Documentation/networking/device_drivers/intel/e1000.rst | 2 +-
+ Documentation/networking/device_drivers/intel/fm10k.rst | 2 +-
+ Documentation/networking/device_drivers/intel/iavf.rst  | 2 +-
+ Documentation/networking/device_drivers/intel/igb.rst   | 2 +-
+ Documentation/networking/device_drivers/intel/igbvf.rst | 2 +-
+ Documentation/networking/device_drivers/intel/ixgb.rst  | 2 +-
+ 7 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/networking/device_drivers/intel/e100.rst b/Documentation/networking/device_drivers/intel/e100.rst
+index 3ac21e7119a7..3d4a9ba21946 100644
+--- a/Documentation/networking/device_drivers/intel/e100.rst
++++ b/Documentation/networking/device_drivers/intel/e100.rst
+@@ -41,7 +41,7 @@ Identifying Your Adapter
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ Driver Configuration Parameters
+ ===============================
+@@ -179,7 +179,7 @@ filtering by
+ Support
+ =======
+ For general information, go to the Intel support website at:
+-http://www.intel.com/support/
++https://www.intel.com/support/
+ 
+ or the Intel Wired Networking project hosted by Sourceforge at:
+ http://sourceforge.net/projects/e1000
+diff --git a/Documentation/networking/device_drivers/intel/e1000.rst b/Documentation/networking/device_drivers/intel/e1000.rst
+index 4aaae0f7d6ba..9d99ff15d737 100644
+--- a/Documentation/networking/device_drivers/intel/e1000.rst
++++ b/Documentation/networking/device_drivers/intel/e1000.rst
+@@ -44,7 +44,7 @@ NOTES:
+         For more information about the InterruptThrottleRate,
+         RxIntDelay, TxIntDelay, RxAbsIntDelay, and TxAbsIntDelay
+         parameters, see the application note at:
+-        http://www.intel.com/design/network/applnots/ap450.htm
++        https://www.intel.com/design/network/applnots/ap450.htm
+ 
+ AutoNeg
+ -------
+diff --git a/Documentation/networking/device_drivers/intel/fm10k.rst b/Documentation/networking/device_drivers/intel/fm10k.rst
+index 4d279e64e221..9258ef6f515c 100644
+--- a/Documentation/networking/device_drivers/intel/fm10k.rst
++++ b/Documentation/networking/device_drivers/intel/fm10k.rst
+@@ -22,7 +22,7 @@ Ethernet Multi-host Controller.
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Flow Control
+diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
+index 84ac7e75f363..52e037b11c97 100644
+--- a/Documentation/networking/device_drivers/intel/iavf.rst
++++ b/Documentation/networking/device_drivers/intel/iavf.rst
+@@ -43,7 +43,7 @@ device.
+ 
+ For information on how to identify your adapter, and for the latest NVM/FW
+ images and Intel network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/intel/igb.rst b/Documentation/networking/device_drivers/intel/igb.rst
+index 87e560fe5eaa..d46289e182cf 100644
+--- a/Documentation/networking/device_drivers/intel/igb.rst
++++ b/Documentation/networking/device_drivers/intel/igb.rst
+@@ -20,7 +20,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Command Line Parameters
+diff --git a/Documentation/networking/device_drivers/intel/igbvf.rst b/Documentation/networking/device_drivers/intel/igbvf.rst
+index 557fc020ef31..40fa210c5e14 100644
+--- a/Documentation/networking/device_drivers/intel/igbvf.rst
++++ b/Documentation/networking/device_drivers/intel/igbvf.rst
+@@ -35,7 +35,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/intel/ixgb.rst b/Documentation/networking/device_drivers/intel/ixgb.rst
+index ab624f1a44a8..c6a233e68ad6 100644
+--- a/Documentation/networking/device_drivers/intel/ixgb.rst
++++ b/Documentation/networking/device_drivers/intel/ixgb.rst
+@@ -203,7 +203,7 @@ With the 10 Gigabit server adapters, the default Linux configuration will
+ very likely limit the total available throughput artificially.  There is a set
+ of configuration changes that, when applied together, will increase the ability
+ of Linux to transmit and receive data.  The following enhancements were
+-originally acquired from settings published at http://www.spec.org/web99/ for
++originally acquired from settings published at https://www.spec.org/web99/ for
+ various submitted results using Linux.
+ 
+ NOTE:
+-- 
+2.27.0
 
