@@ -1,40 +1,130 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Mon, 20 Jul 2020 11:27:12 -0700
-Subject: [Intel-wired-lan] [PATCH ethtool 0/4] Add support for IGC driver
-In-Reply-To: <20200720001046.g7y3p7wrua5qz6i2@lion.mk-sys.cz>
-References: <20200707234800.39119-1-andre.guedes@intel.com>
- <20200720001046.g7y3p7wrua5qz6i2@lion.mk-sys.cz>
-Message-ID: <159526963226.8351.8054617544521796564@jrmontoy-mobl.amr.corp.intel.com>
+From: Alexander A. Klimov <grandmaster@al2klimov.de>
+Date: Mon, 20 Jul 2020 23:37:58 +0200
+Subject: [Intel-wired-lan] [PATCH v2] Documentation: intel: Replace HTTP
+ links with HTTPS ones
+In-Reply-To: <CAKgT0Ud4jwxD_NHqLdcWXJSdVJ3CZtzosCwODtdfKnV48GfPfQ@mail.gmail.com>
+References: <CAKgT0Ud4jwxD_NHqLdcWXJSdVJ3CZtzosCwODtdfKnV48GfPfQ@mail.gmail.com>
+Message-ID: <20200720213758.64556-1-grandmaster@al2klimov.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Michal,
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
 
-Quoting Michal Kubecek (2020-07-19 17:10:46)
-> On Tue, Jul 07, 2020 at 04:47:56PM -0700, Andre Guedes wrote:
-> > Hi all,
-> > 
-> > This patch series adds support for parsing registers dumped by the IGC driver.
-> > For now, the following registers are parsed:
-> > 
-> >       * Receive Address Low (RAL)
-> >       * Receive Address High (RAH)
-> >       * Receive Control (RCTL)
-> >       * VLAN Priority Queue Filter (VLANPQF)
-> >       * EType Queue Filter (ETQF)
-> > 
-> > More registers should be parsed as we need/enable them.
-> > 
-> > Cheers,
-> > Andre
-> 
-> Series merged. But please consider making the output consistent with
-> other Intel drivers which use lowercase keywords for values (e.g.
-> "enabled") and "yes"/"no" for bool values (rather than "True" / "False").
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
 
-Sure, I'll send a patch aligning this.
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ v2: Undone broken link.
 
-- Andre
+ Documentation/networking/device_drivers/intel/e100.rst  | 4 ++--
+ Documentation/networking/device_drivers/intel/fm10k.rst | 2 +-
+ Documentation/networking/device_drivers/intel/iavf.rst  | 2 +-
+ Documentation/networking/device_drivers/intel/igb.rst   | 2 +-
+ Documentation/networking/device_drivers/intel/igbvf.rst | 2 +-
+ Documentation/networking/device_drivers/intel/ixgb.rst  | 2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/networking/device_drivers/intel/e100.rst b/Documentation/networking/device_drivers/intel/e100.rst
+index 3ac21e7119a7..3d4a9ba21946 100644
+--- a/Documentation/networking/device_drivers/intel/e100.rst
++++ b/Documentation/networking/device_drivers/intel/e100.rst
+@@ -41,7 +41,7 @@ Identifying Your Adapter
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ Driver Configuration Parameters
+ ===============================
+@@ -179,7 +179,7 @@ filtering by
+ Support
+ =======
+ For general information, go to the Intel support website at:
+-http://www.intel.com/support/
++https://www.intel.com/support/
+ 
+ or the Intel Wired Networking project hosted by Sourceforge at:
+ http://sourceforge.net/projects/e1000
+diff --git a/Documentation/networking/device_drivers/intel/fm10k.rst b/Documentation/networking/device_drivers/intel/fm10k.rst
+index 4d279e64e221..9258ef6f515c 100644
+--- a/Documentation/networking/device_drivers/intel/fm10k.rst
++++ b/Documentation/networking/device_drivers/intel/fm10k.rst
+@@ -22,7 +22,7 @@ Ethernet Multi-host Controller.
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Flow Control
+diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
+index 84ac7e75f363..52e037b11c97 100644
+--- a/Documentation/networking/device_drivers/intel/iavf.rst
++++ b/Documentation/networking/device_drivers/intel/iavf.rst
+@@ -43,7 +43,7 @@ device.
+ 
+ For information on how to identify your adapter, and for the latest NVM/FW
+ images and Intel network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/intel/igb.rst b/Documentation/networking/device_drivers/intel/igb.rst
+index 87e560fe5eaa..d46289e182cf 100644
+--- a/Documentation/networking/device_drivers/intel/igb.rst
++++ b/Documentation/networking/device_drivers/intel/igb.rst
+@@ -20,7 +20,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Command Line Parameters
+diff --git a/Documentation/networking/device_drivers/intel/igbvf.rst b/Documentation/networking/device_drivers/intel/igbvf.rst
+index 557fc020ef31..40fa210c5e14 100644
+--- a/Documentation/networking/device_drivers/intel/igbvf.rst
++++ b/Documentation/networking/device_drivers/intel/igbvf.rst
+@@ -35,7 +35,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/intel/ixgb.rst b/Documentation/networking/device_drivers/intel/ixgb.rst
+index ab624f1a44a8..c6a233e68ad6 100644
+--- a/Documentation/networking/device_drivers/intel/ixgb.rst
++++ b/Documentation/networking/device_drivers/intel/ixgb.rst
+@@ -203,7 +203,7 @@ With the 10 Gigabit server adapters, the default Linux configuration will
+ very likely limit the total available throughput artificially.  There is a set
+ of configuration changes that, when applied together, will increase the ability
+ of Linux to transmit and receive data.  The following enhancements were
+-originally acquired from settings published at http://www.spec.org/web99/ for
++originally acquired from settings published at https://www.spec.org/web99/ for
+ various submitted results using Linux.
+ 
+ NOTE:
+-- 
+2.27.0
+
