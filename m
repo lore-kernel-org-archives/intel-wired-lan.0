@@ -1,68 +1,172 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 20 Jul 2020 13:00:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 4/98]
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition
- of 'truesize'
-Message-ID: <202007201338.M8Cx1gOu%lkp@intel.com>
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+Date: Mon, 20 Jul 2020 09:21:27 +0200
+Subject: [Intel-wired-lan] [PATCH 1/2] xdp: i40e: ixgbe: ixgbevf: not
+ flip rx buffer for copy mode xdp
+In-Reply-To: <1594967062-20674-2-git-send-email-lirongqing@baidu.com>
+References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+ <1594967062-20674-2-git-send-email-lirongqing@baidu.com>
+Message-ID: <CAJ8uoz2hdemss9S5vuF=Ttapkfb8U4YJy41oVjpMUVLiCOJTkw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   ad6bec45756329c9f9bfe97f015a89fc68479391
-commit: eba152543daeea51dfc43363fd8b2e2ba9b8b7c6 [4/98] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
-config: sparc-allyesconfig (attached as .config)
-compiler: sparc64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout eba152543daeea51dfc43363fd8b2e2ba9b8b7c6
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc 
+On Fri, Jul 17, 2020 at 8:24 AM Li RongQing <lirongqing@baidu.com> wrote:
+>
+> i40e/ixgbe/ixgbevf_rx_buffer_flip in copy mode xdp can lead to
+> data corruption, like the following flow:
+>
+>    1. first skb is not for xsk, and forwarded to another device
+>       or socket queue
+>    2. seconds skb is for xsk, copy data to xsk memory, and page
+>       of skb->data is released
+>    3. rx_buff is reusable since only first skb is in it, but
+>       *_rx_buffer_flip will make that page_offset is set to
+>       first skb data
+>    4. then reuse rx buffer, first skb which still is living
+>       will be corrupted.
+>
+> so add flags in xdp struct, to report xdp's data status, then
+> driver has knowledge whether to flip rx buffer
+>
+> Fixes: c497176cb2e4 ("xsk: add Rx receive functions and poll support")
+> Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> Signed-off-by: Dongsheng Rong <rongdongsheng@baidu.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 5 ++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 5 ++++-
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 ++++-
+>  include/net/xdp.h                                 | 3 +++
+>  net/xdp/xsk.c                                     | 4 +++-
+>  5 files changed, 18 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> index b3836092c327..51fa6f86f917 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> @@ -2376,6 +2376,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+>
+>                 /* retrieve a buffer from the ring */
+>                 if (!skb) {
+> +                       xdp.flags = 0;
+>                         xdp.data = page_address(rx_buffer->page) +
+>                                    rx_buffer->page_offset;
+>                         xdp.data_meta = xdp.data;
+> @@ -2394,7 +2395,9 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+>
+>                         if (xdp_res & (I40E_XDP_TX | I40E_XDP_REDIR)) {
+>                                 xdp_xmit |= xdp_res;
+> -                               i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+> +
+> +                               if (!(xdp.flags & XDP_DATA_RELEASED))
+> +                                       i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+>                         } else {
+>                                 rx_buffer->pagecnt_bias++;
+>                         }
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index a8bf941c5c29..9e44a7e1d91c 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -2333,6 +2333,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>
+>                 /* retrieve a buffer from the ring */
+>                 if (!skb) {
+> +                       xdp.flags = 0;
+>                         xdp.data = page_address(rx_buffer->page) +
+>                                    rx_buffer->page_offset;
+>                         xdp.data_meta = xdp.data;
+> @@ -2351,7 +2352,9 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+>
+>                         if (xdp_res & (IXGBE_XDP_TX | IXGBE_XDP_REDIR)) {
+>                                 xdp_xmit |= xdp_res;
+> -                               ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+> +
+> +                               if (!(xdp.flags & XDP_DATA_RELEASED))
+> +                                       ixgbe_rx_buffer_flip(rx_ring, rx_buffer, size);
+>                         } else {
+>                                 rx_buffer->pagecnt_bias++;
+>                         }
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index a39e2cb384dd..1c1a8b6a5dcf 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -1168,6 +1168,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
+>
+>                 /* retrieve a buffer from the ring */
+>                 if (!skb) {
+> +                       xdp.flags = 0;
+>                         xdp.data = page_address(rx_buffer->page) +
+>                                    rx_buffer->page_offset;
+>                         xdp.data_meta = xdp.data;
+> @@ -1184,7 +1185,9 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
+>                 if (IS_ERR(skb)) {
+>                         if (PTR_ERR(skb) == -IXGBEVF_XDP_TX) {
+>                                 xdp_xmit = true;
+> -                               ixgbevf_rx_buffer_flip(rx_ring, rx_buffer,
+> +
+> +                               if (!(xdp.flags & XDP_DATA_RELEASED))
+> +                                       ixgbevf_rx_buffer_flip(rx_ring, rx_buffer,
+>                                                        size);
+>                         } else {
+>                                 rx_buffer->pagecnt_bias++;
+> diff --git a/include/net/xdp.h b/include/net/xdp.h
+> index 609f819ed08b..6b32a01ade19 100644
+> --- a/include/net/xdp.h
+> +++ b/include/net/xdp.h
+> @@ -47,6 +47,8 @@ enum xdp_mem_type {
+>  #define XDP_XMIT_FLUSH         (1U << 0)       /* doorbell signal consumer */
+>  #define XDP_XMIT_FLAGS_MASK    XDP_XMIT_FLUSH
+>
+> +#define XDP_DATA_RELEASED (1U << 0)
+> +
+>  struct xdp_mem_info {
+>         u32 type; /* enum xdp_mem_type, but known size type */
+>         u32 id;
+> @@ -73,6 +75,7 @@ struct xdp_buff {
+>         struct xdp_rxq_info *rxq;
+>         struct xdp_txq_info *txq;
+>         u32 frame_sz; /* frame size to deduce data_hard_end/reserved tailroom*/
+> +       u32 flags;
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+RongQing,
 
-All errors (new ones prefixed by >>):
+Sorry that I was not clear enough. Could you please submit the simple
+patch you had, the one that only tests for the memory type.
 
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
-    2269 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-         |               ^~~~~~~~
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2265:15: note: previous definition of 'truesize' was here
-    2265 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-         |               ^~~~~~~~
+if (xdp->rxq->mem.type != MEM_TYPE_XSK_BUFF_POOL)
+      i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
 
-vim +/truesize +2269 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+I do not think that adding a flags field in the xdp_mem_info to fix an
+Intel driver problem will be hugely popular. The struct is also meant
+to contain long lived information, not things that will frequently
+change.
 
-  2260	
-  2261	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
-  2262					 struct ixgbe_rx_buffer *rx_buffer,
-  2263					 unsigned int size)
-  2264	{
-  2265		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
-  2266	#if (PAGE_SIZE < 8192)
-  2267		rx_buffer->page_offset ^= truesize;
-  2268	#else
-> 2269		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
-  2270					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
-  2271					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
-  2272					SKB_DATA_ALIGN(size);
-  2273	
-  2274		rx_buffer->page_offset += truesize;
-  2275	#endif
-  2276	}
-  2277	
+Thank you: Magnus
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 66267 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200720/6a4a7059/attachment-0001.bin>
+>  };
+>
+>  /* Reserve memory area at end-of data area.
+> diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
+> index b6c0f08bd80d..2c4c5c16660b 100644
+> --- a/net/xdp/xsk.c
+> +++ b/net/xdp/xsk.c
+> @@ -172,8 +172,10 @@ static int __xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len,
+>                 xsk_buff_free(xsk_xdp);
+>                 return err;
+>         }
+> -       if (explicit_free)
+> +       if (explicit_free) {
+>                 xdp_return_buff(xdp);
+> +               xdp->flags |= XDP_DATA_RELEASED;
+> +       }
+>         return 0;
+>  }
+>
+> --
+> 2.16.2
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
