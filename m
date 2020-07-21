@@ -1,130 +1,81 @@
-From: Alexander A. Klimov <grandmaster@al2klimov.de>
-Date: Mon, 20 Jul 2020 23:37:58 +0200
-Subject: [Intel-wired-lan] [PATCH v2] Documentation: intel: Replace HTTP
- links with HTTPS ones
-In-Reply-To: <CAKgT0Ud4jwxD_NHqLdcWXJSdVJ3CZtzosCwODtdfKnV48GfPfQ@mail.gmail.com>
-References: <CAKgT0Ud4jwxD_NHqLdcWXJSdVJ3CZtzosCwODtdfKnV48GfPfQ@mail.gmail.com>
-Message-ID: <20200720213758.64556-1-grandmaster@al2klimov.de>
+From: Li,Rongqing <lirongqing@baidu.com>
+Date: Tue, 21 Jul 2020 01:42:39 +0000
+Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgW1BBVENIIDEvMl0geGRwOiBp?=
+ =?utf-8?q?40e=3A_ixgbe=3A_ixgbevf=3A_not_flip_rx_buffer_for_copy_mode_xdp?=
+In-Reply-To: <CAJ8uoz2hdemss9S5vuF=Ttapkfb8U4YJy41oVjpMUVLiCOJTkw@mail.gmail.com>
+References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+ <1594967062-20674-2-git-send-email-lirongqing@baidu.com>
+ <CAJ8uoz2hdemss9S5vuF=Ttapkfb8U4YJy41oVjpMUVLiCOJTkw@mail.gmail.com>
+Message-ID: <7b87919a454c4c7ba3d431783069e686@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rationale:
-Reduces attack surface on kernel devs opening the links for MITM
-as HTTPS traffic is much harder to manipulate.
 
-Deterministic algorithm:
-For each file:
-  If not .svg:
-    For each line:
-      If doesn't contain `\bxmlns\b`:
-        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
-	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
-            If both the HTTP and HTTPS versions
-            return 200 OK and serve the same content:
-              Replace HTTP with HTTPS.
 
-Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
----
- v2: Undone broken link.
+> -----????-----
+> ???: Magnus Karlsson [mailto:magnus.karlsson at gmail.com]
+> ????: 2020?7?20? 15:21
+> ???: Li,Rongqing <lirongqing@baidu.com>
+> ??: Network Development <netdev@vger.kernel.org>; intel-wired-lan
+> <intel-wired-lan@lists.osuosl.org>; Karlsson, Magnus
+> <magnus.karlsson@intel.com>; Bj?rn T?pel <bjorn.topel@intel.com>
+> ??: Re: [Intel-wired-lan] [PATCH 1/2] xdp: i40e: ixgbe: ixgbevf: not flip rx
+> buffer for copy mode xdp
+> 
+> On Fri, Jul 17, 2020 at 8:24 AM Li RongQing <lirongqing@baidu.com> wrote:
+> >
+> > i40e/ixgbe/ixgbevf_rx_buffer_flip in copy mode xdp can lead to data
+> > corruption, like the following flow:
+> >
+> >    1. first skb is not for xsk, and forwarded to another device
+> >       or socket queue
+> >    2. seconds skb is for xsk, copy data to xsk memory, and page
+> >       of skb->data is released
+> >    3. rx_buff is reusable since only first skb is in it, but
+> >       *_rx_buffer_flip will make that page_offset is set to
+> >       first skb data
+> >    4. then reuse rx buffer, first skb which still is living
+> >       will be corrupted.
+e, but known size type */
+> >         u32 id;
+> > @@ -73,6 +75,7 @@ struct xdp_buff {
+> >         struct xdp_rxq_info *rxq;
+> >         struct xdp_txq_info *txq;
+> >         u32 frame_sz; /* frame size to deduce data_hard_end/reserved
+> > tailroom*/
+> > +       u32 flags;
+> 
+> RongQing,
+> 
+> Sorry that I was not clear enough. Could you please submit the simple patch
+> you had, the one that only tests for the memory type.
+> 
+> if (xdp->rxq->mem.type != MEM_TYPE_XSK_BUFF_POOL)
+>       i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+> 
+> I do not think that adding a flags field in the xdp_mem_info to fix an Intel driver
+> problem will be hugely popular. The struct is also meant to contain long lived
+> information, not things that will frequently change.
+> 
 
- Documentation/networking/device_drivers/intel/e100.rst  | 4 ++--
- Documentation/networking/device_drivers/intel/fm10k.rst | 2 +-
- Documentation/networking/device_drivers/intel/iavf.rst  | 2 +-
- Documentation/networking/device_drivers/intel/igb.rst   | 2 +-
- Documentation/networking/device_drivers/intel/igbvf.rst | 2 +-
- Documentation/networking/device_drivers/intel/ixgb.rst  | 2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/networking/device_drivers/intel/e100.rst b/Documentation/networking/device_drivers/intel/e100.rst
-index 3ac21e7119a7..3d4a9ba21946 100644
---- a/Documentation/networking/device_drivers/intel/e100.rst
-+++ b/Documentation/networking/device_drivers/intel/e100.rst
-@@ -41,7 +41,7 @@ Identifying Your Adapter
- 
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- Driver Configuration Parameters
- ===============================
-@@ -179,7 +179,7 @@ filtering by
- Support
- =======
- For general information, go to the Intel support website at:
--http://www.intel.com/support/
-+https://www.intel.com/support/
- 
- or the Intel Wired Networking project hosted by Sourceforge at:
- http://sourceforge.net/projects/e1000
-diff --git a/Documentation/networking/device_drivers/intel/fm10k.rst b/Documentation/networking/device_drivers/intel/fm10k.rst
-index 4d279e64e221..9258ef6f515c 100644
---- a/Documentation/networking/device_drivers/intel/fm10k.rst
-+++ b/Documentation/networking/device_drivers/intel/fm10k.rst
-@@ -22,7 +22,7 @@ Ethernet Multi-host Controller.
- 
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Flow Control
-diff --git a/Documentation/networking/device_drivers/intel/iavf.rst b/Documentation/networking/device_drivers/intel/iavf.rst
-index 84ac7e75f363..52e037b11c97 100644
---- a/Documentation/networking/device_drivers/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/intel/iavf.rst
-@@ -43,7 +43,7 @@ device.
- 
- For information on how to identify your adapter, and for the latest NVM/FW
- images and Intel network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Additional Features and Configurations
-diff --git a/Documentation/networking/device_drivers/intel/igb.rst b/Documentation/networking/device_drivers/intel/igb.rst
-index 87e560fe5eaa..d46289e182cf 100644
---- a/Documentation/networking/device_drivers/intel/igb.rst
-+++ b/Documentation/networking/device_drivers/intel/igb.rst
-@@ -20,7 +20,7 @@ Identifying Your Adapter
- ========================
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Command Line Parameters
-diff --git a/Documentation/networking/device_drivers/intel/igbvf.rst b/Documentation/networking/device_drivers/intel/igbvf.rst
-index 557fc020ef31..40fa210c5e14 100644
---- a/Documentation/networking/device_drivers/intel/igbvf.rst
-+++ b/Documentation/networking/device_drivers/intel/igbvf.rst
-@@ -35,7 +35,7 @@ Identifying Your Adapter
- ========================
- For information on how to identify your adapter, and for the latest Intel
- network drivers, refer to the Intel Support website:
--http://www.intel.com/support
-+https://www.intel.com/support
- 
- 
- Additional Features and Configurations
-diff --git a/Documentation/networking/device_drivers/intel/ixgb.rst b/Documentation/networking/device_drivers/intel/ixgb.rst
-index ab624f1a44a8..c6a233e68ad6 100644
---- a/Documentation/networking/device_drivers/intel/ixgb.rst
-+++ b/Documentation/networking/device_drivers/intel/ixgb.rst
-@@ -203,7 +203,7 @@ With the 10 Gigabit server adapters, the default Linux configuration will
- very likely limit the total available throughput artificially.  There is a set
- of configuration changes that, when applied together, will increase the ability
- of Linux to transmit and receive data.  The following enhancements were
--originally acquired from settings published at http://www.spec.org/web99/ for
-+originally acquired from settings published at https://www.spec.org/web99/ for
- various submitted results using Linux.
- 
- NOTE:
--- 
-2.27.0
+Thank you Magnus
+
+My original suggestion is wrong , it should be following
+
+if (xdp->rxq->mem.type == MEM_TYPE_XSK_BUFF_POOL)
+       i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+
+
+but I feel it is not enough to only check mem.type, it must ensure that map_type is BPF_MAP_TYPE_XSKMAP ? but it is not expose. 
+
+other maptype, like BPF_MAP_TYPE_DEVMAP,  and if mem.type is MEM_TYPE_PAGE_SHARED, not flip the rx buffer, will cause data corruption.
+
+
+-Li 
+
+
 
