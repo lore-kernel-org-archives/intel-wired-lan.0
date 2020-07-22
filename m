@@ -1,106 +1,112 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 21 Jul 2020 18:27:15 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 6/7] ice: remove unused args
- from ice_get_open_tunnel_port()
+Date: Tue, 21 Jul 2020 18:27:12 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] netdevsim: shared UDP
+ tunnel port table support
 In-Reply-To: <20200722012716.2814777-1-kuba@kernel.org>
 References: <20200722012716.2814777-1-kuba@kernel.org>
-Message-ID: <20200722012716.2814777-7-kuba@kernel.org>
+Message-ID: <20200722012716.2814777-4-kuba@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ice_get_open_tunnel_port() is always passed TNL_ALL
-as the second parameter.
+Add the ability to simulate a device with a shared UDP tunnel port
+table.
+
+Try to reject the configurations and actions which are not supported
+by the core, so we don't get syzcaller etc. warning reports.
 
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c | 6 ++----
- drivers/net/ethernet/intel/ice/ice_fdir.c         | 2 +-
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c    | 7 ++-----
- drivers/net/ethernet/intel/ice/ice_flex_pipe.h    | 3 +--
- 4 files changed, 6 insertions(+), 12 deletions(-)
+ drivers/net/netdevsim/netdevsim.h   |  7 ++++++-
+ drivers/net/netdevsim/udp_tunnels.c | 17 ++++++++++++++++-
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-index d7430ce6af26..2d27f66ac853 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
-@@ -1268,8 +1268,7 @@ ice_fdir_write_all_fltr(struct ice_pf *pf, struct ice_fdir_fltr *input,
- 		bool is_tun = tun == ICE_FD_HW_SEG_TUN;
- 		int err;
+diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
+index d164052e0393..4335ab4e5ce0 100644
+--- a/drivers/net/netdevsim/netdevsim.h
++++ b/drivers/net/netdevsim/netdevsim.h
+@@ -20,6 +20,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/u64_stats_sync.h>
+ #include <net/devlink.h>
++#include <net/udp_tunnel.h>
+ #include <net/xdp.h>
  
--		if (is_tun && !ice_get_open_tunnel_port(&pf->hw, TNL_ALL,
--							&port_num))
-+		if (is_tun && !ice_get_open_tunnel_port(&pf->hw, &port_num))
- 			continue;
- 		err = ice_fdir_write_fltr(pf, input, add, is_tun);
- 		if (err)
-@@ -1647,8 +1646,7 @@ int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
- 	}
+ #define DRV_NAME	"netdevsim"
+@@ -77,7 +78,8 @@ struct netdevsim {
+ 	struct {
+ 		u32 inject_error;
+ 		u32 sleep;
+-		u32 ports[2][NSIM_UDP_TUNNEL_N_PORTS];
++		u32 __ports[2][NSIM_UDP_TUNNEL_N_PORTS];
++		u32 (*ports)[NSIM_UDP_TUNNEL_N_PORTS];
+ 		struct debugfs_u32_array dfs_ports[2];
+ 	} udp_ports;
+ };
+@@ -197,9 +199,12 @@ struct nsim_dev {
+ 	bool fail_trap_policer_set;
+ 	bool fail_trap_policer_counter_get;
+ 	struct {
++		struct udp_tunnel_nic_shared utn_shared;
++		u32 __ports[2][NSIM_UDP_TUNNEL_N_PORTS];
+ 		bool sync_all;
+ 		bool open_only;
+ 		bool ipv4_only;
++		bool shared;
+ 		u32 sleep;
+ 	} udp_ports;
+ };
+diff --git a/drivers/net/netdevsim/udp_tunnels.c b/drivers/net/netdevsim/udp_tunnels.c
+index ad65b860bd7b..6b98e6d1188f 100644
+--- a/drivers/net/netdevsim/udp_tunnels.c
++++ b/drivers/net/netdevsim/udp_tunnels.c
+@@ -112,7 +112,7 @@ nsim_udp_tunnels_info_reset_write(struct file *file, const char __user *data,
+ 	struct net_device *dev = file->private_data;
+ 	struct netdevsim *ns = netdev_priv(dev);
  
- 	/* return error if not an update and no available filters */
--	fltrs_needed = ice_get_open_tunnel_port(hw, TNL_ALL, &tunnel_port) ?
--		2 : 1;
-+	fltrs_needed = ice_get_open_tunnel_port(hw, &tunnel_port) ? 2 : 1;
- 	if (!ice_fdir_find_fltr_by_idx(hw, fsp->location) &&
- 	    ice_fdir_num_avail_fltr(hw, pf->vsi[vsi->idx]) < fltrs_needed) {
- 		dev_err(dev, "Failed to add filter.  The maximum number of flow director filters has been reached.\n");
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
-index 6834df14332f..59c0c6a0f8c5 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
-@@ -556,7 +556,7 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
- 		memcpy(pkt, ice_fdir_pkt[idx].pkt, ice_fdir_pkt[idx].pkt_len);
- 		loc = pkt;
- 	} else {
--		if (!ice_get_open_tunnel_port(hw, TNL_ALL, &tnl_port))
-+		if (!ice_get_open_tunnel_port(hw, &tnl_port))
- 			return ICE_ERR_DOES_NOT_EXIST;
- 		if (!ice_fdir_pkt[idx].tun_pkt)
- 			return ICE_ERR_PARAM;
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 3c217e51b27e..a60c5b2a0aed 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1696,12 +1696,10 @@ ice_find_free_tunnel_entry(struct ice_hw *hw, enum ice_tunnel_type type,
- /**
-  * ice_get_open_tunnel_port - retrieve an open tunnel port
-  * @hw: pointer to the HW structure
-- * @type: tunnel type (TNL_ALL will return any open port)
-  * @port: returns open port
-  */
- bool
--ice_get_open_tunnel_port(struct ice_hw *hw, enum ice_tunnel_type type,
--			 u16 *port)
-+ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port)
- {
- 	bool res = false;
- 	u16 i;
-@@ -1709,8 +1707,7 @@ ice_get_open_tunnel_port(struct ice_hw *hw, enum ice_tunnel_type type,
- 	mutex_lock(&hw->tnl_lock);
+-	memset(&ns->udp_ports.ports, 0, sizeof(ns->udp_ports.ports));
++	memset(ns->udp_ports.ports, 0, sizeof(ns->udp_ports.__ports));
+ 	rtnl_lock();
+ 	udp_tunnel_nic_reset_ntf(dev);
+ 	rtnl_unlock();
+@@ -132,6 +132,17 @@ int nsim_udp_tunnels_info_create(struct nsim_dev *nsim_dev,
+ 	struct netdevsim *ns = netdev_priv(dev);
+ 	struct udp_tunnel_nic_info *info;
  
- 	for (i = 0; i < hw->tnl.count && i < ICE_TUNNEL_MAX_ENTRIES; i++)
--		if (hw->tnl.tbl[i].valid && hw->tnl.tbl[i].in_use &&
--		    (type == TNL_ALL || hw->tnl.tbl[i].type == type)) {
-+		if (hw->tnl.tbl[i].valid && hw->tnl.tbl[i].in_use) {
- 			*port = hw->tnl.tbl[i].port;
- 			res = true;
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 568ea519af51..a18c87d9d9b1 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -19,8 +19,7 @@
- #define ICE_PKG_CNT 4
++	if (nsim_dev->udp_ports.shared && nsim_dev->udp_ports.open_only) {
++		dev_err(&nsim_dev->nsim_bus_dev->dev,
++			"shared can't be used in conjunction with open_only\n");
++		return -EINVAL;
++	}
++
++	if (!nsim_dev->udp_ports.shared)
++		ns->udp_ports.ports = ns->udp_ports.__ports;
++	else
++		ns->udp_ports.ports = nsim_dev->udp_ports.__ports;
++
+ 	debugfs_create_u32("udp_ports_inject_error", 0600,
+ 			   ns->nsim_dev_port->ddir,
+ 			   &ns->udp_ports.inject_error);
+@@ -173,6 +184,8 @@ int nsim_udp_tunnels_info_create(struct nsim_dev *nsim_dev,
+ 		info->flags |= UDP_TUNNEL_NIC_INFO_OPEN_ONLY;
+ 	if (nsim_dev->udp_ports.ipv4_only)
+ 		info->flags |= UDP_TUNNEL_NIC_INFO_IPV4_ONLY;
++	if (nsim_dev->udp_ports.shared)
++		info->shared = &nsim_dev->udp_ports.utn_shared;
  
- bool
--ice_get_open_tunnel_port(struct ice_hw *hw, enum ice_tunnel_type type,
--			 u16 *port);
-+ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port);
- enum ice_status
- ice_create_tunnel(struct ice_hw *hw, enum ice_tunnel_type type, u16 port);
- enum ice_status ice_destroy_tunnel(struct ice_hw *hw, u16 port, bool all);
+ 	dev->udp_tunnel_nic_info = info;
+ 	return 0;
+@@ -192,6 +205,8 @@ void nsim_udp_tunnels_debugfs_create(struct nsim_dev *nsim_dev)
+ 			    &nsim_dev->udp_ports.open_only);
+ 	debugfs_create_bool("udp_ports_ipv4_only", 0600, nsim_dev->ddir,
+ 			    &nsim_dev->udp_ports.ipv4_only);
++	debugfs_create_bool("udp_ports_shared", 0600, nsim_dev->ddir,
++			    &nsim_dev->udp_ports.shared);
+ 	debugfs_create_u32("udp_ports_sleep", 0600, nsim_dev->ddir,
+ 			   &nsim_dev->udp_ports.sleep);
+ }
 -- 
 2.26.2
 
