@@ -1,46 +1,78 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 22 Jul 2020 10:32:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:200GbE] BUILD SUCCESS
- d0bd59215c59721d6506c3084e70f5d4d673af01
-Message-ID: <5f17a526.mNzrYScAjvT1IqMw%lkp@intel.com>
+Date: Thu, 23 Jul 2020 02:52:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD REGRESSION
+ a9dee8850a1ffb9307fe52c99c2c50dcb2b46966
+Message-ID: <5f188ad9.w4qSmVk/IwMl2Fzf%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  200GbE
-branch HEAD: d0bd59215c59721d6506c3084e70f5d4d673af01  idpf: Introduce idpf driver
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: a9dee8850a1ffb9307fe52c99c2c50dcb2b46966  idpf: Introduce idpf driver
 
-elapsed time: 1546m
+Error/Warning in current branch:
 
-configs tested: 94
-configs skipped: 2
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Error/Warning ids grouped by kconfigs:
 
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
+recent_errors
+|-- arc-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+`-- i386-debian-10.3
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+    `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+
+elapsed time: 2526m
+
+configs tested: 90
+configs skipped: 3
+
 arm                                 defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 arm                               allnoconfig
-arm                         shannon_defconfig
-powerpc                       ppc64_defconfig
-arm                      footbridge_defconfig
-s390                             alldefconfig
-c6x                               allnoconfig
-arm                         s3c6400_defconfig
-mips                       rbtx49xx_defconfig
-arm                            u300_defconfig
-ia64                             alldefconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+sh                               alldefconfig
+mips                         bigsur_defconfig
+arm                           sama5_defconfig
+arm                           omap1_defconfig
+mips                            e55_defconfig
+arm                            zeus_defconfig
+sh                ecovec24-romimage_defconfig
+arm                       netwinder_defconfig
+mips                        nlm_xlr_defconfig
+powerpc                        cell_defconfig
+i386                             allyesconfig
 i386                                defconfig
 i386                              debian-10.3
 i386                              allnoconfig
-i386                             allyesconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                              allnoconfig
@@ -54,6 +86,7 @@ nios2                               defconfig
 nios2                            allyesconfig
 openrisc                            defconfig
 c6x                              allyesconfig
+c6x                               allnoconfig
 openrisc                         allyesconfig
 nds32                               defconfig
 nds32                             allnoconfig
@@ -88,12 +121,6 @@ i386                 randconfig-a002-20200719
 i386                 randconfig-a005-20200719
 i386                 randconfig-a003-20200719
 i386                 randconfig-a004-20200719
-i386                 randconfig-a015-20200719
-i386                 randconfig-a011-20200719
-i386                 randconfig-a016-20200719
-i386                 randconfig-a012-20200719
-i386                 randconfig-a013-20200719
-i386                 randconfig-a014-20200719
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
