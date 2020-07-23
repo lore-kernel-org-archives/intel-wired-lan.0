@@ -1,144 +1,131 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 23 Jul 2020 22:58:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- bd25e2e04a80b8618a6f429e18069a6b08318f91
-Message-ID: <5f19a5a2.Pq2RXUNI5hadcUIO%lkp@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 23 Jul 2020 09:07:20 -0700
+Subject: [Intel-wired-lan] [next-queue v3] Documentation: intel: Replace
+ HTTP links with HTTPS ones
+Message-ID: <20200723160720.795688-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: bd25e2e04a80b8618a6f429e18069a6b08318f91  igb: use eth_zero_addr() to clear mac address
+From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
 
-Error/Warning in current branch:
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
 
-include/linux/avf/virtchnl.h:1102:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:1184:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1200:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1230:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:1245:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:1383:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
 
-Error/Warning ids grouped by kconfigs:
-
-recent_errors
-|-- arc-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-allmodconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-`-- i386-debian-10.3
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-    `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-
-elapsed time: 1362m
-
-configs tested: 80
-configs skipped: 1
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-s390                          debug_defconfig
-arm                          pxa3xx_defconfig
-m68k                        m5407c3_defconfig
-sh                          sdk7780_defconfig
-c6x                         dsk6455_defconfig
-arm                           h5000_defconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                              allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc64                             defconfig
-sparc64                          allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                          allmodconfig
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+v3: Fixed to apply to dev-queue
+v2: Undone broken link.
+
+ .../networking/device_drivers/ethernet/intel/e100.rst         | 4 ++--
+ .../networking/device_drivers/ethernet/intel/fm10k.rst        | 2 +-
+ .../networking/device_drivers/ethernet/intel/iavf.rst         | 2 +-
+ .../networking/device_drivers/ethernet/intel/igb.rst          | 2 +-
+ .../networking/device_drivers/ethernet/intel/igbvf.rst        | 2 +-
+ .../networking/device_drivers/ethernet/intel/ixgb.rst         | 2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/e100.rst b/Documentation/networking/device_drivers/ethernet/intel/e100.rst
+index 3ac21e7119a7..3d4a9ba21946 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/e100.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/e100.rst
+@@ -41,7 +41,7 @@ Identifying Your Adapter
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ Driver Configuration Parameters
+ ===============================
+@@ -179,7 +179,7 @@ filtering by
+ Support
+ =======
+ For general information, go to the Intel support website at:
+-http://www.intel.com/support/
++https://www.intel.com/support/
+ 
+ or the Intel Wired Networking project hosted by Sourceforge at:
+ http://sourceforge.net/projects/e1000
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/fm10k.rst b/Documentation/networking/device_drivers/ethernet/intel/fm10k.rst
+index 4d279e64e221..9258ef6f515c 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/fm10k.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/fm10k.rst
+@@ -22,7 +22,7 @@ Ethernet Multi-host Controller.
+ 
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Flow Control
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
+index 84ac7e75f363..52e037b11c97 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
+@@ -43,7 +43,7 @@ device.
+ 
+ For information on how to identify your adapter, and for the latest NVM/FW
+ images and Intel network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/igb.rst b/Documentation/networking/device_drivers/ethernet/intel/igb.rst
+index 87e560fe5eaa..d46289e182cf 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/igb.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/igb.rst
+@@ -20,7 +20,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Command Line Parameters
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/igbvf.rst b/Documentation/networking/device_drivers/ethernet/intel/igbvf.rst
+index 557fc020ef31..40fa210c5e14 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/igbvf.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/igbvf.rst
+@@ -35,7 +35,7 @@ Identifying Your Adapter
+ ========================
+ For information on how to identify your adapter, and for the latest Intel
+ network drivers, refer to the Intel Support website:
+-http://www.intel.com/support
++https://www.intel.com/support
+ 
+ 
+ Additional Features and Configurations
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/ixgb.rst b/Documentation/networking/device_drivers/ethernet/intel/ixgb.rst
+index ab624f1a44a8..c6a233e68ad6 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/ixgb.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/ixgb.rst
+@@ -203,7 +203,7 @@ With the 10 Gigabit server adapters, the default Linux configuration will
+ very likely limit the total available throughput artificially.  There is a set
+ of configuration changes that, when applied together, will increase the ability
+ of Linux to transmit and receive data.  The following enhancements were
+-originally acquired from settings published at http://www.spec.org/web99/ for
++originally acquired from settings published at https://www.spec.org/web99/ for
+ various submitted results using Linux.
+ 
+ NOTE:
+-- 
+2.26.2
+
