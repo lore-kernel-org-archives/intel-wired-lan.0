@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 23 Jul 2020 01:26:18 +0000
-Subject: [Intel-wired-lan] [PATCH S49 03/15] ice: split
- ice_discover_caps into two functions
-In-Reply-To: <20200709161614.61098-3-anthony.l.nguyen@intel.com>
+Date: Thu, 23 Jul 2020 01:26:41 +0000
+Subject: [Intel-wired-lan] [PATCH S49 02/15] ice: split ice_parse_caps
+ into separate functions
+In-Reply-To: <20200709161614.61098-2-anthony.l.nguyen@intel.com>
 References: <20200709161614.61098-1-anthony.l.nguyen@intel.com>
- <20200709161614.61098-3-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145494F024E8FE3BD4314E58C760@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200709161614.61098-2-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB21458F5F374DCD53A54F18A58C760@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, July 9, 2020 9:16 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S49 03/15] ice: split ice_discover_caps into
-> two functions
+> Subject: [Intel-wired-lan] [PATCH S49 02/15] ice: split ice_parse_caps into
+> separate functions
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Using the new ice_aq_list_caps and ice_parse_(dev|func)_caps functions,
-> replace ice_discover_caps with two functions that each take a pointer to the
-> dev_caps and func_caps structures respectively.
+> The ice_parse_caps function is used to convert the capability block data
+> coming from firmware into a structured format used by other parts of the
+> code.
 > 
-> This makes the side effect of updating the hw->dev_caps and
-> hw->func_caps obvious from reading the implementation of the function.
-> Additionally, it opens the way for enabling reading of device capabilities
-> outside of the initialization flow. By passing in a pointer, another caller will be
-> able to read the capabilities without modifying the hw capabilities structures.
+> The current implementation directly updates the hw->func_caps and
+> hw->dev_caps structures. It is directly called from within
+> ice_aq_discover_caps. This causes the discover_caps function to have the
+> side effect of modifying the hw capability structures, which is not intuitive.
 > 
-> As there are no other callers, it is safe to now remove ice_aq_discover_caps
-> and ice_parse_caps.
+> Split this function into ice_parse_dev_caps and ice_parse_func_caps.
+> These functions will take a pointer to the dev_caps and func_caps
+> respectively. Also create an ice_parse_common_caps for sharing the
+> capability logic that is common to device and function.
+> 
+> Doing so enables a future refactor to allow reading and parsing capabilities
+> into a local caps structure instead of modifying the members of the hw
+> structure directly.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 94 +++++++++------------
->  1 file changed, 39 insertions(+), 55 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 548 ++++++++++++++------
+>  1 file changed, 378 insertions(+), 170 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
