@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 24 Jul 2020 23:57:56 +0000
-Subject: [Intel-wired-lan] [PATCH S48 v6 07/16] ice: Enable RSS
- Configure for AVF
-In-Reply-To: <20200716133938.46921-8-qi.z.zhang@intel.com>
+Date: Fri, 24 Jul 2020 23:58:13 +0000
+Subject: [Intel-wired-lan] [PATCH S48 v6 16/16] ice: Check FDIR program
+ status for AVF
+In-Reply-To: <20200716133938.46921-17-qi.z.zhang@intel.com>
 References: <20200716133938.46921-1-qi.z.zhang@intel.com>
- <20200716133938.46921-8-qi.z.zhang@intel.com>
-Message-ID: <BN6PR1101MB21455146A0BDAAEBF407DA678C770@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200716133938.46921-17-qi.z.zhang@intel.com>
+Message-ID: <BN6PR1101MB21450854C26D89CC7D4259C58C770@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,104 +15,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Qi
 > Zhang
-> Sent: Thursday, July 16, 2020 6:39 AM
+> Sent: Thursday, July 16, 2020 6:40 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Zhang, Qi Z <qi.z.zhang@intel.com>
-> Subject: [Intel-wired-lan] [PATCH S48 v6 07/16] ice: Enable RSS Configure for
-> AVF
+> Subject: [Intel-wired-lan] [PATCH S48 v6 16/16] ice: Check FDIR program
+> status for AVF
 > 
-> The virtual channel is going to be extended to support FDIR and RSS
-> configure from AVF. New data structures and OP codes will be added, the
-> patch enable the RSS part.
+> Enables returning FDIR completion status by checking the ctrl_vsi Rx queue
+> descriptor value.
 > 
-> To support above advanced AVF feature, we need to figure out what kind of
-> data structure should be passed from VF to PF to describe an FDIR rule or RSS
-> config rule. The common part of the requirement is we need a data structure
-> to represent the input set selection of a rule's hash key.
+> To enable returning FDIR completion status from ctrl_vsi Rx queue,
+> COMP_Queue and COMP_Report of FDIR filter programming descriptor
+> needs to be properly configured. After program request sent to ctrl_vsi Tx
+> queue, ctrl_vsi Rx queue interrupt will be triggered and completion status
+> will be returned.
 > 
-> An input set selection is a group of fields be selected from one or more
-> network protocol layers that could be identified as a specific flow.
-> For example, select dst IP address from an IPv4 header combined with dst
-> port from the TCP header as the input set for an IPv4/TCP flow.
+> Driver will first issue request in ice_vc_fdir_add_fltr(), then pass FDIR context
+> to the background task in interrupt service routine
+> ice_vc_fdir_irq_handler() and finally deal with them in ice_flush_fdir_ctx().
+> ice_flush_fdir_ctx() will check the descriptor's value, fdir context, and then
+> send back virtual channel message to VF by calling
+> ice_vc_add_fdir_fltr_post(). An additional timer will be setup in case of
+> hardware interrupt timeout.
 > 
-> The patch adds a new data structure virtchnl_proto_hdrs to abstract a
-> network protocol headers group which is composed of layers of network
-> protocol header(virtchnl_proto_hdr).
-> 
-> A protocol header contains a 32 bits mask (field_selector) to describe which
-> fields are selected as input sets, as well as a header type (enum
-> virtchnl_proto_hdr_type). Each bit is mapped to a field in enum
-> virtchnl_proto_hdr_field guided by its header type.
-> 
-> +------------+-----------+------------------------------+
-> |            | Proto Hdr | Header Type A                |
-> |            |           +------------------------------+
-> |            |           | BIT 31 | ... | BIT 1 | BIT 0 |
-> |            |-----------+------------------------------+
-> |Proto Hdrs  | Proto Hdr | Header Type B                |
-> |            |           +------------------------------+
-> |            |           | BIT 31 | ... | BIT 1 | BIT 0 |
-> |            |-----------+------------------------------+
-> |            | Proto Hdr | Header Type C                |
-> |            |           +------------------------------+
-> |            |           | BIT 31 | ... | BIT 1 | BIT 0 |
-> |            |-----------+------------------------------+
-> |            |    ....                                  |
-> +-------------------------------------------------------+
-> 
-> All fields in enum virtchnl_proto_hdr_fields are grouped with header type
-> and the value of the first field of a header type is always 32 aligned.
-> 
-> enum proto_hdr_type {
->         header_type_A = 0;
->         header_type_B = 1;
->         ....
-> }
-> 
-> enum proto_hdr_field {
->         /* header type A */
->         header_A_field_0 = 0,
->         header_A_field_1 = 1,
->         header_A_field_2 = 2,
->         header_A_field_3 = 3,
-> 
->         /* header type B */
->         header_B_field_0 = 32, // = header_type_B << 5
->         header_B_field_0 = 33,
->         header_B_field_0 = 34
->         header_B_field_0 = 35,
->         ....
-> };
-> 
-> So we have:
-> proto_hdr_type = proto_hdr_field / 32
-> bit offset = proto_hdr_field % 32
-> 
-> To simply the protocol header's operations, couple help macros are added.
-> For example, to select src IP and dst port as input set for an IPv4/UDP flow.
-> 
-> we have:
-> struct virtchnl_proto_hdr hdr[2];
-> 
-> VIRTCHNL_SET_PROTO_HDR_TYPE(&hdr[0], IPV4)
-> VIRTCHNL_ADD_PROTO_HDR_FIELD(&hdr[0], IPV4, SRC)
-> 
-> VIRTCHNL_SET_PROTO_HDR_TYPE(&hdr[1], UDP)
-> VIRTCHNL_ADD_PROTO_HDR_FIELD(&hdr[1], UDP, DST)
-> 
-> A protocol header also contains a byte array, this field should only be used by
-> an FDIR rule and should be ignored by RSS. For an FDIR rule, the byte array is
-> used to store the protocol header of a training package. The byte array must
-> be network order.
-> 
-> Signed-off-by: Jeff Guo <jia.guo@intel.com>
+> Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_flow.h        |   3 +
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 454
-> +++++++++++++++++++++++
->  include/linux/avf/virtchnl.h                     | 178 +++++++++
->  3 files changed, 635 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice.h               |   1 +
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h    |   3 +
+>  drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h     |  20 +
+>  drivers/net/ethernet/intel/ice/ice_main.c          |   2 +
+>  drivers/net/ethernet/intel/ice/ice_txrx.c          |   5 +
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 494
+> ++++++++++++++++++++-
+> drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h |  27 +-
+>  7 files changed, 536 insertions(+), 16 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
