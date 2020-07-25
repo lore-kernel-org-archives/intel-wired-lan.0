@@ -1,5 +1,5 @@
-From: Ian Kumlien <ian.kumlien@gmail.com>
-Date: Sat, 25 Jul 2020 02:13:01 +0200
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 24 Jul 2020 17:45:27 -0700
 Subject: [Intel-wired-lan] NAT performance issue 944mbit -> ~40mbit
 In-Reply-To: <CAA85sZvtct5qzNMAcO=jjcfuFPJ4dVfyUDzyXdqAmNDdoLUXuA@mail.gmail.com>
 References: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
@@ -27,14 +27,14 @@ References: <CAA85sZvKNXCo5bB5a6kKmsOUAiw+_daAVaSYqNW6QbSBJ0TcyQ@mail.gmail.com>
  <CAA85sZv=u2EaLKuTvrOnKRn1AKkdpYcG4038zZde_3cMLMAfNw@mail.gmail.com>
  <CAA85sZvTrmKhmoW6xASgOcZqPhLMkgy_LyfzvkGcqURUuvVxcg@mail.gmail.com>
  <CAA85sZvtct5qzNMAcO=jjcfuFPJ4dVfyUDzyXdqAmNDdoLUXuA@mail.gmail.com>
-Message-ID: <CAA85sZsRboyebNzFL1MHWq2i-R7wyqh-93kmhu9c-A4qHKk3Aw@mail.gmail.com>
+Message-ID: <CAKgT0UdanNRN_KFkUjjpkiMPfi1ktjeD1ejiqnU_rU-0wJVn5A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Jul 25, 2020 at 1:08 AM Ian Kumlien <ian.kumlien@gmail.com> wrote:
+On Fri, Jul 24, 2020 at 4:08 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
 >
 > On Sat, Jul 25, 2020 at 12:49 AM Ian Kumlien <ian.kumlien@gmail.com> wrote:
 > >
@@ -174,70 +174,77 @@ On Sat, Jul 25, 2020 at 1:08 AM Ian Kumlien <ian.kumlien@gmail.com> wrote:
 > > a.up + b.dw + b.up + c.dw
 > >
 > > for a (root?) to go through b (bridge/switch?) to c (device)
->
+
+Actually I think it is max(a.dw, b.up) + max(b.dw, a.up). Basically
+what you want is the maximum time to bring the link up so technically
+you only have 2 links so you just have to add up the maximum time to
+create each link.
+
 > Also, we only disabled L0, which isn't counted as a total at all, it
 > only checks each side.
->
+
+Not sure what you mean here. L0 is the link fully powered on. The two
+link states we have to worry about are L0s and L1 as those involve
+various states of power-down. The L1 latency is the nasty one as that
+basically involves fully powering down the link and requires time for
+the link to be reestablished.
+
 > Since pcie is serial and judging from your previous statements I
 > assume that the max statement is a bug.
 > I also assume that l0 counts, and should be dealt with the same way
 > and it should also be cumulative...
->
+
+That latency check looks like it would be for a single link. Not each
+link in the chain.
+
 > The question becomes, is this latency from root? or is it "one step"?
->
+
+Actually the function is doing both. I had to reread the spec.
+Basically the switch is supposed to start trying to bring up the other
+links as soon as it detects that we are trying to bring up the link.
+In theory this is only supposed to add about 1us. So in theory the
+total bring-up time should be 33us.
+
 > Also they add one microsecond but that looks like it should be
 > parent.l0.up + link.l0.dw latency values
->
+
+Yes, the 1us is the value I reference above. Basically the assumption
+is that as soon as one link starts retraining it should start working
+on the other ones so the serialization penalty is only supposed to be
+1us.
+
 > So are my assumptions correct that the serial nature means that all
 > latenies stack?
 >
 > l0 is done first, so latency is actually l0 + l1 as max latency? (per side)
 
-Found some intel documentation "PCI Express compiler v6.1 User Guide" and it
-does seem like the l0 and l1 latencies are cumulative...
+I don't think the L0s latency needs to be added if that is what you
+are asking. Basically you either go from L0s->L0 or L1->L0. There is
+no jumping between L0s and L1.
 
-So it looks like we should have something like:
-        while (link) {
-                /* Check L0s latency, this is cumulative from the root */
-                if (link->aspm_capable & ASPM_STATE_L0S) {
-                        /* Check downstream direction L0s latency */
-                        if (link->aspm_capable & ASPM_STATE_L0S_DW)
-                                l0_switch_latency += link->latency_dw.l0s;
-                        /* Add upstream direction L0s parent latency */
-                        if (link->parent && link->parent->aspm_capable
-& ASPM_STATE_L0S_UP)
-                                l0_switch_latency +=
-link->parent->latency_up.l0s;
+Something still isn't adding up with all this as the latency shouldn't
+be enough to trigger buffer overruns. I wonder if we don't have
+something that is misreporting the actual L1 wakeup latency. One thing
+that I notice is that the link between the root complex and the PCIe
+switch seems to have some sort of electrical issue. If you look at the
+section from the upstream side of the switch:
+LnkCap: Port #0, Speed 16GT/s, Width x8, ASPM L1, Exit Latency L1 <32us
+ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+LnkCtl: ASPM L1 Enabled; Disabled- CommClk+
+ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+LnkSta: Speed 16GT/s (ok), Width x4 (downgraded)
+TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
 
-                        /* Clear ASPM L0 since the latency is too high */
-                        if (l0_switch_latency > acceptable->l0s)
-
-endpoint->bus->self->link_state->aspm_capable &= ~ASPM_STATE_L0S
-                }
-
-                latency = link->latency_up.l1 + link->latency_dw.l1;
-                if (link->aspm_capable & ASPM_STATE_L1) {
-                        l1_switch_latency += link->latency_dw.l1;
-                        if (link->parent && link->parent->aspm_capable
-& ASPM_STATE_L1)
-                                l1_switch_latency +=
-link->parent->latency.up.l1;
-
-                        /* Clear ASPM L1 since the latency is too high */
-                        /* FIXME: should l0 latency be used here? */
-                        if (l1_switch_latency + l0_switch_latency >
-acceptable->l1)
-
-endpoint->bus->self->link_state->aspm_capable &= ~ASPM_STATE_L1
-                        /* FIXME: is this still required? */
-                        l1_switch_latency += 1000;
-                }
-
-                link = link->parent;
----
-
-I don't know if i got downstream/upstream right though... But as you
-can see there are a few questions...
-An additional question is if it's enough to only clear endpoints or if
-i should walk the path... (it does feel like endpoints would be good
-enough)
+One thing that catches my eye is that it is only linked at x4 when
+both sides are listing themselves as x8. Do you know if this has ever
+linked at x8 or has it always been x4? With this being a Gen 4 x8
+connection it would normally take a little while to establish a link,
+but with it having to fail down to a x4 that would add extra time and
+likely push it out of the expected exit latency. Also I notice that
+there are mentions of lane errors in the config, however I suspect
+those are Gen 4 features that I am not familiar with so I don't know
+if those are normal. It might be interesting to reboot and see if the
+link goes back to a x8 and if the lane errors clear@some point. If
+it does then we might want to disable ASPM on the upstream port of the
+switch since I have seen ASPM cause link downgrades and that may be
+what is occurring here.
