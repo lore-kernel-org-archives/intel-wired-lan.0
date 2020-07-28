@@ -1,34 +1,57 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 27 Jul 2020 23:14:15 +0000
-Subject: [Intel-wired-lan] [PATCH v2] i40e: add support for PTP external
- synchronization clock
-In-Reply-To: <20200724155948.9434-1-piotr.kwapulinski@intel.com>
-References: <1ad46857df3e932b2e28256a62f7ad32ae03da23.camel@intel.com>
- <20200724155948.9434-1-piotr.kwapulinski@intel.com>
-Message-ID: <6ef09135cb431475f16beb55f79037d5875c40fc.camel@intel.com>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Tue, 28 Jul 2020 09:41:53 +0800
+Subject: [Intel-wired-lan] [PATCH net-next] ice: mark PM functions as
+ __maybe_unused
+Message-ID: <20200728014153.44834-1-weiyongjun1@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2020-07-24 at 17:59 +0200, Piotr Kwapulinski wrote:
-> Add support for external synchronization clock via GPIOs.
-> 1PPS signals are handled via the dedicated 3 GPIOs: SDP3_2,
-> SDP3_3 and GPIO_4.
-> Previously it was not possible to use the external PTP
-> synchronization clock.
-> 
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
-> ---
+In certain configurations without power management support, the
+following warnings happen:
 
-This still doesn't apply. I was able to hand merge the patch but ended
-up with a bunch errors when building. I'm guessing whatever this was
-prepared against didn't have this patch:
+drivers/net/ethernet/intel/ice/ice_main.c:4214:12: warning:
+ 'ice_resume' defined but not used [-Wunused-function]
+ 4214 | static int ice_resume(struct device *dev)
+      |            ^~~~~~~~~~
+drivers/net/ethernet/intel/ice/ice_main.c:4150:12: warning:
+ 'ice_suspend' defined but not used [-Wunused-function]
+ 4150 | static int ice_suspend(struct device *dev)
+      |            ^~~~~~~~~~~
 
+Mark these functions as __maybe_unused to make it clear to the
+compiler that this is going to happen based on the configuration,
+which is the standard for these types of functions.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/commit/drivers/net/ethernet/intel/i40e?id=3c98f9ee6bc280499cbcb6f8e42c001c3bd7caa1
+Fixes: 769c500dcc1e ("ice: Add advanced power mgmt for WoL")
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Please use dev-queue that I pointed you to in the other reponse.
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d6981ba34b27..6edf018c4940 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4147,7 +4147,7 @@ static int ice_reinit_interrupt_scheme(struct ice_pf *pf)
+  * Power Management callback to quiesce the device and prepare
+  * for D3 transition.
+  */
+-static int ice_suspend(struct device *dev)
++static int __maybe_unused ice_suspend(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct ice_pf *pf;
+@@ -4211,7 +4211,7 @@ static int ice_suspend(struct device *dev)
+  * ice_resume - PM callback for waking up from D3
+  * @dev: generic device information structure
+  */
+-static int ice_resume(struct device *dev)
++static int __maybe_unused ice_resume(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	enum ice_reset_req reset_type;
+
