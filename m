@@ -1,43 +1,49 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 28 Jul 2020 20:10:56 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Allow changing FEC settings on
- X722 if supported by FW
-In-Reply-To: <20200724122356.24058-1-arkadiusz.kubalewski@intel.com>
-References: <20200724122356.24058-1-arkadiusz.kubalewski@intel.com>
-Message-ID: <BN6PR1101MB21457755A765EB31F827D2898C730@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 28 Jul 2020 20:34:41 +0000
+Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even
+ when failed to disable ULP
+In-Reply-To: <20200618065453.12140-1-aaron.ma@canonical.com>
+References: <20200616100512.22512-1-aaron.ma@canonical.com>
+ <20200618065453.12140-1-aaron.ma@canonical.com>
+Message-ID: <DM6PR11MB2890F94DA893CE56A5D8A3EABC730@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Arkadiusz Kubalewski
-> Sent: Friday, July 24, 2020 5:24 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Gawin,
-> JaroslawX <jaroslawx.gawin@intel.com>
-> Subject: [Intel-wired-lan] [PATCH] i40e: Allow changing FEC settings on X722
-> if supported by FW
+> Aaron Ma
+> Sent: Wednesday, June 17, 2020 11:55 PM
+> To: kuba at kernel.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
+> davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Lifshits, Vitaly
+> <vitaly.lifshits@intel.com>; kai.heng.feng at canonical.com; Neftin, Sasha
+> <sasha.neftin@intel.com>
+> Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even when
+> failed to disable ULP
 > 
-> From: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> After 'commit e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
+>  for ME systems")',
+> ThinkPad P14s always failed to disable ULP by ME.
+> 'commit 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")'
+> break out of init phy:
 > 
-> Starting with API version 1.10 firmware for X722 devices has ability to change
-> FEC settings in PHY. Code added in this patch allows changing FEC settings if
-> the capability flag indicates the device supports this feature.
+> error log:
+> [   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
+> [   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast
+> Packet
+> [   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
 > 
-> Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
+> If continue to init phy like before, it can work as before.
+> iperf test result good too.
+> 
+> Fixes: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c |  6 +++++
-> .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  2 ++
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 22 ++++++++++++++++---
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 19 ++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
->  5 files changed, 47 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 1 -
+>  1 file changed, 1 deletion(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
+I never did find a system that triggered the initial problem, but from a compatibility with the set of systems I do have working...
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
