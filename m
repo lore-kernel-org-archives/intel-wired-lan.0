@@ -1,222 +1,44 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue, 28 Jul 2020 16:37:54 -0700
-Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in PTP tx code
+Date: Tue, 28 Jul 2020 16:37:53 -0700
+Subject: [Intel-wired-lan] [PATCH 3/4] igc: Remove timeout check from ptp_tx
+ work
 In-Reply-To: <20200728233754.65747-1-andre.guedes@intel.com>
 References: <20200728233754.65747-1-andre.guedes@intel.com>
-Message-ID: <20200728233754.65747-5-andre.guedes@intel.com>
+Message-ID: <20200728233754.65747-4-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, the igc driver supports timestamping only one tx packet at a
-time. During the transmission flow, the skb that requires hardware
-timestamping is saved in adapter->ptp_tx_skb. Once hardware has the
-timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
-scheduled. In igc_ptp_tx_work(), we read the timestamp register, update
-adapter->ptp_tx_skb, and notify the network stack.
-
-While the thread executing the transmission flow (the user process
-running in kernel mode) and the thread executing ptp_tx_work don't
-access adapter->ptp_tx_skb concurrently, there are two other places
-where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
-igc_ptp_suspend().
-
-igc_ptp_tx_hang() is executed by the adapter->watchdog_task worker
-thread which runs periodically so it is possible we have two threads
-accessing ptp_tx_skb at the same time. Consider the following scenario:
-right after __IGC_PTP_TX_IN_PROGRESS is set in igc_xmit_frame_ring(),
-igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't been
-written yet, this is considered a timeout and adapter->ptp_tx_skb is
-cleaned up.
-
-This patch fixes the issue described above by adding the ptp_tx_lock to
-protect access to ptp_tx_skb and ptp_tx_start fields from igc_adapter.
-Since igc_xmit_frame_ring() called in atomic context by the networking
-stack, ptp_tx_lock is defined as a spinlock.
-
-With the introduction of the ptp_tx_lock, the __IGC_PTP_TX_IN_PROGRESS
-flag doesn't provide much of a use anymore so this patch gets rid of it.
+The tx timestamp timeout is already checked by the watchdog_task work
+which runs periodically. In addition to that, from the ptp_tx work
+perspective, if __IGC_PTP_TX_IN_PROGRESS flag is set we always want
+handle the timestamp stored in hardware and update the skb. So this
+patch removes the timeout check in igc_ptp_tx_work() function.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  5 ++-
- drivers/net/ethernet/intel/igc/igc_main.c |  7 +++-
- drivers/net/ethernet/intel/igc/igc_ptp.c  | 49 ++++++++++++++---------
- 3 files changed, 40 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 3070dfdb7eb4..19f88f705ec3 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -207,6 +207,10 @@ struct igc_adapter {
- 	struct ptp_clock *ptp_clock;
- 	struct ptp_clock_info ptp_caps;
- 	struct work_struct ptp_tx_work;
-+	/* Access to ptp_tx_skb and ptp_tx_start is protected by the
-+	 * ptp_tx_lock.
-+	 */
-+	spinlock_t ptp_tx_lock;
- 	struct sk_buff *ptp_tx_skb;
- 	struct hwtstamp_config tstamp_config;
- 	unsigned long ptp_tx_start;
-@@ -361,7 +365,6 @@ enum igc_state_t {
- 	__IGC_TESTING,
- 	__IGC_RESETTING,
- 	__IGC_DOWN,
--	__IGC_PTP_TX_IN_PROGRESS,
- };
- 
- enum igc_tx_flags {
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index ab5b302d6655..d6b37d91cad9 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1347,13 +1347,14 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 	if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)) {
- 		struct igc_adapter *adapter = netdev_priv(tx_ring->netdev);
- 
-+		spin_lock(&adapter->ptp_tx_lock);
-+
- 		/* FIXME: add support for retrieving timestamps from
- 		 * the other timer registers before skipping the
- 		 * timestamping request.
- 		 */
- 		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
--		    !test_and_set_bit_lock(__IGC_PTP_TX_IN_PROGRESS,
--					   &adapter->state)) {
-+		    !adapter->ptp_tx_skb) {
- 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
- 			tx_flags |= IGC_TX_FLAGS_TSTAMP;
- 
-@@ -1362,6 +1363,8 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 		} else {
- 			adapter->tx_hwtstamp_skipped++;
- 		}
-+
-+		spin_unlock(&adapter->ptp_tx_lock);
- 	}
- 
- 	/* record initial flags and protocol */
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 22b2cf80b22f..3dda5bd05cc6 100644
+index b912830ea7bb..22b2cf80b22f 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -320,35 +320,35 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 	return 0;
- }
- 
-+/* Requires adapter->ptp_tx_lock held by caller. */
- static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
- 	adapter->ptp_tx_skb = NULL;
-+	adapter->ptp_tx_start = 0;
- 	adapter->tx_hwtstamp_timeouts++;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
- 	/* Clear the tx valid bit in TSYNCTXCTL register to enable interrupt. */
- 	rd32(IGC_TXSTMPH);
-+
- 	netdev_warn(adapter->netdev, "Tx timestamp timeout\n");
- }
- 
- void igc_ptp_tx_hang(struct igc_adapter *adapter)
- {
--	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
--					      IGC_PTP_TX_TIMEOUT);
-+	spin_lock(&adapter->ptp_tx_lock);
- 
--	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
--		return;
-+	if (!adapter->ptp_tx_skb)
-+		goto unlock;
- 
--	/* If we haven't received a timestamp within the timeout, it is
--	 * reasonable to assume that it will never occur, so we can unlock the
--	 * timestamp bit when this occurs.
--	 */
--	if (timeout) {
--		cancel_work_sync(&adapter->ptp_tx_work);
--		igc_ptp_tx_timeout(adapter);
--	}
-+	if (time_is_after_jiffies(adapter->ptp_tx_start + IGC_PTP_TX_TIMEOUT))
-+		goto unlock;
-+
-+	igc_ptp_tx_timeout(adapter);
-+
-+unlock:
-+	spin_unlock(&adapter->ptp_tx_lock);
- }
- 
- /**
-@@ -358,6 +358,8 @@ void igc_ptp_tx_hang(struct igc_adapter *adapter)
-  * If we were asked to do hardware stamping and such a time stamp is
-  * available, then it must have been for this skb here because we only
-  * allow only one such packet into the queue.
-+ *
-+ * Context: Expects adapter->ptp_tx_lock to be held by caller.
-  */
- static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- {
-@@ -379,7 +381,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 	 * while we're notifying the stack.
- 	 */
- 	adapter->ptp_tx_skb = NULL;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
-+	adapter->ptp_tx_start = 0;
- 
- 	/* Notify the stack and free the skb after we've unlocked */
- 	skb_tstamp_tx(skb, &shhwtstamps);
-@@ -400,14 +402,19 @@ static void igc_ptp_tx_work(struct work_struct *work)
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 tsynctxctl;
- 
--	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
--		return;
-+	spin_lock(&adapter->ptp_tx_lock);
-+
-+	if (!adapter->ptp_tx_skb)
-+		goto unlock;
- 
- 	tsynctxctl = rd32(IGC_TSYNCTXCTL);
- 	if (WARN_ON_ONCE(!(tsynctxctl & IGC_TSYNCTXCTL_TXTT_0)))
--		return;
-+		goto unlock;
- 
- 	igc_ptp_tx_hwtstamp(adapter);
-+
-+unlock:
-+	spin_unlock(&adapter->ptp_tx_lock);
- }
- 
- /**
-@@ -484,6 +491,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
- 	}
- 
- 	spin_lock_init(&adapter->tmreg_lock);
-+	spin_lock_init(&adapter->ptp_tx_lock);
- 	INIT_WORK(&adapter->ptp_tx_work, igc_ptp_tx_work);
- 
- 	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
-@@ -515,9 +523,14 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+@@ -403,12 +403,6 @@ static void igc_ptp_tx_work(struct work_struct *work)
+ 	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
  		return;
  
- 	cancel_work_sync(&adapter->ptp_tx_work);
-+
-+	spin_lock(&adapter->ptp_tx_lock);
-+
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
- 	adapter->ptp_tx_skb = NULL;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
-+	adapter->ptp_tx_start = 0;
-+
-+	spin_unlock(&adapter->ptp_tx_lock);
- }
- 
- /**
+-	if (time_is_before_jiffies(adapter->ptp_tx_start +
+-				   IGC_PTP_TX_TIMEOUT)) {
+-		igc_ptp_tx_timeout(adapter);
+-		return;
+-	}
+-
+ 	tsynctxctl = rd32(IGC_TSYNCTXCTL);
+ 	if (WARN_ON_ONCE(!(tsynctxctl & IGC_TSYNCTXCTL_TXTT_0)))
+ 		return;
 -- 
 2.26.2
 
