@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 28 Jul 2020 20:34:41 +0000
-Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even
- when failed to disable ULP
-In-Reply-To: <20200618065453.12140-1-aaron.ma@canonical.com>
-References: <20200616100512.22512-1-aaron.ma@canonical.com>
- <20200618065453.12140-1-aaron.ma@canonical.com>
-Message-ID: <DM6PR11MB2890F94DA893CE56A5D8A3EABC730@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Tue, 28 Jul 2020 20:37:36 +0000
+Subject: [Intel-wired-lan] [PATCH v2] igb: reinit_locked() should be
+ called with rtnl_lock
+In-Reply-To: <20200702223906.42B6C95C0494@us180.sjc.aristanetworks.com>
+References: <20200702223906.42B6C95C0494@us180.sjc.aristanetworks.com>
+Message-ID: <DM6PR11MB28903B2C52C7DE21578C17B4BC730@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,37 +12,68 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Aaron Ma
-> Sent: Wednesday, June 17, 2020 11:55 PM
-> To: kuba at kernel.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Lifshits, Vitaly
-> <vitaly.lifshits@intel.com>; kai.heng.feng at canonical.com; Neftin, Sasha
-> <sasha.neftin@intel.com>
-> Subject: [Intel-wired-lan] [v4][PATCH] e1000e: continue to init phy even when
-> failed to disable ULP
+> Francesco Ruggeri
+> Sent: Thursday, July 2, 2020 3:39 PM
+> To: linux-kernel at vger.kernel.org; netdev at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net; Kirsher, Jeffrey
+> T <jeffrey.t.kirsher@intel.com>; fruggeri at arista.com
+> Subject: [Intel-wired-lan] [PATCH v2] igb: reinit_locked() should be called with
+> rtnl_lock
 > 
-> After 'commit e086ba2fccda4 ("e1000e: disable s0ix entry and exit flows
->  for ME systems")',
-> ThinkPad P14s always failed to disable ULP by ME.
-> 'commit 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")'
-> break out of init phy:
+> We observed two panics involving races with igb_reset_task.
+> The first panic is caused by this race condition:
 > 
-> error log:
-> [   42.364753] e1000e 0000:00:1f.6 enp0s31f6: Failed to disable ULP
-> [   42.524626] e1000e 0000:00:1f.6 enp0s31f6: PHY Wakeup cause - Unicast
-> Packet
-> [   42.822476] e1000e 0000:00:1f.6 enp0s31f6: Hardware Error
+> 	kworker			reboot -f
 > 
-> When disable s0ix, E1000_FWSM_ULP_CFG_DONE will never be 1.
-> If continue to init phy like before, it can work as before.
-> iperf test result good too.
+> 	igb_reset_task
+> 	igb_reinit_locked
+> 	igb_down
+> 	napi_synchronize
+> 				__igb_shutdown
+> 				igb_clear_interrupt_scheme
+> 				igb_free_q_vectors
+> 				igb_free_q_vector
+> 				adapter->q_vector[v_idx] = NULL;
+> 	napi_disable
+> 	Panics trying to access
+> 	adapter->q_vector[v_idx].napi_state
 > 
-> Fixes: 0c80cdbf3320 ("e1000e: Warn if disabling ULP failed")
-> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> The second panic (a divide error) is caused by this race:
+> 
+> kworker		reboot -f	tx packet
+> 
+> igb_reset_task
+> 		__igb_shutdown
+> 		rtnl_lock()
+> 		...
+> 		igb_clear_interrupt_scheme
+> 		igb_free_q_vectors
+> 		adapter->num_tx_queues = 0
+> 		...
+> 		rtnl_unlock()
+> rtnl_lock()
+> igb_reinit_locked
+> igb_down
+> igb_up
+> netif_tx_start_all_queues
+> 				dev_hard_start_xmit
+> 				igb_xmit_frame
+> 				igb_tx_queue_mapping
+> 				Panics on
+> 				r_idx % adapter->num_tx_queues
+> 
+> This commit applies to igb_reset_task the same changes that
+> were applied to ixgbe in commit 2f90b8657ec9 ("ixgbe: this patch
+> adds support for DCB to the kernel and ixgbe driver"),
+> commit 8f4c5c9fb87a ("ixgbe: reinit_locked() should be called with
+> rtnl_lock") and commit 88adce4ea8f9 ("ixgbe: fix possible race in
+> reset subtask").
+> 
+> v2: add fix for second race condition above.
+> 
+> Signed-off-by: Francesco Ruggeri <fruggeri@arista.com>
+> 
 > ---
->  drivers/net/ethernet/intel/e1000e/ich8lan.c | 1 -
->  1 file changed, 1 deletion(-)
-
-I never did find a system that triggered the initial problem, but from a compatibility with the set of systems I do have working...
+>  drivers/net/ethernet/intel/igb/igb_main.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
