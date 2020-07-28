@@ -1,63 +1,43 @@
-From: Jesse Brandeburg <jbrandeb@intel.com>
-Date: Tue, 28 Jul 2020 11:10:27 -0700 (PDT)
-Subject: [Intel-wired-lan] Further information on
- CVE-2019-0145/CVE-2019-0146/CVE-2019-0147/CVE-2019-0148/CVE-2019-0149 for
- Linux?
-In-Reply-To: <20200716203902.acn3ea2b4iorxlhq@inutil.org>
-References: <20200716203902.acn3ea2b4iorxlhq@inutil.org>
-Message-ID: <alpine.LFD.2.23.451.2007281106010.590669@jbrandeb-desk.jf.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 28 Jul 2020 20:10:56 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Allow changing FEC settings on
+ X722 if supported by FW
+In-Reply-To: <20200724122356.24058-1-arkadiusz.kubalewski@intel.com>
+References: <20200724122356.24058-1-arkadiusz.kubalewski@intel.com>
+Message-ID: <BN6PR1101MB21457755A765EB31F827D2898C730@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Arkadiusz Kubalewski
+> Sent: Friday, July 24, 2020 5:24 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Gawin,
+> JaroslawX <jaroslawx.gawin@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Allow changing FEC settings on X722
+> if supported by FW
+> 
+> From: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> 
+> Starting with API version 1.10 firmware for X722 devices has ability to change
+> FEC settings in PHY. Code added in this patch allows changing FEC settings if
+> the capability flag indicates the device supports this feature.
+> 
+> Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c |  6 +++++
+> .../net/ethernet/intel/i40e/i40e_adminq_cmd.h |  2 ++
+>  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 22 ++++++++++++++++---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   | 19 ++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
+>  5 files changed, 47 insertions(+), 3 deletions(-)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
-On Thu, 16 Jul 2020, Moritz Muehlenhoff wrote:
-
-> Hi,
-> https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00255.html refers
-> to vulnerabilities in Intel Ethernet drivers and a few of them refer to the i40e driver
-> specifically:
-
-I'm sorry Moritz that we haven't gotten back to you. We are chasing down 
-the specific patches made upstream for software portions of the below 
-fixes.
-
-> CVEID: CVE-2019-0145
-> Description: Buffer overflow in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> versions before 7.0 may allow an authenticated user to potentially enable an escalation
-> of privilege via local access.
->
-> CVEID: CVE-2019-0146
-> Description: Resource leak in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> versions before 2.8.43 may allow an authenticated user to potentially enable a denial of
-> service via local access.
->
-> CVEID: CVE-2019-0147
-> Description: Insufficient input validation in i40e driver for Intel(R) Ethernet 700 Series
-> Controllers versions before 7.0 may allow an authenticated user to potentially enable a
-> denial of service via local access.
->
-> CVEID: CVE-2019-0148
-> Description: Resource leak in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> versions before 7.0 may allow an authenticated use to potentially enable a denial of
-> service via local access.
->
-> CVEID: CVE-2019-0149
-> Description: Insufficient input validation in i40e driver for Intel(R) Ethernet 700
-> Series Controllers versions before 2.8.43 may allow an authenticated user to potentially
-> enable a denial of service via local access.
->
-> Is there any further information which commits fixed these and if so, were they submitted
-> to stable kernels? (The Debian kernels are based on 4.9.x and 4.19.x LTS kernels, so that
-> we can make sure these are addressed in stable/oldstable releases)
-
-We will get you the information, it was a mistake on our part to not 
-mention CVEs in the commit messages if/when we upstreamed the patches. The 
-only thing I can say for sure is that these have been addressed in our 
-Out-of-tree drivers, but I realize that is not your question.
-
-Thanks for your patience,
-Jesse
