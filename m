@@ -1,40 +1,54 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 29 Jul 2020 13:38:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE] BUILD SUCCESS
- 126d27286b7e62bb2b4ac31dd2357394b5007a4e
-Message-ID: <5f210b68.EJe6mLxEoy3dWqo4%lkp@intel.com>
+Date: Wed, 29 Jul 2020 20:41:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ c5897c2f695af60c217ce7c20a88010846f1f71c
+Message-ID: <5f216e73.0MAYoWe/zrqc4ltZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-branch HEAD: 126d27286b7e62bb2b4ac31dd2357394b5007a4e  i40e, xsk: move buffer allocation out of the Rx processing loop
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: c5897c2f695af60c217ce7c20a88010846f1f71c  ice: mark PM functions as __maybe_unused
 
-elapsed time: 725m
+Error/Warning in current branch:
 
-configs tested: 79
-configs skipped: 4
+include/linux/avf/virtchnl.h:1102:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:1184:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1200:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1230:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:1245:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:1383:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Error/Warning ids grouped by kconfigs:
 
+recent_errors
+|-- arc-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+`-- i386-allyesconfig
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+    `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+
+elapsed time: 1148m
+
+configs tested: 51
+configs skipped: 2
+
+arm                              allyesconfig
 arm                                 defconfig
 arm64                            allyesconfig
 arm64                               defconfig
-arm                              allyesconfig
 arm                              allmodconfig
-arm                            qcom_defconfig
-powerpc                      ep88xc_defconfig
-mips                  decstation_64_defconfig
-xtensa                           alldefconfig
-mips                          ath79_defconfig
-arm                     davinci_all_defconfig
-nios2                            alldefconfig
-arm                         vf610m4_defconfig
-m68k                            mac_defconfig
-sh                          lboxre2_defconfig
 arm                          prima2_defconfig
 arm                      footbridge_defconfig
 mips                        nlm_xlr_defconfig
@@ -61,34 +75,16 @@ parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
 s390                                defconfig
-i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
+i386                             allyesconfig
 mips                             allyesconfig
 mips                             allmodconfig
+powerpc                             defconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a003-20200728
-i386                 randconfig-a004-20200728
-i386                 randconfig-a005-20200728
-i386                 randconfig-a002-20200728
-i386                 randconfig-a006-20200728
-i386                 randconfig-a001-20200728
-x86_64               randconfig-a014-20200728
-x86_64               randconfig-a012-20200728
-x86_64               randconfig-a015-20200728
-x86_64               randconfig-a016-20200728
-x86_64               randconfig-a013-20200728
-x86_64               randconfig-a011-20200728
-i386                 randconfig-a016-20200728
-i386                 randconfig-a012-20200728
-i386                 randconfig-a013-20200728
-i386                 randconfig-a014-20200728
-i386                 randconfig-a011-20200728
-i386                 randconfig-a015-20200728
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
