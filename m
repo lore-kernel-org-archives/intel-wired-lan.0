@@ -1,75 +1,92 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 29 Jul 2020 17:19:17 -0700
-Subject: [Intel-wired-lan] [PATCH S51 08/13] ice: port fix for chk_linearlize
-In-Reply-To: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
-References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200730001922.52568-8-anthony.l.nguyen@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 30 Jul 2020 23:58:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ 6221595fc5fd55a457d0439a381c388d967f2011
+Message-ID: <5f22ee2a.6/Wcwcw58MMTRpKg%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Kiran Patil <kiran.patil@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 6221595fc5fd55a457d0439a381c388d967f2011  ice: fix unused parameter warning
 
-This is a port of commit 248de22e638f ("i40e/i40evf: Account for frags
-split over multiple descriptors in check linearize")
+elapsed time: 1398m
 
-As part of testing workloads (read/write) using larger IO size (128K)
-tx_timeout is observed and whenever it happens, it was due to
-tx_linearize.
+configs tested: 66
+configs skipped: 1
 
-Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a001-20200730
+x86_64               randconfig-a004-20200730
+x86_64               randconfig-a002-20200730
+x86_64               randconfig-a006-20200730
+x86_64               randconfig-a003-20200730
+x86_64               randconfig-a005-20200730
+i386                 randconfig-a005-20200730
+i386                 randconfig-a004-20200730
+i386                 randconfig-a006-20200730
+i386                 randconfig-a002-20200730
+i386                 randconfig-a001-20200730
+i386                 randconfig-a003-20200730
+i386                 randconfig-a016-20200730
+i386                 randconfig-a012-20200730
+i386                 randconfig-a014-20200730
+i386                 randconfig-a015-20200730
+i386                 randconfig-a011-20200730
+i386                 randconfig-a013-20200730
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 26 ++++++++++++++++++++---
- 1 file changed, 23 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 53c67eeec2fa..77de8869e7ca 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -2292,10 +2292,30 @@ static bool __ice_chk_linearize(struct sk_buff *skb)
- 	/* Walk through fragments adding latest fragment, testing it, and
- 	 * then removing stale fragments from the sum.
- 	 */
--	stale = &skb_shinfo(skb)->frags[0];
--	for (;;) {
-+	for (stale = &skb_shinfo(skb)->frags[0];; stale++) {
-+		int stale_size = skb_frag_size(stale);
-+
- 		sum += skb_frag_size(frag++);
- 
-+		/* The stale fragment may present us with a smaller
-+		 * descriptor than the actual fragment size. To account
-+		 * for that we need to remove all the data on the front and
-+		 * figure out what the remainder would be in the last
-+		 * descriptor associated with the fragment.
-+		 */
-+		if (stale_size > ICE_MAX_DATA_PER_TXD) {
-+			int align_pad = -(skb_frag_off(stale)) &
-+					(ICE_MAX_READ_REQ_SIZE - 1);
-+
-+			sum -= align_pad;
-+			stale_size -= align_pad;
-+
-+			do {
-+				sum -= ICE_MAX_DATA_PER_TXD_ALIGNED;
-+				stale_size -= ICE_MAX_DATA_PER_TXD_ALIGNED;
-+			} while (stale_size > ICE_MAX_DATA_PER_TXD);
-+		}
-+
- 		/* if sum is negative we failed to make sufficient progress */
- 		if (sum < 0)
- 			return true;
-@@ -2303,7 +2323,7 @@ static bool __ice_chk_linearize(struct sk_buff *skb)
- 		if (!nr_frags--)
- 			break;
- 
--		sum -= skb_frag_size(stale++);
-+		sum -= stale_size;
- 	}
- 
- 	return false;
--- 
-2.20.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
