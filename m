@@ -1,355 +1,208 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 29 Jul 2020 17:19:20 -0700
-Subject: [Intel-wired-lan] [PATCH S51 11/13] ice: update PTYPE lookup table
+Date: Wed, 29 Jul 2020 17:19:22 -0700
+Subject: [Intel-wired-lan] [PATCH S51 13/13] ice: Misc minor fixes
 In-Reply-To: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200730001922.52568-11-anthony.l.nguyen@intel.com>
+Message-ID: <20200730001922.52568-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Update the PTYPE lookup table to reflect values that can be set by the
-hardware.
+This is a collection of minor fixes including typos, whitespace, and style.
+No functional changes.
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 314 ++++++++++++++++++
- 1 file changed, 314 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_common.c      | 5 ++---
+ drivers/net/ethernet/intel/ice/ice_devlink.c     | 2 +-
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_sched.c       | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_txrx.c        | 7 +++----
+ drivers/net/ethernet/intel/ice/ice_type.h        | 2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_xsk.c         | 2 --
+ 9 files changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 14dfbbc1b2cf..4ec24c3e813f 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -601,6 +601,7 @@ struct ice_tlan_ctx {
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 8a93fbd6f1be..34abfcea9858 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1718,8 +1718,7 @@ ice_alloc_hw_res(struct ice_hw *hw, u16 type, u16 num, bool btm, u16 *res)
+  * @num: number of resources
+  * @res: pointer to array that contains the resources to free
+  */
+-enum ice_status
+-ice_free_hw_res(struct ice_hw *hw, u16 type, u16 num, u16 *res)
++enum ice_status ice_free_hw_res(struct ice_hw *hw, u16 type, u16 num, u16 *res)
+ {
+ 	struct ice_aqc_alloc_free_res_elem *buf;
+ 	enum ice_status status;
+@@ -2121,7 +2120,7 @@ ice_parse_fdir_dev_caps(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
+  * @cap_count: the number of capabilities
+  *
+  * Helper device to parse device (0x000B) capabilities list. For
+- * capabilities shared between device and device, this relies on
++ * capabilities shared between device and function, this relies on
+  * ice_parse_common_caps.
+  *
+  * Loop through the list of provided capabilities and extract the relevant
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index dbbd8b6f9d1a..111d6bfe4222 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -357,7 +357,7 @@ void ice_devlink_unregister(struct ice_pf *pf)
+  *
+  * Create and register a devlink_port for this PF. Note that although each
+  * physical function is connected to a separate devlink instance, the port
+- * will still be numbered according to the physical function id.
++ * will still be numbered according to the physical function ID.
+  *
+  * Return: zero on success or an error code on failure.
+  */
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 7ae4df0901c3..73b9a50e0dfb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -644,7 +644,7 @@ static bool ice_bits_max_set(const u8 *mask, u16 size, u16 max)
+  * This function generates a key from a value, a don't care mask and a never
+  * match mask.
+  * upd, dc, and nm are optional parameters, and can be NULL:
+- *	upd == NULL --> udp mask is all 1's (update all bits)
++ *	upd == NULL --> upd mask is all 1's (update all bits)
+  *	dc == NULL --> dc mask is all 0's (no don't care bits)
+  *	nm == NULL --> nm mask is all 0's (no never match bits)
+  */
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 92e4abca62a4..90abc8612a6a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -57,7 +57,7 @@
+ #define PRTDCB_GENS				0x00083020
+ #define PRTDCB_GENS_DCBX_STATUS_S		0
+ #define PRTDCB_GENS_DCBX_STATUS_M		ICE_M(0x7, 0)
+-#define PRTDCB_TUP2TC				0x001D26C0 /* Reset Source: CORER */
++#define PRTDCB_TUP2TC				0x001D26C0
+ #define GL_PREEXT_L2_PMASK0(_i)			(0x0020F0FC + ((_i) * 4))
+ #define GL_PREEXT_L2_PMASK1(_i)			(0x0020F108 + ((_i) * 4))
+ #define GLFLXP_RXDID_FLX_WRD_0(_i)		(0x0045c800 + ((_i) * 4))
+@@ -362,6 +362,7 @@
+ #define GLV_TEPC(_VSI)				(0x00312000 + ((_VSI) * 4))
+ #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
+ #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
++#define PRTRPB_RDPC				0x000AC260
+ #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
+ #define VSIQF_FD_CNT_FD_GCNT_S			0
+ #define VSIQF_FD_CNT_FD_GCNT_M			ICE_M(0x3FFF, 0)
+@@ -378,6 +379,5 @@
+ #define PFPM_WUS_FW_RST_WK_M			BIT(31)
+ #define VFINT_DYN_CTLN(_i)			(0x00003800 + ((_i) * 4))
+ #define VFINT_DYN_CTLN_CLEARPBA_M		BIT(1)
+-#define PRTRPB_RDPC				0x000AC260
  
- /* shorter macros makes the table fit but are terse */
- #define ICE_RX_PTYPE_NOF		ICE_RX_PTYPE_NOT_FRAG
-+#define ICE_RX_PTYPE_FRG		ICE_RX_PTYPE_FRAG
+ #endif /* _ICE_HW_AUTOGEN_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 355f727563e4..44a228530253 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -170,7 +170,7 @@ ice_sched_add_node(struct ice_port_info *pi, u8 layer,
+ 		return ICE_ERR_PARAM;
+ 	}
  
- /* Lookup table mapping the HW PTYPE to the bit field for decoding */
- static const struct ice_rx_ptype_decoded ice_ptype_lkup[] = {
-@@ -608,6 +609,319 @@ static const struct ice_rx_ptype_decoded ice_ptype_lkup[] = {
- 	ICE_PTT_UNUSED_ENTRY(0),
- 	ICE_PTT(1, L2, NONE, NOF, NONE, NONE, NOF, NONE, PAY2),
- 	ICE_PTT(2, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT_UNUSED_ENTRY(3),
-+	ICE_PTT_UNUSED_ENTRY(4),
-+	ICE_PTT_UNUSED_ENTRY(5),
-+	ICE_PTT(6, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT(7, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT_UNUSED_ENTRY(8),
-+	ICE_PTT_UNUSED_ENTRY(9),
-+	ICE_PTT(10, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT(11, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT_UNUSED_ENTRY(12),
-+	ICE_PTT_UNUSED_ENTRY(13),
-+	ICE_PTT_UNUSED_ENTRY(14),
-+	ICE_PTT_UNUSED_ENTRY(15),
-+	ICE_PTT_UNUSED_ENTRY(16),
-+	ICE_PTT_UNUSED_ENTRY(17),
-+	ICE_PTT_UNUSED_ENTRY(18),
-+	ICE_PTT_UNUSED_ENTRY(19),
-+	ICE_PTT_UNUSED_ENTRY(20),
-+	ICE_PTT_UNUSED_ENTRY(21),
-+
-+	/* Non Tunneled IPv4 */
-+	ICE_PTT(22, IP, IPV4, FRG, NONE, NONE, NOF, NONE, PAY3),
-+	ICE_PTT(23, IP, IPV4, NOF, NONE, NONE, NOF, NONE, PAY3),
-+	ICE_PTT(24, IP, IPV4, NOF, NONE, NONE, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(25),
-+	ICE_PTT(26, IP, IPV4, NOF, NONE, NONE, NOF, TCP,  PAY4),
-+	ICE_PTT(27, IP, IPV4, NOF, NONE, NONE, NOF, SCTP, PAY4),
-+	ICE_PTT(28, IP, IPV4, NOF, NONE, NONE, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> IPv4 */
-+	ICE_PTT(29, IP, IPV4, NOF, IP_IP, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(30, IP, IPV4, NOF, IP_IP, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(31, IP, IPV4, NOF, IP_IP, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(32),
-+	ICE_PTT(33, IP, IPV4, NOF, IP_IP, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(34, IP, IPV4, NOF, IP_IP, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(35, IP, IPV4, NOF, IP_IP, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> IPv6 */
-+	ICE_PTT(36, IP, IPV4, NOF, IP_IP, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(37, IP, IPV4, NOF, IP_IP, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(38, IP, IPV4, NOF, IP_IP, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(39),
-+	ICE_PTT(40, IP, IPV4, NOF, IP_IP, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(41, IP, IPV4, NOF, IP_IP, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(42, IP, IPV4, NOF, IP_IP, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> GRE/NAT */
-+	ICE_PTT(43, IP, IPV4, NOF, IP_GRENAT, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv4 --> GRE/NAT --> IPv4 */
-+	ICE_PTT(44, IP, IPV4, NOF, IP_GRENAT, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(45, IP, IPV4, NOF, IP_GRENAT, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(46, IP, IPV4, NOF, IP_GRENAT, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(47),
-+	ICE_PTT(48, IP, IPV4, NOF, IP_GRENAT, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(49, IP, IPV4, NOF, IP_GRENAT, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(50, IP, IPV4, NOF, IP_GRENAT, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> GRE/NAT --> IPv6 */
-+	ICE_PTT(51, IP, IPV4, NOF, IP_GRENAT, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(52, IP, IPV4, NOF, IP_GRENAT, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(53, IP, IPV4, NOF, IP_GRENAT, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(54),
-+	ICE_PTT(55, IP, IPV4, NOF, IP_GRENAT, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(56, IP, IPV4, NOF, IP_GRENAT, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(57, IP, IPV4, NOF, IP_GRENAT, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> GRE/NAT --> MAC */
-+	ICE_PTT(58, IP, IPV4, NOF, IP_GRENAT_MAC, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv4 --> GRE/NAT --> MAC --> IPv4 */
-+	ICE_PTT(59, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(60, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(61, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(62),
-+	ICE_PTT(63, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(64, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(65, IP, IPV4, NOF, IP_GRENAT_MAC, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> GRE/NAT -> MAC --> IPv6 */
-+	ICE_PTT(66, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(67, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(68, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(69),
-+	ICE_PTT(70, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(71, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(72, IP, IPV4, NOF, IP_GRENAT_MAC, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv4 --> GRE/NAT --> MAC/VLAN */
-+	ICE_PTT(73, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv4 ---> GRE/NAT -> MAC/VLAN --> IPv4 */
-+	ICE_PTT(74, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(75, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(76, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(77),
-+	ICE_PTT(78, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(79, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(80, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv4 -> GRE/NAT -> MAC/VLAN --> IPv6 */
-+	ICE_PTT(81, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(82, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(83, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(84),
-+	ICE_PTT(85, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(86, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(87, IP, IPV4, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, ICMP, PAY4),
-+
-+	/* Non Tunneled IPv6 */
-+	ICE_PTT(88, IP, IPV6, FRG, NONE, NONE, NOF, NONE, PAY3),
-+	ICE_PTT(89, IP, IPV6, NOF, NONE, NONE, NOF, NONE, PAY3),
-+	ICE_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY3),
-+	ICE_PTT_UNUSED_ENTRY(91),
-+	ICE_PTT(92, IP, IPV6, NOF, NONE, NONE, NOF, TCP,  PAY4),
-+	ICE_PTT(93, IP, IPV6, NOF, NONE, NONE, NOF, SCTP, PAY4),
-+	ICE_PTT(94, IP, IPV6, NOF, NONE, NONE, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> IPv4 */
-+	ICE_PTT(95, IP, IPV6, NOF, IP_IP, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(96, IP, IPV6, NOF, IP_IP, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(97, IP, IPV6, NOF, IP_IP, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(98),
-+	ICE_PTT(99, IP, IPV6, NOF, IP_IP, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(100, IP, IPV6, NOF, IP_IP, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(101, IP, IPV6, NOF, IP_IP, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> IPv6 */
-+	ICE_PTT(102, IP, IPV6, NOF, IP_IP, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(103, IP, IPV6, NOF, IP_IP, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(104, IP, IPV6, NOF, IP_IP, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(105),
-+	ICE_PTT(106, IP, IPV6, NOF, IP_IP, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(107, IP, IPV6, NOF, IP_IP, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(108, IP, IPV6, NOF, IP_IP, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT */
-+	ICE_PTT(109, IP, IPV6, NOF, IP_GRENAT, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv6 --> GRE/NAT -> IPv4 */
-+	ICE_PTT(110, IP, IPV6, NOF, IP_GRENAT, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(111, IP, IPV6, NOF, IP_GRENAT, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(112, IP, IPV6, NOF, IP_GRENAT, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(113),
-+	ICE_PTT(114, IP, IPV6, NOF, IP_GRENAT, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(115, IP, IPV6, NOF, IP_GRENAT, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(116, IP, IPV6, NOF, IP_GRENAT, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT -> IPv6 */
-+	ICE_PTT(117, IP, IPV6, NOF, IP_GRENAT, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(118, IP, IPV6, NOF, IP_GRENAT, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(119, IP, IPV6, NOF, IP_GRENAT, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(120),
-+	ICE_PTT(121, IP, IPV6, NOF, IP_GRENAT, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(122, IP, IPV6, NOF, IP_GRENAT, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(123, IP, IPV6, NOF, IP_GRENAT, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT -> MAC */
-+	ICE_PTT(124, IP, IPV6, NOF, IP_GRENAT_MAC, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv6 --> GRE/NAT -> MAC -> IPv4 */
-+	ICE_PTT(125, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(126, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(127, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(128),
-+	ICE_PTT(129, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(130, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(131, IP, IPV6, NOF, IP_GRENAT_MAC, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT -> MAC -> IPv6 */
-+	ICE_PTT(132, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(133, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(134, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(135),
-+	ICE_PTT(136, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(137, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(138, IP, IPV6, NOF, IP_GRENAT_MAC, IPV6, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT -> MAC/VLAN */
-+	ICE_PTT(139, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, NONE, NOF, NONE, PAY3),
-+
-+	/* IPv6 --> GRE/NAT -> MAC/VLAN --> IPv4 */
-+	ICE_PTT(140, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, FRG, NONE, PAY3),
-+	ICE_PTT(141, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, NONE, PAY3),
-+	ICE_PTT(142, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(143),
-+	ICE_PTT(144, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, TCP,  PAY4),
-+	ICE_PTT(145, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, SCTP, PAY4),
-+	ICE_PTT(146, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV4, NOF, ICMP, PAY4),
-+
-+	/* IPv6 --> GRE/NAT -> MAC/VLAN --> IPv6 */
-+	ICE_PTT(147, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, FRG, NONE, PAY3),
-+	ICE_PTT(148, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, NONE, PAY3),
-+	ICE_PTT(149, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, UDP,  PAY4),
-+	ICE_PTT_UNUSED_ENTRY(150),
-+	ICE_PTT(151, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, TCP,  PAY4),
-+	ICE_PTT(152, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, SCTP, PAY4),
-+	ICE_PTT(153, IP, IPV6, NOF, IP_GRENAT_MAC_VLAN, IPV6, NOF, ICMP, PAY4),
-+
-+	/* unused entries */
-+	ICE_PTT_UNUSED_ENTRY(154),
-+	ICE_PTT_UNUSED_ENTRY(155),
-+	ICE_PTT_UNUSED_ENTRY(156),
-+	ICE_PTT_UNUSED_ENTRY(157),
-+	ICE_PTT_UNUSED_ENTRY(158),
-+	ICE_PTT_UNUSED_ENTRY(159),
-+
-+	ICE_PTT_UNUSED_ENTRY(160),
-+	ICE_PTT_UNUSED_ENTRY(161),
-+	ICE_PTT_UNUSED_ENTRY(162),
-+	ICE_PTT_UNUSED_ENTRY(163),
-+	ICE_PTT_UNUSED_ENTRY(164),
-+	ICE_PTT_UNUSED_ENTRY(165),
-+	ICE_PTT_UNUSED_ENTRY(166),
-+	ICE_PTT_UNUSED_ENTRY(167),
-+	ICE_PTT_UNUSED_ENTRY(168),
-+	ICE_PTT_UNUSED_ENTRY(169),
-+
-+	ICE_PTT_UNUSED_ENTRY(170),
-+	ICE_PTT_UNUSED_ENTRY(171),
-+	ICE_PTT_UNUSED_ENTRY(172),
-+	ICE_PTT_UNUSED_ENTRY(173),
-+	ICE_PTT_UNUSED_ENTRY(174),
-+	ICE_PTT_UNUSED_ENTRY(175),
-+	ICE_PTT_UNUSED_ENTRY(176),
-+	ICE_PTT_UNUSED_ENTRY(177),
-+	ICE_PTT_UNUSED_ENTRY(178),
-+	ICE_PTT_UNUSED_ENTRY(179),
-+
-+	ICE_PTT_UNUSED_ENTRY(180),
-+	ICE_PTT_UNUSED_ENTRY(181),
-+	ICE_PTT_UNUSED_ENTRY(182),
-+	ICE_PTT_UNUSED_ENTRY(183),
-+	ICE_PTT_UNUSED_ENTRY(184),
-+	ICE_PTT_UNUSED_ENTRY(185),
-+	ICE_PTT_UNUSED_ENTRY(186),
-+	ICE_PTT_UNUSED_ENTRY(187),
-+	ICE_PTT_UNUSED_ENTRY(188),
-+	ICE_PTT_UNUSED_ENTRY(189),
-+
-+	ICE_PTT_UNUSED_ENTRY(190),
-+	ICE_PTT_UNUSED_ENTRY(191),
-+	ICE_PTT_UNUSED_ENTRY(192),
-+	ICE_PTT_UNUSED_ENTRY(193),
-+	ICE_PTT_UNUSED_ENTRY(194),
-+	ICE_PTT_UNUSED_ENTRY(195),
-+	ICE_PTT_UNUSED_ENTRY(196),
-+	ICE_PTT_UNUSED_ENTRY(197),
-+	ICE_PTT_UNUSED_ENTRY(198),
-+	ICE_PTT_UNUSED_ENTRY(199),
-+
-+	ICE_PTT_UNUSED_ENTRY(200),
-+	ICE_PTT_UNUSED_ENTRY(201),
-+	ICE_PTT_UNUSED_ENTRY(202),
-+	ICE_PTT_UNUSED_ENTRY(203),
-+	ICE_PTT_UNUSED_ENTRY(204),
-+	ICE_PTT_UNUSED_ENTRY(205),
-+	ICE_PTT_UNUSED_ENTRY(206),
-+	ICE_PTT_UNUSED_ENTRY(207),
-+	ICE_PTT_UNUSED_ENTRY(208),
-+	ICE_PTT_UNUSED_ENTRY(209),
-+
-+	ICE_PTT_UNUSED_ENTRY(210),
-+	ICE_PTT_UNUSED_ENTRY(211),
-+	ICE_PTT_UNUSED_ENTRY(212),
-+	ICE_PTT_UNUSED_ENTRY(213),
-+	ICE_PTT_UNUSED_ENTRY(214),
-+	ICE_PTT_UNUSED_ENTRY(215),
-+	ICE_PTT_UNUSED_ENTRY(216),
-+	ICE_PTT_UNUSED_ENTRY(217),
-+	ICE_PTT_UNUSED_ENTRY(218),
-+	ICE_PTT_UNUSED_ENTRY(219),
-+
-+	ICE_PTT_UNUSED_ENTRY(220),
-+	ICE_PTT_UNUSED_ENTRY(221),
-+	ICE_PTT_UNUSED_ENTRY(222),
-+	ICE_PTT_UNUSED_ENTRY(223),
-+	ICE_PTT_UNUSED_ENTRY(224),
-+	ICE_PTT_UNUSED_ENTRY(225),
-+	ICE_PTT_UNUSED_ENTRY(226),
-+	ICE_PTT_UNUSED_ENTRY(227),
-+	ICE_PTT_UNUSED_ENTRY(228),
-+	ICE_PTT_UNUSED_ENTRY(229),
-+
-+	ICE_PTT_UNUSED_ENTRY(230),
-+	ICE_PTT_UNUSED_ENTRY(231),
-+	ICE_PTT_UNUSED_ENTRY(232),
-+	ICE_PTT_UNUSED_ENTRY(233),
-+	ICE_PTT_UNUSED_ENTRY(234),
-+	ICE_PTT_UNUSED_ENTRY(235),
-+	ICE_PTT_UNUSED_ENTRY(236),
-+	ICE_PTT_UNUSED_ENTRY(237),
-+	ICE_PTT_UNUSED_ENTRY(238),
-+	ICE_PTT_UNUSED_ENTRY(239),
-+
-+	ICE_PTT_UNUSED_ENTRY(240),
-+	ICE_PTT_UNUSED_ENTRY(241),
-+	ICE_PTT_UNUSED_ENTRY(242),
-+	ICE_PTT_UNUSED_ENTRY(243),
-+	ICE_PTT_UNUSED_ENTRY(244),
-+	ICE_PTT_UNUSED_ENTRY(245),
-+	ICE_PTT_UNUSED_ENTRY(246),
-+	ICE_PTT_UNUSED_ENTRY(247),
-+	ICE_PTT_UNUSED_ENTRY(248),
-+	ICE_PTT_UNUSED_ENTRY(249),
-+
-+	ICE_PTT_UNUSED_ENTRY(250),
-+	ICE_PTT_UNUSED_ENTRY(251),
-+	ICE_PTT_UNUSED_ENTRY(252),
-+	ICE_PTT_UNUSED_ENTRY(253),
-+	ICE_PTT_UNUSED_ENTRY(254),
-+	ICE_PTT_UNUSED_ENTRY(255),
+-	/* query the current node information from FW  before additing it
++	/* query the current node information from FW before adding it
+ 	 * to the SW DB
+ 	 */
+ 	status = ice_sched_query_elem(hw, le32_to_cpu(info->node_teid), &elem);
+@@ -578,7 +578,7 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
+ /**
+  * ice_aq_rl_profile - performs a rate limiting task
+  * @hw: pointer to the HW struct
+- * @opcode:opcode for add, query, or remove profile(s)
++ * @opcode: opcode for add, query, or remove profile(s)
+  * @num_profiles: the number of profiles
+  * @buf: pointer to buffer
+  * @buf_size: buffer size in bytes
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 77de8869e7ca..9d0d6b0025cf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -631,9 +631,8 @@ ice_alloc_mapped_page(struct ice_ring *rx_ring, struct ice_rx_buf *bi)
+ 	dma_addr_t dma;
+ 
+ 	/* since we are recycling buffers we should seldom need to alloc */
+-	if (likely(page)) {
++	if (likely(page))
+ 		return true;
+-	}
+ 
+ 	/* alloc new page for storage */
+ 	page = dev_alloc_pages(ice_rx_pg_order(rx_ring));
+@@ -1252,12 +1251,12 @@ int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+  * @itr: ITR value to update
+  *
+  * Calculate how big of an increment should be applied to the ITR value passed
+- * in based on wmem_default, SKB overhead, Ethernet overhead, and the current
++ * in based on wmem_default, SKB overhead, ethernet overhead, and the current
+  * link speed.
+  *
+  * The following is a calculation derived from:
+  *  wmem_default / (size + overhead) = desired_pkts_per_int
+- *  rate / bits_per_byte / (size + Ethernet overhead) = pkt_rate
++ *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
+  *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
+  *
+  * Assuming wmem_default is 212992 and overhead is 640 bytes per
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 1eb83d9b0546..4cdccfadf274 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -321,7 +321,7 @@ struct ice_nvm_info {
+ 	u32 flash_size;			/* Size of available flash in bytes */
+ 	u8 major_ver;			/* major version of NVM package */
+ 	u8 minor_ver;			/* minor version of dev starter */
+-	u8 blank_nvm_mode;        /* is NVM empty (no FW present) */
++	u8 blank_nvm_mode;		/* is NVM empty (no FW present) */
  };
  
- static inline struct ice_rx_ptype_decoded ice_decode_rx_desc_ptype(u16 ptype)
+ struct ice_link_default_override_tlv {
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 0ba54b39ab43..bce35ba997a8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2973,8 +2973,8 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		vsi->max_frame = qpi->rxq.max_pkt_size;
+ 	}
+ 
+-	/* VF can request to configure less than allocated queues
+-	 * or default allocated queues. So update the VSI with new number
++	/* VF can request to configure less than allocated queues or default
++	 * allocated queues. So update the VSI with new number
+ 	 */
+ 	vsi->num_txq = num_txq;
+ 	vsi->num_rxq = num_rxq;
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 87862918bc7a..20ac5fca68c6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -298,7 +298,6 @@ static void ice_xsk_remove_umem(struct ice_vsi *vsi, u16 qid)
+ 	}
+ }
+ 
+-
+ /**
+  * ice_xsk_umem_disable - disable a UMEM region
+  * @vsi: Current VSI
+@@ -594,7 +593,6 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
+ 		if (!size)
+ 			break;
+ 
+-
+ 		rx_buf = &rx_ring->rx_buf[rx_ring->next_to_clean];
+ 		rx_buf->xdp->data_end = rx_buf->xdp->data + size;
+ 		xsk_buff_dma_sync_for_cpu(rx_buf->xdp);
 -- 
 2.20.1
 
