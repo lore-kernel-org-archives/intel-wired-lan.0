@@ -1,71 +1,47 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 29 Jul 2020 17:19:10 -0700
-Subject: [Intel-wired-lan] [PATCH S51 01/13] ice: rename misleading
- grst_delay variable
-Message-ID: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
+Date: Wed, 29 Jul 2020 17:19:18 -0700
+Subject: [Intel-wired-lan] [PATCH S51 09/13] ice: Graceful error handling in
+ HW table calloc failure
+In-Reply-To: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
+References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200730001922.52568-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nick Nunley <nicholas.d.nunley@intel.com>
+From: Surabhi Boob <surabhi.boob@intel.com>
 
-The grst_delay variable in ice_check_reset contains the maximum time
-(in 100 msec units) that the driver will wait for a reset event to
-transition to the Device Active state. The value is the sum of three
-separate components:
-1) The maximum time it may take for the firmware to process its
-outstanding command before handling the reset request.
-2) The value in RSTCTL.GRSTDEL (the delay firmware inserts between first
-seeing the driver reset request and the actual hardware assertion).
-3) The maximum expected reset processing time in hardware.
+In the ice_init_hw_tbls, if the devm_kcalloc for es->written fails, catch
+that error and bail out gracefully, instead of continuing with a NULL
+pointer.
 
-Referring to this total time as "grst_delay" is misleading and
-potentially confusing to someone checking the code and cross-referencing
-the hardware specification.
-
-Fix this by renaming the variable to "grst_timeout", which is more
-descriptive of its actual use.
-
-Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+Fixes: 32d63fa1e9f3 ("ice: Initialize DDP package structures")
+Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index ad5941ec7b11..8a93fbd6f1be 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1027,23 +1027,23 @@ void ice_deinit_hw(struct ice_hw *hw)
-  */
- enum ice_status ice_check_reset(struct ice_hw *hw)
- {
--	u32 cnt, reg = 0, grst_delay, uld_mask;
-+	u32 cnt, reg = 0, grst_timeout, uld_mask;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index d59869b2c65e..d8ada9675650 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -3152,9 +3152,13 @@ enum ice_status ice_init_hw_tbls(struct ice_hw *hw)
+ 					     sizeof(*es->ref_count),
+ 					     GFP_KERNEL);
  
- 	/* Poll for Device Active state in case a recent CORER, GLOBR,
- 	 * or EMPR has occurred. The grst delay value is in 100ms units.
- 	 * Add 1sec for outstanding AQ commands that can take a long time.
- 	 */
--	grst_delay = ((rd32(hw, GLGEN_RSTCTL) & GLGEN_RSTCTL_GRSTDEL_M) >>
--		      GLGEN_RSTCTL_GRSTDEL_S) + 10;
-+	grst_timeout = ((rd32(hw, GLGEN_RSTCTL) & GLGEN_RSTCTL_GRSTDEL_M) >>
-+			GLGEN_RSTCTL_GRSTDEL_S) + 10;
- 
--	for (cnt = 0; cnt < grst_delay; cnt++) {
-+	for (cnt = 0; cnt < grst_timeout; cnt++) {
- 		mdelay(100);
- 		reg = rd32(hw, GLGEN_RSTAT);
- 		if (!(reg & GLGEN_RSTAT_DEVSTATE_M))
- 			break;
++		if (!es->ref_count)
++			goto err;
++
+ 		es->written = devm_kcalloc(ice_hw_to_dev(hw), es->count,
+ 					   sizeof(*es->written), GFP_KERNEL);
+-		if (!es->ref_count)
++
++		if (!es->written)
+ 			goto err;
  	}
- 
--	if (cnt == grst_delay) {
-+	if (cnt == grst_timeout) {
- 		ice_debug(hw, ICE_DBG_INIT,
- 			  "Global reset polling failed to complete.\n");
- 		return ICE_ERR_RESET_FAILED;
+ 	return 0;
 -- 
 2.20.1
 
