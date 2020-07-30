@@ -1,135 +1,81 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 29 Jul 2020 17:19:14 -0700
-Subject: [Intel-wired-lan] [PATCH S51 05/13] ice: add useful statistics
+Date: Wed, 29 Jul 2020 17:19:12 -0700
+Subject: [Intel-wired-lan] [PATCH S51 03/13] ice: Fix RSS profile locks
 In-Reply-To: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200730001922.52568-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200730001922.52568-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Vignesh Sridhar <vignesh.sridhar@intel.com>
 
-Display and count some useful hot-path statistics. The usefulness is as
-follows:
+Replacing flow profile locks with RSS profile locks in the function to
+remove all RSS rules for a given VSI. This is to align the locks used
+for RSS rule addition to VSI and removal during VSI teardown to avoid
+a race condition owing to several iterations of the above operations.
+In function to get RSS rules for given VSI and protocol header replacing
+the pointer reference of the RSS entry with a copy of hash value to
+ensure thread safety.
 
-- tx_restart: use to determine if the transmit ring size is too small or
-  if the transmit interrupt rate is too low.
-- rx_gro_dropped: use to count drops from GRO layer, which previously were
-  completely uncounted when occurring.
-- tx_busy: use to determine when the driver is miscounting number of
-  descriptors needed for an skb.
-- tx_timeout: as our other drivers, count the number of times we've reset
-  due to timeout because the kernel only prints a warning once per netdev.
-
-Several of these were already counted but not displayed.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Vignesh Sridhar <vignesh.sridhar@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          | 1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 4 ++++
- drivers/net/ethernet/intel/ice/ice_main.c     | 4 +++-
- drivers/net/ethernet/intel/ice/ice_txrx.h     | 1 +
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 7 ++++++-
- 5 files changed, 15 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_flow.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 7d194d2a031a..fe140ff38f74 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -256,6 +256,7 @@ struct ice_vsi {
- 	u32 tx_busy;
- 	u32 rx_buf_failed;
- 	u32 rx_page_failed;
-+	u32 rx_gro_dropped;
- 	u16 num_q_vectors;
- 	u16 base_vector;		/* IRQ base for OS reserved vectors */
- 	enum ice_vsi_type type;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 06b93e97892d..9e8e9531cd87 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -59,8 +59,11 @@ static const struct ice_stats ice_gstrings_vsi_stats[] = {
- 	ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
- 	ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
- 	ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
-+	ICE_VSI_STAT("rx_gro_dropped", rx_gro_dropped),
- 	ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
- 	ICE_VSI_STAT("tx_linearize", tx_linearize),
-+	ICE_VSI_STAT("tx_busy", tx_busy),
-+	ICE_VSI_STAT("tx_restart", tx_restart),
- };
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index d74e5290677f..fe677621dd51 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -1187,7 +1187,7 @@ enum ice_status ice_rem_vsi_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
+ 	if (list_empty(&hw->fl_profs[blk]))
+ 		return 0;
  
- enum ice_ethtool_test_id {
-@@ -100,6 +103,7 @@ static const struct ice_stats ice_gstrings_pf_stats[] = {
- 	ICE_PF_STAT("rx_broadcast.nic", stats.eth.rx_broadcast),
- 	ICE_PF_STAT("tx_broadcast.nic", stats.eth.tx_broadcast),
- 	ICE_PF_STAT("tx_errors.nic", stats.eth.tx_errors),
-+	ICE_PF_STAT("tx_timeout.nic", tx_timeout_count),
- 	ICE_PF_STAT("rx_size_64.nic", stats.rx_size_64),
- 	ICE_PF_STAT("tx_size_64.nic", stats.tx_size_64),
- 	ICE_PF_STAT("rx_size_127.nic", stats.rx_size_127),
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index bd2a2df25def..22bbd84eef64 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5290,6 +5290,7 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
- 	vsi->tx_linearize = 0;
- 	vsi->rx_buf_failed = 0;
- 	vsi->rx_page_failed = 0;
-+	vsi->rx_gro_dropped = 0;
+-	mutex_lock(&hw->fl_profs_locks[blk]);
++	mutex_lock(&hw->rss_locks);
+ 	list_for_each_entry_safe(p, t, &hw->fl_profs[blk], l_entry)
+ 		if (test_bit(vsi_handle, p->vsis)) {
+ 			status = ice_flow_disassoc_prof(hw, blk, p, vsi_handle);
+@@ -1195,12 +1195,12 @@ enum ice_status ice_rem_vsi_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
+ 				break;
  
- 	rcu_read_lock();
+ 			if (bitmap_empty(p->vsis, ICE_MAX_VSI)) {
+-				status = ice_flow_rem_prof_sync(hw, blk, p);
++				status = ice_flow_rem_prof(hw, blk, p->id);
+ 				if (status)
+ 					break;
+ 			}
+ 		}
+-	mutex_unlock(&hw->fl_profs_locks[blk]);
++	mutex_unlock(&hw->rss_locks);
  
-@@ -5304,6 +5305,7 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
- 		vsi_stats->rx_bytes += bytes;
- 		vsi->rx_buf_failed += ring->rx_stats.alloc_buf_failed;
- 		vsi->rx_page_failed += ring->rx_stats.alloc_page_failed;
-+		vsi->rx_gro_dropped += ring->rx_stats.gro_dropped;
- 	}
- 
- 	/* update XDP Tx rings counters */
-@@ -5335,7 +5337,7 @@ void ice_update_vsi_stats(struct ice_vsi *vsi)
- 	ice_update_eth_stats(vsi);
- 
- 	cur_ns->tx_errors = cur_es->tx_errors;
--	cur_ns->rx_dropped = cur_es->rx_discards;
-+	cur_ns->rx_dropped = cur_es->rx_discards + vsi->rx_gro_dropped;
- 	cur_ns->tx_dropped = cur_es->tx_discards;
- 	cur_ns->multicast = cur_es->rx_multicast;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 77c94daeb434..51b4df7a59d2 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -193,6 +193,7 @@ struct ice_rxq_stats {
- 	u64 non_eop_descs;
- 	u64 alloc_page_failed;
- 	u64 alloc_buf_failed;
-+	u64 gro_dropped; /* GRO returned dropped */
- };
- 
- /* this enum matches hardware bits and is meant to be used by DYN_CTLN
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index 02b12736ea80..bc2f4390b51d 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -191,7 +191,12 @@ ice_receive_skb(struct ice_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag)
- 	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
- 	    (vlan_tag & VLAN_VID_MASK))
- 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
--	napi_gro_receive(&rx_ring->q_vector->napi, skb);
-+	if (napi_gro_receive(&rx_ring->q_vector->napi, skb) == GRO_DROP) {
-+		/* this is tracked separately to help us debug stack drops */
-+		rx_ring->rx_stats.gro_dropped++;
-+		netdev_dbg(rx_ring->netdev, "Receive Queue %d: Dropped packet from GRO\n",
-+			   rx_ring->q_index);
-+	}
+ 	return status;
  }
+@@ -1597,7 +1597,8 @@ enum ice_status ice_replay_rss_cfg(struct ice_hw *hw, u16 vsi_handle)
+  */
+ u64 ice_get_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u32 hdrs)
+ {
+-	struct ice_rss_cfg *r, *rss_cfg = NULL;
++	u64 rss_hash = ICE_HASH_INVALID;
++	struct ice_rss_cfg *r;
  
- /**
+ 	/* verify if the protocol header is non zero and VSI is valid */
+ 	if (hdrs == ICE_FLOW_SEG_HDR_NONE || !ice_is_vsi_valid(hw, vsi_handle))
+@@ -1607,10 +1608,10 @@ u64 ice_get_rss_cfg(struct ice_hw *hw, u16 vsi_handle, u32 hdrs)
+ 	list_for_each_entry(r, &hw->rss_list_head, l_entry)
+ 		if (test_bit(vsi_handle, r->vsis) &&
+ 		    r->packet_hdr == hdrs) {
+-			rss_cfg = r;
++			rss_hash = r->hashed_flds;
+ 			break;
+ 		}
+ 	mutex_unlock(&hw->rss_locks);
+ 
+-	return rss_cfg ? rss_cfg->hashed_flds : ICE_HASH_INVALID;
++	return rss_hash;
+ }
 -- 
 2.20.1
 
