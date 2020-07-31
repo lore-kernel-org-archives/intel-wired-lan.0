@@ -1,110 +1,45 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 31 Jul 2020 15:11:33 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE] BUILD SUCCESS
- 024a8168b749db7a4aa40a5fbdfa04bf7e77c1c0
-Message-ID: <5f23c425.LOjLp+zVKfZjaoOp%lkp@intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Fri, 31 Jul 2020 10:49:08 +0300
+Subject: [Intel-wired-lan] [PATCH v1] ice: devlink: use %*phD to print
+ small buffer
+In-Reply-To: <77247fbc-152a-517f-2500-ce761b7afa6a@intel.com>
+References: <20200730160451.40810-1-andriy.shevchenko@linux.intel.com>
+ <77247fbc-152a-517f-2500-ce761b7afa6a@intel.com>
+Message-ID: <20200731074908.GE3703480@smile.fi.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
-branch HEAD: 024a8168b749db7a4aa40a5fbdfa04bf7e77c1c0  igb: reinit_locked() should be called with rtnl_lock
+On Thu, Jul 30, 2020 at 02:20:46PM -0700, Jacob Keller wrote:
+> On 7/30/2020 9:04 AM, Andy Shevchenko wrote:
+> > Use %*phD format to print small buffer as hex string.
+> > 
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> 
+> Ah nice. I swear I looked for a printk format to do this and didn't find
+> one. But it's been there since 2012.. so I guess I just missed it.
 
-elapsed time: 723m
+commit 31550a16a5d2af859e8a11839e8c6c6c9c92dfa7
+Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date:   Mon Jul 30 14:40:27 2012 -0700
 
-configs tested: 84
-configs skipped: 1
+    vsprintf: add support of '%*ph[CDN]'
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Maybe it was just a coincidence :-)
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a005-20200730
-i386                 randconfig-a004-20200730
-i386                 randconfig-a006-20200730
-i386                 randconfig-a002-20200730
-i386                 randconfig-a001-20200730
-i386                 randconfig-a003-20200730
-i386                 randconfig-a005-20200731
-i386                 randconfig-a004-20200731
-i386                 randconfig-a006-20200731
-i386                 randconfig-a002-20200731
-i386                 randconfig-a001-20200731
-i386                 randconfig-a003-20200731
-x86_64               randconfig-a001-20200730
-x86_64               randconfig-a004-20200730
-x86_64               randconfig-a002-20200730
-x86_64               randconfig-a006-20200730
-x86_64               randconfig-a003-20200730
-x86_64               randconfig-a005-20200730
-x86_64               randconfig-a015-20200731
-x86_64               randconfig-a014-20200731
-x86_64               randconfig-a016-20200731
-x86_64               randconfig-a012-20200731
-x86_64               randconfig-a013-20200731
-x86_64               randconfig-a011-20200731
-i386                 randconfig-a016-20200731
-i386                 randconfig-a012-20200731
-i386                 randconfig-a014-20200731
-i386                 randconfig-a015-20200731
-i386                 randconfig-a011-20200731
-i386                 randconfig-a013-20200731
-i386                 randconfig-a016-20200730
-i386                 randconfig-a012-20200730
-i386                 randconfig-a014-20200730
-i386                 randconfig-a015-20200730
-i386                 randconfig-a011-20200730
-i386                 randconfig-a013-20200730
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> I also tested this on my system to make sure it gives the same output
+> for the serial value, so I guess also:
+> 
+> Tested-by: Jacob Keller <jacob.e.keller@intel.com>
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Thanks!
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
