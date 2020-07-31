@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Jul 2020 19:58:01 +0000
-Subject: [Intel-wired-lan] [PATCH S51 09/13] ice: Graceful error
- handling in HW table calloc failure
-In-Reply-To: <20200730001922.52568-9-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jul 2020 19:58:19 +0000
+Subject: [Intel-wired-lan] [PATCH S51 06/13] ice: Clear and free XLT
+ entries on reset
+In-Reply-To: <20200730001922.52568-6-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
- <20200730001922.52568-9-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145BA3A9BC357CAA70C85948C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200730001922.52568-6-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB2145B913EE49E66C7ACB0EDC8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, July 29, 2020 5:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S51 09/13] ice: Graceful error handling in
-> HW table calloc failure
+> Subject: [Intel-wired-lan] [PATCH S51 06/13] ice: Clear and free XLT entries
+> on reset
 > 
-> From: Surabhi Boob <surabhi.boob@intel.com>
+> From: Vignesh Sridhar <vignesh.sridhar@intel.com>
 > 
-> In the ice_init_hw_tbls, if the devm_kcalloc for es->written fails, catch that
-> error and bail out gracefully, instead of continuing with a NULL pointer.
+> This fix has been added to address memory leak issues resulting from
+> triggering a sudden driver reset which does not allow us to follow our normal
+> removal flows for SW XLT entries for advanced features.
 > 
-> Fixes: 32d63fa1e9f3 ("ice: Initialize DDP package structures")
-> Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
+> - Adding call to destroy flow profile locks when clearing SW XLT tables.
+> 
+> - Extraction sequence entries were not correctly cleared previously which
+> could cause ownership conflicts for repeated reset-replay calls.
+> 
+> Fixes: 31ad4e4ee1e4 ("ice: Allocate flow profile")
+> Signed-off-by: Vignesh Sridhar <vignesh.sridhar@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
