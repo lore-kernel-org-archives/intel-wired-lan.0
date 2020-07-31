@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Jul 2020 19:56:17 +0000
-Subject: [Intel-wired-lan] [PATCH S51 08/13] ice: port fix for
- chk_linearlize
-In-Reply-To: <20200730001922.52568-8-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jul 2020 19:57:01 +0000
+Subject: [Intel-wired-lan] [PATCH S51 12/13] ice: adjust profile id map
+ locks
+In-Reply-To: <20200730001922.52568-12-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
- <20200730001922.52568-8-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB21451FF54FFF932E89C8761B8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200730001922.52568-12-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB214537464B83A777907241758C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, July 29, 2020 5:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S51 08/13] ice: port fix for chk_linearlize
+> Subject: [Intel-wired-lan] [PATCH S51 12/13] ice: adjust profile id map locks
 > 
-> From: Kiran Patil <kiran.patil@intel.com>
+> From: Victor Raj <victor.raj@intel.com>
 > 
-> This is a port of commit 248de22e638f ("i40e/i40evf: Account for frags split
-> over multiple descriptors in check linearize")
+> The profile id map lock should be held till the caller completes all references
+> of that profile entries.
 > 
-> As part of testing workloads (read/write) using larger IO size (128K)
-> tx_timeout is observed and whenever it happens, it was due to tx_linearize.
+> The current code releases the lock right after the match search.
+> This caused a driver issue when the profile map entries were referenced
+> after it was freed in other thread after the lock was released earlier.
 > 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Victor Raj <victor.raj@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.c | 26 ++++++++++++++++++++---
->  1 file changed, 23 insertions(+), 3 deletions(-)
+>  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 90 +++++++++----------
+>  1 file changed, 45 insertions(+), 45 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
