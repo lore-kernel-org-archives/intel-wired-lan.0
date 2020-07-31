@@ -1,52 +1,39 @@
-From: Bixuan Cui <cuibixuan@huawei.com>
-Date: Fri, 31 Jul 2020 18:07:37 +0800
-Subject: [Intel-wired-lan] [PATCH -next v2] net: ice: Fix pointer cast
- warnings
-In-Reply-To: <20200731105721.18511-1-cuibixuan@huawei.com>
-References: <20200731105721.18511-1-cuibixuan@huawei.com>
-Message-ID: <5af7c5af-c45d-2174-de89-8b89eddb4f4d@huawei.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 31 Jul 2020 19:56:34 +0000
+Subject: [Intel-wired-lan] [PATCH S51 13/13] ice: Misc minor fixes
+In-Reply-To: <20200730001922.52568-13-anthony.l.nguyen@intel.com>
+References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
+ <20200730001922.52568-13-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB2145D2956927810B31B3A7FC8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-pointers should be casted to unsigned long to avoid
--Wpointer-to-int-cast warnings:
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Wednesday, July 29, 2020 5:19 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S51 13/13] ice: Misc minor fixes
+> 
+> This is a collection of minor fixes including typos, whitespace, and style.
+> No functional changes.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_common.c      | 5 ++---
+>  drivers/net/ethernet/intel/ice/ice_devlink.c     | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_sched.c       | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_txrx.c        | 7 +++----
+>  drivers/net/ethernet/intel/ice/ice_type.h        | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_xsk.c         | 2 --
+>  9 files changed, 14 insertions(+), 18 deletions(-)
 
-drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning:
-    cast from pointer to integer of different size
-drivers/net/ethernet/intel/ice/ice_flow.h:198:32: warning:
-    cast to pointer from integer of different size
-
-Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
----
-v2->v1: add fix:
- ice_flow.h:198:32: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
- #define ICE_FLOW_ENTRY_PTR(h) ((struct ice_flow_entry *)(h))
-
- drivers/net/ethernet/intel/ice/ice_flow.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 3913da2116d2..829f90b1e998 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -194,8 +194,8 @@ struct ice_flow_entry {
- 	u16 entry_sz;
- };
-
--#define ICE_FLOW_ENTRY_HNDL(e)	((u64)e)
--#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(h))
-+#define ICE_FLOW_ENTRY_HNDL(e)	((u64)(uintptr_t)e)
-+#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(uintptr_t)(h))
-
- struct ice_flow_prof {
- 	struct list_head l_entry;
---
-2.17.1
-
-
-.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
