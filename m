@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Jul 2020 19:58:19 +0000
-Subject: [Intel-wired-lan] [PATCH S51 06/13] ice: Clear and free XLT
- entries on reset
-In-Reply-To: <20200730001922.52568-6-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jul 2020 19:58:35 +0000
+Subject: [Intel-wired-lan] [PATCH S51 10/13] ice: Disable VLAN pruning
+ in promiscuous mode
+In-Reply-To: <20200730001922.52568-10-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
- <20200730001922.52568-6-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145B913EE49E66C7ACB0EDC8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200730001922.52568-10-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB2145837D452D65535EA2AB7F8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, July 29, 2020 5:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S51 06/13] ice: Clear and free XLT entries
-> on reset
+> Subject: [Intel-wired-lan] [PATCH S51 10/13] ice: Disable VLAN pruning in
+> promiscuous mode
 > 
-> From: Vignesh Sridhar <vignesh.sridhar@intel.com>
+> From: Nick Nunley <nicholas.d.nunley@intel.com>
 > 
-> This fix has been added to address memory leak issues resulting from
-> triggering a sudden driver reset which does not allow us to follow our normal
-> removal flows for SW XLT entries for advanced features.
+> Disable VLAN pruning when entering promiscuous mode, and re-enable it
+> when exiting.
 > 
-> - Adding call to destroy flow profile locks when clearing SW XLT tables.
+> Without this VLAN-over-bridge topologies created on the device won't be
+> functional unless rx-vlan-filter is explicitly disabled with ethtool.
 > 
-> - Extraction sequence entries were not correctly cleared previously which
-> could cause ownership conflicts for repeated reset-replay calls.
-> 
-> Fixes: 31ad4e4ee1e4 ("ice: Allocate flow profile")
-> Signed-off-by: Vignesh Sridhar <vignesh.sridhar@intel.com>
+> Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 7 +++++++
+> drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+>  2 files changed, 10 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
