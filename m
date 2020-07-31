@@ -1,7 +1,10 @@
 From: Bixuan Cui <cuibixuan@huawei.com>
-Date: Fri, 31 Jul 2020 18:57:21 +0800
-Subject: [Intel-wired-lan] [PATCH -next] net: ice: Fix pointer cast warnings
-Message-ID: <20200731105721.18511-1-cuibixuan@huawei.com>
+Date: Fri, 31 Jul 2020 18:07:37 +0800
+Subject: [Intel-wired-lan] [PATCH -next v2] net: ice: Fix pointer cast
+ warnings
+In-Reply-To: <20200731105721.18511-1-cuibixuan@huawei.com>
+References: <20200731105721.18511-1-cuibixuan@huawei.com>
+Message-ID: <5af7c5af-c45d-2174-de89-8b89eddb4f4d@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,25 +16,37 @@ pointers should be casted to unsigned long to avoid
 
 drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning:
     cast from pointer to integer of different size
+drivers/net/ethernet/intel/ice/ice_flow.h:198:32: warning:
+    cast to pointer from integer of different size
 
 Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flow.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2->v1: add fix:
+ ice_flow.h:198:32: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+ #define ICE_FLOW_ENTRY_PTR(h) ((struct ice_flow_entry *)(h))
+
+ drivers/net/ethernet/intel/ice/ice_flow.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 3913da2116d2..b9a5c208e484 100644
+index 3913da2116d2..829f90b1e998 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flow.h
 +++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -194,7 +194,7 @@ struct ice_flow_entry {
+@@ -194,8 +194,8 @@ struct ice_flow_entry {
  	u16 entry_sz;
  };
 
 -#define ICE_FLOW_ENTRY_HNDL(e)	((u64)e)
-+#define ICE_FLOW_ENTRY_HNDL(e)	((uintptr_t)e)
- #define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(h))
+-#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(h))
++#define ICE_FLOW_ENTRY_HNDL(e)	((u64)(uintptr_t)e)
++#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(uintptr_t)(h))
 
  struct ice_flow_prof {
+ 	struct list_head l_entry;
 --
 2.17.1
+
+
+.
+
 
