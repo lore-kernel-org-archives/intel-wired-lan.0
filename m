@@ -1,52 +1,110 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 30 Jul 2020 14:20:46 -0700
-Subject: [Intel-wired-lan] [PATCH v1] ice: devlink: use %*phD to print
- small buffer
-In-Reply-To: <20200730160451.40810-1-andriy.shevchenko@linux.intel.com>
-References: <20200730160451.40810-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <77247fbc-152a-517f-2500-ce761b7afa6a@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 31 Jul 2020 15:11:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE] BUILD SUCCESS
+ 024a8168b749db7a4aa40a5fbdfa04bf7e77c1c0
+Message-ID: <5f23c425.LOjLp+zVKfZjaoOp%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
+branch HEAD: 024a8168b749db7a4aa40a5fbdfa04bf7e77c1c0  igb: reinit_locked() should be called with rtnl_lock
 
+elapsed time: 723m
 
-On 7/30/2020 9:04 AM, Andy Shevchenko wrote:
-> Use %*phD format to print small buffer as hex string.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+configs tested: 84
+configs skipped: 1
 
-Ah nice. I swear I looked for a printk format to do this and didn't find
-one. But it's been there since 2012.. so I guess I just missed it.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a005-20200730
+i386                 randconfig-a004-20200730
+i386                 randconfig-a006-20200730
+i386                 randconfig-a002-20200730
+i386                 randconfig-a001-20200730
+i386                 randconfig-a003-20200730
+i386                 randconfig-a005-20200731
+i386                 randconfig-a004-20200731
+i386                 randconfig-a006-20200731
+i386                 randconfig-a002-20200731
+i386                 randconfig-a001-20200731
+i386                 randconfig-a003-20200731
+x86_64               randconfig-a001-20200730
+x86_64               randconfig-a004-20200730
+x86_64               randconfig-a002-20200730
+x86_64               randconfig-a006-20200730
+x86_64               randconfig-a003-20200730
+x86_64               randconfig-a005-20200730
+x86_64               randconfig-a015-20200731
+x86_64               randconfig-a014-20200731
+x86_64               randconfig-a016-20200731
+x86_64               randconfig-a012-20200731
+x86_64               randconfig-a013-20200731
+x86_64               randconfig-a011-20200731
+i386                 randconfig-a016-20200731
+i386                 randconfig-a012-20200731
+i386                 randconfig-a014-20200731
+i386                 randconfig-a015-20200731
+i386                 randconfig-a011-20200731
+i386                 randconfig-a013-20200731
+i386                 randconfig-a016-20200730
+i386                 randconfig-a012-20200730
+i386                 randconfig-a014-20200730
+i386                 randconfig-a015-20200730
+i386                 randconfig-a011-20200730
+i386                 randconfig-a013-20200730
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-I also tested this on my system to make sure it gives the same output
-for the serial value, so I guess also:
-
-Tested-by: Jacob Keller <jacob.e.keller@intel.com>
-
-Thanks!
-
-> ---
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> index dbbd8b6f9d1a..a9105ad5b983 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> @@ -13,9 +13,7 @@ static int ice_info_get_dsn(struct ice_pf *pf, char *buf, size_t len)
->  	/* Copy the DSN into an array in Big Endian format */
->  	put_unaligned_be64(pci_get_dsn(pf->pdev), dsn);
->  
-> -	snprintf(buf, len, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x",
-> -		 dsn[0], dsn[1], dsn[2], dsn[3],
-> -		 dsn[4], dsn[5], dsn[6], dsn[7]);
-> +	snprintf(buf, len, "%8phD", dsn);
->  
->  	return 0;
->  }
-> 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
