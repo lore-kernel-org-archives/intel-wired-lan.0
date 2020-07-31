@@ -1,36 +1,92 @@
-From: Gal Hammer <ghammer@redhat.com>
-Date: Sun, 30 Aug 2020 08:45:29 +0300
-Subject: [Intel-wired-lan] [PATCH] igb: read PBA number from flash
-Message-ID: <20200830054529.3980-1-ghammer@redhat.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 01 Aug 2020 01:13:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 8698fb64cc77bf103ab582970965ae851f5f4d72
+Message-ID: <5f24514f.yiIihJYP4p2leibe%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixed flash presence check for 82576 controllers so the part
-number string is read and displayed correctly.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 8698fb64cc77bf103ab582970965ae851f5f4d72  igb: use eth_zero_addr() to clear mac address
 
-Signed-off-by: Gal Hammer <ghammer@redhat.com>
+elapsed time: 1266m
+
+configs tested: 66
+configs skipped: 1
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+sparc                            allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a005-20200731
+i386                 randconfig-a004-20200731
+i386                 randconfig-a006-20200731
+i386                 randconfig-a002-20200731
+i386                 randconfig-a001-20200731
+i386                 randconfig-a003-20200731
+x86_64               randconfig-a015-20200731
+x86_64               randconfig-a014-20200731
+x86_64               randconfig-a016-20200731
+x86_64               randconfig-a012-20200731
+x86_64               randconfig-a013-20200731
+x86_64               randconfig-a011-20200731
+i386                 randconfig-a016-20200731
+i386                 randconfig-a012-20200731
+i386                 randconfig-a014-20200731
+i386                 randconfig-a015-20200731
+i386                 randconfig-a011-20200731
+i386                 randconfig-a013-20200731
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index d9c3a6b169f9..245e62b0a97e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3388,7 +3388,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			  "Width x1" : "unknown"), netdev->dev_addr);
- 	}
- 
--	if ((hw->mac.type >= e1000_i210 ||
-+	if ((hw->mac.type == e1000_82576 &&
-+	     rd32(E1000_EECD) & E1000_EECD_PRES) ||
-+	    (hw->mac.type >= e1000_i210 ||
- 	     igb_get_flash_presence_i210(hw))) {
- 		ret_val = igb_read_part_string(hw, part_str,
- 					       E1000_PBANUM_LENGTH);
--- 
-2.26.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
