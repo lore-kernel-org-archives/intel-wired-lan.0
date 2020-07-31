@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Jul 2020 19:58:35 +0000
-Subject: [Intel-wired-lan] [PATCH S51 10/13] ice: Disable VLAN pruning
- in promiscuous mode
-In-Reply-To: <20200730001922.52568-10-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jul 2020 19:58:58 +0000
+Subject: [Intel-wired-lan] [PATCH S51 11/13] ice: update PTYPE lookup
+ table
+In-Reply-To: <20200730001922.52568-11-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
- <20200730001922.52568-10-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145837D452D65535EA2AB7F8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200730001922.52568-11-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB214581D940F41A9974E2D9BF8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, July 29, 2020 5:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S51 10/13] ice: Disable VLAN pruning in
-> promiscuous mode
+> Subject: [Intel-wired-lan] [PATCH S51 11/13] ice: update PTYPE lookup table
 > 
-> From: Nick Nunley <nicholas.d.nunley@intel.com>
+> Update the PTYPE lookup table to reflect values that can be set by the
+> hardware.
 > 
-> Disable VLAN pruning when entering promiscuous mode, and re-enable it
-> when exiting.
-> 
-> Without this VLAN-over-bridge topologies created on the device won't be
-> functional unless rx-vlan-filter is explicitly disabled with ethtool.
-> 
-> Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c  | 7 +++++++
-> drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->  2 files changed, 10 insertions(+)
+>  .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 314 ++++++++++++++++++
+>  1 file changed, 314 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
