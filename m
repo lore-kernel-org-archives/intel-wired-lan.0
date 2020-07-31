@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 31 Jul 2020 19:56:34 +0000
-Subject: [Intel-wired-lan] [PATCH S51 13/13] ice: Misc minor fixes
-In-Reply-To: <20200730001922.52568-13-anthony.l.nguyen@intel.com>
+Date: Fri, 31 Jul 2020 19:56:17 +0000
+Subject: [Intel-wired-lan] [PATCH S51 08/13] ice: port fix for
+ chk_linearlize
+In-Reply-To: <20200730001922.52568-8-anthony.l.nguyen@intel.com>
 References: <20200730001922.52568-1-anthony.l.nguyen@intel.com>
- <20200730001922.52568-13-anthony.l.nguyen@intel.com>
-Message-ID: <BN6PR1101MB2145D2956927810B31B3A7FC8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+ <20200730001922.52568-8-anthony.l.nguyen@intel.com>
+Message-ID: <BN6PR1101MB21451FF54FFF932E89C8761B8C4E0@BN6PR1101MB2145.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,23 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, July 29, 2020 5:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S51 13/13] ice: Misc minor fixes
+> Subject: [Intel-wired-lan] [PATCH S51 08/13] ice: port fix for chk_linearlize
 > 
-> This is a collection of minor fixes including typos, whitespace, and style.
-> No functional changes.
+> From: Kiran Patil <kiran.patil@intel.com>
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> This is a port of commit 248de22e638f ("i40e/i40evf: Account for frags split
+> over multiple descriptors in check linearize")
+> 
+> As part of testing workloads (read/write) using larger IO size (128K)
+> tx_timeout is observed and whenever it happens, it was due to tx_linearize.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c      | 5 ++---
->  drivers/net/ethernet/intel/ice/ice_devlink.c     | 2 +-
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
->  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_sched.c       | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_txrx.c        | 7 +++----
->  drivers/net/ethernet/intel/ice/ice_type.h        | 2 +-
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_xsk.c         | 2 --
->  9 files changed, 14 insertions(+), 18 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 26 ++++++++++++++++++++---
+>  1 file changed, 23 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
