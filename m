@@ -1,25 +1,98 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Sat, 1 Aug 2020 00:07:07 +0000
-Subject: [Intel-wired-lan] [PATCH v1] ice: devlink: use %*phD to print
- small buffer
-In-Reply-To: <20200731.164921.1194657794631782709.davem@davemloft.net>
-References: <20200730160451.40810-1-andriy.shevchenko@linux.intel.com>
- <20200731.164921.1194657794631782709.davem@davemloft.net>
-Message-ID: <1e14e2bd97cc6e49d60acfa03ab1fa0c777a46ac.camel@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 01 Aug 2020 21:53:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ b06fed7228c1326238ddebe4bddfcdf5f65c0fc2
+Message-ID: <5f2573e1.vOSGFB+Jvtt4hjF2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2020-07-31 at 16:49 -0700, David Miller wrote:
-> From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Date: Thu, 30 Jul 2020 19:04:51 +0300
-> 
-> > Use %*phD format to print small buffer as hex string.
-> > 
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> 
-> I am assuming the Intel folks will integrate this into their tree.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: b06fed7228c1326238ddebe4bddfcdf5f65c0fc2  ice: Fix a couple off by one bugs
 
-Yes, I'll take it into the Intel tree.
+elapsed time: 2565m
+
+configs tested: 72
+configs skipped: 1
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20200731
+i386                 randconfig-a004-20200731
+i386                 randconfig-a006-20200731
+i386                 randconfig-a002-20200731
+i386                 randconfig-a001-20200731
+i386                 randconfig-a003-20200731
+i386                 randconfig-a004-20200801
+i386                 randconfig-a005-20200801
+i386                 randconfig-a001-20200801
+i386                 randconfig-a003-20200801
+i386                 randconfig-a002-20200801
+i386                 randconfig-a006-20200801
+x86_64               randconfig-a015-20200731
+x86_64               randconfig-a014-20200731
+x86_64               randconfig-a016-20200731
+x86_64               randconfig-a012-20200731
+x86_64               randconfig-a013-20200731
+x86_64               randconfig-a011-20200731
+i386                 randconfig-a016-20200731
+i386                 randconfig-a012-20200731
+i386                 randconfig-a014-20200731
+i386                 randconfig-a015-20200731
+i386                 randconfig-a011-20200731
+i386                 randconfig-a013-20200731
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
