@@ -1,39 +1,101 @@
-From: Florian Westphal <fw@strlen.de>
-Date: Sat, 1 Aug 2020 16:41:02 +0200
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 1901/1959]
- include/linux/kernel.h:47:38: warning: division by zero
-In-Reply-To: <202008012237.F1NJb2jD%lkp@intel.com>
-References: <202008012237.F1NJb2jD%lkp@intel.com>
-Message-ID: <20200801144102.GI5271@breakpoint.cc>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 02 Aug 2020 17:05:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ 7dbc63f0a5402293e887e89a7974c5e48405565d
+Message-ID: <5f2681ee.fN0MScrxv6cbHFiM%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-kernel test robot <lkp@intel.com> wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-> head:   9217a41c8ac7e1ca23399f9af7455f1085df9594
-> commit: 9466a1ccebbe54ac57fb8a89c2b4b854826546a8 [1901/1959] mptcp: enable JOIN requests even if cookies are in use
-> config: parisc-randconfig-c004-20200731 (attached as .config)
-> compiler: hppa-linux-gcc (GCC) 9.3.0
-> reproduce (this is a W=1 build):
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         git checkout 9466a1ccebbe54ac57fb8a89c2b4b854826546a8
->         # save the attached .config to linux build tree
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=parisc 
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All warnings (new ones prefixed by >>):
-> 
->    In file included from include/linux/skbuff.h:13,
->                     from net/mptcp/syncookies.c:2:
->    net/mptcp/syncookies.c: In function 'mptcp_join_cookie_init':
-> >> include/linux/kernel.h:47:38: warning: division by zero [-Wdiv-by-zero]
->       47 | #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 7dbc63f0a5402293e887e89a7974c5e48405565d  ice: Misc minor fixes
 
-I forgot ARRAY_SIZE can't be used for spinlock_t arrays because they are
-0 on UP.  I've sumitted a build fix.
+elapsed time: 965m
+
+configs tested: 75
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                     ep8248e_defconfig
+sh                        sh7785lcr_defconfig
+openrisc                    or1ksim_defconfig
+sh                           se7751_defconfig
+sh                        sh7763rdp_defconfig
+xtensa                       common_defconfig
+sh                     sh7710voipgw_defconfig
+m68k                          multi_defconfig
+arm                      jornada720_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20200802
+i386                 randconfig-a005-20200802
+i386                 randconfig-a001-20200802
+i386                 randconfig-a002-20200802
+i386                 randconfig-a003-20200802
+i386                 randconfig-a006-20200802
+i386                 randconfig-a011-20200802
+i386                 randconfig-a012-20200802
+i386                 randconfig-a015-20200802
+i386                 randconfig-a014-20200802
+i386                 randconfig-a013-20200802
+i386                 randconfig-a016-20200802
+x86_64               randconfig-a006-20200802
+x86_64               randconfig-a001-20200802
+x86_64               randconfig-a004-20200802
+x86_64               randconfig-a003-20200802
+x86_64               randconfig-a002-20200802
+x86_64               randconfig-a005-20200802
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
