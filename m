@@ -1,133 +1,75 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 04 Aug 2020 23:59:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 8e94cc412bfec0a9ff51f8d7b876f285f5572c92
-Message-ID: <5f2985db.8ReD+kPU5GZzyTKl%lkp@intel.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Tue, 04 Aug 2020 10:51:30 -0700
+Subject: [Intel-wired-lan] [net-queue PATCH v1] igc: Fix PTP
+ initialization
+In-Reply-To: <20200803183207.817588-1-vinicius.gomes@intel.com>
+References: <20200803183207.817588-1-vinicius.gomes@intel.com>
+Message-ID: <159656349099.62699.10691780346692711576@patankar-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 8e94cc412bfec0a9ff51f8d7b876f285f5572c92  igc: Add new device ID's
+> Right now, igc_ptp_reset() is called from igc_reset(), which is called
+> from igc_probe() before igc_ptp_init() has a chance to run. It is
+> detected as an attempt to use an spinlook without registering its key
+> first. See log below.
+> 
+> To avoid this problem, simplify the initialization: igc_ptp_init() is
+> only called from igc_probe(), and igc_ptp_reset() is only called from
+> igc_reset().
+> 
+> [    2.736332] INFO: trying to register non-static key.
+> [    2.736902] input: HDA Intel PCH Front Headphone as /devices/pci0000:00/0000:00:1f.3/sound/card0/input10
+> [    2.737513] the code is fine but needs lockdep annotation.
+> [    2.737513] turning off the locking correctness validator.
+> [    2.737515] CPU: 8 PID: 239 Comm: systemd-udevd Tainted: G            E     5.8.0-rc7+ #13
+> [    2.737515] Hardware name: Gigabyte Technology Co., Ltd. Z390 AORUS ULTRA/Z390 AORUS ULTRA-CF, BIOS F7 03/14/2019
+> [    2.737516] Call Trace:
+> [    2.737521]  dump_stack+0x78/0xa0
+> [    2.737524]  register_lock_class+0x6b1/0x6f0
+> [    2.737526]  ? lockdep_hardirqs_on_prepare+0xca/0x160
+> [    2.739177]  ? _raw_spin_unlock_irq+0x24/0x50
+> [    2.739179]  ? trace_hardirqs_on+0x1c/0xf0
+> [    2.740820]  __lock_acquire+0x56/0x1ff0
+> [    2.740823]  ? __schedule+0x30c/0x970
+> [    2.740825]  lock_acquire+0x97/0x3e0
+> [    2.740830]  ? igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.740833]  ? schedule_hrtimeout_range_clock+0xb7/0x120
+> [    2.742507]  _raw_spin_lock_irqsave+0x3a/0x50
+> [    2.742512]  ? igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.742515]  igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.742519]  igc_reset+0x96/0xd0 [igc]
+> [    2.744148]  igc_probe+0x68f/0x7d0 [igc]
+> [    2.745796]  local_pci_probe+0x3d/0x70
+> [    2.745799]  pci_device_probe+0xd1/0x190
+> [    2.745802]  really_probe+0x15a/0x3f0
+> [    2.759936]  driver_probe_device+0xe1/0x150
+> [    2.759937]  device_driver_attach+0xa8/0xb0
+> [    2.761786]  __driver_attach+0x89/0x150
+> [    2.761786]  ? device_driver_attach+0xb0/0xb0
+> [    2.761787]  ? device_driver_attach+0xb0/0xb0
+> [    2.761788]  bus_for_each_dev+0x66/0x90
+> [    2.765012]  bus_add_driver+0x12e/0x1f0
+> [    2.765716]  driver_register+0x8b/0xe0
+> [    2.766418]  ? 0xffffffffc0230000
+> [    2.767119]  do_one_initcall+0x5a/0x310
+> [    2.767826]  ? kmem_cache_alloc_trace+0xe9/0x200
+> [    2.768528]  do_init_module+0x5c/0x260
+> [    2.769206]  __do_sys_finit_module+0x93/0xe0
+> [    2.770048]  do_syscall_64+0x46/0xa0
+> [    2.770716]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> [    2.771396] RIP: 0033:0x7f83534589e0
+> [    2.772073] Code: 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 2e 2e 2e 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 80 24 0d 00 f7 d8 64 89 01 48
+> [    2.772074] RSP: 002b:00007ffd31d0ed18 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+> [    2.774854] RAX: ffffffffffffffda RBX: 000055d52816aba0 RCX: 00007f83534589e0
+> [    2.774855] RDX: 0000000000000000 RSI: 00007f83535b982f RDI: 0000000000000006
+> [    2.774855] RBP: 00007ffd31d0ed60 R08: 0000000000000000 R09: 00007ffd31d0ed30
+> [    2.774856] R10: 0000000000000006 R11: 0000000000000246 R12: 0000000000000000
+> [    2.774856] R13: 0000000000020000 R14: 00007f83535b982f R15: 000055d527f5e120
+> 
+> Fixes: 5f2958052c58 ("igc: Add basic skeleton for PTP")
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-elapsed time: 724m
-
-configs tested: 107
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-h8300                     edosk2674_defconfig
-arm                        shmobile_defconfig
-c6x                                 defconfig
-arm                            mmp2_defconfig
-arm                         lubbock_defconfig
-arc                     nsimosci_hs_defconfig
-sh                           se7206_defconfig
-arm                           spitz_defconfig
-arm                        neponset_defconfig
-sh                          rsk7201_defconfig
-s390                       zfcpdump_defconfig
-c6x                        evmc6457_defconfig
-m68k                         apollo_defconfig
-mips                           mtx1_defconfig
-arm                            pleb_defconfig
-m68k                          multi_defconfig
-arm                       netwinder_defconfig
-c6x                              alldefconfig
-powerpc                           allnoconfig
-arm                          gemini_defconfig
-powerpc                     pq2fads_defconfig
-arm                   milbeaut_m10v_defconfig
-powerpc                     skiroot_defconfig
-sh                         ecovec24_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                      chrp32_defconfig
-s390                          debug_defconfig
-parisc                           alldefconfig
-parisc                generic-32bit_defconfig
-c6x                        evmc6472_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a006-20200804
-x86_64               randconfig-a001-20200804
-x86_64               randconfig-a004-20200804
-x86_64               randconfig-a005-20200804
-x86_64               randconfig-a002-20200804
-x86_64               randconfig-a003-20200804
-i386                 randconfig-a005-20200804
-i386                 randconfig-a004-20200804
-i386                 randconfig-a001-20200804
-i386                 randconfig-a003-20200804
-i386                 randconfig-a002-20200804
-i386                 randconfig-a006-20200804
-i386                 randconfig-a004-20200803
-i386                 randconfig-a005-20200803
-i386                 randconfig-a001-20200803
-i386                 randconfig-a002-20200803
-i386                 randconfig-a003-20200803
-i386                 randconfig-a006-20200803
-x86_64               randconfig-a013-20200803
-x86_64               randconfig-a011-20200803
-x86_64               randconfig-a012-20200803
-x86_64               randconfig-a016-20200803
-x86_64               randconfig-a015-20200803
-x86_64               randconfig-a014-20200803
-i386                 randconfig-a011-20200804
-i386                 randconfig-a012-20200804
-i386                 randconfig-a013-20200804
-i386                 randconfig-a014-20200804
-i386                 randconfig-a015-20200804
-i386                 randconfig-a016-20200804
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Reviewed-by: Andre Guedes <andre.guedes@intel.com>
