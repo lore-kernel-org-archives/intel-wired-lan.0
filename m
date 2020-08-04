@@ -1,103 +1,146 @@
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Tue,  4 Aug 2020 10:55:50 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix MAC address setting for a VF
- via Host/VM
-Message-ID: <20200804105550.10763-1-arkadiusz.kubalewski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 04 Aug 2020 19:43:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 145f0e0cd17dc0c636d86cf2947bcc6f2c84532a
+Message-ID: <5f2949e5.ouN6sfsR40HiYVp1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 145f0e0cd17dc0c636d86cf2947bcc6f2c84532a  igc: Fix PTP initialization
 
-Fix MAC setting flow for the PF driver.
+elapsed time: 724m
 
-Without this change the MAC address setting was interpreted
-incorrectly in the following usecases:
-1) Print incorrect VF MAC or zero MAC
-ip link show dev $pf
-2) Don't preserve MAC between driver reload
-rmmod iavf; modprobe iavf
-3) Update VF MAC when macvlan was set
-ip link add link $vf address $mac $vf.1 type macvlan
-4) Failed to update mac address when VF was trusted
-ip link set dev $vf address $mac
+configs tested: 120
+configs skipped: 9
 
-This includes all other configurations including above commands.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                          moxart_defconfig
+sh                        sh7763rdp_defconfig
+sh                         microdev_defconfig
+arm                        magician_defconfig
+arm                             pxa_defconfig
+powerpc                  storcenter_defconfig
+sh                           se7206_defconfig
+arm                           spitz_defconfig
+arm                        neponset_defconfig
+sh                          rsk7201_defconfig
+mips                 pnx8335_stb225_defconfig
+sparc64                          alldefconfig
+arm                          badge4_defconfig
+arm                          ixp4xx_defconfig
+sh                          lboxre2_defconfig
+arm                    vt8500_v6_v7_defconfig
+arm                            lart_defconfig
+mips                        omega2p_defconfig
+mips                     loongson1c_defconfig
+m68k                       bvme6000_defconfig
+xtensa                           alldefconfig
+arm                       netwinder_defconfig
+c6x                              alldefconfig
+sh                           se7751_defconfig
+sh                           se7712_defconfig
+arm                            mmp2_defconfig
+sh                           sh2007_defconfig
+mips                      maltaaprp_defconfig
+arm                          gemini_defconfig
+powerpc                     pq2fads_defconfig
+arm                   milbeaut_m10v_defconfig
+powerpc                     skiroot_defconfig
+sh                         ecovec24_defconfig
+sh                        sh7757lcr_defconfig
+parisc                           alldefconfig
+mips                           ip32_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20200804
+x86_64               randconfig-a001-20200804
+x86_64               randconfig-a004-20200804
+x86_64               randconfig-a005-20200804
+x86_64               randconfig-a002-20200804
+x86_64               randconfig-a003-20200804
+i386                 randconfig-a004-20200803
+i386                 randconfig-a005-20200803
+i386                 randconfig-a001-20200803
+i386                 randconfig-a002-20200803
+i386                 randconfig-a003-20200803
+i386                 randconfig-a006-20200803
+i386                 randconfig-a005-20200804
+i386                 randconfig-a004-20200804
+i386                 randconfig-a001-20200804
+i386                 randconfig-a003-20200804
+i386                 randconfig-a002-20200804
+i386                 randconfig-a006-20200804
+x86_64               randconfig-a013-20200803
+x86_64               randconfig-a011-20200803
+x86_64               randconfig-a012-20200803
+x86_64               randconfig-a016-20200803
+x86_64               randconfig-a015-20200803
+x86_64               randconfig-a014-20200803
+i386                 randconfig-a011-20200803
+i386                 randconfig-a012-20200803
+i386                 randconfig-a015-20200803
+i386                 randconfig-a014-20200803
+i386                 randconfig-a013-20200803
+i386                 randconfig-a016-20200803
+i386                 randconfig-a011-20200804
+i386                 randconfig-a012-20200804
+i386                 randconfig-a013-20200804
+i386                 randconfig-a014-20200804
+i386                 randconfig-a015-20200804
+i386                 randconfig-a016-20200804
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 25 +++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8e133d6..ef96f68 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2702,6 +2702,10 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 				spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 				goto error_param;
- 			}
-+			if (is_valid_ether_addr(al->list[i].addr) &&
-+			    is_zero_ether_addr(vf->default_lan_addr.addr))
-+				ether_addr_copy(vf->default_lan_addr.addr,
-+						al->list[i].addr);
- 		}
- 	}
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-@@ -2729,6 +2733,7 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- {
- 	struct virtchnl_ether_addr_list *al =
- 	    (struct virtchnl_ether_addr_list *)msg;
-+	bool was_unimac_deleted = false;
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_vsi *vsi = NULL;
- 	i40e_status ret = 0;
-@@ -2748,6 +2753,8 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 			ret = I40E_ERR_INVALID_MAC_ADDR;
- 			goto error_param;
- 		}
-+		if (ether_addr_equal(al->list[i].addr, vf->default_lan_addr.addr))
-+			was_unimac_deleted = true;
- 	}
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 
-@@ -2768,10 +2775,24 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters, error %d\n",
- 			vf->vf_id, ret);
- 
-+	if (vf->trusted && was_unimac_deleted) {
-+		struct i40e_mac_filter *f;
-+		struct hlist_node *h;
-+		u8 *macaddr = NULL;
-+		int bkt;
-+		/* set last unicast mac address as default */
-+		spin_lock_bh(&vsi->mac_filter_hash_lock);
-+		hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
-+			if (is_valid_ether_addr(f->macaddr))
-+				macaddr = f->macaddr;
-+		}
-+		if (macaddr)
-+			ether_addr_copy(vf->default_lan_addr.addr, macaddr);
-+		spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+	}
- error_param:
- 	/* send the response to the VF */
--	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR,
--				       ret);
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR, ret);
- }
- 
- /**
--- 
-2.26.0
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
