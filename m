@@ -1,44 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 4 Aug 2020 20:58:42 +0000
-Subject: [Intel-wired-lan] [PATCH][v2] i40e: optimise prefetch page
- refcount
-In-Reply-To: <1596191874-27757-1-git-send-email-lirongqing@baidu.com>
-References: <1596191874-27757-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <BN6PR1101MB2145FBEC323CA803DD7F1DF78C4A0@BN6PR1101MB2145.namprd11.prod.outlook.com>
+From: Yaroslav Isakov <yaroslav.isakov@gmail.com>
+Date: Wed, 5 Aug 2020 02:42:54 +0200
+Subject: [Intel-wired-lan] Deep package C-states cannot be reached on e1000e
+ after resume from suspend
+Message-ID: <CADS+iDVjpGVQifg+RtNEQKJw4ePe6+ViUpto8U1v0Xv1HwN2-Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Li RongQing <lirongqing@baidu.com>
-> Sent: Friday, July 31, 2020 3:38 AM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
-> kuba at kernel.org; Bowers, AndrewX <andrewx.bowers@intel.com>;
-> Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Subject: [PATCH][v2] i40e: optimise prefetch page refcount
-> 
-> refcount of rx_buffer page will be added here originally, so prefetchw is
-> needed, but after commit 1793668c3b8c ("i40e/i40evf: Update code to
-> better handle incrementing page count"), and refcount is not added
-> everytime, so change prefetchw as prefetch,
-> 
-> now it mainly services page_address(), but which accesses struct page only
-> when WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL is defined
-> otherwise it returns address based on offset, so we prefetch it conditionally
-> 
-> Jakub suggested to define prefetch_page_address in a common header
-> 
-> Suggested-by: Jakub Kicinski <kuba@kernel.org>
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> ---
-> diff with v1: create a common function prefetch_page_address
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 +-
->  include/linux/prefetch.h                    | 7 +++++++
->  2 files changed, 8 insertions(+), 1 deletion(-)
+Hello! I've found that my laptop (T460s) cannot reach Package C-states
+deeper than PC2. After some research, I've found that unplugging cable
+from my laptop and plugging it back fixes that, until the laptop is
+suspended. After resume, this problem returns, but unplugging and
+plugging fix it again.
+I'm using kernel 5.8.0, but I've seen the same behavior on previous
+kernel as well.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Here is a lspci -n -vv excerpt:
+00:1f.6 0200: 8086:156f (rev 21)
+    Subsystem: 17aa:2233
+    Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B- DisINTx+
+    Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+    Latency: 0
+    Interrupt: pin A routed to IRQ 129
+    Region 0: Memory@e1100000 (32-bit, non-prefetchable) [size=128K]
+    Capabilities: [c8] Power Management version 3
+        Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
+PME(D0+,D1-,D2-,D3hot+,D3cold+)
+        Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+    Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+        Address: 00000000fee002f8  Data: 0000
+    Capabilities: [e0] PCI Advanced Features
+        AFCap: TP+ FLR+
+        AFCtrl: FLR-
+        AFStatus: TP-
+    Kernel driver in use: e1000e
+    Kernel modules: e1000e
 
-
+/sys/bus/pci/devices/0000:00:1f.6/power/control = on (I've changed it
+to auto, but no change in behavoir)
