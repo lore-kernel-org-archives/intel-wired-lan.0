@@ -1,86 +1,140 @@
-From: Yaroslav Isakov <yaroslav.isakov@gmail.com>
-Date: Wed, 5 Aug 2020 21:58:01 +0200
-Subject: [Intel-wired-lan] Deep package C-states cannot be reached on
- e1000e after resume from suspend
-In-Reply-To: <CADS+iDVfMUHYrhWvs5SmjKiH6wCp3M34kP80Apzaq9DspVrU5w@mail.gmail.com>
-References: <CADS+iDVjpGVQifg+RtNEQKJw4ePe6+ViUpto8U1v0Xv1HwN2-Q@mail.gmail.com>
- <013f9961-a7fc-0d60-eea3-30b5171a27e1@intel.com>
- <CADS+iDVfMUHYrhWvs5SmjKiH6wCp3M34kP80Apzaq9DspVrU5w@mail.gmail.com>
-Message-ID: <CADS+iDWwbngp0FdHf4FWDpmac75VYZS=4KRE6w3VqD3m=S_e=A@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 06 Aug 2020 16:02:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ b9721e471d8836b587b16ade9484087e2ef7bb8d
+Message-ID: <5f2bb932.ceyHmcqzXVoo9Uj+%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I think that the problem is in suspend/resume. When I'm booting
-laptop, I can see C6, C8 residency (after setting
-CONFIG_SATA_MOBILE_LPM_POLICY=3), but after suspend/resume package is
-stuck in PC2, until I'll unplug/wait/plug cable.
-P.S. I've tried to disable WOL, or set
-/sys/bus/pci/devices/0000:04:00.0/power/control to auto - no change in
-behavior.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: b9721e471d8836b587b16ade9484087e2ef7bb8d  i40e: Fix MAC address setting for a VF via Host/VM
 
-??, 5 ???. 2020 ?. ? 21:18, Yaroslav Isakov <yaroslav.isakov@gmail.com>:
->
-> Vitaly,
-> Thank you, I've tried, but no change in C-states. I do not understand
-> why unplugging and plugging cable back fix my issue...
-> I've also found that if I plug cable immediately after unplugging, it
-> also doesn't fix my problem. I should unplug cable, wait until there
-> are numbers in RC6+ columns in turbostat, and only then I can insert
-> the cable back.
->
-> ??, 5 ???. 2020 ?. ? 13:34, Vitaly Lifshits <vitaly.lifshits@intel.com>:
-> >
-> > Hello Yatoslav,
-> >
-> > On 8/5/2020 03:42, Yaroslav Isakov wrote:
-> > > Hello! I've found that my laptop (T460s) cannot reach Package C-states
-> > > deeper than PC2. After some research, I've found that unplugging cable
-> > > from my laptop and plugging it back fixes that, until the laptop is
-> > > suspended. After resume, this problem returns, but unplugging and
-> > > plugging fix it again.
-> > > I'm using kernel 5.8.0, but I've seen the same behavior on previous
-> > > kernel as well.
-> > >
-> > > Here is a lspci -n -vv excerpt:
-> > > 00:1f.6 0200: 8086:156f (rev 21)
-> > >      Subsystem: 17aa:2233
-> > >      Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> > > ParErr- Stepping- SERR- FastB2B- DisINTx+
-> > >      Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-> > > <TAbort- <MAbort- >SERR- <PERR- INTx-
-> > >      Latency: 0
-> > >      Interrupt: pin A routed to IRQ 129
-> > >      Region 0: Memory at e1100000 (32-bit, non-prefetchable) [size=128K]
-> > >      Capabilities: [c8] Power Management version 3
-> > >          Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
-> > > PME(D0+,D1-,D2-,D3hot+,D3cold+)
-> > >          Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
-> > >      Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
-> > >          Address: 00000000fee002f8  Data: 0000
-> > >      Capabilities: [e0] PCI Advanced Features
-> > >          AFCap: TP+ FLR+
-> > >          AFCtrl: FLR-
-> > >          AFStatus: TP-
-> > >      Kernel driver in use: e1000e
-> > >      Kernel modules: e1000e
-> > >
-> > > /sys/bus/pci/devices/0000:00:1f.6/power/control = on (I've changed it
-> > > to auto, but no change in behavoir)
-> > > _______________________________________________
-> > > Intel-wired-lan mailing list
-> > > Intel-wired-lan at osuosl.org
-> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> > >
-> >
-> > In order to be able to reach the lowest power state with connected cable
-> > you need to set pmc to ignore ltr from the GBE.
-> >
-> > You can do it by executing:
-> > echo 3 > /sys/kernel/debug/pmc_core/ltr_ignore
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at osuosl.org
-> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Error/Warning in current branch:
+
+net/ipv4/udp_tunnel_nic.c:849:6-10: ERROR: invalid reference to the index variable of the iterator on line 846
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- c6x-randconfig-c003-20200805
+|   `-- net-ipv4-udp_tunnel_nic.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
+`-- i386-randconfig-c001-20200805
+    `-- net-ipv4-udp_tunnel_nic.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
+
+elapsed time: 724m
+
+configs tested: 105
+configs skipped: 6
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                       mainstone_defconfig
+sh                   sh7770_generic_defconfig
+mips                       rbtx49xx_defconfig
+ia64                         bigsur_defconfig
+arm                          simpad_defconfig
+powerpc                      mgcoge_defconfig
+powerpc64                        alldefconfig
+mips                      maltasmvp_defconfig
+mips                      fuloong2e_defconfig
+mips                     loongson1c_defconfig
+arm                          lpd270_defconfig
+m68k                       m5249evb_defconfig
+sh                        dreamcast_defconfig
+powerpc                    amigaone_defconfig
+powerpc                      pasemi_defconfig
+arm                             rpc_defconfig
+m68k                        mvme147_defconfig
+m68k                          multi_defconfig
+powerpc                  mpc885_ads_defconfig
+sh                   secureedge5410_defconfig
+ia64                          tiger_defconfig
+arm                         mv78xx0_defconfig
+microblaze                      mmu_defconfig
+s390                          debug_defconfig
+powerpc                     powernv_defconfig
+arm                        spear6xx_defconfig
+mips                         db1xxx_defconfig
+sh                         apsh4a3a_defconfig
+mips                            gpr_defconfig
+arm                       imx_v4_v5_defconfig
+arm                     eseries_pxa_defconfig
+arm                            pleb_defconfig
+arm                        keystone_defconfig
+arm                          collie_defconfig
+arc                        vdk_hs38_defconfig
+arm                      tct_hammer_defconfig
+mips                     loongson1b_defconfig
+powerpc                       ppc64_defconfig
+arm                             ezx_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20200805
+i386                 randconfig-a001-20200805
+i386                 randconfig-a003-20200805
+i386                 randconfig-a002-20200805
+i386                 randconfig-a005-20200805
+i386                 randconfig-a006-20200805
+x86_64               randconfig-a013-20200805
+x86_64               randconfig-a011-20200805
+x86_64               randconfig-a012-20200805
+x86_64               randconfig-a016-20200805
+x86_64               randconfig-a015-20200805
+x86_64               randconfig-a014-20200805
+i386                 randconfig-a011-20200805
+i386                 randconfig-a012-20200805
+i386                 randconfig-a013-20200805
+i386                 randconfig-a014-20200805
+i386                 randconfig-a015-20200805
+i386                 randconfig-a016-20200805
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
