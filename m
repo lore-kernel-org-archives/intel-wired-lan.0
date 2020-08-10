@@ -1,75 +1,68 @@
-From: Salvatore Bonaccorso <carnil@debian.org>
-Date: Mon, 10 Aug 2020 20:47:31 +0200
-Subject: [Intel-wired-lan] Further information on
- CVE-2019-0145/CVE-2019-0146/CVE-2019-0147/CVE-2019-0148/CVE-2019-0149 for
- Linux?
-In-Reply-To: <alpine.LFD.2.23.451.2007281106010.590669@jbrandeb-desk.jf.intel.com>
-References: <20200716203902.acn3ea2b4iorxlhq@inutil.org>
- <alpine.LFD.2.23.451.2007281106010.590669@jbrandeb-desk.jf.intel.com>
-Message-ID: <20200810184731.GA300766@eldamar.local>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 11 Aug 2020 03:26:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 4/33]
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition
+ of 'truesize'
+Message-ID: <202008110318.5Yla7AOX%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jessie,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   5cf0cbb14925b7131baa959b35a2267d6bbb6651
+commit: b9b2990dfe8754cb52443a4cfe8c8f7faf6f1cb6 [4/33] ixgbe: fix XDP redirect on archs with PAGE_SIZE above 4K
+config: alpha-allyesconfig (attached as .config)
+compiler: alpha-linux-gcc (GCC) 9.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout b9b2990dfe8754cb52443a4cfe8c8f7faf6f1cb6
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
 
-On Tue, Jul 28, 2020 at 11:10:27AM -0700, Jesse Brandeburg wrote:
-> 
-> 
-> On Thu, 16 Jul 2020, Moritz Muehlenhoff wrote:
-> 
-> > Hi,
-> > https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00255.html refers
-> > to vulnerabilities in Intel Ethernet drivers and a few of them refer to the i40e driver
-> > specifically:
-> 
-> I'm sorry Moritz that we haven't gotten back to you. We are chasing down the
-> specific patches made upstream for software portions of the below fixes.
-> 
-> > CVEID: CVE-2019-0145
-> > Description: Buffer overflow in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> > versions before 7.0 may allow an authenticated user to potentially enable an escalation
-> > of privilege via local access.
-> > 
-> > CVEID: CVE-2019-0146
-> > Description: Resource leak in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> > versions before 2.8.43 may allow an authenticated user to potentially enable a denial of
-> > service via local access.
-> > 
-> > CVEID: CVE-2019-0147
-> > Description: Insufficient input validation in i40e driver for Intel(R) Ethernet 700 Series
-> > Controllers versions before 7.0 may allow an authenticated user to potentially enable a
-> > denial of service via local access.
-> > 
-> > CVEID: CVE-2019-0148
-> > Description: Resource leak in i40e driver for Intel(R) Ethernet 700 Series Controllers
-> > versions before 7.0 may allow an authenticated use to potentially enable a denial of
-> > service via local access.
-> > 
-> > CVEID: CVE-2019-0149
-> > Description: Insufficient input validation in i40e driver for Intel(R) Ethernet 700
-> > Series Controllers versions before 2.8.43 may allow an authenticated user to potentially
-> > enable a denial of service via local access.
-> > 
-> > Is there any further information which commits fixed these and if so, were they submitted
-> > to stable kernels? (The Debian kernels are based on 4.9.x and 4.19.x LTS kernels, so that
-> > we can make sure these are addressed in stable/oldstable releases)
-> 
-> We will get you the information, it was a mistake on our part to not mention
-> CVEs in the commit messages if/when we upstreamed the patches. The only
-> thing I can say for sure is that these have been addressed in our
-> Out-of-tree drivers, but I realize that is not your question.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-Thanks a lot as well for coming back to the question from Moritz, much
-appreiciated.
+All errors (new ones prefixed by >>):
 
-I noted here was a submission for i40e fixes to stable, as
-https://lore.kernel.org/stable/20200807205517.1740307-1-jesse.brandeburg at intel.com/
-. Is any of those referring to one of the above?
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_rx_buffer_flip':
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+    2269 |  unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+         |               ^~~~~~~~
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2265:15: note: previous definition of 'truesize' was here
+    2265 |  unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+         |               ^~~~~~~~
 
-Thanks already for your time,
+vim +/truesize +2269 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 
-Regards,
-Salvatore
+  2260	
+  2261	static void ixgbe_rx_buffer_flip(struct ixgbe_ring *rx_ring,
+  2262					 struct ixgbe_rx_buffer *rx_buffer,
+  2263					 unsigned int size)
+  2264	{
+  2265		unsigned int truesize = ixgbe_rx_frame_truesize(rx_ring, size);
+  2266	#if (PAGE_SIZE < 8192)
+  2267		rx_buffer->page_offset ^= truesize;
+  2268	#else
+> 2269		unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+  2270					SKB_DATA_ALIGN(IXGBE_SKB_PAD + size) +
+  2271					SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) :
+  2272					SKB_DATA_ALIGN(size);
+  2273	
+  2274		rx_buffer->page_offset += truesize;
+  2275	#endif
+  2276	}
+  2277	
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 65348 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200811/8f3bc576/attachment-0001.bin>
