@@ -1,40 +1,64 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 10 Aug 2020 14:59:09 -0700
-Subject: [Intel-wired-lan] Further information on
- CVE-2019-0145/CVE-2019-0146/CVE-2019-0147/CVE-2019-0148/CVE-2019-0149 for
- Linux?
-In-Reply-To: <20200810184731.GA300766@eldamar.local>
-References: <20200716203902.acn3ea2b4iorxlhq@inutil.org>
- <alpine.LFD.2.23.451.2007281106010.590669@jbrandeb-desk.jf.intel.com>
- <20200810184731.GA300766@eldamar.local>
-Message-ID: <20200810145909.0000134f@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 10 Aug 2020 15:56:31 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] igc: Fix SRRCTL register setup
+In-Reply-To: <20200810210832.34699-3-andre.guedes@intel.com>
+References: <20200810210832.34699-1-andre.guedes@intel.com>
+ <20200810210832.34699-3-andre.guedes@intel.com>
+Message-ID: <CAKgT0UdvyU+xkESA5HaqS2acbXQMJDUGdchRM2J6QExEcjiSkQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 10 Aug 2020 20:47:31 +0200
-Salvatore Bonaccorso <carnil@debian.org> wrote:
+On Mon, Aug 10, 2020 at 2:08 PM Andre Guedes <andre.guedes@intel.com> wrote:
+>
+> SRRCTL register is set with 'one buffer descriptor' option (see DESCTYPE
+> setting a few lines below) so setting BSIZEHEADER bits is pointless.
+> They should be zero. Also, since there is no header buffer we should set
+> the header buffer address field from the receive descriptor to zero for
+> the sake of consistency.
+>
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 0c481dc906ad..a5d825d44002 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -531,14 +531,11 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
+>         ring->next_to_clean = 0;
+>         ring->next_to_use = 0;
+>
+> -       /* set descriptor configuration */
+> -       srrctl = IGC_RX_HDR_LEN << IGC_SRRCTL_BSIZEHDRSIZE_SHIFT;
+>         if (ring_uses_large_buffer(ring))
+>                 srrctl |= IGC_RXBUFFER_3072 >> IGC_SRRCTL_BSIZEPKT_SHIFT;
+>         else
+>                 srrctl |= IGC_RXBUFFER_2048 >> IGC_SRRCTL_BSIZEPKT_SHIFT;
+>         srrctl |= IGC_SRRCTL_DESCTYPE_ADV_ONEBUF;
+> -
+>         wr32(IGC_SRRCTL(reg_idx), srrctl);
+>
+>         rxdctl |= IGC_RX_PTHRESH;
 
-> > We will get you the information, it was a mistake on our part to
-> > not mention CVEs in the commit messages if/when we upstreamed the
-> > patches. The only thing I can say for sure is that these have been
-> > addressed in our Out-of-tree drivers, but I realize that is not
-> > your question.
-> 
-> Thanks a lot as well for coming back to the question from Moritz, much
-> appreiciated.
-> 
-> I noted here was a submission for i40e fixes to stable, as
-> https://lore.kernel.org/stable/20200807205517.1740307-1-jesse.brandeburg at intel.com/
-> . Is any of those referring to one of the above?
-> 
-> Thanks already for your time,
+Some of this was left in place to leave parity with the ixgbe driver
+which was required to populate that field in order to enable RSC/LRO.
 
-The patches to address the above issues are part of mainline kernel
-5.2.0, and (upcoming) stable kernel 4.19.139, however I'm not sure if
-there is anything else I need to do in order to have them backported to
-4.9.y.
+> @@ -1869,6 +1866,7 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
+>                  * because each write-back erases this info.
+>                  */
+>                 rx_desc->read.pkt_addr = cpu_to_le64(bi->dma + bi->page_offset);
+> +               rx_desc->read.hdr_addr = 0;
+>
+>                 rx_desc++;
+>                 bi++;
 
-I hope that helps you! Thanks for bringing it to our attention.
+If you are going to do this it would be better to replace the line
+that is setting the length to zero instead of just adding this line.
+That way you can avoid having to rewrite it. I only had bothered with
+clearing the length field as it was a 32b field, however if you are
+wanting to flush the full 64b then I would recommend doing it there
+rather than here.
