@@ -1,13 +1,14 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 11 Aug 2020 11:02:32 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] igc: Check descriptor's DD bit in
- igc_clean_rx_irq()
-In-Reply-To: <159716519786.40621.1181546461816516018@awandler-mobl.amr.corp.intel.com>
+Date: Tue, 11 Aug 2020 11:04:52 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] igc: Fix SRRCTL register setup
+In-Reply-To: <159716520324.40621.12578308745578598418@awandler-mobl.amr.corp.intel.com>
 References: <20200810210832.34699-1-andre.guedes@intel.com>
- <20200810210832.34699-2-andre.guedes@intel.com>
- <CAKgT0Uf-nQ105jbAK-Ag0M=mn254YJX=A7DJ9PMWZFPAFunNUg@mail.gmail.com>
- <159716519786.40621.1181546461816516018@awandler-mobl.amr.corp.intel.com>
-Message-ID: <CAKgT0Uc1zs95OT6doaXo_cXHieAoimeBRhBczM-0cJg4-4Td-g@mail.gmail.com>
+ <20200810210832.34699-3-andre.guedes@intel.com>
+ <CAKgT0UdvyU+xkESA5HaqS2acbXQMJDUGdchRM2J6QExEcjiSkQ@mail.gmail.com>
+ <159710652891.38166.5470520112400402456@gwclark-mobl2.amr.corp.intel.com>
+ <CAKgT0UfujXBhZX8WeM_YrtZyCxZpP10zfARH6x4HdmjLbaFJvw@mail.gmail.com>
+ <159716520324.40621.12578308745578598418@awandler-mobl.amr.corp.intel.com>
+Message-ID: <CAKgT0UfDs1VUo3zkgC_5m=ZTD_gTWaVEm5GuCqjxhw99agjjkg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,96 +17,59 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Tue, Aug 11, 2020 at 10:00 AM Andre Guedes <andre.guedes@intel.com> wrote:
 >
-> Hi Alexander,
->
-> Quoting Alexander Duyck (2020-08-10 18:25:12)
-> > > --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> > > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> > > @@ -551,7 +551,6 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
+> Quoting Alexander Duyck (2020-08-10 18:41:41)
+> > On Mon, Aug 10, 2020 at 5:42 PM Andre Guedes <andre.guedes@intel.com> wrote:
 > > >
-> > >         /* initialize Rx descriptor 0 */
-> > >         rx_desc = IGC_RX_DESC(ring, 0);
-> > > -       rx_desc->wb.upper.length = 0;
+> > > Quoting Alexander Duyck (2020-08-10 15:56:31)
+> > > > > @@ -1869,6 +1866,7 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
+> > > > >                  * because each write-back erases this info.
+> > > > >                  */
+> > > > >                 rx_desc->read.pkt_addr = cpu_to_le64(bi->dma + bi->page_offset);
+> > > > > +               rx_desc->read.hdr_addr = 0;
+> > > > >
+> > > > >                 rx_desc++;
+> > > > >                 bi++;
+> > > >
+> > > > If you are going to do this it would be better to replace the line
+> > > > that is setting the length to zero instead of just adding this line.
+> > > > That way you can avoid having to rewrite it. I only had bothered with
+> > > > clearing the length field as it was a 32b field, however if you are
+> > > > wanting to flush the full 64b then I would recommend doing it there
+> > > > rather than here.
 > > >
-> > >         /* enable receive descriptor fetching */
-> > >         rxdctl |= IGC_RXDCTL_QUEUE_ENABLE;
+> > > Just to make sure I'm on the same page, do you mean to move this line to
+> > > patch 2/3, right?
 > >
-> > This is initializing the ring for the first descriptor to 0. Without
-> > this line you break the driver. Without this you need to memset the
-> > entire descriptor ring to 0.
-> >
-> > > @@ -1880,9 +1879,6 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
-> > >                         i -= rx_ring->count;
-> > >                 }
-> > >
-> > > -               /* clear the length for the next_to_use descriptor */
-> > > -               rx_desc->wb.upper.length = 0;
-> > > -
-> > >                 cleaned_count--;
-> > >         } while (cleaned_count);
-> > >
-> >
-> > Same here. Without doing this you can potentially hang as you need to
-> > make sure the status bits are cleared before releasing a descriptor to
-> > the device.
+> > No, I hadn't had a chance to take a look at patch 2 yet. I think patch
+> > 2 is ill advised as the patch is currently broken, and even if done
+> > correctly you don't get any benefit out of it that I can see. From
+> > what I can tell this patch was likely covering up some of the errors
+> > introduced in patch 2. Now that I see this in conjunction with patch 2
+> > I would say you should probably just drop patch 2 and this one as well
+> > since they aren't adding any real value other than removing a
+> > redundant write which was just there to keep this mostly in sync with
+> > how we did it for ixgbe.
 >
-> Yes, after your first comment on patch 3/3 I realized this was bogus. Moving
-> the 'read.hdr_addr = 0' to this patch should fix it. That's why I thought you
-> were suggesting that.
+> What about not setting BSIZEHEADER bits since 'one buffer descriptor' option
+> is used in SRRCTL?
+
+Does it cause some sort of problem to be populating it? If not I would
+say leave it. It isn't too different from just populating the field
+with 0 and should have no effect since the field is unused when in one
+buffer mode.
+
+> > The reason the driver path was coded the way it is in order to get
+> > away from having to clear the entire descriptor after processing it
+> > and to avoid having to explicitly track next_to_use and next_to_clean.
+> > Instead we leave the descriptor as mostly read-only until we
+> > reallocate the buffer and give it back to the device. All we have to
+> > do is clear the length field of the next_to_use descriptor when we are
+> > done allocating so that we do not overrun the descriptors when
+> > cleaning. It makes it much easier to debug when the descriptors are
+> > left in place as long as possible since we can then come back and look
+> > at the memory and generally I have found performance is improved as we
+> > are not having to dirty cachelines prematurely.
 >
-> > > @@ -1924,8 +1920,12 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
-> > >                 }
-> > >
-> > >                 rx_desc = IGC_RX_DESC(rx_ring, rx_ring->next_to_clean);
-> > > -               size = le16_to_cpu(rx_desc->wb.upper.length);
-> > > -               if (!size)
-> > > +
-> > > +               /* If we reached a descriptor with 'Descriptor Done' bit not
-> > > +                * set, it means we have handled all descriptors owned by
-> > > +                * software already so we should prematurely break the loop.
-> > > +                */
-> > > +               if (!igc_test_staterr(rx_desc, IGC_RXD_STAT_DD))
-> > >                         break;
-> > >
-> > >                 /* This memory barrier is needed to keep us from reading
-> >
-> > Why add an extra check when you don't need to? This doesn't make
-> > sense. The DD bit tells you that the descriptor was written back but
-> > you can do the same thing by reading the size field.
+> Thanks for the context.
 >
-> I was using i40e and ice drivers as reference. If I'm reading it correctly,
-> they check the DD bit first (or similar) and then read the length information.
-> I don't see a strong reason besides making the code a bit more readable.
-
-The i40e driver does the same thing as igb and ixgbe. The ice driver
-doesn't but in the case of that driver the pkt_len field resides in
-the first qword which is the same as the pkt_addr so they overlap and
-the same approach cannot be used.
-
-> > > @@ -1934,6 +1934,8 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
-> > >                  */
-> > >                 dma_rmb();
-> > >
-> > > +               size = le16_to_cpu(rx_desc->wb.upper.length);
-> > > +
-> > >                 rx_buffer = igc_get_rx_buffer(rx_ring, size);
-> > >
-> > >                 /* retrieve a buffer from the ring */
-> >
-> > This should be fine since the dma_rmb() will prevent the reads from
-> > being reordered. However it is really redundant. For a bit of history
-> > the reason for reading the size as the first field is because
-> > previously we had bugs on PowerPC where the length field was being
-> > read first, and then the DD bit. As such if the length is 0 before the
-> > writeback, and non-zero after then you can spare yourself some cycles
-> > by reading the size first and if it is non-zero then you know the
-> > descriptor has valid data to be read.
->
-> Thanks for the history context.
-
-No problem, just glad I saw this before it went too far down the path
-of undoing the work that was done in the past.
-
-Thanks.
-
-- Alex
+> - Andre
