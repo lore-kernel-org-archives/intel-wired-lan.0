@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 12 Aug 2020 12:16:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 1798aee4053c4f8e8288e64566105cd63354eaad
-Message-ID: <5f336d2a.Mhcbl/UfRM1V5l07%lkp@intel.com>
+Date: Wed, 12 Aug 2020 16:21:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 1e38a2ae2ca4c1d7c81e5620e5c43e69c2c79854
+Message-ID: <5f33a695.RMWZ2rMS1F/a2GuN%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 1798aee4053c4f8e8288e64566105cd63354eaad  i40e: Fix crash during removing i40e driver
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 1e38a2ae2ca4c1d7c81e5620e5c43e69c2c79854  igc: Clean RX descriptor error flags
 
-elapsed time: 724m
+elapsed time: 723m
 
-configs tested: 78
-configs skipped: 5
+configs tested: 77
+configs skipped: 2
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -30,13 +30,6 @@ m68k                          sun3x_defconfig
 m68k                           sun3_defconfig
 powerpc                     skiroot_defconfig
 sh                     sh7710voipgw_defconfig
-arm                         axm55xx_defconfig
-powerpc                     ep8248e_defconfig
-arc                        nsim_700_defconfig
-arm                            hisi_defconfig
-arm                  colibri_pxa270_defconfig
-arm                       mainstone_defconfig
-sh                            shmin_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -52,10 +45,6 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
 parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
@@ -64,18 +53,16 @@ i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                             defconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a006-20200811
-x86_64               randconfig-a001-20200811
-x86_64               randconfig-a003-20200811
-x86_64               randconfig-a005-20200811
-x86_64               randconfig-a004-20200811
-x86_64               randconfig-a002-20200811
 i386                 randconfig-a005-20200811
 i386                 randconfig-a001-20200811
 i386                 randconfig-a002-20200811
@@ -88,6 +75,18 @@ i386                 randconfig-a015-20200811
 i386                 randconfig-a013-20200811
 i386                 randconfig-a012-20200811
 i386                 randconfig-a014-20200811
+i386                 randconfig-a016-20200812
+i386                 randconfig-a011-20200812
+i386                 randconfig-a013-20200812
+i386                 randconfig-a015-20200812
+i386                 randconfig-a012-20200812
+i386                 randconfig-a014-20200812
+x86_64               randconfig-a006-20200811
+x86_64               randconfig-a001-20200811
+x86_64               randconfig-a003-20200811
+x86_64               randconfig-a005-20200811
+x86_64               randconfig-a004-20200811
+x86_64               randconfig-a002-20200811
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
