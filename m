@@ -1,103 +1,41 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 12 Aug 2020 16:21:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 1e38a2ae2ca4c1d7c81e5620e5c43e69c2c79854
-Message-ID: <5f33a695.RMWZ2rMS1F/a2GuN%lkp@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Wed, 12 Aug 2020 16:39:50 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: fix uninitialized variable in
+ i40e_set_vsi_promisc
+Message-ID: <20200812143950.11675-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 1e38a2ae2ca4c1d7c81e5620e5c43e69c2c79854  igc: Clean RX descriptor error flags
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function ?i40e_set_vsi_promisc?:
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1176:14: error: ?aq_ret? may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  i40e_status aq_ret;
 
-elapsed time: 723m
+In case the code inside the if statement and the for loop does not get
+executed aq_ret will be uninitialized when the variable gets returned at
+the end of the function.
 
-configs tested: 77
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                        qi_lb60_defconfig
-m68k                          sun3x_defconfig
-m68k                           sun3_defconfig
-powerpc                     skiroot_defconfig
-sh                     sh7710voipgw_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20200811
-i386                 randconfig-a001-20200811
-i386                 randconfig-a002-20200811
-i386                 randconfig-a003-20200811
-i386                 randconfig-a006-20200811
-i386                 randconfig-a004-20200811
-i386                 randconfig-a016-20200811
-i386                 randconfig-a011-20200811
-i386                 randconfig-a015-20200811
-i386                 randconfig-a013-20200811
-i386                 randconfig-a012-20200811
-i386                 randconfig-a014-20200811
-i386                 randconfig-a016-20200812
-i386                 randconfig-a011-20200812
-i386                 randconfig-a013-20200812
-i386                 randconfig-a015-20200812
-i386                 randconfig-a012-20200812
-i386                 randconfig-a014-20200812
-x86_64               randconfig-a006-20200811
-x86_64               randconfig-a001-20200811
-x86_64               randconfig-a003-20200811
-x86_64               randconfig-a005-20200811
-x86_64               randconfig-a004-20200811
-x86_64               randconfig-a002-20200811
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
+Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8e133d6545bd..ae290ebd83cf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1173,7 +1173,7 @@ i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
+ {
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+-	i40e_status aq_ret;
++	i40e_status aq_ret = 0;
+ 	int i;
+ 
+ 	/* No VLAN to set promisc on, set on VSI */
+-- 
+2.26.2
+
