@@ -1,72 +1,66 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu, 13 Aug 2020 13:26:38 +0200
-Subject: [Intel-wired-lan] [PATCH v2] i40e: fix return of uninitialized
- aq_ret in i40e_set_vsi_promisc
-Message-ID: <20200813112638.12699-1-sassmann@kpanic.de>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 13 Aug 2020 18:18:15 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Expose LPI counters
+Message-ID: <20200813151815.2970941-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function ?i40e_set_vsi_promisc?:
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1176:14: error: ?aq_ret? may be used uninitialized in this function [-Werror=maybe-uninitialized]
-  i40e_status aq_ret;
+Completion to commit 900d1e8b346b ("igc: Add LPI counters")
+LPI counters exposed by statitics update method.
+A EEE TX LPI counter reflect the transmitter entries EEE (IEEE 802.3az)
+into the LPI state. A EEE RX LPI counter reflect the receiver link
+partner entries into EEE(IEEE 802.3az) LPI state.
 
-In case the code inside the if statement and the for loop does not get
-executed aq_ret will be uninitialized when the variable gets returned at
-the end of the function.
-
-Avoid this by changing num_vlans from int to u16, so aq_ret always gets
-set. Making this change in additional places as num_vlans should never
-be negative.
-
-Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 3 +++
+ drivers/net/ethernet/intel/igc/igc_hw.h      | 2 ++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 2 ++
+ 3 files changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8e133d6545bd..90ef810cba97 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1115,7 +1115,7 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
- static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
- {
- 	struct i40e_mac_filter *f;
--	int num_vlans = 0, bkt;
-+	u16 num_vlans = 0, bkt;
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 44410c2265d6..61d331ce38cd 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -321,6 +321,9 @@ static void igc_ethtool_get_regs(struct net_device *netdev,
  
- 	hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
- 		if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
-@@ -1134,7 +1134,7 @@ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
-  *
-  * Called to get number of VLANs and VLAN list present in mac_filter_hash.
-  **/
--static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, int *num_vlans,
-+static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, u16 *num_vlans,
- 					   s16 **vlan_list)
- {
- 	struct i40e_mac_filter *f;
-@@ -1169,7 +1169,7 @@ static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, int *num_vlans,
-  **/
- static i40e_status
- i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
--		     bool unicast_enable, s16 *vl, int num_vlans)
-+		     bool unicast_enable, s16 *vl, u16 num_vlans)
- {
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_hw *hw = &pf->hw;
-@@ -1258,7 +1258,7 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
- 	i40e_status aq_ret = I40E_SUCCESS;
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_vsi *vsi;
--	int num_vlans;
-+	u16 num_vlans;
- 	s16 *vl;
+ 	for (i = 0; i < 8; i++)
+ 		regs_buff[205 + i] = rd32(IGC_ETQF(i));
++
++	regs_buff[213] = adapter->stats.tlpic;
++	regs_buff[214] = adapter->stats.rlpic;
+ }
  
- 	vsi = i40e_find_vsi_from_id(pf, vsi_id);
+ static void igc_ethtool_get_wol(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 6defdb8a31fe..b70253fb8ebc 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -244,6 +244,8 @@ struct igc_hw_stats {
+ 	u64 prc511;
+ 	u64 prc1023;
+ 	u64 prc1522;
++	u64 tlpic;
++	u64 rlpic;
+ 	u64 gprc;
+ 	u64 bprc;
+ 	u64 mprc;
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 298f408519f4..933e0d3445df 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3693,6 +3693,8 @@ void igc_update_stats(struct igc_adapter *adapter)
+ 	adapter->stats.prc511 += rd32(IGC_PRC511);
+ 	adapter->stats.prc1023 += rd32(IGC_PRC1023);
+ 	adapter->stats.prc1522 += rd32(IGC_PRC1522);
++	adapter->stats.tlpic += rd32(IGC_TLPIC);
++	adapter->stats.rlpic += rd32(IGC_RLPIC);
+ 
+ 	mpc = rd32(IGC_MPC);
+ 	adapter->stats.mpc += mpc;
 -- 
-2.26.2
+2.18.4
 
