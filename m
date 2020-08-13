@@ -1,66 +1,35 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 13 Aug 2020 18:18:15 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Expose LPI counters
-Message-ID: <20200813151815.2970941-1-sasha.neftin@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Thu, 13 Aug 2020 13:46:27 -0700
+Subject: [Intel-wired-lan] [PATCH v2] i40e: fix return of uninitialized
+ aq_ret in i40e_set_vsi_promisc
+In-Reply-To: <20200813112638.12699-1-sassmann@kpanic.de>
+References: <20200813112638.12699-1-sassmann@kpanic.de>
+Message-ID: <20200813134627.4dd521cc@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Completion to commit 900d1e8b346b ("igc: Add LPI counters")
-LPI counters exposed by statitics update method.
-A EEE TX LPI counter reflect the transmitter entries EEE (IEEE 802.3az)
-into the LPI state. A EEE RX LPI counter reflect the receiver link
-partner entries into EEE(IEEE 802.3az) LPI state.
+On Thu, 13 Aug 2020 13:26:38 +0200 Stefan Assmann wrote:
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function ?i40e_set_vsi_promisc?:
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1176:14: error: ?aq_ret? may be used uninitialized in this function [-Werror=maybe-uninitialized]
+>   i40e_status aq_ret;
+> 
+> In case the code inside the if statement and the for loop does not get
+> executed aq_ret will be uninitialized when the variable gets returned at
+> the end of the function.
+> 
+> Avoid this by changing num_vlans from int to u16, so aq_ret always gets
+> set. Making this change in additional places as num_vlans should never
+> be negative.
+> 
+> Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 3 +++
- drivers/net/ethernet/intel/igc/igc_hw.h      | 2 ++
- drivers/net/ethernet/intel/igc/igc_main.c    | 2 ++
- 3 files changed, 7 insertions(+)
+Acked-by: Jakub Kicinski <kuba@kernel.org>
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 44410c2265d6..61d331ce38cd 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -321,6 +321,9 @@ static void igc_ethtool_get_regs(struct net_device *netdev,
- 
- 	for (i = 0; i < 8; i++)
- 		regs_buff[205 + i] = rd32(IGC_ETQF(i));
-+
-+	regs_buff[213] = adapter->stats.tlpic;
-+	regs_buff[214] = adapter->stats.rlpic;
- }
- 
- static void igc_ethtool_get_wol(struct net_device *netdev,
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 6defdb8a31fe..b70253fb8ebc 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -244,6 +244,8 @@ struct igc_hw_stats {
- 	u64 prc511;
- 	u64 prc1023;
- 	u64 prc1522;
-+	u64 tlpic;
-+	u64 rlpic;
- 	u64 gprc;
- 	u64 bprc;
- 	u64 mprc;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 298f408519f4..933e0d3445df 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3693,6 +3693,8 @@ void igc_update_stats(struct igc_adapter *adapter)
- 	adapter->stats.prc511 += rd32(IGC_PRC511);
- 	adapter->stats.prc1023 += rd32(IGC_PRC1023);
- 	adapter->stats.prc1522 += rd32(IGC_PRC1522);
-+	adapter->stats.tlpic += rd32(IGC_TLPIC);
-+	adapter->stats.rlpic += rd32(IGC_RLPIC);
- 
- 	mpc = rd32(IGC_MPC);
- 	adapter->stats.mpc += mpc;
--- 
-2.18.4
-
+Good enough - in general unless you're trying to save space using types
+other than unsigned int is not really worth it, and can slow the code
+down - since 2B arithmetic is actually slowest on modern CPUs. But it's
+not a fast path, so doesn't matter much.
