@@ -1,172 +1,72 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 13 Aug 2020 11:34:06 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Add support for Meteor Lake
-Message-ID: <20200813083406.2857904-1-sasha.neftin@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Thu, 13 Aug 2020 13:26:38 +0200
+Subject: [Intel-wired-lan] [PATCH v2] i40e: fix return of uninitialized
+ aq_ret in i40e_set_vsi_promisc
+Message-ID: <20200813112638.12699-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add devices ID's for the next LOM generations that will be
-available on the next Intel Client platform (Meteor Lake)
-This patch provides the initial support for these devices
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function ?i40e_set_vsi_promisc?:
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1176:14: error: ?aq_ret? may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  i40e_status aq_ret;
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+In case the code inside the if statement and the for loop does not get
+executed aq_ret will be uninitialized when the variable gets returned at
+the end of the function.
+
+Avoid this by changing num_vlans from int to u16, so aq_ret always gets
+set. Making this change in additional places as num_vlans should never
+be negative.
+
+Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 2 ++
- drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
- drivers/net/ethernet/intel/e1000e/netdev.c  | 6 ++++++
- drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
- 5 files changed, 21 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 64f684dc6c7a..e570de91a09b 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -895,6 +895,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		mask |= BIT(18);
- 		break;
- 	default:
-@@ -1560,6 +1561,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		fext_nvm11 = er32(FEXTNVM11);
- 		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
- 		ew32(FEXTNVM11, fext_nvm11);
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index b1447221669e..69a2329ea463 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -102,6 +102,10 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_ADP_I219_V16		0x1A1F
- #define E1000_DEV_ID_PCH_ADP_I219_LM17		0x1A1C
- #define E1000_DEV_ID_PCH_ADP_I219_V17		0x1A1D
-+#define E1000_DEV_ID_PCH_MTP_I219_LM18		0x550A
-+#define E1000_DEV_ID_PCH_MTP_I219_V18		0x550B
-+#define E1000_DEV_ID_PCH_MTP_I219_LM19		0x550C
-+#define E1000_DEV_ID_PCH_MTP_I219_V19		0x550D
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8e133d6545bd..90ef810cba97 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1115,7 +1115,7 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
+ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_mac_filter *f;
+-	int num_vlans = 0, bkt;
++	u16 num_vlans = 0, bkt;
  
- #define E1000_REVISION_4	4
+ 	hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
+ 		if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
+@@ -1134,7 +1134,7 @@ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
+  *
+  * Called to get number of VLANs and VLAN list present in mac_filter_hash.
+  **/
+-static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, int *num_vlans,
++static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, u16 *num_vlans,
+ 					   s16 **vlan_list)
+ {
+ 	struct i40e_mac_filter *f;
+@@ -1169,7 +1169,7 @@ static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, int *num_vlans,
+  **/
+ static i40e_status
+ i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
+-		     bool unicast_enable, s16 *vl, int num_vlans)
++		     bool unicast_enable, s16 *vl, u16 num_vlans)
+ {
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+@@ -1258,7 +1258,7 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
+ 	i40e_status aq_ret = I40E_SUCCESS;
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_vsi *vsi;
+-	int num_vlans;
++	u16 num_vlans;
+ 	s16 *vl;
  
-@@ -127,6 +131,7 @@ enum e1000_mac_type {
- 	e1000_pch_cnp,
- 	e1000_pch_tgp,
- 	e1000_pch_adp,
-+	e1000_pch_mtp,
- };
- 
- enum e1000_media_type {
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 3956a0cdd989..1fa1436032b5 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -321,6 +321,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		if (e1000_phy_is_accessible_pchlan(hw))
- 			break;
- 
-@@ -465,6 +466,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
- 		case e1000_pch_cnp:
- 		case e1000_pch_tgp:
- 		case e1000_pch_adp:
-+		case e1000_pch_mtp:
- 			/* In case the PHY needs to be in mdio slow mode,
- 			 * set slow mode and try to get the PHY id again.
- 			 */
-@@ -709,6 +711,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 	case e1000_pchlan:
- 		/* check management mode */
- 		mac->ops.check_mng_mode = e1000_check_mng_mode_pchlan;
-@@ -1649,6 +1652,7 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		rc = e1000_init_phy_params_pchlan(hw);
- 		break;
- 	default:
-@@ -2103,6 +2107,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG_ICH8M;
- 		break;
- 	default:
-@@ -3142,6 +3147,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		bank1_offset = nvm->flash_bank_size;
- 		act_offset = E1000_ICH_NVM_SIG_WORD;
- 
-@@ -4087,6 +4093,7 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		word = NVM_COMPAT;
- 		valid_csum_mask = NVM_COMPAT_VALID_CSUM;
- 		break;
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 63dde3bcf5bc..ee6a5f0cb16c 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3570,6 +3570,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
- 			/* Stable 24MHz frequency */
- 			incperiod = INCPERIOD_24MHZ;
-@@ -4082,6 +4083,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 		fallthrough;
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		fc->refresh_time = 0xFFFF;
- 		fc->pause_time = 0xFFFF;
- 
-@@ -7854,6 +7856,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_cnp },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 34b988d70488..b0c7a0cff98d 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -297,6 +297,7 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
- 	case e1000_pch_cnp:
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
-+	case e1000_pch_mtp:
- 		if ((hw->mac.type < e1000_pch_lpt) ||
- 		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
- 			adapter->ptp_clock_info.max_adj = 24000000 - 1;
+ 	vsi = i40e_find_vsi_from_id(pf, vsi_id);
 -- 
-2.11.0
+2.26.2
 
