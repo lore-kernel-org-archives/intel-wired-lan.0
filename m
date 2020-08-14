@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 14 Aug 2020 01:53:55 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix crash during removing i40e
- driver
-In-Reply-To: <20200811105649.13359-1-arkadiusz.kubalewski@intel.com>
-References: <20200811105649.13359-1-arkadiusz.kubalewski@intel.com>
-Message-ID: <DM6PR11MB28905FE170463AD149C67B8BBC400@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Fri, 14 Aug 2020 01:59:20 +0000
+Subject: [Intel-wired-lan] [net-queue PATCH v1] igc: Fix PTP
+ initialization
+In-Reply-To: <20200803183207.817588-1-vinicius.gomes@intel.com>
+References: <20200803183207.817588-1-vinicius.gomes@intel.com>
+Message-ID: <DM6PR11MB28907E7E74CDEF5288AC8344BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,77 +12,85 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Arkadiusz Kubalewski
-> Sent: Tuesday, August 11, 2020 3:57 AM
+> Vinicius Costa Gomes
+> Sent: Monday, August 3, 2020 11:32 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: Fix crash during removing i40e driver
+> Subject: [Intel-wired-lan] [net-queue PATCH v1] igc: Fix PTP initialization
 > 
-> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Right now, igc_ptp_reset() is called from igc_reset(), which is called
+> from igc_probe() before igc_ptp_init() has a chance to run. It is
+> detected as an attempt to use an spinlook without registering its key
+> first. See log below.
 > 
-> Fix the reason of crashing system by add waiting time to finish reset
-> recovery process before starting remove driver procedure.
-> Now vsi is releasing if vsi is not in reset recovery mode.
-> Without this fix it was possible to start remove driver if other
-> processing command need reset recovery procedure which resulted in
-> null pointer dereference. Vsi used by the ethtool process has been
-> cleared by remove driver process.
+> To avoid this problem, simplify the initialization: igc_ptp_init() is
+> only called from igc_probe(), and igc_ptp_reset() is only called from
+> igc_reset().
 > 
-> [ 6731.508665] BUG: kernel NULL pointer dereference, address:
+> [    2.736332] INFO: trying to register non-static key.
+> [    2.736902] input: HDA Intel PCH Front Headphone as
+> /devices/pci0000:00/0000:00:1f.3/sound/card0/input10
+> [    2.737513] the code is fine but needs lockdep annotation.
+> [    2.737513] turning off the locking correctness validator.
+> [    2.737515] CPU: 8 PID: 239 Comm: systemd-udevd Tainted: G            E
+> 5.8.0-rc7+ #13
+> [    2.737515] Hardware name: Gigabyte Technology Co., Ltd. Z390 AORUS
+> ULTRA/Z390 AORUS ULTRA-CF, BIOS F7 03/14/2019
+> [    2.737516] Call Trace:
+> [    2.737521]  dump_stack+0x78/0xa0
+> [    2.737524]  register_lock_class+0x6b1/0x6f0
+> [    2.737526]  ? lockdep_hardirqs_on_prepare+0xca/0x160
+> [    2.739177]  ? _raw_spin_unlock_irq+0x24/0x50
+> [    2.739179]  ? trace_hardirqs_on+0x1c/0xf0
+> [    2.740820]  __lock_acquire+0x56/0x1ff0
+> [    2.740823]  ? __schedule+0x30c/0x970
+> [    2.740825]  lock_acquire+0x97/0x3e0
+> [    2.740830]  ? igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.740833]  ? schedule_hrtimeout_range_clock+0xb7/0x120
+> [    2.742507]  _raw_spin_lock_irqsave+0x3a/0x50
+> [    2.742512]  ? igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.742515]  igc_ptp_reset+0x35/0xf0 [igc]
+> [    2.742519]  igc_reset+0x96/0xd0 [igc]
+> [    2.744148]  igc_probe+0x68f/0x7d0 [igc]
+> [    2.745796]  local_pci_probe+0x3d/0x70
+> [    2.745799]  pci_device_probe+0xd1/0x190
+> [    2.745802]  really_probe+0x15a/0x3f0
+> [    2.759936]  driver_probe_device+0xe1/0x150
+> [    2.759937]  device_driver_attach+0xa8/0xb0
+> [    2.761786]  __driver_attach+0x89/0x150
+> [    2.761786]  ? device_driver_attach+0xb0/0xb0
+> [    2.761787]  ? device_driver_attach+0xb0/0xb0
+> [    2.761788]  bus_for_each_dev+0x66/0x90
+> [    2.765012]  bus_add_driver+0x12e/0x1f0
+> [    2.765716]  driver_register+0x8b/0xe0
+> [    2.766418]  ? 0xffffffffc0230000
+> [    2.767119]  do_one_initcall+0x5a/0x310
+> [    2.767826]  ? kmem_cache_alloc_trace+0xe9/0x200
+> [    2.768528]  do_init_module+0x5c/0x260
+> [    2.769206]  __do_sys_finit_module+0x93/0xe0
+> [    2.770048]  do_syscall_64+0x46/0xa0
+> [    2.770716]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> [    2.771396] RIP: 0033:0x7f83534589e0
+> [    2.772073] Code: 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 2e 2e 2e 48 89 f8 48
+> 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff
+> 73 01 c3 48 8b 0d 80 24 0d 00 f7 d8 64 89 01 48
+> [    2.772074] RSP: 002b:00007ffd31d0ed18 EFLAGS: 00000246 ORIG_RAX:
+> 0000000000000139
+> [    2.774854] RAX: ffffffffffffffda RBX: 000055d52816aba0 RCX:
+> 00007f83534589e0
+> [    2.774855] RDX: 0000000000000000 RSI: 00007f83535b982f RDI:
+> 0000000000000006
+> [    2.774855] RBP: 00007ffd31d0ed60 R08: 0000000000000000 R09:
+> 00007ffd31d0ed30
+> [    2.774856] R10: 0000000000000006 R11: 0000000000000246 R12:
 > 0000000000000000
-> [ 6731.508668] #PF: supervisor read access in kernel mode
-> [ 6731.508670] #PF: error_code(0x0000) - not-present page
-> [ 6731.508671] PGD 0 P4D 0
-> [ 6731.508674] Oops: 0000 [#1] SMP PTI
-> [ 6731.508679] Hardware name: Intel Corporation S2600WT2R/S2600WT2R,
-> BIOS SE5C610.86B.01.01.0021.032120170601 03/21/2017
-> [ 6731.508694] RIP: 0010:i40e_down+0x252/0x310 [i40e]
-> [ 6731.508696] Code: c7 78 de fa c0 e8 61 02 3a c1 66 83 bb f6 0c 00 00 00 0f 84
-> bf 00 00 00 45 31 e4 45 31 ff eb 03 41 89 c7 48 8b 83 98 0c 00 00 <4a> 8b 3c 20 e8
-> a5 79 02 00 48 83 bb d0 0c 00 00 00 74 10 48 8b 83
-> [ 6731.508698] RSP: 0018:ffffb75ac7b3faf0 EFLAGS: 00010246
-> [ 6731.508700] RAX: 0000000000000000 RBX: ffff9c9874bd5000 RCX:
-> 0000000000000007
-> [ 6731.508701] RDX: 0000000000000000 RSI: 0000000000000096 RDI:
-> ffff9c987f4d9780
-> [ 6731.508703] RBP: ffffb75ac7b3fb30 R08: 0000000000005b60 R09:
-> 0000000000000004
-> [ 6731.508704] R10: ffffb75ac64fbd90 R11: 0000000000000001 R12:
-> 0000000000000000
-> [ 6731.508706] R13: ffff9c97a08e0000 R14: ffff9c97a08e0a68 R15:
-> 0000000000000000
-> [ 6731.508708] FS:  00007f2617cd2740(0000) GS:ffff9c987f4c0000(0000)
-> knlGS:0000000000000000
-> [ 6731.508710] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [ 6731.508711] CR2: 0000000000000000 CR3: 0000001e765c4006 CR4:
-> 00000000003606e0
-> [ 6731.508713] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> 0000000000000000
-> [ 6731.508714] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
-> 0000000000000400
-> [ 6731.508715] Call Trace:
-> [ 6731.508734]  i40e_vsi_close+0x84/0x90 [i40e]
-> [ 6731.508742]  i40e_quiesce_vsi.part.98+0x3c/0x40 [i40e]
-> [ 6731.508749]  i40e_pf_quiesce_all_vsi+0x55/0x60 [i40e]
-> [ 6731.508757]  i40e_prep_for_reset+0x59/0x130 [i40e]
-> [ 6731.508765]  i40e_reconfig_rss_queues+0x5a/0x120 [i40e]
-> [ 6731.508774]  i40e_set_channels+0xda/0x170 [i40e]
-> [ 6731.508778]  ethtool_set_channels+0xe9/0x150
-> [ 6731.508781]  dev_ethtool+0x1b94/0x2920
-> [ 6731.508805]  dev_ioctl+0xc2/0x590
-> [ 6731.508811]  sock_do_ioctl+0xae/0x150
-> [ 6731.508813]  sock_ioctl+0x34f/0x3c0
-> [ 6731.508821]  ksys_ioctl+0x98/0xb0
-> [ 6731.508828]  __x64_sys_ioctl+0x1a/0x20
-> [ 6731.508831]  do_syscall_64+0x57/0x1c0
-> [ 6731.508835]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> [    2.774856] R13: 0000000000020000 R14: 00007f83535b982f R15:
+> 000055d527f5e120
 > 
-> Fixes: 4b8164467b85 ("Add common function for finding VSI by type")
-> 
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> 
+> Fixes: 5f2958052c58 ("igc: Add basic skeleton for PTP")
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 5 ++---
+>  drivers/net/ethernet/intel/igc/igc_ptp.c  | 2 --
+>  2 files changed, 2 insertions(+), 5 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
