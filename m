@@ -1,10 +1,9 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 14 Aug 2020 02:03:37 +0000
-Subject: [Intel-wired-lan] [PATCH 1/3] igc: Clean RX descriptor error
- flags
-In-Reply-To: <20200810210832.34699-1-andre.guedes@intel.com>
-References: <20200810210832.34699-1-andre.guedes@intel.com>
-Message-ID: <DM6PR11MB2890BC434D3ED3EEF4609CADBC400@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Fri, 14 Aug 2020 02:07:21 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add new device ID's
+In-Reply-To: <20200803183358.1099864-1-sasha.neftin@intel.com>
+References: <20200803183358.1099864-1-sasha.neftin@intel.com>
+Message-ID: <DM6PR11MB289080C73FB6C90A60941CD2BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,23 +11,19 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Andre Guedes
-> Sent: Monday, August 10, 2020 2:09 PM
+> Sasha Neftin
+> Sent: Monday, August 3, 2020 11:34 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/3] igc: Clean RX descriptor error flags
+> Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add new device ID's
 > 
-> I225 advanced receive descriptor doesn't have the following extend error
-> bits: CE, SE, SEQ, CXE. In addition to that, the bit TCPE is called L4E
-> in the datasheet.
+> Add new device ID's for the next step of the silicon and
+> reflect i221 and i226 parts
 > 
-> This patch cleans up the code accordingly, and gets rid of the macro
-> IGC_RXDEXT_ERR_FRAME_ERR_MASK since it doesn't make much sense
-> anymore.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_defines.h | 14 +-------------
->  drivers/net/ethernet/intel/igc/igc_main.c    |  5 ++---
->  2 files changed, 3 insertions(+), 16 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_base.c | 5 +++++
+>  drivers/net/ethernet/intel/igc/igc_hw.h   | 5 +++++
+>  drivers/net/ethernet/intel/igc/igc_main.c | 5 +++++
+>  3 files changed, 15 insertions(+)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
