@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 14 Aug 2020 03:07:49 +0000
-Subject: [Intel-wired-lan] [PATCH 1/4] igc: Rename IGC_TSYNCTXCTL_VALID
- macro
-In-Reply-To: <20200728233754.65747-2-andre.guedes@intel.com>
+Date: Fri, 14 Aug 2020 03:08:47 +0000
+Subject: [Intel-wired-lan] [PATCH 2/4] igc: Don't reschedule ptp_tx work
+In-Reply-To: <20200728233754.65747-3-andre.guedes@intel.com>
 References: <20200728233754.65747-1-andre.guedes@intel.com>
- <20200728233754.65747-2-andre.guedes@intel.com>
-Message-ID: <DM6PR11MB2890613A7119693298E53996BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <20200728233754.65747-3-andre.guedes@intel.com>
+Message-ID: <DM6PR11MB289000597720FD7185422F72BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,11 +15,13 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Andre Guedes
 > Sent: Tuesday, July 28, 2020 4:38 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/4] igc: Rename IGC_TSYNCTXCTL_VALID
-> macro
+> Subject: [Intel-wired-lan] [PATCH 2/4] igc: Don't reschedule ptp_tx work
 > 
-> This patch renames the IGC_TSYNCTXCTL_VALID macro to IGC_TSYNCTXCTL_
-> TXTT_0 so it matches the datasheet.
+> The ptp_tx work is scheduled only if TSICR.TXTS bit is set, therefore
+> TSYNCTXCTL.TXTT_0 bit is expected to be set when we check it igc_ptp_tx_
+> work(). If it isn't, something is really off and rescheduling the ptp_tx
+> work to check it later doesn't help much. This patch changes the code to
+> WARN_ON_ONCE() if this situation ever happens.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > ---
