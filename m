@@ -1,17 +1,16 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Fri, 14 Aug 2020 01:24:47 -0700
-Subject: [Intel-wired-lan] [net-next,
- V7 04/14] iecm: Add basic netdevice functionality
+Date: Fri, 14 Aug 2020 01:24:51 -0700
+Subject: [Intel-wired-lan] [net-next, V7 08/14] iecm: Init and allocate vport
 In-Reply-To: <20200814082457.7190-1-alice.michael@intel.com>
 References: <20200814082457.7190-1-alice.michael@intel.com>
-Message-ID: <20200814082457.7190-5-alice.michael@intel.com>
+Message-ID: <20200814082457.7190-9-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This implements probe, interface up/down, and netdev_ops.
+Initialize vport and allocate queue resources.
 
 Signed-off-by: Alice Michael <alice.michael@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
@@ -25,705 +24,1190 @@ Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    | 420 +++++++++++++++++-
- drivers/net/ethernet/intel/iecm/iecm_main.c   |   7 +-
- drivers/net/ethernet/intel/iecm/iecm_txrx.c   |   6 +-
- .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  71 ++-
- 4 files changed, 479 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    | 125 ++-
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 782 +++++++++++++++++-
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  36 +-
+ 3 files changed, 911 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index a5ff9209d290..23eef4a9c7ca 100644
+index 4037d13e4512..8c5e90f275c3 100644
 --- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
 +++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -23,7 +23,17 @@ static void iecm_mb_intr_rel_irq(struct iecm_adapter *adapter)
-  */
- static void iecm_intr_rel(struct iecm_adapter *adapter)
+@@ -461,7 +461,15 @@ static void iecm_vport_rel_all(struct iecm_adapter *adapter)
+ void iecm_vport_set_hsplit(struct iecm_vport *vport,
+ 			   struct bpf_prog __always_unused *prog)
  {
 -	/* stub */
-+	if (!adapter->msix_entries)
-+		return;
-+	clear_bit(__IECM_MB_INTR_MODE, adapter->flags);
-+	clear_bit(__IECM_MB_INTR_TRIGGER, adapter->flags);
-+	iecm_mb_intr_rel_irq(adapter);
-+
-+	pci_free_irq_vectors(adapter->pdev);
-+	kfree(adapter->msix_entries);
-+	adapter->msix_entries = NULL;
-+	kfree(adapter->req_vec_chunks);
-+	adapter->req_vec_chunks = NULL;
- }
- 
- /**
-@@ -95,7 +105,53 @@ static void iecm_intr_distribute(struct iecm_adapter *adapter)
-  */
- static int iecm_intr_req(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	int min_vectors, max_vectors, err = 0;
-+	unsigned int vector;
-+	int num_vecs;
-+	int v_actual;
-+
-+	num_vecs = adapter->vports[0]->num_q_vectors +
-+		   IECM_MAX_NONQ_VEC + IECM_MAX_RDMA_VEC;
-+
-+	min_vectors = IECM_MIN_VEC;
-+#define IECM_MAX_EVV_MAPPED_VEC 16
-+	max_vectors = min(num_vecs, IECM_MAX_EVV_MAPPED_VEC);
-+
-+	v_actual = pci_alloc_irq_vectors(adapter->pdev, min_vectors,
-+					 max_vectors, PCI_IRQ_MSIX);
-+	if (v_actual < 0) {
-+		dev_err(&adapter->pdev->dev, "Failed to allocate MSIX vectors: %d\n",
-+			v_actual);
-+		return v_actual;
-+	}
-+
-+	adapter->msix_entries = kcalloc(v_actual, sizeof(struct msix_entry),
-+					GFP_KERNEL);
-+
-+	if (!adapter->msix_entries) {
-+		pci_free_irq_vectors(adapter->pdev);
-+		return -ENOMEM;
-+	}
-+
-+	for (vector = 0; vector < v_actual; vector++) {
-+		adapter->msix_entries[vector].entry = vector;
-+		adapter->msix_entries[vector].vector =
-+			pci_irq_vector(adapter->pdev, vector);
-+	}
-+	adapter->num_msix_entries = v_actual;
-+	adapter->num_req_msix = num_vecs;
-+
-+	iecm_intr_distribute(adapter);
-+
-+	err = iecm_mb_intr_init(adapter);
-+	if (err)
-+		goto intr_rel;
-+	iecm_mb_irq_enable(adapter);
-+	return err;
-+
-+intr_rel:
-+	iecm_intr_rel(adapter);
-+	return err;
- }
- 
- /**
-@@ -117,7 +173,18 @@ static int iecm_cfg_netdev(struct iecm_vport *vport)
-  */
- static int iecm_cfg_hw(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct pci_dev *pdev = adapter->pdev;
-+	struct iecm_hw *hw = &adapter->hw;
-+
-+	hw->hw_addr_len = pci_resource_len(pdev, 0);
-+	hw->hw_addr = ioremap(pci_resource_start(pdev, 0), hw->hw_addr_len);
-+
-+	if (!hw->hw_addr)
-+		return -EIO;
-+
-+	hw->back = adapter;
-+
-+	return 0;
- }
- 
- /**
-@@ -126,7 +193,15 @@ static int iecm_cfg_hw(struct iecm_adapter *adapter)
-  */
- static int iecm_vport_res_alloc(struct iecm_vport *vport)
- {
--	/* stub */
-+	if (iecm_vport_queues_alloc(vport))
-+		return -ENOMEM;
-+
-+	if (iecm_vport_intr_alloc(vport)) {
-+		iecm_vport_queues_rel(vport);
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
- }
- 
- /**
-@@ -135,7 +210,8 @@ static int iecm_vport_res_alloc(struct iecm_vport *vport)
-  */
- static void iecm_vport_res_free(struct iecm_vport *vport)
- {
--	/* stub */
-+	iecm_vport_intr_rel(vport);
-+	iecm_vport_queues_rel(vport);
- }
- 
- /**
-@@ -149,7 +225,22 @@ static void iecm_vport_res_free(struct iecm_vport *vport)
-  */
- static int iecm_get_free_slot(void *array, int size, int curr)
- {
--	/* stub */
-+	int **tmp_array = (int **)array;
-+	int next;
-+
-+	if (curr < (size - 1) && !tmp_array[curr + 1]) {
-+		next = curr + 1;
-+	} else {
-+		int i = 0;
-+
-+		while ((i < size) && (tmp_array[i]))
-+			i++;
-+		if (i == size)
-+			next = IECM_NO_FREE_SLOT;
-+		else
-+			next = i;
-+	}
-+	return next;
- }
- 
- /**
-@@ -158,7 +249,9 @@ static int iecm_get_free_slot(void *array, int size, int curr)
-  */
- struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev)
- {
--	/* stub */
-+	struct iecm_netdev_priv *np = netdev_priv(netdev);
-+
-+	return np->vport;
- }
- 
- /**
-@@ -167,7 +260,9 @@ struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev)
-  */
- struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev)
- {
--	/* stub */
-+	struct iecm_netdev_priv *np = netdev_priv(netdev);
-+
-+	return np->vport->adapter;
- }
- 
- /**
-@@ -200,7 +295,17 @@ static int iecm_stop(struct net_device *netdev)
-  */
- static void iecm_vport_rel(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+
-+	iecm_vport_stop(vport);
-+	iecm_vport_res_free(vport);
-+	iecm_deinit_rss(vport);
-+	unregister_netdev(vport->netdev);
-+	free_netdev(vport->netdev);
-+	vport->netdev = NULL;
-+	if (adapter->dev_ops.vc_ops.destroy_vport)
-+		adapter->dev_ops.vc_ops.destroy_vport(vport);
-+	kfree(vport);
- }
- 
- /**
-@@ -209,7 +314,19 @@ static void iecm_vport_rel(struct iecm_vport *vport)
-  */
- static void iecm_vport_rel_all(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	int i;
-+
-+	if (!adapter->vports)
-+		return;
-+
-+	for (i = 0; i < adapter->num_alloc_vport; i++) {
-+		if (!adapter->vports[i])
-+			continue;
-+
-+		iecm_vport_rel(adapter->vports[i]);
-+		adapter->vports[i] = NULL;
-+	}
-+	adapter->num_alloc_vport = 0;
- }
- 
- /**
-@@ -233,7 +350,47 @@ void iecm_vport_set_hsplit(struct iecm_vport *vport,
- static struct iecm_vport *
- iecm_vport_alloc(struct iecm_adapter *adapter, int vport_id)
- {
--	/* stub */
-+	struct iecm_vport *vport = NULL;
-+
-+	if (adapter->next_vport == IECM_NO_FREE_SLOT)
-+		return vport;
-+
-+	/* Need to protect the allocation of the vports at the adapter level */
-+	mutex_lock(&adapter->sw_mutex);
-+
-+	vport = kzalloc(sizeof(*vport), GFP_KERNEL);
-+	if (!vport)
-+		goto unlock_adapter;
-+
-+	vport->adapter = adapter;
-+	vport->idx = adapter->next_vport;
-+	vport->compln_clean_budget = IECM_TX_COMPLQ_CLEAN_BUDGET;
-+	adapter->num_alloc_vport++;
-+	adapter->dev_ops.vc_ops.vport_init(vport, vport_id);
-+
-+	/* Setup default MSIX irq handler for the vport */
-+	vport->irq_q_handler = iecm_vport_intr_clean_queues;
-+	vport->q_vector_base = IECM_MAX_NONQ_VEC;
-+
-+	/* fill vport slot in the adapter struct */
-+	adapter->vports[adapter->next_vport] = vport;
-+	if (iecm_cfg_netdev(vport))
-+		goto cfg_netdev_fail;
-+
-+	/* prepare adapter->next_vport for next use */
-+	adapter->next_vport = iecm_get_free_slot(adapter->vports,
-+						 adapter->num_alloc_vport,
-+						 adapter->next_vport);
-+
-+	goto unlock_adapter;
-+
-+cfg_netdev_fail:
-+	adapter->vports[adapter->next_vport] = NULL;
-+	kfree(vport);
-+	vport = NULL;
-+unlock_adapter:
-+	mutex_unlock(&adapter->sw_mutex);
-+	return vport;
- }
- 
- /**
-@@ -243,7 +400,22 @@ iecm_vport_alloc(struct iecm_adapter *adapter, int vport_id)
-  */
- static void iecm_service_task(struct work_struct *work)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = container_of(work,
-+						    struct iecm_adapter,
-+						    serv_task.work);
-+
-+	if (test_bit(__IECM_MB_INTR_MODE, adapter->flags)) {
-+		if (test_and_clear_bit(__IECM_MB_INTR_TRIGGER,
-+				       adapter->flags)) {
-+			iecm_recv_mb_msg(adapter, VIRTCHNL_OP_UNKNOWN, NULL, 0);
-+			iecm_mb_irq_enable(adapter);
-+		}
-+	} else {
-+		iecm_recv_mb_msg(adapter, VIRTCHNL_OP_UNKNOWN, NULL, 0);
-+	}
-+
-+	queue_delayed_work(adapter->serv_wq, &adapter->serv_task,
-+			   msecs_to_jiffies(300));
- }
- 
- /**
-@@ -285,7 +457,50 @@ static int iecm_vport_open(struct iecm_vport *vport)
-  */
- static void iecm_init_task(struct work_struct *work)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = container_of(work,
-+						    struct iecm_adapter,
-+						    init_task.work);
-+	struct iecm_vport *vport;
-+	struct pci_dev *pdev;
-+	int vport_id, err;
-+
-+	err = adapter->dev_ops.vc_ops.core_init(adapter, &vport_id);
-+	if (err)
-+		return;
-+
-+	pdev = adapter->pdev;
-+	vport = iecm_vport_alloc(adapter, vport_id);
-+	if (!vport) {
-+		err = -EFAULT;
-+		dev_err(&pdev->dev, "probe failed on vport setup:%d\n",
-+			err);
++	if (prog) {
++		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
 +		return;
 +	}
-+	/* Start the service task before requesting vectors. This will ensure
-+	 * vector information response from mailbox is handled
-+	 */
-+	queue_delayed_work(adapter->serv_wq, &adapter->serv_task,
-+			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
-+	err = iecm_intr_req(adapter);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to enable interrupt vectors: %d\n",
-+			err);
-+		iecm_vport_rel(vport);
-+		return;
-+	}
-+	/* Deal with major memory allocations for vport resources */
-+	err = iecm_vport_res_alloc(vport);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to allocate resources: %d\n",
-+			err);
-+		iecm_vport_rel(vport);
-+		return;
-+	}
-+
-+	/* Once state is put into DOWN, driver is ready for dev_open */
-+	adapter->state = __IECM_DOWN;
-+	if (test_and_clear_bit(__IECM_UP_REQUESTED, adapter->flags))
-+		iecm_vport_open(vport);
++	if (iecm_is_cap_ena(vport->adapter, VIRTCHNL_CAP_HEADER_SPLIT) &&
++	    iecm_is_queue_model_split(vport->rxq_model))
++		vport->rx_hsplit_en = IECM_RX_HDR_SPLIT;
++	else
++		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
  }
  
  /**
-@@ -296,7 +511,46 @@ static void iecm_init_task(struct work_struct *work)
+@@ -548,7 +556,19 @@ static void iecm_service_task(struct work_struct *work)
   */
- static int iecm_api_init(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct iecm_reg_ops *reg_ops = &adapter->dev_ops.reg_ops;
-+	struct pci_dev *pdev = adapter->pdev;
-+
-+	if (!adapter->dev_ops.reg_ops_init) {
-+		dev_err(&pdev->dev, "Invalid device, register API init not defined\n");
-+		return -EINVAL;
-+	}
-+	adapter->dev_ops.reg_ops_init(adapter);
-+	if (!(reg_ops->ctlq_reg_init && reg_ops->vportq_reg_init &&
-+	      reg_ops->intr_reg_init && reg_ops->mb_intr_reg_init &&
-+	      reg_ops->reset_reg_init && reg_ops->trigger_reset)) {
-+		dev_err(&pdev->dev, "Invalid device, missing one or more register functions\n");
-+		return -EINVAL;
-+	}
-+
-+	if (adapter->dev_ops.vc_ops_init) {
-+		struct iecm_virtchnl_ops *vc_ops;
-+
-+		adapter->dev_ops.vc_ops_init(adapter);
-+		vc_ops = &adapter->dev_ops.vc_ops;
-+		if (!(vc_ops->core_init &&
-+		      vc_ops->vport_init &&
-+		      vc_ops->vport_queue_ids_init &&
-+		      vc_ops->get_caps &&
-+		      vc_ops->config_queues &&
-+		      vc_ops->enable_queues &&
-+		      vc_ops->disable_queues &&
-+		      vc_ops->irq_map_unmap &&
-+		      vc_ops->get_set_rss_lut &&
-+		      vc_ops->get_set_rss_hash &&
-+		      vc_ops->adjust_qs &&
-+		      vc_ops->get_ptype)) {
-+			dev_err(&pdev->dev, "Invalid device, missing one or more virtchnl functions\n");
-+			return -EINVAL;
-+		}
-+	} else {
-+		iecm_vc_ops_init(adapter);
-+	}
-+
-+	return 0;
- }
- 
- /**
-@@ -308,7 +562,11 @@ static int iecm_api_init(struct iecm_adapter *adapter)
-  */
- static void iecm_deinit_task(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	iecm_vport_rel_all(adapter);
-+	cancel_delayed_work_sync(&adapter->serv_task);
-+	iecm_deinit_dflt_mbx(adapter);
-+	iecm_vport_params_buf_rel(adapter);
-+	iecm_intr_rel(adapter);
- }
- 
- /**
-@@ -330,7 +588,13 @@ static int iecm_init_hard_reset(struct iecm_adapter *adapter)
-  */
- static void iecm_vc_event_task(struct work_struct *work)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = container_of(work,
-+						    struct iecm_adapter,
-+						    vc_event_task.work);
-+
-+	if (test_bit(__IECM_HR_CORE_RESET, adapter->flags) ||
-+	    test_bit(__IECM_HR_FUNC_RESET, adapter->flags))
-+		iecm_init_hard_reset(adapter);
- }
- 
- /**
-@@ -359,7 +623,104 @@ int iecm_probe(struct pci_dev *pdev,
- 	       const struct pci_device_id __always_unused *ent,
- 	       struct iecm_adapter *adapter)
+ static int iecm_up_complete(struct iecm_vport *vport)
  {
 -	/* stub */
 +	int err;
 +
-+	adapter->pdev = pdev;
-+	err = iecm_api_init(adapter);
-+	if (err) {
-+		dev_err(&pdev->dev, "Device API is incorrectly configured\n");
-+		return err;
-+	}
-+
-+	err = pcim_iomap_regions(pdev, BIT(IECM_BAR0), pci_name(pdev));
-+	if (err) {
-+		dev_err(&pdev->dev, "BAR0 I/O map error %d\n", err);
-+		return err;
-+	}
-+
-+	/* set up for high or low DMA */
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	err = netif_set_real_num_rx_queues(vport->netdev, vport->num_txq);
 +	if (err)
-+		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
++		return err;
++	err = netif_set_real_num_tx_queues(vport->netdev, vport->num_rxq);
++	if (err)
++		return err;
++	netif_carrier_on(vport->netdev);
++	netif_tx_start_all_queues(vport->netdev);
++
++	vport->adapter->state = __IECM_UP;
++	return 0;
+ }
+ 
+ /**
+@@ -557,7 +577,27 @@ static int iecm_up_complete(struct iecm_vport *vport)
+  */
+ static void iecm_rx_init_buf_tail(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int i, j;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *grp = &vport->rxq_grps[i];
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				struct iecm_queue *q =
++					&grp->splitq.bufq_sets[j].bufq;
++
++				writel_relaxed(q->next_to_alloc, q->tail);
++			}
++		} else {
++			for (j = 0; j < grp->singleq.num_rxq; j++) {
++				struct iecm_queue *q =
++					&grp->singleq.rxqs[j];
++
++				writel_relaxed(q->next_to_alloc, q->tail);
++			}
++		}
++	}
+ }
+ 
+ /**
+@@ -566,7 +606,80 @@ static void iecm_rx_init_buf_tail(struct iecm_vport *vport)
+  */
+ static int iecm_vport_open(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	int err;
++
++	if (vport->adapter->state != __IECM_DOWN)
++		return -EBUSY;
++
++	/* we do not allow interface up just yet */
++	netif_carrier_off(vport->netdev);
++
++	if (adapter->dev_ops.vc_ops.enable_vport) {
++		err = adapter->dev_ops.vc_ops.enable_vport(vport);
++		if (err)
++			return -EAGAIN;
++	}
++
++	err = adapter->dev_ops.vc_ops.vport_queue_ids_init(vport);
 +	if (err) {
-+		dev_err(&pdev->dev, "DMA configuration failed: 0x%x\n", err);
++		dev_err(&vport->adapter->pdev->dev,
++			"Call to queue ids init returned %d\n", err);
 +		return err;
 +	}
 +
-+	pci_enable_pcie_error_reporting(pdev);
-+	pci_set_master(pdev);
-+	pci_set_drvdata(pdev, adapter);
++	adapter->dev_ops.reg_ops.vportq_reg_init(vport);
++	iecm_rx_init_buf_tail(vport);
 +
-+	adapter->init_wq =
-+		alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, KBUILD_MODNAME);
-+	if (!adapter->init_wq) {
-+		dev_err(&pdev->dev, "Failed to allocate workqueue\n");
-+		err = -ENOMEM;
-+		goto err_wq_alloc;
-+	}
-+
-+	adapter->serv_wq =
-+		alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, KBUILD_MODNAME);
-+	if (!adapter->serv_wq) {
-+		dev_err(&pdev->dev, "Failed to allocate workqueue\n");
-+		err = -ENOMEM;
-+		goto err_mbx_wq_alloc;
-+	}
-+	/* setup msglvl */
-+	adapter->msg_enable = netif_msg_init(adapter->debug_msk,
-+					     IECM_AVAIL_NETIF_M);
-+
-+	adapter->vports = kcalloc(IECM_MAX_NUM_VPORTS,
-+				  sizeof(*adapter->vports), GFP_KERNEL);
-+	if (!adapter->vports) {
-+		err = -ENOMEM;
-+		goto err_vport_alloc;
-+	}
-+
-+	err = iecm_vport_params_buf_alloc(adapter);
++	err = iecm_vport_intr_init(vport);
 +	if (err) {
-+		dev_err(&pdev->dev, "Failed to alloc vport params buffer: %d\n",
-+			err);
-+		goto err_mb_res;
++		dev_err(&vport->adapter->pdev->dev,
++			"Call to vport interrupt init returned %d\n", err);
++		return err;
 +	}
 +
-+	err = iecm_cfg_hw(adapter);
++	err = vport->adapter->dev_ops.vc_ops.config_queues(vport);
++	if (err)
++		goto unroll_config_queues;
++	err = vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, true);
 +	if (err) {
-+		dev_err(&pdev->dev, "Failed to configure HW structure for adapter: %d\n",
-+			err);
-+		goto err_cfg_hw;
++		dev_err(&vport->adapter->pdev->dev,
++			"Call to irq_map_unmap returned %d\n", err);
++		goto unroll_config_queues;
 +	}
++	err = vport->adapter->dev_ops.vc_ops.enable_queues(vport);
++	if (err)
++		goto unroll_enable_queues;
 +
-+	mutex_init(&adapter->sw_mutex);
-+	mutex_init(&adapter->vc_msg_lock);
-+	mutex_init(&adapter->reset_lock);
-+	init_waitqueue_head(&adapter->vchnl_wq);
++	err = vport->adapter->dev_ops.vc_ops.get_ptype(vport);
++	if (err)
++		goto unroll_get_ptype;
 +
-+	INIT_DELAYED_WORK(&adapter->serv_task, iecm_service_task);
-+	INIT_DELAYED_WORK(&adapter->init_task, iecm_init_task);
-+	INIT_DELAYED_WORK(&adapter->vc_event_task, iecm_vc_event_task);
++	if (adapter->rss_data.rss_lut)
++		err = iecm_config_rss(vport);
++	else
++		err = iecm_init_rss(vport);
++	if (err)
++		goto unroll_init_rss;
++	err = iecm_up_complete(vport);
++	if (err)
++		goto unroll_up_comp;
 +
-+	mutex_lock(&adapter->reset_lock);
-+	set_bit(__IECM_HR_DRV_LOAD, adapter->flags);
-+	err = iecm_init_hard_reset(adapter);
-+	if (err) {
-+		dev_err(&pdev->dev, "Failed to reset device: %d\n", err);
-+		goto err_mb_init;
-+	}
++	netif_info(vport->adapter, hw, vport->netdev, "%s\n", __func__);
 +
 +	return 0;
-+err_mb_init:
-+err_cfg_hw:
-+	iecm_vport_params_buf_rel(adapter);
-+err_mb_res:
-+	kfree(adapter->vports);
-+err_vport_alloc:
-+	destroy_workqueue(adapter->serv_wq);
-+err_mbx_wq_alloc:
-+	destroy_workqueue(adapter->init_wq);
-+err_wq_alloc:
-+	pci_disable_pcie_error_reporting(pdev);
++unroll_up_comp:
++	iecm_deinit_rss(vport);
++unroll_init_rss:
++	adapter->dev_ops.vc_ops.disable_vport(vport);
++unroll_get_ptype:
++	vport->adapter->dev_ops.vc_ops.disable_queues(vport);
++unroll_enable_queues:
++	vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, false);
++unroll_config_queues:
++	iecm_vport_intr_deinit(vport);
++
 +	return err;
  }
- EXPORT_SYMBOL(iecm_probe);
  
-@@ -369,7 +730,22 @@ EXPORT_SYMBOL(iecm_probe);
+ /**
+@@ -903,7 +1016,9 @@ EXPORT_SYMBOL(iecm_shutdown);
   */
- void iecm_remove(struct pci_dev *pdev)
+ static int iecm_open(struct net_device *netdev)
  {
 -	/* stub */
-+	struct iecm_adapter *adapter = pci_get_drvdata(pdev);
++	struct iecm_netdev_priv *np = netdev_priv(netdev);
 +
-+	if (!adapter)
-+		return;
-+
-+	iecm_deinit_task(adapter);
-+	cancel_delayed_work_sync(&adapter->vc_event_task);
-+	destroy_workqueue(adapter->serv_wq);
-+	destroy_workqueue(adapter->init_wq);
-+	kfree(adapter->vports);
-+	kfree(adapter->vport_params_recvd);
-+	kfree(adapter->vport_params_reqd);
-+	mutex_destroy(&adapter->sw_mutex);
-+	mutex_destroy(&adapter->vc_msg_lock);
-+	mutex_destroy(&adapter->reset_lock);
-+	pci_disable_pcie_error_reporting(pdev);
++	return iecm_vport_open(np->vport);
  }
- EXPORT_SYMBOL(iecm_remove);
  
-@@ -379,7 +755,13 @@ EXPORT_SYMBOL(iecm_remove);
+ /**
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+index 8214de2506af..781942f934df 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+@@ -86,7 +86,38 @@ static void iecm_tx_desc_rel_all(struct iecm_vport *vport)
   */
- void iecm_shutdown(struct pci_dev *pdev)
+ static int iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
  {
 -	/* stub */
-+	struct iecm_adapter *adapter;
++	int buf_size;
++	int i = 0;
 +
-+	adapter = pci_get_drvdata(pdev);
-+	adapter->state = __IECM_REMOVE;
++	/* Allocate book keeping buffers only. Buffers to be supplied to HW
++	 * are allocated by kernel network stack and received as part of skb
++	 */
++	buf_size = sizeof(struct iecm_tx_buf) * tx_q->desc_count;
++	tx_q->tx_buf = kzalloc(buf_size, GFP_KERNEL);
++	if (!tx_q->tx_buf)
++		return -ENOMEM;
 +
-+	if (system_state == SYSTEM_POWER_OFF)
-+		pci_set_power_state(pdev, PCI_D3hot);
- }
- EXPORT_SYMBOL(iecm_shutdown);
- 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_main.c b/drivers/net/ethernet/intel/iecm/iecm_main.c
-index 68d9f2e6445b..3f26fbdf96f6 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_main.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_main.c
-@@ -21,7 +21,10 @@ MODULE_LICENSE("GPL v2");
-  */
- static int __init iecm_module_init(void)
- {
--	/* stub */
-+	pr_info("%s\n", iecm_driver_string);
-+	pr_info("%s\n", iecm_copyright);
++	/* Initialize Tx buf stack for out-of-order completions if
++	 * flow scheduling offload is enabled
++	 */
++	tx_q->buf_stack.bufs =
++		kcalloc(tx_q->desc_count, sizeof(struct iecm_tx_buf *),
++			GFP_KERNEL);
++	if (!tx_q->buf_stack.bufs)
++		return -ENOMEM;
++
++	for (i = 0; i < tx_q->desc_count; i++) {
++		tx_q->buf_stack.bufs[i] =
++			kzalloc(sizeof(*tx_q->buf_stack.bufs[i]),
++				GFP_KERNEL);
++		if (!tx_q->buf_stack.bufs[i])
++			return IECM_ERR_NO_MEMORY;
++	}
++
++	tx_q->buf_stack.size = tx_q->desc_count;
++	tx_q->buf_stack.top = tx_q->desc_count;
 +
 +	return 0;
  }
- module_init(iecm_module_init);
  
-@@ -33,6 +36,6 @@ module_init(iecm_module_init);
+ /**
+@@ -98,7 +129,40 @@ static int iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
   */
- static void __exit iecm_module_exit(void)
+ static int iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
  {
 -	/* stub */
-+	pr_info("module unloaded\n");
++	struct device *dev = tx_q->dev;
++	int err = 0;
++
++	if (bufq) {
++		err = iecm_tx_buf_alloc_all(tx_q);
++		if (err)
++			goto err_alloc;
++		tx_q->size = tx_q->desc_count *
++				sizeof(struct iecm_base_tx_desc);
++	} else {
++		tx_q->size = tx_q->desc_count *
++				sizeof(struct iecm_splitq_tx_compl_desc);
++	}
++
++	/* Allocate descriptors also round up to nearest 4K */
++	tx_q->size = ALIGN(tx_q->size, 4096);
++	tx_q->desc_ring = dmam_alloc_coherent(dev, tx_q->size, &tx_q->dma,
++					      GFP_KERNEL);
++	if (!tx_q->desc_ring) {
++		dev_info(dev, "Unable to allocate memory for the Tx descriptor ring, size=%d\n",
++			 tx_q->size);
++		err = -ENOMEM;
++		goto err_alloc;
++	}
++
++	tx_q->next_to_alloc = 0;
++	tx_q->next_to_use = 0;
++	tx_q->next_to_clean = 0;
++	set_bit(__IECM_Q_GEN_CHK, tx_q->flags);
++
++err_alloc:
++	if (err)
++		iecm_tx_desc_rel(tx_q, bufq);
++	return err;
  }
- module_exit(iecm_module_exit);
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-index 6df39810264a..e2da7dbc2ced 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-@@ -998,7 +998,11 @@ static int iecm_rx_splitq_clean(struct iecm_queue *rxq, int budget)
- irqreturn_t
- iecm_vport_intr_clean_queues(int __always_unused irq, void *data)
+ 
+ /**
+@@ -109,7 +173,41 @@ static int iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
+  */
+ static int iecm_tx_desc_alloc_all(struct iecm_vport *vport)
  {
 -	/* stub */
-+	struct iecm_q_vector *q_vector = (struct iecm_q_vector *)data;
++	struct pci_dev *pdev = vport->adapter->pdev;
++	int err = 0;
++	int i, j;
 +
-+	napi_schedule(&q_vector->napi);
++	/* Setup buffer queues. In single queue model buffer queues and
++	 * completion queues will be same
++	 */
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		for (j = 0; j < vport->txq_grps[i].num_txq; j++) {
++			err = iecm_tx_desc_alloc(&vport->txq_grps[i].txqs[j],
++						 true);
++			if (err) {
++				dev_err(&pdev->dev,
++					"Allocation for Tx Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
 +
-+	return IRQ_HANDLED;
++		if (iecm_is_queue_model_split(vport->txq_model)) {
++			/* Setup completion queues */
++			err = iecm_tx_desc_alloc(vport->txq_grps[i].complq,
++						 false);
++			if (err) {
++				dev_err(&pdev->dev,
++					"Allocation for Tx Completion Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
++	}
++err_out:
++	if (err)
++		iecm_tx_desc_rel_all(vport);
++	return err;
+ }
+ 
+ /**
+@@ -164,7 +262,19 @@ static void iecm_rx_desc_rel_all(struct iecm_vport *vport)
+  */
+ void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
+ {
+-	/* stub */
++	/* update next to alloc since we have filled the ring */
++	rxq->next_to_alloc = val;
++
++	rxq->next_to_use = val;
++	if (!rxq->tail)
++		return;
++	/* Force memory writes to complete before letting h/w
++	 * know there are new descriptors to fetch.  (Only
++	 * applicable for weak-ordered memory model archs,
++	 * such as IA-64).
++	 */
++	wmb();
++	writel_relaxed(val, rxq->tail);
+ }
+ 
+ /**
+@@ -177,7 +287,34 @@ void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
+  */
+ bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
+ {
+-	/* stub */
++	struct page *page = buf->page;
++	dma_addr_t dma;
++
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
++
++	/* alloc new page for storage */
++	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++	if (unlikely(!page))
++		return false;
++
++	/* map page for use */
++	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rxq->dev, dma)) {
++		__free_pages(page, 0);
++		return false;
++	}
++
++	buf->dma = dma;
++	buf->page = page;
++	buf->page_offset = iecm_rx_offset(rxq);
++
++	return true;
+ }
+ 
+ /**
+@@ -191,7 +328,34 @@ bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
+ static bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
+ 				     struct iecm_rx_buf *hdr_buf)
+ {
+-	/* stub */
++	struct page *page = hdr_buf->page;
++	dma_addr_t dma;
++
++	/* since we are recycling buffers we should seldom need to alloc */
++	if (likely(page))
++		return true;
++
++	/* alloc new page for storage */
++	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++	if (unlikely(!page))
++		return false;
++
++	/* map page for use */
++	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rxq->dev, dma)) {
++		__free_pages(page, 0);
++		return false;
++	}
++
++	hdr_buf->dma = dma;
++	hdr_buf->page = page;
++	hdr_buf->page_offset = 0;
++
++	return true;
+ }
+ 
+ /**
+@@ -205,7 +369,59 @@ static bool
+ iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
+ 			 u16 cleaned_count)
+ {
+-	/* stub */
++	struct iecm_splitq_rx_buf_desc *splitq_rx_desc = NULL;
++	struct iecm_rx_buf *hdr_buf = NULL;
++	u16 nta = rxq->next_to_alloc;
++	struct iecm_rx_buf *buf;
++
++	/* do nothing if no valid netdev defined */
++	if (!rxq->vport->netdev || !cleaned_count)
++		return false;
++
++	splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, nta);
++
++	buf = &rxq->rx_buf.buf[nta];
++	if (rxq->rx_hsplit_en)
++		hdr_buf = &rxq->rx_buf.hdr_buf[nta];
++
++	do {
++		if (rxq->rx_hsplit_en) {
++			if (!iecm_rx_hdr_buf_hw_alloc(rxq, hdr_buf))
++				break;
++
++			splitq_rx_desc->hdr_addr =
++				cpu_to_le64(hdr_buf->dma +
++					    hdr_buf->page_offset);
++			hdr_buf++;
++		}
++
++		if (!iecm_rx_buf_hw_alloc(rxq, buf))
++			break;
++
++		/* Refresh the desc even if buffer_addrs didn't change
++		 * because each write-back erases this info.
++		 */
++		splitq_rx_desc->pkt_addr =
++			cpu_to_le64(buf->dma + buf->page_offset);
++		splitq_rx_desc->qword0.buf_id = cpu_to_le16(nta);
++
++		splitq_rx_desc++;
++		buf++;
++		nta++;
++		if (unlikely(nta == rxq->desc_count)) {
++			splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, 0);
++			buf = rxq->rx_buf.buf;
++			hdr_buf = rxq->rx_buf.hdr_buf;
++			nta = 0;
++		}
++
++		cleaned_count--;
++	} while (cleaned_count);
++
++	if (rxq->next_to_alloc != nta)
++		iecm_rx_buf_hw_update(rxq, nta);
++
++	return !!cleaned_count;
+ }
+ 
+ /**
+@@ -216,7 +432,44 @@ iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
+  */
+ static int iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
+ {
+-	/* stub */
++	int err = 0;
++
++	/* Allocate book keeping buffers */
++	rxq->rx_buf.buf = kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
++				  GFP_KERNEL);
++	if (!rxq->rx_buf.buf) {
++		err = -ENOMEM;
++		goto rx_buf_alloc_all_out;
++	}
++
++	if (rxq->rx_hsplit_en) {
++		rxq->rx_buf.hdr_buf =
++			kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
++				GFP_KERNEL);
++		if (!rxq->rx_buf.hdr_buf) {
++			err = -ENOMEM;
++			goto rx_buf_alloc_all_out;
++		}
++	} else {
++		rxq->rx_buf.hdr_buf = NULL;
++	}
++
++	/* Allocate buffers to be given to HW. Allocate one less than
++	 * total descriptor count as RX splits 4k buffers to 2K and recycles
++	 */
++	if (iecm_is_queue_model_split(rxq->vport->rxq_model)) {
++		if (iecm_rx_buf_hw_alloc_all(rxq,
++					     rxq->desc_count - 1))
++			err = -ENOMEM;
++	} else if (iecm_rx_singleq_buf_hw_alloc_all(rxq,
++						    rxq->desc_count - 1)) {
++		err = -ENOMEM;
++	}
++
++rx_buf_alloc_all_out:
++	if (err)
++		iecm_rx_buf_rel_all(rxq);
++	return err;
+ }
+ 
+ /**
+@@ -230,7 +483,48 @@ static int iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
+ static int iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
+ 			      enum virtchnl_queue_model q_model)
+ {
+-	/* stub */
++	struct device *dev = rxq->dev;
++
++	/* As both single and split descriptors are 32 byte, memory size
++	 * will be same for all three singleq_base Rx, buf., splitq_base
++	 * Rx. So pick anyone of them for size
++	 */
++	if (bufq) {
++		rxq->size = rxq->desc_count *
++			sizeof(struct iecm_splitq_rx_buf_desc);
++	} else {
++		rxq->size = rxq->desc_count *
++			sizeof(union iecm_rx_desc);
++	}
++
++	/* Allocate descriptors and also round up to nearest 4K */
++	rxq->size = ALIGN(rxq->size, 4096);
++	rxq->desc_ring = dmam_alloc_coherent(dev, rxq->size,
++					     &rxq->dma, GFP_KERNEL);
++	if (!rxq->desc_ring) {
++		dev_info(dev, "Unable to allocate memory for the Rx descriptor ring, size=%d\n",
++			 rxq->size);
++		return -ENOMEM;
++	}
++
++	rxq->next_to_alloc = 0;
++	rxq->next_to_clean = 0;
++	rxq->next_to_use = 0;
++	set_bit(__IECM_Q_GEN_CHK, rxq->flags);
++
++	/* Allocate buffers for a Rx queue if the q_model is single OR if it
++	 * is a buffer queue in split queue model
++	 */
++	if (bufq || !iecm_is_queue_model_split(q_model)) {
++		int err = 0;
++
++		err = iecm_rx_buf_alloc_all(rxq);
++		if (err) {
++			iecm_rx_desc_rel(rxq, bufq, q_model);
++			return err;
++		}
++	}
++	return 0;
+ }
+ 
+ /**
+@@ -241,7 +535,48 @@ static int iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
+  */
+ static int iecm_rx_desc_alloc_all(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct device *dev = &vport->adapter->pdev->dev;
++	struct iecm_queue *q;
++	int i, j, num_rxq;
++	int err = 0;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			num_rxq = vport->rxq_grps[i].splitq.num_rxq_sets;
++		else
++			num_rxq = vport->rxq_grps[i].singleq.num_rxq;
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model))
++				q = &vport->rxq_grps[i].splitq.rxq_sets[j].rxq;
++			else
++				q = &vport->rxq_grps[i].singleq.rxqs[j];
++			err = iecm_rx_desc_alloc(q, false, vport->rxq_model);
++			if (err) {
++				dev_err(dev, "Memory allocation for Rx Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				q =
++				  &vport->rxq_grps[i].splitq.bufq_sets[j].bufq;
++				err = iecm_rx_desc_alloc(q, true,
++							 vport->rxq_model);
++				if (err) {
++					dev_err(dev, "Memory allocation for Rx Buffer Queue %u failed\n",
++						i);
++					goto err_out;
++				}
++			}
++		}
++	}
++err_out:
++	if (err)
++		iecm_rx_desc_rel_all(vport);
++	return err;
+ }
+ 
+ /**
+@@ -294,7 +629,23 @@ void iecm_vport_queues_rel(struct iecm_vport *vport)
+  */
+ static int iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int i, j, k = 0;
++
++	vport->txqs = kcalloc(vport->num_txq, sizeof(struct iecm_queue *),
++			      GFP_KERNEL);
++
++	if (!vport->txqs)
++		return -ENOMEM;
++
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct iecm_txq_group *tx_grp = &vport->txq_grps[i];
++
++		for (j = 0; j < tx_grp->num_txq; j++, k++) {
++			vport->txqs[k] = &tx_grp->txqs[j];
++			vport->txqs[k]->idx = k;
++		}
++	}
++	return 0;
+ }
+ 
+ /**
+@@ -305,7 +656,12 @@ static int iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
+ void iecm_vport_init_num_qs(struct iecm_vport *vport,
+ 			    struct virtchnl_create_vport *vport_msg)
+ {
+-	/* stub */
++	vport->num_txq = vport_msg->num_tx_q;
++	vport->num_rxq = vport_msg->num_rx_q;
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_complq = vport_msg->num_tx_complq;
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		vport->num_bufq = vport_msg->num_rx_bufq;
+ }
+ 
+ /**
+@@ -314,7 +670,32 @@ void iecm_vport_init_num_qs(struct iecm_vport *vport,
+  */
+ void iecm_vport_calc_num_q_desc(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int num_req_txq_desc = vport->adapter->config_data.num_req_txq_desc;
++	int num_req_rxq_desc = vport->adapter->config_data.num_req_rxq_desc;
++
++	vport->complq_desc_count = 0;
++	vport->bufq_desc_count = 0;
++	if (num_req_txq_desc) {
++		vport->txq_desc_count = num_req_txq_desc;
++		if (iecm_is_queue_model_split(vport->txq_model))
++			vport->complq_desc_count = num_req_txq_desc;
++	} else {
++		vport->txq_desc_count =
++			IECM_DFLT_TX_Q_DESC_COUNT;
++		if (iecm_is_queue_model_split(vport->txq_model)) {
++			vport->complq_desc_count =
++				IECM_DFLT_TX_COMPLQ_DESC_COUNT;
++		}
++	}
++	if (num_req_rxq_desc) {
++		vport->rxq_desc_count = num_req_rxq_desc;
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			vport->bufq_desc_count = num_req_rxq_desc;
++	} else {
++		vport->rxq_desc_count = IECM_DFLT_RX_Q_DESC_COUNT;
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			vport->bufq_desc_count = IECM_DFLT_RX_BUFQ_DESC_COUNT;
++	}
+ }
+ EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
+ 
+@@ -326,7 +707,51 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
+ void iecm_vport_calc_total_qs(struct virtchnl_create_vport *vport_msg,
+ 			      int num_req_qs)
+ {
+-	/* stub */
++	int dflt_splitq_txq_grps, dflt_singleq_txqs;
++	int dflt_splitq_rxq_grps, dflt_singleq_rxqs;
++	int num_txq_grps, num_rxq_grps;
++	int num_cpus;
++
++	/* Restrict num of queues to cpus online as a default configuration to
++	 * give best performance. User can always override to a max number
++	 * of queues via ethtool.
++	 */
++	num_cpus = num_online_cpus();
++	dflt_splitq_txq_grps = min_t(int, IECM_DFLT_SPLITQ_TX_Q_GROUPS,
++				     num_cpus);
++	dflt_singleq_txqs = min_t(int, IECM_DFLT_SINGLEQ_TXQ_PER_GROUP,
++				  num_cpus);
++	dflt_splitq_rxq_grps = min_t(int, IECM_DFLT_SPLITQ_RX_Q_GROUPS,
++				     num_cpus);
++	dflt_singleq_rxqs = min_t(int, IECM_DFLT_SINGLEQ_RXQ_PER_GROUP,
++				  num_cpus);
++
++	if (iecm_is_queue_model_split(vport_msg->txq_model)) {
++		num_txq_grps = num_req_qs ? num_req_qs : dflt_splitq_txq_grps;
++		vport_msg->num_tx_complq = num_txq_grps *
++			IECM_COMPLQ_PER_GROUP;
++		vport_msg->num_tx_q = num_txq_grps *
++				      IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
++	} else {
++		num_txq_grps = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
++		vport_msg->num_tx_q = num_txq_grps *
++				      (num_req_qs ? num_req_qs :
++				       dflt_singleq_txqs);
++		vport_msg->num_tx_complq = 0;
++	}
++	if (iecm_is_queue_model_split(vport_msg->rxq_model)) {
++		num_rxq_grps = num_req_qs ? num_req_qs : dflt_splitq_rxq_grps;
++		vport_msg->num_rx_bufq = num_rxq_grps *
++					 IECM_BUFQS_PER_RXQ_SET;
++		vport_msg->num_rx_q = num_rxq_grps *
++				      IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++	} else {
++		num_rxq_grps = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
++		vport_msg->num_rx_bufq = 0;
++		vport_msg->num_rx_q = num_rxq_grps *
++				      (num_req_qs ? num_req_qs :
++				       dflt_singleq_rxqs);
++	}
+ }
+ 
+ /**
+@@ -335,7 +760,15 @@ void iecm_vport_calc_total_qs(struct virtchnl_create_vport *vport_msg,
+  */
+ void iecm_vport_calc_num_q_groups(struct iecm_vport *vport)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_txq_grp = vport->num_txq;
++	else
++		vport->num_txq_grp = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
++
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		vport->num_rxq_grp = vport->num_rxq;
++	else
++		vport->num_rxq_grp = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
+ }
+ EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
+ 
+@@ -348,7 +781,15 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
+ static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
+ 					 int *num_txq, int *num_rxq)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		*num_txq = IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
++	else
++		*num_txq = vport->num_txq;
++
++	if (iecm_is_queue_model_split(vport->rxq_model))
++		*num_rxq = IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
++	else
++		*num_rxq = vport->num_rxq;
+ }
+ 
+ /**
+@@ -359,7 +800,10 @@ static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
+  */
+ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
+ {
+-	/* stub */
++	if (iecm_is_queue_model_split(vport->txq_model))
++		vport->num_q_vectors = vport->num_txq_grp;
++	else
++		vport->num_q_vectors = vport->num_txq;
+ }
+ 
+ /**
+@@ -371,7 +815,68 @@ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
+  */
+ static int iecm_txq_group_alloc(struct iecm_vport *vport, int num_txq)
+ {
+-	/* stub */
++	struct iecm_itr tx_itr = { 0 };
++	int err = 0;
++	int i;
++
++	vport->txq_grps = kcalloc(vport->num_txq_grp,
++				  sizeof(*vport->txq_grps), GFP_KERNEL);
++	if (!vport->txq_grps)
++		return -ENOMEM;
++
++	tx_itr.target_itr = IECM_ITR_TX_DEF;
++	tx_itr.itr_idx = VIRTCHNL_ITR_IDX_1;
++	tx_itr.next_update = jiffies + 1;
++
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct iecm_txq_group *tx_qgrp = &vport->txq_grps[i];
++		int j;
++
++		tx_qgrp->vport = vport;
++		tx_qgrp->num_txq = num_txq;
++		tx_qgrp->txqs = kcalloc(num_txq, sizeof(*tx_qgrp->txqs),
++					GFP_KERNEL);
++		if (!tx_qgrp->txqs) {
++			err = -ENOMEM;
++			goto err_alloc;
++		}
++
++		for (j = 0; j < tx_qgrp->num_txq; j++) {
++			struct iecm_queue *q = &tx_qgrp->txqs[j];
++
++			q->dev = &vport->adapter->pdev->dev;
++			q->desc_count = vport->txq_desc_count;
++			q->vport = vport;
++			q->txq_grp = tx_qgrp;
++			hash_init(q->sched_buf_hash);
++
++			if (!iecm_is_queue_model_split(vport->txq_model))
++				q->itr = tx_itr;
++		}
++
++		if (!iecm_is_queue_model_split(vport->txq_model))
++			continue;
++
++		tx_qgrp->complq = kcalloc(IECM_COMPLQ_PER_GROUP,
++					  sizeof(*tx_qgrp->complq),
++					  GFP_KERNEL);
++		if (!tx_qgrp->complq) {
++			err = -ENOMEM;
++			goto err_alloc;
++		}
++
++		tx_qgrp->complq->dev = &vport->adapter->pdev->dev;
++		tx_qgrp->complq->desc_count = vport->complq_desc_count;
++		tx_qgrp->complq->vport = vport;
++		tx_qgrp->complq->txq_grp = tx_qgrp;
++
++		tx_qgrp->complq->itr = tx_itr;
++	}
++
++err_alloc:
++	if (err)
++		iecm_txq_group_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -383,7 +888,115 @@ static int iecm_txq_group_alloc(struct iecm_vport *vport, int num_txq)
+  */
+ static int iecm_rxq_group_alloc(struct iecm_vport *vport, int num_rxq)
+ {
+-	/* stub */
++	struct iecm_itr rx_itr = {0};
++	struct iecm_queue *q;
++	int i, err = 0;
++
++	vport->rxq_grps = kcalloc(vport->num_rxq_grp,
++				  sizeof(struct iecm_rxq_group), GFP_KERNEL);
++	if (!vport->rxq_grps)
++		return -ENOMEM;
++
++	rx_itr.target_itr = IECM_ITR_RX_DEF;
++	rx_itr.itr_idx = VIRTCHNL_ITR_IDX_0;
++	rx_itr.next_update = jiffies + 1;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++		int j;
++
++		rx_qgrp->vport = vport;
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			rx_qgrp->splitq.num_rxq_sets = num_rxq;
++			rx_qgrp->splitq.rxq_sets =
++				kcalloc(num_rxq,
++					sizeof(struct iecm_rxq_set),
++					GFP_KERNEL);
++			if (!rx_qgrp->splitq.rxq_sets) {
++				err = -ENOMEM;
++				goto err_alloc;
++			}
++
++			rx_qgrp->splitq.bufq_sets =
++				kcalloc(IECM_BUFQS_PER_RXQ_SET,
++					sizeof(struct iecm_bufq_set),
++					GFP_KERNEL);
++			if (!rx_qgrp->splitq.bufq_sets) {
++				err = -ENOMEM;
++				goto err_alloc;
++			}
++
++			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
++				int swq_size = sizeof(struct iecm_sw_queue);
++
++				q = &rx_qgrp->splitq.bufq_sets[j].bufq;
++				q->dev = &vport->adapter->pdev->dev;
++				q->desc_count = vport->bufq_desc_count;
++				q->vport = vport;
++				q->rxq_grp = rx_qgrp;
++				q->idx = j;
++				q->rx_buf_size = IECM_RX_BUF_2048;
++				q->rsc_low_watermark = IECM_LOW_WATERMARK;
++				q->rx_buf_stride = IECM_RX_BUF_STRIDE;
++				q->itr = rx_itr;
++
++				if (vport->rx_hsplit_en) {
++					q->rx_hsplit_en = vport->rx_hsplit_en;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++
++				rx_qgrp->splitq.bufq_sets[j].num_refillqs =
++					num_rxq;
++				rx_qgrp->splitq.bufq_sets[j].refillqs =
++					kcalloc(num_rxq, swq_size, GFP_KERNEL);
++				if (!rx_qgrp->splitq.bufq_sets[j].refillqs) {
++					err = -ENOMEM;
++					goto err_alloc;
++				}
++			}
++		} else {
++			rx_qgrp->singleq.num_rxq = num_rxq;
++			rx_qgrp->singleq.rxqs = kcalloc(num_rxq,
++							sizeof(struct iecm_queue),
++							GFP_KERNEL);
++			if (!rx_qgrp->singleq.rxqs)  {
++				err = -ENOMEM;
++				goto err_alloc;
++			}
++		}
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model)) {
++				q = &rx_qgrp->splitq.rxq_sets[j].rxq;
++				rx_qgrp->splitq.rxq_sets[j].refillq0 =
++				      &rx_qgrp->splitq.bufq_sets[0].refillqs[j];
++				rx_qgrp->splitq.rxq_sets[j].refillq1 =
++				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
++
++				if (vport->rx_hsplit_en) {
++					q->rx_hsplit_en = vport->rx_hsplit_en;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++
++			} else {
++				q = &rx_qgrp->singleq.rxqs[j];
++			}
++			q->dev = &vport->adapter->pdev->dev;
++			q->desc_count = vport->rxq_desc_count;
++			q->vport = vport;
++			q->rxq_grp = rx_qgrp;
++			q->idx = (i * num_rxq) + j;
++			q->rx_buf_size = IECM_RX_BUF_2048;
++			q->rsc_low_watermark = IECM_LOW_WATERMARK;
++			q->rx_max_pkt_size = vport->netdev->mtu +
++					     IECM_PACKET_HDR_PAD;
++			q->itr = rx_itr;
++		}
++	}
++err_alloc:
++	if (err)
++		iecm_rxq_group_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -394,7 +1007,20 @@ static int iecm_rxq_group_alloc(struct iecm_vport *vport, int num_rxq)
+  */
+ static int iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int num_txq, num_rxq;
++	int err;
++
++	iecm_vport_calc_numq_per_grp(vport, &num_txq, &num_rxq);
++
++	err = iecm_txq_group_alloc(vport, num_txq);
++	if (err)
++		goto err_out;
++
++	err = iecm_rxq_group_alloc(vport, num_rxq);
++err_out:
++	if (err)
++		iecm_vport_queue_grp_rel_all(vport);
++	return err;
+ }
+ 
+ /**
+@@ -406,7 +1032,28 @@ static int iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
+  */
+ int iecm_vport_queues_alloc(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int err;
++
++	err = iecm_vport_queue_grp_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = iecm_tx_desc_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = iecm_rx_desc_alloc_all(vport);
++	if (err)
++		goto err_out;
++
++	err = iecm_vport_init_fast_path_txqs(vport);
++	if (err)
++		goto err_out;
++
++	return 0;
++err_out:
++	iecm_vport_queues_rel(vport);
++	return err;
+ }
+ 
+ /**
+@@ -1794,7 +2441,16 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_vec);
+  */
+ int iecm_config_rss(struct iecm_vport *vport)
+ {
+-	/* stub */
++	int err = iecm_send_get_set_rss_key_msg(vport, false);
++
++	if (!err)
++		err = vport->adapter->dev_ops.vc_ops.get_set_rss_lut(vport,
++								     false);
++	if (!err)
++		err = vport->adapter->dev_ops.vc_ops.get_set_rss_hash(vport,
++								      false);
++
++	return err;
+ }
+ 
+ /**
+@@ -1806,7 +2462,20 @@ int iecm_config_rss(struct iecm_vport *vport)
+  */
+ void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
+ {
+-	/* stub */
++	int i, j, k = 0;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < rx_qgrp->splitq.num_rxq_sets; j++)
++				qid_list[k++] =
++					rx_qgrp->splitq.rxq_sets[j].rxq.q_id;
++		} else {
++			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++)
++				qid_list[k++] = rx_qgrp->singleq.rxqs[j].q_id;
++		}
++	}
+ }
+ 
+ /**
+@@ -1818,7 +2487,13 @@ void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
+  */
+ void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
+ {
+-	/* stub */
++	int num_lut_segs, lut_seg, i, k = 0;
++
++	num_lut_segs = vport->adapter->rss_data.rss_lut_size / vport->num_rxq;
++	for (lut_seg = 0; lut_seg < num_lut_segs; lut_seg++) {
++		for (i = 0; i < vport->num_rxq; i++)
++			vport->adapter->rss_data.rss_lut[k++] = qid_list[i];
++	}
+ }
+ 
+ /**
+@@ -1829,7 +2504,64 @@ void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
+  */
+ int iecm_init_rss(struct iecm_vport *vport)
+ {
+-	/* stub */
++	struct iecm_adapter *adapter = vport->adapter;
++	u16 *qid_list;
++
++	adapter->rss_data.rss_key = kzalloc(adapter->rss_data.rss_key_size,
++					    GFP_KERNEL);
++	if (!adapter->rss_data.rss_key)
++		return -ENOMEM;
++	adapter->rss_data.rss_lut = kzalloc(adapter->rss_data.rss_lut_size,
++					    GFP_KERNEL);
++	if (!adapter->rss_data.rss_lut) {
++		kfree(adapter->rss_data.rss_key);
++		adapter->rss_data.rss_key = NULL;
++		return -ENOMEM;
++	}
++
++	/* Initialize default rss key */
++	netdev_rss_key_fill((void *)adapter->rss_data.rss_key,
++			    adapter->rss_data.rss_key_size);
++
++	/* Initialize default rss lut */
++	if (adapter->rss_data.rss_lut_size % vport->num_rxq) {
++		u16 dflt_qid;
++		int i;
++
++		/* Set all entries to a default RX queue if the algorithm below
++		 * won't fill all entries
++		 */
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			dflt_qid =
++				vport->rxq_grps[0].splitq.rxq_sets[0].rxq.q_id;
++		else
++			dflt_qid =
++				vport->rxq_grps[0].singleq.rxqs[0].q_id;
++
++		for (i = 0; i < adapter->rss_data.rss_lut_size; i++)
++			adapter->rss_data.rss_lut[i] = dflt_qid;
++	}
++
++	qid_list = kcalloc(vport->num_rxq, sizeof(u16), GFP_KERNEL);
++	if (!qid_list) {
++		kfree(adapter->rss_data.rss_lut);
++		adapter->rss_data.rss_lut = NULL;
++		kfree(adapter->rss_data.rss_key);
++		adapter->rss_data.rss_key = NULL;
++		return -ENOMEM;
++	}
++
++	iecm_get_rx_qid_list(vport, qid_list);
++
++	/* Fill the default RSS lut values*/
++	iecm_fill_dflt_rss_lut(vport, qid_list);
++
++	kfree(qid_list);
++
++	 /* Initialize default rss HASH */
++	adapter->rss_data.rss_hash = IECM_DEFAULT_RSS_HASH_EXPANDED;
++
++	return iecm_config_rss(vport);
  }
  
  /**
 diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-index 7fa8c06c5d7d..838bdeba8e61 100644
+index b8cf8eb15052..36b284aa8be2 100644
 --- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
 +++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-@@ -424,7 +424,46 @@ void iecm_deinit_dflt_mbx(struct iecm_adapter *adapter)
+@@ -663,7 +663,19 @@ int iecm_send_destroy_vport_msg(struct iecm_vport *vport)
   */
- int iecm_init_dflt_mbx(struct iecm_adapter *adapter)
+ int iecm_send_enable_vport_msg(struct iecm_vport *vport)
  {
 -	/* stub */
-+	struct iecm_ctlq_create_info ctlq_info[] = {
-+		{
-+			.type = IECM_CTLQ_TYPE_MAILBOX_TX,
-+			.id = IECM_DFLT_MBX_ID,
-+			.len = IECM_DFLT_MBX_Q_LEN,
-+			.buf_size = IECM_DFLT_MBX_BUF_SIZE
-+		},
-+		{
-+			.type = IECM_CTLQ_TYPE_MAILBOX_RX,
-+			.id = IECM_DFLT_MBX_ID,
-+			.len = IECM_DFLT_MBX_Q_LEN,
-+			.buf_size = IECM_DFLT_MBX_BUF_SIZE
-+		}
-+	};
-+	struct iecm_hw *hw = &adapter->hw;
-+	enum iecm_status status;
++	struct iecm_adapter *adapter = vport->adapter;
++	struct virtchnl_vport v_id;
++	int err;
 +
-+	adapter->dev_ops.reg_ops.ctlq_reg_init(ctlq_info);
++	v_id.vport_id = vport->vport_id;
 +
-+#define NUM_Q 2
-+	status = iecm_ctlq_init(hw, NUM_Q, ctlq_info);
-+	if (status)
-+		return -EINVAL;
++	err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_ENABLE_VPORT,
++			       sizeof(v_id), (u8 *)&v_id);
++	if (err)
++		return err;
 +
-+	hw->asq = iecm_find_ctlq(hw, IECM_CTLQ_TYPE_MAILBOX_TX,
-+				 IECM_DFLT_MBX_ID);
-+	hw->arq = iecm_find_ctlq(hw, IECM_CTLQ_TYPE_MAILBOX_RX,
-+				 IECM_DFLT_MBX_ID);
-+
-+	if (!hw->asq || !hw->arq) {
-+		iecm_ctlq_deinit(hw);
-+		return -ENOENT;
-+	}
-+	adapter->state = __IECM_STARTUP;
-+	/* Skew the delay for init tasks for each function based on fn number
-+	 * to prevent every function from making the same call simultaneously.
-+	 */
-+	queue_delayed_work(adapter->init_wq, &adapter->init_task,
-+			   msecs_to_jiffies(5 * (adapter->pdev->devfn & 0x07)));
-+	return 0;
++	return iecm_wait_for_event(adapter, IECM_VC_ENA_VPORT,
++				   IECM_VC_ENA_VPORT_ERR);
  }
  
  /**
-@@ -446,7 +485,15 @@ int iecm_vport_params_buf_alloc(struct iecm_adapter *adapter)
-  */
- void iecm_vport_params_buf_rel(struct iecm_adapter *adapter)
+@@ -1839,7 +1851,27 @@ EXPORT_SYMBOL(iecm_vc_core_init);
+ static void iecm_vport_init(struct iecm_vport *vport,
+ 			    __always_unused int vport_id)
  {
 -	/* stub */
-+	int i = 0;
++	struct virtchnl_create_vport *vport_msg;
 +
-+	for (i = 0; i < IECM_MAX_NUM_VPORTS; i++) {
-+		kfree(adapter->vport_params_recvd[i]);
-+		kfree(adapter->vport_params_reqd[i]);
-+	}
++	vport_msg = (struct virtchnl_create_vport *)
++				vport->adapter->vport_params_recvd[0];
++	vport->txq_model = vport_msg->txq_model;
++	vport->rxq_model = vport_msg->rxq_model;
++	vport->vport_type = (u16)vport_msg->vport_type;
++	vport->vport_id = vport_msg->vport_id;
++	vport->adapter->rss_data.rss_key_size = min_t(u16, NETDEV_RSS_KEY_LEN,
++						      vport_msg->rss_key_size);
++	vport->adapter->rss_data.rss_lut_size = vport_msg->rss_lut_size;
++	ether_addr_copy(vport->default_mac_addr, vport_msg->default_mac_addr);
++	vport->max_mtu = IECM_MAX_MTU;
 +
-+	kfree(adapter->caps);
-+	kfree(adapter->config_data.req_qs_chunks);
++	iecm_vport_set_hsplit(vport, NULL);
++
++	init_waitqueue_head(&vport->sw_marker_wq);
++	iecm_vport_init_num_qs(vport, vport_msg);
++	iecm_vport_calc_num_q_desc(vport);
++	iecm_vport_calc_num_q_groups(vport);
++	iecm_vport_calc_num_q_vec(vport);
  }
  
  /**
-@@ -572,6 +619,24 @@ static bool iecm_is_capability_ena(struct iecm_adapter *adapter, u64 flag)
-  */
- void iecm_vc_ops_init(struct iecm_adapter *adapter)
- {
--	/* stub */
-+	struct iecm_virtchnl_ops *vc_ops = &adapter->dev_ops.vc_ops;
-+
-+	vc_ops->core_init = iecm_vc_core_init;
-+	vc_ops->vport_init = iecm_vport_init;
-+	vc_ops->vport_queue_ids_init = iecm_vport_queue_ids_init;
-+	vc_ops->get_caps = iecm_send_get_caps_msg;
-+	vc_ops->is_cap_ena = iecm_is_capability_ena;
-+	vc_ops->config_queues = iecm_send_config_queues_msg;
-+	vc_ops->enable_queues = iecm_send_enable_queues_msg;
-+	vc_ops->disable_queues = iecm_send_disable_queues_msg;
-+	vc_ops->irq_map_unmap = iecm_send_map_unmap_queue_vector_msg;
-+	vc_ops->enable_vport = iecm_send_enable_vport_msg;
-+	vc_ops->disable_vport = iecm_send_disable_vport_msg;
-+	vc_ops->destroy_vport = iecm_send_destroy_vport_msg;
-+	vc_ops->get_ptype = iecm_send_get_rx_ptype_msg;
-+	vc_ops->get_set_rss_lut = iecm_send_get_set_rss_lut_msg;
-+	vc_ops->get_set_rss_hash = iecm_send_get_set_rss_hash_msg;
-+	vc_ops->adjust_qs = iecm_vport_adjust_qs;
-+	vc_ops->recv_mbx_msg = NULL;
- }
- EXPORT_SYMBOL(iecm_vc_ops_init);
 -- 
 2.21.0
 
