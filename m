@@ -1,153 +1,56 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 16 Aug 2020 09:05:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 471e0fe0612b162e69cd44534ce78d2bbaf5b331
-Message-ID: <5f388660.IHDHR3wjSZwm6ccg%lkp@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 17 Aug 2020 16:12:30 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: Fix wrong timestamp latency
+ numbers
+Message-ID: <20200817231231.2971207-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 471e0fe0612b162e69cd44534ce78d2bbaf5b331  igc: Expose LPI counters
+The previous timestamping latency numbers were obtained by
+interpolating the i210 numbers with the i225 crystal clock value. That
+calculation was wrong.
 
-elapsed time: 3072m
+Use the correct values from real measurements.
 
-configs tested: 127
-configs skipped: 5
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-riscv                            allyesconfig
-arm                            xcep_defconfig
-mips                          ath25_defconfig
-sh                           se7619_defconfig
-powerpc                        cell_defconfig
-m68k                          multi_defconfig
-sh                           se7750_defconfig
-mips                        maltaup_defconfig
-powerpc                     pseries_defconfig
-arc                          axs103_defconfig
-h8300                     edosk2674_defconfig
-sh                         ap325rxa_defconfig
-arm                            pleb_defconfig
-sh                           se7780_defconfig
-xtensa                    xip_kc705_defconfig
-csky                             alldefconfig
-m68k                       bvme6000_defconfig
-powerpc64                           defconfig
-sh                          sdk7780_defconfig
-sh                          sdk7786_defconfig
-powerpc                          g5_defconfig
-microblaze                      mmu_defconfig
-mips                        vocore2_defconfig
-mips                malta_kvm_guest_defconfig
-sh                           se7722_defconfig
-mips                      malta_kvm_defconfig
-mips                         mpc30x_defconfig
-arm                          ixp4xx_defconfig
-sh                          landisk_defconfig
-sh                          urquell_defconfig
-mips                      pic32mzda_defconfig
-arm                           viper_defconfig
-arm                            hisi_defconfig
-arc                           tb10x_defconfig
-mips                     decstation_defconfig
-sh                             sh03_defconfig
-powerpc                     mpc512x_defconfig
-sh                          lboxre2_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20200811
-x86_64               randconfig-a001-20200811
-x86_64               randconfig-a003-20200811
-x86_64               randconfig-a005-20200811
-x86_64               randconfig-a004-20200811
-x86_64               randconfig-a002-20200811
-x86_64               randconfig-a006-20200813
-x86_64               randconfig-a001-20200813
-x86_64               randconfig-a005-20200813
-x86_64               randconfig-a003-20200813
-x86_64               randconfig-a004-20200813
-x86_64               randconfig-a002-20200813
-i386                 randconfig-a005-20200813
-i386                 randconfig-a001-20200813
-i386                 randconfig-a002-20200813
-i386                 randconfig-a003-20200813
-i386                 randconfig-a006-20200813
-i386                 randconfig-a004-20200813
-i386                 randconfig-a005-20200812
-i386                 randconfig-a001-20200812
-i386                 randconfig-a002-20200812
-i386                 randconfig-a003-20200812
-i386                 randconfig-a006-20200812
-i386                 randconfig-a004-20200812
-i386                 randconfig-a005-20200811
-i386                 randconfig-a001-20200811
-i386                 randconfig-a002-20200811
-i386                 randconfig-a003-20200811
-i386                 randconfig-a006-20200811
-i386                 randconfig-a004-20200811
-i386                 randconfig-a016-20200811
-i386                 randconfig-a011-20200811
-i386                 randconfig-a015-20200811
-i386                 randconfig-a013-20200811
-i386                 randconfig-a012-20200811
-i386                 randconfig-a014-20200811
-i386                 randconfig-a016-20200813
-i386                 randconfig-a011-20200813
-i386                 randconfig-a013-20200813
-i386                 randconfig-a015-20200813
-i386                 randconfig-a012-20200813
-i386                 randconfig-a014-20200813
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc.h | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 19f88f705ec3..522699b870c9 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -303,18 +303,14 @@ extern char igc_driver_name[];
+ #define IGC_RX_HDR_LEN			IGC_RXBUFFER_256
+ 
+ /* Transmit and receive latency (for PTP timestamps) */
+-/* FIXME: These values were estimated using the ones that i225 has as
+- * basis, they seem to provide good numbers with ptp4l/phc2sys, but we
+- * need to confirm them.
+- */
+-#define IGC_I225_TX_LATENCY_10		9542
+-#define IGC_I225_TX_LATENCY_100		1024
+-#define IGC_I225_TX_LATENCY_1000	178
+-#define IGC_I225_TX_LATENCY_2500	64
+-#define IGC_I225_RX_LATENCY_10		20662
+-#define IGC_I225_RX_LATENCY_100		2213
+-#define IGC_I225_RX_LATENCY_1000	448
+-#define IGC_I225_RX_LATENCY_2500	160
++#define IGC_I225_TX_LATENCY_10		240
++#define IGC_I225_TX_LATENCY_100		58
++#define IGC_I225_TX_LATENCY_1000	80
++#define IGC_I225_TX_LATENCY_2500	1325
++#define IGC_I225_RX_LATENCY_10		6450
++#define IGC_I225_RX_LATENCY_100		185
++#define IGC_I225_RX_LATENCY_1000	300
++#define IGC_I225_RX_LATENCY_2500	1485
+ 
+ /* RX and TX descriptor control thresholds.
+  * PTHRESH - MAC will consider prefetch if it has fewer than this number of
+-- 
+2.28.0
+
