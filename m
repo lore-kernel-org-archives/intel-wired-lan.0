@@ -1,71 +1,94 @@
-From: Li RongQing <lirongqing@baidu.com>
-Date: Tue, 18 Aug 2020 15:07:57 +0800
-Subject: [Intel-wired-lan] [PATCH][v3] i40e: optimise prefetch page refcount
-Message-ID: <1597734477-27859-1-git-send-email-lirongqing@baidu.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 18 Aug 2020 16:04:43 +0200
+Subject: [Intel-wired-lan] [PATCH 0/2] intel/xdp fixes for fliping rx
+ buffer
+In-Reply-To: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+Message-ID: <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-refcount of rx_buffer page will be added here originally, so prefetchw
-is needed, but after commit 1793668c3b8c ("i40e/i40evf: Update code to
- better handle incrementing page count"), and refcount is not added
-everytime, so change prefetchw as prefetch,
+On Fri, 17 Jul 2020 at 08:24, Li RongQing <lirongqing@baidu.com> wrote:
+>
+> This fixes ice/i40e/ixgbe/ixgbevf_rx_buffer_flip in
+> copy mode xdp that can lead to data corruption.
+>
+> I split two patches, since i40e/xgbe/ixgbevf supports xsk
+> receiving from 4.18, put their fixes in a patch
+>
 
-now it mainly services page_address(), but which accesses struct page
-only when WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL is defined otherwise
-it returns address based on offset, so we prefetch it conditionally
+Li, sorry for the looong latency. I took a looong vacation. :-P
 
-Jakub suggested to define prefetch_page_address in a common header
+Thanks for taking a look at this, but I believe this is not a bug.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Suggested-by: Jakub Kicinski <kuba@kernel.org>
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
----
-diff with v2: fix a build warning -Wvisibility 
-diff with v1: create a common function prefetch_page_address
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 +-
- include/linux/prefetch.h                    | 8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+The Intel Ethernet drivers (obviously non-zerocopy AF_XDP -- "good ol'
+XDP") use a page reuse algorithm.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 62f5b2d35f63..5f9fe55bb66d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1953,7 +1953,7 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
- 	struct i40e_rx_buffer *rx_buffer;
- 
- 	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
--	prefetchw(rx_buffer->page);
-+	prefetch_page_address(rx_buffer->page);
- 
- 	/* we are reusing so sync this buffer for CPU use */
- 	dma_sync_single_range_for_cpu(rx_ring->dev,
-diff --git a/include/linux/prefetch.h b/include/linux/prefetch.h
-index 13eafebf3549..b83a3f944f28 100644
---- a/include/linux/prefetch.h
-+++ b/include/linux/prefetch.h
-@@ -15,6 +15,7 @@
- #include <asm/processor.h>
- #include <asm/cache.h>
- 
-+struct page;
- /*
- 	prefetch(x) attempts to pre-emptively get the memory pointed to
- 	by address "x" into the CPU L1 cache. 
-@@ -62,4 +63,11 @@ static inline void prefetch_range(void *addr, size_t len)
- #endif
- }
- 
-+static inline void prefetch_page_address(struct page *page)
-+{
-+#if defined(WANT_PAGE_VIRTUAL) || defined(HASHED_PAGE_VIRTUAL)
-+	prefetch(page);
-+#endif
-+}
-+
- #endif
--- 
-2.16.2
+Basic idea is that a page is allocated from the page allocator
+(i40e_alloc_mapped_page()). The refcount is increased to
+USHRT_MAX. The page is split into two chunks (simplified). If there's
+one user of the page, the page can be reused (flipped). If not, a new
+page needs to be allocated (with the large refcount).
 
+So, the idea is that usually the page can be reused (flipped), and the
+page only needs to be "put" not "get" since the refcount was initally
+bumped to a large value.
+
+All frames (except XDP_DROP which can be reused directly) "die" via
+page_frag_free() which decreases the page refcount, and frees the page
+if the refcount is zero.
+
+Let's take some scenarios as examples:
+
+1. A frame is received in "vanilla" XDP (MEM_TYPE_PAGE_SHARED), and
+   the XDP program verdict is XDP_TX. The frame will be placed on the
+   HW Tx ring, and freed* (async) in i40e_clean_tx_irq:
+        /* free the skb/XDP data */
+        if (ring_is_xdp(tx_ring))
+            xdp_return_frame(tx_buf->xdpf); // calls page_frag_free()
+
+2. A frame is passed to the stack, eventually it's freed* via
+   skb_free_frag().
+
+3. A frame is passed to an AF_XDP socket. The data is copied to the
+   socket data area, and the frame is directly freed*.
+
+Not the * by the freed. Actually freeing here means calling
+page_frag_free(), which means decreasing the refcount. The page reuse
+algorithm makes sure that the buffers are not stale.
+
+The only difference from XDP_TX and XDP_DIRECT to dev/cpumaps,
+compared to AF_XDP sockets is that the latter calls page_frag_free()
+directly, whereas the other does it asynchronous from the Tx clean up
+phase.
+
+Let me know if it's still not clear, but the bottom line is that none
+of these patches are needed.
+
+
+Thanks!
+Bj?rn
+
+
+> Li RongQing (2):
+>   xdp: i40e: ixgbe: ixgbevf: not flip rx buffer for copy mode xdp
+>   ice/xdp: not adjust rx buffer for copy mode xdp
+>
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 5 ++++-
+>  drivers/net/ethernet/intel/ice/ice_txrx.c         | 5 ++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 5 ++++-
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 ++++-
+>  include/net/xdp.h                                 | 3 +++
+>  net/xdp/xsk.c                                     | 4 +++-
+>  6 files changed, 22 insertions(+), 5 deletions(-)
+>
+> --
+> 2.16.2
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
