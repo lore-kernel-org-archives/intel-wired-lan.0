@@ -1,73 +1,71 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 18 Aug 2020 12:33:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 8/52]
- include/linux/prefetch.h:65:49: error: declaration of 'struct page' will
- not be visible outside of this function
-Message-ID: <202008181242.BQpCIErV%lkp@intel.com>
+From: Li RongQing <lirongqing@baidu.com>
+Date: Tue, 18 Aug 2020 15:07:57 +0800
+Subject: [Intel-wired-lan] [PATCH][v3] i40e: optimise prefetch page refcount
+Message-ID: <1597734477-27859-1-git-send-email-lirongqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   e5a10a0b92ece69461f51d038ca6a34d96f340d0
-commit: cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea [8/52] i40e: optimise prefetch page refcount
-config: arm-randconfig-r024-20200818 (attached as .config)
-compiler: clang version 12.0.0 (https://github.com/llvm/llvm-project 790878f291fa5dc58a1c560cb6cc76fd1bfd1c5a)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install arm cross compiling tool for clang build
-        # apt-get install binutils-arm-linux-gnueabi
-        git checkout cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=arm 
+refcount of rx_buffer page will be added here originally, so prefetchw
+is needed, but after commit 1793668c3b8c ("i40e/i40evf: Update code to
+ better handle incrementing page count"), and refcount is not added
+everytime, so change prefetchw as prefetch,
 
-If you fix the issue, kindly add following tag as appropriate
+now it mainly services page_address(), but which accesses struct page
+only when WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL is defined otherwise
+it returns address based on offset, so we prefetch it conditionally
+
+Jakub suggested to define prefetch_page_address in a common header
+
 Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   In file included from drivers/gpu/drm/tilcdc/tilcdc_plane.c:7:
-   In file included from include/drm/drm_atomic.h:31:
-   In file included from include/drm/drm_crtc.h:28:
-   In file included from include/linux/i2c.h:13:
-   In file included from include/linux/acpi.h:13:
-   In file included from include/linux/irqdomain.h:35:
-   In file included from include/linux/of.h:15:
-   In file included from include/linux/bitops.h:29:
-   In file included from arch/arm/include/asm/bitops.h:243:
-   In file included from include/asm-generic/bitops/lock.h:5:
-   In file included from include/linux/atomic.h:7:
-   In file included from arch/arm/include/asm/atomic.h:12:
->> include/linux/prefetch.h:65:49: error: declaration of 'struct page' will not be visible outside of this function [-Werror,-Wvisibility]
-   static inline void prefetch_page_address(struct page *page)
-                                                   ^
-   1 error generated.
-
-# https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/?id=cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
-git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-git fetch --no-tags jkirsher-next-queue dev-queue
-git checkout cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
-vim +65 include/linux/prefetch.h
-
-    64	
-  > 65	static inline void prefetch_page_address(struct page *page)
-    66	{
-    67	#if defined(WANT_PAGE_VIRTUAL) || defined(HASHED_PAGE_VIRTUAL)
-    68		prefetch(page);
-    69	#endif
-    70	}
-    71	
-
+Suggested-by: Jakub Kicinski <kuba@kernel.org>
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 30907 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200818/d70c2cfd/attachment-0001.bin>
+diff with v2: fix a build warning -Wvisibility 
+diff with v1: create a common function prefetch_page_address
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 +-
+ include/linux/prefetch.h                    | 8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 62f5b2d35f63..5f9fe55bb66d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1953,7 +1953,7 @@ static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
+ 	struct i40e_rx_buffer *rx_buffer;
+ 
+ 	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
+-	prefetchw(rx_buffer->page);
++	prefetch_page_address(rx_buffer->page);
+ 
+ 	/* we are reusing so sync this buffer for CPU use */
+ 	dma_sync_single_range_for_cpu(rx_ring->dev,
+diff --git a/include/linux/prefetch.h b/include/linux/prefetch.h
+index 13eafebf3549..b83a3f944f28 100644
+--- a/include/linux/prefetch.h
++++ b/include/linux/prefetch.h
+@@ -15,6 +15,7 @@
+ #include <asm/processor.h>
+ #include <asm/cache.h>
+ 
++struct page;
+ /*
+ 	prefetch(x) attempts to pre-emptively get the memory pointed to
+ 	by address "x" into the CPU L1 cache. 
+@@ -62,4 +63,11 @@ static inline void prefetch_range(void *addr, size_t len)
+ #endif
+ }
+ 
++static inline void prefetch_page_address(struct page *page)
++{
++#if defined(WANT_PAGE_VIRTUAL) || defined(HASHED_PAGE_VIRTUAL)
++	prefetch(page);
++#endif
++}
++
+ #endif
+-- 
+2.16.2
+
