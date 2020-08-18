@@ -1,37 +1,30 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 18 Aug 2020 11:19:26 -0700
-Subject: [Intel-wired-lan] [PATCH][v3] i40e: optimise prefetch page
- refcount
-In-Reply-To: <1597734477-27859-1-git-send-email-lirongqing@baidu.com>
-References: <1597734477-27859-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <20200818111926.000028d9@intel.com>
+Date: Tue, 18 Aug 2020 14:36:15 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: Fix wrong timestamp latency
+ numbers
+In-Reply-To: <20200817231231.2971207-1-vinicius.gomes@intel.com>
+References: <20200817231231.2971207-1-vinicius.gomes@intel.com>
+Message-ID: <20200818143615.00000f16@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 18 Aug 2020 15:07:57 +0800
-Li RongQing <lirongqing@baidu.com> wrote:
+Vinicius Costa Gomes wrote:
 
-> refcount of rx_buffer page will be added here originally, so prefetchw
-> is needed, but after commit 1793668c3b8c ("i40e/i40evf: Update code to
->  better handle incrementing page count"), and refcount is not added
-> everytime, so change prefetchw as prefetch,
+> The previous timestamping latency numbers were obtained by
+> interpolating the i210 numbers with the i225 crystal clock value. That
+> calculation was wrong.
 > 
-> now it mainly services page_address(), but which accesses struct page
-> only when WANT_PAGE_VIRTUAL or HASHED_PAGE_VIRTUAL is defined
-> otherwise it returns address based on offset, so we prefetch it
-> conditionally
+> Use the correct values from real measurements.
 > 
-> Jakub suggested to define prefetch_page_address in a common header
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Suggested-by: Jakub Kicinski <kuba@kernel.org>
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-This change looks fine to me, hopefully the more heavyweight
-prefetch instruction doesn't impact performance. Were you able to test
-any performance?
+Is this targeted at net or net-next, and because it is a fix I
+recommend you have subject
+[PATCH net 1/2]
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+and you should include a "Fixes:" tag since this driver has been
+released in previous kernels.
+
