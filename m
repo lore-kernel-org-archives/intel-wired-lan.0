@@ -1,88 +1,73 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 17 Aug 2020 17:25:03 -0700
-Subject: [Intel-wired-lan] [PATCH] ice: remove repeated words
-Message-ID: <20200818002503.44781-1-anthony.l.nguyen@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 18 Aug 2020 12:33:43 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 8/52]
+ include/linux/prefetch.h:65:49: error: declaration of 'struct page' will
+ not be visible outside of this function
+Message-ID: <202008181242.BQpCIErV%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   e5a10a0b92ece69461f51d038ca6a34d96f340d0
+commit: cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea [8/52] i40e: optimise prefetch page refcount
+config: arm-randconfig-r024-20200818 (attached as .config)
+compiler: clang version 12.0.0 (https://github.com/llvm/llvm-project 790878f291fa5dc58a1c560cb6cc76fd1bfd1c5a)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install arm cross compiling tool for clang build
+        # apt-get install binutils-arm-linux-gnueabi
+        git checkout cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=arm 
 
-A new test in checkpatch detects repeated words; cleanup all pre-existing
-occurrences of those now.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+All errors (new ones prefixed by >>):
+
+   In file included from drivers/gpu/drm/tilcdc/tilcdc_plane.c:7:
+   In file included from include/drm/drm_atomic.h:31:
+   In file included from include/drm/drm_crtc.h:28:
+   In file included from include/linux/i2c.h:13:
+   In file included from include/linux/acpi.h:13:
+   In file included from include/linux/irqdomain.h:35:
+   In file included from include/linux/of.h:15:
+   In file included from include/linux/bitops.h:29:
+   In file included from arch/arm/include/asm/bitops.h:243:
+   In file included from include/asm-generic/bitops/lock.h:5:
+   In file included from include/linux/atomic.h:7:
+   In file included from arch/arm/include/asm/atomic.h:12:
+>> include/linux/prefetch.h:65:49: error: declaration of 'struct page' will not be visible outside of this function [-Werror,-Wvisibility]
+   static inline void prefetch_page_address(struct page *page)
+                                                   ^
+   1 error generated.
+
+# https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git/commit/?id=cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
+git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+git fetch --no-tags jkirsher-next-queue dev-queue
+git checkout cb1bd37680e5a58b8e65e53dc5a4ddb4686ef3ea
+vim +65 include/linux/prefetch.h
+
+    64	
+  > 65	static inline void prefetch_page_address(struct page *page)
+    66	{
+    67	#if defined(WANT_PAGE_VIRTUAL) || defined(HASHED_PAGE_VIRTUAL)
+    68		prefetch(page);
+    69	#endif
+    70	}
+    71	
+
 ---
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
- drivers/net/ethernet/intel/ice/ice_flow.c        | 4 ++--
- drivers/net/ethernet/intel/ice/ice_main.c        | 2 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index ac448d223e9a..9095b4d274ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -4876,7 +4876,7 @@ ice_rem_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl)
- 
- 			if (last_profile) {
- 				/* If there are no profiles left for this VSIG,
--				 * then simply remove the the VSIG.
-+				 * then simply remove the VSIG.
- 				 */
- 				status = ice_rem_vsig(hw, blk, vsig, &chg);
- 				if (status)
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index fe677621dd51..45fa3d9e3af2 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -385,7 +385,7 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
-  * ice_flow_xtract_raws - Create extract sequence entries for raw bytes
-  * @hw: pointer to the HW struct
-  * @params: information about the flow to be processed
-- * @seg: index of packet segment whose raw fields are to be be extracted
-+ * @seg: index of packet segment whose raw fields are to be extracted
-  */
- static enum ice_status
- ice_flow_xtract_raws(struct ice_hw *hw, struct ice_flow_prof_params *params,
-@@ -999,7 +999,7 @@ enum ice_status ice_flow_rem_entry(struct ice_hw *hw, enum ice_block blk,
-  *
-  * This helper function stores information of a field being matched, including
-  * the type of the field and the locations of the value to match, the mask, and
-- * and the upper-bound value in the start of the input buffer for a flow entry.
-+ * the upper-bound value in the start of the input buffer for a flow entry.
-  * This function should only be used for fixed-size data structures.
-  *
-  * This function also opportunistically determines the protocol headers to be
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4d79e5c1d6e6..6b6e982e2658 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2417,7 +2417,7 @@ int ice_destroy_xdp_rings(struct ice_vsi *vsi)
- 	int i, v_idx;
- 
- 	/* q_vectors are freed in reset path so there's no point in detaching
--	 * rings; in case of rebuild being triggered not from reset reset bits
-+	 * rings; in case of rebuild being triggered not from reset bits
- 	 * in pf->state won't be set, so additionally check first q_vector
- 	 * against NULL
- 	 */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index bce35ba997a8..c8b2705a8aed 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -872,7 +872,7 @@ static int ice_get_max_valid_res_idx(struct ice_res_tracker *res)
-  * always be caught by ice_set_per_vf_res().
-  *
-  * Return 0 on success, and -EINVAL when there are not enough MSIX vectors in
-- * in the PF's space available for SR-IOV.
-+ * the PF's space available for SR-IOV.
-  */
- static int ice_sriov_set_msix_res(struct ice_pf *pf, u16 num_msix_needed)
- {
--- 
-2.20.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 30907 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200818/d70c2cfd/attachment-0001.bin>
