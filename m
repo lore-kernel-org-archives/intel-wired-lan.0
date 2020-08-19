@@ -1,114 +1,136 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 19 Aug 2020 08:49:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- f8a4d05b5330695c72ba71e6e2d6a966e3f26100
-Message-ID: <5f3c7724.LaebN+LLeXaJqJ2K%lkp@intel.com>
+From: Li,Rongqing <lirongqing@baidu.com>
+Date: Wed, 19 Aug 2020 01:37:58 +0000
+Subject: [Intel-wired-lan] =?utf-8?b?562U5aSNOiAgW1BBVENIIDAvMl0gaW50ZWwv?=
+ =?utf-8?q?xdp_fixes_for_fliping_rx_buffer?=
+In-Reply-To: <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
+References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+ <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
+Message-ID: <4268316b200049d58b9973ec4dc4725c@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: f8a4d05b5330695c72ba71e6e2d6a966e3f26100  ice: Fix a couple off by one bugs
 
-elapsed time: 4219m
 
-configs tested: 88
-configs skipped: 9
+> -----????-----
+> ???: Bj?rn T?pel [mailto:bjorn.topel at gmail.com]
+> ????: 2020?8?18? 22:05
+> ???: Li,Rongqing <lirongqing@baidu.com>
+> ??: Netdev <netdev@vger.kernel.org>; intel-wired-lan
+> <intel-wired-lan@lists.osuosl.org>; Karlsson, Magnus
+> <magnus.karlsson@intel.com>; Bj?rn T?pel <bjorn.topel@intel.com>; bpf
+> <bpf@vger.kernel.org>; Maciej Fijalkowski <maciej.fijalkowski@intel.com>;
+> Piotr <piotr.raczynski@intel.com>; Maciej <maciej.machnikowski@intel.com>
+> ??: Re: [Intel-wired-lan] [PATCH 0/2] intel/xdp fixes for fliping rx buffer
+> 
+> On Fri, 17 Jul 2020 at 08:24, Li RongQing <lirongqing@baidu.com> wrote:
+> >
+> > This fixes ice/i40e/ixgbe/ixgbevf_rx_buffer_flip in copy mode xdp that
+> > can lead to data corruption.
+> >
+> > I split two patches, since i40e/xgbe/ixgbevf supports xsk receiving
+> > from 4.18, put their fixes in a patch
+> >
+> 
+> Li, sorry for the looong latency. I took a looong vacation. :-P
+> 
+> Thanks for taking a look at this, but I believe this is not a bug.
+> 
+> The Intel Ethernet drivers (obviously non-zerocopy AF_XDP -- "good ol'
+> XDP") use a page reuse algorithm.
+> 
+> Basic idea is that a page is allocated from the page allocator
+> (i40e_alloc_mapped_page()). The refcount is increased to USHRT_MAX. The
+> page is split into two chunks (simplified). If there's one user of the page, the
+> page can be reused (flipped). If not, a new page needs to be allocated (with the
+> large refcount).
+> 
+> So, the idea is that usually the page can be reused (flipped), and the page only
+> needs to be "put" not "get" since the refcount was initally bumped to a large
+> value.
+> 
+> All frames (except XDP_DROP which can be reused directly) "die" via
+> page_frag_free() which decreases the page refcount, and frees the page if the
+> refcount is zero.
+> 
+> Let's take some scenarios as examples:
+> 
+> 1. A frame is received in "vanilla" XDP (MEM_TYPE_PAGE_SHARED), and
+>    the XDP program verdict is XDP_TX. The frame will be placed on the
+>    HW Tx ring, and freed* (async) in i40e_clean_tx_irq:
+>         /* free the skb/XDP data */
+>         if (ring_is_xdp(tx_ring))
+>             xdp_return_frame(tx_buf->xdpf); // calls page_frag_free()
+> 
+> 2. A frame is passed to the stack, eventually it's freed* via
+>    skb_free_frag().
+> 
+> 3. A frame is passed to an AF_XDP socket. The data is copied to the
+>    socket data area, and the frame is directly freed*.
+> 
+> Not the * by the freed. Actually freeing here means calling page_frag_free(),
+> which means decreasing the refcount. The page reuse algorithm makes sure
+> that the buffers are not stale.
+> 
+> The only difference from XDP_TX and XDP_DIRECT to dev/cpumaps, compared
+> to AF_XDP sockets is that the latter calls page_frag_free() directly, whereas
+> the other does it asynchronous from the Tx clean up phase.
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Hi:
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-nds32                            alldefconfig
-powerpc                     pq2fads_defconfig
-sh                        edosk7705_defconfig
-sh                           se7705_defconfig
-mips                malta_qemu_32r6_defconfig
-mips                          malta_defconfig
-arm                          ep93xx_defconfig
-arm                         lpc32xx_defconfig
-h8300                       h8s-sim_defconfig
-sh                           se7206_defconfig
-mips                     loongson1b_defconfig
-m68k                       bvme6000_defconfig
-sh                          r7780mp_defconfig
-arm                           omap1_defconfig
-powerpc                    gamecube_defconfig
-arm                       aspeed_g4_defconfig
-arm                           tegra_defconfig
-mips                          ath79_defconfig
-powerpc                     powernv_defconfig
-arm                           h3600_defconfig
-mips                          rm200_defconfig
-arc                        nsimosci_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20200816
-i386                 randconfig-a001-20200816
-i386                 randconfig-a002-20200816
-i386                 randconfig-a003-20200816
-i386                 randconfig-a006-20200816
-i386                 randconfig-a004-20200816
-x86_64               randconfig-a013-20200816
-x86_64               randconfig-a012-20200816
-x86_64               randconfig-a011-20200816
-x86_64               randconfig-a014-20200816
-x86_64               randconfig-a015-20200816
-x86_64               randconfig-a016-20200816
-i386                 randconfig-a016-20200816
-i386                 randconfig-a011-20200816
-i386                 randconfig-a013-20200816
-i386                 randconfig-a015-20200816
-i386                 randconfig-a014-20200816
-i386                 randconfig-a012-20200816
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Thanks for your explanation.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+But we can reproduce this bug
+
+We use ebpf to redirect only-Vxlan packets to non-zerocopy AF_XDP,  First we see panic on tcp stack, in tcp_collapse: BUG_ON(offset < 0); it is very hard to reproduce.
+
+Then we use the scp to do test, and has lots of vxlan packet@the same time, scp will be broken frequently.
+
+With this fixes, scp has not been broken again, and kernel is not panic again
+
+Seem your explanation is unable to solve my analysis:
+
+       1. first skb is not for xsk, and forwarded to another device
+          or socket queue
+       2. seconds skb is for xsk, copy data to xsk memory, and page
+          of skb->data is released
+       3. rx_buff is reusable since only first skb is in it, but
+          *_rx_buffer_flip will make that page_offset is set to
+          first skb data
+       4. then reuse rx buffer, first skb which still is living
+          will be corrupted.
+
+
+The root cause is difference you said upper, so I only fixes for non-zerocopy AF_XDP
+
+-Li
+> Let me know if it's still not clear, but the bottom line is that none of these
+> patches are needed.
+> 
+> 
+> Thanks!
+> Bj?rn
+> 
+> 
+> > Li RongQing (2):
+> >   xdp: i40e: ixgbe: ixgbevf: not flip rx buffer for copy mode xdp
+> >   ice/xdp: not adjust rx buffer for copy mode xdp
+> >
+> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 5 ++++-
+> >  drivers/net/ethernet/intel/ice/ice_txrx.c         | 5 ++++-
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 5 ++++-
+> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 5 ++++-
+> >  include/net/xdp.h                                 | 3 +++
+> >  net/xdp/xsk.c                                     | 4 +++-
+> >  6 files changed, 22 insertions(+), 5 deletions(-)
+> >
+> > --
+> > 2.16.2
+> >
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
