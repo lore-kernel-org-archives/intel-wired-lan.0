@@ -1,69 +1,221 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 18 Aug 2020 16:40:02 -0700
-Subject: [Intel-wired-lan] [PATCH net v2 2/2] igc: Fix not considering the
- TX delay for timestamps
-In-Reply-To: <20200818234002.3057510-1-vinicius.gomes@intel.com>
-References: <20200818234002.3057510-1-vinicius.gomes@intel.com>
-Message-ID: <20200818234002.3057510-2-vinicius.gomes@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 19 Aug 2020 08:47:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
+ 5b6d4a7f20b09c47ca598760f6dafd554af8b6d5
+Message-ID: <5f3c76b0.F3gKaWuCXbOrs58q%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changes from v1:
-  - Added Fixes tag
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
+branch HEAD: 5b6d4a7f20b09c47ca598760f6dafd554af8b6d5  i40e: Fix crash during removing i40e driver
 
-When timestamping a packet there's a delay between the start of the
-packet and the point where the hardware actually captures the
-timestamp. This difference needs to be considered if we want accurate
-timestamps.
+elapsed time: 4217m
 
-This was done on the RX side, but not on the TX side.
+configs tested: 195
+configs skipped: 21
 
-Fixes: 2c344ae24501 ("igc: Add support for TX timestamping")
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+nds32                            alldefconfig
+powerpc                     pq2fads_defconfig
+sh                        edosk7705_defconfig
+sh                           se7705_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                          malta_defconfig
+arm                          ep93xx_defconfig
+arm                         lpc32xx_defconfig
+sh                        apsh4ad0a_defconfig
+arm                            hisi_defconfig
+ia64                             allyesconfig
+riscv                    nommu_k210_defconfig
+powerpc                       holly_defconfig
+arm                          collie_defconfig
+m68k                        stmark2_defconfig
+powerpc                         ps3_defconfig
+h8300                     edosk2674_defconfig
+sh                          urquell_defconfig
+ia64                        generic_defconfig
+ia64                          tiger_defconfig
+csky                                defconfig
+sh                        edosk7760_defconfig
+sh                           se7712_defconfig
+arm                         s5pv210_defconfig
+arm                        mvebu_v7_defconfig
+um                           x86_64_defconfig
+sh                           se7724_defconfig
+sh                               allmodconfig
+mips                           rs90_defconfig
+powerpc                      ppc64e_defconfig
+sh                         ecovec24_defconfig
+sh                          r7780mp_defconfig
+arm                           omap1_defconfig
+powerpc                    gamecube_defconfig
+m68k                          amiga_defconfig
+ia64                             alldefconfig
+powerpc                    adder875_defconfig
+nds32                             allnoconfig
+mips                          rb532_defconfig
+powerpc                     mpc83xx_defconfig
+mips                      malta_kvm_defconfig
+sparc                            alldefconfig
+mips                       capcella_defconfig
+powerpc                      ppc6xx_defconfig
+arm                             mxs_defconfig
+mips                        omega2p_defconfig
+mips                       rbtx49xx_defconfig
+mips                         cobalt_defconfig
+mips                malta_kvm_guest_defconfig
+arm                          pcm027_defconfig
+ia64                            zx1_defconfig
+mips                         mpc30x_defconfig
+alpha                               defconfig
+arm                           tegra_defconfig
+arm                         s3c2410_defconfig
+m68k                          hp300_defconfig
+arm                        clps711x_defconfig
+mips                      pic32mzda_defconfig
+mips                      maltasmvp_defconfig
+arm                           sunxi_defconfig
+riscv                    nommu_virt_defconfig
+powerpc                      pmac32_defconfig
+arm                      footbridge_defconfig
+mips                        nlm_xlr_defconfig
+microblaze                      mmu_defconfig
+arm                        oxnas_v6_defconfig
+arm                       aspeed_g4_defconfig
+mips                          ath79_defconfig
+sh                               j2_defconfig
+sh                             espt_defconfig
+h8300                    h8300h-sim_defconfig
+mips                  decstation_64_defconfig
+powerpc                      pasemi_defconfig
+m68k                       m5475evb_defconfig
+arc                        nsim_700_defconfig
+arm                          pxa168_defconfig
+sh                        sh7785lcr_defconfig
+arm                          imote2_defconfig
+sh                          kfr2r09_defconfig
+sh                          sdk7786_defconfig
+arm                           spitz_defconfig
+powerpc                        cell_defconfig
+powerpc                      ppc44x_defconfig
+powerpc                     powernv_defconfig
+arm                           h3600_defconfig
+mips                          rm200_defconfig
+arc                        nsimosci_defconfig
+m68k                       m5208evb_defconfig
+arm                   milbeaut_m10v_defconfig
+c6x                        evmc6472_defconfig
+sh                           sh2007_defconfig
+mips                        nlm_xlp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20200817
+x86_64               randconfig-a001-20200817
+x86_64               randconfig-a005-20200817
+x86_64               randconfig-a003-20200817
+x86_64               randconfig-a002-20200817
+x86_64               randconfig-a004-20200817
+i386                 randconfig-a005-20200816
+i386                 randconfig-a001-20200816
+i386                 randconfig-a002-20200816
+i386                 randconfig-a003-20200816
+i386                 randconfig-a006-20200816
+i386                 randconfig-a004-20200816
+i386                 randconfig-a005-20200817
+i386                 randconfig-a001-20200817
+i386                 randconfig-a002-20200817
+i386                 randconfig-a003-20200817
+i386                 randconfig-a006-20200817
+i386                 randconfig-a004-20200817
+i386                 randconfig-a005-20200818
+i386                 randconfig-a002-20200818
+i386                 randconfig-a001-20200818
+i386                 randconfig-a006-20200818
+i386                 randconfig-a003-20200818
+i386                 randconfig-a004-20200818
+x86_64               randconfig-a013-20200818
+x86_64               randconfig-a016-20200818
+x86_64               randconfig-a012-20200818
+x86_64               randconfig-a011-20200818
+x86_64               randconfig-a014-20200818
+x86_64               randconfig-a015-20200818
+x86_64               randconfig-a013-20200816
+x86_64               randconfig-a012-20200816
+x86_64               randconfig-a016-20200816
+x86_64               randconfig-a011-20200816
+x86_64               randconfig-a014-20200816
+x86_64               randconfig-a015-20200816
+i386                 randconfig-a016-20200817
+i386                 randconfig-a011-20200817
+i386                 randconfig-a013-20200817
+i386                 randconfig-a015-20200817
+i386                 randconfig-a014-20200817
+i386                 randconfig-a012-20200817
+i386                 randconfig-a016-20200818
+i386                 randconfig-a011-20200818
+i386                 randconfig-a015-20200818
+i386                 randconfig-a013-20200818
+i386                 randconfig-a012-20200818
+i386                 randconfig-a014-20200818
+i386                 randconfig-a016-20200816
+i386                 randconfig-a011-20200816
+i386                 randconfig-a013-20200816
+i386                 randconfig-a015-20200816
+i386                 randconfig-a014-20200816
+i386                 randconfig-a012-20200816
+x86_64               randconfig-a006-20200819
+x86_64               randconfig-a001-20200819
+x86_64               randconfig-a003-20200819
+x86_64               randconfig-a005-20200819
+x86_64               randconfig-a004-20200819
+x86_64               randconfig-a002-20200819
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/igc/igc_ptp.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 36c999250fcc..6a9b5102aa55 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -364,6 +364,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 	struct sk_buff *skb = adapter->ptp_tx_skb;
- 	struct skb_shared_hwtstamps shhwtstamps;
- 	struct igc_hw *hw = &adapter->hw;
-+	int adjust = 0;
- 	u64 regval;
- 
- 	if (WARN_ON_ONCE(!skb))
-@@ -373,6 +374,24 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 	regval |= (u64)rd32(IGC_TXSTMPH) << 32;
- 	igc_ptp_systim_to_hwtstamp(adapter, &shhwtstamps, regval);
- 
-+	switch (adapter->link_speed) {
-+	case SPEED_10:
-+		adjust = IGC_I225_TX_LATENCY_10;
-+		break;
-+	case SPEED_100:
-+		adjust = IGC_I225_TX_LATENCY_100;
-+		break;
-+	case SPEED_1000:
-+		adjust = IGC_I225_TX_LATENCY_1000;
-+		break;
-+	case SPEED_2500:
-+		adjust = IGC_I225_TX_LATENCY_2500;
-+		break;
-+	}
-+
-+	shhwtstamps.hwtstamp =
-+		ktime_add_ns(shhwtstamps.hwtstamp, adjust);
-+
- 	/* Clear the lock early before calling skb_tstamp_tx so that
- 	 * applications are not woken up before the lock bit is clear. We use
- 	 * a copy of the skb pointer to ensure other threads can't change it
--- 
-2.28.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
