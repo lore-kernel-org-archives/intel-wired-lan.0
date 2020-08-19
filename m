@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 19 Aug 2020 21:02:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 94f0e130c54caede97dd62d5fec8ada4142fe68f
-Message-ID: <5f3d22dc.RU2lG13xNZZw0jwb%lkp@intel.com>
+Date: Wed, 19 Aug 2020 21:02:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD SUCCESS
+ 411736a35504785d139d04e0a72222d6e4d1c749
+Message-ID: <5f3d22e0.TFG5Lk25+3eQ9bMA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 94f0e130c54caede97dd62d5fec8ada4142fe68f  ice: remove repeated words
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: 411736a35504785d139d04e0a72222d6e4d1c749  idpf: Introduce idpf driver
 
-elapsed time: 723m
+elapsed time: 724m
 
-configs tested: 71
+configs tested: 66
 configs skipped: 1
 
 The following configs have been built successfully.
@@ -25,11 +25,6 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-powerpc                     powernv_defconfig
-arm                          pcm027_defconfig
-arm                        mvebu_v7_defconfig
-arm                          pxa168_defconfig
-powerpc                     skiroot_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -59,10 +54,10 @@ sparc                               defconfig
 i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
+powerpc                             defconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-powerpc                             defconfig
 i386                 randconfig-a005-20200818
 i386                 randconfig-a002-20200818
 i386                 randconfig-a001-20200818
