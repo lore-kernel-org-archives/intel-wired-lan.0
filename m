@@ -1,24 +1,47 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 20 Aug 2020 17:46:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 017731bef81b58e15e55e4656a959b4bbfb9fce4
-Message-ID: <5f3e4688.aGmHLygDdmNWOe7I%lkp@intel.com>
+Date: Thu, 20 Aug 2020 19:34:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ ecb4203e85ea61fef623f9df41b0a68285c48361
+Message-ID: <5f3e5fc0.4vaz1OOd8dO7dx4Z%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 017731bef81b58e15e55e4656a959b4bbfb9fce4  igc: Fix not considering the TX delay for timestamps
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: ecb4203e85ea61fef623f9df41b0a68285c48361  ice: refactor devlink_port to be per-VSI
 
-elapsed time: 844m
+Error/Warning in current branch:
+
+drivers/net/ethernet/intel/i40e/i40e_xsk.c:379 i40e_clean_rx_irq_zc() error: uninitialized symbol 'failure'.
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:1370:12: error: 'struct iecm_tx_buf' has no member named 'dma'
+drivers/net/ethernet/intel/iecm/iecm_txrx.c:1371:12: error: 'struct iecm_tx_buf' has no member named 'len'
+drivers/net/ethernet/intel/igb/igb_main.c:8430 igb_run_xdp() error: (-2147483647) too low for ERR_PTR
+drivers/net/ethernet/intel/igb/igb_main.c:8761 igb_clean_rx_irq() error: 'skb' dereferencing possible ERR_PTR()
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- i386-randconfig-a004-20200820
+|   |-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:struct-iecm_tx_buf-has-no-member-named-dma
+|   `-- drivers-net-ethernet-intel-iecm-iecm_txrx.c:error:struct-iecm_tx_buf-has-no-member-named-len
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- x86_64-randconfig-m001-20200819
+    |-- drivers-net-ethernet-intel-i40e-i40e_xsk.c-i40e_clean_rx_irq_zc()-error:uninitialized-symbol-failure-.
+    |-- drivers-net-ethernet-intel-igb-igb_main.c-igb_clean_rx_irq()-error:skb-dereferencing-possible-ERR_PTR()
+    `-- drivers-net-ethernet-intel-igb-igb_main.c-igb_run_xdp()-error:too-low-for-ERR_PTR
+
+elapsed time: 725m
 
 configs tested: 89
 configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
 arm                                 defconfig
 arm64                            allyesconfig
@@ -75,6 +98,12 @@ i386                 randconfig-a001-20200818
 i386                 randconfig-a006-20200818
 i386                 randconfig-a003-20200818
 i386                 randconfig-a004-20200818
+i386                 randconfig-a005-20200819
+i386                 randconfig-a002-20200819
+i386                 randconfig-a001-20200819
+i386                 randconfig-a006-20200819
+i386                 randconfig-a003-20200819
+i386                 randconfig-a004-20200819
 i386                 randconfig-a002-20200820
 i386                 randconfig-a004-20200820
 i386                 randconfig-a005-20200820
@@ -87,12 +116,6 @@ x86_64               randconfig-a012-20200818
 x86_64               randconfig-a011-20200818
 x86_64               randconfig-a014-20200818
 x86_64               randconfig-a015-20200818
-x86_64               randconfig-a015-20200820
-x86_64               randconfig-a012-20200820
-x86_64               randconfig-a016-20200820
-x86_64               randconfig-a014-20200820
-x86_64               randconfig-a011-20200820
-x86_64               randconfig-a013-20200820
 i386                 randconfig-a016-20200818
 i386                 randconfig-a011-20200818
 i386                 randconfig-a015-20200818
