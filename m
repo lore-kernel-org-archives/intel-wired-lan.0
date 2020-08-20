@@ -1,85 +1,128 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Thu, 20 Aug 2020 20:04:03 +0200
-Subject: [Intel-wired-lan] [PATCH 0/2] intel/xdp fixes for fliping rx
- buffer
-In-Reply-To: <20200820165121.GA9731@ranger.igk.intel.com>
-References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
- <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
- <CAJ+HfNjybUeN9v6N-pnupi32088PL+ZXu8CKWGWmowOaH4nmOw@mail.gmail.com>
- <20200820165121.GA9731@ranger.igk.intel.com>
-Message-ID: <4a78ace0-e84e-786f-127d-a3ab7d2a7c3f@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 20 Aug 2020 16:02:17 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v1 2/2] igc: Save PTP time
+ before a reset
+In-Reply-To: <20200820230217.2005122-1-vinicius.gomes@intel.com>
+References: <20200820230217.2005122-1-vinicius.gomes@intel.com>
+Message-ID: <20200820230217.2005122-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-08-20 18:51, Maciej Fijalkowski wrote:
-> On Thu, Aug 20, 2020 at 05:13:16PM +0200, Bj?rn T?pel wrote:
->> On Tue, 18 Aug 2020 at 16:04, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
->>>
->>> On Fri, 17 Jul 2020 at 08:24, Li RongQing <lirongqing@baidu.com> wrote:
->>>>
->>>> This fixes ice/i40e/ixgbe/ixgbevf_rx_buffer_flip in
->>>> copy mode xdp that can lead to data corruption.
->>>>
->>>> I split two patches, since i40e/xgbe/ixgbevf supports xsk
->>>> receiving from 4.18, put their fixes in a patch
->>>>
->>>
->>> Li, sorry for the looong latency. I took a looong vacation. :-P
->>>
->>> Thanks for taking a look at this, but I believe this is not a bug.
->>>
->>
->> Ok, dug a bit more into this. I had an offlist discussion with Li, and
->> there are two places (AFAIK) where Li experience a BUG() in
->> tcp_collapse():
->>
->>              BUG_ON(offset < 0);
->> and
->>                  if (skb_copy_bits(skb, offset, skb_put(nskb, size), size))
->>                      BUG();
->>
->> (Li, please correct me if I'm wrong.)
->>
->> I still claim that the page-flipping mechanism is correct, but I found
->> some weirdness in the build_skb() call.
->>
->> In drivers/net/ethernet/intel/i40e/i40e_txrx.c, build_skb() is invoked as:
->>      skb = build_skb(xdp->data_hard_start, truesize);
->>
->> For the setup Li has truesize is 2048 (half a page), but the
->> rx_buf_len is 1536. In the driver a packet is layed out as:
->>
->> | padding 192 | packet data 1536 | skb shared info 320 |
->>
->> build_skb() assumes that the second argument (frag_size) is max packet
->> size + SKB_DATA_ALIGN(sizeof(struct skb_shared_info)). In other words,
->> frag_size should not include the padding (192 above). In build_skb(),
-> 
-> Not sure I am buying that reasoning. It assumes the padding + packet_data
-> and we use skb_reserve() to tell the skb about the padding.
-> 
-> __build_skb_around() subtracts sizeof(struct skb_shared_info) from size
-> that we are providing, so now we are with padding + packet_data.
-> Then it is used to calculate the skb->end.
-> 
-> Back to i40e_build_skb(), we use the skb_reserve() to advance the
-> skb->data and skb->tail so that they point to packet_data. Finally
-> __skb_put() will move the skb->tail to the end of packet_data.
-> 
-> Wouldn't your approach disallow having the headroom at all in the linear
-> part of skb?
->
+Many TSN features depend on the internal PTP clock, so the internal
+PTP jumping when the adapter is reset can cause problems, usually in
+the form of "TX Hangs" warnings in the driver.
 
-Mea culpa.
+The solution is to save the PTP time before a reset and restore it
+after the reset is done. The value of the PTP time is saved before a
+reset and we use the difference from CLOCK_MONOTONIC from reset time
+to now, to correct what's going to be the new PTP time.
 
-You're perfectly right, and I'm all wrong. Thanks for sorting that out. 
-xdp->data_hard_start messed up my neurons (if any one should ask).
+This is heavily inspired by commit bf4bf09 ("i40e: save PTP
+time before a device reset").
 
-*climbing back into the cave*
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc.h      |  2 ++
+ drivers/net/ethernet/intel/igc/igc_main.c |  2 ++
+ drivers/net/ethernet/intel/igc/igc_ptp.c  | 28 ++++++++++++++++++++---
+ 3 files changed, 29 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 522699b870c9..ad9e2ef80043 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -219,6 +219,8 @@ struct igc_adapter {
+ 	spinlock_t tmreg_lock;
+ 	struct cyclecounter cc;
+ 	struct timecounter tc;
++	struct timespec64 prev_ptp_time; /* Pre-reset PTP clock */
++	ktime_t ptp_reset_start; /* Reset time in clock mono */
+ };
+ 
+ void igc_up(struct igc_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 933e0d3445df..e685a1c3269f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3788,6 +3788,8 @@ void igc_down(struct igc_adapter *adapter)
+ 
+ 	set_bit(__IGC_DOWN, &adapter->state);
+ 
++	igc_ptp_suspend(adapter);
++
+ 	/* disable receives in the hardware */
+ 	rctl = rd32(IGC_RCTL);
+ 	wr32(IGC_RCTL, rctl & ~IGC_RCTL_EN);
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index d1c01fd6f5cc..23285586569e 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -8,6 +8,7 @@
+ #include <linux/pci.h>
+ #include <linux/ptp_classify.h>
+ #include <linux/clocksource.h>
++#include <linux/ktime.h>
+ 
+ #define INCVALUE_MASK		0x7fffffff
+ #define ISGN			0x80000000
+@@ -508,6 +509,9 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
+ 	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
+ 
++	adapter->prev_ptp_time = ktime_to_timespec64(ktime_get_real());
++	adapter->ptp_reset_start = ktime_get();
++
+ 	adapter->ptp_clock = ptp_clock_register(&adapter->ptp_caps,
+ 						&adapter->pdev->dev);
+ 	if (IS_ERR(adapter->ptp_clock)) {
+@@ -519,6 +523,24 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 	}
+ }
+ 
++static void igc_ptp_time_save(struct igc_adapter *adapter)
++{
++	igc_ptp_read_i225(adapter, &adapter->prev_ptp_time);
++	adapter->ptp_reset_start = ktime_get();
++}
++
++static void igc_ptp_time_restore(struct igc_adapter *adapter)
++{
++	struct timespec64 ts = adapter->prev_ptp_time;
++	ktime_t delta;
++
++	delta = ktime_sub(ktime_get(), adapter->ptp_reset_start);
++
++	timespec64_add_ns(&ts, ktime_to_ns(delta));
++
++	igc_ptp_write_i225(adapter, &ts);
++}
++
+ /**
+  * igc_ptp_suspend - Disable PTP work items and prepare for suspend
+  * @adapter: Board private structure
+@@ -540,6 +562,8 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+ 	adapter->ptp_tx_start = 0;
+ 
+ 	spin_unlock(&adapter->ptp_tx_lock);
++
++	igc_ptp_time_save(adapter);
+ }
+ 
+ /**
+@@ -589,9 +613,7 @@ void igc_ptp_reset(struct igc_adapter *adapter)
+ 
+ 	/* Re-initialize the timer. */
+ 	if (hw->mac.type == igc_i225) {
+-		struct timespec64 ts64 = ktime_to_timespec64(ktime_get_real());
+-
+-		igc_ptp_write_i225(adapter, &ts64);
++		igc_ptp_time_restore(adapter);
+ 	} else {
+ 		timecounter_init(&adapter->tc, &adapter->cc,
+ 				 ktime_to_ns(ktime_get_real()));
+-- 
+2.28.0
 
-Sorry for the mail noise,
-Bj?rn
