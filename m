@@ -1,71 +1,83 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu, 20 Aug 2020 13:53:12 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: always propagate error value in
- i40e_set_vsi_promisc()
-Message-ID: <20200820115312.28099-1-sassmann@kpanic.de>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Thu, 20 Aug 2020 17:13:16 +0200
+Subject: [Intel-wired-lan] [PATCH 0/2] intel/xdp fixes for fliping rx
+ buffer
+In-Reply-To: <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
+References: <1594967062-20674-1-git-send-email-lirongqing@baidu.com>
+ <CAJ+HfNi2B+2KYP9A7yCfFUhfUBd=sFPeuGbNZMjhNSdq3GEpMg@mail.gmail.com>
+Message-ID: <CAJ+HfNjybUeN9v6N-pnupi32088PL+ZXu8CKWGWmowOaH4nmOw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The for loop in i40e_set_vsi_promisc() reports errors via dev_err() but
-does not propage the error up the call chain. Instead it continues the
-loop and potentially overwrites the reported error value.
-This results in the error being recorded in the log buffer, but the
-caller might never know anything went the wrong way.
+On Tue, 18 Aug 2020 at 16:04, Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+>
+> On Fri, 17 Jul 2020 at 08:24, Li RongQing <lirongqing@baidu.com> wrote:
+> >
+> > This fixes ice/i40e/ixgbe/ixgbevf_rx_buffer_flip in
+> > copy mode xdp that can lead to data corruption.
+> >
+> > I split two patches, since i40e/xgbe/ixgbevf supports xsk
+> > receiving from 4.18, put their fixes in a patch
+> >
+>
+> Li, sorry for the looong latency. I took a looong vacation. :-P
+>
+> Thanks for taking a look at this, but I believe this is not a bug.
+>
 
-To avoid this situation i40e_set_vsi_promisc() needs to temporary store
-the error after reporting it. This is still not optimal as multiple
-different errors may occur, so store the first error and hope that's
-the main issue.
+Ok, dug a bit more into this. I had an offlist discussion with Li, and
+there are two places (AFAIK) where Li experience a BUG() in
+tcp_collapse():
 
-Fixes: 37d318d7805f (i40e: Remove scheduling while atomic possibility)
-Reported-by: Michal Schmidt <mschmidt@redhat.com>
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+            BUG_ON(offset < 0);
+and
+                if (skb_copy_bits(skb, offset, skb_put(nskb, size), size))
+                    BUG();
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8e133d6545bd..526ce89b0ba5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1173,7 +1173,7 @@ i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
+(Li, please correct me if I'm wrong.)
+
+I still claim that the page-flipping mechanism is correct, but I found
+some weirdness in the build_skb() call.
+
+In drivers/net/ethernet/intel/i40e/i40e_txrx.c, build_skb() is invoked as:
+    skb = build_skb(xdp->data_hard_start, truesize);
+
+For the setup Li has truesize is 2048 (half a page), but the
+rx_buf_len is 1536. In the driver a packet is layed out as:
+
+| padding 192 | packet data 1536 | skb shared info 320 |
+
+build_skb() assumes that the second argument (frag_size) is max packet
+size + SKB_DATA_ALIGN(sizeof(struct skb_shared_info)). In other words,
+frag_size should not include the padding (192 above). In build_skb(),
+frag_size is used to compute the skb truesize and skb end. i40e passes
+a too large buffer, and can therefore potentially corrupt the skb, and
+maybe this is the reason for tcp_collapse() splatting.
+
+Li, could you test if you get the splat with this patch:
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 3e5c566ceb01..acfb4ad9b506 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2065,7 +2065,8 @@ static struct sk_buff *i40e_build_skb(struct
+i40e_ring *rx_ring,
  {
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_hw *hw = &pf->hw;
--	i40e_status aq_ret;
-+	i40e_status aq_ret, aq_tmp = 0;
- 	int i;
- 
- 	/* No VLAN to set promisc on, set on VSI */
-@@ -1222,6 +1222,9 @@ i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
- 				vf->vf_id,
- 				i40e_stat_str(&pf->hw, aq_ret),
- 				i40e_aq_str(&pf->hw, aq_err));
-+
-+			if (!aq_tmp)
-+				aq_tmp = aq_ret;
- 		}
- 
- 		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, seid,
-@@ -1235,8 +1238,15 @@ i40e_set_vsi_promisc(struct i40e_vf *vf, u16 seid, bool multi_enable,
- 				vf->vf_id,
- 				i40e_stat_str(&pf->hw, aq_ret),
- 				i40e_aq_str(&pf->hw, aq_err));
-+
-+			if (!aq_tmp)
-+				aq_tmp = aq_ret;
- 		}
- 	}
-+
-+	if (aq_tmp)
-+		aq_ret = aq_tmp;
-+
- 	return aq_ret;
- }
- 
--- 
-2.26.2
+     unsigned int metasize = xdp->data - xdp->data_meta;
+ #if (PAGE_SIZE < 8192)
+-    unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
++    unsigned int truesize = rx_ring->rx_buf_len +
++                SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+ #else
+     unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+                 SKB_DATA_ALIGN(xdp->data_end -
 
+I'll have a look in the other Intel drivers, and see if there are
+similar issues. I'll cook a patch.
+
+
+Bj?rn
