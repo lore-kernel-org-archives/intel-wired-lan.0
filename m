@@ -1,67 +1,108 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 21 Aug 2020 18:24:48 -0700
-Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in PTP tx
- code
-In-Reply-To: <DM6PR11MB2890FFB4041BB4F13D0326A3BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
-References: <20200728233754.65747-1-andre.guedes@intel.com>
- <20200728233754.65747-5-andre.guedes@intel.com>
- <DM6PR11MB2890FFB4041BB4F13D0326A3BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
-Message-ID: <159805948887.34417.3341607631899328702@dmsimone-mobl2.amr.corp.intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 22 Aug 2020 13:52:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ cd4839ffd8891689e91590208aaa134701ca9aa9
+Message-ID: <5f40b2b4.V71l58mBLR/XahAF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jeff/Tony,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: cd4839ffd8891689e91590208aaa134701ca9aa9  i40e: always propagate error value in i40e_set_vsi_promisc()
 
-Quoting Brown, Aaron F (2020-08-13 20:09:42)
-> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> > Andre Guedes
-> > Sent: Tuesday, July 28, 2020 4:38 PM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in PTP tx code
-> > 
-> > Currently, the igc driver supports timestamping only one tx packet at a
-> > time. During the transmission flow, the skb that requires hardware
-> > timestamping is saved in adapter->ptp_tx_skb. Once hardware has the
-> > timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
-> > scheduled. In igc_ptp_tx_work(), we read the timestamp register, update
-> > adapter->ptp_tx_skb, and notify the network stack.
-> > 
-> > While the thread executing the transmission flow (the user process
-> > running in kernel mode) and the thread executing ptp_tx_work don't
-> > access adapter->ptp_tx_skb concurrently, there are two other places
-> > where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
-> > igc_ptp_suspend().
-> > 
-> > igc_ptp_tx_hang() is executed by the adapter->watchdog_task worker
-> > thread which runs periodically so it is possible we have two threads
-> > accessing ptp_tx_skb at the same time. Consider the following scenario:
-> > right after __IGC_PTP_TX_IN_PROGRESS is set in igc_xmit_frame_ring(),
-> > igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't been
-> > written yet, this is considered a timeout and adapter->ptp_tx_skb is
-> > cleaned up.
-> > 
-> > This patch fixes the issue described above by adding the ptp_tx_lock to
-> > protect access to ptp_tx_skb and ptp_tx_start fields from igc_adapter.
-> > Since igc_xmit_frame_ring() called in atomic context by the networking
-> > stack, ptp_tx_lock is defined as a spinlock.
-> > 
-> > With the introduction of the ptp_tx_lock, the __IGC_PTP_TX_IN_PROGRESS
-> > flag doesn't provide much of a use anymore so this patch gets rid of it.
-> > 
-> > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/igc/igc.h      |  5 ++-
-> >  drivers/net/ethernet/intel/igc/igc_main.c |  7 +++-
-> >  drivers/net/ethernet/intel/igc/igc_ptp.c  | 49 ++++++++++++++---------
-> >  3 files changed, 40 insertions(+), 21 deletions(-)
-> > 
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 722m
 
-Please hold this patch back. I think I found an issue with it. I'm
-investigating it and should send a v2 soon.
+configs tested: 82
+configs skipped: 2
 
-Cheers,
-Andre
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                           ip28_defconfig
+x86_64                           allyesconfig
+arm                            mmp2_defconfig
+h8300                    h8300h-sim_defconfig
+mips                        bcm47xx_defconfig
+powerpc                        cell_defconfig
+arm                           corgi_defconfig
+riscv                            alldefconfig
+arm                   milbeaut_m10v_defconfig
+sh                         ecovec24_defconfig
+arm                          collie_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a002-20200820
+i386                 randconfig-a004-20200820
+i386                 randconfig-a005-20200820
+i386                 randconfig-a003-20200820
+i386                 randconfig-a006-20200820
+i386                 randconfig-a001-20200820
+x86_64               randconfig-a015-20200820
+x86_64               randconfig-a012-20200820
+x86_64               randconfig-a016-20200820
+x86_64               randconfig-a014-20200820
+x86_64               randconfig-a011-20200820
+x86_64               randconfig-a013-20200820
+i386                 randconfig-a013-20200820
+i386                 randconfig-a012-20200820
+i386                 randconfig-a011-20200820
+i386                 randconfig-a016-20200820
+i386                 randconfig-a014-20200820
+i386                 randconfig-a015-20200820
+i386                 randconfig-a013-20200821
+i386                 randconfig-a012-20200821
+i386                 randconfig-a011-20200821
+i386                 randconfig-a016-20200821
+i386                 randconfig-a014-20200821
+i386                 randconfig-a015-20200821
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
