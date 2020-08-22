@@ -1,41 +1,57 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 22 Aug 2020 13:52:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- cd4839ffd8891689e91590208aaa134701ca9aa9
-Message-ID: <5f40b2b4.V71l58mBLR/XahAF%lkp@intel.com>
+Date: Sat, 22 Aug 2020 16:30:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 8c20c95c908ee3e2379f745aa5d0238bb18034fa
+Message-ID: <5f40d7bd.+PmpFL+yBstHZMu1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: cd4839ffd8891689e91590208aaa134701ca9aa9  i40e: always propagate error value in i40e_set_vsi_promisc()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 8c20c95c908ee3e2379f745aa5d0238bb18034fa  igb: read PBA number from flash
+
+Error/Warning in current branch:
+
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+
+Error/Warning ids grouped by kconfigs:
+
+recent_errors
+|-- alpha-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- arc-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- sparc-allyesconfig
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
 
 elapsed time: 722m
 
-configs tested: 82
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+configs tested: 76
+configs skipped: 1
 
 arm                                 defconfig
 arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-mips                           ip28_defconfig
-x86_64                           allyesconfig
-arm                            mmp2_defconfig
-h8300                    h8300h-sim_defconfig
-mips                        bcm47xx_defconfig
-powerpc                        cell_defconfig
 arm                           corgi_defconfig
 riscv                            alldefconfig
 arm                   milbeaut_m10v_defconfig
 sh                         ecovec24_defconfig
 arm                          collie_defconfig
+arm                       aspeed_g4_defconfig
+arm                        clps711x_defconfig
+arm                           spitz_defconfig
+sh                        apsh4ad0a_defconfig
+arm                         orion5x_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -87,17 +103,12 @@ i386                 randconfig-a011-20200820
 i386                 randconfig-a016-20200820
 i386                 randconfig-a014-20200820
 i386                 randconfig-a015-20200820
-i386                 randconfig-a013-20200821
-i386                 randconfig-a012-20200821
-i386                 randconfig-a011-20200821
-i386                 randconfig-a016-20200821
-i386                 randconfig-a014-20200821
-i386                 randconfig-a015-20200821
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                            allmodconfig
 x86_64                                   rhel
+x86_64                           allyesconfig
 x86_64                    rhel-7.6-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
