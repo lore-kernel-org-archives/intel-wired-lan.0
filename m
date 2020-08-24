@@ -1,28 +1,47 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Mon, 31 Aug 2020 21:35:19 -0400
-Subject: [Intel-wired-lan] VRRP not working on i40e X722 S2600WFT
-In-Reply-To: <20200831103512.00001fab@intel.com>
-References: <20200827183039.hrfnb63cxq3pmv4z@csclub.uwaterloo.ca>
- <20200828155616.3sd2ivrml2gpcvod@csclub.uwaterloo.ca>
- <20200831103512.00001fab@intel.com>
-Message-ID: <20200901013519.rfmavd4763gdzw4r@csclub.uwaterloo.ca>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 24 Aug 2020 12:34:38 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.8 38/63] scsi: fcoe: Fix I/O
+ path allocation
+In-Reply-To: <20200824163504.605538-1-sashal@kernel.org>
+References: <20200824163504.605538-1-sashal@kernel.org>
+Message-ID: <20200824163504.605538-38-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 31, 2020 at 10:35:12AM -0700, Jesse Brandeburg wrote:
-> Thanks for the report Lennart, I understand your frustration, as this
-> should probably work without user configuration.
-> 
-> However, please give this command a try:
-> ethtool --set-priv-flags ethX disable-source-pruning on
+From: Mike Christie <michael.christie@oracle.com>
 
-Hmm, our 4.9 kernel is just a touch too old to support that.  And yes
-that really should not require a flag to be set, given the card has no
-reason to ever do that pruning.  There is no justification you could
-have for doing it in the first place.
+[ Upstream commit fa39ab5184d64563cd36f2fb5f0d3fbad83a432c ]
 
+ixgbe_fcoe_ddp_setup() can be called from the main I/O path and is called
+with a spin_lock held, so we have to use GFP_ATOMIC allocation instead of
+GFP_KERNEL.
+
+Link: https://lore.kernel.org/r/1596831813-9839-1-git-send-email-michael.christie at oracle.com
+cc: Hannes Reinecke <hare@suse.de>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index ec7a11d13fdc0..9e70b9a674409 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -192,7 +192,7 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
+ 	}
+ 
+ 	/* alloc the udl from per cpu ddp pool */
+-	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_KERNEL, &ddp->udp);
++	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_ATOMIC, &ddp->udp);
+ 	if (!ddp->udl) {
+ 		e_err(drv, "failed allocated ddp context\n");
+ 		goto out_noddp_unmap;
 -- 
-Len Sorensen
+2.25.1
+
