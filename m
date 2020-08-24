@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 24 Aug 2020 12:36:12 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 33/54] scsi: fcoe: Fix I/O
+Date: Mon, 24 Aug 2020 12:37:36 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 24/38] scsi: fcoe: Fix I/O
  path allocation
-In-Reply-To: <20200824163634.606093-1-sashal@kernel.org>
-References: <20200824163634.606093-1-sashal@kernel.org>
-Message-ID: <20200824163634.606093-33-sashal@kernel.org>
+In-Reply-To: <20200824163751.606577-1-sashal@kernel.org>
+References: <20200824163751.606577-1-sashal@kernel.org>
+Message-ID: <20200824163751.606577-24-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -30,7 +30,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-index ec7a11d13fdc0..9e70b9a674409 100644
+index ccd852ad62a4b..d50c5b55da180 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
 @@ -192,7 +192,7 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
