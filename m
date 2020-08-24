@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 24 Aug 2020 12:34:38 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.8 38/63] scsi: fcoe: Fix I/O
+Date: Mon, 24 Aug 2020 12:36:12 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.7 33/54] scsi: fcoe: Fix I/O
  path allocation
-In-Reply-To: <20200824163504.605538-1-sashal@kernel.org>
-References: <20200824163504.605538-1-sashal@kernel.org>
-Message-ID: <20200824163504.605538-38-sashal@kernel.org>
+In-Reply-To: <20200824163634.606093-1-sashal@kernel.org>
+References: <20200824163634.606093-1-sashal@kernel.org>
+Message-ID: <20200824163634.606093-33-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
