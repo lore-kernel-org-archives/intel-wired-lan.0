@@ -1,47 +1,90 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 24 Aug 2020 12:38:36 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 12/21] scsi: fcoe: Fix I/O
- path allocation
-In-Reply-To: <20200824163845.606933-1-sashal@kernel.org>
-References: <20200824163845.606933-1-sashal@kernel.org>
-Message-ID: <20200824163845.606933-12-sashal@kernel.org>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Mon, 24 Aug 2020 18:07:08 +0000
+Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in PTP tx
+ code
+In-Reply-To: <159805948887.34417.3341607631899328702@dmsimone-mobl2.amr.corp.intel.com>
+References: <20200728233754.65747-1-andre.guedes@intel.com>
+ <20200728233754.65747-5-andre.guedes@intel.com>
+ <DM6PR11MB2890FFB4041BB4F13D0326A3BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <159805948887.34417.3341607631899328702@dmsimone-mobl2.amr.corp.intel.com>
+Message-ID: <c6911616f51969b848e58434d21dc9844095e29c.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mike Christie <michael.christie@oracle.com>
+On Fri, 2020-08-21 at 18:24 -0700, Andre Guedes wrote:
+> Hi Jeff/Tony,
+> 
+> Quoting Brown, Aaron F (2020-08-13 20:09:42)
+> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On
+> > > Behalf Of
+> > > Andre Guedes
+> > > Sent: Tuesday, July 28, 2020 4:38 PM
+> > > To: intel-wired-lan at lists.osuosl.org
+> > > Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in
+> > > PTP tx code
+> > > 
+> > > Currently, the igc driver supports timestamping only one tx
+> > > packet at a
+> > > time. During the transmission flow, the skb that requires
+> > > hardware
+> > > timestamping is saved in adapter->ptp_tx_skb. Once hardware has
+> > > the
+> > > timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
+> > > scheduled. In igc_ptp_tx_work(), we read the timestamp register,
+> > > update
+> > > adapter->ptp_tx_skb, and notify the network stack.
+> > > 
+> > > While the thread executing the transmission flow (the user
+> > > process
+> > > running in kernel mode) and the thread executing ptp_tx_work
+> > > don't
+> > > access adapter->ptp_tx_skb concurrently, there are two other
+> > > places
+> > > where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
+> > > igc_ptp_suspend().
+> > > 
+> > > igc_ptp_tx_hang() is executed by the adapter->watchdog_task
+> > > worker
+> > > thread which runs periodically so it is possible we have two
+> > > threads
+> > > accessing ptp_tx_skb at the same time. Consider the following
+> > > scenario:
+> > > right after __IGC_PTP_TX_IN_PROGRESS is set in
+> > > igc_xmit_frame_ring(),
+> > > igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't
+> > > been
+> > > written yet, this is considered a timeout and adapter->ptp_tx_skb 
+> > > is
+> > > cleaned up.
+> > > 
+> > > This patch fixes the issue described above by adding the
+> > > ptp_tx_lock to
+> > > protect access to ptp_tx_skb and ptp_tx_start fields from
+> > > igc_adapter.
+> > > Since igc_xmit_frame_ring() called in atomic context by the
+> > > networking
+> > > stack, ptp_tx_lock is defined as a spinlock.
+> > > 
+> > > With the introduction of the ptp_tx_lock, the
+> > > __IGC_PTP_TX_IN_PROGRESS
+> > > flag doesn't provide much of a use anymore so this patch gets rid
+> > > of it.
+> > > 
+> > > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/igc/igc.h      |  5 ++-
+> > >  drivers/net/ethernet/intel/igc/igc_main.c |  7 +++-
+> > >  drivers/net/ethernet/intel/igc/igc_ptp.c  | 49 ++++++++++++++---
+> > > ------
+> > >  3 files changed, 40 insertions(+), 21 deletions(-)
+> > > 
+> > 
+> > Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> 
+> Please hold this patch back. I think I found an issue with it. I'm
+> investigating it and should send a v2 soon.
 
-[ Upstream commit fa39ab5184d64563cd36f2fb5f0d3fbad83a432c ]
-
-ixgbe_fcoe_ddp_setup() can be called from the main I/O path and is called
-with a spin_lock held, so we have to use GFP_ATOMIC allocation instead of
-GFP_KERNEL.
-
-Link: https://lore.kernel.org/r/1596831813-9839-1-git-send-email-michael.christie at oracle.com
-cc: Hannes Reinecke <hare@suse.de>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-index ccd852ad62a4b..d50c5b55da180 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-@@ -192,7 +192,7 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
- 	}
- 
- 	/* alloc the udl from per cpu ddp pool */
--	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_KERNEL, &ddp->udp);
-+	ddp->udl = dma_pool_alloc(ddp_pool->pool, GFP_ATOMIC, &ddp->udp);
- 	if (!ddp->udl) {
- 		e_err(drv, "failed allocated ddp context\n");
- 		goto out_noddp_unmap;
--- 
-2.25.1
-
+Thanks Andre, I've dropped this patch from dev-queue.
