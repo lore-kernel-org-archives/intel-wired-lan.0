@@ -1,90 +1,137 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 24 Aug 2020 18:07:08 +0000
-Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in PTP tx
- code
-In-Reply-To: <159805948887.34417.3341607631899328702@dmsimone-mobl2.amr.corp.intel.com>
-References: <20200728233754.65747-1-andre.guedes@intel.com>
- <20200728233754.65747-5-andre.guedes@intel.com>
- <DM6PR11MB2890FFB4041BB4F13D0326A3BC400@DM6PR11MB2890.namprd11.prod.outlook.com>
- <159805948887.34417.3341607631899328702@dmsimone-mobl2.amr.corp.intel.com>
-Message-ID: <c6911616f51969b848e58434d21dc9844095e29c.camel@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 25 Aug 2020 12:07:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD REGRESSION
+ ada341205cbac0cbaf417131f733e06dd44ff830
+Message-ID: <5f448e83.aviW5EYCIza4Nq7g%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2020-08-21 at 18:24 -0700, Andre Guedes wrote:
-> Hi Jeff/Tony,
-> 
-> Quoting Brown, Aaron F (2020-08-13 20:09:42)
-> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On
-> > > Behalf Of
-> > > Andre Guedes
-> > > Sent: Tuesday, July 28, 2020 4:38 PM
-> > > To: intel-wired-lan at lists.osuosl.org
-> > > Subject: [Intel-wired-lan] [PATCH 4/4] igc: Fix race condition in
-> > > PTP tx code
-> > > 
-> > > Currently, the igc driver supports timestamping only one tx
-> > > packet at a
-> > > time. During the transmission flow, the skb that requires
-> > > hardware
-> > > timestamping is saved in adapter->ptp_tx_skb. Once hardware has
-> > > the
-> > > timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
-> > > scheduled. In igc_ptp_tx_work(), we read the timestamp register,
-> > > update
-> > > adapter->ptp_tx_skb, and notify the network stack.
-> > > 
-> > > While the thread executing the transmission flow (the user
-> > > process
-> > > running in kernel mode) and the thread executing ptp_tx_work
-> > > don't
-> > > access adapter->ptp_tx_skb concurrently, there are two other
-> > > places
-> > > where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
-> > > igc_ptp_suspend().
-> > > 
-> > > igc_ptp_tx_hang() is executed by the adapter->watchdog_task
-> > > worker
-> > > thread which runs periodically so it is possible we have two
-> > > threads
-> > > accessing ptp_tx_skb at the same time. Consider the following
-> > > scenario:
-> > > right after __IGC_PTP_TX_IN_PROGRESS is set in
-> > > igc_xmit_frame_ring(),
-> > > igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't
-> > > been
-> > > written yet, this is considered a timeout and adapter->ptp_tx_skb 
-> > > is
-> > > cleaned up.
-> > > 
-> > > This patch fixes the issue described above by adding the
-> > > ptp_tx_lock to
-> > > protect access to ptp_tx_skb and ptp_tx_start fields from
-> > > igc_adapter.
-> > > Since igc_xmit_frame_ring() called in atomic context by the
-> > > networking
-> > > stack, ptp_tx_lock is defined as a spinlock.
-> > > 
-> > > With the introduction of the ptp_tx_lock, the
-> > > __IGC_PTP_TX_IN_PROGRESS
-> > > flag doesn't provide much of a use anymore so this patch gets rid
-> > > of it.
-> > > 
-> > > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/igc/igc.h      |  5 ++-
-> > >  drivers/net/ethernet/intel/igc/igc_main.c |  7 +++-
-> > >  drivers/net/ethernet/intel/igc/igc_ptp.c  | 49 ++++++++++++++---
-> > > ------
-> > >  3 files changed, 40 insertions(+), 21 deletions(-)
-> > > 
-> > 
-> > Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> 
-> Please hold this patch back. I think I found an issue with it. I'm
-> investigating it and should send a v2 soon.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+branch HEAD: ada341205cbac0cbaf417131f733e06dd44ff830  idpf: Introduce idpf driver
 
-Thanks Andre, I've dropped this patch from dev-queue.
+Error/Warning in current branch:
+
+include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
+include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
+include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
+include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
+include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- arc-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-allyesconfig
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-randconfig-a014-20200824
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|-- i386-randconfig-a015-20200824
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+`-- i386-randconfig-a016-20200824
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
+    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
+    `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+
+elapsed time: 723m
+
+configs tested: 66
+configs skipped: 1
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200824
+i386                 randconfig-a004-20200824
+i386                 randconfig-a005-20200824
+i386                 randconfig-a003-20200824
+i386                 randconfig-a006-20200824
+i386                 randconfig-a001-20200824
+x86_64               randconfig-a015-20200824
+x86_64               randconfig-a016-20200824
+x86_64               randconfig-a012-20200824
+x86_64               randconfig-a014-20200824
+x86_64               randconfig-a011-20200824
+x86_64               randconfig-a013-20200824
+i386                 randconfig-a013-20200824
+i386                 randconfig-a012-20200824
+i386                 randconfig-a011-20200824
+i386                 randconfig-a016-20200824
+i386                 randconfig-a015-20200824
+i386                 randconfig-a014-20200824
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
