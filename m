@@ -1,100 +1,104 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Tue, 25 Aug 2020 13:25:16 +0200
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Tue, 25 Aug 2020 13:29:53 +0200
 Subject: [Intel-wired-lan] [PATCH net 1/3] i40e: avoid premature Rx
  buffer reuse
-In-Reply-To: <20200825111336.GA38865@ranger.igk.intel.com>
+In-Reply-To: <256ab09e-1cea-c8ab-9589-b0c5809bdea7@intel.com>
 References: <20200825091629.12949-1-bjorn.topel@gmail.com>
  <20200825091629.12949-2-bjorn.topel@gmail.com>
  <20200825111336.GA38865@ranger.igk.intel.com>
-Message-ID: <256ab09e-1cea-c8ab-9589-b0c5809bdea7@intel.com>
+ <256ab09e-1cea-c8ab-9589-b0c5809bdea7@intel.com>
+Message-ID: <20200825112953.GB38865@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-08-25 13:13, Maciej Fijalkowski wrote:
-> On Tue, Aug 25, 2020 at 11:16:27AM +0200, Bj?rn T?pel wrote:
-[...]
->>   	struct i40e_rx_buffer *rx_buffer;
->>   
->>   	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
->> +	*rx_buffer_pgcnt = i40e_rx_buffer_page_count(rx_buffer);
+On Tue, Aug 25, 2020 at 01:25:16PM +0200, Bj?rn T?pel wrote:
+> On 2020-08-25 13:13, Maciej Fijalkowski wrote:
+> > On Tue, Aug 25, 2020 at 11:16:27AM +0200, Bj?rn T?pel wrote:
+> [...]
+> > >   	struct i40e_rx_buffer *rx_buffer;
+> > >   	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
+> > > +	*rx_buffer_pgcnt = i40e_rx_buffer_page_count(rx_buffer);
+> > 
+> > What i previously meant was:
+> > 
+> > #if (PAGE_SIZE < 8192)
+> > 	*rx_buffer_pgcnt = page_count(rx_buffer->page);
+> > #endif
+> > 
+> > and see below
+> > 
 > 
-> What i previously meant was:
+> Right...
 > 
-> #if (PAGE_SIZE < 8192)
-> 	*rx_buffer_pgcnt = page_count(rx_buffer->page);
-> #endif
+> > >   	prefetchw(rx_buffer->page);
+> > >   	/* we are reusing so sync this buffer for CPU use */
+> > > @@ -2112,9 +2124,10 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+> > >    * either recycle the buffer or unmap it and free the associated resources.
+> > >    */
+> > >   static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
+> > > -			       struct i40e_rx_buffer *rx_buffer)
+> > > +			       struct i40e_rx_buffer *rx_buffer,
+> > > +			       int rx_buffer_pgcnt)
+> > >   {
+> > > -	if (i40e_can_reuse_rx_page(rx_buffer)) {
+> > > +	if (i40e_can_reuse_rx_page(rx_buffer, rx_buffer_pgcnt)) {
+> > >   		/* hand second half of page back to the ring */
+> > >   		i40e_reuse_rx_page(rx_ring, rx_buffer);
+> > >   	} else {
+> > > @@ -2319,6 +2332,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+> > >   	unsigned int xdp_xmit = 0;
+> > >   	bool failure = false;
+> > >   	struct xdp_buff xdp;
+> > > +	int rx_buffer_pgcnt;
+> > 
+> > you could move scope this variable only for the
+> > 
+> > while (likely(total_rx_packets < (unsigned int)budget))
+> > 
+> > loop and init this to 0. then you could drop the helper function you've
+> > added. and BTW the page_count is not being used for big pages but i agree
+> > that it's better to have it set to 0.
+> > 
 > 
-> and see below
+> ...but isn't it a bit nasty with an output parameter that relies on the that
+> the input was set to zero. I guess it's a matter of taste, but I find that
+> more error prone.
 > 
+> Let me know if you have strong feelings about this, and I'll respin (but I
+> rather not!).
 
-Right...
+Up to you. No strong feelings, i just think that i40e_rx_buffer_page_count
+is not needed. But if you want to keep it, then i was usually asking
+people to provide the doxygen descriptions for newly introduced
+functions... :P
 
->>   	prefetchw(rx_buffer->page);
->>   
->>   	/* we are reusing so sync this buffer for CPU use */
->> @@ -2112,9 +2124,10 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
->>    * either recycle the buffer or unmap it and free the associated resources.
->>    */
->>   static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
->> -			       struct i40e_rx_buffer *rx_buffer)
->> +			       struct i40e_rx_buffer *rx_buffer,
->> +			       int rx_buffer_pgcnt)
->>   {
->> -	if (i40e_can_reuse_rx_page(rx_buffer)) {
->> +	if (i40e_can_reuse_rx_page(rx_buffer, rx_buffer_pgcnt)) {
->>   		/* hand second half of page back to the ring */
->>   		i40e_reuse_rx_page(rx_ring, rx_buffer);
->>   	} else {
->> @@ -2319,6 +2332,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>   	unsigned int xdp_xmit = 0;
->>   	bool failure = false;
->>   	struct xdp_buff xdp;
->> +	int rx_buffer_pgcnt;
+but scoping it still makes sense to me, static analysis tools would agree
+with me I guess.
+
 > 
-> you could move scope this variable only for the
 > 
-> while (likely(total_rx_packets < (unsigned int)budget))
+> Bj?rn
 > 
-> loop and init this to 0. then you could drop the helper function you've
-> added. and BTW the page_count is not being used for big pages but i agree
-> that it's better to have it set to 0.
->
-
-...but isn't it a bit nasty with an output parameter that relies on the 
-that the input was set to zero. I guess it's a matter of taste, but I 
-find that more error prone.
-
-Let me know if you have strong feelings about this, and I'll respin (but 
-I rather not!).
-
-
-Bj?rn
-
-
->>   
->>   #if (PAGE_SIZE < 8192)
->>   	xdp.frame_sz = i40e_rx_frame_truesize(rx_ring, 0);
->> @@ -2370,7 +2384,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>   			break;
->>   
->>   		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
->> -		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
->> +		rx_buffer = i40e_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt);
->>   
->>   		/* retrieve a buffer from the ring */
->>   		if (!skb) {
->> @@ -2413,7 +2427,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>   			break;
->>   		}
->>   
->> -		i40e_put_rx_buffer(rx_ring, rx_buffer);
->> +		i40e_put_rx_buffer(rx_ring, rx_buffer, rx_buffer_pgcnt);
->>   		cleaned_count++;
->>   
->>   		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
->> -- 
->> 2.25.1
->>
+> 
+> > >   #if (PAGE_SIZE < 8192)
+> > >   	xdp.frame_sz = i40e_rx_frame_truesize(rx_ring, 0);
+> > > @@ -2370,7 +2384,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+> > >   			break;
+> > >   		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
+> > > -		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
+> > > +		rx_buffer = i40e_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt);
+> > >   		/* retrieve a buffer from the ring */
+> > >   		if (!skb) {
+> > > @@ -2413,7 +2427,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+> > >   			break;
+> > >   		}
+> > > -		i40e_put_rx_buffer(rx_ring, rx_buffer);
+> > > +		i40e_put_rx_buffer(rx_ring, rx_buffer, rx_buffer_pgcnt);
+> > >   		cleaned_count++;
+> > >   		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
+> > > -- 
+> > > 2.25.1
+> > > 
