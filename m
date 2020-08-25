@@ -1,113 +1,104 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Tue, 25 Aug 2020 13:37:35 +0200
-Subject: [Intel-wired-lan] [PATCH net 1/3] i40e: avoid premature Rx
- buffer reuse
-In-Reply-To: <20200825112953.GB38865@ranger.igk.intel.com>
-References: <20200825091629.12949-1-bjorn.topel@gmail.com>
- <20200825091629.12949-2-bjorn.topel@gmail.com>
- <20200825111336.GA38865@ranger.igk.intel.com>
- <256ab09e-1cea-c8ab-9589-b0c5809bdea7@intel.com>
- <20200825112953.GB38865@ranger.igk.intel.com>
-Message-ID: <378704b9-ad2c-ad63-2434-a2b34bb25f0f@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 25 Aug 2020 14:13:20 +0200
+Subject: [Intel-wired-lan] [PATCH net v2 0/3] Avoid premature Rx buffer
+ reuse for XDP_REDIRECT
+Message-ID: <20200825121323.20239-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-08-25 13:29, Maciej Fijalkowski wrote:
-> On Tue, Aug 25, 2020 at 01:25:16PM +0200, Bj?rn T?pel wrote:
->> On 2020-08-25 13:13, Maciej Fijalkowski wrote:
->>> On Tue, Aug 25, 2020 at 11:16:27AM +0200, Bj?rn T?pel wrote:
->> [...]
->>>>    	struct i40e_rx_buffer *rx_buffer;
->>>>    	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
->>>> +	*rx_buffer_pgcnt = i40e_rx_buffer_page_count(rx_buffer);
->>>
->>> What i previously meant was:
->>>
->>> #if (PAGE_SIZE < 8192)
->>> 	*rx_buffer_pgcnt = page_count(rx_buffer->page);
->>> #endif
->>>
->>> and see below
->>>
->>
->> Right...
->>
->>>>    	prefetchw(rx_buffer->page);
->>>>    	/* we are reusing so sync this buffer for CPU use */
->>>> @@ -2112,9 +2124,10 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
->>>>     * either recycle the buffer or unmap it and free the associated resources.
->>>>     */
->>>>    static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
->>>> -			       struct i40e_rx_buffer *rx_buffer)
->>>> +			       struct i40e_rx_buffer *rx_buffer,
->>>> +			       int rx_buffer_pgcnt)
->>>>    {
->>>> -	if (i40e_can_reuse_rx_page(rx_buffer)) {
->>>> +	if (i40e_can_reuse_rx_page(rx_buffer, rx_buffer_pgcnt)) {
->>>>    		/* hand second half of page back to the ring */
->>>>    		i40e_reuse_rx_page(rx_ring, rx_buffer);
->>>>    	} else {
->>>> @@ -2319,6 +2332,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>>>    	unsigned int xdp_xmit = 0;
->>>>    	bool failure = false;
->>>>    	struct xdp_buff xdp;
->>>> +	int rx_buffer_pgcnt;
->>>
->>> you could move scope this variable only for the
->>>
->>> while (likely(total_rx_packets < (unsigned int)budget))
->>>
->>> loop and init this to 0. then you could drop the helper function you've
->>> added. and BTW the page_count is not being used for big pages but i agree
->>> that it's better to have it set to 0.
->>>
->>
->> ...but isn't it a bit nasty with an output parameter that relies on the that
->> the input was set to zero. I guess it's a matter of taste, but I find that
->> more error prone.
->>
->> Let me know if you have strong feelings about this, and I'll respin (but I
->> rather not!).
-> 
-> Up to you. No strong feelings, i just think that i40e_rx_buffer_page_count
-> is not needed. But if you want to keep it, then i was usually asking
-> people to provide the doxygen descriptions for newly introduced
-> functions... :P
-> 
-> but scoping it still makes sense to me, static analysis tools would agree
-> with me I guess.
->
+Intel NICs have a recycle mechanism. The main idea is that a page is
+split into two parts. One part is owned by the driver, one part might
+be owned by someone else, such as the stack.
 
-Fair enough! I'll spin a v2! Thanks for taking a look!
+The page recycle code, incorrectly, relied on that a page fragment
+could not be freed inside xdp_do_redirect(), e.g. a redirect to a
+devmap where the ndo_xdp_xmit() implementation would transmit and free
+the frame, or xskmap where the frame would be copied to userspace and
+freed.
+
+This assumption leads to that page fragments that are used by the
+stack/XDP redirect can be reused and overwritten.
+
+To avoid this, store the page count prior invoking
+xdp_do_redirect(). The affected drivers are ixgbe, ice, and i40e.
+
+An example how things might go wrong:
+
+t0: Page is allocated, and put on the Rx ring
+              +---------------
+used by NIC ->| upper buffer
+(rx_buffer)   +---------------
+              | lower buffer
+              +---------------
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX
+
+t1: Buffer is received, and passed to the stack (e.g.)
+              +---------------
+              | upper buff (skb)
+              +---------------
+used by NIC ->| lower buffer
+(rx_buffer)   +---------------
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX - 1
+
+t2: Buffer is received, and redirected
+              +---------------
+              | upper buff (skb)
+              +---------------
+used by NIC ->| lower buffer
+(rx_buffer)   +---------------
+
+Now, prior calling xdp_do_redirect():
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX - 2
+
+This means that buffer *cannot* be flipped/reused, because the skb is
+still using it.
+
+The problem arises when xdp_do_redirect() actually frees the
+segment. Then we get:
+  page count  == USHRT_MAX - 1
+  rx_buffer->pagecnt_bias == USHRT_MAX - 2
+
+From a recycle perspective, the buffer can be flipped and reused,
+which means that the skb data area is passed to the Rx HW ring!
+
+To work around this, the page count is stored prior calling
+xdp_do_redirect().
+
+Note that this is not optimal, since the NIC could actually reuse the
+"lower buffer" again. However, then we need to track whether
+XDP_REDIRECT consumed the buffer or not. This scenario is very rare,
+and tracking consumtion status would introduce more complexity.
+
+A big thanks to Li RongQing from Baidu for having patience with me
+understanding that there was a bug. I would have given up much
+earlier! :-)
 
 
+Cheers,
 Bj?rn
 
+v1->v2: Removed page count function into get Rx buffer function, and
+        changed scope of automatic variable. (Maciej)
 
->>
->>
->> Bj?rn
->>
->>
->>>>    #if (PAGE_SIZE < 8192)
->>>>    	xdp.frame_sz = i40e_rx_frame_truesize(rx_ring, 0);
->>>> @@ -2370,7 +2384,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>>>    			break;
->>>>    		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
->>>> -		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
->>>> +		rx_buffer = i40e_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt);
->>>>    		/* retrieve a buffer from the ring */
->>>>    		if (!skb) {
->>>> @@ -2413,7 +2427,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
->>>>    			break;
->>>>    		}
->>>> -		i40e_put_rx_buffer(rx_ring, rx_buffer);
->>>> +		i40e_put_rx_buffer(rx_ring, rx_buffer, rx_buffer_pgcnt);
->>>>    		cleaned_count++;
->>>>    		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
->>>> -- 
->>>> 2.25.1
->>>>
+
+Bj?rn T?pel (3):
+  i40e: avoid premature Rx buffer reuse
+  ixgbe: avoid premature Rx buffer reuse
+  ice: avoid premature Rx buffer reuse
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 24 ++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 27 ++++++++++++-------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 24 ++++++++++++-----
+ 3 files changed, 52 insertions(+), 23 deletions(-)
+
+
+base-commit: 99408c422d336db32bfab5cbebc10038a70cf7d2
+-- 
+2.25.1
+
