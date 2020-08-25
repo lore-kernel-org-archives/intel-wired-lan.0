@@ -1,133 +1,100 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 25 Aug 2020 14:12:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 92c229309b21e403ddc121c38a1a2f4e984a2483
-Message-ID: <5f44abc2.1OV7lWH8vyycefSh%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Tue, 25 Aug 2020 11:16:26 +0200
+Subject: [Intel-wired-lan] [PATCH net 0/3] Avoid premature Rx buffer reuse
+ for XDP_REDIRECT
+Message-ID: <20200825091629.12949-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 92c229309b21e403ddc121c38a1a2f4e984a2483  igb: read PBA number from flash
+Intel NICs have a recycle mechanism. The main idea is that a page is
+split into two parts. One part is owned by the driver, one part might
+be owned by someone else, such as the stack.
 
-Error/Warning in current branch:
+The page recycle code, incorrectly, relied on that a page fragment
+could not be freed inside xdp_do_redirect(), e.g. a redirect to a
+devmap where the ndo_xdp_xmit() implementation would transmit and free
+the frame, or xskmap where the frame would be copied to userspace and
+freed.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
-ld.lld: error: n_tty.c:(.text.fixup+0x4): relocation R_ARM_JUMP24 out of range: 35756372 is not in [-33554432, 33554431]
-ld.lld: error: n_tty.c:(.text.fixup+0xC): relocation R_ARM_JUMP24 out of range: 35762304 is not in [-33554432, 33554431]
-ld.lld: error: tty_ioctl.c:(.text.fixup+0x4): relocation R_ARM_JUMP24 out of range: 35829788 is not in [-33554432, 33554431]
+This assumption leads to that page fragments that are used by the
+stack/XDP redirect can be reused and overwritten.
 
-Error/Warning ids grouped by kconfigs:
+To avoid this, store the page count prior invoking
+xdp_do_redirect(). The affected drivers are ixgbe, ice, and i40e.
 
-gcc_recent_errors
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- arc-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-`-- powerpc-defconfig
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+An example how things might go wrong:
 
-clang_recent_errors
-`-- arm-randconfig-r025-20200824
-    |-- ld.lld:error:n_tty.c:(.text.fixup):relocation-R_ARM_JUMP24-out-of-range:is-not-in
-    |-- ld.lld:error:n_tty.c:(.text.fixupC):relocation-R_ARM_JUMP24-out-of-range:is-not-in
-    `-- ld.lld:error:tty_ioctl.c:(.text.fixup):relocation-R_ARM_JUMP24-out-of-range:is-not-in
+t0: Page is allocated, and put on the Rx ring
+              +---------------
+used by NIC ->| upper buffer
+(rx_buffer)   +---------------
+              | lower buffer
+              +---------------
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX
 
-elapsed time: 723m
+t1: Buffer is received, and passed to the stack (e.g.)
+              +---------------
+              | upper buff (skb)
+              +---------------
+used by NIC ->| lower buffer
+(rx_buffer)   +---------------
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX - 1
 
-configs tested: 83
-configs skipped: 3
+t2: Buffer is received, and redirected
+              +---------------
+              | upper buff (skb)
+              +---------------
+used by NIC ->| lower buffer
+(rx_buffer)   +---------------
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-xtensa                generic_kc705_defconfig
-powerpc                      ppc64e_defconfig
-arm                            xcep_defconfig
-mips                      pistachio_defconfig
-mips                        vocore2_defconfig
-arm                            zeus_defconfig
-arm                              zx_defconfig
-arc                              alldefconfig
-arm                          badge4_defconfig
-sh                          sdk7780_defconfig
-sh                          r7785rp_defconfig
-arm                             rpc_defconfig
-h8300                    h8300h-sim_defconfig
-powerpc64                        alldefconfig
-arm                            mps2_defconfig
-sh                           se7721_defconfig
-arm                         nhk8815_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20200824
-i386                 randconfig-a004-20200824
-i386                 randconfig-a005-20200824
-i386                 randconfig-a003-20200824
-i386                 randconfig-a006-20200824
-i386                 randconfig-a001-20200824
-x86_64               randconfig-a015-20200824
-x86_64               randconfig-a016-20200824
-x86_64               randconfig-a012-20200824
-x86_64               randconfig-a014-20200824
-x86_64               randconfig-a011-20200824
-x86_64               randconfig-a013-20200824
-i386                 randconfig-a013-20200824
-i386                 randconfig-a012-20200824
-i386                 randconfig-a011-20200824
-i386                 randconfig-a016-20200824
-i386                 randconfig-a015-20200824
-i386                 randconfig-a014-20200824
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Now, prior calling xdp_do_redirect():
+  page count  == USHRT_MAX
+  rx_buffer->pagecnt_bias == USHRT_MAX - 2
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+This means that buffer *cannot* be flipped/reused, because the skb is
+still using it.
+
+The problem arises when xdp_do_redirect() actually frees the
+segment. Then we get:
+  page count  == USHRT_MAX - 1
+  rx_buffer->pagecnt_bias == USHRT_MAX - 2
+
+From a recycle perspective, the buffer can be flipped and reused,
+which means that the skb data area is passed to the Rx HW ring!
+
+To work around this, the page count is stored prior calling
+xdp_do_redirect().
+
+Note that this is not optimal, since the NIC could actually reuse the
+"lower buffer" again. However, then we need to track whether
+XDP_REDIRECT consumed the buffer or not. This scenario is very rare,
+and tracking consumtion status would introduce more complexity.
+
+A big thanks to Li RongQing from Baidu for having patience with me
+understanding that there was a bug. I would have given up much
+earlier! :-)
+
+
+Cheers,
+Bj?rn
+
+Bj?rn T?pel (3):
+  i40e: avoid premature Rx buffer reuse
+  ixgbe: avoid premature Rx buffer reuse
+  ice: avoid premature Rx buffer reuse
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 28 ++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 31 +++++++++++++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 28 ++++++++++++-----
+ 3 files changed, 64 insertions(+), 23 deletions(-)
+
+
+base-commit: 99408c422d336db32bfab5cbebc10038a70cf7d2
+-- 
+2.25.1
+
