@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Tue, 25 Aug 2020 19:27:34 +0200
-Subject: [Intel-wired-lan] [PATCH net v3 1/3] i40e: avoid premature Rx
+Date: Tue, 25 Aug 2020 19:27:35 +0200
+Subject: [Intel-wired-lan] [PATCH net v3 2/3] ixgbe: avoid premature Rx
  buffer reuse
 In-Reply-To: <20200825172736.27318-1-bjorn.topel@gmail.com>
 References: <20200825172736.27318-1-bjorn.topel@gmail.com>
-Message-ID: <20200825172736.27318-2-bjorn.topel@gmail.com>
+Message-ID: <20200825172736.27318-3-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,114 +20,47 @@ reused and overwritten.
 
 To avoid this, store the page count prior invoking xdp_do_redirect().
 
-Longer explanation:
-
-Intel NICs have a recycle mechanism. The main idea is that a page is
-split into two parts. One part is owned by the driver, one part might
-be owned by someone else, such as the stack.
-
-t0: Page is allocated, and put on the Rx ring
-              +---------------
-used by NIC ->| upper buffer
-(rx_buffer)   +---------------
-              | lower buffer
-              +---------------
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX
-
-t1: Buffer is received, and passed to the stack (e.g.)
-              +---------------
-              | upper buff (skb)
-              +---------------
-used by NIC ->| lower buffer
-(rx_buffer)   +---------------
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX - 1
-
-t2: Buffer is received, and redirected
-              +---------------
-              | upper buff (skb)
-              +---------------
-used by NIC ->| lower buffer
-(rx_buffer)   +---------------
-
-Now, prior calling xdp_do_redirect():
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX - 2
-
-This means that buffer *cannot* be flipped/reused, because the skb is
-still using it.
-
-The problem arises when xdp_do_redirect() actually frees the
-segment. Then we get:
-  page count  == USHRT_MAX - 1
-  rx_buffer->pagecnt_bias == USHRT_MAX - 2
-
-From a recycle perspective, the buffer can be flipped and reused,
-which means that the skb data area is passed to the Rx HW ring!
-
-To work around this, the page count is stored prior calling
-xdp_do_redirect().
-
-Note that this is not optimal, since the NIC could actually reuse the
-"lower buffer" again. However, then we need to track whether
-XDP_REDIRECT consumed the buffer or not.
-
-Fixes: d9314c474d4f ("i40e: add support for XDP_REDIRECT")
+Fixes: 6453073987ba ("ixgbe: add initial support for xdp redirect")
 Reported-and-analyzed-by: Li RongQing <lirongqing@baidu.com>
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 27 +++++++++++++++------
- 1 file changed, 20 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 24 +++++++++++++------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 3e5c566ceb01..37af1ad16591 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1851,6 +1851,7 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  * the adapter for another receive
-  *
-  * @rx_buffer: buffer containing the page
-+ * @rx_buffer_pgcnt: buffer page refcount pre xdp_do_redirect() call
-  *
-  * If page is reusable, rx_buffer->page_offset is adjusted to point to
-  * an unused region in the page.
-@@ -1873,7 +1874,8 @@ static inline bool i40e_page_is_reusable(struct page *page)
-  *
-  * In either case, if the page is reusable its refcount is increased.
-  **/
--static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
-+static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
-+				   int rx_buffer_pgcnt)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2f8a4cfc5fa1..824c776a3abc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1945,7 +1945,8 @@ static inline bool ixgbe_page_is_reserved(struct page *page)
+ 	return (page_to_nid(page) != numa_mem_id()) || page_is_pfmemalloc(page);
+ }
+ 
+-static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
++static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer,
++				    int rx_buffer_pgcnt)
  {
  	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias;
  	struct page *page = rx_buffer->page;
-@@ -1884,7 +1886,7 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer)
+@@ -1956,7 +1957,7 @@ static bool ixgbe_can_reuse_rx_page(struct ixgbe_rx_buffer *rx_buffer)
  
  #if (PAGE_SIZE < 8192)
  	/* if we are only owner of page we can reuse it */
--	if (unlikely((page_count(page) - pagecnt_bias) > 1))
+-	if (unlikely((page_ref_count(page) - pagecnt_bias) > 1))
 +	if (unlikely((rx_buffer_pgcnt - pagecnt_bias) > 1))
  		return false;
  #else
- #define I40E_LAST_OFFSET \
-@@ -1943,16 +1945,24 @@ static void i40e_add_rx_frag(struct i40e_ring *rx_ring,
-  * i40e_get_rx_buffer - Fetch Rx buffer and synchronize data for use
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @size: size of buffer to add to skb
-+ * @rx_buffer_pgcnt: buffer page refcount
-  *
-  * This function will pull an Rx buffer from the ring and synchronize it
-  * for use by the CPU.
-  */
- static struct i40e_rx_buffer *i40e_get_rx_buffer(struct i40e_ring *rx_ring,
--						 const unsigned int size)
-+						 const unsigned int size,
-+						 int *rx_buffer_pgcnt)
+ 	/* The last offset is a bit aggressive in that we assume the
+@@ -2021,11 +2022,18 @@ static void ixgbe_add_rx_frag(struct ixgbe_ring *rx_ring,
+ static struct ixgbe_rx_buffer *ixgbe_get_rx_buffer(struct ixgbe_ring *rx_ring,
+ 						   union ixgbe_adv_rx_desc *rx_desc,
+ 						   struct sk_buff **skb,
+-						   const unsigned int size)
++						   const unsigned int size,
++						   int *rx_buffer_pgcnt)
  {
- 	struct i40e_rx_buffer *rx_buffer;
+ 	struct ixgbe_rx_buffer *rx_buffer;
  
- 	rx_buffer = i40e_rx_bi(rx_ring, rx_ring->next_to_clean);
+ 	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
 +	*rx_buffer_pgcnt =
 +#if (PAGE_SIZE < 8192)
 +		page_count(rx_buffer->page);
@@ -135,53 +68,47 @@ index 3e5c566ceb01..37af1ad16591 100644
 +		0;
 +#endif
  	prefetchw(rx_buffer->page);
+ 	*skb = rx_buffer->skb;
  
- 	/* we are reusing so sync this buffer for CPU use */
-@@ -2107,14 +2117,16 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
-  * i40e_put_rx_buffer - Clean up used buffer and either recycle or free
-  * @rx_ring: rx descriptor ring to transact packets on
-  * @rx_buffer: rx buffer to pull data from
-+ * @rx_buffer_pgcnt: rx buffer page refcount pre xdp_do_redirect() call
-  *
-  * This function will clean up the contents of the rx_buffer.  It will
-  * either recycle the buffer or unmap it and free the associated resources.
-  */
- static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
--			       struct i40e_rx_buffer *rx_buffer)
-+			       struct i40e_rx_buffer *rx_buffer,
-+			       int rx_buffer_pgcnt)
+@@ -2055,9 +2063,10 @@ static struct ixgbe_rx_buffer *ixgbe_get_rx_buffer(struct ixgbe_ring *rx_ring,
+ 
+ static void ixgbe_put_rx_buffer(struct ixgbe_ring *rx_ring,
+ 				struct ixgbe_rx_buffer *rx_buffer,
+-				struct sk_buff *skb)
++				struct sk_buff *skb,
++				int rx_buffer_pgcnt)
  {
--	if (i40e_can_reuse_rx_page(rx_buffer)) {
-+	if (i40e_can_reuse_rx_page(rx_buffer, rx_buffer_pgcnt)) {
+-	if (ixgbe_can_reuse_rx_page(rx_buffer)) {
++	if (ixgbe_can_reuse_rx_page(rx_buffer, rx_buffer_pgcnt)) {
  		/* hand second half of page back to the ring */
- 		i40e_reuse_rx_page(rx_ring, rx_buffer);
+ 		ixgbe_reuse_rx_page(rx_ring, rx_buffer);
  	} else {
-@@ -2328,6 +2340,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 	while (likely(total_rx_packets < (unsigned int)budget)) {
- 		struct i40e_rx_buffer *rx_buffer;
- 		union i40e_rx_desc *rx_desc;
+@@ -2308,6 +2317,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		union ixgbe_adv_rx_desc *rx_desc;
+ 		struct ixgbe_rx_buffer *rx_buffer;
+ 		struct sk_buff *skb;
 +		int rx_buffer_pgcnt;
  		unsigned int size;
- 		u64 qword;
  
-@@ -2370,7 +2383,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 			break;
+ 		/* return some buffers to hardware, one at a time is too slow */
+@@ -2327,7 +2337,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		 */
+ 		dma_rmb();
  
- 		i40e_trace(clean_rx_irq, rx_ring, rx_desc, skb);
--		rx_buffer = i40e_get_rx_buffer(rx_ring, size);
-+		rx_buffer = i40e_get_rx_buffer(rx_ring, size, &rx_buffer_pgcnt);
+-		rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size);
++		rx_buffer = ixgbe_get_rx_buffer(rx_ring, rx_desc, &skb, size, &rx_buffer_pgcnt);
  
  		/* retrieve a buffer from the ring */
  		if (!skb) {
-@@ -2413,7 +2426,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+@@ -2372,7 +2382,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
  			break;
  		}
  
--		i40e_put_rx_buffer(rx_ring, rx_buffer);
-+		i40e_put_rx_buffer(rx_ring, rx_buffer, rx_buffer_pgcnt);
+-		ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb);
++		ixgbe_put_rx_buffer(rx_ring, rx_buffer, skb, rx_buffer_pgcnt);
  		cleaned_count++;
  
- 		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
+ 		/* place incomplete frames back on ring for completion */
 -- 
 2.25.1
 
