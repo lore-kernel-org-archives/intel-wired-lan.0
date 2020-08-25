@@ -1,75 +1,71 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 25 Aug 2020 12:07:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE] BUILD REGRESSION
- ada341205cbac0cbaf417131f733e06dd44ff830
-Message-ID: <5f448e83.aviW5EYCIza4Nq7g%lkp@intel.com>
+Date: Tue, 25 Aug 2020 14:12:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
+ 92c229309b21e403ddc121c38a1a2f4e984a2483
+Message-ID: <5f44abc2.1OV7lWH8vyycefSh%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-branch HEAD: ada341205cbac0cbaf417131f733e06dd44ff830  idpf: Introduce idpf driver
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+branch HEAD: 92c229309b21e403ddc121c38a1a2f4e984a2483  igb: read PBA number from flash
 
 Error/Warning in current branch:
 
-include/linux/avf/virtchnl.h:1090:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rss_hash' is not an integer constant
-include/linux/avf/virtchnl.h:809:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_get_capabilities' is not an integer constant
-include/linux/avf/virtchnl.h:891:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_txq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:907:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_tx_queues' is not an integer constant
-include/linux/avf/virtchnl.h:937:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_rxq_info_v2' is not an integer constant
-include/linux/avf/virtchnl.h:952:31: error: enumerator value for 'virtchnl_static_assert_virtchnl_config_rx_queues' is not an integer constant
+drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2269:15: error: redefinition of 'truesize'
+ld.lld: error: n_tty.c:(.text.fixup+0x4): relocation R_ARM_JUMP24 out of range: 35756372 is not in [-33554432, 33554431]
+ld.lld: error: n_tty.c:(.text.fixup+0xC): relocation R_ARM_JUMP24 out of range: 35762304 is not in [-33554432, 33554431]
+ld.lld: error: tty_ioctl.c:(.text.fixup+0x4): relocation R_ARM_JUMP24 out of range: 35829788 is not in [-33554432, 33554431]
 
 Error/Warning ids grouped by kconfigs:
 
 gcc_recent_errors
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
 |-- arc-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-allyesconfig
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-randconfig-a014-20200824
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-|-- i386-randconfig-a015-20200824
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-|   |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-|   `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
-`-- i386-randconfig-a016-20200824
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_rx_queues-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_config_tx_queues-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_get_capabilities-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rss_hash-is-not-an-integer-constant
-    |-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_rxq_info_v2-is-not-an-integer-constant
-    `-- include-linux-avf-virtchnl.h:error:enumerator-value-for-virtchnl_static_assert_virtchnl_txq_info_v2-is-not-an-integer-constant
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+`-- powerpc-defconfig
+    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
+
+clang_recent_errors
+`-- arm-randconfig-r025-20200824
+    |-- ld.lld:error:n_tty.c:(.text.fixup):relocation-R_ARM_JUMP24-out-of-range:is-not-in
+    |-- ld.lld:error:n_tty.c:(.text.fixupC):relocation-R_ARM_JUMP24-out-of-range:is-not-in
+    `-- ld.lld:error:tty_ioctl.c:(.text.fixup):relocation-R_ARM_JUMP24-out-of-range:is-not-in
 
 elapsed time: 723m
 
-configs tested: 66
-configs skipped: 1
+configs tested: 83
+configs skipped: 3
 
 arm                                 defconfig
 arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
+xtensa                generic_kc705_defconfig
+powerpc                      ppc64e_defconfig
+arm                            xcep_defconfig
+mips                      pistachio_defconfig
+mips                        vocore2_defconfig
+arm                            zeus_defconfig
+arm                              zx_defconfig
+arc                              alldefconfig
+arm                          badge4_defconfig
+sh                          sdk7780_defconfig
+sh                          r7785rp_defconfig
+arm                             rpc_defconfig
+h8300                    h8300h-sim_defconfig
+powerpc64                        alldefconfig
+arm                            mps2_defconfig
+sh                           se7721_defconfig
+arm                         nhk8815_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
