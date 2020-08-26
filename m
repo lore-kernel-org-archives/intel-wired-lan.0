@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 26 Aug 2020 22:02:43 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] igc: Fix not considering the TX
- delay for timestamps
-In-Reply-To: <20200817231231.2971207-2-vinicius.gomes@intel.com>
+Date: Wed, 26 Aug 2020 22:02:01 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: Fix wrong timestamp latency
+ numbers
+In-Reply-To: <20200817231231.2971207-1-vinicius.gomes@intel.com>
 References: <20200817231231.2971207-1-vinicius.gomes@intel.com>
- <20200817231231.2971207-2-vinicius.gomes@intel.com>
-Message-ID: <DM6PR11MB289072219AE6BFAE2BF89F13BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB2890E0EB7546D20AC94A87F3BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +16,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Monday, August 17, 2020 4:13 PM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Guedes, Andre <andre.guedes@intel.com>
-> Subject: [Intel-wired-lan] [PATCH 2/2] igc: Fix not considering the TX delay for
-> timestamps
+> Subject: [Intel-wired-lan] [PATCH 1/2] igc: Fix wrong timestamp latency numbers
 > 
-> When timestamping a packet there's a delay between the start of the
-> packet and the point where the hardware actually captures the
-> timestamp. This difference needs to be considered if we want accurate
-> timestamps.
+> The previous timestamping latency numbers were obtained by
+> interpolating the i210 numbers with the i225 crystal clock value. That
+> calculation was wrong.
 > 
-> This was done on the RX side, but not on the TX side.
+> Use the correct values from real measurements.
 > 
 > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_ptp.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
+>  drivers/net/ethernet/intel/igc/igc.h | 20 ++++++++------------
+>  1 file changed, 8 insertions(+), 12 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
