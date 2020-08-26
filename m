@@ -1,40 +1,31 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 26 Aug 2020 23:48:05 +0000
-Subject: [Intel-wired-lan] [PATCH v3] ice: remove repeated words
-In-Reply-To: <20200818214900.35776-1-anthony.l.nguyen@intel.com>
-References: <20200818214900.35776-1-anthony.l.nguyen@intel.com>
-Message-ID: <DM6PR11MB2890BEE1E4C99C6EAD674F0ABC540@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Wed, 26 Aug 2020 23:51:50 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] ice: Change ice_info_get_dsn to
+ be void
+In-Reply-To: <20200819215838.3834786-2-jacob.e.keller@intel.com>
+References: <20200819215838.3834786-1-jacob.e.keller@intel.com>
+ <20200819215838.3834786-2-jacob.e.keller@intel.com>
+Message-ID: <DM6PR11MB28908DC52F1C9F72C7F2DDB5BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
-> Nguyen
-> Sent: Tuesday, August 18, 2020 2:49 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v3] ice: remove repeated words
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jacob
+> Keller
+> Sent: Wednesday, August 19, 2020 2:59 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>
+> Subject: [Intel-wired-lan] [PATCH 1/3] ice: Change ice_info_get_dsn to be void
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> A new test in checkpatch detects repeated words; cleanup all pre-existing
-> occurrences of those now.
+> ice_info_get_dsn always returns 0, so just make it void.
 > 
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-> Co-developed-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > ---
-> v3:
-> - Resolve checkpatch warning on ordering of Co-developed-by and Signed-off-
-> by
-> v2:
-> - Add Co-developed-by
-> ---
->  drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
->  drivers/net/ethernet/intel/ice/ice_flow.c        | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_main.c        | 2 +-
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
->  4 files changed, 5 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_devlink.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
