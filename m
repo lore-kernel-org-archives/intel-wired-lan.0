@@ -1,137 +1,73 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 26 Aug 2020 22:49:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- c4eb4d81f82a47410cc1a393dfc7f3aa3b66392f
-Message-ID: <5f467670.tU4S10HDvNxVfGmv%lkp@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 26 Aug 2020 11:14:47 -0700
+Subject: [Intel-wired-lan] [PATCH net 1/2] ice: increase maximum wait time
+ for flash write commands
+Message-ID: <20200826181448.1176594-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: c4eb4d81f82a47410cc1a393dfc7f3aa3b66392f  i40e: switch kvzalloc to allocate rx/tx_bi buffer
+The ice driver needs to wait for a firmware response to each command to
+write a block of data to the scratch area used to update the device
+firmware. The driver currently waits for up to 1 second for this to be
+returned.
 
-Error/Warning in current branch:
+It turns out that firmware might take longer than 1 second to return
+a completion in some cases. If this happens, the flash update will fail
+to complete.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2278:15: error: redefinition of 'truesize'
-net/ipv4/udp_tunnel_nic.c:849:6-10: ERROR: invalid reference to the index variable of the iterator on line 846
+Fix this by increasing the maximum time that the driver will wait for
+both writing a block of data, and for activating the new NVM bank. The
+timeout for an erase command is already several minutes, as the firmware
+had to erase the entire bank which was already expected to take a minute
+or more in the worst case.
 
-Error/Warning ids grouped by kconfigs:
+In the case where firmware really won't respond, we will now take longer
+to fail. However, this ensures that if the firmware is simply slow to
+respond, the flash update can still complete. This new maximum timeout
+should not adversely increase the update time, as the implementation for
+wait_event_interruptible_timeout, and should wake very soon after we get
+a completion event. It is better for a flash update be slow but still
+succeed than to fail because we gave up too quickly.
 
-gcc_recent_errors
-|-- alpha-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- arc-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- powerpc-defconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- s390-randconfig-c003-20200826
-|   `-- net-ipv4-udp_tunnel_nic.c:ERROR:invalid-reference-to-the-index-variable-of-the-iterator-on-line
-`-- sparc-allyesconfig
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-
-elapsed time: 1016m
-
-configs tested: 89
-configs skipped: 5
-
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                          alldefconfig
-mips                    maltaup_xpa_defconfig
-sh                            shmin_defconfig
-h8300                    h8300h-sim_defconfig
-arc                                 defconfig
-powerpc                    mvme5100_defconfig
-mips                             allyesconfig
-arc                            hsdk_defconfig
-mips                          rb532_defconfig
-arm                          moxart_defconfig
-powerpc                 linkstation_defconfig
-arc                        nsim_700_defconfig
-openrisc                 simple_smp_defconfig
-mips                        nlm_xlp_defconfig
-arm                    vt8500_v6_v7_defconfig
-arc                        vdk_hs38_defconfig
-mips                         bigsur_defconfig
-arm                           omap1_defconfig
-arm                           h5000_defconfig
-arm                          pcm027_defconfig
-mips                 decstation_r4k_defconfig
-arm                          imote2_defconfig
-arm                       aspeed_g4_defconfig
-sparc                               defconfig
-sh                        dreamcast_defconfig
-mips                      maltaaprp_defconfig
-m68k                             allyesconfig
-powerpc                         ps3_defconfig
-c6x                        evmc6457_defconfig
-c6x                                 defconfig
-sh                          r7785rp_defconfig
-sh                           se7712_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20200826
-i386                 randconfig-a004-20200826
-i386                 randconfig-a003-20200826
-i386                 randconfig-a005-20200826
-i386                 randconfig-a006-20200826
-i386                 randconfig-a001-20200826
-x86_64               randconfig-a015-20200826
-x86_64               randconfig-a016-20200826
-i386                 randconfig-a013-20200826
-i386                 randconfig-a012-20200826
-i386                 randconfig-a011-20200826
-i386                 randconfig-a016-20200826
-i386                 randconfig-a015-20200826
-i386                 randconfig-a014-20200826
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                                  kexec
-
+Fixes: d69ea414c9b4 ("ice: implement device flash update via devlink")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_fw_update.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+index deaefe00c9c0..29397a83699d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
++++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+@@ -289,7 +289,13 @@ ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
+ 		return -EIO;
+ 	}
+ 
+-	err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_write, HZ, &event);
++	/* In most cases, firmware reports a write completion within a few
++	 * milliseconds. However, it has been observed that a completion might
++	 * take more than a second to complete in some cases. The timeout here
++	 * is conservative and is intended to prevent failure to update when
++	 * firmware is slow to respond.
++	 */
++	err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_write, 15*HZ, &event);
+ 	if (err) {
+ 		dev_err(dev, "Timed out waiting for firmware write completion for module 0x%02x, err %d\n",
+ 			module, err);
+@@ -513,7 +519,7 @@ static int ice_switch_flash_banks(struct ice_pf *pf, u8 activate_flags,
+ 		return -EIO;
+ 	}
+ 
+-	err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_write_activate, HZ,
++	err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_write_activate, 30*HZ,
+ 				    &event);
+ 	if (err) {
+ 		dev_err(dev, "Timed out waiting for firmware to switch active flash banks, err %d\n",
+
+base-commit: e093edc6dd0815cc0b328cb888262f6315ba018a
+-- 
+2.28.0.218.ge27853923b9d.dirty
+
