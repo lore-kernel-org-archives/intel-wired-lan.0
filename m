@@ -1,40 +1,40 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 26 Aug 2020 23:22:44 +0000
-Subject: [Intel-wired-lan] [PATCH -next v2] net: ice: Fix pointer cast
- warnings
-In-Reply-To: <5af7c5af-c45d-2174-de89-8b89eddb4f4d@huawei.com>
-References: <20200731105721.18511-1-cuibixuan@huawei.com>
- <5af7c5af-c45d-2174-de89-8b89eddb4f4d@huawei.com>
-Message-ID: <DM6PR11MB289004F11B8936F7C421A863BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Wed, 26 Aug 2020 23:48:05 +0000
+Subject: [Intel-wired-lan] [PATCH v3] ice: remove repeated words
+In-Reply-To: <20200818214900.35776-1-anthony.l.nguyen@intel.com>
+References: <20200818214900.35776-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM6PR11MB2890BEE1E4C99C6EAD674F0ABC540@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Bixuan Cui <cuibixuan@huawei.com>
-> Sent: Friday, July 31, 2020 3:08 AM
-> To: davem at davemloft.net; kuba at kernel.org
-> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-next at vger.kernel.org
-> Subject: [PATCH -next v2] net: ice: Fix pointer cast warnings
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
+> Nguyen
+> Sent: Tuesday, August 18, 2020 2:49 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v3] ice: remove repeated words
 > 
-> pointers should be casted to unsigned long to avoid
-> -Wpointer-to-int-cast warnings:
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning:
->     cast from pointer to integer of different size
-> drivers/net/ethernet/intel/ice/ice_flow.h:198:32: warning:
->     cast to pointer from integer of different size
+> A new test in checkpatch detects repeated words; cleanup all pre-existing
+> occurrences of those now.
 > 
-> Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Co-developed-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
-> v2->v1: add fix:
->  ice_flow.h:198:32: warning: cast to pointer from integer of different size [-
-> Wint-to-pointer-cast]
->  #define ICE_FLOW_ENTRY_PTR(h) ((struct ice_flow_entry *)(h))
+> v3:
+> - Resolve checkpatch warning on ordering of Co-developed-by and Signed-off-
+> by
+> v2:
+> - Add Co-developed-by
+> ---
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c   | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_flow.c        | 4 ++--
+>  drivers/net/ethernet/intel/ice/ice_main.c        | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+>  4 files changed, 5 insertions(+), 5 deletions(-)
 > 
->  drivers/net/ethernet/intel/ice/ice_flow.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
