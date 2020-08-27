@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 26 Aug 2020 23:51:50 +0000
-Subject: [Intel-wired-lan] [PATCH 1/3] ice: Change ice_info_get_dsn to
- be void
-In-Reply-To: <20200819215838.3834786-2-jacob.e.keller@intel.com>
+Date: Thu, 27 Aug 2020 01:32:04 +0000
+Subject: [Intel-wired-lan] [PATCH 2/3] ice: add the DDP Track ID to
+ devlink info
+In-Reply-To: <20200819215838.3834786-3-jacob.e.keller@intel.com>
 References: <20200819215838.3834786-1-jacob.e.keller@intel.com>
- <20200819215838.3834786-2-jacob.e.keller@intel.com>
-Message-ID: <DM6PR11MB28908DC52F1C9F72C7F2DDB5BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <20200819215838.3834786-3-jacob.e.keller@intel.com>
+Message-ID: <DM6PR11MB28906C0A6983CBBEE57E7233BC550@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,15 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, August 19, 2020 2:59 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Nguyen, Anthony L
 > <anthony.l.nguyen@intel.com>
-> Subject: [Intel-wired-lan] [PATCH 1/3] ice: Change ice_info_get_dsn to be void
+> Subject: [Intel-wired-lan] [PATCH 2/3] ice: add the DDP Track ID to devlink info
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> Add "fw.app.bundle_id" to display the DDP Track ID of the active DDP
+> package. This id is similar to "fw.bundle_id" and is a unique identifier
+> for the DDP package that is loaded in the device. Each new DDP has
+> a unique Track ID generated for it, and the ID can be used to identify
+> and track the DDP package.
 > 
-> ice_info_get_dsn always returns 0, so just make it void.
+> Add documentation for the new devlink info version.
 > 
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
+>  Documentation/networking/devlink/ice.rst     | 5 +++++
+>  drivers/net/ethernet/intel/ice/ice_devlink.c | 8 ++++++++
+>  2 files changed, 13 insertions(+)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
