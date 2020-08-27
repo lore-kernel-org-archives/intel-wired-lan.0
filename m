@@ -1,60 +1,83 @@
-From: Dinghao Liu <dinghao.liu@zju.edu.cn>
-Date: Thu, 27 Aug 2020 10:34:10 +0800
-Subject: [Intel-wired-lan] [PATCH] ice: Fix memleak in ice_set_ringparam
-Message-ID: <20200827023410.3677-1-dinghao.liu@zju.edu.cn>
+From: Li RongQing <lirongqing@baidu.com>
+Date: Thu, 27 Aug 2020 15:53:08 +0800
+Subject: [Intel-wired-lan] [PATCH] iavf: use kvzalloc instead of kzalloc for
+ rx/tx_bi buffer
+Message-ID: <1598514788-31039-1-git-send-email-lirongqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When kcalloc() on rx_rings fails, we should free tx_rings
-and xdp_rings to prevent memleak. Similarly, when
-ice_alloc_rx_bufs() fails, we should free xdp_rings.
+when changes the rx/tx ring to 4096, kzalloc may fail due to
+a temporary shortage on slab entries.
 
-Signed-off-by: Dinghao Liu <dinghao.liu@zju.edu.cn>
+kvmalloc is used to allocate this memory as there is no need
+to have this memory area physical continuously.
+
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 9e8e9531cd87..caf64eb5e96d 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2863,7 +2863,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	rx_rings = kcalloc(vsi->num_rxq, sizeof(*rx_rings), GFP_KERNEL);
- 	if (!rx_rings) {
- 		err = -ENOMEM;
--		goto done;
-+		goto free_xdp;
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 256fa07d54d5..f5a3e195ec54 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -92,7 +92,7 @@ void iavf_clean_tx_ring(struct iavf_ring *tx_ring)
+ void iavf_free_tx_resources(struct iavf_ring *tx_ring)
+ {
+ 	iavf_clean_tx_ring(tx_ring);
+-	kfree(tx_ring->tx_bi);
++	kvfree(tx_ring->tx_bi);
+ 	tx_ring->tx_bi = NULL;
  
- 	ice_for_each_rxq(vsi, i) {
-@@ -2892,7 +2892,7 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 			}
- 			kfree(rx_rings);
- 			err = -ENOMEM;
--			goto free_tx;
-+			goto free_xdp;
- 		}
- 	}
+ 	if (tx_ring->desc) {
+@@ -622,7 +622,7 @@ int iavf_setup_tx_descriptors(struct iavf_ring *tx_ring)
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(tx_ring->tx_bi);
+ 	bi_size = sizeof(struct iavf_tx_buffer) * tx_ring->count;
+-	tx_ring->tx_bi = kzalloc(bi_size, GFP_KERNEL);
++	tx_ring->tx_bi = kvzalloc(bi_size, GFP_KERNEL);
+ 	if (!tx_ring->tx_bi)
+ 		goto err;
  
-@@ -2943,6 +2943,15 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	}
- 	goto done;
+@@ -643,7 +643,7 @@ int iavf_setup_tx_descriptors(struct iavf_ring *tx_ring)
+ 	return 0;
  
-+free_xdp:
-+	if (xdp_rings) {
-+		for (i = 0; i < vsi->num_xdp_txq; i++) {
-+			ice_free_tx_ring(vsi->xdp_rings[i]);
-+			*vsi->xdp_rings[i] = xdp_rings[i];
-+		}
-+		kfree(xdp_rings);
-+	}
-+
- free_tx:
- 	/* error cleanup if the Rx allocations failed after getting Tx */
- 	if (tx_rings) {
+ err:
+-	kfree(tx_ring->tx_bi);
++	kvfree(tx_ring->tx_bi);
+ 	tx_ring->tx_bi = NULL;
+ 	return -ENOMEM;
+ }
+@@ -714,7 +714,7 @@ void iavf_clean_rx_ring(struct iavf_ring *rx_ring)
+ void iavf_free_rx_resources(struct iavf_ring *rx_ring)
+ {
+ 	iavf_clean_rx_ring(rx_ring);
+-	kfree(rx_ring->rx_bi);
++	kvfree(rx_ring->rx_bi);
+ 	rx_ring->rx_bi = NULL;
+ 
+ 	if (rx_ring->desc) {
+@@ -738,7 +738,7 @@ int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(rx_ring->rx_bi);
+ 	bi_size = sizeof(struct iavf_rx_buffer) * rx_ring->count;
+-	rx_ring->rx_bi = kzalloc(bi_size, GFP_KERNEL);
++	rx_ring->rx_bi = kvzalloc(bi_size, GFP_KERNEL);
+ 	if (!rx_ring->rx_bi)
+ 		goto err;
+ 
+@@ -762,7 +762,7 @@ int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
+ 
+ 	return 0;
+ err:
+-	kfree(rx_ring->rx_bi);
++	kvfree(rx_ring->rx_bi);
+ 	rx_ring->rx_bi = NULL;
+ 	return -ENOMEM;
+ }
 -- 
-2.17.1
+2.16.2
 
