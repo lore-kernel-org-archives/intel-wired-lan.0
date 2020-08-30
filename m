@@ -1,48 +1,36 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Fri, 28 Aug 2020 11:56:16 -0400
-Subject: [Intel-wired-lan] VRRP not working on i40e X722 S2600WFT
-In-Reply-To: <20200827183039.hrfnb63cxq3pmv4z@csclub.uwaterloo.ca>
-References: <20200827183039.hrfnb63cxq3pmv4z@csclub.uwaterloo.ca>
-Message-ID: <20200828155616.3sd2ivrml2gpcvod@csclub.uwaterloo.ca>
+From: Gal Hammer <ghammer@redhat.com>
+Date: Sun, 30 Aug 2020 08:45:29 +0300
+Subject: [Intel-wired-lan] [PATCH] igb: read PBA number from flash
+Message-ID: <20200830054529.3980-1-ghammer@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Aug 27, 2020 at 02:30:39PM -0400, Lennart Sorensen wrote:
-> I have hit a new problem with the X722 chipset (Intel R1304WFT server).
-> VRRP simply does not work.
-> 
-> When keepalived registers a vmac interface, and starts transmitting
-> multicast packets with the vrp message, it never receives those packets
-> from the peers, so all nodes think they are the master.  tcpdump shows
-> transmits, but no receives.  If I stop keepalived, which deletes the
-> vmac interface, then I start to receive the multicast packets from the
-> other nodes.  Even in promisc mode, tcpdump can't see those packets.
-> 
-> So it seems the hardware is dropping all packets with a source mac that
-> matches the source mac of the vmac interface, even when the destination
-> is a multicast address that was subcribed to.  This is clearly not
-> proper behaviour.
-> 
-> I tried a stock 5.8 kernel to check if a driver update helped, and updated
-> the nvm firware to the latest 4.10 (which appears to be over a year old),
-> and nothing changes the behaviour at all.
-> 
-> Seems other people have hit this problem too:
-> http://mails.dpdk.org/archives/users/2018-May/003128.html
-> 
-> Unless someone has a way to fix this, we will have to change away from
-> this hardware very quickly.  The IPsec NAT RSS defect we could tolerate
-> although didn't like, while this is just unworkable.
-> 
-> Quite frustrated by this.  Intel network hardware was always great,
-> how did the X722 make it out in this state.
+Fixed flash presence check for 82576 controllers so the part
+number string is read and displayed correctly.
 
-Another case with the same problem on an X710:
+Signed-off-by: Gal Hammer <ghammer@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-https://www.talkend.net/post/13256.html
-
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index d9c3a6b169f9..245e62b0a97e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3388,7 +3388,9 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			  "Width x1" : "unknown"), netdev->dev_addr);
+ 	}
+ 
+-	if ((hw->mac.type >= e1000_i210 ||
++	if ((hw->mac.type == e1000_82576 &&
++	     rd32(E1000_EECD) & E1000_EECD_PRES) ||
++	    (hw->mac.type >= e1000_i210 ||
+ 	     igb_get_flash_presence_i210(hw))) {
+ 		ret_val = igb_read_part_string(hw, part_str,
+ 					       E1000_PBANUM_LENGTH);
 -- 
-Len Sorensen
+2.26.2
+
