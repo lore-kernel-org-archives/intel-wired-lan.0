@@ -1,70 +1,81 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed,  2 Sep 2020 16:36:56 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v1 1/2] igc: Export a way to
- read the PTP timer
-Message-ID: <20200902233657.4051914-1-vinicius.gomes@intel.com>
+Date: Wed,  2 Sep 2020 16:36:57 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v1 2/2] igc: Reject schedules
+ with a base_time in the future
+In-Reply-To: <20200902233657.4051914-1-vinicius.gomes@intel.com>
+References: <20200902233657.4051914-1-vinicius.gomes@intel.com>
+Message-ID: <20200902233657.4051914-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The next patch will need a way to retrieve the current timestamp from
-the NIC's PTP clock.
+When we set the BASET registers of i225 with a base_time in the
+future, i225 will "hold" all packets until that base_time is reached,
+causing a lot of TX Hangs.
 
-The 'i225' suffix is removed, if anything model specific is needed,
-those specifics should be hidden by this function.
+As this behaviour seems contrary to the expectations of the IEEE
+802.1Q standard (section 8.6.9, specially 8.6.9.4.5), let's start by
+rejecting these types of schedules. If this is too limiting, we can
+for example, setup a timer to configure the BASET registers closer to
+the start time, only blocking the packets for a "short" while.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h     | 1 +
- drivers/net/ethernet/intel/igc/igc_ptp.c | 7 +++----
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 25 +++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 2e5720d34a16..35baae900c1f 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -550,6 +550,7 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
- int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- void igc_ptp_tx_hang(struct igc_adapter *adapter);
-+void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts);
- 
- #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 344bb67018f1..927af8ae2bef 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -17,8 +17,7 @@
- #define IGC_PTP_TX_TIMEOUT		(HZ * 15)
- 
- /* SYSTIM read access for I225 */
--static void igc_ptp_read_i225(struct igc_adapter *adapter,
--			      struct timespec64 *ts)
-+void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 sec, nsec;
-@@ -75,7 +74,7 @@ static int igc_ptp_adjtime_i225(struct ptp_clock_info *ptp, s64 delta)
- 
- 	spin_lock_irqsave(&igc->tmreg_lock, flags);
- 
--	igc_ptp_read_i225(igc, &now);
-+	igc_ptp_read(igc, &now);
- 	now = timespec64_add(now, then);
- 	igc_ptp_write_i225(igc, (const struct timespec64 *)&now);
- 
-@@ -517,7 +516,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
- 
- static void igc_ptp_time_save(struct igc_adapter *adapter)
- {
--	igc_ptp_read_i225(adapter, &adapter->prev_ptp_time);
-+	igc_ptp_read(adapter, &adapter->prev_ptp_time);
- 	adapter->ptp_reset_start = ktime_get();
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 2cdf83e213b3..fd569cfa414f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4705,14 +4705,35 @@ static int igc_save_launchtime_params(struct igc_adapter *adapter, int queue,
+ 	return 0;
  }
  
+-static bool validate_schedule(const struct tc_taprio_qopt_offload *qopt)
++static bool is_base_time_past(ktime_t base_time, const struct timespec64 *now)
++{
++	struct timespec64 b;
++
++	b = ktime_to_timespec64(base_time);
++
++	return timespec64_compare(now, &b) > 0;
++}
++
++static bool validate_schedule(struct igc_adapter *adapter,
++			      const struct tc_taprio_qopt_offload *qopt)
+ {
+ 	int queue_uses[IGC_MAX_TX_QUEUES] = { };
++	struct timespec64 now;
+ 	size_t n;
+ 
+ 	if (qopt->cycle_time_extension)
+ 		return false;
+ 
++	igc_ptp_read(adapter, &now);
++
++	/* If we program the controller's BASET registers with a time
++	 * in the future, it will hold all the packets until that
++	 * time, causing a lot of TX Hangs, so to avoid that, we
++	 * reject schedules that would start in the future.
++	 */
++	if (!is_base_time_past(qopt->base_time, &now))
++		return false;
++
+ 	for (n = 0; n < qopt->num_entries; n++) {
+ 		const struct tc_taprio_sched_entry *e;
+ 		int i;
+@@ -4767,7 +4788,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 	if (adapter->base_time)
+ 		return -EALREADY;
+ 
+-	if (!validate_schedule(qopt))
++	if (!validate_schedule(adapter, qopt))
+ 		return -EINVAL;
+ 
+ 	adapter->cycle_time = qopt->cycle_time;
 -- 
 2.28.0
 
