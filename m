@@ -1,78 +1,70 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed,  2 Sep 2020 15:27:08 -0700
-Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: clean up W=1 warnings in
- ixgbe
-Message-ID: <20200902222708.2144290-1-jesse.brandeburg@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed,  2 Sep 2020 16:36:56 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v1 1/2] igc: Export a way to
+ read the PTP timer
+Message-ID: <20200902233657.4051914-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Inspired by Lee Jones, this elminates the remaining W=1 warnings in
-ixgbe.
+The next patch will need a way to retrieve the current timestamp from
+the NIC's PTP clock.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+The 'i225' suffix is removed, if anything model specific is needed,
+those specifics should be hidden by this function.
+
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 8 ++++----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h     | 1 +
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 7 +++----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 09a38272b413..cf272d3c5658 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6195,8 +6195,9 @@ static void ixgbe_set_eee_capable(struct ixgbe_adapter *adapter)
- /**
-  * ixgbe_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-+ * @txqueue: queue number that timed out
-  **/
--static void ixgbe_tx_timeout(struct net_device *netdev, unsigned int txqueue)
-+static void ixgbe_tx_timeout(struct net_device *netdev, unsigned int __always_unused txqueue)
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 2e5720d34a16..35baae900c1f 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -550,6 +550,7 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ void igc_ptp_tx_hang(struct igc_adapter *adapter);
++void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts);
+ 
+ #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 344bb67018f1..927af8ae2bef 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -17,8 +17,7 @@
+ #define IGC_PTP_TX_TIMEOUT		(HZ * 15)
+ 
+ /* SYSTIM read access for I225 */
+-static void igc_ptp_read_i225(struct igc_adapter *adapter,
+-			      struct timespec64 *ts)
++void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts)
  {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 sec, nsec;
+@@ -75,7 +74,7 @@ static int igc_ptp_adjtime_i225(struct ptp_clock_info *ptp, s64 delta)
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 7980d7265e10..f77fa3e4fdd1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -771,7 +771,7 @@ static s32 ixgbe_mii_bus_write_generic(struct ixgbe_hw *hw, int addr,
+ 	spin_lock_irqsave(&igc->tmreg_lock, flags);
  
- /**
-  *  ixgbe_mii_bus_read - Read a clause 22/45 register
-- *  @hw: pointer to hardware structure
-+ *  @bus: pointer to mii_bus structure which points to our driver private
-  *  @addr: address
-  *  @regnum: register number
-  **/
-@@ -786,7 +786,7 @@ static s32 ixgbe_mii_bus_read(struct mii_bus *bus, int addr, int regnum)
+-	igc_ptp_read_i225(igc, &now);
++	igc_ptp_read(igc, &now);
+ 	now = timespec64_add(now, then);
+ 	igc_ptp_write_i225(igc, (const struct timespec64 *)&now);
  
- /**
-  *  ixgbe_mii_bus_write - Write a clause 22/45 register
-- *  @hw: pointer to hardware structure
-+ *  @bus: pointer to mii_bus structure which points to our driver private
-  *  @addr: address
-  *  @regnum: register number
-  *  @val: value to write
-@@ -803,7 +803,7 @@ static s32 ixgbe_mii_bus_write(struct mii_bus *bus, int addr, int regnum,
+@@ -517,7 +516,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
  
- /**
-  *  ixgbe_x550em_a_mii_bus_read - Read a clause 22/45 register on x550em_a
-- *  @hw: pointer to hardware structure
-+ *  @bus: pointer to mii_bus structure which points to our driver private
-  *  @addr: address
-  *  @regnum: register number
-  **/
-@@ -820,7 +820,7 @@ static s32 ixgbe_x550em_a_mii_bus_read(struct mii_bus *bus, int addr,
+ static void igc_ptp_time_save(struct igc_adapter *adapter)
+ {
+-	igc_ptp_read_i225(adapter, &adapter->prev_ptp_time);
++	igc_ptp_read(adapter, &adapter->prev_ptp_time);
+ 	adapter->ptp_reset_start = ktime_get();
+ }
  
- /**
-  *  ixgbe_x550em_a_mii_bus_write - Write a clause 22/45 register on x550em_a
-- *  @hw: pointer to hardware structure
-+ *  @bus: pointer to mii_bus structure which points to our driver private
-  *  @addr: address
-  *  @regnum: register number
-  *  @val: value to write
 -- 
-2.25.4
+2.28.0
 
