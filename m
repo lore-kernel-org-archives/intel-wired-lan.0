@@ -1,8 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  2 Sep 2020 08:53:42 -0700
-Subject: [Intel-wired-lan] [net 1/6] ice: preserve NVM capabilities in safe
- mode
-Message-ID: <20200902155347.16972-1-anthony.l.nguyen@intel.com>
+Date: Wed,  2 Sep 2020 08:53:46 -0700
+Subject: [Intel-wired-lan] [net 5/6] ice: fix memory leak if
+ register_netdev_fails
+In-Reply-To: <20200902155347.16972-1-anthony.l.nguyen@intel.com>
+References: <20200902155347.16972-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200902155347.16972-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,108 +13,113 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-If the driver initializes in safe mode, it will call
-ice_set_safe_mode_caps. This results in clearing the capabilities
-structures, in order to set them up for operating in safe mode, ensuring
-many features are disabled.
+The ice_setup_pf_sw function can cause a memory leak if register_netdev
+fails, due to accidentally failing to free the VSI rings. Fix the memory
+leak by using ice_vsi_release, ensuring we actually go through the full
+teardown process.
 
-This has a side effect of also clearing the capability bits that relate
-to NVM update. The result is that the device driver will not indicate
-support for unified update, even if the firmware is capable.
+This should be safe even if the netdevice is not registered because we
+will have set the netdev pointer to NULL, ensuring ice_vsi_release won't
+call unregister_netdev.
 
-Fix this by adding the relevant capability fields to the list of values
-we preserve. To simplify the code, use a common_cap structure instead of
-a handful of local variables. To reduce some duplication of the
-capability name, introduce a couple of macros used to restore the
-capabilities values from the cached copy.
+An alternative fix would be moving management of the PF VSI netdev into
+the main VSI setup code. This is complicated and likely requires
+significant refactor in how we manage VSIs
 
-Fixes: de9b277ee032 ("ice: Add support for unified NVM update flow capability")
+Fixes: 3a858ba392c3 ("ice: Add support for VSI allocation and deallocation")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 49 ++++++++++++---------
- 1 file changed, 27 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c  |  6 +++---
+ drivers/net/ethernet/intel/ice/ice_lib.h  |  6 ------
+ drivers/net/ethernet/intel/ice/ice_main.c | 13 +++----------
+ 3 files changed, 6 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 34abfcea9858..7db5fd977367 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2288,26 +2288,28 @@ void ice_set_safe_mode_caps(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f2682776f8c8..65cc78279501 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -246,7 +246,7 @@ static int ice_get_free_slot(void *array, int size, int curr)
+  * ice_vsi_delete - delete a VSI from the switch
+  * @vsi: pointer to VSI being removed
+  */
+-void ice_vsi_delete(struct ice_vsi *vsi)
++static void ice_vsi_delete(struct ice_vsi *vsi)
  {
- 	struct ice_hw_func_caps *func_caps = &hw->func_caps;
- 	struct ice_hw_dev_caps *dev_caps = &hw->dev_caps;
--	u32 valid_func, rxq_first_id, txq_first_id;
--	u32 msix_vector_first_id, max_mtu;
-+	struct ice_hw_common_caps cached_caps;
- 	u32 num_funcs;
+ 	struct ice_pf *pf = vsi->back;
+ 	struct ice_vsi_ctx *ctxt;
+@@ -313,7 +313,7 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
+  *
+  * Returns 0 on success, negative on failure
+  */
+-int ice_vsi_clear(struct ice_vsi *vsi)
++static int ice_vsi_clear(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = NULL;
+ 	struct device *dev;
+@@ -563,7 +563,7 @@ static int ice_vsi_get_qs(struct ice_vsi *vsi)
+  * ice_vsi_put_qs - Release queues from VSI to PF
+  * @vsi: the VSI that is going to release queues
+  */
+-void ice_vsi_put_qs(struct ice_vsi *vsi)
++static void ice_vsi_put_qs(struct ice_vsi *vsi)
+ {
+ 	struct ice_pf *pf = vsi->back;
+ 	int i;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 981f3a156c24..3da17895a2b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -45,10 +45,6 @@ int ice_cfg_vlan_pruning(struct ice_vsi *vsi, bool ena, bool vlan_promisc);
  
- 	/* cache some func_caps values that should be restored after memset */
--	valid_func = func_caps->common_cap.valid_functions;
--	txq_first_id = func_caps->common_cap.txq_first_id;
--	rxq_first_id = func_caps->common_cap.rxq_first_id;
--	msix_vector_first_id = func_caps->common_cap.msix_vector_first_id;
--	max_mtu = func_caps->common_cap.max_mtu;
-+	cached_caps = func_caps->common_cap;
+ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
  
- 	/* unset func capabilities */
- 	memset(func_caps, 0, sizeof(*func_caps));
+-void ice_vsi_delete(struct ice_vsi *vsi);
+-
+-int ice_vsi_clear(struct ice_vsi *vsi);
+-
+ #ifdef CONFIG_DCB
+ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
+ #endif /* CONFIG_DCB */
+@@ -79,8 +75,6 @@ bool ice_is_reset_in_progress(unsigned long *state);
+ void
+ ice_write_qrxflxp_cntxt(struct ice_hw *hw, u16 pf_q, u32 rxdid, u32 prio);
  
-+#define ICE_RESTORE_FUNC_CAP(name) \
-+	func_caps->common_cap.name = cached_caps.name
-+
- 	/* restore cached values */
--	func_caps->common_cap.valid_functions = valid_func;
--	func_caps->common_cap.txq_first_id = txq_first_id;
--	func_caps->common_cap.rxq_first_id = rxq_first_id;
--	func_caps->common_cap.msix_vector_first_id = msix_vector_first_id;
--	func_caps->common_cap.max_mtu = max_mtu;
-+	ICE_RESTORE_FUNC_CAP(valid_functions);
-+	ICE_RESTORE_FUNC_CAP(txq_first_id);
-+	ICE_RESTORE_FUNC_CAP(rxq_first_id);
-+	ICE_RESTORE_FUNC_CAP(msix_vector_first_id);
-+	ICE_RESTORE_FUNC_CAP(max_mtu);
-+	ICE_RESTORE_FUNC_CAP(nvm_unified_update);
-+	ICE_RESTORE_FUNC_CAP(nvm_update_pending_nvm);
-+	ICE_RESTORE_FUNC_CAP(nvm_update_pending_orom);
-+	ICE_RESTORE_FUNC_CAP(nvm_update_pending_netlist);
+-void ice_vsi_put_qs(struct ice_vsi *vsi);
+-
+ void ice_vsi_dis_irq(struct ice_vsi *vsi);
  
- 	/* one Tx and one Rx queue in safe mode */
- 	func_caps->common_cap.num_rxq = 1;
-@@ -2318,22 +2320,25 @@ void ice_set_safe_mode_caps(struct ice_hw *hw)
- 	func_caps->guar_num_vsi = 1;
+ void ice_vsi_free_irq(struct ice_vsi *vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index ebec34d23865..d148bb71f290 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3178,10 +3178,8 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
+ 		return -EBUSY;
  
- 	/* cache some dev_caps values that should be restored after memset */
--	valid_func = dev_caps->common_cap.valid_functions;
--	txq_first_id = dev_caps->common_cap.txq_first_id;
--	rxq_first_id = dev_caps->common_cap.rxq_first_id;
--	msix_vector_first_id = dev_caps->common_cap.msix_vector_first_id;
--	max_mtu = dev_caps->common_cap.max_mtu;
-+	cached_caps = dev_caps->common_cap;
- 	num_funcs = dev_caps->num_funcs;
+ 	vsi = ice_pf_vsi_setup(pf, pf->hw.port_info);
+-	if (!vsi) {
+-		status = -ENOMEM;
+-		goto unroll_vsi_setup;
+-	}
++	if (!vsi)
++		return -ENOMEM;
  
- 	/* unset dev capabilities */
- 	memset(dev_caps, 0, sizeof(*dev_caps));
+ 	status = ice_cfg_netdev(vsi);
+ 	if (status) {
+@@ -3228,12 +3226,7 @@ static int ice_setup_pf_sw(struct ice_pf *pf)
+ 	}
  
-+#define ICE_RESTORE_DEV_CAP(name) \
-+	dev_caps->common_cap.name = cached_caps.name
-+
- 	/* restore cached values */
--	dev_caps->common_cap.valid_functions = valid_func;
--	dev_caps->common_cap.txq_first_id = txq_first_id;
--	dev_caps->common_cap.rxq_first_id = rxq_first_id;
--	dev_caps->common_cap.msix_vector_first_id = msix_vector_first_id;
--	dev_caps->common_cap.max_mtu = max_mtu;
-+	ICE_RESTORE_DEV_CAP(valid_functions);
-+	ICE_RESTORE_DEV_CAP(txq_first_id);
-+	ICE_RESTORE_DEV_CAP(rxq_first_id);
-+	ICE_RESTORE_DEV_CAP(msix_vector_first_id);
-+	ICE_RESTORE_DEV_CAP(max_mtu);
-+	ICE_RESTORE_DEV_CAP(nvm_unified_update);
-+	ICE_RESTORE_DEV_CAP(nvm_update_pending_nvm);
-+	ICE_RESTORE_DEV_CAP(nvm_update_pending_orom);
-+	ICE_RESTORE_DEV_CAP(nvm_update_pending_netlist);
- 	dev_caps->num_funcs = num_funcs;
+ unroll_vsi_setup:
+-	if (vsi) {
+-		ice_vsi_free_q_vectors(vsi);
+-		ice_vsi_delete(vsi);
+-		ice_vsi_put_qs(vsi);
+-		ice_vsi_clear(vsi);
+-	}
++	ice_vsi_release(vsi);
+ 	return status;
+ }
  
- 	/* one Tx and one Rx queue per function in safe mode */
 -- 
 2.20.1
 
