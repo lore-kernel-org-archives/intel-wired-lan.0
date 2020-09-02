@@ -1,50 +1,44 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Wed, 2 Sep 2020 09:47:34 -0400
-Subject: [Intel-wired-lan] VRRP not working on i40e X722 S2600WFT
-In-Reply-To: <20200901013519.rfmavd4763gdzw4r@csclub.uwaterloo.ca>
-References: <20200827183039.hrfnb63cxq3pmv4z@csclub.uwaterloo.ca>
- <20200828155616.3sd2ivrml2gpcvod@csclub.uwaterloo.ca>
- <20200831103512.00001fab@intel.com>
- <20200901013519.rfmavd4763gdzw4r@csclub.uwaterloo.ca>
-Message-ID: <20200902134734.fvtyn5tbhpyssrbq@csclub.uwaterloo.ca>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed,  2 Sep 2020 08:53:44 -0700
+Subject: [Intel-wired-lan] [net 3/6] ice: report correct max number of TCs
+In-Reply-To: <20200902155347.16972-1-anthony.l.nguyen@intel.com>
+References: <20200902155347.16972-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200902155347.16972-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 31, 2020 at 09:35:19PM -0400,  wrote:
-> On Mon, Aug 31, 2020 at 10:35:12AM -0700, Jesse Brandeburg wrote:
-> > Thanks for the report Lennart, I understand your frustration, as this
-> > should probably work without user configuration.
-> > 
-> > However, please give this command a try:
-> > ethtool --set-priv-flags ethX disable-source-pruning on
-> 
-> Hmm, our 4.9 kernel is just a touch too old to support that.  And yes
-> that really should not require a flag to be set, given the card has no
-> reason to ever do that pruning.  There is no justification you could
-> have for doing it in the first place.
+From: Dave Ertman <david.m.ertman@intel.com>
 
-So backporting the patch that enabled that flag does allow it to work.
-Of course there isn't a particularly good place to put an ethtool command
-in the boot up to make sure it runs before vrrp is started.  This has to
-be the default. I know I wasted about a week trying things to get this to
-work, and clearly lots of other people have wasted a ton of time on this
-"feature" too (calling it a feature is clearly wrong, it is a bug).
+In the driver currently, we are reporting max number of TCs
+to the DCBNL callback as a kernel define set to 8.  This is
+preventing userspace applications performing DCBx to correctly
+down map the TCs from requested to actual values.
 
-By default the NIC should work as expected.  Any weird questionable
-optimizations have to be turned on by the user explicitly when they
-understand the consequences.  I can't find any use case documented
-anywhere for this bug, I can only find things it has broken (like
-apparently arp monitoring on bonding, and vrrp).
+Report the actual max TC value to userspace from the capability
+struct.
 
-So who should make the patch to change this to be the default?  Clearly
-the current behaviour is harming and confusing more people than could
-possibly be impacted by changing the current default setting for the flag
-(in fact I would just about be willing to bet there are no people that
-want the current behaviour.  After all no other NIC does this, so clearly
-there is no need for it to be done).
+Fixes: b94b013eb626 ("ice: Implement DCBNL support")
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+index 87f91b750d59..842d44b63480 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+@@ -136,7 +136,7 @@ ice_dcbnl_getnumtcs(struct net_device *dev, int __always_unused tcid, u8 *num)
+ 	if (!test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags))
+ 		return -EINVAL;
+ 
+-	*num = IEEE_8021QAZ_MAX_TCS;
++	*num = pf->hw.func_caps.common_cap.maxtc;
+ 	return 0;
+ }
+ 
 -- 
-Len Sorensen
+2.20.1
+
