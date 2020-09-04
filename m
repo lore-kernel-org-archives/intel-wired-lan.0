@@ -1,41 +1,37 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Fri, 4 Sep 2020 16:32:56 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
- AF_XDP Rx ring is full
-In-Reply-To: <20200904162751.632c4443@carbon>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Fri, 4 Sep 2020 17:11:43 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 3/6] xsk: introduce
+ xsk_do_redirect_rx_full() helper
+In-Reply-To: <20200904135332.60259-4-bjorn.topel@gmail.com>
 References: <20200904135332.60259-1-bjorn.topel@gmail.com>
- <20200904162751.632c4443@carbon>
-Message-ID: <27e05518-99c6-15e2-b801-cbc0310630ef@intel.com>
+ <20200904135332.60259-4-bjorn.topel@gmail.com>
+Message-ID: <20200904171143.5868999a@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-09-04 16:27, Jesper Dangaard Brouer wrote:
-> On Fri,  4 Sep 2020 15:53:25 +0200
-> Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+On Fri,  4 Sep 2020 15:53:28 +0200
+Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
+
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
->> On my machine the "one core scenario Rx drop" performance went from
->> ~65Kpps to 21Mpps. In other words, from "not usable" to
->> "usable". YMMV.
-> 
-> We have observed this kind of dropping off an edge before with softirq
-> (when userspace process runs on same RX-CPU), but I thought that Eric
-> Dumazet solved it in 4cd13c21b207 ("softirq: Let ksoftirqd do its job").
-> 
-> I wonder what makes AF_XDP different or if the problem have come back?
-> 
+> The xsk_do_redirect_rx_full() helper can be used to check if a failure
+> of xdp_do_redirect() was due to the AF_XDP socket had a full Rx ring.
 
-I would say this is not the same issue. The problem is that the softirq 
-is busy dropping packets since the AF_XDP Rx is full. So, the cycles 
-*are* split 50/50, which is not what we want in this case. :-)
+This is very AF_XDP specific.  I think that the cpumap could likely
+benefit from similar approach? e.g. if the cpumap kthread is scheduled
+on the same CPU.
 
-This issue is more of a "Intel AF_XDP ZC drivers does stupid work", than 
-fairness. If the Rx ring is full, then there is really no use to let the 
-NAPI loop continue.
+But for cpumap we only want this behavior if sched on the same CPU as
+RX-NAPI.  This could be "seen" by the cpumap code itself in the case
+bq_flush_to_queue() drops packets, check if rcpu->cpu equal
+smp_processor_id().  Maybe I'm taking this too far?
 
-Would you agree, or am I rambling? :-P
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
-
-Bj?rn
