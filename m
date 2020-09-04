@@ -1,126 +1,70 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 04 Sep 2020 18:07:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- e20782119081ef4d1f5ce800f7ba8a890204cf7e
-Message-ID: <5f5211fc.XCH9mSiyCkZOWlOg%lkp@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Fri,  4 Sep 2020 15:53:25 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
+ AF_XDP Rx ring is full
+Message-ID: <20200904135332.60259-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: e20782119081ef4d1f5ce800f7ba8a890204cf7e  ixgbe: clean up W=1 warnings in ixgbe
+This series addresses a problem that arises when AF_XDP zero-copy is
+enabled, and the kernel softirq Rx processing and userland process is
+running on the same core.
 
-elapsed time: 720m
+In contrast to the two-core case, when the userland process/Rx softirq
+shares one core, it it very important that the kernel is not doing
+unnecessary work, but instead let the userland process run. This has
+not been the case.
 
-configs tested: 97
-configs skipped: 3
+For the Intel drivers, when the XDP_REDIRECT fails due to a full Rx
+ring, the NAPI loop will simply drop the packet and continue
+processing the next packet. The XDP_REDIRECT operation will then fail
+again, since userland has not been able to empty the full Rx ring.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The fix for this is letting the NAPI loop exit early, if the AF_XDP
+socket Rx ring is full.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          rsk7203_defconfig
-m68k                            q40_defconfig
-arm                           sama5_defconfig
-mips                     cu1000-neo_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                mpc7448_hpc2_defconfig
-xtensa                generic_kc705_defconfig
-mips                      fuloong2e_defconfig
-mips                            ar7_defconfig
-arm                         lpc32xx_defconfig
-powerpc                        cell_defconfig
-openrisc                         alldefconfig
-powerpc                      ep88xc_defconfig
-arm                           viper_defconfig
-um                            kunit_defconfig
-powerpc                         ps3_defconfig
-powerpc                    mvme5100_defconfig
-sh                           se7780_defconfig
-ia64                             allmodconfig
-mips                         bigsur_defconfig
-arm                         lubbock_defconfig
-arm                            hisi_defconfig
-arm                    vt8500_v6_v7_defconfig
-arm                  colibri_pxa300_defconfig
-mips                        workpad_defconfig
-alpha                            alldefconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a004-20200904
-i386                 randconfig-a005-20200904
-i386                 randconfig-a006-20200904
-i386                 randconfig-a002-20200904
-i386                 randconfig-a003-20200904
-i386                 randconfig-a001-20200904
-i386                 randconfig-a016-20200903
-i386                 randconfig-a015-20200903
-i386                 randconfig-a011-20200903
-i386                 randconfig-a013-20200903
-i386                 randconfig-a014-20200903
-i386                 randconfig-a012-20200903
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+The outline is as following; The first patch cleans up the error codes
+returned by xdp_do_redirect(), so that a driver can figure out when
+the Rx ring is full (ENOBUFS). Patch two adds an extended
+xdp_do_redirect() variant that returns what kind of map that was used
+in the XDP_REDIRECT action. The third patch adds an AF_XDP driver
+helper to figure out if the Rx ring was full. Finally, the last three
+patches implements the "early exit" support for Intel.
 
-clang tested configs:
-x86_64               randconfig-a004-20200902
-x86_64               randconfig-a006-20200902
-x86_64               randconfig-a003-20200902
-x86_64               randconfig-a005-20200902
-x86_64               randconfig-a001-20200902
-x86_64               randconfig-a002-20200902
-x86_64               randconfig-a013-20200903
-x86_64               randconfig-a016-20200903
-x86_64               randconfig-a011-20200903
-x86_64               randconfig-a012-20200903
-x86_64               randconfig-a015-20200903
-x86_64               randconfig-a014-20200903
+On my machine the "one core scenario Rx drop" performance went from
+~65Kpps to 21Mpps. In other words, from "not usable" to
+"usable". YMMV.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+I prefer to route this series via bpf-next, since it include core
+changes, and not only driver changes.
+
+
+Have a nice weekend!
+Bj?rn
+
+Bj?rn T?pel (6):
+  xsk: improve xdp_do_redirect() error codes
+  xdp: introduce xdp_do_redirect_ext() function
+  xsk: introduce xsk_do_redirect_rx_full() helper
+  i40e, xsk: finish napi loop if AF_XDP Rx queue is full
+  ice, xsk: finish napi loop if AF_XDP Rx queue is full
+  ixgbe, xsk: finish napi loop if AF_XDP Rx queue is full
+
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 23 ++++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_xsk.c     | 23 ++++++++++++++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 23 ++++++++++++++------
+ include/linux/filter.h                       |  2 ++
+ include/net/xdp_sock_drv.h                   |  9 ++++++++
+ net/core/filter.c                            | 16 ++++++++++++--
+ net/xdp/xsk.c                                |  2 +-
+ net/xdp/xsk_queue.h                          |  2 +-
+ 8 files changed, 75 insertions(+), 25 deletions(-)
+
+
+base-commit: 8eb629585d2231e90112148009e2a11b0979ca38
+-- 
+2.25.1
+
