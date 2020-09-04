@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri,  4 Sep 2020 15:53:26 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 1/6] xsk: improve
- xdp_do_redirect() error codes
+Date: Fri,  4 Sep 2020 15:53:27 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 2/6] xdp: introduce
+ xdp_do_redirect_ext() function
 In-Reply-To: <20200904135332.60259-1-bjorn.topel@gmail.com>
 References: <20200904135332.60259-1-bjorn.topel@gmail.com>
-Message-ID: <20200904135332.60259-2-bjorn.topel@gmail.com>
+Message-ID: <20200904135332.60259-3-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,59 +13,82 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-The error codes returned by xdp_do_redirect() when redirecting a frame
-to an AF_XDP socket has not been very useful. A driver could not
-distinguish between different errors. Prior this change the following
-codes where used:
+Introduce the xdp_do_redirect_ext() which returns additional
+information to the caller. For now, it is the type of map that the
+packet was redirected to.
 
-Socket not bound or incorrect queue/netdev: EINVAL
-XDP frame/AF_XDP buffer size mismatch: ENOSPC
-Could not allocate buffer (copy mode): ENOSPC
-AF_XDP Rx buffer full: ENOSPC
-
-After this change:
-
-Socket not bound or incorrect queue/netdev: EINVAL
-XDP frame/AF_XDP buffer size mismatch: ENOSPC
-Could not allocate buffer (copy mode): ENOMEM
-AF_XDP Rx buffer full: ENOBUFS
-
-An AF_XDP zero-copy driver can now potentially determine if the
-failure was due to a full Rx buffer, and if so stop processing more
-frames, yielding to the userland AF_XDP application.
+This enables the driver to have more fine-grained control, e.g. is the
+redirect fails due to full AF_XDP Rx queue (error code ENOBUFS and map
+is XSKMAP), a zero-copy enabled driver should yield to userland as
+soon as possible.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- net/xdp/xsk.c       | 2 +-
- net/xdp/xsk_queue.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ include/linux/filter.h |  2 ++
+ net/core/filter.c      | 16 ++++++++++++++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/net/xdp/xsk.c b/net/xdp/xsk.c
-index 3895697f8540..db38560c4af7 100644
---- a/net/xdp/xsk.c
-+++ b/net/xdp/xsk.c
-@@ -197,7 +197,7 @@ static int __xsk_rcv(struct xdp_sock *xs, struct xdp_buff *xdp, u32 len,
- 	xsk_xdp = xsk_buff_alloc(xs->pool);
- 	if (!xsk_xdp) {
- 		xs->rx_dropped++;
--		return -ENOSPC;
-+		return -ENOMEM;
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index 995625950cc1..0060c2c8abc3 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -942,6 +942,8 @@ static inline int xdp_ok_fwd_dev(const struct net_device *fwd,
+  */
+ int xdp_do_generic_redirect(struct net_device *dev, struct sk_buff *skb,
+ 			    struct xdp_buff *xdp, struct bpf_prog *prog);
++int xdp_do_redirect_ext(struct net_device *dev, struct xdp_buff *xdp,
++			struct bpf_prog *xdp_prog, enum bpf_map_type *map_type);
+ int xdp_do_redirect(struct net_device *dev,
+ 		    struct xdp_buff *xdp,
+ 		    struct bpf_prog *prog);
+diff --git a/net/core/filter.c b/net/core/filter.c
+index 47eef9a0be6a..ce6098210a23 100644
+--- a/net/core/filter.c
++++ b/net/core/filter.c
+@@ -3596,8 +3596,8 @@ void bpf_clear_redirect_map(struct bpf_map *map)
+ 	}
+ }
+ 
+-int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
+-		    struct bpf_prog *xdp_prog)
++int xdp_do_redirect_ext(struct net_device *dev, struct xdp_buff *xdp,
++			struct bpf_prog *xdp_prog, enum bpf_map_type *map_type)
+ {
+ 	struct bpf_redirect_info *ri = this_cpu_ptr(&bpf_redirect_info);
+ 	struct bpf_map *map = READ_ONCE(ri->map);
+@@ -3609,6 +3609,8 @@ int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
+ 	ri->tgt_value = NULL;
+ 	WRITE_ONCE(ri->map, NULL);
+ 
++	*map_type = BPF_MAP_TYPE_UNSPEC;
++
+ 	if (unlikely(!map)) {
+ 		fwd = dev_get_by_index_rcu(dev_net(dev), index);
+ 		if (unlikely(!fwd)) {
+@@ -3618,6 +3620,7 @@ int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
+ 
+ 		err = dev_xdp_enqueue(fwd, xdp, dev);
+ 	} else {
++		*map_type = map->map_type;
+ 		err = __bpf_tx_xdp_map(dev, fwd, map, xdp);
  	}
  
- 	xsk_copy_xdp(xsk_xdp, xdp, len);
-diff --git a/net/xdp/xsk_queue.h b/net/xdp/xsk_queue.h
-index 2d883f631c85..b76966cf122e 100644
---- a/net/xdp/xsk_queue.h
-+++ b/net/xdp/xsk_queue.h
-@@ -305,7 +305,7 @@ static inline int xskq_prod_reserve_desc(struct xsk_queue *q,
- 	u32 idx;
+@@ -3630,6 +3633,15 @@ int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
+ 	_trace_xdp_redirect_map_err(dev, xdp_prog, fwd, map, index, err);
+ 	return err;
+ }
++EXPORT_SYMBOL_GPL(xdp_do_redirect_ext);
++
++int xdp_do_redirect(struct net_device *dev, struct xdp_buff *xdp,
++		    struct bpf_prog *xdp_prog)
++{
++	enum bpf_map_type dummy;
++
++	return xdp_do_redirect_ext(dev, xdp, xdp_prog, &dummy);
++}
+ EXPORT_SYMBOL_GPL(xdp_do_redirect);
  
- 	if (xskq_prod_is_full(q))
--		return -ENOSPC;
-+		return -ENOBUFS;
- 
- 	/* A, matches D */
- 	idx = q->cached_prod++ & q->ring_mask;
+ static int xdp_do_generic_redirect_map(struct net_device *dev,
 -- 
 2.25.1
 
