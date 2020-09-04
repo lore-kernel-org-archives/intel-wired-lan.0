@@ -1,8 +1,8 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri,  4 Sep 2020 13:37:07 -0700
-Subject: [Intel-wired-lan] [PATCH net v1] intel-ethernet: make W=1 build
- cleanly
-Message-ID: <20200904203707.2248877-1-jesse.brandeburg@intel.com>
+Date: Fri,  4 Sep 2020 13:38:49 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2] intel-ethernet: make W=1
+ build cleanly
+Message-ID: <20200904203849.2248944-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,6 +28,8 @@ Compile tested only.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
+v2: pointed at net-next instead
+
  drivers/net/ethernet/intel/e100.c             |   8 +-
  drivers/net/ethernet/intel/e1000/e1000_hw.c   | 147 ++++++++----------
  drivers/net/ethernet/intel/e1000/e1000_main.c |  39 +++--
