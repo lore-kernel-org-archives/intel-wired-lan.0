@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 5 Sep 2020 03:01:08 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: use 16B HW
- descriptors instead of 32B
-In-Reply-To: <20200825113556.18342-3-bjorn.topel@gmail.com>
+Date: Sat, 5 Sep 2020 03:03:46 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e,
+ xsk: move buffer allocation out of the Rx processing loop
+In-Reply-To: <20200825113556.18342-4-bjorn.topel@gmail.com>
 References: <20200825113556.18342-1-bjorn.topel@gmail.com>
- <20200825113556.18342-3-bjorn.topel@gmail.com>
-Message-ID: <DM6PR11MB2890B2527FB513C92041C152BC2A0@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <20200825113556.18342-4-bjorn.topel@gmail.com>
+Message-ID: <DM6PR11MB2890BF5A351C1D7B016E5E12BC2A0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,33 +19,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: netdev at vger.kernel.org; bpf at vger.kernel.org; Topel, Bjorn
 > <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>;
 > kuba at kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: use 16B HW
-> descriptors instead of 32B
+> Subject: [Intel-wired-lan] [PATCH net-next v2 3/3] i40e, xsk: move buffer
+> allocation out of the Rx processing loop
 > 
 > From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> The i40e NIC supports two flavors of HW descriptors, 16 and 32
-> byte. The latter has, obviously, room for more offloading
-> information. However, the only fields of the 32B HW descriptor that is
-> being used by the driver, is also available in the 16B descriptor.
+> Instead of checking in each iteration of the Rx packet processing
+> loop, move the allocation out of the loop and do it once for each napi
+> activation.
 > 
-> In other words; Reading and writing 32 bytes instead of 16 byte is a
-> waste of bus bandwidth.
-> 
-> This commit starts using 16 byte descriptors instead of 32 byte
-> descriptors.
-> 
-> For AF_XDP the rx_drop benchmark was improved by 2%.
+> For AF_XDP the rx_drop benchmark was improved by 6%.
 > 
 > Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 10 ++++------
->  drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 ++--
->  drivers/net/ethernet/intel/i40e/i40e_trace.h   |  6 +++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  6 +++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_type.h    |  5 ++++-
->  7 files changed, 18 insertions(+), 17 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
