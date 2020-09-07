@@ -1,89 +1,62 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Mon, 7 Sep 2020 15:37:40 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
- AF_XDP Rx ring is full
-In-Reply-To: <20200904165837.16d8ecfd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20200904135332.60259-1-bjorn.topel@gmail.com>
- <20200904162751.632c4443@carbon>
- <27e05518-99c6-15e2-b801-cbc0310630ef@intel.com>
- <20200904165837.16d8ecfd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <1d2e781e-b26d-4cf0-0178-25b8835dbe26@intel.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Mon,  7 Sep 2020 17:02:13 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] xsk: increase NAPI budget
+ for AF_XDP zero-copy path
+Message-ID: <20200907150217.30888-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-09-05 01:58, Jakub Kicinski wrote:
- > On Fri, 4 Sep 2020 16:32:56 +0200 Bj?rn T?pel wrote:
- >> On 2020-09-04 16:27, Jesper Dangaard Brouer wrote:
- >>> On Fri,  4 Sep 2020 15:53:25 +0200
- >>> Bj?rn T?pel <bjorn.topel@gmail.com> wrote:
- >>>
- >>>> On my machine the "one core scenario Rx drop" performance went from
- >>>> ~65Kpps to 21Mpps. In other words, from "not usable" to
- >>>> "usable". YMMV.
- >>>
- >>> We have observed this kind of dropping off an edge before with softirq
- >>> (when userspace process runs on same RX-CPU), but I thought that Eric
- >>> Dumazet solved it in 4cd13c21b207 ("softirq: Let ksoftirqd do its 
-job").
- >>>
- >>> I wonder what makes AF_XDP different or if the problem have come back?
- >>>
- >>
- >> I would say this is not the same issue. The problem is that the softirq
- >> is busy dropping packets since the AF_XDP Rx is full. So, the cycles
- >> *are* split 50/50, which is not what we want in this case. :-)
- >>
- >> This issue is more of a "Intel AF_XDP ZC drivers does stupid work", than
- >> fairness. If the Rx ring is full, then there is really no use to let the
- >> NAPI loop continue.
- >>
- >> Would you agree, or am I rambling? :-P
- >
- > I wonder if ksoftirqd never kicks in because we are able to discard
- > the entire ring before we run out of softirq "slice".
- >
+The NAPI budget (NAPI_POLL_WEIGHT), meaning the number of received
+packets that are allowed to be processed for each NAPI invocation,
+takes into consideration that each received packet is aimed for the
+kernel networking stack.
 
-This is exactly what's happening, so we're entering a "busy poll like"
-behavior; syscall, return from syscall softirq/napi, userland.
+That is not the case for the AF_XDP receive path, where the cost of
+each packet is significantly less. Therefore, this commit adds a new
+NAPI budget, which is the NAPI_POLL_WEIGHT scaled by 4. Typically that
+would be 256 in most configuration. It is encouraged that AF_XDP
+zero-copy capable drivers use the XSK_NAPI_WEIGHT, when zero-copy is
+enabled.
 
- >
- > I've been pondering the exact problem you're solving with Maciej
- > recently. The efficiency of AF_XDP on one core with the NAPI processing.
- >
- > Your solution (even though it admittedly helps, and is quite simple)
- > still has the application potentially not able to process packets
- > until the queue fills up. This will be bad for latency.
- >
- > Why don't we move closer to application polling? Never re-arm the NAPI
- > after RX, let the application ask for packets, re-arm if 0 polled.
- > You'd get max batching, min latency.
- >
- > Who's the rambling one now? :-D
- >
+Processing 256 packets targeted for AF_XDP is still less work than 64
+(NAPI_POLL_WEIGHT) packets going to the kernel networking stack.
 
-:-D No, these are all very good ideas! We've actually experimented
-with it with the busy-poll series a while back -- NAPI busy-polling
-does exactly "application polling".
+Jakub suggested in [1] that a more generic approach was preferred over
+"driver hacks". It is arguable if adding the budget as a define which
+is a scaled NAPI_POLL_WEIGHT would classify as "generic", but it is a
+bit further away from "driver hacks". ;-)
 
-However, I wonder if the busy-polling would have better performance
-than the scenario above (i.e. when the ksoftirqd never kicks in)?
-Executing the NAPI poll *explicitly* in the syscall, or implicitly
-from the softirq.
+The first patch adds the actual define, and last three make the Intel
+drivers use it.
 
-Hmm, thinking out loud here. A simple(r) patch enabling busy poll;
-Exporting the napi_id to the AF_XDP socket (xdp->rxq->napi_id to
-sk->sk_napi_id), and do the sk_busy_poll_loop() in sendmsg.
+The AF_XDP Rx performance for "rxdrop" is up ~8% on my machine.
 
-Or did you have something completely different in mind?
-
-As for this patch set, I think it would make sense to pull it in since
-it makes the single-core scenario *much* better, and it is pretty
-simple. Then do the application polling as another, potentially,
-improvement series.
+Routing this series via bpf-next instead of Intel Wired/netdev, since
+it is a core AF_XDP addition, and hopefully Nvidia will pick this up
+for the mlx5 driver.
 
 
-Thoughts? Thanks a lot for the feedback!
 Bj?rn
+
+[1] https://lore.kernel.org/netdev/20200728131512.17c41621 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
+
+Bj?rn T?pel (4):
+  xsk: add XSK_NAPI_WEIGHT define
+  i40e, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
+  ice, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
+  ixgbe, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
+
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c     | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 2 +-
+ include/net/xdp_sock_drv.h                   | 3 +++
+ 4 files changed, 6 insertions(+), 3 deletions(-)
+
+
+base-commit: bc0b5a03079bd78fb3d5cba1ccabf0a7efb1d99f
+-- 
+2.25.1
+
