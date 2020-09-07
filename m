@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  7 Sep 2020 17:02:16 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 3/4] ice,
+Date: Mon,  7 Sep 2020 17:02:17 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 4/4] ixgbe,
  xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
 In-Reply-To: <20200907150217.30888-1-bjorn.topel@gmail.com>
 References: <20200907150217.30888-1-bjorn.topel@gmail.com>
-Message-ID: <20200907150217.30888-4-bjorn.topel@gmail.com>
+Message-ID: <20200907150217.30888-5-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,22 +18,22 @@ zero-copy path.
 
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 797886524054..cb473ccdf613 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -561,7 +561,7 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
- 	unsigned int xdp_xmit = 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 3771857cf887..f32c1ba0d237 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -239,7 +239,7 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
  	bool failure = false;
+ 	struct sk_buff *skb;
  
--	while (likely(total_rx_packets < (unsigned int)budget)) {
+-	while (likely(total_rx_packets < budget)) {
 +	while (likely(total_rx_packets < XSK_NAPI_WEIGHT)) {
- 		union ice_32b_rx_flex_desc *rx_desc;
- 		unsigned int size, xdp_res = 0;
- 		struct ice_rx_buf *rx_buf;
+ 		union ixgbe_adv_rx_desc *rx_desc;
+ 		struct ixgbe_rx_buffer *bi;
+ 		unsigned int size;
 -- 
 2.25.1
 
