@@ -1,13 +1,17 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Mon,  7 Sep 2020 17:02:13 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 0/4] xsk: increase NAPI budget
- for AF_XDP zero-copy path
-Message-ID: <20200907150217.30888-1-bjorn.topel@gmail.com>
+Date: Mon,  7 Sep 2020 17:02:14 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 1/4] xsk: add XSK_NAPI_WEIGHT
+ define
+In-Reply-To: <20200907150217.30888-1-bjorn.topel@gmail.com>
+References: <20200907150217.30888-1-bjorn.topel@gmail.com>
+Message-ID: <20200907150217.30888-2-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
 The NAPI budget (NAPI_POLL_WEIGHT), meaning the number of received
 packets that are allowed to be processed for each NAPI invocation,
@@ -24,39 +28,27 @@ enabled.
 Processing 256 packets targeted for AF_XDP is still less work than 64
 (NAPI_POLL_WEIGHT) packets going to the kernel networking stack.
 
-Jakub suggested in [1] that a more generic approach was preferred over
-"driver hacks". It is arguable if adding the budget as a define which
-is a scaled NAPI_POLL_WEIGHT would classify as "generic", but it is a
-bit further away from "driver hacks". ;-)
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ include/net/xdp_sock_drv.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The first patch adds the actual define, and last three make the Intel
-drivers use it.
-
-The AF_XDP Rx performance for "rxdrop" is up ~8% on my machine.
-
-Routing this series via bpf-next instead of Intel Wired/netdev, since
-it is a core AF_XDP addition, and hopefully Nvidia will pick this up
-for the mlx5 driver.
-
-
-Bj?rn
-
-[1] https://lore.kernel.org/netdev/20200728131512.17c41621 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
-
-Bj?rn T?pel (4):
-  xsk: add XSK_NAPI_WEIGHT define
-  i40e, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
-  ice, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
-  ixgbe, xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
-
- drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 2 +-
- drivers/net/ethernet/intel/ice/ice_xsk.c     | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 2 +-
- include/net/xdp_sock_drv.h                   | 3 +++
- 4 files changed, 6 insertions(+), 3 deletions(-)
-
-
-base-commit: bc0b5a03079bd78fb3d5cba1ccabf0a7efb1d99f
+diff --git a/include/net/xdp_sock_drv.h b/include/net/xdp_sock_drv.h
+index 5b1ee8a9976d..4fc8e931d56f 100644
+--- a/include/net/xdp_sock_drv.h
++++ b/include/net/xdp_sock_drv.h
+@@ -7,8 +7,11 @@
+ #define _LINUX_XDP_SOCK_DRV_H
+ 
+ #include <net/xdp_sock.h>
++#include <linux/netdevice.h>
+ #include <net/xsk_buff_pool.h>
+ 
++#define XSK_NAPI_WEIGHT (NAPI_POLL_WEIGHT << 2)
++
+ #ifdef CONFIG_XDP_SOCKETS
+ 
+ void xsk_tx_completed(struct xsk_buff_pool *pool, u32 nb_entries);
 -- 
 2.25.1
 
