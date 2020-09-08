@@ -1,104 +1,132 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@intel.com>
-Date: Tue, 8 Sep 2020 13:49:54 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 4/4] ixgbe,
- xsk: use XSK_NAPI_WEIGHT as NAPI poll budget
-In-Reply-To: <6bbf1793-d2be-b724-eec4-65546d4cbc9c@gmail.com>
-References: <20200907150217.30888-1-bjorn.topel@gmail.com>
- <20200907150217.30888-5-bjorn.topel@gmail.com>
- <6bbf1793-d2be-b724-eec4-65546d4cbc9c@gmail.com>
-Message-ID: <c5dac6d2-e2aa-05a4-2606-7db0687dd12b@intel.com>
+Date: Tue, 8 Sep 2020 14:21:54 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
+ AF_XDP Rx ring is full
+In-Reply-To: <CAJ8uoz3WbS7E1OiC5p8x+o48vwkN43R9JxMwvRvgVk4n3SNiZg@mail.gmail.com>
+References: <20200904135332.60259-1-bjorn.topel@gmail.com>
+ <0257f769-0f43-a5b7-176d-7c5ff8eaac3a@intel.com>
+ <11f663ec-5ea7-926c-370d-0b67d3052583@nvidia.com>
+ <CAJ8uoz3WbS7E1OiC5p8x+o48vwkN43R9JxMwvRvgVk4n3SNiZg@mail.gmail.com>
+Message-ID: <75146564-2774-47ac-cc75-40d74bea50d8@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-09-08 11:45, Eric Dumazet wrote:
-> 
-> 
-> On 9/7/20 5:02 PM, Bj?rn T?pel wrote:
->> From: Bj?rn T?pel <bjorn.topel@intel.com>
+On 2020-09-08 13:37, Magnus Karlsson wrote:
+> On Tue, Sep 8, 2020 at 12:33 PM Maxim Mikityanskiy <maximmi@nvidia.com> wrote:
 >>
->> Start using XSK_NAPI_WEIGHT as NAPI poll budget for the AF_XDP Rx
->> zero-copy path.
+>> On 2020-09-04 16:59, Bj?rn T?pel wrote:
+>>> On 2020-09-04 15:53, Bj?rn T?pel wrote:
+>>>> This series addresses a problem that arises when AF_XDP zero-copy is
+>>>> enabled, and the kernel softirq Rx processing and userland process
+>>>> is running on the same core.
+>>>>
+>>> [...]
+>>>>
+>>>
+>>> @Maxim I'm not well versed in Mellanox drivers. Would this be relevant
+>>> to mlx5 as well?
 >>
->> Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
->> ---
->>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
+>> Thanks for letting me know about this series! So the basic idea is to
+>> stop processing hardware completions if the RX ring gets full, because
+>> the application didn't have chance to run? Yes, I think it's also
+>> relevant to mlx5, the issue is not driver-specific, and a similar fix is
+>> applicable. However, it may lead to completion queue overflows - some
+>> analysis is needed to understand what happens then and how to handle it.
 >>
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> index 3771857cf887..f32c1ba0d237 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> @@ -239,7 +239,7 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
->>   	bool failure = false;
->>   	struct sk_buff *skb;
->>   
->> -	while (likely(total_rx_packets < budget)) {
->> +	while (likely(total_rx_packets < XSK_NAPI_WEIGHT)) {
->>   		union ixgbe_adv_rx_desc *rx_desc;
->>   		struct ixgbe_rx_buffer *bi;
->>   		unsigned int size
-> 
-> This is a violation of NAPI API. IXGBE is already diverging a bit from best practices.
+>> Regarding the feature, I think it should be opt-in (disabled by
+>> default), because old applications may not wakeup RX after they process
+>> packets in the RX ring.
 >
 
-Thanks for having a look, Eric! By diverging from best practices, do
-you mean that multiple queues share one NAPI context, and the budget
-is split over the queues (say, 4 queues, 64/4 per queue), or that Tx
-simply ignores the budget? Or both?
+First of all; Max, thanks for some really good input as usual!
 
-> There are reasons we want to control the budget from callers,
-> if you want bigger budget just increase it instead of using your own ?
-> 
-> I would rather use a generic patch.
+
+> How about need_wakeup enable/disable at bind time being that opt-in,
+> instead of a new option? It is off by default, and when it is off, the
+> driver busy-spins on the Rx ring until it can put an entry there. It
+> will not yield to the application by returning something less than
+> budget. Applications need not check the need_wakeup flag. If
+> need_wakeup is enabled by the user, the contract is that user-space
+> needs to check the need_wakeup flag and act on it. If it does not,
+> then that is a programming error and it can be set for any unspecified
+> reason. No reason to modify the application, if it checks need_wakeup.
+> But if this patch behaves like that I have not checked.
 >
 
-Hmm, so a configurable NAPI budget for, say, the AF_XDP enabled
-queues/NAPIs? Am I reading that correct? (Note that this is *only* for
-the AF_XDP enabled queues.)
+It does not behave exactly like this. If need_wakeup is enabled, the 
+napi look exists, but if not the napi is rearmed -- so we'll get a less 
+efficient loop. I'll need address this.
 
-I'll try to rework this to something more palatable.
+I'm leaning towards a more explicit opt-in like Max suggested. As Max 
+pointed out, AF_XDP/XDP_TX is actually a non-insane(!) way of using 
+AF_XDP zero-copy, which will suffer from the early exit.
 
 
-Thanks,
+> Good points in the rest of the mail, that I think should be addressed.
+>
+
+Yeah, I agree. I will take a step back an rethink. I'll experiment with
+the busy-polling suggested by Jakub, and also an opt-in early exit.
+
+Thanks for all the suggestions folks!
+
+
+Cheers,
 Bj?rn
 
 
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 7bd4fcdd0738a718d8b0f7134523cd87e4dcdb7b..33bcbdb6fef488983438c6584e3cbb0a44febb1a 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -2311,11 +2311,14 @@ static inline void *netdev_priv(const struct net_device *dev)
->    */
->   #define SET_NETDEV_DEVTYPE(net, devtype)       ((net)->dev.type = (devtype))
->   
-> -/* Default NAPI poll() weight
-> - * Device drivers are strongly advised to not use bigger value
-> - */
-> +/* Default NAPI poll() weight. Highly recommended. */
->   #define NAPI_POLL_WEIGHT 64
->   
-> +/* Device drivers are strongly advised to not use bigger value,
-> + * as this might cause latencies in stress conditions.
-> + */
-> +#define NAPI_POLL_WEIGHT_MAX 256
-> +
->   /**
->    *     netif_napi_add - initialize a NAPI context
->    *     @dev:  network device
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 4086d335978c1bf62bd3965bd2ea96a4ac06b13d..496713fb6075bd8e5e22725e7c817172858e1dd7 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -6608,7 +6608,7 @@ void netif_napi_add(struct net_device *dev, struct napi_struct *napi,
->          INIT_LIST_HEAD(&napi->rx_list);
->          napi->rx_count = 0;
->          napi->poll = poll;
-> -       if (weight > NAPI_POLL_WEIGHT)
-> +       if (weight > NAPI_POLL_WEIGHT_MAX)
->                  netdev_err_once(dev, "%s() called with weight %d\n", __func__,
->                                  weight);
->          napi->weight = weight;
+> /Magnus
 > 
+>> Is it required to change xdpsock accordingly?
+>> Also, when need_wakeup is disabled, your driver implementation seems to
+>> quit NAPI anyway, but it shouldn't happen, because no one will send a
+>> wakeup.
+>>
+>> Waiting until the RX ring fills up, then passing control to the
+>> application and waiting until the hardware completion queue fills up,
+>> and so on increases latency - the busy polling approach sounds more
+>> legit here.
+>>
+>> The behavior may be different depending on the driver implementation:
+>>
+>> 1. If you arm the completion queue and leave interrupts enabled on early
+>> exit too, the application will soon be interrupted anyway and won't have
+>> much time to process many packets, leading to app <-> NAPI ping-pong one
+>> packet at a time, making NAPI inefficient.
+>>
+>> 2. If you don't arm the completion queue on early exit and wait for the
+>> explicit wakeup from the application, it will easily overflow the
+>> hardware completion queue, because we don't have a symmetric mechanism
+>> to stop the application on imminent hardware queue overflow. It doesn't
+>> feel correct and may be trickier to handle: if the application is too
+>> slow, such drops should happen on driver/kernel level, not in hardware.
+>>
+>> Which behavior is used in your drivers? Or am I missing some more options?
+>>
+>> BTW, it should be better to pass control to the application before the
+>> first dropped packet, not after it has been dropped.
+>>
+>> Some workloads different from pure AF_XDP, for example, 50/50 AF_XDP and
+>> XDP_TX may suffer from such behavior, so it's another point to make a
+>> knob on the application layer to enable/disable it.
+>>
+>>   From the driver API perspective, I would prefer to see a simpler API if
+>> possible. The current API exposes things that the driver shouldn't know
+>> (BPF map type), and requires XSK-specific handling. It would be better
+>> if some specific error code returned from xdp_do_redirect was reserved
+>> to mean "exit NAPI early if you support it". This way we wouldn't need
+>> two new helpers, two xdp_do_redirect functions, and this approach would
+>> be extensible to other non-XSK use cases without further changes in the
+>> driver, and also the logic to opt-in the feature could be put inside the
+>> kernel.
+>>
+>> Thanks,
+>> Max
+>>
+>>>
+>>> Cheers,
+>>> Bj?rn
+>>
