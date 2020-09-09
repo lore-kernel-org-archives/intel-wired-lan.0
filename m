@@ -1,34 +1,69 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 8 Sep 2020 11:34:26 -0700
-Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
- AF_XDP Rx ring is full
-In-Reply-To: <12536115-3dae-1efa-5c0d-34fc951fca48@intel.com>
-References: <20200904135332.60259-1-bjorn.topel@gmail.com>
- <20200904162751.632c4443@carbon>
- <27e05518-99c6-15e2-b801-cbc0310630ef@intel.com>
- <20200904165837.16d8ecfd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <1d2e781e-b26d-4cf0-0178-25b8835dbe26@intel.com>
- <20200907114055.27c95483@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <8f698ac5-916f-9bb0-cce2-f00fba6ba407@intel.com>
- <20200908102438.28351aab@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <12536115-3dae-1efa-5c0d-34fc951fca48@intel.com>
-Message-ID: <20200908113426.7af79b5b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Wed,  9 Sep 2020 10:22:12 +0200
+Subject: [Intel-wired-lan] [PATCH] i40e: report correct VF link speed when
+ link state is set to enable
+Message-ID: <20200909082212.67583-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 8 Sep 2020 20:28:14 +0200 Bj?rn T?pel wrote:
-> On 2020-09-08 19:24, Jakub Kicinski wrote:
-> >> I'll start playing around a bit, but again, I think this simple series
-> >> should go in just to make AF_XDP single core usable*today*.  
-> > No objection from me.  
-> 
-> Thanks Jakub, but as you (probably) noticed in the other thread Maxim 
-> had some valid concerns. Let's drop this for now, and I'll get back 
-> after some experimentation/hacking.
+When the virtual link state was set to "enable" ethtool would report
+link speed as 40000Mb/s regardless of the underlying device.
+Report the correct link speed.
 
-Yeah, I sort of assumed you got the wake-up problem down :S
+Example from a XXV710 NIC.
+Before:
+$ ip link set ens3f0 vf 0 state auto
+$  ethtool enp8s2 | grep Speed
+        Speed: 25000Mb/s
+$ ip link set ens3f0 vf 0 state enable
+$ ethtool enp8s2 | grep Speed
+        Speed: 40000Mb/s
+After:
+$ ip link set ens3f0 vf 0 state auto
+$  ethtool enp8s2 | grep Speed
+        Speed: 25000Mb/s
+$ ip link set ens3f0 vf 0 state enable
+$ ethtool enp8s2 | grep Speed
+        Speed: 25000Mb/s
 
-If it gets complicated it may not be worth pursuing this optimization.
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8e133d6545bd..9c4b166f3346 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -63,7 +63,7 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+ 	} else if (vf->link_forced) {
+ 		pfe.event_data.link_event.link_status = vf->link_up;
+ 		pfe.event_data.link_event.link_speed =
+-			(vf->link_up ? VIRTCHNL_LINK_SPEED_40GB : 0);
++			(vf->link_up ? i40e_virtchnl_link_speed(ls->link_speed) : 0);
+ 	} else {
+ 		pfe.event_data.link_event.link_status =
+ 			ls->link_info & I40E_AQ_LINK_UP;
+@@ -4404,6 +4404,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_pf *pf = np->vsi->back;
++	struct i40e_link_status *ls = &pf->hw.phy.link_info;
+ 	struct virtchnl_pf_event pfe;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_vf *vf;
+@@ -4441,7 +4442,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 		vf->link_forced = true;
+ 		vf->link_up = true;
+ 		pfe.event_data.link_event.link_status = true;
+-		pfe.event_data.link_event.link_speed = VIRTCHNL_LINK_SPEED_40GB;
++		pfe.event_data.link_event.link_speed = i40e_virtchnl_link_speed(ls->link_speed);
+ 		break;
+ 	case IFLA_VF_LINK_STATE_DISABLE:
+ 		vf->link_forced = true;
+-- 
+2.26.2
+
