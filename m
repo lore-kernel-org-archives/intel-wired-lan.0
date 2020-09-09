@@ -1,40 +1,36 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 09 Sep 2020 02:33:48 -0700
-Subject: [Intel-wired-lan] [net-next] net: iavf: Use the ARRAY_SIZE
- macro for aq_to_posix
-In-Reply-To: <1599641471-204919-1-git-send-email-xuwei5@hisilicon.com>
-References: <1599641471-204919-1-git-send-email-xuwei5@hisilicon.com>
-Message-ID: <2530c5c8a596b7edd7e2273cffc3b76ac4b437c7.camel@perches.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Wed, 9 Sep 2020 17:37:14 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 0/6] xsk: exit NAPI loop when
+ AF_XDP Rx ring is full
+In-Reply-To: <11f663ec-5ea7-926c-370d-0b67d3052583@nvidia.com>
+References: <20200904135332.60259-1-bjorn.topel@gmail.com>
+ <0257f769-0f43-a5b7-176d-7c5ff8eaac3a@intel.com>
+ <11f663ec-5ea7-926c-370d-0b67d3052583@nvidia.com>
+Message-ID: <20200909173714.25a3ce43@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2020-09-09 at 16:51 +0800, Wei Xu wrote:
-> Use the ARRAY_SIZE macro to calculate the size of an array.
-> This code was detected with the help of Coccinelle.
-[]
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq.h b/drivers/net/ethernet/intel/iavf/iavf_adminq.h
-[]
-> @@ -120,7 +120,7 @@ static inline int iavf_aq_rc_to_posix(int aq_ret, int aq_rc)
->  	if (aq_ret == IAVF_ERR_ADMIN_QUEUE_TIMEOUT)
->  		return -EAGAIN;
->  
-> -	if (!((u32)aq_rc < (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0]))))
-> +	if (!((u32)aq_rc < ARRAY_SIZE(aq_to_posix)))
->  		return -ERANGE;
+On Tue, 8 Sep 2020 13:32:01 +0300
+Maxim Mikityanskiy <maximmi@nvidia.com> wrote:
 
-If you want to use a cast,
+>  From the driver API perspective, I would prefer to see a simpler API if 
+> possible. The current API exposes things that the driver shouldn't know 
+> (BPF map type), and requires XSK-specific handling. It would be better 
+> if some specific error code returned from xdp_do_redirect was reserved 
+> to mean "exit NAPI early if you support it". This way we wouldn't need 
+> two new helpers, two xdp_do_redirect functions, and this approach would 
+> be extensible to other non-XSK use cases without further changes in the 
+> driver, and also the logic to opt-in the feature could be put inside the 
+> kernel.
 
-	if ((u32)aq_rc >= ARRAY_SIZE(aq_to_posix))
-		return -ERANGE;
+I agree.
 
-would be a more common and simpler style, though
-perhaps testing ac_rc < 0 would be more intelligible.
-
-	if (ac_rc < 0 || ac_rq >= ARRAY_SIZE(aq_to_posix))
-		return -ERANGE;
-
-
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
