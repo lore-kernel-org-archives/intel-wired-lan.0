@@ -1,45 +1,35 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 09 Sep 2020 15:47:24 -0700
-Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
- fallthrough; to break; 
-In-Reply-To: <20200909223602.GJ87483@ziepe.ca>
-References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
- <20200909223602.GJ87483@ziepe.ca>
-Message-ID: <b3d6f71aea87f4bb88554f1a3fdaee0b2feb158c.camel@perches.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 10 Sep 2020 06:56:26 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf-linux: Fix incorrect adapter get
+ in iavf_resume
+In-Reply-To: <20200902125459.30641-1-mateusz.palczewski@intel.com>
+References: <20200902125459.30641-1-mateusz.palczewski@intel.com>
+Message-ID: <DM6PR11MB289071A19881F3518A2AD776BC270@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2020-09-09 at 19:36 -0300, Jason Gunthorpe wrote:
-> On Wed, Sep 09, 2020 at 01:06:39PM -0700, Joe Perches wrote:
-> > fallthrough to a separate case/default label break; isn't very readable.
-> > 
-> > Convert pseudo-keyword fallthrough; statements to a simple break; when
-> > the next label is case or default and the only statement in the next
-> > label block is break;
-> > 
-> > Found using:
-> > 
-> > $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
-> > 
-> > Miscellanea:
-> > 
-> > o Move or coalesce a couple label blocks above a default: block.
-> > 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> > ---
-> > 
-> > Compiled allyesconfig x86-64 only.
-> > A few files for other arches were not compiled.
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mateusz Palczewski
+> Sent: Wednesday, September 2, 2020 5:55 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] iavf-linux: Fix incorrect adapter get in
+> iavf_resume
 > 
-> IB part looks OK, I prefer it like this
+> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 > 
-> You could do the same for continue as well, I saw a few of those..
-
-I saw some continue uses as well but wasn't sure
-and didn't look to see if the switch/case with
-continue was in a for/while loop.
-
-
+> When calling iavf_resume there was a crash because wrong
+> function was used to get iavf_adapter and net_device pointers.
+> Changed how iavf_resume is getting iavf_adapter and net_device
+> pointers from pci_dev.
+> 
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
