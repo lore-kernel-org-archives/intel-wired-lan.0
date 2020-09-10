@@ -1,8 +1,8 @@
 From: Wang Hai <wanghai38@huawei.com>
-Date: Thu, 10 Sep 2020 23:11:55 +0800
+Date: Thu, 10 Sep 2020 23:12:04 +0800
 Subject: [Intel-wired-lan] [PATCH net-next] igb: Fix some kernel-doc
  warnings in e1000_82575.c
-Message-ID: <20200910151155.35995-1-wanghai38@huawei.com>
+Message-ID: <20200910151204.36198-1-wanghai38@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
