@@ -1,71 +1,35 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Thu, 10 Sep 2020 07:57:04 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix flow for IPv6 next
- header (extension header)
-Message-ID: <20200910075704.10877-1-mateusz.palczewski@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 10 Sep 2020 11:16:05 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Clean up _nvm_info structure
+Message-ID: <20200910081605.2562950-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Slawomir Laba <slawomirx.laba@intel.com>
+flash_bank_size and flash_base_addr field not in use and can
+be removed from a _nvm_info structure
 
-When a packet contains an IPv6 header with next header which is
-an extension header and not a protocol one, the kernel function
-skb_transport_header called with such sk_buff will return a
-pointer to the extension header and not to the TCP one.
-
-The above explained call caused a problem with packet processing
-for skb with encapsulation for tunnel with I40E_TX_CTX_EXT_IP_IPV6.
-The extension header was not skipped at all.
-
-The ipv6_skip_exthdr function does check if next header of the IPV6
-header is an extension header and doesn't modify the l4_proto pointer
-if it points to a protocol header value so its safe to omit the
-comparison of exthdr and l4.hdr pointers. The ipv6_skip_exthdr can
-return value -1. This means that the skipping process failed
-and there is something wrong with the packet so it will be dropped.
-
-Fixes: a3fd9d8876a5 ("i40e/i40evf: Handle IPv6 extension headers in checksum offload")
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_hw.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 3f3fbfa17..1f29b7c64 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -3283,13 +3283,16 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 17d6669959db..55dae7c4703f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -130,9 +130,6 @@ struct igc_nvm_info {
+ 	struct igc_nvm_operations ops;
+ 	enum igc_nvm_type type;
  
- 			l4_proto = ip.v4->protocol;
- 		} else if (*tx_flags & I40E_TX_FLAGS_IPV6) {
-+			int ret;
-+
- 			tunnel |= I40E_TX_CTX_EXT_IP_IPV6;
- 
- 			exthdr = ip.hdr + sizeof(*ip.v6);
- 			l4_proto = ip.v6->nexthdr;
--			if (l4.hdr != exthdr)
--				ipv6_skip_exthdr(skb, exthdr - skb->data,
--						 &l4_proto, &frag_off);
-+			ret = ipv6_skip_exthdr(skb, exthdr - skb->data,
-+					       &l4_proto, &frag_off);
-+			if (ret < 0)
-+				return -1;
- 		}
- 
- 		/* define outer transport */
+-	u32 flash_bank_size;
+-	u32 flash_base_addr;
+-
+ 	u16 word_size;
+ 	u16 delay_usec;
+ 	u16 address_bits;
 -- 
-2.17.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+2.18.4
 
