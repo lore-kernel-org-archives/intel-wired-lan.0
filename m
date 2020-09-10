@@ -1,67 +1,150 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 10 Sep 2020 11:22:56 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: do not panic on malformed
- rx_desc
-In-Reply-To: <20200908162330.4681-1-ztong0001@gmail.com>
-References: <20200908162330.4681-1-ztong0001@gmail.com>
-Message-ID: <d8c2fdeb-0ae1-5633-7cef-61607fb22d39@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 10 Sep 2020 20:03:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:40GbE] BUILD SUCCESS
+ 4406e977a4a1e997818b6d77c3218ef8d15b2abf
+Message-ID: <5f5a15fc.59dFN14r76Fx5BJq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/8/2020 19:23, Tong Zhang wrote:
-> length may be corrupted in rx_desc and lead to panic, so check the
-> sanity before passing it to skb_put
-> 
-Tong, what is scenario caused to skb panic? How it is happen on your 
-system? Can you please share the test hint and your setup with us?
-> [  103.840572] skbuff: skb_over_panic: text:ffffffff8f432cc1 len:61585 put:61585 head:ffff88805642b800 data:ffff88805642b840 tail:0xf0d1 end:0x6c0 dev:e
-> th0
-> [  103.841283] ------------[ cut here ]------------
-> [  103.841515] kernel BUG at net/core/skbuff.c:109!
-> [  103.841749] invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC KASAN PTI
-> [  103.842063] CPU: 1 PID: 276 Comm: ping Tainted: G        W         5.8.0+ #4
-> [  103.842857] RIP: 0010:skb_panic+0xc4/0xc6
-> [  103.843022] Code: 89 f0 48 c7 c7 60 f2 3e 90 55 48 8b 74 24 18 4d 89 f9 56 48 8b 54 24 18 4c 89 e6 52 48 8b 44 24 18 4c 89 ea 50 e8 01 c5 2a ff <0f>
-> 0b 4c 8b 64 24 18 e8 c1 b4 48 ff 48 c7 c1 e0 fc 3e 90 44 89 ee
-> [  103.843766] RSP: 0018:ffff88806d109c58 EFLAGS: 00010282
-> [  103.843976] RAX: 000000000000008c RBX: ffff8880683407c0 RCX: 0000000000000000
-> [  103.844262] RDX: 1ffff1100da24c91 RSI: 0000000000000008 RDI: ffffed100da2137e
-> [  103.844548] RBP: ffff88806bdcc000 R08: 000000000000008c R09: ffffed100da25cfb
-> [  103.844834] R10: ffff88806d12e7d7 R11: ffffed100da25cfa R12: ffffffff903efd20
-> [  103.845123] R13: ffffffff8f432cc1 R14: 000000000000f091 R15: ffff88805642b800
-> [  103.845410] FS:  00007efcd06852c0(0000) GS:ffff88806d100000(0000) knlGS:0000000000000000
-> [  103.845734] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [  103.845966] CR2: 00007efccf94f8dc CR3: 0000000064810000 CR4: 00000000000006e0
-> [  103.846254] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  103.846539] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-> [  103.846823] Call Trace:
-> [  103.846925]  <IRQ>
-> [  103.847013]  ? e1000_clean_rx_irq+0x311/0x630
-> [  103.847190]  skb_put.cold+0x2b/0x4d
-> [  103.847334]  e1000_clean_rx_irq+0x311/0x630
-> 
-> Signed-off-by: Tong Zhang <ztong0001@gmail.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
->   1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 664e8ccc88d2..f12bd00b2dbf 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -1047,6 +1047,10 @@ static bool e1000_clean_rx_irq(struct e1000_ring *rx_ring, int *work_done,
->   			}
->   			/* else just continue with the old one */
->   		}
-> +		/* check length sanity */
-> +		if (skb->tail + length > skb->end) {
-> +			length = skb->end - skb->tail;
-> +		}
->   		/* end copybreak code */
->   		skb_put(skb, length);
->   
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  40GbE
+branch HEAD: 4406e977a4a1e997818b6d77c3218ef8d15b2abf  igc: Fix not considering the TX delay for timestamps
 
+elapsed time: 721m
+
+configs tested: 121
+configs skipped: 12
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                     powernv_defconfig
+powerpc                      mgcoge_defconfig
+arm                        neponset_defconfig
+m68k                        stmark2_defconfig
+mips                           ip27_defconfig
+arm                          collie_defconfig
+arm                         lpc18xx_defconfig
+mips                           jazz_defconfig
+m68k                       m5249evb_defconfig
+parisc                generic-32bit_defconfig
+arm                         assabet_defconfig
+arm                            dove_defconfig
+arm                         ebsa110_defconfig
+arc                        vdk_hs38_defconfig
+arm                            lart_defconfig
+powerpc                          allmodconfig
+arm                         cm_x300_defconfig
+sh                ecovec24-romimage_defconfig
+csky                                defconfig
+i386                                defconfig
+sh                          polaris_defconfig
+m68k                        mvme16x_defconfig
+c6x                              allyesconfig
+openrisc                 simple_smp_defconfig
+arm                        clps711x_defconfig
+openrisc                         alldefconfig
+sh                           se7750_defconfig
+arm                         hackkit_defconfig
+arm                          gemini_defconfig
+sh                         microdev_defconfig
+arm                          ixp4xx_defconfig
+sparc                       sparc32_defconfig
+mips                      loongson3_defconfig
+mips                  maltasmvp_eva_defconfig
+alpha                               defconfig
+sh                              ul2_defconfig
+powerpc                        cell_defconfig
+m68k                          multi_defconfig
+arm                         nhk8815_defconfig
+sh                           se7206_defconfig
+xtensa                    xip_kc705_defconfig
+mips                          rb532_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20200910
+x86_64               randconfig-a006-20200910
+x86_64               randconfig-a003-20200910
+x86_64               randconfig-a002-20200910
+x86_64               randconfig-a005-20200910
+x86_64               randconfig-a001-20200910
+i386                 randconfig-a004-20200909
+i386                 randconfig-a005-20200909
+i386                 randconfig-a006-20200909
+i386                 randconfig-a002-20200909
+i386                 randconfig-a001-20200909
+i386                 randconfig-a003-20200909
+i386                 randconfig-a004-20200910
+i386                 randconfig-a006-20200910
+i386                 randconfig-a001-20200910
+i386                 randconfig-a003-20200910
+i386                 randconfig-a002-20200910
+i386                 randconfig-a005-20200910
+x86_64               randconfig-a004-20200909
+x86_64               randconfig-a006-20200909
+x86_64               randconfig-a003-20200909
+x86_64               randconfig-a001-20200909
+x86_64               randconfig-a005-20200909
+x86_64               randconfig-a002-20200909
+i386                 randconfig-a016-20200909
+i386                 randconfig-a015-20200909
+i386                 randconfig-a011-20200909
+i386                 randconfig-a013-20200909
+i386                 randconfig-a014-20200909
+i386                 randconfig-a012-20200909
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a013-20200909
+x86_64               randconfig-a016-20200909
+x86_64               randconfig-a011-20200909
+x86_64               randconfig-a012-20200909
+x86_64               randconfig-a015-20200909
+x86_64               randconfig-a014-20200909
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
