@@ -1,49 +1,53 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Date: Thu, 10 Sep 2020 12:16:33 +0200
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Thu, 10 Sep 2020 08:28:12 +0200
 Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
  fallthrough; to break; 
 In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
 References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-Message-ID: <81d852d4-115f-c6c6-ef80-17c47ec4849a@gmail.com>
+Message-ID: <20200910082812.057a04e6@coco.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Em Wed, 09 Sep 2020 13:06:39 -0700
+Joe Perches <joe@perches.com> escreveu:
+
+> fallthrough to a separate case/default label break; isn't very readable.
+> 
+> Convert pseudo-keyword fallthrough; statements to a simple break; when
+> the next label is case or default and the only statement in the next
+> label block is break;
+> 
+> Found using:
+> 
+> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
+> 
+> Miscellanea:
+> 
+> o Move or coalesce a couple label blocks above a default: block.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Compiled allyesconfig x86-64 only.
+> A few files for other arches were not compiled.
+> 
 
 
-On 09/09/2020 22:06, Joe Perches wrote:
-> diff --git a/drivers/net/wireless/mediatek/mt7601u/dma.c b/drivers/net/wireless/mediatek/mt7601u/dma.c
-> index 09f931d4598c..778be26d329f 100644
-> --- a/drivers/net/wireless/mediatek/mt7601u/dma.c
-> +++ b/drivers/net/wireless/mediatek/mt7601u/dma.c
-> @@ -193,11 +193,11 @@ static void mt7601u_complete_rx(struct urb *urb)
->   	case -ESHUTDOWN:
->   	case -ENOENT:
->   		return;
-> +	case 0:
-> +		break;
->   	default:
->   		dev_err_ratelimited(dev->dev, "rx urb failed: %d\n",
->   				    urb->status);
-> -		fallthrough;
-> -	case 0:
->   		break;
->   	}
->   
-> @@ -238,11 +238,11 @@ static void mt7601u_complete_tx(struct urb *urb)
->   	case -ESHUTDOWN:
->   	case -ENOENT:
->   		return;
-> +	case 0:
-> +		break;
->   	default:
->   		dev_err_ratelimited(dev->dev, "tx urb failed: %d\n",
->   				    urb->status);
-> -		fallthrough;
-> -	case 0:
->   		break;
->   	}
+>  drivers/media/dvb-frontends/drxd_hard.c                   |  2 +-
+>  drivers/media/i2c/ov5640.c                                |  2 +-
+>  drivers/media/i2c/ov6650.c                                |  5 ++---
+>  drivers/media/i2c/smiapp/smiapp-core.c                    |  2 +-
+>  drivers/media/i2c/tvp5150.c                               |  2 +-
+>  drivers/media/pci/ddbridge/ddbridge-core.c                |  2 +-
+>  drivers/media/usb/cpia2/cpia2_core.c                      |  2 +-
 
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+For media drivers:
+
+Reviewed-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+
+
+Thanks,
+Mauro
