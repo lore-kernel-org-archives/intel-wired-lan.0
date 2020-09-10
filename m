@@ -1,54 +1,67 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Thu, 10 Sep 2020 12:36:19 +0200
-Subject: [Intel-wired-lan] [PATCH] igbvf: Refactor traces
-Message-ID: <20200910103619.10467-1-karen.sornek@intel.com>
+From: Steffen Maier <maier@linux.ibm.com>
+Date: Thu, 10 Sep 2020 11:18:29 +0200
+Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
+ fallthrough; to break; 
+In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+Message-ID: <0c66fbe5-c48b-7dc1-f7fe-1498da9cc1a3@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Refactoring "PF still resetting" and changing "Failed
- to add vlan id" to "Vlan id is not added"
-messages because previous version looked like a bug
-- it informed about changes that worked as
-designed but might confuse users
+On 9/9/20 10:06 PM, Joe Perches wrote:
+> fallthrough to a separate case/default label break; isn't very readable.
+> 
+> Convert pseudo-keyword fallthrough; statements to a simple break; when
+> the next label is case or default and the only statement in the next
+> label block is break;
+> 
+> Found using:
+> 
+> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
+> 
+> Miscellanea:
+> 
+> o Move or coalesce a couple label blocks above a default: block.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Compiled allyesconfig x86-64 only.
+> A few files for other arches were not compiled.
 
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/igbvf/netdev.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+>   drivers/s390/scsi/zfcp_fsf.c                              |  2 +-
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 19269f5..9c6fd8d 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -1230,7 +1230,7 @@ static int igbvf_vlan_rx_add_vid(struct net_device *netdev,
- 	spin_lock_bh(&hw->mbx_lock);
- 
- 	if (hw->mac.ops.set_vfta(hw, vid, true)) {
--		dev_err(&adapter->pdev->dev, "Failed to add vlan id %d\n", vid);
-+		dev_warn(&adapter->pdev->dev, "Vlan id %d\n is not added", vid);
- 		spin_unlock_bh(&hw->mbx_lock);
- 		return -EINVAL;
- 	}
-@@ -1514,7 +1514,7 @@ static void igbvf_reset(struct igbvf_adapter *adapter)
- 
- 	/* Allow time for pending master requests to run */
- 	if (mac->ops.reset_hw(hw))
--		dev_err(&adapter->pdev->dev, "PF still resetting\n");
-+		dev_warn(&adapter->pdev->dev, "PF still resetting\n");
- 
- 	mac->ops.init_hw(hw);
- 
+>   82 files changed, 109 insertions(+), 112 deletions(-)
+
+> diff --git a/drivers/s390/scsi/zfcp_fsf.c b/drivers/s390/scsi/zfcp_fsf.c
+> index 140186fe1d1e..2741a07df692 100644
+> --- a/drivers/s390/scsi/zfcp_fsf.c
+> +++ b/drivers/s390/scsi/zfcp_fsf.c
+> @@ -2105,7 +2105,7 @@ static void zfcp_fsf_open_lun_handler(struct zfcp_fsf_req *req)
+>   
+>   	case FSF_PORT_HANDLE_NOT_VALID:
+>   		zfcp_erp_adapter_reopen(adapter, 0, "fsouh_1");
+> -		fallthrough;
+> +		break;
+>   	case FSF_LUN_ALREADY_OPEN:
+>   		break;
+>   	case FSF_PORT_BOXED:
+
+Acked-by: Steffen Maier <maier@linux.ibm.com> # for zfcp
+
+
 -- 
-2.18.1
+Mit freundlichen Gruessen / Kind regards
+Steffen Maier
 
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+Linux on IBM Z Development
 
+https://www.ibm.com/privacy/us/en/
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Matthias Hartmann
+Geschaeftsfuehrung: Dirk Wittkopp
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
