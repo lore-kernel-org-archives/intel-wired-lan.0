@@ -1,43 +1,60 @@
-From: Nicolas.Ferre@microchip.com <Nicolas.Ferre@microchip.com>
-Date: Thu, 10 Sep 2020 08:24:21 +0000
+From: Robin Murphy <robin.murphy@arm.com>
+Date: Thu, 10 Sep 2020 15:21:05 +0100
 Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
  fallthrough; to break; 
 In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
 References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-Message-ID: <c2929349-ca60-486d-3cad-a83321587c5f@microchip.com>
+Message-ID: <9372456a-8dcf-2735-57a4-e126aa5df3a6@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Joe,
+On 2020-09-09 21:06, Joe Perches wrote:
+> fallthrough to a separate case/default label break; isn't very readable.
+> 
+> Convert pseudo-keyword fallthrough; statements to a simple break; when
+> the next label is case or default and the only statement in the next
+> label block is break;
+> 
+> Found using:
+> 
+> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
+> 
+> Miscellanea:
+> 
+> o Move or coalesce a couple label blocks above a default: block.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Compiled allyesconfig x86-64 only.
+> A few files for other arches were not compiled.
+> 
 
-Please drop this chunk: it's a successive controller version number 
-which are all backward compatible with "fallthrough" on each case so 
-removing from this last one makes it inconsistent.
+[...]
+> diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> index c192544e874b..743db1abec40 100644
+> --- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> +++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> @@ -3777,7 +3777,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
+>   	switch (FIELD_GET(IDR0_TTF, reg)) {
+>   	case IDR0_TTF_AARCH32_64:
+>   		smmu->ias = 40;
+> -		fallthrough;
+> +		break;
+>   	case IDR0_TTF_AARCH64:
+>   		break;
+>   	default:
 
-In sort: NACK for atmel-mci.
+I have to say I don't really agree with the readability argument for 
+this one - a fallthrough is semantically correct here, since the first 
+case is a superset of the second. It just happens that anything we would 
+do for the common subset is implicitly assumed (there are other 
+potential cases we simply haven't added support for at the moment), thus 
+the second case is currently empty.
 
-Best regards,
-   Nicolas
+This change actively obfuscates that distinction.
 
-
-On 09/09/2020 at 22:06, Joe Perches wrote:
-> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-> index 444bd3a0a922..8324312e4f42 100644
-> --- a/drivers/mmc/host/atmel-mci.c
-> +++ b/drivers/mmc/host/atmel-mci.c
-> @@ -2435,7 +2435,7 @@ static void atmci_get_cap(struct atmel_mci *host)
->          case 0x100:
->                  host->caps.has_bad_data_ordering = 0;
->                  host->caps.need_reset_after_xfer = 0;
-> -               fallthrough;
-> +               break;
->          case 0x0:
->                  break;
->          default:
-
-
--- 
-Nicolas Ferre
+Robin.
