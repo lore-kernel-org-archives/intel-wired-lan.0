@@ -1,60 +1,40 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Date: Thu, 10 Sep 2020 15:21:05 +0100
+From: Wolfram Sang <wsa@kernel.org>
+Date: Thu, 10 Sep 2020 08:53:12 +0200
 Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
  fallthrough; to break; 
 In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
 References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-Message-ID: <9372456a-8dcf-2735-57a4-e126aa5df3a6@arm.com>
+Message-ID: <20200910065312.GH1031@ninjato>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2020-09-09 21:06, Joe Perches wrote:
-> fallthrough to a separate case/default label break; isn't very readable.
-> 
-> Convert pseudo-keyword fallthrough; statements to a simple break; when
-> the next label is case or default and the only statement in the next
-> label block is break;
-> 
-> Found using:
-> 
-> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
-> 
-> Miscellanea:
-> 
-> o Move or coalesce a couple label blocks above a default: block.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-> 
-> Compiled allyesconfig x86-64 only.
-> A few files for other arches were not compiled.
-> 
 
-[...]
-> diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> index c192544e874b..743db1abec40 100644
-> --- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> +++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> @@ -3777,7 +3777,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
->   	switch (FIELD_GET(IDR0_TTF, reg)) {
->   	case IDR0_TTF_AARCH32_64:
->   		smmu->ias = 40;
+> diff --git a/drivers/i2c/busses/i2c-i801.c b/drivers/i2c/busses/i2c-i801.c
+> index e32ef3f01fe8..b13b1cbcac29 100644
+> --- a/drivers/i2c/busses/i2c-i801.c
+> +++ b/drivers/i2c/busses/i2c-i801.c
+> @@ -1785,7 +1785,7 @@ static int i801_probe(struct pci_dev *dev, const struct pci_device_id *id)
+>  		fallthrough;
+>  	case PCI_DEVICE_ID_INTEL_82801CA_3:
+>  		priv->features |= FEATURE_HOST_NOTIFY;
 > -		fallthrough;
 > +		break;
->   	case IDR0_TTF_AARCH64:
->   		break;
->   	default:
+>  	case PCI_DEVICE_ID_INTEL_82801BA_2:
+>  	case PCI_DEVICE_ID_INTEL_82801AB_3:
+>  	case PCI_DEVICE_ID_INTEL_82801AA_3:
 
-I have to say I don't really agree with the readability argument for 
-this one - a fallthrough is semantically correct here, since the first 
-case is a superset of the second. It just happens that anything we would 
-do for the common subset is implicitly assumed (there are other 
-potential cases we simply haven't added support for at the moment), thus 
-the second case is currently empty.
+I am not the maintainer (Jean is) but I suggest to drop this hunk. The
+code is more complex with multiple 'fallthrough', so this change alone
+actually makes the code inconsistent. A rework would need a seperate
+patch.
 
-This change actively obfuscates that distinction.
-
-Robin.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200910/4bdcedb4/attachment-0001.asc>
