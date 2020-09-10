@@ -1,67 +1,49 @@
-From: Steffen Maier <maier@linux.ibm.com>
-Date: Thu, 10 Sep 2020 11:18:29 +0200
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Date: Thu, 10 Sep 2020 12:16:33 +0200
 Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
  fallthrough; to break; 
 In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
 References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-Message-ID: <0c66fbe5-c48b-7dc1-f7fe-1498da9cc1a3@linux.ibm.com>
+Message-ID: <81d852d4-115f-c6c6-ef80-17c47ec4849a@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/9/20 10:06 PM, Joe Perches wrote:
-> fallthrough to a separate case/default label break; isn't very readable.
-> 
-> Convert pseudo-keyword fallthrough; statements to a simple break; when
-> the next label is case or default and the only statement in the next
-> label block is break;
-> 
-> Found using:
-> 
-> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
-> 
-> Miscellanea:
-> 
-> o Move or coalesce a couple label blocks above a default: block.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-> 
-> Compiled allyesconfig x86-64 only.
-> A few files for other arches were not compiled.
 
->   drivers/s390/scsi/zfcp_fsf.c                              |  2 +-
 
->   82 files changed, 109 insertions(+), 112 deletions(-)
-
-> diff --git a/drivers/s390/scsi/zfcp_fsf.c b/drivers/s390/scsi/zfcp_fsf.c
-> index 140186fe1d1e..2741a07df692 100644
-> --- a/drivers/s390/scsi/zfcp_fsf.c
-> +++ b/drivers/s390/scsi/zfcp_fsf.c
-> @@ -2105,7 +2105,7 @@ static void zfcp_fsf_open_lun_handler(struct zfcp_fsf_req *req)
->   
->   	case FSF_PORT_HANDLE_NOT_VALID:
->   		zfcp_erp_adapter_reopen(adapter, 0, "fsouh_1");
-> -		fallthrough;
+On 09/09/2020 22:06, Joe Perches wrote:
+> diff --git a/drivers/net/wireless/mediatek/mt7601u/dma.c b/drivers/net/wireless/mediatek/mt7601u/dma.c
+> index 09f931d4598c..778be26d329f 100644
+> --- a/drivers/net/wireless/mediatek/mt7601u/dma.c
+> +++ b/drivers/net/wireless/mediatek/mt7601u/dma.c
+> @@ -193,11 +193,11 @@ static void mt7601u_complete_rx(struct urb *urb)
+>   	case -ESHUTDOWN:
+>   	case -ENOENT:
+>   		return;
+> +	case 0:
 > +		break;
->   	case FSF_LUN_ALREADY_OPEN:
+>   	default:
+>   		dev_err_ratelimited(dev->dev, "rx urb failed: %d\n",
+>   				    urb->status);
+> -		fallthrough;
+> -	case 0:
 >   		break;
->   	case FSF_PORT_BOXED:
+>   	}
+>   
+> @@ -238,11 +238,11 @@ static void mt7601u_complete_tx(struct urb *urb)
+>   	case -ESHUTDOWN:
+>   	case -ENOENT:
+>   		return;
+> +	case 0:
+> +		break;
+>   	default:
+>   		dev_err_ratelimited(dev->dev, "tx urb failed: %d\n",
+>   				    urb->status);
+> -		fallthrough;
+> -	case 0:
+>   		break;
+>   	}
 
-Acked-by: Steffen Maier <maier@linux.ibm.com> # for zfcp
-
-
--- 
-Mit freundlichen Gruessen / Kind regards
-Steffen Maier
-
-Linux on IBM Z Development
-
-https://www.ibm.com/privacy/us/en/
-IBM Deutschland Research & Development GmbH
-Vorsitzender des Aufsichtsrats: Matthias Hartmann
-Geschaeftsfuehrung: Dirk Wittkopp
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
