@@ -1,25 +1,34 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 10 Sep 2020 12:38:19 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] Fix some kernel-doc
- warnings for e1000/e1000e
-In-Reply-To: <20200910123800.74865996@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20200910150429.31912-1-wanghai38@huawei.com>
- <20200910123800.74865996@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <20200910123819.3ce47422@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Thu, 10 Sep 2020 11:47:27 +0300
+Subject: [Intel-wired-lan] [trivial PATCH] treewide: Convert switch/case
+ fallthrough; to break; 
+In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+Message-ID: <878sdikogw.fsf@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 10 Sep 2020 12:38:00 -0700 Jakub Kicinski wrote:
-> On Thu, 10 Sep 2020 23:04:26 +0800 Wang Hai wrote:
-> > Wang Hai (3):
-> >   e1000e: Fix some kernel-doc warnings in ich8lan.c
-> >   e1000e: Fix some kernel-doc warnings in netdev.c
-> >   e1000: Fix a bunch of kerneldoc parameter issues in e1000_hw.c  
-> 
-> You should put some text here but I can confirm this set removes 17
-> warnings.
+Hi,
 
-Reviewed-by: Jakub Kicinski <kuba@kernel.org>
+Joe Perches <joe@perches.com> writes:
+>  drivers/usb/dwc3/core.c                                   |  2 +-
+>  drivers/usb/gadget/legacy/inode.c                         |  2 +-
+>  drivers/usb/gadget/udc/pxa25x_udc.c                       |  4 ++--
+>  drivers/usb/phy/phy-fsl-usb.c                             |  2 +-
+
+for the drivers above:
+
+Acked-by: Felipe Balbi <balbi@kernel.org>
+
+-- 
+balbi
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 857 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200910/60c0c7ad/attachment.asc>
