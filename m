@@ -1,88 +1,49 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 11 Sep 2020 16:06:33 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 05/11] intel-ethernet:
- make W=1 build cleanly
-In-Reply-To: <877dt0nr8r.fsf@intel.com>
+From: Edward Cree <ecree@solarflare.com>
+Date: Sat, 12 Sep 2020 00:11:20 +0100
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 11/11]
+ drivers/net/ethernet: clean up mis-targeted comments
+In-Reply-To: <20200911152642.62923ba2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
- <20200911012337.14015-6-jesse.brandeburg@intel.com>
- <877dt0nr8r.fsf@intel.com>
-Message-ID: <8d7a918e-ff8f-e9f6-37b6-ad07c674f6af@intel.com>
+ <20200911012337.14015-12-jesse.brandeburg@intel.com>
+ <227d2fe4-ddf8-89c9-b80b-142674c2cca0@solarflare.com>
+ <20200911144207.00005619@intel.com>
+ <e2e637ae-8cda-c9a4-91ce-93dbd475fc0c@solarflare.com>
+ <20200911152642.62923ba2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <115bce2a-daaa-a7c5-3c48-44ce345ea008@solarflare.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 9/11/2020 10:43 AM, Vinicius Costa Gomes wrote:
-> Jesse Brandeburg <jesse.brandeburg@intel.com> writes:
-> 
->> This takes care of all of the trivial W=1 fixes in the Intel
->> Ethernet drivers, which allows developers and maintainers to
->> build more of the networking tree with more complete warning
->> checks.
->>
->> Almost all of the changes were trivial comment updates on
->> function headers, but some of the changes were for variables that
->> were storing a return value from a register read, where the
->> return value wasn't used. Those conversions to remove the lvalue
->> of the assignment should be safe because the readl memory mapped
->> reads are marked volatile and should not be optimized out without
->> an lvalue (I suspect a very long time ago this wasn't guaranteed
->> as it is today).
->>
->> Inspired by Lee Jones' series of wireless work to do the same.
->> Compile tested only.
->>
->> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
->> ---
->>  drivers/net/ethernet/intel/e100.c             |   8 +-
->>  drivers/net/ethernet/intel/e1000/e1000_hw.c   | 147 ++++++++----------
->>  drivers/net/ethernet/intel/e1000/e1000_main.c |  39 +++--
->>  .../net/ethernet/intel/e1000e/80003es2lan.c   |   1 -
->>  drivers/net/ethernet/intel/e1000e/ich8lan.c   |  16 +-
->>  drivers/net/ethernet/intel/e1000e/netdev.c    |  50 ++++--
->>  drivers/net/ethernet/intel/e1000e/phy.c       |   3 +
->>  drivers/net/ethernet/intel/e1000e/ptp.c       |   2 +-
->>  drivers/net/ethernet/intel/igb/e1000_82575.c  |   6 +-
->>  drivers/net/ethernet/intel/igb/e1000_i210.c   |   5 +-
->>  drivers/net/ethernet/intel/igb/e1000_mac.c    |   1 +
->>  drivers/net/ethernet/intel/igb/e1000_mbx.c    |   1 +
->>  drivers/net/ethernet/intel/igb/igb_main.c     |  28 ++--
->>  drivers/net/ethernet/intel/igb/igb_ptp.c      |   8 +-
->>  drivers/net/ethernet/intel/igbvf/netdev.c     |  17 +-
->>  drivers/net/ethernet/intel/igc/igc_main.c     |   2 +-
->>  drivers/net/ethernet/intel/igc/igc_ptp.c      |   4 +-
->>  drivers/net/ethernet/intel/ixgb/ixgb_hw.c     | 135 ++++++++--------
->>  drivers/net/ethernet/intel/ixgb/ixgb_main.c   |  17 +-
->>  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   3 +-
->>  20 files changed, 265 insertions(+), 228 deletions(-)
->>
-> 
+On 11/09/2020 23:26, Jakub Kicinski wrote:
+> "Toolchain" sounds a little grand in this context, the script that
+> parses kdoc does basic regexps to convert the standard kernel macros:
 > ...
-> 
->> diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
->> index 4e7a0810eaeb..2120dacfd55c 100644
->> --- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
->> +++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
->> @@ -139,6 +139,7 @@ static void e1000_phy_init_script(struct e1000_hw *hw)
->>  		 * at the end of this routine.
->>  		 */
->>  		ret_val = e1000_read_phy_reg(hw, 0x2F5B, &phy_saved_data);
->> +		e_dbg("Reading PHY register 0x2F5B failed: %d\n", ret_val);
->>
-> 
-> Adding this debug statement seems unrelated.
+> IDK if we can expect it to understand random driver's macros..
+I wasn't suggesting it should _understand_ this macro, justrecognise
+?when something _is_ a macro it doesn't understand, and refrain from
+?warning about it in that case.
+But I don't know how hard that would be to achieve ? not being fluent
+?in Perl, scripts/kernel-doc is mostly line noise to me.? My best
+?guess is that on seeing 'DECLARE_A_THING(name, argument);' it reads
+?it as though it were 'DECLARE_A_THING name, argument;', mistaking
+?the macro name for a type.
+I think the only way non-macro declarations can legitimately contain
+?parens is in function pointer types, in which case the contents of
+?the parens are part of the type and not declared identifiers.? So
+?shouldn't kernel-doc ignore anything within parens?
+> This is the only use of _MCDI_DECLARE_BUF() in the tree
+Well, except for mcdi.h's
+??? #define MCDI_DECLARE_BUF(_name, _len) _MCDI_DECLARE_BUF(_name, _len) = {{{0}}}
+> , how about converting the declaration to:
+>
+> #declare _MCDI_BUF_LEN(_len)   DIV_ROUND_UP(_len, 4)
+>
+> 	efx_dword_t txbuf[_MCDI_BUF_LEN(MC_CMD_PTP_IN_TRANSMIT_LENMAX)];
+>
+> Would that work?
+That could work, yes.? Though, probably lose the leading underscore
+?in that case.
 
-Adding the debug statement does make ret_val become used, but yea it
-could have been called out in the commit message.
-
-> 
->>  		/* Disabled the PHY transmitter */
->>  		e1000_write_phy_reg(hw, 0x2F5B, 0x0003);
-> 
-> Apart from this,
-> 
-> Reviewed-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> 
+-ed
