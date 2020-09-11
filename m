@@ -1,12 +1,12 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 11 Sep 2020 16:18:05 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 06/11]
- drivers/net/ethernet: clean up unused assignments
-In-Reply-To: <e1cf9542-4e3b-a666-7861-47b069b3a606@intel.com>
+Date: Fri, 11 Sep 2020 16:25:57 -0700
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 10/11]
+ drivers/net/ethernet: remove incorrectly formatted doc
+In-Reply-To: <fbd1fdd9-1000-8aac-7e5c-bc761b2209e1@intel.com>
 References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
- <20200911012337.14015-7-jesse.brandeburg@intel.com>
- <e1cf9542-4e3b-a666-7861-47b069b3a606@intel.com>
-Message-ID: <20200911161805.00005aa1@intel.com>
+ <20200911012337.14015-11-jesse.brandeburg@intel.com>
+ <fbd1fdd9-1000-8aac-7e5c-bc761b2209e1@intel.com>
+Message-ID: <20200911162557.000002d2@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,15 +14,63 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 Jacob Keller wrote:
- 		err = -EBUSY;
-> > diff --git a/drivers/net/ethernet/cavium/liquidio/lio_main.c b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-> > index 8e0ed01e7f03..737ae69eec6e 100644
-> > --- a/drivers/net/ethernet/cavium/liquidio/lio_main.c
-> > +++ b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-> > @@ -1,4 +1,4 @@
-> > -/**********************************************************************
-> > +/*
-> 
-> I suspect this was meant to go into the kdoc patch instead?
 
-Actually it shouldn't be there at all, but it's fixed, thanks!
+> A lot of these look like they should probably just be converted to use
+> kdoc format instead of removing the '/**'
+
+I understand why you're saying that, and I spent a considerable amount
+of time fixing drivers that appeared to *try* to use kdoc but messed
+up. However, if they don't have anything that looks like doxygen or
+kdoc, then I just removed the "/**" to a /* and stopped kdoc processing.
+
+The temac driver is a good example of not actually trying to kdoc at
+all.
+
+However I will look over the patches and see if I see @brief anywhere
+that is left and try to fix those up. I've done so much now I might as
+well finish it, but the @brief doxygen style notes had never been
+processed into kdoc before, so changing the /** into /* doesn't
+actually remove any value, just makes the build clean.
+
+> > diff --git a/drivers/net/ethernet/aquantia/atlantic/hw_atl/hw_atl_b0.c b/drivers/net/ethernet/aquantia/atlantic/hw_atl/hw_atl_b0.c
+> > index 8941ac4df9e3..9f1b15077e7d 100644
+> > --- a/drivers/net/ethernet/aquantia/atlantic/hw_atl/hw_atl_b0.c
+> > +++ b/drivers/net/ethernet/aquantia/atlantic/hw_atl/hw_atl_b0.c
+> > @@ -1536,7 +1536,7 @@ static int hw_atl_b0_hw_fl2_clear(struct aq_hw_s *self,
+> >  	return aq_hw_err_from_flags(self);
+> >  }
+> >  
+> > -/**
+> > +/*
+> >   * @brief Set VLAN filter table
+> >   * @details Configure VLAN filter table to accept (and assign the queue) traffic
+> >   *  for the particular vlan ids.
+> 
+> This looks like a doxygen style comment. I wonder if whoever maintains
+> this code uses doxygen and expects this to get picked up.
+
+It was never picked up by kdoc. And in this case this is the only kdoc
+comment in this whole file, so I didn't like the idea of this *one*
+being documented while the whole rest of the driver was not.
+ 
+> > diff --git a/drivers/net/ethernet/xilinx/ll_temac_main.c b/drivers/net/ethernet/xilinx/ll_temac_main.c
+> > index 9a15f14daa47..60c199fcb91e 100644
+> > --- a/drivers/net/ethernet/xilinx/ll_temac_main.c
+> > +++ b/drivers/net/ethernet/xilinx/ll_temac_main.c
+> > @@ -106,7 +106,7 @@ static bool hard_acs_rdy_or_timeout(struct temac_local *lp, ktime_t timeout)
+> >   */
+> >  #define HARD_ACS_RDY_POLL_NS (20 * NSEC_PER_MSEC)
+> >  
+> > -/**
+> > +/*
+> >   * temac_indirect_busywait - Wait for current indirect register access
+> >   * to complete.
+> >   */
+> 
+> This looks like a function comment. Shouldn't this just be fixed/updated
+> so that it is a valid kdoc comment instead?
+
+As per above, this driver didn't even try to use kdoc, so I just
+honored their original intent and removed /**.
+
+Thanks for the review and comments!
