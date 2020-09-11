@@ -1,114 +1,66 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 10 Sep 2020 18:23:29 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 03/11] iavf: clean up W=1
- warnings in iavf
+Date: Thu, 10 Sep 2020 18:23:33 -0700
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 07/11]
+ drivers/net/ethernet: rid ethernet of no-prototype warnings
 In-Reply-To: <20200911012337.14015-1-jesse.brandeburg@intel.com>
 References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
-Message-ID: <20200911012337.14015-4-jesse.brandeburg@intel.com>
+Message-ID: <20200911012337.14015-8-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Inspired by Lee Jones, this eliminates the remaining W=1 warnings
-in iavf.
+The W=1 builds showed a few files exporting functions
+(non-static) that were not prototyped. What actually happened is
+that there were prototypes, but the include file was forgotten in
+the implementation file.
+
+Add the include file and remove the warnings.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 24 ++++++++++-----------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/cavium/liquidio/cn68xx_device.c   | 1 +
+ drivers/net/ethernet/cavium/liquidio/octeon_mem_ops.c  | 1 +
+ drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_dcb.c | 1 +
+ 3 files changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index d870343cf689..814e59bf2c94 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -147,6 +147,7 @@ void iavf_schedule_reset(struct iavf_adapter *adapter)
- /**
-  * iavf_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-+ * @txqueue: queue number that is timing out
-  **/
- static void iavf_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- {
-@@ -2572,8 +2573,8 @@ static int iavf_validate_ch_config(struct iavf_adapter *adapter,
- }
+diff --git a/drivers/net/ethernet/cavium/liquidio/cn68xx_device.c b/drivers/net/ethernet/cavium/liquidio/cn68xx_device.c
+index 50b533ff58e6..30254e4cf70f 100644
+--- a/drivers/net/ethernet/cavium/liquidio/cn68xx_device.c
++++ b/drivers/net/ethernet/cavium/liquidio/cn68xx_device.c
+@@ -25,6 +25,7 @@
+ #include "octeon_main.h"
+ #include "cn66xx_regs.h"
+ #include "cn66xx_device.h"
++#include "cn68xx_device.h"
+ #include "cn68xx_regs.h"
  
- /**
-- * iavf_del_all_cloud_filters - delete all cloud filters
-- * on the traffic classes
-+ * iavf_del_all_cloud_filters - delete all cloud filters on the traffic classes
-+ * @adapter: board private structure
-  **/
- static void iavf_del_all_cloud_filters(struct iavf_adapter *adapter)
- {
-@@ -2592,7 +2593,7 @@ static void iavf_del_all_cloud_filters(struct iavf_adapter *adapter)
- /**
-  * __iavf_setup_tc - configure multiple traffic classes
-  * @netdev: network interface device structure
-- * @type_date: tc offload data
-+ * @type_data: tc offload data
-  *
-  * This function processes the config information provided by the
-  * user to configure traffic classes/queue channels and packages the
-@@ -2690,7 +2691,7 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
- /**
-  * iavf_parse_cls_flower - Parse tc flower filters provided by kernel
-  * @adapter: board private structure
-- * @cls_flower: pointer to struct flow_cls_offload
-+ * @f: pointer to struct flow_cls_offload
-  * @filter: pointer to cloud filter structure
-  */
- static int iavf_parse_cls_flower(struct iavf_adapter *adapter,
-@@ -3064,8 +3065,8 @@ static int iavf_delete_clsflower(struct iavf_adapter *adapter,
+ static void lio_cn68xx_set_dpi_regs(struct octeon_device *oct)
+diff --git a/drivers/net/ethernet/cavium/liquidio/octeon_mem_ops.c b/drivers/net/ethernet/cavium/liquidio/octeon_mem_ops.c
+index 4c85ae643b7b..7ccab36143c1 100644
+--- a/drivers/net/ethernet/cavium/liquidio/octeon_mem_ops.c
++++ b/drivers/net/ethernet/cavium/liquidio/octeon_mem_ops.c
+@@ -22,6 +22,7 @@
+ #include "octeon_iq.h"
+ #include "response_manager.h"
+ #include "octeon_device.h"
++#include "octeon_mem_ops.h"
  
- /**
-  * iavf_setup_tc_cls_flower - flower classifier offloads
-- * @netdev: net device to configure
-- * @type_data: offload data
-+ * @adapter: board private structure
-+ * @cls_flower: pointer to flow_cls_offload struct with flow info
-  */
- static int iavf_setup_tc_cls_flower(struct iavf_adapter *adapter,
- 				    struct flow_cls_offload *cls_flower)
-@@ -3112,7 +3113,7 @@ static LIST_HEAD(iavf_block_cb_list);
-  * iavf_setup_tc - configure multiple traffic classes
-  * @netdev: network interface device structure
-  * @type: type of offload
-- * @type_date: tc offload data
-+ * @type_data: tc offload data
-  *
-  * This function is the callback to ndo_setup_tc in the
-  * netdev_ops.
-@@ -3768,8 +3769,7 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ #define MEMOPS_IDX   BAR1_INDEX_DYNAMIC_MAP
  
- /**
-  * iavf_suspend - Power management suspend routine
-- * @pdev: PCI device information struct
-- * @state: unused
-+ * @dev_d: device info pointer
-  *
-  * Called when the system (VM) is entering sleep/suspend.
-  **/
-@@ -3799,15 +3799,15 @@ static int __maybe_unused iavf_suspend(struct device *dev_d)
+diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_dcb.c b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_dcb.c
+index d6c3952aba04..f28b8f3df857 100644
+--- a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_dcb.c
++++ b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_dcb.c
+@@ -3,6 +3,7 @@
  
- /**
-  * iavf_resume - Power management resume routine
-- * @pdev: PCI device information struct
-+ * @dev_d: device info pointer
-  *
-  * Called when the system (VM) is resumed from sleep/suspend.
-  **/
- static int __maybe_unused iavf_resume(struct device *dev_d)
- {
-+	struct net_device *netdev = dev_get_drvdata(dev_d);
-+	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	struct pci_dev *pdev = to_pci_dev(dev_d);
--	struct iavf_adapter *adapter = pci_get_drvdata(pdev);
--	struct net_device *netdev = adapter->netdev;
- 	u32 err;
+ #include "hclge_main.h"
+ #include "hclge_tm.h"
++#include "hclge_dcb.h"
+ #include "hnae3.h"
  
- 	pci_set_master(pdev);
+ #define BW_PERCENT	100
 -- 
 2.27.0
 
