@@ -1,26 +1,38 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Fri, 11 Sep 2020 08:33:54 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] i40e: allow VMDQs to be used
- with AF_XDP zero-copy
-In-Reply-To: <1599826106-19020-1-git-send-email-magnus.karlsson@gmail.com>
-References: <1599826106-19020-1-git-send-email-magnus.karlsson@gmail.com>
-Message-ID: <20200911083354.7e501505@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Edward Cree <ecree@solarflare.com>
+Date: Fri, 11 Sep 2020 18:16:58 +0100
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 06/11]
+ drivers/net/ethernet: clean up unused assignments
+In-Reply-To: <20200911012337.14015-7-jesse.brandeburg@intel.com>
+References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
+ <20200911012337.14015-7-jesse.brandeburg@intel.com>
+Message-ID: <5bcd5f6f-d0c1-b9c4-d5f6-4de845ee1ec7@solarflare.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 11 Sep 2020 14:08:26 +0200 Magnus Karlsson wrote:
-> From: Magnus Karlsson <magnus.karlsson@intel.com>
-> 
-> Allow VMDQs to be used with AF_XDP sockets in zero-copy mode. For some
-> reason, we only allowed main VSIs to be used with zero-copy, but
-> there is now reason to not allow VMDQs also.
-> 
-> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-
-The VMQ interfaces that you create through a debugfs command interfaces?
-
-IDK if we should add features to those, or pretend they never existed
-in the first place..
+On 11/09/2020 02:23, Jesse Brandeburg wrote:
+> As part of the W=1 compliation series, these lines all created
+> warnings about unused variables that were assigned a value. Most
+> of them are from register reads, but some are just picking up
+> a return value from a function and never doing anything with it.
+>
+> The register reads should be OK, because the current
+> implementation of readl and friends will always execute even
+> without an lvalue.
+>
+> When it makes sense, just remove the lvalue assignment and the
+> local. Other times, just remove the offending code, and
+> occasionally, just mark the variable as maybe unused since it
+> could be used in an ifdef or debug scenario.
+>
+> Only compile tested with W=1 and an allyesconfig with all the
+> network drivers turned into modules (to try to test all options).
+>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+For the sfc/falcon part:
+Acked-by: Edward Cree <ecree@solarflare.com>
+(it's not the same as the solution I went with for thevery
+?similar code in the Siena driver (../farch.c), but it looks
+?reasonable enough).
