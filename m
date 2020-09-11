@@ -1,57 +1,37 @@
-From: Wang Hai <wanghai38@huawei.com>
-Date: Thu, 10 Sep 2020 23:12:04 +0800
-Subject: [Intel-wired-lan] [PATCH net-next] igb: Fix some kernel-doc
- warnings in e1000_82575.c
-Message-ID: <20200910151204.36198-1-wanghai38@huawei.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 10 Sep 2020 17:49:26 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] Fix some kernel-doc
+ warnings for i40e
+In-Reply-To: <20200910150934.34605-1-wanghai38@huawei.com>
+References: <20200910150934.34605-1-wanghai38@huawei.com>
+Message-ID: <20200910174926.00004f0e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixes the following W=1 kernel build warning(s):
+Wang Hai wrote:
 
-drivers/net/ethernet/intel/igb/e1000_82575.c:2563: warning: Excess function parameter 'addr' description in '__igb_access_emi_reg'
-drivers/net/ethernet/intel/igb/e1000_82575.c:2599: warning: Excess function parameter 'adv100m' description in 'igb_set_eee_i350'
-drivers/net/ethernet/intel/igb/e1000_82575.c:2655: warning: Excess function parameter 'adv100m' description in 'igb_set_eee_i354'
+> Wang Hai (3):
+>   i40e: Fix some kernel-doc warnings in i40e_client.c
+>   i40e: Fix some kernel-doc warnings in i40e_common.c
+>   i40e: Fix a kernel-doc warning in i40e_ptp.c
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 2 --
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 2 --
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c    | 1 -
+>  3 files changed, 5 deletions(-)
+> 
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Wang Hai <wanghai38@huawei.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index a32391e82762..50863fd87d53 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -2554,7 +2554,7 @@ static s32 igb_update_nvm_checksum_i350(struct e1000_hw *hw)
- /**
-  *  __igb_access_emi_reg - Read/write EMI register
-  *  @hw: pointer to the HW structure
-- *  @addr: EMI address to program
-+ *  @address: EMI address to program
-  *  @data: pointer to value to read/write from/to the EMI address
-  *  @read: boolean flag to indicate read or write
-  **/
-@@ -2590,7 +2590,7 @@ s32 igb_read_emi_reg(struct e1000_hw *hw, u16 addr, u16 *data)
-  *  igb_set_eee_i350 - Enable/disable EEE support
-  *  @hw: pointer to the HW structure
-  *  @adv1G: boolean flag enabling 1G EEE advertisement
-- *  @adv100m: boolean flag enabling 100M EEE advertisement
-+ *  @adv100M: boolean flag enabling 100M EEE advertisement
-  *
-  *  Enable/disable EEE based on setting in dev_spec structure.
-  *
-@@ -2646,7 +2646,7 @@ s32 igb_set_eee_i350(struct e1000_hw *hw, bool adv1G, bool adv100M)
-  *  igb_set_eee_i354 - Enable/disable EEE support
-  *  @hw: pointer to the HW structure
-  *  @adv1G: boolean flag enabling 1G EEE advertisement
-- *  @adv100m: boolean flag enabling 100M EEE advertisement
-+ *  @adv100M: boolean flag enabling 100M EEE advertisement
-  *
-  *  Enable/disable EEE legacy mode based on setting in dev_spec structure.
-  *
--- 
-2.17.1
+Please see my patchset [1]: I've already fixed all of these and many
+others.
+
+In fact, before you continue, I have a whole set done making the entire
+drivers/net/ethernet directory compile cleanly with W=1, that I'm about
+to send, but they depend on [1]
+
+[1]
+https://patchwork.ozlabs.org/project/intel-wired-lan/list/?series=&submitter=189&state=&q=&archive=&delegate=
 
