@@ -1,82 +1,50 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 11 Sep 2020 11:41:58 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] i40e: allow VMDQs to be used
- with AF_XDP zero-copy
-In-Reply-To: <b28b4e93-50c2-6183-90ea-8d33902e8f21@intel.com>
-References: <1599826106-19020-1-git-send-email-magnus.karlsson@gmail.com>
- <20200911120519.GA9758@ranger.igk.intel.com>
- <CAJ8uoz3ctVoANjiO_nQ38YA-JoB0nQH1B4W01AZFw3iCyCC_+w@mail.gmail.com>
- <20200911131027.GA2052@ranger.igk.intel.com>
- <b28b4e93-50c2-6183-90ea-8d33902e8f21@intel.com>
-Message-ID: <CAKgT0UcXLi5fK3UiOpfPKu6FxJh1tH4r+_ZjCNsH=cEqHztOOg@mail.gmail.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 11 Sep 2020 12:00:05 -0700
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 00/11] make
+ drivers/net/ethernet W=1 clean
+In-Reply-To: <20200911075515.6d81066b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
+ <20200911075515.6d81066b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <20200911120005.00000178@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 11, 2020 at 11:05 AM Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
->
->
->
-> On 9/11/2020 6:10 AM, Maciej Fijalkowski wrote:
-> > On Fri, Sep 11, 2020 at 02:29:50PM +0200, Magnus Karlsson wrote:
-> >> On Fri, Sep 11, 2020 at 2:11 PM Maciej Fijalkowski
-> >> <maciej.fijalkowski@intel.com> wrote:
-> >>>
-> >>> On Fri, Sep 11, 2020 at 02:08:26PM +0200, Magnus Karlsson wrote:
-> >>>> From: Magnus Karlsson <magnus.karlsson@intel.com>
-> >>>>
-> >>>> Allow VMDQs to be used with AF_XDP sockets in zero-copy mode. For some
-> >>>> reason, we only allowed main VSIs to be used with zero-copy, but
-> >>>> there is now reason to not allow VMDQs also.
-> >>>
-> >>> You meant 'to allow' I suppose. And what reason? :)
-> >>
-> >> Yes, sorry. Should be "not to allow". I was too trigger happy ;-).
-> >>
-> >> I have gotten requests from users that they want to use VMDQs in
-> >> conjunction with containers. Basically small slices of the i40e
-> >> portioned out as netdevs. Do you see any problems with using a VMDQ
-> >> iwth zero-copy?
->
-> Today VMDQ VSIs are used when a macvlan interface is created on top of a
-> i40e PF with l2-fwd-offload on. But i don't think we can create an
-> AF_XDP zerocopy socket on top of a macvlan netdev as it doesn't support
-> ndo_bpf or ndo_xdp_xxx apis or expose hw queues directly.
->
-> We need to expose VMDQ VSI as a native netdev that can expose its own
-> queues and support ndo_ ops in order to enable AF_XDP zerocopy on a
-> VMDQ. We talked about this approach at the recent netdev conference to
-> expose VMDQ VSI as a subdevice with its own netdev.
->
-> https://netdevconf.info/0x14/session.html?talk-hardware-acceleration-of-container-networking-interfaces
+Jakub Kicinski wrote:
 
-I still hold the opinion that macvlan is still the best way to go
-about addressing most of these needs. The problem with doing isolation
-as separate netdevs is the fact that east/west traffic starts to
-essentially swamp the PCIe bus on the device as you have to deal with
-broadcast/multicast replication and east/west traffic. Leaving that
-replication and east/west traffic up to software to handle while
-allowing the unicast traffic to be directed is the best way to go in
-my opinion.
+> On Thu, 10 Sep 2020 18:23:26 -0700 Jesse Brandeburg wrote:
+> > Some of these patches are already sent to Intel Wired Lan, but the rest
+> > of the series titled drivers/net/ethernet affects other drivers, not
+> > just Intel, but they depend on the first five.
+> 
+> Great stuff. Much easier to apply one large series than a thousand
+> small patches. I haven't read all the comment changes but FWIW:
+> 
+> Reviewed-by: Jakub Kicinski <kuba@kernel.org>
 
-The problem with just spawning netdevs is that each vendor can do it
-differently and what you get varies in functionality. If anything we
-would need to come up with a standardized interface to define what
-features can be used and exposed. That was one of the motivations
-behind using macvlan. So if anything it seems like it might make more
-sense to look at extending the macvlan interface to enable offloading
-additional features to the lower level device.
+Thanks!
 
-With that said I am not certain VMDq is even the right kind of
-interface to use for containers. I would be more interested in
-something like what we did in fm10k for macvlan offload where we used
-resource tags to identify traffic that belonged to a given interface
-and just dedicated that to it rather than queues and interrupts. The
-problem with dedicating queues and interrupts is that those are a
-limited resource so scaling will become an issue when you get to any
-decent count of containers.
+> I feel slightly bad for saying this but I think your config did not
+> include all the drivers, 'cause I'm still getting some warnings after
+> patch 11. Regardless this is impressive effort, thanks!
 
-- Alex
+No worries! I want to get it right, can you share your methodology?
+
+I saw from some other message that you're doing
+make CC="ccache gcc" allmodconfig
+make CC="ccache gcc" -j 64 W=1 C=1
+
+Is that the right sequence? did you start with a make mrproper as well?
+I may have missed some drivers when I did this:
+make allyesconfig
+make menuconfig
+<turn on all "Ethernet Drivers" = m manually>
+
+but I'd like to target the actual job you're running and use that as
+the short-term goal.
+
+Also, if you have any comments about the removal of the lvalue from
+some of the register read operations, I figure that is the riskiest
+part of all this.
