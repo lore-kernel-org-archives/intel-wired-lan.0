@@ -1,50 +1,45 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 14 Sep 2020 16:06:02 -0700
-Subject: [Intel-wired-lan] [RFC PATCH net-next v1 10/11]
- drivers/net/ethernet: remove incorrectly formatted doc
-In-Reply-To: <20200911162557.000002d2@intel.com>
-References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
- <20200911012337.14015-11-jesse.brandeburg@intel.com>
- <fbd1fdd9-1000-8aac-7e5c-bc761b2209e1@intel.com>
- <20200911162557.000002d2@intel.com>
-Message-ID: <3e3a63bd-dd6e-09a1-a1ad-29e7a7ed5d1f@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 14 Sep 2020 16:22:44 -0700
+Subject: [Intel-wired-lan] [PATCH][next] i40e: switch kvzalloc to
+ allocate rx/tx_bi buffer
+In-Reply-To: <1598000514-5951-1-git-send-email-lirongqing@baidu.com>
+References: <1598000514-5951-1-git-send-email-lirongqing@baidu.com>
+Message-ID: <20200914162244.00001783@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Li RongQing wrote:
 
+> when changes the rx/tx ring to 4096, rx/tx_bi needs an order
+> 5 pages, and allocation maybe fail due to memory fragmentation
+> so switch to kvzalloc
 
-On 9/11/2020 4:25 PM, Jesse Brandeburg wrote:
-> Jacob Keller wrote:
-> 
->> A lot of these look like they should probably just be converted to use
->> kdoc format instead of removing the '/**'
-> 
-> I understand why you're saying that, and I spent a considerable amount
-> of time fixing drivers that appeared to *try* to use kdoc but messed
-> up. However, if they don't have anything that looks like doxygen or
-> kdoc, then I just removed the "/**" to a /* and stopped kdoc processing.
-> 
-> The temac driver is a good example of not actually trying to kdoc at
-> all.
-> 
-> However I will look over the patches and see if I see @brief anywhere
-> that is left and try to fix those up. I've done so much now I might as
-> well finish it, but the @brief doxygen style notes had never been
-> processed into kdoc before, so changing the /** into /* doesn't
-> actually remove any value, just makes the build clean.
-> 
+Hi Li,
+Thanks for your patches, but I think you're solving a problem that isn't
+a problem (besides that the warning is being printed.) After all, the
+driver either gets the memory that it needed via the kernel waiting
+(since we didn't set GFP_NOWAIT), or ENOMEM gets returned to the user.
+If your kernel is so close to OOM that it's having this problem aren't
+you going to have other issues? Anyway....
 
-Sure, I think that's important. I just wanted to point out that we are
-probably breaking whoever maintained/wrote that code and used doxygen.
-(Since as far as I understand, doxygen also relies on the /** to find
-comments).
+This driver goes to great lengths to not make any changes to the
+existing queues if an allocation fails via ethtool (in fact this is
+code I authored).
 
-Basically: I think we should be clear that is what we are doing:
+Maybe a better option is to just set __GFP_NOWARN on the kcalloc call?
+Then if there is a memory allocation error we'll just reflect it to
+user space and let the user retry, with no noisy kernel message.
 
-  "We support kdoc, not doxygen, so if you want this, use kdoc format"
+For performance reasons, having actually contiguous regions from
+kcalloc should help performance vs kvcalloc virtually contiguous
+regions.
 
-Thanks,
-Jake
+I'd prefer that you don't solve the problem this way. How about just
+marking the allocations as GFP_RETRY_MAYFAIL and GFP_NOWARN?
+
+The same goes for the iavf patch.
+
+Jesse
