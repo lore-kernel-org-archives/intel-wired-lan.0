@@ -1,96 +1,59 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Mon, 14 Sep 2020 12:10:49 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] i40e: allow VMDQs to be used
- with AF_XDP zero-copy
-In-Reply-To: <CAKgT0UcXLi5fK3UiOpfPKu6FxJh1tH4r+_ZjCNsH=cEqHztOOg@mail.gmail.com>
-References: <1599826106-19020-1-git-send-email-magnus.karlsson@gmail.com>
- <20200911120519.GA9758@ranger.igk.intel.com>
- <CAJ8uoz3ctVoANjiO_nQ38YA-JoB0nQH1B4W01AZFw3iCyCC_+w@mail.gmail.com>
- <20200911131027.GA2052@ranger.igk.intel.com>
- <b28b4e93-50c2-6183-90ea-8d33902e8f21@intel.com>
- <CAKgT0UcXLi5fK3UiOpfPKu6FxJh1tH4r+_ZjCNsH=cEqHztOOg@mail.gmail.com>
-Message-ID: <CAJ8uoz2vV4b8EXwdcU7WBxsY0bnM=Lk_b789w0Ki7+8CWRk6fA@mail.gmail.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Mon, 14 Sep 2020 13:24:09 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix S0ix flow to allow
+ S0i3.2 subset entry
+Message-ID: <20200914102409.6464-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 11, 2020 at 8:42 PM Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
->
-> On Fri, Sep 11, 2020 at 11:05 AM Samudrala, Sridhar
-> <sridhar.samudrala@intel.com> wrote:
-> >
-> >
-> >
-> > On 9/11/2020 6:10 AM, Maciej Fijalkowski wrote:
-> > > On Fri, Sep 11, 2020 at 02:29:50PM +0200, Magnus Karlsson wrote:
-> > >> On Fri, Sep 11, 2020 at 2:11 PM Maciej Fijalkowski
-> > >> <maciej.fijalkowski@intel.com> wrote:
-> > >>>
-> > >>> On Fri, Sep 11, 2020 at 02:08:26PM +0200, Magnus Karlsson wrote:
-> > >>>> From: Magnus Karlsson <magnus.karlsson@intel.com>
-> > >>>>
-> > >>>> Allow VMDQs to be used with AF_XDP sockets in zero-copy mode. For some
-> > >>>> reason, we only allowed main VSIs to be used with zero-copy, but
-> > >>>> there is now reason to not allow VMDQs also.
-> > >>>
-> > >>> You meant 'to allow' I suppose. And what reason? :)
-> > >>
-> > >> Yes, sorry. Should be "not to allow". I was too trigger happy ;-).
-> > >>
-> > >> I have gotten requests from users that they want to use VMDQs in
-> > >> conjunction with containers. Basically small slices of the i40e
-> > >> portioned out as netdevs. Do you see any problems with using a VMDQ
-> > >> iwth zero-copy?
-> >
-> > Today VMDQ VSIs are used when a macvlan interface is created on top of a
-> > i40e PF with l2-fwd-offload on. But i don't think we can create an
-> > AF_XDP zerocopy socket on top of a macvlan netdev as it doesn't support
-> > ndo_bpf or ndo_xdp_xxx apis or expose hw queues directly.
-> >
-> > We need to expose VMDQ VSI as a native netdev that can expose its own
-> > queues and support ndo_ ops in order to enable AF_XDP zerocopy on a
-> > VMDQ. We talked about this approach at the recent netdev conference to
-> > expose VMDQ VSI as a subdevice with its own netdev.
-> >
-> > https://netdevconf.info/0x14/session.html?talk-hardware-acceleration-of-container-networking-interfaces
->
-> I still hold the opinion that macvlan is still the best way to go
-> about addressing most of these needs. The problem with doing isolation
-> as separate netdevs is the fact that east/west traffic starts to
-> essentially swamp the PCIe bus on the device as you have to deal with
-> broadcast/multicast replication and east/west traffic. Leaving that
-> replication and east/west traffic up to software to handle while
-> allowing the unicast traffic to be directed is the best way to go in
-> my opinion.
->
-> The problem with just spawning netdevs is that each vendor can do it
-> differently and what you get varies in functionality. If anything we
-> would need to come up with a standardized interface to define what
-> features can be used and exposed. That was one of the motivations
-> behind using macvlan. So if anything it seems like it might make more
-> sense to look at extending the macvlan interface to enable offloading
-> additional features to the lower level device.
+Changed a configuration in the flows to align with
+architecture requirements to achieve S0i3.2 substate.
 
-Agree with this completely. This patch was not intended to "solve" the
-container interface problem. This solution does not scale, is
-proprietary, etc, etc. It just uses something, VMDQs,  that was put in
-the i40e driver a long time ago. Do not know the history behind it,
-but I am sure that Alex and Sridhar do. Anyway, what I believe you and
-Jakub are saying is that this is just extending something that we all
-know is a dead end, or in other words, putting lipstick on a pig ;-).
+Also fixed a typo in the previous patch- e1000e: fix S0ix flows for
+cable connected case (632fbd5eb5b).
 
-Please drop the patch.
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> With that said I am not certain VMDq is even the right kind of
-> interface to use for containers. I would be more interested in
-> something like what we did in fm10k for macvlan offload where we used
-> resource tags to identify traffic that belonged to a given interface
-> and just dedicated that to it rather than queues and interrupts. The
-> problem with dedicating queues and interrupts is that those are a
-> limited resource so scaling will become an issue when you get to any
-> decent count of containers.
->
-> - Alex
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index a77d39723d8d..2f224478a0c3 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6479,13 +6479,13 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+ 
+ 	/* Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data |= BIT(28);
++	mac_data &= ~BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
+ 
+ 	/* Enable K1 off to enable mPHY Power Gating */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data |= BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
+ 
+ 	/* Enable mPHY power gating for any link and speed */
+ 	mac_data = er32(FEXTNVM8);
+@@ -6529,11 +6529,11 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 	/* Disable K1 off */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data &= ~BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
+ 
+ 	/* Disable Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data &= ~BIT(28);
++	mac_data |= BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
+ 
+ 	/* Cancel not waking from dynamic
+-- 
+2.11.0
+
