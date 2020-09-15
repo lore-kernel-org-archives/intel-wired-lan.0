@@ -1,87 +1,32 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 15 Sep 2020 09:48:06 +0300
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: Add support for Comet Lake
-In-Reply-To: <b97d6390-2226-ef51-d87b-736aa6e7189a@molgen.mpg.de>
-References: <20191010101539.37043-1-sasha.neftin@intel.com>
- <b97d6390-2226-ef51-d87b-736aa6e7189a@molgen.mpg.de>
-Message-ID: <292c4e24-9efb-0057-6d50-2b8c72456215@intel.com>
+From: Edward Cree <ecree@solarflare.com>
+Date: Tue, 15 Sep 2020 10:05:59 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v2 09/10] sfc: fix kdoc
+ warning
+In-Reply-To: <20200915014455.1232507-10-jesse.brandeburg@intel.com>
+References: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
+ <20200915014455.1232507-10-jesse.brandeburg@intel.com>
+Message-ID: <aaa15cdb-179b-bca7-6d41-4a861aaa3470@solarflare.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/14/2020 10:35, Paul Menzel wrote:
-> Dear Sasha, dear Jeff,
-> 
-> 
-> Am 10.10.19 um 12:15 schrieb Sasha Neftin:
->> Add devices ID's for the next LOM generations that will be
->> available on the next Intel Client platform (Comet Lake)
->> This patch provides the initial support for these devices
->>
->> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->> ---
->> ? drivers/net/ethernet/intel/e1000e/hw.h???? | 6 ++++++
->> ? drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
->> ? 2 files changed, 12 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h 
->> b/drivers/net/ethernet/intel/e1000e/hw.h
->> index eff75bd8a8f0..11fdc27faa82 100644
->> --- a/drivers/net/ethernet/intel/e1000e/hw.h
->> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
->> @@ -86,6 +86,12 @@ struct e1000_hw;
->> ? #define E1000_DEV_ID_PCH_ICP_I219_V8??????? 0x15E0
->> ? #define E1000_DEV_ID_PCH_ICP_I219_LM9??????? 0x15E1
->> ? #define E1000_DEV_ID_PCH_ICP_I219_V9??????? 0x15E2
->> +#define E1000_DEV_ID_PCH_CMP_I219_LM10??????? 0x0D4E
->> +#define E1000_DEV_ID_PCH_CMP_I219_V10??????? 0x0D4F
->> +#define E1000_DEV_ID_PCH_CMP_I219_LM11??????? 0x0D4C
->> +#define E1000_DEV_ID_PCH_CMP_I219_V11??????? 0x0D4D
->> +#define E1000_DEV_ID_PCH_CMP_I219_LM12??????? 0x0D53
->> +#define E1000_DEV_ID_PCH_CMP_I219_V12??????? 0x0D55
->> ? #define E1000_REVISION_4??? 4
->> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
->> b/drivers/net/ethernet/intel/e1000e/netdev.c
->> index cc4363e67072..2dedeed74cd4 100644
->> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->> @@ -7753,6 +7753,12 @@ static const struct pci_device_id 
->> e1000_pci_tbl[] = {
->> ????? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V8), 
->> board_pch_cnp },
->> ????? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_LM9), 
->> board_pch_cnp },
->> ????? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ICP_I219_V9), 
->> board_pch_cnp },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM10), 
->> board_pch_cnp },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V10), 
->> board_pch_cnp },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM11), 
->> board_pch_cnp },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), 
->> board_pch_cnp },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), 
->> board_pch_spt },
->> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), 
->> board_pch_spt },
->> ????? { 0, 0, 0, 0, 0, 0, 0 }??? /* terminate list */
->> ? };
-> 
-> This landed in Linux 5.5, and we would really like to see it in the 5.4 
-> stable series. As it?s just adding new PCI device codes, this sounds 
-> easily doable.
-> 
-> What is the process of getting it into the stable series? I remember the 
-> net subsystem having a different process than just adding `CC: 
-> stable at vger.kernel.org`, which is too late for this anyway, as it?s 
-> already in Linus? master branch.
-Tony, can you help here?
-(If I recall correctly Greg Kroah-Hartman own the stable version domain)
-> 
-> 
-> Kind regards,
-> 
-> Paul
+On 15/09/2020 02:44, Jesse Brandeburg wrote:
+> kernel-doc script as used by W=1, is confused by the macro
+> usage inside the header describing the efx_ptp_data struct.
+>
+> drivers/net/ethernet/sfc/ptp.c:345: warning: Function parameter or member 'MC_CMD_PTP_IN_TRANSMIT_LENMAX' not described in 'efx_ptp_data'
+>
+> After some discussion on the list, break this patch out to
+> a separate one, and fix the issue through a creative
+> macro declaration.
+>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Cc: Edward Cree <ecree@solarflare.com>
+I still don't love it, but it'll do, so have an
+Acked-by: Edward Cree <ecree@solarflare.com>
+
+(But please make sure whoever maintains scripts/kernel-doc knows that
+?it's breaking on a reasonable construct and forcing the code to be
+?_less_ self-documenting than it otherwise could be.)
