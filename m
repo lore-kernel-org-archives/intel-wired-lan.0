@@ -1,11 +1,11 @@
 From: Edward Cree <ecree@solarflare.com>
-Date: Tue, 15 Sep 2020 10:05:59 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v2 09/10] sfc: fix kdoc
- warning
-In-Reply-To: <20200915014455.1232507-10-jesse.brandeburg@intel.com>
+Date: Tue, 15 Sep 2020 10:02:49 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v2 04/10]
+ drivers/net/ethernet: clean up unused assignments
+In-Reply-To: <20200915014455.1232507-5-jesse.brandeburg@intel.com>
 References: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
- <20200915014455.1232507-10-jesse.brandeburg@intel.com>
-Message-ID: <aaa15cdb-179b-bca7-6d41-4a861aaa3470@solarflare.com>
+ <20200915014455.1232507-5-jesse.brandeburg@intel.com>
+Message-ID: <d647a101-412b-8f17-2460-5171e0a3a218@solarflare.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,20 +13,22 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 15/09/2020 02:44, Jesse Brandeburg wrote:
-> kernel-doc script as used by W=1, is confused by the macro
-> usage inside the header describing the efx_ptp_data struct.
+> As part of the W=1 compliation series, these lines all created
+> warnings about unused variables that were assigned a value. Most
+> of them are from register reads, but some are just picking up
+> a return value from a function and never doing anything with it.
 >
-> drivers/net/ethernet/sfc/ptp.c:345: warning: Function parameter or member 'MC_CMD_PTP_IN_TRANSMIT_LENMAX' not described in 'efx_ptp_data'
+> The register reads should be OK, because the current
+> implementation of readl and friends will always execute even
+> without an lvalue.
 >
-> After some discussion on the list, break this patch out to
-> a separate one, and fix the issue through a creative
-> macro declaration.
+> When it makes sense, just remove the lvalue assignment and the
+> local. Other times, just remove the offending code, and
+> occasionally, just mark the variable as maybe unused since it
+> could be used in an ifdef or debug scenario.
+>
+> Only compile tested with W=1.
 >
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Cc: Edward Cree <ecree@solarflare.com>
-I still don't love it, but it'll do, so have an
+For sfc/falcon:
 Acked-by: Edward Cree <ecree@solarflare.com>
-
-(But please make sure whoever maintains scripts/kernel-doc knows that
-?it's breaking on a reasonable construct and forcing the code to be
-?_less_ self-documenting than it otherwise could be.)
