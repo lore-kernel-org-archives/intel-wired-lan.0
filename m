@@ -1,30 +1,53 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 14 Sep 2020 16:24:18 -0700
-Subject: [Intel-wired-lan] [PATCH][next][v2] iavf: use kvzalloc instead
- of kzalloc for rx/tx_bi buffer
-In-Reply-To: <1598592392-30673-1-git-send-email-lirongqing@baidu.com>
-References: <1598592392-30673-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <20200914162418.00007393@intel.com>
+Date: Mon, 14 Sep 2020 18:44:46 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 01/10] i40e: prepare flash
+ string in a simpler way
+In-Reply-To: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
+References: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
+Message-ID: <20200915014455.1232507-2-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Li RongQing wrote:
+The flash string handling code triggered a W=1 warning and upon
+investigation it seems everything can be handled in a simpler
+way with a single initialization and one strlcat.  The buffer is filled
+with NULL after the end of the string by the initializer, and the
+strlcat checks total length, and makes sure the buffer is terminated
+cleanly.
 
-> when changes the rx/tx ring to 4096, kzalloc may fail due to
-> a temporary shortage on slab entries.
-> 
-> so using kvmalloc to allocate this memory as there is no need
-> that this memory area is physical continuously.
-> 
-> and using __GFP_RETRY_MAYFAIL to allocate from kmalloc as
-> far as possible, which can reduce TLB pressure than vmalloc
-> as suggested by Eric Dumazet
+I didn't mark this with a fixes tag as there is no apparent bug since
+the existing code would limit the input data + path to be the right
+size, but it does fix the W=1 warning.
 
-This change is no good, it's using RETRY_MAYFAIL but still using
-v*alloc.
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Please see my replies to the i40e version of the patch. I don't think
-we should apply these.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+index 5e08f100c413..9767fdf56124 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+@@ -434,14 +434,10 @@ int i40e_ddp_flash(struct net_device *netdev, struct ethtool_flash *flash)
+ 	 * stored profile.
+ 	 */
+ 	if (strncmp(flash->data, "-", 2) != 0) {
++		char profile_name[ETHTOOL_FLASH_MAX_FILENAME] = I40E_DDP_PROFILE_PATH;
+ 		struct i40e_ddp_old_profile_list *list_entry;
+-		char profile_name[sizeof(I40E_DDP_PROFILE_PATH)
+-				  + I40E_DDP_PROFILE_NAME_MAX];
+ 
+-		profile_name[sizeof(profile_name) - 1] = 0;
+-		strncpy(profile_name, I40E_DDP_PROFILE_PATH,
+-			sizeof(profile_name) - 1);
+-		strncat(profile_name, flash->data, I40E_DDP_PROFILE_NAME_MAX);
++		strlcat(profile_name, flash->data, ETHTOOL_FLASH_MAX_FILENAME);
+ 		/* Load DDP recipe. */
+ 		status = request_firmware(&ddp_config, profile_name,
+ 					  &netdev->dev);
+-- 
+2.28.0
+
