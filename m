@@ -1,26 +1,29 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 15 Sep 2020 14:00:58 -0700
+From: David Miller <davem@davemloft.net>
+Date: Tue, 15 Sep 2020 15:37:28 -0700 (PDT)
 Subject: [Intel-wired-lan] [PATCH net-next v2 00/10] make
  drivers/net/ethernet W=1 clean
-In-Reply-To: <20200915.133156.1580615428345209072.davem@davemloft.net>
-References: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
- <20200915.133156.1580615428345209072.davem@davemloft.net>
-Message-ID: <20200915140058.00007553@intel.com>
+In-Reply-To: <734f0c4595a18ab136263b6e5c97e7f48a93abe1.camel@kernel.org>
+References: <a28498acdf87f11e81d3282d63f18dbe1a3d5329.camel@kernel.org>
+ <20200915140326.GG3485708@lunn.ch>
+ <734f0c4595a18ab136263b6e5c97e7f48a93abe1.camel@kernel.org>
+Message-ID: <20200915.153728.107358987807075865.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-David Miller wrote:
-> Jesse, in all of these patches, I want to see the warning you are
-> fixing in the commit message.
+From: Saeed Mahameed <saeed@kernel.org>
+Date: Tue, 15 Sep 2020 13:03:03 -0700
+
+> On Tue, 2020-09-15 at 16:03 +0200, Andrew Lunn wrote:
+>> I would prefer we just enable W=1 by default for everything under
+>> driver/net. Maybe there is something we can set in
+>> driver/net/Makefile?
+>> 
 > 
-> Especially for the sh_eth.c one because I have no idea what the
-> compiler is actually warning about just by reading your commit
-> message and patch on it's own.
+> 
+> Yes we can have our own gcc options in the Makfile regardless of what
+> you put in W command line argument.
 
-Ok, I'll respin with those added for the compiler warning fixes in
-particular, and some simplified descriptions of the classes of kdoc
-warnings.
-
+I definitely would like to see W=1 in drivers/net/Makefile eventually.
