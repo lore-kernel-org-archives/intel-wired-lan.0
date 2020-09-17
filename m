@@ -1,42 +1,101 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 17 Sep 2020 13:13:41 -0700
-Subject: [Intel-wired-lan] [PATCH S53 09/15] ice: Enable Support for FW
- Override (E82X)
+Date: Thu, 17 Sep 2020 13:13:36 -0700
+Subject: [Intel-wired-lan] [PATCH S53 04/15] ice: log message when trusted
+ VF goes in/out of promisc mode
 In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
 References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200917201347.81570-9-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jeb Cramer <jeb.j.cramer@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-The driver is able to override the firmware when it comes to supporting
-a more lenient link mode.  This feature was limited to E810 devices.  It
-is now extended to E82X devices.
+Currently there is no message printed on the host when a VF goes in and
+out of promiscuous mode. This is causing confusion because this is the
+expected behavior based on i40e. Fix this.
 
-Signed-off-by: Jeb Cramer <jeb.j.cramer@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 4 ----
- 1 file changed, 4 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 32 +++++++++++--------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index a0cf60272aab..3b2d48906e61 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4261,10 +4261,6 @@ ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
-  */
- bool ice_fw_supports_link_override(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index ed5cca603949..35ed71694d44 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2314,12 +2314,12 @@ bool ice_is_any_vf_in_promisc(struct ice_pf *pf)
+ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
  {
--	/* Currently, only supported for E810 devices */
--	if (hw->mac_type != ICE_MAC_E810)
--		return false;
--
- 	if (hw->api_maj_ver == ICE_FW_API_LINK_OVERRIDE_MAJ) {
- 		if (hw->api_min_ver > ICE_FW_API_LINK_OVERRIDE_MIN)
- 			return true;
+ 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
++	bool rm_promisc, alluni = false, allmulti = false;
+ 	struct virtchnl_promisc_info *info =
+ 	    (struct virtchnl_promisc_info *)msg;
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_vsi *vsi;
+ 	struct device *dev;
+-	bool rm_promisc;
+ 	int ret = 0;
+ 
+ 	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
+@@ -2346,8 +2346,13 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 		goto error_param;
+ 	}
+ 
+-	rm_promisc = !(info->flags & FLAG_VF_UNICAST_PROMISC) &&
+-		!(info->flags & FLAG_VF_MULTICAST_PROMISC);
++	if (info->flags & FLAG_VF_UNICAST_PROMISC)
++		alluni = true;
++
++	if (info->flags & FLAG_VF_MULTICAST_PROMISC)
++		allmulti = true;
++
++	rm_promisc = !allmulti && !alluni;
+ 
+ 	if (vsi->num_vlan || vf->port_vlan_info) {
+ 		struct ice_vsi *pf_vsi = ice_get_main_vsi(pf);
+@@ -2401,12 +2406,12 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 		enum ice_status status;
+ 		u8 promisc_m;
+ 
+-		if (info->flags & FLAG_VF_UNICAST_PROMISC) {
++		if (alluni) {
+ 			if (vf->port_vlan_info || vsi->num_vlan)
+ 				promisc_m = ICE_UCAST_VLAN_PROMISC_BITS;
+ 			else
+ 				promisc_m = ICE_UCAST_PROMISC_BITS;
+-		} else if (info->flags & FLAG_VF_MULTICAST_PROMISC) {
++		} else if (allmulti) {
+ 			if (vf->port_vlan_info || vsi->num_vlan)
+ 				promisc_m = ICE_MCAST_VLAN_PROMISC_BITS;
+ 			else
+@@ -2434,15 +2439,16 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 		}
+ 	}
+ 
+-	if (info->flags & FLAG_VF_MULTICAST_PROMISC)
+-		set_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states);
+-	else
+-		clear_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states);
++	if (allmulti &&
++	    !test_and_set_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
++		dev_info(dev, "VF %u successfully set multicast promiscuous mode\n", vf->vf_id);
++	else if (!allmulti && test_and_clear_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
++		dev_info(dev, "VF %u successfully unset multicast promiscuous mode\n", vf->vf_id);
+ 
+-	if (info->flags & FLAG_VF_UNICAST_PROMISC)
+-		set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states);
+-	else
+-		clear_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states);
++	if (alluni && !test_and_set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
++		dev_info(dev, "VF %u successfully set unicast promiscuous mode\n", vf->vf_id);
++	else if (!alluni && test_and_clear_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
++		dev_info(dev, "VF %u successfully unset unicast promiscuous mode\n", vf->vf_id);
+ 
+ error_param:
+ 	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
 -- 
 2.20.1
 
