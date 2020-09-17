@@ -1,48 +1,44 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Thu, 17 Sep 2020 20:06:10 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 06/10]
- drivers/net/ethernet: handle one warning explicitly
-In-Reply-To: <e15b85af416c7257aaa601901b18c7c9bc9586e0.camel@kernel.org>
-References: <20200915014455.1232507-1-jesse.brandeburg@intel.com>
- <20200915014455.1232507-7-jesse.brandeburg@intel.com>
- <e15b85af416c7257aaa601901b18c7c9bc9586e0.camel@kernel.org>
-Message-ID: <3C4D967A-183C-4EA9-BA87-CE6731C24AAF@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 17 Sep 2020 13:13:37 -0700
+Subject: [Intel-wired-lan] [PATCH S53 05/15] ice: Set trusted VF as default
+ VSI when setting allmulti on
+In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-5-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-at 8:25 PM, Saeed Mahameed <saeed@kernel.org> wrote:
+From: Brett Creeley <brett.creeley@intel.com>
 
-> I don't have any strong feeling against disabling compiler warnings,
-> but maybe the right thing to do here is to initialize the gaps to the
-> invalid value instead of pre-initializing the whole thing first and
-> then setting up the valid values on the 2nd pass.
->
-> I don't think there are too many gaps to fill, it is doable, so maybe
-> add this as a comment to this driver maintainer so they could pickup
-> the work from here.
+Currently the PF will only set a trusted VF as the default VSI when it
+requests FLAG_VF_UNICAST_PROMISC over VIRTCHNL. However, when
+FLAG_VF_MULTICAST_PROMISC is set it's expected that the trusted VF will
+see multicast packets that don't have a matching destination MAC in the
+devices internal switch. Fix this by setting the trusted VF as the
+default VSI if either FLAG_VF_UNICAST_PROMISC or
+FLAG_VF_MULTICAST_PROMISC is set.
 
-The problem is that filling in the gaps creates a maintenance hazard. As  
-another example, the kernel does exactly this kind of thing to initialize  
-the system call table. Using the override in this way is the clearest,  
-easiest to maintain way of expressing this.
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Disabling the warning not only gets rid of the warning, but should also be  
-seen as a "something special is happening here" flag in the code. With the  
-warning disabled, there is a hazard of now missing the possible  
-introduction of an override here, but I think that risk is less than the  
-risk of failing to fill a gap when changes are made.
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 35ed71694d44..0478d8892f80 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2382,7 +2382,7 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 	}
+ 
+ 	if (!test_bit(ICE_FLAG_VF_TRUE_PROMISC_ENA, pf->flags)) {
+-		bool set_dflt_vsi = !!(info->flags & FLAG_VF_UNICAST_PROMISC);
++		bool set_dflt_vsi = alluni || allmulti;
+ 
+ 		if (set_dflt_vsi && !ice_is_dflt_vsi_in_use(pf->first_sw))
+ 			/* only attempt to set the default forwarding VSI if
+-- 
+2.20.1
 
-I completely support doing this in exactly this way.
-
---
-Mark Rustad, Ethernet Products Group, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 873 bytes
-Desc: Message signed with OpenPGP
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200917/ecd370e2/attachment.asc>
