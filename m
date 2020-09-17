@@ -1,44 +1,42 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 17 Sep 2020 13:13:37 -0700
-Subject: [Intel-wired-lan] [PATCH S53 05/15] ice: Set trusted VF as default
- VSI when setting allmulti on
+Date: Thu, 17 Sep 2020 13:13:40 -0700
+Subject: [Intel-wired-lan] [PATCH S53 08/15] ice: don't always return an
+ error for Get PHY Abilities AQ command
 In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
 References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200917201347.81570-5-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 
-Currently the PF will only set a trusted VF as the default VSI when it
-requests FLAG_VF_UNICAST_PROMISC over VIRTCHNL. However, when
-FLAG_VF_MULTICAST_PROMISC is set it's expected that the trusted VF will
-see multicast packets that don't have a matching destination MAC in the
-devices internal switch. Fix this by setting the trusted VF as the
-default VSI if either FLAG_VF_UNICAST_PROMISC or
-FLAG_VF_MULTICAST_PROMISC is set.
+There are times when the driver shouldn't return an error when the Get
+PHY abilities AQ command (0x0600) returns an error. Instead the driver
+should log that the error occurred and continue on. This allows the
+driver to load even though the AQ command failed. The user can then
+later determine the reason for the failure and correct it.
 
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 35ed71694d44..0478d8892f80 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2382,7 +2382,7 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 1aee8d5791a7..a0cf60272aab 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -925,7 +925,7 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
+ 				     ICE_AQC_REPORT_TOPO_CAP, pcaps, NULL);
+ 	devm_kfree(ice_hw_to_dev(hw), pcaps);
+ 	if (status)
+-		goto err_unroll_sched;
++		ice_debug(hw, ICE_DBG_PHY, "Get PHY capabilities failed, continuing anyway\n");
  
- 	if (!test_bit(ICE_FLAG_VF_TRUE_PROMISC_ENA, pf->flags)) {
--		bool set_dflt_vsi = !!(info->flags & FLAG_VF_UNICAST_PROMISC);
-+		bool set_dflt_vsi = alluni || allmulti;
- 
- 		if (set_dflt_vsi && !ice_is_dflt_vsi_in_use(pf->first_sw))
- 			/* only attempt to set the default forwarding VSI if
+ 	/* Initialize port_info struct with link information */
+ 	status = ice_aq_get_link_info(hw->port_info, false, NULL, NULL);
 -- 
 2.20.1
 
