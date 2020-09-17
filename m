@@ -1,39 +1,24 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 17 Sep 2020 16:22:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD REGRESSION
- 2cdb5a340678628dcb9563e999b27d04324cde5a
-Message-ID: <5f631cd0.karM4V4m5mqZBLuO%lkp@intel.com>
+Date: Thu, 17 Sep 2020 16:45:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 22ddac3ef00718828842451ef0d3f4df5e4e3df4
+Message-ID: <5f632233.DVKzjNwcWnr5wRTQ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-branch HEAD: 2cdb5a340678628dcb9563e999b27d04324cde5a  ice: program ACL entry
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 22ddac3ef00718828842451ef0d3f4df5e4e3df4  i40e: Fix flow for IPv6 next header (extension header)
 
-Error/Warning in current branch:
-
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:2273:15: error: redefinition of 'truesize'
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- alpha-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- arc-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allmodconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-|-- ia64-allyesconfig
-|   `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-`-- sparc-allyesconfig
-    `-- drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:redefinition-of-truesize
-
-elapsed time: 975m
+elapsed time: 910m
 
 configs tested: 124
 configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -47,23 +32,22 @@ sh                        sh7763rdp_defconfig
 arm                          pcm027_defconfig
 powerpc                  storcenter_defconfig
 mips                         cobalt_defconfig
-m68k                             alldefconfig
-sh                   sh7724_generic_defconfig
-mips                          malta_defconfig
-m68k                          sun3x_defconfig
-sh                        edosk7705_defconfig
-m68k                       m5475evb_defconfig
-arm                          tango4_defconfig
-sh                  sh7785lcr_32bit_defconfig
-powerpc                  mpc885_ads_defconfig
-nios2                            allyesconfig
-arm                           sama5_defconfig
-sh                ecovec24-romimage_defconfig
-mips                         rt305x_defconfig
-powerpc                  mpc866_ads_defconfig
-alpha                            alldefconfig
-m68k                         apollo_defconfig
-alpha                               defconfig
+powerpc                      chrp32_defconfig
+mips                     cu1830-neo_defconfig
+nios2                         3c120_defconfig
+powerpc                      bamboo_defconfig
+arm                      integrator_defconfig
+powerpc                    sam440ep_defconfig
+arm                         axm55xx_defconfig
+arm                         at91_dt_defconfig
+parisc                           allyesconfig
+powerpc                     kilauea_defconfig
+arm                          imote2_defconfig
+arm                           efm32_defconfig
+mips                         tb0287_defconfig
+mips                         db1xxx_defconfig
+arc                             nps_defconfig
+arm                        trizeps4_defconfig
 powerpc                 mpc836x_mds_defconfig
 arc                      axs103_smp_defconfig
 powerpc                   lite5200b_defconfig
@@ -80,7 +64,9 @@ arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
 nds32                               defconfig
+nios2                            allyesconfig
 csky                                defconfig
+alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
@@ -88,7 +74,6 @@ arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
-parisc                           allyesconfig
 s390                                defconfig
 i386                             allyesconfig
 sparc                            allyesconfig
@@ -123,18 +108,18 @@ x86_64               randconfig-a016-20200917
 x86_64               randconfig-a012-20200917
 x86_64               randconfig-a015-20200917
 x86_64               randconfig-a013-20200917
-i386                 randconfig-a015-20200916
-i386                 randconfig-a014-20200916
-i386                 randconfig-a011-20200916
-i386                 randconfig-a013-20200916
-i386                 randconfig-a016-20200916
-i386                 randconfig-a012-20200916
 i386                 randconfig-a015-20200917
 i386                 randconfig-a014-20200917
 i386                 randconfig-a011-20200917
 i386                 randconfig-a013-20200917
 i386                 randconfig-a016-20200917
 i386                 randconfig-a012-20200917
+i386                 randconfig-a015-20200916
+i386                 randconfig-a014-20200916
+i386                 randconfig-a011-20200916
+i386                 randconfig-a013-20200916
+i386                 randconfig-a016-20200916
+i386                 randconfig-a012-20200916
 riscv                            allyesconfig
 riscv                             allnoconfig
 riscv                               defconfig
