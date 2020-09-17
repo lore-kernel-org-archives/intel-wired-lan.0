@@ -1,1215 +1,669 @@
 From: Alice Michael <alice.michael@intel.com>
-Date: Thu, 17 Sep 2020 08:45:50 -0700
-Subject: [Intel-wired-lan] [net-next, V8 09/15] iecm: Init and allocate vport
+Date: Thu, 17 Sep 2020 08:45:42 -0700
+Subject: [Intel-wired-lan] [net-next,V8 01/15] virtchnl: Extend AVF ops
 In-Reply-To: <20200917154556.26094-1-alice.michael@intel.com>
 References: <20200917154556.26094-1-alice.michael@intel.com>
-Message-ID: <20200917154556.26094-10-alice.michael@intel.com>
+Message-ID: <20200917154556.26094-2-alice.michael@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Initialize vport and allocate queue resources.
+This implements the next generation of virtchnl ops which
+enable greater functionality and capabilities.
 
 Signed-off-by: Alice Michael <alice.michael@intel.com>
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Alan Brady <Alan.Brady@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
-Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Signed-off-by: Pavan Kumar Linga <Pavan.Kumar.Linga@intel.com>
 Reviewed-by: Donald Skidmore <donald.c.skidmore@intel.com>
 Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    | 125 ++-
- drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 784 +++++++++++++++++-
- .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  36 +-
- 3 files changed, 913 insertions(+), 32 deletions(-)
+ include/linux/avf/virtchnl.h | 606 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 606 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index a64859de4a62..47790261e59f 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -457,7 +457,15 @@ static void iecm_vport_rel_all(struct iecm_adapter *adapter)
- void iecm_vport_set_hsplit(struct iecm_vport *vport,
- 			   struct bpf_prog __always_unused *prog)
- {
--	/* stub */
-+	if (prog) {
-+		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
-+		return;
-+	}
-+	if (iecm_is_cap_ena(vport->adapter, VIRTCHNL_CAP_HEADER_SPLIT) &&
-+	    iecm_is_queue_model_split(vport->rxq_model))
-+		vport->rx_hsplit_en = IECM_RX_HDR_SPLIT;
-+	else
-+		vport->rx_hsplit_en = IECM_RX_NO_HDR_SPLIT;
- }
- 
- /**
-@@ -559,7 +567,19 @@ static void iecm_service_task(struct work_struct *work)
-  */
- static int iecm_up_complete(struct iecm_vport *vport)
- {
--	/* stub */
-+	int err;
-+
-+	err = netif_set_real_num_rx_queues(vport->netdev, vport->num_txq);
-+	if (err)
-+		return err;
-+	err = netif_set_real_num_tx_queues(vport->netdev, vport->num_rxq);
-+	if (err)
-+		return err;
-+	netif_carrier_on(vport->netdev);
-+	netif_tx_start_all_queues(vport->netdev);
-+
-+	vport->adapter->state = __IECM_UP;
-+	return 0;
- }
- 
- /**
-@@ -568,7 +588,27 @@ static int iecm_up_complete(struct iecm_vport *vport)
-  */
- static void iecm_rx_init_buf_tail(struct iecm_vport *vport)
- {
--	/* stub */
-+	int i, j;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		struct iecm_rxq_group *grp = &vport->rxq_grps[i];
-+
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
-+				struct iecm_queue *q =
-+					&grp->splitq.bufq_sets[j].bufq;
-+
-+				writel(q->next_to_alloc, q->tail);
-+			}
-+		} else {
-+			for (j = 0; j < grp->singleq.num_rxq; j++) {
-+				struct iecm_queue *q =
-+					&grp->singleq.rxqs[j];
-+
-+				writel(q->next_to_alloc, q->tail);
-+			}
-+		}
-+	}
- }
- 
- /**
-@@ -577,7 +617,80 @@ static void iecm_rx_init_buf_tail(struct iecm_vport *vport)
-  */
- static int iecm_vport_open(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	int err;
-+
-+	if (vport->adapter->state != __IECM_DOWN)
-+		return -EBUSY;
-+
-+	/* we do not allow interface up just yet */
-+	netif_carrier_off(vport->netdev);
-+
-+	if (adapter->dev_ops.vc_ops.enable_vport) {
-+		err = adapter->dev_ops.vc_ops.enable_vport(vport);
-+		if (err)
-+			return -EAGAIN;
-+	}
-+
-+	err = adapter->dev_ops.vc_ops.vport_queue_ids_init(vport);
-+	if (err) {
-+		dev_err(&vport->adapter->pdev->dev,
-+			"Call to queue ids init returned %d\n", err);
-+		return err;
-+	}
-+
-+	adapter->dev_ops.reg_ops.vportq_reg_init(vport);
-+	iecm_rx_init_buf_tail(vport);
-+
-+	err = iecm_vport_intr_init(vport);
-+	if (err) {
-+		dev_err(&vport->adapter->pdev->dev,
-+			"Call to vport interrupt init returned %d\n", err);
-+		return err;
-+	}
-+
-+	err = vport->adapter->dev_ops.vc_ops.config_queues(vport);
-+	if (err)
-+		goto unroll_config_queues;
-+	err = vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, true);
-+	if (err) {
-+		dev_err(&vport->adapter->pdev->dev,
-+			"Call to irq_map_unmap returned %d\n", err);
-+		goto unroll_config_queues;
-+	}
-+	err = vport->adapter->dev_ops.vc_ops.enable_queues(vport);
-+	if (err)
-+		goto unroll_enable_queues;
-+
-+	err = vport->adapter->dev_ops.vc_ops.get_ptype(vport);
-+	if (err)
-+		goto unroll_get_ptype;
-+
-+	if (adapter->rss_data.rss_lut)
-+		err = iecm_config_rss(vport);
-+	else
-+		err = iecm_init_rss(vport);
-+	if (err)
-+		goto unroll_init_rss;
-+	err = iecm_up_complete(vport);
-+	if (err)
-+		goto unroll_up_comp;
-+
-+	netif_info(vport->adapter, hw, vport->netdev, "%s\n", __func__);
-+
-+	return 0;
-+unroll_up_comp:
-+	iecm_deinit_rss(vport);
-+unroll_init_rss:
-+	adapter->dev_ops.vc_ops.disable_vport(vport);
-+unroll_get_ptype:
-+	vport->adapter->dev_ops.vc_ops.disable_queues(vport);
-+unroll_enable_queues:
-+	vport->adapter->dev_ops.vc_ops.irq_map_unmap(vport, false);
-+unroll_config_queues:
-+	iecm_vport_intr_deinit(vport);
-+
-+	return err;
- }
- 
- /**
-@@ -940,7 +1053,9 @@ EXPORT_SYMBOL(iecm_shutdown);
-  */
- static int iecm_open(struct net_device *netdev)
- {
--	/* stub */
-+	struct iecm_netdev_priv *np = netdev_priv(netdev);
-+
-+	return iecm_vport_open(np->vport);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-index 62318cdb5d26..0e0f4e46864f 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-@@ -86,7 +86,38 @@ static void iecm_tx_desc_rel_all(struct iecm_vport *vport)
-  */
- static int iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
- {
--	/* stub */
-+	int buf_size;
-+	int i = 0;
-+
-+	/* Allocate book keeping buffers only. Buffers to be supplied to HW
-+	 * are allocated by kernel network stack and received as part of skb
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index e49a063d0f14..cf5ea161d638 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -136,6 +136,34 @@ enum virtchnl_ops {
+ 	VIRTCHNL_OP_DISABLE_CHANNELS = 31,
+ 	VIRTCHNL_OP_ADD_CLOUD_FILTER = 32,
+ 	VIRTCHNL_OP_DEL_CLOUD_FILTER = 33,
++	/* New major set of opcodes introduced and so leaving room for
++	 * old misc opcodes to be added in future. Also these opcodes may only
++	 * be used if both the PF and VF have successfully negotiated the
++	 * VIRTCHNL_VF_CAP_EXT_FEATURES capability during initial capabilities
++	 * exchange.
 +	 */
-+	buf_size = sizeof(struct iecm_tx_buf) * tx_q->desc_count;
-+	tx_q->tx_buf = kzalloc(buf_size, GFP_KERNEL);
-+	if (!tx_q->tx_buf)
-+		return -ENOMEM;
-+
-+	/* Initialize Tx buf stack for out-of-order completions if
-+	 * flow scheduling offload is enabled
-+	 */
-+	tx_q->buf_stack.bufs =
-+		kcalloc(tx_q->desc_count, sizeof(struct iecm_tx_buf *),
-+			GFP_KERNEL);
-+	if (!tx_q->buf_stack.bufs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < tx_q->desc_count; i++) {
-+		tx_q->buf_stack.bufs[i] =
-+			kzalloc(sizeof(*tx_q->buf_stack.bufs[i]),
-+				GFP_KERNEL);
-+		if (!tx_q->buf_stack.bufs[i])
-+			return -ENOMEM;
-+	}
-+
-+	tx_q->buf_stack.size = tx_q->desc_count;
-+	tx_q->buf_stack.top = tx_q->desc_count;
-+
-+	return 0;
- }
++	VIRTCHNL_OP_GET_CAPS = 100,
++	VIRTCHNL_OP_CREATE_VPORT = 101,
++	VIRTCHNL_OP_DESTROY_VPORT = 102,
++	VIRTCHNL_OP_ENABLE_VPORT = 103,
++	VIRTCHNL_OP_DISABLE_VPORT = 104,
++	VIRTCHNL_OP_CONFIG_TX_QUEUES = 105,
++	VIRTCHNL_OP_CONFIG_RX_QUEUES = 106,
++	VIRTCHNL_OP_ENABLE_QUEUES_V2 = 107,
++	VIRTCHNL_OP_DISABLE_QUEUES_V2 = 108,
++	VIRTCHNL_OP_ADD_QUEUES = 109,
++	VIRTCHNL_OP_DEL_QUEUES = 110,
++	VIRTCHNL_OP_MAP_QUEUE_VECTOR = 111,
++	VIRTCHNL_OP_UNMAP_QUEUE_VECTOR = 112,
++	VIRTCHNL_OP_GET_RSS_KEY = 113,
++	VIRTCHNL_OP_GET_RSS_LUT = 114,
++	VIRTCHNL_OP_SET_RSS_LUT = 115,
++	VIRTCHNL_OP_GET_RSS_HASH = 116,
++	VIRTCHNL_OP_SET_RSS_HASH = 117,
++	VIRTCHNL_OP_CREATE_VFS = 118,
++	VIRTCHNL_OP_DESTROY_VFS = 119,
++	VIRTCHNL_OP_ALLOC_VECTORS = 120,
++	VIRTCHNL_OP_DEALLOC_VECTORS = 121,
+ };
  
- /**
-@@ -98,7 +129,40 @@ static int iecm_tx_buf_alloc_all(struct iecm_queue *tx_q)
+ /* These macros are used to generate compilation errors if a structure/union
+@@ -490,6 +518,21 @@ VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_promisc_info);
+  * PF replies with struct eth_stats in an external buffer.
   */
- static int iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
- {
--	/* stub */
-+	struct device *dev = tx_q->dev;
-+	int err = 0;
-+
-+	if (bufq) {
-+		err = iecm_tx_buf_alloc_all(tx_q);
-+		if (err)
-+			goto err_alloc;
-+		tx_q->size = tx_q->desc_count *
-+				sizeof(struct iecm_base_tx_desc);
-+	} else {
-+		tx_q->size = tx_q->desc_count *
-+				sizeof(struct iecm_splitq_tx_compl_desc);
-+	}
-+
-+	/* Allocate descriptors also round up to nearest 4K */
-+	tx_q->size = ALIGN(tx_q->size, 4096);
-+	tx_q->desc_ring = dmam_alloc_coherent(dev, tx_q->size, &tx_q->dma,
-+					      GFP_KERNEL);
-+	if (!tx_q->desc_ring) {
-+		dev_info(dev, "Unable to allocate memory for the Tx descriptor ring, size=%d\n",
-+			 tx_q->size);
-+		err = -ENOMEM;
-+		goto err_alloc;
-+	}
-+
-+	tx_q->next_to_alloc = 0;
-+	tx_q->next_to_use = 0;
-+	tx_q->next_to_clean = 0;
-+	set_bit(__IECM_Q_GEN_CHK, tx_q->flags);
-+
-+err_alloc:
-+	if (err)
-+		iecm_tx_desc_rel(tx_q, bufq);
-+	return err;
- }
  
- /**
-@@ -109,7 +173,41 @@ static int iecm_tx_desc_alloc(struct iecm_queue *tx_q, bool bufq)
-  */
- static int iecm_tx_desc_alloc_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct pci_dev *pdev = vport->adapter->pdev;
-+	int err = 0;
-+	int i, j;
++struct virtchnl_eth_stats {
++	u64 rx_bytes;                   /* received bytes */
++	u64 rx_unicast;                 /* received unicast pkts */
++	u64 rx_multicast;               /* received multicast pkts */
++	u64 rx_broadcast;               /* received broadcast pkts */
++	u64 rx_discards;
++	u64 rx_unknown_protocol;
++	u64 tx_bytes;                   /* transmitted bytes */
++	u64 tx_unicast;                 /* transmitted unicast pkts */
++	u64 tx_multicast;               /* transmitted multicast pkts */
++	u64 tx_broadcast;               /* transmitted broadcast pkts */
++	u64 tx_discards;
++	u64 tx_errors;
++};
 +
-+	/* Setup buffer queues. In single queue model buffer queues and
-+	 * completion queues will be same
-+	 */
-+	for (i = 0; i < vport->num_txq_grp; i++) {
-+		for (j = 0; j < vport->txq_grps[i].num_txq; j++) {
-+			err = iecm_tx_desc_alloc(&vport->txq_grps[i].txqs[j],
-+						 true);
-+			if (err) {
-+				dev_err(&pdev->dev,
-+					"Allocation for Tx Queue %u failed\n",
-+					i);
-+				goto err_out;
-+			}
-+		}
-+
-+		if (iecm_is_queue_model_split(vport->txq_model)) {
-+			/* Setup completion queues */
-+			err = iecm_tx_desc_alloc(vport->txq_grps[i].complq,
-+						 false);
-+			if (err) {
-+				dev_err(&pdev->dev,
-+					"Allocation for Tx Completion Queue %u failed\n",
-+					i);
-+				goto err_out;
-+			}
-+		}
-+	}
-+err_out:
-+	if (err)
-+		iecm_tx_desc_rel_all(vport);
-+	return err;
- }
+ /* VIRTCHNL_OP_CONFIG_RSS_KEY
+  * VIRTCHNL_OP_CONFIG_RSS_LUT
+  * VF sends these messages to configure RSS. Only supported if both PF
+@@ -695,6 +738,411 @@ enum virtchnl_vfr_states {
+ 	VIRTCHNL_VFR_VFACTIVE,
+ };
  
++/* PF capability flags
++ * VIRTCHNL_CAP_STATELESS_OFFLOADS flag indicates stateless offloads
++ * such as TX/RX Checksum offloading and TSO for non-tunneled packets. Please
++ * note that old and new capabilities are exclusive and not supposed to be
++ * mixed
++ */
++#define VIRTCHNL_CAP_STATELESS_OFFLOADS        BIT(1)
++#define VIRTCHNL_CAP_UDP_SEG_OFFLOAD   BIT(2)
++#define VIRTCHNL_CAP_RSS               BIT(3)
++#define VIRTCHNL_CAP_TCP_RSC           BIT(4)
++#define VIRTCHNL_CAP_HEADER_SPLIT      BIT(5)
++#define VIRTCHNL_CAP_RDMA              BIT(6)
++#define VIRTCHNL_CAP_SRIOV             BIT(7)
++/* Earliest Departure Time capability used for Timing Wheel */
++#define VIRTCHNL_CAP_EDT               BIT(8)
++
++/* Type of virtual port */
++enum virtchnl_vport_type {
++        VIRTCHNL_VPORT_TYPE_DEFAULT     = 0,
++};
++
++/* Type of queue model */
++enum virtchnl_queue_model {
++        VIRTCHNL_QUEUE_MODEL_SINGLE     = 0,
++        VIRTCHNL_QUEUE_MODEL_SPLIT      = 1,
++};
++
++/* TX and RX queue types are valid in legacy as well as split queue models.
++ * With Split Queue model, 2 additional types are introduced - TX_COMPLETION
++ * and RX_BUFFER. In split queue model, RX corresponds to the queue where HW
++ * posts completions.
++ */
++enum virtchnl_queue_type {
++        VIRTCHNL_QUEUE_TYPE_TX                  = 0,
++        VIRTCHNL_QUEUE_TYPE_RX                  = 1,
++        VIRTCHNL_QUEUE_TYPE_TX_COMPLETION       = 2,
++        VIRTCHNL_QUEUE_TYPE_RX_BUFFER           = 3,
++};
++
++/* RX Queue Feature bits */
++#define VIRTCHNL_RXQ_RSC                       BIT(1)
++#define VIRTCHNL_RXQ_HDR_SPLIT                 BIT(2)
++#define VIRTCHNL_RXQ_IMMEDIATE_WRITE_BACK      BIT(4)
++
++/* RX Queue Descriptor Types */
++enum virtchnl_rxq_desc_size {
++        VIRTCHNL_RXQ_DESC_SIZE_16BYTE           = 0,
++        VIRTCHNL_RXQ_DESC_SIZE_32BYTE           = 1,
++};
++
++/* TX Queue Scheduling Modes  Queue mode is the legacy type i.e. inorder
++ * and Flow mode is out of order packet processing
++ */
++enum virtchnl_txq_sched_mode {
++        VIRTCHNL_TXQ_SCHED_MODE_QUEUE           = 0,
++        VIRTCHNL_TXQ_SCHED_MODE_FLOW            = 1,
++};
++
++/* Queue Descriptor Profiles  Base mode is the legacy and Native is the
++ * flex descriptors
++ */
++enum virtchnl_desc_profile {
++        VIRTCHNL_TXQ_DESC_PROFILE_BASE          = 0,
++        VIRTCHNL_TXQ_DESC_PROFILE_NATIVE        = 1,
++};
++
++/* Type of RSS algorithm */
++enum virtchnl_rss_algorithm {
++        VIRTCHNL_RSS_ALG_TOEPLITZ_ASYMMETRIC    = 0,
++        VIRTCHNL_RSS_ALG_R_ASYMMETRIC           = 1,
++        VIRTCHNL_RSS_ALG_TOEPLITZ_SYMMETRIC     = 2,
++        VIRTCHNL_RSS_ALG_XOR_SYMMETRIC          = 3,
++};
++
++/* VIRTCHNL_OP_GET_CAPS
++ * PF sends this message to CP to negotiate capabilities by filling
++ * in the u64 bitmap of its desired capabilities, max_num_vfs and
++ * num_allocated_vectors.
++ * CP responds with an updated virtchnl_get_capabilities structure
++ * with allowed capabilities and the other fields as below.
++ * If PF sets max_num_vfs as 0, CP will respond with max number of VFs
++ * that can be created by this PF. For any other value 'n', CP responds
++ * with max_num_vfs set to max(n, x) where x is the max number of VFs
++ * allowed by CP's policy.
++ * If PF sets num_allocated_vectors as 0, CP will respond with 1 which
++ * is default vector associated with the default mailbox. For any other
++ * value 'n', CP responds with a value <= n based on the CP's policy of
++ * max number of vectors for a PF.
++ */
++struct virtchnl_get_capabilities {
++        u64 cap_flags;
++        u16 max_num_vfs;
++        u16 num_allocated_vectors;
++	u16 pad;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_get_capabilities);
++
++/* structure to specify a chunk of contiguous queues */
++struct virtchnl_queue_chunk {
++        enum virtchnl_queue_type type;
++        u16 start_queue_id;
++        u16 num_queues;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_queue_chunk);
++
++/* structure to specify several chunks of contiguous queues */
++struct virtchnl_queue_chunks {
++        u16 num_chunks;
++        u16 rsvd;
++        struct virtchnl_queue_chunk chunks[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_chunks);
++
++/* VIRTCHNL_OP_CREATE_VPORT
++ * PF sends this message to CP to create a vport by filling in the first 8
++ * fields of virtchnl_create_vport structure (vport type, tx, rx queue models
++ * and desired number of queues and vectors). CP responds with the updated
++ * virtchnl_create_vport structure containing the number of assigned queues,
++ * vectors, vport id, max mtu, default mac addr followed by chunks which in turn
++ * will have an array of num_chunks entries of virtchnl_queue_chunk structures.
++ */
++struct virtchnl_create_vport {
++        enum virtchnl_vport_type vport_type;
++        /* single or split */
++        enum virtchnl_queue_model txq_model;
++        /* single or split */
++        enum virtchnl_queue_model rxq_model;
++        u16 num_tx_q;
++        /* valid only if txq_model is split Q */
++        u16 num_tx_complq;
++        u16 num_rx_q;
++        /* valid only if rxq_model is split Q */
++        u16 num_rx_bufq;
++        u16 vport_id;
++        u16 max_mtu;
++        u8 default_mac_addr[ETH_ALEN];
++	u16 pad1;
++        enum virtchnl_rss_algorithm rss_algorithm;
++        u16 rss_key_size;
++        u16 rss_lut_size;
++        u16 qset_handle;
++	u16 pad2;
++        struct virtchnl_queue_chunks chunks;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(56, virtchnl_create_vport);
++
++/* VIRTCHNL_OP_DESTROY_VPORT
++ * VIRTCHNL_OP_ENABLE_VPORT
++ * VIRTCHNL_OP_DISABLE_VPORT
++ * PF sends this message to CP to destroy, enable or disable a vport by filling
++ * in the vport_id in virtchnl_vport structure.
++ * CP responds with the status of the requested operation.
++ */
++struct virtchnl_vport {
++        u16 vport_id;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_vport);
++
++/* Tx queue config info */
++struct virtchnl_txq_info_v2 {
++        u16 queue_id;
++	u16 pad1;
++        /* single or split */
++        enum virtchnl_queue_model model;
++        /* tx or tx_completion */
++        enum virtchnl_queue_type type;
++        /* queue or flow based */
++        enum virtchnl_txq_sched_mode sched_mode;
++        /* base or native */
++        enum virtchnl_desc_profile desc_profile;
++        u16 ring_len;
++	u16 pad2;
++        u64 dma_ring_addr;
++        /* valid only if queue model is split and type is tx */
++        u16 tx_compl_queue_id;
++	u16 pad3[3];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(40, virtchnl_txq_info_v2);
++
++/* VIRTCHNL_OP_CONFIG_TX_QUEUES
++ * PF sends this message to set up parameters for one or more TX queues.
++ * This message contains an array of num_qinfo instances of virtchnl_txq_info_v2
++ * structures. CP configures requested queues and returns a status code. If
++ * num_qinfo specified is greater than the number of queues associated with the
++ * vport, an error is returned and no queues are configured.
++ */
++struct virtchnl_config_tx_queues {
++        u16 vport_id;
++        u16 num_qinfo;
++        u32 rsvd;
++        struct virtchnl_txq_info_v2 qinfo[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(48, virtchnl_config_tx_queues);
++
++/* Rx queue config info */
++struct virtchnl_rxq_info_v2 {
++        u16 queue_id;
++	u16 pad1[3];
++        /* single or split */
++        enum virtchnl_queue_model model;
++        /* rx or rx buffer */
++        enum virtchnl_queue_type type;
++        /* base or native */
++        enum virtchnl_desc_profile desc_profile;
++        /* rsc, header-split, immediate write back */
++        u16 queue_flags;
++	u16 pad2;
++        /* 16 or 32 byte */
++        enum virtchnl_rxq_desc_size desc_size;
++        u16 ring_len;
++        u16 hdr_buffer_size;
++        u32 data_buffer_size;
++        u32 max_pkt_size;
++        u64 dma_ring_addr;
++        u64 dma_head_wb_addr;
++        u16 rsc_low_watermark;
++        u8 buffer_notif_stride;
++	u8 pad3;
++        enum virtchnl_rx_hsplit rx_split_pos;
++        /* valid only if queue model is split and type is rx buffer*/
++        u16 rx_bufq1_id;
++        /* valid only if queue model is split and type is rx buffer*/
++        u16 rx_bufq2_id;
++	u32 pad4;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_rxq_info_v2);
++
++/* VIRTCHNL_OP_CONFIG_RX_QUEUES
++ * PF sends this message to set up parameters for one or more RX queues.
++ * This message contains an array of num_qinfo instances of virtchnl_rxq_info_v2
++ * structures. CP configures requested queues and returns a status code.
++ * If the number of queues specified is greater than the number of queues
++ * associated with the vport, an error is returned and no queues are configured.
++ */
++struct virtchnl_config_rx_queues {
++        u16 vport_id;
++        u16 num_qinfo;
++	u32 pad;
++        struct virtchnl_rxq_info_v2 qinfo[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(80, virtchnl_config_rx_queues);
++
++/* VIRTCHNL_OP_ADD_QUEUES
++ * PF sends this message to request additional TX/RX queues beyond the ones
++ * that were assigned via CREATE_VPORT request. virtchnl_add_queues structure is
++ * used to specify the number of each type of queues.
++ * CP responds with the same structure with the actual number of queues assigned
++ * followed by num_chunks of virtchnl_queue_chunk structures.
++ */
++struct virtchnl_add_queues {
++        u16 vport_id;
++        u16 num_tx_q;
++        u16 num_tx_complq;
++        u16 num_rx_q;
++        u16 num_rx_bufq;
++	u16 pad;
++        struct virtchnl_queue_chunks chunks;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(24, virtchnl_add_queues);
++
++/* VIRTCHNL_OP_ENABLE_QUEUES
++ * VIRTCHNL_OP_DISABLE_QUEUES
++ * VIRTCHNL_OP_DEL_QUEUES
++ * PF sends these messages to enable, disable or delete queues specified in
++ * chunks. PF sends virtchnl_del_ena_dis_queues struct to specify the queues
++ * to be enabled/disabled/deleted. Also applicable to single queue RX or
++ * TX. CP performs requested action and returns status.
++ */
++struct virtchnl_del_ena_dis_queues {
++        u16 vport_id;
++	u16 pad;
++        struct virtchnl_queue_chunks chunks;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_del_ena_dis_queues);
++
++/* Virtchannel interrupt throttling rate index */
++enum virtchnl_itr_idx {
++       VIRTCHNL_ITR_IDX_0      = 0,
++       VIRTCHNL_ITR_IDX_1      = 1,
++       VIRTCHNL_ITR_IDX_NO_ITR = 3,
++};
++
++/* Queue to vector mapping */
++struct virtchnl_queue_vector {
++        u16 queue_id;
++        u16 vector_id;
++        enum virtchnl_itr_idx itr_idx;
++        enum virtchnl_queue_type queue_type;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_vector);
++
++/* VIRTCHNL_OP_MAP_QUEUE_VECTOR
++ * VIRTCHNL_OP_UNMAP_QUEUE_VECTOR
++ * PF sends this message to map or unmap queues to vectors and ITR index
++ * registers. External data buffer contains virtchnl_queue_vector_maps structure
++ * that contains num_maps of virtchnl_queue_vector structures.
++ * CP maps the requested queue vector maps after validating the queue and vector
++ * ids and returns a status code.
++ */
++struct virtchnl_queue_vector_maps {
++       u16 vport_id;
++       u16 num_maps;
++       struct virtchnl_queue_vector qv_maps[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_queue_vector_maps);
++
++/* Structure to specify a chunk of contiguous interrupt vectors */
++ struct virtchnl_vector_chunk {
++        u16 start_vector_id;
++        u16 num_vectors;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_vector_chunk);
++
++/* Structure to specify several chunks of contiguous interrupt vectors */
++struct virtchnl_vector_chunks {
++        u16 num_vector_chunks;
++        struct virtchnl_vector_chunk num_vchunk[1];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_vector_chunks);
++
++/* VIRTCHNL_OP_ALLOC_VECTORS
++ * PF sends this message to request additional interrupt vectors beyond the
++ * ones that were assigned via GET_CAPS request. virtchnl_alloc_vectors
++ * structure is used to specify the number of vectors requested. CP responds
++ * with the same structure with the actual number of vectors assigned followed
++ * by virtchnl_vector_chunks structure identifying the vector ids.
++ */
++struct virtchnl_alloc_vectors {
++        u16 num_vectors;
++        struct virtchnl_vector_chunks vchunks;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_alloc_vectors);
++
++/* VIRTCHNL_OP_DEALLOC_VECTORS
++ * PF sends this message to release the vectors.
++ * PF sends virtchnl_vector_chunks struct to specify the vectors it is giving
++ * away. CP performs requested action and returns status.
++ */
++
++/* VIRTCHNL_OP_GET_RSS_LUT
++ * VIRTCHNL_OP_SET_RSS_LUT
++ * PF sends this message to get or set RSS lookup table. Only supported if
++ * both PF and CP drivers set the VIRTCHNL_CAP_RSS bit during configuration
++ * negotiation. Uses the virtchnl_rss_lut_v2 structure
++ */
++struct virtchnl_rss_lut_v2 {
++        u16 vport_id;
++        u16 lut_entries;
++        u16 lut[1]; /* RSS lookup table */
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut_v2);
++
++/* VIRTCHNL_OP_GET_RSS_KEY
++ * PF sends this message to get RSS key. Only supported if
++ * both PF and CP drivers set the VIRTCHNL_CAP_RSS bit during configuration
++ * negotiation. Uses the virtchnl_rss_key structure
++ */
++
++/* VIRTCHNL_OP_GET_RSS_HASH
++ * VIRTCHNL_OP_SET_RSS_HASH
++ * PF sends these messages to get and set the hash filter enable bits for RSS.
++ * By default, the CP sets these to all possible traffic types that the
++ * hardware supports. The PF can query this value if it wants to change the
++ * traffic types that are hashed by the hardware.
++ * Only supported if both PF and CP drivers set the VIRTCHNL_CAP_RSS bit
++ * during configuration negotiation.
++ */
++struct virtchnl_rss_hash {
++        u64 hash;
++        u16 vport_id;
++	u16 pad[3];
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_rss_hash);
++
++/* VIRTCHNL_OP_CREATE_SRIOV_VFS
++ * VIRTCHNL_OP_DESTROY_SRIOV_VFS
++ * This message is used to let the CP know how many SRIOV VFs need to be
++ * created. The actual allocation of resources for the VFs in terms of VSI,
++ * Queues and Interrupts is done by CP. When this call completes, the APF driver
++ * calls pci_enable_sriov to let the OS instantiate the SRIOV PCIE devices.
++ */
++struct virtchnl_sriov_vfs_info {
++        u16 num_vfs;
++};
++
++VIRTCHNL_CHECK_STRUCT_LEN(2, virtchnl_sriov_vfs_info);
++
  /**
-@@ -164,7 +262,19 @@ static void iecm_rx_desc_rel_all(struct iecm_vport *vport)
-  */
- void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
- {
--	/* stub */
-+	/* update next to alloc since we have filled the ring */
-+	rxq->next_to_alloc = val;
+  * virtchnl_vc_validate_vf_msg
+  * @ver: Virtchnl version info
+@@ -855,6 +1303,164 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
+ 	case VIRTCHNL_OP_DEL_CLOUD_FILTER:
+ 		valid_len = sizeof(struct virtchnl_filter);
+ 		break;
++	case VIRTCHNL_OP_GET_CAPS:
++		valid_len = sizeof(struct virtchnl_get_capabilities);
++		break;
++	case VIRTCHNL_OP_CREATE_VPORT:
++		valid_len = sizeof(struct virtchnl_create_vport);
++		if (msglen >= valid_len) {
++			struct virtchnl_create_vport *cvport =
++				(struct virtchnl_create_vport *)msg;
 +
-+	rxq->next_to_use = val;
-+	if (!rxq->tail)
-+		return;
-+	/* Force memory writes to complete before letting h/w
-+	 * know there are new descriptors to fetch.  (Only
-+	 * applicable for weak-ordered memory model archs,
-+	 * such as IA-64).
-+	 */
-+	wmb();
-+	writel(val, rxq->tail);
- }
- 
- /**
-@@ -177,7 +287,34 @@ void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
-  */
- bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
- {
--	/* stub */
-+	struct page *page = buf->page;
-+	dma_addr_t dma;
-+
-+	/* since we are recycling buffers we should seldom need to alloc */
-+	if (likely(page))
-+		return true;
-+
-+	/* alloc new page for storage */
-+	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
-+	if (unlikely(!page))
-+		return false;
-+
-+	/* map page for use */
-+	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
-+
-+	/* if mapping failed free memory back to system since
-+	 * there isn't much point in holding memory we can't use
-+	 */
-+	if (dma_mapping_error(rxq->dev, dma)) {
-+		__free_pages(page, 0);
-+		return false;
-+	}
-+
-+	buf->dma = dma;
-+	buf->page = page;
-+	buf->page_offset = iecm_rx_offset(rxq);
-+
-+	return true;
- }
- 
- /**
-@@ -191,7 +328,34 @@ bool iecm_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf)
- static bool iecm_rx_hdr_buf_hw_alloc(struct iecm_queue *rxq,
- 				     struct iecm_rx_buf *hdr_buf)
- {
--	/* stub */
-+	struct page *page = hdr_buf->page;
-+	dma_addr_t dma;
-+
-+	/* since we are recycling buffers we should seldom need to alloc */
-+	if (likely(page))
-+		return true;
-+
-+	/* alloc new page for storage */
-+	page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
-+	if (unlikely(!page))
-+		return false;
-+
-+	/* map page for use */
-+	dma = dma_map_page(rxq->dev, page, 0, PAGE_SIZE, DMA_FROM_DEVICE);
-+
-+	/* if mapping failed free memory back to system since
-+	 * there isn't much point in holding memory we can't use
-+	 */
-+	if (dma_mapping_error(rxq->dev, dma)) {
-+		__free_pages(page, 0);
-+		return false;
-+	}
-+
-+	hdr_buf->dma = dma;
-+	hdr_buf->page = page;
-+	hdr_buf->page_offset = 0;
-+
-+	return true;
- }
- 
- /**
-@@ -205,7 +369,59 @@ static bool
- iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
- 			 u16 cleaned_count)
- {
--	/* stub */
-+	struct iecm_splitq_rx_buf_desc *splitq_rx_desc = NULL;
-+	struct iecm_rx_buf *hdr_buf = NULL;
-+	u16 nta = rxq->next_to_alloc;
-+	struct iecm_rx_buf *buf;
-+
-+	/* do nothing if no valid netdev defined */
-+	if (!rxq->vport->netdev || !cleaned_count)
-+		return false;
-+
-+	splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, nta);
-+
-+	buf = &rxq->rx_buf.buf[nta];
-+	if (rxq->rx_hsplit_en)
-+		hdr_buf = &rxq->rx_buf.hdr_buf[nta];
-+
-+	do {
-+		if (rxq->rx_hsplit_en) {
-+			if (!iecm_rx_hdr_buf_hw_alloc(rxq, hdr_buf))
++			if (cvport->chunks.num_chunks == 0) {
++				/* zero chunks is allowed as input */
 +				break;
-+
-+			splitq_rx_desc->hdr_addr =
-+				cpu_to_le64(hdr_buf->dma +
-+					    hdr_buf->page_offset);
-+			hdr_buf++;
-+		}
-+
-+		if (!iecm_rx_buf_hw_alloc(rxq, buf))
-+			break;
-+
-+		/* Refresh the desc even if buffer_addrs didn't change
-+		 * because each write-back erases this info.
-+		 */
-+		splitq_rx_desc->pkt_addr =
-+			cpu_to_le64(buf->dma + buf->page_offset);
-+		splitq_rx_desc->qword0.buf_id = cpu_to_le16(nta);
-+
-+		splitq_rx_desc++;
-+		buf++;
-+		nta++;
-+		if (unlikely(nta == rxq->desc_count)) {
-+			splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(rxq, 0);
-+			buf = rxq->rx_buf.buf;
-+			hdr_buf = rxq->rx_buf.hdr_buf;
-+			nta = 0;
-+		}
-+
-+		cleaned_count--;
-+	} while (cleaned_count);
-+
-+	if (rxq->next_to_alloc != nta)
-+		iecm_rx_buf_hw_update(rxq, nta);
-+
-+	return !!cleaned_count;
- }
- 
- /**
-@@ -216,7 +432,44 @@ iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxq,
-  */
- static int iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
- {
--	/* stub */
-+	int err = 0;
-+
-+	/* Allocate book keeping buffers */
-+	rxq->rx_buf.buf = kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
-+				  GFP_KERNEL);
-+	if (!rxq->rx_buf.buf) {
-+		err = -ENOMEM;
-+		goto rx_buf_alloc_all_out;
-+	}
-+
-+	if (rxq->rx_hsplit_en) {
-+		rxq->rx_buf.hdr_buf =
-+			kcalloc(rxq->desc_count, sizeof(struct iecm_rx_buf),
-+				GFP_KERNEL);
-+		if (!rxq->rx_buf.hdr_buf) {
-+			err = -ENOMEM;
-+			goto rx_buf_alloc_all_out;
-+		}
-+	} else {
-+		rxq->rx_buf.hdr_buf = NULL;
-+	}
-+
-+	/* Allocate buffers to be given to HW. Allocate one less than
-+	 * total descriptor count as RX splits 4k buffers to 2K and recycles
-+	 */
-+	if (iecm_is_queue_model_split(rxq->vport->rxq_model)) {
-+		if (iecm_rx_buf_hw_alloc_all(rxq,
-+					     rxq->desc_count - 1))
-+			err = -ENOMEM;
-+	} else if (iecm_rx_singleq_buf_hw_alloc_all(rxq,
-+						    rxq->desc_count - 1)) {
-+		err = -ENOMEM;
-+	}
-+
-+rx_buf_alloc_all_out:
-+	if (err)
-+		iecm_rx_buf_rel_all(rxq);
-+	return err;
- }
- 
- /**
-@@ -230,7 +483,48 @@ static int iecm_rx_buf_alloc_all(struct iecm_queue *rxq)
- static int iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
- 			      enum virtchnl_queue_model q_model)
- {
--	/* stub */
-+	struct device *dev = rxq->dev;
-+
-+	/* As both single and split descriptors are 32 byte, memory size
-+	 * will be same for all three singleq_base Rx, buf., splitq_base
-+	 * Rx. So pick anyone of them for size
-+	 */
-+	if (bufq) {
-+		rxq->size = rxq->desc_count *
-+			sizeof(struct iecm_splitq_rx_buf_desc);
-+	} else {
-+		rxq->size = rxq->desc_count *
-+			sizeof(union iecm_rx_desc);
-+	}
-+
-+	/* Allocate descriptors and also round up to nearest 4K */
-+	rxq->size = ALIGN(rxq->size, 4096);
-+	rxq->desc_ring = dmam_alloc_coherent(dev, rxq->size,
-+					     &rxq->dma, GFP_KERNEL);
-+	if (!rxq->desc_ring) {
-+		dev_info(dev, "Unable to allocate memory for the Rx descriptor ring, size=%d\n",
-+			 rxq->size);
-+		return -ENOMEM;
-+	}
-+
-+	rxq->next_to_alloc = 0;
-+	rxq->next_to_clean = 0;
-+	rxq->next_to_use = 0;
-+	set_bit(__IECM_Q_GEN_CHK, rxq->flags);
-+
-+	/* Allocate buffers for a Rx queue if the q_model is single OR if it
-+	 * is a buffer queue in split queue model
-+	 */
-+	if (bufq || !iecm_is_queue_model_split(q_model)) {
-+		int err = 0;
-+
-+		err = iecm_rx_buf_alloc_all(rxq);
-+		if (err) {
-+			iecm_rx_desc_rel(rxq, bufq, q_model);
-+			return err;
-+		}
-+	}
-+	return 0;
- }
- 
- /**
-@@ -241,7 +535,48 @@ static int iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq,
-  */
- static int iecm_rx_desc_alloc_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct device *dev = &vport->adapter->pdev->dev;
-+	struct iecm_queue *q;
-+	int i, j, num_rxq;
-+	int err = 0;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		if (iecm_is_queue_model_split(vport->rxq_model))
-+			num_rxq = vport->rxq_grps[i].splitq.num_rxq_sets;
-+		else
-+			num_rxq = vport->rxq_grps[i].singleq.num_rxq;
-+
-+		for (j = 0; j < num_rxq; j++) {
-+			if (iecm_is_queue_model_split(vport->rxq_model))
-+				q = &vport->rxq_grps[i].splitq.rxq_sets[j].rxq;
-+			else
-+				q = &vport->rxq_grps[i].singleq.rxqs[j];
-+			err = iecm_rx_desc_alloc(q, false, vport->rxq_model);
-+			if (err) {
-+				dev_err(dev, "Memory allocation for Rx Queue %u failed\n",
-+					i);
-+				goto err_out;
-+			}
-+		}
-+
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
-+				q =
-+				  &vport->rxq_grps[i].splitq.bufq_sets[j].bufq;
-+				err = iecm_rx_desc_alloc(q, true,
-+							 vport->rxq_model);
-+				if (err) {
-+					dev_err(dev, "Memory allocation for Rx Buffer Queue %u failed\n",
-+						i);
-+					goto err_out;
-+				}
-+			}
-+		}
-+	}
-+err_out:
-+	if (err)
-+		iecm_rx_desc_rel_all(vport);
-+	return err;
- }
- 
- /**
-@@ -294,7 +629,23 @@ void iecm_vport_queues_rel(struct iecm_vport *vport)
-  */
- static int iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
- {
--	/* stub */
-+	int i, j, k = 0;
-+
-+	vport->txqs = kcalloc(vport->num_txq, sizeof(struct iecm_queue *),
-+			      GFP_KERNEL);
-+
-+	if (!vport->txqs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < vport->num_txq_grp; i++) {
-+		struct iecm_txq_group *tx_grp = &vport->txq_grps[i];
-+
-+		for (j = 0; j < tx_grp->num_txq; j++, k++) {
-+			vport->txqs[k] = &tx_grp->txqs[j];
-+			vport->txqs[k]->idx = k;
-+		}
-+	}
-+	return 0;
- }
- 
- /**
-@@ -305,7 +656,12 @@ static int iecm_vport_init_fast_path_txqs(struct iecm_vport *vport)
- void iecm_vport_init_num_qs(struct iecm_vport *vport,
- 			    struct virtchnl_create_vport *vport_msg)
- {
--	/* stub */
-+	vport->num_txq = vport_msg->num_tx_q;
-+	vport->num_rxq = vport_msg->num_rx_q;
-+	if (iecm_is_queue_model_split(vport->txq_model))
-+		vport->num_complq = vport_msg->num_tx_complq;
-+	if (iecm_is_queue_model_split(vport->rxq_model))
-+		vport->num_bufq = vport_msg->num_rx_bufq;
- }
- 
- /**
-@@ -314,7 +670,32 @@ void iecm_vport_init_num_qs(struct iecm_vport *vport,
-  */
- void iecm_vport_calc_num_q_desc(struct iecm_vport *vport)
- {
--	/* stub */
-+	int num_req_txq_desc = vport->adapter->config_data.num_req_txq_desc;
-+	int num_req_rxq_desc = vport->adapter->config_data.num_req_rxq_desc;
-+
-+	vport->complq_desc_count = 0;
-+	vport->bufq_desc_count = 0;
-+	if (num_req_txq_desc) {
-+		vport->txq_desc_count = num_req_txq_desc;
-+		if (iecm_is_queue_model_split(vport->txq_model))
-+			vport->complq_desc_count = num_req_txq_desc;
-+	} else {
-+		vport->txq_desc_count =
-+			IECM_DFLT_TX_Q_DESC_COUNT;
-+		if (iecm_is_queue_model_split(vport->txq_model)) {
-+			vport->complq_desc_count =
-+				IECM_DFLT_TX_COMPLQ_DESC_COUNT;
-+		}
-+	}
-+	if (num_req_rxq_desc) {
-+		vport->rxq_desc_count = num_req_rxq_desc;
-+		if (iecm_is_queue_model_split(vport->rxq_model))
-+			vport->bufq_desc_count = num_req_rxq_desc;
-+	} else {
-+		vport->rxq_desc_count = IECM_DFLT_RX_Q_DESC_COUNT;
-+		if (iecm_is_queue_model_split(vport->rxq_model))
-+			vport->bufq_desc_count = IECM_DFLT_RX_BUFQ_DESC_COUNT;
-+	}
- }
- EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
- 
-@@ -326,7 +707,53 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_desc);
- void iecm_vport_calc_total_qs(struct iecm_adapter *adapter,
- 			      struct virtchnl_create_vport *vport_msg)
- {
--	/* stub */
-+	unsigned int num_req_tx_qs = adapter->config_data.num_req_tx_qs;
-+	unsigned int num_req_rx_qs = adapter->config_data.num_req_rx_qs;
-+	int dflt_splitq_txq_grps, dflt_singleq_txqs;
-+	int dflt_splitq_rxq_grps, dflt_singleq_rxqs;
-+	int num_txq_grps, num_rxq_grps;
-+	int num_cpus;
-+
-+	/* Restrict num of queues to cpus online as a default configuration to
-+	 * give best performance. User can always override to a max number
-+	 * of queues via ethtool.
-+	 */
-+	num_cpus = num_online_cpus();
-+	dflt_splitq_txq_grps = min_t(int, IECM_DFLT_SPLITQ_TX_Q_GROUPS,
-+				     num_cpus);
-+	dflt_singleq_txqs = min_t(int, IECM_DFLT_SINGLEQ_TXQ_PER_GROUP,
-+				  num_cpus);
-+	dflt_splitq_rxq_grps = min_t(int, IECM_DFLT_SPLITQ_RX_Q_GROUPS,
-+				     num_cpus);
-+	dflt_singleq_rxqs = min_t(int, IECM_DFLT_SINGLEQ_RXQ_PER_GROUP,
-+				  num_cpus);
-+
-+	if (iecm_is_queue_model_split(vport_msg->txq_model)) {
-+		num_txq_grps = num_req_tx_qs ? num_req_tx_qs : dflt_splitq_txq_grps;
-+		vport_msg->num_tx_complq = num_txq_grps *
-+			IECM_COMPLQ_PER_GROUP;
-+		vport_msg->num_tx_q = num_txq_grps *
-+				      IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
-+	} else {
-+		num_txq_grps = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
-+		vport_msg->num_tx_q = num_txq_grps *
-+				      (num_req_tx_qs ? num_req_tx_qs :
-+				       dflt_singleq_txqs);
-+		vport_msg->num_tx_complq = 0;
-+	}
-+	if (iecm_is_queue_model_split(vport_msg->rxq_model)) {
-+		num_rxq_grps = num_req_rx_qs ? num_req_rx_qs : dflt_splitq_rxq_grps;
-+		vport_msg->num_rx_bufq = num_rxq_grps *
-+					 IECM_BUFQS_PER_RXQ_SET;
-+		vport_msg->num_rx_q = num_rxq_grps *
-+				      IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
-+	} else {
-+		num_rxq_grps = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
-+		vport_msg->num_rx_bufq = 0;
-+		vport_msg->num_rx_q = num_rxq_grps *
-+				      (num_req_rx_qs ? num_req_rx_qs :
-+				       dflt_singleq_rxqs);
-+	}
- }
- 
- /**
-@@ -335,7 +762,15 @@ void iecm_vport_calc_total_qs(struct iecm_adapter *adapter,
-  */
- void iecm_vport_calc_num_q_groups(struct iecm_vport *vport)
- {
--	/* stub */
-+	if (iecm_is_queue_model_split(vport->txq_model))
-+		vport->num_txq_grp = vport->num_txq;
-+	else
-+		vport->num_txq_grp = IECM_DFLT_SINGLEQ_TX_Q_GROUPS;
-+
-+	if (iecm_is_queue_model_split(vport->rxq_model))
-+		vport->num_rxq_grp = vport->num_rxq;
-+	else
-+		vport->num_rxq_grp = IECM_DFLT_SINGLEQ_RX_Q_GROUPS;
- }
- EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
- 
-@@ -348,7 +783,15 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_groups);
- static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
- 					 int *num_txq, int *num_rxq)
- {
--	/* stub */
-+	if (iecm_is_queue_model_split(vport->txq_model))
-+		*num_txq = IECM_DFLT_SPLITQ_TXQ_PER_GROUP;
-+	else
-+		*num_txq = vport->num_txq;
-+
-+	if (iecm_is_queue_model_split(vport->rxq_model))
-+		*num_rxq = IECM_DFLT_SPLITQ_RXQ_PER_GROUP;
-+	else
-+		*num_rxq = vport->num_rxq;
- }
- 
- /**
-@@ -359,7 +802,10 @@ static void iecm_vport_calc_numq_per_grp(struct iecm_vport *vport,
-  */
- void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
- {
--	/* stub */
-+	if (iecm_is_queue_model_split(vport->txq_model))
-+		vport->num_q_vectors = vport->num_txq_grp;
-+	else
-+		vport->num_q_vectors = vport->num_txq;
- }
- 
- /**
-@@ -371,7 +817,68 @@ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
-  */
- static int iecm_txq_group_alloc(struct iecm_vport *vport, int num_txq)
- {
--	/* stub */
-+	struct iecm_itr tx_itr = { 0 };
-+	int err = 0;
-+	int i;
-+
-+	vport->txq_grps = kcalloc(vport->num_txq_grp,
-+				  sizeof(*vport->txq_grps), GFP_KERNEL);
-+	if (!vport->txq_grps)
-+		return -ENOMEM;
-+
-+	tx_itr.target_itr = IECM_ITR_TX_DEF;
-+	tx_itr.itr_idx = VIRTCHNL_ITR_IDX_1;
-+	tx_itr.next_update = jiffies + 1;
-+
-+	for (i = 0; i < vport->num_txq_grp; i++) {
-+		struct iecm_txq_group *tx_qgrp = &vport->txq_grps[i];
-+		int j;
-+
-+		tx_qgrp->vport = vport;
-+		tx_qgrp->num_txq = num_txq;
-+		tx_qgrp->txqs = kcalloc(num_txq, sizeof(*tx_qgrp->txqs),
-+					GFP_KERNEL);
-+		if (!tx_qgrp->txqs) {
-+			err = -ENOMEM;
-+			goto err_alloc;
-+		}
-+
-+		for (j = 0; j < tx_qgrp->num_txq; j++) {
-+			struct iecm_queue *q = &tx_qgrp->txqs[j];
-+
-+			q->dev = &vport->adapter->pdev->dev;
-+			q->desc_count = vport->txq_desc_count;
-+			q->vport = vport;
-+			q->txq_grp = tx_qgrp;
-+			hash_init(q->sched_buf_hash);
-+
-+			if (!iecm_is_queue_model_split(vport->txq_model))
-+				q->itr = tx_itr;
-+		}
-+
-+		if (!iecm_is_queue_model_split(vport->txq_model))
-+			continue;
-+
-+		tx_qgrp->complq = kcalloc(IECM_COMPLQ_PER_GROUP,
-+					  sizeof(*tx_qgrp->complq),
-+					  GFP_KERNEL);
-+		if (!tx_qgrp->complq) {
-+			err = -ENOMEM;
-+			goto err_alloc;
-+		}
-+
-+		tx_qgrp->complq->dev = &vport->adapter->pdev->dev;
-+		tx_qgrp->complq->desc_count = vport->complq_desc_count;
-+		tx_qgrp->complq->vport = vport;
-+		tx_qgrp->complq->txq_grp = tx_qgrp;
-+
-+		tx_qgrp->complq->itr = tx_itr;
-+	}
-+
-+err_alloc:
-+	if (err)
-+		iecm_txq_group_rel(vport);
-+	return err;
- }
- 
- /**
-@@ -383,7 +890,115 @@ static int iecm_txq_group_alloc(struct iecm_vport *vport, int num_txq)
-  */
- static int iecm_rxq_group_alloc(struct iecm_vport *vport, int num_rxq)
- {
--	/* stub */
-+	struct iecm_itr rx_itr = {0};
-+	struct iecm_queue *q;
-+	int i, err = 0;
-+
-+	vport->rxq_grps = kcalloc(vport->num_rxq_grp,
-+				  sizeof(struct iecm_rxq_group), GFP_KERNEL);
-+	if (!vport->rxq_grps)
-+		return -ENOMEM;
-+
-+	rx_itr.target_itr = IECM_ITR_RX_DEF;
-+	rx_itr.itr_idx = VIRTCHNL_ITR_IDX_0;
-+	rx_itr.next_update = jiffies + 1;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
-+		int j;
-+
-+		rx_qgrp->vport = vport;
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			rx_qgrp->splitq.num_rxq_sets = num_rxq;
-+			rx_qgrp->splitq.rxq_sets =
-+				kcalloc(num_rxq,
-+					sizeof(struct iecm_rxq_set),
-+					GFP_KERNEL);
-+			if (!rx_qgrp->splitq.rxq_sets) {
-+				err = -ENOMEM;
-+				goto err_alloc;
 +			}
 +
-+			rx_qgrp->splitq.bufq_sets =
-+				kcalloc(IECM_BUFQS_PER_RXQ_SET,
-+					sizeof(struct iecm_bufq_set),
-+					GFP_KERNEL);
-+			if (!rx_qgrp->splitq.bufq_sets) {
-+				err = -ENOMEM;
-+				goto err_alloc;
-+			}
-+
-+			for (j = 0; j < IECM_BUFQS_PER_RXQ_SET; j++) {
-+				int swq_size = sizeof(struct iecm_sw_queue);
-+
-+				q = &rx_qgrp->splitq.bufq_sets[j].bufq;
-+				q->dev = &vport->adapter->pdev->dev;
-+				q->desc_count = vport->bufq_desc_count;
-+				q->vport = vport;
-+				q->rxq_grp = rx_qgrp;
-+				q->idx = j;
-+				q->rx_buf_size = IECM_RX_BUF_2048;
-+				q->rsc_low_watermark = IECM_LOW_WATERMARK;
-+				q->rx_buf_stride = IECM_RX_BUF_STRIDE;
-+				q->itr = rx_itr;
-+
-+				if (vport->rx_hsplit_en) {
-+					q->rx_hsplit_en = vport->rx_hsplit_en;
-+					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
-+				}
-+
-+				rx_qgrp->splitq.bufq_sets[j].num_refillqs =
-+					num_rxq;
-+				rx_qgrp->splitq.bufq_sets[j].refillqs =
-+					kcalloc(num_rxq, swq_size, GFP_KERNEL);
-+				if (!rx_qgrp->splitq.bufq_sets[j].refillqs) {
-+					err = -ENOMEM;
-+					goto err_alloc;
-+				}
-+			}
-+		} else {
-+			rx_qgrp->singleq.num_rxq = num_rxq;
-+			rx_qgrp->singleq.rxqs = kcalloc(num_rxq,
-+							sizeof(struct iecm_queue),
-+							GFP_KERNEL);
-+			if (!rx_qgrp->singleq.rxqs)  {
-+				err = -ENOMEM;
-+				goto err_alloc;
-+			}
++			valid_len += (cvport->chunks.num_chunks - 1) *
++				sizeof(struct virtchnl_queue_chunk);
 +		}
-+
-+		for (j = 0; j < num_rxq; j++) {
-+			if (iecm_is_queue_model_split(vport->rxq_model)) {
-+				q = &rx_qgrp->splitq.rxq_sets[j].rxq;
-+				rx_qgrp->splitq.rxq_sets[j].refillq0 =
-+				      &rx_qgrp->splitq.bufq_sets[0].refillqs[j];
-+				rx_qgrp->splitq.rxq_sets[j].refillq1 =
-+				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
-+
-+				if (vport->rx_hsplit_en) {
-+					q->rx_hsplit_en = vport->rx_hsplit_en;
-+					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
-+				}
-+
-+			} else {
-+				q = &rx_qgrp->singleq.rxqs[j];
++		break;
++	case VIRTCHNL_OP_DESTROY_VPORT:
++	case VIRTCHNL_OP_ENABLE_VPORT:
++	case VIRTCHNL_OP_DISABLE_VPORT:
++		valid_len = sizeof(struct virtchnl_vport);
++		break;
++	case VIRTCHNL_OP_CONFIG_TX_QUEUES:
++		valid_len = sizeof(struct virtchnl_config_tx_queues);
++		if (msglen >= valid_len) {
++			struct virtchnl_config_tx_queues *ctq =
++				(struct virtchnl_config_tx_queues *)msg;
++			if (ctq->num_qinfo == 0) {
++				err_msg_format = true;
++				break;
 +			}
-+			q->dev = &vport->adapter->pdev->dev;
-+			q->desc_count = vport->rxq_desc_count;
-+			q->vport = vport;
-+			q->rxq_grp = rx_qgrp;
-+			q->idx = (i * num_rxq) + j;
-+			q->rx_buf_size = IECM_RX_BUF_2048;
-+			q->rsc_low_watermark = IECM_LOW_WATERMARK;
-+			q->rx_max_pkt_size = vport->netdev->mtu +
-+					     IECM_PACKET_HDR_PAD;
-+			q->itr = rx_itr;
++			valid_len += (ctq->num_qinfo - 1) *
++				sizeof(struct virtchnl_txq_info_v2);
 +		}
-+	}
-+err_alloc:
-+	if (err)
-+		iecm_rxq_group_rel(vport);
-+	return err;
- }
- 
- /**
-@@ -394,7 +1009,20 @@ static int iecm_rxq_group_alloc(struct iecm_vport *vport, int num_rxq)
-  */
- static int iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
- {
--	/* stub */
-+	int num_txq, num_rxq;
-+	int err;
-+
-+	iecm_vport_calc_numq_per_grp(vport, &num_txq, &num_rxq);
-+
-+	err = iecm_txq_group_alloc(vport, num_txq);
-+	if (err)
-+		goto err_out;
-+
-+	err = iecm_rxq_group_alloc(vport, num_rxq);
-+err_out:
-+	if (err)
-+		iecm_vport_queue_grp_rel_all(vport);
-+	return err;
- }
- 
- /**
-@@ -406,7 +1034,28 @@ static int iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
-  */
- int iecm_vport_queues_alloc(struct iecm_vport *vport)
- {
--	/* stub */
-+	int err;
-+
-+	err = iecm_vport_queue_grp_alloc_all(vport);
-+	if (err)
-+		goto err_out;
-+
-+	err = iecm_tx_desc_alloc_all(vport);
-+	if (err)
-+		goto err_out;
-+
-+	err = iecm_rx_desc_alloc_all(vport);
-+	if (err)
-+		goto err_out;
-+
-+	err = iecm_vport_init_fast_path_txqs(vport);
-+	if (err)
-+		goto err_out;
-+
-+	return 0;
-+err_out:
-+	iecm_vport_queues_rel(vport);
-+	return err;
- }
- 
- /**
-@@ -1791,7 +2440,16 @@ EXPORT_SYMBOL(iecm_vport_calc_num_q_vec);
-  */
- int iecm_config_rss(struct iecm_vport *vport)
- {
--	/* stub */
-+	int err = iecm_send_get_set_rss_key_msg(vport, false);
-+
-+	if (!err)
-+		err = vport->adapter->dev_ops.vc_ops.get_set_rss_lut(vport,
-+								     false);
-+	if (!err)
-+		err = vport->adapter->dev_ops.vc_ops.get_set_rss_hash(vport,
-+								      false);
-+
-+	return err;
- }
- 
- /**
-@@ -1803,7 +2461,20 @@ int iecm_config_rss(struct iecm_vport *vport)
-  */
- void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
- {
--	/* stub */
-+	int i, j, k = 0;
-+
-+	for (i = 0; i < vport->num_rxq_grp; i++) {
-+		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
-+
-+		if (iecm_is_queue_model_split(vport->rxq_model)) {
-+			for (j = 0; j < rx_qgrp->splitq.num_rxq_sets; j++)
-+				qid_list[k++] =
-+					rx_qgrp->splitq.rxq_sets[j].rxq.q_id;
-+		} else {
-+			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++)
-+				qid_list[k++] = rx_qgrp->singleq.rxqs[j].q_id;
++		break;
++	case VIRTCHNL_OP_CONFIG_RX_QUEUES:
++		valid_len = sizeof(struct virtchnl_config_rx_queues);
++		if (msglen >= valid_len) {
++			struct virtchnl_config_rx_queues *crq =
++				(struct virtchnl_config_rx_queues *)msg;
++			if (crq->num_qinfo == 0) {
++				err_msg_format = true;
++				break;
++			}
++			valid_len += (crq->num_qinfo - 1) *
++				sizeof(struct virtchnl_rxq_info_v2);
 +		}
-+	}
- }
- 
- /**
-@@ -1815,7 +2486,13 @@ void iecm_get_rx_qid_list(struct iecm_vport *vport, u16 *qid_list)
-  */
- void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
- {
--	/* stub */
-+	int num_lut_segs, lut_seg, i, k = 0;
++		break;
++	case VIRTCHNL_OP_ADD_QUEUES:
++		valid_len = sizeof(struct virtchnl_add_queues);
++		if (msglen >= valid_len) {
++			struct virtchnl_add_queues *add_q =
++				(struct virtchnl_add_queues *)msg;
 +
-+	num_lut_segs = vport->adapter->rss_data.rss_lut_size / vport->num_rxq;
-+	for (lut_seg = 0; lut_seg < num_lut_segs; lut_seg++) {
-+		for (i = 0; i < vport->num_rxq; i++)
-+			vport->adapter->rss_data.rss_lut[k++] = qid_list[i];
-+	}
- }
- 
- /**
-@@ -1826,7 +2503,64 @@ void iecm_fill_dflt_rss_lut(struct iecm_vport *vport, u16 *qid_list)
-  */
- int iecm_init_rss(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	u16 *qid_list;
++			if (add_q->chunks.num_chunks == 0) {
++				/* zero chunks is allowed as input */
++				break;
++			}
 +
-+	adapter->rss_data.rss_key = kzalloc(adapter->rss_data.rss_key_size,
-+					    GFP_KERNEL);
-+	if (!adapter->rss_data.rss_key)
-+		return -ENOMEM;
-+	adapter->rss_data.rss_lut = kzalloc(adapter->rss_data.rss_lut_size,
-+					    GFP_KERNEL);
-+	if (!adapter->rss_data.rss_lut) {
-+		kfree(adapter->rss_data.rss_key);
-+		adapter->rss_data.rss_key = NULL;
-+		return -ENOMEM;
-+	}
++			valid_len += (add_q->chunks.num_chunks - 1) *
++				sizeof(struct virtchnl_queue_chunk);
++		}
++		break;
++	case VIRTCHNL_OP_ENABLE_QUEUES_V2:
++	case VIRTCHNL_OP_DISABLE_QUEUES_V2:
++	case VIRTCHNL_OP_DEL_QUEUES:
++		valid_len = sizeof(struct virtchnl_del_ena_dis_queues);
++		if (msglen >= valid_len) {
++			struct virtchnl_del_ena_dis_queues *qs =
++				(struct virtchnl_del_ena_dis_queues *)msg;
++			if (qs->chunks.num_chunks == 0) {
++				err_msg_format = true;
++				break;
++			}
++			valid_len += (qs->chunks.num_chunks - 1) *
++				sizeof(struct virtchnl_queue_chunk);
++		}
++		break;
++	case VIRTCHNL_OP_MAP_QUEUE_VECTOR:
++	case VIRTCHNL_OP_UNMAP_QUEUE_VECTOR:
++		valid_len = sizeof(struct virtchnl_queue_vector_maps);
++		if (msglen >= valid_len) {
++			struct virtchnl_queue_vector_maps *v_qp =
++				(struct virtchnl_queue_vector_maps *)msg;
++			if (v_qp->num_maps == 0) {
++				err_msg_format = true;
++				break;
++			}
++			valid_len += (v_qp->num_maps - 1) *
++				sizeof(struct virtchnl_queue_vector);
++		}
++		break;
++	case VIRTCHNL_OP_ALLOC_VECTORS:
++		valid_len = sizeof(struct virtchnl_alloc_vectors);
++		if (msglen >= valid_len) {
++			struct virtchnl_alloc_vectors *v_av =
++				(struct virtchnl_alloc_vectors *)msg;
 +
-+	/* Initialize default rss key */
-+	netdev_rss_key_fill((void *)adapter->rss_data.rss_key,
-+			    adapter->rss_data.rss_key_size);
++			if (v_av->vchunks.num_vector_chunks == 0) {
++				/* zero chunks is allowed as input */
++				break;
++			}
 +
-+	/* Initialize default rss lut */
-+	if (adapter->rss_data.rss_lut_size % vport->num_rxq) {
-+		u16 dflt_qid;
-+		int i;
++			valid_len += (v_av->vchunks.num_vector_chunks - 1) *
++				sizeof(struct virtchnl_vector_chunk);
++		}
++		break;
++	case VIRTCHNL_OP_DEALLOC_VECTORS:
++		valid_len = sizeof(struct virtchnl_vector_chunks);
++		if (msglen >= valid_len) {
++			struct virtchnl_vector_chunks *v_chunks =
++				(struct virtchnl_vector_chunks *)msg;
++			if (v_chunks->num_vector_chunks == 0) {
++				err_msg_format = true;
++				break;
++			}
++			valid_len += (v_chunks->num_vector_chunks - 1) *
++				sizeof(struct virtchnl_vector_chunk);
++		}
++		break;
++	case VIRTCHNL_OP_GET_RSS_KEY:
++		valid_len = sizeof(struct virtchnl_rss_key);
++		if (msglen >= valid_len) {
++			struct virtchnl_rss_key *vrk =
++				(struct virtchnl_rss_key *)msg;
 +
-+		/* Set all entries to a default RX queue if the algorithm below
-+		 * won't fill all entries
-+		 */
-+		if (iecm_is_queue_model_split(vport->rxq_model))
-+			dflt_qid =
-+				vport->rxq_grps[0].splitq.rxq_sets[0].rxq.q_id;
-+		else
-+			dflt_qid =
-+				vport->rxq_grps[0].singleq.rxqs[0].q_id;
++			if (vrk->key_len == 0) {
++				/* zero length is allowed as input */
++				break;
++			}
 +
-+		for (i = 0; i < adapter->rss_data.rss_lut_size; i++)
-+			adapter->rss_data.rss_lut[i] = dflt_qid;
-+	}
++			valid_len += vrk->key_len - 1;
++		}
++		break;
++	case VIRTCHNL_OP_GET_RSS_LUT:
++	case VIRTCHNL_OP_SET_RSS_LUT:
++		valid_len = sizeof(struct virtchnl_rss_lut_v2);
++		if (msglen >= valid_len) {
++			struct virtchnl_rss_lut_v2 *vrl =
++				(struct virtchnl_rss_lut_v2 *)msg;
 +
-+	qid_list = kcalloc(vport->num_rxq, sizeof(u16), GFP_KERNEL);
-+	if (!qid_list) {
-+		kfree(adapter->rss_data.rss_lut);
-+		adapter->rss_data.rss_lut = NULL;
-+		kfree(adapter->rss_data.rss_key);
-+		adapter->rss_data.rss_key = NULL;
-+		return -ENOMEM;
-+	}
++			if (vrl->lut_entries == 0) {
++				/* zero entries is allowed as input */
++				break;
++			}
 +
-+	iecm_get_rx_qid_list(vport, qid_list);
-+
-+	/* Fill the default RSS lut values*/
-+	iecm_fill_dflt_rss_lut(vport, qid_list);
-+
-+	kfree(qid_list);
-+
-+	 /* Initialize default rss HASH */
-+	adapter->rss_data.rss_hash = IECM_DEFAULT_RSS_HASH_EXPANDED;
-+
-+	return iecm_config_rss(vport);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-index c99c1c912303..997366688df4 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-@@ -663,7 +663,19 @@ int iecm_send_destroy_vport_msg(struct iecm_vport *vport)
-  */
- int iecm_send_enable_vport_msg(struct iecm_vport *vport)
- {
--	/* stub */
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct virtchnl_vport v_id;
-+	int err;
-+
-+	v_id.vport_id = vport->vport_id;
-+
-+	err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_ENABLE_VPORT,
-+			       sizeof(v_id), (u8 *)&v_id);
-+	if (err)
-+		return err;
-+
-+	return iecm_wait_for_event(adapter, IECM_VC_ENA_VPORT,
-+				   IECM_VC_ENA_VPORT_ERR);
- }
- 
- /**
-@@ -1839,7 +1851,27 @@ EXPORT_SYMBOL(iecm_vc_core_init);
- static void iecm_vport_init(struct iecm_vport *vport,
- 			    __always_unused int vport_id)
- {
--	/* stub */
-+	struct virtchnl_create_vport *vport_msg;
-+
-+	vport_msg = (struct virtchnl_create_vport *)
-+				vport->adapter->vport_params_recvd[0];
-+	vport->txq_model = vport_msg->txq_model;
-+	vport->rxq_model = vport_msg->rxq_model;
-+	vport->vport_type = (u16)vport_msg->vport_type;
-+	vport->vport_id = vport_msg->vport_id;
-+	vport->adapter->rss_data.rss_key_size = min_t(u16, NETDEV_RSS_KEY_LEN,
-+						      vport_msg->rss_key_size);
-+	vport->adapter->rss_data.rss_lut_size = vport_msg->rss_lut_size;
-+	ether_addr_copy(vport->default_mac_addr, vport_msg->default_mac_addr);
-+	vport->max_mtu = IECM_MAX_MTU;
-+
-+	iecm_vport_set_hsplit(vport, NULL);
-+
-+	init_waitqueue_head(&vport->sw_marker_wq);
-+	iecm_vport_init_num_qs(vport, vport_msg);
-+	iecm_vport_calc_num_q_desc(vport);
-+	iecm_vport_calc_num_q_groups(vport);
-+	iecm_vport_calc_num_q_vec(vport);
- }
- 
- /**
++			valid_len += (vrl->lut_entries - 1) * sizeof(u16);
++		}
++		break;
++	case VIRTCHNL_OP_GET_RSS_HASH:
++	case VIRTCHNL_OP_SET_RSS_HASH:
++		valid_len = sizeof(struct virtchnl_rss_hash);
++		break;
++	case VIRTCHNL_OP_CREATE_VFS:
++	case VIRTCHNL_OP_DESTROY_VFS:
++		valid_len = sizeof(struct virtchnl_sriov_vfs_info);
++		break;
+ 	/* These are always errors coming from the VF. */
+ 	case VIRTCHNL_OP_EVENT:
+ 	case VIRTCHNL_OP_UNKNOWN:
 -- 
 2.21.0
 
