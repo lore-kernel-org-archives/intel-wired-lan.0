@@ -1,214 +1,365 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 17 Sep 2020 13:13:39 -0700
-Subject: [Intel-wired-lan] [PATCH S53 07/15] ice: implement new LLDP filter
- command
+Date: Thu, 17 Sep 2020 13:13:34 -0700
+Subject: [Intel-wired-lan] [PATCH S53 02/15] ice: Manage VF's MAC address
+ for both legacy and new cases
 In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
 References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200917201347.81570-7-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-There is an issue with some NVMs where an already existent LLDP
-filter is blocking the creation of a filter to allow LLDP packets
-to be redirected to the default VSI for the interface.  This is
-blocking all LLDP functionality based in the kernel when the FW
-LLDP agent is disabled (e.g. software based DCBx).
+Currently there is no way for a VF driver to specify if it wants to
+change it's hardware address. New bits are being added to virtchnl.h
+in struct virtchnl_ether_addr that allow for the VF to correctly
+communicate this information. However, legacy VF drivers that don't
+support the new virtchnl.h bits still need to be supported. Make a
+best effort attempt at saving the VF's primary/device address in the
+legacy case and depend on the VIRTCHNL_ETHER_ADDR_PRIMARY type for
+the new case.
 
-Implement the new AQ command to allow adding VSI destinations to
-existent filters on NVM versions that support the new command.
+Legacy case - If a unicast MAC is being added and the
+hw_lan_addr.addr is empty, then populate it. This assumes that the
+address is the VF's hardware address. If a unicast MAC is being
+added and the hw_lan_addr.addr is not empty, then cache it in the
+legacy_last_added_umac.addr. If a unicast MAC is being deleted and it
+matches the hw_lan_addr.addr, then zero the hw_lan_addr.addr.
+Also, if the legacy_last_added_umac.addr has not expired, copy the
+legacy_last_added_umac.addr into the hw_lan_addr.addr. This is done
+because we cannot guarantee the order of VIRTCHNL_OP_ADD_ETH_ADDR and
+VIRTCHNL_OP_DEL_ETH_ADDR.
 
-The new lldp_fltr_ctrl AQ command supports Rx filters only, so the
-code flow for adding filters to disable Tx of control frames will
-remain intact.
+New case - If a unicast MAC is being added and it's specified as
+VIRTCHNL_ETHER_ADDR_PRIMARY, then replace the current
+hw_lan_addr.addr. If a unicast MAC is being deleted and it's type
+is specified as VIRTCHNL_ETHER_ADDR_PRIMARY, then zero the
+hw_lan_addr.addr.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Untrusted VFs - Only allow above legacy/new changes to their
+hardware address if the PF has not set it administratively via
+iproute2.
+
+Trusted VFs - Always allow above legacy/new changes to their
+hardware address even if the PF has administratively set it via
+iproute2.
+
+Also, change the variable dflt_lan_addr to hw_lan_addr to clearly
+represent the purpose of this variable since it's purpose is to
+act as a hardware programmed MAC address for the VF.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 12 +++++
- drivers/net/ethernet/intel/ice/ice_common.c   | 47 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h   |  3 ++
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 10 ++--
- drivers/net/ethernet/intel/ice/ice_lib.c      | 13 +++--
- drivers/net/ethernet/intel/ice/ice_type.h     |  5 ++
- 6 files changed, 82 insertions(+), 8 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 158 +++++++++++++++---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   8 +-
+ 2 files changed, 140 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 349839dba64b..d64a0784e1a4 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1562,6 +1562,16 @@ struct ice_aqc_lldp_stop_start_specific_agent {
- 	u8 reserved[15];
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index c8b2705a8aed..627c4e36c1bd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -637,12 +637,12 @@ static int ice_vf_rebuild_host_mac_cfg(struct ice_vf *vf)
+ 
+ 	vf->num_mac++;
+ 
+-	if (is_valid_ether_addr(vf->dflt_lan_addr.addr)) {
+-		status = ice_fltr_add_mac(vsi, vf->dflt_lan_addr.addr,
++	if (is_valid_ether_addr(vf->hw_lan_addr.addr)) {
++		status = ice_fltr_add_mac(vsi, vf->hw_lan_addr.addr,
+ 					  ICE_FWD_TO_VSI);
+ 		if (status) {
+ 			dev_err(dev, "failed to add default unicast MAC filter %pM for VF %u, error %s\n",
+-				&vf->dflt_lan_addr.addr[0], vf->vf_id,
++				&vf->hw_lan_addr.addr[0], vf->vf_id,
+ 				ice_stat_str(status));
+ 			return ice_status_to_errno(status);
+ 		}
+@@ -1965,7 +1965,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	vfres->vsi_res[0].vsi_type = VIRTCHNL_VSI_SRIOV;
+ 	vfres->vsi_res[0].num_queue_pairs = vsi->num_txq;
+ 	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
+-			vf->dflt_lan_addr.addr);
++			vf->hw_lan_addr.addr);
+ 
+ 	/* match guest capabilities */
+ 	vf->driver_caps = vfres->vf_cap_flags;
+@@ -3018,20 +3018,94 @@ static bool ice_can_vf_change_mac(struct ice_vf *vf)
+ 	return true;
+ }
+ 
++/**
++ * ice_vc_ether_addr_type - get type of virtchnl_ether_addr
++ * @vc_ether_addr: used to extract the type
++ */
++static u8
++ice_vc_ether_addr_type(struct virtchnl_ether_addr *vc_ether_addr)
++{
++	return (vc_ether_addr->type & VIRTCHNL_ETHER_ADDR_TYPE_MASK);
++}
++
++/**
++ * ice_is_vc_addr_legacy - check if the MAC address is from an older VF
++ * @vc_ether_addr: VIRTCHNL structure that contains MAC and type
++ */
++static bool
++ice_is_vc_addr_legacy(struct virtchnl_ether_addr *vc_ether_addr)
++{
++	u8 type = ice_vc_ether_addr_type(vc_ether_addr);
++
++	return (type == VIRTCHNL_ETHER_ADDR_LEGACY);
++}
++
++/**
++ * ice_is_vc_addr_primary - check if the MAC address is the VF's primary MAC
++ * @vc_ether_addr: VIRTCHNL structure that contains MAC and type
++ *
++ * This function should only be called when the MAC address in
++ * virtchnl_ether_addr is a valid unicast MAC
++ */
++static bool
++ice_is_vc_addr_primary(struct virtchnl_ether_addr __maybe_unused *vc_ether_addr)
++{
++	u8 type = ice_vc_ether_addr_type(vc_ether_addr);
++
++	return (type == VIRTCHNL_ETHER_ADDR_PRIMARY);
++}
++
++/**
++ * ice_vfhw_mac_add - update the VF's cached hardware MAC if allowed
++ * @vf: VF to update
++ * @vc_ether_addr: structure from VIRTCHNL with MAC to add
++ */
++static void
++ice_vfhw_mac_add(struct ice_vf *vf, struct virtchnl_ether_addr *vc_ether_addr)
++{
++	u8 *mac_addr = vc_ether_addr->addr;
++
++	if (!is_valid_ether_addr(mac_addr))
++		return;
++
++	/* only allow legacy VF drivers to set the hardware MAC if it is zero
++	 * and allow new VF drivers to set the hardware MAC if the type was
++	 * correctly specified over VIRTCHNL
++	 */
++	if ((ice_is_vc_addr_legacy(vc_ether_addr) &&
++	     is_zero_ether_addr(vf->hw_lan_addr.addr)) ||
++	    ice_is_vc_addr_primary(vc_ether_addr))
++		ether_addr_copy(vf->hw_lan_addr.addr, mac_addr);
++
++	/* hardware MAC is already set, but its possible that the VF driver sent
++	 * the VIRTCHNL_OP_ADD_ETH_ADDR message before the
++	 * VIRTCHNL_OP_DEL_ETH_ADDR when trying to update its MAC, so save it
++	 * away for the legacy VF driver case as it will be updated in the
++	 * delete flow for this case
++	 */
++	if (ice_is_vc_addr_legacy(vc_ether_addr)) {
++		ether_addr_copy(vf->legacy_last_added_umac.addr,
++				mac_addr);
++		vf->legacy_last_added_umac.time_modified = jiffies;
++	}
++}
++
+ /**
+  * ice_vc_add_mac_addr - attempt to add the MAC address passed in
+  * @vf: pointer to the VF info
+  * @vsi: pointer to the VF's VSI
+- * @mac_addr: MAC address to add
++ * @vc_ether_addr: VIRTCHNL MAC address structure used to add MAC
+  */
+ static int
+-ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
++ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
++		    struct virtchnl_ether_addr *vc_ether_addr)
+ {
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
++	u8 *mac_addr = vc_ether_addr->addr;
+ 	enum ice_status status;
+ 
+ 	/* default unicast MAC already added */
+-	if (ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
++	if (ether_addr_equal(mac_addr, vf->hw_lan_addr.addr))
+ 		return 0;
+ 
+ 	if (is_unicast_ether_addr(mac_addr) && !ice_can_vf_change_mac(vf)) {
+@@ -3050,32 +3124,66 @@ ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+ 		return -EIO;
+ 	}
+ 
+-	/* Set the default LAN address to the latest unicast MAC address added
+-	 * by the VF. The default LAN address is reported by the PF via
+-	 * ndo_get_vf_config.
+-	 */
+-	if (is_unicast_ether_addr(mac_addr))
+-		ether_addr_copy(vf->dflt_lan_addr.addr, mac_addr);
++	ice_vfhw_mac_add(vf, vc_ether_addr);
+ 
+ 	vf->num_mac++;
+ 
+ 	return 0;
+ }
+ 
++/**
++ * ice_is_legacy_umac_expired - check if last added legacy unicast MAC expired
++ * @last_added_umac: structure used to check expiration
++ */
++static bool ice_is_legacy_umac_expired(struct ice_time_mac *last_added_umac)
++{
++#define ICE_LEGACY_VF_MAC_CHANGE_EXPIRE_TIME	msecs_to_jiffies(3000)
++	return time_is_before_jiffies(last_added_umac->time_modified +
++				      ICE_LEGACY_VF_MAC_CHANGE_EXPIRE_TIME);
++}
++
++/**
++ * ice_vfhw_mac_del - update the VF's cached hardware MAC if allowed
++ * @vf: VF to update
++ * @vc_ether_addr: structure from VIRTCHNL with MAC to delete
++ */
++static void
++ice_vfhw_mac_del(struct ice_vf *vf, struct virtchnl_ether_addr *vc_ether_addr)
++{
++	u8 *mac_addr = vc_ether_addr->addr;
++
++	if (!is_valid_ether_addr(mac_addr) ||
++	    !ether_addr_equal(vf->hw_lan_addr.addr, mac_addr))
++		return;
++
++	/* allow the hardware MAC to be repopulated in the add flow */
++	eth_zero_addr(vf->hw_lan_addr.addr);
++
++	/* only update cached hardware MAC for legacy VF drivers on delete
++	 * because we cannot guarantee order/type of MAC from the VF driver
++	 */
++	if (ice_is_vc_addr_legacy(vc_ether_addr) &&
++	    !ice_is_legacy_umac_expired(&vf->legacy_last_added_umac))
++		ether_addr_copy(vf->hw_lan_addr.addr,
++				vf->legacy_last_added_umac.addr);
++}
++
+ /**
+  * ice_vc_del_mac_addr - attempt to delete the MAC address passed in
+  * @vf: pointer to the VF info
+  * @vsi: pointer to the VF's VSI
+- * @mac_addr: MAC address to delete
++ * @vc_ether_addr: VIRTCHNL MAC address structure used to delete MAC
+  */
+ static int
+-ice_vc_del_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
++ice_vc_del_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
++		    struct virtchnl_ether_addr *vc_ether_addr)
+ {
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
++	u8 *mac_addr = vc_ether_addr->addr;
+ 	enum ice_status status;
+ 
+ 	if (!ice_can_vf_change_mac(vf) &&
+-	    ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
++	    ether_addr_equal(mac_addr, vf->hw_lan_addr.addr))
+ 		return 0;
+ 
+ 	status = ice_fltr_remove_mac(vsi, mac_addr, ICE_FWD_TO_VSI);
+@@ -3089,8 +3197,7 @@ ice_vc_del_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+ 		return -EIO;
+ 	}
+ 
+-	if (ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
+-		eth_zero_addr(vf->dflt_lan_addr.addr);
++	ice_vfhw_mac_del(vf, vc_ether_addr);
+ 
+ 	vf->num_mac--;
+ 
+@@ -3109,7 +3216,8 @@ static int
+ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ {
+ 	int (*ice_vc_cfg_mac)
+-		(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr);
++		(struct ice_vf *vf, struct ice_vsi *vsi,
++		 struct virtchnl_ether_addr *virtchnl_ether_addr);
+ 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+ 	struct virtchnl_ether_addr_list *al =
+ 	    (struct virtchnl_ether_addr_list *)msg;
+@@ -3158,7 +3266,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+ 		    is_zero_ether_addr(mac_addr))
+ 			continue;
+ 
+-		result = ice_vc_cfg_mac(vf, vsi, mac_addr);
++		result = ice_vc_cfg_mac(vf, vsi, &al->list[i]);
+ 		if (result == -EEXIST || result == -ENOENT) {
+ 			continue;
+ 		} else if (result) {
+@@ -3779,7 +3887,7 @@ ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi)
+ 		return -EBUSY;
+ 
+ 	ivi->vf = vf_id;
+-	ether_addr_copy(ivi->mac, vf->dflt_lan_addr.addr);
++	ether_addr_copy(ivi->mac, vf->hw_lan_addr.addr);
+ 
+ 	/* VF configuration for VLAN and applicable QoS */
+ 	ivi->vlan = vf->port_vlan_info & VLAN_VID_MASK;
+@@ -3855,7 +3963,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 
+ 	vf = &pf->vf[vf_id];
+ 	/* nothing left to do, unicast MAC already set */
+-	if (ether_addr_equal(vf->dflt_lan_addr.addr, mac))
++	if (ether_addr_equal(vf->hw_lan_addr.addr, mac))
+ 		return 0;
+ 
+ 	ret = ice_check_vf_ready_for_cfg(vf);
+@@ -3871,7 +3979,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	/* VF is notified of its new MAC via the PF's response to the
+ 	 * VIRTCHNL_OP_GET_VF_RESOURCES message after the VF has been reset
+ 	 */
+-	ether_addr_copy(vf->dflt_lan_addr.addr, mac);
++	ether_addr_copy(vf->hw_lan_addr.addr, mac);
+ 	if (is_zero_ether_addr(mac)) {
+ 		/* VF will send VIRTCHNL_OP_ADD_ETH_ADDR message with its MAC */
+ 		vf->pf_set_mac = false;
+@@ -4024,7 +4132,7 @@ void ice_print_vf_rx_mdd_event(struct ice_vf *vf)
+ 
+ 	dev_info(dev, "%d Rx Malicious Driver Detection events detected on PF %d VF %d MAC %pM. mdd-auto-reset-vfs=%s\n",
+ 		 vf->mdd_rx_events.count, pf->hw.pf_id, vf->vf_id,
+-		 vf->dflt_lan_addr.addr,
++		 vf->hw_lan_addr.addr,
+ 		 test_bit(ICE_FLAG_MDD_AUTO_RESET_VF, pf->flags)
+ 			  ? "on" : "off");
+ }
+@@ -4068,7 +4176,7 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+ 
+ 			dev_info(dev, "%d Tx Malicious Driver Detection events detected on PF %d VF %d MAC %pM.\n",
+ 				 vf->mdd_tx_events.count, hw->pf_id, i,
+-				 vf->dflt_lan_addr.addr);
++				 vf->hw_lan_addr.addr);
+ 		}
+ 	}
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 0f519fba3770..f440b290e02e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -57,6 +57,11 @@ enum ice_virtchnl_cap {
+ 	ICE_VIRTCHNL_VF_CAP_PRIVILEGE,
  };
  
-+/* LLDP Filter Control (direct 0x0A0A) */
-+struct ice_aqc_lldp_filter_ctrl {
-+	u8 cmd_flags;
-+#define ICE_AQC_LLDP_FILTER_ACTION_ADD		0x0
-+#define ICE_AQC_LLDP_FILTER_ACTION_DELETE	0x1
-+	u8 reserved1;
-+	__le16 vsi_num;
-+	u8 reserved2[12];
++struct ice_time_mac {
++	unsigned long time_modified;
++	u8 addr[ETH_ALEN];
 +};
 +
- /* Get/Set RSS key (indirect 0x0B04/0x0B02) */
- struct ice_aqc_get_set_rss_key {
- #define ICE_AQC_GSET_RSS_KEY_VSI_VALID	BIT(15)
-@@ -2249,6 +2259,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_lldp_start lldp_start;
- 		struct ice_aqc_lldp_set_local_mib lldp_set_mib;
- 		struct ice_aqc_lldp_stop_start_specific_agent lldp_agent_ctrl;
-+		struct ice_aqc_lldp_filter_ctrl lldp_filter_ctrl;
- 		struct ice_aqc_get_set_rss_lut get_set_rss_lut;
- 		struct ice_aqc_get_set_rss_key get_set_rss_key;
- 		struct ice_aqc_acl_alloc_table alloc_table;
-@@ -2399,6 +2410,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_get_cee_dcb_cfg			= 0x0A07,
- 	ice_aqc_opc_lldp_set_local_mib			= 0x0A08,
- 	ice_aqc_opc_lldp_stop_start_specific_agent	= 0x0A09,
-+	ice_aqc_opc_lldp_filter_ctrl			= 0x0A0A,
- 
- 	/* RSS commands */
- 	ice_aqc_opc_set_rss_key				= 0x0B02,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 7db5fd977367..1aee8d5791a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4403,3 +4403,50 @@ ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
- 
- 	return ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
- }
-+
-+/**
-+ * ice_fw_supports_lldp_fltr - check NVM version supports lldp_fltr_ctrl
-+ * @hw: pointer to HW struct
-+ */
-+bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw)
-+{
-+	if (hw->mac_type != ICE_MAC_E810)
-+		return false;
-+
-+	if (hw->api_maj_ver == ICE_FW_API_LLDP_FLTR_MAJ) {
-+		if (hw->api_min_ver > ICE_FW_API_LLDP_FLTR_MIN)
-+			return true;
-+		if (hw->api_min_ver == ICE_FW_API_LLDP_FLTR_MIN &&
-+		    hw->api_patch >= ICE_FW_API_LLDP_FLTR_PATCH)
-+			return true;
-+	} else if (hw->api_maj_ver > ICE_FW_API_LLDP_FLTR_MAJ) {
-+		return true;
-+	}
-+	return false;
-+}
-+
-+/**
-+ * ice_lldp_fltr_add_remove - add or remove a LLDP Rx switch filter
-+ * @hw: pointer to HW struct
-+ * @vsi_num: absolute HW index for VSI
-+ * @add: boolean for if adding or removing a filter
-+ */
-+enum ice_status
-+ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add)
-+{
-+	struct ice_aqc_lldp_filter_ctrl *cmd;
-+	struct ice_aq_desc desc;
-+
-+	cmd = &desc.params.lldp_filter_ctrl;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_filter_ctrl);
-+
-+	if (add)
-+		cmd->cmd_flags = ICE_AQC_LLDP_FILTER_ACTION_ADD;
-+	else
-+		cmd->cmd_flags = ICE_AQC_LLDP_FILTER_ACTION_DELETE;
-+
-+	cmd->vsi_num = cpu_to_le16(vsi_num);
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 3ebb973878c7..baf4064fcbfe 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -175,4 +175,7 @@ ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
- enum ice_status
- ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
- 		    struct ice_sq_cd *cd);
-+bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw);
-+enum ice_status
-+ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add);
- #endif /* _ICE_COMMON_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 88062a2b496e..53d7e91bbdee 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1242,6 +1242,11 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			enum ice_status status;
- 			bool dcbx_agent_status;
- 
-+			/* Remove rule to direct LLDP packets to default VSI.
-+			 * The FW LLDP engine will now be consuming them.
-+			 */
-+			ice_cfg_sw_lldp(vsi, false, false);
-+
- 			/* AQ command to start FW LLDP agent will return an
- 			 * error if the agent is already started
- 			 */
-@@ -1270,11 +1275,6 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			if (status)
- 				dev_dbg(dev, "Fail to init DCB\n");
- 
--			/* Remove rule to direct LLDP packets to default VSI.
--			 * The FW LLDP engine will now be consuming them.
--			 */
--			ice_cfg_sw_lldp(vsi, false, false);
--
- 			/* Register for MIB change events */
- 			status = ice_cfg_lldp_mib_change(&pf->hw, true);
- 			if (status)
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index df38fa8a0c7c..f118d33e3a20 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2149,11 +2149,18 @@ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
- 	dev = ice_pf_to_dev(pf);
- 	eth_fltr = create ? ice_fltr_add_eth : ice_fltr_remove_eth;
- 
--	if (tx)
-+	if (tx) {
- 		status = eth_fltr(vsi, ETH_P_LLDP, ICE_FLTR_TX,
- 				  ICE_DROP_PACKET);
--	else
--		status = eth_fltr(vsi, ETH_P_LLDP, ICE_FLTR_RX, ICE_FWD_TO_VSI);
-+	} else {
-+		if (ice_fw_supports_lldp_fltr_ctrl(&pf->hw)) {
-+			status = ice_lldp_fltr_add_remove(&pf->hw, vsi->vsi_num,
-+							  create);
-+		} else {
-+			status = eth_fltr(vsi, ETH_P_LLDP, ICE_FLTR_RX,
-+					  ICE_FWD_TO_VSI);
-+		}
-+	}
- 
- 	if (status)
- 		dev_err(dev, "Fail %s %s LLDP rule on VSI %i error: %s\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index f5e42ba9a286..a80fcc0dc44c 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -808,4 +808,9 @@ struct ice_hw_port_stats {
- /* Hash redirection LUT for VSI - maximum array size */
- #define ICE_VSIQF_HLUT_ARRAY_SIZE	((VSIQF_HLUT_MAX_INDEX + 1) * 4)
- 
-+/* AQ API version for LLDP_FILTER_CONTROL */
-+#define ICE_FW_API_LLDP_FLTR_MAJ	1
-+#define ICE_FW_API_LLDP_FLTR_MIN	7
-+#define ICE_FW_API_LLDP_FLTR_PATCH	1
-+
- #endif /* _ICE_TYPE_H_ */
+ /* VF MDD events print structure */
+ struct ice_mdd_vf_events {
+ 	u16 count;			/* total count of Rx|Tx events */
+@@ -75,7 +80,8 @@ struct ice_vf {
+ 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
+ 	struct virtchnl_version_info vf_ver;
+ 	u32 driver_caps;		/* reported by VF driver */
+-	struct virtchnl_ether_addr dflt_lan_addr;
++	struct virtchnl_ether_addr hw_lan_addr;
++	struct ice_time_mac legacy_last_added_umac;
+ 	DECLARE_BITMAP(txq_ena, ICE_MAX_RSS_QS_PER_VF);
+ 	DECLARE_BITMAP(rxq_ena, ICE_MAX_RSS_QS_PER_VF);
+ 	u16 port_vlan_info;		/* Port VLAN ID and QoS */
 -- 
 2.20.1
 
