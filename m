@@ -1,42 +1,63 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 17 Sep 2020 13:13:40 -0700
-Subject: [Intel-wired-lan] [PATCH S53 08/15] ice: don't always return an
- error for Get PHY Abilities AQ command
+Date: Thu, 17 Sep 2020 13:13:42 -0700
+Subject: [Intel-wired-lan] [PATCH S53 10/15] ice: Remove gate to OROM init
 In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
 References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
-Message-ID: <20200917201347.81570-8-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-10-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+From: Jeb Cramer <jeb.j.cramer@intel.com>
 
-There are times when the driver shouldn't return an error when the Get
-PHY abilities AQ command (0x0600) returns an error. Instead the driver
-should log that the error occurred and continue on. This allows the
-driver to load even though the AQ command failed. The user can then
-later determine the reason for the failure and correct it.
+Remove the gate that prevents the OROM and netlist info from being
+populated.  The NVM now has the appropriate section for software to
+reference the versioning info.
 
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Signed-off-by: Jeb Cramer <jeb.j.cramer@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 26 ------------------------
+ 1 file changed, 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 1aee8d5791a7..a0cf60272aab 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -925,7 +925,7 @@ enum ice_status ice_init_hw(struct ice_hw *hw)
- 				     ICE_AQC_REPORT_TOPO_CAP, pcaps, NULL);
- 	devm_kfree(ice_hw_to_dev(hw), pcaps);
- 	if (status)
--		goto err_unroll_sched;
-+		ice_debug(hw, ICE_DBG_PHY, "Get PHY capabilities failed, continuing anyway\n");
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 5903a36763de..cd442a5415d1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -634,32 +634,6 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 		return status;
+ 	}
  
- 	/* Initialize port_info struct with link information */
- 	status = ice_aq_get_link_info(hw->port_info, false, NULL, NULL);
+-	switch (hw->device_id) {
+-	/* the following devices do not have boot_cfg_tlv yet */
+-	case ICE_DEV_ID_E823C_BACKPLANE:
+-	case ICE_DEV_ID_E823C_QSFP:
+-	case ICE_DEV_ID_E823C_SFP:
+-	case ICE_DEV_ID_E823C_10G_BASE_T:
+-	case ICE_DEV_ID_E823C_SGMII:
+-	case ICE_DEV_ID_E822C_BACKPLANE:
+-	case ICE_DEV_ID_E822C_QSFP:
+-	case ICE_DEV_ID_E822C_10G_BASE_T:
+-	case ICE_DEV_ID_E822C_SGMII:
+-	case ICE_DEV_ID_E822C_SFP:
+-	case ICE_DEV_ID_E822L_BACKPLANE:
+-	case ICE_DEV_ID_E822L_SFP:
+-	case ICE_DEV_ID_E822L_10G_BASE_T:
+-	case ICE_DEV_ID_E822L_SGMII:
+-	case ICE_DEV_ID_E823L_BACKPLANE:
+-	case ICE_DEV_ID_E823L_SFP:
+-	case ICE_DEV_ID_E823L_10G_BASE_T:
+-	case ICE_DEV_ID_E823L_1GBE:
+-	case ICE_DEV_ID_E823L_QSFP:
+-		return status;
+-	default:
+-		break;
+-	}
+-
+ 	status = ice_get_orom_ver_info(hw);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_INIT, "Failed to read Option ROM info.\n");
 -- 
 2.20.1
 
