@@ -1,95 +1,52 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 17 Sep 2020 13:13:33 -0700
-Subject: [Intel-wired-lan] [PATCH S53 01/15] virtchnl: Use pad byte in
- virtchnl_ether_addr to specify MAC type
-Message-ID: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+Date: Thu, 17 Sep 2020 13:13:44 -0700
+Subject: [Intel-wired-lan] [PATCH S53 12/15] ice: cleanup misleading comment
+In-Reply-To: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+Message-ID: <20200917201347.81570-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Currently, there is no way for a VF driver to specify that it wants to
-change its device/primary unicast MAC address. This makes it
-difficult/impossible for the PF driver to track the VF's device/primary
-unicast MAC address, which is used for VM/VF reboot and displaying on
-the host. Fix this by using 2 bits of a pad byte in the
-virtchnl_ether_addr structure so the VF can specify what type of MAC
-it's adding/deleting.
+The maximum Admin Queue buffer size and NVM shadow RAM sector size are both
+4 Kilobytes. Some comments refer to those as 4Kb which can be confused with
+4 Kilobits. Update the comments to use the commonly used KB symbol instead.
 
-Below are the values that should be used by all VF drivers going
-forward.
-
-VIRTCHNL_ETHER_ADDR_LEGACY(0):
-	- The type should only ever be 0 for legacy AVF drivers (i.e.
-	  drivers that don't support the new type bits). The PF drivers
-	  will track VF's device/primary unicast MAC, but this will only
-	  be a best effort.
-
-VIRTCHNL_ETHER_ADDR_PRIMARY(1):
-	- This type should only be used when the VF is changing their
-	  device/primary unicast MAC. It should be used for both delete
-	  and add cases related to the device/primary unicast MAC.
-
-VIRTCHNL_ETHER_ADDR_EXTRA(2):
-	- This type should be used when the VF is adding and/or deleting
-	  MAC addresses that are not the device/primary unicast MAC. For
-	  example, extra unicast addresses and multicast addresses
-	  assuming the PF supports "extra" addresses at all.
-
-If a PF is parsing the type field of the virtchnl_ether_addr, then it
-should use the VIRTCHNL_ETHER_ADDR_TYPE_MASK to mask the first two bits
-of the type field since 0, 1, and 2 are the only valid values.
-
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- include/linux/avf/virtchnl.h | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 40bad71865ea..e49a063d0f14 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -403,9 +403,36 @@ VIRTCHNL_CHECK_STRUCT_LEN(12, virtchnl_queue_select);
-  * PF removes the filters and returns status.
-  */
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index cd442a5415d1..dc0d82c844ad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -55,7 +55,7 @@ ice_aq_read_nvm(struct ice_hw *hw, u16 module_typeid, u32 offset, u16 length,
+  *
+  * Reads a portion of the NVM, as a flat memory space. This function correctly
+  * breaks read requests across Shadow RAM sectors and ensures that no single
+- * read request exceeds the maximum 4Kb read for a single AdminQ command.
++ * read request exceeds the maximum 4KB read for a single AdminQ command.
+  *
+  * Returns a status code on failure. Note that the data pointer may be
+  * partially updated if some reads succeed before a failure.
+@@ -81,10 +81,10 @@ ice_read_flat_nvm(struct ice_hw *hw, u32 offset, u32 *length, u8 *data,
+ 	do {
+ 		u32 read_size, sector_offset;
  
-+/* VIRTCHNL_ETHER_ADDR_LEGACY
-+ * Prior to adding the @type member to virtchnl_ether_addr, there were 2 pad
-+ * bytes. Moving forward all VF drivers should not set type to
-+ * VIRTCHNL_ETHER_ADDR_LEGACY. This is only here to not break previous/legacy
-+ * behavior. The control plane function (i.e. PF) can use a best effort method
-+ * of tracking the primary/device unicast in this case, but there is no
-+ * guarantee and functionality depends on the implementation of the PF.
-+ */
-+
-+/* VIRTCHNL_ETHER_ADDR_PRIMARY
-+ * All VF drivers should set @type to VIRTCHNL_ETHER_ADDR_PRIMARY for the
-+ * primary/device unicast MAC address filter for VIRTCHNL_OP_ADD_ETH_ADDR and
-+ * VIRTCHNL_OP_DEL_ETH_ADDR. This allows for the underlying control plane
-+ * function (i.e. PF) to accurately track and use this MAC address for
-+ * displaying on the host and for VM/function reset.
-+ */
-+
-+/* VIRTCHNL_ETHER_ADDR_EXTRA
-+ * All VF drivers should set @type to VIRTCHNL_ETHER_ADDR_EXTRA for any extra
-+ * unicast and/or multicast filters that are being added/deleted via
-+ * VIRTCHNL_OP_DEL_ETH_ADDR/VIRTCHNL_OP_ADD_ETH_ADDR respectively.
-+ */
- struct virtchnl_ether_addr {
- 	u8 addr[ETH_ALEN];
--	u8 pad[2];
-+	u8 type;
-+#define VIRTCHNL_ETHER_ADDR_LEGACY	0
-+#define VIRTCHNL_ETHER_ADDR_PRIMARY	1
-+#define VIRTCHNL_ETHER_ADDR_EXTRA	2
-+#define VIRTCHNL_ETHER_ADDR_TYPE_MASK	3 /* first two bits of type are valid */
-+	u8 pad;
- };
- 
- VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_ether_addr);
+-		/* ice_aq_read_nvm cannot read more than 4Kb at a time.
++		/* ice_aq_read_nvm cannot read more than 4KB at a time.
+ 		 * Additionally, a read from the Shadow RAM may not cross over
+ 		 * a sector boundary. Conveniently, the sector size is also
+-		 * 4Kb.
++		 * 4KB.
+ 		 */
+ 		sector_offset = offset % ICE_AQ_MAX_BUF_LEN;
+ 		read_size = min_t(u32, ICE_AQ_MAX_BUF_LEN - sector_offset,
 -- 
 2.20.1
 
