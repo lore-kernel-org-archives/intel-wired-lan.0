@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 17 Sep 2020 22:07:26 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 170/206] e1000: Do not
+Date: Thu, 17 Sep 2020 22:11:59 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 106/127] e1000: Do not
  perform reset in reset_task if we are already down
-In-Reply-To: <20200918020802.2065198-1-sashal@kernel.org>
-References: <20200918020802.2065198-1-sashal@kernel.org>
-Message-ID: <20200918020802.2065198-170-sashal@kernel.org>
+In-Reply-To: <20200918021220.2066485-1-sashal@kernel.org>
+References: <20200918021220.2066485-1-sashal@kernel.org>
+Message-ID: <20200918021220.2066485-106-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,10 +35,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 47b867c64b147..195108858f38f 100644
+index 175681aa52607..8cc0e48738152 100644
 --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
 +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -542,8 +542,13 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
+@@ -567,8 +567,13 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
  	WARN_ON(in_interrupt());
  	while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
  		msleep(1);
@@ -54,7 +54,7 @@ index 47b867c64b147..195108858f38f 100644
  	clear_bit(__E1000_RESETTING, &adapter->flags);
  }
  
-@@ -1433,10 +1438,15 @@ int e1000_close(struct net_device *netdev)
+@@ -1458,10 +1463,15 @@ int e1000_close(struct net_device *netdev)
  	struct e1000_hw *hw = &adapter->hw;
  	int count = E1000_CHECK_RESET_COUNT;
  
