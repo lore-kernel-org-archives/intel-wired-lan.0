@@ -1,104 +1,58 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 17 Sep 2020 21:56:17 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 037/330] ice: Fix to change
- Rx/Tx ring descriptor size via ethtool with DCBx
+Date: Thu, 17 Sep 2020 21:58:05 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 145/330] iavf: use
+ tc_cls_can_offload_and_chain0() instead of chain check
 In-Reply-To: <20200918020110.2063155-1-sashal@kernel.org>
 References: <20200918020110.2063155-1-sashal@kernel.org>
-Message-ID: <20200918020110.2063155-37-sashal@kernel.org>
+Message-ID: <20200918020110.2063155-145-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Usha Ketineni <usha.k.ketineni@intel.com>
+From: Jiri Pirko <jiri@mellanox.com>
 
-[ Upstream commit c0a3665f71a2f086800abea4d9d14d28269089d6 ]
+[ Upstream commit bb0858d8bc828ebc3eaa90be02a0f32bca3c2351 ]
 
-This patch fixes the call trace caused by the kernel when the Rx/Tx
-descriptor size change request is initiated via ethtool when DCB is
-configured. ice_set_ringparam() should use vsi->num_txq instead of
-vsi->alloc_txq as it represents the queues that are enabled in the
-driver when DCB is enabled/disabled. Otherwise, queue index being
-used can go out of range.
+Looks like the iavf code actually experienced a race condition, when a
+developer took code before the check for chain 0 was put to helper.
+So use tc_cls_can_offload_and_chain0() helper instead of direct check and
+move the check to _cb() so this is similar to i40e code.
 
-For example, when vsi->alloc_txq has 104 queues and with 3 TCS enabled
-via DCB, each TC gets 34 queues, vsi->num_txq will be 102 and only 102
-queues will be enabled.
-
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Jiri Pirko <jiri@mellanox.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 62673e27af0e8..fc9ff985a62bd 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2635,14 +2635,14 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring)
- 	netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
- 		    vsi->tx_rings[0]->count, new_tx_cnt);
- 
--	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_txq,
-+	tx_rings = devm_kcalloc(&pf->pdev->dev, vsi->num_txq,
- 				sizeof(*tx_rings), GFP_KERNEL);
- 	if (!tx_rings) {
- 		err = -ENOMEM;
- 		goto done;
- 	}
- 
--	for (i = 0; i < vsi->alloc_txq; i++) {
-+	ice_for_each_txq(vsi, i) {
- 		/* clone ring and setup updated count */
- 		tx_rings[i] = *vsi->tx_rings[i];
- 		tx_rings[i].count = new_tx_cnt;
-@@ -2667,14 +2667,14 @@ process_rx:
- 	netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
- 		    vsi->rx_rings[0]->count, new_rx_cnt);
- 
--	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->alloc_rxq,
-+	rx_rings = devm_kcalloc(&pf->pdev->dev, vsi->num_rxq,
- 				sizeof(*rx_rings), GFP_KERNEL);
- 	if (!rx_rings) {
- 		err = -ENOMEM;
- 		goto done;
- 	}
- 
--	for (i = 0; i < vsi->alloc_rxq; i++) {
-+	ice_for_each_rxq(vsi, i) {
- 		/* clone ring and setup updated count */
- 		rx_rings[i] = *vsi->rx_rings[i];
- 		rx_rings[i].count = new_rx_cnt;
-@@ -2712,7 +2712,7 @@ process_link:
- 		ice_down(vsi);
- 
- 		if (tx_rings) {
--			for (i = 0; i < vsi->alloc_txq; i++) {
-+			ice_for_each_txq(vsi, i) {
- 				ice_free_tx_ring(vsi->tx_rings[i]);
- 				*vsi->tx_rings[i] = tx_rings[i];
- 			}
-@@ -2720,7 +2720,7 @@ process_link:
- 		}
- 
- 		if (rx_rings) {
--			for (i = 0; i < vsi->alloc_rxq; i++) {
-+			ice_for_each_rxq(vsi, i) {
- 				ice_free_rx_ring(vsi->rx_rings[i]);
- 				/* copy the real tail offset */
- 				rx_rings[i].tail = vsi->rx_rings[i]->tail;
-@@ -2744,7 +2744,7 @@ process_link:
- free_tx:
- 	/* error cleanup if the Rx allocations failed after getting Tx */
- 	if (tx_rings) {
--		for (i = 0; i < vsi->alloc_txq; i++)
-+		ice_for_each_txq(vsi, i)
- 			ice_free_tx_ring(&tx_rings[i]);
- 		devm_kfree(&pf->pdev->dev, tx_rings);
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 34124c213d27c..222ae76809aa1 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3077,9 +3077,6 @@ static int iavf_delete_clsflower(struct iavf_adapter *adapter,
+ static int iavf_setup_tc_cls_flower(struct iavf_adapter *adapter,
+ 				    struct flow_cls_offload *cls_flower)
+ {
+-	if (cls_flower->common.chain_index)
+-		return -EOPNOTSUPP;
+-
+ 	switch (cls_flower->command) {
+ 	case FLOW_CLS_REPLACE:
+ 		return iavf_configure_clsflower(adapter, cls_flower);
+@@ -3103,6 +3100,11 @@ static int iavf_setup_tc_cls_flower(struct iavf_adapter *adapter,
+ static int iavf_setup_tc_block_cb(enum tc_setup_type type, void *type_data,
+ 				  void *cb_priv)
+ {
++	struct iavf_adapter *adapter = cb_priv;
++
++	if (!tc_cls_can_offload_and_chain0(adapter->netdev, type_data))
++		return -EOPNOTSUPP;
++
+ 	switch (type) {
+ 	case TC_SETUP_CLSFLOWER:
+ 		return iavf_setup_tc_cls_flower(cb_priv, type_data);
 -- 
 2.25.1
 
