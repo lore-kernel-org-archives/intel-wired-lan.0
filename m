@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 17 Sep 2020 22:00:20 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 280/330] e1000: Do not perform
- reset in reset_task if we are already down
-In-Reply-To: <20200918020110.2063155-1-sashal@kernel.org>
-References: <20200918020110.2063155-1-sashal@kernel.org>
-Message-ID: <20200918020110.2063155-280-sashal@kernel.org>
+Date: Thu, 17 Sep 2020 22:07:26 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 170/206] e1000: Do not
+ perform reset in reset_task if we are already down
+In-Reply-To: <20200918020802.2065198-1-sashal@kernel.org>
+References: <20200918020802.2065198-1-sashal@kernel.org>
+Message-ID: <20200918020802.2065198-170-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,7 +35,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index f93ed70709c65..a2ee28e487a6f 100644
+index 47b867c64b147..195108858f38f 100644
 --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
 +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
 @@ -542,8 +542,13 @@ void e1000_reinit_locked(struct e1000_adapter *adapter)
