@@ -1,78 +1,117 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 19 Sep 2020 07:23:58 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests: net: add a
- test for shared UDP tunnel info tables
-In-Reply-To: <20200722012716.2814777-5-kuba@kernel.org>
-References: <20200722012716.2814777-1-kuba@kernel.org>
- <20200722012716.2814777-5-kuba@kernel.org>
-Message-ID: <SN6PR11MB2896F5ACC5A59F7F330183FFBC3C0@SN6PR11MB2896.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 19 Sep 2020 17:56:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ d3ab578434f1b3ef8178b97d8a0660459ce0602e
+Message-ID: <5f65d5d7.mZ+i6Pfj/SpAg91x%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jakub
-> Kicinski
-> Sent: Tuesday, July 21, 2020 6:27 PM
-> To: davem at davemloft.net
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Jakub Kicinski
-> <kuba@kernel.org>
-> Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests: net: add a test for
-> shared UDP tunnel info tables
-> 
-> Add a test run of checks validating the shared UDP tunnel port
-> tables function as we expect.
-> 
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-> ---
->  .../drivers/net/netdevsim/udp_tunnel_nic.sh   | 109 ++++++++++++++++++
->  1 file changed, 109 insertions(+)
-> 
-I ran into two things while running this script.
-1. The script as it exists in the git tree (Jeff Kirshers next-queue) is not executable.  I don't know if that's a patch issue or translation into the tree.  Easy enough to get around, but should probably be executable to start.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: d3ab578434f1b3ef8178b97d8a0660459ce0602e  i40e: Fix flow for IPv6 next header (extension header)
 
-2. The script runs into a handful of errors,7 to be precise.  I'm not sure if they are real failures, incorrect expectations or maybe something in my kernel .config (I have been using a minimal .config and enabling modules as needed.)
+elapsed time: 723m
 
-The output I get from it is:
-----------------------------------------------------------------------------------------------------
-u1518:[0]/usr/src/kernels/next-queue> cat ~/udp_tunnel-sh-outut.txt                                                                     
-ERROR: table 0 on port 1: basic - VxLAN v4 devices
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 0 on port 1: basic - VxLAN v4 devices
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 0 on port 1: basic - VxLAN v6 devices
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 0 on port 1: basic - VxLAN v6 devices
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 0 on port 1: basic - another VxLAN v6 devices
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 0 on port 1: basic - Geneve device
-       check_table: wrong entry 0
-       expected: port: 4789     type: 1
-       have:     port: 0        type: 0
-ERROR: table 1 on port 1: basic - Geneve device
-       check_table: wrong entry 0
-       expected: port: 6081     type: 2
-       have:     port: 0        type: 0
-FAILED 7/435 checks
-u1518:[0]/usr/src/kernels/next-queue>
-----------------------------------------------------------------------------------------------------
-The script sends messages to dmesg, most look to be informative "set" and "unset" messages, but I do get a handful of failed messages.  The dmesg queue was cleared before the run so only contains the udp_tunnel-sh messages:
-----------------------------------------------------------------------------------------------------
-u1518:[0]/usr/src/kernels/next-queue> dmesg|grep -i fail
-[ 8909.179462] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 10000 type vxlan: -110
-[ 8909.328763] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 20000 type geneve: -2
-[ 8909.444028] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 10000 type vxlan: -110
-[ 8909.592049] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 20000 type geneve: -2
-u1518:[0]/usr/src/kernels/next-queue>
+configs tested: 88
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                       omap2plus_defconfig
+m68k                             alldefconfig
+mips                          malta_defconfig
+arm                          pxa910_defconfig
+mips                        vocore2_defconfig
+arm                  colibri_pxa300_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                         microdev_defconfig
+alpha                               defconfig
+riscv                             allnoconfig
+arm                          moxart_defconfig
+parisc                           alldefconfig
+powerpc                 linkstation_defconfig
+mips                     decstation_defconfig
+sh                        edosk7760_defconfig
+powerpc                        cell_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20200917
+i386                 randconfig-a006-20200917
+i386                 randconfig-a003-20200917
+i386                 randconfig-a001-20200917
+i386                 randconfig-a002-20200917
+i386                 randconfig-a005-20200917
+x86_64               randconfig-a014-20200917
+x86_64               randconfig-a011-20200917
+x86_64               randconfig-a016-20200917
+x86_64               randconfig-a012-20200917
+x86_64               randconfig-a015-20200917
+x86_64               randconfig-a013-20200917
+i386                 randconfig-a015-20200917
+i386                 randconfig-a014-20200917
+i386                 randconfig-a011-20200917
+i386                 randconfig-a013-20200917
+i386                 randconfig-a016-20200917
+i386                 randconfig-a012-20200917
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a006-20200917
+x86_64               randconfig-a004-20200917
+x86_64               randconfig-a003-20200917
+x86_64               randconfig-a002-20200917
+x86_64               randconfig-a001-20200917
+x86_64               randconfig-a005-20200917
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
