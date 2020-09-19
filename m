@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 19 Sep 2020 07:04:34 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 5/7] i40e: convert to new
- udp_tunnel infrastructure
-In-Reply-To: <20200722012716.2814777-6-kuba@kernel.org>
+Date: Sat, 19 Sep 2020 07:23:58 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests: net: add a
+ test for shared UDP tunnel info tables
+In-Reply-To: <20200722012716.2814777-5-kuba@kernel.org>
 References: <20200722012716.2814777-1-kuba@kernel.org>
- <20200722012716.2814777-6-kuba@kernel.org>
-Message-ID: <SN6PR11MB28969A31367ECAB8B0452FACBC3C0@SN6PR11MB2896.namprd11.prod.outlook.com>
+ <20200722012716.2814777-5-kuba@kernel.org>
+Message-ID: <SN6PR11MB2896F5ACC5A59F7F330183FFBC3C0@SN6PR11MB2896.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,23 +18,61 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: davem at davemloft.net
 > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Jakub Kicinski
 > <kuba@kernel.org>
-> Subject: [Intel-wired-lan] [PATCH net-next v1 5/7] i40e: convert to new
-> udp_tunnel infrastructure
+> Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests: net: add a test for
+> shared UDP tunnel info tables
 > 
-> Make use of the "shared port table" to convert i40e to the new
-> infra.
-> 
-> i40e did not have any reference tracking, locking is also dodgy
-> because rtnl gets released while talking to FW, so port may get
-> removed from the table while it's getting added etc.
-> 
-> On the good side i40e does not seem to be using the ports for
-> TX so we can remove the table from the driver state completely.
+> Add a test run of checks validating the shared UDP tunnel port
+> tables function as we expect.
 > 
 > Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |   6 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 264 ++++----------------
->  2 files changed, 51 insertions(+), 219 deletions(-)
+>  .../drivers/net/netdevsim/udp_tunnel_nic.sh   | 109 ++++++++++++++++++
+>  1 file changed, 109 insertions(+)
 > 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+I ran into two things while running this script.
+1. The script as it exists in the git tree (Jeff Kirshers next-queue) is not executable.  I don't know if that's a patch issue or translation into the tree.  Easy enough to get around, but should probably be executable to start.
+
+2. The script runs into a handful of errors,7 to be precise.  I'm not sure if they are real failures, incorrect expectations or maybe something in my kernel .config (I have been using a minimal .config and enabling modules as needed.)
+
+The output I get from it is:
+----------------------------------------------------------------------------------------------------
+u1518:[0]/usr/src/kernels/next-queue> cat ~/udp_tunnel-sh-outut.txt                                                                     
+ERROR: table 0 on port 1: basic - VxLAN v4 devices
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 0 on port 1: basic - VxLAN v4 devices
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 0 on port 1: basic - VxLAN v6 devices
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 0 on port 1: basic - VxLAN v6 devices
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 0 on port 1: basic - another VxLAN v6 devices
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 0 on port 1: basic - Geneve device
+       check_table: wrong entry 0
+       expected: port: 4789     type: 1
+       have:     port: 0        type: 0
+ERROR: table 1 on port 1: basic - Geneve device
+       check_table: wrong entry 0
+       expected: port: 6081     type: 2
+       have:     port: 0        type: 0
+FAILED 7/435 checks
+u1518:[0]/usr/src/kernels/next-queue>
+----------------------------------------------------------------------------------------------------
+The script sends messages to dmesg, most look to be informative "set" and "unset" messages, but I do get a handful of failed messages.  The dmesg queue was cleared before the run so only contains the udp_tunnel-sh messages:
+----------------------------------------------------------------------------------------------------
+u1518:[0]/usr/src/kernels/next-queue> dmesg|grep -i fail
+[ 8909.179462] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 10000 type vxlan: -110
+[ 8909.328763] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 20000 type geneve: -2
+[ 8909.444028] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 10000 type vxlan: -110
+[ 8909.592049] netdevsim netdevsim386 eth4: UDP tunnel port sync failed port 20000 type geneve: -2
+u1518:[0]/usr/src/kernels/next-queue>
