@@ -1,91 +1,154 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Tue, 22 Sep 2020 05:52:59 +0000
-Subject: [Intel-wired-lan] [next-queue v7] igb: add XDP support
-In-Reply-To: <20200921095821.jmle6qdcn2ksmtee@SvensMacbookPro.hq.voleatech.com>
-References: <20200902203222.185141-1-anthony.l.nguyen@intel.com>
- <20200921095821.jmle6qdcn2ksmtee@SvensMacbookPro.hq.voleatech.com>
-Message-ID: <MW3PR11MB4554FACD3AC02DD37CBC36D19C3B0@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 22 Sep 2020 14:59:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 54b6068eac04e330c49f4555ac5c71840bde69c1
+Message-ID: <5f69a0b7.5oIMakTDnuChpL7c%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sven Auhagen
-Sent: Monday, September 21, 2020 3:28 PM
-To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [next-queue v7] igb: add XDP support
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+branch HEAD: 54b6068eac04e330c49f4555ac5c71840bde69c1  i40e: Fix flow for IPv6 next header (extension header)
 
-On Wed, Sep 02, 2020 at 01:32:22PM -0700, Tony Nguyen wrote:
-> From: Sven Auhagen <Sven.Auhagen@voleatech.de>
-> 
-> Add XDP support to the IGB driver.
-> The implementation follows the IXGBE XDP implementation closely and I 
-> used the following patches as basis:
-> 
-> 1. commit 924708081629 ("ixgbe: add XDP support for pass and drop 
-> actions") 2. commit 33fdc82f0883 ("ixgbe: add support for XDP_TX 
-> action") 3. commit ed93a3987128 ("ixgbe: tweak page counting for 
-> XDP_REDIRECT")
-> 
-> Due to the hardware constraints of the devices using the IGB driver we 
-> must share the TX queues with XDP which means locking the TX queue for 
-> XDP.
-> 
-> I ran tests on an older device to get better numbers.
-> Test machine:
-> 
-> Intel(R) Atom(TM) CPU C2338 @ 1.74GHz (2 Cores) 2x Intel I211
-> 
-> Routing Original Driver Network Stack: 382 Kpps
-> 
-> Routing XDP Redirect (xdp_fwd_kern): 1.48 Mpps XDP Drop: 1.48 Mpps
-> 
-> Using XDP we can achieve line rate forwarding even on an older Intel 
-> Atom CPU.
-> 
-> Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
+elapsed time: 725m
 
-Hello Tony,
+configs tested: 125
+configs skipped: 2
 
-thanks for the patch update.
-How is the process to get this accepted?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Best
-Sven
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                           se7712_defconfig
+arm                        mvebu_v5_defconfig
+arm                        mvebu_v7_defconfig
+arm                          lpd270_defconfig
+sh                        sh7757lcr_defconfig
+arm                     eseries_pxa_defconfig
+arm                            xcep_defconfig
+powerpc                      acadia_defconfig
+mips                 decstation_r4k_defconfig
+arc                     nsimosci_hs_defconfig
+arm                  colibri_pxa300_defconfig
+mips                      malta_kvm_defconfig
+mips                            ar7_defconfig
+arc                        nsim_700_defconfig
+sh                            hp6xx_defconfig
+m68k                             alldefconfig
+arm                            pleb_defconfig
+arm                      footbridge_defconfig
+mips                        nlm_xlr_defconfig
+c6x                        evmc6474_defconfig
+h8300                            allyesconfig
+sh                          landisk_defconfig
+mips                     loongson1b_defconfig
+s390                          debug_defconfig
+c6x                         dsk6455_defconfig
+arm                          pxa910_defconfig
+mips                        vocore2_defconfig
+sh                           se7721_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200921
+i386                 randconfig-a006-20200921
+i386                 randconfig-a003-20200921
+i386                 randconfig-a004-20200921
+i386                 randconfig-a005-20200921
+i386                 randconfig-a001-20200921
+i386                 randconfig-a002-20200920
+i386                 randconfig-a006-20200920
+i386                 randconfig-a003-20200920
+i386                 randconfig-a004-20200920
+i386                 randconfig-a005-20200920
+i386                 randconfig-a001-20200920
+x86_64               randconfig-a011-20200921
+x86_64               randconfig-a013-20200921
+x86_64               randconfig-a014-20200921
+x86_64               randconfig-a015-20200921
+x86_64               randconfig-a012-20200921
+x86_64               randconfig-a016-20200921
+i386                 randconfig-a012-20200921
+i386                 randconfig-a014-20200921
+i386                 randconfig-a016-20200921
+i386                 randconfig-a013-20200921
+i386                 randconfig-a011-20200921
+i386                 randconfig-a015-20200921
+i386                 randconfig-a012-20200920
+i386                 randconfig-a014-20200920
+i386                 randconfig-a016-20200920
+i386                 randconfig-a013-20200920
+i386                 randconfig-a011-20200920
+i386                 randconfig-a015-20200920
+x86_64               randconfig-a005-20200920
+x86_64               randconfig-a003-20200920
+x86_64               randconfig-a004-20200920
+x86_64               randconfig-a002-20200920
+x86_64               randconfig-a006-20200920
+x86_64               randconfig-a001-20200920
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-> ---
-> v7:
->  * Fix issue with applying to dev-queue branch; utilize net_prefetch()
->  * Fix build issue; remove XDP_QUERY_PROG
->  * Replace fallthrough comment with fallthrough macro to resolve 
-> checkpatch warning
->  * Fix reverse Christmas tree
-> 
-> v6:
-> * igb_xdp_ring_update_tail changed to static
-> * bump to 5.8
-> 
-> v5: resubmission with function names in patch
-> 
-> v4:
-> * use HARD_TX_LOCK in XDP xmit
-> * do not pass adapter to igb_setup_rx_resources
-> * account for timestamp in frame size
-> 
-> v3: igb_xdp_ring_update_tail should be static
-> 
-> v2: original did not apply to my dev-queue branch, so fixed the
->     conflicts in the patch
-> 
->  drivers/net/ethernet/intel/igb/igb.h         |  81 +++-
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |   4 +
->  drivers/net/ethernet/intel/igb/igb_main.c    | 433 +++++++++++++++++--
->  3 files changed, 482 insertions(+), 36 deletions(-)
-> 
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+clang tested configs:
+x86_64               randconfig-a005-20200921
+x86_64               randconfig-a003-20200921
+x86_64               randconfig-a004-20200921
+x86_64               randconfig-a002-20200921
+x86_64               randconfig-a006-20200921
+x86_64               randconfig-a001-20200921
+x86_64               randconfig-a011-20200920
+x86_64               randconfig-a013-20200920
+x86_64               randconfig-a014-20200920
+x86_64               randconfig-a015-20200920
+x86_64               randconfig-a012-20200920
+x86_64               randconfig-a016-20200920
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
