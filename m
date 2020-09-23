@@ -1,135 +1,140 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Wed, 23 Sep 2020 17:37:03 +0200
-Subject: [Intel-wired-lan] [PATCH] e1000e: Power cycle phy on PM resume
-In-Reply-To: <F6075687-7BC4-4348-86A8-29D83B7E5AAC@canonical.com>
-References: <20200923074751.10527-1-kai.heng.feng@canonical.com>
- <20200923121748.GE3770354@lunn.ch>
- <F6075687-7BC4-4348-86A8-29D83B7E5AAC@canonical.com>
-Message-ID: <20200923153703.GC3764123@lunn.ch>
+From: Nitesh Narayan Lal <nitesh@redhat.com>
+Date: Wed, 23 Sep 2020 14:11:22 -0400
+Subject: [Intel-wired-lan] [PATCH v2 0/4] isolation: limit msix vectors
+ based on housekeeping CPUs
+Message-ID: <20200923181126.223766-1-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 23, 2020 at 10:44:10PM +0800, Kai-Heng Feng wrote:
-> Hi Andrew,
-> 
-> > On Sep 23, 2020, at 20:17, Andrew Lunn <andrew@lunn.ch> wrote:
-> > 
-> > On Wed, Sep 23, 2020 at 03:47:51PM +0800, Kai-Heng Feng wrote:
-> >> We are seeing the following error after S3 resume:
-> >> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> >> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
-> >> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> >> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
-> >> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> >> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
-> >> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
-> >> ...
-> >> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
-> >> 
-> >> Since we don't know what platform firmware may do to the phy, so let's
-> >> power cycle the phy upon system resume to resolve the issue.
-> >> 
-> >> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> >> ---
-> >> drivers/net/ethernet/intel/e1000e/netdev.c | 2 ++
-> >> 1 file changed, 2 insertions(+)
-> >> 
-> >> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> index 664e8ccc88d2..c2a87a408102 100644
-> >> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> @@ -6968,6 +6968,8 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
-> >> 	    !e1000e_check_me(hw->adapter->pdev->device))
-> >> 		e1000e_s0ix_exit_flow(adapter);
-> >> 
-> >> +	e1000_power_down_phy(adapter);
-> >> +
-> > 
-> > static void e1000_power_down_phy(struct e1000_adapter *adapter)
-> > {
-> > 	struct e1000_hw *hw = &adapter->hw;
-> > 
-> > 	/* Power down the PHY so no link is implied when interface is down *
-> > 	 * The PHY cannot be powered down if any of the following is true *
-> > 	 * (a) WoL is enabled
-> > 	 * (b) AMT is active
-> > 	 * (c) SoL/IDER session is active
-> > 	 */
-> > 	if (!adapter->wol && hw->mac_type >= e1000_82540 &&
-> > 	   hw->media_type == e1000_media_type_copper) {
-> 
-> Looks like the the function comes from e1000, drivers/net/ethernet/intel/e1000/e1000_main.c.
-> However, this patch is for e1000e, so the function with same name is different.
+This is a follow-up posting for "[RFC v1 0/3] isolation: limit msix vectors
+based on housekeeping CPUs".
 
-Ah! Sorry. Missed that. Also it is not nice there are two functions in
-the kernel with the same name.
 
-> > Could it be coming out of S3 because it just received a WoL?
-> 
-> No, the issue can be reproduced by pressing keyboard or rtcwake.
- 
-Not relevant now, since i was looking at the wrong function. But i was
-meaning the call is a NOP in the case WoL caused the wake up. So if
-the issues can also happen after WoL, your fix is not going to fix it.
+Issue
+=====
+With the current implementation device drivers while creating their MSIX ? ? ? ?
+vectors only take num_online_cpus() into consideration which works quite well ?
+for a non-RT environment, but in an RT environment that has a large number of ? 
+isolated CPUs and very few housekeeping CPUs this could lead to a problem. ? ?
+The problem will be triggered when something like tuned will try to move all ? ?
+the IRQs from isolated CPUs to the limited number of housekeeping CPUs to ? ? ? 
+prevent interruptions for a latency-sensitive workload that will be running on ? 
+the isolated CPUs. This failure is caused because of the per CPU vector ? ? ? ? 
+limitation. ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
 
-> > It seems unlikely that it is the MII_CR_POWER_DOWN which is helping,
-> > since that is an MDIO write itself. Do you actually know how this call
-> > to e1000_power_down_phy() fixes the issues?
-> 
 
-> I don't know from hardware's perspective, but I think the comment on
-> e1000_power_down_phy_copper() can give us some insight:
+Proposed Fix
+============
+In this patch-set, the following changes are proposed:
+- A generic API hk_num_online_cpus() which is meant to return the online
+  housekeeping CPUs that are meant to handle managed IRQ jobs.
+- i40e: Specifically for the i40e driver the num_online_cpus() used in 
+? i40e_init_msix() to calculate numbers msix vectors is replaced with the above
+? defined API. This is done to restrict the number of msix vectors for i40e in
+  RT environments.
+- pci_alloc_irq_vector(): With the help of hk_num_online_cpus() the max_vecs
+? passed in pci_alloc_irq_vector() is restricted only to the online
+? housekeeping CPUs only in an RT environment. However, if the min_vecs exceeds
+  the online housekeeping CPUs, max_vecs is limited based on the min_vecs
+  instead.
 
-And there is only one function called e1000_power_down_phy_copper()
-:-)
 
-> 
-> /**
->  * e1000_power_down_phy_copper - Restore copper link in case of PHY power down
->  * @hw: pointer to the HW structure
->  *
->  * In the case of a PHY power down to save power, or to turn off link during a
->  * driver unload, or wake on lan is not enabled, restore the link to previous
->  * settings.                       
->  **/
-> void e1000_power_down_phy_copper(struct e1000_hw *hw)
-> {
->         u16 mii_reg = 0;
-> 
->         /* The PHY will retain its settings across a power down/up cycle */
->         e1e_rphy(hw, MII_BMCR, &mii_reg);
->         mii_reg |= BMCR_PDOWN;
->         e1e_wphy(hw, MII_BMCR, mii_reg);
->         usleep_range(1000, 2000);
-> }
+Future Work
+===========
 
-I don't really see how this explains this:
+- In the previous upstream discussion [1], it was decided that it would be
+  better if we can have a generic framework that can be consumed by all the
+  drivers to  fix this kind of issue. However, it will be a long term work,
+  and since there are RT workloads that are getting impacted by the reported
+  issue. We agreed upon the proposed per-device approach for now.
 
-> >> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> >> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
 
-https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/e1000e/phy.c#L181
+Testing
+=======
+Functionality:
+- To test that the issue is resolved with i40e change I added a tracepoint
+? in i40e_init_msix() to find the number of CPUs derived for vector creation
+? with and without tuned's realtime-virtual-host profile. As per expectation
+? with the profile applied I was only getting the number of housekeeping CPUs
+? and all available CPUs without it.
+  Similarly did a few more tests with different modes eg with only
+  nohz_full, isolcpus etc.
 
-So first off, the comments are all cut/paste from
-e1000e_read_phy_reg_mdic(). It would be nice to s/read/write/g in that
-function.
+Performance:
+- To analyze the performance impact I have targetted the change introduced in 
+? pci_alloc_irq_vectors() and compared the results against a vanilla kernel
+? (5.9.0-rc3) results.
 
-So it sets up the transaction and starts it. MDIO is a serial bus with
-no acknowledgements. You clock out around 64 bits, and hope the PHY
-receives it. The time it takes to send those 64 bits is fixed by the
-bus speed, typically 2.5MHz.
+? Setup Information:
+? + I had a couple of 24-core machines connected back to back via a couple of
+? ? mlx5 NICs and I analyzed the average bitrate for server-client TCP and UDP
+? ? transmission via iperf. 
+? + To minimize the Bitrate variation of iperf TCP and UDP stream test I have
+? ? applied the tuned's network-throughput profile and disabled HT.
+?Test Information:
+? + For the environment that had no isolated CPUs:
+? ? I have tested with single stream and 24 streams (same as that of online
+? ? CPUs).
+? + For the environment that had 20 isolated CPUs:
+? ? I have tested with single stream, 4 streams (same as that the number of
+? ? housekeeping) and 24 streams (same as that of online CPUs).
 
-So the driver polls waiting for the hardware to say the bits have been
-sent. And this is timing out. How long that takes has nothing to do
-with the PHY, or what state it is in. Powering down the PHY has no
-effect on the MDIO bus master, and how long it takes to shift those
-bits out. Which is why i don't think this patch is correct. This is
-probably an MDIO bus issue, not a PHY issue.
+?Results:
+? # UDP Stream Test:
+?   + There was no degradation observed in UDP stream tests in both
+      environments. (With isolated CPUs and without isolated CPUs after the
+      introduction of the patches).
+? # TCP Stream Test - No isolated CPUs:
+?   + No noticeable degradation was observed.
+? # TCP Stream Test - With isolated CPUs:
+?   + Multiple Stream (4) ?- Average degradation of around 5-6%
+?   + Multiple Stream (24) - Average degradation of around 2-3%
+?   + Single Stream ? ? ? ?- Even on a vanilla kernel the Bitrate observed for
+                             a TCP single stream test seem to vary
+                             significantly across different runs (eg. the %
+                             variation between the best and the worst case on
+                             a vanilla kernel was around 8-10%). A similar
+                             variation was observed with the kernel that
+                             included my patches. No additional degradation
+                             was observed.
 
-Try dumping the value of MDIC in the good/bad case before the
-transaction starts.
+If there are any suggestions for more performance evaluation, I would
+be happy to discuss/perform them.
 
-	 Andrew
+Changes from v1[2]:
+==================
+Patch1: ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
+- Replaced num_houskeeeping_cpus() with hk_num_online_cpus() and started using
+  the cpumask corresponding to HK_FLAG_MANAGED_IRQ to derive the number of
+  online housekeeping CPUs. This is based on Frederic Weisbecker's suggestion. ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
+- Since the hk_num_online_cpus() is self-explanatory, got rid of ? ? ? ? ? ? 
+? the comment that was added previously. ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
+Patch2: ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
+- Added a new patch that is meant to enable managed IRQ isolation for nohz_full
+  CPUs. This is based on Frederic Weisbecker's suggestion.? ? ? ? ? ? ? 
+Patch4 (PCI): ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 
+- For cases where the min_vecs exceeds the online housekeeping CPUs, instead
+  of skipping modification to max_vecs, started restricting it based on the
+  min_vecs. This is based on a suggestion from Marcelo Tosatti.? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ??
+
+[1] https://lore.kernel.org/lkml/20200922095440.GA5217 at lenoir/
+[2] https://lore.kernel.org/lkml/20200909150818.313699-1-nitesh at redhat.com/
+
+Nitesh Narayan Lal (4):
+  sched/isolation: API to get housekeeping online CPUs
+  sched/isolation: Extend nohz_full to isolate managed IRQs
+  i40e: limit msix vectors based on housekeeping CPUs
+  PCI: Limit pci_alloc_irq_vectors as per housekeeping CPUs
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c |  3 ++-
+ include/linux/pci.h                         | 15 +++++++++++++++
+ include/linux/sched/isolation.h             | 13 +++++++++++++
+ kernel/sched/isolation.c                    |  2 +-
+ 4 files changed, 31 insertions(+), 2 deletions(-)
+
+-- 
+
+
