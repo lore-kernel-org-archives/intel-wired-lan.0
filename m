@@ -1,11 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 23 Sep 2020 03:51:23 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue v1 2/2] igc: Reject
- schedules with a base_time in the future
-In-Reply-To: <20200902233657.4051914-2-vinicius.gomes@intel.com>
-References: <20200902233657.4051914-1-vinicius.gomes@intel.com>
- <20200902233657.4051914-2-vinicius.gomes@intel.com>
-Message-ID: <DM6PR11MB28905F5373F4CBD48E6C36A7BC380@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Wed, 23 Sep 2020 03:56:53 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: clean up W=1 warnings
+ in ixgbe
+In-Reply-To: <20200902222708.2144290-1-jesse.brandeburg@intel.com>
+References: <20200902222708.2144290-1-jesse.brandeburg@intel.com>
+Message-ID: <DM6PR11MB2890EAFBDA808B5B0533F3E1BC380@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +12,20 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Vinicius Costa Gomes
-> Sent: Wednesday, September 2, 2020 4:37 PM
+> Jesse Brandeburg
+> Sent: Wednesday, September 2, 2020 3:27 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Guedes, Andre <andre.guedes@intel.com>
-> Subject: [Intel-wired-lan] [PATCH next-queue v1 2/2] igc: Reject schedules
-> with a base_time in the future
+> Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: clean up W=1 warnings in
+> ixgbe
 > 
-> When we set the BASET registers of i225 with a base_time in the
-> future, i225 will "hold" all packets until that base_time is reached,
-> causing a lot of TX Hangs.
+> Inspired by Lee Jones, this elminates the remaining W=1 warnings in
+> ixgbe.
 > 
-> As this behaviour seems contrary to the expectations of the IEEE
-> 802.1Q standard (section 8.6.9, specially 8.6.9.4.5), let's start by
-> rejecting these types of schedules. If this is too limiting, we can
-> for example, setup a timer to configure the BASET registers closer to
-> the start time, only blocking the packets for a "short" while.
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 25 +++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 8 ++++----
+>  2 files changed, 6 insertions(+), 5 deletions(-)
 > 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
