@@ -1,10 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 23 Sep 2020 03:56:53 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: clean up W=1 warnings
- in ixgbe
-In-Reply-To: <20200902222708.2144290-1-jesse.brandeburg@intel.com>
-References: <20200902222708.2144290-1-jesse.brandeburg@intel.com>
-Message-ID: <DM6PR11MB2890EAFBDA808B5B0533F3E1BC380@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Wed, 23 Sep 2020 03:57:27 +0000
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 04/11] ixgbe: clean up
+ W=1 warnings in ixgbe
+In-Reply-To: <20200911012337.14015-5-jesse.brandeburg@intel.com>
+References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
+ <20200911012337.14015-5-jesse.brandeburg@intel.com>
+Message-ID: <DM6PR11MB28905F8BA26C5348C3B96E07BC380@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,12 +14,13 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Jesse Brandeburg
-> Sent: Wednesday, September 2, 2020 3:27 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: clean up W=1 warnings in
-> ixgbe
+> Sent: Thursday, September 10, 2020 6:24 PM
+> To: netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [RFC PATCH net-next v1 04/11] ixgbe: clean up W=1
+> warnings in ixgbe
 > 
-> Inspired by Lee Jones, this elminates the remaining W=1 warnings in
+> Inspired by Lee Jones, this eliminates the remaining W=1 warnings in
 > ixgbe.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
