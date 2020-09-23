@@ -1,43 +1,54 @@
 From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Wed, 23 Sep 2020 14:11:24 -0400
-Subject: [Intel-wired-lan] [PATCH v2 2/4] sched/isolation: Extend nohz_full
- to isolate managed IRQs
+Date: Wed, 23 Sep 2020 14:11:23 -0400
+Subject: [Intel-wired-lan] [PATCH v2 1/4] sched/isolation: API to get
+ housekeeping online CPUs
 In-Reply-To: <20200923181126.223766-1-nitesh@redhat.com>
 References: <20200923181126.223766-1-nitesh@redhat.com>
-Message-ID: <20200923181126.223766-3-nitesh@redhat.com>
+Message-ID: <20200923181126.223766-2-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Extend nohz_full feature set to include isolation from managed IRQS. This
-is required specifically for setups that only uses nohz_full and still
-requires isolation for maintaining lower latency for the listed CPUs.
+Introduce a new API hk_num_online_cpus(), that can be used to
+retrieve the number of online housekeeping CPUs that are meant to handle
+managed IRQ jobs.
 
-Having this change will ensure that the kernel functions that were using
-HK_FLAG_MANAGED_IRQ to derive cpumask for pinning various jobs/IRQs do not
-enqueue anything on the CPUs listed under nohz_full.
+This API is introduced for the drivers that were previously relying only
+on num_online_cpus() to determine the number of MSIX vectors to create.
+In an RT environment with large isolated but fewer housekeeping CPUs this
+was leading to a situation where an attempt to move all of the vectors
+corresponding to isolated CPUs to housekeeping CPUs were failing due to
+per CPU vector limit.
 
-Suggested-by: Frederic Weisbecker <frederic@kernel.org>
 Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 ---
- kernel/sched/isolation.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/sched/isolation.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/kernel/sched/isolation.c b/kernel/sched/isolation.c
-index 5a6ea03f9882..9df9598a9e39 100644
---- a/kernel/sched/isolation.c
-+++ b/kernel/sched/isolation.c
-@@ -141,7 +141,7 @@ static int __init housekeeping_nohz_full_setup(char *str)
- 	unsigned int flags;
- 
- 	flags = HK_FLAG_TICK | HK_FLAG_WQ | HK_FLAG_TIMER | HK_FLAG_RCU |
--		HK_FLAG_MISC | HK_FLAG_KTHREAD;
-+		HK_FLAG_MISC | HK_FLAG_KTHREAD | HK_FLAG_MANAGED_IRQ;
- 
- 	return housekeeping_setup(str, flags);
+diff --git a/include/linux/sched/isolation.h b/include/linux/sched/isolation.h
+index cc9f393e2a70..2e96b626e02e 100644
+--- a/include/linux/sched/isolation.h
++++ b/include/linux/sched/isolation.h
+@@ -57,4 +57,17 @@ static inline bool housekeeping_cpu(int cpu, enum hk_flags flags)
+ 	return true;
  }
+ 
++static inline unsigned int hk_num_online_cpus(void)
++{
++#ifdef CONFIG_CPU_ISOLATION
++	const struct cpumask *hk_mask;
++
++	if (static_branch_unlikely(&housekeeping_overridden)) {
++		hk_mask = housekeeping_cpumask(HK_FLAG_MANAGED_IRQ);
++		return cpumask_weight(hk_mask);
++	}
++#endif
++	return cpumask_weight(cpu_online_mask);
++}
++
+ #endif /* _LINUX_SCHED_ISOLATION_H */
 -- 
 2.18.2
 
