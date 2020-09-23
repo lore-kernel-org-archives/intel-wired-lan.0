@@ -1,52 +1,36 @@
-From: Bixuan Cui <cuibixuan@huawei.com>
-Date: Wed, 23 Sep 2020 09:58:15 +0800
-Subject: [Intel-wired-lan] [PATCH v3] net: ice: Fix pointer cast warnings
-In-Reply-To: <DM6PR11MB289004F11B8936F7C421A863BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
-References: <20200731105721.18511-1-cuibixuan@huawei.com>
- <5af7c5af-c45d-2174-de89-8b89eddb4f4d@huawei.com>
- <DM6PR11MB289004F11B8936F7C421A863BC540@DM6PR11MB2890.namprd11.prod.outlook.com>
-Message-ID: <85dcea48-8b82-d806-0026-e6b371e6a092@huawei.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 23 Sep 2020 02:02:19 +0000
+Subject: [Intel-wired-lan] [RFC PATCH net-next v1 02/11] i40e: clean up
+ W=1 warnings in i40e
+In-Reply-To: <20200911012337.14015-3-jesse.brandeburg@intel.com>
+References: <20200911012337.14015-1-jesse.brandeburg@intel.com>
+ <20200911012337.14015-3-jesse.brandeburg@intel.com>
+Message-ID: <DM6PR11MB2890C90E8CBF2EE17ECAF95ABC380@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-pointers should be casted to unsigned long to avoid
--Wpointer-to-int-cast warnings:
-
-drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning:
-    cast from pointer to integer of different size
-drivers/net/ethernet/intel/ice/ice_flow.h:198:32: warning:
-    cast to pointer from integer of different size
-
-Signed-off-by: Bixuan Cui <cuibixuan@huawei.com>
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jesse Brandeburg
+> Sent: Thursday, September 10, 2020 6:23 PM
+> To: netdev at vger.kernel.org
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [RFC PATCH net-next v1 02/11] i40e: clean up W=1
+> warnings in i40e
+> 
+> Inspired by Lee Jones, this eliminates the remaining W=1 warnings in i40e.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_client.c   |  2 --
+>  drivers/net/ethernet/intel/i40e/i40e_common.c   |  4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 17 ++++++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c      |  1 -
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c     |  7 ++++---
+>  .../net/ethernet/intel/i40e/i40e_virtchnl_pf.c  |  9 +++++----
+>  6 files changed, 21 insertions(+), 19 deletions(-)
+> 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
----
-v3->v2: add 'Tested-by: Aaron Brown <aaron.f.brown@intel.com>'
-v2->v1: add fix:
- ice_flow.h:198:32: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
- #define ICE_FLOW_ENTRY_PTR(h) ((struct ice_flow_entry *)(h))
-
- drivers/net/ethernet/intel/ice/ice_flow.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index 3913da2116d2..829f90b1e998 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -194,8 +194,8 @@ struct ice_flow_entry {
- 	u16 entry_sz;
- };
-
--#define ICE_FLOW_ENTRY_HNDL(e)	((u64)e)
--#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(h))
-+#define ICE_FLOW_ENTRY_HNDL(e)	((u64)(uintptr_t)e)
-+#define ICE_FLOW_ENTRY_PTR(h)	((struct ice_flow_entry *)(uintptr_t)(h))
-
- struct ice_flow_prof {
- 	struct list_head l_entry;
--- 
-2.17.1
-
-.
+Not sure if this is intended to be the final form, but it's in the tree I'm testing with and seems to work...
