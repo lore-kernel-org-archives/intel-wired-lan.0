@@ -1,50 +1,59 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu, 24 Sep 2020 18:04:47 +0200
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Increase iteration on
- polling MDIC ready bit
-In-Reply-To: <748efbf9-573f-ab2a-0c82-a7b2a11cda60@molgen.mpg.de>
-References: <20200923074751.10527-1-kai.heng.feng@canonical.com>
- <20200924150958.18016-1-kai.heng.feng@canonical.com>
- <748efbf9-573f-ab2a-0c82-a7b2a11cda60@molgen.mpg.de>
-Message-ID: <20200924160447.GD3821492@lunn.ch>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Fri, 25 Sep 2020 00:45:42 +0800
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: Increase iteration on polling
+ MDIC ready bit
+In-Reply-To: <20200924150958.18016-1-kai.heng.feng@canonical.com>
+References: <20200924150958.18016-1-kai.heng.feng@canonical.com>
+Message-ID: <20200924164542.19906-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 24, 2020 at 05:32:12PM +0200, Paul Menzel wrote:
-> Dear Kai-Heng,
-> 
-> 
-> Thank you for sending version 2.
-> 
-> Am 24.09.20 um 17:09 schrieb Kai-Heng Feng:
-> > We are seeing the following error after S3 resume:
-> 
-> I?d be great if you added the system and used hardware, you are seeing this
-> with.
-> 
-> > [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> > [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
-> 
-> A follow-up patch, should extend the message to include the timeout value.
-> 
-> > MDI Write did not complete did not complete in ? seconds.
-> 
-> According to the Linux timestamps it?s 98 ms, which makes sense, as (640 * 3
-> * 50 ?s = 96 ms).
-> 
-> What crappy hardware is this, that it takes longer than 100 ms?
+We are seeing the following error after S3 resume:
+[  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
+[  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
+[  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
+[  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
+...
+[  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
 
-I'm speculating, but i guess this happens with just the first couple
-of transfers after power up. After that, it probably takes a single
-loop. It would be good to see some profile data for this. Completely
-different MDIO driver and implementation, but this patch might give
-some ideas how to do the profiling:
+As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
+increase polling iteration can resolve the issue.
 
-https://github.com/lunn/linux/commit/76c7810a7e2c1b1e28a7a95d08dd440a8f48a516
+The root cause is quite likely Intel ME, since it's a blackbox to the
+kernel so the only approach we can take is to be patient and wait
+longer.
 
-Look at the debugfs and num_loops/us parts.
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+v3:
+ - Moving delay to end of loop doesn't save anytime, move it back.
+ - Point out this is quitely likely caused by Intel ME.
 
-     Andrew
+v2:
+ - Increase polling iteration instead of powering down the phy.
+
+ drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index e11c877595fb..e6d4acd90937 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * Increasing the time out as testing showed failures with
+ 	 * the lower time out
+ 	 */
+-	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
++	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
+ 		udelay(50);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
+-- 
+2.17.1
+
