@@ -1,78 +1,57 @@
-From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Thu, 24 Sep 2020 17:52:19 -0400
-Subject: [Intel-wired-lan] [PATCH v2 1/4] sched/isolation: API to get
- housekeeping online CPUs
-In-Reply-To: <20200924204759.GA2342589@bjorn-Precision-5520>
-References: <20200924204759.GA2342589@bjorn-Precision-5520>
-Message-ID: <c19c4bc8-05d4-42a2-9469-2de79919c808@redhat.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Thu, 24 Sep 2020 22:25:46 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests: net: add a
+ test for shared UDP tunnel info tables
+In-Reply-To: <20200921144408.19624164@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20200722012716.2814777-1-kuba@kernel.org>
+ <20200722012716.2814777-5-kuba@kernel.org>
+ <SN6PR11MB2896F5ACC5A59F7F330183FFBC3C0@SN6PR11MB2896.namprd11.prod.outlook.com>
+ <20200921144408.19624164@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <808d485e3d63a2e10f1fba75c0cac968d8f844aa.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, 2020-09-21 at 14:44 -0700, Jakub Kicinski wrote:
+> On Sat, 19 Sep 2020 07:23:58 +0000 Brown, Aaron F wrote:
+> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On
+> > > Behalf Of Jakub
+> > > Kicinski
+> > > Sent: Tuesday, July 21, 2020 6:27 PM
+> > > To: davem at davemloft.net
+> > > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+> > > Jakub Kicinski
+> > > <kuba@kernel.org>
+> > > Subject: [Intel-wired-lan] [PATCH net-next v1 4/7] selftests:
+> > > net: add a test for
+> > > shared UDP tunnel info tables
+> > > 
+> > > Add a test run of checks validating the shared UDP tunnel port
+> > > tables function as we expect.
+> > > 
+> > > Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+> > > ---
+> > >  .../drivers/net/netdevsim/udp_tunnel_nic.sh   | 109
+> > > ++++++++++++++++++
+> > >  1 file changed, 109 insertions(+)
+> > >   
+> > 
+> > I ran into two things while running this script.
+> > 1. The script as it exists in the git tree (Jeff Kirshers next-
+> > queue) is not executable.  I don't know if that's a patch issue or
+> > translation into the tree.  Easy enough to get around, but should
+> > probably be executable to start.
+> 
+> Ah, good catch, thanks! Please adjust in your tree or I can send a
+> follow up with other patches I still have queued.
 
-On 9/24/20 4:47 PM, Bjorn Helgaas wrote:
-> On Wed, Sep 23, 2020 at 02:11:23PM -0400, Nitesh Narayan Lal wrote:
->> Introduce a new API hk_num_online_cpus(), that can be used to
->> retrieve the number of online housekeeping CPUs that are meant to handle
->> managed IRQ jobs.
->>
->> This API is introduced for the drivers that were previously relying only
->> on num_online_cpus() to determine the number of MSIX vectors to create.
->> In an RT environment with large isolated but fewer housekeeping CPUs this
->> was leading to a situation where an attempt to move all of the vectors
->> corresponding to isolated CPUs to housekeeping CPUs were failing due to
->> per CPU vector limit.
->>
->> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
->> ---
->>  include/linux/sched/isolation.h | 13 +++++++++++++
->>  1 file changed, 13 insertions(+)
->>
->> diff --git a/include/linux/sched/isolation.h b/include/linux/sched/isolation.h
->> index cc9f393e2a70..2e96b626e02e 100644
->> --- a/include/linux/sched/isolation.h
->> +++ b/include/linux/sched/isolation.h
->> @@ -57,4 +57,17 @@ static inline bool housekeeping_cpu(int cpu, enum hk_flags flags)
->>  	return true;
->>  }
->>  
->> +static inline unsigned int hk_num_online_cpus(void)
->> +{
->> +#ifdef CONFIG_CPU_ISOLATION
->> +	const struct cpumask *hk_mask;
->> +
->> +	if (static_branch_unlikely(&housekeeping_overridden)) {
->> +		hk_mask = housekeeping_cpumask(HK_FLAG_MANAGED_IRQ);
->> +		return cpumask_weight(hk_mask);
->> +	}
->> +#endif
->> +	return cpumask_weight(cpu_online_mask);
-> Just curious: why is this not
->
->   #ifdef CONFIG_CPU_ISOLATION
->   ...
->   #endif
->     return num_online_cpus();
+Hi Jakub,
 
-I think doing an atomic read is better than a bitmap operation.
-Thanks for pointing this out.
+It'd be great if you could adjust and resend the series. As we're still
+working through our email server issue, I don't know if everything
+would make it here.
 
->
->> +}
->> +
->>  #endif /* _LINUX_SCHED_ISOLATION_H */
->> -- 
->> 2.18.2
->>
--- 
-Nitesh
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200924/45fdf978/attachment-0001.asc>
+Thanks,
+Tony
