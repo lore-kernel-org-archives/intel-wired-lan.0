@@ -1,59 +1,50 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Fri, 25 Sep 2020 00:45:42 +0800
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: Increase iteration on polling
- MDIC ready bit
-In-Reply-To: <20200924150958.18016-1-kai.heng.feng@canonical.com>
-References: <20200924150958.18016-1-kai.heng.feng@canonical.com>
-Message-ID: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Thu, 24 Sep 2020 19:54:02 +0000
+Subject: [Intel-wired-lan] General question regarding i40e driver
+ version in upstream kernel
+In-Reply-To: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
+References: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
+Message-ID: <BYAPR11MB3606ABF2B6ACCB67097C2D32EF390@BYAPR11MB3606.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We are seeing the following error after S3 resume:
-[  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
-[  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
-[  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
-[  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
-...
-[  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
+Unfortunately, I think the question is why the patches in the upstream kernel don't make it into the OSV kernel quicker and that's a question for the OSV. In this case, Canonical.
 
-As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
-increase polling iteration can resolve the issue.
+I know we've had some delays getting patches into the upstream kernel but we're working on that. Most of the timing issues are due to release schedules and validation as it probably is for your products as well.
 
-The root cause is quite likely Intel ME, since it's a blackbox to the
-kernel so the only approach we can take is to be patient and wait
-longer.
+Todd Fujinaka
+Software Application Engineer
+Data Center Group
+Intel Corporation
+todd.fujinaka at intel.com
 
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v3:
- - Moving delay to end of loop doesn't save anytime, move it back.
- - Point out this is quitely likely caused by Intel ME.
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Arkady Gilinsky
+Sent: Wednesday, September 23, 2020 11:05 PM
+To: intel-wired-lan@osuosl.org
+Cc: Oron Peled <Oron.Peled@harmonicinc.com>
+Subject: [Intel-wired-lan] General question regarding i40e driver version in upstream kernel
 
-v2:
- - Increase polling iteration instead of powering down the phy.
+Hi All,
 
- drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I have a general question related to i40e driver in Linux kernel.
+In latest Ubuntu-20.04 release (Focal) with kernel 5.4.0-42-generic the standard i40e driver is quite old (2.8.20-k), while on Intel official site recently was announced newer i40e (2.12.6).
+Also, the latest upstream kernel is 5.8.3 has the same (2.8.20-k) version of i40e driver.
+See here: https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/i40e/i40e_main.c#L28
 
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index e11c877595fb..e6d4acd90937 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
- 	 * Increasing the time out as testing showed failures with
- 	 * the lower time out
- 	 */
--	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
-+	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
- 		udelay(50);
- 		mdic = er32(MDIC);
- 		if (mdic & E1000_MDIC_READY)
--- 
-2.17.1
+Could, anybody from driver maintainers, clarify why there is such a big gap in versions of i40e driver.
+Do all the drivers, from 2.8.20-k version, not stable enough, so they were not taken into kernel upstream?
 
+--
+Best regards,
+Arkady Gilinsky
+
+------------------------------------------
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
