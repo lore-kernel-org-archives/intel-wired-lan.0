@@ -1,50 +1,37 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Thu, 24 Sep 2020 19:54:02 +0000
-Subject: [Intel-wired-lan] General question regarding i40e driver
- version in upstream kernel
-In-Reply-To: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
-References: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
-Message-ID: <BYAPR11MB3606ABF2B6ACCB67097C2D32EF390@BYAPR11MB3606.namprd11.prod.outlook.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Thu, 24 Sep 2020 21:57:19 +0200
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: Increase iteration on
+ polling MDIC ready bit
+In-Reply-To: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+References: <20200924150958.18016-1-kai.heng.feng@canonical.com>
+ <20200924164542.19906-1-kai.heng.feng@canonical.com>
+Message-ID: <20200924195719.GF3821492@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Unfortunately, I think the question is why the patches in the upstream kernel don't make it into the OSV kernel quicker and that's a question for the OSV. In this case, Canonical.
+On Fri, Sep 25, 2020 at 12:45:42AM +0800, Kai-Heng Feng wrote:
+> We are seeing the following error after S3 resume:
+> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
+> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
+> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
+> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
+> ...
+> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
+> 
+> As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
+> increase polling iteration can resolve the issue.
+> 
+> The root cause is quite likely Intel ME, since it's a blackbox to the
+> kernel so the only approach we can take is to be patient and wait
+> longer.
 
-I know we've had some delays getting patches into the upstream kernel but we're working on that. Most of the timing issues are due to release schedules and validation as it probably is for your products as well.
+Please could you explain how you see Intel ME being responsible for
+this. I'm not convinced.
 
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com
-
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Arkady Gilinsky
-Sent: Wednesday, September 23, 2020 11:05 PM
-To: intel-wired-lan@osuosl.org
-Cc: Oron Peled <Oron.Peled@harmonicinc.com>
-Subject: [Intel-wired-lan] General question regarding i40e driver version in upstream kernel
-
-Hi All,
-
-I have a general question related to i40e driver in Linux kernel.
-In latest Ubuntu-20.04 release (Focal) with kernel 5.4.0-42-generic the standard i40e driver is quite old (2.8.20-k), while on Intel official site recently was announced newer i40e (2.12.6).
-Also, the latest upstream kernel is 5.8.3 has the same (2.8.20-k) version of i40e driver.
-See here: https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/i40e/i40e_main.c#L28
-
-Could, anybody from driver maintainers, clarify why there is such a big gap in versions of i40e driver.
-Do all the drivers, from 2.8.20-k version, not stable enough, so they were not taken into kernel upstream?
-
---
-Best regards,
-Arkady Gilinsky
-
-------------------------------------------
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+      Andrew
