@@ -1,94 +1,213 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 25 Sep 2020 20:31:43 +0000
-Subject: [Intel-wired-lan] [EXTERNAL] RE: General question regarding
- i40e driver version in upstream kernel
-In-Reply-To: <a01df73ad3031dce66f44e520ebc11b9caf592dd.camel@harmonicinc.com>
-References: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
- <BYAPR11MB3606ABF2B6ACCB67097C2D32EF390@BYAPR11MB3606.namprd11.prod.outlook.com>
- <a01df73ad3031dce66f44e520ebc11b9caf592dd.camel@harmonicinc.com>
-Message-ID: <DM6PR11MB2890E25E8E6896966CA36522BC360@DM6PR11MB2890.namprd11.prod.outlook.com>
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Date: Fri, 25 Sep 2020 15:24:36 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 0/9] make drivers/net/ethernet
+ W=1 clean
+Message-ID: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Unfortunately the driver versioning in the kernel does not really map to the versioning in the ?out of tree? (download-able) driver.  If you look at the git history for the i40e driver you will see regular patches to the driver with very few of those patches touching the version string, so that string in the kernel is not a very good indicator of what code that driver contains.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The current upstream kernel has done away with the driver string in place of the kernel version itself instead, which is probably a better indication of the actual driver.
+The Goal: move to W=1 being default for drivers/net/ethernet, and
+then use automation to catch more code issues (warnings) being
+introduced.
+The status: Getting much closer but not quite done for all
+architectures.
 
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Oron Peled
-Sent: Friday, September 25, 2020 11:53 AM
-To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan at osuosl.org
-Subject: Re: [Intel-wired-lan] [EXTERNAL] RE: General question regarding i40e driver version in upstream kernel
+After applying the patches below, the drivers/net/ethernet
+directory can be built as modules with W=1 with no warnings (so
+far on x64_64 arch only!). As Jakub pointed out, there is much
+more work to do to clean up C=1, but that will be another series
+of changes.
 
-Hi,
+This series removes 1,247 warnings and hopefully allows the
+ethernet directory to move forward from here without more
+warnings being added. There is only one objtool warning now.
 
-I'm sorry, but I don't understand how it's related to OSV's:
+This version drops one of the Intel patches, as I couldn't
+reproduce the original issue to document the warning.
 
-  *   The latest released upstream kernel is 5.8.11
-  *   You can verify it still contain i40e version "2.8.20-k" -- link<https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/net/ethernet/intel/i40e/i40e_main.c?h=v5.8.11>
+Some of these patches are already sent and tested on Intel Wired
+Lan, but the rest of the series titled drivers/net/ethernet
+affects other drivers. The changes are all pretty
+straightforward.
 
-  *   Naturally, this is what "bleeding-edge" OSV's take:
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Reviewed-by: Jakub Kicinski <kuba@kernel.org>
+Reviewed-by: Saeed Mahameed <saeed@kernel.org>
+---
 
-     *   Debian/testing (bullseye) use 5.8.0 -- link<https://packages.debian.org/bullseye/linux-image-5.8.0-2-amd64-unsigned>
+DaveM: if you want to apply all the intel driver changes
+       directly please go ahead.
 
-     *   Ubuntu/groovy use 5.8.0 -- link<https://packages.ubuntu.com/groovy/linux-image-generic>
+As part of testing this series I realized that I have ~1,500 more
+kdoc warnings to fix due to being in other arch or not compiled
+with my x86_64 .config. Feel free to run
+$ git ls-files *.[ch] | grep drivers/net/ethernet | xargs scripts/kernel-doc -none
+to see the remaining issues.
 
-     *   Fedora use 5.8.11 (even for unreleased yet Fedora-33) -- link<https://src.fedoraproject.org/rpms/kernel>
+changes in v3:
+	- addressed comments, updated commit messages with
+	  warnings noted, updated 9/9 with a few extras that
+	  snuck in while I was working, dropped a patch that
+	  I couldn't identify the original warning for.
+changes in v2:
+	- non-rfc
+	- addressed list comments from Edward Cree, Jacob Keller and
+	  Vinicius Costa Gomes
+	- re-split the Intel patches into functional and kdoc only
+	- split out the sfc changes that generated discussion to
+	  a single patch.
 
-As Arkady commented below, Intel recommends a much newer driver: 2.12.6
-All we wanted to know is why there's such a gap to upstream kernel (not what OSV's take or not)
 
-Also,
+Jesse Brandeburg (9):
+  intel-ethernet: clean up W=1 warnings in kdoc
+  intel: handle unused assignments
+  drivers/net/ethernet: clean up unused assignments
+  drivers/net/ethernet: rid ethernet of no-prototype warnings
+  drivers/net/ethernet: handle one warning explicitly
+  drivers/net/ethernet: add some basic kdoc tags
+  drivers/net/ethernet: remove incorrectly formatted doc
+  sfc: fix kdoc warning
+  drivers/net/ethernet: clean up mis-targeted comments
 
-  *   In the upcoming kernel 5.9 the version strings were removed from the drivers -- link<https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=34a2a3b83e2c>
-  *   This would not bother us so much if the latest upstream kernel contained the latest Intel driver.
-  *   Regretfully this is not the case, so hiding the version number just add to the existing confusion.
+ drivers/net/ethernet/amazon/ena/ena_com.c     |   2 +-
+ .../aquantia/atlantic/hw_atl/hw_atl_b0.c      |   2 +-
+ drivers/net/ethernet/arc/emac_arc.c           |   2 +-
+ .../net/ethernet/atheros/atl1c/atl1c_main.c   |   6 +-
+ .../net/ethernet/atheros/atl1e/atl1e_main.c   |   7 +-
+ drivers/net/ethernet/atheros/atlx/atl1.c      |   2 +-
+ drivers/net/ethernet/atheros/atlx/atl2.c      |   6 +-
+ .../net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |   2 +
+ .../ethernet/broadcom/bnx2x/bnx2x_ethtool.c   |   6 +-
+ .../net/ethernet/broadcom/bnx2x/bnx2x_main.c  |  12 +-
+ .../net/ethernet/broadcom/bnx2x/bnx2x_sp.c    |  98 ++---
+ drivers/net/ethernet/brocade/bna/bfa_cee.c    |  20 +-
+ drivers/net/ethernet/brocade/bna/bfa_ioc.c    |   8 +-
+ drivers/net/ethernet/brocade/bna/bnad.c       |   7 +-
+ drivers/net/ethernet/cadence/macb_main.c      |   6 +-
+ drivers/net/ethernet/cadence/macb_pci.c       |   2 +-
+ drivers/net/ethernet/calxeda/xgmac.c          |   2 +
+ .../ethernet/cavium/liquidio/cn68xx_device.c  |   1 +
+ .../net/ethernet/cavium/liquidio/lio_core.c   |  92 ++---
+ .../net/ethernet/cavium/liquidio/lio_main.c   | 351 +++++++++---------
+ .../ethernet/cavium/liquidio/lio_vf_main.c    | 158 ++++----
+ .../ethernet/cavium/liquidio/octeon_console.c |  12 +-
+ .../ethernet/cavium/liquidio/octeon_device.c  |   4 +-
+ .../ethernet/cavium/liquidio/octeon_droq.c    |   2 +-
+ .../ethernet/cavium/liquidio/octeon_mailbox.c |   5 +-
+ .../net/ethernet/chelsio/cxgb3/cxgb3_main.c   |   8 +-
+ drivers/net/ethernet/chelsio/cxgb3/sge.c      |  24 +-
+ drivers/net/ethernet/chelsio/cxgb3/t3_hw.c    |   5 +-
+ drivers/net/ethernet/cisco/enic/enic_api.c    |   2 +-
+ .../net/ethernet/cisco/enic/enic_ethtool.c    |   2 +-
+ drivers/net/ethernet/cortina/gemini.c         |   2 +
+ drivers/net/ethernet/dec/tulip/de4x5.c        |   4 +-
+ drivers/net/ethernet/dec/tulip/media.c        |   5 -
+ drivers/net/ethernet/dnet.c                   |   2 +-
+ drivers/net/ethernet/ethoc.c                  |   6 +-
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   2 +-
+ drivers/net/ethernet/freescale/fec_ptp.c      |   5 +-
+ drivers/net/ethernet/freescale/fman/fman.c    |  14 +-
+ .../net/ethernet/freescale/fman/fman_muram.c  |   6 +-
+ .../net/ethernet/freescale/fman/fman_port.c   |  23 +-
+ drivers/net/ethernet/freescale/fman/mac.c     |   4 +-
+ drivers/net/ethernet/hisilicon/hns/hnae.c     |   2 +-
+ .../net/ethernet/hisilicon/hns/hns_dsaf_mac.c |  34 +-
+ .../ethernet/hisilicon/hns/hns_dsaf_main.c    | 148 ++++----
+ .../ethernet/hisilicon/hns/hns_dsaf_misc.c    |   9 +-
+ .../net/ethernet/hisilicon/hns/hns_dsaf_ppe.c |  17 +-
+ .../net/ethernet/hisilicon/hns/hns_dsaf_rcb.c |   7 +-
+ .../ethernet/hisilicon/hns/hns_dsaf_xgmac.c   |   3 +-
+ drivers/net/ethernet/hisilicon/hns/hns_enet.c |   4 +-
+ .../net/ethernet/hisilicon/hns/hns_ethtool.c  |   8 +-
+ .../hisilicon/hns3/hns3pf/hclge_dcb.c         |   1 +
+ drivers/net/ethernet/hisilicon/hns_mdio.c     |   3 +-
+ drivers/net/ethernet/intel/e100.c             |   8 +-
+ drivers/net/ethernet/intel/e1000/e1000_hw.c   | 146 ++++----
+ drivers/net/ethernet/intel/e1000/e1000_main.c |  39 +-
+ .../net/ethernet/intel/e1000e/80003es2lan.c   |   1 -
+ drivers/net/ethernet/intel/e1000e/ich8lan.c   |  16 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c    |  50 ++-
+ drivers/net/ethernet/intel/e1000e/phy.c       |   3 +
+ drivers/net/ethernet/intel/e1000e/ptp.c       |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c |   2 -
+ drivers/net/ethernet/intel/i40e/i40e_common.c |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  17 +-
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c    |   1 -
+ drivers/net/ethernet/intel/i40e/i40e_trace.h  |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   7 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   1 -
+ .../ethernet/intel/i40e/i40e_txrx_common.h    |   6 +-
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    |   9 +-
+ drivers/net/ethernet/intel/iavf/iavf_adminq.h |   4 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  20 +-
+ drivers/net/ethernet/intel/iavf/iavf_trace.h  |   2 +-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.h   |   2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +-
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 +-
+ drivers/net/ethernet/intel/igb/e1000_82575.c  |   6 +-
+ drivers/net/ethernet/intel/igb/e1000_i210.c   |   5 +-
+ drivers/net/ethernet/intel/igb/e1000_mac.c    |   1 +
+ drivers/net/ethernet/intel/igb/e1000_mbx.c    |   1 +
+ drivers/net/ethernet/intel/igb/igb_main.c     |  28 +-
+ drivers/net/ethernet/intel/igb/igb_ptp.c      |   8 +-
+ drivers/net/ethernet/intel/igbvf/netdev.c     |  17 +-
+ drivers/net/ethernet/intel/igc/igc_main.c     |   2 +-
+ drivers/net/ethernet/intel/igc/igc_ptp.c      |   4 +-
+ drivers/net/ethernet/intel/ixgb/ixgb_hw.c     | 135 ++++---
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c   |  17 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   3 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |   8 +-
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   3 +-
+ drivers/net/ethernet/mellanox/mlx4/en_tx.c    |   2 +-
+ drivers/net/ethernet/micrel/ksz884x.c         |  49 +--
+ .../ethernet/microchip/encx24j600-regmap.c    |   2 +-
+ drivers/net/ethernet/microchip/lan743x_main.c |   6 +-
+ drivers/net/ethernet/natsemi/ns83820.c        |   4 +-
+ drivers/net/ethernet/neterion/s2io.c          |  91 ++---
+ .../net/ethernet/neterion/vxge/vxge-config.c  |   5 +-
+ .../net/ethernet/neterion/vxge/vxge-ethtool.c |   2 +-
+ .../net/ethernet/neterion/vxge/vxge-main.c    |  10 +-
+ .../net/ethernet/neterion/vxge/vxge-traffic.c |  72 ++--
+ .../oki-semi/pch_gbe/pch_gbe_ethtool.c        |   4 +-
+ .../ethernet/oki-semi/pch_gbe/pch_gbe_main.c  |   5 +-
+ .../ethernet/oki-semi/pch_gbe/pch_gbe_param.c |  14 +-
+ .../net/ethernet/packetengines/yellowfin.c    |   2 +-
+ .../net/ethernet/qlogic/netxen/netxen_nic.h   |   3 -
+ .../qlogic/netxen/netxen_nic_ethtool.c        |   3 +
+ drivers/net/ethernet/qualcomm/emac/emac.c     |   1 +
+ drivers/net/ethernet/renesas/sh_eth.c         |  10 +
+ .../net/ethernet/samsung/sxgbe/sxgbe_main.c   |  17 +-
+ drivers/net/ethernet/sfc/falcon/farch.c       |  29 +-
+ drivers/net/ethernet/sfc/falcon/rx.c          |   2 +
+ drivers/net/ethernet/sfc/falcon/selftest.c    |   2 +-
+ drivers/net/ethernet/sfc/mcdi.h               |   1 +
+ drivers/net/ethernet/sfc/net_driver.h         |   2 +-
+ drivers/net/ethernet/sfc/ptp.c                |   7 +-
+ drivers/net/ethernet/sis/sis900.c             |   8 +-
+ .../net/ethernet/stmicro/stmmac/dwmac-rk.c    |   2 +-
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |  14 +-
+ .../ethernet/stmicro/stmmac/stmmac_platform.c |   3 +-
+ drivers/net/ethernet/sun/cassini.c            |   4 +-
+ .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
+ drivers/net/ethernet/tehuti/tehuti.c          |  17 +-
+ drivers/net/ethernet/ti/cpsw_new.c            |   2 -
+ drivers/net/ethernet/ti/davinci_cpdma.c       |   2 +-
+ drivers/net/ethernet/ti/davinci_emac.c        |  10 +-
+ drivers/net/ethernet/ti/tlan.c                |   4 +-
+ drivers/net/ethernet/via/via-rhine.c          |   2 +-
+ drivers/net/ethernet/via/via-velocity.c       |  40 +-
+ drivers/net/ethernet/xilinx/ll_temac_main.c   |  26 +-
+ 130 files changed, 1178 insertions(+), 1062 deletions(-)
 
-Thanks,
 
---
-Oron Peled
+base-commit: 3fc826f121d89c5aa4afd7b3408b07e0ff59466b
+-- 
+2.25.4
 
-On Thu, 2020-09-24 at 19:54 +0000, Fujinaka, Todd wrote:
-Unfortunately, I think the question is why the patches in the upstream kernel don't make it into the OSV kernel quicker and that's a question for the OSV. In this case, Canonical.
-
-I know we've had some delays getting patches into the upstream kernel but we're working on that. Most of the timing issues are due to release schedules and validation as it probably is for your products as well.
-
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
-
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces at osuosl.org<mailto:intel-wired-lan-bounces@osuosl.org>> On Behalf Of Arkady Gilinsky
-Sent: Wednesday, September 23, 2020 11:05 PM
-To: intel-wired-lan@osuosl.org<mailto:intel-wired-lan@osuosl.org>
-Cc: Oron Peled <Oron.Peled at harmonicinc.com<mailto:Oron.Peled@harmonicinc.com>>
-Subject: [Intel-wired-lan] General question regarding i40e driver version in upstream kernel
-
-Hi All,
-
-I have a general question related to i40e driver in Linux kernel.
-In latest Ubuntu-20.04 release (Focal) with kernel 5.4.0-42-generic the standard i40e driver is quite old (2.8.20-k), while on Intel official site recently was announced newer i40e (2.12.6).
-Also, the latest upstream kernel is 5.8.3 has the same (2.8.20-k) version of i40e driver.
-See here: https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/i40e/i40e_main.c#L28
-
-Could, anybody from driver maintainers, clarify why there is such a big gap in versions of i40e driver.
-Do all the drivers, from 2.8.20-k version, not stable enough, so they were not taken into kernel upstream?
-
---
-Best regards,
-Arkady Gilinsky
-
-------------------------------------------
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org<mailto:Intel-wired-lan@osuosl.org>
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200925/8188ea11/attachment-0001.html>
