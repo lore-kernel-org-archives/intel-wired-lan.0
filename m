@@ -1,96 +1,90 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Sat, 26 Sep 2020 10:08:47 +0000
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Increase iteration on
- polling MDIC ready bit
-In-Reply-To: <20200925132903.GB3850848@lunn.ch>
-References: <20200923074751.10527-1-kai.heng.feng@canonical.com>
- <20200924150958.18016-1-kai.heng.feng@canonical.com>
- <20200924155355.GC3821492@lunn.ch>
- <8A08B3A7-8368-48EC-A2DD-B5D5F3EA94C5@canonical.com>
- <2f48175dce974ea689bfd26b9fc2245a@AcuMS.aculab.com>
- <20200925132903.GB3850848@lunn.ch>
-Message-ID: <1b4fadba2e204f6abd4ef6e02d84beed@AcuMS.aculab.com>
+From: Nitesh Narayan Lal <nitesh@redhat.com>
+Date: Fri, 25 Sep 2020 17:38:05 -0400
+Subject: [Intel-wired-lan] [PATCH v3 4/4] PCI: Limit
+ pci_alloc_irq_vectors() to housekeeping CPUs
+In-Reply-To: <20200925202307.GA2456332@bjorn-Precision-5520>
+References: <20200925202307.GA2456332@bjorn-Precision-5520>
+Message-ID: <256490f0-0762-447c-a7be-0e5a6bb04fc4@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Andrew Lunn
-> Sent: 25 September 2020 14:29
-> On Fri, Sep 25, 2020 at 08:50:30AM +0000, David Laight wrote:
-> > From: Kai-Heng Feng
-> > > Sent: 24 September 2020 17:04
-> > ...
-> > > > I also don't fully understand the fix. You are now looping up to 6400
-> > > > times, each with a delay of 50uS. So that is around 12800 times more
-> > > > than it actually needs to transfer the 64 bits! I've no idea how this
-> > > > hardware works, but my guess would be, something is wrong with the
-> > > > clock setup?
-> > >
-> > > It's probably caused by Intel ME. This is not something new, you can find many polling codes in
-> e1000e
-> > > driver are for ME, especially after S3 resume.
-> > >
-> > > Unless Intel is willing to open up ME, being patient and wait for a longer while is the best
-> approach
-> > > we got.
-> >
-> > There is some really broken code in the e1000e driver that affect my
-> > Ivy bridge platform were it is trying to avoid hardware bugs in
-> > the ME interface.
-> >
-> > It seems that before EVERY write to a MAC register it must check
-> > that the ME isn't using the interface - and spin until it isn't.
-> > This causes massive delays in the TX path because it includes
-> > the write that tells the MAC engine about a new packet.
-> 
-> Hi David
-> 
-> Thanks for the information. This however does not really explain the
-> issue.
-> 
-> The code busy loops waiting for the MDIO transaction to complete. If
-> read/writes to the MAC are getting blocked, that just means less
-> iterations of the loop are needed, not more, since the time to
-> complete the transaction should be fixed.
-> 
-> If ME really is to blame, it means ME is completely hijacking the
-> hardware? Stopping the clocks? Maybe doing its own MDIO transactions?
-> How can you write a PHY driver if something else is also programming
-> the PHY.
-> 
-> We don't understand what is going on here. We are just papering over
-> the cracks. The commit message should say this, that the change fixes
-> the symptoms but probably not the cause.
 
-You may not have the same broken hardware as I have...
+On 9/25/20 4:23 PM, Bjorn Helgaas wrote:
+> On Fri, Sep 25, 2020 at 02:26:54PM -0400, Nitesh Narayan Lal wrote:
+>> If we have isolated CPUs dedicated for use by real-time tasks, we try to
+>> move IRQs to housekeeping CPUs from the userspace to reduce latency
+>> overhead on the isolated CPUs.
+>>
+>> If we allocate too many IRQ vectors, moving them all to housekeeping CPUs
+>> may exceed per-CPU vector limits.
+>>
+>> When we have isolated CPUs, limit the number of vectors allocated by
+>> pci_alloc_irq_vectors() to the minimum number required by the driver, or
+>> to one per housekeeping CPU if that is larger.
+>>
+>> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+>> ---
+>>  include/linux/pci.h | 17 +++++++++++++++++
+>>  1 file changed, 17 insertions(+)
+>>
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 835530605c0d..a7b10240b778 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -38,6 +38,7 @@
+>>  #include <linux/interrupt.h>
+>>  #include <linux/io.h>
+>>  #include <linux/resource_ext.h>
+>> +#include <linux/sched/isolation.h>
+>>  #include <uapi/linux/pci.h>
+>>  
+>>  #include <linux/pci_ids.h>
+>> @@ -1797,6 +1798,22 @@ static inline int
+>>  pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
+>>  		      unsigned int max_vecs, unsigned int flags)
+>>  {
+>> +	unsigned int hk_cpus;
+>> +
+>> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
+> Add blank line here before the block comment.
+>
+>> +	/*
+>> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
+>> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
+>> +	 * to the housekeeping CPUs from the userspace by changing their
+>> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
+>> +	 * running out of IRQ vectors.
+>> +	 */
+>> +	if (hk_cpus < num_online_cpus()) {
+>> +		if (hk_cpus < min_vecs)
+>> +			max_vecs = min_vecs;
+>> +		else if (hk_cpus < max_vecs)
+>> +			max_vecs = hk_cpus;
+>> +	}
+> It seems like you'd want to do this inside
+> pci_alloc_irq_vectors_affinity() since that's an exported interface,
+> and drivers that use it will bypass the limiting you're doing here.
 
-From what I could infer from the code and guess from the behaviour
-I got the impression that if the ME was accessing any of the MAC
-registers it was likely that writes from the kernel just got discarded.
+Good point, few drivers directly use this.
+I took a quick look and it seems I may also have to take the pre and the
+post vectors into consideration.
 
-I got the impression that a bug in the hardware was being worked
-around by the ME setting a status bit before and access, waiting
-a bit for the kernel to finish anything it was doing, then
-doing its access and clearing the bit.
+>>  	return pci_alloc_irq_vectors_affinity(dev, min_vecs, max_vecs, flags,
+>>  					      NULL);
+>>  }
+>> -- 
+>> 2.18.2
+>>
+-- 
+Nitesh
 
-The kernel keeps having to wait for the bit to be clear.
-These delays were long; sub ms - but far longer than
-the rest of the code path for sending a packet.
-But the code didn't check/disable pre-emption or interrupts
-so the check was actually broken.
-(If I removed it completely my system wouldn't boot!)
-
-Thing is I don't want the ME.
-I don't need the ME on that system.
-The ME might be a security hole.
-The ME breaks my system.
-But I can't disable it at all.
-
-	David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200925/8fb1b01e/attachment-0001.asc>
