@@ -1,8 +1,10 @@
 From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Date: Fri, 25 Sep 2020 15:24:36 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 0/9] make drivers/net/ethernet
- W=1 clean
-Message-ID: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
+Date: Fri, 25 Sep 2020 15:24:38 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/9] intel: handle unused
+ assignments
+In-Reply-To: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
+References: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
+Message-ID: <20200925222445.74531-3-jesse.brandeburg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,203 +13,497 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The Goal: move to W=1 being default for drivers/net/ethernet, and
-then use automation to catch more code issues (warnings) being
-introduced.
-The status: Getting much closer but not quite done for all
-architectures.
+Remove variables that were storing a return value from a register
+read or other read, where the return value wasn't used. Those
+conversions to remove the lvalue of the assignment should be safe
+because the readl memory mapped reads are marked volatile and
+should not be optimized out without an lvalue (I suspect a very
+long time ago this wasn't guaranteed as it is today).
 
-After applying the patches below, the drivers/net/ethernet
-directory can be built as modules with W=1 with no warnings (so
-far on x64_64 arch only!). As Jakub pointed out, there is much
-more work to do to clean up C=1, but that will be another series
-of changes.
+These changes are part of a separate patch to make it easier to review.
 
-This series removes 1,247 warnings and hopefully allows the
-ethernet directory to move forward from here without more
-warnings being added. There is only one objtool warning now.
-
-This version drops one of the Intel patches, as I couldn't
-reproduce the original issue to document the warning.
-
-Some of these patches are already sent and tested on Intel Wired
-Lan, but the rest of the series titled drivers/net/ethernet
-affects other drivers. The changes are all pretty
-straightforward.
+Warnings Fixed:
+.../intel/e100.c:2596:9: warning: variable ?err? set but not used [-Wunused-but-set-variable]
+.../intel/ixgb/ixgb_hw.c:101:6: warning: variable ?icr_reg? set but not used [-Wunused-but-set-variable]
+.../intel/ixgb/ixgb_hw.c:277:6: warning: variable ?ctrl_reg? set but not used [-Wunused-but-set-variable]
+.../intel/ixgb/ixgb_hw.c:952:15: warning: variable ?temp_reg? set but not used [-Wunused-but-set-variable]
+.../intel/ixgb/ixgb_hw.c:1164:7: warning: variable ?mdio_reg? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:132:6: warning: variable ?ret_val? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:380:6: warning: variable ?icr? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:2378:6: warning: variable ?signal? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:2374:6: warning: variable ?ctrl? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:2373:6: warning: variable ?rxcw? set but not used [-Wunused-but-set-variable]
+.../intel/e1000/e1000_hw.c:4678:15: warning: variable ?temp? set but not used [-Wunused-but-set-variable]
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reviewed-by: Jakub Kicinski <kuba@kernel.org>
-Reviewed-by: Saeed Mahameed <saeed@kernel.org>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 ---
+v3: added summary of warnings fixed.
 
-DaveM: if you want to apply all the intel driver changes
-       directly please go ahead.
+Full list of warnings fixed
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e100.c: In function ?e100_diag_test?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e100.c:2596:9: warning: variable ?err? set but not used [-Wunused-but-set-variable]
+ 2596 |  int i, err;
+      |         ^~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c: In function ?e1000_reset_hw?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c:381:6: warning: variable ?icr? set but not used [-Wunused-but-set-variable]
+  381 |  u32 icr;
+      |      ^~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c: In function ?e1000_check_for_link?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c:2378:6: warning: variable ?signal? set but not used [-Wunused-but-set-variable]
+ 2378 |  u32 signal = 0;
+      |      ^~~~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c:2374:6: warning: variable ?ctrl? set but not used [-Wunused-but-set-variable]
+ 2374 |  u32 ctrl;
+      |      ^~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c:2373:6: warning: variable ?rxcw? set but not used [-Wunused-but-set-variable]
+ 2373 |  u32 rxcw = 0;
+      |      ^~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c: In function ?e1000_clear_hw_cntrs?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/e1000/e1000_hw.c:4678:15: warning: variable ?temp? set but not used [-Wunused-but-set-variable]
+ 4678 |  volatile u32 temp;
+      |               ^~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c: In function ?ixgb_adapter_stop?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c:101:6: warning: variable ?icr_reg? set but not used [-Wunused-but-set-variable]
+  101 |  u32 icr_reg;
+      |      ^~~~~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c: In function ?ixgb_init_hw?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c:277:6: warning: variable ?ctrl_reg? set but not used [-Wunused-but-set-variable]
+  277 |  u32 ctrl_reg;
+      |      ^~~~~~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c: In function ?ixgb_clear_hw_cntrs?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c:952:15: warning: variable ?temp_reg? set but not used [-Wunused-but-set-variable]
+  952 |  volatile u32 temp_reg;
+      |               ^~~~~~~~
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c: In function ?ixgb_optics_reset?:
+/home/jbrandeb/git/linux/drivers/net/ethernet/intel/ixgb/ixgb_hw.c:1164:7: warning: variable ?mdio_reg? set but not used [-Wunused-but-set-variable]
+ 1164 |   u16 mdio_reg;
+      |       ^~~~~~~~
+---
+ drivers/net/ethernet/intel/e100.c           |   6 +-
+ drivers/net/ethernet/intel/e1000/e1000_hw.c | 139 +++++++++-----------
+ drivers/net/ethernet/intel/ixgb/ixgb_hw.c   | 135 +++++++++----------
+ 3 files changed, 131 insertions(+), 149 deletions(-)
 
-As part of testing this series I realized that I have ~1,500 more
-kdoc warnings to fix due to being in other arch or not compiled
-with my x86_64 .config. Feel free to run
-$ git ls-files *.[ch] | grep drivers/net/ethernet | xargs scripts/kernel-doc -none
-to see the remaining issues.
-
-changes in v3:
-	- addressed comments, updated commit messages with
-	  warnings noted, updated 9/9 with a few extras that
-	  snuck in while I was working, dropped a patch that
-	  I couldn't identify the original warning for.
-changes in v2:
-	- non-rfc
-	- addressed list comments from Edward Cree, Jacob Keller and
-	  Vinicius Costa Gomes
-	- re-split the Intel patches into functional and kdoc only
-	- split out the sfc changes that generated discussion to
-	  a single patch.
-
-
-Jesse Brandeburg (9):
-  intel-ethernet: clean up W=1 warnings in kdoc
-  intel: handle unused assignments
-  drivers/net/ethernet: clean up unused assignments
-  drivers/net/ethernet: rid ethernet of no-prototype warnings
-  drivers/net/ethernet: handle one warning explicitly
-  drivers/net/ethernet: add some basic kdoc tags
-  drivers/net/ethernet: remove incorrectly formatted doc
-  sfc: fix kdoc warning
-  drivers/net/ethernet: clean up mis-targeted comments
-
- drivers/net/ethernet/amazon/ena/ena_com.c     |   2 +-
- .../aquantia/atlantic/hw_atl/hw_atl_b0.c      |   2 +-
- drivers/net/ethernet/arc/emac_arc.c           |   2 +-
- .../net/ethernet/atheros/atl1c/atl1c_main.c   |   6 +-
- .../net/ethernet/atheros/atl1e/atl1e_main.c   |   7 +-
- drivers/net/ethernet/atheros/atlx/atl1.c      |   2 +-
- drivers/net/ethernet/atheros/atlx/atl2.c      |   6 +-
- .../net/ethernet/broadcom/bnx2x/bnx2x_cmn.c   |   2 +
- .../ethernet/broadcom/bnx2x/bnx2x_ethtool.c   |   6 +-
- .../net/ethernet/broadcom/bnx2x/bnx2x_main.c  |  12 +-
- .../net/ethernet/broadcom/bnx2x/bnx2x_sp.c    |  98 ++---
- drivers/net/ethernet/brocade/bna/bfa_cee.c    |  20 +-
- drivers/net/ethernet/brocade/bna/bfa_ioc.c    |   8 +-
- drivers/net/ethernet/brocade/bna/bnad.c       |   7 +-
- drivers/net/ethernet/cadence/macb_main.c      |   6 +-
- drivers/net/ethernet/cadence/macb_pci.c       |   2 +-
- drivers/net/ethernet/calxeda/xgmac.c          |   2 +
- .../ethernet/cavium/liquidio/cn68xx_device.c  |   1 +
- .../net/ethernet/cavium/liquidio/lio_core.c   |  92 ++---
- .../net/ethernet/cavium/liquidio/lio_main.c   | 351 +++++++++---------
- .../ethernet/cavium/liquidio/lio_vf_main.c    | 158 ++++----
- .../ethernet/cavium/liquidio/octeon_console.c |  12 +-
- .../ethernet/cavium/liquidio/octeon_device.c  |   4 +-
- .../ethernet/cavium/liquidio/octeon_droq.c    |   2 +-
- .../ethernet/cavium/liquidio/octeon_mailbox.c |   5 +-
- .../net/ethernet/chelsio/cxgb3/cxgb3_main.c   |   8 +-
- drivers/net/ethernet/chelsio/cxgb3/sge.c      |  24 +-
- drivers/net/ethernet/chelsio/cxgb3/t3_hw.c    |   5 +-
- drivers/net/ethernet/cisco/enic/enic_api.c    |   2 +-
- .../net/ethernet/cisco/enic/enic_ethtool.c    |   2 +-
- drivers/net/ethernet/cortina/gemini.c         |   2 +
- drivers/net/ethernet/dec/tulip/de4x5.c        |   4 +-
- drivers/net/ethernet/dec/tulip/media.c        |   5 -
- drivers/net/ethernet/dnet.c                   |   2 +-
- drivers/net/ethernet/ethoc.c                  |   6 +-
- .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   2 +-
- drivers/net/ethernet/freescale/fec_ptp.c      |   5 +-
- drivers/net/ethernet/freescale/fman/fman.c    |  14 +-
- .../net/ethernet/freescale/fman/fman_muram.c  |   6 +-
- .../net/ethernet/freescale/fman/fman_port.c   |  23 +-
- drivers/net/ethernet/freescale/fman/mac.c     |   4 +-
- drivers/net/ethernet/hisilicon/hns/hnae.c     |   2 +-
- .../net/ethernet/hisilicon/hns/hns_dsaf_mac.c |  34 +-
- .../ethernet/hisilicon/hns/hns_dsaf_main.c    | 148 ++++----
- .../ethernet/hisilicon/hns/hns_dsaf_misc.c    |   9 +-
- .../net/ethernet/hisilicon/hns/hns_dsaf_ppe.c |  17 +-
- .../net/ethernet/hisilicon/hns/hns_dsaf_rcb.c |   7 +-
- .../ethernet/hisilicon/hns/hns_dsaf_xgmac.c   |   3 +-
- drivers/net/ethernet/hisilicon/hns/hns_enet.c |   4 +-
- .../net/ethernet/hisilicon/hns/hns_ethtool.c  |   8 +-
- .../hisilicon/hns3/hns3pf/hclge_dcb.c         |   1 +
- drivers/net/ethernet/hisilicon/hns_mdio.c     |   3 +-
- drivers/net/ethernet/intel/e100.c             |   8 +-
- drivers/net/ethernet/intel/e1000/e1000_hw.c   | 146 ++++----
- drivers/net/ethernet/intel/e1000/e1000_main.c |  39 +-
- .../net/ethernet/intel/e1000e/80003es2lan.c   |   1 -
- drivers/net/ethernet/intel/e1000e/ich8lan.c   |  16 +-
- drivers/net/ethernet/intel/e1000e/netdev.c    |  50 ++-
- drivers/net/ethernet/intel/e1000e/phy.c       |   3 +
- drivers/net/ethernet/intel/e1000e/ptp.c       |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq.h |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_client.c |   2 -
- drivers/net/ethernet/intel/i40e/i40e_common.c |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  17 +-
- drivers/net/ethernet/intel/i40e/i40e_ptp.c    |   1 -
- drivers/net/ethernet/intel/i40e/i40e_trace.h  |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   7 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   1 -
- .../ethernet/intel/i40e/i40e_txrx_common.h    |   6 +-
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    |   9 +-
- drivers/net/ethernet/intel/iavf/iavf_adminq.h |   4 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  20 +-
- drivers/net/ethernet/intel/iavf/iavf_trace.h  |   2 +-
- drivers/net/ethernet/intel/iavf/iavf_txrx.h   |   2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +-
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   6 +-
- drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 +-
- drivers/net/ethernet/intel/igb/e1000_82575.c  |   6 +-
- drivers/net/ethernet/intel/igb/e1000_i210.c   |   5 +-
- drivers/net/ethernet/intel/igb/e1000_mac.c    |   1 +
- drivers/net/ethernet/intel/igb/e1000_mbx.c    |   1 +
- drivers/net/ethernet/intel/igb/igb_main.c     |  28 +-
- drivers/net/ethernet/intel/igb/igb_ptp.c      |   8 +-
- drivers/net/ethernet/intel/igbvf/netdev.c     |  17 +-
- drivers/net/ethernet/intel/igc/igc_main.c     |   2 +-
- drivers/net/ethernet/intel/igc/igc_ptp.c      |   4 +-
- drivers/net/ethernet/intel/ixgb/ixgb_hw.c     | 135 ++++---
- drivers/net/ethernet/intel/ixgb/ixgb_main.c   |  17 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   3 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |   8 +-
- .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   3 +-
- drivers/net/ethernet/mellanox/mlx4/en_tx.c    |   2 +-
- drivers/net/ethernet/micrel/ksz884x.c         |  49 +--
- .../ethernet/microchip/encx24j600-regmap.c    |   2 +-
- drivers/net/ethernet/microchip/lan743x_main.c |   6 +-
- drivers/net/ethernet/natsemi/ns83820.c        |   4 +-
- drivers/net/ethernet/neterion/s2io.c          |  91 ++---
- .../net/ethernet/neterion/vxge/vxge-config.c  |   5 +-
- .../net/ethernet/neterion/vxge/vxge-ethtool.c |   2 +-
- .../net/ethernet/neterion/vxge/vxge-main.c    |  10 +-
- .../net/ethernet/neterion/vxge/vxge-traffic.c |  72 ++--
- .../oki-semi/pch_gbe/pch_gbe_ethtool.c        |   4 +-
- .../ethernet/oki-semi/pch_gbe/pch_gbe_main.c  |   5 +-
- .../ethernet/oki-semi/pch_gbe/pch_gbe_param.c |  14 +-
- .../net/ethernet/packetengines/yellowfin.c    |   2 +-
- .../net/ethernet/qlogic/netxen/netxen_nic.h   |   3 -
- .../qlogic/netxen/netxen_nic_ethtool.c        |   3 +
- drivers/net/ethernet/qualcomm/emac/emac.c     |   1 +
- drivers/net/ethernet/renesas/sh_eth.c         |  10 +
- .../net/ethernet/samsung/sxgbe/sxgbe_main.c   |  17 +-
- drivers/net/ethernet/sfc/falcon/farch.c       |  29 +-
- drivers/net/ethernet/sfc/falcon/rx.c          |   2 +
- drivers/net/ethernet/sfc/falcon/selftest.c    |   2 +-
- drivers/net/ethernet/sfc/mcdi.h               |   1 +
- drivers/net/ethernet/sfc/net_driver.h         |   2 +-
- drivers/net/ethernet/sfc/ptp.c                |   7 +-
- drivers/net/ethernet/sis/sis900.c             |   8 +-
- .../net/ethernet/stmicro/stmmac/dwmac-rk.c    |   2 +-
- .../net/ethernet/stmicro/stmmac/stmmac_main.c |  14 +-
- .../ethernet/stmicro/stmmac/stmmac_platform.c |   3 +-
- drivers/net/ethernet/sun/cassini.c            |   4 +-
- .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
- drivers/net/ethernet/tehuti/tehuti.c          |  17 +-
- drivers/net/ethernet/ti/cpsw_new.c            |   2 -
- drivers/net/ethernet/ti/davinci_cpdma.c       |   2 +-
- drivers/net/ethernet/ti/davinci_emac.c        |  10 +-
- drivers/net/ethernet/ti/tlan.c                |   4 +-
- drivers/net/ethernet/via/via-rhine.c          |   2 +-
- drivers/net/ethernet/via/via-velocity.c       |  40 +-
- drivers/net/ethernet/xilinx/ll_temac_main.c   |  26 +-
- 130 files changed, 1178 insertions(+), 1062 deletions(-)
-
-
-base-commit: 3fc826f121d89c5aa4afd7b3408b07e0ff59466b
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 79c7a92aed16..76bb77b4607a 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -2593,7 +2593,7 @@ static void e100_diag_test(struct net_device *netdev,
+ {
+ 	struct ethtool_cmd cmd;
+ 	struct nic *nic = netdev_priv(netdev);
+-	int i, err;
++	int i;
+ 
+ 	memset(data, 0, E100_TEST_LEN * sizeof(u64));
+ 	data[0] = !mii_link_ok(&nic->mii);
+@@ -2601,7 +2601,7 @@ static void e100_diag_test(struct net_device *netdev,
+ 	if (test->flags & ETH_TEST_FL_OFFLINE) {
+ 
+ 		/* save speed, duplex & autoneg settings */
+-		err = mii_ethtool_gset(&nic->mii, &cmd);
++		mii_ethtool_gset(&nic->mii, &cmd);
+ 
+ 		if (netif_running(netdev))
+ 			e100_down(nic);
+@@ -2610,7 +2610,7 @@ static void e100_diag_test(struct net_device *netdev,
+ 		data[4] = e100_loopback_test(nic, lb_phy);
+ 
+ 		/* restore speed, duplex & autoneg settings */
+-		err = mii_ethtool_sset(&nic->mii, &cmd);
++		mii_ethtool_sset(&nic->mii, &cmd);
+ 
+ 		if (netif_running(netdev))
+ 			e100_up(nic);
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+index cf57403d88d2..fb5af23880c3 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+@@ -376,7 +376,6 @@ s32 e1000_reset_hw(struct e1000_hw *hw)
+ {
+ 	u32 ctrl;
+ 	u32 ctrl_ext;
+-	u32 icr;
+ 	u32 manc;
+ 	u32 led_ctrl;
+ 	s32 ret_val;
+@@ -501,7 +500,7 @@ s32 e1000_reset_hw(struct e1000_hw *hw)
+ 	ew32(IMC, 0xffffffff);
+ 
+ 	/* Clear any pending interrupt events. */
+-	icr = er32(ICR);
++	er32(ICR);
+ 
+ 	/* If MWI was previously enabled, reenable it. */
+ 	if (hw->mac_type == e1000_82542_rev2_0) {
+@@ -2368,16 +2367,13 @@ static s32 e1000_check_for_serdes_link_generic(struct e1000_hw *hw)
+  */
+ s32 e1000_check_for_link(struct e1000_hw *hw)
+ {
+-	u32 rxcw = 0;
+-	u32 ctrl;
+ 	u32 status;
+ 	u32 rctl;
+ 	u32 icr;
+-	u32 signal = 0;
+ 	s32 ret_val;
+ 	u16 phy_data;
+ 
+-	ctrl = er32(CTRL);
++	er32(CTRL);
+ 	status = er32(STATUS);
+ 
+ 	/* On adapters with a MAC newer than 82544, SW Definable pin 1 will be
+@@ -2386,12 +2382,9 @@ s32 e1000_check_for_link(struct e1000_hw *hw)
+ 	 */
+ 	if ((hw->media_type == e1000_media_type_fiber) ||
+ 	    (hw->media_type == e1000_media_type_internal_serdes)) {
+-		rxcw = er32(RXCW);
++		er32(RXCW);
+ 
+ 		if (hw->media_type == e1000_media_type_fiber) {
+-			signal =
+-			    (hw->mac_type >
+-			     e1000_82544) ? E1000_CTRL_SWDPIN1 : 0;
+ 			if (status & E1000_STATUS_LU)
+ 				hw->get_link_status = false;
+ 		}
+@@ -4673,78 +4666,76 @@ s32 e1000_led_off(struct e1000_hw *hw)
+  */
+ static void e1000_clear_hw_cntrs(struct e1000_hw *hw)
+ {
+-	volatile u32 temp;
+-
+-	temp = er32(CRCERRS);
+-	temp = er32(SYMERRS);
+-	temp = er32(MPC);
+-	temp = er32(SCC);
+-	temp = er32(ECOL);
+-	temp = er32(MCC);
+-	temp = er32(LATECOL);
+-	temp = er32(COLC);
+-	temp = er32(DC);
+-	temp = er32(SEC);
+-	temp = er32(RLEC);
+-	temp = er32(XONRXC);
+-	temp = er32(XONTXC);
+-	temp = er32(XOFFRXC);
+-	temp = er32(XOFFTXC);
+-	temp = er32(FCRUC);
+-
+-	temp = er32(PRC64);
+-	temp = er32(PRC127);
+-	temp = er32(PRC255);
+-	temp = er32(PRC511);
+-	temp = er32(PRC1023);
+-	temp = er32(PRC1522);
+-
+-	temp = er32(GPRC);
+-	temp = er32(BPRC);
+-	temp = er32(MPRC);
+-	temp = er32(GPTC);
+-	temp = er32(GORCL);
+-	temp = er32(GORCH);
+-	temp = er32(GOTCL);
+-	temp = er32(GOTCH);
+-	temp = er32(RNBC);
+-	temp = er32(RUC);
+-	temp = er32(RFC);
+-	temp = er32(ROC);
+-	temp = er32(RJC);
+-	temp = er32(TORL);
+-	temp = er32(TORH);
+-	temp = er32(TOTL);
+-	temp = er32(TOTH);
+-	temp = er32(TPR);
+-	temp = er32(TPT);
+-
+-	temp = er32(PTC64);
+-	temp = er32(PTC127);
+-	temp = er32(PTC255);
+-	temp = er32(PTC511);
+-	temp = er32(PTC1023);
+-	temp = er32(PTC1522);
+-
+-	temp = er32(MPTC);
+-	temp = er32(BPTC);
++	er32(CRCERRS);
++	er32(SYMERRS);
++	er32(MPC);
++	er32(SCC);
++	er32(ECOL);
++	er32(MCC);
++	er32(LATECOL);
++	er32(COLC);
++	er32(DC);
++	er32(SEC);
++	er32(RLEC);
++	er32(XONRXC);
++	er32(XONTXC);
++	er32(XOFFRXC);
++	er32(XOFFTXC);
++	er32(FCRUC);
++
++	er32(PRC64);
++	er32(PRC127);
++	er32(PRC255);
++	er32(PRC511);
++	er32(PRC1023);
++	er32(PRC1522);
++
++	er32(GPRC);
++	er32(BPRC);
++	er32(MPRC);
++	er32(GPTC);
++	er32(GORCL);
++	er32(GORCH);
++	er32(GOTCL);
++	er32(GOTCH);
++	er32(RNBC);
++	er32(RUC);
++	er32(RFC);
++	er32(ROC);
++	er32(RJC);
++	er32(TORL);
++	er32(TORH);
++	er32(TOTL);
++	er32(TOTH);
++	er32(TPR);
++	er32(TPT);
++
++	er32(PTC64);
++	er32(PTC127);
++	er32(PTC255);
++	er32(PTC511);
++	er32(PTC1023);
++	er32(PTC1522);
++
++	er32(MPTC);
++	er32(BPTC);
+ 
+ 	if (hw->mac_type < e1000_82543)
+ 		return;
+ 
+-	temp = er32(ALGNERRC);
+-	temp = er32(RXERRC);
+-	temp = er32(TNCRS);
+-	temp = er32(CEXTERR);
+-	temp = er32(TSCTC);
+-	temp = er32(TSCTFC);
++	er32(ALGNERRC);
++	er32(RXERRC);
++	er32(TNCRS);
++	er32(CEXTERR);
++	er32(TSCTC);
++	er32(TSCTFC);
+ 
+ 	if (hw->mac_type <= e1000_82544)
+ 		return;
+ 
+-	temp = er32(MGTPRC);
+-	temp = er32(MGTPDC);
+-	temp = er32(MGTPTC);
++	er32(MGTPRC);
++	er32(MGTPDC);
++	er32(MGTPTC);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_hw.c b/drivers/net/ethernet/intel/ixgb/ixgb_hw.c
+index cbaa933ef30d..a430871d1c27 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_hw.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_hw.c
+@@ -98,7 +98,6 @@ bool
+ ixgb_adapter_stop(struct ixgb_hw *hw)
+ {
+ 	u32 ctrl_reg;
+-	u32 icr_reg;
+ 
+ 	ENTER();
+ 
+@@ -142,7 +141,7 @@ ixgb_adapter_stop(struct ixgb_hw *hw)
+ 	IXGB_WRITE_REG(hw, IMC, 0xffffffff);
+ 
+ 	/* Clear any pending interrupt events. */
+-	icr_reg = IXGB_READ_REG(hw, ICR);
++	IXGB_READ_REG(hw, ICR);
+ 
+ 	return ctrl_reg & IXGB_CTRL0_RST;
+ }
+@@ -274,7 +273,6 @@ bool
+ ixgb_init_hw(struct ixgb_hw *hw)
+ {
+ 	u32 i;
+-	u32 ctrl_reg;
+ 	bool status;
+ 
+ 	ENTER();
+@@ -286,7 +284,7 @@ ixgb_init_hw(struct ixgb_hw *hw)
+ 	 */
+ 	pr_debug("Issuing a global reset to MAC\n");
+ 
+-	ctrl_reg = ixgb_mac_reset(hw);
++	ixgb_mac_reset(hw);
+ 
+ 	pr_debug("Issuing an EE reset to MAC\n");
+ #ifdef HP_ZX1
+@@ -949,8 +947,6 @@ bool ixgb_check_for_bad_link(struct ixgb_hw *hw)
+ static void
+ ixgb_clear_hw_cntrs(struct ixgb_hw *hw)
+ {
+-	volatile u32 temp_reg;
+-
+ 	ENTER();
+ 
+ 	/* if we are stopped or resetting exit gracefully */
+@@ -959,66 +955,66 @@ ixgb_clear_hw_cntrs(struct ixgb_hw *hw)
+ 		return;
+ 	}
+ 
+-	temp_reg = IXGB_READ_REG(hw, TPRL);
+-	temp_reg = IXGB_READ_REG(hw, TPRH);
+-	temp_reg = IXGB_READ_REG(hw, GPRCL);
+-	temp_reg = IXGB_READ_REG(hw, GPRCH);
+-	temp_reg = IXGB_READ_REG(hw, BPRCL);
+-	temp_reg = IXGB_READ_REG(hw, BPRCH);
+-	temp_reg = IXGB_READ_REG(hw, MPRCL);
+-	temp_reg = IXGB_READ_REG(hw, MPRCH);
+-	temp_reg = IXGB_READ_REG(hw, UPRCL);
+-	temp_reg = IXGB_READ_REG(hw, UPRCH);
+-	temp_reg = IXGB_READ_REG(hw, VPRCL);
+-	temp_reg = IXGB_READ_REG(hw, VPRCH);
+-	temp_reg = IXGB_READ_REG(hw, JPRCL);
+-	temp_reg = IXGB_READ_REG(hw, JPRCH);
+-	temp_reg = IXGB_READ_REG(hw, GORCL);
+-	temp_reg = IXGB_READ_REG(hw, GORCH);
+-	temp_reg = IXGB_READ_REG(hw, TORL);
+-	temp_reg = IXGB_READ_REG(hw, TORH);
+-	temp_reg = IXGB_READ_REG(hw, RNBC);
+-	temp_reg = IXGB_READ_REG(hw, RUC);
+-	temp_reg = IXGB_READ_REG(hw, ROC);
+-	temp_reg = IXGB_READ_REG(hw, RLEC);
+-	temp_reg = IXGB_READ_REG(hw, CRCERRS);
+-	temp_reg = IXGB_READ_REG(hw, ICBC);
+-	temp_reg = IXGB_READ_REG(hw, ECBC);
+-	temp_reg = IXGB_READ_REG(hw, MPC);
+-	temp_reg = IXGB_READ_REG(hw, TPTL);
+-	temp_reg = IXGB_READ_REG(hw, TPTH);
+-	temp_reg = IXGB_READ_REG(hw, GPTCL);
+-	temp_reg = IXGB_READ_REG(hw, GPTCH);
+-	temp_reg = IXGB_READ_REG(hw, BPTCL);
+-	temp_reg = IXGB_READ_REG(hw, BPTCH);
+-	temp_reg = IXGB_READ_REG(hw, MPTCL);
+-	temp_reg = IXGB_READ_REG(hw, MPTCH);
+-	temp_reg = IXGB_READ_REG(hw, UPTCL);
+-	temp_reg = IXGB_READ_REG(hw, UPTCH);
+-	temp_reg = IXGB_READ_REG(hw, VPTCL);
+-	temp_reg = IXGB_READ_REG(hw, VPTCH);
+-	temp_reg = IXGB_READ_REG(hw, JPTCL);
+-	temp_reg = IXGB_READ_REG(hw, JPTCH);
+-	temp_reg = IXGB_READ_REG(hw, GOTCL);
+-	temp_reg = IXGB_READ_REG(hw, GOTCH);
+-	temp_reg = IXGB_READ_REG(hw, TOTL);
+-	temp_reg = IXGB_READ_REG(hw, TOTH);
+-	temp_reg = IXGB_READ_REG(hw, DC);
+-	temp_reg = IXGB_READ_REG(hw, PLT64C);
+-	temp_reg = IXGB_READ_REG(hw, TSCTC);
+-	temp_reg = IXGB_READ_REG(hw, TSCTFC);
+-	temp_reg = IXGB_READ_REG(hw, IBIC);
+-	temp_reg = IXGB_READ_REG(hw, RFC);
+-	temp_reg = IXGB_READ_REG(hw, LFC);
+-	temp_reg = IXGB_READ_REG(hw, PFRC);
+-	temp_reg = IXGB_READ_REG(hw, PFTC);
+-	temp_reg = IXGB_READ_REG(hw, MCFRC);
+-	temp_reg = IXGB_READ_REG(hw, MCFTC);
+-	temp_reg = IXGB_READ_REG(hw, XONRXC);
+-	temp_reg = IXGB_READ_REG(hw, XONTXC);
+-	temp_reg = IXGB_READ_REG(hw, XOFFRXC);
+-	temp_reg = IXGB_READ_REG(hw, XOFFTXC);
+-	temp_reg = IXGB_READ_REG(hw, RJC);
++	IXGB_READ_REG(hw, TPRL);
++	IXGB_READ_REG(hw, TPRH);
++	IXGB_READ_REG(hw, GPRCL);
++	IXGB_READ_REG(hw, GPRCH);
++	IXGB_READ_REG(hw, BPRCL);
++	IXGB_READ_REG(hw, BPRCH);
++	IXGB_READ_REG(hw, MPRCL);
++	IXGB_READ_REG(hw, MPRCH);
++	IXGB_READ_REG(hw, UPRCL);
++	IXGB_READ_REG(hw, UPRCH);
++	IXGB_READ_REG(hw, VPRCL);
++	IXGB_READ_REG(hw, VPRCH);
++	IXGB_READ_REG(hw, JPRCL);
++	IXGB_READ_REG(hw, JPRCH);
++	IXGB_READ_REG(hw, GORCL);
++	IXGB_READ_REG(hw, GORCH);
++	IXGB_READ_REG(hw, TORL);
++	IXGB_READ_REG(hw, TORH);
++	IXGB_READ_REG(hw, RNBC);
++	IXGB_READ_REG(hw, RUC);
++	IXGB_READ_REG(hw, ROC);
++	IXGB_READ_REG(hw, RLEC);
++	IXGB_READ_REG(hw, CRCERRS);
++	IXGB_READ_REG(hw, ICBC);
++	IXGB_READ_REG(hw, ECBC);
++	IXGB_READ_REG(hw, MPC);
++	IXGB_READ_REG(hw, TPTL);
++	IXGB_READ_REG(hw, TPTH);
++	IXGB_READ_REG(hw, GPTCL);
++	IXGB_READ_REG(hw, GPTCH);
++	IXGB_READ_REG(hw, BPTCL);
++	IXGB_READ_REG(hw, BPTCH);
++	IXGB_READ_REG(hw, MPTCL);
++	IXGB_READ_REG(hw, MPTCH);
++	IXGB_READ_REG(hw, UPTCL);
++	IXGB_READ_REG(hw, UPTCH);
++	IXGB_READ_REG(hw, VPTCL);
++	IXGB_READ_REG(hw, VPTCH);
++	IXGB_READ_REG(hw, JPTCL);
++	IXGB_READ_REG(hw, JPTCH);
++	IXGB_READ_REG(hw, GOTCL);
++	IXGB_READ_REG(hw, GOTCH);
++	IXGB_READ_REG(hw, TOTL);
++	IXGB_READ_REG(hw, TOTH);
++	IXGB_READ_REG(hw, DC);
++	IXGB_READ_REG(hw, PLT64C);
++	IXGB_READ_REG(hw, TSCTC);
++	IXGB_READ_REG(hw, TSCTFC);
++	IXGB_READ_REG(hw, IBIC);
++	IXGB_READ_REG(hw, RFC);
++	IXGB_READ_REG(hw, LFC);
++	IXGB_READ_REG(hw, PFRC);
++	IXGB_READ_REG(hw, PFTC);
++	IXGB_READ_REG(hw, MCFRC);
++	IXGB_READ_REG(hw, MCFTC);
++	IXGB_READ_REG(hw, XONRXC);
++	IXGB_READ_REG(hw, XONTXC);
++	IXGB_READ_REG(hw, XOFFRXC);
++	IXGB_READ_REG(hw, XOFFTXC);
++	IXGB_READ_REG(hw, RJC);
+ }
+ 
+ /******************************************************************************
+@@ -1161,18 +1157,13 @@ static void
+ ixgb_optics_reset(struct ixgb_hw *hw)
+ {
+ 	if (hw->phy_type == ixgb_phy_type_txn17401) {
+-		u16 mdio_reg;
+-
+ 		ixgb_write_phy_reg(hw,
+ 				   MDIO_CTRL1,
+ 				   IXGB_PHY_ADDRESS,
+ 				   MDIO_MMD_PMAPMD,
+ 				   MDIO_CTRL1_RESET);
+ 
+-		mdio_reg = ixgb_read_phy_reg(hw,
+-					     MDIO_CTRL1,
+-					     IXGB_PHY_ADDRESS,
+-					     MDIO_MMD_PMAPMD);
++		ixgb_read_phy_reg(hw, MDIO_CTRL1, IXGB_PHY_ADDRESS, MDIO_MMD_PMAPMD);
+ 	}
+ }
+ 
 -- 
 2.25.4
 
