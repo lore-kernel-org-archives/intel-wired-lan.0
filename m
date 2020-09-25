@@ -1,67 +1,60 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 25 Sep 2020 16:28:32 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v1 1/3] Revert "PCI: Make
- pci_enable_ptm() private"
-In-Reply-To: <20200925232834.2704711-1-vinicius.gomes@intel.com>
-References: <20200925232834.2704711-1-vinicius.gomes@intel.com>
-Message-ID: <20200925232834.2704711-2-vinicius.gomes@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 25 Sep 2020 16:31:15 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH net-next v3 0/9] make
+ drivers/net/ethernet W=1 clean
+In-Reply-To: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
+References: <20200925222445.74531-1-jesse.brandeburg@gmail.com>
+Message-ID: <20200925.163115.1983585891277676668.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make pci_enable_ptm() accessible from the drivers.
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Date: Fri, 25 Sep 2020 15:24:36 -0700
 
-Even if PTM still works on the platform I am using without calling
-this this function, it might be possible that it's not always the
-case.
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> The Goal: move to W=1 being default for drivers/net/ethernet, and
+> then use automation to catch more code issues (warnings) being
+> introduced.
+> The status: Getting much closer but not quite done for all
+> architectures.
+> 
+> After applying the patches below, the drivers/net/ethernet
+> directory can be built as modules with W=1 with no warnings (so
+> far on x64_64 arch only!). As Jakub pointed out, there is much
+> more work to do to clean up C=1, but that will be another series
+> of changes.
+> 
+> This series removes 1,247 warnings and hopefully allows the
+> ethernet directory to move forward from here without more
+> warnings being added. There is only one objtool warning now.
+> 
+> This version drops one of the Intel patches, as I couldn't
+> reproduce the original issue to document the warning.
+> 
+> Some of these patches are already sent and tested on Intel Wired
+> Lan, but the rest of the series titled drivers/net/ethernet
+> affects other drivers. The changes are all pretty
+> straightforward.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Reviewed-by: Jakub Kicinski <kuba@kernel.org>
+> Reviewed-by: Saeed Mahameed <saeed@kernel.org>
 
-Exposing this to the driver enables the driver to use the
-'ptm_enabled' field of 'pci_dev' to check if PTM is enabled or not.
+Series applied, but that sh_eth.c thing gives me major cancer.
 
-This reverts commit ac6c26da29c12fa511c877c273ed5c939dc9e96c.
+There has to be a better way to describe that table and I recently
+pushed back on someone trying to stick a CFLAGS modification into
+that subdirectory's Makefile to fix it.
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- drivers/pci/pci.h   | 3 ---
- include/linux/pci.h | 7 +++++++
- 2 files changed, 7 insertions(+), 3 deletions(-)
+That strategy of initializing a table might be convenient, but with it
+you can't look at each table and see which registers DO NOT exist for
+each chip which is just as interesting as which ones do exist.
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index fa12f7cbc1a0..8871109fe390 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -582,11 +582,8 @@ static inline void pcie_ecrc_get_policy(char *str) { }
- 
- #ifdef CONFIG_PCIE_PTM
- void pci_ptm_init(struct pci_dev *dev);
--int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
- #else
- static inline void pci_ptm_init(struct pci_dev *dev) { }
--static inline int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
--{ return -EINVAL; }
- #endif
- 
- struct pci_dev_reset_methods {
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 835530605c0d..ec4b28153cc4 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1593,6 +1593,13 @@ static inline bool pci_aer_available(void) { return false; }
- 
- bool pci_ats_disabled(void);
- 
-+#ifdef CONFIG_PCIE_PTM
-+int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
-+#else
-+static inline int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
-+{ return -EINVAL; }
-+#endif
-+
- void pci_cfg_access_lock(struct pci_dev *dev);
- bool pci_cfg_access_trylock(struct pci_dev *dev);
- void pci_cfg_access_unlock(struct pci_dev *dev);
--- 
-2.28.0
+But the main point is that the warning should be avoided in a cleaner
+way somehow.  And by doing so we'll likely make the tables more
+expressive.
 
