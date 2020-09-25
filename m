@@ -1,82 +1,222 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 25 Sep 2020 07:16:38 +0200
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: Increase iteration on
- polling MDIC ready bit
-In-Reply-To: <20200924164542.19906-1-kai.heng.feng@canonical.com>
-References: <20200924150958.18016-1-kai.heng.feng@canonical.com>
- <20200924164542.19906-1-kai.heng.feng@canonical.com>
-Message-ID: <1497f846-40d2-ddc8-60be-ffd117ffc0b7@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 25 Sep 2020 13:34:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 92465620e2348c33293eba028d1785e50ce0a922
+Message-ID: <5f6d8167.rXAneI9Zn04IaZYu%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Kai-Heng,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 92465620e2348c33293eba028d1785e50ce0a922  e1000e: Add support for Meteor Lake
 
+elapsed time: 723m
 
-Thank you for patch version 3.
+configs tested: 193
+configs skipped: 2
 
-Am 24.09.20 um 18:45 schrieb Kai-Heng Feng:
-> We are seeing the following error after S3 resume:
-> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
-> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
-> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
-> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
-> ...
-> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
-> 
-> As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
-> increase polling iteration can resolve the issue.
-> 
-> The root cause is quite likely Intel ME, since it's a blackbox to the
-> kernel so the only approach we can take is to be patient and wait
-> longer.
-> 
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> ---
-> v3:
->   - Moving delay to end of loop doesn't save anytime, move it back.
->   - Point out this is quitely likely caused by Intel ME.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-quietly
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                  maltasmvp_eva_defconfig
+mips                    maltaup_xpa_defconfig
+xtensa                  audio_kc705_defconfig
+arm                        vexpress_defconfig
+powerpc                    gamecube_defconfig
+arm                        multi_v7_defconfig
+i386                             allyesconfig
+sh                          rsk7269_defconfig
+ia64                                defconfig
+microblaze                    nommu_defconfig
+arm                       omap2plus_defconfig
+powerpc                 mpc832x_rdb_defconfig
+sh                               j2_defconfig
+arm                       multi_v4t_defconfig
+powerpc                      tqm8xx_defconfig
+arm                         bcm2835_defconfig
+arm                           stm32_defconfig
+arm                          collie_defconfig
+mips                         cobalt_defconfig
+arm                     davinci_all_defconfig
+m68k                       m5275evb_defconfig
+powerpc                     tqm8548_defconfig
+arm                         nhk8815_defconfig
+arm                        clps711x_defconfig
+powerpc                      ppc64e_defconfig
+h8300                            alldefconfig
+arm                        trizeps4_defconfig
+powerpc                 mpc85xx_cds_defconfig
+mips                         rt305x_defconfig
+arm                       mainstone_defconfig
+powerpc64                           defconfig
+xtensa                              defconfig
+m68k                        stmark2_defconfig
+arm                            qcom_defconfig
+sh                          r7780mp_defconfig
+powerpc                       ebony_defconfig
+xtensa                    smp_lx200_defconfig
+m68k                        m5272c3_defconfig
+powerpc                   motionpro_defconfig
+sh                          kfr2r09_defconfig
+powerpc                 linkstation_defconfig
+m68k                        mvme16x_defconfig
+powerpc                     sbc8548_defconfig
+sh                             shx3_defconfig
+arm                           efm32_defconfig
+powerpc                     akebono_defconfig
+sh                         apsh4a3a_defconfig
+sh                           se7712_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                    adder875_defconfig
+arc                      axs103_smp_defconfig
+m68k                          amiga_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                     tqm8540_defconfig
+sh                      rts7751r2d1_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+mips                        bcm47xx_defconfig
+mips                         tb0226_defconfig
+m68k                          hp300_defconfig
+sparc                            allyesconfig
+sparc                       sparc32_defconfig
+powerpc                 mpc837x_mds_defconfig
+arm                         hackkit_defconfig
+um                           x86_64_defconfig
+arm                       netwinder_defconfig
+arm                        keystone_defconfig
+arc                              alldefconfig
+mips                           ci20_defconfig
+xtensa                         virt_defconfig
+arc                        nsim_700_defconfig
+m68k                       bvme6000_defconfig
+arm                        cerfcube_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                     tqm8541_defconfig
+powerpc                    socrates_defconfig
+arm                         s3c6400_defconfig
+mips                        omega2p_defconfig
+h8300                               defconfig
+powerpc                      pcm030_defconfig
+h8300                    h8300h-sim_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                        bcm63xx_defconfig
+arm                         axm55xx_defconfig
+sh                          polaris_defconfig
+sh                ecovec24-romimage_defconfig
+sh                          lboxre2_defconfig
+nds32                             allnoconfig
+csky                                defconfig
+xtensa                           allyesconfig
+mips                         bigsur_defconfig
+mips                     loongson1c_defconfig
+mips                        workpad_defconfig
+powerpc                     ep8248e_defconfig
+mips                       capcella_defconfig
+riscv                          rv32_defconfig
+powerpc                     ppa8548_defconfig
+x86_64                              defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200924
+i386                 randconfig-a006-20200924
+i386                 randconfig-a003-20200924
+i386                 randconfig-a004-20200924
+i386                 randconfig-a005-20200924
+i386                 randconfig-a001-20200924
+i386                 randconfig-a002-20200923
+i386                 randconfig-a006-20200923
+i386                 randconfig-a003-20200923
+i386                 randconfig-a004-20200923
+i386                 randconfig-a005-20200923
+i386                 randconfig-a001-20200923
+x86_64               randconfig-a011-20200925
+x86_64               randconfig-a013-20200925
+x86_64               randconfig-a014-20200925
+x86_64               randconfig-a015-20200925
+x86_64               randconfig-a012-20200925
+x86_64               randconfig-a016-20200925
+x86_64               randconfig-a011-20200923
+x86_64               randconfig-a013-20200923
+x86_64               randconfig-a014-20200923
+x86_64               randconfig-a015-20200923
+x86_64               randconfig-a012-20200923
+x86_64               randconfig-a016-20200923
+i386                 randconfig-a012-20200925
+i386                 randconfig-a014-20200925
+i386                 randconfig-a016-20200925
+i386                 randconfig-a013-20200925
+i386                 randconfig-a011-20200925
+i386                 randconfig-a015-20200925
+i386                 randconfig-a012-20200923
+i386                 randconfig-a014-20200923
+i386                 randconfig-a016-20200923
+i386                 randconfig-a013-20200923
+i386                 randconfig-a011-20200923
+i386                 randconfig-a015-20200923
+i386                 randconfig-a012-20200924
+i386                 randconfig-a014-20200924
+i386                 randconfig-a016-20200924
+i386                 randconfig-a013-20200924
+i386                 randconfig-a011-20200924
+i386                 randconfig-a015-20200924
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-You seem to have missed my comments regarding patch version 3. It?d be 
-great if you improved the commit message with my suggestions.
+clang tested configs:
+x86_64               randconfig-a005-20200923
+x86_64               randconfig-a003-20200923
+x86_64               randconfig-a004-20200923
+x86_64               randconfig-a002-20200923
+x86_64               randconfig-a006-20200923
+x86_64               randconfig-a001-20200923
+x86_64               randconfig-a005-20200925
+x86_64               randconfig-a003-20200925
+x86_64               randconfig-a004-20200925
+x86_64               randconfig-a002-20200925
+x86_64               randconfig-a006-20200925
+x86_64               randconfig-a001-20200925
 
-Without knowing what hardware this happened on, nobody, even later 
-getting the hardware, can reproduce the your results. If you say the ME 
-is involved, please also document the ME firmware version, which is used 
-here.
-
-> v2:
->   - Increase polling iteration instead of powering down the phy.
-> 
->   drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-> index e11c877595fb..e6d4acd90937 100644
-> --- a/drivers/net/ethernet/intel/e1000e/phy.c
-> +++ b/drivers/net/ethernet/intel/e1000e/phy.c
-> @@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
->   	 * Increasing the time out as testing showed failures with
->   	 * the lower time out
->   	 */
-> -	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
-> +	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
->   		udelay(50);
->   		mdic = er32(MDIC);
->   		if (mdic & E1000_MDIC_READY)
-
-In the PCI subsystem, a warning is shown, when something takes more then 
-100 ms. As you increase it to over 320 ms, a warning should be printed 
-to talk to the firmware folks, when it passes 100 ms.
-
-
-Kind regards,
-
-Paul
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
