@@ -1,75 +1,94 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 25 Sep 2020 15:23:07 -0500
-Subject: [Intel-wired-lan] [PATCH v3 4/4] PCI: Limit
- pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <20200925182654.224004-5-nitesh@redhat.com>
-Message-ID: <20200925202307.GA2456332@bjorn-Precision-5520>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 25 Sep 2020 20:31:43 +0000
+Subject: [Intel-wired-lan] [EXTERNAL] RE: General question regarding
+ i40e driver version in upstream kernel
+In-Reply-To: <a01df73ad3031dce66f44e520ebc11b9caf592dd.camel@harmonicinc.com>
+References: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
+ <BYAPR11MB3606ABF2B6ACCB67097C2D32EF390@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <a01df73ad3031dce66f44e520ebc11b9caf592dd.camel@harmonicinc.com>
+Message-ID: <DM6PR11MB2890E25E8E6896966CA36522BC360@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 25, 2020 at 02:26:54PM -0400, Nitesh Narayan Lal wrote:
-> If we have isolated CPUs dedicated for use by real-time tasks, we try to
-> move IRQs to housekeeping CPUs from the userspace to reduce latency
-> overhead on the isolated CPUs.
-> 
-> If we allocate too many IRQ vectors, moving them all to housekeeping CPUs
-> may exceed per-CPU vector limits.
-> 
-> When we have isolated CPUs, limit the number of vectors allocated by
-> pci_alloc_irq_vectors() to the minimum number required by the driver, or
-> to one per housekeeping CPU if that is larger.
-> 
-> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> ---
->  include/linux/pci.h | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 835530605c0d..a7b10240b778 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -38,6 +38,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/io.h>
->  #include <linux/resource_ext.h>
-> +#include <linux/sched/isolation.h>
->  #include <uapi/linux/pci.h>
->  
->  #include <linux/pci_ids.h>
-> @@ -1797,6 +1798,22 @@ static inline int
->  pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
->  		      unsigned int max_vecs, unsigned int flags)
->  {
-> +	unsigned int hk_cpus;
-> +
-> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
+Unfortunately the driver versioning in the kernel does not really map to the versioning in the ?out of tree? (download-able) driver.  If you look at the git history for the i40e driver you will see regular patches to the driver with very few of those patches touching the version string, so that string in the kernel is not a very good indicator of what code that driver contains.
 
-Add blank line here before the block comment.
+The current upstream kernel has done away with the driver string in place of the kernel version itself instead, which is probably a better indication of the actual driver.
 
-> +	/*
-> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
-> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
-> +	 * to the housekeeping CPUs from the userspace by changing their
-> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
-> +	 * running out of IRQ vectors.
-> +	 */
-> +	if (hk_cpus < num_online_cpus()) {
-> +		if (hk_cpus < min_vecs)
-> +			max_vecs = min_vecs;
-> +		else if (hk_cpus < max_vecs)
-> +			max_vecs = hk_cpus;
-> +	}
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Oron Peled
+Sent: Friday, September 25, 2020 11:53 AM
+To: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>; Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan at osuosl.org
+Subject: Re: [Intel-wired-lan] [EXTERNAL] RE: General question regarding i40e driver version in upstream kernel
 
-It seems like you'd want to do this inside
-pci_alloc_irq_vectors_affinity() since that's an exported interface,
-and drivers that use it will bypass the limiting you're doing here.
+Hi,
 
->  	return pci_alloc_irq_vectors_affinity(dev, min_vecs, max_vecs, flags,
->  					      NULL);
->  }
-> -- 
-> 2.18.2
-> 
+I'm sorry, but I don't understand how it's related to OSV's:
+
+  *   The latest released upstream kernel is 5.8.11
+  *   You can verify it still contain i40e version "2.8.20-k" -- link<https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/net/ethernet/intel/i40e/i40e_main.c?h=v5.8.11>
+
+  *   Naturally, this is what "bleeding-edge" OSV's take:
+
+     *   Debian/testing (bullseye) use 5.8.0 -- link<https://packages.debian.org/bullseye/linux-image-5.8.0-2-amd64-unsigned>
+
+     *   Ubuntu/groovy use 5.8.0 -- link<https://packages.ubuntu.com/groovy/linux-image-generic>
+
+     *   Fedora use 5.8.11 (even for unreleased yet Fedora-33) -- link<https://src.fedoraproject.org/rpms/kernel>
+
+As Arkady commented below, Intel recommends a much newer driver: 2.12.6
+All we wanted to know is why there's such a gap to upstream kernel (not what OSV's take or not)
+
+Also,
+
+  *   In the upcoming kernel 5.9 the version strings were removed from the drivers -- link<https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=34a2a3b83e2c>
+  *   This would not bother us so much if the latest upstream kernel contained the latest Intel driver.
+  *   Regretfully this is not the case, so hiding the version number just add to the existing confusion.
+
+Thanks,
+
+--
+Oron Peled
+
+On Thu, 2020-09-24 at 19:54 +0000, Fujinaka, Todd wrote:
+Unfortunately, I think the question is why the patches in the upstream kernel don't make it into the OSV kernel quicker and that's a question for the OSV. In this case, Canonical.
+
+I know we've had some delays getting patches into the upstream kernel but we're working on that. Most of the timing issues are due to release schedules and validation as it probably is for your products as well.
+
+Todd Fujinaka
+Software Application Engineer
+Data Center Group
+Intel Corporation
+todd.fujinaka at intel.com<mailto:todd.fujinaka@intel.com>
+
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces at osuosl.org<mailto:intel-wired-lan-bounces@osuosl.org>> On Behalf Of Arkady Gilinsky
+Sent: Wednesday, September 23, 2020 11:05 PM
+To: intel-wired-lan@osuosl.org<mailto:intel-wired-lan@osuosl.org>
+Cc: Oron Peled <Oron.Peled at harmonicinc.com<mailto:Oron.Peled@harmonicinc.com>>
+Subject: [Intel-wired-lan] General question regarding i40e driver version in upstream kernel
+
+Hi All,
+
+I have a general question related to i40e driver in Linux kernel.
+In latest Ubuntu-20.04 release (Focal) with kernel 5.4.0-42-generic the standard i40e driver is quite old (2.8.20-k), while on Intel official site recently was announced newer i40e (2.12.6).
+Also, the latest upstream kernel is 5.8.3 has the same (2.8.20-k) version of i40e driver.
+See here: https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/i40e/i40e_main.c#L28
+
+Could, anybody from driver maintainers, clarify why there is such a big gap in versions of i40e driver.
+Do all the drivers, from 2.8.20-k version, not stable enough, so they were not taken into kernel upstream?
+
+--
+Best regards,
+Arkady Gilinsky
+
+------------------------------------------
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org<mailto:Intel-wired-lan@osuosl.org>
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200925/8188ea11/attachment-0001.html>
