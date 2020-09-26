@@ -1,103 +1,169 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 26 Sep 2020 12:11:22 +0800
-Subject: [Intel-wired-lan] [PATCH next-queue v1 3/3] igc: Add support
- for PTP getcrosststamp()
-In-Reply-To: <20200925232834.2704711-4-vinicius.gomes@intel.com>
-References: <20200925232834.2704711-4-vinicius.gomes@intel.com>
-Message-ID: <202009261229.ixDMmAy4%lkp@intel.com>
+Date: Sat, 26 Sep 2020 13:22:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE] BUILD SUCCESS
+ 60b57c770c875b198cf886e7a28c28ef99f66785
+Message-ID: <5f6ecfff.cWBwxBFw+Y4Zbfs1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vinicius,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+branch HEAD: 60b57c770c875b198cf886e7a28c28ef99f66785  e1000e: Add support for Meteor Lake
 
-Thank you for the patch! Yet something to improve:
+elapsed time: 881m
 
-[auto build test ERROR on jkirsher-next-queue/dev-queue]
-[cannot apply to pci/next ipvs/master v5.9-rc6 next-20200925]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+configs tested: 140
+configs skipped: 2
 
-url:    https://github.com/0day-ci/linux/commits/Vinicius-Costa-Gomes/igc-Add-support-for-PCIe-PTM/20200926-073053
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-config: xtensa-allyesconfig (attached as .config)
-compiler: xtensa-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/f6b01c642e977d12e008e6e6dbec747de73d836f
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Vinicius-Costa-Gomes/igc-Add-support-for-PCIe-PTM/20200926-073053
-        git checkout f6b01c642e977d12e008e6e6dbec747de73d836f
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=xtensa 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                           se7751_defconfig
+mips                      malta_kvm_defconfig
+arm                             mxs_defconfig
+powerpc                mpc7448_hpc2_defconfig
+h8300                            alldefconfig
+mips                           gcw0_defconfig
+powerpc                    ge_imp3a_defconfig
+m68k                       m5208evb_defconfig
+sh                          sdk7786_defconfig
+powerpc                        fsp2_defconfig
+sh                          rsk7264_defconfig
+mips                    maltaup_xpa_defconfig
+arm                         lpc32xx_defconfig
+powerpc                     tqm8548_defconfig
+powerpc                   bluestone_defconfig
+arc                     haps_hs_smp_defconfig
+sh                          r7785rp_defconfig
+arm                           stm32_defconfig
+powerpc                     taishan_defconfig
+sh                          landisk_defconfig
+sh                            titan_defconfig
+xtensa                    smp_lx200_defconfig
+arm                       versatile_defconfig
+powerpc                     stx_gp3_defconfig
+sh                           se7780_defconfig
+xtensa                         virt_defconfig
+mips                         tb0219_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                          iop32x_defconfig
+arm                         orion5x_defconfig
+arm                         at91_dt_defconfig
+m68k                        m5307c3_defconfig
+mips                      bmips_stb_defconfig
+m68k                       m5275evb_defconfig
+mips                            gpr_defconfig
+powerpc                        icon_defconfig
+mips                         tb0287_defconfig
+mips                         db1xxx_defconfig
+arm                            dove_defconfig
+mips                         rt305x_defconfig
+arm                            pleb_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                            mmp2_defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                                  defconfig
+sh                           se7724_defconfig
+arm                            hisi_defconfig
+i386                                defconfig
+parisc                           allyesconfig
+ia64                                defconfig
+mips                        jmr3927_defconfig
+sparc                       sparc64_defconfig
+arm                     davinci_all_defconfig
+arm                         hackkit_defconfig
+ia64                          tiger_defconfig
+ia64                            zx1_defconfig
+powerpc                        cell_defconfig
+arc                          axs103_defconfig
+powerpc                       maple_defconfig
+arm                        mvebu_v5_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                      ep88xc_defconfig
+m68k                          amiga_defconfig
+arm                             rpc_defconfig
+arm                             ezx_defconfig
+c6x                         dsk6455_defconfig
+mips                         mpc30x_defconfig
+sh                            migor_defconfig
+microblaze                          defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200925
+i386                 randconfig-a006-20200925
+i386                 randconfig-a003-20200925
+i386                 randconfig-a004-20200925
+i386                 randconfig-a005-20200925
+i386                 randconfig-a001-20200925
+x86_64               randconfig-a011-20200925
+x86_64               randconfig-a013-20200925
+x86_64               randconfig-a014-20200925
+x86_64               randconfig-a015-20200925
+x86_64               randconfig-a012-20200925
+x86_64               randconfig-a016-20200925
+i386                 randconfig-a012-20200925
+i386                 randconfig-a014-20200925
+i386                 randconfig-a016-20200925
+i386                 randconfig-a013-20200925
+i386                 randconfig-a011-20200925
+i386                 randconfig-a015-20200925
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-All errors (new ones prefixed by >>):
-
-   drivers/net/ethernet/intel/igc/igc_ptp.c: In function 'igc_ptm_gather_report':
->> drivers/net/ethernet/intel/igc/igc_ptp.c:459:27: error: implicit declaration of function 'convert_art_ns_to_tsc' [-Werror=implicit-function-declaration]
-     459 |  adapter->ptm_host_time = convert_art_ns_to_tsc(t2_curr);
-         |                           ^~~~~~~~~~~~~~~~~~~~~
->> drivers/net/ethernet/intel/igc/igc_ptp.c:459:27: error: incompatible types when assigning to type 'struct system_counterval_t' from type 'int'
-   cc1: some warnings being treated as errors
-
-vim +/convert_art_ns_to_tsc +459 drivers/net/ethernet/intel/igc/igc_ptp.c
-
-   425	
-   426	static void igc_ptm_gather_report(struct igc_adapter *adapter)
-   427	{
-   428		struct igc_hw *hw = &adapter->hw;
-   429		u32 t2_curr_h, t2_curr_l;
-   430		ktime_t t1, t2_curr;
-   431	
-   432		t1 = ktime_set(rd32(IGC_PTM_T1_TIM0_H),
-   433			       rd32(IGC_PTM_T1_TIM0_L));
-   434	
-   435		t2_curr_l = rd32(IGC_PTM_CURR_T2_L);
-   436		t2_curr_h = rd32(IGC_PTM_CURR_T2_H);
-   437	
-   438		/* FIXME: There's an ambiguity on what endianness some PCIe PTM
-   439		 * messages should use. Find a more robust way to handle this.
-   440		 */
-   441		t2_curr_h = be32_to_cpu(t2_curr_h);
-   442	
-   443		t2_curr = ((s64)t2_curr_h << 32 | t2_curr_l);
-   444	
-   445		wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-   446	
-   447		mutex_lock(&adapter->ptm_time_lock);
-   448	
-   449		/* Because get_device_system_crosststamp() requires that the
-   450		 * historic timestamp is before the PTM device/host
-   451		 * timestamps, we keep track of the current and previous
-   452		 * snapshot (historic timestamp).
-   453		 */
-   454		memcpy(&adapter->prev_snapshot,
-   455		       &adapter->curr_snapshot, sizeof(adapter->prev_snapshot));
-   456		ktime_get_snapshot(&adapter->curr_snapshot);
-   457	
-   458		adapter->ptm_device_time = t1;
- > 459		adapter->ptm_host_time = convert_art_ns_to_tsc(t2_curr);
-   460		mutex_unlock(&adapter->ptm_time_lock);
-   461	
-   462		mod_delayed_work(system_wq, &adapter->ptm_report,
-   463				 msecs_to_jiffies(IGC_PTM_CYCLE_TIME_MSECS));
-   464	}
-   465	
+clang tested configs:
+x86_64               randconfig-a005-20200925
+x86_64               randconfig-a003-20200925
+x86_64               randconfig-a004-20200925
+x86_64               randconfig-a002-20200925
+x86_64               randconfig-a006-20200925
+x86_64               randconfig-a001-20200925
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 65176 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200926/e9db674f/attachment-0001.bin>
