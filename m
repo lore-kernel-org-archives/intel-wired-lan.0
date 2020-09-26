@@ -1,124 +1,96 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 26 Sep 2020 15:52:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- 578751f4ae98edbfc84d11910def75b88a256c18
-Message-ID: <5f6ef33d.26s0NBaU5THRyLou%lkp@intel.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Sat, 26 Sep 2020 10:08:47 +0000
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: Increase iteration on
+ polling MDIC ready bit
+In-Reply-To: <20200925132903.GB3850848@lunn.ch>
+References: <20200923074751.10527-1-kai.heng.feng@canonical.com>
+ <20200924150958.18016-1-kai.heng.feng@canonical.com>
+ <20200924155355.GC3821492@lunn.ch>
+ <8A08B3A7-8368-48EC-A2DD-B5D5F3EA94C5@canonical.com>
+ <2f48175dce974ea689bfd26b9fc2245a@AcuMS.aculab.com>
+ <20200925132903.GB3850848@lunn.ch>
+Message-ID: <1b4fadba2e204f6abd4ef6e02d84beed@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-branch HEAD: 578751f4ae98edbfc84d11910def75b88a256c18  i40e: Fix flow for IPv6 next header (extension header)
+From: Andrew Lunn
+> Sent: 25 September 2020 14:29
+> On Fri, Sep 25, 2020 at 08:50:30AM +0000, David Laight wrote:
+> > From: Kai-Heng Feng
+> > > Sent: 24 September 2020 17:04
+> > ...
+> > > > I also don't fully understand the fix. You are now looping up to 6400
+> > > > times, each with a delay of 50uS. So that is around 12800 times more
+> > > > than it actually needs to transfer the 64 bits! I've no idea how this
+> > > > hardware works, but my guess would be, something is wrong with the
+> > > > clock setup?
+> > >
+> > > It's probably caused by Intel ME. This is not something new, you can find many polling codes in
+> e1000e
+> > > driver are for ME, especially after S3 resume.
+> > >
+> > > Unless Intel is willing to open up ME, being patient and wait for a longer while is the best
+> approach
+> > > we got.
+> >
+> > There is some really broken code in the e1000e driver that affect my
+> > Ivy bridge platform were it is trying to avoid hardware bugs in
+> > the ME interface.
+> >
+> > It seems that before EVERY write to a MAC register it must check
+> > that the ME isn't using the interface - and spin until it isn't.
+> > This causes massive delays in the TX path because it includes
+> > the write that tells the MAC engine about a new packet.
+> 
+> Hi David
+> 
+> Thanks for the information. This however does not really explain the
+> issue.
+> 
+> The code busy loops waiting for the MDIO transaction to complete. If
+> read/writes to the MAC are getting blocked, that just means less
+> iterations of the loop are needed, not more, since the time to
+> complete the transaction should be fixed.
+> 
+> If ME really is to blame, it means ME is completely hijacking the
+> hardware? Stopping the clocks? Maybe doing its own MDIO transactions?
+> How can you write a PHY driver if something else is also programming
+> the PHY.
+> 
+> We don't understand what is going on here. We are just papering over
+> the cracks. The commit message should say this, that the change fixes
+> the symptoms but probably not the cause.
 
-elapsed time: 1031m
+You may not have the same broken hardware as I have...
 
-configs tested: 95
-configs skipped: 2
+From what I could infer from the code and guess from the behaviour
+I got the impression that if the ME was accessing any of the MAC
+registers it was likely that writes from the kernel just got discarded.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I got the impression that a bug in the hardware was being worked
+around by the ME setting a status bit before and access, waiting
+a bit for the kernel to finish anything it was doing, then
+doing its access and clearing the bit.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                       holly_defconfig
-arm                        multi_v5_defconfig
-sh                         ecovec24_defconfig
-mips                         rt305x_defconfig
-arm                            pleb_defconfig
-powerpc                 mpc832x_mds_defconfig
-arm                            mmp2_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                     ksi8560_defconfig
-arm                            mps2_defconfig
-um                            kunit_defconfig
-csky                                defconfig
-powerpc               mpc834x_itxgp_defconfig
-sparc                            alldefconfig
-arc                           tb10x_defconfig
-arm                        keystone_defconfig
-mips                        nlm_xlp_defconfig
-c6x                         dsk6455_defconfig
-mips                         mpc30x_defconfig
-sh                            migor_defconfig
-microblaze                          defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20200925
-i386                 randconfig-a006-20200925
-i386                 randconfig-a003-20200925
-i386                 randconfig-a004-20200925
-i386                 randconfig-a005-20200925
-i386                 randconfig-a001-20200925
-x86_64               randconfig-a011-20200925
-x86_64               randconfig-a013-20200925
-x86_64               randconfig-a014-20200925
-x86_64               randconfig-a015-20200925
-x86_64               randconfig-a012-20200925
-x86_64               randconfig-a016-20200925
-i386                 randconfig-a012-20200925
-i386                 randconfig-a014-20200925
-i386                 randconfig-a016-20200925
-i386                 randconfig-a013-20200925
-i386                 randconfig-a011-20200925
-i386                 randconfig-a015-20200925
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+The kernel keeps having to wait for the bit to be clear.
+These delays were long; sub ms - but far longer than
+the rest of the code path for sending a packet.
+But the code didn't check/disable pre-emption or interrupts
+so the check was actually broken.
+(If I removed it completely my system wouldn't boot!)
 
-clang tested configs:
-x86_64               randconfig-a005-20200925
-x86_64               randconfig-a003-20200925
-x86_64               randconfig-a004-20200925
-x86_64               randconfig-a002-20200925
-x86_64               randconfig-a006-20200925
-x86_64               randconfig-a001-20200925
+Thing is I don't want the ME.
+I don't need the ME on that system.
+The ME might be a security hole.
+The ME breaks my system.
+But I can't disable it at all.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+	David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+Registration No: 1397386 (Wales)
+
