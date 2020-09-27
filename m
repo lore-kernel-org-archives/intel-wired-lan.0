@@ -1,31 +1,40 @@
-From: David Miller <davem@davemloft.net>
-Date: Sun, 27 Sep 2020 13:57:07 -0700 (PDT)
-Subject: [Intel-wired-lan] [patch 00/35] net: in_interrupt() cleanup and
- fixes
-In-Reply-To: <20200927194846.045411263@linutronix.de>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Mon, 28 Sep 2020 01:00:52 +0200
+Subject: [Intel-wired-lan] [patch 13/35] net: mdiobus: Remove
+ WARN_ON_ONCE(in_interrupt())
+In-Reply-To: <20200927194921.137019811@linutronix.de>
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927.135707.1699954431349573308.davem@davemloft.net>
+ <20200927194921.137019811@linutronix.de>
+Message-ID: <20200927230052.GG3889809@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:48:46 +0200
+On Sun, Sep 27, 2020 at 09:48:59PM +0200, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+> in_interrupt() is ill defined and does not provide what the name
+> suggests. The usage especially in driver code is deprecated and a tree wide
+> effort to clean up and consolidate the (ab)usage of in_interrupt() and
+> related checks is happening.
+> 
+> In this case the check covers only parts of the contexts in which these
+> functions cannot be called. It fails to detect preemption or interrupt
+> disabled invocations.
+> 
+> As the functions which contain these warnings invoke mutex_lock() which
+> contains a broad variety of checks (always enabled or debug option
+> dependent) and therefore covers all invalid conditions already, there is no
+> point in having inconsistent warnings in those drivers. The conditional
+> return is not really valuable in practice either.
+> 
+> Just remove them.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-> in the discussion about preempt count consistency accross kernel configurations:
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 
-Please respin this against net-next, some of the patches in here are already
-in net-next (the wireless debug macro one) and even after that the series
-doesn't build:
-
-drivers/net/ethernet/cisco/enic/enic_main.c: In function ?enic_reset?:
-drivers/net/ethernet/cisco/enic/enic_main.c:2315:2: error: implicit declaration of function ?enic_set_api_state?; did you mean ?enic_set_api_busy?? [-Werror=implicit-function-declaration]
- 2315 |  enic_set_api_state(enic, true);
-      |  ^~~~~~~~~~~~~~~~~~
-      |  enic_set_api_busy
-At top level:
-drivers/net/ethernet/cisco/enic/enic_main.c:2298:13: warning: ?enic_set_api_busy? defined but not used [-Wunused-function]
- 2298 | static void enic_set_api_busy(struct enic *enic, bool busy)
-      |             ^~~~~~~~~~~~~~~~~
+    Andrew
