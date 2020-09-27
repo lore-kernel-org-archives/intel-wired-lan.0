@@ -1,40 +1,157 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon, 28 Sep 2020 01:00:52 +0200
-Subject: [Intel-wired-lan] [patch 13/35] net: mdiobus: Remove
- WARN_ON_ONCE(in_interrupt())
-In-Reply-To: <20200927194921.137019811@linutronix.de>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sun, 27 Sep 2020 21:48:47 +0200
+Subject: [Intel-wired-lan] [patch 01/35] net: enic: Cure the enic api
+ locking trainwreck
 References: <20200927194846.045411263@linutronix.de>
- <20200927194921.137019811@linutronix.de>
-Message-ID: <20200927230052.GG3889809@lunn.ch>
+Message-ID: <20200927194919.806110712@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Sep 27, 2020 at 09:48:59PM +0200, Thomas Gleixner wrote:
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> 
-> in_interrupt() is ill defined and does not provide what the name
-> suggests. The usage especially in driver code is deprecated and a tree wide
-> effort to clean up and consolidate the (ab)usage of in_interrupt() and
-> related checks is happening.
-> 
-> In this case the check covers only parts of the contexts in which these
-> functions cannot be called. It fails to detect preemption or interrupt
-> disabled invocations.
-> 
-> As the functions which contain these warnings invoke mutex_lock() which
-> contains a broad variety of checks (always enabled or debug option
-> dependent) and therefore covers all invalid conditions already, there is no
-> point in having inconsistent warnings in those drivers. The conditional
-> return is not really valuable in practice either.
-> 
-> Just remove them.
-> 
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+enic_dev_wait() has a BUG_ON(in_interrupt()).
 
-    Andrew
+Chasing the callers of enic_dev_wait() revealed the gems of enic_reset()
+and enic_tx_hang_reset() which are both invoked through work queues in
+order to be able to call rtnl_lock(). So far so good.
+
+After locking rtnl both functions acquire enic::enic_api_lock which
+serializes against the (ab)use from infiniband. This is where the
+trainwreck starts.
+
+enic::enic_api_lock is a spin_lock() which implicitly disables preemption,
+but both functions invoke a ton of functions under that lock which can
+sleep. The BUG_ON(in_interrupt()) does not trigger in that case because it
+can't detect the preempt disabled condition.
+
+This clearly has never been tested with any of the mandatory debug options
+for 7+ years, which would have caught that for sure.
+
+Cure it by adding a enic_api_busy member to struct enic, which is modified
+and evaluated with enic::enic_api_lock held.
+
+If enic_api_devcmd_proxy_by_index() observes enic::enic_api_busy as true,
+it drops enic::enic_api_lock and busy waits for enic::enic_api_busy to
+become false.
+
+It would be smarter to wait for a completion of that busy period, but
+enic_api_devcmd_proxy_by_index() is called with other spin locks held which
+obviously can't sleep.
+
+Remove the BUG_ON(in_interrupt()) check as well because it's incomplete and
+with proper debugging enabled the problem would have been caught from the
+debug checks in schedule_timeout().
+
+Fixes: 0b038566c0ea ("drivers/net: enic: Add an interface for USNIC to interact with firmware")
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christian Benvenuti <benve@cisco.com>
+Cc: Govindarajulu Varadarajan <_govind@gmx.com>
+Cc: Dave Miller <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev at vger.kernel.org
+---
+ drivers/net/ethernet/cisco/enic/enic.h      |    1 +
+ drivers/net/ethernet/cisco/enic/enic_api.c  |    6 ++++++
+ drivers/net/ethernet/cisco/enic/enic_main.c |   27 +++++++++++++++++++++------
+ 3 files changed, 28 insertions(+), 6 deletions(-)
+
+--- a/drivers/net/ethernet/cisco/enic/enic.h
++++ b/drivers/net/ethernet/cisco/enic/enic.h
+@@ -169,6 +169,7 @@ struct enic {
+ 	u16 num_vfs;
+ #endif
+ 	spinlock_t enic_api_lock;
++	bool enic_api_busy;
+ 	struct enic_port_profile *pp;
+ 
+ 	/* work queue cache line section */
+--- a/drivers/net/ethernet/cisco/enic/enic_api.c
++++ b/drivers/net/ethernet/cisco/enic/enic_api.c
+@@ -34,6 +34,12 @@ int enic_api_devcmd_proxy_by_index(struc
+ 	struct vnic_dev *vdev = enic->vdev;
+ 
+ 	spin_lock(&enic->enic_api_lock);
++	while (enic->enic_api_busy) {
++		spin_unlock(&enic->enic_api_lock);
++		cpu_relax();
++		spin_lock(&enic->enic_api_lock);
++	}
++
+ 	spin_lock_bh(&enic->devcmd_lock);
+ 
+ 	vnic_dev_cmd_proxy_by_index_start(vdev, vf);
+--- a/drivers/net/ethernet/cisco/enic/enic_main.c
++++ b/drivers/net/ethernet/cisco/enic/enic_main.c
+@@ -2106,8 +2106,6 @@ static int enic_dev_wait(struct vnic_dev
+ 	int done;
+ 	int err;
+ 
+-	BUG_ON(in_interrupt());
+-
+ 	err = start(vdev, arg);
+ 	if (err)
+ 		return err;
+@@ -2295,6 +2293,13 @@ static int enic_set_rss_nic_cfg(struct e
+ 		rss_hash_bits, rss_base_cpu, rss_enable);
+ }
+ 
++static void enic_set_api_busy(struct enic *enic, bool busy)
++{
++	spin_lock(&enic->enic_api_lock);
++	enic->enic_api_busy = busy;
++	spin_unlock(&enic->enic_api_lock);
++}
++
+ static void enic_reset(struct work_struct *work)
+ {
+ 	struct enic *enic = container_of(work, struct enic, reset);
+@@ -2304,7 +2309,9 @@ static void enic_reset(struct work_struc
+ 
+ 	rtnl_lock();
+ 
+-	spin_lock(&enic->enic_api_lock);
++	/* Stop any activity from infiniband */
++	enic_set_api_state(enic, true);
++
+ 	enic_stop(enic->netdev);
+ 	enic_dev_soft_reset(enic);
+ 	enic_reset_addr_lists(enic);
+@@ -2312,7 +2319,10 @@ static void enic_reset(struct work_struc
+ 	enic_set_rss_nic_cfg(enic);
+ 	enic_dev_set_ig_vlan_rewrite_mode(enic);
+ 	enic_open(enic->netdev);
+-	spin_unlock(&enic->enic_api_lock);
++
++	/* Allow infiniband to fiddle with the device again */
++	enic_set_api_state(enic, false);
++
+ 	call_netdevice_notifiers(NETDEV_REBOOT, enic->netdev);
+ 
+ 	rtnl_unlock();
+@@ -2324,7 +2334,9 @@ static void enic_tx_hang_reset(struct wo
+ 
+ 	rtnl_lock();
+ 
+-	spin_lock(&enic->enic_api_lock);
++	/* Stop any activity from infiniband */
++	enic_set_api_state(enic, true);
++
+ 	enic_dev_hang_notify(enic);
+ 	enic_stop(enic->netdev);
+ 	enic_dev_hang_reset(enic);
+@@ -2333,7 +2345,10 @@ static void enic_tx_hang_reset(struct wo
+ 	enic_set_rss_nic_cfg(enic);
+ 	enic_dev_set_ig_vlan_rewrite_mode(enic);
+ 	enic_open(enic->netdev);
+-	spin_unlock(&enic->enic_api_lock);
++
++	/* Allow infiniband to fiddle with the device again */
++	enic_set_api_state(enic, false);
++
+ 	call_netdevice_notifiers(NETDEV_REBOOT, enic->netdev);
+ 
+ 	rtnl_unlock();
+
