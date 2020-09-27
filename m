@@ -1,74 +1,75 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:48:50 +0200
-Subject: [Intel-wired-lan] [patch 04/35] net: caif: Use
- netif_rx_any_context()
+Date: Sun, 27 Sep 2020 21:48:51 +0200
+Subject: [Intel-wired-lan] [patch 05/35] net: atheros: Remove
+ WARN_ON(in_interrupt())
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194920.214592677@linutronix.de>
+Message-ID: <20200927194920.327665456@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-The usage of in_interrupt() in non-core code is phased out. Ideally the
-information of the calling context should be passed by the callers or the
-functions be split as appropriate.
+in_interrupt() is ill defined and does not provide what the name
+suggests. The usage especially in driver code is deprecated and a tree wide
+effort to clean up and consolidate the (ab)usage of in_interrupt() and
+related checks is happening.
 
-cfhsi_rx_desc() and cfhsi_rx_pld() use in_interrupt() to distinguish if
-they should use netif_rx() or netif_rx_ni() for receiving packets.
+In this case the check covers only parts of the contexts in which these
+functions cannot be called. It fails to detect preemption or interrupt
+disabled invocations.
 
-The attempt to consolidate the code by passing an arguemnt or by
-distangling it failed due lack of knowledge about this driver and because
-the call chains are hard to follow.
+As the functions which are invoked from at*_reinit_locked() contain a broad
+variety of checks (always enabled or debug option dependent) which cover
+all invalid conditions already, there is no point in having inconsistent
+warnings in those drivers.
 
-As a stop gap use netif_rx_any_context() which invokes the correct code path
-depending on context and confines the in_interrupt() usage to core code.
+Just remove them.
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jay Cliburn <jcliburn@gmail.com>
+Cc: Chris Snook <chris.snook@gmail.com>
 Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
 Cc: netdev at vger.kernel.org
----
- drivers/net/caif/caif_hsi.c |   19 ++-----------------
- 1 file changed, 2 insertions(+), 17 deletions(-)
 
---- a/drivers/net/caif/caif_hsi.c
-+++ b/drivers/net/caif/caif_hsi.c
-@@ -458,15 +458,7 @@ static int cfhsi_rx_desc(struct cfhsi_de
- 		skb_reset_mac_header(skb);
- 		skb->dev = cfhsi->ndev;
+---
+ drivers/net/ethernet/atheros/atl1c/atl1c_main.c |    1 -
+ drivers/net/ethernet/atheros/atl1e/atl1e_main.c |    2 --
+ drivers/net/ethernet/atheros/atlx/atl2.c        |    1 -
+ 3 files changed, 4 deletions(-)
+
+--- a/drivers/net/ethernet/atheros/atl1c/atl1c_main.c
++++ b/drivers/net/ethernet/atheros/atl1c/atl1c_main.c
+@@ -220,7 +220,6 @@ static void atl1c_phy_config(struct time
  
--		/*
--		 * We are in a callback handler and
--		 * unfortunately we don't know what context we're
--		 * running in.
--		 */
--		if (in_interrupt())
--			netif_rx(skb);
--		else
--			netif_rx_ni(skb);
-+		netif_rx_any_context(skb);
+ void atl1c_reinit_locked(struct atl1c_adapter *adapter)
+ {
+-	WARN_ON(in_interrupt());
+ 	atl1c_down(adapter);
+ 	atl1c_up(adapter);
+ 	clear_bit(__AT_RESETTING, &adapter->flags);
+--- a/drivers/net/ethernet/atheros/atl1e/atl1e_main.c
++++ b/drivers/net/ethernet/atheros/atl1e/atl1e_main.c
+@@ -127,8 +127,6 @@ static void atl1e_phy_config(struct time
  
- 		/* Update network statistics. */
- 		cfhsi->ndev->stats.rx_packets++;
-@@ -587,14 +579,7 @@ static int cfhsi_rx_pld(struct cfhsi_des
- 		skb_reset_mac_header(skb);
- 		skb->dev = cfhsi->ndev;
+ void atl1e_reinit_locked(struct atl1e_adapter *adapter)
+ {
+-
+-	WARN_ON(in_interrupt());
+ 	while (test_and_set_bit(__AT_RESETTING, &adapter->flags))
+ 		msleep(1);
+ 	atl1e_down(adapter);
+--- a/drivers/net/ethernet/atheros/atlx/atl2.c
++++ b/drivers/net/ethernet/atheros/atlx/atl2.c
+@@ -1085,7 +1085,6 @@ static int atl2_up(struct atl2_adapter *
  
--		/*
--		 * We're called in callback from HSI
--		 * and don't know the context we're running in.
--		 */
--		if (in_interrupt())
--			netif_rx(skb);
--		else
--			netif_rx_ni(skb);
-+		netif_rx_any_context(skb);
- 
- 		/* Update network statistics. */
- 		cfhsi->ndev->stats.rx_packets++;
+ static void atl2_reinit_locked(struct atl2_adapter *adapter)
+ {
+-	WARN_ON(in_interrupt());
+ 	while (test_and_set_bit(__ATL2_RESETTING, &adapter->flags))
+ 		msleep(1);
+ 	atl2_down(adapter);
 
