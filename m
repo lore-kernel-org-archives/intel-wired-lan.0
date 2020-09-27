@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:49:10 +0200
-Subject: [Intel-wired-lan] [patch 24/35] net: brcmfmac: Replace
- in_interrupt()
+Date: Sun, 27 Sep 2020 21:49:11 +0200
+Subject: [Intel-wired-lan] [patch 25/35] net: brcmfmac: Use
+ netif_rx_any_context().
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194922.245750969@linutronix.de>
+Message-ID: <20200927194922.339094192@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,20 +12,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-brcmf_sdio_isr() is using in_interrupt() to distinguish if it is called
-from a interrupt service routine or from a worker thread.
+The usage of in_interrupt() in non-core code is phased out. Ideally the
+information of the calling context should be passed by the callers or the
+functions be split as appropriate.
 
-Passing such information from the calling context is preferred and
-requested by Linus, so add an argument `in_isr' to brcmf_sdio_isr() and let
-the callers pass the information about the calling context.
+brcmfmac uses in_interupt() to select the netif_rx*() variant which matches
+the calling context. The attempt to consolidate the code by passing an
+arguemnt or by distangling it failed due lack of knowledge about this
+driver and because the call chains are convoluted and hard to follow.
+
+As a stop gap use netif_rx_any_context() which invokes the correct code
+path depending on context which confines the usage of in_interrupt() to
+core code.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Arend van Spriel <arend.vanspriel@broadcom.com>
 Cc: Franky Lin <franky.lin@broadcom.com>
 Cc: Hante Meuleman <hante.meuleman@broadcom.com>
-Cc: Chi-Hsien Lin <chi-hsien.lin@cypress.com>
-Cc: Wright Feng <wright.feng@cypress.com>
 Cc: Kalle Valo <kvalo@codeaurora.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
@@ -33,61 +37,27 @@ Cc: linux-wireless at vger.kernel.org
 Cc: brcm80211-dev-list.pdl at broadcom.com
 Cc: brcm80211-dev-list at cypress.com
 Cc: netdev at vger.kernel.org
----
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c |    4 ++--
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c   |    4 ++--
- drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h   |    2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
-@@ -73,7 +73,7 @@ static irqreturn_t brcmf_sdiod_oob_irqha
- 		sdiodev->irq_en = false;
- 	}
+---
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/core.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/core.c
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/core.c
+@@ -418,14 +418,7 @@ void brcmf_netif_rx(struct brcmf_if *ifp
+ 	ifp->ndev->stats.rx_packets++;
  
--	brcmf_sdio_isr(sdiodev->bus);
-+	brcmf_sdio_isr(sdiodev->bus, true);
- 
- 	return IRQ_HANDLED;
- }
-@@ -85,7 +85,7 @@ static void brcmf_sdiod_ib_irqhandler(st
- 
- 	brcmf_dbg(INTR, "IB intr triggered\n");
- 
--	brcmf_sdio_isr(sdiodev->bus);
-+	brcmf_sdio_isr(sdiodev->bus, false);
- }
- 
- /* dummy handler for SDIO function 2 interrupt */
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
-@@ -3625,7 +3625,7 @@ void brcmf_sdio_trigger_dpc(struct brcmf
- 	}
- }
- 
--void brcmf_sdio_isr(struct brcmf_sdio *bus)
-+void brcmf_sdio_isr(struct brcmf_sdio *bus, bool in_isr)
- {
- 	brcmf_dbg(TRACE, "Enter\n");
- 
-@@ -3636,7 +3636,7 @@ void brcmf_sdio_isr(struct brcmf_sdio *b
- 
- 	/* Count the interrupt call */
- 	bus->sdcnt.intrcount++;
+ 	brcmf_dbg(DATA, "rx proto=0x%X\n", ntohs(skb->protocol));
 -	if (in_interrupt())
-+	if (in_isr)
- 		atomic_set(&bus->ipend, 1);
- 	else
- 		if (brcmf_sdio_intr_rstatus(bus)) {
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h
-@@ -372,7 +372,7 @@ int brcmf_sdiod_remove(struct brcmf_sdio
+-		netif_rx(skb);
+-	else
+-		/* If the receive is not processed inside an ISR,
+-		 * the softirqd must be woken explicitly to service
+-		 * the NET_RX_SOFTIRQ.  This is handled by netif_rx_ni().
+-		 */
+-		netif_rx_ni(skb);
++	netif_rx_any_context(skb);
+ }
  
- struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev);
- void brcmf_sdio_remove(struct brcmf_sdio *bus);
--void brcmf_sdio_isr(struct brcmf_sdio *bus);
-+void brcmf_sdio_isr(struct brcmf_sdio *bus, bool in_isr);
- 
- void brcmf_sdio_wd_timer(struct brcmf_sdio *bus, bool active);
- void brcmf_sdio_wowl_config(struct device *dev, bool enabled);
+ void brcmf_netif_mon_rx(struct brcmf_if *ifp, struct sk_buff *skb)
 
