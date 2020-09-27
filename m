@@ -1,38 +1,31 @@
-From: Joe Perches <joe@perches.com>
-Date: Sun, 27 Sep 2020 13:22:10 -0700
+From: David Miller <davem@davemloft.net>
+Date: Sun, 27 Sep 2020 13:57:07 -0700 (PDT)
 Subject: [Intel-wired-lan] [patch 00/35] net: in_interrupt() cleanup and
  fixes
 In-Reply-To: <20200927194846.045411263@linutronix.de>
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <c7a5fd123e3c634ce0bbac9abb4ae32c8c67e0c6.camel@perches.com>
+Message-ID: <20200927.135707.1699954431349573308.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 2020-09-27 at 21:48 +0200, Thomas Gleixner wrote:
-> Folks,
-> 
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sun, 27 Sep 2020 21:48:46 +0200
+
 > in the discussion about preempt count consistency accross kernel configurations:
-> 
->   https://lore.kernel.org/r/20200914204209.256266093 at linutronix.de/
-> 
-> Linus clearly requested that code in drivers and libraries which changes
-> behaviour based on execution context should either be split up so that
-> e.g. task context invocations and BH invocations have different interfaces
-> or if that's not possible the context information has to be provided by the
-> caller which knows in which context it is executing.
-> 
-> This includes conditional locking, allocation mode (GFP_*) decisions and
-> avoidance of code paths which might sleep.
 
-Are these patches intended to be applied to Linus'
-tree before v5.9 is released?
+Please respin this against net-next, some of the patches in here are already
+in net-next (the wireless debug macro one) and even after that the series
+doesn't build:
 
-This patchset will cause conflicts against -next.
-
-For instance, in patch 34, RT_TRACE has already
-been removed in -next.
-
-
+drivers/net/ethernet/cisco/enic/enic_main.c: In function ?enic_reset?:
+drivers/net/ethernet/cisco/enic/enic_main.c:2315:2: error: implicit declaration of function ?enic_set_api_state?; did you mean ?enic_set_api_busy?? [-Werror=implicit-function-declaration]
+ 2315 |  enic_set_api_state(enic, true);
+      |  ^~~~~~~~~~~~~~~~~~
+      |  enic_set_api_busy
+At top level:
+drivers/net/ethernet/cisco/enic/enic_main.c:2298:13: warning: ?enic_set_api_busy? defined but not used [-Wunused-function]
+ 2298 | static void enic_set_api_busy(struct enic *enic, bool busy)
+      |             ^~~~~~~~~~~~~~~~~
