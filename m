@@ -1,30 +1,38 @@
-From: Arkady Gilinsky <arkady.gilinsky@harmonicinc.com>
-Date: Sun, 27 Sep 2020 10:10:16 +0000
-Subject: [Intel-wired-lan] i40e: Function i40e_set_max_tx_rate can exit
- without cleaning pending state
-Message-ID: <fb7b00be5e73657deb6212a36a491d4f443165da.camel@harmonicinc.com>
+From: Joe Perches <joe@perches.com>
+Date: Sun, 27 Sep 2020 13:22:10 -0700
+Subject: [Intel-wired-lan] [patch 00/35] net: in_interrupt() cleanup and
+ fixes
+In-Reply-To: <20200927194846.045411263@linutronix.de>
+References: <20200927194846.045411263@linutronix.de>
+Message-ID: <c7a5fd123e3c634ce0bbac9abb4ae32c8c67e0c6.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi All
+On Sun, 2020-09-27 at 21:48 +0200, Thomas Gleixner wrote:
+> Folks,
+> 
+> in the discussion about preempt count consistency accross kernel configurations:
+> 
+>   https://lore.kernel.org/r/20200914204209.256266093 at linutronix.de/
+> 
+> Linus clearly requested that code in drivers and libraries which changes
+> behaviour based on execution context should either be split up so that
+> e.g. task context invocations and BH invocations have different interfaces
+> or if that's not possible the context information has to be provided by the
+> caller which knows in which context it is executing.
+> 
+> This includes conditional locking, allocation mode (GFP_*) decisions and
+> avoidance of code paths which might sleep.
 
-The below patch fixing the erroneous state in driver (v2.12.6)
-when function i40e_set_max_tx_rate exits without cleaning 
-pending state of the device.
+Are these patches intended to be applied to Linus'
+tree before v5.9 is released?
 
--- 
-Best regards,
-Arkady Gilinsky
+This patchset will cause conflicts against -next.
 
-------------------------------------------
+For instance, in patch 34, RT_TRACE has already
+been removed in -next.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: fix-return-without-releasing-pending-state.patch
-Type: text/x-patch
-Size: 318 bytes
-Desc: fix-return-without-releasing-pending-state.patch
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200927/87ab7754/attachment.bin>
+
