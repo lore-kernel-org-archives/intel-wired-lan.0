@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:48:58 +0200
-Subject: [Intel-wired-lan] [patch 12/35] net: ionic: Remove
- WARN_ON(in_interrupt()).
+Date: Sun, 27 Sep 2020 21:48:59 +0200
+Subject: [Intel-wired-lan] [patch 13/35] net: mdiobus: Remove
+ WARN_ON_ONCE(in_interrupt())
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194921.026798214@linutronix.de>
+Message-ID: <20200927194921.137019811@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,43 +21,77 @@ In this case the check covers only parts of the contexts in which these
 functions cannot be called. It fails to detect preemption or interrupt
 disabled invocations.
 
-As the functions which are invoked from ionic_adminq_post() and
-ionic_dev_cmd_wait() contain a broad variety of checks (always enabled or
-debug option dependent) which cover all invalid conditions already, there
-is no point in having inconsistent warnings in those drivers.
+As the functions which contain these warnings invoke mutex_lock() which
+contains a broad variety of checks (always enabled or debug option
+dependent) and therefore covers all invalid conditions already, there is no
+point in having inconsistent warnings in those drivers. The conditional
+return is not really valuable in practice either.
 
 Just remove them.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Shannon Nelson <snelson@pensando.io>
-Cc: Pensando Drivers <drivers@pensando.io>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 Cc: netdev at vger.kernel.org
 
 ---
- drivers/net/ethernet/pensando/ionic/ionic_main.c |    4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/phy/mdio_bus.c |   15 ---------------
+ 1 file changed, 15 deletions(-)
 
---- a/drivers/net/ethernet/pensando/ionic/ionic_main.c
-+++ b/drivers/net/ethernet/pensando/ionic/ionic_main.c
-@@ -248,8 +248,6 @@ static int ionic_adminq_post(struct ioni
- 	struct ionic_queue *adminq;
- 	int err = 0;
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -825,9 +825,6 @@ int mdiobus_read_nested(struct mii_bus *
+ {
+ 	int retval;
  
--	WARN_ON(in_interrupt());
+-	if (WARN_ON_ONCE(in_interrupt()))
+-		return -EINVAL;
 -
- 	if (!lif->adminqcq)
- 		return -EIO;
+ 	mutex_lock_nested(&bus->mdio_lock, MDIO_MUTEX_NESTED);
+ 	retval = __mdiobus_read(bus, addr, regnum);
+ 	mutex_unlock(&bus->mdio_lock);
+@@ -850,9 +847,6 @@ int mdiobus_read(struct mii_bus *bus, in
+ {
+ 	int retval;
  
-@@ -346,8 +344,6 @@ int ionic_dev_cmd_wait(struct ionic *ion
- 	int done;
+-	if (WARN_ON_ONCE(in_interrupt()))
+-		return -EINVAL;
+-
+ 	mutex_lock(&bus->mdio_lock);
+ 	retval = __mdiobus_read(bus, addr, regnum);
+ 	mutex_unlock(&bus->mdio_lock);
+@@ -879,9 +873,6 @@ int mdiobus_write_nested(struct mii_bus
+ {
  	int err;
  
--	WARN_ON(in_interrupt());
+-	if (WARN_ON_ONCE(in_interrupt()))
+-		return -EINVAL;
 -
- 	/* Wait for dev cmd to complete, retrying if we get EAGAIN,
- 	 * but don't wait any longer than max_seconds.
- 	 */
+ 	mutex_lock_nested(&bus->mdio_lock, MDIO_MUTEX_NESTED);
+ 	err = __mdiobus_write(bus, addr, regnum, val);
+ 	mutex_unlock(&bus->mdio_lock);
+@@ -905,9 +896,6 @@ int mdiobus_write(struct mii_bus *bus, i
+ {
+ 	int err;
+ 
+-	if (WARN_ON_ONCE(in_interrupt()))
+-		return -EINVAL;
+-
+ 	mutex_lock(&bus->mdio_lock);
+ 	err = __mdiobus_write(bus, addr, regnum, val);
+ 	mutex_unlock(&bus->mdio_lock);
+@@ -929,9 +917,6 @@ int mdiobus_modify(struct mii_bus *bus,
+ {
+ 	int err;
+ 
+-	if (WARN_ON_ONCE(in_interrupt()))
+-		return -EINVAL;
+-
+ 	mutex_lock(&bus->mdio_lock);
+ 	err = __mdiobus_modify_changed(bus, addr, regnum, mask, set);
+ 	mutex_unlock(&bus->mdio_lock);
 
