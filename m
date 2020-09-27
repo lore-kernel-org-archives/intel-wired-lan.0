@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:49:02 +0200
-Subject: [Intel-wired-lan] [patch 16/35] net: sunbmac: Replace
- in_interrupt() usage
+Date: Sun, 27 Sep 2020 21:49:04 +0200
+Subject: [Intel-wired-lan] [patch 18/35] net: vxge: Remove in_interrupt()
+ conditionals
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194921.454020115@linutronix.de>
+Message-ID: <20200927194921.639274921@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,108 +12,80 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-bigmac_init_rings() has an argument signaling if it is called from the
-interrupt handler. This is used to decide between GFP_KERNEL and GFP_ATOMIC
-for memory allocations.
+vxge_os_dma_malloc() and vxge_os_dma_malloc_async() are both called from
+callchains which use GFP_KERNEL allocations unconditionally or have other
+requirements to be called from fully preemptible task context..
 
-But it also checks in_interrupt() to handle invocations which come from the
-timer callback bigmac_timer() via bigmac_hw_init(), which is invoked with
-'in_irq = 0'. While the timer callback is clearly not in hard interrupt
-context it is still not sleepable context.
+vxge_os_dma_malloc():
+  1)  __vxge_hw_blockpool_create() <- GFP_KERNEL
+	
+  2)  __vxge_hw_mempool_grow() <- vzalloc()
+        __vxge_hw_blockpool_malloc()
 
-Rename the argument to `non_blocking' and set it to true if invoked from
-the timer callback or the interrupt handler which allows to remove the
-in_interrupt() check and makes the code consistent.
+vxge_os_dma_malloc_async():
+  1  __vxge_hw_mempool_grow() <- vzalloc()
+      __vxge_hw_blockpool_malloc()
+	__vxge_hw_blockpool_blocks_add()
+
+  2)  vxge_hw_vpath_open()	<- vzalloc()
+	__vxge_hw_blockpool_block_allocate()
+
+That means neither of these functions needs a conditional allocation mode.
+
+Remove the in_interrupt() conditional and use GFP_KERNEL.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jon Mason <jdmason@kudzu.us>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 Cc: netdev at vger.kernel.org
 
 ---
- drivers/net/ethernet/sun/sunbmac.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/neterion/vxge/vxge-config.c |    9 +--------
+ drivers/net/ethernet/neterion/vxge/vxge-config.h |    7 +------
+ 2 files changed, 2 insertions(+), 14 deletions(-)
 
---- a/drivers/net/ethernet/sun/sunbmac.c
-+++ b/drivers/net/ethernet/sun/sunbmac.c
-@@ -209,13 +209,13 @@ static void bigmac_clean_rings(struct bi
- 	}
- }
- 
--static void bigmac_init_rings(struct bigmac *bp, int from_irq)
-+static void bigmac_init_rings(struct bigmac *bp, bool non_blocking)
+--- a/drivers/net/ethernet/neterion/vxge/vxge-config.c
++++ b/drivers/net/ethernet/neterion/vxge/vxge-config.c
+@@ -2303,16 +2303,9 @@ static void vxge_hw_blockpool_block_add(
+ static inline void
+ vxge_os_dma_malloc_async(struct pci_dev *pdev, void *devh, unsigned long size)
  {
- 	struct bmac_init_block *bb = bp->bmac_block;
- 	int i;
- 	gfp_t gfp_flags = GFP_KERNEL;
+-	gfp_t flags;
+ 	void *vaddr;
  
--	if (from_irq || in_interrupt())
-+	if (non_blocking)
- 		gfp_flags = GFP_ATOMIC;
- 
- 	bp->rx_new = bp->rx_old = bp->tx_new = bp->tx_old = 0;
-@@ -489,7 +489,7 @@ static void bigmac_tcvr_init(struct bigm
- 	}
+-	if (in_interrupt())
+-		flags = GFP_ATOMIC | GFP_DMA;
+-	else
+-		flags = GFP_KERNEL | GFP_DMA;
+-
+-	vaddr = kmalloc((size), flags);
+-
++	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
+ 	vxge_hw_blockpool_block_add(devh, vaddr, size, pdev, pdev);
  }
  
--static int bigmac_init_hw(struct bigmac *, int);
-+static int bigmac_init_hw(struct bigmac *, bool);
- 
- static int try_next_permutation(struct bigmac *bp, void __iomem *tregs)
+--- a/drivers/net/ethernet/neterion/vxge/vxge-config.h
++++ b/drivers/net/ethernet/neterion/vxge/vxge-config.h
+@@ -1899,18 +1899,13 @@ static inline void *vxge_os_dma_malloc(s
+ 			struct pci_dev **p_dmah,
+ 			struct pci_dev **p_dma_acch)
  {
-@@ -549,7 +549,7 @@ static void bigmac_timer(struct timer_li
- 				if (ret == -1) {
- 					printk(KERN_ERR "%s: Link down, cable problem?\n",
- 					       bp->dev->name);
--					ret = bigmac_init_hw(bp, 0);
-+					ret = bigmac_init_hw(bp, true);
- 					if (ret) {
- 						printk(KERN_ERR "%s: Error, cannot re-init the "
- 						       "BigMAC.\n", bp->dev->name);
-@@ -617,7 +617,7 @@ static void bigmac_begin_auto_negotiatio
- 	add_timer(&bp->bigmac_timer);
- }
+-	gfp_t flags;
+ 	void *vaddr;
+ 	unsigned long misaligned = 0;
+ 	int realloc_flag = 0;
+ 	*p_dma_acch = *p_dmah = NULL;
  
--static int bigmac_init_hw(struct bigmac *bp, int from_irq)
-+static int bigmac_init_hw(struct bigmac *bp, bool non_blocking)
- {
- 	void __iomem *gregs        = bp->gregs;
- 	void __iomem *cregs        = bp->creg;
-@@ -635,7 +635,7 @@ static int bigmac_init_hw(struct bigmac
- 	qec_init(bp);
- 
- 	/* Alloc and reset the tx/rx descriptor chains. */
--	bigmac_init_rings(bp, from_irq);
-+	bigmac_init_rings(bp, non_blocking);
- 
- 	/* Initialize the PHY. */
- 	bigmac_tcvr_init(bp);
-@@ -749,7 +749,7 @@ static void bigmac_is_medium_rare(struct
- 	}
- 
- 	printk(" RESET\n");
--	bigmac_init_hw(bp, 1);
-+	bigmac_init_hw(bp, true);
- }
- 
- /* BigMAC transmit complete service routines. */
-@@ -921,7 +921,7 @@ static int bigmac_open(struct net_device
- 		return ret;
- 	}
- 	timer_setup(&bp->bigmac_timer, bigmac_timer, 0);
--	ret = bigmac_init_hw(bp, 0);
-+	ret = bigmac_init_hw(bp, false);
- 	if (ret)
- 		free_irq(dev->irq, bp);
- 	return ret;
-@@ -945,7 +945,7 @@ static void bigmac_tx_timeout(struct net
- {
- 	struct bigmac *bp = netdev_priv(dev);
- 
--	bigmac_init_hw(bp, 0);
-+	bigmac_init_hw(bp, true);
- 	netif_wake_queue(dev);
- }
- 
+-	if (in_interrupt())
+-		flags = GFP_ATOMIC | GFP_DMA;
+-	else
+-		flags = GFP_KERNEL | GFP_DMA;
+ realloc:
+-	vaddr = kmalloc((size), flags);
++	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
+ 	if (vaddr == NULL)
+ 		return vaddr;
+ 	misaligned = (unsigned long)VXGE_ALIGN((unsigned long)vaddr,
 
