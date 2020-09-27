@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:49:14 +0200
-Subject: [Intel-wired-lan] [patch 28/35] net: iwlwifi: Remove in_interrupt()
- from tracing macro.
+Date: Sun, 27 Sep 2020 21:49:15 +0200
+Subject: [Intel-wired-lan] [patch 29/35] net: hostap: Remove in_interrupt()
+ usage
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194922.629869406@linutronix.de>
+Message-ID: <20200927194922.722439719@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,25 +12,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-The usage of in_interrupt) in driver code is phased out.
+in_interrupt() is ill defined and does not provide what the name
+suggests. The usage especially in driver code is deprecated and a tree wide
+effort to clean up and consolidate the (ab)usage of in_interrupt() and
+related checks is happening.
 
-The iwlwifi_dbg tracepoint records in_interrupt() seperately, but that's
-superfluous because the trace header already records all kind of state and
-context information like hardirq status, softirq status, preemption count
-etc.
+hfa384x_cmd() and prism2_hw_reset() check in_interrupt() at function entry
+and if true emit a printk at debug loglevel and return. This is clearly debug
+code.
 
-Aside of that the recording of in_interrupt() as boolean does not allow to
-distinguish between the possible contexts (hard interrupt, soft interrupt,
-bottom half disabled) while the trace header gives precise information.
+Both functions invoke functions which can sleep. These functions already
+have appropriate debug checks which cover all invalid contexts, while
+in_interrupt() fails to detect context which just has preemption or
+interrupts disabled.
 
-Remove the duplicate information from the tracepoint and fixup the caller.
+Remove both checks as they are incomplete, debug only and already covered
+by the subsequently invoked functions properly. If called from invalid
+context the resulting back trace is definitely more helpful to analyze the
+problem than a printk at debug loglevel.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Johannes Berg <johannes.berg@intel.com>
-Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-Cc: Luca Coelho <luciano.coelho@intel.com>
-Cc: Intel Linux Wireless <linuxwifi@intel.com>
+Cc: Jouni Malinen <j@w1.fi>
 Cc: Kalle Valo <kvalo@codeaurora.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
@@ -38,42 +41,35 @@ Cc: linux-wireless at vger.kernel.org
 Cc: netdev at vger.kernel.org
 
 ---
- drivers/net/wireless/intel/iwlwifi/iwl-debug.c        |    2 +-
- drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h |    6 ++----
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/wireless/intersil/hostap/hostap_hw.c |   12 ------------
+ 1 file changed, 12 deletions(-)
 
---- a/drivers/net/wireless/intel/iwlwifi/iwl-debug.c
-+++ b/drivers/net/wireless/intel/iwlwifi/iwl-debug.c
-@@ -123,7 +123,7 @@ void __iwl_dbg(struct device *dev,
- 	    (!limit || net_ratelimit()))
- 		dev_printk(KERN_DEBUG, dev, "%s %pV", function, &vaf);
- #endif
--	trace_iwlwifi_dbg(level, in_interrupt(), function, &vaf);
-+	trace_iwlwifi_dbg(level, function, &vaf);
- 	va_end(args);
- }
- IWL_EXPORT_SYMBOL(__iwl_dbg);
---- a/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-+++ b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h
-@@ -54,18 +54,16 @@ DEFINE_EVENT(iwlwifi_msg_event, iwlwifi_
- );
+--- a/drivers/net/wireless/intersil/hostap/hostap_hw.c
++++ b/drivers/net/wireless/intersil/hostap/hostap_hw.c
+@@ -320,12 +320,6 @@ static int hfa384x_cmd(struct net_device
+ 	iface = netdev_priv(dev);
+ 	local = iface->local;
  
- TRACE_EVENT(iwlwifi_dbg,
--	TP_PROTO(u32 level, bool in_interrupt, const char *function,
-+	TP_PROTO(u32 level, const char *function,
- 		 struct va_format *vaf),
--	TP_ARGS(level, in_interrupt, function, vaf),
-+	TP_ARGS(level, function, vaf),
- 	TP_STRUCT__entry(
- 		__field(u32, level)
--		__field(u8, in_interrupt)
- 		__string(function, function)
- 		__dynamic_array(char, msg, MAX_MSG_LEN)
- 	),
- 	TP_fast_assign(
- 		__entry->level = level;
--		__entry->in_interrupt = in_interrupt;
- 		__assign_str(function, function);
- 		WARN_ON_ONCE(vsnprintf(__get_dynamic_array(msg),
- 				       MAX_MSG_LEN, vaf->fmt,
+-	if (in_interrupt()) {
+-		printk(KERN_DEBUG "%s: hfa384x_cmd called from interrupt "
+-		       "context\n", dev->name);
+-		return -1;
+-	}
+-
+ 	if (local->cmd_queue_len >= HOSTAP_CMD_QUEUE_MAX_LEN) {
+ 		printk(KERN_DEBUG "%s: hfa384x_cmd: cmd_queue full\n",
+ 		       dev->name);
+@@ -1560,12 +1554,6 @@ static void prism2_hw_reset(struct net_d
+ 	iface = netdev_priv(dev);
+ 	local = iface->local;
+ 
+-	if (in_interrupt()) {
+-		printk(KERN_DEBUG "%s: driver bug - prism2_hw_reset() called "
+-		       "in interrupt context\n", dev->name);
+-		return;
+-	}
+-
+ 	if (local->hw_downloading)
+ 		return;
+ 
 
