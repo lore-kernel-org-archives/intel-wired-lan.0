@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 27 Sep 2020 21:49:04 +0200
-Subject: [Intel-wired-lan] [patch 18/35] net: vxge: Remove in_interrupt()
- conditionals
+Date: Sun, 27 Sep 2020 21:49:05 +0200
+Subject: [Intel-wired-lan] [patch 19/35] net: zd1211rw: Remove
+ ZD_ASSERT(in_interrupt())
 References: <20200927194846.045411263@linutronix.de>
-Message-ID: <20200927194921.639274921@linutronix.de>
+Message-ID: <20200927194921.746408581@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,80 +12,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-vxge_os_dma_malloc() and vxge_os_dma_malloc_async() are both called from
-callchains which use GFP_KERNEL allocations unconditionally or have other
-requirements to be called from fully preemptible task context..
+in_interrupt() is ill defined and does not provide what the name
+suggests. The usage especially in driver code is deprecated and
+a tree wide effort to clean up and consolidate the (ab)usage of
+in_interrupt() and related checks is happening.
 
-vxge_os_dma_malloc():
-  1)  __vxge_hw_blockpool_create() <- GFP_KERNEL
-	
-  2)  __vxge_hw_mempool_grow() <- vzalloc()
-        __vxge_hw_blockpool_malloc()
+handle_regs_int() is always invoked as part of URB callback which is either
+invoked from hard or soft interrupt context.
 
-vxge_os_dma_malloc_async():
-  1  __vxge_hw_mempool_grow() <- vzalloc()
-      __vxge_hw_blockpool_malloc()
-	__vxge_hw_blockpool_blocks_add()
-
-  2)  vxge_hw_vpath_open()	<- vzalloc()
-	__vxge_hw_blockpool_block_allocate()
-
-That means neither of these functions needs a conditional allocation mode.
-
-Remove the in_interrupt() conditional and use GFP_KERNEL.
+Remove the magic assertion.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jon Mason <jdmason@kudzu.us>
+Cc: Daniel Drake <dsd@gentoo.org>
+Cc: Ulrich Kunitz <kune@deine-taler.de>
+Cc: Kalle Valo <kvalo@codeaurora.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: linux-wireless at vger.kernel.org
 Cc: netdev at vger.kernel.org
 
 ---
- drivers/net/ethernet/neterion/vxge/vxge-config.c |    9 +--------
- drivers/net/ethernet/neterion/vxge/vxge-config.h |    7 +------
- 2 files changed, 2 insertions(+), 14 deletions(-)
+ drivers/net/wireless/zydas/zd1211rw/zd_usb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/net/ethernet/neterion/vxge/vxge-config.c
-+++ b/drivers/net/ethernet/neterion/vxge/vxge-config.c
-@@ -2303,16 +2303,9 @@ static void vxge_hw_blockpool_block_add(
- static inline void
- vxge_os_dma_malloc_async(struct pci_dev *pdev, void *devh, unsigned long size)
- {
--	gfp_t flags;
- 	void *vaddr;
+--- a/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
+@@ -378,7 +378,6 @@ static inline void handle_regs_int(struc
+ 	int len;
+ 	u16 int_num;
  
--	if (in_interrupt())
--		flags = GFP_ATOMIC | GFP_DMA;
--	else
--		flags = GFP_KERNEL | GFP_DMA;
--
--	vaddr = kmalloc((size), flags);
--
-+	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
- 	vxge_hw_blockpool_block_add(devh, vaddr, size, pdev, pdev);
- }
+-	ZD_ASSERT(in_interrupt());
+ 	spin_lock_irqsave(&intr->lock, flags);
  
---- a/drivers/net/ethernet/neterion/vxge/vxge-config.h
-+++ b/drivers/net/ethernet/neterion/vxge/vxge-config.h
-@@ -1899,18 +1899,13 @@ static inline void *vxge_os_dma_malloc(s
- 			struct pci_dev **p_dmah,
- 			struct pci_dev **p_dma_acch)
- {
--	gfp_t flags;
- 	void *vaddr;
- 	unsigned long misaligned = 0;
- 	int realloc_flag = 0;
- 	*p_dma_acch = *p_dmah = NULL;
- 
--	if (in_interrupt())
--		flags = GFP_ATOMIC | GFP_DMA;
--	else
--		flags = GFP_KERNEL | GFP_DMA;
- realloc:
--	vaddr = kmalloc((size), flags);
-+	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
- 	if (vaddr == NULL)
- 		return vaddr;
- 	misaligned = (unsigned long)VXGE_ALIGN((unsigned long)vaddr,
+ 	int_num = le16_to_cpu(*(__le16 *)(urb->transfer_buffer+2));
 
