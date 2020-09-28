@@ -1,46 +1,48 @@
-From: Coelho, Luciano <luciano.coelho@intel.com>
-Date: Mon, 28 Sep 2020 06:13:14 +0000
-Subject: [Intel-wired-lan] [patch 28/35] net: iwlwifi: Remove
- in_interrupt() from tracing macro.
-In-Reply-To: <20200927194922.629869406@linutronix.de>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 28 Sep 2020 08:50:11 +0200
+Subject: [Intel-wired-lan] [patch 21/35] net: usb: kaweth: Remove last
+ user of kaweth_control()
+In-Reply-To: <20200927194921.948595516@linutronix.de>
 References: <20200927194846.045411263@linutronix.de>
- <20200927194922.629869406@linutronix.de>
-Message-ID: <ab22cc7b0d1f98e1d620e77ce7abce1f95b6813e.camel@intel.com>
+ <20200927194921.948595516@linutronix.de>
+Message-ID: <20200928065011.GB381927@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 2020-09-27 at 21:49 +0200, Thomas Gleixner wrote:
+On Sun, Sep 27, 2020 at 09:49:07PM +0200, Thomas Gleixner wrote:
 > From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > 
-> The usage of in_interrupt) in driver code is phased out.
+> kaweth_async_set_rx_mode() invokes kaweth_contol() and has two callers:
 > 
-> The iwlwifi_dbg tracepoint records in_interrupt() seperately, but that's
-> superfluous because the trace header already records all kind of state and
-> context information like hardirq status, softirq status, preemption count
-> etc.
+> - kaweth_open() which is invoked from preemptible context
+> .
+> - kaweth_start_xmit() which holds a spinlock and has bottom halfs disabled.
 > 
-> Aside of that the recording of in_interrupt() as boolean does not allow to
-> distinguish between the possible contexts (hard interrupt, soft interrupt,
-> bottom half disabled) while the trace header gives precise information.
+> If called from kaweth_start_xmit() kaweth_async_set_rx_mode() obviously
+> cannot block, which means it can't call kaweth_control(). This is detected
+> with an in_interrupt() check.
 > 
-> Remove the duplicate information from the tracepoint and fixup the caller.
+> Replace the in_interrupt() check in kaweth_async_set_rx_mode() with an
+> argument which is set true by the caller if the context is safe to sleep,
+> otherwise false.
+> 
+> Now kaweth_control() is only called from preemptible context which means
+> there is no need for GFP_ATOMIC allocations anymore. Replace it with
+> usb_control_msg(). Cleanup the code a bit while at it.
+> 
+> Finally remove kaweth_control() since the last user is gone.
 > 
 > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Johannes Berg <johannes.berg@intel.com>
-> Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-> Cc: Luca Coelho <luciano.coelho@intel.com>
-> Cc: Intel Linux Wireless <linuxwifi@intel.com>
-> Cc: Kalle Valo <kvalo@codeaurora.org>
 > Cc: "David S. Miller" <davem@davemloft.net>
 > Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: linux-wireless at vger.kernel.org
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-usb at vger.kernel.org
 > Cc: netdev at vger.kernel.org
 
-Acked-by: Luca Coelho <luca@coelho.fi>
+Thanks for the cleanup, that driver really needed it!
 
---
-Luca.
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
