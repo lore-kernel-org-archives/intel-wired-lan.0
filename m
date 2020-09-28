@@ -1,44 +1,62 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 28 Sep 2020 09:17:44 +0200
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: ixgbe: don't propagate
- -ENODEV from ixgbe_mii_bus_init()
-Message-ID: <20200928071744.18253-1-brgl@bgdev.pl>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 28 Sep 2020 16:36:58 +0800
+Subject: [Intel-wired-lan] [PATCH v4] e1000e: Increase polling timeout on
+ MDIC ready bit
+In-Reply-To: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+References: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+Message-ID: <20200928083658.8567-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+We are seeing the following error after S3 resume:
+[  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
+[  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
+[  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+[  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
+[  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
+...
+[  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
 
-It's a valid use-case for ixgbe_mii_bus_init() to return -ENODEV - we
-still want to finalize the registration of the ixgbe device. Check the
-error code and don't bail out if err == -ENODEV.
+As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
+increase polling iteration can resolve the issue.
 
-This fixes an issue on C3000 family of SoCs where four ixgbe devices
-share a single MDIO bus and ixgbe_mii_bus_init() returns -ENODEV for
-three of them but we still want to register them.
+This patch only papers over the symptom, as we don't really know the
+root cause of the issue. The most possible culprit is Intel ME, which
+may do its own things that conflict with software.
 
-Fixes: 09ef193fef7e ("net: ethernet: ixgbe: check the return value of ixgbe_mii_bus_init()")
-Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+v4:
+ - States that this patch just papers over the symptom.
+
+v3:
+ - Moving delay to end of loop doesn't save anytime, move it back.
+ - Point out this is quitely likely caused by Intel ME.
+
+v2:
+ - Increase polling iteration instead of powering down the phy.
+
+ drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 2f8a4cfc5fa1..d1623af30125 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -11032,7 +11032,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			true);
- 
- 	err = ixgbe_mii_bus_init(hw);
--	if (err)
-+	if (err && err != -ENODEV)
- 		goto err_netdev;
- 
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index e11c877595fb..e6d4acd90937 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * Increasing the time out as testing showed failures with
+ 	 * the lower time out
+ 	 */
+-	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
++	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
+ 		udelay(50);
+ 		mdic = er32(MDIC);
+ 		if (mdic & E1000_MDIC_READY)
 -- 
-2.26.1
+2.17.1
 
