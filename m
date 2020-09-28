@@ -1,115 +1,77 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Mon, 28 Sep 2020 12:51:14 -0700
-Subject: [Intel-wired-lan] [patch 11/35] net: ionic: Replace
- in_interrupt() usage.
-In-Reply-To: <5e4c3201-9d90-65b1-5c13-e2381445be1d@pensando.io>
-References: <20200927194846.045411263@linutronix.de>
- <20200927194920.918550822@linutronix.de>
- <5e4c3201-9d90-65b1-5c13-e2381445be1d@pensando.io>
-Message-ID: <1d0950f8-cab4-9ef2-6cf7-73b71b750a8d@pensando.io>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 28 Sep 2020 16:54:32 -0500
+Subject: [Intel-wired-lan] [PATCH next-queue v1 1/3] Revert "PCI: Make
+ pci_enable_ptm() private"
+In-Reply-To: <20200925232834.2704711-2-vinicius.gomes@intel.com>
+Message-ID: <20200928215432.GA2499272@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/28/20 10:24 AM, Shannon Nelson wrote:
-> On 9/27/20 12:48 PM, Thomas Gleixner wrote:
->> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->>
->> The in_interrupt() usage in this driver tries to figure out which 
->> context
->> may sleep and which context may not sleep. in_interrupt() is not really
->> suitable as it misses both preemption disabled and interrupt disabled
->> invocations from task context.
->>
->> Conditionals like that in driver code are frowned upon in general 
->> because
->> invocations of functions from invalid contexts might not be detected
->> as the conditional papers over it.
->>
->> ionic_lif_addr() can be called from:
->>
->> ? 1) ->ndo_set_rx_mode() which is under netif_addr_lock_bh()) so it 
->> must not
->> ???? sleep.
->>
->> ? 2) Init and setup functions which are in fully preemptible task 
->> context.
->>
->> _ionic_lif_rx_mode() has only one call path with BH disabled.
+On Fri, Sep 25, 2020 at 04:28:32PM -0700, Vinicius Costa Gomes wrote:
+> Make pci_enable_ptm() accessible from the drivers.
+> 
+> Even if PTM still works on the platform I am using without calling
+> this this function, it might be possible that it's not always the
+> case.
 
-Now that I've had my coffee, let's look at this again - there are 
-multiple paths that get us to _ionic_lif_rx_mode():
+*Does* PTM work on your system without calling pci_enable_ptm()?  If
+so, I think that would mean the BIOS enabled PTM, and that seems
+slightly surprising.
 
-.ndo_set_rx_mode
- ? ionic_set_rx_mode,
- ??? _ionic_lif_rx_mode
+> Exposing this to the driver enables the driver to use the
+> 'ptm_enabled' field of 'pci_dev' to check if PTM is enabled or not.
+> 
+> This reverts commit ac6c26da29c12fa511c877c273ed5c939dc9e96c.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-{ ionic_open, ionic_lif_handle_fw_up, ionic_start_queues_reconfig }
- ??? ionic_txrx_init
- ????? ionic_set_rx_mode
- ??????? _ionic_lif_rx_mode
+AFAICT we just never had any callers at all for pci_enable_ptm().  I
+probably shouldn't have merged it in the first place.
 
-We may not want to change this one.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-sln
-
-
-
->>
->> ionic_link_status_check_request() has two call paths:
->>
->> ? 1) NAPI which obviously cannot sleep
->>
->> ? 2) Setup which is again fully preemptible task context
->>
->> Add 'can_sleep' arguments to the affected functions and let the callers
->> provide the context instead of letting the functions deduce it.
->>
->> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Shannon Nelson <snelson@pensando.io>
->> Cc: Pensando Drivers <drivers@pensando.io>
->> Cc: "David S. Miller" <davem@davemloft.net>
->> Cc: Jakub Kicinski <kuba@kernel.org>
->> Cc: netdev at vger.kernel.org
->
-> Acked-by: Shannon Nelson <snelson@pensando.io>
->
->> ---
->>
->> While reviewing the callpaths, a couple of things were observed which 
->> could
->> be improved:
->>
->> - ionic_lif_deferred_work() can iterate over the list. There is no need
->> ?? to schedule the work item after each iteration
->
-> I think the original writer's intent was to avoid monopolizing the 
-> work thread for very long on any one cycle, with the thought that we'd 
-> be making more use of this than we currently are.? I'll address this.
->
->>
->> - ionic_link_status_check_request() could have ionic_deferred_work 
->> within
->> ?? ionic_lif(). This would avoid memory allocation from NAPI. More
->> ?? important, once IONIC_LIF_F_LINK_CHECK_REQUESTED is set and that 
->> alloc
->> ?? fails, the link check never happens.
->
-> Thanks, I'll fix up that error condition.
->
->>
->> - ionic_lif_handle_fw_down() sets IONIC_LIF_F_FW_RESET. Invokes then
->> ?? ionic_lif_deinit() which only invokes cancel_work_sync() if
->> ?? IONIC_LIF_F_FW_RESET is not set. I think the logic is wrong here as
->> ?? the work must always be cancled. Also the list with ionic_deferred
->> ?? work items needs a clean up.
->
-> I'll look at that, thanks.
->
-> sln
->
->
-
+> ---
+>  drivers/pci/pci.h   | 3 ---
+>  include/linux/pci.h | 7 +++++++
+>  2 files changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index fa12f7cbc1a0..8871109fe390 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -582,11 +582,8 @@ static inline void pcie_ecrc_get_policy(char *str) { }
+>  
+>  #ifdef CONFIG_PCIE_PTM
+>  void pci_ptm_init(struct pci_dev *dev);
+> -int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
+>  #else
+>  static inline void pci_ptm_init(struct pci_dev *dev) { }
+> -static inline int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+> -{ return -EINVAL; }
+>  #endif
+>  
+>  struct pci_dev_reset_methods {
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 835530605c0d..ec4b28153cc4 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1593,6 +1593,13 @@ static inline bool pci_aer_available(void) { return false; }
+>  
+>  bool pci_ats_disabled(void);
+>  
+> +#ifdef CONFIG_PCIE_PTM
+> +int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
+> +#else
+> +static inline int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
+> +{ return -EINVAL; }
+> +#endif
+> +
+>  void pci_cfg_access_lock(struct pci_dev *dev);
+>  bool pci_cfg_access_trylock(struct pci_dev *dev);
+>  void pci_cfg_access_unlock(struct pci_dev *dev);
+> -- 
+> 2.28.0
+> 
