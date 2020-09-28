@@ -1,62 +1,46 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 28 Sep 2020 16:36:58 +0800
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: Increase polling timeout on
- MDIC ready bit
-In-Reply-To: <20200924164542.19906-1-kai.heng.feng@canonical.com>
-References: <20200924164542.19906-1-kai.heng.feng@canonical.com>
-Message-ID: <20200928083658.8567-1-kai.heng.feng@canonical.com>
+From: Coelho, Luciano <luciano.coelho@intel.com>
+Date: Mon, 28 Sep 2020 06:13:14 +0000
+Subject: [Intel-wired-lan] [patch 28/35] net: iwlwifi: Remove
+ in_interrupt() from tracing macro.
+In-Reply-To: <20200927194922.629869406@linutronix.de>
+References: <20200927194846.045411263@linutronix.de>
+ <20200927194922.629869406@linutronix.de>
+Message-ID: <ab22cc7b0d1f98e1d620e77ce7abce1f95b6813e.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We are seeing the following error after S3 resume:
-[  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
-[  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
-[  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
-[  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
-[  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
-...
-[  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
+On Sun, 2020-09-27 at 21:49 +0200, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+> The usage of in_interrupt) in driver code is phased out.
+> 
+> The iwlwifi_dbg tracepoint records in_interrupt() seperately, but that's
+> superfluous because the trace header already records all kind of state and
+> context information like hardirq status, softirq status, preemption count
+> etc.
+> 
+> Aside of that the recording of in_interrupt() as boolean does not allow to
+> distinguish between the possible contexts (hard interrupt, soft interrupt,
+> bottom half disabled) while the trace header gives precise information.
+> 
+> Remove the duplicate information from the tracepoint and fixup the caller.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Johannes Berg <johannes.berg@intel.com>
+> Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
+> Cc: Luca Coelho <luciano.coelho@intel.com>
+> Cc: Intel Linux Wireless <linuxwifi@intel.com>
+> Cc: Kalle Valo <kvalo@codeaurora.org>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: linux-wireless at vger.kernel.org
+> Cc: netdev at vger.kernel.org
 
-As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
-increase polling iteration can resolve the issue.
+Acked-by: Luca Coelho <luca@coelho.fi>
 
-This patch only papers over the symptom, as we don't really know the
-root cause of the issue. The most possible culprit is Intel ME, which
-may do its own things that conflict with software.
-
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
-v4:
- - States that this patch just papers over the symptom.
-
-v3:
- - Moving delay to end of loop doesn't save anytime, move it back.
- - Point out this is quitely likely caused by Intel ME.
-
-v2:
- - Increase polling iteration instead of powering down the phy.
-
- drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index e11c877595fb..e6d4acd90937 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
- 	 * Increasing the time out as testing showed failures with
- 	 * the lower time out
- 	 */
--	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
-+	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
- 		udelay(50);
- 		mdic = er32(MDIC);
- 		if (mdic & E1000_MDIC_READY)
--- 
-2.17.1
-
+--
+Luca.
