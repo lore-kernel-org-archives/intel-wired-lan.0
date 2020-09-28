@@ -1,53 +1,149 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 28 Sep 2020 15:32:23 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v1 1/3] Revert "PCI: Make
- pci_enable_ptm() private"
-In-Reply-To: <20200928215432.GA2499272@bjorn-Precision-5520>
-References: <20200928215432.GA2499272@bjorn-Precision-5520>
-Message-ID: <87h7rhv8g8.fsf@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 28 Sep 2020 16:04:31 -0700
+Subject: [Intel-wired-lan] [patch 10/35] net: intel: Remove
+ in_interrupt() warnings
+In-Reply-To: <20200927194920.824108021@linutronix.de>
+References: <20200927194846.045411263@linutronix.de>
+ <20200927194920.824108021@linutronix.de>
+Message-ID: <CAKgT0Uc0bB8nr0Kh-UHS=dEW3nu=DrYeio1w6snkzFSB=tQgXw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
-
-Bjorn Helgaas <helgaas@kernel.org> writes:
-
-> On Fri, Sep 25, 2020 at 04:28:32PM -0700, Vinicius Costa Gomes wrote:
->> Make pci_enable_ptm() accessible from the drivers.
->> 
->> Even if PTM still works on the platform I am using without calling
->> this this function, it might be possible that it's not always the
->> case.
+On Sun, Sep 27, 2020 at 1:00 PM Thomas Gleixner <tglx@linutronix.de> wrote:
 >
-> *Does* PTM work on your system without calling pci_enable_ptm()?  If
-> so, I think that would mean the BIOS enabled PTM, and that seems
-> slightly surprising.
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 >
-
-At least it seems to work, yeah, the PTM related registers that I need
-for cross timestamping still return valid results when I don't call
-pci_enable_ptm().
-
-Btw, I just noticed a typo in the commit message, will fix it for the
-v2.
-
->> Exposing this to the driver enables the driver to use the
->> 'ptm_enabled' field of 'pci_dev' to check if PTM is enabled or not.
->> 
->> This reverts commit ac6c26da29c12fa511c877c273ed5c939dc9e96c.
->> 
->> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> in_interrupt() is ill defined and does not provide what the name
+> suggests. The usage especially in driver code is deprecated and a tree wide
+> effort to clean up and consolidate the (ab)usage of in_interrupt() and
+> related checks is happening.
 >
-> AFAICT we just never had any callers at all for pci_enable_ptm().  I
-> probably shouldn't have merged it in the first place.
+> In this case the checks cover only parts of the contexts in which these
+> functions cannot be called. They fail to detect preemption or interrupt
+> disabled invocations.
 >
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> As the functions which are invoked from the various places contain already
+> a broad variety of checks (always enabled or debug option dependent) cover
+> all invalid conditions already, there is no point in having inconsistent
+> warnings in those drivers.
 >
+> Just remove them.
+>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: netdev at vger.kernel.org
 
-Thanks.
+The patch looks good to me.
 
--- 
-Vinicius
+Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+
+> ---
+>  drivers/net/ethernet/intel/e1000/e1000_main.c     |    1 -
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c      |    2 --
+>  drivers/net/ethernet/intel/i40e/i40e_main.c       |    4 ----
+>  drivers/net/ethernet/intel/ice/ice_main.c         |    1 -
+>  drivers/net/ethernet/intel/igb/igb_main.c         |    1 -
+>  drivers/net/ethernet/intel/igc/igc_main.c         |    1 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    1 -
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 --
+>  8 files changed, 13 deletions(-)
+>
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -534,7 +534,6 @@ void e1000_down(struct e1000_adapter *ad
+>
+>  void e1000_reinit_locked(struct e1000_adapter *adapter)
+>  {
+> -       WARN_ON(in_interrupt());
+>         while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
+>                 msleep(1);
+>
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -221,8 +221,6 @@ static bool fm10k_prepare_for_reset(stru
+>  {
+>         struct net_device *netdev = interface->netdev;
+>
+> -       WARN_ON(in_interrupt());
+> -
+>         /* put off any impending NetWatchDogTimeout */
+>         netif_trans_update(netdev);
+>
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -6689,7 +6689,6 @@ static void i40e_vsi_reinit_locked(struc
+>  {
+>         struct i40e_pf *pf = vsi->back;
+>
+> -       WARN_ON(in_interrupt());
+>         while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state))
+>                 usleep_range(1000, 2000);
+>         i40e_down(vsi);
+> @@ -8462,9 +8461,6 @@ void i40e_do_reset(struct i40e_pf *pf, u
+>  {
+>         u32 val;
+>
+> -       WARN_ON(in_interrupt());
+> -
+> -
+>         /* do the biggest reset indicated */
+>         if (reset_flags & BIT_ULL(__I40E_GLOBAL_RESET_REQUESTED)) {
+>
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -486,7 +486,6 @@ static void ice_do_reset(struct ice_pf *
+>         struct ice_hw *hw = &pf->hw;
+>
+>         dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
+> -       WARN_ON(in_interrupt());
+>
+>         ice_prepare_for_reset(pf);
+>
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -2220,7 +2220,6 @@ void igb_down(struct igb_adapter *adapte
+>
+>  void igb_reinit_locked(struct igb_adapter *adapter)
+>  {
+> -       WARN_ON(in_interrupt());
+>         while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
+>                 usleep_range(1000, 2000);
+>         igb_down(adapter);
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -3831,7 +3831,6 @@ void igc_down(struct igc_adapter *adapte
+>
+>  void igc_reinit_locked(struct igc_adapter *adapter)
+>  {
+> -       WARN_ON(in_interrupt());
+>         while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
+>                 usleep_range(1000, 2000);
+>         igc_down(adapter);
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -5677,7 +5677,6 @@ static void ixgbe_up_complete(struct ixg
+>
+>  void ixgbe_reinit_locked(struct ixgbe_adapter *adapter)
+>  {
+> -       WARN_ON(in_interrupt());
+>         /* put off any impending NetWatchDogTimeout */
+>         netif_trans_update(adapter->netdev);
+>
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -2526,8 +2526,6 @@ void ixgbevf_down(struct ixgbevf_adapter
+>
+>  void ixgbevf_reinit_locked(struct ixgbevf_adapter *adapter)
+>  {
+> -       WARN_ON(in_interrupt());
+> -
+>         while (test_and_set_bit(__IXGBEVF_RESETTING, &adapter->state))
+>                 msleep(1);
+>
+>
