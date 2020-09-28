@@ -1,47 +1,48 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Mon, 28 Sep 2020 11:19:25 +0200
-Subject: [Intel-wired-lan] [patch 24/35] net: brcmfmac: Replace
- in_interrupt()
-In-Reply-To: <a345ad51-4db7-5e4f-3ff9-f1673c12da99@broadcom.com>
+From: Arend Van Spriel <arend.vanspriel@broadcom.com>
+Date: Mon, 28 Sep 2020 11:34:22 +0200
+Subject: [Intel-wired-lan] [patch 26/35] net: brcmfmac: Convey
+ allocation mode as argument
+In-Reply-To: <20200927194922.444952084@linutronix.de>
 References: <20200927194846.045411263@linutronix.de>
- <20200927194922.245750969@linutronix.de>
- <a345ad51-4db7-5e4f-3ff9-f1673c12da99@broadcom.com>
-Message-ID: <CAPDyKFrC2j5S7NrtTRCBga=rttKBp-OZnsEnAEgnXj8zj11p0w@mail.gmail.com>
+ <20200927194922.444952084@linutronix.de>
+Message-ID: <aac2b8b3-53f4-9b27-03d0-742bbe3cd81f@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 28 Sep 2020 at 09:35, Arend Van Spriel
-<arend.vanspriel@broadcom.com> wrote:
->
-> + Uffe
->
-> On 9/27/2020 9:49 PM, Thomas Gleixner wrote:
-> > @@ -85,7 +85,7 @@ static void brcmf_sdiod_ib_irqhandler(st
-> >
-> >       brcmf_dbg(INTR, "IB intr triggered\n");
-> >
-> > -     brcmf_sdio_isr(sdiodev->bus);
-> > +     brcmf_sdio_isr(sdiodev->bus, false);
-> >   }
->
-> Hi Uffe,
->
-> I assume the above code is okay, but want to confirm. Is the SDIO
-> interrupt guaranteed to be on a worker thread?
+On 9/27/2020 9:49 PM, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+> The usage of in_interrupt() in drivers is phased out and Linus clearly
+> requested that code which changes behaviour depending on context should
+> either be seperated or the context be conveyed in an argument passed by the
+> caller, which usually knows the context.
+> 
+> brcmf_fweh_process_event() uses in_interrupt() to select the allocation
+> mode GFP_KERNEL/GFP_ATOMIC. Aside of the above reasons this check is
+> incomplete as it cannot detect contexts which just have preemption or
+> interrupts disabled.
+> 
+> All callchains leading to brcmf_fweh_process_event() can clearly identify
+> the calling context. Convey a 'gfp' argument through the callchains and let
+> the callers hand in the appropriate GFP mode.
+> 
+> This has also the advantage that any change of execution context or
+> preemption/interrupt state in these callchains will be detected by the
+> memory allocator for all GFP_KERNEL allocations.
 
-Correct.
+Looking at the functions changed I see overlap with patch 25/35 so maybe 
+change to gfp flag to a 'in_isr' bool. The flag can then be used for 
+dealing with netif_rx as well.
 
-As a matter of fact, the sdio irqs can be delivered through a couple
-of different paths. The legacy (scheduled for removal), is from a
-dedicated kthread. The more "modern" way is either from the context of
-a threaded IRQ handler or via a workqueue.
-
-However, there are also so-called out of band SDIO irqs, typically
-routed via a separate GPIO line. This isn't managed by the MMC/SDIO
-subsystem, but the SDIO functional driver itself.
-
-Kind regards
-Uffe
+Regards,
+Arend
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 4176 bytes
+Desc: S/MIME Cryptographic Signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200928/ff2058e2/attachment-0001.p7s>
