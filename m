@@ -1,143 +1,44 @@
-From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Sun, 27 Sep 2020 23:40:23 -0500
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Add Dell's Comet Lake systems
- into s0ix heuristics
-In-Reply-To: <20200928044024.7595-1-mario.limonciello@dell.com>
-References: <20200928044024.7595-1-mario.limonciello@dell.com>
-Message-ID: <20200928044024.7595-3-mario.limonciello@dell.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 28 Sep 2020 09:17:44 +0200
+Subject: [Intel-wired-lan] [PATCH] net: ethernet: ixgbe: don't propagate
+ -ENODEV from ixgbe_mii_bus_init()
+Message-ID: <20200928071744.18253-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dell's Comet Lake Latitude and Precision systems containing i219LM are
-properly configured and should use the s0ix flows.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+It's a valid use-case for ixgbe_mii_bus_init() to return -ENODEV - we
+still want to finalize the registration of the ixgbe device. Check the
+error code and don't bail out if err == -ENODEV.
+
+This fixes an issue on C3000 family of SoCs where four ixgbe devices
+share a single MDIO bus and ixgbe_mii_bus_init() returns -ENODEV for
+three of them but we still want to register them.
+
+Fixes: 09ef193fef7e ("net: ethernet: ixgbe: check the return value of ixgbe_mii_bus_init()")
+Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/net/ethernet/intel/Kconfig        |  1 +
- drivers/net/ethernet/intel/e1000e/param.c | 80 ++++++++++++++++++++++-
- 2 files changed, 80 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 5aa86318ed3e..280af47d74d2 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -58,6 +58,7 @@ config E1000
- config E1000E
- 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
- 	depends on PCI && (!SPARC32 || BROKEN)
-+	depends on DMI
- 	select CRC32
- 	imply PTP_1588_CLOCK
- 	help
-diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
-index e66b222c824b..58e6718c4f75 100644
---- a/drivers/net/ethernet/intel/e1000e/param.c
-+++ b/drivers/net/ethernet/intel/e1000e/param.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 1999 - 2018 Intel Corporation. */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2f8a4cfc5fa1..d1623af30125 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -11032,7 +11032,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			true);
  
-+#include <linux/dmi.h>
- #include <linux/netdevice.h>
- #include <linux/module.h>
- #include <linux/pci.h>
-@@ -201,6 +202,80 @@ static const struct e1000e_me_supported me_supported[] = {
- 	{0}
- };
+ 	err = ixgbe_mii_bus_init(hw);
+-	if (err)
++	if (err && err != -ENODEV)
+ 		goto err_netdev;
  
-+static const struct dmi_system_id s0ix_supported_systems[] = {
-+	{
-+		/* Dell Latitude 5310 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "099F"),
-+		},
-+	},
-+	{
-+		/* Dell Latitude 5410 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09A0"),
-+		},
-+	},
-+	{
-+		/* Dell Latitude 5410 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C9"),
-+		},
-+	},
-+	{
-+		/* Dell Latitude 5510 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09A1"),
-+		},
-+	},
-+	{
-+		/* Dell Precision 3550 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09A2"),
-+		},
-+	},
-+	{
-+		/* Dell Latitude 5411 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C0"),
-+		},
-+	},
-+	{
-+		/* Dell Latitude 5511 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C1"),
-+		},
-+	},
-+	{
-+		/* Dell Precision 3551 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C2"),
-+		},
-+	},
-+	{
-+		/* Dell Precision 7550 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C3"),
-+		},
-+	},
-+	{
-+		/* Dell Precision 7750 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_SKU, "09C4"),
-+		},
-+	},
-+	{ }
-+};
-+
- static bool e1000e_check_me(u16 device_id)
- {
- 	struct e1000e_me_supported *id;
-@@ -599,8 +674,11 @@ void e1000e_check_options(struct e1000_adapter *adapter)
- 		}
- 
- 		if (enabled == S0IX_HEURISTICS) {
-+			/* check for allowlist of systems */
-+			if (dmi_check_system(s0ix_supported_systems))
-+				enabled = S0IX_FORCE_ON;
- 			/* default to off for ME configurations */
--			if (e1000e_check_me(hw->adapter->pdev->device))
-+			else if (e1000e_check_me(hw->adapter->pdev->device))
- 				enabled = S0IX_FORCE_OFF;
- 		}
- 
+ 	return 0;
 -- 
-2.25.1
+2.26.1
 
