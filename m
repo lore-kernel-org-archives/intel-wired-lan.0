@@ -1,59 +1,53 @@
 From: Arend Van Spriel <arend.vanspriel@broadcom.com>
-Date: Mon, 28 Sep 2020 11:37:43 +0200
+Date: Mon, 28 Sep 2020 11:40:01 +0200
 Subject: [Intel-wired-lan] [patch 24/35] net: brcmfmac: Replace
  in_interrupt()
-In-Reply-To: <CAPDyKFrC2j5S7NrtTRCBga=rttKBp-OZnsEnAEgnXj8zj11p0w@mail.gmail.com>
+In-Reply-To: <20200927194922.245750969@linutronix.de>
 References: <20200927194846.045411263@linutronix.de>
  <20200927194922.245750969@linutronix.de>
- <a345ad51-4db7-5e4f-3ff9-f1673c12da99@broadcom.com>
- <CAPDyKFrC2j5S7NrtTRCBga=rttKBp-OZnsEnAEgnXj8zj11p0w@mail.gmail.com>
-Message-ID: <c0e376ac-3261-e413-0fe1-505aaa7cbea9@broadcom.com>
+Message-ID: <5e0d60a4-418e-434e-e5fa-4d2dd1cf0d23@broadcom.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/28/2020 11:19 AM, Ulf Hansson wrote:
-> On Mon, 28 Sep 2020 at 09:35, Arend Van Spriel
-> <arend.vanspriel@broadcom.com> wrote:
->>
->> + Uffe
->>
->> On 9/27/2020 9:49 PM, Thomas Gleixner wrote:
->>> @@ -85,7 +85,7 @@ static void brcmf_sdiod_ib_irqhandler(st
->>>
->>>        brcmf_dbg(INTR, "IB intr triggered\n");
->>>
->>> -     brcmf_sdio_isr(sdiodev->bus);
->>> +     brcmf_sdio_isr(sdiodev->bus, false);
->>>    }
->>
->> Hi Uffe,
->>
->> I assume the above code is okay, but want to confirm. Is the SDIO
->> interrupt guaranteed to be on a worker thread?
+On 9/27/2020 9:49 PM, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > 
-> Correct.
+> brcmf_sdio_isr() is using in_interrupt() to distinguish if it is called
+> from a interrupt service routine or from a worker thread.
 > 
-> As a matter of fact, the sdio irqs can be delivered through a couple
-> of different paths. The legacy (scheduled for removal), is from a
-> dedicated kthread. The more "modern" way is either from the context of
-> a threaded IRQ handler or via a workqueue.
-> 
-> However, there are also so-called out of band SDIO irqs, typically
-> routed via a separate GPIO line. This isn't managed by the MMC/SDIO
-> subsystem, but the SDIO functional driver itself.
+> Passing such information from the calling context is preferred and
+> requested by Linus, so add an argument `in_isr' to brcmf_sdio_isr() and let
+> the callers pass the information about the calling context.
 
-In brcmfmac we indeed support the out-of-band interrupt. That scnenario 
-is also taken care of in this patch. Thanks for the confirmation.
+After getting confirmation here is my ...
 
-Regards,
-Arend
+Reviewed-by: Arend van Spriel <arend.vanspriel@broadcom.com>
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Arend van Spriel <arend.vanspriel@broadcom.com>
+> Cc: Franky Lin <franky.lin@broadcom.com>
+> Cc: Hante Meuleman <hante.meuleman@broadcom.com>
+> Cc: Chi-Hsien Lin <chi-hsien.lin@cypress.com>
+> Cc: Wright Feng <wright.feng@cypress.com>
+> Cc: Kalle Valo <kvalo@codeaurora.org>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: linux-wireless at vger.kernel.org
+> Cc: brcm80211-dev-list.pdl at broadcom.com
+> Cc: brcm80211-dev-list at cypress.com
+> Cc: netdev at vger.kernel.org
+> ---
+>   drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c |    4 ++--
+>   drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c   |    4 ++--
+>   drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h   |    2 +-
+>   3 files changed, 5 insertions(+), 5 deletions(-)
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: smime.p7s
 Type: application/pkcs7-signature
 Size: 4176 bytes
 Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200928/c06b9ee1/attachment-0001.p7s>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20200928/04397eb9/attachment-0001.p7s>
