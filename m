@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 29 Sep 2020 22:25:27 +0200
-Subject: [Intel-wired-lan] [patch V2 18/36] net: sun3lance: Remove redundant
- checks in interrupt handler
+Date: Tue, 29 Sep 2020 22:25:28 +0200
+Subject: [Intel-wired-lan] [patch V2 19/36] net: vxge: Remove in_interrupt()
+ conditionals
 References: <20200929202509.673358734@linutronix.de>
-Message-ID: <20200929203501.286933338@linutronix.de>
+Message-ID: <20200929203501.384359804@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,51 +12,78 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-lance_interrupt() contains two pointless checks:
+vxge_os_dma_malloc() and vxge_os_dma_malloc_async() are both called from
+callchains which use GFP_KERNEL allocations unconditionally or have other
+requirements to be called from fully preemptible task context..
 
- - A check whether the 'dev_id' argument is NULL. 'dev_id' is the pointer
-   which was handed in to request_irq() and the interrupt handler will
-   always be invoked with that pointer as 'dev_id' argument by the core
-   code.
+vxge_os_dma_malloc():
+  1)  __vxge_hw_blockpool_create() <- GFP_KERNEL
+	
+  2)  __vxge_hw_mempool_grow() <- vzalloc()
+        __vxge_hw_blockpool_malloc()
 
- - A check for interrupt reentrancy. The core code already guarantees
-   non-reentrancy of interrupt handlers.
+vxge_os_dma_malloc_async():
+  1  __vxge_hw_mempool_grow() <- vzalloc()
+      __vxge_hw_blockpool_malloc()
+	__vxge_hw_blockpool_blocks_add()
 
-Remove these check.
+  2)  vxge_hw_vpath_open()	<- vzalloc()
+	__vxge_hw_blockpool_block_allocate()
+
+That means neither of these functions needs a conditional allocation mode.
+
+Remove the in_interrupt() conditional and use GFP_KERNEL.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
----
- drivers/net/ethernet/amd/sun3lance.c |   11 -----------
- 1 file changed, 11 deletions(-)
 
---- a/drivers/net/ethernet/amd/sun3lance.c
-+++ b/drivers/net/ethernet/amd/sun3lance.c
-@@ -657,16 +657,6 @@ static irqreturn_t lance_interrupt( int
- 	struct net_device *dev = dev_id;
- 	struct lance_private *lp = netdev_priv(dev);
- 	int csr0;
--	static int in_interrupt;
--
--	if (dev == NULL) {
--		DPRINTK( 1, ( "lance_interrupt(): invalid dev_id\n" ));
--		return IRQ_NONE;
--	}
--
--	if (in_interrupt)
--		DPRINTK( 2, ( "%s: Re-entering the interrupt handler.\n", dev->name ));
--	in_interrupt = 1;
+---
+ drivers/net/ethernet/neterion/vxge/vxge-config.c |    9 +--------
+ drivers/net/ethernet/neterion/vxge/vxge-config.h |    7 +------
+ 2 files changed, 2 insertions(+), 14 deletions(-)
+
+--- a/drivers/net/ethernet/neterion/vxge/vxge-config.c
++++ b/drivers/net/ethernet/neterion/vxge/vxge-config.c
+@@ -2303,16 +2303,9 @@ static void vxge_hw_blockpool_block_add(
+ static inline void
+ vxge_os_dma_malloc_async(struct pci_dev *pdev, void *devh, unsigned long size)
+ {
+-	gfp_t flags;
+ 	void *vaddr;
  
-  still_more:
- 	flush_cache_all();
-@@ -774,7 +764,6 @@ static irqreturn_t lance_interrupt( int
- 
- 	DPRINTK( 2, ( "%s: exiting interrupt, csr0=%#04x.\n",
- 				  dev->name, DREG ));
--	in_interrupt = 0;
- 	return IRQ_HANDLED;
+-	if (in_interrupt())
+-		flags = GFP_ATOMIC | GFP_DMA;
+-	else
+-		flags = GFP_KERNEL | GFP_DMA;
+-
+-	vaddr = kmalloc((size), flags);
+-
++	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
+ 	vxge_hw_blockpool_block_add(devh, vaddr, size, pdev, pdev);
  }
  
+--- a/drivers/net/ethernet/neterion/vxge/vxge-config.h
++++ b/drivers/net/ethernet/neterion/vxge/vxge-config.h
+@@ -1899,18 +1899,13 @@ static inline void *vxge_os_dma_malloc(s
+ 			struct pci_dev **p_dmah,
+ 			struct pci_dev **p_dma_acch)
+ {
+-	gfp_t flags;
+ 	void *vaddr;
+ 	unsigned long misaligned = 0;
+ 	int realloc_flag = 0;
+ 	*p_dma_acch = *p_dmah = NULL;
+ 
+-	if (in_interrupt())
+-		flags = GFP_ATOMIC | GFP_DMA;
+-	else
+-		flags = GFP_KERNEL | GFP_DMA;
+ realloc:
+-	vaddr = kmalloc((size), flags);
++	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
+ 	if (vaddr == NULL)
+ 		return vaddr;
+ 	misaligned = (unsigned long)VXGE_ALIGN((unsigned long)vaddr,
 
 
