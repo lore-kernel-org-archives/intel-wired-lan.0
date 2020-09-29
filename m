@@ -1,80 +1,144 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 29 Sep 2020 16:46:36 +0300
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: Increase polling timeout
- on MDIC ready bit
-In-Reply-To: <30761C6B-28B8-4464-8615-55EF3E090E07@canonical.com>
-References: <20200924164542.19906-1-kai.heng.feng@canonical.com>
- <20200928083658.8567-1-kai.heng.feng@canonical.com>
- <469c71d5-93ac-e6c7-f85c-342b0df78a45@intel.com>
- <30761C6B-28B8-4464-8615-55EF3E090E07@canonical.com>
-Message-ID: <345fffcd-e9f1-5881-fba1-d7313876e943@intel.com>
+From: Kalle Valo <kvalo@codeaurora.org>
+Date: Tue, 29 Sep 2020 11:01:23 +0300
+Subject: [Intel-wired-lan] [patch 00/35] net: in_interrupt() cleanup and
+ fixes
+In-Reply-To: <20200927194846.045411263@linutronix.de> (Thomas Gleixner's
+ message of "Sun, 27 Sep 2020 21:48:46 +0200")
+References: <20200927194846.045411263@linutronix.de>
+Message-ID: <87o8lpdnak.fsf@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Kai-Heng,
-On 9/29/2020 16:31, Kai-Heng Feng wrote:
-> Hi Sasha,
-> 
->> On Sep 29, 2020, at 21:08, Neftin, Sasha <sasha.neftin@intel.com> wrote:
->>
->> On 9/28/2020 11:36, Kai-Heng Feng wrote:
->>> We are seeing the following error after S3 resume:
->>> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
->>> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
->>> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
->>> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
->>> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
->>> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
->>> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
->>> ...
->>> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
->>> As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
->>> increase polling iteration can resolve the issue.
->>> This patch only papers over the symptom, as we don't really know the
->>> root cause of the issue. The most possible culprit is Intel ME, which
->>> may do its own things that conflict with software.
->>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->>> ---
->>> v4:
->>>   - States that this patch just papers over the symptom.
->>> v3:
->>>   - Moving delay to end of loop doesn't save anytime, move it back.
->>>   - Point out this is quitely likely caused by Intel ME.
->>> v2:
->>>   - Increase polling iteration instead of powering down the phy.
->>>   drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>> diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
->>> index e11c877595fb..e6d4acd90937 100644
->>> --- a/drivers/net/ethernet/intel/e1000e/phy.c
->>> +++ b/drivers/net/ethernet/intel/e1000e/phy.c
->>> @@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
->>>   	 * Increasing the time out as testing showed failures with
->>>   	 * the lower time out
->>>   	 */
->>> -	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
->>> +	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
->> As we discussed (many threads) - AMT/ME systems not supported on Linux as properly. I do not think increasing polling iteration will solve the problem. Rather mask it.
-> 
-> I am aware of the status quo of no proper support on Intel ME.
-> 
->> I prefer you check option to disable ME vi BIOS on your system.
-> 
-> We can't ask user to change the BIOS to accommodate Linux. So before a proper solution comes out, masking the problem is good enough for me.
-> Until then, I'll carry it as a downstream distro patch.
-What will you do with system that even after increasing polling time 
-will run into HW error?
-> 
-> Kai-Heng
-> 
->>>   		udelay(50);
->>>   		mdic = er32(MDIC);
->>>   		if (mdic & E1000_MDIC_READY)
->> Thanks,
->> Sasha
-> 
-Thanks,
-Sasha
+Thomas Gleixner <tglx@linutronix.de> writes:
+
+> Folks,
+>
+> in the discussion about preempt count consistency accross kernel configurations:
+>
+>   https://lore.kernel.org/r/20200914204209.256266093 at linutronix.de/
+>
+> Linus clearly requested that code in drivers and libraries which changes
+> behaviour based on execution context should either be split up so that
+> e.g. task context invocations and BH invocations have different interfaces
+> or if that's not possible the context information has to be provided by the
+> caller which knows in which context it is executing.
+>
+> This includes conditional locking, allocation mode (GFP_*) decisions and
+> avoidance of code paths which might sleep.
+>
+> In the long run, usage of 'preemptible, in_*irq etc.' should be banned from
+> driver code completely.
+>
+> Our team started to dig through drivers and this it the first batch of
+> cleanups in drivers/net/. It's not yet complete, so expect further patches
+> in the next days.
+>
+> The series contains:
+>
+>     - A couple of bug fixes
+>
+>     - Removal of the bitrotting CAIF SPI driver which has never had a
+>       matching driver providing the necessary platform device support.
+>
+>     - Removal of WARN/BUG(in_interrupt()) en masse as most of them are
+>       incomplete because they won't detect other non-preemptible
+>       context. All of the functions which have these WARN/BUG invoke core
+>       code functions which can sleep. These have plenty of checks to catch
+>       _all_ invalid contexts. So it's pointless to have incomplete WARN/BUG
+>       in the drivers.
+>
+>       If a driver wants to have such a check for paranoia reasons, then
+>       e.g. lockdep_assert_preemtion_enabled() is the right mechanism to
+>       chose because lockdep guarantees to catch all invalid contexts
+>       independent of kernel configuration while e.g. preemptible() does
+>       not.
+>
+>     - Conversion of in_interrupt() checks to use either different functions
+>       or to hand the context information in from the caller.
+>
+>     - For some drivers handing the context into functions which decided
+>       between netif_rx() and netif_rx_ni() turned out to be impossible due
+>       to lack of driver knowledge and convoluted code pathes with multiple
+>       indirections. For those a core code function netif_rx_any_context()
+>       is provided which contains an in_interrupt() check as a stop
+>       gap. This allows to make progess on the driver side cleanup and
+>       the function should go away once the driver wizards have fixed it
+>       up proper.
+>
+>     - Simplifcation and cleanups in various places where code pointlessly
+>       contains in_interrupt() conditionals which are mostly leftovers from
+>       calling conventions in older kernels and have never been cleaned up.
+>
+>       Along with removing if from the horrible DBG_FOO() macro mess which
+>       probably should be removed completely as the kernel today provides
+>       way more sensible mechanisms to do function tracing and similar.
+>
+>     - A few other cleanups which were obvious when chasing the
+>       in_interrupt() usage.
+>
+> The pile is also available from:
+>
+>     git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git softirq
+>
+> The diffstat summary is:
+>
+>  86 files changed, 300 insertions(+), 2233 deletions(-)
+>
+> which is biased by the CAIF SPI removal. Without that it is:
+>
+>  79 files changed, 300 insertions(+), 697 deletions(-)
+>
+> Thanks,
+>
+> 	tglx
+> ---
+
+[...]
+
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c     |    4 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bus.h        |    5 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/core.c       |   20 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.c       |    8 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/fweh.h       |    7 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/msgbuf.c     |    2 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c       |   12 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h       |    2 
+>  b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/usb.c        |    2 
+>  b/drivers/net/wireless/intel/ipw2x00/ipw2100.c                  |    3 
+>  b/drivers/net/wireless/intel/ipw2x00/ipw2200.h                  |    6 
+>  b/drivers/net/wireless/intel/ipw2x00/libipw.h                   |    3 
+>  b/drivers/net/wireless/intel/iwlegacy/common.h                  |    4 
+>  b/drivers/net/wireless/intel/iwlwifi/iwl-debug.c                |    5 
+>  b/drivers/net/wireless/intel/iwlwifi/iwl-devtrace-msg.h         |    6 
+>  b/drivers/net/wireless/intersil/hostap/hostap_hw.c              |   12 
+>  b/drivers/net/wireless/marvell/libertas/defs.h                  |    3 
+>  b/drivers/net/wireless/marvell/libertas/rx.c                    |   11 
+>  b/drivers/net/wireless/marvell/libertas_tf/deb_defs.h           |    3 
+>  b/drivers/net/wireless/marvell/mwifiex/uap_txrx.c               |    6 
+>  b/drivers/net/wireless/marvell/mwifiex/util.c                   |    6 
+>  b/drivers/net/wireless/realtek/rtlwifi/base.c                   |   47 
+>  b/drivers/net/wireless/realtek/rtlwifi/base.h                   |    3 
+>  b/drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c |   12 
+>  b/drivers/net/wireless/realtek/rtlwifi/core.c                   |    6 
+>  b/drivers/net/wireless/realtek/rtlwifi/debug.c                  |   20 
+>  b/drivers/net/wireless/realtek/rtlwifi/debug.h                  |    6 
+>  b/drivers/net/wireless/realtek/rtlwifi/pci.c                    |    4 
+>  b/drivers/net/wireless/realtek/rtlwifi/ps.c                     |   27 
+>  b/drivers/net/wireless/realtek/rtlwifi/ps.h                     |   10 
+>  b/drivers/net/wireless/realtek/rtlwifi/wifi.h                   |    3 
+>  b/drivers/net/wireless/zydas/zd1211rw/zd_usb.c                  |    1 
+
+For the wireless patches:
+
+Acked-by: Kalle Valo <kvalo@codeaurora.org>
+
+I assume Dave will take them, but just let me know if I should take them
+instead.
+
+-- 
+https://patchwork.kernel.org/project/linux-wireless/list/
+
+https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
