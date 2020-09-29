@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 29 Sep 2020 22:25:17 +0200
-Subject: [Intel-wired-lan] [patch V2 08/36] net: e100: Remove in_interrupt()
- usage and pointless GFP_ATOMIC allocation
+Date: Tue, 29 Sep 2020 22:25:18 +0200
+Subject: [Intel-wired-lan] [patch V2 09/36] net: fec_mpc52xx: Replace
+ in_interrupt() usage
 References: <20200929202509.673358734@linutronix.de>
-Message-ID: <20200929203500.277654701@linutronix.de>
+Message-ID: <20200929203500.387065111@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,57 +12,70 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-e100_hw_init() invokes e100_self_test() only if in_interrupt() returns
-false as e100_self_test() uses msleep() which requires sleepable task
-context. The in_interrupt() check is incomplete because in_interrupt()
-cannot catch callers from contexts which have just preemption or interrupts
-disabled.
+The usage of in_interrupt() in drivers is phased out and Linus clearly
+requested that code which changes behaviour depending on context should
+either be seperated or the context be conveyed in an argument passed by the
+caller, which usually knows the context.
 
-e100_hw_init() is invoked from:
+mpc52xx_fec_stop() uses in_interrupt() to check if it is safe to sleep. All
+callers run in well defined contexts.
 
-  - e100_loopback_test() which clearly is sleepable task context as the
-    function uses msleep() itself.
-
-  - e100_up() which clearly is sleepable task context as well because it
-    invokes e100_alloc_cbs() abd request_irq() which both require sleepable
-    task context due to GFP_KERNEL allocations and mutex_lock() operations.
-
-Remove the pointless in_interrupt() check.
-
-As a side effect of this analysis it turned out that e100_rx_alloc_list()
-which is only invoked from e100_loopback_test() and e100_up() pointlessly
-uses a GFP_ATOMIC allocation. The next invoked function e100_alloc_cbs() is
-using GFP_KERNEL already.
-
-Change the allocation mode in e100_rx_alloc_list() to GFP_KERNEL as well.
+Pass an argument from the callers indicating whether it is safe to sleep.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
 ---
- drivers/net/ethernet/intel/e100.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/freescale/fec_mpc52xx.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -1531,7 +1531,7 @@ static int e100_hw_init(struct nic *nic)
- 	e100_hw_reset(nic);
+--- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
++++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+@@ -74,7 +74,7 @@ struct mpc52xx_fec_priv {
+ static irqreturn_t mpc52xx_fec_interrupt(int, void *);
+ static irqreturn_t mpc52xx_fec_rx_interrupt(int, void *);
+ static irqreturn_t mpc52xx_fec_tx_interrupt(int, void *);
+-static void mpc52xx_fec_stop(struct net_device *dev);
++static void mpc52xx_fec_stop(struct net_device *dev, bool may_sleep);
+ static void mpc52xx_fec_start(struct net_device *dev);
+ static void mpc52xx_fec_reset(struct net_device *dev);
  
- 	netif_err(nic, hw, nic->netdev, "e100_hw_init\n");
--	if (!in_interrupt() && (err = e100_self_test(nic)))
-+	if ((err = e100_self_test(nic)))
- 		return err;
+@@ -283,7 +283,7 @@ static int mpc52xx_fec_close(struct net_
  
- 	if ((err = e100_phy_init(nic)))
-@@ -2155,7 +2155,7 @@ static int e100_rx_alloc_list(struct nic
- 	nic->rx_to_use = nic->rx_to_clean = NULL;
- 	nic->ru_running = RU_UNINITIALIZED;
+ 	netif_stop_queue(dev);
  
--	if (!(nic->rxs = kcalloc(count, sizeof(struct rx), GFP_ATOMIC)))
-+	if (!(nic->rxs = kcalloc(count, sizeof(struct rx), GFP_KERNEL)))
- 		return -ENOMEM;
+-	mpc52xx_fec_stop(dev);
++	mpc52xx_fec_stop(dev, true);
  
- 	for (rx = nic->rxs, i = 0; i < count; rx++, i++) {
+ 	mpc52xx_fec_free_rx_buffers(dev, priv->rx_dmatsk);
+ 
+@@ -693,7 +693,7 @@ static void mpc52xx_fec_start(struct net
+  *
+  * stop all activity on fec and empty dma buffers
+  */
+-static void mpc52xx_fec_stop(struct net_device *dev)
++static void mpc52xx_fec_stop(struct net_device *dev, bool may_sleep)
+ {
+ 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+ 	struct mpc52xx_fec __iomem *fec = priv->fec;
+@@ -706,7 +706,7 @@ static void mpc52xx_fec_stop(struct net_
+ 	bcom_disable(priv->rx_dmatsk);
+ 
+ 	/* Wait for tx queue to drain, but only if we're in process context */
+-	if (!in_interrupt()) {
++	if (may_sleep) {
+ 		timeout = jiffies + msecs_to_jiffies(2000);
+ 		while (time_before(jiffies, timeout) &&
+ 				!bcom_queue_empty(priv->tx_dmatsk))
+@@ -738,7 +738,7 @@ static void mpc52xx_fec_reset(struct net
+ 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+ 	struct mpc52xx_fec __iomem *fec = priv->fec;
+ 
+-	mpc52xx_fec_stop(dev);
++	mpc52xx_fec_stop(dev, false);
+ 
+ 	out_be32(&fec->rfifo_status, in_be32(&fec->rfifo_status));
+ 	out_be32(&fec->reset_cntrl, FEC_RESET_CNTRL_RESET_FIFO);
 
 
