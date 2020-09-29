@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 29 Sep 2020 22:25:28 +0200
-Subject: [Intel-wired-lan] [patch V2 19/36] net: vxge: Remove in_interrupt()
- conditionals
+Date: Tue, 29 Sep 2020 22:25:30 +0200
+Subject: [Intel-wired-lan] [patch V2 21/36] net: usb: kaweth: Replace
+ kaweth_control() with usb_control_msg()
 References: <20200929202509.673358734@linutronix.de>
-Message-ID: <20200929203501.384359804@linutronix.de>
+Message-ID: <20200929203501.588965483@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,78 +12,173 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-vxge_os_dma_malloc() and vxge_os_dma_malloc_async() are both called from
-callchains which use GFP_KERNEL allocations unconditionally or have other
-requirements to be called from fully preemptible task context..
+kaweth_control() is almost the same as usb_control_msg() except for the
+memory allocation mode (GFP_ATOMIC vs GFP_NOIO) and the in_interrupt()
+check.
 
-vxge_os_dma_malloc():
-  1)  __vxge_hw_blockpool_create() <- GFP_KERNEL
-	
-  2)  __vxge_hw_mempool_grow() <- vzalloc()
-        __vxge_hw_blockpool_malloc()
+All the invocations of kaweth_control() are within the probe function in
+fully preemtible context so there is no reason to use atomic allocations,
+GFP_NOIO which is used by usb_control_msg() is perfectly fine.
 
-vxge_os_dma_malloc_async():
-  1  __vxge_hw_mempool_grow() <- vzalloc()
-      __vxge_hw_blockpool_malloc()
-	__vxge_hw_blockpool_blocks_add()
-
-  2)  vxge_hw_vpath_open()	<- vzalloc()
-	__vxge_hw_blockpool_block_allocate()
-
-That means neither of these functions needs a conditional allocation mode.
-
-Remove the in_interrupt() conditional and use GFP_KERNEL.
+Replace kaweth_control() invocations from probe with usb_control_msg().
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
 ---
- drivers/net/ethernet/neterion/vxge/vxge-config.c |    9 +--------
- drivers/net/ethernet/neterion/vxge/vxge-config.h |    7 +------
- 2 files changed, 2 insertions(+), 14 deletions(-)
+ drivers/net/usb/kaweth.c |   93 +++++++++++++++--------------------------------
+ 1 file changed, 30 insertions(+), 63 deletions(-)
 
---- a/drivers/net/ethernet/neterion/vxge/vxge-config.c
-+++ b/drivers/net/ethernet/neterion/vxge/vxge-config.c
-@@ -2303,16 +2303,9 @@ static void vxge_hw_blockpool_block_add(
- static inline void
- vxge_os_dma_malloc_async(struct pci_dev *pdev, void *devh, unsigned long size)
+--- a/drivers/net/usb/kaweth.c
++++ b/drivers/net/usb/kaweth.c
+@@ -282,19 +282,13 @@ static int kaweth_control(struct kaweth_
+  ****************************************************************/
+ static int kaweth_read_configuration(struct kaweth_device *kaweth)
  {
--	gfp_t flags;
- 	void *vaddr;
- 
--	if (in_interrupt())
--		flags = GFP_ATOMIC | GFP_DMA;
--	else
--		flags = GFP_KERNEL | GFP_DMA;
+-	int retval;
 -
--	vaddr = kmalloc((size), flags);
+-	retval = kaweth_control(kaweth,
+-				usb_rcvctrlpipe(kaweth->dev, 0),
++	return usb_control_msg(kaweth->dev, usb_rcvctrlpipe(kaweth->dev, 0),
+ 				KAWETH_COMMAND_GET_ETHERNET_DESC,
+ 				USB_TYPE_VENDOR | USB_DIR_IN | USB_RECIP_DEVICE,
+-				0,
+-				0,
+-				(void *)&kaweth->configuration,
++				0, 0,
++				&kaweth->configuration,
+ 				sizeof(kaweth->configuration),
+ 				KAWETH_CONTROL_TIMEOUT);
 -
-+	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
- 	vxge_hw_blockpool_block_add(devh, vaddr, size, pdev, pdev);
+-	return retval;
  }
  
---- a/drivers/net/ethernet/neterion/vxge/vxge-config.h
-+++ b/drivers/net/ethernet/neterion/vxge/vxge-config.h
-@@ -1899,18 +1899,13 @@ static inline void *vxge_os_dma_malloc(s
- 			struct pci_dev **p_dmah,
- 			struct pci_dev **p_dma_acch)
+ /****************************************************************
+@@ -302,21 +296,14 @@ static int kaweth_read_configuration(str
+  ****************************************************************/
+ static int kaweth_set_urb_size(struct kaweth_device *kaweth, __u16 urb_size)
  {
--	gfp_t flags;
- 	void *vaddr;
- 	unsigned long misaligned = 0;
- 	int realloc_flag = 0;
- 	*p_dma_acch = *p_dmah = NULL;
+-	int retval;
+-
+ 	netdev_dbg(kaweth->net, "Setting URB size to %d\n", (unsigned)urb_size);
  
--	if (in_interrupt())
--		flags = GFP_ATOMIC | GFP_DMA;
--	else
--		flags = GFP_KERNEL | GFP_DMA;
- realloc:
--	vaddr = kmalloc((size), flags);
-+	vaddr = kmalloc(size, GFP_KERNEL | GFP_DMA);
- 	if (vaddr == NULL)
- 		return vaddr;
- 	misaligned = (unsigned long)VXGE_ALIGN((unsigned long)vaddr,
+-	retval = kaweth_control(kaweth,
+-				usb_sndctrlpipe(kaweth->dev, 0),
+-				KAWETH_COMMAND_SET_URB_SIZE,
+-				USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
+-				urb_size,
+-				0,
+-				(void *)&kaweth->scratch,
+-				0,
+-				KAWETH_CONTROL_TIMEOUT);
+-
+-	return retval;
++	return usb_control_msg(kaweth->dev, usb_sndctrlpipe(kaweth->dev, 0),
++			       KAWETH_COMMAND_SET_URB_SIZE,
++			       USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
++			       urb_size, 0,
++			       &kaweth->scratch, 0,
++			       KAWETH_CONTROL_TIMEOUT);
+ }
+ 
+ /****************************************************************
+@@ -324,21 +311,14 @@ static int kaweth_set_urb_size(struct ka
+  ****************************************************************/
+ static int kaweth_set_sofs_wait(struct kaweth_device *kaweth, __u16 sofs_wait)
+ {
+-	int retval;
+-
+ 	netdev_dbg(kaweth->net, "Set SOFS wait to %d\n", (unsigned)sofs_wait);
+ 
+-	retval = kaweth_control(kaweth,
+-				usb_sndctrlpipe(kaweth->dev, 0),
+-				KAWETH_COMMAND_SET_SOFS_WAIT,
+-				USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
+-				sofs_wait,
+-				0,
+-				(void *)&kaweth->scratch,
+-				0,
+-				KAWETH_CONTROL_TIMEOUT);
+-
+-	return retval;
++	return usb_control_msg(kaweth->dev, usb_sndctrlpipe(kaweth->dev, 0),
++			       KAWETH_COMMAND_SET_SOFS_WAIT,
++			       USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
++			       sofs_wait, 0,
++			       &kaweth->scratch, 0,
++			       KAWETH_CONTROL_TIMEOUT);
+ }
+ 
+ /****************************************************************
+@@ -347,22 +327,15 @@ static int kaweth_set_sofs_wait(struct k
+ static int kaweth_set_receive_filter(struct kaweth_device *kaweth,
+ 				     __u16 receive_filter)
+ {
+-	int retval;
+-
+ 	netdev_dbg(kaweth->net, "Set receive filter to %d\n",
+ 		   (unsigned)receive_filter);
+ 
+-	retval = kaweth_control(kaweth,
+-				usb_sndctrlpipe(kaweth->dev, 0),
+-				KAWETH_COMMAND_SET_PACKET_FILTER,
+-				USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
+-				receive_filter,
+-				0,
+-				(void *)&kaweth->scratch,
+-				0,
+-				KAWETH_CONTROL_TIMEOUT);
+-
+-	return retval;
++	return usb_control_msg(kaweth->dev, usb_sndctrlpipe(kaweth->dev, 0),
++			       KAWETH_COMMAND_SET_PACKET_FILTER,
++			       USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
++			       receive_filter, 0,
++			       &kaweth->scratch, 0,
++			       KAWETH_CONTROL_TIMEOUT);
+ }
+ 
+ /****************************************************************
+@@ -407,14 +380,11 @@ static int kaweth_download_firmware(stru
+ 		   kaweth->firmware_buf, kaweth);
+ 	netdev_dbg(kaweth->net, "Firmware length: %d\n", data_len);
+ 
+-	return kaweth_control(kaweth,
+-		              usb_sndctrlpipe(kaweth->dev, 0),
++	return usb_control_msg(kaweth->dev, usb_sndctrlpipe(kaweth->dev, 0),
+ 			      KAWETH_COMMAND_SCAN,
+ 			      USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
+-			      0,
+-			      0,
+-			      (void *)kaweth->firmware_buf,
+-			      data_len,
++			      0, 0,
++			      kaweth->firmware_buf, data_len,
+ 			      KAWETH_CONTROL_TIMEOUT);
+ }
+ 
+@@ -433,15 +403,12 @@ static int kaweth_trigger_firmware(struc
+ 	kaweth->firmware_buf[6] = 0x00;
+ 	kaweth->firmware_buf[7] = 0x00;
+ 
+-	return kaweth_control(kaweth,
+-			      usb_sndctrlpipe(kaweth->dev, 0),
+-			      KAWETH_COMMAND_SCAN,
+-			      USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
+-			      0,
+-			      0,
+-			      (void *)kaweth->firmware_buf,
+-			      8,
+-			      KAWETH_CONTROL_TIMEOUT);
++	return usb_control_msg(kaweth->dev, usb_sndctrlpipe(kaweth->dev, 0),
++			       KAWETH_COMMAND_SCAN,
++			       USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
++			       0, 0,
++			       (void *)kaweth->firmware_buf, 8,
++			       KAWETH_CONTROL_TIMEOUT);
+ }
+ 
+ /****************************************************************
 
 
