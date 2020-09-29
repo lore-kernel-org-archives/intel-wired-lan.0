@@ -1,149 +1,68 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 28 Sep 2020 16:04:31 -0700
-Subject: [Intel-wired-lan] [patch 10/35] net: intel: Remove
- in_interrupt() warnings
-In-Reply-To: <20200927194920.824108021@linutronix.de>
-References: <20200927194846.045411263@linutronix.de>
- <20200927194920.824108021@linutronix.de>
-Message-ID: <CAKgT0Uc0bB8nr0Kh-UHS=dEW3nu=DrYeio1w6snkzFSB=tQgXw@mail.gmail.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 29 Sep 2020 16:08:45 +0300
+Subject: [Intel-wired-lan] [PATCH v4] e1000e: Increase polling timeout
+ on MDIC ready bit
+In-Reply-To: <20200928083658.8567-1-kai.heng.feng@canonical.com>
+References: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+ <20200928083658.8567-1-kai.heng.feng@canonical.com>
+Message-ID: <469c71d5-93ac-e6c7-f85c-342b0df78a45@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Sep 27, 2020 at 1:00 PM Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->
-> in_interrupt() is ill defined and does not provide what the name
-> suggests. The usage especially in driver code is deprecated and a tree wide
-> effort to clean up and consolidate the (ab)usage of in_interrupt() and
-> related checks is happening.
->
-> In this case the checks cover only parts of the contexts in which these
-> functions cannot be called. They fail to detect preemption or interrupt
-> disabled invocations.
->
-> As the functions which are invoked from the various places contain already
-> a broad variety of checks (always enabled or debug option dependent) cover
-> all invalid conditions already, there is no point in having inconsistent
-> warnings in those drivers.
->
-> Just remove them.
->
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: netdev at vger.kernel.org
-
-The patch looks good to me.
-
-Reviewed-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-
+On 9/28/2020 11:36, Kai-Heng Feng wrote:
+> We are seeing the following error after S3 resume:
+> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
+> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
+> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
+> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
+> ...
+> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
+> 
+> As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
+> increase polling iteration can resolve the issue.
+> 
+> This patch only papers over the symptom, as we don't really know the
+> root cause of the issue. The most possible culprit is Intel ME, which
+> may do its own things that conflict with software.
+> 
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 > ---
->  drivers/net/ethernet/intel/e1000/e1000_main.c     |    1 -
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c      |    2 --
->  drivers/net/ethernet/intel/i40e/i40e_main.c       |    4 ----
->  drivers/net/ethernet/intel/ice/ice_main.c         |    1 -
->  drivers/net/ethernet/intel/igb/igb_main.c         |    1 -
->  drivers/net/ethernet/intel/igc/igc_main.c         |    1 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    1 -
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 --
->  8 files changed, 13 deletions(-)
->
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> @@ -534,7 +534,6 @@ void e1000_down(struct e1000_adapter *ad
->
->  void e1000_reinit_locked(struct e1000_adapter *adapter)
->  {
-> -       WARN_ON(in_interrupt());
->         while (test_and_set_bit(__E1000_RESETTING, &adapter->flags))
->                 msleep(1);
->
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -221,8 +221,6 @@ static bool fm10k_prepare_for_reset(stru
->  {
->         struct net_device *netdev = interface->netdev;
->
-> -       WARN_ON(in_interrupt());
-> -
->         /* put off any impending NetWatchDogTimeout */
->         netif_trans_update(netdev);
->
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -6689,7 +6689,6 @@ static void i40e_vsi_reinit_locked(struc
->  {
->         struct i40e_pf *pf = vsi->back;
->
-> -       WARN_ON(in_interrupt());
->         while (test_and_set_bit(__I40E_CONFIG_BUSY, pf->state))
->                 usleep_range(1000, 2000);
->         i40e_down(vsi);
-> @@ -8462,9 +8461,6 @@ void i40e_do_reset(struct i40e_pf *pf, u
->  {
->         u32 val;
->
-> -       WARN_ON(in_interrupt());
-> -
-> -
->         /* do the biggest reset indicated */
->         if (reset_flags & BIT_ULL(__I40E_GLOBAL_RESET_REQUESTED)) {
->
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -486,7 +486,6 @@ static void ice_do_reset(struct ice_pf *
->         struct ice_hw *hw = &pf->hw;
->
->         dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
-> -       WARN_ON(in_interrupt());
->
->         ice_prepare_for_reset(pf);
->
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -2220,7 +2220,6 @@ void igb_down(struct igb_adapter *adapte
->
->  void igb_reinit_locked(struct igb_adapter *adapter)
->  {
-> -       WARN_ON(in_interrupt());
->         while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
->                 usleep_range(1000, 2000);
->         igb_down(adapter);
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -3831,7 +3831,6 @@ void igc_down(struct igc_adapter *adapte
->
->  void igc_reinit_locked(struct igc_adapter *adapter)
->  {
-> -       WARN_ON(in_interrupt());
->         while (test_and_set_bit(__IGC_RESETTING, &adapter->state))
->                 usleep_range(1000, 2000);
->         igc_down(adapter);
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -5677,7 +5677,6 @@ static void ixgbe_up_complete(struct ixg
->
->  void ixgbe_reinit_locked(struct ixgbe_adapter *adapter)
->  {
-> -       WARN_ON(in_interrupt());
->         /* put off any impending NetWatchDogTimeout */
->         netif_trans_update(adapter->netdev);
->
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -2526,8 +2526,6 @@ void ixgbevf_down(struct ixgbevf_adapter
->
->  void ixgbevf_reinit_locked(struct ixgbevf_adapter *adapter)
->  {
-> -       WARN_ON(in_interrupt());
-> -
->         while (test_and_set_bit(__IXGBEVF_RESETTING, &adapter->state))
->                 msleep(1);
->
->
+> v4:
+>   - States that this patch just papers over the symptom.
+> 
+> v3:
+>   - Moving delay to end of loop doesn't save anytime, move it back.
+>   - Point out this is quitely likely caused by Intel ME.
+> 
+> v2:
+>   - Increase polling iteration instead of powering down the phy.
+> 
+>   drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+> index e11c877595fb..e6d4acd90937 100644
+> --- a/drivers/net/ethernet/intel/e1000e/phy.c
+> +++ b/drivers/net/ethernet/intel/e1000e/phy.c
+> @@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>   	 * Increasing the time out as testing showed failures with
+>   	 * the lower time out
+>   	 */
+> -	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+> +	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
+As we discussed (many threads) - AMT/ME systems not supported on Linux 
+as properly. I do not think increasing polling iteration will solve the 
+problem. Rather mask it.
+I prefer you check option to disable ME vi BIOS on your system.
+>   		udelay(50);
+>   		mdic = er32(MDIC);
+>   		if (mdic & E1000_MDIC_READY)
+> 
+Thanks,
+Sasha
