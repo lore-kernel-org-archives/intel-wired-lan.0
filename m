@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 29 Sep 2020 22:25:32 +0200
-Subject: [Intel-wired-lan] [patch V2 23/36] net: usb: net1080: Remove
- in_interrupt() comment
+Date: Tue, 29 Sep 2020 22:25:34 +0200
+Subject: [Intel-wired-lan] [patch V2 25/36] net: brcmfmac: Replace
+ in_interrupt()
 References: <20200929202509.673358734@linutronix.de>
-Message-ID: <20200929203501.797721723@linutronix.de>
+Message-ID: <20200929203501.990651184@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,33 +12,73 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-The comment above nc_vendor_write() suggests that the function could become
-async so that is usable in `in_interrupt()' context or that it already is
-safe to be called from such a context.
+brcmf_sdio_isr() is using in_interrupt() to distinguish if it is called
+from a interrupt service routine or from a worker thread.
 
-Eitherway: The function did not become async since v2.4.9.2 (2002) and it
-must be not be called from `in_interrupt()' context because it sleeps on
-mutltiple occations.
-
-Remove the misleading comment.
+Passing such information from the calling context is preferred and
+requested by Linus, so add an argument `in_isr' to brcmf_sdio_isr() and let
+the callers pass the information about the calling context.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
+Reviewed-by: Arend van Spriel <arend.vanspriel@broadcom.com>
+Acked-by: Kalle Valo <kvalo@codeaurora.org>
 ---
- drivers/net/usb/net1080.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c |    4 ++--
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c   |    4 ++--
+ drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h   |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/net/usb/net1080.c
-+++ b/drivers/net/usb/net1080.c
-@@ -113,7 +113,6 @@ nc_register_read(struct usbnet *dev, u8
- 	return nc_vendor_read(dev, REQUEST_REGISTER, regnum, retval_ptr);
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/bcmsdh.c
+@@ -73,7 +73,7 @@ static irqreturn_t brcmf_sdiod_oob_irqha
+ 		sdiodev->irq_en = false;
+ 	}
+ 
+-	brcmf_sdio_isr(sdiodev->bus);
++	brcmf_sdio_isr(sdiodev->bus, true);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -85,7 +85,7 @@ static void brcmf_sdiod_ib_irqhandler(st
+ 
+ 	brcmf_dbg(INTR, "IB intr triggered\n");
+ 
+-	brcmf_sdio_isr(sdiodev->bus);
++	brcmf_sdio_isr(sdiodev->bus, false);
  }
  
--// no retval ... can become async, usable in_interrupt()
- static void
- nc_vendor_write(struct usbnet *dev, u8 req, u8 regnum, u16 value)
+ /* dummy handler for SDIO function 2 interrupt */
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.c
+@@ -3625,7 +3625,7 @@ void brcmf_sdio_trigger_dpc(struct brcmf
+ 	}
+ }
+ 
+-void brcmf_sdio_isr(struct brcmf_sdio *bus)
++void brcmf_sdio_isr(struct brcmf_sdio *bus, bool in_isr)
  {
+ 	brcmf_dbg(TRACE, "Enter\n");
+ 
+@@ -3636,7 +3636,7 @@ void brcmf_sdio_isr(struct brcmf_sdio *b
+ 
+ 	/* Count the interrupt call */
+ 	bus->sdcnt.intrcount++;
+-	if (in_interrupt())
++	if (in_isr)
+ 		atomic_set(&bus->ipend, 1);
+ 	else
+ 		if (brcmf_sdio_intr_rstatus(bus)) {
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/sdio.h
+@@ -372,7 +372,7 @@ int brcmf_sdiod_remove(struct brcmf_sdio
+ 
+ struct brcmf_sdio *brcmf_sdio_probe(struct brcmf_sdio_dev *sdiodev);
+ void brcmf_sdio_remove(struct brcmf_sdio *bus);
+-void brcmf_sdio_isr(struct brcmf_sdio *bus);
++void brcmf_sdio_isr(struct brcmf_sdio *bus, bool in_isr);
+ 
+ void brcmf_sdio_wd_timer(struct brcmf_sdio *bus, bool active);
+ void brcmf_sdio_wowl_config(struct device *dev, bool enabled);
 
 
