@@ -1,9 +1,9 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 29 Sep 2020 22:25:37 +0200
-Subject: [Intel-wired-lan] [patch V2 28/36] net: ipw2x00, iwlegacy,
- iwlwifi: Remove in_interrupt() from debug macros
+Date: Tue, 29 Sep 2020 22:25:39 +0200
+Subject: [Intel-wired-lan] [patch V2 30/36] net: hostap: Remove
+ in_interrupt() usage
 References: <20200929202509.673358734@linutronix.de>
-Message-ID: <20200929203502.290194412@linutronix.de>
+Message-ID: <20200929203502.481146256@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,99 +12,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-The usage of in_interrupt() in non-core code is phased out.
+in_interrupt() is ill defined and does not provide what the name
+suggests. The usage especially in driver code is deprecated and a tree wide
+effort to clean up and consolidate the (ab)usage of in_interrupt() and
+related checks is happening.
 
-The debugging macros in these drivers use in_interrupt() to print 'I' or
-'U' depending on the return value of in_interrupt(). While 'U' is confusing
-at best and 'I' is not really describing the actual context (hard interupt,
-soft interrupt, bottom half disabled section) these debug macros originate
-from the pre ftrace kernel era and their value today is questionable. They
-probably should be removed completely.
+hfa384x_cmd() and prism2_hw_reset() check in_interrupt() at function entry
+and if true emit a printk at debug loglevel and return. This is clearly debug
+code.
 
-The macros weere added initially for ipw2100 and then spreaded when the
-driver was forked.
+Both functions invoke functions which can sleep. These functions already
+have appropriate debug checks which cover all invalid contexts, while
+in_interrupt() fails to detect context which just has preemption or
+interrupts disabled.
 
-Remove the in_interrupt() usage at least..
+Remove both checks as they are incomplete, debug only and already covered
+by the subsequently invoked functions properly. If called from invalid
+context the resulting back trace is definitely more helpful to analyze the
+problem than a printk at debug loglevel.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Acked-by: Kalle Valo <kvalo@codeaurora.org>
 
 ---
- drivers/net/wireless/intel/ipw2x00/ipw2100.c   |    3 +--
- drivers/net/wireless/intel/ipw2x00/ipw2200.h   |    6 ++----
- drivers/net/wireless/intel/ipw2x00/libipw.h    |    3 +--
- drivers/net/wireless/intel/iwlegacy/common.h   |    4 ++--
- drivers/net/wireless/intel/iwlwifi/iwl-debug.c |    3 +--
- 5 files changed, 7 insertions(+), 12 deletions(-)
+ drivers/net/wireless/intersil/hostap/hostap_hw.c |   12 ------------
+ 1 file changed, 12 deletions(-)
 
---- a/drivers/net/wireless/intel/ipw2x00/ipw2100.c
-+++ b/drivers/net/wireless/intel/ipw2x00/ipw2100.c
-@@ -201,8 +201,7 @@ static u32 ipw2100_debug_level = IPW_DL_
- #define IPW_DEBUG(level, message...) \
- do { \
- 	if (ipw2100_debug_level & (level)) { \
--		printk(KERN_DEBUG "ipw2100: %c %s ", \
--                       in_interrupt() ? 'I' : 'U',  __func__); \
-+		printk(KERN_DEBUG "ipw2100: %s ", __func__); \
- 		printk(message); \
- 	} \
- } while (0)
---- a/drivers/net/wireless/intel/ipw2x00/ipw2200.h
-+++ b/drivers/net/wireless/intel/ipw2x00/ipw2200.h
-@@ -1382,14 +1382,12 @@ BIT_ARG16(x)
+--- a/drivers/net/wireless/intersil/hostap/hostap_hw.c
++++ b/drivers/net/wireless/intersil/hostap/hostap_hw.c
+@@ -320,12 +320,6 @@ static int hfa384x_cmd(struct net_device
+ 	iface = netdev_priv(dev);
+ 	local = iface->local;
  
- #define IPW_DEBUG(level, fmt, args...) \
- do { if (ipw_debug_level & (level)) \
--  printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
--         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
-+  printk(KERN_DEBUG DRV_NAME": %s " fmt, __func__ , ## args); } while (0)
+-	if (in_interrupt()) {
+-		printk(KERN_DEBUG "%s: hfa384x_cmd called from interrupt "
+-		       "context\n", dev->name);
+-		return -1;
+-	}
+-
+ 	if (local->cmd_queue_len >= HOSTAP_CMD_QUEUE_MAX_LEN) {
+ 		printk(KERN_DEBUG "%s: hfa384x_cmd: cmd_queue full\n",
+ 		       dev->name);
+@@ -1560,12 +1554,6 @@ static void prism2_hw_reset(struct net_d
+ 	iface = netdev_priv(dev);
+ 	local = iface->local;
  
- #ifdef CONFIG_IPW2200_DEBUG
- #define IPW_LL_DEBUG(level, fmt, args...) \
- do { if (ipw_debug_level & (level)) \
--  printk(KERN_DEBUG DRV_NAME": %c %s " fmt, \
--         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
-+  printk(KERN_DEBUG DRV_NAME": %s " fmt, __func__ , ## args); } while (0)
- #else
- #define IPW_LL_DEBUG(level, fmt, args...) do {} while (0)
- #endif				/* CONFIG_IPW2200_DEBUG */
---- a/drivers/net/wireless/intel/ipw2x00/libipw.h
-+++ b/drivers/net/wireless/intel/ipw2x00/libipw.h
-@@ -60,8 +60,7 @@
- extern u32 libipw_debug_level;
- #define LIBIPW_DEBUG(level, fmt, args...) \
- do { if (libipw_debug_level & (level)) \
--  printk(KERN_DEBUG "libipw: %c %s " fmt, \
--         in_interrupt() ? 'I' : 'U', __func__ , ## args); } while (0)
-+  printk(KERN_DEBUG "libipw: %s " fmt, __func__ , ## args); } while (0)
- #else
- #define LIBIPW_DEBUG(level, fmt, args...) do {} while (0)
- #endif				/* CONFIG_LIBIPW_DEBUG */
---- a/drivers/net/wireless/intel/iwlegacy/common.h
-+++ b/drivers/net/wireless/intel/iwlegacy/common.h
-@@ -2925,8 +2925,8 @@ do {									\
- #define IL_DBG(level, fmt, args...)					\
- do {									\
- 	if (il_get_debug_level(il) & level)				\
--		dev_err(&il->hw->wiphy->dev, "%c %s " fmt,		\
--			in_interrupt() ? 'I' : 'U', __func__ , ##args); \
-+		dev_err(&il->hw->wiphy->dev, "%s " fmt, __func__,	\
-+			 ##args);					\
- } while (0)
+-	if (in_interrupt()) {
+-		printk(KERN_DEBUG "%s: driver bug - prism2_hw_reset() called "
+-		       "in interrupt context\n", dev->name);
+-		return;
+-	}
+-
+ 	if (local->hw_downloading)
+ 		return;
  
- #define il_print_hex_dump(il, level, p, len)				\
---- a/drivers/net/wireless/intel/iwlwifi/iwl-debug.c
-+++ b/drivers/net/wireless/intel/iwlwifi/iwl-debug.c
-@@ -121,8 +121,7 @@ void __iwl_dbg(struct device *dev,
- #ifdef CONFIG_IWLWIFI_DEBUG
- 	if (iwl_have_debug_level(level) &&
- 	    (!limit || net_ratelimit()))
--		dev_printk(KERN_DEBUG, dev, "%c %s %pV",
--			   in_interrupt() ? 'I' : 'U', function, &vaf);
-+		dev_printk(KERN_DEBUG, dev, "%s %pV", function, &vaf);
- #endif
- 	trace_iwlwifi_dbg(level, in_interrupt(), function, &vaf);
- 	va_end(args);
 
 
