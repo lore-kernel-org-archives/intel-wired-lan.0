@@ -1,293 +1,98 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Tue, 29 Sep 2020 16:06:59 -0700
-Subject: [Intel-wired-lan] [patch V2 11/36] net: ionic: Replace
- in_interrupt() usage.
-In-Reply-To: <20200929203500.579810110@linutronix.de>
-References: <20200929202509.673358734@linutronix.de>
- <20200929203500.579810110@linutronix.de>
-Message-ID: <04ec3648-9735-b901-6492-606468d47158@pensando.io>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Wed, 30 Sep 2020 09:54:34 +0300
+Subject: [Intel-wired-lan] [PATCH v4] e1000e: Increase polling timeout
+ on MDIC ready bit
+In-Reply-To: <3DA721C5-F656-4085-9113-A0407CDF90FB@canonical.com>
+References: <20200924164542.19906-1-kai.heng.feng@canonical.com>
+ <20200928083658.8567-1-kai.heng.feng@canonical.com>
+ <469c71d5-93ac-e6c7-f85c-342b0df78a45@intel.com>
+ <30761C6B-28B8-4464-8615-55EF3E090E07@canonical.com>
+ <345fffcd-e9f1-5881-fba1-d7313876e943@intel.com>
+ <3DA721C5-F656-4085-9113-A0407CDF90FB@canonical.com>
+Message-ID: <adb2f604-8c98-8799-6ed1-b8889b8cd0f6@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/29/20 1:25 PM, Thomas Gleixner wrote:
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->
-> The in_interrupt() usage in this driver tries to figure out which context
-> may sleep and which context may not sleep. in_interrupt() is not really
-> suitable as it misses both preemption disabled and interrupt disabled
-> invocations from task context.
->
-> Conditionals like that in driver code are frowned upon in general because
-> invocations of functions from invalid contexts might not be detected
-> as the conditional papers over it.
->
-> ionic_lif_addr() and _ionoc_lif_rx_mode() can be called from:
->
->   1) ->ndo_set_rx_mode() which is under netif_addr_lock_bh()) so it must not
->      sleep.
->
->   2) Init and setup functions which are in fully preemptible task context.
->
-> ionic_link_status_check_request() has two call paths:
->
->   1) NAPI which obviously cannot sleep
->
->   2) Setup which is again fully preemptible task context
->
-> Add arguments which convey the execution context to the affected functions
-> and let the callers provide the context instead of letting the functions
-> deduce it.
->
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
-> V2: Treat _ionoc_lif_rx_mode() correclty (Shannon)
+On 9/29/2020 18:08, Kai-Heng Feng wrote:
 
-Is it fair to poke at the comments?
-s/ionoc/ionic/
-s/correclty/correctly/
+Hello Kai-Heng,
+> 
+> 
+>> On Sep 29, 2020, at 21:46, Neftin, Sasha <sasha.neftin@intel.com> wrote:
+>>
+>> Hello Kai-Heng,
+>> On 9/29/2020 16:31, Kai-Heng Feng wrote:
+>>> Hi Sasha,
+>>>> On Sep 29, 2020, at 21:08, Neftin, Sasha <sasha.neftin@intel.com> wrote:
+>>>>
+>>>> On 9/28/2020 11:36, Kai-Heng Feng wrote:
+>>>>> We are seeing the following error after S3 resume:
+>>>>> [  704.746874] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+>>>>> [  704.844232] e1000e 0000:00:1f.6 eno1: MDI Write did not complete
+>>>>> [  704.902817] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+>>>>> [  704.903075] e1000e 0000:00:1f.6 eno1: reading PHY page 769 (or 0x6020 shifted) reg 0x17
+>>>>> [  704.903281] e1000e 0000:00:1f.6 eno1: Setting page 0x6020
+>>>>> [  704.903486] e1000e 0000:00:1f.6 eno1: writing PHY page 769 (or 0x6020 shifted) reg 0x17
+>>>>> [  704.943155] e1000e 0000:00:1f.6 eno1: MDI Error
+>>>>> ...
+>>>>> [  705.108161] e1000e 0000:00:1f.6 eno1: Hardware Error
+>>>>> As Andrew Lunn pointed out, MDIO has nothing to do with phy, and indeed
+>>>>> increase polling iteration can resolve the issue.
+>>>>> This patch only papers over the symptom, as we don't really know the
+>>>>> root cause of the issue. The most possible culprit is Intel ME, which
+>>>>> may do its own things that conflict with software.
+>>>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>>>>> ---
+>>>>> v4:
+>>>>>   - States that this patch just papers over the symptom.
+>>>>> v3:
+>>>>>   - Moving delay to end of loop doesn't save anytime, move it back.
+>>>>>   - Point out this is quitely likely caused by Intel ME.
+>>>>> v2:
+>>>>>   - Increase polling iteration instead of powering down the phy.
+>>>>>   drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
+>>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>> diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+>>>>> index e11c877595fb..e6d4acd90937 100644
+>>>>> --- a/drivers/net/ethernet/intel/e1000e/phy.c
+>>>>> +++ b/drivers/net/ethernet/intel/e1000e/phy.c
+>>>>> @@ -203,7 +203,7 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>>>>>   	 * Increasing the time out as testing showed failures with
+>>>>>   	 * the lower time out
+>>>>>   	 */
+>>>>> -	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 3); i++) {
+>>>>> +	for (i = 0; i < (E1000_GEN_POLL_TIMEOUT * 10); i++) {
+>>>> As we discussed (many threads) - AMT/ME systems not supported on Linux as properly. I do not think increasing polling iteration will solve the problem. Rather mask it.
+>>> I am aware of the status quo of no proper support on Intel ME.
+>>>> I prefer you check option to disable ME vi BIOS on your system.
+>>> We can't ask user to change the BIOS to accommodate Linux. So before a proper solution comes out, masking the problem is good enough for me.
+>>> Until then, I'll carry it as a downstream distro patch.
+>> What will you do with system that even after increasing polling time will run into HW error?
+> 
+> Hope we finally have proper ME support under Linux?
+> 
+> Kai-Heng
+> 
+>>> Kai-Heng
+>>>>>   		udelay(50);
+>>>>>   		mdic = er32(MDIC);
+>>>>>   		if (mdic & E1000_MDIC_READY)
+>>>> Thanks,
+>>>> Sasha
+>> Thanks,
+>> Sasha
+> 
 
-> ---
->   drivers/net/ethernet/pensando/ionic/ionic_dev.c |    2
->   drivers/net/ethernet/pensando/ionic/ionic_lif.c |   64 ++++++++++++++++--------
->   drivers/net/ethernet/pensando/ionic/ionic_lif.h |    2
->   3 files changed, 47 insertions(+), 21 deletions(-)
->
-> --- a/drivers/net/ethernet/pensando/ionic/ionic_dev.c
-> +++ b/drivers/net/ethernet/pensando/ionic/ionic_dev.c
-> @@ -22,7 +22,7 @@ static void ionic_watchdog_cb(struct tim
->   	hb = ionic_heartbeat_check(ionic);
->   
->   	if (hb >= 0 && ionic->lif)
-> -		ionic_link_status_check_request(ionic->lif);
-> +		ionic_link_status_check_request(ionic->lif, false);
->   }
->   
->   void ionic_init_devinfo(struct ionic *ionic)
-> --- a/drivers/net/ethernet/pensando/ionic/ionic_lif.c
-> +++ b/drivers/net/ethernet/pensando/ionic/ionic_lif.c
-> @@ -151,7 +151,7 @@ static void ionic_link_status_check(stru
->   	clear_bit(IONIC_LIF_F_LINK_CHECK_REQUESTED, lif->state);
->   }
->   
-> -void ionic_link_status_check_request(struct ionic_lif *lif)
-> +void ionic_link_status_check_request(struct ionic_lif *lif, bool can_sleep)
->   {
->   	struct ionic_deferred_work *work;
->   
-> @@ -159,7 +159,7 @@ void ionic_link_status_check_request(str
->   	if (test_and_set_bit(IONIC_LIF_F_LINK_CHECK_REQUESTED, lif->state))
->   		return;
->   
-> -	if (in_interrupt()) {
-> +	if (!can_sleep) {
->   		work = kzalloc(sizeof(*work), GFP_ATOMIC);
->   		if (!work)
->   			return;
-> @@ -798,7 +798,7 @@ static bool ionic_notifyq_service(struct
->   
->   	switch (le16_to_cpu(comp->event.ecode)) {
->   	case IONIC_EVENT_LINK_CHANGE:
-> -		ionic_link_status_check_request(lif);
-> +		ionic_link_status_check_request(lif, false);
->   		break;
->   	case IONIC_EVENT_RESET:
->   		work = kzalloc(sizeof(*work), GFP_ATOMIC);
-> @@ -981,7 +981,8 @@ static int ionic_lif_addr_del(struct ion
->   	return 0;
->   }
->   
-> -static int ionic_lif_addr(struct ionic_lif *lif, const u8 *addr, bool add)
-> +static int ionic_lif_addr(struct ionic_lif *lif, const u8 *addr, bool add,
-> +			  bool can_sleep)
->   {
->   	struct ionic *ionic = lif->ionic;
->   	struct ionic_deferred_work *work;
-> @@ -1010,7 +1011,7 @@ static int ionic_lif_addr(struct ionic_l
->   			lif->nucast--;
->   	}
->   
-> -	if (in_interrupt()) {
-> +	if (!can_sleep) {
->   		work = kzalloc(sizeof(*work), GFP_ATOMIC);
->   		if (!work) {
->   			netdev_err(lif->netdev, "%s OOM\n", __func__);
-> @@ -1036,12 +1037,22 @@ static int ionic_lif_addr(struct ionic_l
->   
->   static int ionic_addr_add(struct net_device *netdev, const u8 *addr)
->   {
-> -	return ionic_lif_addr(netdev_priv(netdev), addr, true);
-> +	return ionic_lif_addr(netdev_priv(netdev), addr, true, true);
-> +}
-> +
-> +static int ionic_ndo_addr_add(struct net_device *netdev, const u8 *addr)
-> +{
-> +	return ionic_lif_addr(netdev_priv(netdev), addr, true, false);
->   }
->   
->   static int ionic_addr_del(struct net_device *netdev, const u8 *addr)
->   {
-> -	return ionic_lif_addr(netdev_priv(netdev), addr, false);
-> +	return ionic_lif_addr(netdev_priv(netdev), addr, false, true);
-> +}
-> +
-> +static int ionic_ndo_addr_del(struct net_device *netdev, const u8 *addr)
-> +{
-> +	return ionic_lif_addr(netdev_priv(netdev), addr, false, false);
->   }
+On which device ID/platform do you see the issue? What is the Firmware 
+version on your platform? What is the ME firmware version that you have?
 
-These changes are reasonable, tho' I'm not fond of parameter lists of 
-"true" and "false" with no context.? I'd prefer to have some constants like
-#define can_sleep true
-so the code can be a little more readable.
+I am asking these questions, since I know there is supposed to be a fix 
+in the firmware to many issues that are related to ME and device 
+interoperability.
 
-Yes, I know we have this problem already in the call to 
-ionic_lif_addr(), which I'm annoyed with but haven't addressed yet.
+Thanks,
 
-So, if you want to deal with this now, fine, otherwise I'll take care of 
-them both later.
-
-Meanwhile,
-
-Acked-by: Shannon Nelson <snelson@pensando.io>
-
-
-
-
->   
->   static void ionic_lif_rx_mode(struct ionic_lif *lif, unsigned int rx_mode)
-> @@ -1081,11 +1092,12 @@ static void ionic_lif_rx_mode(struct ion
->   		lif->rx_mode = rx_mode;
->   }
->   
-> -static void _ionic_lif_rx_mode(struct ionic_lif *lif, unsigned int rx_mode)
-> +static void _ionic_lif_rx_mode(struct ionic_lif *lif, unsigned int rx_mode,
-> +			       bool from_ndo)
->   {
->   	struct ionic_deferred_work *work;
->   
-> -	if (in_interrupt()) {
-> +	if (from_ndo) {
->   		work = kzalloc(sizeof(*work), GFP_ATOMIC);
->   		if (!work) {
->   			netdev_err(lif->netdev, "%s OOM\n", __func__);
-> @@ -1100,7 +1112,16 @@ static void _ionic_lif_rx_mode(struct io
->   	}
->   }
->   
-> -static void ionic_set_rx_mode(struct net_device *netdev)
-> +static void ionic_dev_uc_sync(struct net_device *netdev, bool from_ndo)
-> +{
-> +	if (from_ndo)
-> +		__dev_uc_sync(netdev, ionic_ndo_addr_add, ionic_ndo_addr_del);
-> +	else
-> +		__dev_uc_sync(netdev, ionic_addr_add, ionic_addr_del);
-> +
-> +}
-> +
-> +static void ionic_set_rx_mode(struct net_device *netdev, bool from_ndo)
->   {
->   	struct ionic_lif *lif = netdev_priv(netdev);
->   	struct ionic_identity *ident;
-> @@ -1122,7 +1143,7 @@ static void ionic_set_rx_mode(struct net
->   	 *       we remove our overflow flag and check the netdev flags
->   	 *       to see if we can disable NIC PROMISC
->   	 */
-> -	__dev_uc_sync(netdev, ionic_addr_add, ionic_addr_del);
-> +	ionic_dev_uc_sync(netdev, from_ndo);
->   	nfilters = le32_to_cpu(ident->lif.eth.max_ucast_filters);
->   	if (netdev_uc_count(netdev) + 1 > nfilters) {
->   		rx_mode |= IONIC_RX_MODE_F_PROMISC;
-> @@ -1134,7 +1155,7 @@ static void ionic_set_rx_mode(struct net
->   	}
->   
->   	/* same for multicast */
-> -	__dev_mc_sync(netdev, ionic_addr_add, ionic_addr_del);
-> +	ionic_dev_uc_sync(netdev, from_ndo);
->   	nfilters = le32_to_cpu(ident->lif.eth.max_mcast_filters);
->   	if (netdev_mc_count(netdev) > nfilters) {
->   		rx_mode |= IONIC_RX_MODE_F_ALLMULTI;
-> @@ -1146,7 +1167,12 @@ static void ionic_set_rx_mode(struct net
->   	}
->   
->   	if (lif->rx_mode != rx_mode)
-> -		_ionic_lif_rx_mode(lif, rx_mode);
-> +		_ionic_lif_rx_mode(lif, rx_mode, from_ndo);
-> +}
-> +
-> +static void ionic_ndo_set_rx_mode(struct net_device *netdev)
-> +{
-> +	ionic_set_rx_mode(netdev, true);
->   }
->   
->   static __le64 ionic_netdev_features_to_nic(netdev_features_t features)
-> @@ -1391,7 +1417,7 @@ static int ionic_start_queues_reconfig(s
->   	 */
->   	err = ionic_txrx_init(lif);
->   	mutex_unlock(&lif->queue_lock);
-> -	ionic_link_status_check_request(lif);
-> +	ionic_link_status_check_request(lif, true);
->   	netif_device_attach(lif->netdev);
->   
->   	return err;
-> @@ -1720,7 +1746,7 @@ static int ionic_txrx_init(struct ionic_
->   	if (lif->netdev->features & NETIF_F_RXHASH)
->   		ionic_lif_rss_init(lif);
->   
-> -	ionic_set_rx_mode(lif->netdev);
-> +	ionic_set_rx_mode(lif->netdev, false);
->   
->   	return 0;
->   
-> @@ -2093,7 +2119,7 @@ static const struct net_device_ops ionic
->   	.ndo_stop               = ionic_stop,
->   	.ndo_start_xmit		= ionic_start_xmit,
->   	.ndo_get_stats64	= ionic_get_stats64,
-> -	.ndo_set_rx_mode	= ionic_set_rx_mode,
-> +	.ndo_set_rx_mode	= ionic_ndo_set_rx_mode,
->   	.ndo_set_features	= ionic_set_features,
->   	.ndo_set_mac_address	= ionic_set_mac_address,
->   	.ndo_validate_addr	= eth_validate_addr,
-> @@ -2521,7 +2547,7 @@ static void ionic_lif_handle_fw_up(struc
->   	}
->   
->   	clear_bit(IONIC_LIF_F_FW_RESET, lif->state);
-> -	ionic_link_status_check_request(lif);
-> +	ionic_link_status_check_request(lif, true);
->   	netif_device_attach(lif->netdev);
->   	dev_info(ionic->dev, "FW Up: LIFs restarted\n");
->   
-> @@ -2713,7 +2739,7 @@ static int ionic_station_set(struct ioni
->   		 */
->   		if (!ether_addr_equal(ctx.comp.lif_getattr.mac,
->   				      netdev->dev_addr))
-> -			ionic_lif_addr(lif, netdev->dev_addr, true);
-> +			ionic_lif_addr(lif, netdev->dev_addr, true, true);
->   	} else {
->   		/* Update the netdev mac with the device's mac */
->   		memcpy(addr.sa_data, ctx.comp.lif_getattr.mac, netdev->addr_len);
-> @@ -2730,7 +2756,7 @@ static int ionic_station_set(struct ioni
->   
->   	netdev_dbg(lif->netdev, "adding station MAC addr %pM\n",
->   		   netdev->dev_addr);
-> -	ionic_lif_addr(lif, netdev->dev_addr, true);
-> +	ionic_lif_addr(lif, netdev->dev_addr, true, true);
->   
->   	return 0;
->   }
-> --- a/drivers/net/ethernet/pensando/ionic/ionic_lif.h
-> +++ b/drivers/net/ethernet/pensando/ionic/ionic_lif.h
-> @@ -245,7 +245,7 @@ static inline u32 ionic_coal_usec_to_hw(
->   
->   typedef void (*ionic_reset_cb)(struct ionic_lif *lif, void *arg);
->   
-> -void ionic_link_status_check_request(struct ionic_lif *lif);
-> +void ionic_link_status_check_request(struct ionic_lif *lif, bool can_sleep);
->   void ionic_get_stats64(struct net_device *netdev,
->   		       struct rtnl_link_stats64 *ns);
->   void ionic_lif_deferred_enqueue(struct ionic_deferred *def,
->
-
+Vitaly
