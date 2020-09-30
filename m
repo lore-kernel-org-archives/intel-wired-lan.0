@@ -1,43 +1,52 @@
-From: Martin Habets <mhabets@solarflare.com>
-Date: Wed, 30 Sep 2020 09:00:59 +0100
-Subject: [Intel-wired-lan] [patch V2 16/36] net: sfc: Use GFP_KERNEL in
- efx_ef10_try_update_nic_stats()
-In-Reply-To: <20200929203501.078203643@linutronix.de>
-References: <20200929202509.673358734@linutronix.de>
- <20200929203501.078203643@linutronix.de>
-Message-ID: <20200930080059.GA759845@mh-desktop>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 30 Sep 2020 17:29:25 +0300
+Subject: [Intel-wired-lan] [bug report] igb: add XDP support
+Message-ID: <20200930142925.GA650848@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 29, 2020 at 10:25:25PM +0200, Thomas Gleixner wrote:
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> 
-> efx_ef10_try_update_nic_stats_vf() is now only invoked from thread context
-> and can sleep after efx::stats_lock is dropped.
-> 
-> Change the allocation mode from GFP_ATOMIC to GFP_KERNEL.
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Hello Sven Auhagen,
 
-Acked-by: Martin Habets <mhabets@solarflare.com>
+The patch 9cbc948b5a20: "igb: add XDP support" from Sep 2, 2020,
+leads to the following static checker warning:
 
-> ---
-> V2: Adjust to Edward's stats update split
-> ---
->  drivers/net/ethernet/sfc/ef10.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/drivers/net/ethernet/sfc/ef10.c
-> +++ b/drivers/net/ethernet/sfc/ef10.c
-> @@ -1873,7 +1873,7 @@ static int efx_ef10_try_update_nic_stats
->  
->  	efx_ef10_get_stat_mask(efx, mask);
->  
-> -	rc = efx_nic_alloc_buffer(efx, &stats_buf, dma_len, GFP_ATOMIC);
-> +	rc = efx_nic_alloc_buffer(efx, &stats_buf, dma_len, GFP_KERNEL);
->  	if (rc) {
->  		spin_lock_bh(&efx->stats_lock);
->  		return rc;
+	drivers/net/ethernet/intel/igb/igb_main.c:8427 igb_run_xdp()
+	error: (-2147483647) too low for ERR_PTR
+
+drivers/net/ethernet/intel/igb/igb_main.c
+  2897  static int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
+  2898  {
+  2899          struct xdp_frame *xdpf = xdp_convert_buff_to_frame(xdp);
+  2900          int cpu = smp_processor_id();
+  2901          struct igb_ring *tx_ring;
+  2902          struct netdev_queue *nq;
+  2903          u32 ret;
+  2904  
+  2905          if (unlikely(!xdpf))
+  2906                  return IGB_XDP_CONSUMED;
+  2907  
+  2908          /* During program transitions its possible adapter->xdp_prog is assigned
+  2909           * but ring has not been configured yet. In this case simply abort xmit.
+  2910           */
+  2911          tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
+  2912          if (unlikely(!tx_ring))
+  2913                  return -ENXIO;
+                        ^^^^^^^^^^^^^^
+This is only supposed to return error codes like IGB_XDP_CONSUMED.
+The return here we get converted to a positive eventually it will
+trigger an Oops, because it's no long an IS_ERR() nor a NULL.
+
+  2914  
+  2915          nq = txring_txq(tx_ring);
+  2916          __netif_tx_lock(nq, cpu);
+  2917          ret = igb_xmit_xdp_ring(adapter, tx_ring, xdpf);
+  2918          __netif_tx_unlock(nq);
+  2919  
+  2920          return ret;
+  2921  }
+
+regards,
+dan carpenter
