@@ -1,32 +1,45 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Date: Thu, 1 Oct 2020 17:49:49 +0200
-Subject: [Intel-wired-lan] [PATCH v4 0/4] isolation: limit msix vectors
- to housekeeping CPUs
-In-Reply-To: <20200928183529.471328-1-nitesh@redhat.com>
-References: <20200928183529.471328-1-nitesh@redhat.com>
-Message-ID: <20201001154949.GA7303@lothringen>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Thu,  1 Oct 2020 10:31:40 -0700
+Subject: [Intel-wired-lan] [intel-wired-lan 0/4] implement minimum security
+ revision
+Message-ID: <20201001173144.712615-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 28, 2020 at 02:35:25PM -0400, Nitesh Narayan Lal wrote:
-> Nitesh Narayan Lal (4):
->   sched/isolation: API to get number of housekeeping CPUs
->   sched/isolation: Extend nohz_full to isolate managed IRQs
->   i40e: Limit msix vectors to housekeeping CPUs
->   PCI: Limit pci_alloc_irq_vectors() to housekeeping CPUs
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c |  3 ++-
->  drivers/pci/msi.c                           | 18 ++++++++++++++++++
->  include/linux/sched/isolation.h             |  9 +++++++++
->  kernel/sched/isolation.c                    |  2 +-
->  4 files changed, 30 insertions(+), 2 deletions(-)
+The ice device has security revision fields associated with the ``fw.undi``
+and ``fw.mgmt`` sections of the flash. Additionally each of these security
+revisions has a minimum security revision device parameter.
 
-Acked-by: Frederic Weisbecker <frederic@kernel.org>
+The minimum security revision indicates the lowest security revision that
+will be loaded by the device. If the associated flash section has a lower
+security revision, the device will not load it.
 
-Peter, if you're ok with the set, I guess this should go through
-the scheduler tree?
+Implement support for displaying and updating the minimum security revision
+fields for the device as driver-specific devlink parameters.
 
-Thanks.
+Jacob Keller (4):
+  ice: create flash_info structure and separate NVM version
+  ice: cache NVM module bank information
+  ice: read security revision to ice_nvm_info and ice_orom_info
+  ice: add devlink parameters to read and write minimum security
+    revision
+
+ Documentation/networking/devlink/ice.rst      |  43 ++
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  17 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 254 ++++++++-
+ drivers/net/ethernet/intel/ice/ice_devlink.h  |   2 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |   8 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
+ drivers/net/ethernet/intel/ice/ice_nvm.c      | 532 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_nvm.h      |   4 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |  91 ++-
+ 9 files changed, 888 insertions(+), 66 deletions(-)
+
+
+base-commit: f2e834694b0d92187d889172da842e27829df371
+-- 
+2.28.0.497.g54e85e7af1ac
+
