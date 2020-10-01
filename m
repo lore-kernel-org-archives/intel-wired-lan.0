@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 1 Oct 2020 06:32:32 +0000
+Date: Thu, 1 Oct 2020 07:03:04 +0000
 Subject: [Intel-wired-lan] [PATCH] e1000: do not panic on malformed
  rx_desc
 In-Reply-To: <20200908162231.4592-1-ztong0001@gmail.com>
 References: <20200908162231.4592-1-ztong0001@gmail.com>
-Message-ID: <DM6PR11MB2890535C0E060AEE49A34D2BBC300@DM6PR11MB2890.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB28906E70A61ADFD7A3BF1AE7BC300@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -73,5 +73,4 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-I was not able to trigger the panic prior to the patch, so just a regression check on several e1000 adapters.
-
+Again, regression tested.  I was not able to trigger the panic with or without patch.
