@@ -1,30 +1,45 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 6 Oct 2020 16:56:43 +0000
+From: Oron Peled <Oron.Peled@harmonicinc.com>
+Date: Tue, 6 Oct 2020 17:38:56 +0000
 Subject: [Intel-wired-lan] [EXTERNAL] RE: General question regarding
  i40e driver version in upstream kernel
-In-Reply-To: <ab2e8db6ad05a4a293cd63be0753632e3f3b0ce3.camel@harmonicinc.com>
+In-Reply-To: <DM6PR11MB28900350EA31F2846AB72362BC0D0@DM6PR11MB2890.namprd11.prod.outlook.com>
 References: <33cb749a85e28598dd19e5041d896775b58fb0e1.camel@harmonicinc.com>
  <BYAPR11MB3606ABF2B6ACCB67097C2D32EF390@BYAPR11MB3606.namprd11.prod.outlook.com>
  <a01df73ad3031dce66f44e520ebc11b9caf592dd.camel@harmonicinc.com>
  <DM6PR11MB2890E25E8E6896966CA36522BC360@DM6PR11MB2890.namprd11.prod.outlook.com>
  <ab2e8db6ad05a4a293cd63be0753632e3f3b0ce3.camel@harmonicinc.com>
-Message-ID: <DM6PR11MB28900350EA31F2846AB72362BC0D0@DM6PR11MB2890.namprd11.prod.outlook.com>
+ <DM6PR11MB28900350EA31F2846AB72362BC0D0@DM6PR11MB2890.namprd11.prod.outlook.com>
+Message-ID: <56d2962643aa15994e1b547e832be38535e1301a.camel@harmonicinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, 2020-10-06 at 16:56 +0000, Brown, Aaron F wrote:
 Hi Oron,
-
 Sorry for the delayed response.  As an organization we do attempt to keep the in kernel driver code in sync with the downloadable driver, but that is not always possible.
+
+Many thanks for answering -- we all understand the pressures involved.
 
 I?m only peripherally involved with the i40e driver and cannot speak to specifics, but in general terms the differences can be due to something being implemented in a different way from one form of the driver to the next (yes we should fix those cases) other times it is due to having an implementation or feature in the out of tree driver that is not acceptable to the kernel community.  In the former case any functional differences should be viewed and reported as bugs.  The later case?  Report it anyway and push us to come up with a solution that is acceptable to the community at large.
 
+OK, here is a first test-case ;-)
+Arkady mailed on this list a one-liner bugfix to i40e (on 27'th Sep "Function i40e_set_max_tx_rate can exit without cleaning pending state")
+(no reply yet)
+
 For most use cases I believe the driver differences fall into the category of probably OK with a bit of YMMV (and bug us when mileage varies to keep us honest.)  If you need a feature where our implementation is at odds with the kernel community it may swing towards the ?forget about it? end of the spectrum, but even then bug us about it.  The division is going to be more likely to put effort into something if people are demanding it.
 
-Thanks,
-Aaron Brown
+I'll definitely try to push at our end for using the upstream kernel modules.
+
+One possible strategy is to keep building our package that include Intel's internal driver, but not install it by default. This will allow us to switch implementation and check behavior gaps if they occur for our use case and report them here.
+I'm not sure yet if this can be kept long term. These systems are used in production, so any major issue on upstream driver will cause immediate switch to internal driver and stay with it.
+(But I think it's still worth trying)
+
+Thanks again for the candid answer,
+
+--
+Oron Peled
 
 From: Oron Peled <Oron.Peled@harmonicinc.com>
 Sent: Friday, September 25, 2020 4:15 PM
@@ -71,7 +86,15 @@ $ diff -Nru --exclude kcompat\* ~1 . | diffstat
 
  virtchnl.h           |  959 -------
 
- 45 files changed, 6732 insertions(+), 23518 deletions(-)
+ 45 files changed,
+
+6732
+
+ insertions(+),
+
+23518
+
+ deletions(-)
 
 I cannot say I'm very happy about this -- do I miss something? Is there some light at the end of this tunnel?
 
@@ -159,4 +182,4 @@ Intel-wired-lan at osuosl.org<mailto:Intel-wired-lan@osuosl.org>
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201006/9e4c7952/attachment-0001.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201006/c9b7262f/attachment-0001.html>
