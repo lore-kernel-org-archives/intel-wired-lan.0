@@ -1,55 +1,79 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu,  8 Oct 2020 19:53:40 -0700
-Subject: [Intel-wired-lan] [PATCH 0/9] igc: Add XDP support
-Message-ID: <20201009025349.4037-1-andre.guedes@intel.com>
+Date: Thu,  8 Oct 2020 19:53:44 -0700
+Subject: [Intel-wired-lan] [PATCH 4/9] igc: Introduce
+ igc_get_rx_frame_truesize() helper
+In-Reply-To: <20201009025349.4037-1-andre.guedes@intel.com>
+References: <20201009025349.4037-1-andre.guedes@intel.com>
+Message-ID: <20201009025349.4037-5-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+The RX frame truesize calculation is scattered throughout the RX code.
+This patch creates the helper function igc_get_rx_frame_truesize() and
+uses it where applicable.
 
-This patch series adds XDP support for the igc driver. The approach implemented
-by this series follows the same approach implemented in other Intel drivers as
-much as possible for the sake of consistency.
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 29 ++++++++++++++---------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
 
-The series is organized in two parts. In the first part, i.e. patches from 1 to
-5, igc_main.c and igc_ptp.c code is refactored in preparation for landing the
-XDP support, which is introduced in the second part (patches from 6 to 9).
-
-As far as code organization is concerned, XDP-related helpers are defined in a
-new file, igc_xdp.c, and are called by igc_main.c.
-
-The features added by this series have been tested with the samples provided in
-samples/bpf/: xdp1, xdp2, xdp_redirect_cpu, and xdp_redirect_map.
-
-Upcoming series will add support of UMEM and zero-copy features from AF_XDP.
-
-Best regards,
-Andre
-
-Andre Guedes (9):
-  igc: Fix igc_ptp_rx_pktstamp()
-  igc: Remove unused argument from igc_tx_cmd_type()
-  igc: Introduce igc_rx_buffer_flip() helper
-  igc: Introduce igc_get_rx_frame_truesize() helper
-  igc: Refactor rx timestamp handling
-  igc: Add Initial XDP support
-  igc: Add support for XDP_TX action
-  igc: Add support for XDP_REDIRECT action
-  igc: Implement ndo_xdp_xmit callback
-
- drivers/net/ethernet/intel/igc/Makefile   |   2 +-
- drivers/net/ethernet/intel/igc/igc.h      |  18 +-
- drivers/net/ethernet/intel/igc/igc_main.c | 280 +++++++++++++++++-----
- drivers/net/ethernet/intel/igc/igc_ptp.c  |  87 ++++---
- drivers/net/ethernet/intel/igc/igc_xdp.c  | 202 ++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_xdp.h  |  27 +++
- 6 files changed, 516 insertions(+), 100 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
- create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 5015c39a82ba..850e2bbd9773 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1521,6 +1521,22 @@ static void igc_rx_buffer_flip(struct igc_rx_buffer *buffer,
+ #endif
+ }
+ 
++static unsigned int igc_get_rx_frame_truesize(struct igc_ring *ring,
++					      unsigned int size)
++{
++	unsigned int truesize;
++
++#if (PAGE_SIZE < 8192)
++	truesize = igc_rx_pg_size(ring) / 2;
++#else
++	truesize = ring_uses_build_skb(ring) ?
++		   SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
++		   SKB_DATA_ALIGN(IGC_SKB_PAD + size) :
++		   SKB_DATA_ALIGN(size);
++#endif
++	return truesize;
++}
++
+ /**
+  * igc_add_rx_frag - Add contents of Rx buffer to sk_buff
+  * @rx_ring: rx descriptor ring to transact packets on
+@@ -1555,12 +1571,7 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 				     unsigned int size)
+ {
+ 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
+-#else
+-	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+-				SKB_DATA_ALIGN(IGC_SKB_PAD + size);
+-#endif
++	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	struct sk_buff *skb;
+ 
+ 	/* prefetch first cache line of first page */
+@@ -1585,11 +1596,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 unsigned int size)
+ {
+ 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
+-#else
+-	unsigned int truesize = SKB_DATA_ALIGN(size);
+-#endif
++	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
+ 
 -- 
 2.26.2
 
