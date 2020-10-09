@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:21 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 46/58] drives/staging:
- Utilize new kmap_thread()
+Date: Fri,  9 Oct 2020 12:50:24 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 49/58] drivers/misc: Utilize
+ new kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-47-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-50-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,29 +19,61 @@ head of global PKRS updates use the new kmap_thread() call.
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/staging/rts5208/rtsx_transport.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/misc/vmw_vmci/vmci_queue_pair.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/rts5208/rtsx_transport.c b/drivers/staging/rts5208/rtsx_transport.c
-index 0027bcf638ad..f747cc23951b 100644
---- a/drivers/staging/rts5208/rtsx_transport.c
-+++ b/drivers/staging/rts5208/rtsx_transport.c
-@@ -92,13 +92,13 @@ unsigned int rtsx_stor_access_xfer_buf(unsigned char *buffer,
- 			while (sglen > 0) {
- 				unsigned int plen = min(sglen, (unsigned int)
- 						PAGE_SIZE - poff);
--				unsigned char *ptr = kmap(page);
-+				unsigned char *ptr = kmap_thread(page);
+diff --git a/drivers/misc/vmw_vmci/vmci_queue_pair.c b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+index 8531ae781195..f308abb8ad03 100644
+--- a/drivers/misc/vmw_vmci/vmci_queue_pair.c
++++ b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+@@ -343,7 +343,7 @@ static int qp_memcpy_to_queue_iter(struct vmci_queue *queue,
+ 		size_t to_copy;
  
- 				if (dir == TO_XFER_BUF)
- 					memcpy(ptr + poff, buffer + cnt, plen);
- 				else
- 					memcpy(buffer + cnt, ptr + poff, plen);
--				kunmap(page);
-+				kunmap_thread(page);
+ 		if (kernel_if->host)
+-			va = kmap(kernel_if->u.h.page[page_index]);
++			va = kmap_thread(kernel_if->u.h.page[page_index]);
+ 		else
+ 			va = kernel_if->u.g.vas[page_index + 1];
+ 			/* Skip header. */
+@@ -357,12 +357,12 @@ static int qp_memcpy_to_queue_iter(struct vmci_queue *queue,
+ 		if (!copy_from_iter_full((u8 *)va + page_offset, to_copy,
+ 					 from)) {
+ 			if (kernel_if->host)
+-				kunmap(kernel_if->u.h.page[page_index]);
++				kunmap_thread(kernel_if->u.h.page[page_index]);
+ 			return VMCI_ERROR_INVALID_ARGS;
+ 		}
+ 		bytes_copied += to_copy;
+ 		if (kernel_if->host)
+-			kunmap(kernel_if->u.h.page[page_index]);
++			kunmap_thread(kernel_if->u.h.page[page_index]);
+ 	}
  
- 				/* Start at the beginning of the next page */
- 				poff = 0;
+ 	return VMCI_SUCCESS;
+@@ -391,7 +391,7 @@ static int qp_memcpy_from_queue_iter(struct iov_iter *to,
+ 		int err;
+ 
+ 		if (kernel_if->host)
+-			va = kmap(kernel_if->u.h.page[page_index]);
++			va = kmap_thread(kernel_if->u.h.page[page_index]);
+ 		else
+ 			va = kernel_if->u.g.vas[page_index + 1];
+ 			/* Skip header. */
+@@ -405,12 +405,12 @@ static int qp_memcpy_from_queue_iter(struct iov_iter *to,
+ 		err = copy_to_iter((u8 *)va + page_offset, to_copy, to);
+ 		if (err != to_copy) {
+ 			if (kernel_if->host)
+-				kunmap(kernel_if->u.h.page[page_index]);
++				kunmap_thread(kernel_if->u.h.page[page_index]);
+ 			return VMCI_ERROR_INVALID_ARGS;
+ 		}
+ 		bytes_copied += to_copy;
+ 		if (kernel_if->host)
+-			kunmap(kernel_if->u.h.page[page_index]);
++			kunmap_thread(kernel_if->u.h.page[page_index]);
+ 	}
+ 
+ 	return VMCI_SUCCESS;
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
