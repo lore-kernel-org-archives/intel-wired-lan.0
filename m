@@ -1,52 +1,32 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 9 Oct 2020 16:35:35 +0000
-Subject: [Intel-wired-lan] [PATCH] net: intel: ice: Use uintptr_t for
- casting data
-In-Reply-To: <20201009061827.1279-1-shipujin.t@gmail.com>
-References: <20201009061827.1279-1-shipujin.t@gmail.com>
-Message-ID: <0e4c5d21c237afb5feb297b10d63550a15868ded.camel@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 9 Oct 2020 18:27:58 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix S0ix flow to allow
+ S0i3.2 subset entry
+In-Reply-To: <20200914102409.6464-1-vitaly.lifshits@intel.com>
+References: <20200914102409.6464-1-vitaly.lifshits@intel.com>
+Message-ID: <DM6PR11MB2890A96E95B134233567AB39BC080@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2020-10-09 at 14:18 +0800, Pujin Shi wrote:
-> Fix up a compiler error on 64bit architectures where pointers.
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Vitaly
+> Lifshits
+> Sent: Monday, September 14, 2020 3:24 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix S0ix flow to allow S0i3.2
+> subset entry
 > 
-> In file included from
-> drivers/net/ethernet/intel/ice/ice_flex_pipe.c:6:0:
-> drivers/net/ethernet/intel/ice/ice_flex_pipe.c: In function
-> 'ice_free_flow_profs':
-> drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning: cast from
-> pointer to integer of different size [-Wpointer-to-int-cast]
->  #define ICE_FLOW_ENTRY_HNDL(e) ((u64)e)
->                                  ^
-> drivers/net/ethernet/intel/ice/ice_flex_pipe.c:2882:9: note: in
-> expansion of macro 'ICE_FLOW_ENTRY_HNDL'
->          ICE_FLOW_ENTRY_HNDL(e));
->          ^
-> In file included from drivers/net/ethernet/intel/ice/ice_flow.c:5:0:
-> drivers/net/ethernet/intel/ice/ice_flow.c: In function
-> 'ice_flow_add_entry':
-> drivers/net/ethernet/intel/ice/ice_flow.h:197:33: warning: cast from
-> pointer to integer of different size [-Wpointer-to-int-cast]
->  #define ICE_FLOW_ENTRY_HNDL(e) ((u64)e)
->                                  ^
-> drivers/net/ethernet/intel/ice/ice_flow.c:946:13: note: in expansion
-> of macro 'ICE_FLOW_ENTRY_HNDL'
->   *entry_h = ICE_FLOW_ENTRY_HNDL(e);
->              ^
+> Changed a configuration in the flows to align with
+> architecture requirements to achieve S0i3.2 substate.
 > 
-> 2 warnings generated
+> Also fixed a typo in the previous patch- e1000e: fix S0ix flows for
+> cable connected case (632fbd5eb5b).
 > 
-> Signed-off-by: Pujin Shi <shipujin.t@gmail.com>
-
-Thanks for the patch Pujin, however, Bixuan Cui has already submitted a
-patch to resolve this issue [1].
-
-[1] 
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/85dcea48-8b82-d806-0026-e6b371e6a092 at huawei.com/
-
-Thanks,
-Tony
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
