@@ -1,137 +1,106 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu,  8 Oct 2020 19:53:41 -0700
-Subject: [Intel-wired-lan] [PATCH 1/9] igc: Fix igc_ptp_rx_pktstamp()
+Date: Thu,  8 Oct 2020 19:53:48 -0700
+Subject: [Intel-wired-lan] [PATCH 8/9] igc: Add support for XDP_REDIRECT
+ action
 In-Reply-To: <20201009025349.4037-1-andre.guedes@intel.com>
 References: <20201009025349.4037-1-andre.guedes@intel.com>
-Message-ID: <20201009025349.4037-2-andre.guedes@intel.com>
+Message-ID: <20201009025349.4037-9-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The comment describing the timestamps layout in the packet buffer is
-wrong and the code is actually retrieving the timestamp in Timer 1
-reference instead of Timer 0. This hasn't been a big issue so far
-because hardware is configured to report both timestamps using Timer 0
-(see IGC_SRRCTL register configuration in igc_ptp_enable_rx_timestamp()
-helper). This patch fixes the comment and the code so we retrieve the
-timestamp in Timer 0 reference as expected.
+This patch adds support for the XDP_REDIRECT action which enables XDP
+programs to redirect packets arriving at I225 NIC.
 
-This patch also takes the opportunity to get rid of the hw.mac.type check
-since it is not required.
+The patch also tweaks the driver's page counting scheme (as described
+in '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
+implemented by other Intel drivers) in order to properly support
+XDP_REDIRECT action.
 
-Fixes: 81b055205e8ba ("igc: Add support for RX timestamping")
+This patch has been tested with the sample apps "xdp_redirect_cpu" and
+"xdp_redirect_map" located in samples/bpf/.
+
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h     |  2 +-
- drivers/net/ethernet/intel/igc/igc_ptp.c | 72 +++++++++++++-----------
- 2 files changed, 41 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 11 ++++++++---
+ drivers/net/ethernet/intel/igc/igc_xdp.c  |  6 ++++++
+ drivers/net/ethernet/intel/igc/igc_xdp.h  |  1 +
+ 3 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 35baae900c1f..b9b924794b22 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -545,7 +545,7 @@ void igc_ptp_init(struct igc_adapter *adapter);
- void igc_ptp_reset(struct igc_adapter *adapter);
- void igc_ptp_suspend(struct igc_adapter *adapter);
- void igc_ptp_stop(struct igc_adapter *adapter);
--void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
-+void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
- 			 struct sk_buff *skb);
- int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index ac0b9c85da7c..916721e2cd49 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -152,46 +152,54 @@ static void igc_ptp_systim_to_hwtstamp(struct igc_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 7005e6720261..7cdfce6c0d63 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1708,8 +1708,8 @@ static bool igc_can_reuse_rx_page(struct igc_rx_buffer *rx_buffer)
+ 	 * the pagecnt_bias and page count so that we fully restock the
+ 	 * number of references the driver holds.
+ 	 */
+-	if (unlikely(!pagecnt_bias)) {
+-		page_ref_add(page, USHRT_MAX);
++	if (unlikely(pagecnt_bias == 1)) {
++		page_ref_add(page, USHRT_MAX - 1);
+ 		rx_buffer->pagecnt_bias = USHRT_MAX;
+ 	}
+ 
+@@ -1850,7 +1850,8 @@ static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+ 	bi->dma = dma;
+ 	bi->page = page;
+ 	bi->page_offset = igc_rx_offset(rx_ring);
+-	bi->pagecnt_bias = 1;
++	page_ref_add(page, USHRT_MAX - 1);
++	bi->pagecnt_bias = USHRT_MAX;
+ 
+ 	return true;
+ }
+@@ -1950,6 +1951,9 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
+ 		igc_flush_tx_descriptors(ring);
+ 		__netif_tx_unlock(nq);
+ 	}
++
++	if (status & IGC_XDP_REDIRECT)
++		xdp_do_flush();
  }
  
- /**
-- * igc_ptp_rx_pktstamp - retrieve Rx per packet timestamp
-+ * igc_ptp_rx_pktstamp - Retrieve timestamp from rx packet buffer
-  * @q_vector: Pointer to interrupt specific structure
-  * @va: Pointer to address containing Rx buffer
-  * @skb: Buffer containing timestamp and packet
-  *
-- * This function is meant to retrieve the first timestamp from the
-- * first buffer of an incoming frame. The value is stored in little
-- * endian format starting on byte 0. There's a second timestamp
-- * starting on byte 8.
-- **/
--void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
-+ * This function retrieves the timestamp saved in the beginning of packet
-+ * buffer. While two timestamps are available, one in timer0 reference and the
-+ * other in timer1 reference, this function considers only the timestamp in
-+ * timer0 reference.
-+ */
-+void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
- 			 struct sk_buff *skb)
- {
- 	struct igc_adapter *adapter = q_vector->adapter;
--	__le64 *regval = (__le64 *)va;
--	int adjust = 0;
--
--	/* The timestamp is recorded in little endian format.
--	 * DWORD: | 0          | 1           | 2          | 3
--	 * Field: | Timer0 Low | Timer0 High | Timer1 Low | Timer1 High
-+	u64 regval;
-+	int adjust;
-+
-+	/* Timestamps are saved in little endian at the beginning of the packet
-+	 * buffer following the layout:
-+	 *
-+	 * | 0              | 1              | 2              | 3              |
-+	 * | Timer1 SYSTIML | Timer1 SYSTIMH | Timer0 SYSTIML | Timer0 SYSTIMH |
-+	 *
-+	 * SYSTIML holds the nanoseconds part while SYSTIMH holds the seconds
-+	 * part of the timestamp.
- 	 */
--	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
--				   le64_to_cpu(regval[0]));
--
--	/* adjust timestamp for the RX latency based on link speed */
--	if (adapter->hw.mac.type == igc_i225) {
--		switch (adapter->link_speed) {
--		case SPEED_10:
--			adjust = IGC_I225_RX_LATENCY_10;
--			break;
--		case SPEED_100:
--			adjust = IGC_I225_RX_LATENCY_100;
--			break;
--		case SPEED_1000:
--			adjust = IGC_I225_RX_LATENCY_1000;
--			break;
--		case SPEED_2500:
--			adjust = IGC_I225_RX_LATENCY_2500;
--			break;
--		}
-+	regval = le32_to_cpu(va[2]);
-+	regval |= (u64)le32_to_cpu(va[3]) << 32;
-+	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
-+
-+	/* Adjust timestamp for the RX latency based on link speed */
-+	switch (adapter->link_speed) {
-+	case SPEED_10:
-+		adjust = IGC_I225_RX_LATENCY_10;
+ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+@@ -2018,6 +2022,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 				rx_buffer->pagecnt_bias++;
+ 				break;
+ 			case IGC_XDP_TX:
++			case IGC_XDP_REDIRECT:
+ 				igc_rx_buffer_flip(rx_buffer, truesize);
+ 				xdp_status |= xdp_res;
+ 				break;
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
+index 9f4c58436170..e9a81975324f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_xdp.c
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
+@@ -147,6 +147,12 @@ struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+ 		else
+ 			res = IGC_XDP_TX;
+ 		break;
++	case XDP_REDIRECT:
++		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
++			res = IGC_XDP_CONSUMED;
++		else
++			res = IGC_XDP_REDIRECT;
 +		break;
-+	case SPEED_100:
-+		adjust = IGC_I225_RX_LATENCY_100;
-+		break;
-+	case SPEED_1000:
-+		adjust = IGC_I225_RX_LATENCY_1000;
-+		break;
-+	case SPEED_2500:
-+		adjust = IGC_I225_RX_LATENCY_2500;
-+		break;
-+	default:
-+		adjust = 0;
-+		netdev_warn_once(adapter->netdev, "Imprecise timestamp\n");
-+		break;
- 	}
- 	skb_hwtstamps(skb)->hwtstamp =
- 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
+index fdb31f40dbe5..1c38a80c3aa0 100644
+--- a/drivers/net/ethernet/intel/igc/igc_xdp.h
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
+@@ -7,6 +7,7 @@
+ #define IGC_XDP_PASS		0
+ #define IGC_XDP_CONSUMED	BIT(0)
+ #define IGC_XDP_TX		BIT(1)
++#define IGC_XDP_REDIRECT	BIT(2)
+ 
+ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
+ 		     struct netlink_ext_ack *extack);
 -- 
 2.26.2
 
