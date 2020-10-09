@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:14 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 39/58] fs/jffs2: Utilize new
+Date: Fri,  9 Oct 2020 12:50:13 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 38/58] fs/isofs: Utilize new
  kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-40-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-39-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,29 +18,31 @@ global PKRS updates use the new kmap_thread() call.
 
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- fs/jffs2/file.c | 4 ++--
+ fs/isofs/compress.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/jffs2/file.c b/fs/jffs2/file.c
-index 3e6d54f9b011..14dd2b18cc16 100644
---- a/fs/jffs2/file.c
-+++ b/fs/jffs2/file.c
-@@ -287,13 +287,13 @@ static int jffs2_write_end(struct file *filp, struct address_space *mapping,
+diff --git a/fs/isofs/compress.c b/fs/isofs/compress.c
+index bc12ac7e2312..ddd3fd99d2e1 100644
+--- a/fs/isofs/compress.c
++++ b/fs/isofs/compress.c
+@@ -344,7 +344,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
+ 			pages[i] = grab_cache_page_nowait(mapping, index);
+ 		if (pages[i]) {
+ 			ClearPageError(pages[i]);
+-			kmap(pages[i]);
++			kmap_thread(pages[i]);
+ 		}
+ 	}
  
- 	/* In 2.4, it was already kmapped by generic_file_write(). Doesn't
- 	   hurt to do it again. The alternative is ifdefs, which are ugly. */
--	kmap(pg);
-+	kmap_thread(pg);
- 
- 	ret = jffs2_write_inode_range(c, f, ri, page_address(pg) + aligned_start,
- 				      (pg->index << PAGE_SHIFT) + aligned_start,
- 				      end - aligned_start, &writtenlen);
- 
--	kunmap(pg);
-+	kunmap_thread(pg);
- 
- 	if (ret) {
- 		/* There was an error writing. */
+@@ -356,7 +356,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
+ 			flush_dcache_page(pages[i]);
+ 			if (i == full_page && err)
+ 				SetPageError(pages[i]);
+-			kunmap(pages[i]);
++			kunmap_thread(pages[i]);
+ 			unlock_page(pages[i]);
+ 			if (i != full_page)
+ 				put_page(pages[i]);
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
