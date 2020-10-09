@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 9 Oct 2020 18:27:58 +0000
+Date: Fri, 9 Oct 2020 19:51:03 +0000
 Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: fix S0ix flow to allow
  S0i3.2 subset entry
 In-Reply-To: <20200914102409.6464-1-vitaly.lifshits@intel.com>
 References: <20200914102409.6464-1-vitaly.lifshits@intel.com>
-Message-ID: <DM6PR11MB2890A96E95B134233567AB39BC080@DM6PR11MB2890.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB28907C88A5E245BE9B3543A9BC080@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,5 +28,5 @@ List-ID: <intel-wired-lan.osuosl.org>
 > ---
 >  drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
 >  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
+
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
