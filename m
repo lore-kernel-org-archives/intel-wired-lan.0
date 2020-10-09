@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:33 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 58/58] [dax|pmem]: Enable
- stray access protection
+Date: Fri,  9 Oct 2020 12:50:10 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 35/58] fs: Utilize new
+ kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-59-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-36-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,52 +13,149 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-Protecting against stray writes is particularly important for PMEM
-because, unlike writes to anonymous memory, writes to PMEM persists
-across a reboot.  Thus data corruption could result in permanent loss of
-data.
+These kmap() calls are localized to a single thread.  To avoid the over
+head of global PKRS updates use the new kmap_thread() call.
 
-While stray writes are more serious than reads, protection is also
-enabled for reads.  This helps to detect bugs in code which would
-incorrectly access device memory and prevents a more serious machine
-checks should those bug reads from a poison page.
-
-Enable stray access protection by setting the flag in pgmap which
-requests it.  There is no option presented to the user.  If Zone Device
-Access Protection not be supported this flag will have no affect.
-
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/dax/device.c  | 2 ++
- drivers/nvdimm/pmem.c | 2 ++
- 2 files changed, 4 insertions(+)
+ fs/aio.c              |  4 ++--
+ fs/binfmt_elf.c       |  4 ++--
+ fs/binfmt_elf_fdpic.c |  4 ++--
+ fs/exec.c             | 10 +++++-----
+ fs/io_uring.c         |  4 ++--
+ fs/splice.c           |  4 ++--
+ 6 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/dax/device.c b/drivers/dax/device.c
-index 1e89513f3c59..e6fb35b4f0fb 100644
---- a/drivers/dax/device.c
-+++ b/drivers/dax/device.c
-@@ -430,6 +430,8 @@ int dev_dax_probe(struct device *dev)
- 	}
+diff --git a/fs/aio.c b/fs/aio.c
+index d5ec30385566..27f95996d25f 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -1223,10 +1223,10 @@ static long aio_read_events_ring(struct kioctx *ctx,
+ 		avail = min(avail, nr - ret);
+ 		avail = min_t(long, avail, AIO_EVENTS_PER_PAGE - pos);
  
- 	dev_dax->pgmap.type = MEMORY_DEVICE_GENERIC;
-+	dev_dax->pgmap.flags |= PGMAP_PROT_ENABLED;
-+
- 	addr = devm_memremap_pages(dev, &dev_dax->pgmap);
- 	if (IS_ERR(addr))
- 		return PTR_ERR(addr);
-diff --git a/drivers/nvdimm/pmem.c b/drivers/nvdimm/pmem.c
-index e4dc1ae990fc..9fcd8338e23f 100644
---- a/drivers/nvdimm/pmem.c
-+++ b/drivers/nvdimm/pmem.c
-@@ -426,6 +426,8 @@ static int pmem_attach_disk(struct device *dev,
- 		return -EBUSY;
- 	}
+-		ev = kmap(page);
++		ev = kmap_thread(page);
+ 		copy_ret = copy_to_user(event + ret, ev + pos,
+ 					sizeof(*ev) * avail);
+-		kunmap(page);
++		kunmap_thread(page);
  
-+	pmem->pgmap.flags |= PGMAP_PROT_ENABLED;
-+
- 	q = blk_alloc_queue(dev_to_node(dev));
- 	if (!q)
- 		return -ENOMEM;
+ 		if (unlikely(copy_ret)) {
+ 			ret = -EFAULT;
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 13d053982dd7..1a332ef1ae03 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -2430,9 +2430,9 @@ static int elf_core_dump(struct coredump_params *cprm)
+ 
+ 			page = get_dump_page(addr);
+ 			if (page) {
+-				void *kaddr = kmap(page);
++				void *kaddr = kmap_thread(page);
+ 				stop = !dump_emit(cprm, kaddr, PAGE_SIZE);
+-				kunmap(page);
++				kunmap_thread(page);
+ 				put_page(page);
+ 			} else
+ 				stop = !dump_skip(cprm, PAGE_SIZE);
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 50f845702b92..8fbe188e0fdd 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -1542,9 +1542,9 @@ static bool elf_fdpic_dump_segments(struct coredump_params *cprm)
+ 			bool res;
+ 			struct page *page = get_dump_page(addr);
+ 			if (page) {
+-				void *kaddr = kmap(page);
++				void *kaddr = kmap_thread(page);
+ 				res = dump_emit(cprm, kaddr, PAGE_SIZE);
+-				kunmap(page);
++				kunmap_thread(page);
+ 				put_page(page);
+ 			} else {
+ 				res = dump_skip(cprm, PAGE_SIZE);
+diff --git a/fs/exec.c b/fs/exec.c
+index a91003e28eaa..3948b8511e3a 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -575,11 +575,11 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
+ 
+ 				if (kmapped_page) {
+ 					flush_kernel_dcache_page(kmapped_page);
+-					kunmap(kmapped_page);
++					kunmap_thread(kmapped_page);
+ 					put_arg_page(kmapped_page);
+ 				}
+ 				kmapped_page = page;
+-				kaddr = kmap(kmapped_page);
++				kaddr = kmap_thread(kmapped_page);
+ 				kpos = pos & PAGE_MASK;
+ 				flush_arg_page(bprm, kpos, kmapped_page);
+ 			}
+@@ -593,7 +593,7 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
+ out:
+ 	if (kmapped_page) {
+ 		flush_kernel_dcache_page(kmapped_page);
+-		kunmap(kmapped_page);
++		kunmap_thread(kmapped_page);
+ 		put_arg_page(kmapped_page);
+ 	}
+ 	return ret;
+@@ -871,11 +871,11 @@ int transfer_args_to_stack(struct linux_binprm *bprm,
+ 
+ 	for (index = MAX_ARG_PAGES - 1; index >= stop; index--) {
+ 		unsigned int offset = index == stop ? bprm->p & ~PAGE_MASK : 0;
+-		char *src = kmap(bprm->page[index]) + offset;
++		char *src = kmap_thread(bprm->page[index]) + offset;
+ 		sp -= PAGE_SIZE - offset;
+ 		if (copy_to_user((void *) sp, src, PAGE_SIZE - offset) != 0)
+ 			ret = -EFAULT;
+-		kunmap(bprm->page[index]);
++		kunmap_thread(bprm->page[index]);
+ 		if (ret)
+ 			goto out;
+ 	}
+diff --git a/fs/io_uring.c b/fs/io_uring.c
+index aae0ef2ec34d..f59bb079822d 100644
+--- a/fs/io_uring.c
++++ b/fs/io_uring.c
+@@ -2903,7 +2903,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
+ 			iovec = iov_iter_iovec(iter);
+ 		} else {
+ 			/* fixed buffers import bvec */
+-			iovec.iov_base = kmap(iter->bvec->bv_page)
++			iovec.iov_base = kmap_thread(iter->bvec->bv_page)
+ 						+ iter->iov_offset;
+ 			iovec.iov_len = min(iter->count,
+ 					iter->bvec->bv_len - iter->iov_offset);
+@@ -2918,7 +2918,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
+ 		}
+ 
+ 		if (iov_iter_is_bvec(iter))
+-			kunmap(iter->bvec->bv_page);
++			kunmap_thread(iter->bvec->bv_page);
+ 
+ 		if (nr < 0) {
+ 			if (!ret)
+diff --git a/fs/splice.c b/fs/splice.c
+index ce75aec52274..190c4d218c30 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -815,9 +815,9 @@ static int write_pipe_buf(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+ 	void *data;
+ 	loff_t tmp = sd->pos;
+ 
+-	data = kmap(buf->page);
++	data = kmap_thread(buf->page);
+ 	ret = __kernel_write(sd->u.file, data + buf->offset, sd->len, &tmp);
+-	kunmap(buf->page);
++	kunmap_thread(buf->page);
+ 
+ 	return ret;
+ }
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
