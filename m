@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:49:39 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 04/58] kmap: Add stray access
- protection for device pages
+Date: Fri,  9 Oct 2020 12:49:41 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 06/58] kmap: Introduce
+ k[un]map_thread debugging
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-5-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-7-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,140 +13,238 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-Device managed pages may have additional protections.  These protections
-need to be removed prior to valid use by kernel users.
+Most kmap() callers use the map within a single thread and have no need
+for the protection domain to be enabled globally.
 
-Check for special treatment of device managed pages in kmap and take
-action if needed.  We use kmap as an interface for generic kernel code
-because under normal circumstances it would be a bug for general kernel
-code to not use kmap prior to accessing kernel memory.  Therefore, this
-should allow any valid kernel users to seamlessly use these pages
-without issues.
+To differentiate these kmap users, new k[un]map_thread() calls were
+introduced which are thread local.
 
-Because of the critical nature of kmap it must be pointed out that the
-over head on regular DRAM is carefully implemented to be as fast as
-possible.  Furthermore the underlying MSR write required on device pages
-when protected is better than a normal MSR write.
+To aid in debugging the new use of kmap_thread(), add a reference count,
+a check on that count, and tracing to ID where mapping errors occur.
 
-Specifically, WRMSR(MSR_IA32_PKRS) is not serializing but still
-maintains ordering properties similar to WRPKRU.  The current SDM
-section on PKRS needs updating but should be the same as that of WRPKRU.
-So to quote from the WRPKRU text:
-
-	WRPKRU will never execute speculatively. Memory accesses
-	affected by PKRU register will not execute (even speculatively)
-	until all prior executions of WRPKRU have completed execution
-	and updated the PKRU register.
-
-Still this will make accessing pmem more expensive from the kernel but
-the overhead is minimized and many pmem users access this memory through
-user page mappings which are not affected at all.
-
-Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ben Segall <bsegall@google.com>
+Cc: Mel Gorman <mgorman@suse.de>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- include/linux/highmem.h | 32 +++++++++++++++++++++++++++++++-
- 1 file changed, 31 insertions(+), 1 deletion(-)
+ include/linux/highmem.h            |  5 +++
+ include/linux/sched.h              |  5 +++
+ include/trace/events/kmap_thread.h | 56 ++++++++++++++++++++++++++++++
+ init/init_task.c                   |  3 ++
+ kernel/fork.c                      | 15 ++++++++
+ lib/Kconfig.debug                  |  8 +++++
+ mm/debug.c                         | 23 ++++++++++++
+ 7 files changed, 115 insertions(+)
+ create mode 100644 include/trace/events/kmap_thread.h
 
 diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 14e6202ce47f..2a9806e3b8d2 100644
+index ef7813544719..22d1c000802e 100644
 --- a/include/linux/highmem.h
 +++ b/include/linux/highmem.h
-@@ -8,6 +8,7 @@
- #include <linux/mm.h>
- #include <linux/uaccess.h>
- #include <linux/hardirq.h>
-+#include <linux/memremap.h>
- 
- #include <asm/cacheflush.h>
- 
-@@ -31,6 +32,20 @@ static inline void invalidate_kernel_vmap_range(void *vaddr, int size)
- 
- #include <asm/kmap_types.h>
- 
-+static inline void dev_page_enable_access(struct page *page, bool global)
-+{
-+	if (!page_is_access_protected(page))
-+		return;
-+	dev_access_enable(global);
-+}
-+
-+static inline void dev_page_disable_access(struct page *page, bool global)
-+{
-+	if (!page_is_access_protected(page))
-+		return;
-+	dev_access_disable(global);
-+}
-+
- #ifdef CONFIG_HIGHMEM
- extern void *kmap_atomic_high_prot(struct page *page, pgprot_t prot);
- extern void kunmap_atomic_high(void *kvaddr);
-@@ -55,6 +70,11 @@ static inline void *kmap(struct page *page)
- 	else
- 		addr = kmap_high(page);
- 	kmap_flush_tlb((unsigned long)addr);
-+	/*
-+	 * Even non-highmem pages may have additional access protections which
-+	 * need to be checked and potentially enabled.
-+	 */
-+	dev_page_enable_access(page, true);
- 	return addr;
+@@ -247,6 +247,10 @@ static inline void kunmap(struct page *page)
+ 	__kunmap(page, true);
  }
  
-@@ -63,6 +83,11 @@ void kunmap_high(struct page *page);
- static inline void kunmap(struct page *page)
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++void *kmap_thread(struct page *page);
++void kunmap_thread(struct page *page);
++#else
+ static inline void *kmap_thread(struct page *page)
  {
- 	might_sleep();
-+	/*
-+	 * Even non-highmem pages may have additional access protections which
-+	 * need to be checked and potentially disabled.
-+	 */
-+	dev_page_disable_access(page, true);
- 	if (!PageHighMem(page))
- 		return;
- 	kunmap_high(page);
-@@ -85,6 +110,7 @@ static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
+ 	return __kmap(page, false);
+@@ -255,6 +259,7 @@ static inline void kunmap_thread(struct page *page)
  {
- 	preempt_disable();
- 	pagefault_disable();
-+	dev_page_enable_access(page, false);
- 	if (!PageHighMem(page))
- 		return page_address(page);
- 	return kmap_atomic_high_prot(page, prot);
-@@ -137,6 +163,7 @@ static inline unsigned long totalhigh_pages(void) { return 0UL; }
- static inline void *kmap(struct page *page)
- {
- 	might_sleep();
-+	dev_page_enable_access(page, true);
- 	return page_address(page);
+ 	__kunmap(page, false);
  }
++#endif
  
-@@ -146,6 +173,7 @@ static inline void kunmap_high(struct page *page)
- 
- static inline void kunmap(struct page *page)
- {
-+	dev_page_disable_access(page, true);
- #ifdef ARCH_HAS_FLUSH_ON_KUNMAP
- 	kunmap_flush_on_unmap(page_address(page));
+ /*
+  * Prevent people trying to call kunmap_atomic() as if it were kunmap()
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 25d97ab6c757..4627ea4a49e6 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1318,6 +1318,11 @@ struct task_struct {
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	unsigned int			dev_page_access_ref;
  #endif
-@@ -155,6 +183,7 @@ static inline void *kmap_atomic(struct page *page)
- {
- 	preempt_disable();
- 	pagefault_disable();
-+	dev_page_enable_access(page, false);
- 	return page_address(page);
++
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	unsigned int			kmap_thread_cnt;
++#endif
++
+ 	/*
+ 	 * New fields for task_struct should be added above here, so that
+ 	 * they are included in the randomized portion of task_struct.
+diff --git a/include/trace/events/kmap_thread.h b/include/trace/events/kmap_thread.h
+new file mode 100644
+index 000000000000..e7143cfe0daf
+--- /dev/null
++++ b/include/trace/events/kmap_thread.h
+@@ -0,0 +1,56 @@
++/* SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB */
++
++/*
++ * Copyright (c) 2020 Intel Corporation.  All rights reserved.
++ *
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kmap_thread
++
++#if !defined(_TRACE_KMAP_THREAD_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KMAP_THREAD_H
++
++#include <linux/tracepoint.h>
++
++DECLARE_EVENT_CLASS(kmap_thread_template,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt),
++
++	TP_STRUCT__entry(
++		__field(int, pid)
++		__field(struct page *, page)
++		__field(void *, caller_addr)
++		__field(int, cnt)
++	),
++
++	TP_fast_assign(
++		__entry->pid = tsk->pid;
++		__entry->page = page;
++		__entry->caller_addr = caller_addr;
++		__entry->cnt = cnt;
++	),
++
++	TP_printk("PID %d; (%d) %pS %p",
++		__entry->pid,
++		__entry->cnt,
++		__entry->caller_addr,
++		__entry->page
++	)
++);
++
++DEFINE_EVENT(kmap_thread_template, kmap_thread,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt));
++
++DEFINE_EVENT(kmap_thread_template, kunmap_thread,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt));
++
++
++#endif /* _TRACE_KMAP_THREAD_H */
++
++#include <trace/define_trace.h>
+diff --git a/init/init_task.c b/init/init_task.c
+index 9b39f25de59b..19f09965eb34 100644
+--- a/init/init_task.c
++++ b/init/init_task.c
+@@ -212,6 +212,9 @@ struct task_struct init_task
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	.dev_page_access_ref = 0,
+ #endif
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	.kmap_thread_cnt = 0,
++#endif
+ };
+ EXPORT_SYMBOL(init_task);
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index b6a3ee328a89..2c66e49b7614 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -722,6 +722,17 @@ static inline void put_signal_struct(struct signal_struct *sig)
+ 		free_signal_struct(sig);
  }
- #define kmap_atomic_prot(page, prot)	kmap_atomic(page)
-@@ -216,7 +245,8 @@ static inline void kmap_atomic_idx_pop(void)
- #define kunmap_atomic(addr)                                     \
- do {                                                            \
- 	BUILD_BUG_ON(__same_type((addr), struct page *));       \
--	kunmap_atomic_high(addr);                                  \
-+	dev_page_disable_access(kmap_to_page(addr), false);     \
-+	kunmap_atomic_high(addr);                               \
- 	pagefault_enable();                                     \
- 	preempt_enable();                                       \
- } while (0)
+ 
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++static void check_outstanding_kmap_thread(struct task_struct *tsk)
++{
++	if (tsk->kmap_thread_cnt)
++		pr_warn(KERN_ERR "WARNING: PID %d; Failed to kunmap_thread() [cnt %d]\n",
++			tsk->pid, tsk->kmap_thread_cnt);
++}
++#else
++static void check_outstanding_kmap_thread(struct task_struct *tsk) { }
++#endif
++
+ void __put_task_struct(struct task_struct *tsk)
+ {
+ 	WARN_ON(!tsk->exit_state);
+@@ -734,6 +745,7 @@ void __put_task_struct(struct task_struct *tsk)
+ 	exit_creds(tsk);
+ 	delayacct_tsk_free(tsk);
+ 	put_signal_struct(tsk->signal);
++	check_outstanding_kmap_thread(tsk);
+ 
+ 	if (!profile_handoff_task(tsk))
+ 		free_task(tsk);
+@@ -943,6 +955,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
+ #endif
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	tsk->dev_page_access_ref = 0;
++#endif
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	tsk->kmap_thread_cnt = 0;
+ #endif
+ 	return tsk;
+ 
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index f015c09ba5a1..6507b43d5b0c 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -858,6 +858,14 @@ config DEBUG_HIGHMEM
+ 	  This option enables additional error checking for high memory
+ 	  systems.  Disable for production systems.
+ 
++config DEBUG_KMAP_THREAD
++	bool "Kmap debugging"
++	depends on DEBUG_KERNEL
++	help
++	  This option enables additional error checking for kernel mapping code
++	  specifically the k[un]map_thread() calls.  Disable for production
++	  systems.
++
+ config HAVE_DEBUG_STACKOVERFLOW
+ 	bool
+ 
+diff --git a/mm/debug.c b/mm/debug.c
+index ca8d1cacdecc..68d186f3570e 100644
+--- a/mm/debug.c
++++ b/mm/debug.c
+@@ -320,3 +320,26 @@ void page_init_poison(struct page *page, size_t size)
+ }
+ EXPORT_SYMBOL_GPL(page_init_poison);
+ #endif		/* CONFIG_DEBUG_VM */
++
++#define CREATE_TRACE_POINTS
++#include <trace/events/kmap_thread.h>
++
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++void *kmap_thread(struct page *page)
++{
++	trace_kmap_thread(current, page, __builtin_return_address(0),
++			  current->kmap_thread_cnt);
++	current->kmap_thread_cnt++;
++	return __kmap(page, false);
++}
++EXPORT_SYMBOL_GPL(kmap_thread);
++
++void kunmap_thread(struct page *page)
++{
++	__kunmap(page, false);
++	current->kmap_thread_cnt--;
++	trace_kunmap_thread(current, page, __builtin_return_address(0),
++			    current->kmap_thread_cnt);
++}
++EXPORT_SYMBOL_GPL(kunmap_thread);
++#endif
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
