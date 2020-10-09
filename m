@@ -1,106 +1,310 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu,  8 Oct 2020 19:53:48 -0700
-Subject: [Intel-wired-lan] [PATCH 8/9] igc: Add support for XDP_REDIRECT
- action
+Date: Thu,  8 Oct 2020 19:53:46 -0700
+Subject: [Intel-wired-lan] [PATCH 6/9] igc: Add Initial XDP support
 In-Reply-To: <20201009025349.4037-1-andre.guedes@intel.com>
 References: <20201009025349.4037-1-andre.guedes@intel.com>
-Message-ID: <20201009025349.4037-9-andre.guedes@intel.com>
+Message-ID: <20201009025349.4037-7-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support for the XDP_REDIRECT action which enables XDP
-programs to redirect packets arriving at I225 NIC.
+This patch adds the initial XDP support to the igc driver. For now,
+only XDP_PASS, XDP_DROP, XDP_ABORT actions are supported. Upcoming
+patches will add support for the remaining XDP actions.
 
-The patch also tweaks the driver's page counting scheme (as described
-in '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
-implemented by other Intel drivers) in order to properly support
-XDP_REDIRECT action.
+XDP-specific helpers are defined in a new file, igc_xdp.c. These
+helpers are utilized in igc_main.c to implement the ndo_bpf callback
+and to handle XDP programs execution in igc_clean_rx_irq(). The driver
+doesn't support XDP functionality with frames that span over multiple
+buffers so jumbo frames are not allowed for now.
 
-This patch has been tested with the sample apps "xdp_redirect_cpu" and
-"xdp_redirect_map" located in samples/bpf/.
+The approach implemented by this patch follows the approach implemented
+in other Intel drivers as much as possible for the sake of consistency
+across the drivers.
+
+Quick comment regarding igc_build_skb(): this patch doesn't touch it
+because the function is never called. It seems its support is
+incomplete/in progress. The function was added by commit 0507ef8a0372b
+("igc: Add transmit and receive fastpath and interrupt handlers") but
+ring_ uses_build_skb() always return False since the IGC_RING_FLAG_RX_
+BUILD_SKB_ENABLED isn't set anywhere in the driver code.
+
+This patch has been tested with the sample app "xdp1" located in
+samples/bpf/ dir.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 11 ++++++++---
- drivers/net/ethernet/intel/igc/igc_xdp.c  |  6 ++++++
- drivers/net/ethernet/intel/igc/igc_xdp.h  |  1 +
- 3 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igc/Makefile   |  2 +-
+ drivers/net/ethernet/intel/igc/igc.h      |  2 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 58 +++++++++++++++---
+ drivers/net/ethernet/intel/igc/igc_xdp.c  | 75 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_xdp.h  | 18 ++++++
+ 5 files changed, 144 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
 
+diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
+index 1c3051db9085..95d1e8c490a4 100644
+--- a/drivers/net/ethernet/intel/igc/Makefile
++++ b/drivers/net/ethernet/intel/igc/Makefile
+@@ -8,4 +8,4 @@
+ obj-$(CONFIG_IGC) += igc.o
+ 
+ igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o igc_nvm.o igc_phy.o \
+-igc_diag.o igc_ethtool.o igc_ptp.o igc_dump.o igc_tsn.o
++igc_diag.o igc_ethtool.o igc_ptp.o igc_dump.o igc_tsn.o igc_xdp.o
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index b9d15e6f22f6..e013ac65001b 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -217,6 +217,8 @@ struct igc_adapter {
+ 	struct timecounter tc;
+ 	struct timespec64 prev_ptp_time; /* Pre-reset PTP clock */
+ 	ktime_t ptp_reset_start; /* Reset time in clock mono */
++
++	struct bpf_prog *xdp_prog;
+ };
+ 
+ void igc_up(struct igc_adapter *adapter);
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 7005e6720261..7cdfce6c0d63 100644
+index d026609eec4d..8cdd3a16e637 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1708,8 +1708,8 @@ static bool igc_can_reuse_rx_page(struct igc_rx_buffer *rx_buffer)
- 	 * the pagecnt_bias and page count so that we fully restock the
- 	 * number of references the driver holds.
- 	 */
--	if (unlikely(!pagecnt_bias)) {
--		page_ref_add(page, USHRT_MAX);
-+	if (unlikely(pagecnt_bias == 1)) {
-+		page_ref_add(page, USHRT_MAX - 1);
- 		rx_buffer->pagecnt_bias = USHRT_MAX;
- 	}
+@@ -16,6 +16,7 @@
+ #include "igc.h"
+ #include "igc_hw.h"
+ #include "igc_tsn.h"
++#include "igc_xdp.h"
  
-@@ -1850,7 +1850,8 @@ static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
- 	bi->dma = dma;
- 	bi->page = page;
- 	bi->page_offset = igc_rx_offset(rx_ring);
--	bi->pagecnt_bias = 1;
-+	page_ref_add(page, USHRT_MAX - 1);
-+	bi->pagecnt_bias = USHRT_MAX;
+ #define DRV_SUMMARY	"Intel(R) 2.5G Ethernet Linux Driver"
  
- 	return true;
- }
-@@ -1950,6 +1951,9 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
- 		igc_flush_tx_descriptors(ring);
- 		__netif_tx_unlock(nq);
- 	}
+@@ -1592,11 +1593,11 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 
+ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 struct igc_rx_buffer *rx_buffer,
+-					 unsigned int size, int pkt_offset,
++					 struct xdp_buff *xdp,
+ 					 ktime_t timestamp)
+ {
+-	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset +
+-		   pkt_offset;
++	void *va = xdp->data;
++	unsigned int size = xdp->data_end - xdp->data;
+ 	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
+@@ -1746,6 +1747,10 @@ static bool igc_cleanup_headers(struct igc_ring *rx_ring,
+ 				union igc_adv_rx_desc *rx_desc,
+ 				struct sk_buff *skb)
+ {
++	/* XDP packets use error pointer so abort at this point */
++	if (IS_ERR(skb))
++		return true;
 +
-+	if (status & IGC_XDP_REDIRECT)
-+		xdp_do_flush();
+ 	if (unlikely(igc_test_staterr(rx_desc, IGC_RXDEXT_STATERR_RXE))) {
+ 		struct net_device *netdev = rx_ring->netdev;
+ 
+@@ -1911,7 +1916,9 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 		struct igc_rx_buffer *rx_buffer;
+ 		ktime_t timestamp = 0;
+ 		int pkt_offset = 0;
++		struct xdp_buff xdp;
+ 		unsigned int size;
++		void *pktbuf;
+ 
+ 		/* return some buffers to hardware, one at a time is too slow */
+ 		if (cleaned_count >= IGC_RX_BUFFER_WRITE) {
+@@ -1932,24 +1939,37 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 
+ 		rx_buffer = igc_get_rx_buffer(rx_ring, size);
+ 
+-		if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+-			void *pktbuf = page_address(rx_buffer->page) +
+-				       rx_buffer->page_offset;
++		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
+ 
++		if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+ 			timestamp = igc_ptp_rx_pktstamp(q_vector->adapter,
+ 							pktbuf);
+ 			pkt_offset = IGC_TS_HDR_LEN;
+ 			size -= IGC_TS_HDR_LEN;
+ 		}
+ 
+-		/* retrieve a buffer from the ring */
+-		if (skb)
++		if (!skb) {
++			struct igc_adapter *adapter = q_vector->adapter;
++
++			xdp.data = pktbuf + pkt_offset;
++			xdp.data_end = xdp.data + size;
++			xdp.data_hard_start = pktbuf - igc_rx_offset(rx_ring);
++			xdp_set_data_meta_invalid(&xdp);
++
++			skb = igc_xdp_run_prog(adapter, &xdp);
++		}
++
++		if (IS_ERR(skb)) {
++			rx_buffer->pagecnt_bias++;
++			total_packets++;
++			total_bytes += size;
++		} else if (skb)
+ 			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
+ 		else if (ring_uses_build_skb(rx_ring))
+ 			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
+ 		else
+-			skb = igc_construct_skb(rx_ring, rx_buffer, size,
+-						pkt_offset, timestamp);
++			skb = igc_construct_skb(rx_ring, rx_buffer, &xdp,
++						timestamp);
+ 
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+@@ -3881,6 +3901,11 @@ static int igc_change_mtu(struct net_device *netdev, int new_mtu)
+ 	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
+ 
++	if (igc_xdp_is_enabled(adapter) && new_mtu > ETH_DATA_LEN) {
++		netdev_dbg(netdev, "Jumbo frames not supported with XDP");
++		return -EINVAL;
++	}
++
+ 	/* adjust max frame to be at least the size of a standard frame */
+ 	if (max_frame < (ETH_FRAME_LEN + ETH_FCS_LEN))
+ 		max_frame = ETH_FRAME_LEN + ETH_FCS_LEN;
+@@ -4867,6 +4892,18 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 	}
  }
  
- static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
-@@ -2018,6 +2022,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 				rx_buffer->pagecnt_bias++;
- 				break;
- 			case IGC_XDP_TX:
-+			case IGC_XDP_REDIRECT:
- 				igc_rx_buffer_flip(rx_buffer, truesize);
- 				xdp_status |= xdp_res;
- 				break;
-diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
-index 9f4c58436170..e9a81975324f 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
-@@ -147,6 +147,12 @@ struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 		else
- 			res = IGC_XDP_TX;
- 		break;
-+	case XDP_REDIRECT:
-+		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
-+			res = IGC_XDP_CONSUMED;
-+		else
-+			res = IGC_XDP_REDIRECT;
-+		break;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
- 		fallthrough;
-diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
-index fdb31f40dbe5..1c38a80c3aa0 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.h
-+++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
-@@ -7,6 +7,7 @@
- #define IGC_XDP_PASS		0
- #define IGC_XDP_CONSUMED	BIT(0)
- #define IGC_XDP_TX		BIT(1)
-+#define IGC_XDP_REDIRECT	BIT(2)
++static int igc_bpf(struct net_device *dev, struct netdev_bpf *bpf)
++{
++	struct igc_adapter *adapter = netdev_priv(dev);
++
++	switch (bpf->command) {
++	case XDP_SETUP_PROG:
++		return igc_xdp_set_prog(adapter, bpf->prog, bpf->extack);
++	default:
++		return -EOPNOTSUPP;
++	}
++}
++
+ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_open		= igc_open,
+ 	.ndo_stop		= igc_close,
+@@ -4880,6 +4917,7 @@ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_features_check	= igc_features_check,
+ 	.ndo_do_ioctl		= igc_ioctl,
+ 	.ndo_setup_tc		= igc_setup_tc,
++	.ndo_bpf		= igc_bpf,
+ };
  
- int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
- 		     struct netlink_ext_ack *extack);
+ /* PCIe configuration access */
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
+new file mode 100644
+index 000000000000..0085d8b85466
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
+@@ -0,0 +1,75 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c) 2020, Intel Corporation. */
++
++#include <linux/bpf_trace.h>
++
++#include "igc.h"
++#include "igc_xdp.h"
++
++int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
++		     struct netlink_ext_ack *extack)
++{
++	struct net_device *dev = adapter->netdev;
++	bool if_running = netif_running(dev);
++	struct bpf_prog *old_prog;
++
++	if (dev->mtu > ETH_DATA_LEN) {
++		/* For now, the driver doesn't support XDP functionality with
++		 * jumbo frames so we return error.
++		 */
++		NL_SET_ERR_MSG_MOD(extack, "Jumbo frames not supported");
++		return -EOPNOTSUPP;
++	}
++
++	if (if_running)
++		igc_close(dev);
++
++	old_prog = xchg(&adapter->xdp_prog, prog);
++	if (old_prog)
++		bpf_prog_put(old_prog);
++
++	if (if_running)
++		igc_open(dev);
++
++	netdev_dbg(dev, "XDP program set successfully");
++	return 0;
++}
++
++struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++				 struct xdp_buff *xdp)
++{
++	struct bpf_prog *prog;
++	int res;
++	u32 act;
++
++	rcu_read_lock();
++
++	prog = READ_ONCE(adapter->xdp_prog);
++	if (!prog)
++		goto unlock;
++
++	act = bpf_prog_run_xdp(prog, xdp);
++	switch (act) {
++	case XDP_PASS:
++		res = IGC_XDP_PASS;
++		break;
++	default:
++		bpf_warn_invalid_xdp_action(act);
++		fallthrough;
++	case XDP_ABORTED:
++		trace_xdp_exception(adapter->netdev, prog, act);
++		fallthrough;
++	case XDP_DROP:
++		res = IGC_XDP_CONSUMED;
++		break;
++	}
++
++unlock:
++	rcu_read_unlock();
++	return ERR_PTR(-res);
++}
++
++bool igc_xdp_is_enabled(struct igc_adapter *adapter)
++{
++	return !!adapter->xdp_prog;
++}
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
+new file mode 100644
+index 000000000000..ab36ab4d48fd
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2020, Intel Corporation. */
++
++#ifndef _IGC_XDP_H_
++#define _IGC_XDP_H_
++
++#define IGC_XDP_PASS		0
++#define IGC_XDP_CONSUMED	BIT(0)
++
++int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
++		     struct netlink_ext_ack *extack);
++
++struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++				 struct xdp_buff *xdp);
++
++bool igc_xdp_is_enabled(struct igc_adapter *adapter);
++
++#endif /* _IGC_XDP_H_ */
 -- 
 2.26.2
 
