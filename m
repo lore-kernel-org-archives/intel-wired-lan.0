@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:18 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 43/58] drivers/mmc: Utilize
+Date: Fri,  9 Oct 2020 12:50:22 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 47/58] drivers/mtd: Utilize
  new kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-44-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-48-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,54 +16,54 @@ From: Ira Weiny <ira.weiny@intel.com>
 These kmap() calls are localized to a single thread.  To avoid the over
 head of global PKRS updates use the new kmap_thread() call.
 
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sascha Sommer <saschasommer@freenet.de>
+Cc: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/mmc/host/mmc_spi.c    | 4 ++--
- drivers/mmc/host/sdricoh_cs.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/mtd/mtd_blkdevs.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index 18a850f37ddc..ab28e7103b8d 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -918,7 +918,7 @@ mmc_spi_data_do(struct mmc_spi_host *host, struct mmc_command *cmd,
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 0c05f77f9b21..4b18998273fa 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -88,14 +88,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 			return BLK_STS_IOERR;
+ 		return BLK_STS_OK;
+ 	case REQ_OP_READ:
+-		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
++		buf = kmap_thread(bio_page(req->bio)) + bio_offset(req->bio);
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
+ 			if (tr->readsect(dev, block, buf)) {
+-				kunmap(bio_page(req->bio));
++				kunmap_thread(bio_page(req->bio));
+ 				return BLK_STS_IOERR;
+ 			}
  		}
+-		kunmap(bio_page(req->bio));
++		kunmap_thread(bio_page(req->bio));
+ 		rq_flush_dcache_pages(req);
+ 		return BLK_STS_OK;
+ 	case REQ_OP_WRITE:
+@@ -103,14 +103,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 			return BLK_STS_IOERR;
  
- 		/* allow pio too; we don't allow highmem */
--		kmap_addr = kmap(sg_page(sg));
-+		kmap_addr = kmap_thread(sg_page(sg));
- 		if (direction == DMA_TO_DEVICE)
- 			t->tx_buf = kmap_addr + sg->offset;
- 		else
-@@ -950,7 +950,7 @@ mmc_spi_data_do(struct mmc_spi_host *host, struct mmc_command *cmd,
- 		/* discard mappings */
- 		if (direction == DMA_FROM_DEVICE)
- 			flush_kernel_dcache_page(sg_page(sg));
--		kunmap(sg_page(sg));
-+		kunmap_thread(sg_page(sg));
- 		if (dma_dev)
- 			dma_unmap_page(dma_dev, dma_addr, PAGE_SIZE, dir);
- 
-diff --git a/drivers/mmc/host/sdricoh_cs.c b/drivers/mmc/host/sdricoh_cs.c
-index 76a8cd3a186f..7806bc69c4f1 100644
---- a/drivers/mmc/host/sdricoh_cs.c
-+++ b/drivers/mmc/host/sdricoh_cs.c
-@@ -312,11 +312,11 @@ static void sdricoh_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 			int result;
- 			page = sg_page(data->sg);
- 
--			buf = kmap(page) + data->sg->offset + (len * i);
-+			buf = kmap_thread(page) + data->sg->offset + (len * i);
- 			result =
- 				sdricoh_blockio(host,
- 					data->flags & MMC_DATA_READ, buf, len);
--			kunmap(page);
-+			kunmap_thread(page);
- 			flush_dcache_page(page);
- 			if (result) {
- 				dev_err(dev, "sdricoh_request: cmd %i "
+ 		rq_flush_dcache_pages(req);
+-		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
++		buf = kmap_thread(bio_page(req->bio)) + bio_offset(req->bio);
+ 		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
+ 			if (tr->writesect(dev, block, buf)) {
+-				kunmap(bio_page(req->bio));
++				kunmap_thread(bio_page(req->bio));
+ 				return BLK_STS_IOERR;
+ 			}
+ 		}
+-		kunmap(bio_page(req->bio));
++		kunmap_thread(bio_page(req->bio));
+ 		return BLK_STS_OK;
+ 	default:
+ 		return BLK_STS_IOERR;
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
