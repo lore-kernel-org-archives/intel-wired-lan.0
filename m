@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:49:42 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 07/58] drivers/drbd: Utilize
+Date: Fri,  9 Oct 2020 12:49:45 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 10/58] drivers/rdma: Utilize
  new kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-8-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-11-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,84 +13,143 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-The kmap() calls in this driver are localized to a single thread.  To
+The kmap() calls in these drivers are localized to a single thread.  To
 avoid the over head of global PKRS updates use the new kmap_thread()
 call.
 
-Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
+Cc: Dennis Dalessandro <dennis.dalessandro@intel.com>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Faisal Latif <faisal.latif@intel.com>
+Cc: Shiraz Saleem <shiraz.saleem@intel.com>
+Cc: Bernard Metzler <bmt@zurich.ibm.com>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/block/drbd/drbd_main.c     |  4 ++--
- drivers/block/drbd/drbd_receiver.c | 12 ++++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/infiniband/hw/hfi1/sdma.c      |  4 ++--
+ drivers/infiniband/hw/i40iw/i40iw_cm.c | 10 +++++-----
+ drivers/infiniband/sw/siw/siw_qp_tx.c  | 14 +++++++-------
+ 3 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index 573dbf6f0c31..f0d0c6b0745e 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -1532,9 +1532,9 @@ static int _drbd_no_send_page(struct drbd_peer_device *peer_device, struct page
- 	int err;
- 
- 	socket = peer_device->connection->data.socket;
--	addr = kmap(page) + offset;
-+	addr = kmap_thread(page) + offset;
- 	err = drbd_send_all(peer_device->connection, socket, addr, size, msg_flags);
--	kunmap(page);
-+	kunmap_thread(page);
- 	if (!err)
- 		peer_device->device->send_cnt += size >> 9;
- 	return err;
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 422363daa618..4704bc0564e2 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -1951,13 +1951,13 @@ read_in_block(struct drbd_peer_device *peer_device, u64 id, sector_t sector,
- 	page = peer_req->pages;
- 	page_chain_for_each(page) {
- 		unsigned len = min_t(int, ds, PAGE_SIZE);
--		data = kmap(page);
-+		data = kmap_thread(page);
- 		err = drbd_recv_all_warn(peer_device->connection, data, len);
- 		if (drbd_insert_fault(device, DRBD_FAULT_RECEIVE)) {
- 			drbd_err(device, "Fault injection: Corrupting data on receive\n");
- 			data[0] = data[0] ^ (unsigned long)-1;
+diff --git a/drivers/infiniband/hw/hfi1/sdma.c b/drivers/infiniband/hw/hfi1/sdma.c
+index 04575c9afd61..09d206e3229a 100644
+--- a/drivers/infiniband/hw/hfi1/sdma.c
++++ b/drivers/infiniband/hw/hfi1/sdma.c
+@@ -3130,7 +3130,7 @@ int ext_coal_sdma_tx_descs(struct hfi1_devdata *dd, struct sdma_txreq *tx,
  		}
--		kunmap(page);
-+		kunmap_thread(page);
- 		if (err) {
- 			drbd_free_peer_req(device, peer_req);
- 			return NULL;
-@@ -1992,7 +1992,7 @@ static int drbd_drain_block(struct drbd_peer_device *peer_device, int data_size)
  
- 	page = drbd_alloc_pages(peer_device, 1, 1);
+ 		if (type == SDMA_MAP_PAGE) {
+-			kvaddr = kmap(page);
++			kvaddr = kmap_thread(page);
+ 			kvaddr += offset;
+ 		} else if (WARN_ON(!kvaddr)) {
+ 			__sdma_txclean(dd, tx);
+@@ -3140,7 +3140,7 @@ int ext_coal_sdma_tx_descs(struct hfi1_devdata *dd, struct sdma_txreq *tx,
+ 		memcpy(tx->coalesce_buf + tx->coalesce_idx, kvaddr, len);
+ 		tx->coalesce_idx += len;
+ 		if (type == SDMA_MAP_PAGE)
+-			kunmap(page);
++			kunmap_thread(page);
  
--	data = kmap(page);
-+	data = kmap_thread(page);
- 	while (data_size) {
- 		unsigned int len = min_t(int, data_size, PAGE_SIZE);
+ 		/* If there is more data, return */
+ 		if (tx->tlen - tx->coalesce_idx)
+diff --git a/drivers/infiniband/hw/i40iw/i40iw_cm.c b/drivers/infiniband/hw/i40iw/i40iw_cm.c
+index a3b95805c154..122d7a5642a1 100644
+--- a/drivers/infiniband/hw/i40iw/i40iw_cm.c
++++ b/drivers/infiniband/hw/i40iw/i40iw_cm.c
+@@ -3721,7 +3721,7 @@ int i40iw_accept(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
+ 		ibmr->device = iwpd->ibpd.device;
+ 		iwqp->lsmm_mr = ibmr;
+ 		if (iwqp->page)
+-			iwqp->sc_qp.qp_uk.sq_base = kmap(iwqp->page);
++			iwqp->sc_qp.qp_uk.sq_base = kmap_thread(iwqp->page);
+ 		dev->iw_priv_qp_ops->qp_send_lsmm(&iwqp->sc_qp,
+ 							iwqp->ietf_mem.va,
+ 							(accept.size + conn_param->private_data_len),
+@@ -3729,12 +3729,12 @@ int i40iw_accept(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
  
-@@ -2001,7 +2001,7 @@ static int drbd_drain_block(struct drbd_peer_device *peer_device, int data_size)
- 			break;
- 		data_size -= len;
+ 	} else {
+ 		if (iwqp->page)
+-			iwqp->sc_qp.qp_uk.sq_base = kmap(iwqp->page);
++			iwqp->sc_qp.qp_uk.sq_base = kmap_thread(iwqp->page);
+ 		dev->iw_priv_qp_ops->qp_send_lsmm(&iwqp->sc_qp, NULL, 0, 0);
  	}
--	kunmap(page);
-+	kunmap_thread(page);
- 	drbd_free_pages(peer_device->device, page, 0);
- 	return err;
- }
-@@ -2033,10 +2033,10 @@ static int recv_dless_read(struct drbd_peer_device *peer_device, struct drbd_req
- 	D_ASSERT(peer_device->device, sector == bio->bi_iter.bi_sector);
  
- 	bio_for_each_segment(bvec, bio, iter) {
--		void *mapped = kmap(bvec.bv_page) + bvec.bv_offset;
-+		void *mapped = kmap_thread(bvec.bv_page) + bvec.bv_offset;
- 		expect = min_t(int, data_size, bvec.bv_len);
- 		err = drbd_recv_all_warn(peer_device->connection, mapped, expect);
--		kunmap(bvec.bv_page);
-+		kunmap_thread(bvec.bv_page);
- 		if (err)
- 			return err;
- 		data_size -= expect;
+ 	if (iwqp->page)
+-		kunmap(iwqp->page);
++		kunmap_thread(iwqp->page);
+ 
+ 	iwqp->cm_id = cm_id;
+ 	cm_node->cm_id = cm_id;
+@@ -4102,10 +4102,10 @@ static void i40iw_cm_event_connected(struct i40iw_cm_event *event)
+ 	i40iw_cm_init_tsa_conn(iwqp, cm_node);
+ 	read0 = (cm_node->send_rdma0_op == SEND_RDMA_READ_ZERO);
+ 	if (iwqp->page)
+-		iwqp->sc_qp.qp_uk.sq_base = kmap(iwqp->page);
++		iwqp->sc_qp.qp_uk.sq_base = kmap_thread(iwqp->page);
+ 	dev->iw_priv_qp_ops->qp_send_rtt(&iwqp->sc_qp, read0);
+ 	if (iwqp->page)
+-		kunmap(iwqp->page);
++		kunmap_thread(iwqp->page);
+ 
+ 	memset(&attr, 0, sizeof(attr));
+ 	attr.qp_state = IB_QPS_RTS;
+diff --git a/drivers/infiniband/sw/siw/siw_qp_tx.c b/drivers/infiniband/sw/siw/siw_qp_tx.c
+index d19d8325588b..4ed37c328d02 100644
+--- a/drivers/infiniband/sw/siw/siw_qp_tx.c
++++ b/drivers/infiniband/sw/siw/siw_qp_tx.c
+@@ -76,7 +76,7 @@ static int siw_try_1seg(struct siw_iwarp_tx *c_tx, void *paddr)
+ 			if (unlikely(!p))
+ 				return -EFAULT;
+ 
+-			buffer = kmap(p);
++			buffer = kmap_thread(p);
+ 
+ 			if (likely(PAGE_SIZE - off >= bytes)) {
+ 				memcpy(paddr, buffer + off, bytes);
+@@ -84,7 +84,7 @@ static int siw_try_1seg(struct siw_iwarp_tx *c_tx, void *paddr)
+ 				unsigned long part = bytes - (PAGE_SIZE - off);
+ 
+ 				memcpy(paddr, buffer + off, part);
+-				kunmap(p);
++				kunmap_thread(p);
+ 
+ 				if (!mem->is_pbl)
+ 					p = siw_get_upage(mem->umem,
+@@ -96,10 +96,10 @@ static int siw_try_1seg(struct siw_iwarp_tx *c_tx, void *paddr)
+ 				if (unlikely(!p))
+ 					return -EFAULT;
+ 
+-				buffer = kmap(p);
++				buffer = kmap_thread(p);
+ 				memcpy(paddr + part, buffer, bytes - part);
+ 			}
+-			kunmap(p);
++			kunmap_thread(p);
+ 		}
+ 	}
+ 	return (int)bytes;
+@@ -505,7 +505,7 @@ static int siw_tx_hdt(struct siw_iwarp_tx *c_tx, struct socket *s)
+ 				page_array[seg] = p;
+ 
+ 				if (!c_tx->use_sendpage) {
+-					iov[seg].iov_base = kmap(p) + fp_off;
++					iov[seg].iov_base = kmap_thread(p) + fp_off;
+ 					iov[seg].iov_len = plen;
+ 
+ 					/* Remember for later kunmap() */
+@@ -518,9 +518,9 @@ static int siw_tx_hdt(struct siw_iwarp_tx *c_tx, struct socket *s)
+ 							plen);
+ 				} else if (do_crc) {
+ 					crypto_shash_update(c_tx->mpa_crc_hd,
+-							    kmap(p) + fp_off,
++							    kmap_thread(p) + fp_off,
+ 							    plen);
+-					kunmap(p);
++					kunmap_thread(p);
+ 				}
+ 			} else {
+ 				u64 va = sge->laddr + sge_off;
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
