@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:10 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 35/58] fs: Utilize new
- kmap_thread()
+Date: Fri,  9 Oct 2020 12:50:18 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 43/58] drivers/mmc: Utilize
+ new kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-36-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-44-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,146 +16,54 @@ From: Ira Weiny <ira.weiny@intel.com>
 These kmap() calls are localized to a single thread.  To avoid the over
 head of global PKRS updates use the new kmap_thread() call.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Sascha Sommer <saschasommer@freenet.de>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- fs/aio.c              |  4 ++--
- fs/binfmt_elf.c       |  4 ++--
- fs/binfmt_elf_fdpic.c |  4 ++--
- fs/exec.c             | 10 +++++-----
- fs/io_uring.c         |  4 ++--
- fs/splice.c           |  4 ++--
- 6 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/mmc/host/mmc_spi.c    | 4 ++--
+ drivers/mmc/host/sdricoh_cs.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/aio.c b/fs/aio.c
-index d5ec30385566..27f95996d25f 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -1223,10 +1223,10 @@ static long aio_read_events_ring(struct kioctx *ctx,
- 		avail = min(avail, nr - ret);
- 		avail = min_t(long, avail, AIO_EVENTS_PER_PAGE - pos);
- 
--		ev = kmap(page);
-+		ev = kmap_thread(page);
- 		copy_ret = copy_to_user(event + ret, ev + pos,
- 					sizeof(*ev) * avail);
--		kunmap(page);
-+		kunmap_thread(page);
- 
- 		if (unlikely(copy_ret)) {
- 			ret = -EFAULT;
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 13d053982dd7..1a332ef1ae03 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -2430,9 +2430,9 @@ static int elf_core_dump(struct coredump_params *cprm)
- 
- 			page = get_dump_page(addr);
- 			if (page) {
--				void *kaddr = kmap(page);
-+				void *kaddr = kmap_thread(page);
- 				stop = !dump_emit(cprm, kaddr, PAGE_SIZE);
--				kunmap(page);
-+				kunmap_thread(page);
- 				put_page(page);
- 			} else
- 				stop = !dump_skip(cprm, PAGE_SIZE);
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 50f845702b92..8fbe188e0fdd 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -1542,9 +1542,9 @@ static bool elf_fdpic_dump_segments(struct coredump_params *cprm)
- 			bool res;
- 			struct page *page = get_dump_page(addr);
- 			if (page) {
--				void *kaddr = kmap(page);
-+				void *kaddr = kmap_thread(page);
- 				res = dump_emit(cprm, kaddr, PAGE_SIZE);
--				kunmap(page);
-+				kunmap_thread(page);
- 				put_page(page);
- 			} else {
- 				res = dump_skip(cprm, PAGE_SIZE);
-diff --git a/fs/exec.c b/fs/exec.c
-index a91003e28eaa..3948b8511e3a 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -575,11 +575,11 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
- 
- 				if (kmapped_page) {
- 					flush_kernel_dcache_page(kmapped_page);
--					kunmap(kmapped_page);
-+					kunmap_thread(kmapped_page);
- 					put_arg_page(kmapped_page);
- 				}
- 				kmapped_page = page;
--				kaddr = kmap(kmapped_page);
-+				kaddr = kmap_thread(kmapped_page);
- 				kpos = pos & PAGE_MASK;
- 				flush_arg_page(bprm, kpos, kmapped_page);
- 			}
-@@ -593,7 +593,7 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
- out:
- 	if (kmapped_page) {
- 		flush_kernel_dcache_page(kmapped_page);
--		kunmap(kmapped_page);
-+		kunmap_thread(kmapped_page);
- 		put_arg_page(kmapped_page);
- 	}
- 	return ret;
-@@ -871,11 +871,11 @@ int transfer_args_to_stack(struct linux_binprm *bprm,
- 
- 	for (index = MAX_ARG_PAGES - 1; index >= stop; index--) {
- 		unsigned int offset = index == stop ? bprm->p & ~PAGE_MASK : 0;
--		char *src = kmap(bprm->page[index]) + offset;
-+		char *src = kmap_thread(bprm->page[index]) + offset;
- 		sp -= PAGE_SIZE - offset;
- 		if (copy_to_user((void *) sp, src, PAGE_SIZE - offset) != 0)
- 			ret = -EFAULT;
--		kunmap(bprm->page[index]);
-+		kunmap_thread(bprm->page[index]);
- 		if (ret)
- 			goto out;
- 	}
-diff --git a/fs/io_uring.c b/fs/io_uring.c
-index aae0ef2ec34d..f59bb079822d 100644
---- a/fs/io_uring.c
-+++ b/fs/io_uring.c
-@@ -2903,7 +2903,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
- 			iovec = iov_iter_iovec(iter);
- 		} else {
- 			/* fixed buffers import bvec */
--			iovec.iov_base = kmap(iter->bvec->bv_page)
-+			iovec.iov_base = kmap_thread(iter->bvec->bv_page)
- 						+ iter->iov_offset;
- 			iovec.iov_len = min(iter->count,
- 					iter->bvec->bv_len - iter->iov_offset);
-@@ -2918,7 +2918,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
+diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
+index 18a850f37ddc..ab28e7103b8d 100644
+--- a/drivers/mmc/host/mmc_spi.c
++++ b/drivers/mmc/host/mmc_spi.c
+@@ -918,7 +918,7 @@ mmc_spi_data_do(struct mmc_spi_host *host, struct mmc_command *cmd,
  		}
  
- 		if (iov_iter_is_bvec(iter))
--			kunmap(iter->bvec->bv_page);
-+			kunmap_thread(iter->bvec->bv_page);
+ 		/* allow pio too; we don't allow highmem */
+-		kmap_addr = kmap(sg_page(sg));
++		kmap_addr = kmap_thread(sg_page(sg));
+ 		if (direction == DMA_TO_DEVICE)
+ 			t->tx_buf = kmap_addr + sg->offset;
+ 		else
+@@ -950,7 +950,7 @@ mmc_spi_data_do(struct mmc_spi_host *host, struct mmc_command *cmd,
+ 		/* discard mappings */
+ 		if (direction == DMA_FROM_DEVICE)
+ 			flush_kernel_dcache_page(sg_page(sg));
+-		kunmap(sg_page(sg));
++		kunmap_thread(sg_page(sg));
+ 		if (dma_dev)
+ 			dma_unmap_page(dma_dev, dma_addr, PAGE_SIZE, dir);
  
- 		if (nr < 0) {
- 			if (!ret)
-diff --git a/fs/splice.c b/fs/splice.c
-index ce75aec52274..190c4d218c30 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -815,9 +815,9 @@ static int write_pipe_buf(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
- 	void *data;
- 	loff_t tmp = sd->pos;
+diff --git a/drivers/mmc/host/sdricoh_cs.c b/drivers/mmc/host/sdricoh_cs.c
+index 76a8cd3a186f..7806bc69c4f1 100644
+--- a/drivers/mmc/host/sdricoh_cs.c
++++ b/drivers/mmc/host/sdricoh_cs.c
+@@ -312,11 +312,11 @@ static void sdricoh_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 			int result;
+ 			page = sg_page(data->sg);
  
--	data = kmap(buf->page);
-+	data = kmap_thread(buf->page);
- 	ret = __kernel_write(sd->u.file, data + buf->offset, sd->len, &tmp);
--	kunmap(buf->page);
-+	kunmap_thread(buf->page);
- 
- 	return ret;
- }
+-			buf = kmap(page) + data->sg->offset + (len * i);
++			buf = kmap_thread(page) + data->sg->offset + (len * i);
+ 			result =
+ 				sdricoh_blockio(host,
+ 					data->flags & MMC_DATA_READ, buf, len);
+-			kunmap(page);
++			kunmap_thread(page);
+ 			flush_dcache_page(page);
+ 			if (result) {
+ 				dev_err(dev, "sdricoh_request: cmd %i "
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
