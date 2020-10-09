@@ -1,10 +1,10 @@
 From: ira.weiny@intel.com <ira.weiny@intel.com>
-Date: Fri,  9 Oct 2020 12:50:19 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 44/58] drivers/xen: Utilize
- new kmap_thread()
+Date: Fri,  9 Oct 2020 12:50:20 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 45/58] drivers/firmware:
+ Utilize new kmap_thread()
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
-Message-ID: <20201009195033.3208459-45-ira.weiny@intel.com>
+Message-ID: <20201009195033.3208459-46-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,28 +16,66 @@ From: Ira Weiny <ira.weiny@intel.com>
 These kmap() calls are localized to a single thread.  To avoid the over
 head of global PKRS updates use the new kmap_thread() call.
 
-Cc: Stefano Stabellini <sstabellini@kernel.org>
+Cc: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/xen/gntalloc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/firmware/efi/capsule-loader.c | 6 +++---
+ drivers/firmware/efi/capsule.c        | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/xen/gntalloc.c b/drivers/xen/gntalloc.c
-index 3fa40c723e8e..3b78e055feff 100644
---- a/drivers/xen/gntalloc.c
-+++ b/drivers/xen/gntalloc.c
-@@ -184,9 +184,9 @@ static int add_grefs(struct ioctl_gntalloc_alloc_gref *op,
- static void __del_gref(struct gntalloc_gref *gref)
- {
- 	if (gref->notify.flags & UNMAP_NOTIFY_CLEAR_BYTE) {
--		uint8_t *tmp = kmap(gref->page);
-+		uint8_t *tmp = kmap_thread(gref->page);
- 		tmp[gref->notify.pgoff] = 0;
--		kunmap(gref->page);
-+		kunmap_thread(gref->page);
+diff --git a/drivers/firmware/efi/capsule-loader.c b/drivers/firmware/efi/capsule-loader.c
+index 4dde8edd53b6..aa2e0b5940fd 100644
+--- a/drivers/firmware/efi/capsule-loader.c
++++ b/drivers/firmware/efi/capsule-loader.c
+@@ -197,7 +197,7 @@ static ssize_t efi_capsule_write(struct file *file, const char __user *buff,
+ 		page = cap_info->pages[cap_info->index - 1];
  	}
- 	if (gref->notify.flags & UNMAP_NOTIFY_SEND_EVENT) {
- 		notify_remote_via_evtchn(gref->notify.event);
+ 
+-	kbuff = kmap(page);
++	kbuff = kmap_thread(page);
+ 	kbuff += PAGE_SIZE - cap_info->page_bytes_remain;
+ 
+ 	/* Copy capsule binary data from user space to kernel space buffer */
+@@ -217,7 +217,7 @@ static ssize_t efi_capsule_write(struct file *file, const char __user *buff,
+ 	}
+ 
+ 	cap_info->count += write_byte;
+-	kunmap(page);
++	kunmap_thread(page);
+ 
+ 	/* Submit the full binary to efi_capsule_update() API */
+ 	if (cap_info->header.headersize > 0 &&
+@@ -236,7 +236,7 @@ static ssize_t efi_capsule_write(struct file *file, const char __user *buff,
+ 	return write_byte;
+ 
+ fail_unmap:
+-	kunmap(page);
++	kunmap_thread(page);
+ failed:
+ 	efi_free_all_buff_pages(cap_info);
+ 	return ret;
+diff --git a/drivers/firmware/efi/capsule.c b/drivers/firmware/efi/capsule.c
+index 598b7800d14e..edb7797b0e4f 100644
+--- a/drivers/firmware/efi/capsule.c
++++ b/drivers/firmware/efi/capsule.c
+@@ -244,7 +244,7 @@ int efi_capsule_update(efi_capsule_header_t *capsule, phys_addr_t *pages)
+ 	for (i = 0; i < sg_count; i++) {
+ 		efi_capsule_block_desc_t *sglist;
+ 
+-		sglist = kmap(sg_pages[i]);
++		sglist = kmap_thread(sg_pages[i]);
+ 
+ 		for (j = 0; j < SGLIST_PER_PAGE && count > 0; j++) {
+ 			u64 sz = min_t(u64, imagesize,
+@@ -265,7 +265,7 @@ int efi_capsule_update(efi_capsule_header_t *capsule, phys_addr_t *pages)
+ 		else
+ 			sglist[j].data = page_to_phys(sg_pages[i + 1]);
+ 
+-		kunmap(sg_pages[i]);
++		kunmap_thread(sg_pages[i]);
+ 	}
+ 
+ 	mutex_lock(&capsule_mutex);
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
