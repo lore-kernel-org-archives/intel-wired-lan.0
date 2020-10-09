@@ -1,51 +1,46 @@
-From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Thu, 8 Oct 2020 17:40:36 -0400
-Subject: [Intel-wired-lan] [PATCH v4 0/4] isolation: limit msix vectors
- to housekeeping CPUs
-In-Reply-To: <20201001154949.GA7303@lothringen>
-References: <20200928183529.471328-1-nitesh@redhat.com>
- <20201001154949.GA7303@lothringen>
-Message-ID: <9c55624f-2a01-b71c-7f66-3747cb844e5a@redhat.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Thu,  8 Oct 2020 19:53:42 -0700
+Subject: [Intel-wired-lan] [PATCH 2/9] igc: Remove unused argument from
+ igc_tx_cmd_type()
+In-Reply-To: <20201009025349.4037-1-andre.guedes@intel.com>
+References: <20201009025349.4037-1-andre.guedes@intel.com>
+Message-ID: <20201009025349.4037-3-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The 'skb' argument from igc_tx_cmd_type() is not used so this patch
+removes it.
 
-On 10/1/20 11:49 AM, Frederic Weisbecker wrote:
-> On Mon, Sep 28, 2020 at 02:35:25PM -0400, Nitesh Narayan Lal wrote:
->> Nitesh Narayan Lal (4):
->>   sched/isolation: API to get number of housekeeping CPUs
->>   sched/isolation: Extend nohz_full to isolate managed IRQs
->>   i40e: Limit msix vectors to housekeeping CPUs
->>   PCI: Limit pci_alloc_irq_vectors() to housekeeping CPUs
->>
->>  drivers/net/ethernet/intel/i40e/i40e_main.c |  3 ++-
->>  drivers/pci/msi.c                           | 18 ++++++++++++++++++
->>  include/linux/sched/isolation.h             |  9 +++++++++
->>  kernel/sched/isolation.c                    |  2 +-
->>  4 files changed, 30 insertions(+), 2 deletions(-)
-> Acked-by: Frederic Weisbecker <frederic@kernel.org>
->
-> Peter, if you're ok with the set, I guess this should go through
-> the scheduler tree?
->
-> Thanks.
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Hi Peter,
-
-I wanted follow up to check if you have any concerns/suggestions that I
-should address in this patch-set before this can be picked?
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 897e2d5514a1..63a0d7a2213c 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1040,7 +1040,7 @@ static inline int igc_maybe_stop_tx(struct igc_ring *tx_ring, const u16 size)
+ 	 ((u32)((_input) & (_flag)) * ((_result) / (_flag))) :	\
+ 	 ((u32)((_input) & (_flag)) / ((_flag) / (_result))))
+ 
+-static u32 igc_tx_cmd_type(struct sk_buff *skb, u32 tx_flags)
++static u32 igc_tx_cmd_type(u32 tx_flags)
+ {
+ 	/* set type for advanced descriptor with frame checksum insertion */
+ 	u32 cmd_type = IGC_ADVTXD_DTYP_DATA |
+@@ -1089,7 +1089,7 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+ 	u16 i = tx_ring->next_to_use;
+ 	unsigned int data_len, size;
+ 	dma_addr_t dma;
+-	u32 cmd_type = igc_tx_cmd_type(skb, tx_flags);
++	u32 cmd_type = igc_tx_cmd_type(tx_flags);
+ 
+ 	tx_desc = IGC_TX_DESC(tx_ring, i);
+ 
 -- 
-Thanks
-Nitesh
+2.26.2
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201008/74292894/attachment.asc>
