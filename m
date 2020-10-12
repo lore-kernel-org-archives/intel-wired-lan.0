@@ -1,158 +1,127 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Mon, 12 Oct 2020 17:35:10 +0000
-Subject: [Intel-wired-lan] [PATCH] e100: switch from 'pci_' to 'dma_' API
-In-Reply-To: <20200718115546.358240-1-christophe.jaillet@wanadoo.fr>
-References: <20200718115546.358240-1-christophe.jaillet@wanadoo.fr>
-Message-ID: <DM6PR11MB289001E5538E536F0CB60A1FBC070@DM6PR11MB2890.namprd11.prod.outlook.com>
+From: Ian Kumlien <ian.kumlien@gmail.com>
+Date: Mon, 12 Oct 2020 21:20:37 +0200
+Subject: [Intel-wired-lan] ixgbe - only presenting one out of four
+ interfaces on 5.9
+Message-ID: <CAA85sZv=13q8NXbjdf7+R=wu0Q5=Vj9covZ24e9Ew2DCd7S==A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Christophe JAILLET
-> Sent: Saturday, July 18, 2020 4:56 AM
-> To: kuba at kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; Christophe
-> JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org;
-> linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] e100: switch from 'pci_' to 'dma_' API
-> 
-> The wrappers in include/linux/pci-dma-compat.h should go away.
-> 
-> The patch has been generated with the coccinelle script below and has been
-> hand modified to replace GFP_ with a correct flag.
-> It has been compile tested.
-> 
-> When memory is allocated in 'e100_alloc()', GFP_KERNEL can be used because
-> it is only called from the probe function and no lock is acquired.
-> 
-> 
-> @@
-> @@
-> -    PCI_DMA_BIDIRECTIONAL
-> +    DMA_BIDIRECTIONAL
-> 
-> @@
-> @@
-> -    PCI_DMA_TODEVICE
-> +    DMA_TO_DEVICE
-> 
-> @@
-> @@
-> -    PCI_DMA_FROMDEVICE
-> +    DMA_FROM_DEVICE
-> 
-> @@
-> @@
-> -    PCI_DMA_NONE
-> +    DMA_NONE
-> 
-> @@
-> expression e1, e2, e3;
-> @@
-> -    pci_alloc_consistent(e1, e2, e3)
-> +    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-> 
-> @@
-> expression e1, e2, e3;
-> @@
-> -    pci_zalloc_consistent(e1, e2, e3)
-> +    dma_alloc_coherent(&e1->dev, e2, e3, GFP_)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_free_consistent(e1, e2, e3, e4)
-> +    dma_free_coherent(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_map_single(e1, e2, e3, e4)
-> +    dma_map_single(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_single(e1, e2, e3, e4)
-> +    dma_unmap_single(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4, e5;
-> @@
-> -    pci_map_page(e1, e2, e3, e4, e5)
-> +    dma_map_page(&e1->dev, e2, e3, e4, e5)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_page(e1, e2, e3, e4)
-> +    dma_unmap_page(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_map_sg(e1, e2, e3, e4)
-> +    dma_map_sg(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_unmap_sg(e1, e2, e3, e4)
-> +    dma_unmap_sg(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_single_for_cpu(e1, e2, e3, e4)
-> +    dma_sync_single_for_cpu(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_single_for_device(e1, e2, e3, e4)
-> +    dma_sync_single_for_device(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_sg_for_cpu(e1, e2, e3, e4)
-> +    dma_sync_sg_for_cpu(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2, e3, e4;
-> @@
-> -    pci_dma_sync_sg_for_device(e1, e2, e3, e4)
-> +    dma_sync_sg_for_device(&e1->dev, e2, e3, e4)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_dma_mapping_error(e1, e2)
-> +    dma_mapping_error(&e1->dev, e2)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_set_dma_mask(e1, e2)
-> +    dma_set_mask(&e1->dev, e2)
-> 
-> @@
-> expression e1, e2;
-> @@
-> -    pci_set_consistent_dma_mask(e1, e2)
-> +    dma_set_coherent_mask(&e1->dev, e2)
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> If needed, see post from Christoph Hellwig on the kernel-janitors ML:
->    https://marc.info/?l=kernel-janitors&m=158745678307186&w=4
-> ---
->  drivers/net/ethernet/intel/e100.c | 92 ++++++++++++++++---------------
->  1 file changed, 49 insertions(+), 43 deletions(-)
-> 
-And I finally managed to get a couple functional e100 adapters up and running again.
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Hi,
+
+I was really surprised when i rebooted my firewall and there was
+network issues, I was even more surprised when
+only one of the four ports of my ixbe (x553) nic was available when booted.
+
+You can actually see it dmesg... And i tried some basic looking at
+changes to see if it was obvious.... but..
+
+anyway, on v5.8.14:
+dmesg |grep ixgbe
+[    1.355454] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
+version 5.1.0-k
+[    1.355455] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+[    1.711629] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    1.838170] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
+[    1.838173] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
+[    1.882060] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
+[    1.882196] libphy: ixgbe-mdio: probed
+[    2.234835] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    2.361374] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
+[    2.361377] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
+[    2.405281] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
+[    2.757541] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    2.884104] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
+[    2.884107] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
+[    2.928022] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
+[    3.280728] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    3.407274] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
+[    3.407276] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
+[    3.451155] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
+[    4.648725] ixgbe 0000:07:00.0 eno3: renamed from eth2
+[    4.659827] ixgbe 0000:06:00.0 eno1: renamed from eth0
+[    4.674272] ixgbe 0000:07:00.1 eno4: renamed from eth3
+[    4.685838] ixgbe 0000:06:00.1 eno2: renamed from eth1
+[    6.070294] ixgbe 0000:06:00.0: registered PHC device on eno1
+[    7.178307] ixgbe 0000:07:00.0: registered PHC device on eno3
+[    7.421199] ixgbe 0000:07:00.1: registered PHC device on eno4
+[    7.662712] ixgbe 0000:06:00.1: registered PHC device on eno2
+[    9.587640] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
+Control: RX/TX
+[   10.605594] ixgbe 0000:07:00.1 eno4: NIC Link is Up 1 Gbps, Flow
+Control: RX/TX
+[   10.754615] ixgbe 0000:07:00.0 eno3: NIC Link is Up 1 Gbps, Flow
+Control: RX/TX
+[   10.768586] ixgbe 0000:06:00.1 eno2: NIC Link is Up 1 Gbps, Flow
+Control: RX/TX
+
+on 5.9:
+dmesg |grep ixbge
+[    1.570400] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
+[    1.570401] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
+[    1.928030] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    2.054554] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
+[    2.054556] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
+[    2.098404] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
+[    2.098541] libphy: ixgbe-mdio: probed
+[    2.453350] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    2.579938] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
+[    2.579941] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
+[    2.623783] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
+[    2.987339] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    3.113864] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
+[    3.113867] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
+[    3.157635] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
+[    3.529503] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
+= 12, Tx Queue count = 12 XDP Queue count = 0
+[    3.656041] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
+[    3.656043] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
+[    3.699856] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
+[    4.646247] ixgbe 0000:06:00.0 eno1: renamed from eth0
+[    6.183074] ixgbe 0000:06:00.0: registered PHC device on eno1
+[    9.570382] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
+Control: RX/TX
+
+lspci....
+06:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+X553 1GbE (rev 11)
+06:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+X553 1GbE (rev 11)
+07:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+X553 1GbE (rev 11)
+07:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+X553 1GbE (rev 11)
+
+ethtool -i eno1 and eno2
+driver: ixgbe
+version: 5.1.0-k
+firmware-version: 0x80000877
+expansion-rom-version:
+bus-info: 0000:06:00.0 (and 0000:06:00.1)
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+
+while eno3 and eno4 gives:
+driver: ixgbe
+version: 5.1.0-k
+firmware-version: 0x8000087c
+expansion-rom-version:
+bus-info: 0000:07:00.0 (and 0000:07:00.1)
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: yes
+
+Any ideas?
