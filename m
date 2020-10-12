@@ -1,127 +1,56 @@
-From: Ian Kumlien <ian.kumlien@gmail.com>
-Date: Mon, 12 Oct 2020 21:20:37 +0200
-Subject: [Intel-wired-lan] ixgbe - only presenting one out of four
- interfaces on 5.9
-Message-ID: <CAA85sZv=13q8NXbjdf7+R=wu0Q5=Vj9covZ24e9Ew2DCd7S==A@mail.gmail.com>
+From: Ira Weiny <ira.weiny@intel.com>
+Date: Mon, 12 Oct 2020 12:53:54 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 22/58] fs/f2fs: Utilize
+ new kmap_thread()
+In-Reply-To: <20201012164438.GA20115@casper.infradead.org>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+ <20201009195033.3208459-23-ira.weiny@intel.com>
+ <20201009213434.GA839@sol.localdomain>
+ <20201010003954.GW20115@casper.infradead.org>
+ <20201010013036.GD1122@sol.localdomain>
+ <20201012065635.GB2046448@iweiny-DESK2.sc.intel.com>
+ <20201012161946.GA858@sol.localdomain>
+ <5d621db9-23d4-e140-45eb-d7fca2093d2b@intel.com>
+ <20201012164438.GA20115@casper.infradead.org>
+Message-ID: <20201012195354.GC2046448@iweiny-DESK2.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Mon, Oct 12, 2020 at 05:44:38PM +0100, Matthew Wilcox wrote:
+> On Mon, Oct 12, 2020 at 09:28:29AM -0700, Dave Hansen wrote:
+> > kmap_atomic() is always preferred over kmap()/kmap_thread().
+> > kmap_atomic() is _much_ more lightweight since its TLB invalidation is
+> > always CPU-local and never broadcast.
+> > 
+> > So, basically, unless you *must* sleep while the mapping is in place,
+> > kmap_atomic() is preferred.
+> 
+> But kmap_atomic() disables preemption, so the _ideal_ interface would map
+> it only locally, then on preemption make it global.  I don't even know
+> if that _can_ be done.  But this email makes it seem like kmap_atomic()
+> has no downsides.
 
-I was really surprised when i rebooted my firewall and there was
-network issues, I was even more surprised when
-only one of the four ports of my ixbe (x553) nic was available when booted.
+And that is IIUC what Thomas was trying to solve.
 
-You can actually see it dmesg... And i tried some basic looking at
-changes to see if it was obvious.... but..
+Also, Linus brought up that kmap_atomic() has quirks in nesting.[1]
 
-anyway, on v5.8.14:
-dmesg |grep ixgbe
-[    1.355454] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
-version 5.1.0-k
-[    1.355455] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-[    1.711629] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    1.838170] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-[    1.838173] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
-[    1.882060] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
-[    1.882196] libphy: ixgbe-mdio: probed
-[    2.234835] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    2.361374] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-[    2.361377] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
-[    2.405281] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
-[    2.757541] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    2.884104] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-[    2.884107] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
-[    2.928022] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
-[    3.280728] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    3.407274] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-[    3.407276] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
-[    3.451155] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
-[    4.648725] ixgbe 0000:07:00.0 eno3: renamed from eth2
-[    4.659827] ixgbe 0000:06:00.0 eno1: renamed from eth0
-[    4.674272] ixgbe 0000:07:00.1 eno4: renamed from eth3
-[    4.685838] ixgbe 0000:06:00.1 eno2: renamed from eth1
-[    6.070294] ixgbe 0000:06:00.0: registered PHC device on eno1
-[    7.178307] ixgbe 0000:07:00.0: registered PHC device on eno3
-[    7.421199] ixgbe 0000:07:00.1: registered PHC device on eno4
-[    7.662712] ixgbe 0000:06:00.1: registered PHC device on eno2
-[    9.587640] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
-Control: RX/TX
-[   10.605594] ixgbe 0000:07:00.1 eno4: NIC Link is Up 1 Gbps, Flow
-Control: RX/TX
-[   10.754615] ixgbe 0000:07:00.0 eno3: NIC Link is Up 1 Gbps, Flow
-Control: RX/TX
-[   10.768586] ixgbe 0000:06:00.1 eno2: NIC Link is Up 1 Gbps, Flow
-Control: RX/TX
+From what I can see all of these discussions support the need to have something
+between kmap() and kmap_atomic().
 
-on 5.9:
-dmesg |grep ixbge
-[    1.570400] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
-[    1.570401] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-[    1.928030] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    2.054554] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-[    2.054556] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
-[    2.098404] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
-[    2.098541] libphy: ixgbe-mdio: probed
-[    2.453350] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    2.579938] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-[    2.579941] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
-[    2.623783] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
-[    2.987339] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    3.113864] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-[    3.113867] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
-[    3.157635] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
-[    3.529503] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
-= 12, Tx Queue count = 12 XDP Queue count = 0
-[    3.656041] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-[    3.656043] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
-[    3.699856] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
-[    4.646247] ixgbe 0000:06:00.0 eno1: renamed from eth0
-[    6.183074] ixgbe 0000:06:00.0: registered PHC device on eno1
-[    9.570382] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
-Control: RX/TX
+However, the reason behind converting call sites to kmap_thread() are different
+between Thomas' patch set and mine.  Both require more kmap granularity.
+However, they do so with different reasons and underlying implementations but
+with the _same_ resulting semantics; a thread local mapping which is
+preemptable.[2]  Therefore they each focus on changing different call sites.
 
-lspci....
-06:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-X553 1GbE (rev 11)
-06:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-X553 1GbE (rev 11)
-07:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-X553 1GbE (rev 11)
-07:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-X553 1GbE (rev 11)
+While this patch set is huge I think it serves a valuable purpose to identify a
+large number of call sites which are candidates for this new semantic.
 
-ethtool -i eno1 and eno2
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x80000877
-expansion-rom-version:
-bus-info: 0000:06:00.0 (and 0000:06:00.1)
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
+Ira
 
-while eno3 and eno4 gives:
-driver: ixgbe
-version: 5.1.0-k
-firmware-version: 0x8000087c
-expansion-rom-version:
-bus-info: 0000:07:00.0 (and 0000:07:00.1)
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-
-Any ideas?
+[1] https://lore.kernel.org/lkml/CAHk-=wgbmwsTOKs23Z=71EBTrULoeaH2U3TNqT2atHEWvkBKdw at mail.gmail.com/
+[2] It is important to note these implementations are not incompatible with
+each other.  So I don't see yet another 'kmap_something()' being required.
