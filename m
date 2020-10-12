@@ -1,42 +1,58 @@
 From: Ira Weiny <ira.weiny@intel.com>
-Date: Sun, 11 Oct 2020 21:47:56 -0700
-Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 10/58] drivers/rdma:
+Date: Sun, 11 Oct 2020 22:28:18 -0700
+Subject: [Intel-wired-lan] [PATCH RFC PKS/PMEM 48/58] drivers/md:
  Utilize new kmap_thread()
-In-Reply-To: <OF849D92D8.F4735ECA-ON002585FD.003F5F27-002585FD.003FCBD6@notes.na.collabserv.com>
-References: <20201009195033.3208459-11-ira.weiny@intel.com>
- <20201009195033.3208459-1-ira.weiny@intel.com>
- <OF849D92D8.F4735ECA-ON002585FD.003F5F27-002585FD.003FCBD6@notes.na.collabserv.com>
-Message-ID: <20201012044756.GY2046448@iweiny-DESK2.sc.intel.com>
+In-Reply-To: <c802fbf4-f67a-b205-536d-9c71b440f9c8@suse.de>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+ <20201009195033.3208459-49-ira.weiny@intel.com>
+ <c802fbf4-f67a-b205-536d-9c71b440f9c8@suse.de>
+Message-ID: <20201012052817.GZ2046448@iweiny-DESK2.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Oct 10, 2020 at 11:36:49AM +0000, Bernard Metzler wrote:
-> -----ira.weiny at intel.com wrote: -----
-> 
-
-[snip]
-
-> >@@ -505,7 +505,7 @@ static int siw_tx_hdt(struct siw_iwarp_tx *c_tx,
-> >struct socket *s)
-> > 				page_array[seg] = p;
+On Sat, Oct 10, 2020 at 10:20:34AM +0800, Coly Li wrote:
+> On 2020/10/10 03:50, ira.weiny at intel.com wrote:
+> > From: Ira Weiny <ira.weiny@intel.com>
 > > 
-> > 				if (!c_tx->use_sendpage) {
-> >-					iov[seg].iov_base = kmap(p) + fp_off;
-> >+					iov[seg].iov_base = kmap_thread(p) + fp_off;
+> > These kmap() calls are localized to a single thread.  To avoid the over
+> > head of global PKRS updates use the new kmap_thread() call.
+> > 
 > 
-> This misses a corresponding kunmap_thread() in siw_unmap_pages()
-> (pls change line 403 in siw_qp_tx.c as well)
+> Hi Ira,
+> 
+> There were a number of options considered.
+> 
+> 1) Attempt to change all the thread local kmap() calls to kmap_atomic()
+> 2) Introduce a flags parameter to kmap() to indicate if the mapping
+> should be global or not
+> 3) Change ~20-30 call sites to 'kmap_global()' to indicate that they
+> require a global mapping of the pages
+> 4) Change ~209 call sites to 'kmap_thread()' to indicate that the
+> mapping is to be used within that thread of execution only
+> 
+> 
+> I copied the above information from patch 00/58 to this message. The
+> idea behind kmap_thread() is fine to me, but as you said the new api is
+> very easy to be missed in new code (even for me). I would like to be
+> supportive to option 2) introduce a flag to kmap(), then we won't forget
+> the new thread-localized kmap method, and people won't ask why a
+> _thread() function is called but no kthread created.
 
-Thanks I missed that.
+Thanks for the feedback.
 
-Done.
+I'm going to hold off making any changes until others weigh in.  FWIW, I kind
+of like option 2 as well.  But there is already kmap_atomic() so it seemed like
+kmap_XXXX() was more in line with the current API.
 
+Thanks,
 Ira
 
 > 
-> Thanks,
-> Bernard.
+> Thanks.
+> 
+> 
+> Coly Li
 > 
