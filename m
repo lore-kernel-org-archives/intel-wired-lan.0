@@ -1,33 +1,50 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Mon, 12 Oct 2020 21:53:51 +0000
-Subject: [Intel-wired-lan] [PATCH] igbvf: Refactor traces
-In-Reply-To: <20200910103619.10467-1-karen.sornek@intel.com>
-References: <20200910103619.10467-1-karen.sornek@intel.com>
-Message-ID: <DM6PR11MB289063710054770764B9A0D2BC070@DM6PR11MB2890.namprd11.prod.outlook.com>
+Date: Mon, 12 Oct 2020 22:20:08 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: report correct VF link speed
+ when link state is set to enable
+In-Reply-To: <20200909082212.67583-1-sassmann@kpanic.de>
+References: <20200909082212.67583-1-sassmann@kpanic.de>
+Message-ID: <DM6PR11MB2890AC827D2F779D985D2513BC070@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Karen
-> Sornek
-> Sent: Thursday, September 10, 2020 3:36 AM
+> From: netdev-owner at vger.kernel.org <netdev-owner@vger.kernel.org> On
+> Behalf Of Stefan Assmann
+> Sent: Wednesday, September 9, 2020 1:22 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Sornek, Karen <karen.sornek@intel.com>
-> Subject: [Intel-wired-lan] [PATCH] igbvf: Refactor traces
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; Yang, Lihong <lihong.yang@intel.com>;
+> sassmann at kpanic.de
+> Subject: [PATCH] i40e: report correct VF link speed when link state is set to
+> enable
 > 
-> Refactoring "PF still resetting" and changing "Failed
->  to add vlan id" to "Vlan id is not added"
-> messages because previous version looked like a bug
-> - it informed about changes that worked as
-> designed but might confuse users
+> When the virtual link state was set to "enable" ethtool would report
+> link speed as 40000Mb/s regardless of the underlying device.
+> Report the correct link speed.
 > 
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Example from a XXV710 NIC.
+> Before:
+> $ ip link set ens3f0 vf 0 state auto
+> $  ethtool enp8s2 | grep Speed
+>         Speed: 25000Mb/s
+> $ ip link set ens3f0 vf 0 state enable
+> $ ethtool enp8s2 | grep Speed
+>         Speed: 40000Mb/s
+> After:
+> $ ip link set ens3f0 vf 0 state auto
+> $  ethtool enp8s2 | grep Speed
+>         Speed: 25000Mb/s
+> $ ip link set ens3f0 vf 0 state enable
+> $ ethtool enp8s2 | grep Speed
+>         Speed: 25000Mb/s
+> 
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 > ---
->  drivers/net/ethernet/intel/igbvf/netdev.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
