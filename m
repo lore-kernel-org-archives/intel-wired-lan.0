@@ -1,65 +1,55 @@
-From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Date: Mon, 12 Oct 2020 15:49:48 +0200 (CEST)
-Subject: [Intel-wired-lan] [linux-safety] [PATCH] e1000: drop unneeded
- assignment in e1000_set_itr()
-In-Reply-To: <20201011212326.2758-1-sudipm.mukherjee@gmail.com>
-References: <20201011212326.2758-1-sudipm.mukherjee@gmail.com>
-Message-ID: <alpine.DEB.2.21.2010121546470.6487@felia>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 12 Oct 2020 08:16:33 -0700
+Subject: [Intel-wired-lan] [PATCH] net: ethernet: ixgbe: don't propagate
+ -ENODEV from ixgbe_mii_bus_init()
+In-Reply-To: <CAMRc=MexKweGRjF5KNg1saz7NmE+tQq=03oR3wzoMsaTcm+CAA@mail.gmail.com>
+References: <20200928071744.18253-1-brgl@bgdev.pl>
+ <CAMRc=MexKweGRjF5KNg1saz7NmE+tQq=03oR3wzoMsaTcm+CAA@mail.gmail.com>
+Message-ID: <20201012081633.7b501cde@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, 12 Oct 2020 14:20:16 +0200 Bartosz Golaszewski wrote:
+> On Mon, Sep 28, 2020 at 9:17 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+> >
+> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >
+> > It's a valid use-case for ixgbe_mii_bus_init() to return -ENODEV - we
+> > still want to finalize the registration of the ixgbe device. Check the
+> > error code and don't bail out if err == -ENODEV.
+> >
+> > This fixes an issue on C3000 family of SoCs where four ixgbe devices
+> > share a single MDIO bus and ixgbe_mii_bus_init() returns -ENODEV for
+> > three of them but we still want to register them.
+> >
+> > Fixes: 09ef193fef7e ("net: ethernet: ixgbe: check the return value of ixgbe_mii_bus_init()")
+> > Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
+> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > index 2f8a4cfc5fa1..d1623af30125 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > @@ -11032,7 +11032,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> >                         true);
+> >
+> >         err = ixgbe_mii_bus_init(hw);
+> > -       if (err)
+> > +       if (err && err != -ENODEV)
+> >                 goto err_netdev;
+> >
+> >         return 0;
+>
+> Gentle ping for this patch. Who's picking up networking patches now
+> that David is OoO? Should I Cc someone else?
 
+Intel went through a maintainer change of its own, and they usually
+pick up their patches and send a PR.
 
-On Sun, 11 Oct 2020, Sudip Mukherjee wrote:
-
-> The variable 'current_itr' is assigned to 0 before jumping to
-> 'set_itr_now' but it has not been used after the jump. So, remove the
-> unneeded assignement.
-> 
-> Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_main.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> index 5e28cf4fa2cd..042de276e632 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> @@ -2632,7 +2632,6 @@ static void e1000_set_itr(struct e1000_adapter *adapter)
->  
->  	/* for non-gigabit speeds, just fix the interrupt rate at 4000 */
->  	if (unlikely(adapter->link_speed != SPEED_1000)) {
-> -		current_itr = 0;
->  		new_itr = 4000;
->  		goto set_itr_now;
->  	}
-
-Alternatively, you could just inline the max(...) into the switch and 
-completely drop the current_itr definition.
-
-But your solution probably does the job: it is a "No functional change" 
-commit.
-
-Reviewed-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-
-
-Lukas
-
-> -- 
-> 2.11.0
-> 
-> 
-> 
-> -=-=-=-=-=-=-=-=-=-=-=-
-> Links: You receive all messages sent to this group.
-> View/Reply Online (#77): https://lists.elisa.tech/g/linux-safety/message/77
-> Mute This Topic: https://lists.elisa.tech/mt/77448709/1714638
-> Group Owner: linux-safety+owner at lists.elisa.tech
-> Unsubscribe: https://lists.elisa.tech/g/linux-safety/unsub [lukas.bulwahn at gmail.com]
-> -=-=-=-=-=-=-=-=-=-=-=-
-> 
-> 
-> 
+Tony, do you want me to apply this directly?
