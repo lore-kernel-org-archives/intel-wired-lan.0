@@ -1,59 +1,55 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 12 Oct 2020 08:47:51 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add new device ID
-Message-ID: <20201012054751.1714839-1-sasha.neftin@intel.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 12 Oct 2020 14:20:16 +0200
+Subject: [Intel-wired-lan] [PATCH] net: ethernet: ixgbe: don't propagate
+ -ENODEV from ixgbe_mii_bus_init()
+In-Reply-To: <20200928071744.18253-1-brgl@bgdev.pl>
+References: <20200928071744.18253-1-brgl@bgdev.pl>
+Message-ID: <CAMRc=MexKweGRjF5KNg1saz7NmE+tQq=03oR3wzoMsaTcm+CAA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device ID for the next step of the silicon and
-reflect the I226_K part.
+On Mon, Sep 28, 2020 at 9:17 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+>
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> It's a valid use-case for ixgbe_mii_bus_init() to return -ENODEV - we
+> still want to finalize the registration of the ixgbe device. Check the
+> error code and don't bail out if err == -ENODEV.
+>
+> This fixes an issue on C3000 family of SoCs where four ixgbe devices
+> share a single MDIO bus and ixgbe_mii_bus_init() returns -ENODEV for
+> three of them but we still want to register them.
+>
+> Fixes: 09ef193fef7e ("net: ethernet: ixgbe: check the return value of ixgbe_mii_bus_init()")
+> Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 2f8a4cfc5fa1..d1623af30125 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -11032,7 +11032,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>                         true);
+>
+>         err = ixgbe_mii_bus_init(hw);
+> -       if (err)
+> +       if (err && err != -ENODEV)
+>                 goto err_netdev;
+>
+>         return 0;
+> --
+> 2.26.1
+>
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_base.c | 1 +
- drivers/net/ethernet/intel/igc/igc_hw.h   | 1 +
- drivers/net/ethernet/intel/igc/igc_main.c | 1 +
- 3 files changed, 3 insertions(+)
+Hi!
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index fd37d2c203af..d0700d48ecf9 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -213,6 +213,7 @@ static s32 igc_get_invariants_base(struct igc_hw *hw)
- 	case IGC_DEV_ID_I220_V:
- 	case IGC_DEV_ID_I225_K:
- 	case IGC_DEV_ID_I225_K2:
-+	case IGC_DEV_ID_I226_K:
- 	case IGC_DEV_ID_I225_LMVP:
- 	case IGC_DEV_ID_I225_IT:
- 	case IGC_DEV_ID_I226_LM:
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 55dae7c4703f..9da5f83ce456 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -23,6 +23,7 @@
- #define IGC_DEV_ID_I225_K			0x3100
- #define IGC_DEV_ID_I225_K2			0x3101
- #define IGC_DEV_ID_I225_LMVP			0x5502
-+#define IGC_DEV_ID_I226_K			0x5504
- #define IGC_DEV_ID_I225_IT			0x0D9F
- #define IGC_DEV_ID_I226_LM			0x125B
- #define IGC_DEV_ID_I226_V			0x125C
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 897e2d5514a1..32817a28e34c 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -45,6 +45,7 @@ static const struct pci_device_id igc_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I220_V), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_K2), board_base },
-+	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_K), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_LMVP), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I225_IT), board_base },
- 	{ PCI_VDEVICE(INTEL, IGC_DEV_ID_I226_LM), board_base },
--- 
-2.25.1
+Gentle ping for this patch. Who's picking up networking patches now
+that David is OoO? Should I Cc someone else?
 
+Bartosz
