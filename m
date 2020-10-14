@@ -1,111 +1,60 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 14 Oct 2020 08:54:09 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix MAC address setting for
- a VF via Host/VM
-Message-ID: <20201014085409.13389-1-mateusz.palczewski@intel.com>
+From: Antony Antony <antony@phenome.org>
+Date: Wed, 14 Oct 2020 16:17:48 +0200
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fail to create xfrm offload of
+ IPsec tunnel mode SA
+In-Reply-To: <20200828111101.GA16518@AntonyAntony.local>
+References: <20200828111101.GA16518@AntonyAntony.local>
+Message-ID: <20201014141748.GA4910@AntonyAntony.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Slawomir Laba <slawomirx.laba@intel.com>
+Based on talks and indirect references ixgbe IPsec offlod do not
+support IPsec tunnel mode offload. It can only support IPsec transport
+mode offload. Now explicitly fail when creating non transport mode SA
+ with offload to avoid false performance expectations.
 
-Fix MAC setting flow for the PF driver.
-
-Update the unicast VF's MAC address in VF structure if it is
-a new setting in i40e_vc_add_mac_addr_msg.
-
-When unicast MAC address gets deleted, record that and
-set the new unicast MAC address that is already waiting in the filter
-list. This logic is based on the order of messages arriving to
-the PF driver.
-
-Without this change the MAC address setting was interpreted
-incorrectly in the following usecases:
-1) Print incorrect VF MAC or zero MAC
-ip link show dev $pf
-2) Don't preserve MAC between driver reload
-rmmod iavf; modprobe iavf
-3) Update VF MAC when macvlan was set
-ip link add link $vf address $mac $vf.1 type macvlan
-4) Failed to update mac address when VF was trusted
-ip link set dev $vf address $mac
-
-This includes all other configurations including above commands.
-
-Fixes: f657a6e1313b ("i40e: Fix VF driver MAC address configuration")
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Fixes: 63a67fe229ea ("ixgbe: add ipsec offload add and remove SA")
+Signed-off-by: Antony Antony <antony@phenome.org>
 ---
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 25 +++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 5 +++++
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c     | 5 +++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8e133d6..ef96f68 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2702,6 +2702,10 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 				spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 				goto error_param;
- 			}
-+			if (is_valid_ether_addr(al->list[i].addr) &&
-+			    is_zero_ether_addr(vf->default_lan_addr.addr))
-+				ether_addr_copy(vf->default_lan_addr.addr,
-+						al->list[i].addr);
- 		}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index eca73526ac86..54d47265a7ac 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -575,6 +575,11 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ 		return -EINVAL;
  	}
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-@@ -2729,6 +2733,7 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- {
- 	struct virtchnl_ether_addr_list *al =
- 	    (struct virtchnl_ether_addr_list *)msg;
-+	bool was_unimac_deleted = false;
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_vsi *vsi = NULL;
- 	i40e_status ret = 0;
-@@ -2748,6 +2753,8 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 			ret = I40E_ERR_INVALID_MAC_ADDR;
- 			goto error_param;
- 		}
-+		if (ether_addr_equal(al->list[i].addr, vf->default_lan_addr.addr))
-+			was_unimac_deleted = true;
- 	}
- 	vsi = pf->vsi[vf->lan_vsi_idx];
  
-@@ -2768,10 +2775,24 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
- 		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters, error %d\n",
- 			vf->vf_id, ret);
- 
-+	if (vf->trusted && was_unimac_deleted) {
-+		struct i40e_mac_filter *f;
-+		struct hlist_node *h;
-+		u8 *macaddr = NULL;
-+		int bkt;
-+		/* set last unicast mac address as default */
-+		spin_lock_bh(&vsi->mac_filter_hash_lock);
-+		hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
-+			if (is_valid_ether_addr(f->macaddr))
-+				macaddr = f->macaddr;
-+		}
-+		if (macaddr)
-+			ether_addr_copy(vf->default_lan_addr.addr, macaddr);
-+		spin_unlock_bh(&vsi->mac_filter_hash_lock);
++	if (xs->props.mode != XFRM_MODE_TRANSPORT) {
++		netdev_err(dev, "Unsupported mode for ipsec offload\n");
++		return -EINVAL;
 +	}
- error_param:
- 	/* send the response to the VF */
--	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR,
--				       ret);
-+	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR, ret);
- }
++
+ 	if (ixgbe_ipsec_check_mgmt_ip(xs)) {
+ 		netdev_err(dev, "IPsec IP addr clash with mgmt filters\n");
+ 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+index 5170dd9d8705..caaea2c920a6 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+@@ -272,6 +272,11 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs)
+ 		return -EINVAL;
+ 	}
  
- /**
++	if (xs->props.mode != XFRM_MODE_TRANSPORT) {
++		netdev_err(dev, "Unsupported mode for ipsec offload\n");
++		return -EINVAL;
++	}
++
+ 	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
+ 		struct rx_sa rsa;
+ 
 -- 
-2.17.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+2.21.3
 
