@@ -1,133 +1,83 @@
-From: Ian Kumlien <ian.kumlien@gmail.com>
-Date: Fri, 16 Oct 2020 11:35:15 +0200
-Subject: [Intel-wired-lan] ixgbe - only presenting one out of four
- interfaces on 5.9
-In-Reply-To: <CAA85sZv=13q8NXbjdf7+R=wu0Q5=Vj9covZ24e9Ew2DCd7S==A@mail.gmail.com>
-References: <CAA85sZv=13q8NXbjdf7+R=wu0Q5=Vj9covZ24e9Ew2DCd7S==A@mail.gmail.com>
-Message-ID: <CAA85sZs9wswn06hd7ien2B_fyqFM9kEWL_-vXQN-sjhqisizaQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Fri, 16 Oct 2020 14:20:46 +0200
+Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
+ pci_alloc_irq_vectors() to housekeeping CPUs
+In-Reply-To: <20200928183529.471328-5-nitesh@redhat.com>
+References: <20200928183529.471328-1-nitesh@redhat.com>
+ <20200928183529.471328-5-nitesh@redhat.com>
+Message-ID: <20201016122046.GP2611@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adding netdev, someone might have a clue of what to look at...
+On Mon, Sep 28, 2020 at 02:35:29PM -0400, Nitesh Narayan Lal wrote:
+> If we have isolated CPUs dedicated for use by real-time tasks, we try to
+> move IRQs to housekeeping CPUs from the userspace to reduce latency
+> overhead on the isolated CPUs.
+> 
+> If we allocate too many IRQ vectors, moving them all to housekeeping CPUs
+> may exceed per-CPU vector limits.
+> 
+> When we have isolated CPUs, limit the number of vectors allocated by
+> pci_alloc_irq_vectors() to the minimum number required by the driver, or
+> to one per housekeeping CPU if that is larger.
+> 
+> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+> ---
+>  drivers/pci/msi.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 30ae4ffda5c1..8c156867803c 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/irqdomain.h>
+>  #include <linux/of_irq.h>
+> +#include <linux/sched/isolation.h>
+>  
+>  #include "pci.h"
+>  
+> @@ -1191,8 +1192,25 @@ int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+>  				   struct irq_affinity *affd)
+>  {
+>  	struct irq_affinity msi_default_affd = {0};
+> +	unsigned int hk_cpus;
+>  	int nvecs = -ENOSPC;
+>  
+> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
+> +
+> +	/*
+> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
+> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
+> +	 * to the housekeeping CPUs from the userspace by changing their
+> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
+> +	 * running out of IRQ vectors.
+> +	 */
+> +	if (hk_cpus < num_online_cpus()) {
+> +		if (hk_cpus < min_vecs)
+> +			max_vecs = min_vecs;
+> +		else if (hk_cpus < max_vecs)
+> +			max_vecs = hk_cpus;
 
-On Mon, Oct 12, 2020 at 9:20 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
->
-> Hi,
->
-> I was really surprised when i rebooted my firewall and there was
-> network issues, I was even more surprised when
-> only one of the four ports of my ixbe (x553) nic was available when booted.
->
-> You can actually see it dmesg... And i tried some basic looking at
-> changes to see if it was obvious.... but..
->
-> anyway, on v5.8.14:
-> dmesg |grep ixgbe
-> [    1.355454] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver -
-> version 5.1.0-k
-> [    1.355455] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-> [    1.711629] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    1.838170] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    1.838173] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
-> [    1.882060] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
-> [    1.882196] libphy: ixgbe-mdio: probed
-> [    2.234835] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    2.361374] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    2.361377] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
-> [    2.405281] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
-> [    2.757541] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    2.884104] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    2.884107] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
-> [    2.928022] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
-> [    3.280728] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    3.407274] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    3.407276] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
-> [    3.451155] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
-> [    4.648725] ixgbe 0000:07:00.0 eno3: renamed from eth2
-> [    4.659827] ixgbe 0000:06:00.0 eno1: renamed from eth0
-> [    4.674272] ixgbe 0000:07:00.1 eno4: renamed from eth3
-> [    4.685838] ixgbe 0000:06:00.1 eno2: renamed from eth1
-> [    6.070294] ixgbe 0000:06:00.0: registered PHC device on eno1
-> [    7.178307] ixgbe 0000:07:00.0: registered PHC device on eno3
-> [    7.421199] ixgbe 0000:07:00.1: registered PHC device on eno4
-> [    7.662712] ixgbe 0000:06:00.1: registered PHC device on eno2
-> [    9.587640] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
-> [   10.605594] ixgbe 0000:07:00.1 eno4: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
-> [   10.754615] ixgbe 0000:07:00.0 eno3: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
-> [   10.768586] ixgbe 0000:06:00.1 eno2: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
->
-> on 5.9:
-> dmesg |grep ixbge
-> [    1.570400] ixgbe: Intel(R) 10 Gigabit PCI Express Network Driver
-> [    1.570401] ixgbe: Copyright (c) 1999-2016 Intel Corporation.
-> [    1.928030] ixgbe 0000:06:00.0: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    2.054554] ixgbe 0000:06:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    2.054556] ixgbe 0000:06:00.0: 0c:c4:7a:fa:3d:4a
-> [    2.098404] ixgbe 0000:06:00.0: Intel(R) 10 Gigabit Network Connection
-> [    2.098541] libphy: ixgbe-mdio: probed
-> [    2.453350] ixgbe 0000:06:00.1: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    2.579938] ixgbe 0000:06:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    2.579941] ixgbe 0000:06:00.1: 0c:c4:7a:fa:3d:4b
-> [    2.623783] ixgbe 0000:06:00.1: Intel(R) 10 Gigabit Network Connection
-> [    2.987339] ixgbe 0000:07:00.0: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    3.113864] ixgbe 0000:07:00.0: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    3.113867] ixgbe 0000:07:00.0: 0c:c4:7a:fa:3d:4c
-> [    3.157635] ixgbe 0000:07:00.0: Intel(R) 10 Gigabit Network Connection
-> [    3.529503] ixgbe 0000:07:00.1: Multiqueue Enabled: Rx Queue count
-> = 12, Tx Queue count = 12 XDP Queue count = 0
-> [    3.656041] ixgbe 0000:07:00.1: MAC: 6, PHY: 27, PBA No: 030000-000
-> [    3.656043] ixgbe 0000:07:00.1: 0c:c4:7a:fa:3d:4d
-> [    3.699856] ixgbe 0000:07:00.1: Intel(R) 10 Gigabit Network Connection
-> [    4.646247] ixgbe 0000:06:00.0 eno1: renamed from eth0
-> [    6.183074] ixgbe 0000:06:00.0: registered PHC device on eno1
-> [    9.570382] ixgbe 0000:06:00.0 eno1: NIC Link is Up 1 Gbps, Flow
-> Control: RX/TX
->
-> lspci....
-> 06:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> X553 1GbE (rev 11)
-> 06:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> X553 1GbE (rev 11)
-> 07:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> X553 1GbE (rev 11)
-> 07:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> X553 1GbE (rev 11)
->
-> ethtool -i eno1 and eno2
-> driver: ixgbe
-> version: 5.1.0-k
-> firmware-version: 0x80000877
-> expansion-rom-version:
-> bus-info: 0000:06:00.0 (and 0000:06:00.1)
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
->
-> while eno3 and eno4 gives:
-> driver: ixgbe
-> version: 5.1.0-k
-> firmware-version: 0x8000087c
-> expansion-rom-version:
-> bus-info: 0000:07:00.0 (and 0000:07:00.1)
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
->
-> Any ideas?
+is that:
+
+		max_vecs = clamp(hk_cpus, min_vecs, max_vecs);
+
+Also, do we really need to have that conditional on hk_cpus <
+num_online_cpus()? That is, why can't we do this unconditionally?
+
+And what are the (desired) semantics vs hotplug? Using a cpumask without
+excluding hotplug is racy.
+
+> +	}
+> +
+>  	if (flags & PCI_IRQ_AFFINITY) {
+>  		if (!affd)
+>  			affd = &msi_default_affd;
+> -- 
+> 2.18.2
+> 
