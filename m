@@ -1,83 +1,39 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Fri, 16 Oct 2020 14:20:46 +0200
-Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
- pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <20200928183529.471328-5-nitesh@redhat.com>
-References: <20200928183529.471328-1-nitesh@redhat.com>
- <20200928183529.471328-5-nitesh@redhat.com>
-Message-ID: <20201016122046.GP2611@hirez.programming.kicks-ass.net>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Fri, 16 Oct 2020 12:21:26 -0700
+Subject: [Intel-wired-lan] ixgbe - only presenting one out of four
+ interfaces on 5.9
+In-Reply-To: <CAA85sZs9wswn06hd7ien2B_fyqFM9kEWL_-vXQN-sjhqisizaQ@mail.gmail.com>
+References: <CAA85sZv=13q8NXbjdf7+R=wu0Q5=Vj9covZ24e9Ew2DCd7S==A@mail.gmail.com>
+ <CAA85sZs9wswn06hd7ien2B_fyqFM9kEWL_-vXQN-sjhqisizaQ@mail.gmail.com>
+Message-ID: <20201016122122.0a70f5a3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 28, 2020 at 02:35:29PM -0400, Nitesh Narayan Lal wrote:
-> If we have isolated CPUs dedicated for use by real-time tasks, we try to
-> move IRQs to housekeeping CPUs from the userspace to reduce latency
-> overhead on the isolated CPUs.
+On Fri, 16 Oct 2020 11:35:15 +0200 Ian Kumlien wrote:
+> Adding netdev, someone might have a clue of what to look at...
 > 
-> If we allocate too many IRQ vectors, moving them all to housekeeping CPUs
-> may exceed per-CPU vector limits.
-> 
-> When we have isolated CPUs, limit the number of vectors allocated by
-> pci_alloc_irq_vectors() to the minimum number required by the driver, or
-> to one per housekeeping CPU if that is larger.
-> 
-> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> ---
->  drivers/pci/msi.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index 30ae4ffda5c1..8c156867803c 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -23,6 +23,7 @@
->  #include <linux/slab.h>
->  #include <linux/irqdomain.h>
->  #include <linux/of_irq.h>
-> +#include <linux/sched/isolation.h>
->  
->  #include "pci.h"
->  
-> @@ -1191,8 +1192,25 @@ int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
->  				   struct irq_affinity *affd)
->  {
->  	struct irq_affinity msi_default_affd = {0};
-> +	unsigned int hk_cpus;
->  	int nvecs = -ENOSPC;
->  
-> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
-> +
-> +	/*
-> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
-> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
-> +	 * to the housekeeping CPUs from the userspace by changing their
-> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
-> +	 * running out of IRQ vectors.
-> +	 */
-> +	if (hk_cpus < num_online_cpus()) {
-> +		if (hk_cpus < min_vecs)
-> +			max_vecs = min_vecs;
-> +		else if (hk_cpus < max_vecs)
-> +			max_vecs = hk_cpus;
+> On Mon, Oct 12, 2020 at 9:20 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
+> >
+> > Hi,
+> >
+> > I was really surprised when i rebooted my firewall and there was
+> > network issues, I was even more surprised when
+> > only one of the four ports of my ixbe (x553) nic was available when booted.
 
-is that:
+Just to be sure you mean that the 3 devices are not present in ip link
+show?
 
-		max_vecs = clamp(hk_cpus, min_vecs, max_vecs);
+> > You can actually see it dmesg... And i tried some basic looking at
+> > changes to see if it was obvious.... but..
 
-Also, do we really need to have that conditional on hk_cpus <
-num_online_cpus()? That is, why can't we do this unconditionally?
+Showing a full dmesg may be helpful, but looking at what you posted it
+seems like the driver gets past the point where netdev gets registered,
+so the only thing that could fail after that point AFIACT is
+mdiobus_register(). Could be some breakage in MDIO.
 
-And what are the (desired) semantics vs hotplug? Using a cpumask without
-excluding hotplug is racy.
-
-> +	}
-> +
->  	if (flags & PCI_IRQ_AFFINITY) {
->  		if (!affd)
->  			affd = &msi_default_affd;
-> -- 
-> 2.18.2
-> 
+Any chance you could fire up perf, bpftrace and install a kretprobe to
+see what mdiobus_register() returns? You can rebind the device to the
+driver through sysfs.
