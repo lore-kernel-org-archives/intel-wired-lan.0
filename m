@@ -1,41 +1,74 @@
-From: sven.auhagen@voleatech.de <sven.auhagen@voleatech.de>
-Date: Mon, 19 Oct 2020 10:05:48 +0200
-Subject: [Intel-wired-lan] [PATCH net v3 1/6] igb: XDP xmit back fix error
- code
-In-Reply-To: <20201019080553.24353-1-sven.auhagen@voleatech.de>
-References: <20201019080553.24353-1-sven.auhagen@voleatech.de>
-Message-ID: <20201019080553.24353-2-sven.auhagen@voleatech.de>
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Mon, 19 Oct 2020 13:11:37 +0200
+Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
+ pci_alloc_irq_vectors() to housekeeping CPUs
+In-Reply-To: <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
+References: <20200928183529.471328-1-nitesh@redhat.com>
+ <20200928183529.471328-5-nitesh@redhat.com>
+ <20201016122046.GP2611@hirez.programming.kicks-ass.net>
+ <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
+Message-ID: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sven Auhagen <sven.auhagen@voleatech.de>
+On Sun, Oct 18, 2020 at 02:14:46PM -0400, Nitesh Narayan Lal wrote:
+> >> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
+> >> +
+> >> +	/*
+> >> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
+> >> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
+> >> +	 * to the housekeeping CPUs from the userspace by changing their
+> >> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
+> >> +	 * running out of IRQ vectors.
+> >> +	 */
+> >> +	if (hk_cpus < num_online_cpus()) {
+> >> +		if (hk_cpus < min_vecs)
+> >> +			max_vecs = min_vecs;
+> >> +		else if (hk_cpus < max_vecs)
+> >> +			max_vecs = hk_cpus;
+> > is that:
+> >
+> > 		max_vecs = clamp(hk_cpus, min_vecs, max_vecs);
+> 
+> Yes, I think this will do.
+> 
+> >
+> > Also, do we really need to have that conditional on hk_cpus <
+> > num_online_cpus()? That is, why can't we do this unconditionally?
+> 
+> FWIU most of the drivers using this API already restricts the number of
+> vectors based on the num_online_cpus, if we do it unconditionally we can
+> unnecessary duplicate the restriction for cases where we don't have any
+> isolated CPUs.
 
-The igb XDP xmit back function should only return
-defined error codes.
+unnecessary isn't really a concern here, this is a slow path. What's
+important is code clarity.
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Also, different driver seems to take different factors into consideration
+> along with num_online_cpus while finding the max_vecs to request, for
+> example in the case of mlx5:
+> MLX5_CAP_GEN(dev, num_ports) * num_online_cpus() +
+> ?????????????? MLX5_EQ_VEC_COMP_BASE
+> 
+> Having hk_cpus < num_online_cpus() helps us ensure that we are only
+> changing the behavior when we have isolated CPUs.
+> 
+> Does that make sense?
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 5fc2c381da55..08cc6f59aa2e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2910,7 +2910,7 @@ static int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
- 	 */
- 	tx_ring = adapter->xdp_prog ? igb_xdp_tx_queue_mapping(adapter) : NULL;
- 	if (unlikely(!tx_ring))
--		return -ENXIO;
-+		return IGB_XDP_CONSUMED;
- 
- 	nq = txring_txq(tx_ring);
- 	__netif_tx_lock(nq, cpu);
--- 
-2.20.1
+That seems to want to allocate N interrupts per cpu (plus some random
+static amount, which seems weird, but whatever). This patch breaks that.
 
+So I think it is important to figure out what that driver really wants
+in the nohz_full case. If it wants to retain N interrupts per CPU, and
+only reduce the number of CPUs, the proposed interface is wrong.
+
+> > And what are the (desired) semantics vs hotplug? Using a cpumask without
+> > excluding hotplug is racy.
+> 
+> The housekeeping_mask should still remain constant, isn't?
+> In any case, I can double check this.
+
+The goal is very much to have that dynamically configurable.
