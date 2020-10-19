@@ -1,9 +1,10 @@
 From: sven.auhagen@voleatech.de <sven.auhagen@voleatech.de>
-Date: Mon, 19 Oct 2020 10:05:51 +0200
-Subject: [Intel-wired-lan] [PATCH net v3 4/6] igb: skb add metasize for xdp
+Date: Mon, 19 Oct 2020 10:05:50 +0200
+Subject: [Intel-wired-lan] [PATCH net v3 3/6] igb: XDP extack message on
+ error
 In-Reply-To: <20201019080553.24353-1-sven.auhagen@voleatech.de>
 References: <20201019080553.24353-1-sven.auhagen@voleatech.de>
-Message-ID: <20201019080553.24353-5-sven.auhagen@voleatech.de>
+Message-ID: <20201019080553.24353-4-sven.auhagen@voleatech.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,38 +13,65 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sven Auhagen <sven.auhagen@voleatech.de>
 
-add metasize if it is set in xdp
+Add an extack error message when the RX buffer size is too small
+for the frame size.
 
 Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 088f9ddb0093..36ff8725fdaf 100644
+index 0a9198037b98..088f9ddb0093 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8345,6 +8345,7 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 				     struct xdp_buff *xdp,
- 				     union e1000_adv_rx_desc *rx_desc)
- {
-+	unsigned int metasize = xdp->data - xdp->data_meta;
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
- #else
-@@ -8366,6 +8367,9 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 	skb_reserve(skb, xdp->data - xdp->data_hard_start);
- 	__skb_put(skb, xdp->data_end - xdp->data);
+@@ -2824,20 +2824,22 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
+ 	}
+ }
  
-+	if (metasize)
-+		skb_metadata_set(skb, metasize);
-+
- 	/* pull timestamp out of packet data */
- 	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
- 		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
+-static int igb_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
++static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
+ {
+ 	int i, frame_size = dev->mtu + IGB_ETH_PKT_HDR_PAD;
+ 	struct igb_adapter *adapter = netdev_priv(dev);
++	struct bpf_prog *prog = bpf->prog, *old_prog;
+ 	bool running = netif_running(dev);
+-	struct bpf_prog *old_prog;
+ 	bool need_reset;
+ 
+ 	/* verify igb ring attributes are sufficient for XDP */
+ 	for (i = 0; i < adapter->num_rx_queues; i++) {
+ 		struct igb_ring *ring = adapter->rx_ring[i];
+ 
+-		if (frame_size > igb_rx_bufsz(ring))
++		if (frame_size > igb_rx_bufsz(ring)) {
++			NL_SET_ERR_MSG_MOD(bpf->extack, "The RX buffer size is too small for the frame size");
+ 			return -EINVAL;
++		}
+ 	}
+ 
+ 	old_prog = xchg(&adapter->xdp_prog, prog);
+@@ -2869,7 +2871,7 @@ static int igb_xdp(struct net_device *dev, struct netdev_bpf *xdp)
+ {
+ 	switch (xdp->command) {
+ 	case XDP_SETUP_PROG:
+-		return igb_xdp_setup(dev, xdp->prog);
++		return igb_xdp_setup(dev, xdp);
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -6499,7 +6501,7 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
+ 			struct igb_ring *ring = adapter->rx_ring[i];
+ 
+ 			if (max_frame > igb_rx_bufsz(ring)) {
+-				netdev_warn(adapter->netdev, "Requested MTU size is not supported with XDP\n");
++				netdev_warn(adapter->netdev, "Requested MTU size is not supported with XDP. Max frame size is %d\n", max_frame);
+ 				return -EINVAL;
+ 			}
+ 		}
 -- 
 2.20.1
 
