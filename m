@@ -1,42 +1,76 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Tue, 20 Oct 2020 15:41:28 +0200
-Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
- pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <078e659e-d151-5bc2-a7dd-fe0070267cb3@redhat.com>
-References: <20200928183529.471328-1-nitesh@redhat.com>
- <20200928183529.471328-5-nitesh@redhat.com>
- <20201016122046.GP2611@hirez.programming.kicks-ass.net>
- <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
- <20201019111137.GL2628@hirez.programming.kicks-ass.net>
- <20201019140005.GB17287@fuller.cnet>
- <20201020073055.GY2611@hirez.programming.kicks-ass.net>
- <078e659e-d151-5bc2-a7dd-fe0070267cb3@redhat.com>
-Message-ID: <20201020134128.GT2628@hirez.programming.kicks-ass.net>
+From: Tom Rix <trix@redhat.com>
+Date: Tue, 20 Oct 2020 06:55:52 -0700
+Subject: [Intel-wired-lan] [RFC] treewide: cleanup unreachable breaks
+In-Reply-To: <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
+References: <20201017160928.12698-1-trix@redhat.com>
+ <20201018054332.GB593954@kroah.com>
+ <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
+Message-ID: <ca1f50d6-1005-8e3d-8d5c-98c82a704338@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 20, 2020 at 09:00:01AM -0400, Nitesh Narayan Lal wrote:
-> 
-> On 10/20/20 3:30 AM, Peter Zijlstra wrote:
-> > On Mon, Oct 19, 2020 at 11:00:05AM -0300, Marcelo Tosatti wrote:
-> >>> So I think it is important to figure out what that driver really wants
-> >>> in the nohz_full case. If it wants to retain N interrupts per CPU, and
-> >>> only reduce the number of CPUs, the proposed interface is wrong.
-> >> It wants N interrupts per non-isolated (AKA housekeeping) CPU.
-> > Then the patch is wrong and the interface needs changing from @min_vecs,
-> > @max_vecs to something that expresses the N*nr_cpus relation.
-> 
-> Reading Marcelo's comment again I think what is really expected is 1
-> interrupt per non-isolated (housekeeping) CPU (not N interrupts).
 
-Then what is the point of them asking for N*nr_cpus when there is no
-isolation?
+On 10/19/20 12:42 PM, Nick Desaulniers wrote:
+> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+>> On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
+>>> From: Tom Rix <trix@redhat.com>
+>>>
+>>> This is a upcoming change to clean up a new warning treewide.
+>>> I am wondering if the change could be one mega patch (see below) or
+>>> normal patch per file about 100 patches or somewhere half way by collecting
+>>> early acks.
+>> Please break it up into one-patch-per-subsystem, like normal, and get it
+>> merged that way.
+>>
+>> Sending us a patch, without even a diffstat to review, isn't going to
+>> get you very far...
+> Tom,
+> If you're able to automate this cleanup, I suggest checking in a
+> script that can be run on a directory.  Then for each subsystem you
+> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
+>  Then others can help you drive the tree wide cleanup.  Then we can
+> enable -Wunreachable-code-break either by default, or W=2 right now
+> might be a good idea.
 
-Either everybody wants 1 interrupts per CPU and we can do the clamp
-unconditionally, in which case we should go fix this user, or they want
-multiple per cpu and we should go fix the interface.
+I should have waited for Joe Perches's fixer addition to checkpatch :)
 
-It cannot be both.
+The easy fixes I did only cover about 1/2 of the problems.
+
+Remaining are mostly nested switches, which from a complexity standpoint is bad.
+
+>
+> Ah, George (gbiv@, cc'ed), did an analysis recently of
+> `-Wunreachable-code-loop-increment`, `-Wunreachable-code-break`, and
+> `-Wunreachable-code-return` for Android userspace.  From the review:
+> ```
+> Spoilers: of these, it seems useful to turn on
+> -Wunreachable-code-loop-increment and -Wunreachable-code-return by
+> default for Android
+
+In my simple add-a-cflag bot, i see there are about 250
+
+issues for -Wunreachable-code-return.
+
+I'll see about doing this one next.
+
+> ...
+> While these conventions about always having break arguably became
+> obsolete when we enabled -Wfallthrough, my sample turned up zero
+> potential bugs caught by this warning, and we'd need to put a lot of
+> effort into getting a clean tree. So this warning doesn't seem to be
+> worth it.
+> ```
+> Looks like there's an order of magnitude of `-Wunreachable-code-break`
+> than the other two.
+>
+> We probably should add all 3 to W=2 builds (wrapped in cc-option).
+> I've filed https://github.com/ClangBuiltLinux/linux/issues/1180 to
+> follow up on.
+
+Yes, i think think these should be added.
+
+Tom
+
