@@ -1,62 +1,66 @@
-From: Tom Rix <trix@redhat.com>
-Date: Tue, 20 Oct 2020 07:09:23 -0700
-Subject: [Intel-wired-lan] [RFC] treewide: cleanup unreachable breaks
-In-Reply-To: <20201019230546.GH36674@ziepe.ca>
-References: <20201017160928.12698-1-trix@redhat.com>
- <20201018054332.GB593954@kroah.com>
- <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
- <20201019230546.GH36674@ziepe.ca>
-Message-ID: <859ff6ff-3e10-195c-6961-7b2902b151d4@redhat.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 20 Oct 2020 16:16:52 +0200
+Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
+ pci_alloc_irq_vectors() to housekeeping CPUs
+In-Reply-To: <20200928183529.471328-5-nitesh@redhat.com>
+References: <20200928183529.471328-1-nitesh@redhat.com>
+ <20200928183529.471328-5-nitesh@redhat.com>
+Message-ID: <87v9f57zjf.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, Sep 28 2020 at 14:35, Nitesh Narayan Lal wrote:
+>  
+> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
+> +
+> +	/*
+> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
+> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
+> +	 * to the housekeeping CPUs from the userspace by changing their
+> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
+> +	 * running out of IRQ vectors.
+> +	 */
 
-On 10/19/20 4:05 PM, Jason Gunthorpe wrote:
-> On Mon, Oct 19, 2020 at 12:42:15PM -0700, Nick Desaulniers wrote:
->> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
->>> On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
->>>> From: Tom Rix <trix@redhat.com>
->>>>
->>>> This is a upcoming change to clean up a new warning treewide.
->>>> I am wondering if the change could be one mega patch (see below) or
->>>> normal patch per file about 100 patches or somewhere half way by collecting
->>>> early acks.
->>> Please break it up into one-patch-per-subsystem, like normal, and get it
->>> merged that way.
->>>
->>> Sending us a patch, without even a diffstat to review, isn't going to
->>> get you very far...
->> Tom,
->> If you're able to automate this cleanup, I suggest checking in a
->> script that can be run on a directory.  Then for each subsystem you
->> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
->>  Then others can help you drive the tree wide cleanup.  Then we can
->> enable -Wunreachable-code-break either by default, or W=2 right now
->> might be a good idea.
-> I remember using clang-modernize in the past to fix issues very
-> similar to this, if clang machinery can generate the warning, can't
-> something like clang-tidy directly generate the patch?
+This is not true for managed interrupts. The interrupts affinity of
+those cannot be changed by user space.
 
-Yes clang-tidy and similar are good tools.
+> +	if (hk_cpus < num_online_cpus()) {
+> +		if (hk_cpus < min_vecs)
+> +			max_vecs = min_vecs;
+> +		else if (hk_cpus < max_vecs)
+> +			max_vecs = hk_cpus;
+> +	}
 
-Sometimes they change too much and your time shifts
+So now with that assume a 16 core machine (HT off for simplicity)
 
-from editing to analyzing and dropping changes.
+17 Requested interrupts (1 general, 16 queues)
 
+Managed interrupts will allocate
 
-I am looking at them for auto changing api.
+   1  general interrupt which is free movable by user space
+   16 managed interrupts for queues (one per CPU)
 
-When i have something greater than half baked i will post.
+This allows the driver to have 16 queues, i.e. one queue per CPU. These
+interrupts are only used when an application on a CPU issues I/O.
 
-Tom
+With the above change this will result
 
->
-> You can send me a patch for drivers/infiniband/* as well
->
-> Thanks,
-> Jason
->
+   1  general interrupt which is free movable by user space
+   1  managed interrupts (possible affinity to all 16 CPUs, but routed
+      to housekeeping CPU as long as there is one online)
 
+So the device is now limited to a single queue which also affects the
+housekeeping CPUs because now they have to share a single queue.
+
+With larger machines this gets even worse.
+
+So no. This needs way more thought for managed interrupts and you cannot
+do that at the PCI layer. Only the affinity spreading mechanism can do
+the right thing here.
+
+Thanks,
+
+        tglx
