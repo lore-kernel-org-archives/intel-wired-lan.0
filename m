@@ -1,66 +1,62 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 20 Oct 2020 16:16:52 +0200
+From: Nitesh Narayan Lal <nitesh@redhat.com>
+Date: Tue, 20 Oct 2020 10:39:38 -0400
 Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
  pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <20200928183529.471328-5-nitesh@redhat.com>
+In-Reply-To: <20201020134128.GT2628@hirez.programming.kicks-ass.net>
 References: <20200928183529.471328-1-nitesh@redhat.com>
  <20200928183529.471328-5-nitesh@redhat.com>
-Message-ID: <87v9f57zjf.fsf@nanos.tec.linutronix.de>
+ <20201016122046.GP2611@hirez.programming.kicks-ass.net>
+ <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
+ <20201019111137.GL2628@hirez.programming.kicks-ass.net>
+ <20201019140005.GB17287@fuller.cnet>
+ <20201020073055.GY2611@hirez.programming.kicks-ass.net>
+ <078e659e-d151-5bc2-a7dd-fe0070267cb3@redhat.com>
+ <20201020134128.GT2628@hirez.programming.kicks-ass.net>
+Message-ID: <6736e643-d4ae-9919-9ae1-a73d5f31463e@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 28 2020 at 14:35, Nitesh Narayan Lal wrote:
->  
-> +	hk_cpus = housekeeping_num_online_cpus(HK_FLAG_MANAGED_IRQ);
-> +
-> +	/*
-> +	 * If we have isolated CPUs for use by real-time tasks, to keep the
-> +	 * latency overhead to a minimum, device-specific IRQ vectors are moved
-> +	 * to the housekeeping CPUs from the userspace by changing their
-> +	 * affinity mask. Limit the vector usage to keep housekeeping CPUs from
-> +	 * running out of IRQ vectors.
-> +	 */
 
-This is not true for managed interrupts. The interrupts affinity of
-those cannot be changed by user space.
+On 10/20/20 9:41 AM, Peter Zijlstra wrote:
+> On Tue, Oct 20, 2020 at 09:00:01AM -0400, Nitesh Narayan Lal wrote:
+>> On 10/20/20 3:30 AM, Peter Zijlstra wrote:
+>>> On Mon, Oct 19, 2020 at 11:00:05AM -0300, Marcelo Tosatti wrote:
+>>>>> So I think it is important to figure out what that driver really wants
+>>>>> in the nohz_full case. If it wants to retain N interrupts per CPU, and
+>>>>> only reduce the number of CPUs, the proposed interface is wrong.
+>>>> It wants N interrupts per non-isolated (AKA housekeeping) CPU.
+>>> Then the patch is wrong and the interface needs changing from @min_vecs,
+>>> @max_vecs to something that expresses the N*nr_cpus relation.
+>> Reading Marcelo's comment again I think what is really expected is 1
+>> interrupt per non-isolated (housekeeping) CPU (not N interrupts).
+> Then what is the point of them asking for N*nr_cpus when there is no
+> isolation?
+>
+> Either everybody wants 1 interrupts per CPU and we can do the clamp
+> unconditionally, in which case we should go fix this user, or they want
+> multiple per cpu and we should go fix the interface.
+>
+> It cannot be both.
 
-> +	if (hk_cpus < num_online_cpus()) {
-> +		if (hk_cpus < min_vecs)
-> +			max_vecs = min_vecs;
-> +		else if (hk_cpus < max_vecs)
-> +			max_vecs = hk_cpus;
-> +	}
+Based on my understanding I don't think this is consistent, the number
+of interrupts any driver can request varies to an extent that some
+consumer of this API even request just one interrupt for its use.
 
-So now with that assume a 16 core machine (HT off for simplicity)
+This was one of the reasons why I thought of having a conditional
+restriction.
 
-17 Requested interrupts (1 general, 16 queues)
+But I agree there is a lack of consistency.
 
-Managed interrupts will allocate
+-- 
+Nitesh
 
-   1  general interrupt which is free movable by user space
-   16 managed interrupts for queues (one per CPU)
-
-This allows the driver to have 16 queues, i.e. one queue per CPU. These
-interrupts are only used when an application on a CPU issues I/O.
-
-With the above change this will result
-
-   1  general interrupt which is free movable by user space
-   1  managed interrupts (possible affinity to all 16 CPUs, but routed
-      to housekeeping CPU as long as there is one online)
-
-So the device is now limited to a single queue which also affects the
-housekeeping CPUs because now they have to share a single queue.
-
-With larger machines this gets even worse.
-
-So no. This needs way more thought for managed interrupts and you cannot
-do that at the PCI layer. Only the affinity spreading mechanism can do
-the right thing here.
-
-Thanks,
-
-        tglx
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201020/807f3acc/attachment-0001.asc>
