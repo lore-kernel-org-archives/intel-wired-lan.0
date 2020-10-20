@@ -1,11 +1,12 @@
 From: Tom Rix <trix@redhat.com>
-Date: Tue, 20 Oct 2020 06:55:52 -0700
+Date: Tue, 20 Oct 2020 07:09:23 -0700
 Subject: [Intel-wired-lan] [RFC] treewide: cleanup unreachable breaks
-In-Reply-To: <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
+In-Reply-To: <20201019230546.GH36674@ziepe.ca>
 References: <20201017160928.12698-1-trix@redhat.com>
  <20201018054332.GB593954@kroah.com>
  <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
-Message-ID: <ca1f50d6-1005-8e3d-8d5c-98c82a704338@redhat.com>
+ <20201019230546.GH36674@ziepe.ca>
+Message-ID: <859ff6ff-3e10-195c-6961-7b2902b151d4@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,64 +14,49 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-On 10/19/20 12:42 PM, Nick Desaulniers wrote:
-> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
->> On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
->>> From: Tom Rix <trix@redhat.com>
+On 10/19/20 4:05 PM, Jason Gunthorpe wrote:
+> On Mon, Oct 19, 2020 at 12:42:15PM -0700, Nick Desaulniers wrote:
+>> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+>>> On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
+>>>> From: Tom Rix <trix@redhat.com>
+>>>>
+>>>> This is a upcoming change to clean up a new warning treewide.
+>>>> I am wondering if the change could be one mega patch (see below) or
+>>>> normal patch per file about 100 patches or somewhere half way by collecting
+>>>> early acks.
+>>> Please break it up into one-patch-per-subsystem, like normal, and get it
+>>> merged that way.
 >>>
->>> This is a upcoming change to clean up a new warning treewide.
->>> I am wondering if the change could be one mega patch (see below) or
->>> normal patch per file about 100 patches or somewhere half way by collecting
->>> early acks.
->> Please break it up into one-patch-per-subsystem, like normal, and get it
->> merged that way.
->>
->> Sending us a patch, without even a diffstat to review, isn't going to
->> get you very far...
-> Tom,
-> If you're able to automate this cleanup, I suggest checking in a
-> script that can be run on a directory.  Then for each subsystem you
-> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
->  Then others can help you drive the tree wide cleanup.  Then we can
-> enable -Wunreachable-code-break either by default, or W=2 right now
-> might be a good idea.
+>>> Sending us a patch, without even a diffstat to review, isn't going to
+>>> get you very far...
+>> Tom,
+>> If you're able to automate this cleanup, I suggest checking in a
+>> script that can be run on a directory.  Then for each subsystem you
+>> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
+>>  Then others can help you drive the tree wide cleanup.  Then we can
+>> enable -Wunreachable-code-break either by default, or W=2 right now
+>> might be a good idea.
+> I remember using clang-modernize in the past to fix issues very
+> similar to this, if clang machinery can generate the warning, can't
+> something like clang-tidy directly generate the patch?
 
-I should have waited for Joe Perches's fixer addition to checkpatch :)
+Yes clang-tidy and similar are good tools.
 
-The easy fixes I did only cover about 1/2 of the problems.
+Sometimes they change too much and your time shifts
 
-Remaining are mostly nested switches, which from a complexity standpoint is bad.
+from editing to analyzing and dropping changes.
 
->
-> Ah, George (gbiv@, cc'ed), did an analysis recently of
-> `-Wunreachable-code-loop-increment`, `-Wunreachable-code-break`, and
-> `-Wunreachable-code-return` for Android userspace.  From the review:
-> ```
-> Spoilers: of these, it seems useful to turn on
-> -Wunreachable-code-loop-increment and -Wunreachable-code-return by
-> default for Android
 
-In my simple add-a-cflag bot, i see there are about 250
+I am looking at them for auto changing api.
 
-issues for -Wunreachable-code-return.
-
-I'll see about doing this one next.
-
-> ...
-> While these conventions about always having break arguably became
-> obsolete when we enabled -Wfallthrough, my sample turned up zero
-> potential bugs caught by this warning, and we'd need to put a lot of
-> effort into getting a clean tree. So this warning doesn't seem to be
-> worth it.
-> ```
-> Looks like there's an order of magnitude of `-Wunreachable-code-break`
-> than the other two.
->
-> We probably should add all 3 to W=2 builds (wrapped in cc-option).
-> I've filed https://github.com/ClangBuiltLinux/linux/issues/1180 to
-> follow up on.
-
-Yes, i think think these should be added.
+When i have something greater than half baked i will post.
 
 Tom
+
+>
+> You can send me a patch for drivers/infiniband/* as well
+>
+> Thanks,
+> Jason
+>
 
