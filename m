@@ -1,49 +1,27 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue, 20 Oct 2020 16:34:00 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: reinit_locked() should be
- called with rtnl_lock
-Message-ID: <20201020133400.2187467-1-sasha.neftin@intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Tue, 20 Oct 2020 09:30:55 +0200
+Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
+ pci_alloc_irq_vectors() to housekeeping CPUs
+In-Reply-To: <20201019140005.GB17287@fuller.cnet>
+References: <20200928183529.471328-1-nitesh@redhat.com>
+ <20200928183529.471328-5-nitesh@redhat.com>
+ <20201016122046.GP2611@hirez.programming.kicks-ass.net>
+ <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
+ <20201019111137.GL2628@hirez.programming.kicks-ass.net>
+ <20201019140005.GB17287@fuller.cnet>
+Message-ID: <20201020073055.GY2611@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This commit applies to the igc_reset_task the same changes that
-were applied to the igb driver in commit 024a8168b749 ("igb:
-reinit_locked() should be called with rtnl_lock")
-and fix possible race in reset subtask.
+On Mon, Oct 19, 2020 at 11:00:05AM -0300, Marcelo Tosatti wrote:
+> > So I think it is important to figure out what that driver really wants
+> > in the nohz_full case. If it wants to retain N interrupts per CPU, and
+> > only reduce the number of CPUs, the proposed interface is wrong.
+> 
+> It wants N interrupts per non-isolated (AKA housekeeping) CPU.
 
-Suggested-by: Jakub Kicinski <kuba@kernel.org>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 32817a28e34c..ec3a1a8bb65b 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3849,10 +3849,19 @@ static void igc_reset_task(struct work_struct *work)
- 
- 	adapter = container_of(work, struct igc_adapter, reset_task);
- 
-+	rtnl_lock();
-+	/* If we're already down or resetting, just bail */
-+	if (test_bit(__IGC_DOWN, &adapter->state) ||
-+	    test_bit(__IGC_RESETTING, &adapter->state)) {
-+		rtnl_unlock();
-+		return;
-+	}
-+
- 	igc_rings_dump(adapter);
- 	igc_regs_dump(adapter);
- 	netdev_err(adapter->netdev, "Reset adapter\n");
- 	igc_reinit_locked(adapter);
-+	rtnl_unlock();
- }
- 
- /**
--- 
-2.25.1
-
+Then the patch is wrong and the interface needs changing from @min_vecs,
+@max_vecs to something that expresses the N*nr_cpus relation.
