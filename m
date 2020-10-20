@@ -1,64 +1,66 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 20 Oct 2020 20:07:23 +0200
-Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
- pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <3bca9eb1-a318-1fc6-9eee-aacc0293a193@redhat.com>
-References: <20200928183529.471328-1-nitesh@redhat.com>
- <20200928183529.471328-5-nitesh@redhat.com>
- <87v9f57zjf.fsf@nanos.tec.linutronix.de>
- <3bca9eb1-a318-1fc6-9eee-aacc0293a193@redhat.com>
-Message-ID: <87lfg093fo.fsf@nanos.tec.linutronix.de>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 20 Oct 2020 11:42:42 -0700
+Subject: [Intel-wired-lan] [RFC] treewide: cleanup unreachable breaks
+In-Reply-To: <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
+References: <20201017160928.12698-1-trix@redhat.com>
+ <20201018054332.GB593954@kroah.com>
+ <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
+Message-ID: <3bc5c2e3b3edc22a4d167ec807ecdaaf8dcda76d.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 20 2020 at 12:18, Nitesh Narayan Lal wrote:
-> On 10/20/20 10:16 AM, Thomas Gleixner wrote:
->> With the above change this will result
->>
->>    1  general interrupt which is free movable by user space
->>    1  managed interrupts (possible affinity to all 16 CPUs, but routed
->>       to housekeeping CPU as long as there is one online)
->>
->> So the device is now limited to a single queue which also affects the
->> housekeeping CPUs because now they have to share a single queue.
->>
->> With larger machines this gets even worse.
->
-> Yes, the change can impact the performance, however, if we don't do that we
-> may have a latency impact instead. Specifically, on larger systems where
-> most of the CPUs are isolated as we will definitely fail in moving all of the
-> IRQs away from the isolated CPUs to the housekeeping.
+On Mon, 2020-10-19 at 12:42 -0700, Nick Desaulniers wrote:
+> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+> > On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
+> > > From: Tom Rix <trix@redhat.com>
+> > > 
+> > > This is a upcoming change to clean up a new warning treewide.
+> > > I am wondering if the change could be one mega patch (see below) or
+> > > normal patch per file about 100 patches or somewhere half way by collecting
+> > > early acks.
+> > 
+> > Please break it up into one-patch-per-subsystem, like normal, and get it
+> > merged that way.
+> > 
+> > Sending us a patch, without even a diffstat to review, isn't going to
+> > get you very far...
+> 
+> Tom,
+> If you're able to automate this cleanup, I suggest checking in a
+> script that can be run on a directory.  Then for each subsystem you
+> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
+>  Then others can help you drive the tree wide cleanup.  Then we can
+> enable -Wunreachable-code-break either by default, or W=2 right now
+> might be a good idea.
+> 
+> Ah, George (gbiv@, cc'ed), did an analysis recently of
+> `-Wunreachable-code-loop-increment`, `-Wunreachable-code-break`, and
+> `-Wunreachable-code-return` for Android userspace.  From the review:
+> ```
+> Spoilers: of these, it seems useful to turn on
+> -Wunreachable-code-loop-increment and -Wunreachable-code-return by
+> default for Android
+> ...
+> While these conventions about always having break arguably became
+> obsolete when we enabled -Wfallthrough, my sample turned up zero
+> potential bugs caught by this warning, and we'd need to put a lot of
+> effort into getting a clean tree. So this warning doesn't seem to be
+> worth it.
+> ```
+> Looks like there's an order of magnitude of `-Wunreachable-code-break`
+> than the other two.
+> 
+> We probably should add all 3 to W=2 builds (wrapped in cc-option).
+> I've filed https://github.com/ClangBuiltLinux/linux/issues/1180 to
+> follow up on.
 
-For non managed interrupts I agree.
+I suggest using W=1 as people that are doing cleanups
+generally use that and not W=123 or any other style.
 
->> So no. This needs way more thought for managed interrupts and you cannot
->> do that at the PCI layer.
->
-> Maybe we should not be doing anything in the case of managed IRQs as they
-> are anyways pinned to the housekeeping CPUs as long as we have the
-> 'managed_irq' option included in the kernel cmdline.
+Every other use of W= is still quite noisy and these
+code warnings are relatively trivially to fix up.
 
-Exactly. For the PCI side this vector limiting has to be restricted to
-the non managed case.
 
->>  Only the affinity spreading mechanism can do
->> the right thing here.
->
-> I can definitely explore this further.
->
-> However, IMHO we would still need a logic to prevent the devices from
-> creating excess vectors.
-
-Managed interrupts are preventing exactly that by pinning the interrupts
-and queues to one or a set of CPUs, which prevents vector exhaustion on
-CPU hotplug.
-
-Non-managed, yes that is and always was a problem. One of the reasons
-why managed interrupts exist.
-
-Thanks,
-
-        tglx
