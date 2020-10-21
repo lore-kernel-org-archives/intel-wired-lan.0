@@ -1,66 +1,51 @@
-From: Joe Perches <joe@perches.com>
-Date: Tue, 20 Oct 2020 11:42:42 -0700
-Subject: [Intel-wired-lan] [RFC] treewide: cleanup unreachable breaks
-In-Reply-To: <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
-References: <20201017160928.12698-1-trix@redhat.com>
- <20201018054332.GB593954@kroah.com>
- <CAKwvOdkR_Ttfo7_JKUiZFVqr=Uh=4b05KCPCSuzwk=zaWtA2_Q@mail.gmail.com>
-Message-ID: <3bc5c2e3b3edc22a4d167ec807ecdaaf8dcda76d.camel@perches.com>
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Date: Wed, 21 Oct 2020 14:59:37 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: add rtnl_lock() to
+ e1000_reset_task
+Message-ID: <20201021115937.40428-1-vitaly.lifshits@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2020-10-19 at 12:42 -0700, Nick Desaulniers wrote:
-> On Sat, Oct 17, 2020 at 10:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
-> > On Sat, Oct 17, 2020 at 09:09:28AM -0700, trix at redhat.com wrote:
-> > > From: Tom Rix <trix@redhat.com>
-> > > 
-> > > This is a upcoming change to clean up a new warning treewide.
-> > > I am wondering if the change could be one mega patch (see below) or
-> > > normal patch per file about 100 patches or somewhere half way by collecting
-> > > early acks.
-> > 
-> > Please break it up into one-patch-per-subsystem, like normal, and get it
-> > merged that way.
-> > 
-> > Sending us a patch, without even a diffstat to review, isn't going to
-> > get you very far...
-> 
-> Tom,
-> If you're able to automate this cleanup, I suggest checking in a
-> script that can be run on a directory.  Then for each subsystem you
-> can say in your commit "I ran scripts/fix_whatever.py on this subdir."
->  Then others can help you drive the tree wide cleanup.  Then we can
-> enable -Wunreachable-code-break either by default, or W=2 right now
-> might be a good idea.
-> 
-> Ah, George (gbiv@, cc'ed), did an analysis recently of
-> `-Wunreachable-code-loop-increment`, `-Wunreachable-code-break`, and
-> `-Wunreachable-code-return` for Android userspace.  From the review:
-> ```
-> Spoilers: of these, it seems useful to turn on
-> -Wunreachable-code-loop-increment and -Wunreachable-code-return by
-> default for Android
-> ...
-> While these conventions about always having break arguably became
-> obsolete when we enabled -Wfallthrough, my sample turned up zero
-> potential bugs caught by this warning, and we'd need to put a lot of
-> effort into getting a clean tree. So this warning doesn't seem to be
-> worth it.
-> ```
-> Looks like there's an order of magnitude of `-Wunreachable-code-break`
-> than the other two.
-> 
-> We probably should add all 3 to W=2 builds (wrapped in cc-option).
-> I've filed https://github.com/ClangBuiltLinux/linux/issues/1180 to
-> follow up on.
+A possible race condition was found in e1000_reset_task,
+after discovering a similar issue in igb driver
+(024a8168b7 igb: reinit_locked() should be called with rtnl_lock).
 
-I suggest using W=1 as people that are doing cleanups
-generally use that and not W=123 or any other style.
+Added rtnl_lock() and rtnl_unlock() to avoid this.
 
-Every other use of W= is still quite noisy and these
-code warnings are relatively trivially to fix up.
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Suggested-by: Jakub Kicinski <kuba@kernel.org>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index ee6a5f0cb16c..ab2cf4540425 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5990,15 +5990,19 @@ static void e1000_reset_task(struct work_struct *work)
+ 	struct e1000_adapter *adapter;
+ 	adapter = container_of(work, struct e1000_adapter, reset_task);
+ 
++	rtnl_lock();
+ 	/* don't run the task if already down */
+-	if (test_bit(__E1000_DOWN, &adapter->state))
++	if (test_bit(__E1000_DOWN, &adapter->state)) {
++		rtnl_unlock();
+ 		return;
++	}
+ 
+ 	if (!(adapter->flags & FLAG_RESTART_NOW)) {
+ 		e1000e_dump(adapter);
+ 		e_err("Reset adapter unexpectedly\n");
+ 	}
+ 	e1000e_reinit_locked(adapter);
++	rtnl_unlock();
+ }
+ 
+ /**
+-- 
+2.11.0
 
