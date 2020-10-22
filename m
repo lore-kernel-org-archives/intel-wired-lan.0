@@ -1,37 +1,40 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 22 Oct 2020 11:04:55 -0700
-Subject: [Intel-wired-lan] [PATCH 7/9] igc: Add support for XDP_TX action
-In-Reply-To: <20201022101003.GC61349@ranger.igk.intel.com>
-References: <20201009025349.4037-1-andre.guedes@intel.com>
- <20201009025349.4037-8-andre.guedes@intel.com>
- <20201021145742.GC58344@ranger.igk.intel.com>
- <160331862448.64680.18381150586195546148@lsachorn-mobl.amr.corp.intel.com>
- <20201022101003.GC61349@ranger.igk.intel.com>
-Message-ID: <160338989511.80318.17251246598552128793@skottana-mobl.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 22 Oct 2020 19:21:04 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: allow turning s0ix flows
+ on for systems with ME
+In-Reply-To: <20200928044024.7595-2-mario.limonciello@dell.com>
+References: <20200928044024.7595-1-mario.limonciello@dell.com>
+ <20200928044024.7595-2-mario.limonciello@dell.com>
+Message-ID: <DM6PR11MB2890B9B211E9F5F9A78EE978BC1D0@DM6PR11MB2890.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Maciej,
-
-Quoting Maciej Fijalkowski (2020-10-22 03:10:03)
-> > > > +
-> > > > +     buffer->next_to_watch = desc;
-> > > > +
-> > > > +     ring->next_to_use = (ring->next_to_use + 1) % ring->count;
-> > > 
-> > > Please avoid modulos.
-> > 
-> > Sure, I'll do it. Just out of curiosity, why modulo operation should be
-> > avoided?
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mario Limonciello
+> Sent: Sunday, September 27, 2020 9:40 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
+> lan at lists.osuosl.org
+> Cc: Perry.Yuan at dell.com; Yijun.Shen at dell.com; linux-kernel at vger.kernel.org;
+> Mario Limonciello <mario.limonciello@dell.com>
+> Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: allow turning s0ix flows on for
+> systems with ME
 > 
-> Just because it's slow and you're in fast path :p but you can take it as a
-> suggestion.
+> S0ix for GBE flows are needed for allowing the system to get into deepest
+> power state, but these require coordination of components outside of
+> control of Linux kernel.  For systems that have confirmed to coordinate
+> this properly, allow turning on the s0ix flows at load time or runtime.
+> 
+> Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+> ---
+>  .../device_drivers/ethernet/intel/e1000e.rst  |  23 ++++
+>  drivers/net/ethernet/intel/e1000e/e1000.h     |   7 ++
+>  drivers/net/ethernet/intel/e1000e/netdev.c    |  64 +++++-----
+>  drivers/net/ethernet/intel/e1000e/param.c     | 110 ++++++++++++++++++
+>  4 files changed, 166 insertions(+), 38 deletions(-)
+> 
 
-Thanks, it makes sense. Also, looking at other Intel drivers, they handle
-wrapping with an if-clause. I'll do the same here.
-
-Cheers,
-Andre
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
