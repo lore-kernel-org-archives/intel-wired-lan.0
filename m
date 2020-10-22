@@ -1,83 +1,54 @@
-From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Thu, 22 Oct 2020 13:47:14 -0400
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Fri, 23 Oct 2020 00:39:25 +0200
 Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
  pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <6736e643-d4ae-9919-9ae1-a73d5f31463e@redhat.com>
+In-Reply-To: <20201022122849.GA148426@fuller.cnet>
 References: <20200928183529.471328-1-nitesh@redhat.com>
  <20200928183529.471328-5-nitesh@redhat.com>
- <20201016122046.GP2611@hirez.programming.kicks-ass.net>
- <79f382a7-883d-ff42-394d-ec4ce81fed6a@redhat.com>
- <20201019111137.GL2628@hirez.programming.kicks-ass.net>
- <20201019140005.GB17287@fuller.cnet>
- <20201020073055.GY2611@hirez.programming.kicks-ass.net>
- <078e659e-d151-5bc2-a7dd-fe0070267cb3@redhat.com>
- <20201020134128.GT2628@hirez.programming.kicks-ass.net>
- <6736e643-d4ae-9919-9ae1-a73d5f31463e@redhat.com>
-Message-ID: <260f4191-5b9f-6dc1-9f11-085533ac4f55@redhat.com>
+ <87v9f57zjf.fsf@nanos.tec.linutronix.de>
+ <3bca9eb1-a318-1fc6-9eee-aacc0293a193@redhat.com>
+ <87lfg093fo.fsf@nanos.tec.linutronix.de>
+ <877drj72cz.fsf@nanos.tec.linutronix.de>
+ <20201022122849.GA148426@fuller.cnet>
+Message-ID: <87pn596g2q.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-On 10/20/20 10:39 AM, Nitesh Narayan Lal wrote:
-> On 10/20/20 9:41 AM, Peter Zijlstra wrote:
->> On Tue, Oct 20, 2020 at 09:00:01AM -0400, Nitesh Narayan Lal wrote:
->>> On 10/20/20 3:30 AM, Peter Zijlstra wrote:
->>>> On Mon, Oct 19, 2020 at 11:00:05AM -0300, Marcelo Tosatti wrote:
->>>>>> So I think it is important to figure out what that driver really wants
->>>>>> in the nohz_full case. If it wants to retain N interrupts per CPU, and
->>>>>> only reduce the number of CPUs, the proposed interface is wrong.
->>>>> It wants N interrupts per non-isolated (AKA housekeeping) CPU.
->>>> Then the patch is wrong and the interface needs changing from @min_vecs,
->>>> @max_vecs to something that expresses the N*nr_cpus relation.
->>> Reading Marcelo's comment again I think what is really expected is 1
->>> interrupt per non-isolated (housekeeping) CPU (not N interrupts).
->> Then what is the point of them asking for N*nr_cpus when there is no
->> isolation?
->>
->> Either everybody wants 1 interrupts per CPU and we can do the clamp
->> unconditionally, in which case we should go fix this user, or they want
->> multiple per cpu and we should go fix the interface.
->>
->> It cannot be both.
-> Based on my understanding I don't think this is consistent, the number
-> of interrupts any driver can request varies to an extent that some
-> consumer of this API even request just one interrupt for its use.
+On Thu, Oct 22 2020 at 09:28, Marcelo Tosatti wrote:
+> On Wed, Oct 21, 2020 at 10:25:48PM +0200, Thomas Gleixner wrote:
+>> The right answer to this is to utilize managed interrupts and have
+>> according logic in your network driver to handle CPU hotplug. When a CPU
+>> goes down, then the queue which is associated to that CPU is quiesced
+>> and the interrupt core shuts down the relevant interrupt instead of
+>> moving it to an online CPU (which causes the whole vector exhaustion
+>> problem on x86). When the CPU comes online again, then the interrupt is
+>> reenabled in the core and the driver reactivates the queue.
 >
-> This was one of the reasons why I thought of having a conditional
-> restriction.
->
-> But I agree there is a lack of consistency.
->
+> Aha... But it would be necessary to do that from userspace (for runtime
+> isolate/unisolate).
 
-Hi Peter,
+For anything which uses managed interrupts this is a non-problem and
+userspace has absolutely no business with it.
 
-So based on the suggestions from you and Thomas, I think something like the
-following should do the job within pci_alloc_irq_vectors_affinity():
+Isolation does not shut down queues, at least not the block multi-queue
+ones which are only active when I/O is issued from that isolated CPU.
 
-+ ? ? ? if (!pci_is_managed(dev) && (hk_cpus < num_online_cpus()))
-+ ? ? ? ? ? ? ? max_vecs = clamp(hk_cpus, min_vecs, max_vecs);
+So transitioning out of isolation requires no action at all.
 
-I do know that you didn't like the usage of "hk_cpus < num_online_cpus()"
-and to an extent I agree that it does degrade the code clarity.
+Transitioning in or changing the housekeeping mask needs some trivial
+tweak to handle the case where there is an overlap in the cpuset of a
+queue (housekeeping and isolated). This is handled already for setup and
+affinity changes, but of course not for runtime isolation mask changes,
+but that's a trivial thing to do.
 
-However, since there is a certain inconsistency in the number of vectors
-that drivers request through this API IMHO we will need this, otherwise
-we could cause an impact on the drivers even in setups that doesn't
-have any isolated CPUs.
+What's more interesting is how to deal with the network problem where
+there is no guarantee that the "response" ends up on the same queue as
+the "request" which is what the block people rely on. And that problem
+is not really an interrupt affinity problem in the first place.
 
-If you agree, I can send the next version of the patch-set.
+Thanks,
 
--- 
-Thanks
-Nitesh
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201022/42e01657/attachment.asc>
+        tglx
