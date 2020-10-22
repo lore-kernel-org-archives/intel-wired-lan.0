@@ -1,113 +1,107 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Thu, 22 Oct 2020 12:10:03 +0200
-Subject: [Intel-wired-lan] [PATCH 7/9] igc: Add support for XDP_TX action
-In-Reply-To: <160331862448.64680.18381150586195546148@lsachorn-mobl.amr.corp.intel.com>
-References: <20201009025349.4037-1-andre.guedes@intel.com>
- <20201009025349.4037-8-andre.guedes@intel.com>
- <20201021145742.GC58344@ranger.igk.intel.com>
- <160331862448.64680.18381150586195546148@lsachorn-mobl.amr.corp.intel.com>
-Message-ID: <20201022101003.GC61349@ranger.igk.intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Thu, 22 Oct 2020 12:39:36 +0200
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix Error I40E_AQ_RC_EINVAL
+ when removing VFs
+Message-ID: <20201022103936.1586-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 21, 2020 at 03:17:04PM -0700, Andre Guedes wrote:
-> Hi Maciej,
-> 
-> Quoting Maciej Fijalkowski (2020-10-21 07:57:42)
-> > On Thu, Oct 08, 2020 at 07:53:47PM -0700, Andre Guedes wrote:
-> > > This patch adds support for XDP_TX action which enables XDP programs to
-> > > transmit back receiving frames.
-> > > 
-> > > The main changes in igc_xdp.c are related to the transmission of the
-> > > packet (e.g. select the transmission queue, prepare buffer, prepare
-> > > descriptor) while the changes in igc_main.c are related to tx_buffer
-> > > management and XDP resources setup required to perform the XDP_TX
-> > > action.
-> > > 
-> > > By default, the driver uses rx buffers with 2 KB size. When XDP is
-> > > enabled, it uses larger buffers so we have enough space to accommodate
-> > > the headroom and tailroom required by XDP infrastructure. While the
-> > > driver had already code to handle larger buffers (IGC_RING_FLAG_RX_3K_
-> > > BUFFER flag), it was missing the set/clear helpers that enable/disable
-> > > that feature so this patch also introduces these missing helpers.
-> > 
-> > Ugh. This belongs to the previous patch.
-> 
-> Hope the reply on the previous patch clarifies why this is done in this patch
-> instead.
-> 
-> > > +/* This function requires __netif_tx_lock is held by the caller. */
-> > > +static int igc_xdp_init_tx_descriptor(struct igc_ring *ring,
-> > > +                                   struct xdp_frame *xdpf)
-> > > +{
-> > > +     struct igc_tx_buffer *buffer;
-> > > +     union igc_adv_tx_desc *desc;
-> > > +     u32 cmd_type, olinfo_status;
-> > > +     int err;
-> > > +
-> > > +     if (!igc_desc_unused(ring))
-> > > +             return -EBUSY;
-> > > +
-> > > +     buffer = &ring->tx_buffer_info[ring->next_to_use];
-> > > +     err = igc_xdp_init_tx_buffer(buffer, xdpf, ring);
-> > > +     if (err)
-> > > +             return err;
-> > > +
-> > > +     cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
-> > > +                IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
-> > > +                buffer->bytecount;
-> > > +     olinfo_status = buffer->bytecount << IGC_ADVTXD_PAYLEN_SHIFT;
-> > > +
-> > > +     desc = IGC_TX_DESC(ring, ring->next_to_use);
-> > > +     desc->read.cmd_type_len = cpu_to_le32(cmd_type);
-> > > +     desc->read.olinfo_status = cpu_to_le32(olinfo_status);
-> > > +     desc->read.buffer_addr = cpu_to_le64(dma_unmap_addr(buffer, dma));
-> > > +
-> > > +     netdev_tx_sent_queue(txring_txq(ring), buffer->bytecount);
-> > 
-> > So you're letting stack know that you sent a frame but that's not what is
-> > happening because you wait with bumping the tail until you are done with
-> > napi rx loop.
-> > 
-> > this probably should be called during the tx irq cleanup.
-> 
-> I see your point, and I think calling it during tx irq cleanup should work too.
-> 
-> The rationale to put it here was to keep it similar to ndo_start_xmit's flow
-> i.e. the stack is notified before packets are actually transmitted by
-> hardware. Also, if we do it in tx irq cleanup, we probably need to acquire
-> __netif_tx_lock to ensure we don't have a race conditions with ndo_start_xmit.
-> 
-> Let me know your thoughts here.
+When removing VFs for PF added to bridge there was
+an error I40E_AQ_RC_EINVAL. It was caused by not properly
+resetting and reinitializing PF when adding/removing VFs.
+Changed how reset is performed when adding/removing VFs
+to properly reinitialize PFs VSI.
 
-Sorry, ignore my previous comment. It's fine.
+Fixes: fc60861e9b00 ("i40e: start up in VEPA mode by default")
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Reported-by: kernel test robot <lkp@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h             |  3 +++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 10 ++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  4 ++--
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
-> 
-> > > +
-> > > +     buffer->next_to_watch = desc;
-> > > +
-> > > +     ring->next_to_use = (ring->next_to_use + 1) % ring->count;
-> > 
-> > Please avoid modulos.
-> 
-> Sure, I'll do it. Just out of curiosity, why modulo operation should be
-> avoided?
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index c517c47..f1f0fe2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -120,6 +120,7 @@ enum i40e_state_t {
+ 	__I40E_RESET_INTR_RECEIVED,
+ 	__I40E_REINIT_REQUESTED,
+ 	__I40E_PF_RESET_REQUESTED,
++	__I40E_PF_RESET_AND_REBUILD_REQUESTED,
+ 	__I40E_CORE_RESET_REQUESTED,
+ 	__I40E_GLOBAL_RESET_REQUESTED,
+ 	__I40E_EMP_RESET_INTR_RECEIVED,
+@@ -145,6 +146,8 @@ enum i40e_state_t {
+ };
+ 
+ #define I40E_PF_RESET_FLAG	BIT_ULL(__I40E_PF_RESET_REQUESTED)
++#define I40E_PF_RESET_AND_REBUILD_FLAG	\
++	BIT_ULL(__I40E_PF_RESET_AND_REBUILD_REQUESTED)
+ 
+ /* VSI state flags */
+ enum i40e_vsi_state_t {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 672dc2c..5fef34f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -36,6 +36,8 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf);
+ static void i40e_determine_queue_usage(struct i40e_pf *pf);
+ static int i40e_setup_pf_filter_control(struct i40e_pf *pf);
+ static void i40e_prep_for_reset(struct i40e_pf *pf, bool lock_acquired);
++static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
++				   bool lock_acquired);
+ static int i40e_reset(struct i40e_pf *pf);
+ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired);
+ static int i40e_setup_misc_vector_for_recovery_mode(struct i40e_pf *pf);
+@@ -8581,6 +8583,14 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags, bool lock_acquired)
+ 			 "FW LLDP is disabled\n" :
+ 			 "FW LLDP is enabled\n");
+ 
++	} else if (reset_flags & I40E_PF_RESET_AND_REBUILD_FLAG) {
++		/* Request a PF Reset
++		 *
++		 * Resets PF and reinitializes PFs VSI.
++		 */
++		i40e_prep_for_reset(pf, lock_acquired);
++		i40e_reset_and_rebuild(pf, true, lock_acquired);
++
+ 	} else if (reset_flags & BIT_ULL(__I40E_REINIT_REQUESTED)) {
+ 		int v;
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8951740..8987295 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1776,7 +1776,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (num_vfs) {
+ 		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
+ 			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
+-			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
++			i40e_do_reset_safe(pf, I40E_PF_RESET_AND_REBUILD_FLAG);
+ 		}
+ 		ret = i40e_pci_sriov_enable(pdev, num_vfs);
+ 		goto sriov_configure_out;
+@@ -1785,7 +1785,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (!pci_vfs_assigned(pf->pdev)) {
+ 		i40e_free_vfs(pf);
+ 		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
+-		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
++		i40e_do_reset_safe(pf, I40E_PF_RESET_AND_REBUILD_FLAG);
+ 	} else {
+ 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
+ 		ret = -EINVAL;
+-- 
+2.18.4
 
-Just because it's slow and you're in fast path :p but you can take it as a
-suggestion.
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
 
-> 
-> > > +void igc_xdp_unregister_rxq_info(struct igc_ring *ring)
-> > > +{
-> > > +     xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
-> > 
-> > xdp_rxq_info_unreg will call internally the xdp_rxq_info_unreg_mem_model
-> > so I think the call above is redundant.
-> 
-> Yep, you're right, this is redundant. I'll remove it.
-> 
-> Thanks,
-> Andre
