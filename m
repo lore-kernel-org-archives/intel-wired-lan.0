@@ -1,8 +1,8 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Mon, 26 Oct 2020 20:00:39 +0100
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 26 Oct 2020 12:21:45 -0700
 Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
  pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <20201026173012.GA377978@fuller.cnet>
+In-Reply-To: <875z6w4xt4.fsf@nanos.tec.linutronix.de>
 References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
  <20201019140005.GB17287@fuller.cnet>
  <20201020073055.GY2611@hirez.programming.kicks-ass.net>
@@ -14,56 +14,71 @@ References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
  <9ee77056-ef02-8696-5b96-46007e35ab00@redhat.com>
  <87ft6464jf.fsf@nanos.tec.linutronix.de>
  <20201026173012.GA377978@fuller.cnet>
-Message-ID: <875z6w4xt4.fsf@nanos.tec.linutronix.de>
+ <875z6w4xt4.fsf@nanos.tec.linutronix.de>
+Message-ID: <86f8f667-bda6-59c4-91b7-6ba2ef55e3db@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 26 2020 at 14:30, Marcelo Tosatti wrote:
-> On Fri, Oct 23, 2020 at 11:00:52PM +0200, Thomas Gleixner wrote:
->> So without information from the driver which tells what the best number
->> of interrupts is with a reduced number of CPUs, this cutoff will cause
->> more problems than it solves. Regressions guaranteed.
->
-> One might want to move from one interrupt per isolated app core
-> to zero, or vice versa. It seems that "best number of interrupts 
-> is with reduced number of CPUs" information, is therefore in userspace, 
-> not in driver...
 
-How does userspace know about the driver internals? Number of management
-interrupts, optimal number of interrupts per queue?
 
->> Managed interrupts base their interrupt allocation and spreading on
->> information which is handed in by the individual driver and not on crude
->> assumptions. They are not imposing restrictions on the use case.
->> 
->> It's perfectly fine for isolated work to save a data set to disk after
->> computation has finished and that just works with the per-cpu I/O queue
->> which is otherwise completely silent. 
->
-> Userspace could only change the mask of interrupts which are not 
-> triggered by requests from the local CPU (admin, error, mgmt, etc),
-> to avoid the vector exhaustion problem.
->
-> However, there is no explicit way for userspace to know that, as far as
-> i know.
->
->  130:      34845          0          0          0          0          0          0          0  IR-PCI-MSI 33554433-edge      nvme0q1
->  131:          0      27062          0          0          0          0          0          0  IR-PCI-MSI 33554434-edge      nvme0q2
->  132:          0          0      24393          0          0          0          0          0  IR-PCI-MSI 33554435-edge      nvme0q3
->  133:          0          0          0      24313          0          0          0          0  IR-PCI-MSI 33554436-edge      nvme0q4
->  134:          0          0          0          0      20608          0          0          0  IR-PCI-MSI 33554437-edge      nvme0q5
->  135:          0          0          0          0          0      22163          0          0  IR-PCI-MSI 33554438-edge      nvme0q6
->  136:          0          0          0          0          0          0      23020          0  IR-PCI-MSI 33554439-edge      nvme0q7
->  137:          0          0          0          0          0          0          0      24285  IR-PCI-MSI 33554440-edge      nvme0q8
->
-> Can that be retrieved from PCI-MSI information, or drivers
-> have to inform this?
+On 10/26/2020 12:00 PM, Thomas Gleixner wrote:
+> On Mon, Oct 26 2020 at 14:30, Marcelo Tosatti wrote:
+>> On Fri, Oct 23, 2020 at 11:00:52PM +0200, Thomas Gleixner wrote:
+>>> So without information from the driver which tells what the best number
+>>> of interrupts is with a reduced number of CPUs, this cutoff will cause
+>>> more problems than it solves. Regressions guaranteed.
+>>
+>> One might want to move from one interrupt per isolated app core
+>> to zero, or vice versa. It seems that "best number of interrupts 
+>> is with reduced number of CPUs" information, is therefore in userspace, 
+>> not in driver...
+> 
+> How does userspace know about the driver internals? Number of management
+> interrupts, optimal number of interrupts per queue?
+> 
 
-The driver should use a different name for the admin queues.
+I guess this is the problem solved in part by the queue management work
+that would make queues a thing that userspace is aware of.
 
-Thanks,
+Are there drivers which use more than one interrupt per queue? I know
+drivers have multiple management interrupts.. and I guess some drivers
+do combined 1 interrupt per pair of Tx/Rx..  It's also plausible to to
+have multiple queues for one interrupt .. I'm not sure how a single
+queue with multiple interrupts would work though.
 
-        tglx
+>>> Managed interrupts base their interrupt allocation and spreading on
+>>> information which is handed in by the individual driver and not on crude
+>>> assumptions. They are not imposing restrictions on the use case.
+>>>
+>>> It's perfectly fine for isolated work to save a data set to disk after
+>>> computation has finished and that just works with the per-cpu I/O queue
+>>> which is otherwise completely silent. 
+>>
+>> Userspace could only change the mask of interrupts which are not 
+>> triggered by requests from the local CPU (admin, error, mgmt, etc),
+>> to avoid the vector exhaustion problem.
+>>
+>> However, there is no explicit way for userspace to know that, as far as
+>> i know.
+>>
+>>  130:      34845          0          0          0          0          0          0          0  IR-PCI-MSI 33554433-edge      nvme0q1
+>>  131:          0      27062          0          0          0          0          0          0  IR-PCI-MSI 33554434-edge      nvme0q2
+>>  132:          0          0      24393          0          0          0          0          0  IR-PCI-MSI 33554435-edge      nvme0q3
+>>  133:          0          0          0      24313          0          0          0          0  IR-PCI-MSI 33554436-edge      nvme0q4
+>>  134:          0          0          0          0      20608          0          0          0  IR-PCI-MSI 33554437-edge      nvme0q5
+>>  135:          0          0          0          0          0      22163          0          0  IR-PCI-MSI 33554438-edge      nvme0q6
+>>  136:          0          0          0          0          0          0      23020          0  IR-PCI-MSI 33554439-edge      nvme0q7
+>>  137:          0          0          0          0          0          0          0      24285  IR-PCI-MSI 33554440-edge      nvme0q8
+>>
+>> Can that be retrieved from PCI-MSI information, or drivers
+>> have to inform this?
+> 
+> The driver should use a different name for the admin queues.
+> 
+> Thanks,
+> 
+>         tglx
+> 
