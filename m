@@ -1,11 +1,9 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 26 Oct 2020 16:08:08 -0700
+From: Marcelo Tosatti <mtosatti@redhat.com>
+Date: Mon, 26 Oct 2020 16:11:07 -0300
 Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
  pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <875z6w38n4.fsf@nanos.tec.linutronix.de>
-References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
- <20201019140005.GB17287@fuller.cnet>
- <20201020073055.GY2611@hirez.programming.kicks-ass.net>
+In-Reply-To: <875z6w4xt4.fsf@nanos.tec.linutronix.de>
+References: <20201020073055.GY2611@hirez.programming.kicks-ass.net>
  <078e659e-d151-5bc2-a7dd-fe0070267cb3@redhat.com>
  <20201020134128.GT2628@hirez.programming.kicks-ass.net>
  <6736e643-d4ae-9919-9ae1-a73d5f31463e@redhat.com>
@@ -15,47 +13,59 @@ References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
  <87ft6464jf.fsf@nanos.tec.linutronix.de>
  <20201026173012.GA377978@fuller.cnet>
  <875z6w4xt4.fsf@nanos.tec.linutronix.de>
- <86f8f667-bda6-59c4-91b7-6ba2ef55e3db@intel.com>
- <87v9ew3fzd.fsf@nanos.tec.linutronix.de>
- <85b5f53e-5be2-beea-269a-f70029bea298@intel.com>
- <87lffs3bd6.fsf@nanos.tec.linutronix.de>
- <959997ee-f393-bab0-45c0-4144c37b9185@redhat.com>
- <875z6w38n4.fsf@nanos.tec.linutronix.de>
-Message-ID: <586e249a-1078-9fe9-22d4-b3c1ec0a3a5e@intel.com>
+Message-ID: <20201026191107.GA407524@fuller.cnet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 10/26/2020 3:49 PM, Thomas Gleixner wrote:
-> On Mon, Oct 26 2020 at 18:22, Nitesh Narayan Lal wrote:
->> On 10/26/20 5:50 PM, Thomas Gleixner wrote:
->>> But I still think that for curing that isolation stuff we want at least
->>> some information from the driver. Alternative solution would be to grant
->>> the allocation of interrupts and queues and have some sysfs knob to shut
->>> down queues at runtime. If that shutdown results in releasing the queue
->>> interrupt (via free_irq()) then the vector exhaustion problem goes away.
->>
->> I think this is close to what I and Marcelo were discussing earlier today
->> privately.
->>
->> I don't think there is currently a way to control the enablement/disablement of
->> interrupts from the userspace.
+On Mon, Oct 26, 2020 at 08:00:39PM +0100, Thomas Gleixner wrote:
+> On Mon, Oct 26 2020 at 14:30, Marcelo Tosatti wrote:
+> > On Fri, Oct 23, 2020 at 11:00:52PM +0200, Thomas Gleixner wrote:
+> >> So without information from the driver which tells what the best number
+> >> of interrupts is with a reduced number of CPUs, this cutoff will cause
+> >> more problems than it solves. Regressions guaranteed.
+> >
+> > One might want to move from one interrupt per isolated app core
+> > to zero, or vice versa. It seems that "best number of interrupts 
+> > is with reduced number of CPUs" information, is therefore in userspace, 
+> > not in driver...
 > 
-> You cannot just disable the interrupt. You need to make sure that the
-> associated queue is shutdown or quiesced _before_ the interrupt is shut
-> down.
+> How does userspace know about the driver internals? Number of management
+> interrupts, optimal number of interrupts per queue?
 > 
-> Thanks,
+> >> Managed interrupts base their interrupt allocation and spreading on
+> >> information which is handed in by the individual driver and not on crude
+> >> assumptions. They are not imposing restrictions on the use case.
+> >> 
+> >> It's perfectly fine for isolated work to save a data set to disk after
+> >> computation has finished and that just works with the per-cpu I/O queue
+> >> which is otherwise completely silent. 
+> >
+> > Userspace could only change the mask of interrupts which are not 
+> > triggered by requests from the local CPU (admin, error, mgmt, etc),
+> > to avoid the vector exhaustion problem.
+> >
+> > However, there is no explicit way for userspace to know that, as far as
+> > i know.
+> >
+> >  130:      34845          0          0          0          0          0          0          0  IR-PCI-MSI 33554433-edge      nvme0q1
+> >  131:          0      27062          0          0          0          0          0          0  IR-PCI-MSI 33554434-edge      nvme0q2
+> >  132:          0          0      24393          0          0          0          0          0  IR-PCI-MSI 33554435-edge      nvme0q3
+> >  133:          0          0          0      24313          0          0          0          0  IR-PCI-MSI 33554436-edge      nvme0q4
+> >  134:          0          0          0          0      20608          0          0          0  IR-PCI-MSI 33554437-edge      nvme0q5
+> >  135:          0          0          0          0          0      22163          0          0  IR-PCI-MSI 33554438-edge      nvme0q6
+> >  136:          0          0          0          0          0          0      23020          0  IR-PCI-MSI 33554439-edge      nvme0q7
+> >  137:          0          0          0          0          0          0          0      24285  IR-PCI-MSI 33554440-edge      nvme0q8
+> >
+> > Can that be retrieved from PCI-MSI information, or drivers
+> > have to inform this?
 > 
->         tglx
-> 
+> The driver should use a different name for the admin queues.
 
-Could this be handled with a callback to the driver/hw? I know Intel HW
-should support this type of quiesce/shutdown.
+Works for me.
 
-Thanks,
-Jake
+Sounds more like a heuristic which can break, so documenting this 
+as an "interface" seems appropriate.
+
