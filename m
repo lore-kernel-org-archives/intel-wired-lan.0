@@ -1,8 +1,8 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 26 Oct 2020 14:11:24 -0700
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Mon, 26 Oct 2020 22:50:45 +0100
 Subject: [Intel-wired-lan] [PATCH v4 4/4] PCI: Limit
  pci_alloc_irq_vectors() to housekeeping CPUs
-In-Reply-To: <87v9ew3fzd.fsf@nanos.tec.linutronix.de>
+In-Reply-To: <85b5f53e-5be2-beea-269a-f70029bea298@intel.com>
 References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
  <20201019140005.GB17287@fuller.cnet>
  <20201020073055.GY2611@hirez.programming.kicks-ass.net>
@@ -17,43 +17,56 @@ References: <20201019111137.GL2628@hirez.programming.kicks-ass.net>
  <875z6w4xt4.fsf@nanos.tec.linutronix.de>
  <86f8f667-bda6-59c4-91b7-6ba2ef55e3db@intel.com>
  <87v9ew3fzd.fsf@nanos.tec.linutronix.de>
-Message-ID: <85b5f53e-5be2-beea-269a-f70029bea298@intel.com>
+ <85b5f53e-5be2-beea-269a-f70029bea298@intel.com>
+Message-ID: <87lffs3bd6.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, Oct 26 2020 at 14:11, Jacob Keller wrote:
+> On 10/26/2020 1:11 PM, Thomas Gleixner wrote:
+>> On Mon, Oct 26 2020 at 12:21, Jacob Keller wrote:
+>>> Are there drivers which use more than one interrupt per queue? I know
+>>> drivers have multiple management interrupts.. and I guess some drivers
+>>> do combined 1 interrupt per pair of Tx/Rx..  It's also plausible to to
+>>> have multiple queues for one interrupt .. I'm not sure how a single
+>>> queue with multiple interrupts would work though.
+>> 
+>> For block there is always one interrupt per queue. Some Network drivers
+>> seem to have seperate RX and TX interrupts per queue.
+> That's true when thinking of Tx and Rx as a single queue. Another way to
+> think about it is "one rx queue" and "one tx queue" each with their own
+> interrupt...
+>
+> Even if there are devices which force there to be exactly queue pairs,
+> you could still think of them as separate entities?
 
+Interesting thought.
 
-On 10/26/2020 1:11 PM, Thomas Gleixner wrote:
-> On Mon, Oct 26 2020 at 12:21, Jacob Keller wrote:
->> On 10/26/2020 12:00 PM, Thomas Gleixner wrote:
->>> How does userspace know about the driver internals? Number of management
->>> interrupts, optimal number of interrupts per queue?
->>
->> I guess this is the problem solved in part by the queue management work
->> that would make queues a thing that userspace is aware of.
->>
->> Are there drivers which use more than one interrupt per queue? I know
->> drivers have multiple management interrupts.. and I guess some drivers
->> do combined 1 interrupt per pair of Tx/Rx..  It's also plausible to to
->> have multiple queues for one interrupt .. I'm not sure how a single
->> queue with multiple interrupts would work though.
-> 
-> For block there is always one interrupt per queue. Some Network drivers
-> seem to have seperate RX and TX interrupts per queue.
-> 
-> Thanks,
-> 
->         tglx
-> 
+But as Jakub explained networking queues are fundamentally different
+from block queues on the RX side. For block the request issued on queue
+X will raise the complete interrupt on queue X.
 
-That's true when thinking of Tx and Rx as a single queue. Another way to
-think about it is "one rx queue" and "one tx queue" each with their own
-interrupt...
+For networking the TX side will raise the TX interrupt on the queue on
+which the packet was queued obviously or should I say hopefully. :)
 
-Even if there are devices which force there to be exactly queue pairs,
-you could still think of them as separate entities?
+But incoming packets will be directed to some receive queue based on a
+hash or whatever crystallball logic the firmware decided to implement.
 
-Hmm.
+Which makes this not really suitable for the managed interrupt and
+spreading approach which is used by block-mq. Hrm...
+
+But I still think that for curing that isolation stuff we want at least
+some information from the driver. Alternative solution would be to grant
+the allocation of interrupts and queues and have some sysfs knob to shut
+down queues at runtime. If that shutdown results in releasing the queue
+interrupt (via free_irq()) then the vector exhaustion problem goes away.
+
+Needs more thought and information (for network oblivious folks like
+me).
+
+Thanks,
+
+        tglx
