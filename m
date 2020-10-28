@@ -1,33 +1,35 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Wed, 28 Oct 2020 14:34:28 +0100
-Subject: [Intel-wired-lan] [RFC PATCH bpf-next 0/9] Introduce biased
+Date: Wed, 28 Oct 2020 14:34:29 +0100
+Subject: [Intel-wired-lan] [RFC PATCH bpf-next 1/9] net: introduce biased
  busy-polling
-Message-ID: <20201028133437.212503-1-bjorn.topel@gmail.com>
+In-Reply-To: <20201028133437.212503-1-bjorn.topel@gmail.com>
+References: <20201028133437.212503-1-bjorn.topel@gmail.com>
+Message-ID: <20201028133437.212503-2-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jakub suggested in [1] a "strict busy-polling mode with out
-interrupts". This is a first stab at that.
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-This series adds a new NAPI mode, called biased busy-polling, which is
+This change adds a new NAPI mode, called biased busy-polling, which is
 an extension to the existing busy-polling mode. The new mode is
 enabled on the socket layer, where a socket setting this option
 "promisies" to busy-poll the NAPI context via a system call. When this
 mode is enabled, the NAPI context will operate in a mode with
 interrupts disabled. The kernel monitors that the busy-polling promise
 is fulfilled by an internal watchdog. If the socket fail/stop
-performing the busy-polling, the mode will be disabled.
+performing the busy-polling, the mode will be disabled. The watchdog
+is currently 200 ms.
 
 Biased busy-polling follows the same mechanism as the existing
 busy-poll; The napi_id is reported to the socket via the skbuff. Later
 commits will extend napi_id reporting to XDP, in order to work
 correctly with XDP sockets.
-    
+
 Let us walk through a flow of execution:
-    
+
 1. A socket sets the new SO_BIAS_BUSY_POLL socket option to true. The
    socket now shows an intent of doing busy-polling. No data has been
    received to the socket, so the napi_id of the socket is still 0
@@ -46,140 +48,394 @@ Let us walk through a flow of execution:
 
 4. Goto 3, or wait until the watchdog timeout.
 
-The series is outlined as following:
-  Patch 1-2: Biased busy-polling, and option to set busy-poll budget.
-  Patch 3-6: Busy-poll plumbing for XDP sockets
-  Patch 7-9: Add busy-polling support to the xdpsock sample
+Given the nature of busy-polling, this mode only make sense for
+non-blocking sockets.
 
-Performance UDP sockets:
+When the NAPI context is in biased busy-polling mode, it will not
+allow a NAPI to be scheduled using the
+napi_schedule_prep()/napi_scheduleXXX() combo.
 
-I hacked netperf to use non-blocking sockets, and looping over
-recvfrom(). The following command-line was used:
-  $ netperf -H 192.168.1.1 -l 30 -t UDP_RR -v 2 -- \
-      -o min_latency,mean_latency,max_latency,stddev_latency,transaction_rate
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+---
+ arch/alpha/include/uapi/asm/socket.h  |  2 +
+ arch/mips/include/uapi/asm/socket.h   |  2 +
+ arch/parisc/include/uapi/asm/socket.h |  2 +
+ arch/sparc/include/uapi/asm/socket.h  |  2 +
+ include/linux/netdevice.h             | 33 +++++-----
+ include/net/busy_poll.h               | 17 ++++-
+ include/net/sock.h                    |  3 +
+ include/uapi/asm-generic/socket.h     |  2 +
+ net/core/dev.c                        | 89 +++++++++++++++++++++++++--
+ net/core/sock.c                       |  9 +++
+ 10 files changed, 140 insertions(+), 21 deletions(-)
 
-Non-blocking:
-  16,18.45,195,0.94,54070.369
-Non-blocking with biased busy-polling:
-  15,16.59,38,0.70,60086.313
-
-Performance XDP sockets:
-
-Today, running XDP sockets sample on the same core as the softirq
-handling, performance tanks mainly because we do not yield to
-user-space when the XDP socket Rx queue is full.
-  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r
-  Rx: 64Kpps
-  
-  # # biased busy-polling, budget 8
-  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 8
-  Rx 9.9Mpps
-  # # biased busy-polling, budget 64
-  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 64
-  Rx: 19.3Mpps
-  # # biased busy-polling, budget 256
-  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 256
-  Rx: 21.4Mpps
-  # # biased busy-polling, budget 512
-  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 512
-  Rx: 21.4Mpps
-
-Compared to the two-core case:
-  # taskset -c 4 ./xdpsock -i ens785f1 -q 20 -n 1 -r
-  Rx: 20.7Mpps
-
-We're getting better single-core performance than two, for this na?ve
-drop scenario.
-
-The above tests was done for the 'ice' driver.
-
-Some outstanding questions:
-
-* Does biased busy-polling make sense for non-XDP sockets? For a
-  dedicated queue, biased busy-polling has a strong case. When the
-  NAPI is shared with other sockets, it can affect the latencies of
-  sockets that were not explicity busy-poll enabled. Note that this
-  true for regular busy-polling as well, but the biased version is
-  stricter.
-
-* Currently busy-polling for UDP/TCP is only wired up in the recvmsg()
-  path. Does it make sense to extend that to sendmsg() as well?
-
-* Biased busy-polling only makes sense for non-blocking sockets. Reject
-  enabling of biased busy-polling unless the socket is non-blocking?
-
-* The watchdog is 200 ms. Should it be configurable?
-
-* Extending xdp_rxq_info_reg() with napi_id touches a lot of drivers,
-  and I've only verified the Intel ones. Some drivers initialize NAPI
-  (generating the napi_id) after the xdp_rxq_info_reg() call, which
-  maybe would open up for another API? I did not send this RFC to all
-  the driver authors. I'll do that for a patch proper series.
-
-* Today, enabling busy-polling require CAP_NET_ADMIN. For a NAPI
-  context that services multiple socket, this makes sense because one
-  socket can affect performance of other sockets. Now, for a
-  *dedicated* queue for say XDP socket, would it be OK to drop
-  CAP_NET_ADMIN, because it cannot affect other sockets/users?
-
-@Jakub Thanks for the early comments. I left the check in
-napi_schedule_prep(), because I hit that for the Intel i40e driver;
-forcing busy-polling on a core outside the interrupt affinity mask.
-
-[1] https://lore.kernel.org/netdev/20200925120652.10b8d7c5 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
-
-Bj?rn T?pel (9):
-  net: introduce biased busy-polling
-  net: add SO_BUSY_POLL_BUDGET socket option
-  xsk: add support for recvmsg()
-  xsk: check need wakeup flag in sendmsg()
-  xsk: add busy-poll support for {recv,send}msg()
-  xsk: propagate napi_id to XDP socket Rx path
-  samples/bpf: use recvfrom() in xdpsock
-  samples/bpf: add busy-poll support to xdpsock
-  samples/bpf: add option to set the busy-poll budget
-
- arch/alpha/include/uapi/asm/socket.h          |   3 +
- arch/mips/include/uapi/asm/socket.h           |   3 +
- arch/parisc/include/uapi/asm/socket.h         |   3 +
- arch/sparc/include/uapi/asm/socket.h          |   3 +
- drivers/net/ethernet/amazon/ena/ena_netdev.c  |   2 +-
- drivers/net/ethernet/broadcom/bnxt/bnxt.c     |   2 +-
- .../ethernet/cavium/thunder/nicvf_queues.c    |   2 +-
- .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   2 +-
- drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   2 +-
- drivers/net/ethernet/marvell/mvneta.c         |   2 +-
- .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |   4 +-
- drivers/net/ethernet/mellanox/mlx4/en_rx.c    |   2 +-
- .../ethernet/netronome/nfp/nfp_net_common.c   |   2 +-
- drivers/net/ethernet/qlogic/qede/qede_main.c  |   2 +-
- drivers/net/ethernet/sfc/rx_common.c          |   2 +-
- drivers/net/ethernet/socionext/netsec.c       |   2 +-
- drivers/net/ethernet/ti/cpsw_priv.c           |   2 +-
- drivers/net/hyperv/netvsc.c                   |   2 +-
- drivers/net/tun.c                             |   2 +-
- drivers/net/veth.c                            |   2 +-
- drivers/net/virtio_net.c                      |   2 +-
- drivers/net/xen-netfront.c                    |   2 +-
- fs/eventpoll.c                                |   3 +-
- include/linux/netdevice.h                     |  33 +++---
- include/net/busy_poll.h                       |  42 +++++--
- include/net/sock.h                            |   4 +
- include/net/xdp.h                             |   3 +-
- include/uapi/asm-generic/socket.h             |   3 +
- net/core/dev.c                                | 111 +++++++++++++++---
- net/core/sock.c                               |  19 +++
- net/core/xdp.c                                |   3 +-
- net/xdp/xsk.c                                 |  36 +++++-
- net/xdp/xsk_buff_pool.c                       |  13 +-
- samples/bpf/xdpsock_user.c                    |  53 +++++++--
- 37 files changed, 296 insertions(+), 85 deletions(-)
-
-
-base-commit: 3cb12d27ff655e57e8efe3486dca2a22f4e30578
+diff --git a/arch/alpha/include/uapi/asm/socket.h b/arch/alpha/include/uapi/asm/socket.h
+index de6c4df61082..0f776668fb09 100644
+--- a/arch/alpha/include/uapi/asm/socket.h
++++ b/arch/alpha/include/uapi/asm/socket.h
+@@ -124,6 +124,8 @@
+ 
+ #define SO_DETACH_REUSEPORT_BPF 68
+ 
++#define SO_BIAS_BUSY_POLL	69
++
+ #if !defined(__KERNEL__)
+ 
+ #if __BITS_PER_LONG == 64
+diff --git a/arch/mips/include/uapi/asm/socket.h b/arch/mips/include/uapi/asm/socket.h
+index d0a9ed2ca2d6..d23984731504 100644
+--- a/arch/mips/include/uapi/asm/socket.h
++++ b/arch/mips/include/uapi/asm/socket.h
+@@ -135,6 +135,8 @@
+ 
+ #define SO_DETACH_REUSEPORT_BPF 68
+ 
++#define SO_BIAS_BUSY_POLL	69
++
+ #if !defined(__KERNEL__)
+ 
+ #if __BITS_PER_LONG == 64
+diff --git a/arch/parisc/include/uapi/asm/socket.h b/arch/parisc/include/uapi/asm/socket.h
+index 10173c32195e..49469713ed2a 100644
+--- a/arch/parisc/include/uapi/asm/socket.h
++++ b/arch/parisc/include/uapi/asm/socket.h
+@@ -116,6 +116,8 @@
+ 
+ #define SO_DETACH_REUSEPORT_BPF 0x4042
+ 
++#define SO_BIAS_BUSY_POLL	0x4043
++
+ #if !defined(__KERNEL__)
+ 
+ #if __BITS_PER_LONG == 64
+diff --git a/arch/sparc/include/uapi/asm/socket.h b/arch/sparc/include/uapi/asm/socket.h
+index 8029b681fc7c..009aba6f7a54 100644
+--- a/arch/sparc/include/uapi/asm/socket.h
++++ b/arch/sparc/include/uapi/asm/socket.h
+@@ -117,6 +117,8 @@
+ 
+ #define SO_DETACH_REUSEPORT_BPF  0x0047
+ 
++#define SO_BIAS_BUSY_POLL	 0x0048
++
+ #if !defined(__KERNEL__)
+ 
+ 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 964b494b0e8d..9bdc84d3d6b8 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -344,29 +344,32 @@ struct napi_struct {
+ 	struct list_head	rx_list; /* Pending GRO_NORMAL skbs */
+ 	int			rx_count; /* length of rx_list */
+ 	struct hrtimer		timer;
++	struct hrtimer		bp_watchdog;
+ 	struct list_head	dev_list;
+ 	struct hlist_node	napi_hash_node;
+ 	unsigned int		napi_id;
+ };
+ 
+ enum {
+-	NAPI_STATE_SCHED,	/* Poll is scheduled */
+-	NAPI_STATE_MISSED,	/* reschedule a napi */
+-	NAPI_STATE_DISABLE,	/* Disable pending */
+-	NAPI_STATE_NPSVC,	/* Netpoll - don't dequeue from poll_list */
+-	NAPI_STATE_LISTED,	/* NAPI added to system lists */
+-	NAPI_STATE_NO_BUSY_POLL,/* Do not add in napi_hash, no busy polling */
+-	NAPI_STATE_IN_BUSY_POLL,/* sk_busy_loop() owns this NAPI */
++	NAPI_STATE_SCHED,		/* Poll is scheduled */
++	NAPI_STATE_MISSED,		/* reschedule a napi */
++	NAPI_STATE_DISABLE,		/* Disable pending */
++	NAPI_STATE_NPSVC,		/* Netpoll - don't dequeue from poll_list */
++	NAPI_STATE_LISTED,		/* NAPI added to system lists */
++	NAPI_STATE_NO_BUSY_POLL,	/* Do not add in napi_hash, no busy polling */
++	NAPI_STATE_IN_BUSY_POLL,	/* sk_busy_loop() owns this NAPI */
++	NAPI_STATE_BIAS_BUSY_POLL,	/* biased busy-polling */
+ };
+ 
+ enum {
+-	NAPIF_STATE_SCHED	 = BIT(NAPI_STATE_SCHED),
+-	NAPIF_STATE_MISSED	 = BIT(NAPI_STATE_MISSED),
+-	NAPIF_STATE_DISABLE	 = BIT(NAPI_STATE_DISABLE),
+-	NAPIF_STATE_NPSVC	 = BIT(NAPI_STATE_NPSVC),
+-	NAPIF_STATE_LISTED	 = BIT(NAPI_STATE_LISTED),
+-	NAPIF_STATE_NO_BUSY_POLL = BIT(NAPI_STATE_NO_BUSY_POLL),
+-	NAPIF_STATE_IN_BUSY_POLL = BIT(NAPI_STATE_IN_BUSY_POLL),
++	NAPIF_STATE_SCHED	   = BIT(NAPI_STATE_SCHED),
++	NAPIF_STATE_MISSED	   = BIT(NAPI_STATE_MISSED),
++	NAPIF_STATE_DISABLE	   = BIT(NAPI_STATE_DISABLE),
++	NAPIF_STATE_NPSVC	   = BIT(NAPI_STATE_NPSVC),
++	NAPIF_STATE_LISTED	   = BIT(NAPI_STATE_LISTED),
++	NAPIF_STATE_NO_BUSY_POLL   = BIT(NAPI_STATE_NO_BUSY_POLL),
++	NAPIF_STATE_IN_BUSY_POLL   = BIT(NAPI_STATE_IN_BUSY_POLL),
++	NAPIF_STATE_BIAS_BUSY_POLL = BIT(NAPI_STATE_BIAS_BUSY_POLL),
+ };
+ 
+ enum gro_result {
+@@ -555,6 +558,8 @@ static inline bool napi_if_scheduled_mark_missed(struct napi_struct *n)
+ 	return true;
+ }
+ 
++void napi_bias_busy_poll(unsigned int napi_id);
++
+ enum netdev_queue_state_t {
+ 	__QUEUE_STATE_DRV_XOFF,
+ 	__QUEUE_STATE_STACK_XOFF,
+diff --git a/include/net/busy_poll.h b/include/net/busy_poll.h
+index b001fa91c14e..9738923ed17b 100644
+--- a/include/net/busy_poll.h
++++ b/include/net/busy_poll.h
+@@ -23,6 +23,9 @@
+  */
+ #define MIN_NAPI_ID ((unsigned int)(NR_CPUS + 1))
+ 
++/* Biased busy-poll watchdog timeout in ms */
++#define BIASED_BUSY_POLL_TIMEOUT 200
++
+ #ifdef CONFIG_NET_RX_BUSY_POLL
+ 
+ struct napi_struct;
+@@ -99,13 +102,25 @@ static inline bool sk_busy_loop_timeout(struct sock *sk,
+ 	return true;
+ }
+ 
++#ifdef CONFIG_NET_RX_BUSY_POLL
++static inline void __sk_bias_busy_poll(struct sock *sk, unsigned int napi_id)
++{
++	if (likely(!READ_ONCE(sk->sk_bias_busy_poll)))
++		return;
++
++	napi_bias_busy_poll(napi_id);
++}
++#endif
++
+ static inline void sk_busy_loop(struct sock *sk, int nonblock)
+ {
+ #ifdef CONFIG_NET_RX_BUSY_POLL
+ 	unsigned int napi_id = READ_ONCE(sk->sk_napi_id);
+ 
+-	if (napi_id >= MIN_NAPI_ID)
++	if (napi_id >= MIN_NAPI_ID) {
++		__sk_bias_busy_poll(sk, napi_id);
+ 		napi_busy_loop(napi_id, nonblock ? NULL : sk_busy_loop_end, sk);
++	}
+ #endif
+ }
+ 
+diff --git a/include/net/sock.h b/include/net/sock.h
+index a5c6ae78df77..cf71834fb601 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -479,6 +479,9 @@ struct sock {
+ 	u32			sk_ack_backlog;
+ 	u32			sk_max_ack_backlog;
+ 	kuid_t			sk_uid;
++#ifdef CONFIG_NET_RX_BUSY_POLL
++	u8			sk_bias_busy_poll;
++#endif
+ 	struct pid		*sk_peer_pid;
+ 	const struct cred	*sk_peer_cred;
+ 	long			sk_rcvtimeo;
+diff --git a/include/uapi/asm-generic/socket.h b/include/uapi/asm-generic/socket.h
+index 77f7c1638eb1..8a2b37ccd9d5 100644
+--- a/include/uapi/asm-generic/socket.h
++++ b/include/uapi/asm-generic/socket.h
+@@ -119,6 +119,8 @@
+ 
+ #define SO_DETACH_REUSEPORT_BPF 68
+ 
++#define SO_BIAS_BUSY_POLL	69
++
+ #if !defined(__KERNEL__)
+ 
+ #if __BITS_PER_LONG == 64 || (defined(__x86_64__) && defined(__ILP32__))
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 9499a414d67e..a29e4c4a35f6 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -6378,6 +6378,9 @@ bool napi_schedule_prep(struct napi_struct *n)
+ 		val = READ_ONCE(n->state);
+ 		if (unlikely(val & NAPIF_STATE_DISABLE))
+ 			return false;
++		if (unlikely(val & NAPIF_STATE_BIAS_BUSY_POLL))
++			return false;
++
+ 		new = val | NAPIF_STATE_SCHED;
+ 
+ 		/* Sets STATE_MISSED bit if STATE_SCHED was already set
+@@ -6458,12 +6461,14 @@ bool napi_complete_done(struct napi_struct *n, int work_done)
+ 
+ 		/* If STATE_MISSED was set, leave STATE_SCHED set,
+ 		 * because we will call napi->poll() one more time.
+-		 * This C code was suggested by Alexander Duyck to help gcc.
+ 		 */
+-		new |= (val & NAPIF_STATE_MISSED) / NAPIF_STATE_MISSED *
+-						    NAPIF_STATE_SCHED;
++		if (val & NAPIF_STATE_MISSED && !(val & NAPIF_STATE_BIAS_BUSY_POLL))
++			new |= NAPIF_STATE_SCHED;
+ 	} while (cmpxchg(&n->state, val, new) != val);
+ 
++	if (unlikely(val & NAPIF_STATE_BIAS_BUSY_POLL))
++		return false;
++
+ 	if (unlikely(val & NAPIF_STATE_MISSED)) {
+ 		__napi_schedule(n);
+ 		return false;
+@@ -6497,6 +6502,20 @@ static void busy_poll_stop(struct napi_struct *napi, void *have_poll_lock)
+ {
+ 	int rc;
+ 
++	clear_bit(NAPI_STATE_IN_BUSY_POLL, &napi->state);
++
++	local_bh_disable();
++	/* If we're biased towards busy poll, clear the sched flags,
++	 * so that we can enter again.
++	 */
++	if (READ_ONCE(napi->state) & NAPIF_STATE_BIAS_BUSY_POLL) {
++		netpoll_poll_unlock(have_poll_lock);
++		napi_complete(napi);
++		__kfree_skb_flush();
++		local_bh_enable();
++		return;
++	}
++
+ 	/* Busy polling means there is a high chance device driver hard irq
+ 	 * could not grab NAPI_STATE_SCHED, and that NAPI_STATE_MISSED was
+ 	 * set in napi_schedule_prep().
+@@ -6507,9 +6526,6 @@ static void busy_poll_stop(struct napi_struct *napi, void *have_poll_lock)
+ 	 * to perform these two clear_bit()
+ 	 */
+ 	clear_bit(NAPI_STATE_MISSED, &napi->state);
+-	clear_bit(NAPI_STATE_IN_BUSY_POLL, &napi->state);
+-
+-	local_bh_disable();
+ 
+ 	/* All we really want here is to re-enable device interrupts.
+ 	 * Ideally, a new ndo_busy_poll_stop() could avoid another round.
+@@ -6569,6 +6585,11 @@ void napi_busy_loop(unsigned int napi_id,
+ 				goto count;
+ 			have_poll_lock = netpoll_poll_lock(napi);
+ 			napi_poll = napi->poll;
++			if (val & NAPIF_STATE_BIAS_BUSY_POLL) {
++				hrtimer_start(&napi->bp_watchdog,
++					      ms_to_ktime(BIASED_BUSY_POLL_TIMEOUT),
++					      HRTIMER_MODE_REL_PINNED);
++			}
+ 		}
+ 		work = napi_poll(napi, BUSY_POLL_BUDGET);
+ 		trace_napi_poll(napi, work, BUSY_POLL_BUDGET);
+@@ -6652,6 +6673,53 @@ static enum hrtimer_restart napi_watchdog(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
+ }
+ 
++static enum hrtimer_restart napi_biased_busy_poll_watchdog(struct hrtimer *timer)
++{
++	struct napi_struct *napi;
++	unsigned long val, new;
++
++	napi = container_of(timer, struct napi_struct, bp_watchdog);
++
++	do {
++		val = READ_ONCE(napi->state);
++		if (WARN_ON_ONCE(!(val & NAPIF_STATE_BIAS_BUSY_POLL)))
++			return HRTIMER_NORESTART;
++
++		new = val & ~NAPIF_STATE_BIAS_BUSY_POLL;
++	} while (cmpxchg(&napi->state, val, new) != val);
++
++	if (!napi_disable_pending(napi) &&
++	    !test_and_set_bit(NAPI_STATE_SCHED, &napi->state))
++		__napi_schedule_irqoff(napi);
++
++	return HRTIMER_NORESTART;
++}
++
++void napi_bias_busy_poll(unsigned int napi_id)
++{
++#ifdef CONFIG_NET_RX_BUSY_POLL
++	struct napi_struct *napi;
++	unsigned long val, new;
++
++	napi = napi_by_id(napi_id);
++	if (!napi)
++		return;
++
++	do {
++		val = READ_ONCE(napi->state);
++		if (val & NAPIF_STATE_BIAS_BUSY_POLL)
++			return;
++
++		new = val | NAPIF_STATE_BIAS_BUSY_POLL;
++	} while (cmpxchg(&napi->state, val, new) != val);
++
++	hrtimer_start(&napi->bp_watchdog, ms_to_ktime(BIASED_BUSY_POLL_TIMEOUT),
++		      HRTIMER_MODE_REL_PINNED);
++#endif
++}
++EXPORT_SYMBOL(napi_bias_busy_poll);
++
++
+ static void init_gro_hash(struct napi_struct *napi)
+ {
+ 	int i;
+@@ -6673,6 +6741,8 @@ void netif_napi_add(struct net_device *dev, struct napi_struct *napi,
+ 	INIT_HLIST_NODE(&napi->napi_hash_node);
+ 	hrtimer_init(&napi->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED);
+ 	napi->timer.function = napi_watchdog;
++	hrtimer_init(&napi->bp_watchdog, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED);
++	napi->bp_watchdog.function = napi_biased_busy_poll_watchdog;
+ 	init_gro_hash(napi);
+ 	napi->skb = NULL;
+ 	INIT_LIST_HEAD(&napi->rx_list);
+@@ -6704,7 +6774,9 @@ void napi_disable(struct napi_struct *n)
+ 		msleep(1);
+ 
+ 	hrtimer_cancel(&n->timer);
++	hrtimer_cancel(&n->bp_watchdog);
+ 
++	clear_bit(NAPI_STATE_BIAS_BUSY_POLL, &n->state);
+ 	clear_bit(NAPI_STATE_DISABLE, &n->state);
+ }
+ EXPORT_SYMBOL(napi_disable);
+@@ -6767,6 +6839,11 @@ static int napi_poll(struct napi_struct *n, struct list_head *repoll)
+ 	if (likely(work < weight))
+ 		goto out_unlock;
+ 
++	if (unlikely(n->state & NAPIF_STATE_BIAS_BUSY_POLL)) {
++		napi_complete(n);
++		goto out_unlock;
++	}
++
+ 	/* Drivers must not modify the NAPI state if they
+ 	 * consume the entire weight.  In such cases this code
+ 	 * still "owns" the NAPI instance and therefore can
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 727ea1cc633c..686eb5549b79 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1159,6 +1159,12 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 				sk->sk_ll_usec = val;
+ 		}
+ 		break;
++	case SO_BIAS_BUSY_POLL:
++		if (valbool && !capable(CAP_NET_ADMIN))
++			ret = -EPERM;
++		else
++			sk->sk_bias_busy_poll = valbool;
++		break;
+ #endif
+ 
+ 	case SO_MAX_PACING_RATE:
+@@ -1523,6 +1529,9 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
+ 	case SO_BUSY_POLL:
+ 		v.val = sk->sk_ll_usec;
+ 		break;
++	case SO_BIAS_BUSY_POLL:
++		v.val = sk->sk_bias_busy_poll;
++		break;
+ #endif
+ 
+ 	case SO_MAX_PACING_RATE:
 -- 
 2.27.0
 
