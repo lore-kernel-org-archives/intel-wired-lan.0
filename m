@@ -1,42 +1,174 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Fri, 30 Oct 2020 14:03:48 -0700
-Subject: [Intel-wired-lan] [PATCH v3 6/9] igc: Add set/clear large buffer
- helpers
+Date: Fri, 30 Oct 2020 14:03:47 -0700
+Subject: [Intel-wired-lan] [PATCH v3 5/9] igc: Refactor rx timestamp handling
 In-Reply-To: <20201030210351.46482-1-andre.guedes@intel.com>
 References: <20201030210351.46482-1-andre.guedes@intel.com>
-Message-ID: <20201030210351.46482-7-andre.guedes@intel.com>
+Message-ID: <20201030210351.46482-6-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-While commit 13b5b7fd6a4a ("igc: Add support for Tx/Rx rings")
-introduced code to handle larger packet buffers, it missed the
-set/clear helpers which enable/disable that feature. This patch
-introduces the missing helpers which will be use in the next
-patch.
+This patch refactors the rx timestamp handling in preparation to land
+XDP support.
+
+RX timestamps are put in the rx buffer by hardware, before the packet
+data. When creating the xdp buffer, we will need to check the rx
+descriptor to determine if the buffer contains timestamp information
+and consider the offset when setting xdp.data.
+
+The rx descriptor check is already done in igc_construct_skb(). To
+avoid code duplication, this patch moves the timestamp handling to
+igc_clean_rx_irq() so both skb and xdp paths can reuse it.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/igc/igc.h      |  3 +--
+ drivers/net/ethernet/intel/igc/igc_main.c | 30 +++++++++++++++--------
+ drivers/net/ethernet/intel/igc/igc_ptp.c  | 25 ++++++++++---------
+ 3 files changed, 34 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index ae91d51073ca..e72f1fc772aa 100644
+index b66dda992d32..ae91d51073ca 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -509,6 +509,10 @@ enum igc_ring_flags_t {
+@@ -552,8 +552,7 @@ void igc_ptp_init(struct igc_adapter *adapter);
+ void igc_ptp_reset(struct igc_adapter *adapter);
+ void igc_ptp_suspend(struct igc_adapter *adapter);
+ void igc_ptp_stop(struct igc_adapter *adapter);
+-void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+-			 struct sk_buff *skb);
++ktime_t igc_ptp_rx_pktstamp(struct igc_adapter *adapter, u32 *buf);
+ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ void igc_ptp_tx_hang(struct igc_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 15c67e5763d3..84ffde75e968 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1594,10 +1594,11 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
  
- #define ring_uses_large_buffer(ring) \
- 	test_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
-+#define set_ring_uses_large_buffer(ring) \
-+	set_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
-+#define clear_ring_uses_large_buffer(ring) \
-+	clear_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
+ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 struct igc_rx_buffer *rx_buffer,
+-					 union igc_adv_rx_desc *rx_desc,
+-					 unsigned int size)
++					 unsigned int size, int pkt_offset,
++					 ktime_t timestamp)
+ {
+-	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
++	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset +
++		   pkt_offset;
+ 	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
+@@ -1610,11 +1611,8 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 	if (unlikely(!skb))
+ 		return NULL;
  
- #define ring_uses_build_skb(ring) \
- 	test_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
+-	if (unlikely(igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP))) {
+-		igc_ptp_rx_pktstamp(rx_ring->q_vector, va, skb);
+-		va += IGC_TS_HDR_LEN;
+-		size -= IGC_TS_HDR_LEN;
+-	}
++	if (timestamp)
++		skb_hwtstamps(skb)->hwtstamp = timestamp;
+ 
+ 	/* Determine available headroom for copy */
+ 	headlen = size;
+@@ -1913,6 +1911,8 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 	while (likely(total_packets < budget)) {
+ 		union igc_adv_rx_desc *rx_desc;
+ 		struct igc_rx_buffer *rx_buffer;
++		ktime_t timestamp = 0;
++		int pkt_offset = 0;
+ 		unsigned int size;
+ 
+ 		/* return some buffers to hardware, one@a time is too slow */
+@@ -1934,14 +1934,24 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 
+ 		rx_buffer = igc_get_rx_buffer(rx_ring, size);
+ 
++		if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
++			void *pktbuf = page_address(rx_buffer->page) +
++				       rx_buffer->page_offset;
++
++			timestamp = igc_ptp_rx_pktstamp(q_vector->adapter,
++							pktbuf);
++			pkt_offset = IGC_TS_HDR_LEN;
++			size -= IGC_TS_HDR_LEN;
++		}
++
+ 		/* retrieve a buffer from the ring */
+ 		if (skb)
+ 			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
+ 		else if (ring_uses_build_skb(rx_ring))
+ 			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
+ 		else
+-			skb = igc_construct_skb(rx_ring, rx_buffer,
+-						rx_desc, size);
++			skb = igc_construct_skb(rx_ring, rx_buffer, size,
++						pkt_offset, timestamp);
+ 
+ 		/* exit if we failed to retrieve a buffer */
+ 		if (!skb) {
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 79873f6df335..4331c2dcffb2 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -155,20 +155,20 @@ static void igc_ptp_systim_to_hwtstamp(struct igc_adapter *adapter,
+ 
+ /**
+  * igc_ptp_rx_pktstamp - Retrieve timestamp from rx packet buffer
+- * @q_vector: Pointer to interrupt specific structure
+- * @va: Pointer to address containing Rx buffer
+- * @skb: Buffer containing timestamp and packet
++ * @adapter: Pointer to adapter the packet buffer belongs to
++ * @buf: Pointer to packet buffer
+  *
+  * This function retrieves the timestamp saved in the beginning of packet
+  * buffer. While two timestamps are available, one in timer0 reference and the
+  * other in timer1 reference, this function considers only the timestamp in
+  * timer0 reference.
++ *
++ * Returns: Timestamp value.
+  */
+-void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+-			 struct sk_buff *skb)
++ktime_t igc_ptp_rx_pktstamp(struct igc_adapter *adapter, u32 *buf)
+ {
+-	struct igc_adapter *adapter = q_vector->adapter;
+-	u64 regval;
++	ktime_t timestamp;
++	u32 secs, nsecs;
+ 	int adjust;
+ 
+ 	/* Timestamps are saved in little endian at the beginning of the packet
+@@ -180,9 +180,10 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+ 	 * SYSTIML holds the nanoseconds part while SYSTIMH holds the seconds
+ 	 * part of the timestamp.
+ 	 */
+-	regval = le32_to_cpu(va[2]);
+-	regval |= (u64)le32_to_cpu(va[3]) << 32;
+-	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
++	nsecs = le32_to_cpu(buf[2]);
++	secs = le32_to_cpu(buf[3]);
++
++	timestamp = ktime_set(secs, nsecs);
+ 
+ 	/* Adjust timestamp for the RX latency based on link speed */
+ 	switch (adapter->link_speed) {
+@@ -203,8 +204,8 @@ void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+ 		netdev_warn_once(adapter->netdev, "Imprecise timestamp\n");
+ 		break;
+ 	}
+-	skb_hwtstamps(skb)->hwtstamp =
+-		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
++
++	return ktime_sub_ns(timestamp, adjust);
+ }
+ 
+ static void igc_ptp_disable_rx_timestamp(struct igc_adapter *adapter)
 -- 
 2.28.0
 
