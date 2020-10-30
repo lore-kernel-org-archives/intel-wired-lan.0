@@ -1,38 +1,37 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 29 Oct 2020 17:00:19 -0700
-Subject: [Intel-wired-lan] [PATCH v2 10/10] igc: Implement ndo_xdp_xmit
- callback
-In-Reply-To: <20201029143439.GE890@ranger.igk.intel.com>
-References: <20201028201943.93147-1-andre.guedes@intel.com>
- <20201028201943.93147-11-andre.guedes@intel.com>
- <20201029143439.GE890@ranger.igk.intel.com>
-Message-ID: <160401601981.13680.8790675217584504450@sjaggi-mobl.amr.corp.intel.com>
+From: Keita Suzuki <keitasuzuki.park@sslab.ics.keio.ac.jp>
+Date: Fri, 30 Oct 2020 07:14:30 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix memory leak in i40e_probe
+Message-ID: <20201030071431.10488-1-keitasuzuki.park@sslab.ics.keio.ac.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Maciej Fijalkowski (2020-10-29 07:34:39)
-> On Wed, Oct 28, 2020 at 01:19:43PM -0700, Andre Guedes wrote:
-> > This patch introduces the helper igc_xdp_xmit() which implements the
-> > ndo_xdp_xmit ops, enabling the igc driver to transmit packets forwarded
-> > to it by xdp programs running on other interfaces.
-> > 
-> > This patch has been tested with the sample app "xdp_redirect_map"
-> > located in samples/bpf/.
-> > 
-> > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/igc/igc_main.c | 41 +++++++++++++++++++++++
-> >  drivers/net/ethernet/intel/igc/igc_xdp.c  |  3 +-
-> >  drivers/net/ethernet/intel/igc/igc_xdp.h  |  2 ++
-> >  3 files changed, 44 insertions(+), 2 deletions(-)
-> 
-> I think that it should be squashed with previous patch? So you have
-> XDP_REDIRECT support in a single patch.
+Struct i40e_veb is allocated in function i40e_setup_pf_switch, and
+stored to an array field veb inside struct i40e_pf. However when
+i40e_setup_misc_vector fails, this memory leaks.
 
-Sure, makes sense.
+Fix this by calling exit and teardown functions.
 
-Thanks,
-Andre
+Signed-off-by: Keita Suzuki <keitasuzuki.park@sslab.ics.keio.ac.jp>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4f8a2154b93f..428964c4ade1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15104,6 +15104,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		if (err) {
+ 			dev_info(&pdev->dev,
+ 				 "setup of misc vector failed: %d\n", err);
++			i40e_cloud_filter_exit(pf);
++			i40e_fdir_teardown(pf);
+ 			goto err_vsis;
+ 		}
+ 	}
+-- 
+2.17.1
+
