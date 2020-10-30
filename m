@@ -1,69 +1,56 @@
-From: JD <jdtxs00@gmail.com>
-Date: Fri, 30 Oct 2020 12:33:28 -0500
-Subject: [Intel-wired-lan] i40e/iavf bandwidth spikes to 500Gbps & returning
- IAVF_ERR_PARAM
-Message-ID: <CAMnf+PhD9VJH-db8nssDr9RgyJY6JV7bBL-Yvn2U87gSxfp+mg@mail.gmail.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Fri, 30 Oct 2020 14:03:42 -0700
+Subject: [Intel-wired-lan] [PATCH v3 0/9] igc: Add XDP support
+Message-ID: <20201030210351.46482-1-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+Hi all,
 
-Over the past month I've observed some KVM servers exhibiting
-extremely high bandwidth activity (500gbit, which is impossible).
-Please see the attached graphs from Prometheus. It starts small then
-progressively gets worse over time.
+This is the third version of this series which adds XDP support to igc driver.
 
-During these spikes, I see the following appear on the KVM guest about
-once every minute.
-iavf 0000:00:05.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 15
+The main changes from v2 are:
 
-And on the KVM parent, I see this about once every minute:
-i40e 0000:81:00.0: VF 20 failed opcode 15, retval: -5
+    - Moved functions that belong to the driver's hot path to igc_main.c to
+      allow the compiler to inline them if convenient.
+    - Squashed ndo_xdp_xmit patch into XDP_REDIRECT patch.
 
-This doesn't seem to happen with any obvious cause, the only other
-thing I see in dmesg that may be related is the following (which is
-repeated a few times over several hours, but not at the same rate)
+v2 is here:
 
-vfio-pci 0000:81:0c.3: Event logged [IO_PAGE_FAULT domain=0x0000
-address=0xfffffffdf8040000 flags=0x0008]
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201028201943.93147-1-andre.guedes at intel.com/
+
+v1 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201009025349.4037-1-andre.guedes at intel.com/
+
+Cheers,
+Andre
 
 
-The KVM guest is running the iavf driver:
-driver: iavf
-version: 3.9.3
+Andre Guedes (9):
+  igc: Fix igc_ptp_rx_pktstamp()
+  igc: Remove unused argument from igc_tx_cmd_type()
+  igc: Introduce igc_rx_buffer_flip() helper
+  igc: Introduce igc_get_rx_frame_truesize() helper
+  igc: Refactor rx timestamp handling
+  igc: Add set/clear large buffer helpers
+  igc: Add initial XDP support
+  igc: Add support for XDP_TX action
+  igc: Add support for XDP_REDIRECT action
 
-The KVM parent is running the i40e driver:
-driver: i40e
-version: 2.11.21
+ drivers/net/ethernet/intel/igc/Makefile   |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h      |  18 +-
+ drivers/net/ethernet/intel/igc/igc_main.c | 431 +++++++++++++++++++---
+ drivers/net/ethernet/intel/igc/igc_ptp.c  |  89 +++--
+ drivers/net/ethernet/intel/igc/igc_xdp.c  |  60 +++
+ drivers/net/ethernet/intel/igc/igc_xdp.h  |  13 +
+ 6 files changed, 512 insertions(+), 101 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
 
-I'm running 2 of the following NIC's on the KVM parent in a bonded
-setup (mode 4, hash policy 3+4, IEEE 802.3ad dynamic link aggregation)
-:
-Intel Corporation Ethernet Controller XXV710 for 25GbE SFP28 (rev 02)
+-- 
+2.28.0
 
-Both the parent/guest are running the same kernel version of 4.19.107
-
-I'm not sure whether this is a NIC issue, driver issue, or something
-else. I'm happy to provide any more information about the system on
-request if it is relevant (qemu versions, mobo/cpu/ram).  I've
-observed this issue on 3 different KVM parents/guests in different
-regions.
-
-If this has already been fixed or is a known issue, then I apologize,
-but I could not find anything by searching the mailing list w/ my
-codes from dmesg.
-
-If anyone can provide any information about this or any pointers on
-this or how to narrow the issue down, I'd greatly appreciate it.
-
-Thank you.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: prom-graph.png
-Type: image/png
-Size: 50550 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201030/dffc13c2/attachment-0001.png>
