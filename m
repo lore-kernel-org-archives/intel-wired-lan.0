@@ -1,37 +1,38 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 29 Oct 2020 17:00:13 -0700
-Subject: [Intel-wired-lan] [PATCH v2 08/10] igc: Add support for XDP_TX
- action
-In-Reply-To: <20201029143009.GD890@ranger.igk.intel.com>
+Date: Thu, 29 Oct 2020 17:00:19 -0700
+Subject: [Intel-wired-lan] [PATCH v2 10/10] igc: Implement ndo_xdp_xmit
+ callback
+In-Reply-To: <20201029143439.GE890@ranger.igk.intel.com>
 References: <20201028201943.93147-1-andre.guedes@intel.com>
- <20201028201943.93147-9-andre.guedes@intel.com>
- <20201029143009.GD890@ranger.igk.intel.com>
-Message-ID: <160401601359.13680.1113520617252128897@sjaggi-mobl.amr.corp.intel.com>
+ <20201028201943.93147-11-andre.guedes@intel.com>
+ <20201029143439.GE890@ranger.igk.intel.com>
+Message-ID: <160401601981.13680.8790675217584504450@sjaggi-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Maciej Fijalkowski (2020-10-29 07:30:09)
-> > +
-> > +struct igc_ring *igc_xdp_get_tx_ring(struct igc_adapter *adapter, int cpu)
-> > +{
-> > +     int index = cpu;
-> > +
-> > +     if (index >= adapter->num_tx_queues)
-> > +             index = index % adapter->num_tx_queues;
+Quoting Maciej Fijalkowski (2020-10-29 07:34:39)
+> On Wed, Oct 28, 2020 at 01:19:43PM -0700, Andre Guedes wrote:
+> > This patch introduces the helper igc_xdp_xmit() which implements the
+> > ndo_xdp_xmit ops, enabling the igc driver to transmit packets forwarded
+> > to it by xdp programs running on other interfaces.
+> > 
+> > This patch has been tested with the sample app "xdp_redirect_map"
+> > located in samples/bpf/.
+> > 
+> > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/igc/igc_main.c | 41 +++++++++++++++++++++++
+> >  drivers/net/ethernet/intel/igc/igc_xdp.c  |  3 +-
+> >  drivers/net/ethernet/intel/igc/igc_xdp.h  |  2 ++
+> >  3 files changed, 44 insertions(+), 2 deletions(-)
 > 
-> So you kept modulos? :) I think you can simply substitute it with
-> subtraction.
+> I think that it should be squashed with previous patch? So you have
+> XDP_REDIRECT support in a single patch.
 
-Did you mean something like:
-
-	while (index >= adapter->num_tx_queues)
-		index -= adapter->num_tx_queues
-
-That should work too. I just followed the same approach we do in igb driver
-here.
+Sure, makes sense.
 
 Thanks,
 Andre
