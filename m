@@ -1,127 +1,225 @@
-From: JD <jdtxs00@gmail.com>
-Date: Sun, 1 Nov 2020 21:48:18 -0600
-Subject: [Intel-wired-lan] i40e/iavf bandwidth spikes to 500Gbps &
- returning IAVF_ERR_PARAM
-In-Reply-To: <DM6PR11MB4657C3917162CED4AD9377769B130@DM6PR11MB4657.namprd11.prod.outlook.com>
-References: <CAMnf+PhD9VJH-db8nssDr9RgyJY6JV7bBL-Yvn2U87gSxfp+mg@mail.gmail.com>
- <DM6PR11MB4657C3917162CED4AD9377769B130@DM6PR11MB4657.namprd11.prod.outlook.com>
-Message-ID: <CAMnf+PgOmUX8QPXNiiQoYxyHW6vTLbsBL+Orb_-MzpY=oXdZpA@mail.gmail.com>
+From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Date: Mon,  2 Nov 2020 04:37:27 -0500
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Remove xsk_buff_pool from
+ VSI structure
+Message-ID: <20201102093727.15388-1-michal.swiatkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Arkadiusz, I suppose that makes sense. I didn't expect VF/PF
-communication issues to increment bandwidth counters in /proc/net/dev
-(which Prom reads).
+Current implementation of netdev already contains xsk_buff_pools.
+We no longer have to contain these structures in ice_vsi.
 
-I will get the i40e driver upgraded and hopefully the problem will go away
-for good.
+Refactor the code to operate on netdev-provided xsk_buff_pools.
 
-Thank you very much for the reply, much appreciated!
+Move scheduling napi on each queue to a separate function to
+simplify setup function.
 
-On Sun, Nov 1, 2020 at 1:35 PM Kubalewski, Arkadiusz <
-arkadiusz.kubalewski@intel.com> wrote:
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h      | 10 +---
+ drivers/net/ethernet/intel/ice/ice_main.c | 28 +++++----
+ drivers/net/ethernet/intel/ice/ice_xsk.c  | 71 +++--------------------
+ 3 files changed, 30 insertions(+), 79 deletions(-)
 
-> Good day JD!
->
-> The message you have provided:
-> iavf 0000:00:05.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 15
-> indicates that there was a failure while communicating with parent PF port.
-> In fact, failed command was trying to get statistics of a VF port from
-> parent PF.
-> Command have failed, so the stats returned shall be equal to 0.
-> Probably Prometheus considered them valid and that is why it shows
-> "impossible" stats.
->
-> About the command failure...
-> It is related to old issue, where PF and VF are out of sync on their
-> communication channel.
->
-> The issue was already fixed in 2.12.6, please use the latest driver to get
-> rid of the issue
->
-> Hope this helps ?
->
-> Best Regards,
->
-> Arkadiusz Kubalewski
-> Software Engineer
-> CG EPG SW ITP Linux base driver
->
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of JD
-> Sent: pi?tek, 30 pa?dziernika 2020 18:33
-> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] i40e/iavf bandwidth spikes to 500Gbps &
-> returning IAVF_ERR_PARAM
->
-> Hello,
->
-> Over the past month I've observed some KVM servers exhibiting extremely
-> high bandwidth activity (500gbit, which is impossible).
-> Please see the attached graphs from Prometheus. It starts small then
-> progressively gets worse over time.
->
-> During these spikes, I see the following appear on the KVM guest about
-> once every minute.
-> iavf 0000:00:05.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 15
->
-> And on the KVM parent, I see this about once every minute:
-> i40e 0000:81:00.0: VF 20 failed opcode 15, retval: -5
->
-> This doesn't seem to happen with any obvious cause, the only other thing I
-> see in dmesg that may be related is the following (which is repeated a few
-> times over several hours, but not at the same rate)
->
-> vfio-pci 0000:81:0c.3: Event logged [IO_PAGE_FAULT domain=0x0000
-> address=0xfffffffdf8040000 flags=0x0008]
->
->
-> The KVM guest is running the iavf driver:
-> driver: iavf
-> version: 3.9.3
->
-> The KVM parent is running the i40e driver:
-> driver: i40e
-> version: 2.11.21
->
-> I'm running 2 of the following NIC's on the KVM parent in a bonded setup
-> (mode 4, hash policy 3+4, IEEE 802.3ad dynamic link aggregation)
-> :
-> Intel Corporation Ethernet Controller XXV710 for 25GbE SFP28 (rev 02)
->
-> Both the parent/guest are running the same kernel version of 4.19.107
->
-> I'm not sure whether this is a NIC issue, driver issue, or something else.
-> I'm happy to provide any more information about the system on request if it
-> is relevant (qemu versions, mobo/cpu/ram).  I've observed this issue on 3
-> different KVM parents/guests in different regions.
->
-> If this has already been fixed or is a known issue, then I apologize, but
-> I could not find anything by searching the mailing list w/ my codes from
-> dmesg.
->
-> If anyone can provide any information about this or any pointers on this
-> or how to narrow the issue down, I'd greatly appreciate it.
->
-> Thank you.
-> ---------------------------------------------------------------------
-> Intel Technology Poland sp. z o.o.
-> ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia
-> Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 |
-> Kapita zakadowy 200.000 PLN.
-> Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i
-> moe zawiera informacje poufne. W razie przypadkowego otrzymania tej
-> wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie;
-> jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-> This e-mail and any attachments may contain confidential material for the
-> sole use of the intended recipient(s). If you are not the intended
-> recipient, please contact the sender and delete all copies; any review or
-> distribution by others is strictly prohibited.
->
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201101/951fa49f/attachment.html>
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index a0723831c4e4..c53cd2e84ef6 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -39,6 +39,7 @@
+ #include <net/devlink.h>
+ #include <net/ipv6.h>
+ #include <net/xdp_sock.h>
++#include <net/xdp_sock_drv.h>
+ #include <net/geneve.h>
+ #include <net/gre.h>
+ #include <net/udp_tunnel.h>
+@@ -325,9 +326,6 @@ struct ice_vsi {
+ 	struct ice_ring **xdp_rings;	 /* XDP ring array */
+ 	u16 num_xdp_txq;		 /* Used XDP queues */
+ 	u8 xdp_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
+-	struct xsk_buff_pool **xsk_pools;
+-	u16 num_xsk_pools_used;
+-	u16 num_xsk_pools;
+ } ____cacheline_internodealigned_in_smp;
+ 
+ /* struct that defines an interrupt vector */
+@@ -516,17 +514,15 @@ static inline void ice_set_ring_xdp(struct ice_ring *ring)
+  */
+ static inline struct xsk_buff_pool *ice_xsk_pool(struct ice_ring *ring)
+ {
+-	struct xsk_buff_pool **pools = ring->vsi->xsk_pools;
+ 	u16 qid = ring->q_index;
+ 
+ 	if (ice_ring_is_xdp(ring))
+ 		qid -= ring->vsi->num_xdp_txq;
+ 
+-	if (qid >= ring->vsi->num_xsk_pools || !pools || !pools[qid] ||
+-	    !ice_is_xdp_ena_vsi(ring->vsi))
++	if (!ice_is_xdp_ena_vsi(ring->vsi))
+ 		return NULL;
+ 
+-	return pools[qid];
++	return xsk_get_pool_from_qid(ring->vsi->netdev, qid);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 2dea4d0e9415..997bc37f7d2b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2481,6 +2481,22 @@ int ice_destroy_xdp_rings(struct ice_vsi *vsi)
+ 			       max_txqs);
+ }
+ 
++/**
++ * ice_vsi_rx_napi_schedule - Schedule napi on RX queues from VSI
++ * @vsi: VSI to schedule napi on
++ */
++static void ice_vsi_rx_napi_schedule(struct ice_vsi *vsi)
++{
++	int i;
++
++	ice_for_each_rxq(vsi, i) {
++		struct ice_ring *rx_ring = vsi->rx_rings[i];
++
++		if (rx_ring->xsk_pool)
++			napi_schedule(&rx_ring->q_vector->napi);
++	}
++}
++
+ /**
+  * ice_xdp_setup_prog - Add or remove XDP eBPF program
+  * @vsi: VSI to setup XDP for
+@@ -2525,16 +2541,8 @@ ice_xdp_setup_prog(struct ice_vsi *vsi, struct bpf_prog *prog,
+ 	if (if_running)
+ 		ret = ice_up(vsi);
+ 
+-	if (!ret && prog && vsi->xsk_pools) {
+-		int i;
+-
+-		ice_for_each_rxq(vsi, i) {
+-			struct ice_ring *rx_ring = vsi->rx_rings[i];
+-
+-			if (rx_ring->xsk_pool)
+-				napi_schedule(&rx_ring->q_vector->napi);
+-		}
+-	}
++	if (!ret && prog)
++		ice_vsi_rx_napi_schedule(vsi);
+ 
+ 	return (ret || xdp_ring_err) ? -ENOMEM : 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 797886524054..4d44431c71a0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -259,45 +259,6 @@ static int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
+ 	return err;
+ }
+ 
+-/**
+- * ice_xsk_alloc_pools - allocate a buffer pool for an XDP socket
+- * @vsi: VSI to allocate the buffer pool on
+- *
+- * Returns 0 on success, negative on error
+- */
+-static int ice_xsk_alloc_pools(struct ice_vsi *vsi)
+-{
+-	if (vsi->xsk_pools)
+-		return 0;
+-
+-	vsi->xsk_pools = kcalloc(vsi->num_xsk_pools, sizeof(*vsi->xsk_pools),
+-				 GFP_KERNEL);
+-
+-	if (!vsi->xsk_pools) {
+-		vsi->num_xsk_pools = 0;
+-		return -ENOMEM;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_xsk_remove_pool - Remove an buffer pool for a certain ring/qid
+- * @vsi: VSI from which the VSI will be removed
+- * @qid: Ring/qid associated with the buffer pool
+- */
+-static void ice_xsk_remove_pool(struct ice_vsi *vsi, u16 qid)
+-{
+-	vsi->xsk_pools[qid] = NULL;
+-	vsi->num_xsk_pools_used--;
+-
+-	if (vsi->num_xsk_pools_used == 0) {
+-		kfree(vsi->xsk_pools);
+-		vsi->xsk_pools = NULL;
+-		vsi->num_xsk_pools = 0;
+-	}
+-}
+-
+ /**
+  * ice_xsk_pool_disable - disable a buffer pool region
+  * @vsi: Current VSI
+@@ -307,12 +268,12 @@ static void ice_xsk_remove_pool(struct ice_vsi *vsi, u16 qid)
+  */
+ static int ice_xsk_pool_disable(struct ice_vsi *vsi, u16 qid)
+ {
+-	if (!vsi->xsk_pools || qid >= vsi->num_xsk_pools ||
+-	    !vsi->xsk_pools[qid])
++	struct xsk_buff_pool *pool = xsk_get_pool_from_qid(vsi->netdev, qid);
++
++	if (!pool)
+ 		return -EINVAL;
+ 
+-	xsk_pool_dma_unmap(vsi->xsk_pools[qid], ICE_RX_DMA_ATTR);
+-	ice_xsk_remove_pool(vsi, qid);
++	xsk_pool_dma_unmap(pool, ICE_RX_DMA_ATTR);
+ 
+ 	return 0;
+ }
+@@ -333,22 +294,11 @@ ice_xsk_pool_enable(struct ice_vsi *vsi, struct xsk_buff_pool *pool, u16 qid)
+ 	if (vsi->type != ICE_VSI_PF)
+ 		return -EINVAL;
+ 
+-	if (!vsi->num_xsk_pools)
+-		vsi->num_xsk_pools = min_t(u16, vsi->num_rxq, vsi->num_txq);
+-	if (qid >= vsi->num_xsk_pools)
++	if (qid >= vsi->netdev->real_num_rx_queues ||
++	    qid >= vsi->netdev->real_num_tx_queues)
+ 		return -EINVAL;
+ 
+-	err = ice_xsk_alloc_pools(vsi);
+-	if (err)
+-		return err;
+-
+-	if (vsi->xsk_pools && vsi->xsk_pools[qid])
+-		return -EBUSY;
+-
+-	vsi->xsk_pools[qid] = pool;
+-	vsi->num_xsk_pools_used++;
+-
+-	err = xsk_pool_dma_map(vsi->xsk_pools[qid], ice_pf_to_dev(vsi->back),
++	err = xsk_pool_dma_map(pool, ice_pf_to_dev(vsi->back),
+ 			       ICE_RX_DMA_ATTR);
+ 	if (err)
+ 		return err;
+@@ -842,11 +792,8 @@ bool ice_xsk_any_rx_ring_ena(struct ice_vsi *vsi)
+ {
+ 	int i;
+ 
+-	if (!vsi->xsk_pools)
+-		return false;
+-
+-	for (i = 0; i < vsi->num_xsk_pools; i++) {
+-		if (vsi->xsk_pools[i])
++	ice_for_each_rxq(vsi, i) {
++		if (xsk_get_pool_from_qid(vsi->netdev, i))
+ 			return true;
+ 	}
+ 
+-- 
+2.21.3
+
