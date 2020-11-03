@@ -1,27 +1,26 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Mon, 2 Nov 2020 16:19:43 -0800
-Subject: [Intel-wired-lan] [PATCH 2/2] ethernet: igb: e1000_phy: Check
- for ops.force_speed_duplex existence
-In-Reply-To: <20201102231307.13021-3-pmenzel@molgen.mpg.de>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Mon, 2 Nov 2020 17:15:41 -0800
+Subject: [Intel-wired-lan] [PATCH 1/2] ethernet: igb: Support PHY
+ BCM5461S
+In-Reply-To: <20201102231307.13021-2-pmenzel@molgen.mpg.de>
 References: <20201102231307.13021-1-pmenzel@molgen.mpg.de>
- <20201102231307.13021-3-pmenzel@molgen.mpg.de>
-Message-ID: <20201102161943.343586b1@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+ <20201102231307.13021-2-pmenzel@molgen.mpg.de>
+Message-ID: <cdcaf9fa-4983-934f-0d9c-09588fe07901@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue,  3 Nov 2020 00:13:07 +0100 Paul Menzel wrote:
+
+
+On 11/2/2020 3:13 PM, Paul Menzel wrote:
 > From: Jeffrey Townsend <jeffrey.townsend@bigswitch.com>
 > 
-> The ops field might no be defined, so add a check.
-
-This change should be first, otherwise AFAIU if someone builds the
-kernel in between the commits (e.g. for bisection) it will crash.
-
-> The patch is taken from Open Network Linux (ONL), and it was added there
-> as part of the patch
+> The BCM5461S PHY is used in switches.
+> 
+> The patch is taken from Open Network Linux, and it was added there as
+> patch
 > 
 >     packages/base/any/kernels/3.16+deb8/patches/driver-support-intel-igb-bcm5461X-phy.patch
 > 
@@ -37,15 +36,47 @@ kernel in between the commits (e.g. for bisection) it will crash.
 > 
 > [1]: https://github.com/opencomputeproject/OpenNetworkLinux/commit/f32316c63ce3a64de125b7429115c6d45e942bd1
 > [2]: https://github.com/opencomputeproject/OpenNetworkLinux/commit/5ace6bcdb37cb8065dcd1d4404b3dcb6424f6331
-
-No need to put this in every commit message.
-
-We preserve the cover letter in tree as a merge commit message, so
-explaining things once in the cover letter is sufficient.
-
+> 
 > Cc: Jeffrey Townsend <jeffrey.townsend@bigswitch.com>
-
-Jefferey will need to provide a sign-off as the author.
-
 > Cc: John W Linville <linville@tuxdriver.com>
 > Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> ---
+
+[snip]
+
+> +
+> +/**
+> + *  igb_phy_init_script_5461s - Inits the BCM5461S PHY
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Initializes a Broadcom Gigabit PHY.
+> + **/
+> +s32 igb_phy_init_script_5461s(struct e1000_hw *hw)
+> +{
+> +	u16 mii_reg_led = 0;
+> +
+> +	/* 1. Speed LED (Set the Link LED mode), Shadow 00010, 0x1C.bit2=1 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x0800);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0004;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +
+> +	/* 2. Active LED (Set the Link LED mode), Shadow 01001, 0x1C.bit4=1, 0x10.bit5=0 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x2400);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0010;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +	hw->phy.ops.read_reg(hw, 0x10, &mii_reg_led);
+> +	mii_reg_led &= 0xffdf;
+> +	hw->phy.ops.write_reg(hw, 0x10, mii_reg_led);
+
+Please try at least to re-use the definitions from
+include/linux/brcmphy.h and add new ones where appropriate.
+
+It is already painful enough to see that Intel does not use the PHY
+library, there is no need to add insult to the injury by open coding all
+of these register addresses and values.
+
+Thanks
+-- 
+Florian
