@@ -1,10 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Wed,  4 Nov 2020 15:08:57 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next 1/6] i40e: introduce lazy Tx
- completions for AF_XDP zero-copy
+Date: Wed,  4 Nov 2020 15:08:58 +0100
+Subject: [Intel-wired-lan] [PATCH bpf-next 2/6] samples/bpf: increment Tx
+ stats at sending
 In-Reply-To: <1604498942-24274-1-git-send-email-magnus.karlsson@gmail.com>
 References: <1604498942-24274-1-git-send-email-magnus.karlsson@gmail.com>
-Message-ID: <1604498942-24274-2-git-send-email-magnus.karlsson@gmail.com>
+Message-ID: <1604498942-24274-3-git-send-email-magnus.karlsson@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,58 +13,68 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Introduce lazy Tx completions when a queue is used for AF_XDP
-zero-copy. In the current design, each time we get into the NAPI poll
-loop we try to complete as many Tx packets as possible from the
-NIC. This is performed by reading the head pointer register in the NIC
-that tells us how many packets have been completed. Reading this
-register is expensive as it is across PCIe, so let us try to limit the
-number of times it is read by only completing Tx packets to user-space
-when the number of available descriptors in the Tx HW ring is below
-some threshold. This will decrease the number of reads issued to the
-NIC and improves performance with 1.5% - 2% for the l2fwd xdpsock
-microbenchmark.
-
-The threshold is set to the minimum possible size that the HW ring can
-have. This so that we do not run into a scenario where the threshold
-is higher than the configured number of descriptors in the HW ring.
+Increment the statistics over how many Tx packets have been sent at
+the time of sending instead of at the time of completion. This as a
+completion event means that the buffer has been sent AND returned to
+user space. The packet always gets sent shortly after sendto() is
+called. The kernel might, for performance reasons, decide to not
+return every single buffer to user space immediately after sending,
+for example, only after a batch of packets have been
+transmitted. Incrementing the number of packets sent at completion,
+will in that case be confusing as if you send a single packet, the
+counter might show zero for a while even though the packet has been
+transmitted.
 
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ samples/bpf/xdpsock_user.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 6acede0..f8815b3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -9,6 +9,8 @@
- #include "i40e_txrx_common.h"
- #include "i40e_xsk.h"
+diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
+index 1149e94..2567f0d 100644
+--- a/samples/bpf/xdpsock_user.c
++++ b/samples/bpf/xdpsock_user.c
+@@ -1146,7 +1146,6 @@ static inline void complete_tx_l2fwd(struct xsk_socket_info *xsk,
+ 		xsk_ring_prod__submit(&xsk->umem->fq, rcvd);
+ 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
+ 		xsk->outstanding_tx -= rcvd;
+-		xsk->ring_stats.tx_npkts += rcvd;
+ 	}
+ }
  
-+#define I40E_TX_COMPLETION_THRESHOLD I40E_MIN_NUM_DESCRIPTORS
-+
- int i40e_alloc_rx_bi_zc(struct i40e_ring *rx_ring)
- {
- 	unsigned long sz = sizeof(*rx_ring->rx_bi_zc) * rx_ring->count;
-@@ -460,12 +462,15 @@ static void i40e_clean_xdp_tx_buffer(struct i40e_ring *tx_ring,
-  **/
- bool i40e_clean_xdp_tx_irq(struct i40e_vsi *vsi, struct i40e_ring *tx_ring)
- {
-+	u32 i, completed_frames, xsk_frames = 0, head_idx;
- 	struct xsk_buff_pool *bp = tx_ring->xsk_pool;
--	u32 i, completed_frames, xsk_frames = 0;
--	u32 head_idx = i40e_get_head(tx_ring);
- 	struct i40e_tx_buffer *tx_bi;
- 	unsigned int ntc;
+@@ -1168,7 +1167,6 @@ static inline void complete_tx_only(struct xsk_socket_info *xsk,
+ 	if (rcvd > 0) {
+ 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
+ 		xsk->outstanding_tx -= rcvd;
+-		xsk->ring_stats.tx_npkts += rcvd;
+ 	}
+ }
  
-+	if (I40E_DESC_UNUSED(tx_ring) >= I40E_TX_COMPLETION_THRESHOLD)
-+		goto out_xmit;
-+
-+	head_idx = i40e_get_head(tx_ring);
- 	if (head_idx < tx_ring->next_to_clean)
- 		head_idx += tx_ring->count;
- 	completed_frames = head_idx - tx_ring->next_to_clean;
+@@ -1260,6 +1258,7 @@ static void tx_only(struct xsk_socket_info *xsk, u32 *frame_nb, int batch_size)
+ 	}
+ 
+ 	xsk_ring_prod__submit(&xsk->tx, batch_size);
++	xsk->ring_stats.tx_npkts += batch_size;
+ 	xsk->outstanding_tx += batch_size;
+ 	*frame_nb += batch_size;
+ 	*frame_nb %= NUM_FRAMES;
+@@ -1348,6 +1347,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
+ 		}
+ 		return;
+ 	}
++	xsk->ring_stats.rx_npkts += rcvd;
+ 
+ 	ret = xsk_ring_prod__reserve(&xsk->tx, rcvd, &idx_tx);
+ 	while (ret != rcvd) {
+@@ -1379,7 +1379,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
+ 	xsk_ring_prod__submit(&xsk->tx, rcvd);
+ 	xsk_ring_cons__release(&xsk->rx, rcvd);
+ 
+-	xsk->ring_stats.rx_npkts += rcvd;
++	xsk->ring_stats.tx_npkts += rcvd;
+ 	xsk->outstanding_tx += rcvd;
+ }
+ 
 -- 
 2.7.4
 
