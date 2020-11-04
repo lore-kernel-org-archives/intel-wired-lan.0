@@ -1,410 +1,374 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Tue,  3 Nov 2020 19:12:09 -0800
-Subject: [Intel-wired-lan] [PATCH v4 8/9] igc: Add support for XDP_TX action
+Date: Tue,  3 Nov 2020 19:12:08 -0800
+Subject: [Intel-wired-lan] [PATCH v4 7/9] igc: Add initial XDP support
 In-Reply-To: <20201104031210.27772-1-andre.guedes@intel.com>
 References: <20201104031210.27772-1-andre.guedes@intel.com>
-Message-ID: <20201104031210.27772-9-andre.guedes@intel.com>
+Message-ID: <20201104031210.27772-8-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support for XDP_TX action which enables XDP programs to
-transmit back receiving frames.
+This patch adds the initial XDP support to the igc driver. For now,
+only XDP_PASS, XDP_DROP, XDP_ABORTED actions are supported. Upcoming
+patches will add support for the remaining XDP actions.
 
-I225 controller has only 4 tx hardware queues. Since XDP programs may
-not even issue an XDP_TX action, this patch doesn't reserve dedicated
-queues just for XDP like other Intel drivers do. Instead, the queues
-are shared between the network stack and XDP. The netdev queue lock is
-used to ensure mutual exclusion.
+XDP configuration helpers are defined in a new file, igc_xdp.c. These
+helpers are utilized in igc_main.c to implement the ndo_bpf callback.
+XDP-related code that belongs to the driver's hot path is landed in
+igc_main.c.
 
-Since frames can now be transmitted via XDP_TX, the igc_tx_buffer
-structure is modified so we are able to save a reference to the xdp
-frame for later clean up once the packet is transmitted. The tx_buffer
-is mapped to either a skb or a xdpf so we use a union to save the skb
-or xdpf pointer and have a bit in tx_flags to indicate which field to
-use.
+By default, the driver uses rx buffers with 2 KB size. When XDP is
+enabled, it uses larger buffers so we have enough space to accommodate
+the headroom and tailroom required by XDP infrastructure. Also, the
+driver doesn't support XDP functionality with frames that span over
+multiple buffers so jumbo frames are not allowed for now.
 
-This patch has been tested with the sample app "xdp2" located in
+The approach implemented by this patch follows the approach implemented
+in other Intel drivers as much as possible for the sake of consistency
+across the drivers.
+
+Quick comment regarding igc_build_skb(): this patch doesn't touch it
+because the function is never called. It seems its support is
+incomplete/in progress. The function was added by commit 0507ef8a0372b
+("igc: Add transmit and receive fastpath and interrupt handlers") but
+ring_uses_build_skb() always return False since the IGC_RING_FLAG_RX_
+BUILD_SKB_ENABLED isn't set anywhere in the driver code.
+
+This patch has been tested with the sample app "xdp1" located in
 samples/bpf/ dir.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |   9 +-
- drivers/net/ethernet/intel/igc/igc_main.c | 176 ++++++++++++++++++++--
- drivers/net/ethernet/intel/igc/igc_xdp.c  |  27 ++++
- drivers/net/ethernet/intel/igc/igc_xdp.h  |   3 +
- 4 files changed, 204 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/igc/Makefile   |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h      |   2 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 118 ++++++++++++++++++++--
+ drivers/net/ethernet/intel/igc/igc_xdp.c  |  33 ++++++
+ drivers/net/ethernet/intel/igc/igc_xdp.h  |  10 ++
+ 5 files changed, 153 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
 
+diff --git a/drivers/net/ethernet/intel/igc/Makefile b/drivers/net/ethernet/intel/igc/Makefile
+index 1c3051db9085..95d1e8c490a4 100644
+--- a/drivers/net/ethernet/intel/igc/Makefile
++++ b/drivers/net/ethernet/intel/igc/Makefile
+@@ -8,4 +8,4 @@
+ obj-$(CONFIG_IGC) += igc.o
+ 
+ igc-objs := igc_main.o igc_mac.o igc_i225.o igc_base.o igc_nvm.o igc_phy.o \
+-igc_diag.o igc_ethtool.o igc_ptp.o igc_dump.o igc_tsn.o
++igc_diag.o igc_ethtool.o igc_ptp.o igc_dump.o igc_tsn.o igc_xdp.o
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 5c2f363106ae..9c566d930ab0 100644
+index e72f1fc772aa..5c2f363106ae 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -112,6 +112,8 @@ struct igc_ring {
- 			struct sk_buff *skb;
- 		};
- 	};
+@@ -224,6 +224,8 @@ struct igc_adapter {
+ 	struct mutex ptm_time_lock; /* protects host and device timestamps */
+ 	ktime_t ptm_device_time;
+ 	struct system_counterval_t ptm_host_time;
 +
-+	struct xdp_rxq_info xdp_rxq;
- } ____cacheline_internodealigned_in_smp;
- 
- /* Board specific private data structure */
-@@ -380,6 +382,8 @@ enum igc_tx_flags {
- 	/* olinfo flags */
- 	IGC_TX_FLAGS_IPV4	= 0x10,
- 	IGC_TX_FLAGS_CSUM	= 0x20,
-+
-+	IGC_TX_FLAGS_XDP	= 0x100,
++	struct bpf_prog *xdp_prog;
  };
  
- enum igc_boards {
-@@ -402,7 +406,10 @@ enum igc_boards {
- struct igc_tx_buffer {
- 	union igc_adv_tx_desc *next_to_watch;
- 	unsigned long time_stamp;
--	struct sk_buff *skb;
-+	union {
-+		struct sk_buff *skb;
-+		struct xdp_frame *xdpf;
-+	};
- 	unsigned int bytecount;
- 	u16 gso_segs;
- 	__be16 protocol;
+ void igc_up(struct igc_adapter *adapter);
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 734a570bbadb..ee8e4615aba5 100644
+index 84ffde75e968..734a570bbadb 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -26,6 +26,7 @@
+@@ -11,17 +11,22 @@
+ #include <linux/pm_runtime.h>
+ #include <net/pkt_sched.h>
+ #include <linux/pci.h>
++#include <linux/bpf_trace.h>
  
- #define IGC_XDP_PASS		0
- #define IGC_XDP_CONSUMED	BIT(0)
-+#define IGC_XDP_TX		BIT(1)
+ #include <net/ipv6.h>
  
+ #include "igc.h"
+ #include "igc_hw.h"
+ #include "igc_tsn.h"
++#include "igc_xdp.h"
+ 
+ #define DRV_SUMMARY	"Intel(R) 2.5G Ethernet Linux Driver"
+ 
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
+ 
++#define IGC_XDP_PASS		0
++#define IGC_XDP_CONSUMED	BIT(0)
++
  static int debug = -1;
  
-@@ -182,8 +183,10 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
- 	while (i != tx_ring->next_to_use) {
- 		union igc_adv_tx_desc *eop_desc, *tx_desc;
- 
--		/* Free all the Tx ring sk_buffs */
--		dev_kfree_skb_any(tx_buffer->skb);
-+		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+			xdp_return_frame(tx_buffer->xdpf);
-+		else
-+			dev_kfree_skb_any(tx_buffer->skb);
- 
- 		/* unmap skb header data */
- 		dma_unmap_single(tx_ring->dev,
-@@ -411,6 +414,8 @@ void igc_free_rx_resources(struct igc_ring *rx_ring)
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+@@ -346,6 +351,8 @@ static void igc_clean_rx_ring(struct igc_ring *rx_ring)
  {
- 	igc_clean_rx_ring(rx_ring);
+ 	u16 i = rx_ring->next_to_clean;
  
-+	igc_xdp_unregister_rxq_info(rx_ring);
++	clear_ring_uses_large_buffer(rx_ring);
 +
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
+ 	dev_kfree_skb(rx_ring->skb);
+ 	rx_ring->skb = NULL;
  
-@@ -448,7 +453,11 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
+@@ -498,6 +505,11 @@ static int igc_setup_all_rx_resources(struct igc_adapter *adapter)
+ 	return err;
+ }
+ 
++static bool igc_xdp_is_enabled(struct igc_adapter *adapter)
++{
++	return !!adapter->xdp_prog;
++}
++
+ /**
+  * igc_configure_rx_ring - Configure a receive ring after Reset
+  * @adapter: board private structure
+@@ -514,6 +526,9 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
+ 	u32 srrctl = 0, rxdctl = 0;
+ 	u64 rdba = ring->dma;
+ 
++	if (igc_xdp_is_enabled(adapter))
++		set_ring_uses_large_buffer(ring);
++
+ 	/* disable the queue */
+ 	wr32(IGC_RXDCTL(reg_idx), 0);
+ 
+@@ -1594,12 +1609,12 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 
+ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 struct igc_rx_buffer *rx_buffer,
+-					 unsigned int size, int pkt_offset,
++					 struct xdp_buff *xdp,
+ 					 ktime_t timestamp)
  {
- 	struct net_device *ndev = rx_ring->netdev;
- 	struct device *dev = rx_ring->dev;
--	int size, desc_len;
-+	int size, desc_len, res;
+-	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset +
+-		   pkt_offset;
++	unsigned int size = xdp->data_end - xdp->data;
+ 	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
++	void *va = xdp->data;
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
+ 
+@@ -1748,6 +1763,10 @@ static bool igc_cleanup_headers(struct igc_ring *rx_ring,
+ 				union igc_adv_rx_desc *rx_desc,
+ 				struct sk_buff *skb)
+ {
++	/* XDP packets use error pointer so abort at this point */
++	if (IS_ERR(skb))
++		return true;
 +
-+	res = igc_xdp_register_rxq_info(rx_ring);
-+	if (res < 0)
-+		return res;
+ 	if (unlikely(igc_test_staterr(rx_desc, IGC_RXDEXT_STATERR_RXE))) {
+ 		struct net_device *netdev = rx_ring->netdev;
  
- 	size = sizeof(struct igc_rx_buffer) * rx_ring->count;
- 	rx_ring->rx_buffer_info = vzalloc(size);
-@@ -474,6 +483,7 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
- 	return 0;
+@@ -1787,7 +1806,14 @@ static void igc_put_rx_buffer(struct igc_ring *rx_ring,
  
- err:
-+	igc_xdp_unregister_rxq_info(rx_ring);
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
- 	netdev_err(ndev, "Unable to allocate memory for Rx descriptor ring\n");
-@@ -1927,6 +1937,101 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
+ static inline unsigned int igc_rx_offset(struct igc_ring *rx_ring)
+ {
+-	return ring_uses_build_skb(rx_ring) ? IGC_SKB_PAD : 0;
++	struct igc_adapter *adapter = rx_ring->q_vector->adapter;
++
++	if (ring_uses_build_skb(rx_ring))
++		return IGC_SKB_PAD;
++	if (igc_xdp_is_enabled(adapter))
++		return XDP_PACKET_HEADROOM;
++
++	return 0;
+ }
+ 
+ static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+@@ -1901,6 +1927,42 @@ static void igc_alloc_rx_buffers(struct igc_ring *rx_ring, u16 cleaned_count)
  	}
  }
  
-+static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
-+				  struct xdp_frame *xdpf,
-+				  struct igc_ring *ring)
++static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++					struct xdp_buff *xdp)
 +{
-+	dma_addr_t dma;
-+
-+	dma = dma_map_single(ring->dev, xdpf->data, xdpf->len, DMA_TO_DEVICE);
-+	if (dma_mapping_error(ring->dev, dma)) {
-+		netdev_err_once(ring->netdev, "Failed to map DMA for TX\n");
-+		return -ENOMEM;
-+	}
-+
-+	buffer->xdpf = xdpf;
-+	buffer->tx_flags = IGC_TX_FLAGS_XDP;
-+	buffer->protocol = 0;
-+	buffer->bytecount = xdpf->len;
-+	buffer->gso_segs = 1;
-+	buffer->time_stamp = jiffies;
-+	dma_unmap_len_set(buffer, len, xdpf->len);
-+	dma_unmap_addr_set(buffer, dma, dma);
-+	return 0;
-+}
-+
-+/* This function requires __netif_tx_lock is held by the caller. */
-+static int igc_xdp_init_tx_descriptor(struct igc_ring *ring,
-+				      struct xdp_frame *xdpf)
-+{
-+	struct igc_tx_buffer *buffer;
-+	union igc_adv_tx_desc *desc;
-+	u32 cmd_type, olinfo_status;
-+	int err;
-+
-+	if (!igc_desc_unused(ring))
-+		return -EBUSY;
-+
-+	buffer = &ring->tx_buffer_info[ring->next_to_use];
-+	err = igc_xdp_init_tx_buffer(buffer, xdpf, ring);
-+	if (err)
-+		return err;
-+
-+	cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
-+		   IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
-+		   buffer->bytecount;
-+	olinfo_status = buffer->bytecount << IGC_ADVTXD_PAYLEN_SHIFT;
-+
-+	desc = IGC_TX_DESC(ring, ring->next_to_use);
-+	desc->read.cmd_type_len = cpu_to_le32(cmd_type);
-+	desc->read.olinfo_status = cpu_to_le32(olinfo_status);
-+	desc->read.buffer_addr = cpu_to_le64(dma_unmap_addr(buffer, dma));
-+
-+	netdev_tx_sent_queue(txring_txq(ring), buffer->bytecount);
-+
-+	buffer->next_to_watch = desc;
-+
-+	ring->next_to_use++;
-+	if (ring->next_to_use == ring->count)
-+		ring->next_to_use = 0;
-+
-+	return 0;
-+}
-+
-+static struct igc_ring *igc_xdp_get_tx_ring(struct igc_adapter *adapter,
-+					    int cpu)
-+{
-+	int index = cpu;
-+
-+	if (unlikely(index < 0))
-+		index = 0;
-+
-+	while (index >= adapter->num_tx_queues)
-+		index -= adapter->num_tx_queues;
-+
-+	return adapter->tx_ring[index];
-+}
-+
-+static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
-+{
-+	struct xdp_frame *xdpf = xdp_convert_buff_to_frame(xdp);
-+	int cpu = smp_processor_id();
-+	struct netdev_queue *nq;
-+	struct igc_ring *ring;
++	struct bpf_prog *prog;
 +	int res;
++	u32 act;
 +
-+	if (unlikely(!xdpf))
-+		return -EFAULT;
++	rcu_read_lock();
 +
-+	ring = igc_xdp_get_tx_ring(adapter, cpu);
-+	nq = txring_txq(ring);
-+
-+	__netif_tx_lock(nq, cpu);
-+	res = igc_xdp_init_tx_descriptor(ring, xdpf);
-+	__netif_tx_unlock(nq);
-+	return res;
-+}
-+
- static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 					struct xdp_buff *xdp)
- {
-@@ -1947,6 +2052,12 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 	case XDP_PASS:
- 		res = IGC_XDP_PASS;
- 		break;
-+	case XDP_TX:
-+		if (igc_xdp_xmit_back(adapter, xdp) < 0)
-+			res = IGC_XDP_CONSUMED;
-+		else
-+			res = IGC_XDP_TX;
-+		break;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
- 		fallthrough;
-@@ -1963,20 +2074,49 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 	return ERR_PTR(-res);
- }
- 
-+/* This function assumes __netif_tx_lock is held by the caller. */
-+static void igc_flush_tx_descriptors(struct igc_ring *ring)
-+{
-+	/* Once tail pointer is updated, hardware can fetch the descriptors
-+	 * any time so we issue a write membar here to ensure all memory
-+	 * writes are complete before the tail pointer is updated.
-+	 */
-+	wmb();
-+	writel(ring->next_to_use, ring->tail);
-+}
-+
-+static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
-+{
-+	int cpu = smp_processor_id();
-+	struct netdev_queue *nq;
-+	struct igc_ring *ring;
-+
-+	if (status & IGC_XDP_TX) {
-+		ring = igc_xdp_get_tx_ring(adapter, cpu);
-+		nq = txring_txq(ring);
-+
-+		__netif_tx_lock(nq, cpu);
-+		igc_flush_tx_descriptors(ring);
-+		__netif_tx_unlock(nq);
++	prog = READ_ONCE(adapter->xdp_prog);
++	if (!prog) {
++		res = IGC_XDP_PASS;
++		goto unlock;
 +	}
++
++	act = bpf_prog_run_xdp(prog, xdp);
++	switch (act) {
++	case XDP_PASS:
++		res = IGC_XDP_PASS;
++		break;
++	default:
++		bpf_warn_invalid_xdp_action(act);
++		fallthrough;
++	case XDP_ABORTED:
++		trace_xdp_exception(adapter->netdev, prog, act);
++		fallthrough;
++	case XDP_DROP:
++		res = IGC_XDP_CONSUMED;
++		break;
++	}
++
++unlock:
++	rcu_read_unlock();
++	return ERR_PTR(-res);
 +}
 +
  static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
  {
  	unsigned int total_bytes = 0, total_packets = 0;
-+	struct igc_adapter *adapter = q_vector->adapter;
- 	struct igc_ring *rx_ring = q_vector->rx.ring;
- 	struct sk_buff *skb = rx_ring->skb;
- 	u16 cleaned_count = igc_desc_unused(rx_ring);
-+	int xdp_status = 0;
- 
- 	while (likely(total_packets < budget)) {
+@@ -1912,8 +1974,10 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
  		union igc_adv_rx_desc *rx_desc;
  		struct igc_rx_buffer *rx_buffer;
-+		unsigned int size, truesize;
  		ktime_t timestamp = 0;
- 		struct xdp_buff xdp;
++		struct xdp_buff xdp;
  		int pkt_offset = 0;
--		unsigned int size;
- 		void *pktbuf;
+ 		unsigned int size;
++		void *pktbuf;
  
- 		/* return some buffers to hardware, one@a time is too slow */
-@@ -1997,6 +2137,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 		dma_rmb();
+ 		/* return some buffers to hardware, one at a time is too slow */
+ 		if (cleaned_count >= IGC_RX_BUFFER_WRITE) {
+@@ -1934,24 +1998,38 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
  
  		rx_buffer = igc_get_rx_buffer(rx_ring, size);
-+		truesize = igc_get_rx_frame_truesize(rx_ring, size);
  
- 		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
+-		if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+-			void *pktbuf = page_address(rx_buffer->page) +
+-				       rx_buffer->page_offset;
++		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
  
-@@ -2008,19 +2149,29 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
++		if (igc_test_staterr(rx_desc, IGC_RXDADV_STAT_TSIP)) {
+ 			timestamp = igc_ptp_rx_pktstamp(q_vector->adapter,
+ 							pktbuf);
+ 			pkt_offset = IGC_TS_HDR_LEN;
+ 			size -= IGC_TS_HDR_LEN;
  		}
  
+-		/* retrieve a buffer from the ring */
+-		if (skb)
++		if (!skb) {
++			struct igc_adapter *adapter = q_vector->adapter;
++
++			xdp.data = pktbuf + pkt_offset;
++			xdp.data_end = xdp.data + size;
++			xdp.data_hard_start = pktbuf - igc_rx_offset(rx_ring);
++			xdp_set_data_meta_invalid(&xdp);
++			xdp.frame_sz = igc_get_rx_frame_truesize(rx_ring, size);
++
++			skb = igc_xdp_run_prog(adapter, &xdp);
++		}
++
++		if (IS_ERR(skb)) {
++			rx_buffer->pagecnt_bias++;
++			total_packets++;
++			total_bytes += size;
++		} else if (skb)
+ 			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
+ 		else if (ring_uses_build_skb(rx_ring))
+ 			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
+ 		else
+-			skb = igc_construct_skb(rx_ring, rx_buffer, size,
+-						pkt_offset, timestamp);
++			skb = igc_construct_skb(rx_ring, rx_buffer, &xdp,
++						timestamp);
+ 
+ 		/* exit if we failed to retrieve a buffer */
  		if (!skb) {
--			struct igc_adapter *adapter = q_vector->adapter;
--
- 			xdp.data = pktbuf + pkt_offset;
- 			xdp.data_end = xdp.data + size;
- 			xdp.data_hard_start = pktbuf - igc_rx_offset(rx_ring);
- 			xdp_set_data_meta_invalid(&xdp);
--			xdp.frame_sz = igc_get_rx_frame_truesize(rx_ring, size);
-+			xdp.frame_sz = truesize;
-+			xdp.rxq = &rx_ring->xdp_rxq;
+@@ -3893,6 +3971,11 @@ static int igc_change_mtu(struct net_device *netdev, int new_mtu)
+ 	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+ 	struct igc_adapter *adapter = netdev_priv(netdev);
  
- 			skb = igc_xdp_run_prog(adapter, &xdp);
- 		}
- 
- 		if (IS_ERR(skb)) {
--			rx_buffer->pagecnt_bias++;
-+			unsigned int xdp_res = -PTR_ERR(skb);
++	if (igc_xdp_is_enabled(adapter) && new_mtu > ETH_DATA_LEN) {
++		netdev_dbg(netdev, "Jumbo frames not supported with XDP");
++		return -EINVAL;
++	}
 +
-+			switch (xdp_res) {
-+			case IGC_XDP_CONSUMED:
-+				rx_buffer->pagecnt_bias++;
-+				break;
-+			case IGC_XDP_TX:
-+				igc_rx_buffer_flip(rx_buffer, truesize);
-+				xdp_status |= xdp_res;
-+				break;
-+			}
-+
- 			total_packets++;
- 			total_bytes += size;
- 		} else if (skb)
-@@ -2066,6 +2217,9 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 		total_packets++;
+ 	/* adjust max frame to be at least the size of a standard frame */
+ 	if (max_frame < (ETH_FRAME_LEN + ETH_FCS_LEN))
+ 		max_frame = ETH_FRAME_LEN + ETH_FCS_LEN;
+@@ -4881,6 +4964,18 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
  	}
- 
-+	if (xdp_status)
-+		igc_finalize_xdp(adapter, xdp_status);
-+
- 	/* place incomplete frames back on ring for completion */
- 	rx_ring->skb = skb;
- 
-@@ -2127,8 +2281,10 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 		total_bytes += tx_buffer->bytecount;
- 		total_packets += tx_buffer->gso_segs;
- 
--		/* free the skb */
--		napi_consume_skb(tx_buffer->skb, napi_budget);
-+		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+			xdp_return_frame(tx_buffer->xdpf);
-+		else
-+			napi_consume_skb(tx_buffer->skb, napi_budget);
- 
- 		/* unmap skb header data */
- 		dma_unmap_single(tx_ring->dev,
-diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
-index 27c886a254f1..aa65c99c8c4d 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
-@@ -31,3 +31,30 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
- 
- 	return 0;
  }
-+
-+int igc_xdp_register_rxq_info(struct igc_ring *ring)
+ 
++static int igc_bpf(struct net_device *dev, struct netdev_bpf *bpf)
 +{
-+	struct net_device *dev = ring->netdev;
-+	int err;
++	struct igc_adapter *adapter = netdev_priv(dev);
 +
-+	err = xdp_rxq_info_reg(&ring->xdp_rxq, dev, ring->queue_index);
-+	if (err) {
-+		netdev_err(dev, "Failed to register xdp rxq info\n");
-+		return err;
++	switch (bpf->command) {
++	case XDP_SETUP_PROG:
++		return igc_xdp_set_prog(adapter, bpf->prog, bpf->extack);
++	default:
++		return -EOPNOTSUPP;
++	}
++}
++
+ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_open		= igc_open,
+ 	.ndo_stop		= igc_close,
+@@ -4894,6 +4989,7 @@ static const struct net_device_ops igc_netdev_ops = {
+ 	.ndo_features_check	= igc_features_check,
+ 	.ndo_do_ioctl		= igc_ioctl,
+ 	.ndo_setup_tc		= igc_setup_tc,
++	.ndo_bpf		= igc_bpf,
+ };
+ 
+ /* PCIe configuration access */
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
+new file mode 100644
+index 000000000000..27c886a254f1
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (c) 2020, Intel Corporation. */
++
++#include "igc.h"
++#include "igc_xdp.h"
++
++int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
++		     struct netlink_ext_ack *extack)
++{
++	struct net_device *dev = adapter->netdev;
++	bool if_running = netif_running(dev);
++	struct bpf_prog *old_prog;
++
++	if (dev->mtu > ETH_DATA_LEN) {
++		/* For now, the driver doesn't support XDP functionality with
++		 * jumbo frames so we return error.
++		 */
++		NL_SET_ERR_MSG_MOD(extack, "Jumbo frames not supported");
++		return -EOPNOTSUPP;
 +	}
 +
-+	err = xdp_rxq_info_reg_mem_model(&ring->xdp_rxq, MEM_TYPE_PAGE_SHARED,
-+					 NULL);
-+	if (err) {
-+		netdev_err(dev, "Failed to register xdp rxq mem model\n");
-+		xdp_rxq_info_unreg(&ring->xdp_rxq);
-+		return err;
-+	}
++	if (if_running)
++		igc_close(dev);
++
++	old_prog = xchg(&adapter->xdp_prog, prog);
++	if (old_prog)
++		bpf_prog_put(old_prog);
++
++	if (if_running)
++		igc_open(dev);
 +
 +	return 0;
 +}
-+
-+void igc_xdp_unregister_rxq_info(struct igc_ring *ring)
-+{
-+	xdp_rxq_info_unreg(&ring->xdp_rxq);
-+}
 diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
-index 8a410bcefe1a..cfecb515b718 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.h
+new file mode 100644
+index 000000000000..8a410bcefe1a
+--- /dev/null
 +++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
-@@ -7,4 +7,7 @@
- int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
- 		     struct netlink_ext_ack *extack);
- 
-+int igc_xdp_register_rxq_info(struct igc_ring *ring);
-+void igc_xdp_unregister_rxq_info(struct igc_ring *ring);
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2020, Intel Corporation. */
 +
- #endif /* _IGC_XDP_H_ */
++#ifndef _IGC_XDP_H_
++#define _IGC_XDP_H_
++
++int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
++		     struct netlink_ext_ack *extack);
++
++#endif /* _IGC_XDP_H_ */
 -- 
 2.28.0
 
