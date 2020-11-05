@@ -1,308 +1,203 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Thu, 5 Nov 2020 08:19:11 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next 6/6] i40e: use batched xsk Tx
- interfaces to increase performance
-In-Reply-To: <20201104230122.GA40117@ranger.igk.intel.com>
-References: <1604498942-24274-1-git-send-email-magnus.karlsson@gmail.com>
- <1604498942-24274-7-git-send-email-magnus.karlsson@gmail.com>
- <20201104230122.GA40117@ranger.igk.intel.com>
-Message-ID: <CAJ8uoz1B8GSCSFoOWN8cM=qUczLRqELSjUsoG-K2AcOzKEzEyg@mail.gmail.com>
+From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
+Date: Thu,  5 Nov 2020 11:28:03 +0100
+Subject: [Intel-wired-lan] [RFC PATCH bpf-next v2 0/9] Introduce preferred
+ busy-polling
+Message-ID: <20201105102812.152836-1-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Nov 5, 2020 at 12:12 AM Maciej Fijalkowski
-<maciej.fijalkowski@intel.com> wrote:
->
-> On Wed, Nov 04, 2020 at 03:09:02PM +0100, Magnus Karlsson wrote:
-> > From: Magnus Karlsson <magnus.karlsson@intel.com>
-> >
-> > Use the new batched xsk interfaces for the Tx path in the i40e driver
-> > to improve performance. On my machine, this yields a throughput
-> > increase of 4% for the l2fwd sample app in xdpsock. If we instead just
-> > look at the Tx part, this patch set increases throughput with above
-> > 20% for Tx.
-> >
-> > Note that I had to explicitly loop unroll the inner loop to get to
-> > this performance level, by using a pragma. It is honored by both clang
-> > and gcc and should be ignored by versions that do not support
-> > it. Using the -funroll-loops compiler command line switch on the
-> > source file resulted in a loop unrolling on a higher level that
-> > lead to a performance decrease instead of an increase.
-> >
-> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   2 +-
-> >  drivers/net/ethernet/intel/i40e/i40e_main.c    |   4 +-
-> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  14 ++-
-> >  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   3 +-
-> >  drivers/net/ethernet/intel/i40e/i40e_xsk.c     | 127 ++++++++++++++++++-------
-> >  5 files changed, 110 insertions(+), 40 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > index 26ba1f3..dc34867 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> > @@ -2025,7 +2025,7 @@ static int i40e_set_ringparam(struct net_device *netdev,
-> >                        */
-> >                       tx_rings[i].desc = NULL;
-> >                       tx_rings[i].rx_bi = NULL;
-> > -                     err = i40e_setup_tx_descriptors(&tx_rings[i]);
-> > +                     err = i40e_setup_tx_descriptors(&tx_rings[i], false);
-> >                       if (err) {
-> >                               while (i) {
-> >                                       i--;
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > index 4f8a2154..c93774a 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > @@ -3030,13 +3030,13 @@ static int i40e_vsi_setup_tx_resources(struct i40e_vsi *vsi)
-> >       int i, err = 0;
-> >
-> >       for (i = 0; i < vsi->num_queue_pairs && !err; i++)
-> > -             err = i40e_setup_tx_descriptors(vsi->tx_rings[i]);
-> > +             err = i40e_setup_tx_descriptors(vsi->tx_rings[i], false);
-> >
-> >       if (!i40e_enabled_xdp_vsi(vsi))
-> >               return err;
-> >
-> >       for (i = 0; i < vsi->num_queue_pairs && !err; i++)
-> > -             err = i40e_setup_tx_descriptors(vsi->xdp_rings[i]);
-> > +             err = i40e_setup_tx_descriptors(vsi->xdp_rings[i], true);
->
-> One last suggestion: I think that you could just call ring_is_xdp(tx_ring)
-> within i40e_setup_tx_descriptors() and based on that allocate the
-> xsk_descs array, instead of parametrizing the function. At the time of
-> setting up tx descs the I40E_TXR_FLAGS_XDP flag is already set.
->
-> I think this would be a cleaner way of doing it.
+This series introduces three new features:
 
-Yes, good suggestion. Will do that.
+1. A new "heavy traffic" busy-polling variant that works in concert
+   with the existing napi_defer_hard_irqs and gro_flush_timeout knobs.
 
-> >
-> >       return err;
-> >  }
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > index d43ce13..3e13e0e 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> > @@ -676,6 +676,8 @@ void i40e_free_tx_resources(struct i40e_ring *tx_ring)
-> >       i40e_clean_tx_ring(tx_ring);
-> >       kfree(tx_ring->tx_bi);
-> >       tx_ring->tx_bi = NULL;
-> > +     kfree(tx_ring->xsk_descs);
-> > +     tx_ring->xsk_descs = NULL;
-> >
-> >       if (tx_ring->desc) {
-> >               dma_free_coherent(tx_ring->dev, tx_ring->size,
-> > @@ -1259,10 +1261,11 @@ void i40e_clean_programming_status(struct i40e_ring *rx_ring, u64 qword0_raw,
-> >  /**
-> >   * i40e_setup_tx_descriptors - Allocate the Tx descriptors
-> >   * @tx_ring: the tx ring to set up
-> > + * @xdp_ring: true if this is an XDP Tx ring
-> >   *
-> >   * Return 0 on success, negative on error
-> >   **/
-> > -int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring)
-> > +int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring, bool xdp_ring)
-> >  {
-> >       struct device *dev = tx_ring->dev;
-> >       int bi_size;
-> > @@ -1277,6 +1280,13 @@ int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring)
-> >       if (!tx_ring->tx_bi)
-> >               goto err;
-> >
-> > +     if (xdp_ring) {
-> > +             tx_ring->xsk_descs = kcalloc(I40E_MAX_NUM_DESCRIPTORS, sizeof(*tx_ring->xsk_descs),
-> > +                                          GFP_KERNEL);
-> > +             if (!tx_ring->xsk_descs)
-> > +                     goto err;
-> > +     }
-> > +
-> >       u64_stats_init(&tx_ring->syncp);
-> >
-> >       /* round up to nearest 4K */
-> > @@ -1300,6 +1310,8 @@ int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring)
-> >       return 0;
-> >
-> >  err:
-> > +     kfree(tx_ring->xsk_descs);
-> > +     tx_ring->xsk_descs = NULL;
-> >       kfree(tx_ring->tx_bi);
-> >       tx_ring->tx_bi = NULL;
-> >       return -ENOMEM;
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > index 2feed92..628d5d7 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-> > @@ -389,6 +389,7 @@ struct i40e_ring {
-> >       struct i40e_channel *ch;
-> >       struct xdp_rxq_info xdp_rxq;
-> >       struct xsk_buff_pool *xsk_pool;
-> > +     struct xdp_desc *xsk_descs;      /* For storing descriptors in the AF_XDP ZC path */
-> >  } ____cacheline_internodealigned_in_smp;
-> >
-> >  static inline bool ring_uses_build_skb(struct i40e_ring *ring)
-> > @@ -451,7 +452,7 @@ bool i40e_alloc_rx_buffers(struct i40e_ring *rxr, u16 cleaned_count);
-> >  netdev_tx_t i40e_lan_xmit_frame(struct sk_buff *skb, struct net_device *netdev);
-> >  void i40e_clean_tx_ring(struct i40e_ring *tx_ring);
-> >  void i40e_clean_rx_ring(struct i40e_ring *rx_ring);
-> > -int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring);
-> > +int i40e_setup_tx_descriptors(struct i40e_ring *tx_ring, bool xdp_ring);
-> >  int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring);
-> >  void i40e_free_tx_resources(struct i40e_ring *tx_ring);
-> >  void i40e_free_rx_resources(struct i40e_ring *rx_ring);
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > index eabe1a3..515d856 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> > @@ -383,6 +383,78 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
-> >       return failure ? budget : (int)total_rx_packets;
-> >  }
-> >
-> > +static void i40e_xmit_pkt(struct i40e_ring *xdp_ring, struct xdp_desc *desc,
-> > +                       unsigned int *total_bytes)
-> > +{
-> > +     struct i40e_tx_desc *tx_desc;
-> > +     dma_addr_t dma;
-> > +
-> > +     dma = xsk_buff_raw_get_dma(xdp_ring->xsk_pool, desc->addr);
-> > +     xsk_buff_raw_dma_sync_for_device(xdp_ring->xsk_pool, dma, desc->len);
-> > +
-> > +     tx_desc = I40E_TX_DESC(xdp_ring, xdp_ring->next_to_use++);
-> > +     tx_desc->buffer_addr = cpu_to_le64(dma);
-> > +     tx_desc->cmd_type_offset_bsz = build_ctob(I40E_TX_DESC_CMD_ICRC | I40E_TX_DESC_CMD_EOP,
-> > +                                               0, desc->len, 0);
-> > +
-> > +     *total_bytes += desc->len;
-> > +}
-> > +
-> > +/* This value should match the pragma below. Why 4? It is strictly
-> > + * empirical. It seems to be a good compromise between the advantage
-> > + * of having simultaneous outstanding reads to the DMA array that can
-> > + * hide each others latency and the disadvantage of having a larger
-> > + * code path.
-> > + */
-> > +#define PKTS_PER_BATCH 4
-> > +
-> > +static void i40e_xmit_pkt_batch(struct i40e_ring *xdp_ring, struct xdp_desc *desc,
-> > +                             unsigned int *total_bytes)
-> > +{
-> > +     u16 ntu = xdp_ring->next_to_use;
-> > +     struct i40e_tx_desc *tx_desc;
-> > +     dma_addr_t dma;
-> > +     u32 i;
-> > +
-> > +#pragma GCC unroll 4
-> > +     for (i = 0; i < PKTS_PER_BATCH; i++) {
-> > +             dma = xsk_buff_raw_get_dma(xdp_ring->xsk_pool, desc[i].addr);
-> > +             xsk_buff_raw_dma_sync_for_device(xdp_ring->xsk_pool, dma, desc[i].len);
-> > +
-> > +             tx_desc = I40E_TX_DESC(xdp_ring, ntu++);
-> > +             tx_desc->buffer_addr = cpu_to_le64(dma);
-> > +             tx_desc->cmd_type_offset_bsz = build_ctob(I40E_TX_DESC_CMD_ICRC |
-> > +                                                       I40E_TX_DESC_CMD_EOP,
-> > +                                                       0, desc[i].len, 0);
-> > +
-> > +             *total_bytes += desc[i].len;
-> > +     }
-> > +
-> > +     xdp_ring->next_to_use = ntu;
-> > +}
-> > +
-> > +static void i40e_fill_tx_hw_ring(struct i40e_ring *xdp_ring, struct xdp_desc *descs, u32 nb_pkts,
-> > +                              unsigned int *total_bytes)
-> > +{
-> > +     u32 batched, leftover, i;
-> > +
-> > +     batched = nb_pkts & ~(PKTS_PER_BATCH - 1);
-> > +     leftover = nb_pkts & (PKTS_PER_BATCH - 1);
-> > +     for (i = 0; i < batched; i += PKTS_PER_BATCH)
-> > +             i40e_xmit_pkt_batch(xdp_ring, &descs[i], total_bytes);
-> > +     for (i = batched; i < batched + leftover; i++)
-> > +             i40e_xmit_pkt(xdp_ring, &descs[i], total_bytes);
-> > +}
-> > +
-> > +static void i40e_set_rs_bit(struct i40e_ring *xdp_ring)
-> > +{
-> > +     u16 ntu = xdp_ring->next_to_use ? xdp_ring->next_to_use - 1 : xdp_ring->count - 1;
-> > +     struct i40e_tx_desc *tx_desc;
-> > +
-> > +     tx_desc = I40E_TX_DESC(xdp_ring, ntu);
-> > +     tx_desc->cmd_type_offset_bsz |= (I40E_TX_DESC_CMD_RS << I40E_TXD_QW1_CMD_SHIFT);
-> > +}
-> > +
-> >  /**
-> >   * i40e_xmit_zc - Performs zero-copy Tx AF_XDP
-> >   * @xdp_ring: XDP Tx ring
-> > @@ -392,45 +464,30 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
-> >   **/
-> >  static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
-> >  {
-> > -     unsigned int sent_frames = 0, total_bytes = 0;
-> > -     struct i40e_tx_desc *tx_desc = NULL;
-> > -     struct xdp_desc desc;
-> > -     dma_addr_t dma;
-> > -
-> > -     while (budget-- > 0) {
-> > -             if (!xsk_tx_peek_desc(xdp_ring->xsk_pool, &desc))
-> > -                     break;
-> > -
-> > -             dma = xsk_buff_raw_get_dma(xdp_ring->xsk_pool, desc.addr);
-> > -             xsk_buff_raw_dma_sync_for_device(xdp_ring->xsk_pool, dma,
-> > -                                              desc.len);
-> > -
-> > -             tx_desc = I40E_TX_DESC(xdp_ring, xdp_ring->next_to_use);
-> > -             tx_desc->buffer_addr = cpu_to_le64(dma);
-> > -             tx_desc->cmd_type_offset_bsz =
-> > -                     build_ctob(I40E_TX_DESC_CMD_ICRC
-> > -                                | I40E_TX_DESC_CMD_EOP,
-> > -                                0, desc.len, 0);
-> > -
-> > -             sent_frames++;
-> > -             total_bytes += desc.len;
-> > -
-> > -             xdp_ring->next_to_use++;
-> > -             if (xdp_ring->next_to_use == xdp_ring->count)
-> > -                     xdp_ring->next_to_use = 0;
-> > +     struct xdp_desc *descs = xdp_ring->xsk_descs;
-> > +     u32 nb_pkts, nb_processed = 0;
-> > +     unsigned int total_bytes = 0;
-> > +
-> > +     nb_pkts = xsk_tx_peek_release_desc_batch(xdp_ring->xsk_pool, descs, budget);
-> > +     if (!nb_pkts)
-> > +             return false;
-> > +
-> > +     if (xdp_ring->next_to_use + nb_pkts >= xdp_ring->count) {
-> > +             nb_processed = xdp_ring->count - xdp_ring->next_to_use;
-> > +             i40e_fill_tx_hw_ring(xdp_ring, descs, nb_processed, &total_bytes);
-> > +             xdp_ring->next_to_use = 0;
-> >       }
-> >
-> > -     if (tx_desc) {
-> > -             /* Request an interrupt for the last frame and bump tail ptr. */
-> > -             tx_desc->cmd_type_offset_bsz |= (I40E_TX_DESC_CMD_RS <<
-> > -                                              I40E_TXD_QW1_CMD_SHIFT);
-> > -             i40e_xdp_ring_update_tail(xdp_ring);
-> > +     i40e_fill_tx_hw_ring(xdp_ring, &descs[nb_processed], nb_pkts - nb_processed,
-> > +                          &total_bytes);
-> >
-> > -             xsk_tx_release(xdp_ring->xsk_pool);
-> > -             i40e_update_tx_stats(xdp_ring, sent_frames, total_bytes);
-> > -     }
-> > +     /* Request an interrupt for the last frame and bump tail ptr. */
-> > +     i40e_set_rs_bit(xdp_ring);
-> > +     i40e_xdp_ring_update_tail(xdp_ring);
-> > +
-> > +     i40e_update_tx_stats(xdp_ring, nb_pkts, total_bytes);
-> >
-> > -     return !!budget;
-> > +     return true;
-> >  }
-> >
-> >  /**
-> > --
-> > 2.7.4
-> >
+2. A new socket option that let a user change the busy-polling NAPI
+   budget.
+
+3. Allow busy-polling to be performed on XDP sockets.
+
+The existing busy-polling mode, enabled by the SO_BUSY_POLL socket
+option or system-wide using the /proc/sys/net/core/busy_read knob, is
+an opportunistic. That means that if the NAPI context is not
+scheduled, it will poll it. If, after busy-polling, the budget is
+exceeded the busy-polling logic will schedule the NAPI onto the
+regular softirq handling.
+
+One implication of the behavior above is that a busy/heavy loaded NAPI
+context will never enter/allow for busy-polling. Some applications
+prefer that most NAPI processing would be done by busy-polling.
+
+This series adds a new socket option, SO_PREFER_BUSY_POLL, that works
+in concert with the napi_defer_hard_irqs and gro_flush_timeout
+knobs. The napi_defer_hard_irqs and gro_flush_timeout knobs were
+introduced in commit 6f8b12d661d0 ("net: napi: add hard irqs deferral
+feature"), and allows for a user to defer interrupts to be enabled and
+instead schedule the NAPI context from a watchdog timer. When a user
+enables the SO_PREFER_BUSY_POLL, again with the other knobs enabled,
+and the NAPI context is being processed by a softirq, the softirq NAPI
+processing will exit early to allow the busy-polling to be performed.
+
+If the application stops performing busy-polling via a system call,
+the watchdog timer defined by gro_flush_timeout will timeout, and
+regular softirq handling will resume.
+
+In summary; Heavy traffic applications that prefer busy-polling over
+softirq processing should use this option.
+
+Example usage:
+
+  $ echo 2 | sudo tee /sys/class/net/ens785f1/napi_defer_hard_irqs
+  $ echo 200000 | sudo tee /sys/class/net/ens785f1/gro_flush_timeout
+
+Note that the timeout should be larger than the userspace processing
+window, otherwise the watchdog will timeout and fall back to regular
+softirq processing.
+
+Enable the SO_BUSY_POLL/SO_PREFER_BUSY_POLL options on your socket.
+
+
+Performance netperf UDP_RR:
+
+Note that netperf UDP_RR is not a heavy traffic tests, and preferred
+busy-polling is not typically something we want to use here.
+
+  $ echo 20 | sudo tee /proc/sys/net/core/busy_read
+  $ netperf -H 192.168.1.1 -l 30 -t UDP_RR -v 2 -- \
+      -o min_latency,mean_latency,max_latency,stddev_latency,transaction_rate
+
+busy-polling blocking sockets:            12,13.33,224,0.63,74731.177
+
+I hacked netperf to use non-blocking sockets and re-ran:
+
+busy-polling non-blocking sockets:        12,13.46,218,0.72,73991.172
+prefer busy-polling non-blocking sockets: 12,13.62,221,0.59,73138.448
+
+Using the preferred busy-polling mode does not impact performance.
+
+
+Performance XDP sockets:
+
+Today, running XDP sockets sample on the same core as the softirq
+handling, performance tanks mainly because we do not yield to
+user-space when the XDP socket Rx queue is full.
+
+  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r
+  Rx: 64Kpps
+  
+  # # biased busy-polling, budget 8
+  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 8
+  Rx 9.9Mpps
+  # # biased busy-polling, budget 64
+  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 64
+  Rx: 19.3Mpps
+  # # biased busy-polling, budget 256
+  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 256
+  Rx: 21.4Mpps
+  # # biased busy-polling, budget 512
+  # taskset -c 5 ./xdpsock -i ens785f1 -q 5 -n 1 -r -B -b 512
+  Rx: 21.7Mpps
+
+Compared to the two-core case:
+  # taskset -c 4 ./xdpsock -i ens785f1 -q 20 -n 1 -r
+  Rx: 20.7Mpps
+
+We're getting better single-core performance than two, for this na?ve
+drop scenario.
+
+The above tests was done for the 'ice' driver.
+
+Thanks to Jakub for suggesting this busy-polling addition [1], and
+Eric for the input on the v1 RFC.
+
+
+Some outstanding questions:
+
+* Currently busy-polling for UDP/TCP is only wired up in the recvmsg()
+  path. Does it make sense to extend that to sendmsg() as well?
+
+* Extending xdp_rxq_info_reg() with napi_id touches a lot of drivers,
+  and I've only verified the Intel ones. Some drivers initialize NAPI
+  (generating the napi_id) after the xdp_rxq_info_reg() call, which
+  maybe would open up for another API. I did not send this RFC to all
+  the driver authors. I'll do that for a patch proper series.
+
+* Today, enabling busy-polling require CAP_NET_ADMIN. For a NAPI
+  context that services multiple socket, this makes sense because one
+  socket can affect performance of other sockets. Now, for a
+  *dedicated* queue for say XDP socket, would it be OK to drop
+  CAP_NET_ADMIN, because it cannot affect other sockets/users.
+
+
+Changes:
+
+rfc-v1 [2] -> rfc-v2:
+  * Changed name from bias to prefer.
+  * Base the work on Eric's/Luigi's defer irq/gro timeout work.
+  * Proper GRO flushing.
+  * Build issues for some XDP drivers.
+
+[1] https://lore.kernel.org/netdev/20200925120652.10b8d7c5 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
+[2] https://lore.kernel.org/bpf/20201028133437.212503-1-bjorn.topel at gmail.com/
+
+
+Bj?rn T?pel (9):
+  net: introduce preferred busy-polling
+  net: add SO_BUSY_POLL_BUDGET socket option
+  xsk: add support for recvmsg()
+  xsk: check need wakeup flag in sendmsg()
+  xsk: add busy-poll support for {recv,send}msg()
+  xsk: propagate napi_id to XDP socket Rx path
+  samples/bpf: use recvfrom() in xdpsock
+  samples/bpf: add busy-poll support to xdpsock
+  samples/bpf: add option to set the busy-poll budget
+
+ arch/alpha/include/uapi/asm/socket.h          |  3 +
+ arch/mips/include/uapi/asm/socket.h           |  3 +
+ arch/parisc/include/uapi/asm/socket.h         |  3 +
+ arch/sparc/include/uapi/asm/socket.h          |  3 +
+ drivers/net/ethernet/amazon/ena/ena_netdev.c  |  2 +-
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     |  2 +-
+ .../ethernet/cavium/thunder/nicvf_queues.c    |  2 +-
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_base.c     |  4 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |  2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c     |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  2 +-
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |  2 +-
+ drivers/net/ethernet/marvell/mvneta.c         |  2 +-
+ .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |  4 +-
+ drivers/net/ethernet/mellanox/mlx4/en_rx.c    |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |  2 +-
+ .../ethernet/netronome/nfp/nfp_net_common.c   |  2 +-
+ drivers/net/ethernet/qlogic/qede/qede_main.c  |  2 +-
+ drivers/net/ethernet/sfc/rx_common.c          |  2 +-
+ drivers/net/ethernet/socionext/netsec.c       |  2 +-
+ drivers/net/ethernet/ti/cpsw_priv.c           |  2 +-
+ drivers/net/hyperv/netvsc.c                   |  2 +-
+ drivers/net/tun.c                             |  2 +-
+ drivers/net/veth.c                            |  2 +-
+ drivers/net/virtio_net.c                      |  2 +-
+ drivers/net/xen-netfront.c                    |  2 +-
+ fs/eventpoll.c                                |  3 +-
+ include/linux/netdevice.h                     | 35 +++++---
+ include/net/busy_poll.h                       | 27 ++++--
+ include/net/sock.h                            |  4 +
+ include/net/xdp.h                             |  3 +-
+ include/uapi/asm-generic/socket.h             |  3 +
+ net/core/dev.c                                | 89 ++++++++++++++-----
+ net/core/sock.c                               | 19 ++++
+ net/core/xdp.c                                |  3 +-
+ net/xdp/xsk.c                                 | 36 +++++++-
+ net/xdp/xsk_buff_pool.c                       | 13 ++-
+ samples/bpf/xdpsock_user.c                    | 53 ++++++++---
+ 40 files changed, 262 insertions(+), 90 deletions(-)
+
+
+base-commit: d0b3d2d7e50de5ce121f77a16df4c17e91b09421
+-- 
+2.27.0
+
