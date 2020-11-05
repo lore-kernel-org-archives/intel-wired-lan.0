@@ -1,39 +1,43 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 5 Nov 2020 07:45:11 -0800
-Subject: [Intel-wired-lan] [PATCH bpf-next 1/6] i40e: introduce lazy Tx
- completions for AF_XDP zero-copy
-In-Reply-To: <CAJ8uoz3-tjXekU=kR+HfMhGBcHtAFnKGq1ZvpFq99T_S-mknPg@mail.gmail.com>
-References: <1604498942-24274-1-git-send-email-magnus.karlsson@gmail.com>
- <1604498942-24274-2-git-send-email-magnus.karlsson@gmail.com>
- <20201104153320.66cecba8@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <CAJ8uoz3-tjXekU=kR+HfMhGBcHtAFnKGq1ZvpFq99T_S-mknPg@mail.gmail.com>
-Message-ID: <20201105074511.6935e8b7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 05 Nov 2020 14:03:31 -0800
+Subject: [Intel-wired-lan] [PATCH v3 8/9] igc: Add support for XDP_TX
+ action
+In-Reply-To: <160444685523.10323.13712174376571831748@anemani-mobl2.amr.corp.intel.com>
+References: <20201030210351.46482-1-andre.guedes@intel.com>
+ <20201030210351.46482-9-andre.guedes@intel.com>
+ <20201102182659.GK6427@ranger.igk.intel.com>
+ <160444685523.10323.13712174376571831748@anemani-mobl2.amr.corp.intel.com>
+Message-ID: <87k0uza2bw.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 5 Nov 2020 15:17:50 +0100 Magnus Karlsson wrote:
-> > I feel like this needs a big fat warning somewhere.
-> >
-> > It's perfectly fine to never complete TCP packets, but AF_XDP could be
-> > used to implement protocols in user space. What if someone wants to
-> > implement something like TSQ?  
-> 
-> I might misunderstand you, but with TSQ here (for something that
-> bypasses qdisk and any buffering and just goes straight to the driver)
-> you mean the ability to have just a few buffers outstanding and
-> continuously reuse these? If so, that is likely best achieved by
-> setting a low Tx queue size on the NIC. Note that even without this
-> patch, completions could be delayed. Though this patch makes that the
-> normal case. In any way, I think this calls for some improved
-> documentation.
+Hi,
 
-TSQ tries to limit the amount of data the TCP stack queues into TC/sched
-and drivers. Say 1MB ~ 16 GSO frames. It will not queue more data until
-some of the transfer is reported as completed. 
+Andre Guedes <andre.guedes@intel.com> writes:
 
-IIUC you're allowing up to 64 descriptors to linger without reporting
-back that the transfer is done. That means that user space implementing
-a scheme similar to TSQ may see its transfers stalled.
+> Quoting Maciej Fijalkowski (2020-11-02 10:26:59)
+>> > +static struct igc_ring *igc_xdp_get_tx_ring(struct igc_adapter *adapter,
+>> > +                                         int cpu)
+>> > +{
+>> > +     int index = cpu;
+>> > +
+>> > +     if (index >= adapter->num_tx_queues)
+>> > +             index = index % adapter->num_tx_queues;
+>> 
+>> I'm not sure why you don't want to take the suggestion for getting rid of
+>> modulo op. I won't insist anymore ;)
+>
+> As I mentioned in the previous comment, I was just following the same
+> approach from igb. Since I'll submit a v4 already, I'll do that as
+> well.
+
+Another idea is to use iter_div_u64_rem() as the expected difference
+between divident and divisor should be small.
+
+
+Cheers,
+-- 
+Vinicius
