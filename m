@@ -1,75 +1,81 @@
 From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Tue, 10 Nov 2020 12:01:29 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next v2 0/5] xsk: i40e: Tx performance
- improvements
-Message-ID: <1605006094-31097-1-git-send-email-magnus.karlsson@gmail.com>
+Date: Tue, 10 Nov 2020 12:01:30 +0100
+Subject: [Intel-wired-lan] [PATCH bpf-next v2 1/5] samples/bpf: increment Tx
+ stats at sending
+In-Reply-To: <1605006094-31097-1-git-send-email-magnus.karlsson@gmail.com>
+References: <1605006094-31097-1-git-send-email-magnus.karlsson@gmail.com>
+Message-ID: <1605006094-31097-2-git-send-email-magnus.karlsson@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set improves the performance of mainly the Tx processing of
-AF_XDP sockets. Though, patch 3 also improves the Rx path. All in all,
-this patch set improves the throughput of the l2fwd xdpsock
-application by around 11%. If we just take a look at Tx processing part,
-it is improved by 35% to 40%.
+From: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Hopefully the new batched Tx interfaces should be of value to other
-drivers implementing AF_XDP zero-copy support. But patch #3 is generic
-and will improve performance of all drivers when using AF_XDP sockets
-(under the premises explained in that patch).
+Increment the statistics over how many Tx packets have been sent at
+the time of sending instead of at the time of completion. This as a
+completion event means that the buffer has been sent AND returned to
+user space. The packet always gets sent shortly after sendto() is
+called. The kernel might, for performance reasons, decide to not
+return every single buffer to user space immediately after sending,
+for example, only after a batch of packets have been
+transmitted. Incrementing the number of packets sent at completion,
+will in that case be confusing as if you send a single packet, the
+counter might show zero for a while even though the packet has been
+transmitted.
 
-@Daniel. In patch 3, I apply all the padding required to hinder the
-adjacency prefetcher to prefetch the wrong things. After this patch
-set, I will submit another patch set that introduces
-____cacheline_padding_in_smp in include/linux/cache.h according to your
-suggestions. The last patch in that patch set will then convert the
-explicit paddings that we have now to ____cacheline_padding_in_smp.
+Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+Acked-by: John Fastabend <john.fastabend@gmail.com>
+---
+ samples/bpf/xdpsock_user.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v1 -> v2:
-* Removed added parameter in i40e_setup_tx_descriptors and adopted a
-  simpler solution [Maciej]
-* Added test for !xs in xsk_tx_peek_release_desc_batch() [John]
-* Simplified return path in xsk_tx_peek_release_desc_batch() [John]
-* Dropped patch #1 in v1 that introduced lazy completions. Hopefully
-  this is not needed when we get busy poll. [Jakub]
-* Iterate over local variable in xskq_prod_reserve_addr_batch() for
-  improved performance
-* Fixed the fallback path in xsk_tx_peek_release_desc_batch() so that
-  it also produces a batch of descriptors, albeit by using the slower
-  (but more general) older code. This improves the performance of the
-  case when multiple sockets are sharing the same device and queue id.
-
-This patch has been applied against commit f52b8fd33257 ("bpf: selftest: Use static globals in tcp_hdr_options and btf_skc_cls_ingress")
-
-Structure of the patch set:
-
-Patch 1: For the xdpsock sample, increment Tx stats at sending instead
-         of at completion.
-Patch 2: Remove an unnecessary sw ring access from the Tx path in i40e.
-Patch 3: Introduce padding between all pointers and fields in the ring.
-Patch 4: Introduce batched Tx descriptor interfaces.
-Patch 5: Use the new batched interfaces in the i40e driver to get higher
-         throughput.
-
-Thanks: Magnus
-
-Magnus Karlsson (5):
-  samples/bpf: increment Tx stats at sending
-  i40e: remove unnecessary sw_ring access from xsk Tx
-  xsk: introduce padding between more ring pointers
-  xsk: introduce batched Tx descriptor interfaces
-  i40e: use batched xsk Tx interfaces to increase performance
-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  11 +++
- drivers/net/ethernet/intel/i40e/i40e_txrx.h |   1 +
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 131 +++++++++++++++++++---------
- include/net/xdp_sock_drv.h                  |   7 ++
- net/xdp/xsk.c                               |  57 ++++++++++++
- net/xdp/xsk_queue.h                         |  96 +++++++++++++++++---
- samples/bpf/xdpsock_user.c                  |   6 +-
- 7 files changed, 253 insertions(+), 56 deletions(-)
-
---
+diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
+index 1149e94..2567f0d 100644
+--- a/samples/bpf/xdpsock_user.c
++++ b/samples/bpf/xdpsock_user.c
+@@ -1146,7 +1146,6 @@ static inline void complete_tx_l2fwd(struct xsk_socket_info *xsk,
+ 		xsk_ring_prod__submit(&xsk->umem->fq, rcvd);
+ 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
+ 		xsk->outstanding_tx -= rcvd;
+-		xsk->ring_stats.tx_npkts += rcvd;
+ 	}
+ }
+ 
+@@ -1168,7 +1167,6 @@ static inline void complete_tx_only(struct xsk_socket_info *xsk,
+ 	if (rcvd > 0) {
+ 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
+ 		xsk->outstanding_tx -= rcvd;
+-		xsk->ring_stats.tx_npkts += rcvd;
+ 	}
+ }
+ 
+@@ -1260,6 +1258,7 @@ static void tx_only(struct xsk_socket_info *xsk, u32 *frame_nb, int batch_size)
+ 	}
+ 
+ 	xsk_ring_prod__submit(&xsk->tx, batch_size);
++	xsk->ring_stats.tx_npkts += batch_size;
+ 	xsk->outstanding_tx += batch_size;
+ 	*frame_nb += batch_size;
+ 	*frame_nb %= NUM_FRAMES;
+@@ -1348,6 +1347,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
+ 		}
+ 		return;
+ 	}
++	xsk->ring_stats.rx_npkts += rcvd;
+ 
+ 	ret = xsk_ring_prod__reserve(&xsk->tx, rcvd, &idx_tx);
+ 	while (ret != rcvd) {
+@@ -1379,7 +1379,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
+ 	xsk_ring_prod__submit(&xsk->tx, rcvd);
+ 	xsk_ring_cons__release(&xsk->rx, rcvd);
+ 
+-	xsk->ring_stats.rx_npkts += rcvd;
++	xsk->ring_stats.tx_npkts += rcvd;
+ 	xsk->outstanding_tx += rcvd;
+ }
+ 
+-- 
 2.7.4
+
