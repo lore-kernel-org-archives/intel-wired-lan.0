@@ -1,10 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Tue, 10 Nov 2020 12:01:30 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next v2 1/5] samples/bpf: increment Tx
- stats at sending
+Date: Tue, 10 Nov 2020 12:01:31 +0100
+Subject: [Intel-wired-lan] [PATCH bpf-next v2 2/5] i40e: remove unnecessary
+ sw_ring access from xsk Tx
 In-Reply-To: <1605006094-31097-1-git-send-email-magnus.karlsson@gmail.com>
 References: <1605006094-31097-1-git-send-email-magnus.karlsson@gmail.com>
-Message-ID: <1605006094-31097-2-git-send-email-magnus.karlsson@gmail.com>
+Message-ID: <1605006094-31097-3-git-send-email-magnus.karlsson@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,69 +13,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Increment the statistics over how many Tx packets have been sent at
-the time of sending instead of at the time of completion. This as a
-completion event means that the buffer has been sent AND returned to
-user space. The packet always gets sent shortly after sendto() is
-called. The kernel might, for performance reasons, decide to not
-return every single buffer to user space immediately after sending,
-for example, only after a batch of packets have been
-transmitted. Incrementing the number of packets sent at completion,
-will in that case be confusing as if you send a single packet, the
-counter might show zero for a while even though the packet has been
-transmitted.
+Remove the unnecessary access to the software ring for the AF_XDP
+zero-copy driver. This was used to record the length of the packet so
+that the driver Tx completion code could sum this up to produce the
+total bytes sent. This is now performed during the transmission of the
+packet, so no need to record this in the software ring.
 
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 Acked-by: John Fastabend <john.fastabend@gmail.com>
 ---
- samples/bpf/xdpsock_user.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
-index 1149e94..2567f0d 100644
---- a/samples/bpf/xdpsock_user.c
-+++ b/samples/bpf/xdpsock_user.c
-@@ -1146,7 +1146,6 @@ static inline void complete_tx_l2fwd(struct xsk_socket_info *xsk,
- 		xsk_ring_prod__submit(&xsk->umem->fq, rcvd);
- 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
- 		xsk->outstanding_tx -= rcvd;
--		xsk->ring_stats.tx_npkts += rcvd;
- 	}
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 6acede0..61aa1fc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -392,7 +392,6 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ {
+ 	unsigned int sent_frames = 0, total_bytes = 0;
+ 	struct i40e_tx_desc *tx_desc = NULL;
+-	struct i40e_tx_buffer *tx_bi;
+ 	struct xdp_desc desc;
+ 	dma_addr_t dma;
  
-@@ -1168,7 +1167,6 @@ static inline void complete_tx_only(struct xsk_socket_info *xsk,
- 	if (rcvd > 0) {
- 		xsk_ring_cons__release(&xsk->umem->cq, rcvd);
- 		xsk->outstanding_tx -= rcvd;
--		xsk->ring_stats.tx_npkts += rcvd;
- 	}
- }
+@@ -404,9 +403,6 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ 		xsk_buff_raw_dma_sync_for_device(xdp_ring->xsk_pool, dma,
+ 						 desc.len);
  
-@@ -1260,6 +1258,7 @@ static void tx_only(struct xsk_socket_info *xsk, u32 *frame_nb, int batch_size)
- 	}
+-		tx_bi = &xdp_ring->tx_bi[xdp_ring->next_to_use];
+-		tx_bi->bytecount = desc.len;
+-
+ 		tx_desc = I40E_TX_DESC(xdp_ring, xdp_ring->next_to_use);
+ 		tx_desc->buffer_addr = cpu_to_le64(dma);
+ 		tx_desc->cmd_type_offset_bsz =
+@@ -415,7 +411,7 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
+ 				   0, desc.len, 0);
  
- 	xsk_ring_prod__submit(&xsk->tx, batch_size);
-+	xsk->ring_stats.tx_npkts += batch_size;
- 	xsk->outstanding_tx += batch_size;
- 	*frame_nb += batch_size;
- 	*frame_nb %= NUM_FRAMES;
-@@ -1348,6 +1347,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
- 		}
- 		return;
- 	}
-+	xsk->ring_stats.rx_npkts += rcvd;
+ 		sent_frames++;
+-		total_bytes += tx_bi->bytecount;
++		total_bytes += desc.len;
  
- 	ret = xsk_ring_prod__reserve(&xsk->tx, rcvd, &idx_tx);
- 	while (ret != rcvd) {
-@@ -1379,7 +1379,7 @@ static void l2fwd(struct xsk_socket_info *xsk, struct pollfd *fds)
- 	xsk_ring_prod__submit(&xsk->tx, rcvd);
- 	xsk_ring_cons__release(&xsk->rx, rcvd);
- 
--	xsk->ring_stats.rx_npkts += rcvd;
-+	xsk->ring_stats.tx_npkts += rcvd;
- 	xsk->outstanding_tx += rcvd;
- }
- 
+ 		xdp_ring->next_to_use++;
+ 		if (xdp_ring->next_to_use == xdp_ring->count)
 -- 
 2.7.4
 
