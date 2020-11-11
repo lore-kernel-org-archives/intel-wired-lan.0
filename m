@@ -1,9 +1,10 @@
 From: sven.auhagen@voleatech.de <sven.auhagen@voleatech.de>
-Date: Wed, 11 Nov 2020 18:04:50 +0100
-Subject: [Intel-wired-lan] [PATCH v4 3/6] igb: XDP extack message on error
+Date: Wed, 11 Nov 2020 18:04:53 +0100
+Subject: [Intel-wired-lan] [PATCH v4 6/6] igb: avoid transmit queue timeout
+ in xdp path
 In-Reply-To: <20201111170453.32693-1-sven.auhagen@voleatech.de>
 References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
-Message-ID: <20201111170453.32693-4-sven.auhagen@voleatech.de>
+Message-ID: <20201111170453.32693-7-sven.auhagen@voleatech.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,71 +13,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sven Auhagen <sven.auhagen@voleatech.de>
 
-Add an extack error message when the RX buffer size is too small
-for the frame size.
+Since we share the transmit queue with the network stack,
+it is possible that we run into a transmit queue timeout.
+This will reset the queue.
+This happens under high load when XDP is using the
+transmit queue pretty much exclusively.
 
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
-Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+netdev_start_xmit() sets the trans_start variable of the
+transmit queue to jiffies which is later utilized by dev_watchdog(),
+so to avoid timeout, let stack know that XDP xmit happened by
+bumping the trans_start within XDP Tx routines to jiffies.
+
 Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0a9198037b98..a0a310a75cc5 100644
+index b6c793441585..74f0f06bedff 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2824,20 +2824,25 @@ static int igb_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 	}
- }
+@@ -2919,6 +2919,8 @@ static int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
  
--static int igb_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
-+static int igb_xdp_setup(struct net_device *dev, struct netdev_bpf *bpf)
- {
- 	int i, frame_size = dev->mtu + IGB_ETH_PKT_HDR_PAD;
- 	struct igb_adapter *adapter = netdev_priv(dev);
-+	struct bpf_prog *prog = bpf->prog, *old_prog;
- 	bool running = netif_running(dev);
--	struct bpf_prog *old_prog;
- 	bool need_reset;
+ 	nq = txring_txq(tx_ring);
+ 	__netif_tx_lock(nq, cpu);
++	/* Avoid transmit queue timeout since we share it with the slow path */
++	nq->trans_start = jiffies;
+ 	ret = igb_xmit_xdp_ring(adapter, tx_ring, xdpf);
+ 	__netif_tx_unlock(nq);
  
- 	/* verify igb ring attributes are sufficient for XDP */
- 	for (i = 0; i < adapter->num_rx_queues; i++) {
- 		struct igb_ring *ring = adapter->rx_ring[i];
+@@ -2951,6 +2953,9 @@ static int igb_xdp_xmit(struct net_device *dev, int n,
+ 	nq = txring_txq(tx_ring);
+ 	__netif_tx_lock(nq, cpu);
  
--		if (frame_size > igb_rx_bufsz(ring))
-+		if (frame_size > igb_rx_bufsz(ring)) {
-+			NL_SET_ERR_MSG_MOD(bpf->extack,
-+					   "The RX buffer size is too small for the frame size");
-+			netdev_warn(dev, "XDP RX buffer size %d is too small for the frame size %d\n",
-+				    igb_rx_bufsz(ring), frame_size);
- 			return -EINVAL;
-+		}
- 	}
- 
- 	old_prog = xchg(&adapter->xdp_prog, prog);
-@@ -2869,7 +2874,7 @@ static int igb_xdp(struct net_device *dev, struct netdev_bpf *xdp)
- {
- 	switch (xdp->command) {
- 	case XDP_SETUP_PROG:
--		return igb_xdp_setup(dev, xdp->prog);
-+		return igb_xdp_setup(dev, xdp);
- 	default:
- 		return -EINVAL;
- 	}
-@@ -6499,7 +6504,9 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
- 			struct igb_ring *ring = adapter->rx_ring[i];
- 
- 			if (max_frame > igb_rx_bufsz(ring)) {
--				netdev_warn(adapter->netdev, "Requested MTU size is not supported with XDP\n");
-+				netdev_warn(adapter->netdev,
-+					    "Requested MTU size is not supported with XDP. Max frame size is %d\n",
-+					    max_frame);
- 				return -EINVAL;
- 			}
- 		}
++	/* Avoid transmit queue timeout since we share it with the slow path */
++	nq->trans_start = jiffies;
++
+ 	for (i = 0; i < n; i++) {
+ 		struct xdp_frame *xdpf = frames[i];
+ 		int err;
 -- 
 2.20.1
 
