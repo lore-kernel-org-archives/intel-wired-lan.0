@@ -1,10 +1,9 @@
 From: sven.auhagen@voleatech.de <sven.auhagen@voleatech.de>
-Date: Wed, 11 Nov 2020 18:04:53 +0100
-Subject: [Intel-wired-lan] [PATCH v4 6/6] igb: avoid transmit queue timeout
- in xdp path
+Date: Wed, 11 Nov 2020 18:04:51 +0100
+Subject: [Intel-wired-lan] [PATCH v4 4/6] igb: skb add metasize for xdp
 In-Reply-To: <20201111170453.32693-1-sven.auhagen@voleatech.de>
 References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
-Message-ID: <20201111170453.32693-7-sven.auhagen@voleatech.de>
+Message-ID: <20201111170453.32693-5-sven.auhagen@voleatech.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,46 +12,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Sven Auhagen <sven.auhagen@voleatech.de>
 
-Since we share the transmit queue with the network stack,
-it is possible that we run into a transmit queue timeout.
-This will reset the queue.
-This happens under high load when XDP is using the
-transmit queue pretty much exclusively.
+add metasize if it is set in xdp
 
-netdev_start_xmit() sets the trans_start variable of the
-transmit queue to jiffies which is later utilized by dev_watchdog(),
-so to avoid timeout, let stack know that XDP xmit happened by
-bumping the trans_start within XDP Tx routines to jiffies.
-
+Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b6c793441585..74f0f06bedff 100644
+index a0a310a75cc5..fa93aec0ba04 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2919,6 +2919,8 @@ static int igb_xdp_xmit_back(struct igb_adapter *adapter, struct xdp_buff *xdp)
+@@ -8350,6 +8350,7 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
+ 				     struct xdp_buff *xdp,
+ 				     union e1000_adv_rx_desc *rx_desc)
+ {
++	unsigned int metasize = xdp->data - xdp->data_meta;
+ #if (PAGE_SIZE < 8192)
+ 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
+ #else
+@@ -8371,6 +8372,9 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
+ 	skb_reserve(skb, xdp->data - xdp->data_hard_start);
+ 	__skb_put(skb, xdp->data_end - xdp->data);
  
- 	nq = txring_txq(tx_ring);
- 	__netif_tx_lock(nq, cpu);
-+	/* Avoid transmit queue timeout since we share it with the slow path */
-+	nq->trans_start = jiffies;
- 	ret = igb_xmit_xdp_ring(adapter, tx_ring, xdpf);
- 	__netif_tx_unlock(nq);
- 
-@@ -2951,6 +2953,9 @@ static int igb_xdp_xmit(struct net_device *dev, int n,
- 	nq = txring_txq(tx_ring);
- 	__netif_tx_lock(nq, cpu);
- 
-+	/* Avoid transmit queue timeout since we share it with the slow path */
-+	nq->trans_start = jiffies;
++	if (metasize)
++		skb_metadata_set(skb, metasize);
 +
- 	for (i = 0; i < n; i++) {
- 		struct xdp_frame *xdpf = frames[i];
- 		int err;
+ 	/* pull timestamp out of packet data */
+ 	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+ 		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
 -- 
 2.20.1
 
