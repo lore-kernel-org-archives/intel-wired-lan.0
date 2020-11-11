@@ -1,63 +1,75 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Date: Wed, 11 Nov 2020 13:50:35 +0800
-Subject: [Intel-wired-lan] [PATCH 0/4][RFC] Disable e1000e power management
- if hardware error is detected
-Message-ID: <cover.1605073208.git.yu.c.chen@intel.com>
+Date: Wed, 11 Nov 2020 13:51:00 +0800
+Subject: [Intel-wired-lan] [PATCH 1/4][RFC] e1000e: save the return value of
+ e1000e_reset()
+In-Reply-To: <cover.1605073208.git.yu.c.chen@intel.com>
+References: <cover.1605073208.git.yu.c.chen@intel.com>
+Message-ID: <7e68b2f6a9b0a6e03f6eeba8433bc532a3256830.1605073208.git.yu.c.chen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is a trial patchset that aims to cope with an intermittently
-triggered hardware error during system resume.
+Sometimes e1000e_reset() might fail during reume from S3 due to
+hardware/firmware issues. Actually the return value from e1000e_reset()
+can be used by the caller to verify if the NIC succeed to initialize or
+not.
 
-On some platforms the NIC's hardware error was detected during
-resume from S3, causing the NIC to not fully initialize
-and remain in unstable state afterwards. As a consequence
-the system fails to suspend due to incorrect NIC status.
+Introduce a static function _e1000e_reset() which is derived
+from e1000e_reset(), except that the former returns the result
+of this reset.
 
-In theory if the NIC could not be initialized after resumed,
-it should not do system/runtime suspend/resume afterwards.
-There are two proposals to deal with this situation:
+No functional change expected.
 
-Either:
-1. Each time before the NIC going to suspend, check the status
-   of NIC by querying corresponding registers, bypass the suspend
-   callback on this NIC if it's unstable.
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Or:
-2. During NIC resume, if the hardware error was detected, removes
-   the NIC from power management list entirely.
-
-Proposal 2 was chosen in this patch set because:
-1. Proposal 1 requires that the driver queries the status
-   of the NIC in e1000e driver. However there seems to be
-   no specific registers for the e1000e to query the result
-   of NIC initialization.
-2. Proposal 1 just bypass the suspend process but the power management
-   framework is still aware of this NIC, which might bring potential issue
-   in race condition.
-3. Approach 2 is a clean solution and it is platform independent
-   that, not only e1000e, but also other drivers could leverage
-   this generic mechanism in the future.
-
-Comments appreciated.
-
-Chen Yu (4):
-  e1000e: save the return value of e1000e_reset()
-  PM: sleep: export device_pm_remove() for driver use
-  e1000e: Introduce workqueue to disable the power management
-  e1000e: Disable the power management if hardware error detected during
-    resume
-
- drivers/base/power/main.c                  |  1 +
- drivers/base/power/power.h                 |  8 -------
- drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
- drivers/net/ethernet/intel/e1000e/netdev.c | 27 ++++++++++++++++++----
- include/linux/pm.h                         | 12 ++++++++++
- 5 files changed, 37 insertions(+), 12 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b30f00891c03..f7c08426c0d7 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3998,7 +3998,7 @@ static void e1000e_systim_reset(struct e1000_adapter *adapter)
+  * set/changed during runtime. After reset the device needs to be
+  * properly configured for Rx, Tx etc.
+  */
+-void e1000e_reset(struct e1000_adapter *adapter)
++static int _e1000e_reset(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_mac_info *mac = &adapter->hw.mac;
+ 	struct e1000_fc_info *fc = &adapter->hw.fc;
+@@ -4191,14 +4191,14 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 		default:
+ 			dev_err(&adapter->pdev->dev,
+ 				"Invalid PHY type setting EEE advertisement\n");
+-			return;
++			return -EINVAL;
+ 		}
+ 
+ 		ret_val = hw->phy.ops.acquire(hw);
+ 		if (ret_val) {
+ 			dev_err(&adapter->pdev->dev,
+ 				"EEE advertisement - unable to acquire PHY\n");
+-			return;
++			return -EBUSY;
+ 		}
+ 
+ 		e1000_write_emi_reg_locked(hw, adv_addr,
+@@ -4239,6 +4239,12 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 		ew32(FEXTNVM9, reg);
+ 	}
+ 
++	return 0;
++}
++
++void e1000e_reset(struct e1000_adapter *adapter)
++{
++	_e1000e_reset(adapter);
+ }
+ 
+ /**
 -- 
 2.17.1
 
