@@ -1,444 +1,314 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Nov 2020 16:43:29 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 6/7] ice: display stored netlist
+Date: Wed, 11 Nov 2020 16:43:28 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 5/7] ice: display some stored NVM
  versions via devlink info
 In-Reply-To: <20201112004330.2896993-1-jacob.e.keller@intel.com>
 References: <20201112004330.2896993-1-jacob.e.keller@intel.com>
-Message-ID: <20201112004330.2896993-7-jacob.e.keller@intel.com>
+Message-ID: <20201112004330.2896993-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add a function to read the inactive netlist bank for version
-information. To support this, refactor how we read the netlist version
-data. Instead of using the firmware AQ interface with a module ID, read
-from the flash as a flat NVM, using ice_read_flash_module.
+The devlink info interface supports drivers reporting "stored" versions.
+These versions indicate the version of an update that has been
+downloaded to the device, but is not yet active.
 
-This change requires a slight adjustment to the offset values used, as
-reading from the flat NVM includes the type field (which was stripped by
-firmware previously). Cleanup the macro names and move them to
-ice_type.h. For clarity in how we calculate the offsets and so that
-programmers can easily map the offset value to the data sheet, use
-a wrapper macro to account for the offset adjustments.
+Add a new function to read some of the fw.mgmt version data from the
+inactive flash section. This function, ice_get_inactive_nvm_ver, will
+read the NVM version data from the inactive section of flash.
 
-Use the newly added ice_get_inactive_netlist_ver function to extract the
-version data from the pending netlist module update. Add the stored
-variants of "fw.netlist", and "fw.netlist.build" to the info version map
-array.
+To avoid code duplication, we refactor ice_get_nvm_ver_info so that it
+takes the bank parameter for specifying which flash bank to read from.
+Instead of reading from the copy stored in the Shadow RAM, always read
+from the copy of the specified flash bank.
 
-With this change, we now report the pending netlist module version if we
-detect a pending but not complete netlist update when reporting firmware
-versions.
+Note that the start of the Shadow RAM copy is not directly following the
+CSS header, but is actually aligned to the next 64-byte boundary. The
+correct word offset must be rounded up to 32-bytes.
+
+When reporting the versions via devlink info, first read the device
+capabilities. If there is a pending flash update, use this new function
+to extract the inactive flash versions. Add the stored fields to the
+flash version map structure so that they will be displayed when
+available.
+
+It should be noted that it is not currently feasible to extract all of
+the related versions for the management firmware. This patch adds
+support for displaying "fw.mgmt.srev", "fw.psid.api", and
+"fw.bundle_id". The management firmware versions are more difficult to
+extract from the binary and have not been implemented in this change.
+
+Future changes will introduce support for reading the UNDI Option ROM
+version and the version associated with the Netlist module.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  27 ---
- drivers/net/ethernet/intel/ice/ice_devlink.c  |  38 ++++
- drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
- drivers/net/ethernet/intel/ice/ice_nvm.c      | 164 +++++++++++-------
- drivers/net/ethernet/intel/ice/ice_nvm.h      |   2 +
- drivers/net/ethernet/intel/ice/ice_status.h   |   1 +
- drivers/net/ethernet/intel/ice/ice_type.h     |  35 ++++
- 7 files changed, 176 insertions(+), 93 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 57 ++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c     | 44 ++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_nvm.h     |  2 +
+ drivers/net/ethernet/intel/ice/ice_type.h    |  8 ++-
+ 4 files changed, 104 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index ce9090c009e8..d384ad2dfdab 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1343,33 +1343,6 @@ struct ice_aqc_nvm_checksum {
- 
- #define ICE_AQC_NVM_MINSREV_MOD_ID		0x130
- 
--/* The result of netlist NVM read comes in a TLV format. The actual data
-- * (netlist header) starts from word offset 1 (byte 2). The FW strips
-- * out the type field from the TLV header so all the netlist fields
-- * should adjust their offset value by 1 word (2 bytes) in order to map
-- * their correct location.
-- */
--#define ICE_AQC_NVM_LINK_TOPO_NETLIST_MOD_ID		0x11B
--#define ICE_AQC_NVM_LINK_TOPO_NETLIST_LEN_OFFSET	1
--#define ICE_AQC_NVM_LINK_TOPO_NETLIST_LEN		2 /* In bytes */
--#define ICE_AQC_NVM_NETLIST_NODE_COUNT_OFFSET		2
--#define ICE_AQC_NVM_NETLIST_NODE_COUNT_LEN		2 /* In bytes */
--#define ICE_AQC_NVM_NETLIST_NODE_COUNT_M		ICE_M(0x3FF, 0)
--#define ICE_AQC_NVM_NETLIST_ID_BLK_START_OFFSET		5
--#define ICE_AQC_NVM_NETLIST_ID_BLK_LEN			0x30 /* In words */
--
--/* netlist ID block field offsets (word offsets) */
--#define ICE_AQC_NVM_NETLIST_ID_BLK_MAJOR_VER_LOW	2
--#define ICE_AQC_NVM_NETLIST_ID_BLK_MAJOR_VER_HIGH	3
--#define ICE_AQC_NVM_NETLIST_ID_BLK_MINOR_VER_LOW	4
--#define ICE_AQC_NVM_NETLIST_ID_BLK_MINOR_VER_HIGH	5
--#define ICE_AQC_NVM_NETLIST_ID_BLK_TYPE_LOW		6
--#define ICE_AQC_NVM_NETLIST_ID_BLK_TYPE_HIGH		7
--#define ICE_AQC_NVM_NETLIST_ID_BLK_REV_LOW		8
--#define ICE_AQC_NVM_NETLIST_ID_BLK_REV_HIGH		9
--#define ICE_AQC_NVM_NETLIST_ID_BLK_SHA_HASH		0xA
--#define ICE_AQC_NVM_NETLIST_ID_BLK_CUST_VER		0x2F
--
- /* Used for reading and writing MinSRev using 0x0701 and 0x0703. Note that the
-  * type field is excluded from the section when reading and writing from
-  * a module using the module_typeid field with these AQ commands.
 diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 26bee486997f..392b90e58add 100644
+index 31cbb0fbd429..26bee486997f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
 +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -10,6 +10,7 @@
+@@ -9,6 +9,8 @@
+ /* context for devlink info version reporting */
  struct ice_info_ctx {
  	char buf[128];
- 	struct ice_nvm_info pending_nvm;
-+	struct ice_netlist_info pending_netlist;
- 	struct ice_hw_dev_caps dev_caps;
++	struct ice_nvm_info pending_nvm;
++	struct ice_hw_dev_caps dev_caps;
  };
  
-@@ -195,6 +196,30 @@ static int ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ /* The following functions are used to format specific strings for various
+@@ -80,6 +82,16 @@ static int ice_info_fw_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
  	return 0;
  }
  
-+static int ice_info_pending_netlist_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static int ice_info_pending_fw_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
 +{
-+	struct ice_netlist_info *netlist = &ctx->pending_netlist;
++	struct ice_nvm_info *nvm = &ctx->pending_nvm;
 +
-+	/* The netlist version fields are BCD formatted */
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist)
-+		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x",
-+			 netlist->major, netlist->minor,
-+			 netlist->type >> 16, netlist->type & 0xFFFF, netlist->rev,
-+			 netlist->cust_ver);
++	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
++		snprintf(ctx->buf, sizeof(ctx->buf), "%u", nvm->srev);
 +
 +	return 0;
 +}
 +
-+static int ice_info_pending_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ static int ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_orom_info *orom = &pf->hw.flash.orom;
+@@ -107,6 +119,16 @@ static int ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 	return 0;
+ }
+ 
++static int ice_info_pending_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
 +{
-+	struct ice_netlist_info *netlist = &ctx->pending_netlist;
++	struct ice_nvm_info *nvm = &ctx->pending_nvm;
 +
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist)
-+		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
++	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
++		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
 +
 +	return 0;
 +}
 +
+ static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
+@@ -116,6 +138,16 @@ static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 	return 0;
+ }
+ 
++static int ice_info_pending_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
++{
++	struct ice_nvm_info *nvm = &ctx->pending_nvm;
++
++	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
++		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", nvm->eetrack);
++
++	return 0;
++}
++
+ static int ice_info_ddp_pkg_name(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+@@ -165,6 +197,7 @@ static int ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 
  #define fixed(key, getter) { ICE_VERSION_FIXED, key, getter }
  #define running(key, getter) { ICE_VERSION_RUNNING, key, getter }
- #define stored(key, getter) { ICE_VERSION_STORED, key, getter }
-@@ -226,7 +251,9 @@ static const struct ice_devlink_version {
++#define stored(key, getter) { ICE_VERSION_STORED, key, getter }
+ 
+ enum ice_version_type {
+ 	ICE_VERSION_FIXED,
+@@ -182,10 +215,13 @@ static const struct ice_devlink_version {
+ 	running("fw.mgmt.api", ice_info_fw_api),
+ 	running("fw.mgmt.build", ice_info_fw_build),
+ 	running("fw.mgmt.srev", ice_info_fw_srev),
++	stored("fw.mgmt.srev", ice_info_pending_fw_srev),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_UNDI, ice_info_orom_ver),
+ 	running("fw.undi.srev", ice_info_orom_srev),
+ 	running("fw.psid.api", ice_info_nvm_ver),
++	stored("fw.psid.api", ice_info_pending_nvm_ver),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_eetrack),
++	stored(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_pending_eetrack),
+ 	running("fw.app.name", ice_info_ddp_pkg_name),
  	running(DEVLINK_INFO_VERSION_GENERIC_FW_APP, ice_info_ddp_pkg_version),
  	running("fw.app.bundle_id", ice_info_ddp_pkg_bundle_id),
- 	running("fw.netlist", ice_info_netlist_ver),
-+	stored("fw.netlist", ice_info_pending_netlist_ver),
- 	running("fw.netlist.build", ice_info_netlist_build),
-+	stored("fw.netlist.build", ice_info_pending_netlist_build),
- };
+@@ -209,7 +245,10 @@ static int ice_devlink_info_get(struct devlink *devlink,
+ 				struct netlink_ext_ack *extack)
+ {
+ 	struct ice_pf *pf = devlink_priv(devlink);
++	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_hw *hw = &pf->hw;
+ 	struct ice_info_ctx *ctx;
++	enum ice_status status;
+ 	size_t i;
+ 	int err;
  
- /**
-@@ -274,6 +301,17 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 		}
- 	}
+@@ -217,6 +256,24 @@ static int ice_devlink_info_get(struct devlink *devlink,
+ 	if (!ctx)
+ 		return -ENOMEM;
  
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist) {
-+		status = ice_get_inactive_netlist_ver(hw, &ctx->pending_netlist);
++	/* discover capabilities first */
++	status = ice_discover_dev_caps(hw, &ctx->dev_caps);
++	if (status) {
++		err = -EIO;
++		goto out_free_ctx;
++	}
++
++	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm) {
++		status = ice_get_inactive_nvm_ver(hw, &ctx->pending_nvm);
 +		if (status) {
-+			dev_dbg(dev, "Unable to read inactive Netlist version data, status %s aq_err %s\n",
++			dev_dbg(dev, "Unable to read inactive NVM version data, status %s aq_err %s\n",
 +				ice_stat_str(status), ice_aq_str(hw->adminq.sq_last_status));
 +
 +			/* disable display of pending Option ROM */
-+			ctx->dev_caps.common_cap.nvm_update_pending_netlist = false;
++			ctx->dev_caps.common_cap.nvm_update_pending_nvm = false;
 +		}
 +	}
 +
  	err = devlink_info_driver_name_put(req, KBUILD_MODNAME);
  	if (err) {
  		NL_SET_ERR_MSG_MOD(extack, "Unable to set driver name");
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index f1fa22189750..5692c9db5829 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6310,6 +6310,8 @@ const char *ice_stat_str(enum ice_status stat_err)
- 		return "ICE_ERR_OUT_OF_RANGE";
- 	case ICE_ERR_ALREADY_EXISTS:
- 		return "ICE_ERR_ALREADY_EXISTS";
-+	case ICE_ERR_NVM:
-+		return "ICE_ERR_NVM";
- 	case ICE_ERR_NVM_CHECKSUM:
- 		return "ICE_ERR_NVM_CHECKSUM";
- 	case ICE_ERR_BUF_TOO_SHORT:
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 9613d24eaa06..8bc2df09a11a 100644
+index ff99815402d1..9613d24eaa06 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -408,6 +408,29 @@ ice_read_orom_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u
+@@ -367,6 +367,22 @@ ice_read_nvm_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u1
  	return status;
  }
  
 +/**
-+ * ice_read_netlist_module - Read data from the netlist module area
++ * ice_read_nvm_sr_copy - Read a word from the Shadow RAM copy in the NVM bank
 + * @hw: pointer to the HW structure
-+ * @bank: whether to read from the active or inactive module
-+ * @offset: offset into the netlist to read from
++ * @bank: whether to read from the active or inactive NVM module
++ * @offset: offset into the Shadow RAM copy to read, in words
 + * @data: storage for returned word value
 + *
-+ * Read a word from the specified netlist bank.
++ * Read the specified word from the copy of the Shadow RAM found in the
++ * specified NVM module.
 + */
 +static enum ice_status
-+ice_read_netlist_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u16 *data)
++ice_read_nvm_sr_copy(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u16 *data)
 +{
-+	enum ice_status status;
-+	__le16 data_local;
-+
-+	status = ice_read_flash_module(hw, bank, ICE_SR_NETLIST_BANK_PTR, offset * sizeof(u16),
-+				       (__force u8 *)&data_local, sizeof(u16));
-+	if (!status)
-+		*data = le16_to_cpu(data_local);
-+
-+	return status;
++	return ice_read_nvm_module(hw, bank, ICE_NVM_SR_COPY_WORD_OFFSET + offset, data);
 +}
 +
  /**
-  * ice_read_sr_word - Reads Shadow RAM word and acquire NVM if necessary
+  * ice_read_orom_module - Read from the active Option ROM module
   * @hw: pointer to the HW structure
-@@ -739,85 +762,94 @@ ice_get_orom_ver_info(struct ice_hw *hw, struct ice_orom_info *orom)
- }
- 
+@@ -568,31 +584,33 @@ static enum ice_status ice_get_nvm_srev(struct ice_hw *hw, enum ice_bank_select
  /**
-- * ice_get_netlist_ver_info
-+ * ice_get_netlist_info
+  * ice_get_nvm_ver_info - Read NVM version information
   * @hw: pointer to the HW struct
-- * @ver: pointer to netlist version info structure
 + * @bank: whether to read from the active or inactive flash bank
-+ * @netlist: pointer to netlist version info structure
+  * @nvm: pointer to NVM info structure
   *
-- * Get the netlist version information
-+ * Get the netlist version information from the requested bank. Reads the Link
-+ * Topology section to find the Netlist ID block and extract the relevant
-+ * information into the netlist version structure.
+  * Read the NVM EETRACK ID and map version of the main NVM image bank, filling
+  * in the nvm info structure.
   */
  static enum ice_status
--ice_get_netlist_ver_info(struct ice_hw *hw, struct ice_netlist_info *ver)
-+ice_get_netlist_info(struct ice_hw *hw, enum ice_bank_select bank,
-+		     struct ice_netlist_info *netlist)
+-ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
++ice_get_nvm_ver_info(struct ice_hw *hw, enum ice_bank_select bank, struct ice_nvm_info *nvm)
  {
--	enum ice_status ret;
--	u32 id_blk_start;
--	__le16 raw_data;
--	u16 data, i;
--	u16 *buff;
-+	u16 module_id, length, node_count, i;
-+	enum ice_status status;
-+	u16 *id_blk;
+ 	u16 eetrack_lo, eetrack_hi, ver;
+ 	enum ice_status status;
  
--	ret = ice_acquire_nvm(hw, ICE_RES_READ);
--	if (ret)
--		return ret;
--	buff = kcalloc(ICE_AQC_NVM_NETLIST_ID_BLK_LEN, sizeof(*buff),
--		       GFP_KERNEL);
--	if (!buff) {
--		ret = ICE_ERR_NO_MEMORY;
--		goto exit_no_mem;
-+	status = ice_read_netlist_module(hw, bank, ICE_NETLIST_TYPE_OFFSET, &module_id);
-+	if (status)
-+		return status;
-+
-+	if (module_id != ICE_NETLIST_LINK_TOPO_MOD_ID) {
-+		ice_debug(hw, ICE_DBG_NVM, "Expected netlist module_id ID of 0x%04x, but got 0x%04x\n",
-+			  ICE_NETLIST_LINK_TOPO_MOD_ID, module_id);
-+		return ICE_ERR_NVM;
+-	status = ice_read_sr_word(hw, ICE_SR_NVM_DEV_STARTER_VER, &ver);
++	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_DEV_STARTER_VER, &ver);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read DEV starter version.\n");
+ 		return status;
  	}
++
+ 	nvm->major = (ver & ICE_NVM_VER_HI_MASK) >> ICE_NVM_VER_HI_SHIFT;
+ 	nvm->minor = (ver & ICE_NVM_VER_LO_MASK) >> ICE_NVM_VER_LO_SHIFT;
  
--	/* read module length */
--	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_LINK_TOPO_NETLIST_MOD_ID,
--			      ICE_AQC_NVM_LINK_TOPO_NETLIST_LEN_OFFSET * 2,
--			      ICE_AQC_NVM_LINK_TOPO_NETLIST_LEN, &raw_data,
--			      false, false, NULL);
--	if (ret)
-+	status = ice_read_netlist_module(hw, bank, ICE_LINK_TOPO_MODULE_LEN, &length);
-+	if (status)
-+		return status;
-+
-+	/* sanity check that we have at least enough words to store the netlist ID block */
-+	if (length < ICE_NETLIST_ID_BLK_SIZE) {
-+		ice_debug(hw, ICE_DBG_NVM, "Netlist Link Topology module too small. Expected at least %u words, but got %u words.\n",
-+			  ICE_NETLIST_ID_BLK_SIZE, length);
-+		return ICE_ERR_NVM;
-+	}
-+
-+	status = ice_read_netlist_module(hw, bank, ICE_LINK_TOPO_NODE_COUNT, &node_count);
-+	if (status)
-+		return status;
-+	node_count &= ICE_LINK_TOPO_NODE_COUNT_M;
-+
-+	id_blk = kcalloc(ICE_NETLIST_ID_BLK_SIZE, sizeof(*id_blk), GFP_KERNEL);
-+	if (!id_blk)
-+		return ICE_ERR_NO_MEMORY;
-+
-+	/* Read out the entire Netlist ID Block@once. */
-+	status = ice_read_flash_module(hw, bank, ICE_SR_NETLIST_BANK_PTR,
-+				       ICE_NETLIST_ID_BLK_OFFSET(node_count) * sizeof(u16),
-+				       (u8 *)id_blk, ICE_NETLIST_ID_BLK_SIZE * sizeof(u16));
-+	if (status)
- 		goto exit_error;
+-	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
++	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read EETRACK lo.\n");
+ 		return status;
+ 	}
+-	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_HI, &eetrack_hi);
++	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_EETRACK_HI, &eetrack_hi);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read EETRACK hi.\n");
+ 		return status;
+@@ -600,13 +618,27 @@ ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
  
--	data = le16_to_cpu(raw_data);
--	/* exit if length is = 0 */
--	if (!data)
--		goto exit_error;
-+	for (i = 0; i < ICE_NETLIST_ID_BLK_SIZE; i++)
-+		id_blk[i] = le16_to_cpu(((__force __le16 *)id_blk)[i]);
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
  
--	/* read node count */
--	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_LINK_TOPO_NETLIST_MOD_ID,
--			      ICE_AQC_NVM_NETLIST_NODE_COUNT_OFFSET * 2,
--			      ICE_AQC_NVM_NETLIST_NODE_COUNT_LEN, &raw_data,
--			      false, false, NULL);
--	if (ret)
--		goto exit_error;
--	data = le16_to_cpu(raw_data) & ICE_AQC_NVM_NETLIST_NODE_COUNT_M;
--
--	/* netlist ID block starts from offset 4 + node count * 2 */
--	id_blk_start = ICE_AQC_NVM_NETLIST_ID_BLK_START_OFFSET + data * 2;
--
--	/* read the entire netlist ID block */
--	ret = ice_aq_read_nvm(hw, ICE_AQC_NVM_LINK_TOPO_NETLIST_MOD_ID,
--			      id_blk_start * 2,
--			      ICE_AQC_NVM_NETLIST_ID_BLK_LEN * 2, buff, false,
--			      false, NULL);
--	if (ret)
--		goto exit_error;
--
--	for (i = 0; i < ICE_AQC_NVM_NETLIST_ID_BLK_LEN; i++)
--		buff[i] = le16_to_cpu(((__force __le16 *)buff)[i]);
--
--	ver->major = (buff[ICE_AQC_NVM_NETLIST_ID_BLK_MAJOR_VER_HIGH] << 16) |
--		buff[ICE_AQC_NVM_NETLIST_ID_BLK_MAJOR_VER_LOW];
--	ver->minor = (buff[ICE_AQC_NVM_NETLIST_ID_BLK_MINOR_VER_HIGH] << 16) |
--		buff[ICE_AQC_NVM_NETLIST_ID_BLK_MINOR_VER_LOW];
--	ver->type = (buff[ICE_AQC_NVM_NETLIST_ID_BLK_TYPE_HIGH] << 16) |
--		buff[ICE_AQC_NVM_NETLIST_ID_BLK_TYPE_LOW];
--	ver->rev = (buff[ICE_AQC_NVM_NETLIST_ID_BLK_REV_HIGH] << 16) |
--		buff[ICE_AQC_NVM_NETLIST_ID_BLK_REV_LOW];
--	ver->cust_ver = buff[ICE_AQC_NVM_NETLIST_ID_BLK_CUST_VER];
-+	netlist->major = id_blk[ICE_NETLIST_ID_BLK_MAJOR_VER_HIGH] << 16 |
-+			 id_blk[ICE_NETLIST_ID_BLK_MAJOR_VER_LOW];
-+	netlist->minor = id_blk[ICE_NETLIST_ID_BLK_MINOR_VER_HIGH] << 16 |
-+			 id_blk[ICE_NETLIST_ID_BLK_MINOR_VER_LOW];
-+	netlist->type = id_blk[ICE_NETLIST_ID_BLK_TYPE_HIGH] << 16 |
-+			id_blk[ICE_NETLIST_ID_BLK_TYPE_LOW];
-+	netlist->rev = id_blk[ICE_NETLIST_ID_BLK_REV_HIGH] << 16 |
-+		       id_blk[ICE_NETLIST_ID_BLK_REV_LOW];
-+	netlist->cust_ver = id_blk[ICE_NETLIST_ID_BLK_CUST_VER];
- 	/* Read the left most 4 bytes of SHA */
--	ver->hash = buff[ICE_AQC_NVM_NETLIST_ID_BLK_SHA_HASH + 15] << 16 |
--		buff[ICE_AQC_NVM_NETLIST_ID_BLK_SHA_HASH + 14];
-+	netlist->hash = id_blk[ICE_NETLIST_ID_BLK_SHA_HASH_WORD(15)] << 16 |
-+			id_blk[ICE_NETLIST_ID_BLK_SHA_HASH_WORD(14)];
+-	status = ice_get_nvm_srev(hw, ICE_ACTIVE_FLASH_BANK, &nvm->srev);
++	status = ice_get_nvm_srev(hw, bank, &nvm->srev);
+ 	if (status)
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read NVM security revision.\n");
  
- exit_error:
--	kfree(buff);
--exit_no_mem:
--	ice_release_nvm(hw);
--	return ret;
-+	kfree(id_blk);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_get_inactive_netlist_ver
-+ * @hw: pointer to the HW struct
-+ * @netlist: pointer to netlist version info structure
-+ *
-+ * Read the netlist version data from the inactive netlist bank. Used to
-+ * extract version data of a pending flash update in order to display the
-+ * version data.
-+ */
-+enum ice_status ice_get_inactive_netlist_ver(struct ice_hw *hw, struct ice_netlist_info *netlist)
-+{
-+	return ice_get_netlist_info(hw, ICE_INACTIVE_FLASH_BANK, netlist);
+ 	return 0;
  }
  
++/**
++ * ice_get_inactive_nvm_ver - Read Option ROM version from the inactive bank
++ * @hw: pointer to the HW structure
++ * @nvm: storage for Option ROM version information
++ *
++ * Reads the NVM EETRACK ID, Map version, and security revision of the
++ * inactive NVM bank. Used to access version data for a pending update that
++ * has not yet been activated.
++ */
++enum ice_status ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm)
++{
++	return ice_get_nvm_ver_info(hw, ICE_INACTIVE_FLASH_BANK, nvm);
++}
++
  /**
-@@ -1073,7 +1105,7 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+  * ice_get_orom_srev - Read the security revision from the OROM CSS header
+  * @hw: pointer to the HW struct
+@@ -1028,7 +1060,7 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 		return status;
  	}
  
- 	/* read the netlist version information */
--	status = ice_get_netlist_ver_info(hw, &flash->netlist);
-+	status = ice_get_netlist_info(hw, ICE_ACTIVE_FLASH_BANK, &flash->netlist);
- 	if (status)
- 		ice_debug(hw, ICE_DBG_INIT, "Failed to read netlist info.\n");
- 
+-	status = ice_get_nvm_ver_info(hw, &flash->nvm);
++	status = ice_get_nvm_ver_info(hw, ICE_ACTIVE_FLASH_BANK, &flash->nvm);
+ 	if (status) {
+ 		ice_debug(hw, ICE_DBG_INIT, "Failed to read NVM info.\n");
+ 		return status;
 diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index c5c737b7b062..34b5d9589ecc 100644
+index 8cfb9b9ac638..c5c737b7b062 100644
 --- a/drivers/net/ethernet/intel/ice/ice_nvm.h
 +++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -20,6 +20,8 @@ ice_update_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
+@@ -18,6 +18,8 @@ ice_get_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
  enum ice_status
- ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm);
+ ice_update_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
  enum ice_status
-+ice_get_inactive_netlist_ver(struct ice_hw *hw, struct ice_netlist_info *netlist);
++ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm);
 +enum ice_status
  ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size);
  enum ice_status ice_init_nvm(struct ice_hw *hw);
  enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
-diff --git a/drivers/net/ethernet/intel/ice/ice_status.h b/drivers/net/ethernet/intel/ice/ice_status.h
-index 4028c6365172..dbf66057371d 100644
---- a/drivers/net/ethernet/intel/ice/ice_status.h
-+++ b/drivers/net/ethernet/intel/ice/ice_status.h
-@@ -29,6 +29,7 @@ enum ice_status {
- 	ICE_ERR_HW_TABLE			= -19,
- 	ICE_ERR_FW_DDP_MISMATCH			= -20,
- 
-+	ICE_ERR_NVM				= -50,
- 	ICE_ERR_NVM_CHECKSUM			= -51,
- 	ICE_ERR_BUF_TOO_SHORT			= -52,
- 	ICE_ERR_NVM_BLANK_MODE			= -53,
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index a9832b85f157..9265b8190499 100644
+index b9230c9158e1..a9832b85f157 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -857,6 +857,41 @@ struct ice_hw_port_stats {
- /* Size in bytes of Option ROM trailer */
- #define ICE_NVM_OROM_TRAILER_LENGTH		(2 * ICE_CSS_HEADER_LENGTH)
+@@ -848,8 +848,14 @@ struct ice_hw_port_stats {
+ #define ICE_NVM_CSS_SREV_L			0x14
+ #define ICE_NVM_CSS_SREV_H			0x15
  
-+/* The Link Topology Netlist section is stored as a series of words. It is
-+ * stored in the NVM as a TLV, with the first two words containing the type
-+ * and length.
-+ */
-+#define ICE_NETLIST_LINK_TOPO_MOD_ID		0x011B
-+#define ICE_NETLIST_TYPE_OFFSET			0x0000
-+#define ICE_NETLIST_LEN_OFFSET			0x0001
++/* Length of CSS header section in words */
++#define ICE_CSS_HEADER_LENGTH			330
 +
-+/* The Link Topology section follows the TLV header. When reading the netlist
-+ * using ice_read_netlist_module, we need to account for the 2-word TLV
-+ * header.
-+ */
-+#define ICE_NETLIST_LINK_TOPO_OFFSET(n)		((n) + 2)
++/* Offset of Shadow RAM copy in the NVM bank area. */
++#define ICE_NVM_SR_COPY_WORD_OFFSET		roundup(ICE_CSS_HEADER_LENGTH, 32)
 +
-+#define ICE_LINK_TOPO_MODULE_LEN		ICE_NETLIST_LINK_TOPO_OFFSET(0x0000)
-+#define ICE_LINK_TOPO_NODE_COUNT		ICE_NETLIST_LINK_TOPO_OFFSET(0x0001)
-+
-+#define ICE_LINK_TOPO_NODE_COUNT_M		ICE_M(0x3FF, 0)
-+
-+/* The Netlist ID Block is located after all of the Link Topology nodes. */
-+#define ICE_NETLIST_ID_BLK_SIZE			0x30
-+#define ICE_NETLIST_ID_BLK_OFFSET(n)		ICE_NETLIST_LINK_TOPO_OFFSET(0x0004 + 2 * (n))
-+
-+/* netlist ID block field offsets (word offsets) */
-+#define ICE_NETLIST_ID_BLK_MAJOR_VER_LOW	0x02
-+#define ICE_NETLIST_ID_BLK_MAJOR_VER_HIGH	0x03
-+#define ICE_NETLIST_ID_BLK_MINOR_VER_LOW	0x04
-+#define ICE_NETLIST_ID_BLK_MINOR_VER_HIGH	0x05
-+#define ICE_NETLIST_ID_BLK_TYPE_LOW		0x06
-+#define ICE_NETLIST_ID_BLK_TYPE_HIGH		0x07
-+#define ICE_NETLIST_ID_BLK_REV_LOW		0x08
-+#define ICE_NETLIST_ID_BLK_REV_HIGH		0x09
-+#define ICE_NETLIST_ID_BLK_SHA_HASH_WORD(n)	(0x0A + (n))
-+#define ICE_NETLIST_ID_BLK_CUST_VER		0x2F
-+
+ /* Size in bytes of Option ROM trailer */
+-#define ICE_NVM_OROM_TRAILER_LENGTH		660
++#define ICE_NVM_OROM_TRAILER_LENGTH		(2 * ICE_CSS_HEADER_LENGTH)
+ 
  /* Auxiliary field, mask, and shift definition for Shadow RAM and NVM Flash */
  #define ICE_SR_CTRL_WORD_1_S		0x06
- #define ICE_SR_CTRL_WORD_1_M		(0x03 << ICE_SR_CTRL_WORD_1_S)
 -- 
 2.29.0
 
