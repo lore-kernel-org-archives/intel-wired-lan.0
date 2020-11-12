@@ -1,57 +1,25 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 12 Nov 2020 21:33:56 +0100
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Support external GBE SerDes PHY
- BCM54616s
-Message-ID: <20201112203356.344748-1-pmenzel@molgen.mpg.de>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Thu, 12 Nov 2020 13:58:21 -0800
+Subject: [Intel-wired-lan] [PATCH v4 7/9] igc: Add initial XDP support
+In-Reply-To: <5cec65f6-a155-57d8-623e-4308ac62ba0f@intel.com>
+References: <20201104031210.27772-1-andre.guedes@intel.com>
+ <20201104031210.27772-8-andre.guedes@intel.com>
+ <5cec65f6-a155-57d8-623e-4308ac62ba0f@intel.com>
+Message-ID: <160521830157.29792.4388568942163519947@ngilbert-mobl1.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jostar Yang <jostar_yang@accton.com>
+Quoting Neftin, Sasha (2020-11-12 01:13:27)
+> > +#define IGC_XDP_PASS         0
+> > +#define IGC_XDP_CONSUMED     BIT(0)
+> > +
+> Hello Andre, please, move these defines to igc_defines.h to bottom the 
+> file under /* XDP defines */ comment.
 
-The Broadcom PHY is used in switches, so add the ID, and hook it up.
-
-This upstreams the Linux kernel patch from the network operating system
-SONiC from Februar 2020 [1].
-
-[1]: https://github.com/Azure/sonic-linux-kernel/pull/122
-
-Signed-off-by: Jostar Yang <jostar_yang@accton.com>
-Signed-off-by: Guohan Lu <lguohan@gmail.com>
-Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 3 +++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 1 +
- 2 files changed, 4 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index fc389eecdd2b..cb685e917b0c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -380,6 +380,9 @@ static enum ixgbe_phy_type ixgbe_get_phy_type_from_id(u32 phy_id)
- 	case X557_PHY_ID2:
- 		phy_type = ixgbe_phy_x550em_ext_t;
- 		break;
-+	case BCM54616S_E_PHY_ID:
-+		phy_type = ixgbe_phy_ext_1g_t;
-+		break;
- 	default:
- 		phy_type = ixgbe_phy_unknown;
- 		break;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 2be1c4c72435..4c317b0dbfd4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1407,6 +1407,7 @@ struct ixgbe_nvm_version {
- #define QT2022_PHY_ID    0x0043A400
- #define ATH_PHY_ID       0x03429050
- #define AQ_FW_REV        0x20
-+#define BCM54616S_E_PHY_ID 0x03625D10
- 
- /* Special PHY Init Routine */
- #define IXGBE_PHY_INIT_OFFSET_NL 0x002B
--- 
-2.29.2
-
+Hi Sasha, looking at the macros defined in igc_defines.h, they seem to be
+hardware-related (registers, fields, masks, etc) which is not the case of
+the XDP macros defined here. In addition to that, note that these macros
+are used only in igc_main.c so maybe it makes sense to leave them here?
