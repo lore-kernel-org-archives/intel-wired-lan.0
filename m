@@ -1,347 +1,326 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Nov 2020 16:43:24 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 1/7] ice: introduce context
- struct for info report
+Date: Wed, 11 Nov 2020 16:43:30 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 7/7] ice: display stored UNDI
+ firmware version via devlink info
 In-Reply-To: <20201112004330.2896993-1-jacob.e.keller@intel.com>
 References: <20201112004330.2896993-1-jacob.e.keller@intel.com>
-Message-ID: <20201112004330.2896993-2-jacob.e.keller@intel.com>
+Message-ID: <20201112004330.2896993-8-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice driver uses an array of structures which link an info name with
-a function that formats the associated version data into a string.
+Just as we recently added support for other stored firmware flash
+versions, support display of the stored UNDI Option ROM version via
+devlink info.
 
-All existing format functions simply format already captured static data
-from the driver hw structure. Future changes will introduce format
-functions for reporting the versions of flash sections stored but not
-yet applied. This type of version data is not stored as a member of the
-hw structure. This is because (a) it might not yet exist in the case
-there is no pending flash update, and (b) even if it does, it might
-change such as if an update is canceled or replaced by a new update
-before finalizing.
+To do this, we need to introduce a new ice_get_inactive_orom_ver
+function. This is a little trickier than with other flash versions. The
+Option ROM version data was being read from a special "Boot
+Configuration" block of the NVM Preserved Field Area. This block only
+contains the *active* Option ROM version data. It is populated when the
+device firmware finishes updating the Option ROM.
 
-We could simply have each format function gather its own data upon being
-called. However, in some cases the raw binary version data is
-a combination of multiple different reported fields. Additionally, the
-current interface doesn't have a way for the function to indicate that
-the version doesn't exist.
+This method is ineffective at reading the stored Option ROM version
+data. Instead of reading from this section of the flash, replace this
+version extraction with one which locates the Combo Version information
+from within the Option ROM binary.
 
-Refactor this function interface to take a new ice_info_ctx structure
-instead of the buffer pointer and length. This context structure allows
-for future extensions to pre-gather version data that is stored within
-the context struct instead of the hw struct.
+This data is stored within the Option ROM at a 512 byte offset, in
+a simple structured format. The structure uses a simple modulo 256
+checksum for integrity verification. Scan through the Option ROM to
+locate the CIVD data section, and extract the Combo Version.
 
-Allocate this context structure initially at the start of
-ice_devlink_info_get. We use dynamic allocation instead of a local stack
-variable in order to avoid using too much kernel stack once we extend it
-with additional data structures.
+Refactor ice_get_orom_ver_info so that it takes the bank select
+enumeration parameter. Use this to implement ice_get_inactive_orom_ver.
 
-Modify the main loop that drives the info reporting so that the version
-buffer string is always cleared between each format. Explicitly check
-that the format function actually filled in a version string of non-zero
-length. If the string is not provided, simply skip this version without
-reporting an error. This allows for introducing format functions of
-versions which may or may not be present, such as the version of
-a pending update that has not yet been activated.
+Although all ice devices have a Boot Configuration block in the NVM PFA,
+not all devices have a valid Option ROM. In this case, the old
+ice_get_orom_ver_info would "succeed" but report a version of all
+zeros. The new implementation would fail to locate the $CIV section in
+the Option ROM and report an error. Thus, we must ensure that
+ice_init_nvm does not fail if ice_get_orom_ver_info fails.
+
+Use the new ice_get_inactive_orom_ver to allow reporting the Option ROM
+versions for a pending update via devlink info.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_devlink.c | 117 ++++++++++++-------
- 1 file changed, 72 insertions(+), 45 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_devlink.c |  35 +++++
+ drivers/net/ethernet/intel/ice/ice_nvm.c     | 127 +++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_nvm.h     |  10 ++
+ 3 files changed, 130 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 4fd117757ee9..31cbb0fbd429 100644
+index 392b90e58add..b56d35bea7b5 100644
 --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
 +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -6,144 +6,159 @@
- #include "ice_devlink.h"
- #include "ice_fw_update.h"
+@@ -9,6 +9,7 @@
+ /* context for devlink info version reporting */
+ struct ice_info_ctx {
+ 	char buf[128];
++	struct ice_orom_info pending_orom;
+ 	struct ice_nvm_info pending_nvm;
+ 	struct ice_netlist_info pending_netlist;
+ 	struct ice_hw_dev_caps dev_caps;
+@@ -102,6 +103,17 @@ static int ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 	return 0;
+ }
  
--static void ice_info_get_dsn(struct ice_pf *pf, char *buf, size_t len)
-+/* context for devlink info version reporting */
-+struct ice_info_ctx {
-+	char buf[128];
-+};
++static int ice_info_pending_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++{
++	struct ice_orom_info *orom = &ctx->pending_orom;
 +
-+/* The following functions are used to format specific strings for various
-+ * devlink info versions. The ctx parameter is used to provide the storage
-+ * buffer, as well as any ancillary information calculated when the info
-+ * request was made.
-+ *
-+ * If a version does not exist, for example a "stored" version that does not
-+ * exist because no update is pending, the function should leave the buffer in
-+ * the ctx structure empty and return 0.
-+ */
++	if (ctx->dev_caps.common_cap.nvm_update_pending_orom)
++		snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u",
++			 orom->major, orom->build, orom->patch);
 +
-+static void ice_info_get_dsn(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	u8 dsn[8];
- 
- 	/* Copy the DSN into an array in Big Endian format */
- 	put_unaligned_be64(pci_get_dsn(pf->pdev), dsn);
- 
--	snprintf(buf, len, "%8phD", dsn);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%8phD", dsn);
- }
- 
--static int ice_info_pba(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_pba(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
- 	enum ice_status status;
- 
--	status = ice_read_pba_string(hw, (u8 *)buf, len);
-+	status = ice_read_pba_string(hw, (u8 *)ctx->buf, sizeof(ctx->buf));
- 	if (status)
- 		return -EIO;
- 
- 	return 0;
- }
- 
--static int ice_info_fw_mgmt(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_fw_mgmt(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
- 
--	snprintf(buf, len, "%u.%u.%u", hw->fw_maj_ver, hw->fw_min_ver,
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u", hw->fw_maj_ver, hw->fw_min_ver,
- 		 hw->fw_patch);
- 
- 	return 0;
- }
- 
--static int ice_info_fw_api(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_fw_api(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
- 
--	snprintf(buf, len, "%u.%u", hw->api_maj_ver, hw->api_min_ver);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u", hw->api_maj_ver, hw->api_min_ver);
- 
- 	return 0;
- }
- 
--static int ice_info_fw_build(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_fw_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
- 
--	snprintf(buf, len, "0x%08x", hw->fw_build);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", hw->fw_build);
- 
- 	return 0;
- }
- 
--static int ice_info_fw_srev(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_fw_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
- 
--	snprintf(buf, len, "%u", nvm->srev);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u", nvm->srev);
- 
- 	return 0;
- }
- 
--static int ice_info_orom_ver(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++	return 0;
++}
++
+ static int ice_info_orom_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
  {
  	struct ice_orom_info *orom = &pf->hw.flash.orom;
- 
--	snprintf(buf, len, "%u.%u.%u", orom->major, orom->build, orom->patch);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u", orom->major, orom->build, orom->patch);
- 
+@@ -111,6 +123,16 @@ static int ice_info_orom_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
  	return 0;
  }
  
--static int ice_info_orom_srev(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_orom_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_orom_info *orom = &pf->hw.flash.orom;
- 
--	snprintf(buf, len, "%u", orom->srev);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u", orom->srev);
- 
- 	return 0;
- }
- 
--static int ice_info_nvm_ver(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static int ice_info_pending_orom_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
++{
++	struct ice_orom_info *orom = &ctx->pending_orom;
++
++	if (ctx->dev_caps.common_cap.nvm_update_pending_orom)
++		snprintf(ctx->buf, sizeof(ctx->buf), "%u", orom->srev);
++
++	return 0;
++}
++
+ static int ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
  {
  	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
- 
--	snprintf(buf, len, "%x.%02x", nvm->major, nvm->minor);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
- 
- 	return 0;
- }
- 
--static int ice_info_eetrack(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
- 
--	snprintf(buf, len, "0x%08x", nvm->eetrack);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", nvm->eetrack);
- 
- 	return 0;
- }
- 
--static int ice_info_ddp_pkg_name(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_ddp_pkg_name(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
- 
--	snprintf(buf, len, "%s", hw->active_pkg_name);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%s", hw->active_pkg_name);
- 
- 	return 0;
- }
- 
--static int ice_info_ddp_pkg_version(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_ddp_pkg_version(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_pkg_ver *pkg = &pf->hw.active_pkg_ver;
- 
--	snprintf(buf, len, "%u.%u.%u.%u", pkg->major, pkg->minor, pkg->update,
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u.%u", pkg->major, pkg->minor, pkg->update,
- 		 pkg->draft);
- 
- 	return 0;
- }
- 
--static int ice_info_ddp_pkg_bundle_id(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_ddp_pkg_bundle_id(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
--	snprintf(buf, len, "0x%08x", pf->hw.active_track_id);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", pf->hw.active_track_id);
- 
- 	return 0;
- }
- 
--static int ice_info_netlist_ver(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_netlist_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_netlist_info *netlist = &pf->hw.flash.netlist;
- 
- 	/* The netlist version fields are BCD formatted */
--	snprintf(buf, len, "%x.%x.%x-%x.%x.%x", netlist->major, netlist->minor,
-+	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x", netlist->major, netlist->minor,
- 		 netlist->type >> 16, netlist->type & 0xFFFF, netlist->rev,
- 		 netlist->cust_ver);
- 
- 	return 0;
- }
- 
--static int ice_info_netlist_build(struct ice_pf *pf, char *buf, size_t len)
-+static int ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_netlist_info *netlist = &pf->hw.flash.netlist;
- 
--	snprintf(buf, len, "0x%08x", netlist->hash);
-+	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
- 
- 	return 0;
- }
-@@ -160,7 +175,7 @@ enum ice_version_type {
- static const struct ice_devlink_version {
- 	enum ice_version_type type;
- 	const char *key;
--	int (*getter)(struct ice_pf *pf, char *buf, size_t len);
-+	int (*getter)(struct ice_pf *pf, struct ice_info_ctx *ctx);
- } ice_devlink_versions[] = {
- 	fixed(DEVLINK_INFO_VERSION_GENERIC_BOARD_ID, ice_info_pba),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
-@@ -194,60 +209,72 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 				struct netlink_ext_ack *extack)
- {
- 	struct ice_pf *pf = devlink_priv(devlink);
--	char buf[100];
-+	struct ice_info_ctx *ctx;
- 	size_t i;
- 	int err;
- 
-+	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
- 	err = devlink_info_driver_name_put(req, KBUILD_MODNAME);
- 	if (err) {
- 		NL_SET_ERR_MSG_MOD(extack, "Unable to set driver name");
--		return err;
-+		goto out_free_ctx;
+@@ -242,7 +264,9 @@ static const struct ice_devlink_version {
+ 	running("fw.mgmt.srev", ice_info_fw_srev),
+ 	stored("fw.mgmt.srev", ice_info_pending_fw_srev),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_UNDI, ice_info_orom_ver),
++	stored(DEVLINK_INFO_VERSION_GENERIC_FW_UNDI, ice_info_pending_orom_ver),
+ 	running("fw.undi.srev", ice_info_orom_srev),
++	stored("fw.undi.srev", ice_info_pending_orom_srev),
+ 	running("fw.psid.api", ice_info_nvm_ver),
+ 	stored("fw.psid.api", ice_info_pending_nvm_ver),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_eetrack),
+@@ -290,6 +314,17 @@ static int ice_devlink_info_get(struct devlink *devlink,
+ 		goto out_free_ctx;
  	}
  
--	ice_info_get_dsn(pf, buf, sizeof(buf));
-+	ice_info_get_dsn(pf, ctx);
- 
--	err = devlink_info_serial_number_put(req, buf);
-+	err = devlink_info_serial_number_put(req, ctx->buf);
- 	if (err) {
- 		NL_SET_ERR_MSG_MOD(extack, "Unable to set serial number");
--		return err;
-+		goto out_free_ctx;
- 	}
- 
- 	for (i = 0; i < ARRAY_SIZE(ice_devlink_versions); i++) {
- 		enum ice_version_type type = ice_devlink_versions[i].type;
- 		const char *key = ice_devlink_versions[i].key;
- 
--		err = ice_devlink_versions[i].getter(pf, buf, sizeof(buf));
-+		memset(ctx->buf, 0, sizeof(ctx->buf));
++	if (ctx->dev_caps.common_cap.nvm_update_pending_orom) {
++		status = ice_get_inactive_orom_ver(hw, &ctx->pending_orom);
++		if (status) {
++			dev_dbg(dev, "Unable to read inactive Option ROM version data, status %s aq_err %s\n",
++				ice_stat_str(status), ice_aq_str(hw->adminq.sq_last_status));
 +
-+		err = ice_devlink_versions[i].getter(pf, ctx);
- 		if (err) {
- 			NL_SET_ERR_MSG_MOD(extack, "Unable to obtain version info");
--			return err;
-+			goto out_free_ctx;
- 		}
++			/* disable display of pending Option ROM */
++			ctx->dev_caps.common_cap.nvm_update_pending_orom = false;
++		}
++	}
++
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm) {
+ 		status = ice_get_inactive_nvm_ver(hw, &ctx->pending_nvm);
+ 		if (status) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 8bc2df09a11a..916ab2504a07 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -703,64 +703,109 @@ static enum ice_status ice_get_orom_srev(struct ice_hw *hw, enum ice_bank_select
+ }
  
-+		/* Do not report missing versions */
-+		if (ctx->buf[0] == '\0')
+ /**
+- * ice_get_orom_ver_info - Read Option ROM version information
++ * ice_get_orom_civd_data - Get the combo version information from Option ROM
+  * @hw: pointer to the HW struct
+- * @orom: pointer to Option ROM info structure
++ * @bank: whether to read from the active or inactive flash module
++ * @civd: storage for the Option ROM CIVD data.
+  *
+- * Read the Combo Image version data from the Boot Configuration TLV and fill
+- * in the option ROM version data.
++ * Searches through the Option ROM flash contents to locate the CIVD data for
++ * the image.
+  */
+ static enum ice_status
+-ice_get_orom_ver_info(struct ice_hw *hw, struct ice_orom_info *orom)
++ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
++		       struct ice_orom_civd_info *civd)
+ {
+-	u16 combo_hi, combo_lo, boot_cfg_tlv, boot_cfg_tlv_len;
++	struct ice_orom_civd_info tmp;
++	enum ice_status status;
++	u32 offset;
++
++	/* The CIVD section is located in the Option ROM aligned to 512 bytes.
++	 * The first 4 bytes must contain the ASCII characters "$CIV".
++	 * A simple modulo 256 sum of all of the bytes of the structure must
++	 * equal 0.
++	 */
++	for (offset = 0; (offset + 512) <= hw->flash.banks.orom_size; offset += 512) {
++		u8 sum = 0, i;
++
++		status = ice_read_flash_module(hw, bank, ICE_SR_1ST_OROM_BANK_PTR,
++					       offset, (u8 *)&tmp, sizeof(tmp));
++		if (status) {
++			ice_debug(hw, ICE_DBG_NVM, "Unable to read Option ROM CIVD data\n");
++			return status;
++		}
++
++		/* Skip forward until we find a matching signature */
++		if (memcmp("$CIV", tmp.signature, sizeof(tmp.signature)) != 0)
 +			continue;
 +
- 		switch (type) {
- 		case ICE_VERSION_FIXED:
--			err = devlink_info_version_fixed_put(req, key, buf);
-+			err = devlink_info_version_fixed_put(req, key, ctx->buf);
- 			if (err) {
- 				NL_SET_ERR_MSG_MOD(extack, "Unable to set fixed version");
--				return err;
-+				goto out_free_ctx;
- 			}
- 			break;
- 		case ICE_VERSION_RUNNING:
--			err = devlink_info_version_running_put(req, key, buf);
-+			err = devlink_info_version_running_put(req, key, ctx->buf);
- 			if (err) {
- 				NL_SET_ERR_MSG_MOD(extack, "Unable to set running version");
--				return err;
-+				goto out_free_ctx;
- 			}
- 			break;
- 		case ICE_VERSION_STORED:
--			err = devlink_info_version_stored_put(req, key, buf);
-+			err = devlink_info_version_stored_put(req, key, ctx->buf);
- 			if (err) {
- 				NL_SET_ERR_MSG_MOD(extack, "Unable to set stored version");
--				return err;
-+				goto out_free_ctx;
- 			}
- 			break;
- 		}
++		/* Verify that the simple checksum is zero */
++		for (i = 0; i < sizeof(tmp); i++)
++			sum += ((u8 *)&tmp)[i];
++
++		if (sum) {
++			ice_debug(hw, ICE_DBG_NVM, "Found CIVD data with invalid checksum of %u\n",
++				  sum);
++			return ICE_ERR_NVM;
++		}
++
++		*civd = tmp;
++		return 0;
++	}
++
++	return ICE_ERR_NVM;
++}
++
++/**
++ * ice_get_orom_ver_info - Read Option ROM version information
++ * @hw: pointer to the HW struct
++ * @bank: whether to read from the active or inactive flash module
++ * @orom: pointer to Option ROM info structure
++ *
++ * Read Option ROM version and security revision from the Option ROM flash
++ * section.
++ */
++static enum ice_status
++ice_get_orom_ver_info(struct ice_hw *hw, enum ice_bank_select bank, struct ice_orom_info *orom)
++{
++	struct ice_orom_civd_info civd;
+ 	enum ice_status status;
+ 	u32 combo_ver;
+ 
+-	status = ice_get_pfa_module_tlv(hw, &boot_cfg_tlv, &boot_cfg_tlv_len,
+-					ICE_SR_BOOT_CFG_PTR);
++	status = ice_get_orom_civd_data(hw, bank, &civd);
+ 	if (status) {
+-		ice_debug(hw, ICE_DBG_INIT, "Failed to read Boot Configuration Block TLV.\n");
++		ice_debug(hw, ICE_DBG_NVM, "Failed to locate valid Option ROM CIVD data\n");
+ 		return status;
  	}
  
--	return 0;
-+out_free_ctx:
-+	kfree(ctx);
-+	return err;
+-	/* Boot Configuration Block must have length@least 2 words
+-	 * (Combo Image Version High and Combo Image Version Low)
+-	 */
+-	if (boot_cfg_tlv_len < 2) {
+-		ice_debug(hw, ICE_DBG_INIT, "Invalid Boot Configuration Block TLV size.\n");
+-		return ICE_ERR_INVAL_SIZE;
+-	}
++	combo_ver = le32_to_cpu(civd.combo_ver);
+ 
+-	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OROM_VER_OFF),
+-				  &combo_hi);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_INIT, "Failed to read OROM_VER hi.\n");
+-		return status;
+-	}
+-
+-	status = ice_read_sr_word(hw, (boot_cfg_tlv + ICE_NVM_OROM_VER_OFF + 1),
+-				  &combo_lo);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_INIT, "Failed to read OROM_VER lo.\n");
+-		return status;
+-	}
+-
+-	combo_ver = ((u32)combo_hi << 16) | combo_lo;
+-
+-	orom->major = (u8)((combo_ver & ICE_OROM_VER_MASK) >>
+-			   ICE_OROM_VER_SHIFT);
++	orom->major = (u8)((combo_ver & ICE_OROM_VER_MASK) >> ICE_OROM_VER_SHIFT);
+ 	orom->patch = (u8)(combo_ver & ICE_OROM_VER_PATCH_MASK);
+-	orom->build = (u16)((combo_ver & ICE_OROM_VER_BUILD_MASK) >>
+-			    ICE_OROM_VER_BUILD_SHIFT);
++	orom->build = (u16)((combo_ver & ICE_OROM_VER_BUILD_MASK) >> ICE_OROM_VER_BUILD_SHIFT);
+ 
+-	status = ice_get_orom_srev(hw, ICE_ACTIVE_FLASH_BANK, &orom->srev);
+-	if (status)
++	status = ice_get_orom_srev(hw, bank, &orom->srev);
++	if (status) {
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read Option ROM security revision.\n");
++		return status;
++	}
+ 
+ 	return 0;
  }
  
- enum ice_devlink_param_id {
++/**
++ * ice_get_inactive_orom_ver - Read Option ROM version from the inactive bank
++ * @hw: pointer to the HW structure
++ * @orom: storage for Option ROM version information
++ *
++ * Reads the Option ROM version and security revision data for the inactive
++ * section of flash. Used to access version data for a pending update that has
++ * not yet been activated.
++ */
++enum ice_status ice_get_inactive_orom_ver(struct ice_hw *hw, struct ice_orom_info *orom)
++{
++	return ice_get_orom_ver_info(hw, ICE_INACTIVE_FLASH_BANK, orom);
++}
++
+ /**
+  * ice_get_netlist_info
+  * @hw: pointer to the HW struct
+@@ -1098,11 +1143,9 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
+ 		return status;
+ 	}
+ 
+-	status = ice_get_orom_ver_info(hw, &flash->orom);
+-	if (status) {
++	status = ice_get_orom_ver_info(hw, ICE_ACTIVE_FLASH_BANK, &flash->orom);
++	if (status)
+ 		ice_debug(hw, ICE_DBG_INIT, "Failed to read Option ROM info.\n");
+-		return status;
+-	}
+ 
+ 	/* read the netlist version information */
+ 	status = ice_get_netlist_info(hw, ICE_ACTIVE_FLASH_BANK, &flash->netlist);
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
+index 34b5d9589ecc..905f6893e0b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.h
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+@@ -4,6 +4,14 @@
+ #ifndef _ICE_NVM_H_
+ #define _ICE_NVM_H_
+ 
++struct ice_orom_civd_info {
++	u8 signature[4];	/* Must match ASCII '$CIV' characters */
++	u8 checksum;		/* Simple modulo 256 sum of all structure bytes must equal 0 */
++	__le32 combo_ver;	/* Combo Image Version number */
++	u8 combo_name_len;	/* Length of the unicode combo image version string, max of 32 */
++	__le16 combo_name[32];	/* Unicode string representing the Combo Image version */
++} __packed;
++
+ enum ice_status
+ ice_acquire_nvm(struct ice_hw *hw, enum ice_aq_res_access_type access);
+ void ice_release_nvm(struct ice_hw *hw);
+@@ -18,6 +26,8 @@ ice_get_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
+ enum ice_status
+ ice_update_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
+ enum ice_status
++ice_get_inactive_orom_ver(struct ice_hw *hw, struct ice_orom_info *orom);
++enum ice_status
+ ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm);
+ enum ice_status
+ ice_get_inactive_netlist_ver(struct ice_hw *hw, struct ice_netlist_info *netlist);
 -- 
 2.29.0
 
