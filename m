@@ -1,28 +1,80 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 12 Nov 2020 11:13:11 -0500
-Subject: [Intel-wired-lan] [4.4] Security fixes (pinctrl, i40e, geneve)
-In-Reply-To: <f5e2e87fb1a9613b161e63cf5504cc375e095dbc.camel@codethink.co.uk>
-References: <f5e2e87fb1a9613b161e63cf5504cc375e095dbc.camel@codethink.co.uk>
-Message-ID: <20201112161311.GE403069@sasha-vm>
+From: Shannon Nelson <shannon.lee.nelson@gmail.com>
+Date: Thu, 12 Nov 2020 10:50:19 -0800
+Subject: [Intel-wired-lan] [net-next PATCH] ice: report timeout length
+ for erasing during devlink flash
+In-Reply-To: <20201111185915.813332-1-jacob.e.keller@intel.com>
+References: <20201111185915.813332-1-jacob.e.keller@intel.com>
+Message-ID: <CAP-MU4Nc=2m5=51-2D1y30U1U8svF58iFHTZGWDp0Z6FTV2CoA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 11, 2020 at 11:43:56PM +0000, Ben Hutchings wrote:
->Here are backports of some fixes to the 4.4 stable branch.
+On Wed, Nov 11, 2020 at 11:00 AM Jacob Keller <jacob.e.keller@intel.com> wrote:
 >
->I wasn't able to test the pinctrl fix (no idea how to reproduce it).
+> When erasing, notify userspace of how long we will potentially take to
+> erase a module. Doing so allows userspace to report the timeout, giving
+> a clear indication of the upper time bound of the operation.
 >
->I wasn't able to test the i40e changes (no hardware and no reproducer
->available).
+> Since we're re-using the erase timeout value, make it a macro rather
+> than a magic number.
 >
->I tested the geneve fix with libreswan as (roughly) described in the
->commit message.
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 
-Queued up, thanks Ben!
+Reviewed-by: Shannon Nelson <snelson@pensando.io>
+
+> ---
+>  drivers/net/ethernet/intel/ice/ice_fw_update.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+> index 8f81b95e679c..dcec0360ce55 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
+> @@ -417,6 +417,11 @@ ice_write_nvm_module(struct ice_pf *pf, u16 module, const char *component,
+>         return err;
+>  }
+>
+> +/* Length in seconds to wait before timing out when erasing a flash module.
+> + * Yes, erasing really can take minutes to complete.
+> + */
+> +#define ICE_FW_ERASE_TIMEOUT 300
+> +
+>  /**
+>   * ice_erase_nvm_module - Erase an NVM module and await firmware completion
+>   * @pf: the PF data structure
+> @@ -449,7 +454,7 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
+>
+>         devlink = priv_to_devlink(pf);
+>
+> -       devlink_flash_update_status_notify(devlink, "Erasing", component, 0, 0);
+> +       devlink_flash_update_timeout_notify(devlink, "Erasing", component, ICE_FW_ERASE_TIMEOUT);
+>
+>         status = ice_aq_erase_nvm(hw, module, NULL);
+>         if (status) {
+> @@ -461,8 +466,7 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
+>                 goto out_notify_devlink;
+>         }
+>
+> -       /* Yes, this really can take minutes to complete */
+> -       err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_erase, 300 * HZ, &event);
+> +       err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_erase, ICE_FW_ERASE_TIMEOUT * HZ, &event);
+>         if (err) {
+>                 dev_err(dev, "Timed out waiting for firmware to respond with erase completion for %s (module 0x%02x), err %d\n",
+>                         component, module, err);
+>
+> base-commit: 6a4868314a36d2580a87ade92e2d3f302eec3f03
+> --
+> 2.29.0
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+
 
 -- 
-Thanks,
-Sasha
+==============================================
+Mr. Shannon Nelson         Parents can't afford to be squeamish.
