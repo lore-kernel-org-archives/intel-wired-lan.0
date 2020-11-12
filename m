@@ -1,80 +1,57 @@
-From: Shannon Nelson <shannon.lee.nelson@gmail.com>
-Date: Thu, 12 Nov 2020 10:50:19 -0800
-Subject: [Intel-wired-lan] [net-next PATCH] ice: report timeout length
- for erasing during devlink flash
-In-Reply-To: <20201111185915.813332-1-jacob.e.keller@intel.com>
-References: <20201111185915.813332-1-jacob.e.keller@intel.com>
-Message-ID: <CAP-MU4Nc=2m5=51-2D1y30U1U8svF58iFHTZGWDp0Z6FTV2CoA@mail.gmail.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 12 Nov 2020 21:33:56 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Support external GBE SerDes PHY
+ BCM54616s
+Message-ID: <20201112203356.344748-1-pmenzel@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 11, 2020 at 11:00 AM Jacob Keller <jacob.e.keller@intel.com> wrote:
->
-> When erasing, notify userspace of how long we will potentially take to
-> erase a module. Doing so allows userspace to report the timeout, giving
-> a clear indication of the upper time bound of the operation.
->
-> Since we're re-using the erase timeout value, make it a macro rather
-> than a magic number.
->
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+From: Jostar Yang <jostar_yang@accton.com>
 
-Reviewed-by: Shannon Nelson <snelson@pensando.io>
+The Broadcom PHY is used in switches, so add the ID, and hook it up.
 
-> ---
->  drivers/net/ethernet/intel/ice/ice_fw_update.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-> index 8f81b95e679c..dcec0360ce55 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-> @@ -417,6 +417,11 @@ ice_write_nvm_module(struct ice_pf *pf, u16 module, const char *component,
->         return err;
->  }
->
-> +/* Length in seconds to wait before timing out when erasing a flash module.
-> + * Yes, erasing really can take minutes to complete.
-> + */
-> +#define ICE_FW_ERASE_TIMEOUT 300
-> +
->  /**
->   * ice_erase_nvm_module - Erase an NVM module and await firmware completion
->   * @pf: the PF data structure
-> @@ -449,7 +454,7 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
->
->         devlink = priv_to_devlink(pf);
->
-> -       devlink_flash_update_status_notify(devlink, "Erasing", component, 0, 0);
-> +       devlink_flash_update_timeout_notify(devlink, "Erasing", component, ICE_FW_ERASE_TIMEOUT);
->
->         status = ice_aq_erase_nvm(hw, module, NULL);
->         if (status) {
-> @@ -461,8 +466,7 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
->                 goto out_notify_devlink;
->         }
->
-> -       /* Yes, this really can take minutes to complete */
-> -       err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_erase, 300 * HZ, &event);
-> +       err = ice_aq_wait_for_event(pf, ice_aqc_opc_nvm_erase, ICE_FW_ERASE_TIMEOUT * HZ, &event);
->         if (err) {
->                 dev_err(dev, "Timed out waiting for firmware to respond with erase completion for %s (module 0x%02x), err %d\n",
->                         component, module, err);
->
-> base-commit: 6a4868314a36d2580a87ade92e2d3f302eec3f03
-> --
-> 2.29.0
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+This upstreams the Linux kernel patch from the network operating system
+SONiC from Februar 2020 [1].
 
+[1]: https://github.com/Azure/sonic-linux-kernel/pull/122
 
+Signed-off-by: Jostar Yang <jostar_yang@accton.com>
+Signed-off-by: Guohan Lu <lguohan@gmail.com>
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  | 3 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 1 +
+ 2 files changed, 4 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index fc389eecdd2b..cb685e917b0c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -380,6 +380,9 @@ static enum ixgbe_phy_type ixgbe_get_phy_type_from_id(u32 phy_id)
+ 	case X557_PHY_ID2:
+ 		phy_type = ixgbe_phy_x550em_ext_t;
+ 		break;
++	case BCM54616S_E_PHY_ID:
++		phy_type = ixgbe_phy_ext_1g_t;
++		break;
+ 	default:
+ 		phy_type = ixgbe_phy_unknown;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 2be1c4c72435..4c317b0dbfd4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1407,6 +1407,7 @@ struct ixgbe_nvm_version {
+ #define QT2022_PHY_ID    0x0043A400
+ #define ATH_PHY_ID       0x03429050
+ #define AQ_FW_REV        0x20
++#define BCM54616S_E_PHY_ID 0x03625D10
+ 
+ /* Special PHY Init Routine */
+ #define IXGBE_PHY_INIT_OFFSET_NL 0x002B
 -- 
-==============================================
-Mr. Shannon Nelson         Parents can't afford to be squeamish.
+2.29.2
+
