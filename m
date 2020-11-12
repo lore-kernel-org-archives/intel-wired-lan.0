@@ -1,62 +1,158 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 11 Nov 2020 16:38:16 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
- for PTP getcrosststamp()
-In-Reply-To: <20201110180719.GA1559650@localhost>
-References: <20201110061019.519589-1-vinicius.gomes@intel.com>
- <20201110061019.519589-4-vinicius.gomes@intel.com>
- <20201110180719.GA1559650@localhost>
-Message-ID: <87imab8l53.fsf@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 11 Nov 2020 16:43:26 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 3/7] ice: allow reading inactive
+ flash security revision
+In-Reply-To: <20201112004330.2896993-1-jacob.e.keller@intel.com>
+References: <20201112004330.2896993-1-jacob.e.keller@intel.com>
+Message-ID: <20201112004330.2896993-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Modify ice_get_nvm_srev and ice_get_orom_srev to take the
+ice_flash_bank enumeration that specifies whether to read from the
+active or the inactive flash module. Rename and refactor the
+ice_read_active_nvm_module and ice_read_active_orom_module functions to
+take the bank enum value as well.
 
-Miroslav Lichvar <mlichvar@redhat.com> writes:
+With this change, ice_get_nvm_srev and ice_get_orom_srev will be usable
+in a future change to implement reading the version data for a pending
+flash image.
 
-> On Mon, Nov 09, 2020 at 10:10:19PM -0800, Vinicius Costa Gomes wrote:
->> i225 has support for PCIe PTM, which allows us to implement support
->> for the PTP_SYS_OFFSET_PRECISE ioctl(), implemented in the driver via
->> the getcrosststamp() function.
->
-> Would it be possible to provide the PTM measurements with the
-> PTP_SYS_OFFSET_EXTENDED ioctl instead of PTP_SYS_OFFSET_PRECISE?
->
-> As I understand it, PTM is not cross timestamping. It's basically
-> NTP over PCIe, which provides four timestamps with each "dialog". From
-> the other constants added to the header file it looks like they could
-> all be obtained and then they could be converted to the triplets
-> returned by the EXTENDED ioctl.
->
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 36 +++++++++++++-----------
+ 1 file changed, 19 insertions(+), 17 deletions(-)
 
-There might be a problem, the PTM dialogs start from the device, the
-protocol is more or less this:
-
- 1. NIC sends "Request" message, takes T1 timestamp;
- 2. Host receives "Request" message, takes T2 timestamp;
- 3. Host sends "Response" message, takes T3 timestamp;
- 4. NIC receives "Response" message, takes T4 timestamp;
-
-So, T2 and T3 are "host" timestamps and T1 and T4 are NIC timestamps.
-
-That means that the timestamps I have "as is" are a bit different than
-the expectations of the EXTENDED ioctl().
-
-Of course I could use T3 (as the "pre" timestamp), T4 as the device
-timestamp, and calculate the delay[1], apply it to T3 and get something
-T3' as the "post" timestamp (T3' = T3 + delay). But I feel that this
-"massaging" would defeat the purpose of using the EXTENDED variant.
-
-Does it make sense? Am I worrying too much?
-
-[1] 
-	delay = ((T4 - T1) - (T3 - T2)) / 2
-
-
-
-Cheers,
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 0e949114359c..88a9e17744f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -348,8 +348,9 @@ ice_read_flash_module(struct ice_hw *hw, enum ice_bank_select bank, u16 module,
+ }
+ 
+ /**
+- * ice_read_active_nvm_module - Read from the active main NVM module
++ * ice_read_nvm_module - Read from the active main NVM module
+  * @hw: pointer to the HW structure
++ * @bank: whether to read from active or inactive NVM module
+  * @offset: offset into the NVM module to read, in words
+  * @data: storage for returned word value
+  *
+@@ -357,15 +358,15 @@ ice_read_flash_module(struct ice_hw *hw, enum ice_bank_select bank, u16 module,
+  * header at the start of the NVM module.
+  */
+ static enum ice_status
+-ice_read_active_nvm_module(struct ice_hw *hw, u32 offset, u16 *data)
++ice_read_nvm_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u16 *data)
+ {
+-	return ice_read_flash_module(hw, ICE_ACTIVE_FLASH_BANK,
+-				     ICE_SR_1ST_NVM_BANK_PTR, offset, data);
++	return ice_read_flash_module(hw, bank, ICE_SR_1ST_NVM_BANK_PTR, offset, data);
+ }
+ 
+ /**
+- * ice_read_active_orom_module - Read from the active Option ROM module
++ * ice_read_orom_module - Read from the active Option ROM module
+  * @hw: pointer to the HW structure
++ * @bank: whether to read from active or inactive OROM module
+  * @offset: offset into the OROM module to read, in words
+  * @data: storage for returned word value
+  *
+@@ -374,10 +375,9 @@ ice_read_active_nvm_module(struct ice_hw *hw, u32 offset, u16 *data)
+  * module instead of at the beginning.
+  */
+ static enum ice_status
+-ice_read_active_orom_module(struct ice_hw *hw, u32 offset, u16 *data)
++ice_read_orom_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u16 *data)
+ {
+-	return ice_read_flash_module(hw, ICE_ACTIVE_FLASH_BANK,
+-				     ICE_SR_1ST_OROM_BANK_PTR, offset, data);
++	return ice_read_flash_module(hw, bank, ICE_SR_1ST_OROM_BANK_PTR, offset, data);
+ }
+ 
+ /**
+@@ -529,21 +529,22 @@ ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size)
+ /**
+  * ice_get_nvm_srev - Read the security revision from the NVM CSS header
+  * @hw: pointer to the HW struct
++ * @bank: whether to read from the active or inactive flash bank
+  * @srev: storage for security revision
+  *
+  * Read the security revision out of the CSS header of the active NVM module
+  * bank.
+  */
+-static enum ice_status ice_get_nvm_srev(struct ice_hw *hw, u32 *srev)
++static enum ice_status ice_get_nvm_srev(struct ice_hw *hw, enum ice_bank_select bank, u32 *srev)
+ {
+ 	enum ice_status status;
+ 	u16 srev_l, srev_h;
+ 
+-	status = ice_read_active_nvm_module(hw, ICE_NVM_CSS_SREV_L, &srev_l);
++	status = ice_read_nvm_module(hw, bank, ICE_NVM_CSS_SREV_L, &srev_l);
+ 	if (status)
+ 		return status;
+ 
+-	status = ice_read_active_nvm_module(hw, ICE_NVM_CSS_SREV_H, &srev_h);
++	status = ice_read_nvm_module(hw, bank, ICE_NVM_CSS_SREV_H, &srev_h);
+ 	if (status)
+ 		return status;
+ 
+@@ -587,7 +588,7 @@ ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
+ 
+ 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
+ 
+-	status = ice_get_nvm_srev(hw, &nvm->srev);
++	status = ice_get_nvm_srev(hw, ICE_ACTIVE_FLASH_BANK, &nvm->srev);
+ 	if (status)
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read NVM security revision.\n");
+ 
+@@ -597,12 +598,13 @@ ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
+ /**
+  * ice_get_orom_srev - Read the security revision from the OROM CSS header
+  * @hw: pointer to the HW struct
++ * @bank: whether to read from active or inactive flash module
+  * @srev: storage for security revision
+  *
+  * Read the security revision out of the CSS header of the active OROM module
+  * bank.
+  */
+-static enum ice_status ice_get_orom_srev(struct ice_hw *hw, u32 *srev)
++static enum ice_status ice_get_orom_srev(struct ice_hw *hw, enum ice_bank_select bank, u32 *srev)
+ {
+ 	enum ice_status status;
+ 	u16 srev_l, srev_h;
+@@ -615,16 +617,16 @@ static enum ice_status ice_get_orom_srev(struct ice_hw *hw, u32 *srev)
+ 	}
+ 
+ 	/* calculate how far into the Option ROM the CSS header starts. Note
+-	 * that ice_read_active_orom_module takes a word offset so we need to
++	 * that ice_read_orom_module takes a word offset so we need to
+ 	 * divide by 2 here.
+ 	 */
+ 	css_start = (hw->flash.banks.orom_size - ICE_NVM_OROM_TRAILER_LENGTH) / 2;
+ 
+-	status = ice_read_active_orom_module(hw, css_start + ICE_NVM_CSS_SREV_L, &srev_l);
++	status = ice_read_orom_module(hw, bank, css_start + ICE_NVM_CSS_SREV_L, &srev_l);
+ 	if (status)
+ 		return status;
+ 
+-	status = ice_read_active_orom_module(hw, css_start + ICE_NVM_CSS_SREV_H, &srev_h);
++	status = ice_read_orom_module(hw, bank, css_start + ICE_NVM_CSS_SREV_H, &srev_h);
+ 	if (status)
+ 		return status;
+ 
+@@ -685,7 +687,7 @@ ice_get_orom_ver_info(struct ice_hw *hw, struct ice_orom_info *orom)
+ 	orom->build = (u16)((combo_ver & ICE_OROM_VER_BUILD_MASK) >>
+ 			    ICE_OROM_VER_BUILD_SHIFT);
+ 
+-	status = ice_get_orom_srev(hw, &orom->srev);
++	status = ice_get_orom_srev(hw, ICE_ACTIVE_FLASH_BANK, &orom->srev);
+ 	if (status)
+ 		ice_debug(hw, ICE_DBG_NVM, "Failed to read Option ROM security revision.\n");
+ 
 -- 
-Vinicius
+2.29.0
+
