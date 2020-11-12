@@ -1,314 +1,159 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 11 Nov 2020 16:43:28 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 5/7] ice: display some stored NVM
- versions via devlink info
-In-Reply-To: <20201112004330.2896993-1-jacob.e.keller@intel.com>
-References: <20201112004330.2896993-1-jacob.e.keller@intel.com>
-Message-ID: <20201112004330.2896993-6-jacob.e.keller@intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 12 Nov 2020 11:03:24 +0200
+Subject: [Intel-wired-lan] [PATCH v4 9/9] igc: Add support for
+ XDP_REDIRECT action
+In-Reply-To: <20201104031210.27772-10-andre.guedes@intel.com>
+References: <20201104031210.27772-1-andre.guedes@intel.com>
+ <20201104031210.27772-10-andre.guedes@intel.com>
+Message-ID: <df3339ba-f2d1-6e85-044d-9db96807fd97@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The devlink info interface supports drivers reporting "stored" versions.
-These versions indicate the version of an update that has been
-downloaded to the device, but is not yet active.
-
-Add a new function to read some of the fw.mgmt version data from the
-inactive flash section. This function, ice_get_inactive_nvm_ver, will
-read the NVM version data from the inactive section of flash.
-
-To avoid code duplication, we refactor ice_get_nvm_ver_info so that it
-takes the bank parameter for specifying which flash bank to read from.
-Instead of reading from the copy stored in the Shadow RAM, always read
-from the copy of the specified flash bank.
-
-Note that the start of the Shadow RAM copy is not directly following the
-CSS header, but is actually aligned to the next 64-byte boundary. The
-correct word offset must be rounded up to 32-bytes.
-
-When reporting the versions via devlink info, first read the device
-capabilities. If there is a pending flash update, use this new function
-to extract the inactive flash versions. Add the stored fields to the
-flash version map structure so that they will be displayed when
-available.
-
-It should be noted that it is not currently feasible to extract all of
-the related versions for the management firmware. This patch adds
-support for displaying "fw.mgmt.srev", "fw.psid.api", and
-"fw.bundle_id". The management firmware versions are more difficult to
-extract from the binary and have not been implemented in this change.
-
-Future changes will introduce support for reading the UNDI Option ROM
-version and the version associated with the Netlist module.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_devlink.c | 57 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_nvm.c     | 44 ++++++++++++---
- drivers/net/ethernet/intel/ice/ice_nvm.h     |  2 +
- drivers/net/ethernet/intel/ice/ice_type.h    |  8 ++-
- 4 files changed, 104 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 31cbb0fbd429..26bee486997f 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -9,6 +9,8 @@
- /* context for devlink info version reporting */
- struct ice_info_ctx {
- 	char buf[128];
-+	struct ice_nvm_info pending_nvm;
-+	struct ice_hw_dev_caps dev_caps;
- };
- 
- /* The following functions are used to format specific strings for various
-@@ -80,6 +82,16 @@ static int ice_info_fw_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
- 	return 0;
- }
- 
-+static int ice_info_pending_fw_srev(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	struct ice_nvm_info *nvm = &ctx->pending_nvm;
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
-+		snprintf(ctx->buf, sizeof(ctx->buf), "%u", nvm->srev);
-+
-+	return 0;
-+}
-+
- static int ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_orom_info *orom = &pf->hw.flash.orom;
-@@ -107,6 +119,16 @@ static int ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
- 	return 0;
- }
- 
-+static int ice_info_pending_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	struct ice_nvm_info *nvm = &ctx->pending_nvm;
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
-+		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
-+
-+	return 0;
-+}
-+
- static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
-@@ -116,6 +138,16 @@ static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
- 	return 0;
- }
- 
-+static int ice_info_pending_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	struct ice_nvm_info *nvm = &ctx->pending_nvm;
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
-+		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", nvm->eetrack);
-+
-+	return 0;
-+}
-+
- static int ice_info_ddp_pkg_name(struct ice_pf *pf, struct ice_info_ctx *ctx)
- {
- 	struct ice_hw *hw = &pf->hw;
-@@ -165,6 +197,7 @@ static int ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
- 
- #define fixed(key, getter) { ICE_VERSION_FIXED, key, getter }
- #define running(key, getter) { ICE_VERSION_RUNNING, key, getter }
-+#define stored(key, getter) { ICE_VERSION_STORED, key, getter }
- 
- enum ice_version_type {
- 	ICE_VERSION_FIXED,
-@@ -182,10 +215,13 @@ static const struct ice_devlink_version {
- 	running("fw.mgmt.api", ice_info_fw_api),
- 	running("fw.mgmt.build", ice_info_fw_build),
- 	running("fw.mgmt.srev", ice_info_fw_srev),
-+	stored("fw.mgmt.srev", ice_info_pending_fw_srev),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_UNDI, ice_info_orom_ver),
- 	running("fw.undi.srev", ice_info_orom_srev),
- 	running("fw.psid.api", ice_info_nvm_ver),
-+	stored("fw.psid.api", ice_info_pending_nvm_ver),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_eetrack),
-+	stored(DEVLINK_INFO_VERSION_GENERIC_FW_BUNDLE_ID, ice_info_pending_eetrack),
- 	running("fw.app.name", ice_info_ddp_pkg_name),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_APP, ice_info_ddp_pkg_version),
- 	running("fw.app.bundle_id", ice_info_ddp_pkg_bundle_id),
-@@ -209,7 +245,10 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 				struct netlink_ext_ack *extack)
- {
- 	struct ice_pf *pf = devlink_priv(devlink);
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
- 	struct ice_info_ctx *ctx;
-+	enum ice_status status;
- 	size_t i;
- 	int err;
- 
-@@ -217,6 +256,24 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 	if (!ctx)
- 		return -ENOMEM;
- 
-+	/* discover capabilities first */
-+	status = ice_discover_dev_caps(hw, &ctx->dev_caps);
-+	if (status) {
-+		err = -EIO;
-+		goto out_free_ctx;
-+	}
-+
-+	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm) {
-+		status = ice_get_inactive_nvm_ver(hw, &ctx->pending_nvm);
-+		if (status) {
-+			dev_dbg(dev, "Unable to read inactive NVM version data, status %s aq_err %s\n",
-+				ice_stat_str(status), ice_aq_str(hw->adminq.sq_last_status));
-+
-+			/* disable display of pending Option ROM */
-+			ctx->dev_caps.common_cap.nvm_update_pending_nvm = false;
-+		}
-+	}
-+
- 	err = devlink_info_driver_name_put(req, KBUILD_MODNAME);
- 	if (err) {
- 		NL_SET_ERR_MSG_MOD(extack, "Unable to set driver name");
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index ff99815402d1..9613d24eaa06 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -367,6 +367,22 @@ ice_read_nvm_module(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u1
- 	return status;
- }
- 
-+/**
-+ * ice_read_nvm_sr_copy - Read a word from the Shadow RAM copy in the NVM bank
-+ * @hw: pointer to the HW structure
-+ * @bank: whether to read from the active or inactive NVM module
-+ * @offset: offset into the Shadow RAM copy to read, in words
-+ * @data: storage for returned word value
-+ *
-+ * Read the specified word from the copy of the Shadow RAM found in the
-+ * specified NVM module.
-+ */
-+static enum ice_status
-+ice_read_nvm_sr_copy(struct ice_hw *hw, enum ice_bank_select bank, u32 offset, u16 *data)
-+{
-+	return ice_read_nvm_module(hw, bank, ICE_NVM_SR_COPY_WORD_OFFSET + offset, data);
-+}
-+
- /**
-  * ice_read_orom_module - Read from the active Option ROM module
-  * @hw: pointer to the HW structure
-@@ -568,31 +584,33 @@ static enum ice_status ice_get_nvm_srev(struct ice_hw *hw, enum ice_bank_select
- /**
-  * ice_get_nvm_ver_info - Read NVM version information
-  * @hw: pointer to the HW struct
-+ * @bank: whether to read from the active or inactive flash bank
-  * @nvm: pointer to NVM info structure
-  *
-  * Read the NVM EETRACK ID and map version of the main NVM image bank, filling
-  * in the nvm info structure.
-  */
- static enum ice_status
--ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
-+ice_get_nvm_ver_info(struct ice_hw *hw, enum ice_bank_select bank, struct ice_nvm_info *nvm)
- {
- 	u16 eetrack_lo, eetrack_hi, ver;
- 	enum ice_status status;
- 
--	status = ice_read_sr_word(hw, ICE_SR_NVM_DEV_STARTER_VER, &ver);
-+	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_DEV_STARTER_VER, &ver);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_NVM, "Failed to read DEV starter version.\n");
- 		return status;
- 	}
-+
- 	nvm->major = (ver & ICE_NVM_VER_HI_MASK) >> ICE_NVM_VER_HI_SHIFT;
- 	nvm->minor = (ver & ICE_NVM_VER_LO_MASK) >> ICE_NVM_VER_LO_SHIFT;
- 
--	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
-+	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_EETRACK_LO, &eetrack_lo);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_NVM, "Failed to read EETRACK lo.\n");
- 		return status;
- 	}
--	status = ice_read_sr_word(hw, ICE_SR_NVM_EETRACK_HI, &eetrack_hi);
-+	status = ice_read_nvm_sr_copy(hw, bank, ICE_SR_NVM_EETRACK_HI, &eetrack_hi);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_NVM, "Failed to read EETRACK hi.\n");
- 		return status;
-@@ -600,13 +618,27 @@ ice_get_nvm_ver_info(struct ice_hw *hw, struct ice_nvm_info *nvm)
- 
- 	nvm->eetrack = (eetrack_hi << 16) | eetrack_lo;
- 
--	status = ice_get_nvm_srev(hw, ICE_ACTIVE_FLASH_BANK, &nvm->srev);
-+	status = ice_get_nvm_srev(hw, bank, &nvm->srev);
- 	if (status)
- 		ice_debug(hw, ICE_DBG_NVM, "Failed to read NVM security revision.\n");
- 
- 	return 0;
- }
- 
-+/**
-+ * ice_get_inactive_nvm_ver - Read Option ROM version from the inactive bank
-+ * @hw: pointer to the HW structure
-+ * @nvm: storage for Option ROM version information
-+ *
-+ * Reads the NVM EETRACK ID, Map version, and security revision of the
-+ * inactive NVM bank. Used to access version data for a pending update that
-+ * has not yet been activated.
-+ */
-+enum ice_status ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm)
-+{
-+	return ice_get_nvm_ver_info(hw, ICE_INACTIVE_FLASH_BANK, nvm);
-+}
-+
- /**
-  * ice_get_orom_srev - Read the security revision from the OROM CSS header
-  * @hw: pointer to the HW struct
-@@ -1028,7 +1060,7 @@ enum ice_status ice_init_nvm(struct ice_hw *hw)
- 		return status;
- 	}
- 
--	status = ice_get_nvm_ver_info(hw, &flash->nvm);
-+	status = ice_get_nvm_ver_info(hw, ICE_ACTIVE_FLASH_BANK, &flash->nvm);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_INIT, "Failed to read NVM info.\n");
- 		return status;
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
-index 8cfb9b9ac638..c5c737b7b062 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.h
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
-@@ -18,6 +18,8 @@ ice_get_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
- enum ice_status
- ice_update_nvm_minsrevs(struct ice_hw *hw, struct ice_minsrev_info *minsrevs);
- enum ice_status
-+ice_get_inactive_nvm_ver(struct ice_hw *hw, struct ice_nvm_info *nvm);
-+enum ice_status
- ice_read_pba_string(struct ice_hw *hw, u8 *pba_num, u32 pba_num_size);
- enum ice_status ice_init_nvm(struct ice_hw *hw);
- enum ice_status ice_read_sr_word(struct ice_hw *hw, u16 offset, u16 *data);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index b9230c9158e1..a9832b85f157 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -848,8 +848,14 @@ struct ice_hw_port_stats {
- #define ICE_NVM_CSS_SREV_L			0x14
- #define ICE_NVM_CSS_SREV_H			0x15
- 
-+/* Length of CSS header section in words */
-+#define ICE_CSS_HEADER_LENGTH			330
-+
-+/* Offset of Shadow RAM copy in the NVM bank area. */
-+#define ICE_NVM_SR_COPY_WORD_OFFSET		roundup(ICE_CSS_HEADER_LENGTH, 32)
-+
- /* Size in bytes of Option ROM trailer */
--#define ICE_NVM_OROM_TRAILER_LENGTH		660
-+#define ICE_NVM_OROM_TRAILER_LENGTH		(2 * ICE_CSS_HEADER_LENGTH)
- 
- /* Auxiliary field, mask, and shift definition for Shadow RAM and NVM Flash */
- #define ICE_SR_CTRL_WORD_1_S		0x06
--- 
-2.29.0
-
+On 11/4/2020 05:12, Andre Guedes wrote:
+> This patch adds support for the XDP_REDIRECT action which enables XDP
+> programs to redirect packets arriving at I225 NIC. It also implements
+> the ndo_xdp_xmit ops, enabling the igc driver to transmit packets
+> forwarded to it by xdp programs running on other interfaces.
+> 
+> The patch tweaks the driver's page counting scheme (as described in
+> '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
+> implemented by other Intel drivers) in order to properly support
+> XDP_REDIRECT action.
+> 
+> This patch has been tested with the sample apps "xdp_redirect_cpu" and
+> "xdp_redirect_map" located in samples/bpf/.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 59 +++++++++++++++++++++--
+>   1 file changed, 56 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index ee8e4615aba5..f406364e8797 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -27,6 +27,7 @@
+>   #define IGC_XDP_PASS		0
+>   #define IGC_XDP_CONSUMED	BIT(0)
+>   #define IGC_XDP_TX		BIT(1)
+> +#define IGC_XDP_REDIRECT	BIT(2)
+Hello Andre, I would suggest move the _XDP_REDIRECT mask to the 
+igc_defines.h file.
+Same suggestion for mask above (in previous patches)
+>   
+>   static int debug = -1;
+>   
+> @@ -1720,8 +1721,8 @@ static bool igc_can_reuse_rx_page(struct igc_rx_buffer *rx_buffer)
+>   	 * the pagecnt_bias and page count so that we fully restock the
+>   	 * number of references the driver holds.
+>   	 */
+> -	if (unlikely(!pagecnt_bias)) {
+> -		page_ref_add(page, USHRT_MAX);
+> +	if (unlikely(pagecnt_bias == 1)) {
+> +		page_ref_add(page, USHRT_MAX - 1);
+>   		rx_buffer->pagecnt_bias = USHRT_MAX;
+>   	}
+>   
+> @@ -1862,7 +1863,8 @@ static bool igc_alloc_mapped_page(struct igc_ring *rx_ring,
+>   	bi->dma = dma;
+>   	bi->page = page;
+>   	bi->page_offset = igc_rx_offset(rx_ring);
+> -	bi->pagecnt_bias = 1;
+> +	page_ref_add(page, USHRT_MAX - 1);
+> +	bi->pagecnt_bias = USHRT_MAX;
+>   
+>   	return true;
+>   }
+> @@ -2058,6 +2060,12 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+>   		else
+>   			res = IGC_XDP_TX;
+>   		break;
+> +	case XDP_REDIRECT:
+> +		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+> +			res = IGC_XDP_CONSUMED;
+> +		else
+> +			res = IGC_XDP_REDIRECT;
+> +		break;
+>   	default:
+>   		bpf_warn_invalid_xdp_action(act);
+>   		fallthrough;
+> @@ -2099,6 +2107,9 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
+>   		igc_flush_tx_descriptors(ring);
+>   		__netif_tx_unlock(nq);
+>   	}
+> +
+> +	if (status & IGC_XDP_REDIRECT)
+> +		xdp_do_flush();
+>   }
+>   
+>   static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+> @@ -2167,6 +2178,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+>   				rx_buffer->pagecnt_bias++;
+>   				break;
+>   			case IGC_XDP_TX:
+> +			case IGC_XDP_REDIRECT:
+>   				igc_rx_buffer_flip(rx_buffer, truesize);
+>   				xdp_status |= xdp_res;
+>   				break;
+> @@ -5132,6 +5144,46 @@ static int igc_bpf(struct net_device *dev, struct netdev_bpf *bpf)
+>   	}
+>   }
+>   
+> +static int igc_xdp_xmit(struct net_device *dev, int num_frames,
+> +			struct xdp_frame **frames, u32 flags)
+> +{
+> +	struct igc_adapter *adapter = netdev_priv(dev);
+> +	int cpu = smp_processor_id();
+> +	struct netdev_queue *nq;
+> +	struct igc_ring *ring;
+> +	int i, drops;
+> +
+> +	if (unlikely(test_bit(__IGC_DOWN, &adapter->state)))
+> +		return -ENETDOWN;
+> +
+> +	if (unlikely(flags & ~XDP_XMIT_FLAGS_MASK))
+> +		return -EINVAL;
+> +
+> +	ring = igc_xdp_get_tx_ring(adapter, cpu);
+> +	nq = txring_txq(ring);
+> +
+> +	__netif_tx_lock(nq, cpu);
+> +
+> +	drops = 0;
+> +	for (i = 0; i < num_frames; i++) {
+> +		int err;
+> +		struct xdp_frame *xdpf = frames[i];
+> +
+> +		err = igc_xdp_init_tx_descriptor(ring, xdpf);
+> +		if (err) {
+> +			xdp_return_frame_rx_napi(xdpf);
+> +			drops++;
+> +		}
+> +	}
+> +
+> +	if (flags & XDP_XMIT_FLUSH)
+> +		igc_flush_tx_descriptors(ring);
+> +
+> +	__netif_tx_unlock(nq);
+> +
+> +	return num_frames - drops;
+> +}
+> +
+>   static const struct net_device_ops igc_netdev_ops = {
+>   	.ndo_open		= igc_open,
+>   	.ndo_stop		= igc_close,
+> @@ -5146,6 +5198,7 @@ static const struct net_device_ops igc_netdev_ops = {
+>   	.ndo_do_ioctl		= igc_ioctl,
+>   	.ndo_setup_tc		= igc_setup_tc,
+>   	.ndo_bpf		= igc_bpf,
+> +	.ndo_xdp_xmit		= igc_xdp_xmit,
+>   };
+>   
+>   /* PCIe configuration access */
+> 
+Thanks,
+Sasha
