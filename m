@@ -1,9 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 13 Nov 2020 12:49:11 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 50/96]
- drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to
- restricted __be32
-Message-ID: <202011131208.X8ZMYl5e-lkp@intel.com>
+Date: Fri, 13 Nov 2020 13:58:51 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 73/96]
+ drivers/net/ethernet/intel/igc/igc_ptp.c:183:18: sparse: sparse: cast to
+ restricted __le32
+Message-ID: <202011131348.852qYDiM-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +12,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
 head:   3f69b6741396fada730c8a1ccc0bfa8c771b9dab
-commit: cf576c848e1829ce268474d0510dab01a4235e36 [50/96] igc: Add support for PTP getcrosststamp()
+commit: 44f0d25c501202f999773c94ee0a11d7e7376b76 [73/96] igc: Fix igc_ptp_rx_pktstamp()
 config: i386-randconfig-s002-20201113 (attached as .config)
 compiler: gcc-9 (Debian 9.3.0-15) 9.3.0
 reproduce:
         # apt-get install sparse
         # sparse version: v0.6.3-107-gaf3512a6-dirty
-        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=cf576c848e1829ce268474d0510dab01a4235e36
+        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=44f0d25c501202f999773c94ee0a11d7e7376b76
         git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
         git fetch --no-tags tnguy-next-queue dev-queue
-        git checkout cf576c848e1829ce268474d0510dab01a4235e36
+        git checkout 44f0d25c501202f999773c94ee0a11d7e7376b76
         # save the attached .config to linux build tree
         make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' ARCH=i386 
 
@@ -30,56 +30,72 @@ Reported-by: kernel test robot <lkp@intel.com>
 
 
 "sparse warnings: (new ones prefixed by >>)"
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
->> drivers/net/ethernet/intel/igc/igc_ptp.c:450:21: sparse: sparse: cast to restricted __be32
+>> drivers/net/ethernet/intel/igc/igc_ptp.c:183:18: sparse: sparse: cast to restricted __le32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:184:24: sparse: sparse: cast to restricted __le32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
+   drivers/net/ethernet/intel/igc/igc_ptp.c:458:21: sparse: sparse: cast to restricted __be32
 
-vim +450 drivers/net/ethernet/intel/igc/igc_ptp.c
+vim +183 drivers/net/ethernet/intel/igc/igc_ptp.c
 
-   434	
-   435	static void igc_ptm_gather_report(struct igc_adapter *adapter)
-   436	{
-   437		struct igc_hw *hw = &adapter->hw;
-   438		u32 t2_curr_h, t2_curr_l;
-   439		ktime_t t1, t2_curr;
-   440	
-   441		t1 = ktime_set(rd32(IGC_PTM_T1_TIM0_H),
-   442			       rd32(IGC_PTM_T1_TIM0_L));
-   443	
-   444		t2_curr_l = rd32(IGC_PTM_CURR_T2_L);
-   445		t2_curr_h = rd32(IGC_PTM_CURR_T2_H);
-   446	
-   447		/* FIXME: There's an ambiguity on what endianness some PCIe PTM
-   448		 * messages should use. Find a more robust way to handle this.
-   449		 */
- > 450		t2_curr_h = be32_to_cpu(t2_curr_h);
-   451	
-   452		t2_curr = ((s64)t2_curr_h << 32 | t2_curr_l);
-   453	
-   454		wr32(IGC_PTM_STAT, IGC_PTM_STAT_VALID);
-   455	
-   456		mutex_lock(&adapter->ptm_time_lock);
-   457	
-   458		/* Because get_device_system_crosststamp() requires that the
-   459		 * historic timestamp is before the PTM device/host
-   460		 * timestamps, we keep track of the current and previous
-   461		 * snapshot (historic timestamp).
-   462		 */
-   463		memcpy(&adapter->prev_snapshot,
-   464		       &adapter->curr_snapshot, sizeof(adapter->prev_snapshot));
-   465		ktime_get_snapshot(&adapter->curr_snapshot);
-   466	
-   467		adapter->ptm_device_time = t1;
-   468		adapter->ptm_host_time = igc_device_tstamp_to_system(t2_curr);
-   469		mutex_unlock(&adapter->ptm_time_lock);
-   470	
-   471		mod_delayed_work(system_wq, &adapter->ptm_report,
-   472				 msecs_to_jiffies(IGC_PTM_CYCLE_TIME_MSECS));
-   473	}
-   474	
+   155	
+   156	/**
+   157	 * igc_ptp_rx_pktstamp - Retrieve timestamp from Rx packet buffer
+   158	 * @q_vector: Pointer to interrupt specific structure
+   159	 * @va: Pointer to address containing Rx buffer
+   160	 * @skb: Buffer containing timestamp and packet
+   161	 *
+   162	 * This function retrieves the timestamp saved in the beginning of packet
+   163	 * buffer. While two timestamps are available, one in timer0 reference and the
+   164	 * other in timer1 reference, this function considers only the timestamp in
+   165	 * timer0 reference.
+   166	 */
+   167	void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+   168				 struct sk_buff *skb)
+   169	{
+   170		struct igc_adapter *adapter = q_vector->adapter;
+   171		u64 regval;
+   172		int adjust;
+   173	
+   174		/* Timestamps are saved in little endian at the beginning of the packet
+   175		 * buffer following the layout:
+   176		 *
+   177		 * DWORD: | 0              | 1              | 2              | 3              |
+   178		 * Field: | Timer1 SYSTIML | Timer1 SYSTIMH | Timer0 SYSTIML | Timer0 SYSTIMH |
+   179		 *
+   180		 * SYSTIML holds the nanoseconds part while SYSTIMH holds the seconds
+   181		 * part of the timestamp.
+   182		 */
+ > 183		regval = le32_to_cpu(va[2]);
+   184		regval |= (u64)le32_to_cpu(va[3]) << 32;
+   185		igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
+   186	
+   187		/* Adjust timestamp for the RX latency based on link speed */
+   188		switch (adapter->link_speed) {
+   189		case SPEED_10:
+   190			adjust = IGC_I225_RX_LATENCY_10;
+   191			break;
+   192		case SPEED_100:
+   193			adjust = IGC_I225_RX_LATENCY_100;
+   194			break;
+   195		case SPEED_1000:
+   196			adjust = IGC_I225_RX_LATENCY_1000;
+   197			break;
+   198		case SPEED_2500:
+   199			adjust = IGC_I225_RX_LATENCY_2500;
+   200			break;
+   201		default:
+   202			adjust = 0;
+   203			netdev_warn_once(adapter->netdev, "Imprecise timestamp\n");
+   204			break;
+   205		}
+   206		skb_hwtstamps(skb)->hwtstamp =
+   207			ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
+   208	}
+   209	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
@@ -90,4 +106,4 @@ Name: .config.gz
 Type: application/gzip
 Size: 41744 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201113/f66e13a9/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201113/4d24ba52/attachment-0001.bin>
