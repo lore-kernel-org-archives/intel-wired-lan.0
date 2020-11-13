@@ -1,67 +1,54 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 13 Nov 2020 11:10:58 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
- for PTP getcrosststamp()
-In-Reply-To: <20201113032451.GB32138@hoboy.vegasvil.org>
-References: <20201112093203.GH1559650@localhost> <87pn4i6svv.fsf@intel.com>
- <20201113032451.GB32138@hoboy.vegasvil.org>
-Message-ID: <87ima96pj1.fsf@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Fri, 13 Nov 2020 22:01:03 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix check for PF state
+ (vf disable)
+In-Reply-To: <20201113101411.25092-1-mateusz.palczewski@intel.com>
+References: <20201113101411.25092-1-mateusz.palczewski@intel.com>
+Message-ID: <ccb2f9563068920c9072d1942febceb6b00639e5.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Richard,
+On Fri, 2020-11-13 at 10:14 +0000, Mateusz Palczewski wrote:
+> When PF state bit for __I40e_VF_DISABLE is set,
+> it doesn't mean necessary that the VF called in
+> i40e_reset_vf is disabled. It is rather impossible to
+> call a reset on a disabled VF, so return false and
+> repeat the request after a while.
 
-Richard Cochran <richardcochran@gmail.com> writes:
+False is already being returned. This patch is only adding a comment.
 
-> On Thu, Nov 12, 2020 at 03:46:12PM -0800, Vinicius Costa Gomes wrote:
->> I wanted it so using PCIe PTM was transparent to applications, so adding
->> another API wouldn't be my preference.
->> 
->> That being said, having a trigger from the application to start/stop the
->> PTM cycles doesn't sound too bad an idea. So, not too opposed to this
->> idea.
->> 
->> Richard, any opinions here?
->
-> Sorry, I only have the last two message from this thread, and so I'm
-> missing the backstory.
+> Fixes: 8d38e0c("i40e: Fix removing driver while bare-metal VFs pass
+> traffic")
 
-No worries. The not so short version of the story is this:
+The fixes tags should have 12 chars.
 
-I am proposing a series that adds support for PCIe PTM (for the igc
-driver), exporting the values via the PTP_SYS_OFFSET_PRECISE ioctl().
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+> Reviewed-on: https://git-amr-1.devtools.intel.com/gerrit/301695
 
-The way PTM works in the NIC I have, kind of forces me to start the PTM
-dialogs during initialization, and they are kept running in background,
-what the _PRECISE ioctl() does is basically collecting the most recent
-measurement.
+This Reviewed-on shouldn't be here.
 
-Miroslav is suggesting that a new API, similar to PTP_EXTTS_REQUEST,
-would be a good idea.
-
-This new API idea has a few nice "pros":
- - I can use it to trigger starting the PTM cycles (instead of starting
- PTM during initialization), and the application would potentially have
- access to all the measurements;
- - Right now, keeping the PTM cycles always running would probably have
- an impact in power comsuption/number of wake-ups, with this new API,
- this price would only be paid when the user wants.
-
-The main "con" would be that it wouldn't be transparent to applications
-(phc2sys), as it would have to use another API if it wants to take
-advantage of PTM.
-
-And so question is, what is your opinion on this: export the PTM
-measurements using some "to be defined" new API or keep using some of
-the PTP_SYS_OFFSET_* ioctls?
-
-I think that's it. Miroslav, feel free to correct me if I missed
-something.
-
-
-Cheers,
--- 
-Vinicius
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Tested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 8951740..d30a57f 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -1423,6 +1423,8 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool
+> flr)
+>  
+>  	/* If the VFs have been disabled, this means something else is
+>  	 * resetting the VF, so we shouldn't continue.
+> +	 * This is a global state of a PF, so it is possible that
+> +	 * a different VF is in reset.
+>  	 */
+>  	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
+>  		return false;
