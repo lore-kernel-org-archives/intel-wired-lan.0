@@ -1,50 +1,114 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Fri, 13 Nov 2020 10:14:11 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix check for PF state (vf
- disable)
-Message-ID: <20201113101411.25092-1-mateusz.palczewski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 13 Nov 2020 21:36:31 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 3f69b6741396fada730c8a1ccc0bfa8c771b9dab
+Message-ID: <5fae8bdf.wMHjT1rHwe4PWV1u%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When PF state bit for __I40e_VF_DISABLE is set,
-it doesn't mean necessary that the VF called in
-i40e_reset_vf is disabled. It is rather impossible to
-call a reset on a disabled VF, so return false and
-repeat the request after a while.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: 3f69b6741396fada730c8a1ccc0bfa8c771b9dab  ice: display stored UNDI firmware version via devlink info
 
-Fixes: 8d38e0c("i40e: Fix removing driver while bare-metal VFs pass traffic")
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Reviewed-on: https://git-amr-1.devtools.intel.com/gerrit/301695
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Tested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+elapsed time: 722m
+
+configs tested: 87
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                       aspeed_g4_defconfig
+m68k                          atari_defconfig
+powerpc                     pseries_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                        multi_v5_defconfig
+powerpc                      chrp32_defconfig
+powerpc                       eiger_defconfig
+h8300                               defconfig
+mips                           ip22_defconfig
+s390                          debug_defconfig
+arm                         hackkit_defconfig
+x86_64                           allyesconfig
+arc                 nsimosci_hs_smp_defconfig
+arm                            pleb_defconfig
+mips                        omega2p_defconfig
+m68k                          hp300_defconfig
+arm                       mainstone_defconfig
+m68k                          amiga_defconfig
+mips                        maltaup_defconfig
+arm                        vexpress_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20201113
+i386                 randconfig-a005-20201113
+i386                 randconfig-a002-20201113
+i386                 randconfig-a001-20201113
+i386                 randconfig-a003-20201113
+i386                 randconfig-a004-20201113
+x86_64               randconfig-a015-20201113
+x86_64               randconfig-a011-20201113
+x86_64               randconfig-a014-20201113
+x86_64               randconfig-a013-20201113
+x86_64               randconfig-a016-20201113
+x86_64               randconfig-a012-20201113
+i386                 randconfig-a012-20201113
+i386                 randconfig-a014-20201113
+i386                 randconfig-a016-20201113
+i386                 randconfig-a011-20201113
+i386                 randconfig-a015-20201113
+i386                 randconfig-a013-20201113
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8951740..d30a57f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1423,6 +1423,8 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
- 
- 	/* If the VFs have been disabled, this means something else is
- 	 * resetting the VF, so we shouldn't continue.
-+	 * This is a global state of a PF, so it is possible that
-+	 * a different VF is in reset.
- 	 */
- 	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
- 		return false;
--- 
-2.17.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
