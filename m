@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 13 Nov 2020 22:12:16 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 8a5c2906c52f4a81939b4f8536e0004a4193a154
-Message-ID: <5fae9440.OjinXP0Ze0+vEqnO%lkp@intel.com>
+Date: Fri, 13 Nov 2020 22:12:21 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 1323489e64de3881c84ac17b92371b722cf42e6c
+Message-ID: <5fae9445.D9TbSKi0iQoR2UTG%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  master
-branch HEAD: 8a5c2906c52f4a81939b4f8536e0004a4193a154  Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: 1323489e64de3881c84ac17b92371b722cf42e6c  igb: avoid transmit queue timeout in xdp path
 
 elapsed time: 720m
 
-configs tested: 183
+configs tested: 186
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -46,11 +46,10 @@ arm                             mxs_defconfig
 arm                          prima2_defconfig
 arm64                            alldefconfig
 mips                          ath79_defconfig
-mips                          malta_defconfig
-powerpc                       holly_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                        warp_defconfig
-arm                        neponset_defconfig
+powerpc                   motionpro_defconfig
+arm                        clps711x_defconfig
+powerpc                    gamecube_defconfig
+arm                          pxa910_defconfig
 mips                         bigsur_defconfig
 arm                         s3c6400_defconfig
 arm                         s5pv210_defconfig
@@ -76,10 +75,6 @@ sparc                       sparc32_defconfig
 powerpc                     tqm8548_defconfig
 um                            kunit_defconfig
 arc                          axs103_defconfig
-powerpc                      chrp32_defconfig
-powerpc                       eiger_defconfig
-h8300                               defconfig
-mips                           ip22_defconfig
 sh                           se7750_defconfig
 c6x                              alldefconfig
 arc                     nsimosci_hs_defconfig
@@ -94,6 +89,10 @@ powerpc                    sam440ep_defconfig
 arm                           h3600_defconfig
 powerpc                     stx_gp3_defconfig
 arm                           sunxi_defconfig
+powerpc                   bluestone_defconfig
+sh                          r7780mp_defconfig
+arm                       imx_v6_v7_defconfig
+mips                      bmips_stb_defconfig
 sh                           se7722_defconfig
 c6x                                 defconfig
 csky                             alldefconfig
@@ -101,8 +100,6 @@ arc                        nsim_700_defconfig
 nds32                            alldefconfig
 powerpc                      ep88xc_defconfig
 sh                  sh7785lcr_32bit_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                       imx_v6_v7_defconfig
 powerpc                      pasemi_defconfig
 ia64                        generic_defconfig
 arm                            dove_defconfig
@@ -115,24 +112,31 @@ arm                              zx_defconfig
 mips                            gpr_defconfig
 powerpc                     skiroot_defconfig
 arm                          lpd270_defconfig
+m68k                       m5208evb_defconfig
+mips                           xway_defconfig
+mips                        jmr3927_defconfig
+powerpc                     sequoia_defconfig
+mips                          rb532_defconfig
+powerpc                          allmodconfig
 m68k                          hp300_defconfig
 riscv                            allyesconfig
 mips                        maltaup_defconfig
 mips                        nlm_xlp_defconfig
+powerpc                       maple_defconfig
+xtensa                  nommu_kc705_defconfig
 arm                            u300_defconfig
 openrisc                 simple_smp_defconfig
+sh                           se7724_defconfig
+sh                           se7780_defconfig
 sh                          polaris_defconfig
 sh                          urquell_defconfig
 arm                         bcm2835_defconfig
 m68k                       m5475evb_defconfig
 arm                      tct_hammer_defconfig
 powerpc                mpc7448_hpc2_defconfig
-mips                         rt305x_defconfig
-arc                          axs101_defconfig
-xtensa                    xip_kc705_defconfig
-arm                           u8500_defconfig
-powerpc                      ppc40x_defconfig
-sh                          rsk7201_defconfig
+um                           x86_64_defconfig
+arm                        realview_defconfig
+powerpc                     ppa8548_defconfig
 sh                          rsk7269_defconfig
 arm                           spitz_defconfig
 powerpc                         wii_defconfig
@@ -166,7 +170,6 @@ i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
-powerpc                          allmodconfig
 powerpc                           allnoconfig
 i386                 randconfig-a006-20201113
 i386                 randconfig-a005-20201113
