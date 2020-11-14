@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 14 Nov 2020 13:56:57 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 808462a6466238af590ee7a16b2578853ddb8126
-Message-ID: <5faf71a9.J5aq9rMPeiyD11lc%lkp@intel.com>
+Date: Sat, 14 Nov 2020 13:56:53 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 04bbddb5ef0c4c6033434b44000d9f6618dab5f3
+Message-ID: <5faf71a5.K6RCn/UjXu1jXkPO%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  100GbE
-branch HEAD: 808462a6466238af590ee7a16b2578853ddb8126  ice: Add space to unknown speed
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: 04bbddb5ef0c4c6033434b44000d9f6618dab5f3  ice: display stored UNDI firmware version via devlink info
 
 elapsed time: 721m
 
-configs tested: 132
+configs tested: 118
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,17 +26,10 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arm                         hackkit_defconfig
-mips                          rm200_defconfig
-sh                          r7785rp_defconfig
-ia64                             alldefconfig
-arm                          collie_defconfig
-m68k                        m5307c3_defconfig
-powerpc                      mgcoge_defconfig
-sh                          sdk7780_defconfig
-arm                         lubbock_defconfig
-mips                            e55_defconfig
-xtensa                  cadence_csp_defconfig
+powerpc                     sequoia_defconfig
+powerpc                       eiger_defconfig
+arm                        neponset_defconfig
+powerpc                     kmeter1_defconfig
 nios2                            alldefconfig
 sh                          rsk7203_defconfig
 m68k                            q40_defconfig
@@ -47,44 +40,31 @@ powerpc                   bluestone_defconfig
 powerpc               mpc834x_itxgp_defconfig
 arm                      pxa255-idp_defconfig
 powerpc                     tqm8560_defconfig
-powerpc                 mpc832x_rdb_defconfig
-mips                        omega2p_defconfig
-powerpc                      cm5200_defconfig
-powerpc                      bamboo_defconfig
-mips                        bcm47xx_defconfig
-powerpc64                        alldefconfig
 sh                   sh7724_generic_defconfig
 alpha                            alldefconfig
 arm                         s3c6400_defconfig
 arm                         vf610m4_defconfig
 arm                      integrator_defconfig
 sh                         ecovec24_defconfig
-sh                           se7750_defconfig
-mips                           jazz_defconfig
-powerpc                      acadia_defconfig
-xtensa                          iss_defconfig
 nds32                            alldefconfig
 arm                       aspeed_g4_defconfig
 arm                         assabet_defconfig
 um                            kunit_defconfig
-powerpc                      chrp32_defconfig
-sh                               j2_defconfig
-m68k                       m5249evb_defconfig
-powerpc                     rainier_defconfig
-m68k                            mac_defconfig
-mips                        vocore2_defconfig
 xtensa                         virt_defconfig
 arm                        shmobile_defconfig
 powerpc64                           defconfig
 arm                           sama5_defconfig
 mips                           ip32_defconfig
 riscv                               defconfig
-arm                       imx_v4_v5_defconfig
-powerpc                     pq2fads_defconfig
-powerpc                    mvme5100_defconfig
-ia64                        generic_defconfig
-arm                           stm32_defconfig
-mips                        bcm63xx_defconfig
+sh                          kfr2r09_defconfig
+mips                     loongson1c_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                           spitz_defconfig
+mips                         tb0226_defconfig
+m68k                        m5272c3_defconfig
+ia64                          tiger_defconfig
+arm                            xcep_defconfig
+mips                 decstation_r4k_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -135,6 +115,12 @@ i386                 randconfig-a016-20201113
 i386                 randconfig-a011-20201113
 i386                 randconfig-a015-20201113
 i386                 randconfig-a013-20201113
+x86_64               randconfig-a003-20201114
+x86_64               randconfig-a005-20201114
+x86_64               randconfig-a004-20201114
+x86_64               randconfig-a002-20201114
+x86_64               randconfig-a001-20201114
+x86_64               randconfig-a006-20201114
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
