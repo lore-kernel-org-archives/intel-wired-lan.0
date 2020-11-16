@@ -1,62 +1,56 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Mon, 16 Nov 2020 12:14:02 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Add rx errors aggregation
- feature
-Message-ID: <20201116121402.11318-1-mateusz.palczewski@intel.com>
+From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Date: Mon, 16 Nov 2020 14:25:35 +0100
+Subject: [Intel-wired-lan] [PATCH 0/8] New netdev feature flags for XDP
+In-Reply-To: <20201116093452.7541-1-marekx.majtyka@intel.com>
+References: <20201116093452.7541-1-marekx.majtyka@intel.com>
+Message-ID: <875z655t80.fsf@toke.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Extend calculation of receive errors by aggregating them in the
-existing netstat receive error counter.
+alardam at gmail.com writes:
 
-Error counters added for:
-rx_csum_bad, rx_length_errors, rx_undersize_, rx_fragments,
-rx_oversize and rx_jabber.
+> From: Marek Majtyka <marekx.majtyka@intel.com>
+>
+> Implement support for checking if a netdev has native XDP and AF_XDP zero
+> copy support. Previously, there was no way to do this other than to try
+> to create an AF_XDP socket on the interface or load an XDP program and
+> see if it worked. This commit changes this by extending existing
+> netdev_features in the following way:
+>  * xdp        - full XDP support (XDP_{TX, PASS, DROP, ABORT, REDIRECT})
+>  * af-xdp-zc  - AF_XDP zero copy support
+> NICs supporting these features are updated by turning the corresponding
+> netdev feature flags on.
 
-The above were added in order to align statistics with other products.
+Thank you for working on this! The lack of a way to discover whether an
+interface supports XDP is really annoying.
 
-Without this change only rx_crc_errors and illegal_bytes were
-collected by netstat receive error counter.
+However, I don't think just having two separate netdev feature flags for
+XDP and AF_XDP is going to cut it. Whatever mechanism we end up will
+need to be able to express at least the following, in addition to your
+two flags:
 
+- Which return codes does it support (with DROP/PASS, TX and REDIRECT as
+  separate options)?
+- Does this interface be used as a target for XDP_REDIRECT
+  (supported/supported but not enabled)?
+- Does the interface support offloaded XDP?
 
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Tested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+That's already five or six more flags, and we can't rule out that we'll
+need more; so I'm not sure if just defining feature bits for all of them
+is a good idea.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 672dc2c..0799476 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -859,7 +859,14 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
- 	/* pull in a couple PF stats if this is the main vsi */
- 	if (vsi == pf->vsi[pf->lan_vsi]) {
- 		ns->rx_crc_errors = pf->stats.crc_errors;
--		ns->rx_errors = pf->stats.crc_errors + pf->stats.illegal_bytes;
-+		ns->rx_errors = pf->stats.crc_errors +
-+				pf->stats.illegal_bytes +
-+				pf->hw_csum_rx_error +
-+				pf->stats.rx_length_errors +
-+				pf->stats.rx_undersize +
-+				pf->stats.rx_fragments +
-+				pf->stats.rx_oversize +
-+				pf->stats.rx_jabber;
- 		ns->rx_length_errors = pf->stats.rx_length_errors;
- 	}
- }
--- 
-2.17.1
+In addition, we should be able to check this in a way so we can reject
+XDP programs that use features that are not supported. E.g., program
+uses REDIRECT return code (or helper), but the interface doesn't support
+it? Reject at attach/load time! Or the user attempts to insert an
+interface into a redirect map, but that interface doesn't implement
+ndo_xdp_xmit()? Reject the insert! Etc.
 
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+That last bit can be added later, of course, but we need to make sure we
+design the support in a way that it is possible to do so...
+
+-Toke
 
