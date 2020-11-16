@@ -1,130 +1,103 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Fri, 27 Nov 2020 20:20:17 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Assign DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_MAY_SKIP_RESUME to speed up s2ram
-In-Reply-To: <20201126144536.GA19171@chenyu-office.sh.intel.com>
-References: <20201124153221.11265-1-yu.c.chen@intel.com>
- <8BA4D1E1-DACF-4E84-A5B8-75A7CEA65F98@canonical.com>
- <20201125103612.GA17700@chenyu-office.sh.intel.com>
- <B66CCBD9-5828-4514-AD08-C6FDF026646D@canonical.com>
- <20201126111053.GA15841@chenyu-office.sh.intel.com>
- <43247451-BA44-4958-A921-2BD0FF5FA5BA@canonical.com>
- <20201126144536.GA19171@chenyu-office.sh.intel.com>
-Message-ID: <E385D730-1D0A-41B0-B6CC-CFBA7535BA1B@canonical.com>
+From: alardam@gmail.com <alardam@gmail.com>
+Date: Mon, 16 Nov 2020 10:34:44 +0100
+Subject: [Intel-wired-lan] [PATCH 0/8] New netdev feature flags for XDP
+Message-ID: <20201116093452.7541-1-marekx.majtyka@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Marek Majtyka <marekx.majtyka@intel.com>
 
+Implement support for checking if a netdev has native XDP and AF_XDP zero
+copy support. Previously, there was no way to do this other than to try
+to create an AF_XDP socket on the interface or load an XDP program and
+see if it worked. This commit changes this by extending existing
+netdev_features in the following way:
+ * xdp        - full XDP support (XDP_{TX, PASS, DROP, ABORT, REDIRECT})
+ * af-xdp-zc  - AF_XDP zero copy support
+NICs supporting these features are updated by turning the corresponding
+netdev feature flags on.
 
-> On Nov 26, 2020, at 22:45, Chen Yu <yu.c.chen@intel.com> wrote:
-> 
-> On Thu, Nov 26, 2020 at 08:05:02PM +0800, Kai-Heng Feng wrote:
->> 
->> 
->>> On Nov 26, 2020, at 19:10, Chen Yu <yu.c.chen@intel.com> wrote:
->>> 
->>> On Thu, Nov 26, 2020 at 02:36:42PM +0800, Kai-Heng Feng wrote:
->>>>>> 
->>>>>> What about plugging ethernet cable and using WoL after system is suspended?
->>>>>> Commit "e1000e: Exclude device from suspend direct complete optimization" was to address that scenario.
->>> [cut]
->>>> 
->>>> I don't think this is right.
->>>> Isn't E1000_WUFC_LNKC already set for runtime suspend?
->>>> What if WoL doesn't have it set?
->>>> 
->>> After re-taking a look at your description, please let me elaborate more about the scenario.
->>> With this patch applied, and with sysfs wake up disabled, the expected behavior is:
->>> 
->>> 1. If NIC is not runtime suspended:
->>> 1.1 s2ram suspend -> wufc will be set to 0(no WoL settings), suspend(), suspend_late(), suspend_noirq()
->>> 1.2 s2ram resume  -> NIC resumes normaly
->>> 
->>> 2. If NIC is runtime suspended:
->>> 2.1 s2ram suspend -> wufc set to E1000_WUFC_LNKC, skip the subsequent suspend callbacks.
->> 
->> Is it safe to keep E1000_WUFC_LNKC enabled here?
->> 
->> From commit 6bf6be1127f7 ("e1000e: Do not wake up the system via WOL if device wakeup is disabled"):
->> 
->>       /* Runtime suspend should only enable wakeup for link changes */
->>       if (runtime)
->>               wufc = E1000_WUFC_LNKC;
->>       else if (device_may_wakeup(&pdev->dev))
->>               wufc = adapter->wol;
->>       else
->>               wufc = 0;
->> 
->> So it has different wakeup settings for runtime suspend and system suspend, either device_may_wakeup() true or false.
-> Right.
->> Or maybe e1000e devs can confirm E1000_WUFC_LNKC is a safe for system suspend?
->> 
-> Does 'safe' here mean waking up the system?
-> For s2ram, whether the NIC can wake up the system from S3 via cable plug is platform
-> (BIOS) specific. So the wufc settings here is not directly related to system wake up
-> via plug event.
+NOTE:
+ Only the compilation check was performed for:
+  - ice, 
+  - igb,
+  - mlx5, 
+  - bnxt, 
+  - dpaa2, 
+  - mvmeta, 
+  - mvpp2, 
+  - qede,
+  - sfc, 
+  - netsec, 
+  - cpsw, 
+  - xen, 
+  - virtio_net.
 
-Thanks for the confirmation. How about a different approach? 
-Simply use direct-complete to let PM core handle the rest:
+Libbpf library is extended in order to provide a simple API for gathering
+information about XDP supported capabilities of a netdev. This API
+utilizes netlink interface towards kernel. With this function it is
+possible to get xsk supported options for netdev beforehand.
+The new API is used in core xsk code as well as in the xdpsock sample.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index b30f00891c03..1d1424a20733 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -25,6 +25,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/aer.h>
- #include <linux/prefetch.h>
-+#include <linux/suspend.h>
- 
- #include "e1000.h"
- 
-@@ -6868,6 +6869,20 @@ static void e1000e_disable_aspm_locked(struct pci_dev *pdev, u16 state)
- 	__e1000e_disable_aspm(pdev, state, 1);
- }
- 
-+static int e1000e_pm_prepare(struct device *dev)
-+{
-+	return pm_runtime_suspended(dev) &&
-+	       pm_suspend_via_firmware() &&
-+	       !device_may_wakeup(dev);
-+}
-+
-+static void e1000e_pm_complete(struct device *dev)
-+{
-+	/* Detect link change */
-+	if (pm_runtime_suspended(dev))
-+		pm_request_resume(dev);
-+}
-+
- static int e1000e_pm_thaw(struct device *dev)
- {
- 	struct net_device *netdev = dev_get_drvdata(dev);
-@@ -7665,9 +7680,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	e1000_print_device_info(adapter);
- 
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
--
--	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
-+	if (pci_dev_run_wake(pdev))
- 		pm_runtime_put_noidle(&pdev->dev);
- 
- 	return 0;
-@@ -7890,6 +7903,8 @@ MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
- static const struct dev_pm_ops e1000_pm_ops = {
- #ifdef CONFIG_PM_SLEEP
-+	.prepare	= e1000e_pm_prepare,
-+	.complete	= e1000e_pm_complete,
- 	.suspend	= e1000e_pm_suspend,
- 	.resume		= e1000e_pm_resume,
- 	.freeze		= e1000e_pm_freeze,
+These new flags also solve the problem with strict recognition of zero
+copy support. The problem is that there are drivers out there that only
+support XDP partially, so it is possible to successfully load the XDP
+program in native mode, but it will still not be able to support zero-copy
+as it does not have XDP_REDIRECT support. With af-xdp-zc flag the check
+is possible and trivial.
 
+Marek Majtyka (8):
+  net: ethtool: extend netdev_features flag set
+  drivers/net: turn XDP flags on
+  xsk: add usage of xdp netdev_features flags
+  xsk: add check for full support of XDP in bind
+  libbpf: extend netlink attribute API
+  libbpf: add functions to get XSK modes
+  libbpf: add API to get XSK/XDP caps
+  samples/bpf/xdp: apply netdev XDP/XSK modes info
 
-> thanks,
-> Chenyu
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     |   1 +
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |   2 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |   4 +
+ drivers/net/ethernet/intel/igb/igb_main.c     |   2 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   3 +
+ drivers/net/ethernet/marvell/mvneta.c         |   1 +
+ .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |   1 +
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |   2 +
+ drivers/net/ethernet/qlogic/qede/qede_main.c  |   1 +
+ drivers/net/ethernet/sfc/efx.c                |   1 +
+ drivers/net/ethernet/socionext/netsec.c       |   1 +
+ drivers/net/ethernet/ti/cpsw.c                |   2 +
+ drivers/net/ethernet/ti/cpsw_new.c            |   2 +
+ drivers/net/tun.c                             |   4 +
+ drivers/net/veth.c                            |   1 +
+ drivers/net/virtio_net.c                      |   1 +
+ drivers/net/xen-netfront.c                    |   1 +
+ include/linux/netdev_features.h               |   6 +
+ include/net/xdp.h                             |  13 +
+ include/net/xdp_sock_drv.h                    |  11 +
+ include/uapi/linux/if_xdp.h                   |   1 +
+ net/ethtool/common.c                          |   2 +
+ net/xdp/xsk.c                                 |   4 +-
+ net/xdp/xsk_buff_pool.c                       |  21 +-
+ samples/bpf/xdpsock_user.c                    | 117 +++++-
+ tools/include/uapi/linux/ethtool.h            |  44 ++
+ tools/include/uapi/linux/if_xdp.h             |   1 +
+ tools/lib/bpf/ethtool.h                       |  49 +++
+ tools/lib/bpf/libbpf.h                        |   1 +
+ tools/lib/bpf/libbpf.map                      |   1 +
+ tools/lib/bpf/netlink.c                       | 379 +++++++++++++++++-
+ tools/lib/bpf/nlattr.c                        | 105 +++++
+ tools/lib/bpf/nlattr.h                        |  22 +
+ tools/lib/bpf/xsk.c                           |  54 ++-
+ tools/lib/bpf/xsk.h                           |   3 +-
+ 36 files changed, 845 insertions(+), 20 deletions(-)
+ create mode 100644 tools/lib/bpf/ethtool.h
+
+-- 
+2.20.1
 
