@@ -1,9 +1,10 @@
 From: alardam@gmail.com <alardam@gmail.com>
-Date: Mon, 16 Nov 2020 10:34:51 +0100
-Subject: [Intel-wired-lan] [PATCH 7/8] libbpf: add API to get XSK/XDP caps
+Date: Mon, 16 Nov 2020 10:34:52 +0100
+Subject: [Intel-wired-lan] [PATCH 8/8] samples/bpf/xdp: apply netdev XDP/XSK
+ modes info
 In-Reply-To: <20201116093452.7541-1-marekx.majtyka@intel.com>
 References: <20201116093452.7541-1-marekx.majtyka@intel.com>
-Message-ID: <20201116093452.7541-8-marekx.majtyka@intel.com>
+Message-ID: <20201116093452.7541-9-marekx.majtyka@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,114 +13,201 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Marek Majtyka <marekx.majtyka@intel.com>
 
-Add public xsk API to read supported XDP functions of a netdev:
- - XDP driver mode (SKB, DRV),
- - XSK bind mode (COPY, ZEROCOPY).
+Update xdpsock sample so that it utilizes netlink ethtool interface
+to get available XDP/XSK modes. This allows to automatically choose
+the best available mode of operation, if these are not provided explicitly.
 
 Signed-off-by: Marek Majtyka <marekx.majtyka@intel.com>
 ---
- tools/lib/bpf/libbpf.map |  1 +
- tools/lib/bpf/xsk.c      | 51 +++++++++++++++++++++++++++++++++++++++-
- tools/lib/bpf/xsk.h      |  3 ++-
- 3 files changed, 53 insertions(+), 2 deletions(-)
+ samples/bpf/xdpsock_user.c | 117 ++++++++++++++++++++++++++++++++++---
+ 1 file changed, 108 insertions(+), 9 deletions(-)
 
-diff --git a/tools/lib/bpf/libbpf.map b/tools/lib/bpf/libbpf.map
-index 29ff4807b909..0867dd078a65 100644
---- a/tools/lib/bpf/libbpf.map
-+++ b/tools/lib/bpf/libbpf.map
-@@ -345,4 +345,5 @@ LIBBPF_0.3.0 {
- 		btf__parse_split;
- 		btf__new_empty_split;
- 		btf__new_split;
-+		xsk_socket__get_caps;
- } LIBBPF_0.2.0;
-diff --git a/tools/lib/bpf/xsk.c b/tools/lib/bpf/xsk.c
-index 7951f7ea6db3..433c58fbed68 100644
---- a/tools/lib/bpf/xsk.c
-+++ b/tools/lib/bpf/xsk.c
-@@ -15,7 +15,6 @@
- #include <arpa/inet.h>
- #include <asm/barrier.h>
- #include <linux/compiler.h>
--#include <linux/ethtool.h>
- #include <linux/filter.h>
- #include <linux/if_ether.h>
- #include <linux/if_link.h>
-@@ -31,6 +30,7 @@
- #include <sys/types.h>
+diff --git a/samples/bpf/xdpsock_user.c b/samples/bpf/xdpsock_user.c
+index 1149e94ca32f..780e5d1d73a0 100644
+--- a/samples/bpf/xdpsock_user.c
++++ b/samples/bpf/xdpsock_user.c
+@@ -53,6 +53,9 @@
  
- #include "bpf.h"
-+#include "ethtool.h"
- #include "libbpf.h"
- #include "libbpf_internal.h"
- #include "xsk.h"
-@@ -931,3 +931,52 @@ void xsk_socket__delete(struct xsk_socket *xsk)
- 		close(xsk->fd);
- 	free(xsk);
+ #define DEBUG_HEXDUMP 0
+ 
++#define XDP_MODES		(XDP_FLAGS_SKB_MODE | XDP_FLAGS_DRV_MODE)
++#define XSK_MODES		(XDP_COPY | XDP_ZEROCOPY)
++
+ typedef __u64 u64;
+ typedef __u32 u32;
+ typedef __u16 u16;
+@@ -86,7 +89,7 @@ static u32 irq_no;
+ static int irqs_at_init = -1;
+ static int opt_poll;
+ static int opt_interval = 1;
+-static u32 opt_xdp_bind_flags = XDP_USE_NEED_WAKEUP;
++static u16 opt_xdp_bind_flags = XDP_USE_NEED_WAKEUP;
+ static u32 opt_umem_flags;
+ static int opt_unaligned_chunks;
+ static int opt_mmap_flags;
+@@ -95,6 +98,8 @@ static int opt_timeout = 1000;
+ static bool opt_need_wakeup = true;
+ static u32 opt_num_xsks = 1;
+ static u32 prog_id;
++static u32 xdp_caps;
++static u16 bind_caps;
+ 
+ struct xsk_ring_stats {
+ 	unsigned long rx_npkts;
+@@ -957,6 +962,26 @@ static void usage(const char *prog)
+ 	exit(EXIT_FAILURE);
  }
-+
-+int xsk_socket__get_caps(const char *ifname, __u32 *xdp_caps, __u16 *bind_caps)
+ 
++static inline void set_drv_mode(void)
 +{
-+	struct ethnl_params param;
-+	int ret;
++	opt_xdp_flags |= XDP_FLAGS_DRV_MODE;
++}
 +
-+	if (!xdp_caps || !bind_caps || !ifname ||
-+	    (strnlen(ifname, IFNAMSIZ) >= IFNAMSIZ))
-+		return -EINVAL;
++static inline void set_skb_mode(void)
++{
++	opt_xdp_flags |= XDP_FLAGS_SKB_MODE;
++}
 +
-+	param.nl_family = ETHTOOL_GENL_NAME;
-+	param.xdp_zc_flags = 0;
-+	param.ifname = ifname;
-+	param.xdp_flags = 0;
++static inline void set_zc_mode(void)
++{
++	opt_xdp_bind_flags |= XDP_ZEROCOPY;
++}
 +
-+	/* First, get the netlink family id */
-+	ret = libbpf_ethnl_get_ethtool_family_id(&param);
-+	if (ret)
-+		return ret;
++static inline void set_copy_mode(void)
++{
++	opt_xdp_bind_flags |= XDP_COPY;
++}
 +
-+	/* Second, get number of features */
-+	param.features = 0;
-+	ret = libbpf_ethnl_get_netdev_features(&param);
-+	if (ret)
-+		return ret;
+ static void parse_command_line(int argc, char **argv)
+ {
+ 	int option_index, c;
+@@ -989,20 +1014,19 @@ static void parse_command_line(int argc, char **argv)
+ 			opt_poll = 1;
+ 			break;
+ 		case 'S':
+-			opt_xdp_flags |= XDP_FLAGS_SKB_MODE;
+-			opt_xdp_bind_flags |= XDP_COPY;
++			set_skb_mode();
+ 			break;
+ 		case 'N':
+-			/* default, set below */
++			set_drv_mode();
+ 			break;
+ 		case 'n':
+ 			opt_interval = atoi(optarg);
+ 			break;
+ 		case 'z':
+-			opt_xdp_bind_flags |= XDP_ZEROCOPY;
++			set_zc_mode();
+ 			break;
+ 		case 'c':
+-			opt_xdp_bind_flags |= XDP_COPY;
++			set_copy_mode();
+ 			break;
+ 		case 'u':
+ 			opt_umem_flags |= XDP_UMEM_UNALIGNED_CHUNK_FLAG;
+@@ -1069,9 +1093,6 @@ static void parse_command_line(int argc, char **argv)
+ 		}
+ 	}
+ 
+-	if (!(opt_xdp_flags & XDP_FLAGS_SKB_MODE))
+-		opt_xdp_flags |= XDP_FLAGS_DRV_MODE;
+-
+ 	opt_ifindex = if_nametoindex(opt_if);
+ 	if (!opt_ifindex) {
+ 		fprintf(stderr, "ERROR: interface \"%s\" does not exist\n",
+@@ -1461,6 +1482,76 @@ static void enter_xsks_into_map(struct bpf_object *obj)
+ 	}
+ }
+ 
++static inline u32 xdp_mode_not_set(void)
++{
++	return (opt_xdp_flags & XDP_MODES) == 0;
++}
 +
-+	/* Third, get the features description */
-+	ret = libbpf_ethnl_get_netdev_features(&param);
-+	if (ret)
-+		return ret;
++static inline u16 bind_mode_not_set(void)
++{
++	return (opt_xdp_bind_flags & XSK_MODES) == 0;
++}
 +
-+	*xdp_caps  = XDP_FLAGS_SKB_MODE;
-+	*bind_caps = XDP_COPY;
++static inline u16 zc_mode_set(void)
++{
++	return opt_xdp_bind_flags & XDP_ZEROCOPY;
++}
 +
-+	if (param.xdp_idx == -1 || param.xdp_zc_idx == -1)
-+		return 0;
++static inline u32 drv_mode_set(void)
++{
++	return opt_xdp_flags & XDP_FLAGS_DRV_MODE;
++}
 +
-+	/* Finally, get features flags and process it */
-+	ret = libbpf_ethnl_get_active_bits(&param);
-+	if (!ret) {
-+		if (param.xdp_flags) {
-+			*xdp_caps |= XDP_FLAGS_DRV_MODE;
-+			if (param.xdp_zc_flags)
-+				*bind_caps |= XDP_ZEROCOPY;
++static inline u16 zc_mode_available(void)
++{
++	return bind_caps & XDP_ZEROCOPY;
++}
++
++static inline u32 drv_mode_available(void)
++{
++	return xdp_caps & XDP_FLAGS_DRV_MODE;
++}
++
++static void set_xsk_default_flags(void)
++{
++	if (drv_mode_available()) {
++		set_drv_mode();
++
++		if (zc_mode_available())
++			set_zc_mode();
++		else
++			set_copy_mode();
++	} else {
++		set_skb_mode();
++		set_copy_mode();
++	}
++}
++
++static void adjust_missing_flags(void)
++{
++	if (xdp_mode_not_set()) {
++		if (bind_mode_not_set()) {
++			set_xsk_default_flags();
++		} else {
++			if (zc_mode_set()) {
++				set_drv_mode();
++			} else {
++				if (drv_mode_available())
++					set_drv_mode();
++				else
++					set_skb_mode();
++			}
++		}
++	} else {
++		if (bind_mode_not_set()) {
++			if (drv_mode_set() && zc_mode_available())
++				set_zc_mode();
++			else
++				set_copy_mode();
 +		}
 +	}
-+
-+	return ret;
 +}
-diff --git a/tools/lib/bpf/xsk.h b/tools/lib/bpf/xsk.h
-index 1069c46364ff..ae29004570b2 100644
---- a/tools/lib/bpf/xsk.h
-+++ b/tools/lib/bpf/xsk.h
-@@ -247,7 +247,8 @@ xsk_socket__create_shared(struct xsk_socket **xsk_ptr,
- /* Returns 0 for success and -EBUSY if the umem is still in use. */
- LIBBPF_API int xsk_umem__delete(struct xsk_umem *umem);
- LIBBPF_API void xsk_socket__delete(struct xsk_socket *xsk);
--
-+LIBBPF_API int xsk_socket__get_caps(const char *ifname, __u32 *xdp_caps,
-+				    __u16 *bind_caps);
- #ifdef __cplusplus
- } /* extern "C" */
- #endif
++
+ int main(int argc, char **argv)
+ {
+ 	struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
+@@ -1473,6 +1564,14 @@ int main(int argc, char **argv)
+ 
+ 	parse_command_line(argc, argv);
+ 
++	ret = xsk_socket__get_caps(opt_if, &xdp_caps, &bind_caps);
++	if (ret) {
++		fprintf(stderr, "ERROR: xsk_socket__get_caps\n");
++		exit(EXIT_FAILURE);
++	}
++
++	adjust_missing_flags();
++
+ 	if (setrlimit(RLIMIT_MEMLOCK, &r)) {
+ 		fprintf(stderr, "ERROR: setrlimit(RLIMIT_MEMLOCK) \"%s\"\n",
+ 			strerror(errno));
 -- 
 2.20.1
 
