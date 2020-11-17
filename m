@@ -1,95 +1,79 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Tue, 17 Nov 2020 20:36:54 +0100
-Subject: [Intel-wired-lan] [PATCH bpf-next v3 4/5] xsk: introduce
- batched Tx descriptor interfaces
-In-Reply-To: <5fb41f6ae195_310220813@john-XPS-13-9370.notmuch>
-References: <1605525167-14450-1-git-send-email-magnus.karlsson@gmail.com>
- <1605525167-14450-5-git-send-email-magnus.karlsson@gmail.com>
- <5fb41f6ae195_310220813@john-XPS-13-9370.notmuch>
-Message-ID: <CAJ8uoz3kKqxReJxsT_asecnF==QwRfbVZ81mEoMDgyxSFHO8Kg@mail.gmail.com>
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Tue, 17 Nov 2020 20:46:29 +0100
+Subject: [Intel-wired-lan] [RHEL8.4 PATCH] igc: fix link speed advertising
+Message-ID: <20201117194629.178360-1-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 17, 2020 at 8:07 PM John Fastabend <john.fastabend@gmail.com> wrote:
->
-> Magnus Karlsson wrote:
-> > From: Magnus Karlsson <magnus.karlsson@intel.com>
-> >
-> > Introduce batched descriptor interfaces in the xsk core code for the
-> > Tx path to be used in the driver to write a code path with higher
-> > performance. This interface will be used by the i40e driver in the
-> > next patch. Though other drivers would likely benefit from this new
-> > interface too.
-> >
-> > Note that batching is only implemented for the common case when
-> > there is only one socket bound to the same device and queue id. When
-> > this is not the case, we fall back to the old non-batched version of
-> > the function.
-> >
-> > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> > ---
-> >  include/net/xdp_sock_drv.h |  7 ++++
-> >  net/xdp/xsk.c              | 57 +++++++++++++++++++++++++++++
-> >  net/xdp/xsk_queue.h        | 89 +++++++++++++++++++++++++++++++++++++++-------
-> >  3 files changed, 140 insertions(+), 13 deletions(-)
-> >
->
-> Acked-by: John Fastabend <john.fastabend@gmail.com>
->
-> > +
-> > +u32 xsk_tx_peek_release_desc_batch(struct xsk_buff_pool *pool, struct xdp_desc *descs,
-> > +                                u32 max_entries)
-> > +{
-> > +     struct xdp_sock *xs;
-> > +     u32 nb_pkts;
-> > +
-> > +     rcu_read_lock();
-> > +     if (!list_is_singular(&pool->xsk_tx_list)) {
-> > +             /* Fallback to the non-batched version */
->
-> I'm going to ask even though I believe its correct.
->
-> If we fallback here and then an entry is added to the list while we are
-> in the fallback logic everything should still be OK, correct?
+Link speed advertising in igc has two problems:
 
-Yes, the fallback function can handle all cases.
+- When setting the advertisement via ethtool, the link speed is converted
+  to the legacy 32 bit representation for the intel PHY code.
+  This inadvertently drops ETHTOOL_LINK_MODE_2500baseT_Full_BIT (being
+  beyond bit 31).  As a result, any call to `ethtool -s ...' drops the
+  2500Mbit/s link speed from the PHY settings.  Only reloading the driver
+  alleviates that problem.
 
-> > +             rcu_read_unlock();
-> > +             return xsk_tx_peek_release_fallback(pool, descs, max_entries);
-> > +     }
-> > +
-> > +     xs = list_first_or_null_rcu(&pool->xsk_tx_list, struct xdp_sock, tx_list);
-> > +     if (!xs) {
-> > +             nb_pkts = 0;
-> > +             goto out;
-> > +     }
-> > +
-> > +     nb_pkts = xskq_cons_peek_desc_batch(xs->tx, descs, pool, max_entries);
-> > +     if (!nb_pkts) {
-> > +             xs->tx->queue_empty_descs++;
-> > +             goto out;
-> > +     }
-> > +
-> > +     /* This is the backpressure mechanism for the Tx path. Try to
-> > +      * reserve space in the completion queue for all packets, but
-> > +      * if there are fewer slots available, just process that many
-> > +      * packets. This avoids having to implement any buffering in
-> > +      * the Tx path.
-> > +      */
-> > +     nb_pkts = xskq_prod_reserve_addr_batch(pool->cq, descs, nb_pkts);
-> > +     if (!nb_pkts)
-> > +             goto out;
-> > +
-> > +     xskq_cons_release_n(xs->tx, nb_pkts);
-> > +     __xskq_cons_release(xs->tx);
-> > +     xs->sk.sk_write_space(&xs->sk);
-> > +
-> > +out:
-> > +     rcu_read_unlock();
-> > +     return nb_pkts;
-> > +}
-> > +EXPORT_SYMBOL(xsk_tx_peek_release_desc_batch);
-> > +
+  Fix this by converting the ETHTOOL_LINK_MODE_2500baseT_Full_BIT to the
+  Intel PHY ADVERTISE_2500_FULL bit explicitely.
+
+- Rather than checking the actual PHY setting, the .get_link_ksettings
+  function always fills link_modes.advertising with all link speeds
+  the device is capable of.
+
+  Fix this by checking the PHY autoneg_advertised settings and report
+  only the actually advertised speeds up to ethtool.
+
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+---
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 24 +++++++++++++++-----
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 61d331ce38cd..75cb4ca36bac 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1675,12 +1675,18 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+ 	cmd->base.phy_address = hw->phy.addr;
+ 
+ 	/* advertising link modes */
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Half);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Full);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Half);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Full);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 1000baseT_Full);
+-	ethtool_link_ksettings_add_link_mode(cmd, advertising, 2500baseT_Full);
++	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Half);
++	if (hw->phy.autoneg_advertised & ADVERTISE_10_FULL)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Full);
++	if (hw->phy.autoneg_advertised & ADVERTISE_100_HALF)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Half);
++	if (hw->phy.autoneg_advertised & ADVERTISE_100_FULL)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Full);
++	if (hw->phy.autoneg_advertised & ADVERTISE_1000_FULL)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 1000baseT_Full);
++	if (hw->phy.autoneg_advertised & ADVERTISE_2500_FULL)
++		ethtool_link_ksettings_add_link_mode(cmd, advertising, 2500baseT_Full);
+ 
+ 	/* set autoneg settings */
+ 	if (hw->mac.autoneg == 1) {
+@@ -1792,6 +1798,12 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
+ 
+ 	ethtool_convert_link_mode_to_legacy_u32(&advertising,
+ 						cmd->link_modes.advertising);
++	/* Converting to legacy u32 drops ETHTOOL_LINK_MODE_2500baseT_Full_BIT.
++	 * We have to check this and convert it to ADVERTISE_2500_FULL
++	 * (aka ETHTOOL_LINK_MODE_2500baseX_Full_BIT) explicitely.
++	 */
++	if (ethtool_link_ksettings_test_link_mode(cmd, advertising, 2500baseT_Full))
++		advertising |= ADVERTISE_2500_FULL;
+ 
+ 	if (cmd->base.autoneg == AUTONEG_ENABLE) {
+ 		hw->mac.autoneg = 1;
+-- 
+2.27.0
+
