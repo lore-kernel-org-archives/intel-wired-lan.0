@@ -1,106 +1,90 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Tue, 17 Nov 2020 19:38:43 +0100
-Subject: [Intel-wired-lan] [PATCH 0/8] New netdev feature flags for XDP
-In-Reply-To: <CAAOQfrGzfKf-vpaitfC_KLDnWDo_uJFDF_PE5X9RH_G4Yt8QHA@mail.gmail.com>
-References: <20201116093452.7541-1-marekx.majtyka@intel.com>
- <875z655t80.fsf@toke.dk>
- <CAJ8uoz1C7-a7A0WJqThomSxYwmdkfLpDyC5YnB8g_J+p486RXQ@mail.gmail.com>
- <CAAOQfrGzfKf-vpaitfC_KLDnWDo_uJFDF_PE5X9RH_G4Yt8QHA@mail.gmail.com>
-Message-ID: <87wnyj25ho.fsf@toke.dk>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Tue, 17 Nov 2020 11:07:22 -0800
+Subject: [Intel-wired-lan] [PATCH bpf-next v3 4/5] xsk: introduce
+ batched Tx descriptor interfaces
+In-Reply-To: <1605525167-14450-5-git-send-email-magnus.karlsson@gmail.com>
+References: <1605525167-14450-1-git-send-email-magnus.karlsson@gmail.com>
+ <1605525167-14450-5-git-send-email-magnus.karlsson@gmail.com>
+Message-ID: <5fb41f6ae195_310220813@john-XPS-13-9370.notmuch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Marek Majtyka <alardam@gmail.com> writes:
+Magnus Karlsson wrote:
+> From: Magnus Karlsson <magnus.karlsson@intel.com>
+> 
+> Introduce batched descriptor interfaces in the xsk core code for the
+> Tx path to be used in the driver to write a code path with higher
+> performance. This interface will be used by the i40e driver in the
+> next patch. Though other drivers would likely benefit from this new
+> interface too.
+> 
+> Note that batching is only implemented for the common case when
+> there is only one socket bound to the same device and queue id. When
+> this is not the case, we fall back to the old non-batched version of
+> the function.
+> 
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> ---
+>  include/net/xdp_sock_drv.h |  7 ++++
+>  net/xdp/xsk.c              | 57 +++++++++++++++++++++++++++++
+>  net/xdp/xsk_queue.h        | 89 +++++++++++++++++++++++++++++++++++++++-------
+>  3 files changed, 140 insertions(+), 13 deletions(-)
+> 
 
-> On Tue, Nov 17, 2020 at 8:37 AM Magnus Karlsson
-> <magnus.karlsson@gmail.com> wrote:
->
-> Thank you for your quick answers and comments.
->
->>
->> On Mon, Nov 16, 2020 at 2:25 PM Toke H?iland-J?rgensen <toke@redhat.com> wrote:
->> >
->> > alardam at gmail.com writes:
->> >
->> > > From: Marek Majtyka <marekx.majtyka@intel.com>
->> > >
->> > > Implement support for checking if a netdev has native XDP and AF_XDP zero
->> > > copy support. Previously, there was no way to do this other than to try
->> > > to create an AF_XDP socket on the interface or load an XDP program and
->> > > see if it worked. This commit changes this by extending existing
->> > > netdev_features in the following way:
->> > >  * xdp        - full XDP support (XDP_{TX, PASS, DROP, ABORT, REDIRECT})
->> > >  * af-xdp-zc  - AF_XDP zero copy support
->> > > NICs supporting these features are updated by turning the corresponding
->> > > netdev feature flags on.
->> >
->> > Thank you for working on this! The lack of a way to discover whether an
->> > interface supports XDP is really annoying.
->> >
->> > However, I don't think just having two separate netdev feature flags for
->> > XDP and AF_XDP is going to cut it. Whatever mechanism we end up will
->> > need to be able to express at least the following, in addition to your
->> > two flags:
->> >
->> > - Which return codes does it support (with DROP/PASS, TX and REDIRECT as
->> >   separate options)?
->> > - Does this interface be used as a target for XDP_REDIRECT
->> >   (supported/supported but not enabled)?
->> > - Does the interface support offloaded XDP?
->>
->> If we want feature discovery on this level, which seems to be a good
->> idea and goal to have, then it is a dead end to bunch all XDP features
->> into one. But fortunately, this can easily be addressed.
->
-> Do you think that is it still considerable to have a single netdev
-> flag that means "some" XDP feature support which would activate new
-> further functionalities?
+Acked-by: John Fastabend <john.fastabend@gmail.com>
 
-Why bother? The presence of any XDP-specific feature bits would imply
-the support for XDP :)
+> +
+> +u32 xsk_tx_peek_release_desc_batch(struct xsk_buff_pool *pool, struct xdp_desc *descs,
+> +				   u32 max_entries)
+> +{
+> +	struct xdp_sock *xs;
+> +	u32 nb_pkts;
+> +
+> +	rcu_read_lock();
+> +	if (!list_is_singular(&pool->xsk_tx_list)) {
+> +		/* Fallback to the non-batched version */
 
->> > That's already five or six more flags, and we can't rule out that we'll
->> > need more; so I'm not sure if just defining feature bits for all of them
->> > is a good idea.
->>
->> I think this is an important question. Is extending the netdev
->> features flags the right way to go? If not, is there some other
->> interface in the kernel that could be used/extended for this? If none
->> of these are possible, then we (unfortunately) need a new interface
->> and in that case, what should it look like?
->
-> Toke, are you thinking about any particular existing interface or a
-> new specific one?
+I'm going to ask even though I believe its correct.
 
-I have mostly been thinking about the internal kernel interface. The
-simple thing would just be to define a whole new bitmap of XDP-specific
-feature bits that the rest of the kernel can consume. That would also
-mean we don't have to do pointer chasing to see if the ndos are
-implemented, which Jesper pointed out the other day actually shows up on
-his profiling traces.
+If we fallback here and then an entry is added to the list while we are
+in the fallback logic everything should still be OK, correct?
 
-The downside to having them be feature flags is that they can get out of
-sync, of course. But if we block the support from working unless the
-right flags are set, that should at least make driver developers pay
-attention. Although we'd have to change all the drivers in one go, but I
-suppose that's not too onerous seeing as you just did that for this
-series :)
-
-So what that boils down to is basically what you're doing in this
-series, but more fine grained, via a new netdev->xdp_features instead of
-burning bits in netdev->features.
-
-As for UAPI, i dunno? Ethtool is netlink now, right? So it should be
-fairly easy to just extend with a new attribute for XDP?
-
-I believe there was originally some resistance to explicitly exposing
-XDP capabilities to userspace because we wanted all drivers to implement
-all features. Clearly that has not panned out, though, so as far as I'm
-concerned we can just expose it and be done with it :) But I'll let
-others weigh in here; the original discussions predate my involvement.
-
--Toke
-
+> +		rcu_read_unlock();
+> +		return xsk_tx_peek_release_fallback(pool, descs, max_entries);
+> +	}
+> +
+> +	xs = list_first_or_null_rcu(&pool->xsk_tx_list, struct xdp_sock, tx_list);
+> +	if (!xs) {
+> +		nb_pkts = 0;
+> +		goto out;
+> +	}
+> +
+> +	nb_pkts = xskq_cons_peek_desc_batch(xs->tx, descs, pool, max_entries);
+> +	if (!nb_pkts) {
+> +		xs->tx->queue_empty_descs++;
+> +		goto out;
+> +	}
+> +
+> +	/* This is the backpressure mechanism for the Tx path. Try to
+> +	 * reserve space in the completion queue for all packets, but
+> +	 * if there are fewer slots available, just process that many
+> +	 * packets. This avoids having to implement any buffering in
+> +	 * the Tx path.
+> +	 */
+> +	nb_pkts = xskq_prod_reserve_addr_batch(pool->cq, descs, nb_pkts);
+> +	if (!nb_pkts)
+> +		goto out;
+> +
+> +	xskq_cons_release_n(xs->tx, nb_pkts);
+> +	__xskq_cons_release(xs->tx);
+> +	xs->sk.sk_write_space(&xs->sk);
+> +
+> +out:
+> +	rcu_read_unlock();
+> +	return nb_pkts;
+> +}
+> +EXPORT_SYMBOL(xsk_tx_peek_release_desc_batch);
+> +
