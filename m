@@ -1,138 +1,106 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 17 Nov 2020 20:58:46 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 4aee452f74e3213e8fbcdec312c5463986a652da
-Message-ID: <5fb3c906.SOj2mnbtr08UaAcj%lkp@intel.com>
+From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Date: Tue, 17 Nov 2020 19:38:43 +0100
+Subject: [Intel-wired-lan] [PATCH 0/8] New netdev feature flags for XDP
+In-Reply-To: <CAAOQfrGzfKf-vpaitfC_KLDnWDo_uJFDF_PE5X9RH_G4Yt8QHA@mail.gmail.com>
+References: <20201116093452.7541-1-marekx.majtyka@intel.com>
+ <875z655t80.fsf@toke.dk>
+ <CAJ8uoz1C7-a7A0WJqThomSxYwmdkfLpDyC5YnB8g_J+p486RXQ@mail.gmail.com>
+ <CAAOQfrGzfKf-vpaitfC_KLDnWDo_uJFDF_PE5X9RH_G4Yt8QHA@mail.gmail.com>
+Message-ID: <87wnyj25ho.fsf@toke.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
-branch HEAD: 4aee452f74e3213e8fbcdec312c5463986a652da  i40e: Add Rx errors aggregation
+Marek Majtyka <alardam@gmail.com> writes:
 
-elapsed time: 723m
+> On Tue, Nov 17, 2020 at 8:37 AM Magnus Karlsson
+> <magnus.karlsson@gmail.com> wrote:
+>
+> Thank you for your quick answers and comments.
+>
+>>
+>> On Mon, Nov 16, 2020 at 2:25 PM Toke H?iland-J?rgensen <toke@redhat.com> wrote:
+>> >
+>> > alardam at gmail.com writes:
+>> >
+>> > > From: Marek Majtyka <marekx.majtyka@intel.com>
+>> > >
+>> > > Implement support for checking if a netdev has native XDP and AF_XDP zero
+>> > > copy support. Previously, there was no way to do this other than to try
+>> > > to create an AF_XDP socket on the interface or load an XDP program and
+>> > > see if it worked. This commit changes this by extending existing
+>> > > netdev_features in the following way:
+>> > >  * xdp        - full XDP support (XDP_{TX, PASS, DROP, ABORT, REDIRECT})
+>> > >  * af-xdp-zc  - AF_XDP zero copy support
+>> > > NICs supporting these features are updated by turning the corresponding
+>> > > netdev feature flags on.
+>> >
+>> > Thank you for working on this! The lack of a way to discover whether an
+>> > interface supports XDP is really annoying.
+>> >
+>> > However, I don't think just having two separate netdev feature flags for
+>> > XDP and AF_XDP is going to cut it. Whatever mechanism we end up will
+>> > need to be able to express at least the following, in addition to your
+>> > two flags:
+>> >
+>> > - Which return codes does it support (with DROP/PASS, TX and REDIRECT as
+>> >   separate options)?
+>> > - Does this interface be used as a target for XDP_REDIRECT
+>> >   (supported/supported but not enabled)?
+>> > - Does the interface support offloaded XDP?
+>>
+>> If we want feature discovery on this level, which seems to be a good
+>> idea and goal to have, then it is a dead end to bunch all XDP features
+>> into one. But fortunately, this can easily be addressed.
+>
+> Do you think that is it still considerable to have a single netdev
+> flag that means "some" XDP feature support which would activate new
+> further functionalities?
 
-configs tested: 109
-configs skipped: 2
+Why bother? The presence of any XDP-specific feature bits would imply
+the support for XDP :)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>> > That's already five or six more flags, and we can't rule out that we'll
+>> > need more; so I'm not sure if just defining feature bits for all of them
+>> > is a good idea.
+>>
+>> I think this is an important question. Is extending the netdev
+>> features flags the right way to go? If not, is there some other
+>> interface in the kernel that could be used/extended for this? If none
+>> of these are possible, then we (unfortunately) need a new interface
+>> and in that case, what should it look like?
+>
+> Toke, are you thinking about any particular existing interface or a
+> new specific one?
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                           gcw0_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                     mpc512x_defconfig
-sh                        sh7785lcr_defconfig
-arm                        oxnas_v6_defconfig
-sh                          rsk7203_defconfig
-powerpc               mpc834x_itxgp_defconfig
-mips                         bigsur_defconfig
-sh                           sh2007_defconfig
-mips                        bcm63xx_defconfig
-mips                          rm200_defconfig
-mips                       lemote2f_defconfig
-mips                 decstation_r4k_defconfig
-powerpc                     ppa8548_defconfig
-sh                     magicpanelr2_defconfig
-mips                         tb0219_defconfig
-arc                      axs103_smp_defconfig
-mips                        qi_lb60_defconfig
-m68k                            mac_defconfig
-mips                          ath79_defconfig
-sh                         ecovec24_defconfig
-arm                            zeus_defconfig
-arm                     eseries_pxa_defconfig
-sh                               alldefconfig
-arm                           h3600_defconfig
-arm                        neponset_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                          iop32x_defconfig
-mips                      loongson3_defconfig
-powerpc                     stx_gp3_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                 mpc8272_ads_defconfig
-m68k                       m5249evb_defconfig
-m68k                          sun3x_defconfig
-arm                          collie_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20201116
-x86_64               randconfig-a005-20201116
-x86_64               randconfig-a004-20201116
-x86_64               randconfig-a002-20201116
-x86_64               randconfig-a001-20201116
-x86_64               randconfig-a006-20201116
-i386                 randconfig-a006-20201116
-i386                 randconfig-a005-20201116
-i386                 randconfig-a001-20201116
-i386                 randconfig-a002-20201116
-i386                 randconfig-a004-20201116
-i386                 randconfig-a003-20201116
-i386                 randconfig-a012-20201116
-i386                 randconfig-a014-20201116
-i386                 randconfig-a016-20201116
-i386                 randconfig-a011-20201116
-i386                 randconfig-a015-20201116
-i386                 randconfig-a013-20201116
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+I have mostly been thinking about the internal kernel interface. The
+simple thing would just be to define a whole new bitmap of XDP-specific
+feature bits that the rest of the kernel can consume. That would also
+mean we don't have to do pointer chasing to see if the ndos are
+implemented, which Jesper pointed out the other day actually shows up on
+his profiling traces.
 
-clang tested configs:
-x86_64               randconfig-a015-20201116
-x86_64               randconfig-a011-20201116
-x86_64               randconfig-a014-20201116
-x86_64               randconfig-a013-20201116
-x86_64               randconfig-a016-20201116
-x86_64               randconfig-a012-20201116
+The downside to having them be feature flags is that they can get out of
+sync, of course. But if we block the support from working unless the
+right flags are set, that should at least make driver developers pay
+attention. Although we'd have to change all the drivers in one go, but I
+suppose that's not too onerous seeing as you just did that for this
+series :)
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+So what that boils down to is basically what you're doing in this
+series, but more fine grained, via a new netdev->xdp_features instead of
+burning bits in netdev->features.
+
+As for UAPI, i dunno? Ethtool is netlink now, right? So it should be
+fairly easy to just extend with a new attribute for XDP?
+
+I believe there was originally some resistance to explicitly exposing
+XDP capabilities to userspace because we wanted all drivers to implement
+all features. Clearly that has not panned out, though, so as far as I'm
+concerned we can just expose it and be done with it :) But I'll let
+others weigh in here; the original discussions predate my involvement.
+
+-Toke
+
