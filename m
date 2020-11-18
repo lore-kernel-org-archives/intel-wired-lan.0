@@ -1,84 +1,127 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 17 Nov 2020 17:21:48 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
- for PTP getcrosststamp()
-In-Reply-To: <20201117014926.GA26272@hoboy.vegasvil.org>
-References: <20201114025704.GA15240@hoboy.vegasvil.org>
- <874klo7pwp.fsf@intel.com> <20201117014926.GA26272@hoboy.vegasvil.org>
-Message-ID: <87d00b5uj7.fsf@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 18 Nov 2020 16:12:29 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ de0223bde011b2f6da54bfb8e087ac6718a32c8a
+Message-ID: <5fb4d76d.FND55T8pVfytdOKD%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Richard Cochran <richardcochran@gmail.com> writes:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: de0223bde011b2f6da54bfb8e087ac6718a32c8a  i40e: Add Rx errors aggregation
 
-> On Mon, Nov 16, 2020 at 05:06:30PM -0800, Vinicius Costa Gomes wrote:
->> The PTM dialogs are a pair of messages: a Request from the endpoint (in
->> my case, the NIC) to the PCIe root (or switch), and a Response from the
->> other side (this message includes the Master Root Time, and the
->> calculated propagation delay).
->> 
->> The interface exposed by the NIC I have allows basically to start/stop
->> these PTM dialogs (I was calling them PTM cycles) and to configure the
->> interval between each cycle (~1ms - ~512ms).
->
-> Ah, now I am starting to understand...
->
-> Just to be clear, this is yet another time measurement over PCIe,
-> different than the cross time stamp that we already have, right?
->
+elapsed time: 724m
 
-Not so different. This series implement the getcrosststamp() function in
-the igc driver, the difference from e1000e (another NIC driver that
-supports getcrosststamp()) is that e1000e uses the fact that it has more
-or less direct access to the CPU clock. In my case the access is less
-direct as it happens via standardized PCIe PTM.
+configs tested: 98
+configs skipped: 2
 
-> Also, what is the point of providing time measurements every 1
-> millisecond?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I sincerely have no idea. I had no power on how the hardware was
-designed, and how PTM was implemented in HW.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+s390                       zfcpdump_defconfig
+openrisc                         alldefconfig
+powerpc                 xes_mpc85xx_defconfig
+arc                         haps_hs_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                          pxa910_defconfig
+sh                          sdk7786_defconfig
+powerpc                     tqm8555_defconfig
+powerpc                     tqm8560_defconfig
+arm                         orion5x_defconfig
+arm                       mainstone_defconfig
+mips                       bmips_be_defconfig
+xtensa                       common_defconfig
+arm                        neponset_defconfig
+mips                malta_kvm_guest_defconfig
+powerpc                     redwood_defconfig
+mips                          rb532_defconfig
+h8300                    h8300h-sim_defconfig
+arc                          axs103_defconfig
+mips                         bigsur_defconfig
+sh                         apsh4a3a_defconfig
+arm                          pcm027_defconfig
+sparc                       sparc32_defconfig
+arm                      integrator_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20201117
+i386                 randconfig-a005-20201117
+i386                 randconfig-a001-20201117
+i386                 randconfig-a002-20201117
+i386                 randconfig-a004-20201117
+i386                 randconfig-a003-20201117
+i386                 randconfig-a012-20201117
+i386                 randconfig-a014-20201117
+i386                 randconfig-a016-20201117
+i386                 randconfig-a011-20201117
+i386                 randconfig-a015-20201117
+i386                 randconfig-a013-20201117
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
->
->> Another thing of note, is that trying to start the PTM dialogs "on
->> demand" syncronously with the ioctl() doesn't seem too reliable, it
->> seems to want to be kept running for a longer time.
->
-> So, I think the simplest thing would be to have a one-shot
-> measurement, if possible.  Then you could use the existing API and let
-> the user space trigger the time stamps.
+clang tested configs:
+x86_64               randconfig-a003-20201117
+x86_64               randconfig-a005-20201117
+x86_64               randconfig-a004-20201117
+x86_64               randconfig-a002-20201117
+x86_64               randconfig-a001-20201117
+x86_64               randconfig-a006-20201117
+x86_64               randconfig-a015-20201116
+x86_64               randconfig-a011-20201116
+x86_64               randconfig-a014-20201116
+x86_64               randconfig-a013-20201116
+x86_64               randconfig-a016-20201116
+x86_64               randconfig-a012-20201116
 
-Agreed that would be easiest/simplest. But what I have in hand seems to
-not like it, i.e. I have an earlier series implementing this "one shot" way
-and it's not reliable over long periods of time or against having the
-system time adjusted.
-
-So I think I am stuck with proposing a new API, if I am reading this
-right.
-
-Something like PTP_EXTTS_REQUEST is what was suggested, so
-PTP_CROSSTS_REQUEST?
-
-struct ptp_crossts_request {
-	unsigned int index;
-        struct ptp_clock_time period; /* Desired period, zero means disable */
-	unsigned int flags;
-	unsigned int rsv[2]; 
-};
-
-And a new event type, something like:
-
-struct ptp_extts_event {
-	struct ptp_clock_time hostts;
-	struct ptp_clock_time devicets;
-	unsigned int index;      
-	unsigned int flags;      
-};
-
-
-Cheers,
--- 
-Vinicius
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
