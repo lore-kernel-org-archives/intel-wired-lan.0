@@ -1,34 +1,38 @@
-From: Joe Perches <joe@perches.com>
-Date: Fri, 20 Nov 2020 10:28:48 -0800
-Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
- Clang
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Fri, 20 Nov 2020 12:30:36 -0600
+Subject: [Intel-wired-lan] [PATCH 039/141] ixgbevf: Fix fall-through
+ warnings for Clang
 In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
 References: <cover.1605896059.git.gustavoars@kernel.org>
-Message-ID: <3e0bbb1644fe53d79322c2feb28ccaf3e20c0e94.camel@perches.com>
+Message-ID: <cec560b39c59d4c6b854fbe534cbe77050d097a8.1605896059.git.gustavoars@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2020-11-20 at 12:21 -0600, Gustavo A. R. Silva wrote:
-> Hi all,
-> 
-> This series aims to fix almost all remaining fall-through warnings in
-> order to enable -Wimplicit-fallthrough for Clang.
-> 
-> In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
-> add multiple break/goto/return/fallthrough statements instead of just
-> letting the code fall through to the next case.
-> 
-> Notice that in order to enable -Wimplicit-fallthrough for Clang, this
-> change[1] is meant to be reverted at some point. So, this patch helps
-> to move in that direction.
+In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
+by explicitly adding a break statement instead of just letting the code
+fall through to the next case.
 
-This was a bit hard to parse for a second or three.
+Link: https://github.com/KSPP/linux/issues/115
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks Gustavo.
-
-How was this change done?
-
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 82fce27f682b..afab78c51be0 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2639,6 +2639,7 @@ static void ixgbevf_set_num_queues(struct ixgbevf_adapter *adapter)
+ 			adapter->num_rx_queues = rss;
+ 			adapter->num_tx_queues = rss;
+ 			adapter->num_xdp_queues = adapter->xdp_prog ? rss : 0;
++			break;
+ 		default:
+ 			break;
+ 		}
+-- 
+2.27.0
 
