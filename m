@@ -1,10 +1,10 @@
 From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Fri, 20 Nov 2020 12:25:35 -0600
-Subject: [Intel-wired-lan] [PATCH 009/141] igb: Fix fall-through warnings
+Date: Fri, 20 Nov 2020 12:26:03 -0600
+Subject: [Intel-wired-lan] [PATCH 012/141] ixgbe: Fix fall-through warnings
  for Clang
 In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
 References: <cover.1605896059.git.gustavoars@kernel.org>
-Message-ID: <f4696db7798ce0efd9e1d10ce28f6413a09c3c57.1605896059.git.gustavoars@kernel.org>
+Message-ID: <a50df6c98bcda9454fa27b8d654b19528c5a8ae2.1605896059.git.gustavoars@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,40 +18,61 @@ letting the code fall through to the next case.
 Link: https://github.com/KSPP/linux/issues/115
 Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
- drivers/net/ethernet/intel/igb/e1000_phy.c   | 1 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 1 +
- drivers/net/ethernet/intel/igb/igb_ptp.c     | 1 +
- 3 files changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  | 2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c    | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c    | 1 +
+ 4 files changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index 8c8eb82e6272..a018000f7db9 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -836,6 +836,7 @@ s32 igb_copper_link_setup_igp(struct e1000_hw *hw)
- 			break;
- 		case e1000_ms_auto:
- 			data &= ~CR_1000T_MS_ENABLE;
-+			break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index 8d3798a32f0e..cdfff510a27b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -1542,6 +1542,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
+ 	switch (input_mask->formatted.vm_pool & 0x7F) {
+ 	case 0x0:
+ 		fdirm |= IXGBE_FDIRM_POOL;
++		break;
+ 	case 0x7F:
+ 		break;
+ 	default:
+@@ -1557,6 +1558,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
+ 			hw_dbg(hw, " Error on src/dst port mask\n");
+ 			return IXGBE_ERR_CONFIG;
+ 		}
++		break;
+ 	case IXGBE_ATR_L4TYPE_MASK:
+ 		break;
+ 	default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 62ddb452f862..8d5a01be1d99 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -93,6 +93,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
  		default:
  			break;
  		}
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 28baf203459a..486d3e67d3a9 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -3022,6 +3022,7 @@ static int igb_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 		break;
- 	case ETHTOOL_SRXCLSRLDEL:
- 		ret = igb_del_ethtool_nfc_entry(adapter, cmd);
 +		break;
  	default:
  		break;
  	}
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 7cc5428c3b3d..f3ff565da0a1 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -1008,6 +1008,7 @@ static int igb_ptp_set_timestamp_mode(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index df389a11d3af..0218f6c9b925 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -132,6 +132,7 @@ static void ixgbe_get_first_reg_idx(struct ixgbe_adapter *adapter, u8 tc,
+ 			else
+ 				*tx = (tc + 4) << 4;	/* 96, 112 */
+ 		}
++		break;
+ 	default:
+ 		break;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+index 22a874eee2e8..23ddfd79fc8b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
+@@ -999,6 +999,7 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
  	switch (config->tx_type) {
  	case HWTSTAMP_TX_OFF:
  		tsync_tx_ctl = 0;
