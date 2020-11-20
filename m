@@ -1,37 +1,44 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 20 Nov 2020 11:07:21 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
- for PTP getcrosststamp()
-In-Reply-To: <20201118075534.2a5e63c4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
-References: <20201114025704.GA15240@hoboy.vegasvil.org>
- <874klo7pwp.fsf@intel.com> <20201117014926.GA26272@hoboy.vegasvil.org>
- <87d00b5uj7.fsf@intel.com>
- <20201118075534.2a5e63c4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
-Message-ID: <87361326fq.fsf@intel.com>
+From: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Date: Fri, 20 Nov 2020 13:02:34 -0600
+Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
+ Clang
+In-Reply-To: <3e0bbb1644fe53d79322c2feb28ccaf3e20c0e94.camel@perches.com>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+ <3e0bbb1644fe53d79322c2feb28ccaf3e20c0e94.camel@perches.com>
+Message-ID: <9f986394-125a-81f7-7696-fe1a9f4eb4f5@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jakub,
-
-Jakub Kicinski <kuba@kernel.org> writes:
-
-> On Tue, 17 Nov 2020 17:21:48 -0800 Vinicius Costa Gomes wrote:
->> > Also, what is the point of providing time measurements every 1
->> > millisecond?  
->> 
->> I sincerely have no idea. I had no power on how the hardware was
->> designed, and how PTM was implemented in HW.
->
-> Is the PTMed latency not dependent on how busy the bus is?
-> That'd make 1ms more reasonable.
-
-At least from the values of the registers I couldn't see any difference
-if I was fully using the 2.5G ethernet link or not.
 
 
-Cheers,
--- 
-Vinicius
+On 11/20/20 12:28, Joe Perches wrote:
+> On Fri, 2020-11-20 at 12:21 -0600, Gustavo A. R. Silva wrote:
+>> Hi all,
+>>
+>> This series aims to fix almost all remaining fall-through warnings in
+>> order to enable -Wimplicit-fallthrough for Clang.
+>>
+>> In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
+>> add multiple break/goto/return/fallthrough statements instead of just
+>> letting the code fall through to the next case.
+>>
+>> Notice that in order to enable -Wimplicit-fallthrough for Clang, this
+>> change[1] is meant to be reverted at some point. So, this patch helps
+>> to move in that direction.
+> 
+> This was a bit hard to parse for a second or three.
+> 
+> Thanks Gustavo.
+> 
+> How was this change done?
+
+I audited case by case in order to determine the best fit for each
+situation. Depending on the surrounding logic, sometimes it makes
+more sense a goto or a fallthrough rather than merely a break.
+
+Thanks
+--
+Gustavo
