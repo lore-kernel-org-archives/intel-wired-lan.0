@@ -1,37 +1,37 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Fri, 20 Nov 2020 10:53:44 -0800
-Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
- Clang
-In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
-References: <cover.1605896059.git.gustavoars@kernel.org>
-Message-ID: <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 20 Nov 2020 11:07:21 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
+ for PTP getcrosststamp()
+In-Reply-To: <20201118075534.2a5e63c4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+References: <20201114025704.GA15240@hoboy.vegasvil.org>
+ <874klo7pwp.fsf@intel.com> <20201117014926.GA26272@hoboy.vegasvil.org>
+ <87d00b5uj7.fsf@intel.com>
+ <20201118075534.2a5e63c4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+Message-ID: <87361326fq.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 20 Nov 2020 12:21:39 -0600 Gustavo A. R. Silva wrote:
-> This series aims to fix almost all remaining fall-through warnings in
-> order to enable -Wimplicit-fallthrough for Clang.
-> 
-> In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
-> add multiple break/goto/return/fallthrough statements instead of just
-> letting the code fall through to the next case.
-> 
-> Notice that in order to enable -Wimplicit-fallthrough for Clang, this
-> change[1] is meant to be reverted at some point. So, this patch helps
-> to move in that direction.
-> 
-> Something important to mention is that there is currently a discrepancy
-> between GCC and Clang when dealing with switch fall-through to empty case
-> statements or to cases that only contain a break/continue/return
-> statement[2][3][4].
+Hi Jakub,
 
-Are we sure we want to make this change? Was it discussed before?
+Jakub Kicinski <kuba@kernel.org> writes:
 
-Are there any bugs Clangs puritanical definition of fallthrough helped
-find?
+> On Tue, 17 Nov 2020 17:21:48 -0800 Vinicius Costa Gomes wrote:
+>> > Also, what is the point of providing time measurements every 1
+>> > millisecond?  
+>> 
+>> I sincerely have no idea. I had no power on how the hardware was
+>> designed, and how PTM was implemented in HW.
+>
+> Is the PTMed latency not dependent on how busy the bus is?
+> That'd make 1ms more reasonable.
 
-IMVHO compiler warnings are supposed to warn about issues that could
-be bugs. Falling through to default: break; can hardly be a bug?!
+At least from the values of the registers I couldn't see any difference
+if I was fully using the 2.5G ethernet link or not.
+
+
+Cheers,
+-- 
+Vinicius
