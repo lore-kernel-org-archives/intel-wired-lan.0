@@ -1,85 +1,38 @@
 From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Fri, 20 Nov 2020 12:26:03 -0600
-Subject: [Intel-wired-lan] [PATCH 012/141] ixgbe: Fix fall-through warnings
+Date: Fri, 20 Nov 2020 12:28:18 -0600
+Subject: [Intel-wired-lan] [PATCH 029/141] e1000: Fix fall-through warnings
  for Clang
 In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
 References: <cover.1605896059.git.gustavoars@kernel.org>
-Message-ID: <a50df6c98bcda9454fa27b8d654b19528c5a8ae2.1605896059.git.gustavoars@kernel.org>
+Message-ID: <ea9567cc53425566b874484143c4b44619b17ae7.1605896059.git.gustavoars@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In preparation to enable -Wimplicit-fallthrough for Clang, fix multiple
-warnings by explicitly adding multiple break statements instead of just
-letting the code fall through to the next case.
+In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
+by explicitly adding a break statement instead of just letting the code
+fall through to the next case.
 
 Link: https://github.com/KSPP/linux/issues/115
 Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  | 2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c    | 1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c    | 1 +
- 4 files changed, 5 insertions(+)
+ drivers/net/ethernet/intel/e1000/e1000_hw.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index 8d3798a32f0e..cdfff510a27b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -1542,6 +1542,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
- 	switch (input_mask->formatted.vm_pool & 0x7F) {
- 	case 0x0:
- 		fdirm |= IXGBE_FDIRM_POOL;
-+		break;
- 	case 0x7F:
- 		break;
- 	default:
-@@ -1557,6 +1558,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
- 			hw_dbg(hw, " Error on src/dst port mask\n");
- 			return IXGBE_ERR_CONFIG;
- 		}
-+		break;
- 	case IXGBE_ATR_L4TYPE_MASK:
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 62ddb452f862..8d5a01be1d99 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -93,6 +93,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+index 4c0c9433bd60..19cf36360933 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+@@ -1183,6 +1183,7 @@ static s32 e1000_copper_link_igp_setup(struct e1000_hw *hw)
+ 			break;
+ 		case e1000_ms_auto:
+ 			phy_data &= ~CR_1000T_MS_ENABLE;
++			break;
  		default:
  			break;
  		}
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index df389a11d3af..0218f6c9b925 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -132,6 +132,7 @@ static void ixgbe_get_first_reg_idx(struct ixgbe_adapter *adapter, u8 tc,
- 			else
- 				*tx = (tc + 4) << 4;	/* 96, 112 */
- 		}
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index 22a874eee2e8..23ddfd79fc8b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -999,6 +999,7 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
- 	switch (config->tx_type) {
- 	case HWTSTAMP_TX_OFF:
- 		tsync_tx_ctl = 0;
-+		break;
- 	case HWTSTAMP_TX_ON:
- 		break;
- 	default:
 -- 
 2.27.0
 
