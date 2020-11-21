@@ -1,92 +1,44 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 20 Nov 2020 16:38:35 -0800
-Subject: [Intel-wired-lan] [net 6/6] ice: Fix state bits on LLDP mode switch
-In-Reply-To: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
-References: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
-Message-ID: <20201121003835.48424-6-anthony.l.nguyen@intel.com>
+Date: Fri, 20 Nov 2020 16:38:30 -0800
+Subject: [Intel-wired-lan] [net 1/6] ice: fix FDir IPv6 flexbyte
+Message-ID: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-DCBX_CAP bits were not being adjusted when switching
-between SW and FW controlled LLDP.
+The packet classifier would occasionally misrecognize an IPv6 training
+packet when the next protocol field was 0. The correct value for
+unspecified protocol is IPPROTO_NONE.
 
-Adjust bits to correctly indicate which mode the
-LLDP logic is in.
-
-Fixes: b94b013eb626 ("ice: Implement DCBNL support")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Fixes: 165d80d6adab ("ice: Support IPv6 Flow Director filters")
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         | 2 --
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c  | 4 ++++
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 +++++++
- 3 files changed, 11 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index a0723831c4e4..fc022daba022 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -442,9 +442,7 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
- 	u8 stat_prev_loaded:1; /* has previous stats been loaded */
--#ifdef CONFIG_DCB
- 	u16 dcbx_cap;
--#endif /* CONFIG_DCB */
- 	u32 tx_timeout_count;
- 	unsigned long tx_timeout_last_recovery;
- 	u32 tx_timeout_recovery_level;
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 842d44b63480..8c133a8be6ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -160,6 +160,10 @@ static u8 ice_dcbnl_setdcbx(struct net_device *netdev, u8 mode)
- {
- 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
- 
-+	/* if FW LLDP agent is running, DCBNL not allowed to change mode */
-+	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
-+		return ICE_DCB_NO_HW_CHG;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+index 2d27f66ac853..192729546bbf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+@@ -1576,7 +1576,13 @@ ice_set_fdir_input_set(struct ice_vsi *vsi, struct ethtool_rx_flow_spec *fsp,
+ 		       sizeof(struct in6_addr));
+ 		input->ip.v6.l4_header = fsp->h_u.usr_ip6_spec.l4_4_bytes;
+ 		input->ip.v6.tc = fsp->h_u.usr_ip6_spec.tclass;
+-		input->ip.v6.proto = fsp->h_u.usr_ip6_spec.l4_proto;
 +
- 	/* No support for LLD_MANAGED modes or CEE+IEEE */
- 	if ((mode & DCB_CAP_DCBX_LLD_MANAGED) ||
- 	    ((mode & DCB_CAP_DCBX_VER_IEEE) && (mode & DCB_CAP_DCBX_VER_CEE)) ||
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 8515a3a7515f..1cfa7332888d 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -8,6 +8,7 @@
- #include "ice_fltr.h"
- #include "ice_lib.h"
- #include "ice_dcb_lib.h"
-+#include <net/dcbnl.h>
- 
- struct ice_stats {
- 	char stat_string[ETH_GSTRING_LEN];
-@@ -1238,6 +1239,9 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			status = ice_init_pf_dcb(pf, true);
- 			if (status)
- 				dev_warn(dev, "Fail to init DCB\n");
++		/* if no protocol requested, use IPPROTO_NONE */
++		if (!fsp->m_u.usr_ip6_spec.l4_proto)
++			input->ip.v6.proto = IPPROTO_NONE;
++		else
++			input->ip.v6.proto = fsp->h_u.usr_ip6_spec.l4_proto;
 +
-+			pf->dcbx_cap &= ~DCB_CAP_DCBX_LLD_MANAGED;
-+			pf->dcbx_cap |= DCB_CAP_DCBX_HOST;
- 		} else {
- 			enum ice_status status;
- 			bool dcbx_agent_status;
-@@ -1280,6 +1284,9 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
- 			if (status)
- 				dev_dbg(dev, "Fail to enable MIB change events\n");
- 
-+			pf->dcbx_cap &= ~DCB_CAP_DCBX_HOST;
-+			pf->dcbx_cap |= DCB_CAP_DCBX_LLD_MANAGED;
-+
- 			ice_nway_reset(netdev);
- 		}
- 	}
+ 		memcpy(input->mask.v6.dst_ip, fsp->m_u.usr_ip6_spec.ip6dst,
+ 		       sizeof(struct in6_addr));
+ 		memcpy(input->mask.v6.src_ip, fsp->m_u.usr_ip6_spec.ip6src,
 -- 
 2.20.1
 
