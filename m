@@ -1,66 +1,92 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 20 Nov 2020 16:38:31 -0800
-Subject: [Intel-wired-lan] [net 2/6] ice: Implement flow for IPv6 next
- header (extension header)
+Date: Fri, 20 Nov 2020 16:38:35 -0800
+Subject: [Intel-wired-lan] [net 6/6] ice: Fix state bits on LLDP mode switch
 In-Reply-To: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
 References: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
-Message-ID: <20201121003835.48424-2-anthony.l.nguyen@intel.com>
+Message-ID: <20201121003835.48424-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nick Nunley <nicholas.d.nunley@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-This patch is based on a similar change to i40e by Slawomir Laba:
-"i40e: Implement flow for IPv6 next header (extension header)".
+DCBX_CAP bits were not being adjusted when switching
+between SW and FW controlled LLDP.
 
-When a packet contains an IPv6 header with next header which is
-an extension header and not a protocol one, the kernel function
-skb_transport_header called with such sk_buff will return a
-pointer to the extension header and not to the TCP one.
+Adjust bits to correctly indicate which mode the
+LLDP logic is in.
 
-The above explained call caused a problem with packet processing
-for skb with encapsulation for tunnel with ICE_TX_CTX_EIPT_IPV6.
-The extension header was not skipped at all.
-
-The ipv6_skip_exthdr function does check if next header of the IPV6
-header is an extension header and doesn't modify the l4_proto pointer
-if it points to a protocol header value so its safe to omit the
-comparison of exthdr and l4.hdr pointers. The ipv6_skip_exthdr can
-return value -1. This means that the skipping process failed
-and there is something wrong with the packet so it will be dropped.
-
-Fixes: a4e82a81f573 ("ice: Add support for tunnel offloads")
-Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+Fixes: b94b013eb626 ("ice: Implement DCBNL support")
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         | 2 --
+ drivers/net/ethernet/intel/ice/ice_dcb_nl.c  | 4 ++++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 +++++++
+ 3 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index d2493fa71336..a6793147dc00 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1922,12 +1922,15 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
- 				  ICE_TX_CTX_EIPT_IPV4_NO_CSUM;
- 			l4_proto = ip.v4->protocol;
- 		} else if (first->tx_flags & ICE_TX_FLAGS_IPV6) {
-+			int ret;
-+
- 			tunnel |= ICE_TX_CTX_EIPT_IPV6;
- 			exthdr = ip.hdr + sizeof(*ip.v6);
- 			l4_proto = ip.v6->nexthdr;
--			if (l4.hdr != exthdr)
--				ipv6_skip_exthdr(skb, exthdr - skb->data,
--						 &l4_proto, &frag_off);
-+			ret = ipv6_skip_exthdr(skb, exthdr - skb->data,
-+					       &l4_proto, &frag_off);
-+			if (ret < 0)
-+				return -1;
- 		}
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index a0723831c4e4..fc022daba022 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -442,9 +442,7 @@ struct ice_pf {
+ 	struct ice_hw_port_stats stats_prev;
+ 	struct ice_hw hw;
+ 	u8 stat_prev_loaded:1; /* has previous stats been loaded */
+-#ifdef CONFIG_DCB
+ 	u16 dcbx_cap;
+-#endif /* CONFIG_DCB */
+ 	u32 tx_timeout_count;
+ 	unsigned long tx_timeout_last_recovery;
+ 	u32 tx_timeout_recovery_level;
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+index 842d44b63480..8c133a8be6ad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
+@@ -160,6 +160,10 @@ static u8 ice_dcbnl_setdcbx(struct net_device *netdev, u8 mode)
+ {
+ 	struct ice_pf *pf = ice_netdev_to_pf(netdev);
  
- 		/* define outer transport */
++	/* if FW LLDP agent is running, DCBNL not allowed to change mode */
++	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
++		return ICE_DCB_NO_HW_CHG;
++
+ 	/* No support for LLD_MANAGED modes or CEE+IEEE */
+ 	if ((mode & DCB_CAP_DCBX_LLD_MANAGED) ||
+ 	    ((mode & DCB_CAP_DCBX_VER_IEEE) && (mode & DCB_CAP_DCBX_VER_CEE)) ||
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 8515a3a7515f..1cfa7332888d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -8,6 +8,7 @@
+ #include "ice_fltr.h"
+ #include "ice_lib.h"
+ #include "ice_dcb_lib.h"
++#include <net/dcbnl.h>
+ 
+ struct ice_stats {
+ 	char stat_string[ETH_GSTRING_LEN];
+@@ -1238,6 +1239,9 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 			status = ice_init_pf_dcb(pf, true);
+ 			if (status)
+ 				dev_warn(dev, "Fail to init DCB\n");
++
++			pf->dcbx_cap &= ~DCB_CAP_DCBX_LLD_MANAGED;
++			pf->dcbx_cap |= DCB_CAP_DCBX_HOST;
+ 		} else {
+ 			enum ice_status status;
+ 			bool dcbx_agent_status;
+@@ -1280,6 +1284,9 @@ static int ice_set_priv_flags(struct net_device *netdev, u32 flags)
+ 			if (status)
+ 				dev_dbg(dev, "Fail to enable MIB change events\n");
+ 
++			pf->dcbx_cap &= ~DCB_CAP_DCBX_HOST;
++			pf->dcbx_cap |= DCB_CAP_DCBX_LLD_MANAGED;
++
+ 			ice_nway_reset(netdev);
+ 		}
+ 	}
 -- 
 2.20.1
 
