@@ -1,1080 +1,1611 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 20 Nov 2020 16:39:25 -0800
-Subject: [Intel-wired-lan] [PATCH S54 01/14] Documentation: ice: update
- documentation
-Message-ID: <20201121003938.48514-1-anthony.l.nguyen@intel.com>
+Date: Fri, 20 Nov 2020 16:39:27 -0800
+Subject: [Intel-wired-lan] [PATCH S54 03/14] ice: create scheduler
+ aggregator node config and move VSIs
+In-Reply-To: <20201121003938.48514-1-anthony.l.nguyen@intel.com>
+References: <20201121003938.48514-1-anthony.l.nguyen@intel.com>
+Message-ID: <20201121003938.48514-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice documentation has not been updated since the initial commits of the
-driver. Update the documentation with features and information that are now
-available.
+From: Kiran Patil <kiran.patil@intel.com>
 
+Create set scheduler aggregator node and move for VSIs into respective
+scheduler node. Max children per aggregator node is 64.
+
+There are two types of aggregator node(s) created.
+1. dedicated node for PF and _CTRL VSIs
+2. dedicated node(s) for VFs.
+
+As part of reset and rebuild, aggregator nodes are recreated and VSIs
+are moved to respective aggregator node.
+
+Having related VSIs in respective tree avoid starvation between PF and VF
+w.r.t Tx bandwidth.
+
+Co-developed-by: Tarun Singh <tarun.k.singh@intel.com>
+Signed-off-by: Tarun Singh <tarun.k.singh@intel.com>
+Co-developed-by: Victor Raj <victor.raj@intel.com>
+Signed-off-by: Victor Raj <victor.raj@intel.com>
+Co-developed-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../device_drivers/ethernet/intel/ice.rst     | 1027 ++++++++++++++++-
- 1 file changed, 1006 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h          |   20 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   13 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |    4 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  125 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |    8 +
+ drivers/net/ethernet/intel/ice/ice_sched.c    | 1001 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_sched.h    |   16 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |    4 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   36 +
+ 9 files changed, 1207 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/ice.rst b/Documentation/networking/device_drivers/ethernet/intel/ice.rst
-index ee43ea57d443..ed6555c8b541 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/ice.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/ice.rst
-@@ -1,46 +1,1031 @@
- .. SPDX-License-Identifier: GPL-2.0+
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index baee27b8184c..855db84d4186 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -330,6 +330,11 @@ struct ice_vsi {
+ 	struct ice_ring **xdp_rings;	 /* XDP ring array */
+ 	u16 num_xdp_txq;		 /* Used XDP queues */
+ 	u8 xdp_mapping_mode;		 /* ICE_MAP_MODE_[CONTIG|SCATTER] */
++
++	/* setup back reference, to which aggregator node this VSI
++	 * corresponds to
++	 */
++	struct ice_agg_node *agg_node;
+ } ____cacheline_internodealigned_in_smp;
  
--==================================================================
--Linux Base Driver for the Intel(R) Ethernet Connection E800 Series
--==================================================================
-+=================================================================
-+Linux Base Driver for the Intel(R) Ethernet Controller 800 Series
-+=================================================================
+ /* struct that defines an interrupt vector */
+@@ -378,6 +383,13 @@ enum ice_pf_flags {
+ 	ICE_PF_FLAGS_NBITS		/* must be last */
+ };
  
- Intel ice Linux driver.
--Copyright(c) 2018 Intel Corporation.
-+Copyright(c) 2018-2020 Intel Corporation.
++struct ice_agg_node {
++	u32 agg_id;
++#define ICE_MAX_VSIS_IN_AGG_NODE	64
++	u32 num_vsis;
++	u8 valid;
++};
++
+ struct ice_pf {
+ 	struct pci_dev *pdev;
  
- Contents
- ========
+@@ -457,6 +469,14 @@ struct ice_pf {
+ 	__le64 nvm_phy_type_hi; /* NVM PHY type high */
+ 	struct ice_link_default_override_tlv link_dflt_override;
+ 	struct ice_lag *lag; /* Link Aggregation information */
++
++#define ICE_INVALID_AGG_NODE_ID		0
++#define ICE_PF_AGG_NODE_ID_START	1
++#define ICE_MAX_PF_AGG_NODES		32
++	struct ice_agg_node pf_agg_node[ICE_MAX_PF_AGG_NODES];
++#define ICE_VF_AGG_NODE_ID_START	65
++#define ICE_MAX_VF_AGG_NODES		32
++	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
+ };
  
--- Enabling the driver
--- Support
-+- Overview
-+- Identifying Your Adapter
-+- Important Notes
-+- Additional Features & Configurations
-+- Performance Optimization
+ struct ice_netdev_priv {
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index d384ad2dfdab..caf09ac8a8c4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -702,6 +702,18 @@ struct ice_aqc_sched_elem_cmd {
+ 	__le32 addr_low;
+ };
  
--The driver in this release supports Intel's E800 Series of products. For
--more information, visit Intel's support page at https://support.intel.com.
++struct ice_aqc_txsched_move_grp_info_hdr {
++	__le32 src_parent_teid;
++	__le32 dest_parent_teid;
++	__le16 num_elems;
++	__le16 reserved;
++};
++
++struct ice_aqc_move_elem {
++	struct ice_aqc_txsched_move_grp_info_hdr hdr;
++	__le32 teid[];
++};
++
+ struct ice_aqc_elem_info_bw {
+ 	__le16 bw_profile_idx;
+ 	__le16 bw_alloc;
+@@ -2359,6 +2371,7 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_add_sched_elems			= 0x0401,
+ 	ice_aqc_opc_cfg_sched_elems			= 0x0403,
+ 	ice_aqc_opc_get_sched_elems			= 0x0404,
++	ice_aqc_opc_move_sched_elems			= 0x0408,
+ 	ice_aqc_opc_suspend_sched_elems			= 0x0409,
+ 	ice_aqc_opc_resume_sched_elems			= 0x040A,
+ 	ice_aqc_opc_query_port_ets			= 0x040E,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index c462ac923b5d..5f6698ef9ab2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -4077,6 +4077,7 @@ static enum ice_status ice_replay_pre_init(struct ice_hw *hw)
+ 	for (i = 0; i < ICE_SW_LKUP_LAST; i++)
+ 		list_replace_init(&sw->recp_list[i].filt_rules,
+ 				  &sw->recp_list[i].filt_replay_rules);
++	ice_sched_replay_agg_vsi_preinit(hw);
  
--Enabling the driver
--===================
--The driver is enabled via the standard kernel configuration system,
--using the make command::
-+The associated Virtual Function (VF) driver for this driver is iavf.
+ 	return 0;
+ }
+@@ -4108,6 +4109,8 @@ enum ice_status ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle)
+ 		return status;
+ 	/* Replay per VSI all filters */
+ 	status = ice_replay_vsi_all_fltr(hw, vsi_handle);
++	if (!status)
++		status = ice_replay_vsi_agg(hw, vsi_handle);
+ 	return status;
+ }
  
--  make oldconfig/menuconfig/etc.
-+Driver information can be obtained using ethtool and lspci.
+@@ -4121,6 +4124,7 @@ void ice_replay_post(struct ice_hw *hw)
+ {
+ 	/* Delete old entries from replay filter list head */
+ 	ice_rm_all_sw_replay_rule_info(hw);
++	ice_sched_replay_agg(hw);
+ }
  
--The driver is located in the menu structure at:
-+For questions related to hardware requirements, refer to the documentation
-+supplied with your Intel adapter. All hardware requirements listed apply to use
-+with Linux.
-+
-+This driver supports XDP (Express Data Path) and AF_XDP zero-copy. Note that
-+XDP is blocked for frame sizes larger than 3KB.
-+
-+
-+Identifying Your Adapter
-+========================
-+For information on how to identify your adapter, and for the latest Intel
-+network drivers, refer to the Intel Support website:
-+https://www.intel.com/support
-+
-+
-+Important Notes
-+===============
-+
-+Packet drops may occur under receive stress
-+-------------------------------------------
-+Devices based on the Intel(R) Ethernet Controller 800 Series are designed to
-+tolerate a limited amount of system latency during PCIe and DMA transactions.
-+If these transactions take longer than the tolerated latency, it can impact the
-+length of time the packets are buffered in the device and associated memory,
-+which may result in dropped packets. These packets drops typically do not have
-+a noticeable impact on throughput and performance under standard workloads.
-+
-+If these packet drops appear to affect your workload, the following may improve
-+the situation:
-+
-+1) Make sure that your system's physical memory is in a high-performance
-+   configuration, as recommended by the platform vendor. A common
-+   recommendation is for all channels to be populated with a single DIMM
-+   module.
-+2) In your system's BIOS/UEFI settings, select the "Performance" profile.
-+3) Your distribution may provide tools like "tuned," which can help tweak
-+   kernel settings to achieve better standard settings for different workloads.
-+
-+
-+Configuring SR-IOV for improved network security
-+------------------------------------------------
-+In a virtualized environment, on Intel(R) Ethernet Network Adapters that
-+support SR-IOV, the virtual function (VF) may be subject to malicious behavior.
-+Software-generated layer two frames, like IEEE 802.3x (link flow control), IEEE
-+802.1Qbb (priority based flow-control), and others of this type, are not
-+expected and can throttle traffic between the host and the virtual switch,
-+reducing performance. To resolve this issue, and to ensure isolation from
-+unintended traffic streams, configure all SR-IOV enabled ports for VLAN tagging
-+from the administrative interface on the PF. This configuration allows
-+unexpected, and potentially malicious, frames to be dropped.
-+
-+See "Configuring VLAN Tagging on SR-IOV Enabled Adapter Ports" later in this
-+README for configuration instructions.
-+
-+
-+Do not unload port driver if VF with active VM is bound to it
-+-------------------------------------------------------------
-+Do not unload a port's driver if a Virtual Function (VF) with an active Virtual
-+Machine (VM) is bound to it. Doing so will cause the port to appear to hang.
-+Once the VM shuts down, or otherwise releases the VF, the command will
-+complete.
-+
-+
-+Important notes for SR-IOV and Link Aggregation
-+-----------------------------------------------
-+Link Aggregation is mutually exclusive with SR-IOV.
-+
-+- If Link Aggregation is active, SR-IOV VFs cannot be created on the PF.
-+- If SR-IOV is active, you cannot set up Link Aggregation on the interface.
-+
-+Bridging and MACVLAN are also affected by this. If you wish to use bridging or
-+MACVLAN with SR-IOV, you must set up bridging or MACVLAN before enabling
-+SR-IOV. If you are using bridging or MACVLAN in conjunction with SR-IOV, and
-+you want to remove the interface from the bridge or MACVLAN, you must follow
-+these steps:
-+
-+1. Destroy SR-IOV VFs if they exist
-+2. Remove the interface from the bridge or MACVLAN
-+3. Recreate SRIOV VFs as needed
-+
-+
-+Additional Features and Configurations
-+======================================
-+
-+ethtool
-+-------
-+The driver utilizes the ethtool interface for driver configuration and
-+diagnostics, as well as displaying statistical information. The latest ethtool
-+version is required for this functionality. Download it at:
-+https://kernel.org/pub/software/network/ethtool/
-+
-+NOTE: The rx_bytes value of ethtool does not match the rx_bytes value of
-+Netdev, due to the 4-byte CRC being stripped by the device. The difference
-+between the two rx_bytes values will be 4 x the number of Rx packets. For
-+example, if Rx packets are 10 and Netdev (software statistics) displays
-+rx_bytes as "X", then ethtool (hardware statistics) will display rx_bytes as
-+"X+40" (4 bytes CRC x 10 packets).
-+
-+
-+Viewing Link Messages
-+---------------------
-+Link messages will not be displayed to the console if the distribution is
-+restricting system messages. In order to see network driver link messages on
-+your console, set dmesg to eight by entering the following::
-+
-+  # dmesg -n 8
-+
-+NOTE: This setting is not saved across reboots.
-+
-+
-+Dynamic Device Personalization
-+------------------------------
-+Dynamic Device Personalization (DDP) allows you to change the packet processing
-+pipeline of a device by applying a profile package to the device at runtime.
-+Profiles can be used to, for example, add support for new protocols, change
-+existing protocols, or change default settings. DDP profiles can also be rolled
-+back without rebooting the system.
-+
-+The DDP package loads during device initialization. The driver looks for
-+``intel/ice/ddp/ice.pkg`` in your firmware root (typically ``/lib/firmware/``
-+or ``/lib/firmware/updates/``) and checks that it contains a valid DDP package
-+file.
-+
-+NOTE: Your distribution should likely have provided the latest DDP file, but if
-+ice.pkg is missing, you can find it in the linux-firmware repository or from
-+intel.com.
-+
-+If the driver is unable to load the DDP package, the device will enter Safe
-+Mode. Safe Mode disables advanced and performance features and supports only
-+basic traffic and minimal functionality, such as updating the NVM or
-+downloading a new driver or DDP package. Safe Mode only applies to the affected
-+physical function and does not impact any other PFs. See the "Intel(R) Ethernet
-+Adapters and Devices User Guide" for more details on DDP and Safe Mode.
-+
-+NOTES:
-+
-+- If you encounter issues with the DDP package file, you may need to download
-+  an updated driver or DDP package file. See the log messages for more
-+  information.
-+
-+- The ice.pkg file is a symbolic link to the default DDP package file.
-+
-+- You cannot update the DDP package if any PF drivers are already loaded. To
-+  overwrite a package, unload all PFs and then reload the driver with the new
-+  package.
-+
-+- Only the first loaded PF per device can download a package for that device.
-+
-+You can install specific DDP package files for different physical devices in
-+the same system. To install a specific DDP package file:
-+
-+1. Download the DDP package file you want for your device.
-+
-+2. Rename the file ice-xxxxxxxxxxxxxxxx.pkg, where 'xxxxxxxxxxxxxxxx' is the
-+   unique 64-bit PCI Express device serial number (in hex) of the device you
-+   want the package downloaded on. The filename must include the complete
-+   serial number (including leading zeros) and be all lowercase. For example,
-+   if the 64-bit serial number is b887a3ffffca0568, then the file name would be
-+   ice-b887a3ffffca0568.pkg.
-+
-+   To find the serial number from the PCI bus address, you can use the
-+   following command::
-+
-+     # lspci -vv -s af:00.0 | grep -i Serial
-+     Capabilities: [150 v1] Device Serial Number b8-87-a3-ff-ff-ca-05-68
-+
-+   You can use the following command to format the serial number without the
-+   dashes::
-+
-+     # lspci -vv -s af:00.0 | grep -i Serial | awk '{print $7}' | sed s/-//g
-+     b887a3ffffca0568
-+
-+3. Copy the renamed DDP package file to
-+   ``/lib/firmware/updates/intel/ice/ddp/``. If the directory does not yet
-+   exist, create it before copying the file.
-+
-+4. Unload all of the PFs on the device.
-+
-+5. Reload the driver with the new package.
-+
-+NOTE: The presence of a device-specific DDP package file overrides the loading
-+of the default DDP package file (ice.pkg).
-+
-+
-+Intel(R) Ethernet Flow Director
-+-------------------------------
-+The Intel Ethernet Flow Director performs the following tasks:
-+
-+- Directs receive packets according to their flows to different queues
-+- Enables tight control on routing a flow in the platform
-+- Matches flows and CPU cores for flow affinity
-+
-+NOTE: This driver supports the following flow types:
-+
-+- IPv4
-+- TCPv4
-+- UDPv4
-+- SCTPv4
-+- IPv6
-+- TCPv6
-+- UDPv6
-+- SCTPv6
-+
-+Each flow type supports valid combinations of IP addresses (source or
-+destination) and UDP/TCP/SCTP ports (source and destination). You can supply
-+only a source IP address, a source IP address and a destination port, or any
-+combination of one or more of these four parameters.
-+
-+NOTE: This driver allows you to filter traffic based on a user-defined flexible
-+two-byte pattern and offset by using the ethtool user-def and mask fields. Only
-+L3 and L4 flow types are supported for user-defined flexible filters. For a
-+given flow type, you must clear all Intel Ethernet Flow Director filters before
-+changing the input set (for that flow type).
-+
-+
-+Flow Director Filters
-+---------------------
-+Flow Director filters are used to direct traffic that matches specified
-+characteristics. They are enabled through ethtool's ntuple interface. To enable
-+or disable the Intel Ethernet Flow Director and these filters::
-+
-+  # ethtool -K <ethX> ntuple <off|on>
-+
-+NOTE: When you disable ntuple filters, all the user programmed filters are
-+flushed from the driver cache and hardware. All needed filters must be re-added
-+when ntuple is re-enabled.
-+
-+To display all of the active filters::
-+
-+  # ethtool -u <ethX>
-+
-+To add a new filter::
-+
-+  # ethtool -U <ethX> flow-type <type> src-ip <ip> [m <ip_mask>] dst-ip <ip>
-+  [m <ip_mask>] src-port <port> [m <port_mask>] dst-port <port> [m <port_mask>]
-+  action <queue>
-+
-+  Where:
-+    <ethX> - the Ethernet device to program
-+    <type> - can be ip4, tcp4, udp4, sctp4, ip6, tcp6, udp6, sctp6
-+    <ip> - the IP address to match on
-+    <ip_mask> - the IPv4 address to mask on
-+              NOTE: These filters use inverted masks.
-+    <port> - the port number to match on
-+    <port_mask> - the 16-bit integer for masking
-+              NOTE: These filters use inverted masks.
-+    <queue> - the queue to direct traffic toward (-1 discards the
-+              matched traffic)
-+
-+To delete a filter::
-+
-+  # ethtool -U <ethX> delete <N>
-+
-+  Where <N> is the filter ID displayed when printing all the active filters,
-+  and may also have been specified using "loc <N>" when adding the filter.
-+
-+EXAMPLES:
-+
-+To add a filter that directs packet to queue 2::
-+
-+  # ethtool -U <ethX> flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-+  192.168.10.2 src-port 2000 dst-port 2001 action 2 [loc 1]
-+
-+To set a filter using only the source and destination IP address::
-+
-+  # ethtool -U <ethX> flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-+  192.168.10.2 action 2 [loc 1]
-+
-+To set a filter based on a user-defined pattern and offset::
-+
-+  # ethtool -U <ethX> flow-type tcp4 src-ip 192.168.10.1 dst-ip \
-+  192.168.10.2 user-def 0x4FFFF action 2 [loc 1]
-+
-+  where the value of the user-def field contains the offset (4 bytes) and
-+  the pattern (0xffff).
-+
-+To match TCP traffic sent from 192.168.0.1, port 5300, directed to 192.168.0.5,
-+port 80, and then send it to queue 7::
-+
-+  # ethtool -U enp130s0 flow-type tcp4 src-ip 192.168.0.1 dst-ip 192.168.0.5
-+  src-port 5300 dst-port 80 action 7
-+
-+To add a TCPv4 filter with a partial mask for a source IP subnet::
-+
-+  # ethtool -U <ethX> flow-type tcp4 src-ip 192.168.0.0 m 0.255.255.255 dst-ip
-+  192.168.5.12 src-port 12600 dst-port 31 action 12
-+
-+NOTES:
-+
-+For each flow-type, the programmed filters must all have the same matching
-+input set. For example, issuing the following two commands is acceptable::
-+
-+  # ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.1 src-port 5300 action 7
-+  # ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.5 src-port 55 action 10
-+
-+Issuing the next two commands, however, is not acceptable, since the first
-+specifies src-ip and the second specifies dst-ip::
-+
-+  # ethtool -U enp130s0 flow-type ip4 src-ip 192.168.0.1 src-port 5300 action 7
-+  # ethtool -U enp130s0 flow-type ip4 dst-ip 192.168.0.5 src-port 55 action 10
-+
-+The second command will fail with an error. You may program multiple filters
-+with the same fields, using different values, but, on one device, you may not
-+program two tcp4 filters with different matching fields.
-+
-+The ice driver does not support matching on a subportion of a field, thus
-+partial mask fields are not supported.
-+
-+
-+Flex Byte Flow Director Filters
-+-------------------------------
-+The driver also supports matching user-defined data within the packet payload.
-+This flexible data is specified using the "user-def" field of the ethtool
-+command in the following way:
-+
-+.. table::
-+
-+    ============================== ============================
-+    ``31    28    24    20    16`` ``15    12    8    4    0``
-+    ``offset into packet payload`` ``2 bytes of flexible data``
-+    ============================== ============================
-+
-+For example,
-+
-+::
-+
-+  ... user-def 0x4FFFF ...
-+
-+tells the filter to look 4 bytes into the payload and match that value against
-+0xFFFF. The offset is based on the beginning of the payload, and not the
-+beginning of the packet. Thus
-+
-+::
-+
-+  flow-type tcp4 ... user-def 0x8BEAF ...
-+
-+would match TCP/IPv4 packets which have the value 0xBEAF 8 bytes into the
-+TCP/IPv4 payload.
-+
-+Note that ICMP headers are parsed as 4 bytes of header and 4 bytes of payload.
-+Thus to match the first byte of the payload, you must actually add 4 bytes to
-+the offset. Also note that ip4 filters match both ICMP frames as well as raw
-+(unknown) ip4 frames, where the payload will be the L3 payload of the IP4
-+frame.
-+
-+The maximum offset is 64. The hardware will only read up to 64 bytes of data
-+from the payload. The offset must be even because the flexible data is 2 bytes
-+long and must be aligned to byte 0 of the packet payload.
-+
-+The user-defined flexible offset is also considered part of the input set and
-+cannot be programmed separately for multiple filters of the same type. However,
-+the flexible data is not part of the input set and multiple filters may use the
-+same offset but match against different data.
-+
-+
-+RSS Hash Flow
-+-------------
-+Allows you to set the hash bytes per flow type and any combination of one or
-+more options for Receive Side Scaling (RSS) hash byte configuration.
-+
-+::
-+
-+  # ethtool -N <ethX> rx-flow-hash <type> <option>
-+
-+  Where <type> is:
-+    tcp4  signifying TCP over IPv4
-+    udp4  signifying UDP over IPv4
-+    tcp6  signifying TCP over IPv6
-+    udp6  signifying UDP over IPv6
-+  And <option> is one or more of:
-+    s     Hash on the IP source address of the Rx packet.
-+    d     Hash on the IP destination address of the Rx packet.
-+    f     Hash on bytes 0 and 1 of the Layer 4 header of the Rx packet.
-+    n     Hash on bytes 2 and 3 of the Layer 4 header of the Rx packet.
-+
-+
-+Accelerated Receive Flow Steering (aRFS)
-+----------------------------------------
-+Devices based on the Intel(R) Ethernet Controller 800 Series support
-+Accelerated Receive Flow Steering (aRFS) on the PF. aRFS is a load-balancing
-+mechanism that allows you to direct packets to the same CPU where an
-+application is running or consuming the packets in that flow.
-+
-+NOTES:
-+
-+- aRFS requires that ntuple filtering is enabled via ethtool.
-+- aRFS support is limited to the following packet types:
-+
-+    - TCP over IPv4 and IPv6
-+    - UDP over IPv4 and IPv6
-+    - Nonfragmented packets
-+
-+- aRFS only supports Flow Director filters, which consist of the
-+  source/destination IP addresses and source/destination ports.
-+- aRFS and ethtool's ntuple interface both use the device's Flow Director. aRFS
-+  and ntuple features can coexist, but you may encounter unexpected results if
-+  there's a conflict between aRFS and ntuple requests. See "Intel(R) Ethernet
-+  Flow Director" for additional information.
-+
-+To set up aRFS:
-+
-+1. Enable the Intel Ethernet Flow Director and ntuple filters using ethtool.
-+
-+::
-+
-+   # ethtool -K <ethX> ntuple on
-+
-+2. Set up the number of entries in the global flow table. For example:
-+
-+::
-+
-+   # NUM_RPS_ENTRIES=16384
-+   # echo $NUM_RPS_ENTRIES > /proc/sys/net/core/rps_sock_flow_entries
-+
-+3. Set up the number of entries in the per-queue flow table. For example:
-+
-+::
-+
-+   # NUM_RX_QUEUES=64
-+   # for file in /sys/class/net/$IFACE/queues/rx-*/rps_flow_cnt; do
-+   # echo $(($NUM_RPS_ENTRIES/$NUM_RX_QUEUES)) > $file;
-+   # done
-+
-+4. Disable the IRQ balance daemon (this is only a temporary stop of the service
-+   until the next reboot).
-+
-+::
-+
-+   # systemctl stop irqbalance
-+
-+5. Configure the interrupt affinity.
-+
-+   See ``/Documentation/core-api/irq/irq-affinity.rst``
-+
-+
-+To disable aRFS using ethtool::
-+
-+  # ethtool -K <ethX> ntuple off
-+
-+NOTE: This command will disable ntuple filters and clear any aRFS filters in
-+software and hardware.
-+
-+Example Use Case:
-+
-+1. Set the server application on the desired CPU (e.g., CPU 4).
-+
-+::
-+
-+   # taskset -c 4 netserver
-+
-+2. Use netperf to route traffic from the client to CPU 4 on the server with
-+   aRFS configured. This example uses TCP over IPv4.
-+
-+::
-+
-+   # netperf -H <Host IPv4 Address> -t TCP_STREAM
-+
-+
-+Enabling Virtual Functions (VFs)
-+--------------------------------
-+Use sysfs to enable virtual functions (VF).
-+
-+For example, you can create 4 VFs as follows::
-+
-+  # echo 4 > /sys/class/net/<ethX>/device/sriov_numvfs
-+
-+To disable VFs, write 0 to the same file::
-+
-+  # echo 0 > /sys/class/net/<ethX>/device/sriov_numvfs
-+
-+The maximum number of VFs for the ice driver is 256 total (all ports). To check
-+how many VFs each PF supports, use the following command::
-+
-+  # cat /sys/class/net/<ethX>/device/sriov_totalvfs
-+
-+Note: You cannot use SR-IOV when link aggregation (LAG)/bonding is active, and
-+vice versa. To enforce this, the driver checks for this mutual exclusion.
-+
-+
-+Displaying VF Statistics on the PF
-+----------------------------------
-+Use the following command to display the statistics for the PF and its VFs::
-+
-+  # ip -s link show dev <ethX>
-+
-+NOTE: The output of this command can be very large due to the maximum number of
-+possible VFs.
-+
-+The PF driver will display a subset of the statistics for the PF and for all
-+VFs that are configured. The PF will always print a statistics block for each
-+of the possible VFs, and it will show zero for all unconfigured VFs.
-+
-+
-+Configuring VLAN Tagging on SR-IOV Enabled Adapter Ports
-+--------------------------------------------------------
-+To configure VLAN tagging for the ports on an SR-IOV enabled adapter, use the
-+following command. The VLAN configuration should be done before the VF driver
-+is loaded or the VM is booted. The VF is not aware of the VLAN tag being
-+inserted on transmit and removed on received frames (sometimes called "port
-+VLAN" mode).
-+
-+::
-+
-+  # ip link set dev <ethX> vf <id> vlan <vlan id>
-+
-+For example, the following will configure PF eth0 and the first VF on VLAN 10::
-+
-+  # ip link set dev eth0 vf 0 vlan 10
-+
-+
-+Enabling a VF link if the port is disconnected
-+----------------------------------------------
-+If the physical function (PF) link is down, you can force link up (from the
-+host PF) on any virtual functions (VF) bound to the PF.
-+
-+For example, to force link up on VF 0 bound to PF eth0::
-+
-+  # ip link set eth0 vf 0 state enable
-+
-+Note: If the command does not work, it may not be supported by your system.
-+
-+
-+Setting the MAC Address for a VF
-+--------------------------------
-+To change the MAC address for the specified VF::
-+
-+  # ip link set <ethX> vf 0 mac <address>
-+
-+For example::
-+
-+  # ip link set <ethX> vf 0 mac 00:01:02:03:04:05
-+
-+This setting lasts until the PF is reloaded.
-+
-+NOTE: Assigning a MAC address for a VF from the host will disable any
-+subsequent requests to change the MAC address from within the VM. This is a
-+security feature. The VM is not aware of this restriction, so if this is
-+attempted in the VM, it will trigger MDD events.
-+
-+
-+Trusted VFs and VF Promiscuous Mode
-+-----------------------------------
-+This feature allows you to designate a particular VF as trusted and allows that
-+trusted VF to request selective promiscuous mode on the Physical Function (PF).
-+
-+To set a VF as trusted or untrusted, enter the following command in the
-+Hypervisor::
-+
-+  # ip link set dev <ethX> vf 1 trust [on|off]
-+
-+NOTE: It's important to set the VF to trusted before setting promiscuous mode.
-+If the VM is not trusted, the PF will ignore promiscuous mode requests from the
-+VF. If the VM becomes trusted after the VF driver is loaded, you must make a
-+new request to set the VF to promiscuous.
-+
-+Once the VF is designated as trusted, use the following commands in the VM to
-+set the VF to promiscuous mode.
-+
-+For promiscuous all::
-+
-+  # ip link set <ethX> promisc on
-+  Where <ethX> is a VF interface in the VM
-+
-+For promiscuous Multicast::
-+
-+  # ip link set <ethX> allmulticast on
-+  Where <ethX> is a VF interface in the VM
-+
-+NOTE: By default, the ethtool private flag vf-true-promisc-support is set to
-+"off," meaning that promiscuous mode for the VF will be limited. To set the
-+promiscuous mode for the VF to true promiscuous and allow the VF to see all
-+ingress traffic, use the following command::
-+
-+  # ethtool --set-priv-flags <ethX> vf-true-promisc-support on
-+
-+The vf-true-promisc-support private flag does not enable promiscuous mode;
-+rather, it designates which type of promiscuous mode (limited or true) you will
-+get when you enable promiscuous mode using the ip link commands above. Note
-+that this is a global setting that affects the entire device. However, the
-+vf-true-promisc-support private flag is only exposed to the first PF of the
-+device. The PF remains in limited promiscuous mode regardless of the
-+vf-true-promisc-support setting.
-+
-+Next, add a VLAN interface on the VF interface. For example::
-+
-+  # ip link add link eth2 name eth2.100 type vlan id 100
-+
-+Note that the order in which you set the VF to promiscuous mode and add the
-+VLAN interface does not matter (you can do either first). The result in this
-+example is that the VF will get all traffic that is tagged with VLAN 100.
-+
-+
-+Malicious Driver Detection (MDD) for VFs
-+----------------------------------------
-+Some Intel Ethernet devices use Malicious Driver Detection (MDD) to detect
-+malicious traffic from the VF and disable Tx/Rx queues or drop the offending
-+packet until a VF driver reset occurs. You can view MDD messages in the PF's
-+system log using the dmesg command.
-+
-+- If the PF driver logs MDD events from the VF, confirm that the correct VF
-+  driver is installed.
-+- To restore functionality, you can manually reload the VF or VM or enable
-+  automatic VF resets.
-+- When automatic VF resets are enabled, the PF driver will immediately reset
-+  the VF and reenable queues when it detects MDD events on the receive path.
-+- If automatic VF resets are disabled, the PF will not automatically reset the
-+  VF when it detects MDD events.
-+
-+To enable or disable automatic VF resets, use the following command::
-+
-+  # ethtool --set-priv-flags <ethX> mdd-auto-reset-vf on|off
-+
-+
-+MAC and VLAN Anti-Spoofing Feature for VFs
-+------------------------------------------
-+When a malicious driver on a Virtual Function (VF) interface attempts to send a
-+spoofed packet, it is dropped by the hardware and not transmitted.
-+
-+NOTE: This feature can be disabled for a specific VF::
-+
-+  # ip link set <ethX> vf <vf id> spoofchk {off|on}
-+
-+
-+Jumbo Frames
-+------------
-+Jumbo Frames support is enabled by changing the Maximum Transmission Unit (MTU)
-+to a value larger than the default value of 1500.
-+
-+Use the ifconfig command to increase the MTU size. For example, enter the
-+following where <ethX> is the interface number::
-+
-+  # ifconfig <ethX> mtu 9000 up
-+
-+Alternatively, you can use the ip command as follows::
-+
-+  # ip link set mtu 9000 dev <ethX>
-+  # ip link set up dev <ethX>
-+
-+This setting is not saved across reboots.
-+
-+
-+NOTE: The maximum MTU setting for jumbo frames is 9702. This corresponds to the
-+maximum jumbo frame size of 9728 bytes.
-+
-+NOTE: This driver will attempt to use multiple page sized buffers to receive
-+each jumbo packet. This should help to avoid buffer starvation issues when
-+allocating receive packets.
-+
-+NOTE: Packet loss may have a greater impact on throughput when you use jumbo
-+frames. If you observe a drop in performance after enabling jumbo frames,
-+enabling flow control may mitigate the issue.
-+
-+
-+Speed and Duplex Configuration
-+------------------------------
-+In addressing speed and duplex configuration issues, you need to distinguish
-+between copper-based adapters and fiber-based adapters.
-+
-+In the default mode, an Intel(R) Ethernet Network Adapter using copper
-+connections will attempt to auto-negotiate with its link partner to determine
-+the best setting. If the adapter cannot establish link with the link partner
-+using auto-negotiation, you may need to manually configure the adapter and link
-+partner to identical settings to establish link and pass packets. This should
-+only be needed when attempting to link with an older switch that does not
-+support auto-negotiation or one that has been forced to a specific speed or
-+duplex mode. Your link partner must match the setting you choose. 1 Gbps speeds
-+and higher cannot be forced. Use the autonegotiation advertising setting to
-+manually set devices for 1 Gbps and higher.
-+
-+Speed, duplex, and autonegotiation advertising are configured through the
-+ethtool utility. For the latest version, download and install ethtool from the
-+following website:
-+
-+   https://kernel.org/pub/software/network/ethtool/
-+
-+To see the speed configurations your device supports, run the following::
-+
-+  # ethtool <ethX>
-+
-+Caution: Only experienced network administrators should force speed and duplex
-+or change autonegotiation advertising manually. The settings at the switch must
-+always match the adapter settings. Adapter performance may suffer or your
-+adapter may not operate if you configure the adapter differently from your
-+switch.
-+
-+
-+Data Center Bridging (DCB)
-+--------------------------
-+NOTE: The kernel assumes that TC0 is available, and will disable Priority Flow
-+Control (PFC) on the device if TC0 is not available. To fix this, ensure TC0 is
-+enabled when setting up DCB on your switch.
-+
-+DCB is a configuration Quality of Service implementation in hardware. It uses
-+the VLAN priority tag (802.1p) to filter traffic. That means that there are 8
-+different priorities that traffic can be filtered into. It also enables
-+priority flow control (802.1Qbb) which can limit or eliminate the number of
-+dropped packets during network stress. Bandwidth can be allocated to each of
-+these priorities, which is enforced at the hardware level (802.1Qaz).
-+
-+DCB is normally configured on the network using the DCBX protocol (802.1Qaz), a
-+specialization of LLDP (802.1AB). The ice driver supports the following
-+mutually exclusive variants of DCBX support:
-+
-+1) Firmware-based LLDP Agent
-+2) Software-based LLDP Agent
-+
-+In firmware-based mode, firmware intercepts all LLDP traffic and handles DCBX
-+negotiation transparently for the user. In this mode, the adapter operates in
-+"willing" DCBX mode, receiving DCB settings from the link partner (typically a
-+switch). The local user can only query the negotiated DCB configuration. For
-+information on configuring DCBX parameters on a switch, please consult the
-+switch manufacturer's documentation.
-+
-+In software-based mode, LLDP traffic is forwarded to the network stack and user
-+space, where a software agent can handle it. In this mode, the adapter can
-+operate in either "willing" or "nonwilling" DCBX mode and DCB configuration can
-+be both queried and set locally. This mode requires the FW-based LLDP Agent to
-+be disabled.
-+
-+NOTE:
-+
-+- You can enable and disable the firmware-based LLDP Agent using an ethtool
-+  private flag. Refer to the "FW-LLDP (Firmware Link Layer Discovery Protocol)"
-+  section in this README for more information.
-+- In software-based DCBX mode, you can configure DCB parameters using software
-+  LLDP/DCBX agents that interface with the Linux kernel's DCB Netlink API. We
-+  recommend using OpenLLDP as the DCBX agent when running in software mode. For
-+  more information, see the OpenLLDP man pages and
-+  https://github.com/intel/openlldp.
-+- The driver implements the DCB netlink interface layer to allow the user space
-+  to communicate with the driver and query DCB configuration for the port.
-+- iSCSI with DCB is not supported.
-+
-+
-+FW-LLDP (Firmware Link Layer Discovery Protocol)
-+------------------------------------------------
-+Use ethtool to change FW-LLDP settings. The FW-LLDP setting is per port and
-+persists across boots.
-+
-+To enable LLDP::
-+
-+  # ethtool --set-priv-flags <ethX> fw-lldp-agent on
-+
-+To disable LLDP::
-+
-+  # ethtool --set-priv-flags <ethX> fw-lldp-agent off
-+
-+To check the current LLDP setting::
-+
-+  # ethtool --show-priv-flags <ethX>
-+
-+NOTE: You must enable the UEFI HII "LLDP Agent" attribute for this setting to
-+take effect. If "LLDP AGENT" is set to disabled, you cannot enable it from the
-+OS.
-+
-+
-+Flow Control
-+------------
-+Ethernet Flow Control (IEEE 802.3x) can be configured with ethtool to enable
-+receiving and transmitting pause frames for ice. When transmit is enabled,
-+pause frames are generated when the receive packet buffer crosses a predefined
-+threshold. When receive is enabled, the transmit unit will halt for the time
-+delay specified when a pause frame is received.
-+
-+NOTE: You must have a flow control capable link partner.
-+
-+Flow Control is disabled by default.
-+
-+Use ethtool to change the flow control settings.
-+
-+To enable or disable Rx or Tx Flow Control::
-+
-+  # ethtool -A <ethX> rx <on|off> tx <on|off>
-+
-+Note: This command only enables or disables Flow Control if auto-negotiation is
-+disabled. If auto-negotiation is enabled, this command changes the parameters
-+used for auto-negotiation with the link partner.
-+
-+Note: Flow Control auto-negotiation is part of link auto-negotiation. Depending
-+on your device, you may not be able to change the auto-negotiation setting.
-+
-+NOTE:
-+
-+- The ice driver requires flow control on both the port and link partner. If
-+  flow control is disabled on one of the sides, the port may appear to hang on
-+  heavy traffic.
-+- You may encounter issues with link-level flow control (LFC) after disabling
-+  DCB. The LFC status may show as enabled but traffic is not paused. To resolve
-+  this issue, disable and reenable LFC using ethtool::
-+
-+   # ethtool -A <ethX> rx off tx off
-+   # ethtool -A <ethX> rx on tx on
-+
-+
-+NAPI
-+----
-+This driver supports NAPI (Rx polling mode).
-+For more information on NAPI, see
-+https://www.linuxfoundation.org/collaborate/workgroups/networking/napi
-+
-+
-+MACVLAN
-+-------
-+This driver supports MACVLAN. Kernel support for MACVLAN can be tested by
-+checking if the MACVLAN driver is loaded. You can run 'lsmod | grep macvlan' to
-+see if the MACVLAN driver is loaded or run 'modprobe macvlan' to try to load
-+the MACVLAN driver.
-+
-+NOTE:
-+
-+- In passthru mode, you can only set up one MACVLAN device. It will inherit the
-+  MAC address of the underlying PF (Physical Function) device.
-+
-+
-+IEEE 802.1ad (QinQ) Support
-+---------------------------
-+The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
-+IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
-+"tags," and multiple VLAN IDs are thus referred to as a "tag stack." Tag stacks
-+allow L2 tunneling and the ability to segregate traffic within a particular
-+VLAN ID, among other uses.
-+
-+NOTES:
-+
-+- Receive checksum offloads and VLAN acceleration are not supported for 802.1ad
-+  (QinQ) packets.
-+
-+- 0x88A8 traffic will not be received unless VLAN stripping is disabled with
-+  the following command::
-+
-+    # ethool -K <ethX> rxvlan off
-+
-+- 0x88A8/0x8100 double VLANs cannot be used with 0x8100 or 0x8100/0x8100 VLANS
-+  configured on the same port. 0x88a8/0x8100 traffic will not be received if
-+  0x8100 VLANs are configured.
-+
-+- The VF can only transmit 0x88A8/0x8100 (i.e., 802.1ad/802.1Q) traffic if:
-+
-+    1) The VF is not assigned a port VLAN.
-+    2) spoofchk is disabled from the PF. If you enable spoofchk, the VF will
-+       not transmit 0x88A8/0x8100 traffic.
-+
-+- The VF may not receive all network traffic based on the Inner VLAN header
-+  when VF true promiscuous mode (vf-true-promisc-support) and double VLANs are
-+  enabled in SR-IOV mode.
-+
-+The following are examples of how to configure 802.1ad (QinQ)::
-+
-+  # ip link add link eth0 eth0.24 type vlan proto 802.1ad id 24
-+  # ip link add link eth0.24 eth0.24.371 type vlan proto 802.1Q id 371
-+
-+  Where "24" and "371" are example VLAN IDs.
-+
-+
-+Tunnel/Overlay Stateless Offloads
-+---------------------------------
-+Supported tunnels and overlays include VXLAN, GENEVE, and others depending on
-+hardware and software configuration. Stateless offloads are enabled by default.
-+
-+To view the current state of all offloads::
-+
-+  # ethtool -k <ethX>
-+
-+
-+UDP Segmentation Offload
-+------------------------
-+Allows the adapter to offload transmit segmentation of UDP packets with
-+payloads up to 64K into valid Ethernet frames. Because the adapter hardware is
-+able to complete data segmentation much faster than operating system software,
-+this feature may improve transmission performance.
-+In addition, the adapter may use fewer CPU resources.
-+
-+NOTE:
-+
-+- The application sending UDP packets must support UDP segmentation offload.
-+
-+To enable/disable UDP Segmentation Offload, issue the following command::
-+
-+  # ethtool -K <ethX> tx-udp-segmentation [off|on]
-+
-+
-+Performance Optimization
-+========================
-+Driver defaults are meant to fit a wide variety of workloads, but if further
-+optimization is required, we recommend experimenting with the following
-+settings.
-+
-+
-+Rx Descriptor Ring Size
-+-----------------------
-+To reduce the number of Rx packet discards, increase the number of Rx
-+descriptors for each Rx ring using ethtool.
-+
-+  Check if the interface is dropping Rx packets due to buffers being full
-+  (rx_dropped.nic can mean that there is no PCIe bandwidth)::
-+
-+    # ethtool -S <ethX> | grep "rx_dropped"
-+
-+  If the previous command shows drops on queues, it may help to increase
-+  the number of descriptors using 'ethtool -G'::
-+
-+    # ethtool -G <ethX> rx <N>
-+    Where <N> is the desired number of ring entries/descriptors
-+
-+  This can provide temporary buffering for issues that create latency while
-+  the CPUs process descriptors.
-+
-+
-+Interrupt Rate Limiting
-+-----------------------
-+This driver supports an adaptive interrupt throttle rate (ITR) mechanism that
-+is tuned for general workloads. The user can customize the interrupt rate
-+control for specific workloads, via ethtool, adjusting the number of
-+microseconds between interrupts.
-+
-+To set the interrupt rate manually, you must disable adaptive mode::
-+
-+  # ethtool -C <ethX> adaptive-rx off adaptive-tx off
-+
-+For lower CPU utilization:
-+
-+  Disable adaptive ITR and lower Rx and Tx interrupts. The examples below
-+  affect every queue of the specified interface.
-+
-+  Setting rx-usecs and tx-usecs to 80 will limit interrupts to about
-+  12,500 interrupts per second per queue::
-+
-+    # ethtool -C <ethX> adaptive-rx off adaptive-tx off rx-usecs 80 tx-usecs 80
-+
-+For reduced latency:
-+
-+  Disable adaptive ITR and ITR by setting rx-usecs and tx-usecs to 0
-+  using ethtool::
-+
-+    # ethtool -C <ethX> adaptive-rx off adaptive-tx off rx-usecs 0 tx-usecs 0
-+
-+Per-queue interrupt rate settings:
-+
-+  The following examples are for queues 1 and 3, but you can adjust other
-+  queues.
-+
-+  To disable Rx adaptive ITR and set static Rx ITR to 10 microseconds or
-+  about 100,000 interrupts/second, for queues 1 and 3::
-+
-+    # ethtool --per-queue <ethX> queue_mask 0xa --coalesce adaptive-rx off
-+    rx-usecs 10
-+
-+  To show the current coalesce settings for queues 1 and 3::
-+
-+    # ethtool --per-queue <ethX> queue_mask 0xa --show-coalesce
-+
-+Bounding interrupt rates using rx-usecs-high:
-+
-+  :Valid Range: 0-236 (0=no limit)
-+
-+   The range of 0-236 microseconds provides an effective range of 4,237 to
-+   250,000 interrupts per second. The value of rx-usecs-high can be set
-+   independently of rx-usecs and tx-usecs in the same ethtool command, and is
-+   also independent of the adaptive interrupt moderation algorithm. The
-+   underlying hardware supports granularity in 4-microsecond intervals, so
-+   adjacent values may result in the same interrupt rate.
-+
-+  The following command would disable adaptive interrupt moderation, and allow
-+  a maximum of 5 microseconds before indicating a receive or transmit was
-+  complete. However, instead of resulting in as many as 200,000 interrupts per
-+  second, it limits total interrupts per second to 50,000 via the rx-usecs-high
-+  parameter.
-+
-+  ::
-+
-+    # ethtool -C <ethX> adaptive-rx off adaptive-tx off rx-usecs-high 20
-+    rx-usecs 5 tx-usecs 5
-+
-+
-+Virtualized Environments
-+------------------------
-+In addition to the other suggestions in this section, the following may be
-+helpful to optimize performance in VMs.
-+
-+  Using the appropriate mechanism (vcpupin) in the VM, pin the CPUs to
-+  individual LCPUs, making sure to use a set of CPUs included in the
-+  device's local_cpulist: ``/sys/class/net/<ethX>/device/local_cpulist``.
-+
-+  Configure as many Rx/Tx queues in the VM as available. (See the iavf driver
-+  documentation for the number of queues supported.) For example::
-+
-+    # ethtool -L <virt_interface> rx <max> tx <max>
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 34fad02a653d..b71d9e1d9262 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2168,6 +2168,126 @@ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create)
+ 			vsi->vsi_num, ice_stat_str(status));
+ }
  
--  -> Device Drivers
--    -> Network device support (NETDEVICES [=y])
--      -> Ethernet driver support
--        -> Intel devices
--          -> Intel(R) Ethernet Connection E800 Series Support
- 
- Support
- =======
- For general information, go to the Intel support website at:
--
- https://www.intel.com/support/
- 
- or the Intel Wired Networking project hosted by Sourceforge at:
--
- https://sourceforge.net/projects/e1000
- 
- If an issue is identified with the released source code on a supported kernel
- with a supported adapter, email the specific information related to the issue
- to e1000-devel at lists.sf.net.
++/**
++ * ice_set_agg_vsi - sets up scheduler aggregator node and move VSI into it
++ * @vsi: pointer to the VSI
++ *
++ * This function will allocate new scheduler aggregator now if needed and will
++ * move specified VSI into it.
++ */
++static void ice_set_agg_vsi(struct ice_vsi *vsi)
++{
++	struct device *dev = ice_pf_to_dev(vsi->back);
++	struct ice_agg_node *agg_node_iter = NULL;
++	u32 agg_id = ICE_INVALID_AGG_NODE_ID;
++	struct ice_agg_node *agg_node = NULL;
++	int node_offset, max_agg_nodes = 0;
++	struct ice_port_info *port_info;
++	struct ice_pf *pf = vsi->back;
++	u32 agg_node_id_start = 0;
++	enum ice_status status;
 +
++	/* create (as needed) scheduler aggregator node and move VSI into
++	 * corresponding aggregator node
++	 * - PF aggregator node to contains VSIs of type _PF and _CTRL
++	 * - VF aggregator nodes will contain VF VSI
++	 */
++	port_info = pf->hw.port_info;
++	if (!port_info)
++		return;
 +
-+Trademarks
-+==========
-+Intel is a trademark or registered trademark of Intel Corporation or its
-+subsidiaries in the United States and/or other countries.
++	switch (vsi->type) {
++	case ICE_VSI_CTRL:
++	case ICE_VSI_LB:
++	case ICE_VSI_PF:
++		max_agg_nodes = ICE_MAX_PF_AGG_NODES;
++		agg_node_id_start = ICE_PF_AGG_NODE_ID_START;
++		agg_node_iter = &pf->pf_agg_node[0];
++		break;
++	case ICE_VSI_VF:
++		/* user can create 'n' VFs on a given PF, but since max children
++		 * per aggregator node can be only 64. Following code handles
++		 * aggregator(s) for VF VSIs, either selects a agg_node which
++		 * was already created provided num_vsis < 64, otherwise
++		 * select next available node, which will be created
++		 */
++		max_agg_nodes = ICE_MAX_VF_AGG_NODES;
++		agg_node_id_start = ICE_VF_AGG_NODE_ID_START;
++		agg_node_iter = &pf->vf_agg_node[0];
++		break;
++	default:
++		/* other VSI type, handle later if needed */
++		dev_dbg(dev, "unexpected VSI type %s\n",
++			ice_vsi_type_str(vsi->type));
++		return;
++	}
 +
-+* Other names and brands may be claimed as the property of others.
++	/* find the appropriate aggregator node */
++	for (node_offset = 0; node_offset < max_agg_nodes; node_offset++) {
++		/* see if we can find space in previously created
++		 * node if num_vsis < 64, otherwise skip
++		 */
++		if (agg_node_iter->num_vsis &&
++		    agg_node_iter->num_vsis == ICE_MAX_VSIS_IN_AGG_NODE) {
++			agg_node_iter++;
++			continue;
++		}
++
++		if (agg_node_iter->valid &&
++		    agg_node_iter->agg_id != ICE_INVALID_AGG_NODE_ID) {
++			agg_id = agg_node_iter->agg_id;
++			agg_node = agg_node_iter;
++			break;
++		}
++
++		/* find unclaimed agg_id */
++		if (agg_node_iter->agg_id == ICE_INVALID_AGG_NODE_ID) {
++			agg_id = node_offset + agg_node_id_start;
++			agg_node = agg_node_iter;
++			break;
++		}
++		/* move to next agg_node */
++		agg_node_iter++;
++	}
++
++	if (!agg_node)
++		return;
++
++	/* if selected aggregator node was not created, create it */
++	if (!agg_node->valid) {
++		status = ice_cfg_agg(port_info, agg_id, ICE_AGG_TYPE_AGG,
++				     vsi->tc_cfg.ena_tc);
++		if (status) {
++			dev_err(dev, "unable to create aggregator node with agg_id %u\n",
++				agg_id);
++			return;
++		}
++		/* aggregator node is created, store the neeeded info */
++		agg_node->valid = true;
++		agg_node->agg_id = agg_id;
++	}
++
++	/* move VSI to corresponding aggregator node */
++	status = ice_move_vsi_to_agg(port_info, agg_id, vsi->idx,
++				     vsi->tc_cfg.ena_tc);
++	if (status) {
++		dev_err(dev, "unable to move VSI idx %u into aggregator %u node",
++			vsi->idx, agg_id);
++		return;
++	}
++
++	/* keep active children count for aggregator node */
++	agg_node->num_vsis++;
++
++	/* cache the 'agg_id' in VSI, so that after reset - VSI will be moved
++	 * to aggregator node
++	 */
++	vsi->agg_node = agg_node;
++	dev_dbg(dev, "successfully moved VSI idx %u tc_bitmap 0x%x) into aggregator node %d which has num_vsis %u\n",
++		vsi->idx, vsi->tc_cfg.ena_tc, vsi->agg_node->agg_id,
++		vsi->agg_node->num_vsis);
++}
++
+ /**
+  * ice_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+@@ -2338,6 +2458,8 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 			ice_cfg_sw_lldp(vsi, true, true);
+ 		}
+ 
++	if (!vsi->agg_node)
++		ice_set_agg_vsi(vsi);
+ 	return vsi;
+ 
+ unroll_clear_rings:
+@@ -2682,6 +2804,9 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 		vsi->netdev = NULL;
+ 	}
+ 
++	if (vsi->type == ICE_VSI_VF &&
++	    vsi->agg_node && vsi->agg_node->valid)
++		vsi->agg_node->num_vsis--;
+ 	ice_vsi_clear_rings(vsi);
+ 
+ 	ice_vsi_put_qs(vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 0b120d9b5a83..647f6c105c65 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -435,11 +435,19 @@ static void ice_sync_fltr_subtask(struct ice_pf *pf)
+  */
+ static void ice_pf_dis_all_vsi(struct ice_pf *pf, bool locked)
+ {
++	int node;
+ 	int v;
+ 
+ 	ice_for_each_vsi(pf, v)
+ 		if (pf->vsi[v])
+ 			ice_dis_vsi(pf->vsi[v], locked);
++
++	for (node = 0; node < ICE_MAX_PF_AGG_NODES; node++)
++		pf->pf_agg_node[node].num_vsis = 0;
++
++	for (node = 0; node < ICE_MAX_VF_AGG_NODES; node++)
++		pf->vf_agg_node[node].num_vsis = 0;
++
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index f0912e44d4ad..b4f425c0b7f5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -430,6 +430,27 @@ ice_aq_cfg_sched_elems(struct ice_hw *hw, u16 elems_req,
+ 					   elems_cfgd, cd);
+ }
+ 
++/**
++ * ice_aq_move_sched_elems - move scheduler elements
++ * @hw: pointer to the HW struct
++ * @grps_req: number of groups to move
++ * @buf: pointer to buffer
++ * @buf_size: buffer size in bytes
++ * @grps_movd: returns total number of groups moved
++ * @cd: pointer to command details structure or NULL
++ *
++ * Move scheduling elements (0x0408)
++ */
++static enum ice_status
++ice_aq_move_sched_elems(struct ice_hw *hw, u16 grps_req,
++			struct ice_aqc_move_elem *buf, u16 buf_size,
++			u16 *grps_movd, struct ice_sq_cd *cd)
++{
++	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_move_sched_elems,
++					   grps_req, (void *)buf, buf_size,
++					   grps_movd, cd);
++}
++
+ /**
+  * ice_aq_suspend_sched_elems - suspend scheduler elements
+  * @hw: pointer to the HW struct
+@@ -1021,6 +1042,28 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
+ 	return hw->sw_entry_point_layer;
+ }
+ 
++/**
++ * ice_sched_get_agg_layer - get the current aggregator layer number
++ * @hw: pointer to the HW struct
++ *
++ * This function returns the current aggregator layer number
++ */
++static u8 ice_sched_get_agg_layer(struct ice_hw *hw)
++{
++	/* Num Layers       aggregator layer
++	 *     9               4
++	 *     7 or less       sw_entry_point_layer
++	 */
++	/* calculate the aggregator layer based on number of layers. */
++	if (hw->num_tx_sched_layers > ICE_AGG_LAYER_OFFSET + 1) {
++		u8 layer = hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
++
++		if (layer > hw->sw_entry_point_layer)
++			return layer;
++	}
++	return hw->sw_entry_point_layer;
++}
++
+ /**
+  * ice_rm_dflt_leaf_node - remove the default leaf node in the tree
+  * @pi: port information structure
+@@ -1364,7 +1407,7 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 
+ /**
+  * ice_sched_get_vsi_node - Get a VSI node based on VSI ID
+- * @hw: pointer to the HW struct
++ * @pi: pointer to the port information structure
+  * @tc_node: pointer to the TC node
+  * @vsi_handle: software VSI handle
+  *
+@@ -1372,14 +1415,14 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+  * TC branch
+  */
+ static struct ice_sched_node *
+-ice_sched_get_vsi_node(struct ice_hw *hw, struct ice_sched_node *tc_node,
++ice_sched_get_vsi_node(struct ice_port_info *pi, struct ice_sched_node *tc_node,
+ 		       u16 vsi_handle)
+ {
+ 	struct ice_sched_node *node;
+ 	u8 vsi_layer;
+ 
+-	vsi_layer = ice_sched_get_vsi_layer(hw);
+-	node = ice_sched_get_first_node(hw->port_info, tc_node, vsi_layer);
++	vsi_layer = ice_sched_get_vsi_layer(pi->hw);
++	node = ice_sched_get_first_node(pi, tc_node, vsi_layer);
+ 
+ 	/* Check whether it already exists */
+ 	while (node) {
+@@ -1391,6 +1434,38 @@ ice_sched_get_vsi_node(struct ice_hw *hw, struct ice_sched_node *tc_node,
+ 	return node;
+ }
+ 
++/**
++ * ice_sched_get_agg_node - Get an aggregator node based on aggregator ID
++ * @pi: pointer to the port information structure
++ * @tc_node: pointer to the TC node
++ * @agg_id: aggregator ID
++ *
++ * This function retrieves an aggregator node for a given aggregator ID from
++ * a given TC branch
++ */
++static struct ice_sched_node *
++ice_sched_get_agg_node(struct ice_port_info *pi, struct ice_sched_node *tc_node,
++		       u32 agg_id)
++{
++	struct ice_sched_node *node;
++	struct ice_hw *hw = pi->hw;
++	u8 agg_layer;
++
++	if (!hw)
++		return NULL;
++	agg_layer = ice_sched_get_agg_layer(hw);
++	node = ice_sched_get_first_node(pi, tc_node, agg_layer);
++
++	/* Check whether it already exists */
++	while (node) {
++		if (node->agg_id == agg_id)
++			return node;
++		node = node->sibling;
++	}
++
++	return node;
++}
++
+ /**
+  * ice_sched_calc_vsi_child_nodes - calculate number of VSI child nodes
+  * @hw: pointer to the HW struct
+@@ -1444,7 +1519,7 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 
+ 	qgl = ice_sched_get_qgrp_layer(hw);
+ 	vsil = ice_sched_get_vsi_layer(hw);
+-	parent = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
++	parent = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
+ 	for (i = vsil + 1; i <= qgl; i++) {
+ 		if (!parent)
+ 			return ICE_ERR_CFG;
+@@ -1477,7 +1552,7 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 
+ /**
+  * ice_sched_calc_vsi_support_nodes - calculate number of VSI support nodes
+- * @hw: pointer to the HW struct
++ * @pi: pointer to the port info structure
+  * @tc_node: pointer to TC node
+  * @num_nodes: pointer to num nodes array
+  *
+@@ -1486,15 +1561,15 @@ ice_sched_add_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+  * layers
+  */
+ static void
+-ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
++ice_sched_calc_vsi_support_nodes(struct ice_port_info *pi,
+ 				 struct ice_sched_node *tc_node, u16 *num_nodes)
+ {
+ 	struct ice_sched_node *node;
+ 	u8 vsil;
+ 	int i;
+ 
+-	vsil = ice_sched_get_vsi_layer(hw);
+-	for (i = vsil; i >= hw->sw_entry_point_layer; i--)
++	vsil = ice_sched_get_vsi_layer(pi->hw);
++	for (i = vsil; i >= pi->hw->sw_entry_point_layer; i--)
+ 		/* Add intermediate nodes if TC has no children and
+ 		 * need at least one node for VSI
+ 		 */
+@@ -1504,11 +1579,10 @@ ice_sched_calc_vsi_support_nodes(struct ice_hw *hw,
+ 			/* If intermediate nodes are reached max children
+ 			 * then add a new one.
+ 			 */
+-			node = ice_sched_get_first_node(hw->port_info, tc_node,
+-							(u8)i);
++			node = ice_sched_get_first_node(pi, tc_node, (u8)i);
+ 			/* scan all the siblings */
+ 			while (node) {
+-				if (node->num_children < hw->max_children[i])
++				if (node->num_children < pi->hw->max_children[i])
+ 					break;
+ 				node = node->sibling;
+ 			}
+@@ -1588,14 +1662,13 @@ ice_sched_add_vsi_to_topo(struct ice_port_info *pi, u16 vsi_handle, u8 tc)
+ {
+ 	u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+ 	struct ice_sched_node *tc_node;
+-	struct ice_hw *hw = pi->hw;
+ 
+ 	tc_node = ice_sched_get_tc_node(pi, tc);
+ 	if (!tc_node)
+ 		return ICE_ERR_PARAM;
+ 
+ 	/* calculate number of supported nodes needed for this VSI */
+-	ice_sched_calc_vsi_support_nodes(hw, tc_node, num_nodes);
++	ice_sched_calc_vsi_support_nodes(pi, tc_node, num_nodes);
+ 
+ 	/* add VSI supported nodes to TC subtree */
+ 	return ice_sched_add_vsi_support_nodes(pi, vsi_handle, tc_node,
+@@ -1628,7 +1701,7 @@ ice_sched_update_vsi_child_nodes(struct ice_port_info *pi, u16 vsi_handle,
+ 	if (!tc_node)
+ 		return ICE_ERR_CFG;
+ 
+-	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
++	vsi_node = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
+ 	if (!vsi_node)
+ 		return ICE_ERR_CFG;
+ 
+@@ -1691,7 +1764,7 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 	vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
+ 	if (!vsi_ctx)
+ 		return ICE_ERR_PARAM;
+-	vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
++	vsi_node = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
+ 
+ 	/* suspend the VSI if TC is not enabled */
+ 	if (!enable) {
+@@ -1712,7 +1785,7 @@ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 		if (status)
+ 			return status;
+ 
+-		vsi_node = ice_sched_get_vsi_node(hw, tc_node, vsi_handle);
++		vsi_node = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
+ 		if (!vsi_node)
+ 			return ICE_ERR_CFG;
+ 
+@@ -1821,7 +1894,7 @@ ice_sched_rm_vsi_cfg(struct ice_port_info *pi, u16 vsi_handle, u8 owner)
+ 		if (!tc_node)
+ 			continue;
+ 
+-		vsi_node = ice_sched_get_vsi_node(pi->hw, tc_node, vsi_handle);
++		vsi_node = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
+ 		if (!vsi_node)
+ 			continue;
+ 
+@@ -1873,6 +1946,720 @@ enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle)
+ 	return ice_sched_rm_vsi_cfg(pi, vsi_handle, ICE_SCHED_NODE_OWNER_LAN);
+ }
+ 
++/**
++ * ice_get_agg_info - get the aggregator ID
++ * @hw: pointer to the hardware structure
++ * @agg_id: aggregator ID
++ *
++ * This function validates aggregator ID. The function returns info if
++ * aggregator ID is present in list otherwise it returns null.
++ */
++static struct ice_sched_agg_info *
++ice_get_agg_info(struct ice_hw *hw, u32 agg_id)
++{
++	struct ice_sched_agg_info *agg_info;
++
++	list_for_each_entry(agg_info, &hw->agg_list, list_entry)
++		if (agg_info->agg_id == agg_id)
++			return agg_info;
++
++	return NULL;
++}
++
++/**
++ * ice_sched_get_free_vsi_parent - Find a free parent node in aggregator subtree
++ * @hw: pointer to the HW struct
++ * @node: pointer to a child node
++ * @num_nodes: num nodes count array
++ *
++ * This function walks through the aggregator subtree to find a free parent
++ * node
++ */
++static struct ice_sched_node *
++ice_sched_get_free_vsi_parent(struct ice_hw *hw, struct ice_sched_node *node,
++			      u16 *num_nodes)
++{
++	u8 l = node->tx_sched_layer;
++	u8 vsil, i;
++
++	vsil = ice_sched_get_vsi_layer(hw);
++
++	/* Is it VSI parent layer ? */
++	if (l == vsil - 1)
++		return (node->num_children < hw->max_children[l]) ? node : NULL;
++
++	/* We have intermediate nodes. Let's walk through the subtree. If the
++	 * intermediate node has space to add a new node then clear the count
++	 */
++	if (node->num_children < hw->max_children[l])
++		num_nodes[l] = 0;
++	/* The below recursive call is intentional and wouldn't go more than
++	 * 2 or 3 iterations.
++	 */
++
++	for (i = 0; i < node->num_children; i++) {
++		struct ice_sched_node *parent;
++
++		parent = ice_sched_get_free_vsi_parent(hw, node->children[i],
++						       num_nodes);
++		if (parent)
++			return parent;
++	}
++
++	return NULL;
++}
++
++/**
++ * ice_sched_update_parent - update the new parent in SW DB
++ * @new_parent: pointer to a new parent node
++ * @node: pointer to a child node
++ *
++ * This function removes the child from the old parent and adds it to a new
++ * parent
++ */
++static void
++ice_sched_update_parent(struct ice_sched_node *new_parent,
++			struct ice_sched_node *node)
++{
++	struct ice_sched_node *old_parent;
++	u8 i, j;
++
++	old_parent = node->parent;
++
++	/* update the old parent children */
++	for (i = 0; i < old_parent->num_children; i++)
++		if (old_parent->children[i] == node) {
++			for (j = i + 1; j < old_parent->num_children; j++)
++				old_parent->children[j - 1] =
++					old_parent->children[j];
++			old_parent->num_children--;
++			break;
++		}
++
++	/* now move the node to a new parent */
++	new_parent->children[new_parent->num_children++] = node;
++	node->parent = new_parent;
++	node->info.parent_teid = new_parent->info.node_teid;
++}
++
++/**
++ * ice_sched_move_nodes - move child nodes to a given parent
++ * @pi: port information structure
++ * @parent: pointer to parent node
++ * @num_items: number of child nodes to be moved
++ * @list: pointer to child node teids
++ *
++ * This function move the child nodes to a given parent.
++ */
++static enum ice_status
++ice_sched_move_nodes(struct ice_port_info *pi, struct ice_sched_node *parent,
++		     u16 num_items, u32 *list)
++{
++	struct ice_aqc_move_elem *buf;
++	struct ice_sched_node *node;
++	enum ice_status status = 0;
++	u16 i, grps_movd = 0;
++	struct ice_hw *hw;
++	u16 buf_len;
++
++	hw = pi->hw;
++
++	if (!parent || !num_items)
++		return ICE_ERR_PARAM;
++
++	/* Does parent have enough space */
++	if (parent->num_children + num_items >
++	    hw->max_children[parent->tx_sched_layer])
++		return ICE_ERR_AQ_FULL;
++
++	buf_len = struct_size(buf, teid, 1);
++	buf = kzalloc(buf_len, GFP_KERNEL);
++	if (!buf)
++		return ICE_ERR_NO_MEMORY;
++
++	for (i = 0; i < num_items; i++) {
++		node = ice_sched_find_node_by_teid(pi->root, list[i]);
++		if (!node) {
++			status = ICE_ERR_PARAM;
++			goto move_err_exit;
++		}
++
++		buf->hdr.src_parent_teid = node->info.parent_teid;
++		buf->hdr.dest_parent_teid = parent->info.node_teid;
++		buf->teid[0] = node->info.node_teid;
++		buf->hdr.num_elems = cpu_to_le16(1);
++		status = ice_aq_move_sched_elems(hw, 1, buf, buf_len,
++						 &grps_movd, NULL);
++		if (status && grps_movd != 1) {
++			status = ICE_ERR_CFG;
++			goto move_err_exit;
++		}
++
++		/* update the SW DB */
++		ice_sched_update_parent(parent, node);
++	}
++
++move_err_exit:
++	kfree(buf);
++	return status;
++}
++
++/**
++ * ice_sched_move_vsi_to_agg - move VSI to aggregator node
++ * @pi: port information structure
++ * @vsi_handle: software VSI handle
++ * @agg_id: aggregator ID
++ * @tc: TC number
++ *
++ * This function moves a VSI to an aggregator node or its subtree.
++ * Intermediate nodes may be created if required.
++ */
++static enum ice_status
++ice_sched_move_vsi_to_agg(struct ice_port_info *pi, u16 vsi_handle, u32 agg_id,
++			  u8 tc)
++{
++	struct ice_sched_node *vsi_node, *agg_node, *tc_node, *parent;
++	u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
++	u32 first_node_teid, vsi_teid;
++	enum ice_status status;
++	u16 num_nodes_added;
++	u8 aggl, vsil, i;
++
++	tc_node = ice_sched_get_tc_node(pi, tc);
++	if (!tc_node)
++		return ICE_ERR_CFG;
++
++	agg_node = ice_sched_get_agg_node(pi, tc_node, agg_id);
++	if (!agg_node)
++		return ICE_ERR_DOES_NOT_EXIST;
++
++	vsi_node = ice_sched_get_vsi_node(pi, tc_node, vsi_handle);
++	if (!vsi_node)
++		return ICE_ERR_DOES_NOT_EXIST;
++
++	/* Is this VSI already part of given aggregator? */
++	if (ice_sched_find_node_in_subtree(pi->hw, agg_node, vsi_node))
++		return 0;
++
++	aggl = ice_sched_get_agg_layer(pi->hw);
++	vsil = ice_sched_get_vsi_layer(pi->hw);
++
++	/* set intermediate node count to 1 between aggregator and VSI layers */
++	for (i = aggl + 1; i < vsil; i++)
++		num_nodes[i] = 1;
++
++	/* Check if the aggregator subtree has any free node to add the VSI */
++	for (i = 0; i < agg_node->num_children; i++) {
++		parent = ice_sched_get_free_vsi_parent(pi->hw,
++						       agg_node->children[i],
++						       num_nodes);
++		if (parent)
++			goto move_nodes;
++	}
++
++	/* add new nodes */
++	parent = agg_node;
++	for (i = aggl + 1; i < vsil; i++) {
++		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent, i,
++						      num_nodes[i],
++						      &first_node_teid,
++						      &num_nodes_added);
++		if (status || num_nodes[i] != num_nodes_added)
++			return ICE_ERR_CFG;
++
++		/* The newly added node can be a new parent for the next
++		 * layer nodes
++		 */
++		if (num_nodes_added)
++			parent = ice_sched_find_node_by_teid(tc_node,
++							     first_node_teid);
++		else
++			parent = parent->children[0];
++
++		if (!parent)
++			return ICE_ERR_CFG;
++	}
++
++move_nodes:
++	vsi_teid = le32_to_cpu(vsi_node->info.node_teid);
++	return ice_sched_move_nodes(pi, parent, 1, &vsi_teid);
++}
++
++/**
++ * ice_move_all_vsi_to_dflt_agg - move all VSI(s) to default aggregator
++ * @pi: port information structure
++ * @agg_info: aggregator info
++ * @tc: traffic class number
++ * @rm_vsi_info: true or false
++ *
++ * This function move all the VSI(s) to the default aggregator and delete
++ * aggregator VSI info based on passed in boolean parameter rm_vsi_info. The
++ * caller holds the scheduler lock.
++ */
++static enum ice_status
++ice_move_all_vsi_to_dflt_agg(struct ice_port_info *pi,
++			     struct ice_sched_agg_info *agg_info, u8 tc,
++			     bool rm_vsi_info)
++{
++	struct ice_sched_agg_vsi_info *agg_vsi_info;
++	struct ice_sched_agg_vsi_info *tmp;
++	enum ice_status status = 0;
++
++	list_for_each_entry_safe(agg_vsi_info, tmp, &agg_info->agg_vsi_list,
++				 list_entry) {
++		u16 vsi_handle = agg_vsi_info->vsi_handle;
++
++		/* Move VSI to default aggregator */
++		if (!ice_is_tc_ena(agg_vsi_info->tc_bitmap[0], tc))
++			continue;
++
++		status = ice_sched_move_vsi_to_agg(pi, vsi_handle,
++						   ICE_DFLT_AGG_ID, tc);
++		if (status)
++			break;
++
++		clear_bit(tc, agg_vsi_info->tc_bitmap);
++		if (rm_vsi_info && !agg_vsi_info->tc_bitmap[0]) {
++			list_del(&agg_vsi_info->list_entry);
++			devm_kfree(ice_hw_to_dev(pi->hw), agg_vsi_info);
++		}
++	}
++
++	return status;
++}
++
++/**
++ * ice_sched_is_agg_inuse - check whether the aggregator is in use or not
++ * @pi: port information structure
++ * @node: node pointer
++ *
++ * This function checks whether the aggregator is attached with any VSI or not.
++ */
++static bool
++ice_sched_is_agg_inuse(struct ice_port_info *pi, struct ice_sched_node *node)
++{
++	u8 vsil, i;
++
++	vsil = ice_sched_get_vsi_layer(pi->hw);
++	if (node->tx_sched_layer < vsil - 1) {
++		for (i = 0; i < node->num_children; i++)
++			if (ice_sched_is_agg_inuse(pi, node->children[i]))
++				return true;
++		return false;
++	} else {
++		return node->num_children ? true : false;
++	}
++}
++
++/**
++ * ice_sched_rm_agg_cfg - remove the aggregator node
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @tc: TC number
++ *
++ * This function removes the aggregator node and intermediate nodes if any
++ * from the given TC
++ */
++static enum ice_status
++ice_sched_rm_agg_cfg(struct ice_port_info *pi, u32 agg_id, u8 tc)
++{
++	struct ice_sched_node *tc_node, *agg_node;
++	struct ice_hw *hw = pi->hw;
++
++	tc_node = ice_sched_get_tc_node(pi, tc);
++	if (!tc_node)
++		return ICE_ERR_CFG;
++
++	agg_node = ice_sched_get_agg_node(pi, tc_node, agg_id);
++	if (!agg_node)
++		return ICE_ERR_DOES_NOT_EXIST;
++
++	/* Can't remove the aggregator node if it has children */
++	if (ice_sched_is_agg_inuse(pi, agg_node))
++		return ICE_ERR_IN_USE;
++
++	/* need to remove the whole subtree if aggregator node is the
++	 * only child.
++	 */
++	while (agg_node->tx_sched_layer > hw->sw_entry_point_layer) {
++		struct ice_sched_node *parent = agg_node->parent;
++
++		if (!parent)
++			return ICE_ERR_CFG;
++
++		if (parent->num_children > 1)
++			break;
++
++		agg_node = parent;
++	}
++
++	ice_free_sched_node(pi, agg_node);
++	return 0;
++}
++
++/**
++ * ice_rm_agg_cfg_tc - remove aggregator configuration for TC
++ * @pi: port information structure
++ * @agg_info: aggregator ID
++ * @tc: TC number
++ * @rm_vsi_info: bool value true or false
++ *
++ * This function removes aggregator reference to VSI of given TC. It removes
++ * the aggregator configuration completely for requested TC. The caller needs
++ * to hold the scheduler lock.
++ */
++static enum ice_status
++ice_rm_agg_cfg_tc(struct ice_port_info *pi, struct ice_sched_agg_info *agg_info,
++		  u8 tc, bool rm_vsi_info)
++{
++	enum ice_status status = 0;
++
++	/* If nothing to remove - return success */
++	if (!ice_is_tc_ena(agg_info->tc_bitmap[0], tc))
++		goto exit_rm_agg_cfg_tc;
++
++	status = ice_move_all_vsi_to_dflt_agg(pi, agg_info, tc, rm_vsi_info);
++	if (status)
++		goto exit_rm_agg_cfg_tc;
++
++	/* Delete aggregator node(s) */
++	status = ice_sched_rm_agg_cfg(pi, agg_info->agg_id, tc);
++	if (status)
++		goto exit_rm_agg_cfg_tc;
++
++	clear_bit(tc, agg_info->tc_bitmap);
++exit_rm_agg_cfg_tc:
++	return status;
++}
++
++/**
++ * ice_save_agg_tc_bitmap - save aggregator TC bitmap
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @tc_bitmap: 8 bits TC bitmap
++ *
++ * Save aggregator TC bitmap. This function needs to be called with scheduler
++ * lock held.
++ */
++static enum ice_status
++ice_save_agg_tc_bitmap(struct ice_port_info *pi, u32 agg_id,
++		       unsigned long *tc_bitmap)
++{
++	struct ice_sched_agg_info *agg_info;
++
++	agg_info = ice_get_agg_info(pi->hw, agg_id);
++	if (!agg_info)
++		return ICE_ERR_PARAM;
++	bitmap_copy(agg_info->replay_tc_bitmap, tc_bitmap,
++		    ICE_MAX_TRAFFIC_CLASS);
++	return 0;
++}
++
++/**
++ * ice_sched_add_agg_cfg - create an aggregator node
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @tc: TC number
++ *
++ * This function creates an aggregator node and intermediate nodes if required
++ * for the given TC
++ */
++static enum ice_status
++ice_sched_add_agg_cfg(struct ice_port_info *pi, u32 agg_id, u8 tc)
++{
++	struct ice_sched_node *parent, *agg_node, *tc_node;
++	u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
++	enum ice_status status = 0;
++	struct ice_hw *hw = pi->hw;
++	u32 first_node_teid;
++	u16 num_nodes_added;
++	u8 i, aggl;
++
++	tc_node = ice_sched_get_tc_node(pi, tc);
++	if (!tc_node)
++		return ICE_ERR_CFG;
++
++	agg_node = ice_sched_get_agg_node(pi, tc_node, agg_id);
++	/* Does Agg node already exist ? */
++	if (agg_node)
++		return status;
++
++	aggl = ice_sched_get_agg_layer(hw);
++
++	/* need one node in Agg layer */
++	num_nodes[aggl] = 1;
++
++	/* Check whether the intermediate nodes have space to add the
++	 * new aggregator. If they are full, then SW needs to allocate a new
++	 * intermediate node on those layers
++	 */
++	for (i = hw->sw_entry_point_layer; i < aggl; i++) {
++		parent = ice_sched_get_first_node(pi, tc_node, i);
++
++		/* scan all the siblings */
++		while (parent) {
++			if (parent->num_children < hw->max_children[i])
++				break;
++			parent = parent->sibling;
++		}
++
++		/* all the nodes are full, reserve one for this layer */
++		if (!parent)
++			num_nodes[i]++;
++	}
++
++	/* add the aggregator node */
++	parent = tc_node;
++	for (i = hw->sw_entry_point_layer; i <= aggl; i++) {
++		if (!parent)
++			return ICE_ERR_CFG;
++
++		status = ice_sched_add_nodes_to_layer(pi, tc_node, parent, i,
++						      num_nodes[i],
++						      &first_node_teid,
++						      &num_nodes_added);
++		if (status || num_nodes[i] != num_nodes_added)
++			return ICE_ERR_CFG;
++
++		/* The newly added node can be a new parent for the next
++		 * layer nodes
++		 */
++		if (num_nodes_added) {
++			parent = ice_sched_find_node_by_teid(tc_node,
++							     first_node_teid);
++			/* register aggregator ID with the aggregator node */
++			if (parent && i == aggl)
++				parent->agg_id = agg_id;
++		} else {
++			parent = parent->children[0];
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * ice_sched_cfg_agg - configure aggregator node
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @agg_type: aggregator type queue, VSI, or aggregator group
++ * @tc_bitmap: bits TC bitmap
++ *
++ * It registers a unique aggregator node into scheduler services. It
++ * allows a user to register with a unique ID to track it's resources.
++ * The aggregator type determines if this is a queue group, VSI group
++ * or aggregator group. It then creates the aggregator node(s) for requested
++ * TC(s) or removes an existing aggregator node including its configuration
++ * if indicated via tc_bitmap. Call ice_rm_agg_cfg to release aggregator
++ * resources and remove aggregator ID.
++ * This function needs to be called with scheduler lock held.
++ */
++static enum ice_status
++ice_sched_cfg_agg(struct ice_port_info *pi, u32 agg_id,
++		  enum ice_agg_type agg_type, unsigned long *tc_bitmap)
++{
++	struct ice_sched_agg_info *agg_info;
++	enum ice_status status = 0;
++	struct ice_hw *hw = pi->hw;
++	u8 tc;
++
++	agg_info = ice_get_agg_info(hw, agg_id);
++	if (!agg_info) {
++		/* Create new entry for new aggregator ID */
++		agg_info = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*agg_info),
++					GFP_KERNEL);
++		if (!agg_info)
++			return ICE_ERR_NO_MEMORY;
++
++		agg_info->agg_id = agg_id;
++		agg_info->agg_type = agg_type;
++		agg_info->tc_bitmap[0] = 0;
++
++		/* Initialize the aggregator VSI list head */
++		INIT_LIST_HEAD(&agg_info->agg_vsi_list);
++
++		/* Add new entry in aggregator list */
++		list_add(&agg_info->list_entry, &hw->agg_list);
++	}
++	/* Create aggregator node(s) for requested TC(s) */
++	ice_for_each_traffic_class(tc) {
++		if (!ice_is_tc_ena(*tc_bitmap, tc)) {
++			/* Delete aggregator cfg TC if it exists previously */
++			status = ice_rm_agg_cfg_tc(pi, agg_info, tc, false);
++			if (status)
++				break;
++			continue;
++		}
++
++		/* Check if aggregator node for TC already exists */
++		if (ice_is_tc_ena(agg_info->tc_bitmap[0], tc))
++			continue;
++
++		/* Create new aggregator node for TC */
++		status = ice_sched_add_agg_cfg(pi, agg_id, tc);
++		if (status)
++			break;
++
++		/* Save aggregator node's TC information */
++		set_bit(tc, agg_info->tc_bitmap);
++	}
++
++	return status;
++}
++
++/**
++ * ice_cfg_agg - config aggregator node
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @agg_type: aggregator type queue, VSI, or aggregator group
++ * @tc_bitmap: bits TC bitmap
++ *
++ * This function configures aggregator node(s).
++ */
++enum ice_status
++ice_cfg_agg(struct ice_port_info *pi, u32 agg_id, enum ice_agg_type agg_type,
++	    u8 tc_bitmap)
++{
++	unsigned long bitmap = tc_bitmap;
++	enum ice_status status;
++
++	mutex_lock(&pi->sched_lock);
++	status = ice_sched_cfg_agg(pi, agg_id, agg_type,
++				   (unsigned long *)&bitmap);
++	if (!status)
++		status = ice_save_agg_tc_bitmap(pi, agg_id,
++						(unsigned long *)&bitmap);
++	mutex_unlock(&pi->sched_lock);
++	return status;
++}
++
++/**
++ * ice_get_agg_vsi_info - get the aggregator ID
++ * @agg_info: aggregator info
++ * @vsi_handle: software VSI handle
++ *
++ * The function returns aggregator VSI info based on VSI handle. This function
++ * needs to be called with scheduler lock held.
++ */
++static struct ice_sched_agg_vsi_info *
++ice_get_agg_vsi_info(struct ice_sched_agg_info *agg_info, u16 vsi_handle)
++{
++	struct ice_sched_agg_vsi_info *agg_vsi_info;
++
++	list_for_each_entry(agg_vsi_info, &agg_info->agg_vsi_list, list_entry)
++		if (agg_vsi_info->vsi_handle == vsi_handle)
++			return agg_vsi_info;
++
++	return NULL;
++}
++
++/**
++ * ice_get_vsi_agg_info - get the aggregator info of VSI
++ * @hw: pointer to the hardware structure
++ * @vsi_handle: Sw VSI handle
++ *
++ * The function returns aggregator info of VSI represented via vsi_handle. The
++ * VSI has in this case a different aggregator than the default one. This
++ * function needs to be called with scheduler lock held.
++ */
++static struct ice_sched_agg_info *
++ice_get_vsi_agg_info(struct ice_hw *hw, u16 vsi_handle)
++{
++	struct ice_sched_agg_info *agg_info;
++
++	list_for_each_entry(agg_info, &hw->agg_list, list_entry) {
++		struct ice_sched_agg_vsi_info *agg_vsi_info;
++
++		agg_vsi_info = ice_get_agg_vsi_info(agg_info, vsi_handle);
++		if (agg_vsi_info)
++			return agg_info;
++	}
++	return NULL;
++}
++
++/**
++ * ice_save_agg_vsi_tc_bitmap - save aggregator VSI TC bitmap
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @vsi_handle: software VSI handle
++ * @tc_bitmap: TC bitmap of enabled TC(s)
++ *
++ * Save VSI to aggregator TC bitmap. This function needs to call with scheduler
++ * lock held.
++ */
++static enum ice_status
++ice_save_agg_vsi_tc_bitmap(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
++			   unsigned long *tc_bitmap)
++{
++	struct ice_sched_agg_vsi_info *agg_vsi_info;
++	struct ice_sched_agg_info *agg_info;
++
++	agg_info = ice_get_agg_info(pi->hw, agg_id);
++	if (!agg_info)
++		return ICE_ERR_PARAM;
++	/* check if entry already exist */
++	agg_vsi_info = ice_get_agg_vsi_info(agg_info, vsi_handle);
++	if (!agg_vsi_info)
++		return ICE_ERR_PARAM;
++	bitmap_copy(agg_vsi_info->replay_tc_bitmap, tc_bitmap,
++		    ICE_MAX_TRAFFIC_CLASS);
++	return 0;
++}
++
++/**
++ * ice_sched_assoc_vsi_to_agg - associate/move VSI to new/default aggregator
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @vsi_handle: software VSI handle
++ * @tc_bitmap: TC bitmap of enabled TC(s)
++ *
++ * This function moves VSI to a new or default aggregator node. If VSI is
++ * already associated to the aggregator node then no operation is performed on
++ * the tree. This function needs to be called with scheduler lock held.
++ */
++static enum ice_status
++ice_sched_assoc_vsi_to_agg(struct ice_port_info *pi, u32 agg_id,
++			   u16 vsi_handle, unsigned long *tc_bitmap)
++{
++	struct ice_sched_agg_vsi_info *agg_vsi_info;
++	struct ice_sched_agg_info *agg_info;
++	enum ice_status status = 0;
++	struct ice_hw *hw = pi->hw;
++	u8 tc;
++
++	if (!ice_is_vsi_valid(pi->hw, vsi_handle))
++		return ICE_ERR_PARAM;
++	agg_info = ice_get_agg_info(hw, agg_id);
++	if (!agg_info)
++		return ICE_ERR_PARAM;
++	/* check if entry already exist */
++	agg_vsi_info = ice_get_agg_vsi_info(agg_info, vsi_handle);
++	if (!agg_vsi_info) {
++		/* Create new entry for VSI under aggregator list */
++		agg_vsi_info = devm_kzalloc(ice_hw_to_dev(hw),
++					    sizeof(*agg_vsi_info), GFP_KERNEL);
++		if (!agg_vsi_info)
++			return ICE_ERR_PARAM;
++
++		/* add VSI ID into the aggregator list */
++		agg_vsi_info->vsi_handle = vsi_handle;
++		list_add(&agg_vsi_info->list_entry, &agg_info->agg_vsi_list);
++	}
++	/* Move VSI node to new aggregator node for requested TC(s) */
++	ice_for_each_traffic_class(tc) {
++		if (!ice_is_tc_ena(*tc_bitmap, tc))
++			continue;
++
++		/* Move VSI to new aggregator */
++		status = ice_sched_move_vsi_to_agg(pi, vsi_handle, agg_id, tc);
++		if (status)
++			break;
++
++		set_bit(tc, agg_vsi_info->tc_bitmap);
++	}
++	return status;
++}
++
+ /**
+  * ice_sched_rm_unused_rl_prof - remove unused RL profile
+  * @pi: port information structure
+@@ -1955,7 +2742,6 @@ ice_sched_cfg_node_bw_alloc(struct ice_hw *hw, struct ice_sched_node *node,
+ {
+ 	struct ice_aqc_txsched_elem_data buf;
+ 	struct ice_aqc_txsched_elem *data;
+-	enum ice_status status;
+ 
+ 	buf = node->info;
+ 	data = &buf.data;
+@@ -1970,7 +2756,32 @@ ice_sched_cfg_node_bw_alloc(struct ice_hw *hw, struct ice_sched_node *node,
+ 	}
+ 
+ 	/* Configure element */
+-	status = ice_sched_update_elem(hw, node, &buf);
++	return ice_sched_update_elem(hw, node, &buf);
++}
++
++/**
++ * ice_move_vsi_to_agg - moves VSI to new or default aggregator
++ * @pi: port information structure
++ * @agg_id: aggregator ID
++ * @vsi_handle: software VSI handle
++ * @tc_bitmap: TC bitmap of enabled TC(s)
++ *
++ * Move or associate VSI to a new or default aggregator node.
++ */
++enum ice_status
++ice_move_vsi_to_agg(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
++		    u8 tc_bitmap)
++{
++	unsigned long bitmap = tc_bitmap;
++	enum ice_status status;
++
++	mutex_lock(&pi->sched_lock);
++	status = ice_sched_assoc_vsi_to_agg(pi, agg_id, vsi_handle,
++					    (unsigned long *)&bitmap);
++	if (!status)
++		status = ice_save_agg_vsi_tc_bitmap(pi, agg_id, vsi_handle,
++						    (unsigned long *)&bitmap);
++	mutex_unlock(&pi->sched_lock);
+ 	return status;
+ }
+ 
+@@ -2940,6 +3751,156 @@ ice_sched_replay_node_bw(struct ice_hw *hw, struct ice_sched_node *node,
+ 	return status;
+ }
+ 
++/**
++ * ice_sched_get_ena_tc_bitmap - get enabled TC bitmap
++ * @pi: port info struct
++ * @tc_bitmap: 8 bits TC bitmap to check
++ * @ena_tc_bitmap: 8 bits enabled TC bitmap to return
++ *
++ * This function returns enabled TC bitmap in variable ena_tc_bitmap. Some TCs
++ * may be missing, it returns enabled TCs. This function needs to be called with
++ * scheduler lock held.
++ */
++static void
++ice_sched_get_ena_tc_bitmap(struct ice_port_info *pi,
++			    unsigned long *tc_bitmap,
++			    unsigned long *ena_tc_bitmap)
++{
++	u8 tc;
++
++	/* Some TC(s) may be missing after reset, adjust for replay */
++	ice_for_each_traffic_class(tc)
++		if (ice_is_tc_ena(*tc_bitmap, tc) &&
++		    (ice_sched_get_tc_node(pi, tc)))
++			set_bit(tc, ena_tc_bitmap);
++}
++
++/**
++ * ice_sched_replay_agg - recreate aggregator node(s)
++ * @hw: pointer to the HW struct
++ *
++ * This function recreate aggregator type nodes which are not replayed earlier.
++ * It also replay aggregator BW information. These aggregator nodes are not
++ * associated with VSI type node yet.
++ */
++void ice_sched_replay_agg(struct ice_hw *hw)
++{
++	struct ice_port_info *pi = hw->port_info;
++	struct ice_sched_agg_info *agg_info;
++
++	mutex_lock(&pi->sched_lock);
++	list_for_each_entry(agg_info, &hw->agg_list, list_entry)
++		/* replay aggregator (re-create aggregator node) */
++		if (!bitmap_equal(agg_info->tc_bitmap, agg_info->replay_tc_bitmap,
++				  ICE_MAX_TRAFFIC_CLASS)) {
++			DECLARE_BITMAP(replay_bitmap, ICE_MAX_TRAFFIC_CLASS);
++			enum ice_status status;
++
++			bitmap_zero(replay_bitmap, ICE_MAX_TRAFFIC_CLASS);
++			ice_sched_get_ena_tc_bitmap(pi,
++						    agg_info->replay_tc_bitmap,
++						    replay_bitmap);
++			status = ice_sched_cfg_agg(hw->port_info,
++						   agg_info->agg_id,
++						   ICE_AGG_TYPE_AGG,
++						   replay_bitmap);
++			if (status) {
++				dev_info(ice_hw_to_dev(hw),
++					 "Replay agg id[%d] failed\n",
++					 agg_info->agg_id);
++				/* Move on to next one */
++				continue;
++			}
++		}
++	mutex_unlock(&pi->sched_lock);
++}
++
++/**
++ * ice_sched_replay_agg_vsi_preinit - Agg/VSI replay pre initialization
++ * @hw: pointer to the HW struct
++ *
++ * This function initialize aggregator(s) TC bitmap to zero. A required
++ * preinit step for replaying aggregators.
++ */
++void ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw)
++{
++	struct ice_port_info *pi = hw->port_info;
++	struct ice_sched_agg_info *agg_info;
++
++	mutex_lock(&pi->sched_lock);
++	list_for_each_entry(agg_info, &hw->agg_list, list_entry) {
++		struct ice_sched_agg_vsi_info *agg_vsi_info;
++
++		agg_info->tc_bitmap[0] = 0;
++		list_for_each_entry(agg_vsi_info, &agg_info->agg_vsi_list,
++				    list_entry)
++			agg_vsi_info->tc_bitmap[0] = 0;
++	}
++	mutex_unlock(&pi->sched_lock);
++}
++
++/**
++ * ice_sched_replay_vsi_agg - replay aggregator & VSI to aggregator node(s)
++ * @hw: pointer to the HW struct
++ * @vsi_handle: software VSI handle
++ *
++ * This function replays aggregator node, VSI to aggregator type nodes, and
++ * their node bandwidth information. This function needs to be called with
++ * scheduler lock held.
++ */
++static enum ice_status
++ice_sched_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle)
++{
++	DECLARE_BITMAP(replay_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	struct ice_sched_agg_vsi_info *agg_vsi_info;
++	struct ice_port_info *pi = hw->port_info;
++	struct ice_sched_agg_info *agg_info;
++	enum ice_status status;
++
++	bitmap_zero(replay_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	if (!ice_is_vsi_valid(hw, vsi_handle))
++		return ICE_ERR_PARAM;
++	agg_info = ice_get_vsi_agg_info(hw, vsi_handle);
++	if (!agg_info)
++		return 0; /* Not present in list - default Agg case */
++	agg_vsi_info = ice_get_agg_vsi_info(agg_info, vsi_handle);
++	if (!agg_vsi_info)
++		return 0; /* Not present in list - default Agg case */
++	ice_sched_get_ena_tc_bitmap(pi, agg_info->replay_tc_bitmap,
++				    replay_bitmap);
++	/* Replay aggregator node associated to vsi_handle */
++	status = ice_sched_cfg_agg(hw->port_info, agg_info->agg_id,
++				   ICE_AGG_TYPE_AGG, replay_bitmap);
++	if (status)
++		return status;
++
++	bitmap_zero(replay_bitmap, ICE_MAX_TRAFFIC_CLASS);
++	ice_sched_get_ena_tc_bitmap(pi, agg_vsi_info->replay_tc_bitmap,
++				    replay_bitmap);
++	/* Move this VSI (vsi_handle) to above aggregator */
++	return ice_sched_assoc_vsi_to_agg(pi, agg_info->agg_id, vsi_handle,
++					  replay_bitmap);
++}
++
++/**
++ * ice_replay_vsi_agg - replay VSI to aggregator node
++ * @hw: pointer to the HW struct
++ * @vsi_handle: software VSI handle
++ *
++ * This function replays association of VSI to aggregator type nodes, and
++ * node bandwidth information.
++ */
++enum ice_status ice_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle)
++{
++	struct ice_port_info *pi = hw->port_info;
++	enum ice_status status;
++
++	mutex_lock(&pi->sched_lock);
++	status = ice_sched_replay_vsi_agg(hw, vsi_handle);
++	mutex_unlock(&pi->sched_lock);
++	return status;
++}
++
+ /**
+  * ice_sched_replay_q_bw - replay queue type node BW
+  * @pi: port information structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
+index 0e55ae0d446f..8abc9e63e58d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.h
++++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+@@ -8,6 +8,7 @@
+ 
+ #define ICE_QGRP_LAYER_OFFSET	2
+ #define ICE_VSI_LAYER_OFFSET	4
++#define ICE_AGG_LAYER_OFFSET	6
+ #define ICE_SCHED_INVAL_LAYER_NUM	0xFF
+ /* Burst size is a 12 bits register that is configured while creating the RL
+  * profile(s). MSB is a granularity bit and tells the granularity type
+@@ -43,6 +44,8 @@ struct ice_sched_agg_vsi_info {
+ 	struct list_head list_entry;
+ 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
+ 	u16 vsi_handle;
++	/* save aggregator VSI TC bitmap */
++	DECLARE_BITMAP(replay_tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
+ };
+ 
+ struct ice_sched_agg_info {
+@@ -51,6 +54,8 @@ struct ice_sched_agg_info {
+ 	DECLARE_BITMAP(tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
+ 	u32 agg_id;
+ 	enum ice_agg_type agg_type;
++	/* save aggregator TC bitmap */
++	DECLARE_BITMAP(replay_tc_bitmap, ICE_MAX_TRAFFIC_CLASS);
+ };
+ 
+ /* FW AQ command calls */
+@@ -78,6 +83,14 @@ enum ice_status
+ ice_sched_cfg_vsi(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 maxqs,
+ 		  u8 owner, bool enable);
+ enum ice_status ice_rm_vsi_lan_cfg(struct ice_port_info *pi, u16 vsi_handle);
++
++/* Tx scheduler rate limiter functions */
++enum ice_status
++ice_cfg_agg(struct ice_port_info *pi, u32 agg_id,
++	    enum ice_agg_type agg_type, u8 tc_bitmap);
++enum ice_status
++ice_move_vsi_to_agg(struct ice_port_info *pi, u32 agg_id, u16 vsi_handle,
++		    u8 tc_bitmap);
+ enum ice_status
+ ice_cfg_q_bw_lmt(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 		 u16 q_handle, enum ice_rl_type rl_type, u32 bw);
+@@ -85,6 +98,9 @@ enum ice_status
+ ice_cfg_q_bw_dflt_lmt(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 		      u16 q_handle, enum ice_rl_type rl_type);
+ enum ice_status ice_cfg_rl_burst_size(struct ice_hw *hw, u32 bytes);
++void ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw);
++void ice_sched_replay_agg(struct ice_hw *hw);
++enum ice_status ice_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle);
+ enum ice_status
+ ice_sched_replay_q_bw(struct ice_port_info *pi, struct ice_q_ctx *q_ctx);
+ #endif /* _ICE_SCHED_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 9265b8190499..d0e08fc4f49d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -414,7 +414,11 @@ struct ice_link_default_override_tlv {
+ #define ice_for_each_traffic_class(_i)	\
+ 	for ((_i) = 0; (_i) < ICE_MAX_TRAFFIC_CLASS; (_i)++)
+ 
++/* ICE_DFLT_AGG_ID means that all new VM(s)/VSI node connects
++ * to driver defined policy for default aggregator
++ */
+ #define ICE_INVAL_TEID 0xFFFFFFFF
++#define ICE_DFLT_AGG_ID 0
+ 
+ struct ice_sched_node {
+ 	struct ice_sched_node *parent;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 2614de4dd36f..2d5d6c766035 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1058,12 +1058,46 @@ static void ice_vf_pre_vsi_rebuild(struct ice_vf *vf)
+ 	ice_clear_vf_reset_trigger(vf);
+ }
+ 
++/**
++ * ice_vf_rebuild_aggregator_node_cfg - rebuild aggregator node config
++ * @vsi: Pointer to VSI
++ *
++ * This function moves VSI into corresponding scheduler aggregator node
++ * based on cached value of "aggregator node info" per VSI
++ */
++static void ice_vf_rebuild_aggregator_node_cfg(struct ice_vsi *vsi)
++{
++	struct ice_pf *pf = vsi->back;
++	enum ice_status status;
++	struct device *dev;
++
++	if (!vsi->agg_node)
++		return;
++
++	dev = ice_pf_to_dev(pf);
++	if (vsi->agg_node->num_vsis == ICE_MAX_VSIS_IN_AGG_NODE) {
++		dev_dbg(dev,
++			"agg_id %u already has reached max_num_vsis %u\n",
++			vsi->agg_node->agg_id, vsi->agg_node->num_vsis);
++		return;
++	}
++
++	status = ice_move_vsi_to_agg(pf->hw.port_info, vsi->agg_node->agg_id,
++				     vsi->idx, vsi->tc_cfg.ena_tc);
++	if (status)
++		dev_dbg(dev, "unable to move VSI idx %u into aggregator %u node",
++			vsi->idx, vsi->agg_node->agg_id);
++	else
++		vsi->agg_node->num_vsis++;
++}
++
+ /**
+  * ice_vf_rebuild_host_cfg - host admin configuration is persistent across reset
+  * @vf: VF to rebuild host configuration on
+  */
+ static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
+ {
++	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
+ 
+ 	ice_vf_set_host_trust_cfg(vf);
+@@ -1075,6 +1109,8 @@ static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
+ 	if (ice_vf_rebuild_host_vlan_cfg(vf))
+ 		dev_err(dev, "failed to rebuild VLAN configuration for VF %u\n",
+ 			vf->vf_id);
++	/* rebuild aggregator node config for main VF VSI */
++	ice_vf_rebuild_aggregator_node_cfg(vsi);
+ }
+ 
+ /**
 -- 
 2.20.1
 
