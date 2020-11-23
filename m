@@ -1,50 +1,67 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Mon, 23 Nov 2020 14:45:17 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix check for PF state (vf
- disable)
-Message-ID: <20201123144517.15180-1-mateusz.palczewski@intel.com>
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Mon, 23 Nov 2020 07:03:48 -0600
+Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
+ Clang
+In-Reply-To: <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+ <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011201129.B13FDB3C@keescook>
+ <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011220816.8B6591A@keescook>
+ <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+ <ca071decb87cc7e905411423c05a48f9fd2f58d7.camel@perches.com>
+ <0147972a72bc13f3629de8a32dee6f1f308994b5.camel@HansenPartnership.com>
+ <d8d1e9add08cdd4158405e77762d4946037208f8.camel@perches.com>
+ <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com>
+Message-ID: <20201123130348.GA3119@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adding missing comments to previously applied patch.
+On Sun, Nov 22, 2020 at 11:53:55AM -0800, James Bottomley wrote:
+> On Sun, 2020-11-22 at 11:22 -0800, Joe Perches wrote:
+> > On Sun, 2020-11-22 at 11:12 -0800, James Bottomley wrote:
+> > > On Sun, 2020-11-22 at 10:25 -0800, Joe Perches wrote:
+> > > > On Sun, 2020-11-22 at 10:21 -0800, James Bottomley wrote:
+> > > > > Please tell me our reward for all this effort isn't a single
+> > > > > missing error print.
+> > > > 
+> > > > There were quite literally dozens of logical defects found
+> > > > by the fallthrough additions.  Very few were logging only.
+> > > 
+> > > So can you give us the best examples (or indeed all of them if
+> > > someone is keeping score)?  hopefully this isn't a US election
+> > > situation ...
+> > 
+> > Gustavo?  Are you running for congress now?
+> > 
+> > https://lwn.net/Articles/794944/
+> 
+> That's 21 reported fixes of which about 50% seem to produce no change
+> in code behaviour at all, a quarter seem to have no user visible effect
+> with the remaining quarter producing unexpected errors on obscure
+> configuration parameters, which is why no-one really noticed them
+> before.
 
-When PF state bit for __I40e_VF_DISABLE is set,
-it doesn't mean necessary that the VF called in
-i40e_reset_vf is disabled. It is rather impossible to
-call a reset on a disabled VF, so return false and
-repeat the request after a while.
+The really important point here is the number of bugs this has prevented
+and will prevent in the future. See an example of this, below:
 
-Fixes: 8d38e0cd5211("i40e: Fix removing driver while bare-metal VFs pass traffic")
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 ++
- 1 file changed, 2 insertions(+)
+https://lore.kernel.org/linux-iio/20190813135802.GB27392 at kroah.com/
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8951740..d30a57f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1423,6 +1423,8 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
- 
- 	/* If the VFs have been disabled, this means something else is
- 	 * resetting the VF, so we shouldn't continue.
-+	 * This is a global state of a PF, so it is possible that
-+	 * a different VF is in reset.
- 	 */
- 	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
- 		return false;
--- 
-2.17.1
+This work is still relevant, even if the total number of issues/bugs
+we find in the process is zero (which is not the case).
 
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+"The sucky thing about doing hard work to deploy hardening is that the
+result is totally invisible by definition (things not happening) [..]"
+- Dmitry Vyukov
+
+Thanks
+--
+Gustavo
+
+
+
+
 
