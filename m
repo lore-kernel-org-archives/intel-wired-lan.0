@@ -1,146 +1,67 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 23 Nov 2020 17:22:05 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- cc8971275fe3eea2c629a5a0edb89b058c9167c8
-Message-ID: <5fbb7f3d.SB9abPivNrF09Uud%lkp@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Mon, 23 Nov 2020 13:46:56 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: allow controlling PTP
+ external clock features
+Message-ID: <20201123134656.14911-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  1GbE
-branch HEAD: cc8971275fe3eea2c629a5a0edb89b058c9167c8  e1000e: fix S0ix flow to allow S0i3.2 subset entry
+From: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 
-elapsed time: 721m
+Provide information what functions are supported by PTP pins and allow
+controlling them.
+Implemented in i40e_ptp_verify() and i40e_pps_configure().
+Previously it was not possible to control PTP external clock features.
 
-configs tested: 117
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                            allyesconfig
-arm64                               defconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          polaris_defconfig
-arm                         s3c6400_defconfig
-mips                        omega2p_defconfig
-arm                          ep93xx_defconfig
-xtensa                           allyesconfig
-powerpc                 linkstation_defconfig
-arm                         s5pv210_defconfig
-powerpc                       eiger_defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                  colibri_pxa300_defconfig
-powerpc                     pq2fads_defconfig
-arm                         bcm2835_defconfig
-arm                         lubbock_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arm                         axm55xx_defconfig
-arm                          moxart_defconfig
-arm                            lart_defconfig
-m68k                          atari_defconfig
-m68k                        stmark2_defconfig
-sh                           se7780_defconfig
-arm                            qcom_defconfig
-c6x                        evmc6678_defconfig
-powerpc                       ebony_defconfig
-sparc                               defconfig
-arc                 nsimosci_hs_smp_defconfig
-c6x                        evmc6472_defconfig
-powerpc                 mpc8272_ads_defconfig
-arm                        mini2440_defconfig
-arm                        magician_defconfig
-mips                      pic32mzda_defconfig
-sh                             espt_defconfig
-arm                        realview_defconfig
-sparc                       sparc64_defconfig
-mips                    maltaup_xpa_defconfig
-mips                      maltasmvp_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                          rm200_defconfig
-sh                            shmin_defconfig
-h8300                               defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201123
-i386                 randconfig-a003-20201123
-i386                 randconfig-a002-20201123
-i386                 randconfig-a005-20201123
-i386                 randconfig-a001-20201123
-i386                 randconfig-a006-20201123
-x86_64               randconfig-a015-20201123
-x86_64               randconfig-a011-20201123
-x86_64               randconfig-a014-20201123
-x86_64               randconfig-a016-20201123
-x86_64               randconfig-a012-20201123
-x86_64               randconfig-a013-20201123
-i386                 randconfig-a012-20201123
-i386                 randconfig-a013-20201123
-i386                 randconfig-a011-20201123
-i386                 randconfig-a016-20201123
-i386                 randconfig-a014-20201123
-i386                 randconfig-a015-20201123
-i386                 randconfig-a012-20201122
-i386                 randconfig-a013-20201122
-i386                 randconfig-a011-20201122
-i386                 randconfig-a016-20201122
-i386                 randconfig-a014-20201122
-i386                 randconfig-a015-20201122
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-x86_64                               rhel-8.3
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a006-20201123
-x86_64               randconfig-a003-20201123
-x86_64               randconfig-a004-20201123
-x86_64               randconfig-a005-20201123
-x86_64               randconfig-a002-20201123
-x86_64               randconfig-a001-20201123
-
+Signed-off-by: Piotr Kwapulinski <piotr.kwapulinski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 26f583f..6182d42 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -241,7 +241,15 @@ static void i40_ptp_reset_timing_events(struct i40e_pf *pf)
+ static int i40e_ptp_verify(struct ptp_clock_info *ptp, unsigned int pin,
+ 			   enum ptp_pin_function func, unsigned int chan)
+ {
+-	/* TODO: implement pin checking */
++	switch (func) {
++	case PTP_PF_NONE:
++	case PTP_PF_EXTTS:
++	case PTP_PF_PEROUT:
++		break;
++	case PTP_PF_PHYSYNC:
++		return -EOPNOTSUPP;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -486,7 +494,11 @@ static int i40e_pps_configure(struct ptp_clock_info *ptp,
+ 			      struct ptp_clock_request *rq,
+ 			      int on)
+ {
+-	/* TODO: implement PPS events */
++	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
++
++	if (!!on)
++		i40e_ptp_set_1pps_signal_hw(pf);
++
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
+
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
+
