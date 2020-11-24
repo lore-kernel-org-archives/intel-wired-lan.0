@@ -1,118 +1,124 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 24 Nov 2020 16:47:30 +0100
-Subject: [Intel-wired-lan] [PATCH] e1000e: Assign DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_MAY_SKIP_RESUME to speed up s2ram
-In-Reply-To: <20201124153221.11265-1-yu.c.chen@intel.com>
-References: <20201124153221.11265-1-yu.c.chen@intel.com>
-Message-ID: <a8058c17-141d-986e-903d-462dc72999f1@molgen.mpg.de>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Tue, 24 Nov 2020 11:58:37 +1100 (AEDT)
+Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
+ Clang
+In-Reply-To: <CANiq72=z+tmuey9wj3Kk7wX5s0hTHpsQdLhAqcOVNrHon6xn5Q@mail.gmail.com>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+ <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011201129.B13FDB3C@keescook>
+ <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011220816.8B6591A@keescook>
+ <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+ <CANiq72nZrHWTA4_Msg6MP9snTyenC6-eGfD27CyfNSu7QoVZbw@mail.gmail.com>
+ <alpine.LNX.2.23.453.2011230938390.7@nippy.intranet>
+ <CANiq72=z+tmuey9wj3Kk7wX5s0hTHpsQdLhAqcOVNrHon6xn5Q@mail.gmail.com>
+Message-ID: <alpine.LNX.2.23.453.2011241036520.7@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Chen,
 
+On Mon, 23 Nov 2020, Miguel Ojeda wrote:
 
-Thank you for the patch.
-
-Am 24.11.20 um 16:32 schrieb Chen Yu:
-> The NIC is put in runtime suspend status when there is no wire connected.
-> As a result, it is safe to keep this NIC in runtime suspended during s2ram
-> because the system does not rely on the NIC plug event nor WOL to wake up
-> the system. Unlike the s2idle, s2ram does not need to manipulate S0ix settings
-> during suspend.
-
-what happens, when I plug in a cable, when the suspend is in ACPI S3 
-state? I guess it?s ignored?
-
-> This patch assigns DPM_FLAG_SMART_SUSPEND and DPM_FLAG_MAY_SKIP_RESUME
-> to the e1000e driver so that the s2ram could skip the .suspend_late(),
-> .suspend_noirq() and .resume_noirq() .resume_early() when possible.
-> Also skip .suspend() and .resume() if dev_pm_skip_suspend() and
-> dev_pm_skip_resume() return true, so as to speed up the s2ram.
-
-What is sped up? Suspend or resume?
-
-Please also document, what system you tested this on, and what the 
-numbers before and after are.
-
-If there is a bug report, please note it too.
-
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->   drivers/base/power/main.c                  |  2 ++
->   drivers/net/ethernet/intel/e1000e/netdev.c | 14 +++++++++++++-
->   2 files changed, 15 insertions(+), 1 deletion(-)
+> On Mon, 23 Nov 2020, Finn Thain wrote:
 > 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index c7ac49042cee..9cd8abba8612 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -580,6 +580,7 @@ bool dev_pm_skip_resume(struct device *dev)
->   
->   	return !dev->power.must_resume;
->   }
-> +EXPORT_SYMBOL_GPL(dev_pm_skip_resume);
->   
->   /**
->    * device_resume_noirq - Execute a "noirq resume" callback for given device.
-> @@ -2010,3 +2011,4 @@ bool dev_pm_skip_suspend(struct device *dev)
->   	return dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
->   		pm_runtime_status_suspended(dev);
->   }
-> +EXPORT_SYMBOL_GPL(dev_pm_skip_suspend);
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b30f00891c03..d79fddabc553 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6965,6 +6965,14 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
->   	struct e1000_hw *hw = &adapter->hw;
->   	int rc;
->   
-> +	/* Runtime suspended means that there is no wired connection
+> > On Sun, 22 Nov 2020, Miguel Ojeda wrote:
+> > 
+> > > 
+> > > It isn't that much effort, isn't it? Plus we need to take into 
+> > > account the future mistakes that it might prevent, too.
+> > 
+> > We should also take into account optimisim about future improvements 
+> > in tooling.
+> > 
+> Not sure what you mean here. There is no reliable way to guess what the 
+> intention was with a missing fallthrough, even if you parsed whitespace 
+> and indentation.
+> 
 
-Maybe explicitly use *cable* in here to avoid confusion?
+What I meant was that you've used pessimism as if it was fact.
 
-> +	 * and it has nothing to do with WOL that, we don't need to
+For example, "There is no way to guess what the effect would be if the 
+compiler trained programmers to add a knee-jerk 'break' statement to avoid 
+a warning".
 
-Move the comma before *that*?
+Moreover, what I meant was that preventing programmer mistakes is a 
+problem to be solved by development tools. The idea that retro-fitting new 
+language constructs onto mature code is somehow necessary to "prevent 
+future mistakes" is entirely questionable.
 
-> +	 * adjust the WOL settings. So it is safe to put NIC in
-> +	 * runtime suspend while doing system suspend.
+> > > So even if there were zero problems found so far, it is still a 
+> > > positive change.
+> > > 
+> > 
+> > It is if you want to spin it that way.
+> > 
+> How is that a "spin"? It is a fact that we won't get *implicit* 
+> fallthrough mistakes anymore (in particular if we make it a hard error).
+> 
 
-I understood, that the NIC is already in runtime suspend? Could you 
-please clarify the comment?
+Perhaps "handwaving" is a better term?
 
-> +	 */
-> +	if (dev_pm_skip_suspend(dev))
-> +		return 0;
-> +
->   	e1000e_flush_lpic(pdev);
->   
->   	e1000e_pm_freeze(dev);
-> @@ -6989,6 +6997,9 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
->   	struct e1000_hw *hw = &adapter->hw;
->   	int rc;
->   
-> +	if (dev_pm_skip_resume(dev))
-> +		return 0;
-> +
->   	/* Introduce S0ix implementation */
->   	if (hw->mac.type >= e1000_pch_cnp &&
->   	    !e1000e_check_me(hw->adapter->pdev->device))
-> @@ -7665,7 +7676,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   
->   	e1000_print_device_info(adapter);
->   
-> -	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
-> +	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE |
-> +				DPM_FLAG_SMART_SUSPEND | DPM_FLAG_MAY_SKIP_RESUME);
->   
->   	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
->   		pm_runtime_put_noidle(&pdev->dev);
+> > > I would agree if these changes were high risk, though; but they are 
+> > > almost trivial.
+> > > 
+> > 
+> > This is trivial:
+> > 
+> >  case 1:
+> >         this();
+> > +       fallthrough;
+> >  case 2:
+> >         that();
+> > 
+> > But what we inevitably get is changes like this:
+> > 
+> >  case 3:
+> >         this();
+> > +       break;
+> >  case 4:
+> >         hmmm();
+> > 
+> > Why? Mainly to silence the compiler. Also because the patch author 
+> > argued successfully that they had found a theoretical bug, often in 
+> > mature code.
+> > 
+> If someone changes control flow, that is on them. Every kernel developer 
+> knows what `break` does.
+> 
 
+Sure. And if you put -Wimplicit-fallthrough into the Makefile and if that 
+leads to well-intentioned patches that cause regressions, it is partly on 
+you.
 
-Kind regards,
+Have you ever considered the overall cost of the countless 
+-Wpresume-incompetence flags?
 
-Paul
+Perhaps you pay the power bill for a build farm that produces logs that 
+no-one reads? Perhaps you've run git bisect, knowing that the compiler 
+messages are not interesting? Or compiled software in using a language 
+that generates impenetrable messages? If so, here's a tip:
+
+# grep CFLAGS /etc/portage/make.conf 
+CFLAGS="... -Wno-all -Wno-extra ..."
+CXXFLAGS="${CFLAGS}"
+
+Now allow me some pessimism: the hardware upgrades, gigawatt hours and 
+wait time attributable to obligatory static analyses are a net loss.
+
+> > But is anyone keeping score of the regressions? If unreported bugs 
+> > count, what about unreported regressions?
+> > 
+> Introducing `fallthrough` does not change semantics. If you are really 
+> keen, you can always compare the objects because the generated code 
+> shouldn't change.
+> 
+
+No, it's not for me to prove that such patches don't affect code 
+generation. That's for the patch author and (unfortunately) for reviewers.
+
+> Cheers,
+> Miguel
+> 
