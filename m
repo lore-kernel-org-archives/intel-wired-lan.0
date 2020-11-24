@@ -1,757 +1,391 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Tue, 24 Nov 2020 14:24:05 +0800
-Subject: [Intel-wired-lan] [RFC 15/20] ice: Check FDIR program status for AVF
+Date: Tue, 24 Nov 2020 14:24:08 +0800
+Subject: [Intel-wired-lan] [RFC 18/20] iavf: Support IPv6 Flow Director
+ filters
 In-Reply-To: <20201124062410.6824-1-haiyue.wang@intel.com>
 References: <20201124062410.6824-1-haiyue.wang@intel.com>
-Message-ID: <20201124062410.6824-16-haiyue.wang@intel.com>
+Message-ID: <20201124062410.6824-19-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Qi Zhang <qi.z.zhang@intel.com>
+Support the addition and deletion of IPv6 filters.
 
-Enables returning FDIR completion status by checking the
-ctrl_vsi Rx queue descriptor value.
+Supported fields are: src-ip, dst-ip, src-port, dst-port and l4proto
+Supported flow-types are: tcp6, udp6, sctp6, ip6, ah6, esp6
 
-To enable returning FDIR completion status from ctrl_vsi Rx queue,
-COMP_Queue and COMP_Report of FDIR filter programming descriptor
-needs to be properly configured. After program request sent to ctrl_vsi
-Tx queue, ctrl_vsi Rx queue interrupt will be triggered and
-completion status will be returned.
+Example usage:
+ethtool -N ens787f0v0 flow-type tcp6 src-ip 2001::2 \
+  dst-ip CDCD:910A:2222:5498:8475:1111:3900:2020 \
+  tclass 1 src-port 22 dst-port 23 action 7
 
-Driver will first issue request in ice_vc_fdir_add_fltr(), then
-pass FDIR context to the background task in interrupt service routine
-ice_vc_fdir_irq_handler() and finally deal with them in
-ice_flush_fdir_ctx(). ice_flush_fdir_ctx() will check the descriptor's
-value, fdir context, and then send back virtual channel message to VF
-by calling ice_vc_add_fdir_fltr_post(). An additional timer will be
-setup in case of hardware interrupt timeout.
+L2TPv3 over IP with 'Session ID' 17:
+ethtool -N ens787f0v0 flow-type ip6 l4proto 115 l4data 17 action 7
 
-Signed-off-by: Yahui Cao <yahui.cao@intel.com>
-Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   1 +
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   3 +
- .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  20 +
- drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   5 +
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 494 +++++++++++++++++-
- .../ethernet/intel/ice/ice_virtchnl_fdir.h    |  27 +-
- 7 files changed, 536 insertions(+), 16 deletions(-)
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 122 ++++++++++++++++++
+ drivers/net/ethernet/intel/iavf/iavf_fdir.c   | 111 ++++++++++++++++
+ drivers/net/ethernet/intel/iavf/iavf_fdir.h   |  13 ++
+ 3 files changed, 246 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 3e6e48a139da..82227d87d84b 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -232,6 +232,7 @@ enum ice_state {
- 	__ICE_VF_RESETS_DISABLED,	/* disable resets during ice_remove */
- 	__ICE_LINK_DEFAULT_OVERRIDE_PENDING,
- 	__ICE_PHY_INIT_COMPLETE,
-+	__ICE_FD_VF_FLUSH_CTX,		/* set at FD Rx IRQ or timeout */
- 	__ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index bab05b3cf08f..e39afe3ffe57 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -382,6 +382,9 @@
- #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
- #define VSIQF_FD_CNT_FD_GCNT_S			0
- #define VSIQF_FD_CNT_FD_GCNT_M			ICE_M(0x3FFF, 0)
-+#define VSIQF_FD_CNT_FD_BCNT_S                  16
-+#define VSIQF_FD_CNT_FD_BCNT_M                  ICE_M(0x3FFF, 16)
-+#define VSIQF_FD_SIZE(_VSI)                     (0x00462000 + ((_VSI) * 4))
- #define VSIQF_HKEY_MAX_INDEX			12
- #define VSIQF_HLUT_MAX_INDEX			15
- #define PFPM_APM				0x000B8080
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index eee58a554b5d..a92277e9683b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -140,6 +140,26 @@ struct ice_fltr_desc {
- 			(0xFFFFFFFFULL << ICE_FXD_FLTR_QW1_FDID_S)
- #define ICE_FXD_FLTR_QW1_FDID_ZERO	0x0ULL
- 
-+/* definition for FD filter programming status descriptor WB format */
-+#define ICE_FXD_FLTR_WB_QW1_DD_S	0
-+#define ICE_FXD_FLTR_WB_QW1_DD_M	(0x1ULL << ICE_FXD_FLTR_WB_QW1_DD_S)
-+#define ICE_FXD_FLTR_WB_QW1_DD_YES	0x1ULL
-+
-+#define ICE_FXD_FLTR_WB_QW1_PROG_ID_S	1
-+#define ICE_FXD_FLTR_WB_QW1_PROG_ID_M	\
-+				(0x3ULL << ICE_FXD_FLTR_WB_QW1_PROG_ID_S)
-+#define ICE_FXD_FLTR_WB_QW1_PROG_ADD	0x0ULL
-+#define ICE_FXD_FLTR_WB_QW1_PROG_DEL	0x1ULL
-+
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_S	4
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_M	(0x1ULL << ICE_FXD_FLTR_WB_QW1_FAIL_S)
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_YES	0x1ULL
-+
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_PROF_S	5
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_PROF_M	\
-+				(0x1ULL << ICE_FXD_FLTR_WB_QW1_FAIL_PROF_S)
-+#define ICE_FXD_FLTR_WB_QW1_FAIL_PROF_YES	0x1ULL
-+
- struct ice_rx_ptype_decoded {
- 	u32 ptype:10;
- 	u32 known:1;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index ff5940a9ce01..4bb7b3eeaed6 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2058,6 +2058,7 @@ static void ice_service_task(struct work_struct *work)
- 	ice_process_vflr_event(pf);
- 	ice_clean_mailboxq_subtask(pf);
- 	ice_sync_arfs_fltrs(pf);
-+	ice_flush_fdir_ctx(pf);
- 	/* Clear __ICE_SERVICE_SCHED flag to allow scheduling next event */
- 	ice_service_task_complete(pf);
- 
-@@ -2069,6 +2070,7 @@ static void ice_service_task(struct work_struct *work)
- 	    test_bit(__ICE_MDD_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_VFLR_EVENT_PENDING, pf->state) ||
- 	    test_bit(__ICE_MAILBOXQ_EVENT_PENDING, pf->state) ||
-+	    test_bit(__ICE_FD_VF_FLUSH_CTX, pf->state) ||
- 	    test_bit(__ICE_ADMINQ_EVENT_PENDING, pf->state))
- 		mod_timer(&pf->serv_tmr, jiffies);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index d2493fa71336..1bafd3ef47da 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1131,6 +1131,11 @@ int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 		dma_rmb();
- 
- 		if (rx_desc->wb.rxdid == FDIR_DESC_RXDID || !rx_ring->netdev) {
-+			struct ice_vsi *ctrl_vsi = rx_ring->vsi;
-+
-+			if (rx_desc->wb.rxdid == FDIR_DESC_RXDID &&
-+			    ctrl_vsi->vf_id != ICE_INVAL_VFID)
-+				ice_vc_fdir_irq_handler(ctrl_vsi, rx_desc);
- 			ice_put_rx_buf(rx_ring, NULL, 0);
- 			cleaned_count++;
- 			continue;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index 20cb1b525a46..6d66cddc60c9 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -45,6 +45,7 @@ struct virtchnl_fdir_fltr_conf {
- 	struct ice_fdir_fltr input;
- 	enum ice_fdir_tunnel_type ttype;
- 	u64 inset_flag;
-+	u32 flow_id;
- };
- 
- static enum virtchnl_proto_hdr_type vc_pattern_ether[] = {
-@@ -1486,7 +1487,7 @@ static int ice_vc_fdir_write_fltr(struct ice_vf *vf,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index edd864f3b717..8d856f5dc38e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -849,6 +849,18 @@ static int iavf_fltr_to_ethtool_flow(enum iavf_fdir_flow_type flow)
+ 		return ESP_V4_FLOW;
+ 	case IAVF_FDIR_FLOW_IPV4_OTHER:
+ 		return IPV4_USER_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_TCP:
++		return TCP_V6_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_UDP:
++		return UDP_V6_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_SCTP:
++		return SCTP_V6_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_AH:
++		return AH_V6_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_ESP:
++		return ESP_V6_FLOW;
++	case IAVF_FDIR_FLOW_IPV6_OTHER:
++		return IPV6_USER_FLOW;
+ 	default:
+ 		/* 0 is undefined ethtool flow */
+ 		return 0;
+@@ -876,6 +888,18 @@ static enum iavf_fdir_flow_type iavf_ethtool_flow_to_fltr(int eth)
+ 		return IAVF_FDIR_FLOW_IPV4_ESP;
+ 	case IPV4_USER_FLOW:
+ 		return IAVF_FDIR_FLOW_IPV4_OTHER;
++	case TCP_V6_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_TCP;
++	case UDP_V6_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_UDP;
++	case SCTP_V6_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_SCTP;
++	case AH_V6_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_AH;
++	case ESP_V6_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_ESP;
++	case IPV6_USER_FLOW:
++		return IAVF_FDIR_FLOW_IPV6_OTHER;
+ 	default:
+ 		return IAVF_FDIR_FLOW_NONE;
  	}
+@@ -952,6 +976,55 @@ iavf_get_ethtool_fdir_entry(struct iavf_adapter *adapter,
+ 		fsp->m_u.usr_ip4_spec.ip_ver = 0xFF;
+ 		fsp->m_u.usr_ip4_spec.proto = rule->ip_mask.proto;
+ 		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(fsp->h_u.usr_ip6_spec.ip6src, &rule->ip_data.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->h_u.usr_ip6_spec.ip6dst, &rule->ip_data.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->h_u.tcp_ip6_spec.psrc = rule->ip_data.src_port;
++		fsp->h_u.tcp_ip6_spec.pdst = rule->ip_data.dst_port;
++		fsp->h_u.tcp_ip6_spec.tclass = rule->ip_data.tclass;
++		memcpy(fsp->m_u.usr_ip6_spec.ip6src, &rule->ip_mask.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.usr_ip6_spec.ip6dst, &rule->ip_mask.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->m_u.tcp_ip6_spec.psrc = rule->ip_mask.src_port;
++		fsp->m_u.tcp_ip6_spec.pdst = rule->ip_mask.dst_port;
++		fsp->m_u.tcp_ip6_spec.tclass = rule->ip_mask.tclass;
++		break;
++	case AH_V6_FLOW:
++	case ESP_V6_FLOW:
++		memcpy(fsp->h_u.ah_ip6_spec.ip6src, &rule->ip_data.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->h_u.ah_ip6_spec.ip6dst, &rule->ip_data.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->h_u.ah_ip6_spec.spi = rule->ip_data.spi;
++		fsp->h_u.ah_ip6_spec.tclass = rule->ip_data.tclass;
++		memcpy(fsp->m_u.ah_ip6_spec.ip6src, &rule->ip_mask.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.ah_ip6_spec.ip6dst, &rule->ip_mask.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->m_u.ah_ip6_spec.spi = rule->ip_mask.spi;
++		fsp->m_u.ah_ip6_spec.tclass = rule->ip_mask.tclass;
++		break;
++	case IPV6_USER_FLOW:
++		memcpy(fsp->h_u.usr_ip6_spec.ip6src, &rule->ip_data.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->h_u.usr_ip6_spec.ip6dst, &rule->ip_data.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->h_u.usr_ip6_spec.l4_4_bytes = rule->ip_data.l4_header;
++		fsp->h_u.usr_ip6_spec.tclass = rule->ip_data.tclass;
++		fsp->h_u.usr_ip6_spec.l4_proto = rule->ip_data.proto;
++		memcpy(fsp->m_u.usr_ip6_spec.ip6src, &rule->ip_mask.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		memcpy(fsp->m_u.usr_ip6_spec.ip6dst, &rule->ip_mask.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		fsp->m_u.usr_ip6_spec.l4_4_bytes = rule->ip_mask.l4_header;
++		fsp->m_u.usr_ip6_spec.tclass = rule->ip_mask.tclass;
++		fsp->m_u.usr_ip6_spec.l4_proto = rule->ip_mask.proto;
++		break;
+ 	default:
+ 		ret = -EINVAL;
+ 		break;
+@@ -1075,6 +1148,55 @@ iavf_add_fdir_fltr_info(struct iavf_adapter *adapter, struct ethtool_rx_flow_spe
+ 		fltr->ip_mask.tos = fsp->m_u.usr_ip4_spec.tos;
+ 		fltr->ip_mask.proto = fsp->m_u.usr_ip4_spec.proto;
+ 		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip, fsp->h_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip, fsp->h_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_data.src_port = fsp->h_u.tcp_ip6_spec.psrc;
++		fltr->ip_data.dst_port = fsp->h_u.tcp_ip6_spec.pdst;
++		fltr->ip_data.tclass = fsp->h_u.tcp_ip6_spec.tclass;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip, fsp->m_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip, fsp->m_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_mask.src_port = fsp->m_u.tcp_ip6_spec.psrc;
++		fltr->ip_mask.dst_port = fsp->m_u.tcp_ip6_spec.pdst;
++		fltr->ip_mask.tclass = fsp->m_u.tcp_ip6_spec.tclass;
++		break;
++	case AH_V6_FLOW:
++	case ESP_V6_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip, fsp->h_u.ah_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip, fsp->h_u.ah_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_data.spi = fsp->h_u.ah_ip6_spec.spi;
++		fltr->ip_data.tclass = fsp->h_u.ah_ip6_spec.tclass;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip, fsp->m_u.ah_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip, fsp->m_u.ah_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_mask.spi = fsp->m_u.ah_ip6_spec.spi;
++		fltr->ip_mask.tclass = fsp->m_u.ah_ip6_spec.tclass;
++		break;
++	case IPV6_USER_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip, fsp->h_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip, fsp->h_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_data.l4_header = fsp->h_u.usr_ip6_spec.l4_4_bytes;
++		fltr->ip_data.tclass = fsp->h_u.usr_ip6_spec.tclass;
++		fltr->ip_data.proto = fsp->h_u.usr_ip6_spec.l4_proto;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip, fsp->m_u.usr_ip6_spec.ip6src,
++		       sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip, fsp->m_u.usr_ip6_spec.ip6dst,
++		       sizeof(struct in6_addr));
++		fltr->ip_mask.l4_header = fsp->m_u.usr_ip6_spec.l4_4_bytes;
++		fltr->ip_mask.tclass = fsp->m_u.usr_ip6_spec.tclass;
++		fltr->ip_mask.proto = fsp->m_u.usr_ip6_spec.l4_proto;
++		break;
+ 	default:
+ 		/* not doing un-parsed flow types */
+ 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.c b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
+index 1202c86a7f9d..abcdf69777d7 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_fdir.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
+@@ -5,6 +5,15 @@
  
- 	input->dest_vsi = vsi->idx;
--	input->comp_report = ICE_FXD_FLTR_QW0_COMP_REPORT_SW_FAIL;
-+	input->comp_report = ICE_FXD_FLTR_QW0_COMP_REPORT_SW;
+ #include "iavf.h"
  
- 	ctrl_vsi = pf->vsi[vf->ctrl_vsi_idx];
- 	if (!ctrl_vsi) {
-@@ -1518,6 +1519,455 @@ static int ice_vc_fdir_write_fltr(struct ice_vf *vf,
- 	return ret;
++static const struct in6_addr ipv6_addr_full_mask = {
++	.in6_u = {
++		.u6_addr8 = {
++			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++		}
++	}
++};
++
+ /**
+  * iavf_fill_fdir_ip4_hdr - fill the IPv4 protocol header
+  * @fltr: Flow Director filter data structure
+@@ -44,6 +53,50 @@ iavf_fill_fdir_ip4_hdr(struct iavf_fdir_fltr *fltr,
+ 	return 0;
  }
  
 +/**
-+ * ice_vf_fdir_timer - FDIR program waiting timer interrupt handler
-+ * @t: pointer to timer_list
-+ */
-+static void ice_vf_fdir_timer(struct timer_list *t)
-+{
-+	struct ice_vf_fdir_ctx *ctx_irq = from_timer(ctx_irq, t, rx_tmr);
-+	struct ice_vf_fdir_ctx *ctx_done;
-+	struct ice_vf_fdir *fdir;
-+	unsigned long flags;
-+	struct ice_vf *vf;
-+	struct ice_pf *pf;
-+
-+	fdir = container_of(ctx_irq, struct ice_vf_fdir, ctx_irq);
-+	vf = container_of(fdir, struct ice_vf, fdir);
-+	ctx_done = &fdir->ctx_done;
-+	pf = vf->pf;
-+	spin_lock_irqsave(&fdir->ctx_lock, flags);
-+	if (!(ctx_irq->flags & ICE_VF_FDIR_CTX_VALID)) {
-+		spin_unlock_irqrestore(&fdir->ctx_lock, flags);
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-+	ctx_irq->flags &= ~ICE_VF_FDIR_CTX_VALID;
-+
-+	ctx_done->flags |= ICE_VF_FDIR_CTX_VALID;
-+	ctx_done->conf = ctx_irq->conf;
-+	ctx_done->stat = ICE_FDIR_CTX_TIMEOUT;
-+	ctx_done->v_opcode = ctx_irq->v_opcode;
-+	spin_unlock_irqrestore(&fdir->ctx_lock, flags);
-+
-+	set_bit(__ICE_FD_VF_FLUSH_CTX, pf->state);
-+	ice_service_task_schedule(pf);
-+}
-+
-+/**
-+ * ice_vc_fdir_irq_handler - ctrl_vsi Rx queue interrupt handler
-+ * @ctrl_vsi: pointer to a VF's CTRL VSI
-+ * @rx_desc: pointer to FDIR Rx queue descriptor
-+ */
-+void
-+ice_vc_fdir_irq_handler(struct ice_vsi *ctrl_vsi,
-+			union ice_32b_rx_flex_desc *rx_desc)
-+{
-+	struct ice_pf *pf = ctrl_vsi->back;
-+	struct ice_vf_fdir_ctx *ctx_done;
-+	struct ice_vf_fdir_ctx *ctx_irq;
-+	struct ice_vf_fdir *fdir;
-+	unsigned long flags;
-+	struct device *dev;
-+	struct ice_vf *vf;
-+	int ret;
-+
-+	vf = &pf->vf[ctrl_vsi->vf_id];
-+
-+	fdir = &vf->fdir;
-+	ctx_done = &fdir->ctx_done;
-+	ctx_irq = &fdir->ctx_irq;
-+	dev = ice_pf_to_dev(pf);
-+	spin_lock_irqsave(&fdir->ctx_lock, flags);
-+	if (!(ctx_irq->flags & ICE_VF_FDIR_CTX_VALID)) {
-+		spin_unlock_irqrestore(&fdir->ctx_lock, flags);
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-+	ctx_irq->flags &= ~ICE_VF_FDIR_CTX_VALID;
-+
-+	ctx_done->flags |= ICE_VF_FDIR_CTX_VALID;
-+	ctx_done->conf = ctx_irq->conf;
-+	ctx_done->stat = ICE_FDIR_CTX_IRQ;
-+	ctx_done->v_opcode = ctx_irq->v_opcode;
-+	memcpy(&ctx_done->rx_desc, rx_desc, sizeof(*rx_desc));
-+	spin_unlock_irqrestore(&fdir->ctx_lock, flags);
-+
-+	ret = del_timer(&ctx_irq->rx_tmr);
-+	if (!ret)
-+		dev_err(dev, "VF %d: Unexpected inactive timer!\n", vf->vf_id);
-+
-+	set_bit(__ICE_FD_VF_FLUSH_CTX, pf->state);
-+	ice_service_task_schedule(pf);
-+}
-+
-+/**
-+ * ice_vf_fdir_dump_info - dump FDIR information for diagnosis
-+ * @vf: pointer to the VF info
-+ */
-+static void ice_vf_fdir_dump_info(struct ice_vf *vf)
-+{
-+	struct ice_vsi *vf_vsi;
-+	u32 fd_size, fd_cnt;
-+	struct device *dev;
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	u16 vsi_num;
-+
-+	pf = vf->pf;
-+	hw = &pf->hw;
-+	dev = ice_pf_to_dev(pf);
-+	vf_vsi = pf->vsi[vf->lan_vsi_idx];
-+	vsi_num = ice_get_hw_vsi_num(hw, vf_vsi->idx);
-+
-+	fd_size = rd32(hw, VSIQF_FD_SIZE(vsi_num));
-+	fd_cnt = rd32(hw, VSIQF_FD_CNT(vsi_num));
-+	dev_dbg(dev, "VF %d: space allocated: guar:0x%x, be:0x%x, space consumed: guar:0x%x, be:0x%x",
-+		vf->vf_id,
-+		(fd_size & VSIQF_FD_CNT_FD_GCNT_M) >> VSIQF_FD_CNT_FD_GCNT_S,
-+		(fd_size & VSIQF_FD_CNT_FD_BCNT_M) >> VSIQF_FD_CNT_FD_BCNT_S,
-+		(fd_cnt & VSIQF_FD_CNT_FD_GCNT_M) >> VSIQF_FD_CNT_FD_GCNT_S,
-+		(fd_cnt & VSIQF_FD_CNT_FD_BCNT_M) >> VSIQF_FD_CNT_FD_BCNT_S);
-+}
-+
-+/**
-+ * ice_vf_verify_rx_desc - verify received FDIR programming status descriptor
-+ * @vf: pointer to the VF info
-+ * @ctx: FDIR context info for post processing
-+ * @status: virtchnl FDIR program status
++ * iavf_fill_fdir_ip6_hdr - fill the IPv6 protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
 + *
-+ * Return: 0 on success, and other on error.
++ * Returns 0 if the IPv6 protocol header is set successfully
 + */
 +static int
-+ice_vf_verify_rx_desc(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
-+		      enum virtchnl_fdir_prgm_status *status)
++iavf_fill_fdir_ip6_hdr(struct iavf_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
 +{
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	u32 stat_err, error, prog_id;
-+	int ret;
++	struct virtchnl_proto_hdr *hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct ipv6hdr *iph = (struct ipv6hdr *)hdr->buffer;
 +
-+	stat_err = le16_to_cpu(ctx->rx_desc.wb.status_error0);
-+	if (((stat_err & ICE_FXD_FLTR_WB_QW1_DD_M) >>
-+	    ICE_FXD_FLTR_WB_QW1_DD_S) != ICE_FXD_FLTR_WB_QW1_DD_YES) {
-+		*status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "VF %d: Desc Done not set\n", vf->vf_id);
-+		ret = -EINVAL;
-+		goto err_exit;
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, IPV6);
++
++	if (fltr->ip_mask.tclass == U8_MAX) {
++		iph->priority = (fltr->ip_data.tclass >> 4) & 0xF;
++		iph->flow_lbl[0] = (fltr->ip_data.tclass << 4) & 0xF0;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, TC);
 +	}
 +
-+	prog_id = (stat_err & ICE_FXD_FLTR_WB_QW1_PROG_ID_M) >>
-+		ICE_FXD_FLTR_WB_QW1_PROG_ID_S;
-+	if (prog_id == ICE_FXD_FLTR_WB_QW1_PROG_ADD &&
-+	    ctx->v_opcode != VIRTCHNL_OP_ADD_FDIR_FILTER) {
-+		dev_err(dev, "VF %d: Desc show add, but ctx not",
-+			vf->vf_id);
-+		*status = VIRTCHNL_FDIR_FAILURE_RULE_INVALID;
-+		ret = -EINVAL;
-+		goto err_exit;
++	if (fltr->ip_mask.proto == U8_MAX) {
++		iph->nexthdr = fltr->ip_data.proto;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, PROT);
 +	}
 +
-+	if (prog_id == ICE_FXD_FLTR_WB_QW1_PROG_DEL &&
-+	    ctx->v_opcode != VIRTCHNL_OP_DEL_FDIR_FILTER) {
-+		dev_err(dev, "VF %d: Desc show del, but ctx not",
-+			vf->vf_id);
-+		*status = VIRTCHNL_FDIR_FAILURE_RULE_INVALID;
-+		ret = -EINVAL;
-+		goto err_exit;
++	if (!memcmp(&fltr->ip_mask.v6_addrs.src_ip, &ipv6_addr_full_mask,
++		    sizeof(struct in6_addr))) {
++		memcpy(&iph->saddr, &fltr->ip_data.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, SRC);
 +	}
 +
-+	error = (stat_err & ICE_FXD_FLTR_WB_QW1_FAIL_M) >>
-+		ICE_FXD_FLTR_WB_QW1_FAIL_S;
-+	if (error == ICE_FXD_FLTR_WB_QW1_FAIL_YES) {
-+		if (prog_id == ICE_FXD_FLTR_WB_QW1_PROG_ADD) {
-+			dev_err(dev, "VF %d, Failed to add FDIR rule due to no space in the table",
-+				vf->vf_id);
-+			*status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		} else {
-+			dev_err(dev, "VF %d, Failed to remove FDIR rule, attempt to remove non-existent entry",
-+				vf->vf_id);
-+			*status = VIRTCHNL_FDIR_FAILURE_RULE_NONEXIST;
-+		}
-+		ret = -EINVAL;
-+		goto err_exit;
++	if (!memcmp(&fltr->ip_mask.v6_addrs.dst_ip, &ipv6_addr_full_mask,
++		    sizeof(struct in6_addr))) {
++		memcpy(&iph->daddr, &fltr->ip_data.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, DST);
 +	}
-+
-+	error = (stat_err & ICE_FXD_FLTR_WB_QW1_FAIL_PROF_M) >>
-+		ICE_FXD_FLTR_WB_QW1_FAIL_PROF_S;
-+	if (error == ICE_FXD_FLTR_WB_QW1_FAIL_PROF_YES) {
-+		dev_err(dev, "VF %d: Profile matching error", vf->vf_id);
-+		*status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		ret = -EINVAL;
-+		goto err_exit;
-+	}
-+
-+	*status = VIRTCHNL_FDIR_SUCCESS;
-+
-+	return 0;
-+
-+err_exit:
-+	ice_vf_fdir_dump_info(vf);
-+	return ret;
-+}
-+
-+/**
-+ * ice_vc_add_fdir_fltr_post
-+ * @vf: pointer to the VF structure
-+ * @ctx: FDIR context info for post processing
-+ * @status: virtchnl FDIR program status
-+ * @success: true implies success, false implies failure
-+ *
-+ * Post process for flow director add command. If success, then do post process
-+ * and send back success msg by virtchnl. Otherwise, do context reversion and
-+ * send back failure msg by virtchnl.
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_add_fdir_fltr_post(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
-+			  enum virtchnl_fdir_prgm_status status,
-+			  bool success)
-+{
-+	struct virtchnl_fdir_fltr_conf *conf = ctx->conf;
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	enum virtchnl_status_code v_ret;
-+	struct virtchnl_fdir_add *resp;
-+	int ret, len, is_tun;
-+
-+	v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	len = sizeof(*resp);
-+	resp = kzalloc(len, GFP_KERNEL);
-+	if (!resp) {
-+		len = 0;
-+		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
-+		dev_dbg(dev, "VF %d: Alloc resp buf fail", vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	if (!success)
-+		goto err_exit;
-+
-+	is_tun = 0;
-+	resp->status = status;
-+	resp->flow_id = conf->flow_id;
-+	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]++;
-+
-+	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
-+				    (u8 *)resp, len);
-+	kfree(resp);
-+
-+	dev_dbg(dev, "VF %d: flow_id:0x%X, FDIR %s success!\n",
-+		vf->vf_id, conf->flow_id,
-+		(ctx->v_opcode == VIRTCHNL_OP_ADD_FDIR_FILTER) ?
-+		"add" : "del");
-+	return ret;
-+
-+err_exit:
-+	if (resp)
-+		resp->status = status;
-+	ice_vc_fdir_remove_entry(vf, conf, conf->flow_id);
-+	devm_kfree(dev, conf);
-+
-+	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
-+				    (u8 *)resp, len);
-+	kfree(resp);
-+	return ret;
-+}
-+
-+/**
-+ * ice_vc_del_fdir_fltr_post
-+ * @vf: pointer to the VF structure
-+ * @ctx: FDIR context info for post processing
-+ * @status: virtchnl FDIR program status
-+ * @success: true implies success, false implies failure
-+ *
-+ * Post process for flow director del command. If success, then do post process
-+ * and send back success msg by virtchnl. Otherwise, do context reversion and
-+ * send back failure msg by virtchnl.
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_del_fdir_fltr_post(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
-+			  enum virtchnl_fdir_prgm_status status,
-+			  bool success)
-+{
-+	struct virtchnl_fdir_fltr_conf *conf = ctx->conf;
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	enum virtchnl_status_code v_ret;
-+	struct virtchnl_fdir_del *resp;
-+	int ret, len, is_tun;
-+
-+	v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	len = sizeof(*resp);
-+	resp = kzalloc(len, GFP_KERNEL);
-+	if (!resp) {
-+		len = 0;
-+		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
-+		dev_dbg(dev, "VF %d: Alloc resp buf fail", vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	if (!success)
-+		goto err_exit;
-+
-+	is_tun = 0;
-+	resp->status = status;
-+	ice_vc_fdir_remove_entry(vf, conf, conf->flow_id);
-+	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]--;
-+
-+	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
-+				    (u8 *)resp, len);
-+	kfree(resp);
-+
-+	dev_dbg(dev, "VF %d: flow_id:0x%X, FDIR %s success!\n",
-+		vf->vf_id, conf->flow_id,
-+		(ctx->v_opcode == VIRTCHNL_OP_ADD_FDIR_FILTER) ?
-+		"add" : "del");
-+	devm_kfree(dev, conf);
-+	return ret;
-+
-+err_exit:
-+	if (resp)
-+		resp->status = status;
-+	if (success)
-+		devm_kfree(dev, conf);
-+
-+	ret = ice_vc_send_msg_to_vf(vf, ctx->v_opcode, v_ret,
-+				    (u8 *)resp, len);
-+	kfree(resp);
-+	return ret;
-+}
-+
-+/**
-+ * ice_flush_fdir_ctx
-+ * @pf: pointer to the PF structure
-+ *
-+ * Flush all the pending event on ctx_done list and process them.
-+ */
-+void ice_flush_fdir_ctx(struct ice_pf *pf)
-+{
-+	int i;
-+
-+	if (!test_and_clear_bit(__ICE_FD_VF_FLUSH_CTX, pf->state))
-+		return;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct device *dev = ice_pf_to_dev(pf);
-+		enum virtchnl_fdir_prgm_status status;
-+		struct ice_vf *vf = &pf->vf[i];
-+		struct ice_vf_fdir_ctx *ctx;
-+		unsigned long flags;
-+		int ret;
-+
-+		if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
-+			continue;
-+
-+		if (vf->ctrl_vsi_idx == ICE_NO_VSI)
-+			continue;
-+
-+		ctx = &vf->fdir.ctx_done;
-+		spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-+		if (!(ctx->flags & ICE_VF_FDIR_CTX_VALID)) {
-+			spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+			continue;
-+		}
-+		spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+
-+		WARN_ON(ctx->stat == ICE_FDIR_CTX_READY);
-+		if (ctx->stat == ICE_FDIR_CTX_TIMEOUT) {
-+			status = VIRTCHNL_FDIR_FAILURE_RULE_TIMEOUT;
-+			dev_err(dev, "VF %d: ctrl_vsi irq timeout\n",
-+				vf->vf_id);
-+			goto err_exit;
-+		}
-+
-+		ret = ice_vf_verify_rx_desc(vf, ctx, &status);
-+		if (ret)
-+			goto err_exit;
-+
-+		if (ctx->v_opcode == VIRTCHNL_OP_ADD_FDIR_FILTER)
-+			ice_vc_add_fdir_fltr_post(vf, ctx, status, true);
-+		else if (ctx->v_opcode == VIRTCHNL_OP_DEL_FDIR_FILTER)
-+			ice_vc_del_fdir_fltr_post(vf, ctx, status, true);
-+		else
-+			dev_err(dev, "VF %d: Unsupported opcode\n", vf->vf_id);
-+
-+		spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-+		ctx->flags &= ~ICE_VF_FDIR_CTX_VALID;
-+		spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+		continue;
-+err_exit:
-+		if (ctx->v_opcode == VIRTCHNL_OP_ADD_FDIR_FILTER)
-+			ice_vc_add_fdir_fltr_post(vf, ctx, status, false);
-+		else if (ctx->v_opcode == VIRTCHNL_OP_DEL_FDIR_FILTER)
-+			ice_vc_del_fdir_fltr_post(vf, ctx, status, false);
-+		else
-+			dev_err(dev, "VF %d: Unsupported opcode\n", vf->vf_id);
-+
-+		spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-+		ctx->flags &= ~ICE_VF_FDIR_CTX_VALID;
-+		spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+	}
-+}
-+
-+/**
-+ * ice_vc_fdir_set_irq_ctx - set FDIR context info for later irq handler
-+ * @vf: pointer to the VF structure
-+ * @conf: FDIR configuration for each filter
-+ * @v_opcode: virtual channel operation code
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_fdir_set_irq_ctx(struct ice_vf *vf, struct virtchnl_fdir_fltr_conf *conf,
-+			enum virtchnl_ops v_opcode)
-+{
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	struct ice_vf_fdir_ctx *ctx;
-+	unsigned long flags;
-+
-+	ctx = &vf->fdir.ctx_irq;
-+	spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-+	if ((vf->fdir.ctx_irq.flags & ICE_VF_FDIR_CTX_VALID) ||
-+	    (vf->fdir.ctx_done.flags & ICE_VF_FDIR_CTX_VALID)) {
-+		spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+		dev_dbg(dev, "VF %d: Last request is still in progress\n",
-+			vf->vf_id);
-+		return -EBUSY;
-+	}
-+	ctx->flags |= ICE_VF_FDIR_CTX_VALID;
-+	spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+
-+	ctx->conf = conf;
-+	ctx->v_opcode = v_opcode;
-+	ctx->stat = ICE_FDIR_CTX_READY;
-+	timer_setup(&ctx->rx_tmr, ice_vf_fdir_timer, 0);
-+
-+	mod_timer(&ctx->rx_tmr,
-+		  round_jiffies(msecs_to_jiffies(10) + jiffies));
 +
 +	return 0;
 +}
 +
-+/**
-+ * ice_vc_fdir_clear_irq_ctx - clear FDIR context info for irq handler
-+ * @vf: pointer to the VF structure
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static void ice_vc_fdir_clear_irq_ctx(struct ice_vf *vf)
-+{
-+	struct ice_vf_fdir_ctx *ctx = &vf->fdir.ctx_irq;
-+	unsigned long flags;
-+
-+	del_timer(&ctx->rx_tmr);
-+	spin_lock_irqsave(&vf->fdir.ctx_lock, flags);
-+	ctx->flags &= ~ICE_VF_FDIR_CTX_VALID;
-+	spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
-+}
-+
  /**
-  * ice_vc_add_fdir_fltr - add a FDIR filter for VF by the msg buffer
-  * @vf: pointer to the VF info
-@@ -1604,7 +2054,7 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_free_conf;
+  * iavf_fill_fdir_tcp_hdr - fill the TCP protocol header
+  * @fltr: Flow Director filter data structure
+@@ -274,6 +327,30 @@ int iavf_fill_fdir_add_msg(struct iavf_adapter *adapter, struct iavf_fdir_fltr *
+ 		err = iavf_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
+ 		      iavf_fill_fdir_l4_hdr(fltr, proto_hdrs);
+ 		break;
++	case IAVF_FDIR_FLOW_IPV6_TCP:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_tcp_hdr(fltr, proto_hdrs);
++		break;
++	case IAVF_FDIR_FLOW_IPV6_UDP:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_udp_hdr(fltr, proto_hdrs);
++		break;
++	case IAVF_FDIR_FLOW_IPV6_SCTP:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_sctp_hdr(fltr, proto_hdrs);
++		break;
++	case IAVF_FDIR_FLOW_IPV6_AH:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_ah_hdr(fltr, proto_hdrs);
++		break;
++	case IAVF_FDIR_FLOW_IPV6_ESP:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_esp_hdr(fltr, proto_hdrs);
++		break;
++	case IAVF_FDIR_FLOW_IPV6_OTHER:
++		err = iavf_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iavf_fill_fdir_l4_hdr(fltr, proto_hdrs);
++		break;
+ 	default:
+ 		err = -EINVAL;
+ 		break;
+@@ -298,16 +375,22 @@ static const char *iavf_fdir_flow_proto_name(enum iavf_fdir_flow_type flow_type)
+ {
+ 	switch (flow_type) {
+ 	case IAVF_FDIR_FLOW_IPV4_TCP:
++	case IAVF_FDIR_FLOW_IPV6_TCP:
+ 		return "TCP";
+ 	case IAVF_FDIR_FLOW_IPV4_UDP:
++	case IAVF_FDIR_FLOW_IPV6_UDP:
+ 		return "UDP";
+ 	case IAVF_FDIR_FLOW_IPV4_SCTP:
++	case IAVF_FDIR_FLOW_IPV6_SCTP:
+ 		return "SCTP";
+ 	case IAVF_FDIR_FLOW_IPV4_AH:
++	case IAVF_FDIR_FLOW_IPV6_AH:
+ 		return "AH";
+ 	case IAVF_FDIR_FLOW_IPV4_ESP:
++	case IAVF_FDIR_FLOW_IPV6_ESP:
+ 		return "ESP";
+ 	case IAVF_FDIR_FLOW_IPV4_OTHER:
++	case IAVF_FDIR_FLOW_IPV6_OTHER:
+ 		return "Other";
+ 	default:
+ 		return NULL;
+@@ -357,6 +440,34 @@ void iavf_print_fdir_fltr(struct iavf_adapter *adapter, struct iavf_fdir_fltr *f
+ 			 fltr->ip_data.proto,
+ 			 ntohl(fltr->ip_data.l4_header));
+ 		break;
++	case IAVF_FDIR_FLOW_IPV6_TCP:
++	case IAVF_FDIR_FLOW_IPV6_UDP:
++	case IAVF_FDIR_FLOW_IPV6_SCTP:
++		dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 %s: dst_port %hu src_port %hu\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 proto,
++			 ntohs(fltr->ip_data.dst_port),
++			 ntohs(fltr->ip_data.src_port));
++		break;
++	case IAVF_FDIR_FLOW_IPV6_AH:
++	case IAVF_FDIR_FLOW_IPV6_ESP:
++		dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 %s: SPI %u\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 proto,
++			 ntohl(fltr->ip_data.spi));
++		break;
++	case IAVF_FDIR_FLOW_IPV6_OTHER:
++		dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 proto: %u L4_bytes: 0x%x\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 fltr->ip_data.proto,
++			 ntohl(fltr->ip_data.l4_header));
++		break;
+ 	default:
+ 		break;
  	}
- 
--	ret = ice_vc_fdir_insert_entry(vf, conf, &stat->flow_id);
-+	ret = ice_vc_fdir_insert_entry(vf, conf, &conf->flow_id);
- 	if (ret) {
- 		v_ret = VIRTCHNL_STATUS_SUCCESS;
- 		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-@@ -1612,6 +2062,14 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_free_conf;
- 	}
- 
-+	ret = ice_vc_fdir_set_irq_ctx(vf, conf, VIRTCHNL_OP_ADD_FDIR_FILTER);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_dbg(dev, "VF %d: set FDIR context failed\n", vf->vf_id);
-+		goto err_free_conf;
-+	}
-+
- 	ret = ice_vc_fdir_write_fltr(vf, conf, true, is_tun);
- 	if (ret) {
- 		v_ret = VIRTCHNL_STATUS_SUCCESS;
-@@ -1621,18 +2079,13 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_rem_entry;
- 	}
- 
--	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]++;
--
--	v_ret = VIRTCHNL_STATUS_SUCCESS;
--	stat->status = VIRTCHNL_FDIR_SUCCESS;
- exit:
--	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ADD_FDIR_FILTER, v_ret,
--				    (u8 *)stat, len);
- 	kfree(stat);
- 	return ret;
- 
- err_rem_entry:
--	ice_vc_fdir_remove_entry(vf, conf, stat->flow_id);
-+	ice_vc_fdir_clear_irq_ctx(vf);
-+	ice_vc_fdir_remove_entry(vf, conf, conf->flow_id);
- err_free_conf:
- 	devm_kfree(dev, conf);
- err_exit:
-@@ -1696,22 +2149,29 @@ int ice_vc_del_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_exit;
- 	}
- 
-+	ret = ice_vc_fdir_set_irq_ctx(vf, conf, VIRTCHNL_OP_DEL_FDIR_FILTER);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_dbg(dev, "VF %d: set FDIR context failed\n", vf->vf_id);
-+		goto err_exit;
-+	}
-+
- 	ret = ice_vc_fdir_write_fltr(vf, conf, false, is_tun);
- 	if (ret) {
- 		v_ret = VIRTCHNL_STATUS_SUCCESS;
- 		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
- 		dev_err(dev, "VF %d: writing FDIR rule failed, ret:%d\n",
- 			vf->vf_id, ret);
--		goto err_exit;
-+		goto err_del_tmr;
- 	}
- 
--	ice_vc_fdir_remove_entry(vf, conf, fltr->flow_id);
--	devm_kfree(dev, conf);
--	vf->fdir.fdir_fltr_cnt[conf->input.flow_type][is_tun]--;
-+	kfree(stat);
- 
--	v_ret = VIRTCHNL_STATUS_SUCCESS;
--	stat->status = VIRTCHNL_FDIR_SUCCESS;
-+	return ret;
- 
-+err_del_tmr:
-+	ice_vc_fdir_clear_irq_ctx(vf);
- err_exit:
- 	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DEL_FDIR_FILTER, v_ret,
- 				    (u8 *)stat, len);
-@@ -1729,6 +2189,10 @@ void ice_vf_fdir_init(struct ice_vf *vf)
- 
- 	idr_init(&fdir->fdir_rule_idr);
- 	INIT_LIST_HEAD(&fdir->fdir_rule_list);
-+
-+	spin_lock_init(&fdir->ctx_lock);
-+	fdir->ctx_irq.flags = 0;
-+	fdir->ctx_done.flags = 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
-index 676de402475e..53b78e866381 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
-@@ -5,6 +5,24 @@
- #define _ICE_VIRTCHNL_FDIR_H_
- 
- struct ice_vf;
-+struct ice_pf;
-+
-+enum ice_fdir_ctx_stat {
-+	ICE_FDIR_CTX_READY,
-+	ICE_FDIR_CTX_IRQ,
-+	ICE_FDIR_CTX_TIMEOUT,
-+};
-+
-+struct ice_vf_fdir_ctx {
-+	struct timer_list rx_tmr;
-+	enum virtchnl_ops v_opcode;
-+	enum ice_fdir_ctx_stat stat;
-+	union ice_32b_rx_flex_desc rx_desc;
-+#define ICE_VF_FDIR_CTX_VALID		BIT(0)
-+	u32 flags;
-+
-+	void *conf;
-+};
- 
- /* VF FDIR information structure */
- struct ice_vf_fdir {
-@@ -14,11 +32,18 @@ struct ice_vf_fdir {
- 
- 	struct idr fdir_rule_idr;
- 	struct list_head fdir_rule_list;
-+
-+	spinlock_t ctx_lock; /* protects FDIR context info */
-+	struct ice_vf_fdir_ctx ctx_irq;
-+	struct ice_vf_fdir_ctx ctx_done;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.h b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+index 8cc83324e25f..50f4d01a4cd2 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_fdir.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+@@ -24,6 +24,12 @@ enum iavf_fdir_flow_type {
+ 	IAVF_FDIR_FLOW_IPV4_AH,
+ 	IAVF_FDIR_FLOW_IPV4_ESP,
+ 	IAVF_FDIR_FLOW_IPV4_OTHER,
++	IAVF_FDIR_FLOW_IPV6_TCP,
++	IAVF_FDIR_FLOW_IPV6_UDP,
++	IAVF_FDIR_FLOW_IPV6_SCTP,
++	IAVF_FDIR_FLOW_IPV6_AH,
++	IAVF_FDIR_FLOW_IPV6_ESP,
++	IAVF_FDIR_FLOW_IPV6_OTHER,
+ 	/* MAX - this must be last and add anything new just above it */
+ 	IAVF_FDIR_FLOW_PTYPE_MAX,
+ };
+@@ -33,9 +39,15 @@ struct iavf_ipv4_addrs {
+ 	__be32 dst_ip;
  };
  
- int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg);
- int ice_vc_del_fdir_fltr(struct ice_vf *vf, u8 *msg);
- void ice_vf_fdir_init(struct ice_vf *vf);
- void ice_vf_fdir_exit(struct ice_vf *vf);
--
-+void
-+ice_vc_fdir_irq_handler(struct ice_vsi *ctrl_vsi,
-+			union ice_32b_rx_flex_desc *rx_desc);
-+void ice_flush_fdir_ctx(struct ice_pf *pf);
- #endif /* _ICE_VIRTCHNL_FDIR_H_ */
++struct iavf_ipv6_addrs {
++	struct in6_addr src_ip;
++	struct in6_addr dst_ip;
++};
++
+ struct iavf_fdir_ip {
+ 	union {
+ 		struct iavf_ipv4_addrs v4_addrs;
++		struct iavf_ipv6_addrs v6_addrs;
+ 	};
+ 	__be16 src_port;
+ 	__be16 dst_port;
+@@ -43,6 +55,7 @@ struct iavf_fdir_ip {
+ 	__be32 spi;		/* security parameter index for AH/ESP */
+ 	union {
+ 		u8 tos;
++		u8 tclass;
+ 	};
+ 	u8 proto;
+ };
 -- 
 2.29.2
 
