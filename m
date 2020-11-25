@@ -1,226 +1,147 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 25 Nov 2020 15:45:02 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 1198f2f4eb68a42696ff48b3d113a5a77d499a36
-Message-ID: <5fbe0b7e.GPYxodzFLMvdoKNH%lkp@intel.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Date: Wed, 25 Nov 2020 18:15:36 +0800
+Subject: [Intel-wired-lan] [PATCH] e1000e: Assign DPM_FLAG_SMART_SUSPEND
+ and DPM_FLAG_MAY_SKIP_RESUME to speed up s2ram
+In-Reply-To: <a8058c17-141d-986e-903d-462dc72999f1@molgen.mpg.de>
+References: <20201124153221.11265-1-yu.c.chen@intel.com>
+ <a8058c17-141d-986e-903d-462dc72999f1@molgen.mpg.de>
+Message-ID: <20201125101534.GA17181@chenyu-office.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
-branch HEAD: 1198f2f4eb68a42696ff48b3d113a5a77d499a36  i40e: Add zero-initialization of AQ command structures
+Hi Paul,
+On Tue, Nov 24, 2020 at 04:47:30PM +0100, Paul Menzel wrote:
+> Dear Chen,
+> 
+> 
+> Thank you for the patch.
+> 
+Thanks for reviewing this change.
+> Am 24.11.20 um 16:32 schrieb Chen Yu:
+> > The NIC is put in runtime suspend status when there is no wire connected.
+> > As a result, it is safe to keep this NIC in runtime suspended during s2ram
+> > because the system does not rely on the NIC plug event nor WOL to wake up
+> > the system. Unlike the s2idle, s2ram does not need to manipulate S0ix settings
+> > during suspend.
+> 
+> what happens, when I plug in a cable, when the suspend is in ACPI S3 state?
+> I guess it?s ignored?
+> 
+I think it depends on the platform(or BIOS implementation).
+On my platform it is ignored. When the system is running,
+the plug event would generate a SCI, but if it is in S3,
+whether to generate wake up event or not depends on the BIOS and
+the sysfs whether the device is device_may_wakeup().
+In summary, whether the NIC is in runtime_suspend() or system_suspended
+does not impact the wake up from S3 by plug event.
+> > This patch assigns DPM_FLAG_SMART_SUSPEND and DPM_FLAG_MAY_SKIP_RESUME
+> > to the e1000e driver so that the s2ram could skip the .suspend_late(),
+> > .suspend_noirq() and .resume_noirq() .resume_early() when possible.
+> > Also skip .suspend() and .resume() if dev_pm_skip_suspend() and
+> > dev_pm_skip_resume() return true, so as to speed up the s2ram.
+> 
+> What is sped up? Suspend or resume?
+>
+Both suspend and resume.
+> Please also document, what system you tested this on, and what the numbers
+> before and after are.
+The platform I'm testing on a laptop with i5-8300H CPU and I219-LM NIC.
 
-elapsed time: 720m
+Before this change:
+[  203.391465] e1000e 0000:00:1f.6: pci_pm_suspend+0x0/0x170 returned 0 after 323186 usecs
+[  203.598307] e1000e 0000:00:1f.6: pci_pm_suspend_late+0x0/0x40 returned 0 after 4 usecs
+[  203.654026] e1000e 0000:00:1f.6: pci_pm_suspend_noirq+0x0/0x290 returned 0 after 20915 usecs
+[  203.714464] e1000e 0000:00:1f.6: pci_pm_resume_noirq+0x0/0x120 returned 0 after 19952 usecs
+[  203.716208] e1000e 0000:00:1f.6: pci_pm_resume_early+0x0/0x30 returned 0 after 0 usecs
+[  203.934399] e1000e 0000:00:1f.6: pci_pm_resume+0x0/0x90 returned 0 after 211437 usecs
 
-configs tested: 197
-configs skipped: 4
+After this change:
+[  150.455612] e1000e 0000:00:1f.6: pci_pm_suspend+0x0/0x170 returned 0 after 14 usecs
+[  150.987627] e1000e 0000:00:1f.6: pci_pm_suspend_late+0x0/0x40 returned 0 after 3 usecs
+[  151.021659] e1000e 0000:00:1f.6: pci_pm_suspend_noirq+0x0/0x290 returned 0 after 1 usecs
+[  151.087303] e1000e 0000:00:1f.6: pci_pm_resume_noirq+0x0/0x120 returned 0 after 0 usecs
+[  151.112056] e1000e 0000:00:1f.6: pci_pm_resume_early+0x0/0x30 returned 0 after 0 usecs
+[  151.136508] e1000e 0000:00:1f.6: pci_pm_resume+0x0/0x90 returned 0 after 3030 usecs
+> 
+> If there is a bug report, please note it too.
+> 
+This is an optimization for scenario when cable is unpluged, so there's
+no dedicated bug report on this.
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >   drivers/base/power/main.c                  |  2 ++
+> >   drivers/net/ethernet/intel/e1000e/netdev.c | 14 +++++++++++++-
+> >   2 files changed, 15 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > index c7ac49042cee..9cd8abba8612 100644
+> > --- a/drivers/base/power/main.c
+> > +++ b/drivers/base/power/main.c
+> > @@ -580,6 +580,7 @@ bool dev_pm_skip_resume(struct device *dev)
+> >   	return !dev->power.must_resume;
+> >   }
+> > +EXPORT_SYMBOL_GPL(dev_pm_skip_resume);
+> >   /**
+> >    * device_resume_noirq - Execute a "noirq resume" callback for given device.
+> > @@ -2010,3 +2011,4 @@ bool dev_pm_skip_suspend(struct device *dev)
+> >   	return dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+> >   		pm_runtime_status_suspended(dev);
+> >   }
+> > +EXPORT_SYMBOL_GPL(dev_pm_skip_suspend);
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > index b30f00891c03..d79fddabc553 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -6965,6 +6965,14 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+> >   	struct e1000_hw *hw = &adapter->hw;
+> >   	int rc;
+> > +	/* Runtime suspended means that there is no wired connection
+> 
+> Maybe explicitly use *cable* in here to avoid confusion?
+> 
+Okay.
+> > +	 * and it has nothing to do with WOL that, we don't need to
+> 
+> Move the comma before *that*?
+> 
+Okay.
+> > +	 * adjust the WOL settings. So it is safe to put NIC in
+> > +	 * runtime suspend while doing system suspend.
+> 
+> I understood, that the NIC is already in runtime suspend? Could you please
+> clarify the comment?
+> 
+Yes, it is already runtime suspended, I'll revise the comment.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                      tqm8xx_defconfig
-m68k                       m5475evb_defconfig
-mips                           jazz_defconfig
-c6x                        evmc6474_defconfig
-powerpc                      makalu_defconfig
-sh                         ap325rxa_defconfig
-arm                         at91_dt_defconfig
-m68k                        mvme147_defconfig
-sh                        dreamcast_defconfig
-powerpc                     kmeter1_defconfig
-m68k                       m5249evb_defconfig
-sparc                            alldefconfig
-arm                  colibri_pxa270_defconfig
-arm                          ixp4xx_defconfig
-arm                           corgi_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                               allmodconfig
-powerpc                     ep8248e_defconfig
-powerpc                   lite5200b_defconfig
-ia64                          tiger_defconfig
-arc                     haps_hs_smp_defconfig
-mips                            ar7_defconfig
-arm                         lubbock_defconfig
-parisc                           allyesconfig
-sh                        sh7757lcr_defconfig
-nios2                         3c120_defconfig
-powerpc                      pasemi_defconfig
-arm                           sama5_defconfig
-mips                          rm200_defconfig
-powerpc                  iss476-smp_defconfig
-sh                                  defconfig
-arm                          gemini_defconfig
-csky                             alldefconfig
-arm                          tango4_defconfig
-xtensa                       common_defconfig
-m68k                           sun3_defconfig
-arc                        vdk_hs38_defconfig
-mips                         db1xxx_defconfig
-arm                          prima2_defconfig
-powerpc                  storcenter_defconfig
-arm                             ezx_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                    ge_imp3a_defconfig
-mips                           ip27_defconfig
-powerpc                    socrates_defconfig
-sh                           se7724_defconfig
-powerpc                 mpc8313_rdb_defconfig
-s390                             alldefconfig
-sh                     sh7710voipgw_defconfig
-sh                         microdev_defconfig
-ia64                         bigsur_defconfig
-nios2                               defconfig
-m68k                         apollo_defconfig
-mips                           rs90_defconfig
-riscv                               defconfig
-arm                            pleb_defconfig
-x86_64                           alldefconfig
-arm                        neponset_defconfig
-sh                            migor_defconfig
-mips                      maltaaprp_defconfig
-s390                                defconfig
-mips                      fuloong2e_defconfig
-mips                    maltaup_xpa_defconfig
-mips                          rb532_defconfig
-arc                     nsimosci_hs_defconfig
-sh                          rsk7203_defconfig
-arm                        mvebu_v7_defconfig
-mips                 decstation_r4k_defconfig
-parisc                           alldefconfig
-sh                   sh7770_generic_defconfig
-powerpc                    gamecube_defconfig
-arm                        trizeps4_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                 mpc834x_itx_defconfig
-arm                            qcom_defconfig
-arc                            hsdk_defconfig
-m68k                       m5275evb_defconfig
-arm                        multi_v5_defconfig
-sh                           se7780_defconfig
-arm                       imx_v4_v5_defconfig
-arm                         ebsa110_defconfig
-powerpc                        fsp2_defconfig
-mips                malta_kvm_guest_defconfig
-powerpc                      ep88xc_defconfig
-mips                          ath25_defconfig
-microblaze                          defconfig
-powerpc                 mpc834x_mds_defconfig
-arc                        nsimosci_defconfig
-mips                        jmr3927_defconfig
-arc                        nsim_700_defconfig
-h8300                            alldefconfig
-powerpc                      walnut_defconfig
-powerpc                     sbc8548_defconfig
-sh                          rsk7264_defconfig
-powerpc                     tqm8548_defconfig
-ia64                             alldefconfig
-microblaze                    nommu_defconfig
-mips                     cu1000-neo_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                        shmobile_defconfig
-sh                               j2_defconfig
-parisc                generic-64bit_defconfig
-ia64                            zx1_defconfig
-sh                              ul2_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-parisc                              defconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201124
-i386                 randconfig-a003-20201124
-i386                 randconfig-a002-20201124
-i386                 randconfig-a005-20201124
-i386                 randconfig-a001-20201124
-i386                 randconfig-a006-20201124
-i386                 randconfig-a004-20201125
-i386                 randconfig-a003-20201125
-i386                 randconfig-a002-20201125
-i386                 randconfig-a005-20201125
-i386                 randconfig-a001-20201125
-i386                 randconfig-a006-20201125
-x86_64               randconfig-a015-20201125
-x86_64               randconfig-a011-20201125
-x86_64               randconfig-a014-20201125
-x86_64               randconfig-a016-20201125
-x86_64               randconfig-a012-20201125
-x86_64               randconfig-a013-20201125
-i386                 randconfig-a012-20201125
-i386                 randconfig-a013-20201125
-i386                 randconfig-a011-20201125
-i386                 randconfig-a016-20201125
-i386                 randconfig-a014-20201125
-i386                 randconfig-a015-20201125
-i386                 randconfig-a012-20201124
-i386                 randconfig-a013-20201124
-i386                 randconfig-a011-20201124
-i386                 randconfig-a016-20201124
-i386                 randconfig-a014-20201124
-i386                 randconfig-a015-20201124
-x86_64               randconfig-a006-20201124
-x86_64               randconfig-a003-20201124
-x86_64               randconfig-a004-20201124
-x86_64               randconfig-a005-20201124
-x86_64               randconfig-a001-20201124
-x86_64               randconfig-a002-20201124
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a006-20201125
-x86_64               randconfig-a003-20201125
-x86_64               randconfig-a004-20201125
-x86_64               randconfig-a005-20201125
-x86_64               randconfig-a002-20201125
-x86_64               randconfig-a001-20201125
-x86_64               randconfig-a015-20201124
-x86_64               randconfig-a011-20201124
-x86_64               randconfig-a014-20201124
-x86_64               randconfig-a016-20201124
-x86_64               randconfig-a012-20201124
-x86_64               randconfig-a013-20201124
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Thanks,
+Chenyu
+> > +	 */
+> > +	if (dev_pm_skip_suspend(dev))
+> > +		return 0;
+> > +
+> >   	e1000e_flush_lpic(pdev);
+> >   	e1000e_pm_freeze(dev);
+> > @@ -6989,6 +6997,9 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+> >   	struct e1000_hw *hw = &adapter->hw;
+> >   	int rc;
+> > +	if (dev_pm_skip_resume(dev))
+> > +		return 0;
+> > +
+> >   	/* Introduce S0ix implementation */
+> >   	if (hw->mac.type >= e1000_pch_cnp &&
+> >   	    !e1000e_check_me(hw->adapter->pdev->device))
+> > @@ -7665,7 +7676,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> >   	e1000_print_device_info(adapter);
+> > -	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
+> > +	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE |
+> > +				DPM_FLAG_SMART_SUSPEND | DPM_FLAG_MAY_SKIP_RESUME);
+> >   	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
+> >   		pm_runtime_put_noidle(&pdev->dev);
+> 
+> 
+> Kind regards,
+> 
+> Paul
