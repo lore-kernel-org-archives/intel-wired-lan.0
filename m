@@ -1,82 +1,34 @@
 From: Edward Cree <ecree.xilinx@gmail.com>
-Date: Wed, 25 Nov 2020 22:44:35 +0000
+Date: Wed, 25 Nov 2020 23:02:40 +0000
 Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
  Clang
-In-Reply-To: <CANiq72kqO=bYMJnFS2uYRpgWATJ=uXxZuNUsTXT+3aLtrpnzvQ@mail.gmail.com>
+In-Reply-To: <202011241324.B3439A2@keescook>
 References: <cover.1605896059.git.gustavoars@kernel.org>
  <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <202011201129.B13FDB3C@keescook>
  <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <202011220816.8B6591A@keescook>
- <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
- <CANiq72nZrHWTA4_Msg6MP9snTyenC6-eGfD27CyfNSu7QoVZbw@mail.gmail.com>
- <1c7d7fde126bc0acf825766de64bf2f9b888f216.camel@HansenPartnership.com>
- <CANiq72m22Jb5_+62NnwX8xds2iUdWDMAqD8PZw9cuxdHd95W0A@mail.gmail.com>
- <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>
- <CANiq72k5tpDoDPmJ0ZWc1DGqm+81Gi-uEENAtvEs9v3SZcx6_Q@mail.gmail.com>
- <4993259d01a0064f8bb22770503490f9252f3659.camel@HansenPartnership.com>
- <CANiq72kqO=bYMJnFS2uYRpgWATJ=uXxZuNUsTXT+3aLtrpnzvQ@mail.gmail.com>
-Message-ID: <44005bde-f6d4-5eaa-39b8-1a5efeedb2d3@gmail.com>
+ <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>
+ <202011241324.B3439A2@keescook>
+Message-ID: <99a9ffd7-6356-b81d-6e08-7ed74b6fb82c@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 25/11/2020 00:32, Miguel Ojeda wrote:
-> I have said *authoring* lines of *this* kind takes a minute per line.
-> Specifically: lines fixing the fallthrough warning mechanically and
-> repeatedly where the compiler tells you to, and doing so full-time for
-> a month.
-<snip>
-> It is useful since it makes intent clear.
-To make the intent clear, you have to first be certain that you
- understand the intent; otherwise by adding either a break or a
- fallthrough to suppress the warning you are just destroying the
- information that "the intent of this code is unknown".
-Figuring out the intent of a piece of unfamiliar code takes more
- than 1 minute; just because
+On 24/11/2020 21:25, Kees Cook wrote:
+> I still think this isn't right -- it's a case statement that runs off
+> the end without an explicit flow control determination.
+
+Proves too much ? for instance
     case foo:
-        thing;
     case bar:
-        break;
- produces identical code to
-    case foo:
         thing;
         break;
-    case bar:
-        break;
- doesn't mean that *either* is correct ? maybe the author meant
- to write
-    case foo:
-        return thing;
-    case bar:
-        break;
- and by inserting that break you've destroyed the marker that
- would direct someone who knew what the code was about to look
- at that point in the code and spot the problem.
-Thus, you *always* have to look at more than just the immediate
- mechanical context of the code, to make a proper judgement that
- yes, this was the intent.  If you think that that sort of thing
- can be done in an *average* time of one minute, then I hope you
- stay away from code I'm responsible for!
-One minute would be an optimistic target for code that, as the
- maintainer, one is already somewhat familiar with.  For code
- that you're seeing for the first time, as is usually the case
- with the people doing these mechanical fix-a-warning patches,
- it's completely unrealistic.
-
-A warning is only useful because it makes you *think* about the
- code.  If you suppress the warning without doing that thinking,
- then you made the warning useless; and if the warning made you
- think about code that didn't *need* it, then the warning was
- useless from the start.
-
-So make your mind up: does Clang's stricter -Wimplicit-fallthrough
- flag up code that needs thought (in which case the fixes take
- effort both to author and to review) or does it flag up code
- that can be mindlessly "fixed" (in which case the warning is
- worthless)?  Proponents in this thread seem to be trying to
- have it both ways.
+ doesn't require a fallthrough; after case foo:, and afaik
+ no-one is suggesting it should.  Yet it, too, is "a case
+ statement that runs off the end without an explicit flow
+ control determination".
 
 -ed
