@@ -1,65 +1,115 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Date: Thu, 26 Nov 2020 22:45:37 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Assign DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_MAY_SKIP_RESUME to speed up s2ram
-In-Reply-To: <43247451-BA44-4958-A921-2BD0FF5FA5BA@canonical.com>
-References: <20201124153221.11265-1-yu.c.chen@intel.com>
- <8BA4D1E1-DACF-4E84-A5B8-75A7CEA65F98@canonical.com>
- <20201125103612.GA17700@chenyu-office.sh.intel.com>
- <B66CCBD9-5828-4514-AD08-C6FDF026646D@canonical.com>
- <20201126111053.GA15841@chenyu-office.sh.intel.com>
- <43247451-BA44-4958-A921-2BD0FF5FA5BA@canonical.com>
-Message-ID: <20201126144536.GA19171@chenyu-office.sh.intel.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Thu, 26 Nov 2020 15:53:27 +0100
+Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
+ Clang
+In-Reply-To: <44005bde-f6d4-5eaa-39b8-1a5efeedb2d3@gmail.com>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+ <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011201129.B13FDB3C@keescook>
+ <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011220816.8B6591A@keescook>
+ <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+ <CANiq72nZrHWTA4_Msg6MP9snTyenC6-eGfD27CyfNSu7QoVZbw@mail.gmail.com>
+ <1c7d7fde126bc0acf825766de64bf2f9b888f216.camel@HansenPartnership.com>
+ <CANiq72m22Jb5_+62NnwX8xds2iUdWDMAqD8PZw9cuxdHd95W0A@mail.gmail.com>
+ <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>
+ <CANiq72k5tpDoDPmJ0ZWc1DGqm+81Gi-uEENAtvEs9v3SZcx6_Q@mail.gmail.com>
+ <4993259d01a0064f8bb22770503490f9252f3659.camel@HansenPartnership.com>
+ <CANiq72kqO=bYMJnFS2uYRpgWATJ=uXxZuNUsTXT+3aLtrpnzvQ@mail.gmail.com>
+ <44005bde-f6d4-5eaa-39b8-1a5efeedb2d3@gmail.com>
+Message-ID: <CANiq72nobq=ptWK-qWxU91JHqkKhMcRtJNnw2XJd5-vSJWZd8Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Nov 26, 2020 at 08:05:02PM +0800, Kai-Heng Feng wrote:
-> 
-> 
-> > On Nov 26, 2020, at 19:10, Chen Yu <yu.c.chen@intel.com> wrote:
-> > 
-> > On Thu, Nov 26, 2020 at 02:36:42PM +0800, Kai-Heng Feng wrote:
-> >>>> 
-> >>>> What about plugging ethernet cable and using WoL after system is suspended?
-> >>>> Commit "e1000e: Exclude device from suspend direct complete optimization" was to address that scenario.
-> > [cut]
-> >> 
-> >> I don't think this is right.
-> >> Isn't E1000_WUFC_LNKC already set for runtime suspend?
-> >> What if WoL doesn't have it set?
-> >> 
-> > After re-taking a look at your description, please let me elaborate more about the scenario.
-> > With this patch applied, and with sysfs wake up disabled, the expected behavior is:
-> > 
-> > 1. If NIC is not runtime suspended:
-> > 1.1 s2ram suspend -> wufc will be set to 0(no WoL settings), suspend(), suspend_late(), suspend_noirq()
-> > 1.2 s2ram resume  -> NIC resumes normaly
-> > 
-> > 2. If NIC is runtime suspended:
-> > 2.1 s2ram suspend -> wufc set to E1000_WUFC_LNKC, skip the subsequent suspend callbacks.
-> 
-> Is it safe to keep E1000_WUFC_LNKC enabled here?
-> 
-> From commit 6bf6be1127f7 ("e1000e: Do not wake up the system via WOL if device wakeup is disabled"):
-> 
->        /* Runtime suspend should only enable wakeup for link changes */
->        if (runtime)
->                wufc = E1000_WUFC_LNKC;
->        else if (device_may_wakeup(&pdev->dev))
->                wufc = adapter->wol;
->        else
->                wufc = 0;
-> 
-> So it has different wakeup settings for runtime suspend and system suspend, either device_may_wakeup() true or false.
-Right.
-> Or maybe e1000e devs can confirm E1000_WUFC_LNKC is a safe for system suspend?
+On Wed, Nov 25, 2020 at 11:44 PM Edward Cree <ecree.xilinx@gmail.com> wrote:
 >
-Does 'safe' here mean waking up the system?
-For s2ram, whether the NIC can wake up the system from S3 via cable plug is platform
-(BIOS) specific. So the wufc settings here is not directly related to system wake up
-via plug event.
-thanks,
-Chenyu
+> To make the intent clear, you have to first be certain that you
+>  understand the intent; otherwise by adding either a break or a
+>  fallthrough to suppress the warning you are just destroying the
+>  information that "the intent of this code is unknown".
+
+If you don't know what the intent of your own code is, then you
+*already* have a problem in your hands.
+
+> Figuring out the intent of a piece of unfamiliar code takes more
+>  than 1 minute; just because
+>     case foo:
+>         thing;
+>     case bar:
+>         break;
+>  produces identical code to
+>     case foo:
+>         thing;
+>         break;
+>     case bar:
+>         break;
+>  doesn't mean that *either* is correct ? maybe the author meant
+
+What takes 1 minute is adding it *mechanically* by the author, i.e. so
+that you later compare whether codegen is the same.
+
+>  to write
+>     case foo:
+>         return thing;
+>     case bar:
+>         break;
+>  and by inserting that break you've destroyed the marker that
+>  would direct someone who knew what the code was about to look
+>  at that point in the code and spot the problem.
+
+Then it means you already have a bug. This patchset gives the
+maintainer a chance to notice it, which is a good thing. The "you've
+destroyed the market" claim is bogus, because:
+  1. you were not looking into it
+  2. you didn't notice the bug so far
+  3. is implicit -- harder to spot
+  4. is only useful if you explicitly take a look at this kind of bug.
+So why don't you do it now?
+
+> Thus, you *always* have to look at more than just the immediate
+>  mechanical context of the code, to make a proper judgement that
+>  yes, this was the intent.
+
+I find that is the responsibility of the maintainers and reviewers for
+tree-wide patches like this, assuming they want. They can also keep
+the behavior (and the bugs) without spending time. Their choice.
+
+> If you think that that sort of thing
+>  can be done in an *average* time of one minute, then I hope you
+>  stay away from code I'm responsible for!
+
+Please don't accuse others of recklessness or incompetence, especially
+if you didn't understand what they said.
+
+> A warning is only useful because it makes you *think* about the
+>  code.  If you suppress the warning without doing that thinking,
+>  then you made the warning useless; and if the warning made you
+>  think about code that didn't *need* it, then the warning was
+>  useless from the start.
+
+We are not suppressing the warning. Quite the opposite, in fact.
+
+> So make your mind up: does Clang's stricter -Wimplicit-fallthrough
+>  flag up code that needs thought (in which case the fixes take
+>  effort both to author and to review)
+
+As I said several times already, it does take time to review if the
+maintainer wants to take the chance to see if they had a bug to begin
+with, but it does not require thought for the author if they just go
+for equivalent codegen.
+
+> or does it flag up code
+>  that can be mindlessly "fixed" (in which case the warning is
+>  worthless)?  Proponents in this thread seem to be trying to
+>  have it both ways.
+
+A warning is not worthless just because you can mindlessly fix it.
+There are many counterexamples, e.g. many
+checkpatch/lint/lang-format/indentation warnings, functional ones like
+the `if (a = b)` warning...
+
+Cheers,
+Miguel
