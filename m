@@ -1,5 +1,5 @@
-From: Karol Herbst <kherbst@redhat.com>
-Date: Thu, 26 Nov 2020 17:18:13 +0100
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Thu, 26 Nov 2020 18:05:45 +0100
 Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
  Clang
 In-Reply-To: <CAMuHMdV5kOakvZJMWLxbpigFPS+Xuw6DVYsWCWZy7wGsv3idcw@mail.gmail.com>
@@ -19,7 +19,7 @@ References: <cover.1605896059.git.gustavoars@kernel.org>
  <44005bde-f6d4-5eaa-39b8-1a5efeedb2d3@gmail.com>
  <CANiq72nobq=ptWK-qWxU91JHqkKhMcRtJNnw2XJd5-vSJWZd8Q@mail.gmail.com>
  <CAMuHMdV5kOakvZJMWLxbpigFPS+Xuw6DVYsWCWZy7wGsv3idcw@mail.gmail.com>
-Message-ID: <CACO55tsBj3gLECoMWtViDitd7fVTnW+Cp0LVmqYkR=QFBJkEmQ@mail.gmail.com>
+Message-ID: <CANiq72=n4rVvmKt0RCb5aOfQydA8bgDxfntRLDieV8Q2efP8Zg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,59 +28,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Thu, Nov 26, 2020 at 4:28 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> Hi Miguel,
->
-> On Thu, Nov 26, 2020 at 3:54 PM Miguel Ojeda
-> <miguel.ojeda.sandonis@gmail.com> wrote:
-> > On Wed, Nov 25, 2020 at 11:44 PM Edward Cree <ecree.xilinx@gmail.com> wrote:
-> > > To make the intent clear, you have to first be certain that you
-> > >  understand the intent; otherwise by adding either a break or a
-> > >  fallthrough to suppress the warning you are just destroying the
-> > >  information that "the intent of this code is unknown".
-> >
-> > If you don't know what the intent of your own code is, then you
-> > *already* have a problem in your hands.
->
 > The maintainer is not necessarily the owner/author of the code, and
 > thus may not know the intent of the code.
->
-> > > or does it flag up code
-> > >  that can be mindlessly "fixed" (in which case the warning is
-> > >  worthless)?  Proponents in this thread seem to be trying to
-> > >  have it both ways.
-> >
-> > A warning is not worthless just because you can mindlessly fix it.
-> > There are many counterexamples, e.g. many
-> > checkpatch/lint/lang-format/indentation warnings, functional ones like
-> > the `if (a = b)` warning...
->
+
+Agreed, I was not blaming maintainers -- just trying to point out that
+the problem is there :-)
+
+In those cases, it is still very useful: we add the `fallthrough` and
+a comment saying `FIXME: fallthrough intended? Figure this out...`.
+Thus a previous unknown unknown is now a known unknown. And no new
+unknown unknowns will be introduced since we enabled the warning
+globally.
+
 > BTW, you cannot mindlessly fix the latter, as you cannot know if
 > "(a == b)" or "((a = b))" was intended, without understanding the code
 > (and the (possibly unavailable) data sheet, and the hardware, ...).
->
 
-to allow assignments in if statements was clearly a mistake and if you
-need outside information to understand the code, your code is the
-issue already.
+That's right, I was referring to the cases where the compiler saves
+someone time from a typo they just made.
 
-> P.S. So far I've stayed out of this thread, as I like it if the compiler
->      flags possible mistakes.  After all I was the one fixing new
->      "may be used uninitialized" warnings thrown up by gcc-4.1, until
->      (a bit later than) support for that compiler was removed...
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel at lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
->
-
+Cheers,
+Miguel
