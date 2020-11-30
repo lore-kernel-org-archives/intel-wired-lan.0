@@ -1,34 +1,62 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 30 Nov 2020 11:24:04 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Clean up nvm_operations
- structure
-Message-ID: <20201130092404.2694347-1-sasha.neftin@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Mon, 30 Nov 2020 14:12:57 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: acquire VSI pointer only after VF
+ is initialized
+Message-ID: <20201130131257.28856-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-valid_led_default function pointer not in use and can
-be removed from a nvm_operations structure
+This change simplifies the VF initialization check and also minimizes
+the delay between acquiring the VSI pointer and using it. As known by
+the commit being fixed, there is a risk of the VSI pointer getting
+changed. Therefore minimize the delay between getting and using the
+pointer.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Fixes: 9889707b06ac ("i40e: Fix crash caused by stress setting of VF MAC addresses")
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 9da5f83ce456..4461f8b9a864 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -113,7 +113,6 @@ struct igc_nvm_operations {
- 	s32 (*write)(struct igc_hw *hw, u16 offset, u16 i, u16 *data);
- 	s32 (*update)(struct igc_hw *hw);
- 	s32 (*validate)(struct igc_hw *hw);
--	s32 (*valid_led_default)(struct igc_hw *hw, u16 *data);
- };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 729c4f0d5ac5..bf6034c3a6ea 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -4046,20 +4046,16 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 		goto error_param;
  
- struct igc_phy_operations {
+ 	vf = &pf->vf[vf_id];
+-	vsi = pf->vsi[vf->lan_vsi_idx];
+ 
+ 	/* When the VF is resetting wait until it is done.
+ 	 * It can take up to 200 milliseconds,
+ 	 * but wait for up to 300 milliseconds to be safe.
+-	 * If the VF is indeed in reset, the vsi pointer has
+-	 * to show on the newly loaded vsi under pf->vsi[id].
++	 * Acquire the vsi pointer only after the VF has been
++	 * properly initialized.
+ 	 */
+ 	for (i = 0; i < 15; i++) {
+-		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
+-			if (i > 0)
+-				vsi = pf->vsi[vf->lan_vsi_idx];
++		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states))
+ 			break;
+-		}
+ 		msleep(20);
+ 	}
+ 	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
+@@ -4068,6 +4064,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 		ret = -EAGAIN;
+ 		goto error_param;
+ 	}
++	vsi = pf->vsi[vf->lan_vsi_idx];
+ 
+ 	if (is_multicast_ether_addr(mac)) {
+ 		dev_err(&pf->pdev->dev,
 -- 
-2.25.1
+2.28.0
 
