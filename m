@@ -1,73 +1,106 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 30 Nov 2020 11:31:54 -0800
-Subject: [Intel-wired-lan] [PATCH] i40e: acquire VSI pointer only after
- VF is initialized
-In-Reply-To: <20201130131257.28856-1-sassmann@kpanic.de>
-References: <20201130131257.28856-1-sassmann@kpanic.de>
-Message-ID: <263c6e31-62a3-e73d-6f63-23216b15fdd0@intel.com>
+From: Gong, Sishuai <sishuai@purdue.edu>
+Date: Mon, 30 Nov 2020 17:43:09 +0000
+Subject: [Intel-wired-lan] Race: data race between packet_getname() and
+ e1000_set_mac()
+Message-ID: <397ACEA3-ABA1-4F59-A3D3-BE54F273B247@purdue.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi,
+
+We found a data race in linux kernel 5.3.11 that we are able to reproduce in x86 under specific interleavings. Currently, we are not sure about the consequence of this race so we would like to confirm with the community if this can be a harmful bug.
+
+ ------------------------------------------
+Writer site
+
+/tmp/tmp.B7zb7od2zE-5.3.11/extract/linux-5.3.11/drivers/net/ethernet/intel/e1000/e1000_main.c:2206
+       2186   * e1000_set_mac - Change the Ethernet Address of the NIC
+       2187   * @netdev: network interface device structure
+       2188   * @p: pointer to an address structure
+       2189   *
+       2190   * Returns 0 on success, negative on failure
+       2191   **/
+       2192  static int e1000_set_mac(struct net_device *netdev, void *p)
+       2193  {
+       2194      struct e1000_adapter *adapter = netdev_priv(netdev);
+       2195      struct e1000_hw *hw = &adapter->hw;
+       2196      struct sockaddr *addr = p;
+       2197
+       2198      if (!is_valid_ether_addr(addr->sa_data))
+       2199          return -EADDRNOTAVAIL;
+       2200
+       2201      /* 82542 2.0 needs to be in reset to write receive address registers */
+       2202
+       2203      if (hw->mac_type == e1000_82542_rev2_0)
+       2204          e1000_enter_82542_rst(adapter);
+       2205
+ ==>   2206      memcpy(netdev->dev_addr, addr->sa_data, netdev->addr_len);
+       2207      memcpy(hw->mac_addr, addr->sa_data, netdev->addr_len);
+       2208
+       2209      e1000_rar_set(hw, hw->mac_addr, 0);
+       2210
+       2211      if (hw->mac_type == e1000_82542_rev2_0)
+       2212          e1000_leave_82542_rst(adapter);
+       2213
+       2214      return 0;
+       2215  }
+
+------------------------------------------
+Reader site
+
+ /tmp/tmp.B7zb7od2zE-5.3.11/extract/linux-5.3.11/net/packet/af_packet.c:3477
+       3457  static int packet_getname(struct socket *sock, struct sockaddr *uaddr,
+       3458                int peer)
+       3459  {
+       3460      struct net_device *dev;
+       3461      struct sock *sk = sock->sk;
+       3462      struct packet_sock *po = pkt_sk(sk);
+       3463      DECLARE_SOCKADDR(struct sockaddr_ll *, sll, uaddr);
+       3464
+       3465      if (peer)
+       3466          return -EOPNOTSUPP;
+       3467
+       3468      sll->sll_family = AF_PACKET;
+       3469      sll->sll_ifindex = po->ifindex;
+       3470      sll->sll_protocol = po->num;
+       3471      sll->sll_pkttype = 0;
+       3472      rcu_read_lock();
+       3473      dev = dev_get_by_index_rcu(sock_net(sk), po->ifindex);
+       3474      if (dev) {
+       3475          sll->sll_hatype = dev->type;
+       3476          sll->sll_halen = dev->addr_len;
+ ==>   3477          memcpy(sll->sll_addr, dev->dev_addr, dev->addr_len);
+       3478      } else {
+       3479          sll->sll_hatype = 0;    /* Bad: we have no ARPHRD_UNSPEC */
+       3480          sll->sll_halen = 0;
+       3481      }
+       3482      rcu_read_unlock();
+       3483
+       3484      return offsetof(struct sockaddr_ll, sll_addr) + sll->sll_halen;
+       3485  }
 
 
-On 11/30/2020 5:12 AM, Stefan Assmann wrote:
-> This change simplifies the VF initialization check and also minimizes
-> the delay between acquiring the VSI pointer and using it. As known by
-> the commit being fixed, there is a risk of the VSI pointer getting
-> changed. Therefore minimize the delay between getting and using the
-> pointer.
-> 
-> Fixes: 9889707b06ac ("i40e: Fix crash caused by stress setting of VF MAC addresses")
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 
-Ok.
+------------------------------------------
+Writer calling trace
+- __sys_sendmsg
+-- ___sys_sendmsg
+--- sock_sendmsg
+---- netlink_unicast
+----- netlink_rcv_skb 
+------ __rtnl_newlink
+------- do_setlink
+-------- dev_set_mac_address
 
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 729c4f0d5ac5..bf6034c3a6ea 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -4046,20 +4046,16 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
->  		goto error_param;
->  
->  	vf = &pf->vf[vf_id];
-> -	vsi = pf->vsi[vf->lan_vsi_idx];
->  
->  	/* When the VF is resetting wait until it is done.
->  	 * It can take up to 200 milliseconds,
->  	 * but wait for up to 300 milliseconds to be safe.
-> -	 * If the VF is indeed in reset, the vsi pointer has
-> -	 * to show on the newly loaded vsi under pf->vsi[id].
-> +	 * Acquire the vsi pointer only after the VF has been
-> +	 * properly initialized.
->  	 */
->  	for (i = 0; i < 15; i++) {
-> -		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
-> -			if (i > 0)
-> -				vsi = pf->vsi[vf->lan_vsi_idx];
-> +		if (test_bit(I40E_VF_STATE_INIT, &vf->vf_states))
->  			break;
-> -		}
->  		msleep(20);
->  	}
->  	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
-> @@ -4068,6 +4064,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
->  		ret = -EAGAIN;
->  		goto error_param;
->  	}
-> +	vsi = pf->vsi[vf->lan_vsi_idx];
->  
+------------------------------------------
+Reader calling trace
+- __sys_getsockname
 
-Yea, this makes more sense to me.
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 
->  	if (is_multicast_ether_addr(mac)) {
->  		dev_err(&pf->pdev->dev,
-> 
+Thanks,
+Sishuai
+
