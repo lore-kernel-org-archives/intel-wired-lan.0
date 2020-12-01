@@ -1,44 +1,294 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Date: Tue,  1 Dec 2020 09:22:09 +0800
-Subject: [Intel-wired-lan] [PATCH 2/2][v3] e1000e: Remove the runtime
- suspend restriction on CNP+
-In-Reply-To: <cover.1606757180.git.yu.c.chen@intel.com>
-References: <cover.1606757180.git.yu.c.chen@intel.com>
-Message-ID: <aa62fe21ecafaff167f57e86192be70ee8914738.1606757180.git.yu.c.chen@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 01 Dec 2020 14:23:58 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ 4d521943f76bd0d1e68ea5e02df7aadd30b2838a
+Message-ID: <5fc5e17e.+wp/p3taVphII4LZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Although there is platform issue of runtime suspend support
-on CNP, it would be more flexible to let the user decide whether
-to disable runtime or not because:
-1. This can be done in userspace via
-   echo on > /sys/devices/pci0000\:00/0000\:00\:1f.d/power/control
-2. More and more NICs would support runtime suspend, disabling the
-   runtime suspend on them by default would impact the validation.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  master
+branch HEAD: 4d521943f76bd0d1e68ea5e02df7aadd30b2838a  dt-bindings: net: correct interrupt flags in examples
 
-Only disable runtime suspend on CNP in case of any user space regression.
+elapsed time: 3329m
 
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+configs tested: 265
+configs skipped: 4
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allyesconfig
+arm                                 defconfig
+arm                              allmodconfig
+h8300                     edosk2674_defconfig
+sh                          rsk7203_defconfig
+arm                       imx_v6_v7_defconfig
+arc                            hsdk_defconfig
+ia64                            zx1_defconfig
+sh                              ul2_defconfig
+powerpc                    sam440ep_defconfig
+nds32                            alldefconfig
+arm                            qcom_defconfig
+powerpc                 mpc832x_rdb_defconfig
+mips                           xway_defconfig
+arm                         lpc18xx_defconfig
+powerpc                      pcm030_defconfig
+powerpc                          allyesconfig
+sh                ecovec24-romimage_defconfig
+arm                        vexpress_defconfig
+arm                           sama5_defconfig
+arm                       aspeed_g5_defconfig
+sh                             espt_defconfig
+sh                        edosk7705_defconfig
+arm                      jornada720_defconfig
+powerpc                 mpc8540_ads_defconfig
+m68k                       m5275evb_defconfig
+arm                         lpc32xx_defconfig
+xtensa                              defconfig
+mips                        vocore2_defconfig
+arm                         cm_x300_defconfig
+mips                           ip27_defconfig
+mips                      pic32mzda_defconfig
+arm                        mvebu_v5_defconfig
+sh                          urquell_defconfig
+powerpc                     pq2fads_defconfig
+arm                          prima2_defconfig
+sh                            shmin_defconfig
+sh                        dreamcast_defconfig
+powerpc                       maple_defconfig
+xtensa                    xip_kc705_defconfig
+sh                         apsh4a3a_defconfig
+c6x                         dsk6455_defconfig
+powerpc                      ppc64e_defconfig
+openrisc                 simple_smp_defconfig
+arc                          axs101_defconfig
+powerpc                    klondike_defconfig
+mips                           jazz_defconfig
+powerpc                     skiroot_defconfig
+riscv                            allmodconfig
+s390                       zfcpdump_defconfig
+mips                           gcw0_defconfig
+arm                      pxa255-idp_defconfig
+arm                        multi_v7_defconfig
+m68k                                defconfig
+sh                   sh7724_generic_defconfig
+mips                     loongson1c_defconfig
+powerpc64                        alldefconfig
+mips                       lemote2f_defconfig
+xtensa                  cadence_csp_defconfig
+sh                          landisk_defconfig
+powerpc                      walnut_defconfig
+um                             i386_defconfig
+arm                          ep93xx_defconfig
+s390                          debug_defconfig
+powerpc                      ep88xc_defconfig
+arm                            mmp2_defconfig
+sh                   secureedge5410_defconfig
+powerpc                     mpc5200_defconfig
+mips                         tb0287_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                 canyonlands_defconfig
+mips                            gpr_defconfig
+arc                        nsimosci_defconfig
+riscv                    nommu_k210_defconfig
+arm                             mxs_defconfig
+riscv                    nommu_virt_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                     pseries_defconfig
+arm                           omap1_defconfig
+powerpc                      tqm8xx_defconfig
+sh                   sh7770_generic_defconfig
+xtensa                           alldefconfig
+c6x                        evmc6474_defconfig
+arm                        clps711x_defconfig
+arm                           corgi_defconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                          r7785rp_defconfig
+mips                        workpad_defconfig
+arm                          gemini_defconfig
+mips                     cu1000-neo_defconfig
+ia64                        generic_defconfig
+powerpc                     kilauea_defconfig
+alpha                            alldefconfig
+m68k                       m5249evb_defconfig
+xtensa                    smp_lx200_defconfig
+sh                           se7343_defconfig
+arm                  colibri_pxa270_defconfig
+mips                         bigsur_defconfig
+arm                           h3600_defconfig
+m68k                        m5407c3_defconfig
+mips                        bcm47xx_defconfig
+xtensa                          iss_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                    adder875_defconfig
+sh                               j2_defconfig
+powerpc                      katmai_defconfig
+arc                           tb10x_defconfig
+arm                             rpc_defconfig
+arm                        cerfcube_defconfig
+sh                           se7619_defconfig
+microblaze                          defconfig
+powerpc                      cm5200_defconfig
+arm                          collie_defconfig
+arc                          axs103_defconfig
+arm                         bcm2835_defconfig
+c6x                        evmc6472_defconfig
+nios2                         10m50_defconfig
+um                           x86_64_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                        fsp2_defconfig
+mips                       capcella_defconfig
+powerpc                      ppc44x_defconfig
+arm                          imote2_defconfig
+xtensa                           allyesconfig
+arm                        shmobile_defconfig
+powerpc                     asp8347_defconfig
+mips                         mpc30x_defconfig
+h8300                       h8s-sim_defconfig
+powerpc                   bluestone_defconfig
+powerpc                   lite5200b_defconfig
+m68k                        m5272c3_defconfig
+arm                          exynos_defconfig
+riscv                             allnoconfig
+powerpc                        cell_defconfig
+powerpc                      obs600_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                       ebony_defconfig
+mips                      malta_kvm_defconfig
+arm                       netwinder_defconfig
+powerpc                     tqm8555_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                   motionpro_defconfig
+sh                            hp6xx_defconfig
+sh                          lboxre2_defconfig
+nios2                         3c120_defconfig
+arc                 nsimosci_hs_smp_defconfig
+mips                      bmips_stb_defconfig
+powerpc                      bamboo_defconfig
+arm                             pxa_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                mpc7448_hpc2_defconfig
+arm                       multi_v4t_defconfig
+powerpc                     sequoia_defconfig
+arm                         s5pv210_defconfig
+mips                    maltaup_xpa_defconfig
+c6x                              alldefconfig
+c6x                        evmc6678_defconfig
+mips                      loongson3_defconfig
+mips                     cu1830-neo_defconfig
+arm                         axm55xx_defconfig
+sh                          rsk7269_defconfig
+powerpc                    socrates_defconfig
+sh                             sh03_defconfig
+arm                     eseries_pxa_defconfig
+mips                         db1xxx_defconfig
+arm                        mini2440_defconfig
+arm                           spitz_defconfig
+arc                              allyesconfig
+m68k                        mvme16x_defconfig
+mips                          rm200_defconfig
+m68k                       bvme6000_defconfig
+powerpc                     stx_gp3_defconfig
+arm                          simpad_defconfig
+arm                              zx_defconfig
+arm                        realview_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                     kmeter1_defconfig
+mips                      maltasmvp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201130
+i386                 randconfig-a002-20201130
+i386                 randconfig-a003-20201130
+i386                 randconfig-a005-20201130
+i386                 randconfig-a006-20201130
+i386                 randconfig-a001-20201130
+i386                 randconfig-a004-20201129
+i386                 randconfig-a003-20201129
+i386                 randconfig-a002-20201129
+i386                 randconfig-a005-20201129
+i386                 randconfig-a001-20201129
+i386                 randconfig-a006-20201129
+x86_64               randconfig-a014-20201130
+x86_64               randconfig-a015-20201130
+x86_64               randconfig-a016-20201130
+x86_64               randconfig-a011-20201130
+x86_64               randconfig-a012-20201130
+x86_64               randconfig-a013-20201130
+x86_64               randconfig-a015-20201129
+x86_64               randconfig-a011-20201129
+x86_64               randconfig-a016-20201129
+x86_64               randconfig-a014-20201129
+x86_64               randconfig-a012-20201129
+x86_64               randconfig-a013-20201129
+i386                 randconfig-a013-20201130
+i386                 randconfig-a012-20201130
+i386                 randconfig-a011-20201130
+i386                 randconfig-a016-20201130
+i386                 randconfig-a015-20201130
+i386                 randconfig-a014-20201130
+i386                 randconfig-a012-20201129
+i386                 randconfig-a013-20201129
+i386                 randconfig-a011-20201129
+i386                 randconfig-a016-20201129
+i386                 randconfig-a014-20201129
+i386                 randconfig-a015-20201129
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a002-20201130
+x86_64               randconfig-a006-20201130
+x86_64               randconfig-a005-20201130
+x86_64               randconfig-a004-20201130
+x86_64               randconfig-a001-20201130
+x86_64               randconfig-a003-20201130
+x86_64               randconfig-a003-20201129
+x86_64               randconfig-a006-20201129
+x86_64               randconfig-a004-20201129
+x86_64               randconfig-a005-20201129
+x86_64               randconfig-a002-20201129
+x86_64               randconfig-a001-20201129
+
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index b210bba3f20a..d06435267dc8 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7674,7 +7674,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_SMART_PREPARE);
- 
--	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
-+	if (pci_dev_run_wake(pdev) && hw->mac.type != e1000_pch_cnp)
- 		pm_runtime_put_noidle(&pdev->dev);
- 
- 	return 0;
--- 
-2.17.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
