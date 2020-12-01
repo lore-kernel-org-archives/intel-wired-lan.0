@@ -1,39 +1,30 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Tue, 1 Dec 2020 08:23:23 +0000
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Tue, 1 Dec 2020 09:58:52 +0100
 Subject: [Intel-wired-lan] [PATCH v4 2/6] igb: take vlan double header
  into account
-In-Reply-To: <20201111170453.32693-3-sven.auhagen@voleatech.de>
+In-Reply-To: <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
 References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
  <20201111170453.32693-3-sven.auhagen@voleatech.de>
-Message-ID: <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
+ <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
+Message-ID: <20201201095852.2dc1e8f8@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: sven.auhagen at voleatech.de <sven.auhagen@voleatech.de>
-> Sent: Wednesday, November 11, 2020 10:35 PM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Fijalkowski, Maciej
-> <maciej.fijalkowski@intel.com>; kuba at kernel.org
-> Cc: davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; nhorman at redhat.com; sassmann at redhat.com;
-> Penigalapati, Sandeep <sandeep.penigalapati@intel.com>;
-> brouer at redhat.com; pmenzel at molgen.mpg.de
-> Subject: [PATCH v4 2/6] igb: take vlan double header into account
-> 
-> From: Sven Auhagen <sven.auhagen@voleatech.de>
-> 
-> Increase the packet header padding to include double VLAN tagging.
-> This patch uses a macro for this.
-> 
-> Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h      | 5 +++++
->  drivers/net/ethernet/intel/igb/igb_main.c | 7 +++----
->  2 files changed, 8 insertions(+), 4 deletions(-)
-> 
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+On Tue, 1 Dec 2020 08:23:23 +0000
+"Penigalapati, Sandeep" <sandeep.penigalapati@intel.com> wrote:
+
+> Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+
+Very happy that you are testing this.
+
+Have you also tested that samples/bpf/ xdp_redirect_cpu program works?
+
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
+
