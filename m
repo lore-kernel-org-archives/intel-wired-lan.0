@@ -1,169 +1,39 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 01 Dec 2020 15:49:29 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 91c03970feaacc96d992da2d409446dd9f1952dd
-Message-ID: <5fc5f589./X7mQiJnxCytgsJ9%lkp@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Tue, 1 Dec 2020 08:23:23 +0000
+Subject: [Intel-wired-lan] [PATCH v4 2/6] igb: take vlan double header
+ into account
+In-Reply-To: <20201111170453.32693-3-sven.auhagen@voleatech.de>
+References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
+ <20201111170453.32693-3-sven.auhagen@voleatech.de>
+Message-ID: <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
-branch HEAD: 91c03970feaacc96d992da2d409446dd9f1952dd  i40e: acquire VSI pointer only after VF is initialized
-
-elapsed time: 725m
-
-configs tested: 140
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-h8300                     edosk2674_defconfig
-sh                          rsk7203_defconfig
-arm                       imx_v6_v7_defconfig
-arc                            hsdk_defconfig
-ia64                            zx1_defconfig
-sh                              ul2_defconfig
-powerpc                    sam440ep_defconfig
-nds32                            alldefconfig
-arm                            qcom_defconfig
-powerpc                 mpc832x_rdb_defconfig
-mips                           xway_defconfig
-arm                           sama5_defconfig
-arm                       aspeed_g5_defconfig
-sh                             espt_defconfig
-sh                        edosk7705_defconfig
-arm                      jornada720_defconfig
-s390                       zfcpdump_defconfig
-mips                           gcw0_defconfig
-arm                      pxa255-idp_defconfig
-arm                        multi_v7_defconfig
-mips                         tb0287_defconfig
-arm                        mvebu_v7_defconfig
-powerpc                 canyonlands_defconfig
-mips                            gpr_defconfig
-arc                        nsimosci_defconfig
-arm                        clps711x_defconfig
-arm                           corgi_defconfig
-sh                          r7785rp_defconfig
-mips                        workpad_defconfig
-arm                          gemini_defconfig
-mips                     cu1000-neo_defconfig
-ia64                        generic_defconfig
-powerpc                     kilauea_defconfig
-powerpc                    adder875_defconfig
-sh                               j2_defconfig
-sh                   secureedge5410_defconfig
-powerpc                      katmai_defconfig
-arc                           tb10x_defconfig
-powerpc                     mpc5200_defconfig
-nios2                         10m50_defconfig
-um                           x86_64_defconfig
-powerpc                     skiroot_defconfig
-powerpc                 mpc836x_mds_defconfig
-xtensa                           allyesconfig
-powerpc                        fsp2_defconfig
-mips                       capcella_defconfig
-powerpc                      ppc44x_defconfig
-arm                          imote2_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                   bluestone_defconfig
-powerpc                   lite5200b_defconfig
-m68k                        m5272c3_defconfig
-powerpc                       ebony_defconfig
-powerpc               mpc834x_itxgp_defconfig
-mips                      malta_kvm_defconfig
-arm                       netwinder_defconfig
-powerpc                     tqm8555_defconfig
-mips                        nlm_xlp_defconfig
-mips                     cu1830-neo_defconfig
-c6x                        evmc6678_defconfig
-powerpc                      walnut_defconfig
-mips                      loongson3_defconfig
-arm                              zx_defconfig
-arm                        realview_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                     kmeter1_defconfig
-mips                      maltasmvp_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201130
-i386                 randconfig-a002-20201130
-i386                 randconfig-a003-20201130
-i386                 randconfig-a005-20201130
-i386                 randconfig-a006-20201130
-i386                 randconfig-a001-20201130
-x86_64               randconfig-a014-20201130
-x86_64               randconfig-a015-20201130
-x86_64               randconfig-a016-20201130
-x86_64               randconfig-a011-20201130
-x86_64               randconfig-a012-20201130
-x86_64               randconfig-a013-20201130
-i386                 randconfig-a013-20201130
-i386                 randconfig-a012-20201130
-i386                 randconfig-a011-20201130
-i386                 randconfig-a016-20201130
-i386                 randconfig-a015-20201130
-i386                 randconfig-a014-20201130
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a002-20201130
-x86_64               randconfig-a006-20201130
-x86_64               randconfig-a005-20201130
-x86_64               randconfig-a004-20201130
-x86_64               randconfig-a001-20201130
-x86_64               randconfig-a003-20201130
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> From: sven.auhagen at voleatech.de <sven.auhagen@voleatech.de>
+> Sent: Wednesday, November 11, 2020 10:35 PM
+> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Fijalkowski, Maciej
+> <maciej.fijalkowski@intel.com>; kuba at kernel.org
+> Cc: davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; nhorman at redhat.com; sassmann at redhat.com;
+> Penigalapati, Sandeep <sandeep.penigalapati@intel.com>;
+> brouer at redhat.com; pmenzel at molgen.mpg.de
+> Subject: [PATCH v4 2/6] igb: take vlan double header into account
+> 
+> From: Sven Auhagen <sven.auhagen@voleatech.de>
+> 
+> Increase the packet header padding to include double VLAN tagging.
+> This patch uses a macro for this.
+> 
+> Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
+> ---
+>  drivers/net/ethernet/intel/igb/igb.h      | 5 +++++
+>  drivers/net/ethernet/intel/igb/igb_main.c | 7 +++----
+>  2 files changed, 8 insertions(+), 4 deletions(-)
+> 
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
