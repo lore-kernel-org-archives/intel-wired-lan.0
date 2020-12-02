@@ -1,105 +1,80 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Wed,  2 Dec 2020 10:17:48 -0600
-Subject: [Intel-wired-lan] [PATCH v2 5/5] e1000e: Export s0ix flags to
- ethtool
+Date: Wed,  2 Dec 2020 10:17:46 -0600
+Subject: [Intel-wired-lan] [PATCH v2 3/5] e1000e: Add Dell's Comet Lake
+ systems into s0ix heuristics
 In-Reply-To: <20201202161748.128938-1-mario.limonciello@dell.com>
 References: <20201202161748.128938-1-mario.limonciello@dell.com>
-Message-ID: <20201202161748.128938-6-mario.limonciello@dell.com>
+Message-ID: <20201202161748.128938-4-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This flag can be used for debugging and development purposes
-including determining if s0ix flows work properly for a system
-not currently recognized by heuristics.
+Dell's Comet Lake Latitude and Precision systems containing i219LM are
+properly configured and should use the s0ix flows.
 
 Tested-by: Yijun Shen <yijun.shen@dell.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 40 +++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ drivers/net/ethernet/intel/e1000e/s0ix.c | 33 +++++++++++++++++++++---
+ 1 file changed, 29 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 03215b0aee4b..eb683949ebfe 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -23,6 +23,13 @@ struct e1000_stats {
- 	int stat_offset;
- };
+diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
+index c3013edbd9e4..74043e80c32f 100644
+--- a/drivers/net/ethernet/intel/e1000e/s0ix.c
++++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
+@@ -1,5 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+-/* Copyright(c) 1999 - 2018 Intel Corporation. */
++/* Copyright(c) 1999 - 2018 Intel Corporation.
++ * Copyright(c) 2020 Dell Inc.
++ */
  
-+static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
-+	"s0ix-enabled",
-+};
-+
-+#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
-+
- #define E1000_STAT(str, m) { \
- 		.stat_string = str, \
- 		.type = E1000_STATS, \
-@@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
- 		return E1000_TEST_LEN;
- 	case ETH_SS_STATS:
- 		return E1000_STATS_LEN;
-+	case ETH_SS_PRIV_FLAGS:
-+		return E1000E_PRIV_FLAGS_STR_LEN;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
- 			p += ETH_GSTRING_LEN;
- 		}
- 		break;
-+	case ETH_SS_PRIV_FLAGS:
-+		memcpy(data, e1000e_priv_flags_strings,
-+		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-+		break;
- 	}
+ #include <linux/netdevice.h>
+ 
+@@ -44,6 +46,26 @@ static bool e1000e_check_me(u16 device_id)
+ 	return false;
  }
  
-@@ -2305,6 +2318,31 @@ static int e1000e_get_ts_info(struct net_device *netdev,
- 	return 0;
++static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
++{
++	if (dev->subsystem_vendor == PCI_VENDOR_ID_DELL) {
++		switch (dev->subsystem_device) {
++		case 0x099f: /* Latitude 5310 */
++		case 0x09a0: /* Latitude 5410 */
++		case 0x09c9: /* Latitude 5410 */
++		case 0x09a1: /* Latitude 5510 */
++		case 0x09a2: /* Precision 3550 */
++		case 0x09c0: /* Latitude 5411 */
++		case 0x09c1: /* Latitude 5511 */
++		case 0x09c2: /* Precision 3551 */
++		case 0x09c3: /* Precision 7550 */
++		case 0x09c4: /* Precision 7750 */
++			return true;
++		}
++	}
++	return false;
++}
++
+ void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+@@ -273,8 +295,11 @@ void e1000e_maybe_enable_s0ix(struct e1000_adapter *adapter)
+ 	/* require cannon point or later */
+ 	if (hw->mac.type < e1000_pch_cnp)
+ 		return;
+-	/* turn off on ME configurations */
+-	if (e1000e_check_me(pdev->device))
+-		return;
++	/* check for allowlist of systems */
++	if (!e1000e_check_subsystem_allowlist(pdev)) {
++		/* turn off on ME configurations */
++		if (e1000e_check_me(pdev->device))
++			return;
++	}
+ 	adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
  }
- 
-+static u32 e1000e_get_priv_flags(struct net_device *netdev)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	u32 priv_flags = 0;
-+
-+	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-+		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
-+
-+	return priv_flags;
-+}
-+
-+static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	unsigned int flags2 = adapter->flags2;
-+
-+	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
-+	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED)
-+		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-+	if (flags2 != adapter->flags2)
-+		adapter->flags2 = flags2;
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops e1000_ethtool_ops = {
- 	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
- 	.get_drvinfo		= e1000_get_drvinfo,
-@@ -2336,6 +2374,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
- 	.set_eee		= e1000e_set_eee,
- 	.get_link_ksettings	= e1000_get_link_ksettings,
- 	.set_link_ksettings	= e1000_set_link_ksettings,
-+	.get_priv_flags		= e1000e_get_priv_flags,
-+	.set_priv_flags		= e1000e_set_priv_flags,
- };
- 
- void e1000e_set_ethtool_ops(struct net_device *netdev)
 -- 
 2.25.1
 
