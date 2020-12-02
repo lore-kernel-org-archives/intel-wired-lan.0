@@ -1,313 +1,167 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue,  1 Dec 2020 20:53:25 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 9/9] igc: Separate TSN
- configurations that can be updated
+Date: Tue,  1 Dec 2020 20:53:18 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 2/9] taprio: Add support for
+ frame preemption offload
 In-Reply-To: <20201202045325.3254757-1-vinicius.gomes@intel.com>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
-Message-ID: <20201202045325.3254757-10-vinicius.gomes@intel.com>
+Message-ID: <20201202045325.3254757-3-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Some TSN features can be enabled during runtime, but most of the
-features need an adapter reset to be disabled.
+This adds a way to configure which queues are marked as preemptible
+and which are marked as express.
 
-To better keep track of this, separate the process into an "_apply"
-and a "reset" functions, "_apply" will run with the adapter in
-potencially "dirty" state, and if necessary will request an adapter
-reset, so "_reset" always run with a "clean" adapter.
-
-The idea is to make the process easier to follow.
+Even if this is not a "real" offload, because it can't be executed
+purely in software, having this information near where the mapping of
+queues is specified, makes it, hopefully, easier to understand.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c |  21 ++--
- drivers/net/ethernet/intel/igc/igc_tsn.c  | 140 +++++++++++++++-------
- drivers/net/ethernet/intel/igc/igc_tsn.h  |   1 +
- 3 files changed, 103 insertions(+), 59 deletions(-)
+ include/linux/netdevice.h      |  1 +
+ include/net/pkt_sched.h        |  4 ++++
+ include/uapi/linux/pkt_sched.h |  1 +
+ net/sched/sch_taprio.c         | 41 ++++++++++++++++++++++++++++++----
+ 4 files changed, 43 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 763f39082f91..76999fe05926 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -107,7 +107,7 @@ void igc_reset(struct igc_adapter *adapter)
- 	igc_ptp_reset(adapter);
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 8eeb73ac58bd..d7a99e769e79 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -852,6 +852,7 @@ enum tc_setup_type {
+ 	TC_SETUP_QDISC_ETS,
+ 	TC_SETUP_QDISC_TBF,
+ 	TC_SETUP_QDISC_FIFO,
++	TC_SETUP_PREEMPT,
+ };
  
- 	/* Re-enable TSN offloading, where applicable. */
--	igc_tsn_offload_apply(adapter);
-+	igc_tsn_reset(adapter);
+ /* These structures hold the attributes of bpf state that are being passed
+diff --git a/include/net/pkt_sched.h b/include/net/pkt_sched.h
+index 15b1b30f454e..be5ff1535332 100644
+--- a/include/net/pkt_sched.h
++++ b/include/net/pkt_sched.h
+@@ -183,6 +183,10 @@ struct tc_taprio_qopt_offload {
+ 	struct tc_taprio_sched_entry entries[];
+ };
  
- 	igc_get_phy_info(hw);
- }
-@@ -4823,6 +4823,11 @@ static int igc_save_frame_preemption(struct igc_adapter *adapter,
- 	u32 preempt;
- 	int i;
- 
-+	/* What we want here is just to save the configuration, so
-+	 * when frame preemption is enabled via ethtool, which queues
-+	 * are marked as preemptible is saved.
-+	 */
++struct tc_preempt_qopt_offload {
++	u32 preemptible_queues;
++};
 +
- 	preempt = qopt->preemptible_queues;
+ /* Reference counting */
+ struct tc_taprio_qopt_offload *taprio_offload_get(struct tc_taprio_qopt_offload
+ 						  *offload);
+diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+index 9e7c2c607845..f0240ddaeee3 100644
+--- a/include/uapi/linux/pkt_sched.h
++++ b/include/uapi/linux/pkt_sched.h
+@@ -1240,6 +1240,7 @@ enum {
+ 	TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME_EXTENSION, /* s64 */
+ 	TCA_TAPRIO_ATTR_FLAGS, /* u32 */
+ 	TCA_TAPRIO_ATTR_TXTIME_DELAY, /* u32 */
++	TCA_TAPRIO_ATTR_PREEMPT_QUEUES, /* u32 */
+ 	__TCA_TAPRIO_ATTR_MAX,
+ };
  
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
-@@ -4850,18 +4855,6 @@ static int igc_tsn_enable_qbv_scheduling(struct igc_adapter *adapter,
- 	return igc_tsn_offload_apply(adapter);
- }
+diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+index 26fb8a62996b..c482c5d211bb 100644
+--- a/net/sched/sch_taprio.c
++++ b/net/sched/sch_taprio.c
+@@ -64,6 +64,7 @@ struct taprio_sched {
+ 	struct Qdisc **qdiscs;
+ 	struct Qdisc *root;
+ 	u32 flags;
++	u32 preemptible_queues;
+ 	enum tk_offsets tk_offset;
+ 	int clockid;
+ 	atomic64_t picos_per_byte; /* Using picoseconds because for 10Gbps+
+@@ -776,6 +777,7 @@ static const struct nla_policy taprio_policy[TCA_TAPRIO_ATTR_MAX + 1] = {
+ 	[TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME_EXTENSION] = { .type = NLA_S64 },
+ 	[TCA_TAPRIO_ATTR_FLAGS]                      = { .type = NLA_U32 },
+ 	[TCA_TAPRIO_ATTR_TXTIME_DELAY]		     = { .type = NLA_U32 },
++	[TCA_TAPRIO_ATTR_PREEMPT_QUEUES]	     = { .type = NLA_U32 },
+ };
  
--static int igc_tsn_enable_frame_preemption(struct igc_adapter *adapter,
--					   struct tc_preempt_qopt_offload *qopt)
--{
--	int err;
--
--	err = igc_save_frame_preemption(adapter, qopt);
--	if (err)
--		return err;
--
--	return igc_tsn_offload_apply(adapter);
--}
--
- static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 			void *type_data)
+ static int fill_sched_entry(struct taprio_sched *q, struct nlattr **tb,
+@@ -1268,6 +1270,7 @@ static int taprio_disable_offload(struct net_device *dev,
+ 				  struct netlink_ext_ack *extack)
  {
-@@ -4875,7 +4868,7 @@ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 		return igc_tsn_enable_launchtime(adapter, type_data);
+ 	const struct net_device_ops *ops = dev->netdev_ops;
++	struct tc_preempt_qopt_offload preempt = { };
+ 	struct tc_taprio_qopt_offload *offload;
+ 	int err;
  
- 	case TC_SETUP_PREEMPT:
--		return igc_tsn_enable_frame_preemption(adapter, type_data);
-+		return igc_save_frame_preemption(adapter, type_data);
+@@ -1286,13 +1289,15 @@ static int taprio_disable_offload(struct net_device *dev,
+ 	offload->enable = 0;
  
- 	default:
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index 76272f62bb69..caf8510ad6be 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -18,8 +18,24 @@ static bool is_any_launchtime(struct igc_adapter *adapter)
- 	return false;
- }
- 
-+static unsigned int igc_tsn_new_flags(struct igc_adapter *adapter)
-+{
-+	unsigned int new_flags = adapter->flags & ~IGC_FLAG_TSN_ANY_ENABLED;
+ 	err = ops->ndo_setup_tc(dev, TC_SETUP_QDISC_TAPRIO, offload);
+-	if (err < 0) {
++	if (err < 0)
++		NL_SET_ERR_MSG(extack,
++			       "Device failed to disable offload");
 +
-+	if (adapter->base_time)
-+		new_flags |= IGC_FLAG_TSN_QBV_ENABLED;
-+
-+	if (is_any_launchtime(adapter))
-+		new_flags |= IGC_FLAG_TSN_QBV_ENABLED;
-+
-+	if (adapter->frame_preemption_active)
-+		new_flags |= IGC_FLAG_TSN_PREEMPT_ENABLED;
-+
-+	return new_flags;
-+}
-+
- /* Returns the TSN specific registers to their default values after
-- * TSN offloading is disabled.
-+ * the adapter is reset.
-  */
- static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- {
-@@ -27,11 +43,9 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 	u32 tqavctrl, rxpbs;
- 	int i;
++	err = ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT, &preempt);
++	if (err < 0)
+ 		NL_SET_ERR_MSG(extack,
+ 			       "Device failed to disable offload");
+-		goto out;
+-	}
  
--	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED))
--		return 0;
--
- 	adapter->cycle_time = 0;
- 	adapter->frame_preemption_active = false;
-+	adapter->base_time = 0;
+-out:
+ 	taprio_offload_free(offload);
  
- 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_DEFAULT);
-@@ -63,37 +77,24 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_QBVCYCLET_S, NSEC_PER_MSEC);
- 	wr32(IGC_QBVCYCLET, NSEC_PER_MSEC);
- 
--	adapter->flags &= ~IGC_FLAG_TSN_QBV_ENABLED;
-+	adapter->flags &= ~IGC_FLAG_TSN_ANY_ENABLED;
- 
- 	return 0;
- }
- 
--static int igc_tsn_enable_offload(struct igc_adapter *adapter)
-+static int igc_tsn_update_params(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
--	u32 tqavctrl, baset_l, baset_h;
--	u32 sec, nsec, cycle, rxpbs;
--	ktime_t base_time, systim;
-+	u32 tqavctrl;
-+	unsigned int flags;
- 	int i;
- 
--	if (adapter->flags & IGC_FLAG_TSN_QBV_ENABLED)
-+	flags = igc_tsn_new_flags(adapter) & IGC_FLAG_TSN_ANY_ENABLED;
-+	if (!flags)
- 		return 0;
- 
--	cycle = adapter->cycle_time;
--	base_time = adapter->base_time;
--
--	wr32(IGC_TSAUXC, 0);
--	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
--	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
--
--	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
--	rxpbs |= IGC_RXPBSIZE_TSN;
--
--	wr32(IGC_RXPBS, rxpbs);
--
- 	tqavctrl = rd32(IGC_TQAVCTRL) &
- 		~(IGC_TQAVCTRL_MIN_FRAG_MASK | IGC_TQAVCTRL_PREEMPT_ENA);
--	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
- 
- 	if (adapter->frame_preemption_active)
- 		tqavctrl |= IGC_TQAVCTRL_PREEMPT_ENA;
-@@ -102,9 +103,6 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
--	wr32(IGC_QBVCYCLET_S, cycle);
--	wr32(IGC_QBVCYCLET, cycle);
--
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
- 		struct igc_ring *ring = adapter->tx_ring[i];
- 		u32 txqctl = 0;
-@@ -125,12 +123,47 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 		if (ring->launchtime_enable)
- 			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
- 
--		if (ring->preemptible)
-+		if (adapter->frame_preemption_active && ring->preemptible)
- 			txqctl |= IGC_TXQCTL_PREEMPTABLE;
- 
- 		wr32(IGC_TXQCTL(i), txqctl);
+ 	return err;
+@@ -1509,6 +1514,29 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+ 					       mqprio->prio_tc_map[i]);
  	}
  
-+	adapter->flags = igc_tsn_new_flags(adapter);
++	/* It's valid to enable frame preemption without any kind of
++	 * offloading being enabled, so keep it separated.
++	 */
++	if (tb[TCA_TAPRIO_ATTR_PREEMPT_QUEUES]) {
++		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_QUEUES]);
++		struct tc_preempt_qopt_offload qopt = { };
 +
-+	return 0;
-+}
++		if (preempt == U32_MAX) {
++			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
++			err = -EINVAL;
++			goto free_sched;
++		}
 +
-+static int igc_tsn_enable_offload(struct igc_adapter *adapter)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 baset_l, baset_h, tqavctrl;
-+	u32 sec, nsec, cycle, rxpbs;
-+	ktime_t base_time, systim;
++		qopt.preemptible_queues = preempt;
 +
-+	tqavctrl = rd32(IGC_TQAVCTRL);
-+	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
++		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
++						    &qopt);
++		if (err)
++			goto free_sched;
 +
-+	wr32(IGC_TQAVCTRL, tqavctrl);
++		q->preemptible_queues = preempt;
++	}
 +
-+	wr32(IGC_TSAUXC, 0);
-+	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
-+	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
-+
-+	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
-+	rxpbs |= IGC_RXPBSIZE_TSN;
-+
-+	wr32(IGC_RXPBS, rxpbs);
-+
-+	if (!adapter->base_time)
-+		goto done;
-+
-+	cycle = adapter->cycle_time;
-+	base_time = adapter->base_time;
-+
-+	wr32(IGC_QBVCYCLET_S, cycle);
-+	wr32(IGC_QBVCYCLET, cycle);
-+
- 	nsec = rd32(IGC_SYSTIML);
- 	sec = rd32(IGC_SYSTIMH);
+ 	if (FULL_OFFLOAD_IS_ENABLED(q->flags))
+ 		err = taprio_enable_offload(dev, q, new_admin, extack);
+ 	else
+@@ -1650,6 +1678,7 @@ static int taprio_init(struct Qdisc *sch, struct nlattr *opt,
+ 	 */
+ 	q->clockid = -1;
+ 	q->flags = TAPRIO_FLAGS_INVALID;
++	q->preemptible_queues = U32_MAX;
  
-@@ -148,34 +181,51 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_BASET_H, baset_h);
- 	wr32(IGC_BASET_L, baset_l);
+ 	spin_lock(&taprio_list_lock);
+ 	list_add(&q->taprio_list, &taprio_list);
+@@ -1833,6 +1862,10 @@ static int taprio_dump(struct Qdisc *sch, struct sk_buff *skb)
+ 	if (q->flags && nla_put_u32(skb, TCA_TAPRIO_ATTR_FLAGS, q->flags))
+ 		goto options_error;
  
--	adapter->flags |= IGC_FLAG_TSN_QBV_ENABLED;
-+done:
-+	igc_tsn_update_params(adapter);
- 
- 	return 0;
- }
- 
-+int igc_tsn_reset(struct igc_adapter *adapter)
-+{
-+	unsigned int new_flags;
-+	int err = 0;
++	if (q->preemptible_queues != U32_MAX &&
++	    nla_put_u32(skb, TCA_TAPRIO_ATTR_PREEMPT_QUEUES, q->preemptible_queues))
++		goto options_error;
 +
-+	new_flags = igc_tsn_new_flags(adapter);
-+
-+	if (!(new_flags & IGC_FLAG_TSN_ANY_ENABLED))
-+		return igc_tsn_disable_offload(adapter);
-+
-+	err = igc_tsn_enable_offload(adapter);
-+	if (err < 0)
-+		return err;
-+
-+	adapter->flags = new_flags;
-+
-+	return err;
-+}
-+
- int igc_tsn_offload_apply(struct igc_adapter *adapter)
- {
--	bool is_any_enabled = adapter->base_time ||
--		is_any_launchtime(adapter) || adapter->frame_preemption_active;
-+	unsigned int new_flags, old_flags;
- 
--	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED) && !is_any_enabled)
--		return 0;
-+	old_flags = adapter->flags;
-+	new_flags = igc_tsn_new_flags(adapter);
- 
--	if (!is_any_enabled) {
--		int err = igc_tsn_disable_offload(adapter);
-+	if (old_flags == new_flags)
-+		return igc_tsn_update_params(adapter);
- 
--		if (err < 0)
--			return err;
-+	/* Enabling features work without resetting the adapter */
-+	if (new_flags > old_flags)
-+		return igc_tsn_enable_offload(adapter);
- 
--		/* The BASET registers aren't cleared when writing
--		 * into them, force a reset if the interface is
--		 * running.
--		 */
--		if (netif_running(adapter->netdev))
--			schedule_work(&adapter->reset_task);
-+	adapter->flags = new_flags;
- 
--		return 0;
--	}
-+	if (!netif_running(adapter->netdev))
-+		return igc_tsn_enable_offload(adapter);
- 
--	return igc_tsn_enable_offload(adapter);
-+	schedule_work(&adapter->reset_task);
-+
-+	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.h b/drivers/net/ethernet/intel/igc/igc_tsn.h
-index f76bc86ddccd..1512307f5a52 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.h
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.h
-@@ -5,5 +5,6 @@
- #define _IGC_TSN_H_
- 
- int igc_tsn_offload_apply(struct igc_adapter *adapter);
-+int igc_tsn_reset(struct igc_adapter *adapter);
- 
- #endif /* _IGC_BASE_H */
+ 	if (q->txtime_delay &&
+ 	    nla_put_u32(skb, TCA_TAPRIO_ATTR_TXTIME_DELAY, q->txtime_delay))
+ 		goto options_error;
 -- 
 2.29.2
 
