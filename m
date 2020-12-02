@@ -1,74 +1,82 @@
-From: Limonciello, Mario <Mario.Limonciello@dell.com>
-Date: Wed, 2 Dec 2020 19:24:28 +0000
-Subject: [Intel-wired-lan] [PATCH v2 0/5] Improve s0ix flows for systems
- i219LM
-In-Reply-To: <20201202110640.27269583@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
-References: <20201202161748.128938-1-mario.limonciello@dell.com>
- <20201202110640.27269583@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
-Message-ID: <DM6PR19MB26365E4B4EA330B499A325CBFAF30@DM6PR19MB2636.namprd19.prod.outlook.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Wed, 2 Dec 2020 14:10:29 -0600
+Subject: [Intel-wired-lan] [PATCH v2 1/5] e1000e: fix S0ix flow to allow
+ S0i3.2 subset entry
+In-Reply-To: <20201202161748.128938-2-mario.limonciello@dell.com>
+Message-ID: <20201202201029.GA1464938@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Jakub Kicinski <kuba@kernel.org>
-> Sent: Wednesday, December 2, 2020 13:07
-> To: Limonciello, Mario
-> Cc: Tony Nguyen; intel-wired-lan at lists.osuosl.org; Linux PM; Netdev; Alexander
-> Duyck; Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller;
-> darcari at redhat.com; Shen, Yijun; Yuan, Perry
-> Subject: Re: [PATCH v2 0/5] Improve s0ix flows for systems i219LM
+On Wed, Dec 02, 2020 at 10:17:44AM -0600, Mario Limonciello wrote:
+> From: Vitaly Lifshits <vitaly.lifshits@intel.com>
 > 
+> Changed a configuration in the flows to align with
+> architecture requirements to achieve S0i3.2 substate.
+
+I guess this is really talking about requirements of a specific
+CPU/SOC before it will enter S0i3.2?
+
+> Also fixed a typo in the previous commit 632fbd5eb5b0
+> ("e1000e: fix S0ix flows for cable connected case").
+
+Not clear what the typo was, maybe these?
+
+  > -	ew32(FEXTNVM12, mac_data);
+  > +	ew32(FEXTNVM6, mac_data);
+
+  > -	ew32(FEXTNVM12, mac_data);
+  > +	ew32(FEXTNVM6, mac_data);
+
+I would probably have put typo fixes in a separate patch, especially
+since the cover letter mentions regressions related to 632fbd5eb5b0.
+Maybe the commit log for the fix should mention that it's fixing a
+regression, what the regression was, and include a Fixes: tag?  But
+not my circus.
+
+> Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> [EXTERNAL EMAIL]
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index b30f00891c03..128ab6898070 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -6475,13 +6475,13 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+>  
+>  	/* Ungate PGCB clock */
+>  	mac_data = er32(FEXTNVM9);
+> -	mac_data |= BIT(28);
+> +	mac_data &= ~BIT(28);
+>  	ew32(FEXTNVM9, mac_data);
+>  
+>  	/* Enable K1 off to enable mPHY Power Gating */
+>  	mac_data = er32(FEXTNVM6);
+>  	mac_data |= BIT(31);
+> -	ew32(FEXTNVM12, mac_data);
+> +	ew32(FEXTNVM6, mac_data);
+>  
+>  	/* Enable mPHY power gating for any link and speed */
+>  	mac_data = er32(FEXTNVM8);
+> @@ -6525,11 +6525,11 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+>  	/* Disable K1 off */
+>  	mac_data = er32(FEXTNVM6);
+>  	mac_data &= ~BIT(31);
+> -	ew32(FEXTNVM12, mac_data);
+> +	ew32(FEXTNVM6, mac_data);
+>  
+>  	/* Disable Ungate PGCB clock */
+>  	mac_data = er32(FEXTNVM9);
+> -	mac_data &= ~BIT(28);
+> +	mac_data |= BIT(28);
+>  	ew32(FEXTNVM9, mac_data);
+>  
+>  	/* Cancel not waking from dynamic
+> -- 
+> 2.25.1
 > 
-> On Wed,  2 Dec 2020 10:17:43 -0600 Mario Limonciello wrote:
-> > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
-> systems")
-> > disabled s0ix flows for systems that have various incarnations of the
-> > i219-LM ethernet controller.  This was done because of some regressions
-> > caused by an earlier
-> > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-> > with i219-LM controller.
-> >
-> > Performing suspend to idle with these ethernet controllers requires a
-> properly
-> > configured system.  To make enabling such systems easier, this patch
-> > series allows turning on using ethtool.
-> >
-> > The flows have also been confirmed to be configured correctly on Dell's
-> Latitude
-> > and Precision CML systems containing the i219-LM controller, when the kernel
-> also
-> > contains the fix for s0i3.2 entry previously submitted here:
-> > https://marc.info/?l=linux-netdev&m=160677194809564&w=2
-> >
-> > Patches 3 and 4 will turn the behavior on by default for Dell's CML systems.
-> > Patch 5 allows accessing the value of the flags via ethtool to tell if the
-> > heuristics have turned on s0ix flows, as well as for development purposes
-> > to determine if a system should be added to the heuristics list.
-> 
-> I don't see PCI or Bjorn Helgaas CCed.
-> 
-> You can drop linux-kernel tho.
-
-Correct, that was intentional that PCI (and Bjorn) weren't added.  Since I came
-up with a way to detect platforms without DMI as suggested and this is entirely
-controlling a driver behavior within e1000e only on systems with i219-LM I
-didn't think that PCI ML was actually needed.
-
-Since you disagree, I'll add Bjorn into this thread.
-
-@Bjorn Helgaas,
-
-Apologies that you're looped in this way rather than directly to the submission,
-but the cover letter is above and the patch series can be viewed at this patchwork
-if you would like to fetch the mbox and respond to provide any comments.
-
-https://patchwork.ozlabs.org/project/netdev/list/?series=218121
-
-I'll include you directly if any future v3 is necessary.
-
-
