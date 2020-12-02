@@ -1,53 +1,60 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Date: Wed, 2 Dec 2020 23:40:46 +0800
-Subject: [Intel-wired-lan] [PATCH 1/2][v3] e1000e: Leverage
- direct_complete to speed up s2ram
-In-Reply-To: <DF79FD96-31E6-4D9A-BF0D-40B7FC563C0B@canonical.com>
-References: <cover.1606757180.git.yu.c.chen@intel.com>
- <b8896b7748e516e9c440ab22e582e30f1389776c.1606757180.git.yu.c.chen@intel.com>
- <DF79FD96-31E6-4D9A-BF0D-40B7FC563C0B@canonical.com>
-Message-ID: <20201202154046.GA17693@chenyu-office.sh.intel.com>
+From: Mario Limonciello <mario.limonciello@dell.com>
+Date: Wed,  2 Dec 2020 10:17:43 -0600
+Subject: [Intel-wired-lan] [PATCH v2 0/5] Improve s0ix flows for systems
+ i219LM
+Message-ID: <20201202161748.128938-1-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Kai-Heng,
-On Wed, Dec 02, 2020 at 09:06:19PM +0800, Kai-Heng Feng wrote:
-> > ---
-> > v2: Added test data and some commit log revise(Paul Menzel)
-> >    Only skip the suspend/resume if the NIC is not a wake up device specified
-> >    by the user(Kai-Heng Feng)
-> > v3: Leverage direct complete mechanism to skip all hooks(Kai-Heng Feng)
-> > ---
-> > 
-> > -	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
-> > +	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_SMART_PREPARE);
-> 
-> This isn't required for pci_pm_prepare() to use driver's .prepare callback.
->
-pci_pm_prepare() is likely to return 1 even if driver's prepare() return 0,
-when DPM_FLAG_SMART_PREPARE is not set, which might cause prblems:
-if (!error && dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_PREPARE))
-	return 0;
-> > 
-> > 	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
-> > 		pm_runtime_put_noidle(&pdev->dev);
-> > @@ -7890,6 +7897,7 @@ MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
-> > 
-> > static const struct dev_pm_ops e1000_pm_ops = {
-> > #ifdef CONFIG_PM_SLEEP
-> > +	.prepare	= e1000e_pm_prepare,
-> 
-> How do we make sure a link change happened in S3 can be detect after resume, without a .complete callback which ask device to runtime resume?
-> 
-The pm core's device_complete() has already done that pm_runtime_put() in the end.
+commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+disabled s0ix flows for systems that have various incarnations of the
+i219-LM ethernet controller.  This was done because of some regressions
+caused by an earlier
+commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
+with i219-LM controller.
 
-Just talked to Rafael and he might also give some feedbacks later.
+Performing suspend to idle with these ethernet controllers requires a properly
+configured system.  To make enabling such systems easier, this patch
+series allows turning on using ethtool.
 
-thanks,
-Chenyu
-> Kai-Heng
-> 
-> 
+The flows have also been confirmed to be configured correctly on Dell's Latitude
+and Precision CML systems containing the i219-LM controller, when the kernel also
+contains the fix for s0i3.2 entry previously submitted here:
+https://marc.info/?l=linux-netdev&m=160677194809564&w=2
+
+Patches 3 and 4 will turn the behavior on by default for Dell's CML systems.
+Patch 5 allows accessing the value of the flags via ethtool to tell if the
+heuristics have turned on s0ix flows, as well as for development purposes
+to determine if a system should be added to the heuristics list.
+
+Changes from v1 to v2:
+ - Directly incorporate Vitaly's dependency patch in the series
+ - Split out s0ix code into it's own file
+ - Adjust from DMI matching to PCI subsystem vendor ID/device matching
+ - Remove module parameter and sysfs, use ethtool flag instead.
+ - Export s0ix flag to ethtool private flags
+ - Include more people and lists directly in this submission chain.
+
+Mario Limonciello (4):
+  e1000e: Move all s0ix related code into it's own source file
+  e1000e: Add Dell's Comet Lake systems into s0ix heuristics
+  e1000e: Add more Dell CML systems into s0ix heuristics
+  e1000e: Export adapter flags to ethtool
+
+Vitaly Lifshits (1):
+  e1000e: fix S0ix flow to allow S0i3.2 subset entry
+
+ drivers/net/ethernet/intel/e1000e/Makefile  |   2 +-
+ drivers/net/ethernet/intel/e1000e/e1000.h   |   4 +
+ drivers/net/ethernet/intel/e1000e/ethtool.c |  23 ++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 272 +----------------
+ drivers/net/ethernet/intel/e1000e/s0ix.c    | 308 ++++++++++++++++++++
+ 5 files changed, 341 insertions(+), 268 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/e1000e/s0ix.c
+
+--
+2.25.1
+
