@@ -1,76 +1,77 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Wed, 2 Dec 2020 14:14:25 -0600
+From: Limonciello, Mario <Mario.Limonciello@dell.com>
+Date: Wed, 2 Dec 2020 20:23:08 +0000
 Subject: [Intel-wired-lan] [PATCH v2 0/5] Improve s0ix flows for systems
  i219LM
-In-Reply-To: <DM6PR19MB26365E4B4EA330B499A325CBFAF30@DM6PR19MB2636.namprd19.prod.outlook.com>
-Message-ID: <20201202201425.GA1467301@bjorn-Precision-5520>
+In-Reply-To: <20201202201425.GA1467301@bjorn-Precision-5520>
+References: <DM6PR19MB26365E4B4EA330B499A325CBFAF30@DM6PR19MB2636.namprd19.prod.outlook.com>
+ <20201202201425.GA1467301@bjorn-Precision-5520>
+Message-ID: <DM6PR19MB2636D3D47AFC1B67113BD566FAF30@DM6PR19MB2636.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 02, 2020 at 07:24:28PM +0000, Limonciello, Mario wrote:
-> > -----Original Message-----
-> > From: Jakub Kicinski <kuba@kernel.org>
-> > Sent: Wednesday, December 2, 2020 13:07
-> > To: Limonciello, Mario
-> > Cc: Tony Nguyen; intel-wired-lan at lists.osuosl.org; Linux PM; Netdev; Alexander
-> > Duyck; Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller;
-> > darcari at redhat.com; Shen, Yijun; Yuan, Perry
-> > Subject: Re: [PATCH v2 0/5] Improve s0ix flows for systems i219LM
-> > 
-> > 
-> > [EXTERNAL EMAIL]
-> > 
-> > On Wed,  2 Dec 2020 10:17:43 -0600 Mario Limonciello wrote:
-> > > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
-> > systems")
-> > > disabled s0ix flows for systems that have various incarnations of the
-> > > i219-LM ethernet controller.  This was done because of some regressions
-> > > caused by an earlier
-> > > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-> > > with i219-LM controller.
+> > > On Wed,  2 Dec 2020 10:17:43 -0600 Mario Limonciello wrote:
+> > > > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
+> > > systems")
+> > > > disabled s0ix flows for systems that have various incarnations of the
+> > > > i219-LM ethernet controller.  This was done because of some regressions
+> > > > caused by an earlier
+> > > > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
+> > > > with i219-LM controller.
+> > > >
+> > > > Performing suspend to idle with these ethernet controllers requires a
+> > > properly
+> > > > configured system.  To make enabling such systems easier, this patch
+> > > > series allows turning on using ethtool.
+> > > >
+> > > > The flows have also been confirmed to be configured correctly on Dell's
+> > > Latitude
+> > > > and Precision CML systems containing the i219-LM controller, when the
+> kernel
+> > > also
+> > > > contains the fix for s0i3.2 entry previously submitted here:
+> > > > https://marc.info/?l=linux-netdev&m=160677194809564&w=2
+> > > >
+> > > > Patches 3 and 4 will turn the behavior on by default for Dell's CML
+> systems.
+> > > > Patch 5 allows accessing the value of the flags via ethtool to tell if
+> the
+> > > > heuristics have turned on s0ix flows, as well as for development
+> purposes
+> > > > to determine if a system should be added to the heuristics list.
 > > >
-> > > Performing suspend to idle with these ethernet controllers requires a
-> > properly
-> > > configured system.  To make enabling such systems easier, this patch
-> > > series allows turning on using ethtool.
+> > > I don't see PCI or Bjorn Helgaas CCed.
 > > >
-> > > The flows have also been confirmed to be configured correctly on Dell's
-> > Latitude
-> > > and Precision CML systems containing the i219-LM controller, when the kernel
-> > also
-> > > contains the fix for s0i3.2 entry previously submitted here:
-> > > https://marc.info/?l=linux-netdev&m=160677194809564&w=2
-> > >
-> > > Patches 3 and 4 will turn the behavior on by default for Dell's CML systems.
-> > > Patch 5 allows accessing the value of the flags via ethtool to tell if the
-> > > heuristics have turned on s0ix flows, as well as for development purposes
-> > > to determine if a system should be added to the heuristics list.
-> > 
-> > I don't see PCI or Bjorn Helgaas CCed.
-> > 
-> > You can drop linux-kernel tho.
+> > > You can drop linux-kernel tho.
+> >
+> > Correct, that was intentional that PCI (and Bjorn) weren't added.  Since I
+> came
+> > up with a way to detect platforms without DMI as suggested and this is
+> entirely
+> > controlling a driver behavior within e1000e only on systems with i219-LM I
+> > didn't think that PCI ML was actually needed.
+> >
+> > Since you disagree, I'll add Bjorn into this thread.
+> >
+> > @Bjorn Helgaas,
+> >
+> > Apologies that you're looped in this way rather than directly to the
+> submission,
+> > but the cover letter is above and the patch series can be viewed at this
+> patchwork
+> > if you would like to fetch the mbox and respond to provide any comments.
+> >
+> > https://patchwork.ozlabs.org/project/netdev/list/?series=218121
+> >
+> > I'll include you directly if any future v3 is necessary.
 > 
-> Correct, that was intentional that PCI (and Bjorn) weren't added.  Since I came
-> up with a way to detect platforms without DMI as suggested and this is entirely
-> controlling a driver behavior within e1000e only on systems with i219-LM I
-> didn't think that PCI ML was actually needed.
+> No need, I don't think.  AFAICT there's nothing there related to the
+> PCI core.  Thanks!
 > 
-> Since you disagree, I'll add Bjorn into this thread.
-> 
-> @Bjorn Helgaas,
-> 
-> Apologies that you're looped in this way rather than directly to the submission,
-> but the cover letter is above and the patch series can be viewed at this patchwork
-> if you would like to fetch the mbox and respond to provide any comments.
-> 
-> https://patchwork.ozlabs.org/project/netdev/list/?series=218121
-> 
-> I'll include you directly if any future v3 is necessary.
+> Bjorn
 
-No need, I don't think.  AFAICT there's nothing there related to the
-PCI core.  Thanks!
-
-Bjorn
+Thanks, appreciate your comments on my terrible grammar.
+I'll fix up my commits from the series and submit v3 once I've got some code feedback
+from netdev folks.
