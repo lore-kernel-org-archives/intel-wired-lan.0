@@ -1,86 +1,68 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue,  1 Dec 2020 20:53:19 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 3/9] igc: Set the RX packet
- buffer size for TSN mode
+Date: Tue,  1 Dec 2020 20:53:24 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 8/9] igc: Add support for
+ exposing frame preemption stats registers
 In-Reply-To: <20201202045325.3254757-1-vinicius.gomes@intel.com>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
-Message-ID: <20201202045325.3254757-4-vinicius.gomes@intel.com>
+Message-ID: <20201202045325.3254757-9-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In preparation for supporting frame preemption, when entering TSN mode
-set the receive packet buffer to 16KB for the Express MAC, 16KB for
-the Preemptible MAC and 2KB for the BMC, according to the datasheet
-section 7.1.3.2.
+Expose the Frame Preemption counters, so the number of
+express/preemptible packets can be monitored by userspace.
+
+These registers are cleared when read, so the value shown is the
+number of events that happened since the last read.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h |  2 ++
- drivers/net/ethernet/intel/igc/igc_tsn.c     | 14 ++++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  8 ++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    | 10 ++++++++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 32f5fd684139..0e78abfd99ee 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -351,6 +351,8 @@
- #define IGC_RXPBS_CFG_TS_EN	0x80000000 /* Timestamp in Rx buffer */
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 492c6592c150..14a14a61de45 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -325,6 +325,14 @@ static void igc_ethtool_get_regs(struct net_device *netdev,
  
- #define IGC_TXPBSIZE_TSN	0x04145145 /* 5k bytes buffer for each queue */
-+#define IGC_RXPBSIZE_TSN	0x00010090 /* 16KB for EXP + 16KB for BE + 2KB for BMC */
-+#define IGC_RXPBSIZE_SIZE_MASK	0x0001FFFF
+ 	regs_buff[213] = adapter->stats.tlpic;
+ 	regs_buff[214] = adapter->stats.rlpic;
++	regs_buff[215] = rd32(IGC_PRMPTDTCNT);
++	regs_buff[216] = rd32(IGC_PRMEVNTTCNT);
++	regs_buff[217] = rd32(IGC_PRMPTDRCNT);
++	regs_buff[218] = rd32(IGC_PRMEVNTRCNT);
++	regs_buff[219] = rd32(IGC_PRMPBLTCNT);
++	regs_buff[220] = rd32(IGC_PRMPBLRCNT);
++	regs_buff[221] = rd32(IGC_PRMEXPTCNT);
++	regs_buff[222] = rd32(IGC_PRMEXPRCNT);
+ }
  
- #define IGC_DTXMXPKTSZ_TSN	0x19 /* 1600 bytes of max TX DMA packet size */
- #define IGC_DTXMXPKTSZ_DEFAULT	0x98 /* 9728-byte Jumbo frames */
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index 174103c4bea6..38451cf05ac6 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -24,7 +24,7 @@ static bool is_any_launchtime(struct igc_adapter *adapter)
- static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
--	u32 tqavctrl;
-+	u32 tqavctrl, rxpbs;
- 	int i;
+ static void igc_ethtool_get_wol(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index b52dd9d737e8..69e295d69d84 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -197,6 +197,16 @@
  
- 	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED))
-@@ -35,6 +35,11 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_DEFAULT);
+ #define IGC_FTQF(_n)	(0x059E0 + (4 * (_n)))  /* 5-tuple Queue Fltr */
  
-+	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
-+	rxpbs |= I225_RXPBSIZE_DEFAULT;
++/* Time sync registers - preemption statistics */
++#define IGC_PRMPTDTCNT	0x04280  /* Good TX Preempted Packets */
++#define IGC_PRMEVNTTCNT	0x04298  /* TX Preemption event counter */
++#define IGC_PRMPTDRCNT	0x04284  /* Good RX Preempted Packets */
++#define IGC_PRMEVNTRCNT	0x0429C  /* RX Preemption event counter */
++#define IGC_PRMPBLTCNT	0x04288  /* Good TX Preemptable Packets */
++#define IGC_PRMPBLRCNT	0x0428C  /* Good RX Preemptable Packets */
++#define IGC_PRMEXPTCNT	0x04290  /* Good TX Express Packets */
++#define IGC_PRMEXPRCNT	0x042A0  /* Preemption Exception Counter */
 +
-+	wr32(IGC_RXPBS, rxpbs);
-+
- 	tqavctrl = rd32(IGC_TQAVCTRL);
- 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
- 		      IGC_TQAVCTRL_ENHANCED_QAV);
-@@ -64,7 +69,7 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
- 	u32 tqavctrl, baset_l, baset_h;
--	u32 sec, nsec, cycle;
-+	u32 sec, nsec, cycle, rxpbs;
- 	ktime_t base_time, systim;
- 	int i;
- 
-@@ -79,6 +84,11 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
- 
- 	tqavctrl = rd32(IGC_TQAVCTRL);
-+	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
-+	rxpbs |= IGC_RXPBSIZE_TSN;
-+
-+	wr32(IGC_RXPBS, rxpbs);
-+
- 	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
+ /* Transmit Scheduling Registers */
+ #define IGC_TQAVCTRL		0x3570
+ #define IGC_TXQCTL(_n)		(0x3344 + 0x4 * (_n))
 -- 
 2.29.2
 
