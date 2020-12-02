@@ -1,140 +1,109 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 02 Dec 2020 19:14:38 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 8f2bb4501f5675fa2175632693a814fe7db3d7e3
-Message-ID: <5fc7771e.sYvKCXiXnNzsCSRC%lkp@intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Wed, 2 Dec 2020 21:06:19 +0800
+Subject: [Intel-wired-lan] [PATCH 1/2][v3] e1000e: Leverage
+ direct_complete to speed up s2ram
+In-Reply-To: <b8896b7748e516e9c440ab22e582e30f1389776c.1606757180.git.yu.c.chen@intel.com>
+References: <cover.1606757180.git.yu.c.chen@intel.com>
+ <b8896b7748e516e9c440ab22e582e30f1389776c.1606757180.git.yu.c.chen@intel.com>
+Message-ID: <DF79FD96-31E6-4D9A-BF0D-40B7FC563C0B@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
-branch HEAD: 8f2bb4501f5675fa2175632693a814fe7db3d7e3  e1000e: Remove the runtime suspend restriction on CNP+
+Hi Yu,
 
-elapsed time: 720m
+> On Dec 1, 2020, at 09:21, Chen Yu <yu.c.chen@intel.com> wrote:
+> 
+> The NIC is put in runtime suspend status when there is no cable connected.
+> As a result, it is safe to keep non-wakeup NIC in runtime suspended during
+> s2ram because the system does not rely on the NIC plug event nor WoL to wake
+> up the system. Besides that, unlike the s2idle, s2ram does not need to
+> manipulate S0ix settings during suspend.
+> 
+> This patch introduces the .prepare() for e1000e so that if the NIC is runtime
+> suspended the subsequent suspend/resume hooks will be skipped so as to speed
+> up the s2ram. The pm core will check whether the NIC is a wake up device so
+> there's no need to check it again in .prepare(). DPM_FLAG_SMART_PREPARE flag
+> should be set during probe to ask the pci subsystem to honor the driver's
+> prepare() result. Besides, the NIC remains runtime suspended after resumed
+> from s2ram as there is no need to resume it.
+> 
+> Tested on i7-2600K with 82579V NIC
+> Before the patch:
+> e1000e 0000:00:19.0: pci_pm_suspend+0x0/0x160 returned 0 after 225146 usecs
+> e1000e 0000:00:19.0: pci_pm_resume+0x0/0x90 returned 0 after 140588 usecs
+> 
+> After the patch:
+> echo disabled > //sys/devices/pci0000\:00/0000\:00\:19.0/power/wakeup
+> becomes 0 usecs because the hooks will be skipped.
+> 
+> Suggested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-configs tested: 111
-configs skipped: 2
+Well, I was intended to send it, but anyway :)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> ---
+> v2: Added test data and some commit log revise(Paul Menzel)
+>    Only skip the suspend/resume if the NIC is not a wake up device specified
+>    by the user(Kai-Heng Feng)
+> v3: Leverage direct complete mechanism to skip all hooks(Kai-Heng Feng)
+> ---
+> drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++++++-
+> 1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index b30f00891c03..b210bba3f20a 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -25,6 +25,7 @@
+> #include <linux/pm_runtime.h>
+> #include <linux/aer.h>
+> #include <linux/prefetch.h>
+> +#include <linux/suspend.h>
+> 
+> #include "e1000.h"
+> 
+> @@ -6957,6 +6958,12 @@ static int __e1000_resume(struct pci_dev *pdev)
+> 	return 0;
+> }
+> 
+> +static int e1000e_pm_prepare(struct device *dev)
+> +{
+> +	return pm_runtime_suspended(dev) &&
+> +		pm_suspend_via_firmware();
+> +}
+> +
+> static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+> {
+> 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+> @@ -7665,7 +7672,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> 
+> 	e1000_print_device_info(adapter);
+> 
+> -	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
+> +	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_SMART_PREPARE);
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                         ps3_defconfig
-mips                malta_qemu_32r6_defconfig
-x86_64                           alldefconfig
-mips                          ath25_defconfig
-sh                          rsk7201_defconfig
-riscv                    nommu_k210_defconfig
-arm                          pxa3xx_defconfig
-c6x                        evmc6457_defconfig
-m68k                            q40_defconfig
-arc                        nsim_700_defconfig
-sh                           se7705_defconfig
-m68k                         apollo_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arm                        realview_defconfig
-microblaze                          defconfig
-mips                           gcw0_defconfig
-xtensa                         virt_defconfig
-c6x                        evmc6678_defconfig
-sh                             shx3_defconfig
-m68k                       m5208evb_defconfig
-m68k                        mvme16x_defconfig
-m68k                          atari_defconfig
-arc                        nsimosci_defconfig
-arm                          pcm027_defconfig
-ia64                        generic_defconfig
-sh                        dreamcast_defconfig
-arm                            mps2_defconfig
-arm                     davinci_all_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                    mvme5100_defconfig
-sh                        apsh4ad0a_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                          imote2_defconfig
-mips                      fuloong2e_defconfig
-sparc                            allyesconfig
-sparc                       sparc64_defconfig
-arm                        vexpress_defconfig
-powerpc                       eiger_defconfig
-c6x                        evmc6474_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201201
-i386                 randconfig-a005-20201201
-i386                 randconfig-a001-20201201
-i386                 randconfig-a002-20201201
-i386                 randconfig-a006-20201201
-i386                 randconfig-a003-20201201
-x86_64               randconfig-a016-20201201
-x86_64               randconfig-a012-20201201
-x86_64               randconfig-a014-20201201
-x86_64               randconfig-a013-20201201
-x86_64               randconfig-a015-20201201
-x86_64               randconfig-a011-20201201
-i386                 randconfig-a014-20201201
-i386                 randconfig-a013-20201201
-i386                 randconfig-a011-20201201
-i386                 randconfig-a015-20201201
-i386                 randconfig-a012-20201201
-i386                 randconfig-a016-20201201
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+This isn't required for pci_pm_prepare() to use driver's .prepare callback.
 
-clang tested configs:
-x86_64               randconfig-a004-20201201
-x86_64               randconfig-a006-20201201
-x86_64               randconfig-a001-20201201
-x86_64               randconfig-a002-20201201
-x86_64               randconfig-a005-20201201
-x86_64               randconfig-a003-20201201
+> 
+> 	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
+> 		pm_runtime_put_noidle(&pdev->dev);
+> @@ -7890,6 +7897,7 @@ MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
+> 
+> static const struct dev_pm_ops e1000_pm_ops = {
+> #ifdef CONFIG_PM_SLEEP
+> +	.prepare	= e1000e_pm_prepare,
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+How do we make sure a link change happened in S3 can be detect after resume, without a .complete callback which ask device to runtime resume?
+
+Kai-Heng
+
+> 	.suspend	= e1000e_pm_suspend,
+> 	.resume		= e1000e_pm_resume,
+> 	.freeze		= e1000e_pm_freeze,
+> -- 
+> 2.17.1
+> 
+
