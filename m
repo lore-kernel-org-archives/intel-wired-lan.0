@@ -1,110 +1,49 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 2 Dec 2020 00:21:13 +0000
-Subject: [Intel-wired-lan] [net 3/6] ice: update the number of available
- RSS queues
-In-Reply-To: <446e74e7-5e33-0e68-a187-4b114389abef@molgen.mpg.de>
-References: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
- <20201121003835.48424-3-anthony.l.nguyen@intel.com>
- <446e74e7-5e33-0e68-a187-4b114389abef@molgen.mpg.de>
-Message-ID: <0a2a6f22d55cf548c8cdd244f7485356586a41f5.camel@intel.com>
+Date: Wed, 2 Dec 2020 00:22:19 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix check for PF state
+ (vf disable)
+In-Reply-To: <20201123144517.15180-1-mateusz.palczewski@intel.com>
+References: <20201123144517.15180-1-mateusz.palczewski@intel.com>
+Message-ID: <7c6c477abb7dd93d02f091797362895e3a86f18c.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2020-12-01 at 16:31 +0100, Paul Menzel wrote:
-> Dear Henry, dear Tony,
+On Mon, 2020-11-23 at 14:45 +0000, Mateusz Palczewski wrote:
+> Adding missing comments to previously applied patch.
 > 
-> 
-> Am 21.11.20 um 01:38 schrieb Tony Nguyen:
-> > From: Henry Tieman <henry.w.tieman@intel.com>
-> > 
-> > It was possible to have Rx queues that were not available for use
-> > by RSS. This would happen when increasing the number of Rx queues
-> > while there was a user defined RSS LUT.
-> > 
-> > Always update the number of available RSS queues when changing the
-> > number of Rx queues.
-> > 
-> > Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
-> > Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/ice/ice_ethtool.c | 31 ++++++++++++++-
-> > -----
-> >   1 file changed, 22 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> > b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> > index 9e8e9531cd87..8515a3a7515f 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> > @@ -3321,6 +3321,18 @@ ice_get_channels(struct net_device *dev,
-> > struct ethtool_channels *ch)
-> >   	ch->max_other = ch->other_count;
-> >   }
-> >   
-> > +/**
-> > + * ice_get_valid_rss_size - return valid number of RSS queues
-> > + * @hw: pointer to the HW structure
-> > + * @new_size: requested RSS queues
-> > + */
-> > +static int ice_get_valid_rss_size(struct ice_hw *hw, int new_size)
-> > +{
-> > +	struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
-> > +
-> > +	return min_t(int, new_size, BIT(caps->rss_table_entry_width));
-> > +}
-> > +
-> >   /**
-> >    * ice_vsi_set_dflt_rss_lut - set default RSS LUT with requested
-> > RSS size
-> >    * @vsi: VSI to reconfigure RSS LUT on
-> > @@ -3348,14 +3360,10 @@ static int ice_vsi_set_dflt_rss_lut(struct
-> > ice_vsi *vsi, int req_rss_size)
-> >   		return -ENOMEM;
-> >   
-> >   	/* set RSS LUT parameters */
-> > -	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
-> > +	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags))
-> >   		vsi->rss_size = 1;
-> > -	} else {
-> > -		struct ice_hw_common_caps *caps = &hw-
-> > >func_caps.common_cap;
-> > -
-> > -		vsi->rss_size = min_t(int, req_rss_size,
-> > -				      BIT(caps-
-> > >rss_table_entry_width));
-> > -	}
-> > +	else
-> > +		vsi->rss_size = ice_get_valid_rss_size(hw,
-> > req_rss_size);
-> >   
-> >   	/* create/set RSS LUT */
-> >   	ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
-> > @@ -3434,8 +3442,13 @@ static int ice_set_channels(struct
-> > net_device *dev, struct ethtool_channels *ch)
-> >   
-> >   	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
-> >   
-> > -	if (new_rx && !netif_is_rxfh_configured(dev))
-> > -		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
-> > +	if (new_rx) {
-> > +		if (!netif_is_rxfh_configured(dev))
-> > +			return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
-> > +
-> > +		/* Update rss_size due to change in Rx queues */
-> > +		vsi->rss_size = ice_get_valid_rss_size(&pf->hw,
-> > new_rx);
-> > +	}
-> 
-> Why not unconditionally call
-> 
->      vsi->rss_size = ice_get_valid_rss_size(&pf->hw, new_rx);
-> 
-> as the function handles the case `new_rx = 0`, right?
+> When PF state bit for __I40e_VF_DISABLE is set,
+> it doesn't mean necessary that the VF called in
+> i40e_reset_vf is disabled. It is rather impossible to
+> call a reset on a disabled VF, so return false and
+> repeat the request after a while.
 
-Yea, that's right. I will update.
+The title and description doesn't match the patch. The description
+isn't really explaining the comment.
 
-Thanks,
-Tony
+> Fixes: 8d38e0cd5211("i40e: Fix removing driver while bare-metal VFs
+> pass traffic")
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 8951740..d30a57f 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -1423,6 +1423,8 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool
+> flr)
+>  
+>  	/* If the VFs have been disabled, this means something else is
+>  	 * resetting the VF, so we shouldn't continue.
+> +	 * This is a global state of a PF, so it is possible that
+> +	 * a different VF is in reset.
+>  	 */
+>  	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
+>  		return false;
