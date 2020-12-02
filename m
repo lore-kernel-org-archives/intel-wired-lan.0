@@ -1,81 +1,110 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 1 Dec 2020 17:08:49 +0300
-Subject: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
- Clang
-In-Reply-To: <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>
-References: <cover.1605896059.git.gustavoars@kernel.org>
- <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <202011201129.B13FDB3C@keescook>
- <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <202011220816.8B6591A@keescook>
- <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>
-Message-ID: <20201201140849.GH2767@kadam>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 2 Dec 2020 00:21:13 +0000
+Subject: [Intel-wired-lan] [net 3/6] ice: update the number of available
+ RSS queues
+In-Reply-To: <446e74e7-5e33-0e68-a187-4b114389abef@molgen.mpg.de>
+References: <20201121003835.48424-1-anthony.l.nguyen@intel.com>
+ <20201121003835.48424-3-anthony.l.nguyen@intel.com>
+ <446e74e7-5e33-0e68-a187-4b114389abef@molgen.mpg.de>
+Message-ID: <0a2a6f22d55cf548c8cdd244f7485356586a41f5.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Nov 23, 2020 at 05:32:51PM -0800, Nick Desaulniers wrote:
-> On Sun, Nov 22, 2020 at 8:17 AM Kees Cook <keescook@chromium.org> wrote:
-> >
-> > On Fri, Nov 20, 2020 at 11:51:42AM -0800, Jakub Kicinski wrote:
-> > > If none of the 140 patches here fix a real bug, and there is no change
-> > > to machine code then it sounds to me like a W=2 kind of a warning.
-> >
-> > FWIW, this series has found at least one bug so far:
-> > https://lore.kernel.org/lkml/CAFCwf11izHF=g1mGry1fE5kvFFFrxzhPSM6qKAO8gxSp=Kr_CQ at mail.gmail.com/
+On Tue, 2020-12-01 at 16:31 +0100, Paul Menzel wrote:
+> Dear Henry, dear Tony,
 > 
-> So looks like the bulk of these are:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     break;
-> }
-
-This should not generate a warning.
-
 > 
-> I have a patch that fixes those up for clang:
-> https://reviews.llvm.org/D91895
+> Am 21.11.20 um 01:38 schrieb Tony Nguyen:
+> > From: Henry Tieman <henry.w.tieman@intel.com>
+> > 
+> > It was possible to have Rx queues that were not available for use
+> > by RSS. This would happen when increasing the number of Rx queues
+> > while there was a user defined RSS LUT.
+> > 
+> > Always update the number of available RSS queues when changing the
+> > number of Rx queues.
+> > 
+> > Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+> > Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/ice/ice_ethtool.c | 31 ++++++++++++++-
+> > -----
+> >   1 file changed, 22 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > index 9e8e9531cd87..8515a3a7515f 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > @@ -3321,6 +3321,18 @@ ice_get_channels(struct net_device *dev,
+> > struct ethtool_channels *ch)
+> >   	ch->max_other = ch->other_count;
+> >   }
+> >   
+> > +/**
+> > + * ice_get_valid_rss_size - return valid number of RSS queues
+> > + * @hw: pointer to the HW structure
+> > + * @new_size: requested RSS queues
+> > + */
+> > +static int ice_get_valid_rss_size(struct ice_hw *hw, int new_size)
+> > +{
+> > +	struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
+> > +
+> > +	return min_t(int, new_size, BIT(caps->rss_table_entry_width));
+> > +}
+> > +
+> >   /**
+> >    * ice_vsi_set_dflt_rss_lut - set default RSS LUT with requested
+> > RSS size
+> >    * @vsi: VSI to reconfigure RSS LUT on
+> > @@ -3348,14 +3360,10 @@ static int ice_vsi_set_dflt_rss_lut(struct
+> > ice_vsi *vsi, int req_rss_size)
+> >   		return -ENOMEM;
+> >   
+> >   	/* set RSS LUT parameters */
+> > -	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+> > +	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags))
+> >   		vsi->rss_size = 1;
+> > -	} else {
+> > -		struct ice_hw_common_caps *caps = &hw-
+> > >func_caps.common_cap;
+> > -
+> > -		vsi->rss_size = min_t(int, req_rss_size,
+> > -				      BIT(caps-
+> > >rss_table_entry_width));
+> > -	}
+> > +	else
+> > +		vsi->rss_size = ice_get_valid_rss_size(hw,
+> > req_rss_size);
+> >   
+> >   	/* create/set RSS LUT */
+> >   	ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
+> > @@ -3434,8 +3442,13 @@ static int ice_set_channels(struct
+> > net_device *dev, struct ethtool_channels *ch)
+> >   
+> >   	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
+> >   
+> > -	if (new_rx && !netif_is_rxfh_configured(dev))
+> > -		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
+> > +	if (new_rx) {
+> > +		if (!netif_is_rxfh_configured(dev))
+> > +			return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
+> > +
+> > +		/* Update rss_size due to change in Rx queues */
+> > +		vsi->rss_size = ice_get_valid_rss_size(&pf->hw,
+> > new_rx);
+> > +	}
 > 
-> There's 3 other cases that don't quite match between GCC and Clang I
-> observe in the kernel:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     goto y;
-> }
-> y:;
-
-This should generate a warning.
-
+> Why not unconditionally call
 > 
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     return;
-> }
-
-Warn for this.
-
-
+>      vsi->rss_size = ice_get_valid_rss_size(&pf->hw, new_rx);
 > 
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     ;
-> }
+> as the function handles the case `new_rx = 0`, right?
 
-Don't warn for this.
+Yea, that's right. I will update.
 
-If adding a break statement changes the flow of the code then warn about
-potentially missing break statements, but if it doesn't change anything
-then don't warn about it.
-
-regards,
-dan carpenter
+Thanks,
+Tony
