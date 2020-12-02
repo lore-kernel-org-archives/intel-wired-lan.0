@@ -1,242 +1,372 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue,  1 Dec 2020 20:53:22 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 6/9] igc: Add support for
- tuning frame preemption via ethtool
+Date: Tue,  1 Dec 2020 20:53:17 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/9] ethtool: Add support for
+ configuring frame preemption
 In-Reply-To: <20201202045325.3254757-1-vinicius.gomes@intel.com>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
-Message-ID: <20201202045325.3254757-7-vinicius.gomes@intel.com>
+Message-ID: <20201202045325.3254757-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The tc subsystem sets which queues are marked as preemptible, it's the
-role of ethtool to control more hardware specific parameters. These
-parameters include:
+Frame preemption (described in IEEE 802.3br-2016) defines the concept
+of preemptible and express queues. It allows traffic from express
+queues to "interrupt" traffic from preemptible queues, which are
+"resumed" after the express traffic has finished transmitting.
 
- - enabling the frame preemption hardware: As enabling frame
- preemption may have other requirements before it can be enabled, it's
- exposed via the ethtool API;
+Frame preemption can only be used when both the local device and the
+link partner support it.
 
- - mininum fragment size multiplier: expressed in usually in the form
- of (1 + N)*64, this number indicates what's the size of the minimum
- fragment that can be preempted.
+Only parameters for enabling/disabling frame preemption and
+configuring the minimum fragment size are included here. Expressing
+which queues are marked as preemptible is left to mqprio/taprio, as
+having that information there should be easier on the user.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h         | 10 ++++
- drivers/net/ethernet/intel/igc/igc_defines.h |  4 ++
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 55 ++++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_tsn.c     | 20 +++++--
- 4 files changed, 86 insertions(+), 3 deletions(-)
+ include/linux/ethtool.h              |  19 ++++
+ include/uapi/linux/ethtool_netlink.h |  17 +++
+ net/ethtool/Makefile                 |   2 +-
+ net/ethtool/netlink.c                |  19 ++++
+ net/ethtool/netlink.h                |   4 +
+ net/ethtool/preempt.c                | 151 +++++++++++++++++++++++++++
+ 6 files changed, 211 insertions(+), 1 deletion(-)
+ create mode 100644 net/ethtool/preempt.c
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 35baae900c1f..35c2dc4ad810 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -87,6 +87,7 @@ struct igc_ring {
- 	u8 queue_index;                 /* logical index of the ring*/
- 	u8 reg_idx;                     /* physical index of the ring */
- 	bool launchtime_enable;         /* true if LaunchTime is enabled */
-+	bool preemptible;		/* true if not express */
+diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+index e3da25b51ae4..16d6ee29a6ac 100644
+--- a/include/linux/ethtool.h
++++ b/include/linux/ethtool.h
+@@ -263,6 +263,19 @@ struct ethtool_pause_stats {
+ 	u64 rx_pause_frames;
+ };
  
- 	u32 start_time;
- 	u32 end_time;
-@@ -165,6 +166,11 @@ struct igc_adapter {
- 
- 	ktime_t base_time;
- 	ktime_t cycle_time;
-+	bool frame_preemption_active;
-+	/* Frame preemption minimum fragment size, this the X in
-+	 * (1 + X)*64 + 4
-+	 */
++/**
++ * struct ethtool_fp - Frame Preemption information
++ *
++ * @enabled: Enable frame preemption.
++ *
++ * @min_frag_size_mult: Minimum size for all non-final fragment size,
++ * expressed in terms of X in '(1 + X)*64 + 4'
++ */
++struct ethtool_fp {
++	u8 enabled;
 +	u8 min_frag_size_mult;
- 
- 	/* OS defined structs */
- 	struct pci_dev *pdev;
-@@ -262,6 +268,10 @@ extern char igc_driver_name[];
- #define IGC_FLAG_VLAN_PROMISC		BIT(15)
- #define IGC_FLAG_RX_LEGACY		BIT(16)
- #define IGC_FLAG_TSN_QBV_ENABLED	BIT(17)
-+#define IGC_FLAG_TSN_PREEMPT_ENABLED	BIT(18)
++};
 +
-+#define IGC_FLAG_TSN_ANY_ENABLED \
-+	(IGC_FLAG_TSN_QBV_ENABLED | IGC_FLAG_TSN_PREEMPT_ENABLED)
+ /**
+  * struct ethtool_ops - optional netdev operations
+  * @supported_coalesce_params: supported types of interrupt coalescing.
+@@ -406,6 +419,8 @@ struct ethtool_pause_stats {
+  * @get_ethtool_phy_stats: Return extended statistics about the PHY device.
+  *	This is only useful if the device maintains PHY statistics and
+  *	cannot use the standard PHY library helpers.
++ * @get_preempt: Get the network device Frame Preemption parameters.
++ * @set_preempt: Set the network device Frame Preemption parameters.
+  *
+  * All operations are optional (i.e. the function pointer may be set
+  * to %NULL) and callers must take this into account.  Callers must
+@@ -504,6 +519,10 @@ struct ethtool_ops {
+ 				      struct ethtool_fecparam *);
+ 	int	(*set_fecparam)(struct net_device *,
+ 				      struct ethtool_fecparam *);
++	int	(*get_preempt)(struct net_device *,
++			       struct ethtool_fp *);
++	int	(*set_preempt)(struct net_device *,
++			       struct ethtool_fp *);
+ 	void	(*get_ethtool_phy_stats)(struct net_device *,
+ 					 struct ethtool_stats *, u64 *);
+ 	int	(*get_phy_tunable)(struct net_device *,
+diff --git a/include/uapi/linux/ethtool_netlink.h b/include/uapi/linux/ethtool_netlink.h
+index e2bf36e6964b..0b3dc0c263a9 100644
+--- a/include/uapi/linux/ethtool_netlink.h
++++ b/include/uapi/linux/ethtool_netlink.h
+@@ -42,6 +42,8 @@ enum {
+ 	ETHTOOL_MSG_CABLE_TEST_ACT,
+ 	ETHTOOL_MSG_CABLE_TEST_TDR_ACT,
+ 	ETHTOOL_MSG_TUNNEL_INFO_GET,
++	ETHTOOL_MSG_PREEMPT_GET,
++	ETHTOOL_MSG_PREEMPT_SET,
  
- #define IGC_FLAG_RSS_FIELD_IPV4_UDP	BIT(6)
- #define IGC_FLAG_RSS_FIELD_IPV6_UDP	BIT(7)
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 0e78abfd99ee..c2155d109bd6 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -410,10 +410,14 @@
- /* Transmit Scheduling */
- #define IGC_TQAVCTRL_TRANSMIT_MODE_TSN	0x00000001
- #define IGC_TQAVCTRL_ENHANCED_QAV	0x00000008
-+#define IGC_TQAVCTRL_PREEMPT_ENA	0x00000002
-+#define IGC_TQAVCTRL_MIN_FRAG_MASK	0x0000C000
-+#define IGC_TQAVCTRL_MIN_FRAG_SHIFT	14
+ 	/* add new constants above here */
+ 	__ETHTOOL_MSG_USER_CNT,
+@@ -80,6 +82,8 @@ enum {
+ 	ETHTOOL_MSG_CABLE_TEST_NTF,
+ 	ETHTOOL_MSG_CABLE_TEST_TDR_NTF,
+ 	ETHTOOL_MSG_TUNNEL_INFO_GET_REPLY,
++	ETHTOOL_MSG_PREEMPT_GET_REPLY,
++	ETHTOOL_MSG_PREEMPT_NTF,
  
- #define IGC_TXQCTL_QUEUE_MODE_LAUNCHT	0x00000001
- #define IGC_TXQCTL_STRICT_CYCLE		0x00000002
- #define IGC_TXQCTL_STRICT_END		0x00000004
-+#define IGC_TXQCTL_PREEMPTABLE		0x00000008
+ 	/* add new constants above here */
+ 	__ETHTOOL_MSG_KERNEL_CNT,
+@@ -628,6 +632,19 @@ enum {
+ 	ETHTOOL_A_TUNNEL_INFO_MAX = (__ETHTOOL_A_TUNNEL_INFO_CNT - 1)
+ };
  
- /* Receive Checksum Control */
- #define IGC_RXCSUM_CRCOFL	0x00000800   /* CRC32 offload enable */
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 61d331ce38cd..492c6592c150 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -8,6 +8,7 @@
++/* FRAME PREEMPTION */
++
++enum {
++	ETHTOOL_A_PREEMPT_UNSPEC,
++	ETHTOOL_A_PREEMPT_HEADER,			/* nest - _A_HEADER_* */
++	ETHTOOL_A_PREEMPT_ENABLED,			/* u8 */
++	ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT,		/* u8 */
++
++	/* add new constants above here */
++	__ETHTOOL_A_PREEMPT_CNT,
++	ETHTOOL_A_PREEMPT_MAX = (__ETHTOOL_A_PREEMPT_CNT - 1)
++};
++
+ /* generic netlink info */
+ #define ETHTOOL_GENL_NAME "ethtool"
+ #define ETHTOOL_GENL_VERSION 1
+diff --git a/net/ethtool/Makefile b/net/ethtool/Makefile
+index 7a849ff22dad..4e584903e3ef 100644
+--- a/net/ethtool/Makefile
++++ b/net/ethtool/Makefile
+@@ -7,4 +7,4 @@ obj-$(CONFIG_ETHTOOL_NETLINK)	+= ethtool_nl.o
+ ethtool_nl-y	:= netlink.o bitset.o strset.o linkinfo.o linkmodes.o \
+ 		   linkstate.o debug.o wol.o features.o privflags.o rings.o \
+ 		   channels.o coalesce.o pause.o eee.o tsinfo.o cabletest.o \
+-		   tunnels.o
++		   tunnels.o preempt.o
+diff --git a/net/ethtool/netlink.c b/net/ethtool/netlink.c
+index 50d3c8896f91..bc7d66e3ba38 100644
+--- a/net/ethtool/netlink.c
++++ b/net/ethtool/netlink.c
+@@ -245,6 +245,7 @@ ethnl_default_requests[__ETHTOOL_MSG_USER_CNT] = {
+ 	[ETHTOOL_MSG_PAUSE_GET]		= &ethnl_pause_request_ops,
+ 	[ETHTOOL_MSG_EEE_GET]		= &ethnl_eee_request_ops,
+ 	[ETHTOOL_MSG_TSINFO_GET]	= &ethnl_tsinfo_request_ops,
++	[ETHTOOL_MSG_PREEMPT_GET]	= &ethnl_preempt_request_ops,
+ };
  
- #include "igc.h"
- #include "igc_diag.h"
-+#include "igc_tsn.h"
+ static struct ethnl_dump_ctx *ethnl_dump_context(struct netlink_callback *cb)
+@@ -551,6 +552,7 @@ ethnl_default_notify_ops[ETHTOOL_MSG_KERNEL_MAX + 1] = {
+ 	[ETHTOOL_MSG_COALESCE_NTF]	= &ethnl_coalesce_request_ops,
+ 	[ETHTOOL_MSG_PAUSE_NTF]		= &ethnl_pause_request_ops,
+ 	[ETHTOOL_MSG_EEE_NTF]		= &ethnl_eee_request_ops,
++	[ETHTOOL_MSG_PREEMPT_NTF]	= &ethnl_preempt_request_ops,
+ };
  
- /* forward declaration */
- struct igc_stats {
-@@ -1636,6 +1637,58 @@ static int igc_ethtool_set_eee(struct net_device *netdev,
- 	return 0;
- }
+ /* default notification handler */
+@@ -643,6 +645,7 @@ static const ethnl_notify_handler_t ethnl_notify_handlers[] = {
+ 	[ETHTOOL_MSG_COALESCE_NTF]	= ethnl_default_notify,
+ 	[ETHTOOL_MSG_PAUSE_NTF]		= ethnl_default_notify,
+ 	[ETHTOOL_MSG_EEE_NTF]		= ethnl_default_notify,
++	[ETHTOOL_MSG_PREEMPT_NTF]	= ethnl_default_notify,
+ };
  
-+static int igc_ethtool_get_preempt(struct net_device *netdev,
-+				   struct ethtool_fp *fpcmd)
+ void ethtool_notify(struct net_device *dev, unsigned int cmd, const void *data)
+@@ -912,6 +915,22 @@ static const struct genl_ops ethtool_genl_ops[] = {
+ 		.policy = ethnl_tunnel_info_get_policy,
+ 		.maxattr = ARRAY_SIZE(ethnl_tunnel_info_get_policy) - 1,
+ 	},
++	{
++		.cmd	= ETHTOOL_MSG_PREEMPT_GET,
++		.doit	= ethnl_default_doit,
++		.start	= ethnl_default_start,
++		.dumpit	= ethnl_default_dumpit,
++		.done	= ethnl_default_done,
++		.policy = ethnl_preempt_get_policy,
++		.maxattr = ARRAY_SIZE(ethnl_preempt_get_policy) - 1,
++	},
++	{
++		.cmd	= ETHTOOL_MSG_PREEMPT_SET,
++		.flags	= GENL_UNS_ADMIN_PERM,
++		.doit	= ethnl_set_preempt,
++		.policy = ethnl_preempt_set_policy,
++		.maxattr = ARRAY_SIZE(ethnl_preempt_set_policy) - 1,
++	},
+ };
+ 
+ static const struct genl_multicast_group ethtool_nl_mcgrps[] = {
+diff --git a/net/ethtool/netlink.h b/net/ethtool/netlink.h
+index d8efec516d86..8f65e53ccd59 100644
+--- a/net/ethtool/netlink.h
++++ b/net/ethtool/netlink.h
+@@ -344,6 +344,7 @@ extern const struct ethnl_request_ops ethnl_coalesce_request_ops;
+ extern const struct ethnl_request_ops ethnl_pause_request_ops;
+ extern const struct ethnl_request_ops ethnl_eee_request_ops;
+ extern const struct ethnl_request_ops ethnl_tsinfo_request_ops;
++extern const struct ethnl_request_ops ethnl_preempt_request_ops;
+ 
+ extern const struct nla_policy ethnl_header_policy[ETHTOOL_A_HEADER_FLAGS + 1];
+ extern const struct nla_policy ethnl_header_policy_stats[ETHTOOL_A_HEADER_FLAGS + 1];
+@@ -375,6 +376,8 @@ extern const struct nla_policy ethnl_tsinfo_get_policy[ETHTOOL_A_TSINFO_HEADER +
+ extern const struct nla_policy ethnl_cable_test_act_policy[ETHTOOL_A_CABLE_TEST_HEADER + 1];
+ extern const struct nla_policy ethnl_cable_test_tdr_act_policy[ETHTOOL_A_CABLE_TEST_TDR_CFG + 1];
+ extern const struct nla_policy ethnl_tunnel_info_get_policy[ETHTOOL_A_TUNNEL_INFO_HEADER + 1];
++extern const struct nla_policy ethnl_preempt_get_policy[ETHTOOL_A_PREEMPT_MAX + 1];
++extern const struct nla_policy ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_MAX + 1];
+ 
+ int ethnl_set_linkinfo(struct sk_buff *skb, struct genl_info *info);
+ int ethnl_set_linkmodes(struct sk_buff *skb, struct genl_info *info);
+@@ -392,5 +395,6 @@ int ethnl_act_cable_test_tdr(struct sk_buff *skb, struct genl_info *info);
+ int ethnl_tunnel_info_doit(struct sk_buff *skb, struct genl_info *info);
+ int ethnl_tunnel_info_start(struct netlink_callback *cb);
+ int ethnl_tunnel_info_dumpit(struct sk_buff *skb, struct netlink_callback *cb);
++int ethnl_set_preempt(struct sk_buff *skb, struct genl_info *info);
+ 
+ #endif /* _NET_ETHTOOL_NETLINK_H */
+diff --git a/net/ethtool/preempt.c b/net/ethtool/preempt.c
+new file mode 100644
+index 000000000000..4d97d1180a65
+--- /dev/null
++++ b/net/ethtool/preempt.c
+@@ -0,0 +1,151 @@
++// SPDX-License-Identifier: GPL-2.0-only
++
++#include "netlink.h"
++#include "common.h"
++
++struct preempt_req_info {
++	struct ethnl_req_info		base;
++};
++
++struct preempt_reply_data {
++	struct ethnl_reply_data		base;
++	struct ethtool_fp		fp;
++};
++
++#define PREEMPT_REPDATA(__reply_base) \
++	container_of(__reply_base, struct preempt_reply_data, base)
++
++const struct nla_policy
++ethnl_preempt_get_policy[ETHTOOL_A_PREEMPT_MAX + 1] = {
++	[ETHTOOL_A_PREEMPT_UNSPEC]		= { .type = NLA_REJECT },
++	[ETHTOOL_A_PREEMPT_HEADER]		= { .type = NLA_NESTED },
++	[ETHTOOL_A_PREEMPT_ENABLED]		= { .type = NLA_REJECT },
++	[ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT]	= { .type = NLA_REJECT },
++};
++
++static int preempt_prepare_data(const struct ethnl_req_info *req_base,
++				struct ethnl_reply_data *reply_base,
++				struct genl_info *info)
 +{
-+	struct igc_adapter *adapter = netdev_priv(netdev);
++	struct preempt_reply_data *data = PREEMPT_REPDATA(reply_base);
++	struct net_device *dev = reply_base->dev;
++	int ret;
 +
-+	fpcmd->enabled = adapter->frame_preemption_active;
-+	fpcmd->min_frag_size_mult = adapter->min_frag_size_mult;
++	if (!dev->ethtool_ops->get_preempt)
++		return -EOPNOTSUPP;
++
++	ret = ethnl_ops_begin(dev);
++	if (ret < 0)
++		return ret;
++
++	ret = dev->ethtool_ops->get_preempt(dev, &data->fp);
++	ethnl_ops_complete(dev);
++
++	return ret;
++}
++
++static int preempt_reply_size(const struct ethnl_req_info *req_base,
++			      const struct ethnl_reply_data *reply_base)
++{
++	int len = 0;
++
++	len += nla_total_size(sizeof(u8)); /* _PREEMPT_ENABLED */
++	len += nla_total_size(sizeof(u8)); /* _PREEMPT_MIN_FRAG_SIZE */
++
++	return len;
++}
++
++static int preempt_fill_reply(struct sk_buff *skb,
++			      const struct ethnl_req_info *req_base,
++			      const struct ethnl_reply_data *reply_base)
++{
++	const struct preempt_reply_data *data = PREEMPT_REPDATA(reply_base);
++	const struct ethtool_fp *preempt = &data->fp;
++
++	if (nla_put_u8(skb, ETHTOOL_A_PREEMPT_ENABLED, preempt->enabled))
++		return -EMSGSIZE;
++
++	if (nla_put_u8(skb, ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT,
++		       preempt->min_frag_size_mult))
++		return -EMSGSIZE;
 +
 +	return 0;
 +}
 +
-+static int igc_ethtool_set_preempt(struct net_device *netdev,
-+				   struct ethtool_fp *fpcmd)
++const struct ethnl_request_ops ethnl_preempt_request_ops = {
++	.request_cmd		= ETHTOOL_MSG_PREEMPT_GET,
++	.reply_cmd		= ETHTOOL_MSG_PREEMPT_GET_REPLY,
++	.hdr_attr		= ETHTOOL_A_PREEMPT_HEADER,
++	.req_info_size		= sizeof(struct preempt_req_info),
++	.reply_data_size	= sizeof(struct preempt_reply_data),
++
++	.prepare_data		= preempt_prepare_data,
++	.reply_size		= preempt_reply_size,
++	.fill_reply		= preempt_fill_reply,
++};
++
++const struct nla_policy
++ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_MAX + 1] = {
++	[ETHTOOL_A_PREEMPT_UNSPEC]			= { .type = NLA_REJECT },
++	[ETHTOOL_A_PREEMPT_HEADER]			= { .type = NLA_NESTED },
++	[ETHTOOL_A_PREEMPT_ENABLED]			= { .type = NLA_U8 },
++	[ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT]		= { .type = NLA_U8 },
++};
++
++int ethnl_set_preempt(struct sk_buff *skb, struct genl_info *info)
 +{
-+	struct igc_adapter *adapter = netdev_priv(netdev);
-+	int i;
++	struct ethnl_req_info req_info = {};
++	struct nlattr **tb = info->attrs;
++	struct ethtool_fp preempt = {};
++	struct net_device *dev;
++	bool mod = false;
++	int ret;
 +
-+	/* The formula is (Section 8.12.4 of the datasheet):
-+	 *   MIN_FRAG_SIZE = 4 + (1 + MIN_FRAG)*64
-+	 * MIN_FRAG is represented by two bits, so we can only have
-+	 * min_frag_size between 68 and 260.
-+	 */
-+	if (fpcmd->min_frag_size_mult > 3)
-+		return -EINVAL;
++	ret = ethnl_parse_header_dev_get(&req_info,
++					 tb[ETHTOOL_A_PREEMPT_HEADER],
++					 genl_info_net(info), info->extack,
++					 true);
++	if (ret < 0)
++		return ret;
++	dev = req_info.dev;
++	ret = -EOPNOTSUPP;
++	if (!dev->ethtool_ops->get_preempt ||
++	    !dev->ethtool_ops->set_preempt)
++		goto out_dev;
 +
-+	adapter->frame_preemption_active = fpcmd->enabled;
-+	adapter->min_frag_size_mult = fpcmd->min_frag_size_mult;
++	rtnl_lock();
++	ret = ethnl_ops_begin(dev);
++	if (ret < 0)
++		goto out_rtnl;
 +
-+	if (!adapter->frame_preemption_active)
-+		goto done;
-+
-+	/* Enabling frame preemption requires TSN mode to be enabled,
-+	 * which requires a schedule to be active. So, if there isn't
-+	 * a schedule already configured, configure a simple one, with
-+	 * all queues open, with 1ms cycle time.
-+	 */
-+	if (adapter->base_time)
-+		goto done;
-+
-+	adapter->cycle_time = NSEC_PER_MSEC;
-+
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		struct igc_ring *ring = adapter->tx_ring[i];
-+
-+		ring->start_time = 0;
-+		ring->end_time = NSEC_PER_MSEC;
++	ret = dev->ethtool_ops->get_preempt(dev, &preempt);
++	if (ret < 0) {
++		GENL_SET_ERR_MSG(info, "failed to retrieve frame preemption settings");
++		goto out_ops;
 +	}
 +
-+done:
-+	return igc_tsn_offload_apply(adapter);
++	ethnl_update_u8(&preempt.enabled,
++			tb[ETHTOOL_A_PREEMPT_ENABLED], &mod);
++	ethnl_update_u8(&preempt.min_frag_size_mult,
++			tb[ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT], &mod);
++
++	ret = 0;
++	if (!mod)
++		goto out_ops;
++
++	ret = dev->ethtool_ops->set_preempt(dev, &preempt);
++	if (ret < 0) {
++		GENL_SET_ERR_MSG(info, "frame preemption settings update failed");
++		goto out_ops;
++	}
++
++	ethtool_notify(dev, ETHTOOL_MSG_PREEMPT_NTF, NULL);
++
++out_ops:
++	ethnl_ops_complete(dev);
++out_rtnl:
++	rtnl_unlock();
++out_dev:
++	dev_put(dev);
++	return ret;
 +}
-+
- static int igc_ethtool_begin(struct net_device *netdev)
- {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
-@@ -1915,6 +1968,8 @@ static const struct ethtool_ops igc_ethtool_ops = {
- 	.get_ts_info		= igc_ethtool_get_ts_info,
- 	.get_channels		= igc_ethtool_get_channels,
- 	.set_channels		= igc_ethtool_set_channels,
-+	.get_preempt		= igc_ethtool_get_preempt,
-+	.set_preempt		= igc_ethtool_set_preempt,
- 	.get_priv_flags		= igc_ethtool_get_priv_flags,
- 	.set_priv_flags		= igc_ethtool_set_priv_flags,
- 	.get_eee		= igc_ethtool_get_eee,
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index f5a5527adb21..76272f62bb69 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -31,6 +31,7 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 		return 0;
- 
- 	adapter->cycle_time = 0;
-+	adapter->frame_preemption_active = false;
- 
- 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_DEFAULT);
-@@ -42,7 +43,8 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 
- 	tqavctrl = rd32(IGC_TQAVCTRL);
- 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
--		      IGC_TQAVCTRL_ENHANCED_QAV);
-+		      IGC_TQAVCTRL_ENHANCED_QAV | IGC_TQAVCTRL_PREEMPT_ENA |
-+		      IGC_TQAVCTRL_MIN_FRAG_MASK);
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
-@@ -51,6 +53,7 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 		ring->start_time = 0;
- 		ring->end_time = 0;
- 		ring->launchtime_enable = false;
-+		ring->preemptible = false;
- 
- 		wr32(IGC_TXQCTL(i), 0);
- 		wr32(IGC_STQT(i), 0);
-@@ -83,13 +86,20 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
- 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
- 
--	tqavctrl = rd32(IGC_TQAVCTRL);
- 	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
- 	rxpbs |= IGC_RXPBSIZE_TSN;
- 
- 	wr32(IGC_RXPBS, rxpbs);
- 
-+	tqavctrl = rd32(IGC_TQAVCTRL) &
-+		~(IGC_TQAVCTRL_MIN_FRAG_MASK | IGC_TQAVCTRL_PREEMPT_ENA);
- 	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
-+
-+	if (adapter->frame_preemption_active)
-+		tqavctrl |= IGC_TQAVCTRL_PREEMPT_ENA;
-+
-+	tqavctrl |= adapter->min_frag_size_mult << IGC_TQAVCTRL_MIN_FRAG_SHIFT;
-+
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
- 	wr32(IGC_QBVCYCLET_S, cycle);
-@@ -115,6 +125,9 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 		if (ring->launchtime_enable)
- 			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
- 
-+		if (ring->preemptible)
-+			txqctl |= IGC_TXQCTL_PREEMPTABLE;
-+
- 		wr32(IGC_TXQCTL(i), txqctl);
- 	}
- 
-@@ -142,7 +155,8 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 
- int igc_tsn_offload_apply(struct igc_adapter *adapter)
- {
--	bool is_any_enabled = adapter->base_time || is_any_launchtime(adapter);
-+	bool is_any_enabled = adapter->base_time ||
-+		is_any_launchtime(adapter) || adapter->frame_preemption_active;
- 
- 	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED) && !is_any_enabled)
- 		return 0;
 -- 
 2.29.2
 
