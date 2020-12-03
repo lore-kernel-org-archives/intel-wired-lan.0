@@ -1,62 +1,86 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 3 Dec 2020 17:21:17 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] i40e, ice,
- ixgbe: optimize for XDP_REDIRECT in xsk path
-In-Reply-To: <CAJ8uoz04dFruNnDDyvgbPBZBbMqZxHS6xQJ66dnoPLFtWXv0Uw@mail.gmail.com>
-References: <20201202150724.31439-1-magnus.karlsson@gmail.com>
- <20201202204041.GA30907@ranger.igk.intel.com>
- <CAJ8uoz04dFruNnDDyvgbPBZBbMqZxHS6xQJ66dnoPLFtWXv0Uw@mail.gmail.com>
-Message-ID: <618e35ec5aa31b92990a9224181a9011119fc98c.camel@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu,  3 Dec 2020 09:20:24 -0800
+Subject: [Intel-wired-lan] [net v2 3/6] ice: update the number of available
+ RSS queues
+Message-ID: <20201203172024.9283-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2020-12-03 at 07:58 +0100, Magnus Karlsson wrote:
-> On Wed, Dec 2, 2020 at 9:49 PM Maciej Fijalkowski
-> <maciej.fijalkowski@intel.com> wrote:
-> > 
-> > On Wed, Dec 02, 2020 at 04:07:21PM +0100, Magnus Karlsson wrote:
-> > > Optimize run_xdp_zc() for the XDP program verdict being
-> > > XDP_REDIRECT
-> > > in the zsk zero-copy path. This path is only used when having
-> > > AF_XDP
-> > > zero-copy on and in that case most packets will be directed to
-> > > user
-> > > space. This provides around 100k extra packets in throughput on
-> > > my
-> > > server when running l2fwd in xdpsock.
-> > > 
-> > > Thanks: Magnus
-> > 
-> > For series:
-> > Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> > 
-> > You only ate 'e' from i40e subject line.
-> 
-> Sorry, you are right. Tony, would you please be so kind to add this
-> missing "e" in the commit message before you send the pull request?
-> 
-> Thanks: Magnus
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-I can do that.
+It was possible to have Rx queues that were not available for use
+by RSS. This would happen when increasing the number of Rx queues
+while there was a user defined RSS LUT.
 
-Thanks,
-Tony
+Always update the number of available RSS queues when changing the
+number of Rx queues.
 
-> > > 
-> > > Magnus Karlsson (3):
-> > >   i40: optimize for XDP_REDIRECT in xsk path
-> > >   ixgbe: optimize for XDP_REDIRECT in xsk path
-> > >   ice: optimize for XDP_REDIRECT in xsk path
-> > > 
-> > >  drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 11 +++++++----
-> > >  drivers/net/ethernet/intel/ice/ice_xsk.c     | 12 ++++++++----
-> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 11 +++++++----
-> > >  3 files changed, 22 insertions(+), 12 deletions(-)
-> > > 
-> > > 
-> > > base-commit: 6b4f503186b73e3da24c6716c8c7ea903e6b74d4
-> > > --
-> > > 2.29.0
+Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+---
+v2: Remove new_rx check, execute unconditionally
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 27 ++++++++++++++------
+ 1 file changed, 19 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 9e8e9531cd87..6f1e0db635fc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3321,6 +3321,18 @@ ice_get_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 	ch->max_other = ch->other_count;
+ }
+ 
++/**
++ * ice_get_valid_rss_size - return valid number of RSS queues
++ * @hw: pointer to the HW structure
++ * @new_size: requested RSS queues
++ */
++static int ice_get_valid_rss_size(struct ice_hw *hw, int new_size)
++{
++	struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
++
++	return min_t(int, new_size, BIT(caps->rss_table_entry_width));
++}
++
+ /**
+  * ice_vsi_set_dflt_rss_lut - set default RSS LUT with requested RSS size
+  * @vsi: VSI to reconfigure RSS LUT on
+@@ -3348,14 +3360,10 @@ static int ice_vsi_set_dflt_rss_lut(struct ice_vsi *vsi, int req_rss_size)
+ 		return -ENOMEM;
+ 
+ 	/* set RSS LUT parameters */
+-	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
++	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags))
+ 		vsi->rss_size = 1;
+-	} else {
+-		struct ice_hw_common_caps *caps = &hw->func_caps.common_cap;
+-
+-		vsi->rss_size = min_t(int, req_rss_size,
+-				      BIT(caps->rss_table_entry_width));
+-	}
++	else
++		vsi->rss_size = ice_get_valid_rss_size(hw, req_rss_size);
+ 
+ 	/* create/set RSS LUT */
+ 	ice_fill_rss_lut(lut, vsi->rss_table_size, vsi->rss_size);
+@@ -3434,9 +3442,12 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 
+ 	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
+ 
+-	if (new_rx && !netif_is_rxfh_configured(dev))
++	if (!netif_is_rxfh_configured(dev))
+ 		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
+ 
++	/* Update rss_size due to change in Rx queues */
++	vsi->rss_size = ice_get_valid_rss_size(&pf->hw, new_rx);
++
+ 	return 0;
+ }
+ 
+-- 
+2.20.1
+
