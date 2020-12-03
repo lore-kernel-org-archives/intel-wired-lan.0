@@ -1,42 +1,31 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Wed, 2 Dec 2020 21:40:41 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] i40e, ice,
- ixgbe: optimize for XDP_REDIRECT in xsk path
-In-Reply-To: <20201202150724.31439-1-magnus.karlsson@gmail.com>
-References: <20201202150724.31439-1-magnus.karlsson@gmail.com>
-Message-ID: <20201202204041.GA30907@ranger.igk.intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 2 Dec 2020 17:53:47 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/9] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20201202045325.3254757-2-vinicius.gomes@intel.com>
+References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
+ <20201202045325.3254757-2-vinicius.gomes@intel.com>
+Message-ID: <20201202175347.3ee19c51@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 02, 2020 at 04:07:21PM +0100, Magnus Karlsson wrote:
-> Optimize run_xdp_zc() for the XDP program verdict being XDP_REDIRECT
-> in the zsk zero-copy path. This path is only used when having AF_XDP
-> zero-copy on and in that case most packets will be directed to user
-> space. This provides around 100k extra packets in throughput on my
-> server when running l2fwd in xdpsock.
+On Tue,  1 Dec 2020 20:53:17 -0800 Vinicius Costa Gomes wrote:
+> Frame preemption (described in IEEE 802.3br-2016) defines the concept
+> of preemptible and express queues. It allows traffic from express
+> queues to "interrupt" traffic from preemptible queues, which are
+> "resumed" after the express traffic has finished transmitting.
 > 
-> Thanks: Magnus
+> Frame preemption can only be used when both the local device and the
+> link partner support it.
+> 
+> Only parameters for enabling/disabling frame preemption and
+> configuring the minimum fragment size are included here. Expressing
+> which queues are marked as preemptible is left to mqprio/taprio, as
+> having that information there should be easier on the user.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-For series:
-Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-
-You only ate 'e' from i40e subject line.
-
-> 
-> Magnus Karlsson (3):
->   i40: optimize for XDP_REDIRECT in xsk path
->   ixgbe: optimize for XDP_REDIRECT in xsk path
->   ice: optimize for XDP_REDIRECT in xsk path
-> 
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 11 +++++++----
->  drivers/net/ethernet/intel/ice/ice_xsk.c     | 12 ++++++++----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 11 +++++++----
->  3 files changed, 22 insertions(+), 12 deletions(-)
-> 
-> 
-> base-commit: 6b4f503186b73e3da24c6716c8c7ea903e6b74d4
-> --
-> 2.29.0
+CC: Michal
