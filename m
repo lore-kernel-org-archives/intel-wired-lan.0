@@ -1,77 +1,100 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 3 Dec 2020 09:57:09 -0800
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Added ICR clearing by
- corresponding IMS bit.
-In-Reply-To: <20201203133236.222207-1-andrew@daynix.com>
-References: <20201203133236.222207-1-andrew@daynix.com>
-Message-ID: <CAKgT0UeoKDcDeMMG7KGMSKXP26txrwNuc73HKFPa57y=Vuo-kg@mail.gmail.com>
+From: Michael S. Tsirkin <mst@redhat.com>
+Date: Thu, 3 Dec 2020 16:57:03 -0500
+Subject: [Intel-wired-lan] [PATCH v4 2/2] hw/virtio-pci Added AER
+ capability.
+In-Reply-To: <20201203132517.220811-3-andrew@daynix.com>
+References: <20201203132517.220811-1-andrew@daynix.com>
+ <20201203132517.220811-3-andrew@daynix.com>
+Message-ID: <20201203165317-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Dec 3, 2020 at 5:00 AM Andrew Melnychenko <andrew@daynix.com> wrote:
->
-> Buglink: https://bugzilla.redhat.com/show_bug.cgi?id=1707441
-
-So the bugzilla seems to be reporting that the NIC operstate is being
-misreported when qemu has configured the link down. Based on the
-description it isn't clear to me how this patch addresses that. Some
-documentation on how you reproduced the issue, and what was seen
-before and after this patch would be useful.
-
-> Added ICR clearing if there is IMS bit - according to the note by
-
-Should probably be "Add" instead of "Added". Same for the title of the patch.
-
-> section 13.3.27 of the 8257X developers manual.
->
+On Thu, Dec 03, 2020 at 03:25:17PM +0200, Andrew Melnychenko wrote:
+> From: Andrew <andrew@daynix.com>
+> 
+> Added AER capability for virtio-pci devices.
+> Also added property for devices, by default AER is disabled.
+> 
 > Signed-off-by: Andrew Melnychenko <andrew@daynix.com>
 > ---
->  hw/net/e1000e_core.c | 10 ++++++++++
->  hw/net/trace-events  |  1 +
->  2 files changed, 11 insertions(+)
->
-> diff --git a/hw/net/e1000e_core.c b/hw/net/e1000e_core.c
-> index 095c01ebc6..9705f5c52e 100644
-> --- a/hw/net/e1000e_core.c
-> +++ b/hw/net/e1000e_core.c
-> @@ -2624,6 +2624,16 @@ e1000e_mac_icr_read(E1000ECore *core, int index)
->          e1000e_clear_ims_bits(core, core->mac[IAM]);
->      }
->
-> +    /*
-> +     * PCIe* GbE Controllers Open Source Software Developer's Manual
-> +     * 13.3.27 Interrupt Cause Read Register
-> +     */
-> +    if ((core->mac[ICR] & E1000_ICR_ASSERTED) &&
-> +        (core->mac[ICR] & core->mac[IMS])) {
-> +        trace_e1000e_irq_icr_clear_icr_bit_ims(core->mac[ICR], core->mac[IMS]);
-> +        core->mac[ICR] = 0;
-> +    }
+>  hw/virtio/virtio-pci.c | 16 ++++++++++++++++
+>  hw/virtio/virtio-pci.h |  4 ++++
+>  2 files changed, 20 insertions(+)
+> 
+> diff --git a/hw/virtio/virtio-pci.c b/hw/virtio/virtio-pci.c
+> index ceaa233129..f863f69ede 100644
+> --- a/hw/virtio/virtio-pci.c
+> +++ b/hw/virtio/virtio-pci.c
+> @@ -1817,6 +1817,12 @@ static void virtio_pci_realize(PCIDevice *pci_dev, Error **errp)
+>           */
+>          pci_set_word(pci_dev->config + pos + PCI_PM_PMC, 0x3);
+>  
+> +        if (proxy->flags & VIRTIO_PCI_FLAG_AER) {
+> +            pcie_aer_init(pci_dev, PCI_ERR_VER, last_pcie_cap_offset,
+> +                          PCI_ERR_SIZEOF, NULL);
+> +            last_pcie_cap_offset += PCI_ERR_SIZEOF;
+> +        }
 > +
->      trace_e1000e_irq_icr_read_exit(core->mac[ICR]);
->      e1000e_update_interrupt_state(core);
->      return ret;
 
-Changes like this have historically been problematic. I am curious
-what testing had been done on this and with what drivers? Keep in mind
-that we have to support several flavors of BSD, Windows, and Linux
-with this.
 
-> diff --git a/hw/net/trace-events b/hw/net/trace-events
-> index 5db45456d9..2c3521a19c 100644
-> --- a/hw/net/trace-events
-> +++ b/hw/net/trace-events
-> @@ -237,6 +237,7 @@ e1000e_irq_icr_read_entry(uint32_t icr) "Starting ICR read. Current ICR: 0x%x"
->  e1000e_irq_icr_read_exit(uint32_t icr) "Ending ICR read. Current ICR: 0x%x"
->  e1000e_irq_icr_clear_zero_ims(void) "Clearing ICR on read due to zero IMS"
->  e1000e_irq_icr_clear_iame(void) "Clearing ICR on read due to IAME"
-> +e1000e_irq_icr_clear_icr_bit_ims(uint32_t icr, uint32_t ims) "Clearing ICR on read due corresponding IMS bit: 0x%x & 0x%x"
->  e1000e_irq_iam_clear_eiame(uint32_t iam, uint32_t cause) "Clearing IMS due to EIAME, IAM: 0x%X, cause: 0x%X"
->  e1000e_irq_icr_clear_eiac(uint32_t icr, uint32_t eiac) "Clearing ICR bits due to EIAC, ICR: 0x%X, EIAC: 0x%X"
->  e1000e_irq_ims_clear_set_imc(uint32_t val) "Clearing IMS bits due to IMC write 0x%x"
-> --
-> 2.29.2
+What I dislike here is that the property can be added to
+pci devices (not express) and will apparently succeed.
+Pls add code to validate and fail init.
+
+
+>          if (proxy->flags & VIRTIO_PCI_FLAG_INIT_DEVERR) {
+>              /* Init error enabling flags */
+>              pcie_cap_deverr_init(pci_dev);
+> @@ -1858,7 +1864,15 @@ static void virtio_pci_realize(PCIDevice *pci_dev, Error **errp)
+>  
+>  static void virtio_pci_exit(PCIDevice *pci_dev)
+>  {
+> +    VirtIOPCIProxy *proxy = VIRTIO_PCI(pci_dev);
+> +    bool pcie_port = pci_bus_is_express(pci_get_bus(pci_dev)) &&
+> +                     !pci_bus_is_root(pci_get_bus(pci_dev));
+> +
+>      msix_uninit_exclusive_bar(pci_dev);
+> +    if (proxy->flags & VIRTIO_PCI_FLAG_AER && pcie_port &&
+> +        pci_is_express(pci_dev)) {
+> +        pcie_aer_exit(pci_dev);
+> +    }
+>  }
+>  
+>  static void virtio_pci_reset(DeviceState *qdev)
+> @@ -1911,6 +1925,8 @@ static Property virtio_pci_properties[] = {
+>                      VIRTIO_PCI_FLAG_INIT_PM_BIT, true),
+>      DEFINE_PROP_BIT("x-pcie-flr-init", VirtIOPCIProxy, flags,
+>                      VIRTIO_PCI_FLAG_INIT_FLR_BIT, true),
+> +    DEFINE_PROP_BIT("aer", VirtIOPCIProxy, flags,
+> +                    VIRTIO_PCI_FLAG_AER_BIT, false),
+>      DEFINE_PROP_END_OF_LIST(),
+>  };
 >
+> diff --git a/hw/virtio/virtio-pci.h b/hw/virtio/virtio-pci.h
+> index 06e2af12de..d7d5d403a9 100644
+> --- a/hw/virtio/virtio-pci.h
+> +++ b/hw/virtio/virtio-pci.h
+> @@ -41,6 +41,7 @@ enum {
+>      VIRTIO_PCI_FLAG_INIT_LNKCTL_BIT,
+>      VIRTIO_PCI_FLAG_INIT_PM_BIT,
+>      VIRTIO_PCI_FLAG_INIT_FLR_BIT,
+> +    VIRTIO_PCI_FLAG_AER_BIT,
+>  };
+>  
+>  /* Need to activate work-arounds for buggy guests at vmstate load. */
+> @@ -80,6 +81,9 @@ enum {
+>  /* Init Function Level Reset capability */
+>  #define VIRTIO_PCI_FLAG_INIT_FLR (1 << VIRTIO_PCI_FLAG_INIT_FLR_BIT)
+>  
+> +/* Advanced Error Reporting capability */
+> +#define VIRTIO_PCI_FLAG_AER (1 << VIRTIO_PCI_FLAG_AER_BIT)
+> +
+>  typedef struct {
+>      MSIMessage msg;
+>      int virq;
+> -- 
+> 2.29.2
+
