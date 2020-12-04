@@ -1,84 +1,121 @@
-From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Fri,  4 Dec 2020 14:09:17 -0600
-Subject: [Intel-wired-lan] [PATCH v3 4/7] e1000e: Add Dell's Comet Lake
- systems into S0ix heuristics
-In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
-References: <20201204200920.133780-1-mario.limonciello@dell.com>
-Message-ID: <20201204200920.133780-5-mario.limonciello@dell.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 05 Dec 2020 05:19:07 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 96b8ee374a36498f6bf909e7ad08d589a57da40c
+Message-ID: <5fcaa7cb.TdGKParB5tyaVxwF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dell's shipping Comet Lake Latitude and Precision systems containing i219LM are
-properly configured and should use the S0ix flows.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: 96b8ee374a36498f6bf909e7ad08d589a57da40c  iavf: fix double-release of rtnl_lock
 
-Disabling s0ix entry and exit flows caused a regression in power consumption
-over suspend to idle on these systems.
+elapsed time: 848m
 
-Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-Tested-by: Yijun Shen <yijun.shen@dell.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+configs tested: 92
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+m68k                          amiga_defconfig
+sh                          r7785rp_defconfig
+sh                         microdev_defconfig
+m68k                       m5275evb_defconfig
+powerpc                      ep88xc_defconfig
+arm                         bcm2835_defconfig
+powerpc                      acadia_defconfig
+arm                         assabet_defconfig
+powerpc                     skiroot_defconfig
+arm                          pxa3xx_defconfig
+openrisc                         alldefconfig
+powerpc                      mgcoge_defconfig
+arm                         s3c2410_defconfig
+openrisc                    or1ksim_defconfig
+m68k                            q40_defconfig
+mips                           jazz_defconfig
+sparc64                             defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20201204
+i386                 randconfig-a004-20201204
+i386                 randconfig-a001-20201204
+i386                 randconfig-a002-20201204
+i386                 randconfig-a006-20201204
+i386                 randconfig-a003-20201204
+i386                 randconfig-a014-20201204
+i386                 randconfig-a013-20201204
+i386                 randconfig-a011-20201204
+i386                 randconfig-a015-20201204
+i386                 randconfig-a012-20201204
+i386                 randconfig-a016-20201204
+x86_64               randconfig-a004-20201204
+x86_64               randconfig-a006-20201204
+x86_64               randconfig-a002-20201204
+x86_64               randconfig-a001-20201204
+x86_64               randconfig-a005-20201204
+x86_64               randconfig-a003-20201204
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a016-20201204
+x86_64               randconfig-a012-20201204
+x86_64               randconfig-a014-20201204
+x86_64               randconfig-a013-20201204
+x86_64               randconfig-a015-20201204
+x86_64               randconfig-a011-20201204
+
 ---
- drivers/net/ethernet/intel/e1000e/s0ix.c | 33 +++++++++++++++++++++---
- 1 file changed, 29 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
-index c3013edbd9e4..74043e80c32f 100644
---- a/drivers/net/ethernet/intel/e1000e/s0ix.c
-+++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
-@@ -1,5 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright(c) 1999 - 2018 Intel Corporation. */
-+/* Copyright(c) 1999 - 2018 Intel Corporation.
-+ * Copyright(c) 2020 Dell Inc.
-+ */
- 
- #include <linux/netdevice.h>
- 
-@@ -44,6 +46,26 @@ static bool e1000e_check_me(u16 device_id)
- 	return false;
- }
- 
-+static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
-+{
-+	if (dev->subsystem_vendor == PCI_VENDOR_ID_DELL) {
-+		switch (dev->subsystem_device) {
-+		case 0x099f: /* Latitude 5310 */
-+		case 0x09a0: /* Latitude 5410 */
-+		case 0x09c9: /* Latitude 5410 */
-+		case 0x09a1: /* Latitude 5510 */
-+		case 0x09a2: /* Precision 3550 */
-+		case 0x09c0: /* Latitude 5411 */
-+		case 0x09c1: /* Latitude 5511 */
-+		case 0x09c2: /* Precision 3551 */
-+		case 0x09c3: /* Precision 7550 */
-+		case 0x09c4: /* Precision 7750 */
-+			return true;
-+		}
-+	}
-+	return false;
-+}
-+
- void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-@@ -273,8 +295,11 @@ void e1000e_maybe_enable_s0ix(struct e1000_adapter *adapter)
- 	/* require cannon point or later */
- 	if (hw->mac.type < e1000_pch_cnp)
- 		return;
--	/* turn off on ME configurations */
--	if (e1000e_check_me(pdev->device))
--		return;
-+	/* check for allowlist of systems */
-+	if (!e1000e_check_subsystem_allowlist(pdev)) {
-+		/* turn off on ME configurations */
-+		if (e1000e_check_me(pdev->device))
-+			return;
-+	}
- 	adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
- }
--- 
-2.25.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
