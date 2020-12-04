@@ -1,41 +1,105 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Fri,  4 Dec 2020 14:09:19 -0600
-Subject: [Intel-wired-lan] [PATCH v3 6/7] e1000e: Add Dell TGL desktop
- systems into S0ix heuristics
+Date: Fri,  4 Dec 2020 14:09:16 -0600
+Subject: [Intel-wired-lan] [PATCH v3 3/7] e1000e: Export S0ix flags to
+ ethtool
 In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
 References: <20201204200920.133780-1-mario.limonciello@dell.com>
-Message-ID: <20201204200920.133780-7-mario.limonciello@dell.com>
+Message-ID: <20201204200920.133780-4-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-These Tiger Lake systems are not yet released, but have been validated
-on pre-release hardware.
+This flag can be used for debugging and development purposes
+including determining if S0ix flows work properly for a system
+not currently recognized by heuristics.
 
-This is being submitted separately from released hardware in case of
-a regression between pre-release and release hardware so this commit
-can be reverted alone.
-
+Tested-by: Yijun Shen <yijun.shen@dell.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/s0ix.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 40 +++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
-index 0dd2e2702ebb..cc04aeaa2292 100644
---- a/drivers/net/ethernet/intel/e1000e/s0ix.c
-+++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
-@@ -63,6 +63,8 @@ static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
- 		case 0x0a40: /* Notebook 0x0a40 */
- 		case 0x0a41: /* Notebook 0x0a41 */
- 		case 0x0a42: /* Notebook 0x0a42 */
-+		case 0x0a2e: /* Desktop  0x0a2e */
-+		case 0x0a30: /* Desktop  0x0a30 */
- 			return true;
- 		}
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 03215b0aee4b..eb683949ebfe 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -23,6 +23,13 @@ struct e1000_stats {
+ 	int stat_offset;
+ };
+ 
++static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
++	"s0ix-enabled",
++};
++
++#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
++
+ #define E1000_STAT(str, m) { \
+ 		.stat_string = str, \
+ 		.type = E1000_STATS, \
+@@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
+ 		return E1000_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return E1000_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return E1000E_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EOPNOTSUPP;
  	}
+@@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
+ 			p += ETH_GSTRING_LEN;
+ 		}
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, e1000e_priv_flags_strings,
++		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
++		break;
+ 	}
+ }
+ 
+@@ -2305,6 +2318,31 @@ static int e1000e_get_ts_info(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++static u32 e1000e_get_priv_flags(struct net_device *netdev)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
++
++	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
++		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
++
++	return priv_flags;
++}
++
++static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags2 = adapter->flags2;
++
++	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
++	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED)
++		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
++	if (flags2 != adapter->flags2)
++		adapter->flags2 = flags2;
++
++	return 0;
++}
++
+ static const struct ethtool_ops e1000_ethtool_ops = {
+ 	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
+ 	.get_drvinfo		= e1000_get_drvinfo,
+@@ -2336,6 +2374,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
+ 	.set_eee		= e1000e_set_eee,
+ 	.get_link_ksettings	= e1000_get_link_ksettings,
+ 	.set_link_ksettings	= e1000_set_link_ksettings,
++	.get_priv_flags		= e1000e_get_priv_flags,
++	.set_priv_flags		= e1000e_set_priv_flags,
+ };
+ 
+ void e1000e_set_ethtool_ops(struct net_device *netdev)
 -- 
 2.25.1
 
