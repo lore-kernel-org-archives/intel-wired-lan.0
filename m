@@ -1,40 +1,66 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Fri, 4 Dec 2020 23:19:55 +0100
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <87pn3p7aiv.fsf@toke.dk>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
- <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net> <87pn3p7aiv.fsf@toke.dk>
-Message-ID: <eb305a4f-c189-6b32-f718-6e709ef0fa55@iogearbox.net>
+From: Limonciello, Mario <Mario.Limonciello@dell.com>
+Date: Fri, 4 Dec 2020 22:28:06 +0000
+Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <CAKgT0Uc=OxcuHbZihY3zxsxzPprJ_8vGHr=reBJFMrf=V9A5kg@mail.gmail.com>
+References: <20201204200920.133780-1-mario.limonciello@dell.com>
+ <CAKgT0Uc=OxcuHbZihY3zxsxzPprJ_8vGHr=reBJFMrf=V9A5kg@mail.gmail.com>
+Message-ID: <DM6PR19MB2636B200D618A5546E7BBB57FAF10@DM6PR19MB2636.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/4/20 6:20 PM, Toke H?iland-J?rgensen wrote:
-> Daniel Borkmann <daniel@iogearbox.net> writes:
-[...]
->> We tried to standardize on a minimum guaranteed amount, but unfortunately not
->> everyone seems to implement it, but I think it would be very useful to query
->> this from application side, for example, consider that an app inserts a BPF
->> prog at XDP doing custom encap shortly before XDP_TX so it would be useful to
->> know which of the different encaps it implements are realistically possible on
->> the underlying XDP supported dev.
+> -----Original Message-----
+> From: Alexander Duyck <alexander.duyck@gmail.com>
+> Sent: Friday, December 4, 2020 15:27
+> To: Limonciello, Mario
+> Cc: Jeff Kirsher; Tony Nguyen; intel-wired-lan; LKML; Linux PM; Netdev; Jakub
+> Kicinski; Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller; David
+> Arcari; Shen, Yijun; Yuan, Perry; anthony.wong at canonical.com
+> Subject: Re: [PATCH v3 0/7] Improve s0ix flows for systems i219LM
 > 
-> How many distinct values are there in reality? Enough to express this in
-> a few flags (XDP_HEADROOM_128, XDP_HEADROOM_192, etc?), or does it need
-> an additional field to get the exact value? If we implement the latter
-> we also run the risk of people actually implementing all sorts of weird
-> values, whereas if we constrain it to a few distinct values it's easier
-> to push back against adding new values (as it'll be obvious from the
-> addition of new flags).
+> 
+> [EXTERNAL EMAIL]
+> 
+> On Fri, Dec 4, 2020 at 12:09 PM Mario Limonciello
+> <mario.limonciello@dell.com> wrote:
+> >
+> > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
+> systems")
+> > disabled s0ix flows for systems that have various incarnations of the
+> > i219-LM ethernet controller.  This was done because of some regressions
+> > caused by an earlier
+> > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
+> > with i219-LM controller.
+> >
+> > Performing suspend to idle with these ethernet controllers requires a
+> properly
+> > configured system.  To make enabling such systems easier, this patch
+> > series allows determining if enabled and turning on using ethtool.
+> >
+> > The flows have also been confirmed to be configured correctly on Dell's
+> Latitude
+> > and Precision CML systems containing the i219-LM controller, when the kernel
+> also
+> > contains the fix for s0i3.2 entry previously submitted here and now part of
+> this
+> > series.
+> > https://marc.info/?l=linux-netdev&m=160677194809564&w=2
+> >
+> > Patches 4 through 7 will turn the behavior on by default for some of Dell's
+> > CML and TGL systems.
+> 
+> The patches look good to me. Just need to address the minor issue that
+> seems to have been present prior to the introduction of this patch
+> set.
+> 
+> Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 
-It's not everywhere straight forward to determine unfortunately, see also [0,1]
-as some data points where Jesper looked into in the past, so in some cases it
-might differ depending on the build/runtime config..
+Thanks for your review.  Just some operational questions - since this previously
+existed do you want me to re-spin the series to a v4 for this, or should it be
+a follow up after the series?
 
-   [0] https://lore.kernel.org/bpf/158945314698.97035.5286827951225578467.stgit at firesoul/
-   [1] https://lore.kernel.org/bpf/158945346494.97035.12809400414566061815.stgit at firesoul/
+If I respin it, would you prefer that change to occur at the start or end
+of the series?
