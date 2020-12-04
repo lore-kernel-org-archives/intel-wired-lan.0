@@ -1,105 +1,65 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Fri,  4 Dec 2020 14:09:16 -0600
-Subject: [Intel-wired-lan] [PATCH v3 3/7] e1000e: Export S0ix flags to
- ethtool
+Date: Fri,  4 Dec 2020 14:09:14 -0600
+Subject: [Intel-wired-lan] [PATCH v3 1/7] e1000e: fix S0ix flow to allow
+ S0i3.2 subset entry
 In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
 References: <20201204200920.133780-1-mario.limonciello@dell.com>
-Message-ID: <20201204200920.133780-4-mario.limonciello@dell.com>
+Message-ID: <20201204200920.133780-2-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This flag can be used for debugging and development purposes
-including determining if S0ix flows work properly for a system
-not currently recognized by heuristics.
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
 
-Tested-by: Yijun Shen <yijun.shen@dell.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+Changed a configuration in the flows to align with
+architecture requirements to achieve S0i3.2 substate.
+
+Also fixed a typo in the previous commit 632fbd5eb5b0
+("e1000e: fix S0ix flows for cable connected case").
+
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 40 +++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 03215b0aee4b..eb683949ebfe 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -23,6 +23,13 @@ struct e1000_stats {
- 	int stat_offset;
- };
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b30f00891c03..128ab6898070 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6475,13 +6475,13 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
  
-+static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
-+	"s0ix-enabled",
-+};
-+
-+#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
-+
- #define E1000_STAT(str, m) { \
- 		.stat_string = str, \
- 		.type = E1000_STATS, \
-@@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
- 		return E1000_TEST_LEN;
- 	case ETH_SS_STATS:
- 		return E1000_STATS_LEN;
-+	case ETH_SS_PRIV_FLAGS:
-+		return E1000E_PRIV_FLAGS_STR_LEN;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
- 			p += ETH_GSTRING_LEN;
- 		}
- 		break;
-+	case ETH_SS_PRIV_FLAGS:
-+		memcpy(data, e1000e_priv_flags_strings,
-+		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-+		break;
- 	}
- }
+ 	/* Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data |= BIT(28);
++	mac_data &= ~BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
  
-@@ -2305,6 +2318,31 @@ static int e1000e_get_ts_info(struct net_device *netdev,
- 	return 0;
- }
+ 	/* Enable K1 off to enable mPHY Power Gating */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data |= BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
  
-+static u32 e1000e_get_priv_flags(struct net_device *netdev)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	u32 priv_flags = 0;
-+
-+	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-+		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
-+
-+	return priv_flags;
-+}
-+
-+static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	unsigned int flags2 = adapter->flags2;
-+
-+	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
-+	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED)
-+		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-+	if (flags2 != adapter->flags2)
-+		adapter->flags2 = flags2;
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops e1000_ethtool_ops = {
- 	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
- 	.get_drvinfo		= e1000_get_drvinfo,
-@@ -2336,6 +2374,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
- 	.set_eee		= e1000e_set_eee,
- 	.get_link_ksettings	= e1000_get_link_ksettings,
- 	.set_link_ksettings	= e1000_set_link_ksettings,
-+	.get_priv_flags		= e1000e_get_priv_flags,
-+	.set_priv_flags		= e1000e_set_priv_flags,
- };
+ 	/* Enable mPHY power gating for any link and speed */
+ 	mac_data = er32(FEXTNVM8);
+@@ -6525,11 +6525,11 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 	/* Disable K1 off */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data &= ~BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
  
- void e1000e_set_ethtool_ops(struct net_device *netdev)
+ 	/* Disable Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data &= ~BIT(28);
++	mac_data |= BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
+ 
+ 	/* Cancel not waking from dynamic
 -- 
 2.25.1
 
