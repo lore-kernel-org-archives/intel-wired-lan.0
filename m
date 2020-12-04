@@ -1,40 +1,43 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Fri,  4 Dec 2020 14:09:20 -0600
-Subject: [Intel-wired-lan] [PATCH v3 7/7] e1000e: Add another Dell TGL
- notebook system into S0ix heuristics
+Date: Fri,  4 Dec 2020 14:09:18 -0600
+Subject: [Intel-wired-lan] [PATCH v3 5/7] e1000e: Add more Dell CML systems
+ into S0ix heuristics
 In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
 References: <20201204200920.133780-1-mario.limonciello@dell.com>
-Message-ID: <20201204200920.133780-8-mario.limonciello@dell.com>
+Message-ID: <20201204200920.133780-6-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This Tiger Lake system is not yet released, but has been validated
+These Comet Lake systems are not yet released, but have been validated
 on pre-release hardware.
 
 This is being submitted separately from released hardware in case of
 a regression between pre-release and release hardware so this commit
 can be reverted alone.
 
+Tested-by: Yijun Shen <yijun.shen@dell.com>
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/s0ix.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/e1000e/s0ix.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
-index cc04aeaa2292..3f2985fac67c 100644
+index 74043e80c32f..0dd2e2702ebb 100644
 --- a/drivers/net/ethernet/intel/e1000e/s0ix.c
 +++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
-@@ -63,6 +63,7 @@ static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
- 		case 0x0a40: /* Notebook 0x0a40 */
- 		case 0x0a41: /* Notebook 0x0a41 */
- 		case 0x0a42: /* Notebook 0x0a42 */
-+		case 0x0a22: /* Notebook 0x0a22 */
- 		case 0x0a2e: /* Desktop  0x0a2e */
- 		case 0x0a30: /* Desktop  0x0a30 */
+@@ -60,6 +60,9 @@ static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
+ 		case 0x09c2: /* Precision 3551 */
+ 		case 0x09c3: /* Precision 7550 */
+ 		case 0x09c4: /* Precision 7750 */
++		case 0x0a40: /* Notebook 0x0a40 */
++		case 0x0a41: /* Notebook 0x0a41 */
++		case 0x0a42: /* Notebook 0x0a42 */
  			return true;
+ 		}
+ 	}
 -- 
 2.25.1
 
