@@ -1,29 +1,30 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Sat, 5 Dec 2020 09:59:48 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 8/9] igc: Add support for
- exposing frame preemption stats registers
-In-Reply-To: <20201202045325.3254757-9-vinicius.gomes@intel.com>
+Date: Sat, 5 Dec 2020 10:00:30 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 6/9] igc: Add support for
+ tuning frame preemption via ethtool
+In-Reply-To: <20201202045325.3254757-7-vinicius.gomes@intel.com>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
- <20201202045325.3254757-9-vinicius.gomes@intel.com>
-Message-ID: <20201205095948.5e0eba28@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+ <20201202045325.3254757-7-vinicius.gomes@intel.com>
+Message-ID: <20201205100030.2e3c5dd2@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue,  1 Dec 2020 20:53:24 -0800 Vinicius Costa Gomes wrote:
-> Expose the Frame Preemption counters, so the number of
-> express/preemptible packets can be monitored by userspace.
+On Tue,  1 Dec 2020 20:53:22 -0800 Vinicius Costa Gomes wrote:
+> The tc subsystem sets which queues are marked as preemptible, it's the
+> role of ethtool to control more hardware specific parameters. These
+> parameters include:
 > 
-> These registers are cleared when read, so the value shown is the
-> number of events that happened since the last read.
+>  - enabling the frame preemption hardware: As enabling frame
+>  preemption may have other requirements before it can be enabled, it's
+>  exposed via the ethtool API;
+> 
+>  - mininum fragment size multiplier: expressed in usually in the form
+>  of (1 + N)*64, this number indicates what's the size of the minimum
+>  fragment that can be preempted.
 > 
 > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
-You mean expose in a register dump? That's not great user experience..
-
-Are there any stats that the standards mandate?
-
-It'd be great if we could come up with some common set and expose them
-via ethtool like the pause frame statistics.
+WARNING: 'PREEMPTABLE' may be misspelled - perhaps 'PREEMPTIBLE'?
