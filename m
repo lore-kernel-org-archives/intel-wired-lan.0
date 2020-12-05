@@ -1,41 +1,117 @@
-From: Sven Auhagen <sven.auhagen@voleatech.de>
-Date: Sat, 5 Dec 2020 10:42:13 +0100
-Subject: [Intel-wired-lan] [PATCH v4 2/6] igb: take vlan double header
- into account
-In-Reply-To: <20201201095852.2dc1e8f8@carbon>
-References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
- <20201111170453.32693-3-sven.auhagen@voleatech.de>
- <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
- <20201201095852.2dc1e8f8@carbon>
-Message-ID: <20201205094213.p64bkcmd3lr4iejl@SvensMacBookAir-2.local>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Sat, 5 Dec 2020 09:43:25 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/9] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20201202045325.3254757-2-vinicius.gomes@intel.com>
+References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
+ <20201202045325.3254757-2-vinicius.gomes@intel.com>
+Message-ID: <20201205094325.790b187f@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 01, 2020 at 09:58:52AM +0100, Jesper Dangaard Brouer wrote:
-> On Tue, 1 Dec 2020 08:23:23 +0000
-> "Penigalapati, Sandeep" <sandeep.penigalapati@intel.com> wrote:
+On Tue,  1 Dec 2020 20:53:17 -0800 Vinicius Costa Gomes wrote:
+> Frame preemption (described in IEEE 802.3br-2016) defines the concept
+> of preemptible and express queues. It allows traffic from express
+> queues to "interrupt" traffic from preemptible queues, which are
+> "resumed" after the express traffic has finished transmitting.
 > 
-> > Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+> Frame preemption can only be used when both the local device and the
+> link partner support it.
 > 
-> Very happy that you are testing this.
+> Only parameters for enabling/disabling frame preemption and
+> configuring the minimum fragment size are included here. Expressing
+> which queues are marked as preemptible is left to mqprio/taprio, as
+> having that information there should be easier on the user.
 > 
-> Have you also tested that samples/bpf/ xdp_redirect_cpu program works?
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>  include/linux/ethtool.h              |  19 ++++
+>  include/uapi/linux/ethtool_netlink.h |  17 +++
+>  net/ethtool/Makefile                 |   2 +-
+>  net/ethtool/netlink.c                |  19 ++++
+>  net/ethtool/netlink.h                |   4 +
+>  net/ethtool/preempt.c                | 151 +++++++++++++++++++++++++++
+>  6 files changed, 211 insertions(+), 1 deletion(-)
+>  create mode 100644 net/ethtool/preempt.c
+> 
+> diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+> index e3da25b51ae4..16d6ee29a6ac 100644
+> --- a/include/linux/ethtool.h
+> +++ b/include/linux/ethtool.h
+> @@ -263,6 +263,19 @@ struct ethtool_pause_stats {
+>  	u64 rx_pause_frames;
+>  };
+>  
+> +/**
+> + * struct ethtool_fp - Frame Preemption information
+> + *
+> + * @enabled: Enable frame preemption.
+> + *
 
-Hi Jesper,
+The empty line between members seems unnecessary.
 
-I have tested the xdp routing example but it would be good if someone
-can double check this.
+> + * @min_frag_size_mult: Minimum size for all non-final fragment size,
+> + * expressed in terms of X in '(1 + X)*64 + 4'
 
-Best
-Sven
+Is this way of expressing the min frag size from the standard?
 
-> 
-> -- 
-> Best regards,
->   Jesper Dangaard Brouer
->   MSc.CS, Principal Kernel Engineer at Red Hat
->   LinkedIn: https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.linkedin.com%2Fin%2Fbrouer&amp;data=04%7C01%7Csven.auhagen%40voleatech.de%7C5a78333f75c945b9bcee08d895d75e5b%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637424099531073949%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=g80690tGbCHAi3lr412ZlKoxwIFSIzn5e8V8nO1aZcw%3D&amp;reserved=0
-> 
+> + */
+> +struct ethtool_fp {
+> +	u8 enabled;
+> +	u8 min_frag_size_mult;
+> +};
+
+> +	int	(*get_preempt)(struct net_device *,
+> +			       struct ethtool_fp *);
+> +	int	(*set_preempt)(struct net_device *,
+> +			       struct ethtool_fp *);
+
+Since this is a new op we should probably pass extack to the drivers?
+
+>  extern const struct nla_policy ethnl_header_policy[ETHTOOL_A_HEADER_FLAGS + 1];
+>  extern const struct nla_policy ethnl_header_policy_stats[ETHTOOL_A_HEADER_FLAGS + 1];
+> @@ -375,6 +376,8 @@ extern const struct nla_policy ethnl_tsinfo_get_policy[ETHTOOL_A_TSINFO_HEADER +
+>  extern const struct nla_policy ethnl_cable_test_act_policy[ETHTOOL_A_CABLE_TEST_HEADER + 1];
+>  extern const struct nla_policy ethnl_cable_test_tdr_act_policy[ETHTOOL_A_CABLE_TEST_TDR_CFG + 1];
+>  extern const struct nla_policy ethnl_tunnel_info_get_policy[ETHTOOL_A_TUNNEL_INFO_HEADER + 1];
+> +extern const struct nla_policy ethnl_preempt_get_policy[ETHTOOL_A_PREEMPT_MAX + 1];
+> +extern const struct nla_policy ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_MAX + 1];
+
+Let's make the size
+
+ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT + 1
+
+for set, and
+
+ETHTOOL_A_PREEMPT_HEADER + 1
+
+for get, like the other tables
+
+> +const struct nla_policy
+> +ethnl_preempt_get_policy[ETHTOOL_A_PREEMPT_MAX + 1] = {
+> +	[ETHTOOL_A_PREEMPT_UNSPEC]		= { .type = NLA_REJECT },
+
+Unnecessary, NLA_REJECT is 0.
+
+> +	[ETHTOOL_A_PREEMPT_HEADER]		= { .type = NLA_NESTED },
+
+Please specify nested policy
+
+> +	[ETHTOOL_A_PREEMPT_ENABLED]		= { .type = NLA_REJECT },
+> +	[ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT]	= { .type = NLA_REJECT },
+
+Unnecessary
+
+> +const struct nla_policy
+> +ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_MAX + 1] = {
+> +	[ETHTOOL_A_PREEMPT_UNSPEC]			= { .type = NLA_REJECT },
+> +	[ETHTOOL_A_PREEMPT_HEADER]			= { .type = NLA_NESTED },
+> +	[ETHTOOL_A_PREEMPT_ENABLED]			= { .type = NLA_U8 },
+
+Set the right netlink policy to check the value is <= 1.
+
+> +	[ETHTOOL_A_PREEMPT_MIN_FRAG_SIZE_MULT]		= { .type = NLA_U8 },
+> +};
