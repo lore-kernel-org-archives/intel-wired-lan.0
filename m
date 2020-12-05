@@ -1,75 +1,41 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 4 Dec 2020 14:38:03 -0800
-Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
- i219LM
-In-Reply-To: <DM6PR19MB2636B200D618A5546E7BBB57FAF10@DM6PR19MB2636.namprd19.prod.outlook.com>
-References: <20201204200920.133780-1-mario.limonciello@dell.com>
- <CAKgT0Uc=OxcuHbZihY3zxsxzPprJ_8vGHr=reBJFMrf=V9A5kg@mail.gmail.com>
- <DM6PR19MB2636B200D618A5546E7BBB57FAF10@DM6PR19MB2636.namprd19.prod.outlook.com>
-Message-ID: <CAKgT0UfuyrbzpDNySMmnAkqKnw9cYuEM1LhgG0QvmrY=smR-uw@mail.gmail.com>
+From: Sven Auhagen <sven.auhagen@voleatech.de>
+Date: Sat, 5 Dec 2020 10:42:13 +0100
+Subject: [Intel-wired-lan] [PATCH v4 2/6] igb: take vlan double header
+ into account
+In-Reply-To: <20201201095852.2dc1e8f8@carbon>
+References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
+ <20201111170453.32693-3-sven.auhagen@voleatech.de>
+ <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
+ <20201201095852.2dc1e8f8@carbon>
+Message-ID: <20201205094213.p64bkcmd3lr4iejl@SvensMacBookAir-2.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 4, 2020 at 2:28 PM Limonciello, Mario
-<Mario.Limonciello@dell.com> wrote:
->
-> > -----Original Message-----
-> > From: Alexander Duyck <alexander.duyck@gmail.com>
-> > Sent: Friday, December 4, 2020 15:27
-> > To: Limonciello, Mario
-> > Cc: Jeff Kirsher; Tony Nguyen; intel-wired-lan; LKML; Linux PM; Netdev; Jakub
-> > Kicinski; Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller; David
-> > Arcari; Shen, Yijun; Yuan, Perry; anthony.wong at canonical.com
-> > Subject: Re: [PATCH v3 0/7] Improve s0ix flows for systems i219LM
-> >
-> >
-> > [EXTERNAL EMAIL]
-> >
-> > On Fri, Dec 4, 2020 at 12:09 PM Mario Limonciello
-> > <mario.limonciello@dell.com> wrote:
-> > >
-> > > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
-> > systems")
-> > > disabled s0ix flows for systems that have various incarnations of the
-> > > i219-LM ethernet controller.  This was done because of some regressions
-> > > caused by an earlier
-> > > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-> > > with i219-LM controller.
-> > >
-> > > Performing suspend to idle with these ethernet controllers requires a
-> > properly
-> > > configured system.  To make enabling such systems easier, this patch
-> > > series allows determining if enabled and turning on using ethtool.
-> > >
-> > > The flows have also been confirmed to be configured correctly on Dell's
-> > Latitude
-> > > and Precision CML systems containing the i219-LM controller, when the kernel
-> > also
-> > > contains the fix for s0i3.2 entry previously submitted here and now part of
-> > this
-> > > series.
-> > > https://marc.info/?l=linux-netdev&m=160677194809564&w=2
-> > >
-> > > Patches 4 through 7 will turn the behavior on by default for some of Dell's
-> > > CML and TGL systems.
-> >
-> > The patches look good to me. Just need to address the minor issue that
-> > seems to have been present prior to the introduction of this patch
-> > set.
-> >
-> > Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
->
-> Thanks for your review.  Just some operational questions - since this previously
-> existed do you want me to re-spin the series to a v4 for this, or should it be
-> a follow up after the series?
->
-> If I respin it, would you prefer that change to occur at the start or end
-> of the series?
+On Tue, Dec 01, 2020 at 09:58:52AM +0100, Jesper Dangaard Brouer wrote:
+> On Tue, 1 Dec 2020 08:23:23 +0000
+> "Penigalapati, Sandeep" <sandeep.penigalapati@intel.com> wrote:
+> 
+> > Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+> 
+> Very happy that you are testing this.
+> 
+> Have you also tested that samples/bpf/ xdp_redirect_cpu program works?
 
-I don't need a respin, but if you are going to fix it you should
-probably put out the patch as something like a 8/7. If you respin it
-should happen near the start of the series as it is a bug you are
-addressing.
+Hi Jesper,
+
+I have tested the xdp routing example but it would be good if someone
+can double check this.
+
+Best
+Sven
+
+> 
+> -- 
+> Best regards,
+>   Jesper Dangaard Brouer
+>   MSc.CS, Principal Kernel Engineer at Red Hat
+>   LinkedIn: https://eur03.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.linkedin.com%2Fin%2Fbrouer&amp;data=04%7C01%7Csven.auhagen%40voleatech.de%7C5a78333f75c945b9bcee08d895d75e5b%7Cb82a99f679814a7295344d35298f847b%7C0%7C0%7C637424099531073949%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&amp;sdata=g80690tGbCHAi3lr412ZlKoxwIFSIzn5e8V8nO1aZcw%3D&amp;reserved=0
+> 
