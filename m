@@ -1,37 +1,45 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun,  6 Dec 2020 14:07:00 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add Host Good Packets
- Transmitted Count
-Message-ID: <20201206120700.3767534-1-sasha.neftin@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sun, 6 Dec 2020 09:32:23 -0800
+Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <20201205154951.4dd92194@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+References: <20201204200920.133780-1-mario.limonciello@dell.com>
+ <CAKgT0Uc=OxcuHbZihY3zxsxzPprJ_8vGHr=reBJFMrf=V9A5kg@mail.gmail.com>
+ <DM6PR19MB2636B200D618A5546E7BBB57FAF10@DM6PR19MB2636.namprd19.prod.outlook.com>
+ <CAKgT0UfuyrbzpDNySMmnAkqKnw9cYuEM1LhgG0QvmrY=smR-uw@mail.gmail.com>
+ <20201205154951.4dd92194@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+Message-ID: <CAKgT0UcJh219bAXJtJFu7BZsh2+UVGqpLmTiX9V1utsQpPSjvA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This counter counts the number of good (non-erred) packets
-transmitted sent by the host.
-A good transmit packet is considered one that is 64 or more bytes
-in length (from <Destination Address> through <CRC>,
-inclusively) in length
+On Sat, Dec 5, 2020 at 3:49 PM Jakub Kicinski <kuba@kernel.org> wrote:
+>
+> On Fri, 4 Dec 2020 14:38:03 -0800 Alexander Duyck wrote:
+> > > > The patches look good to me. Just need to address the minor issue that
+> > > > seems to have been present prior to the introduction of this patch
+> > > > set.
+> > > >
+> > > > Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+> > >
+> > > Thanks for your review.  Just some operational questions - since this previously
+> > > existed do you want me to re-spin the series to a v4 for this, or should it be
+> > > a follow up after the series?
+> > >
+> > > If I respin it, would you prefer that change to occur at the start or end
+> > > of the series?
+> >
+> > I don't need a respin, but if you are going to fix it you should
+> > probably put out the patch as something like a 8/7. If you respin it
+> > should happen near the start of the series as it is a bug you are
+> > addressing.
+>
+> Don't we need that patch to be before this series so it can be
+> back ported easily? Or is it not really a bug?
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 705bb89aded7..8913c7f7be7f 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3949,6 +3949,7 @@ void igc_update_stats(struct igc_adapter *adapter)
- 	adapter->stats.prc1522 += rd32(IGC_PRC1522);
- 	adapter->stats.tlpic += rd32(IGC_TLPIC);
- 	adapter->stats.rlpic += rd32(IGC_RLPIC);
-+	adapter->stats.hgptc += rd32(IGC_HGPTC);
- 
- 	mpc = rd32(IGC_MPC);
- 	adapter->stats.mpc += mpc;
--- 
-2.25.1
-
+You're right. For backports it would make it easier to have the patch
+be before the changes. As far as being a bug, it is one, but it isn't
+an urgent bug as it is basically some bad exception handling so the
+likelihood of seeing it should be quite low.
