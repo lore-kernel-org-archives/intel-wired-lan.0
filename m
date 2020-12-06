@@ -1,33 +1,37 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun,  6 Dec 2020 11:37:07 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove MULR mask define
-Message-ID: <20201206093707.3695380-1-sasha.neftin@intel.com>
+Date: Sun,  6 Dec 2020 14:07:00 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Add Host Good Packets
+ Transmitted Count
+Message-ID: <20201206120700.3767534-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Multiple Tx Data Read Requests is hardware pipeline feature and
-do not controlled by software
+This counter counts the number of good (non-erred) packets
+transmitted sent by the host.
+A good transmit packet is considered one that is 64 or more bytes
+in length (from <Destination Address> through <CRC>,
+inclusively) in length
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 21695476b8a5..efddb9012439 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -284,7 +284,6 @@
- #define IGC_TCTL_CT		0x00000ff0 /* collision threshold */
- #define IGC_TCTL_COLD		0x003ff000 /* collision distance */
- #define IGC_TCTL_RTLC		0x01000000 /* Re-transmit on late collision */
--#define IGC_TCTL_MULR		0x10000000 /* Multiple request support */
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 705bb89aded7..8913c7f7be7f 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3949,6 +3949,7 @@ void igc_update_stats(struct igc_adapter *adapter)
+ 	adapter->stats.prc1522 += rd32(IGC_PRC1522);
+ 	adapter->stats.tlpic += rd32(IGC_TLPIC);
+ 	adapter->stats.rlpic += rd32(IGC_RLPIC);
++	adapter->stats.hgptc += rd32(IGC_HGPTC);
  
- /* Flow Control Constants */
- #define FLOW_CONTROL_ADDRESS_LOW	0x00C28001
+ 	mpc = rd32(IGC_MPC);
+ 	adapter->stats.mpc += mpc;
 -- 
 2.25.1
 
