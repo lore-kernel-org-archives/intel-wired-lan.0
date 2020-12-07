@@ -1,145 +1,195 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 7 Dec 2020 14:28:00 +0100
-Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
- i219LM
-In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
-References: <20201204200920.133780-1-mario.limonciello@dell.com>
-Message-ID: <d0f7e565-05e1-437e-4342-55eb73daa907@redhat.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 7 Dec 2020 14:32:05 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
+ adminq while VF reset
+In-Reply-To: <20201207114223.29030-1-mateusz.palczewski@intel.com>
+References: <20201207114223.29030-1-mateusz.palczewski@intel.com>
+Message-ID: <551e0e32-b901-4cc0-3919-c497ca3610a2@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Dear Mateusz,
 
-On 12/4/20 9:09 PM, Mario Limonciello wrote:
-> commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-> disabled s0ix flows for systems that have various incarnations of the
-> i219-LM ethernet controller.  This was done because of some regressions
-> caused by an earlier
-> commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-> with i219-LM controller.
+
+Am 07.12.20 um 12:42 schrieb Mateusz Palczewski:
+> Fix for failed to init adminq: -53 while VF is resetting via MAC
+> address changing procedure.
+> Added sync module to avoid reading deadbeef value in reinit adminq
+> during software reset.
+> Without this patch it is possible to trigger VF reset procedure
+> during reinit adminq. This resulted in an incorrect reading of
+> value from the AQP registers and generated the -53 error.
+
+Thank you for fixing this issue. (Blank lines between paragraphs would 
+make them better readable.)
+
+How can the problem be reproduced? Do you have a recipe do cause this?
+
+I have some nits below, but maybe you also can use the summary below for 
+the git commit message summary, so it?s a statement with a verb in 
+imperative mood.
+
+ > Fix init adminq failure while VF reset
+
+You are adding several delays below. What is the effect on that on 
+overall timings of the driver?
+
+
+> Fixes: 9dc2e417383815"(i40e: split some code in i40e_reset_vf into helpers")
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> Reviewed-by: Slawomir Laba <slawomirx.laba@intel.com>
+> Reviewed-by: Karen Sornek <karen.sornek@intel.com>
+> Reviewed-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>   .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 46 ++++++++++++++++++-
+>   .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  2 +
+>   2 files changed, 46 insertions(+), 2 deletions(-)
 > 
-> Performing suspend to idle with these ethernet controllers requires a properly
-> configured system.  To make enabling such systems easier, this patch
-> series allows determining if enabled and turning on using ethtool.
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 21ee564..afccbbc 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -1297,6 +1297,32 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
+>   	return aq_ret;
+>   }
+>   
+> +/**
+> +* i40e_sync_vfr_reset
+> +* @hw: pointer to hw struct
+> +* @vf_id: VF identifier
+> +*
+> +* Before trigger hardware reset, we need to know if no other process has
+
+Small typo:
+
+ > Before trigger*ing a* hardware reset, ?
+
+> +* reserved the hardware for any reset operations. This check is done by
+> +* examining the status of the ADMINQ bit in VF interrupt register.
+
+Please add how much time this delays.
+
+> +**/
+> +static int i40e_sync_vfr_reset(struct i40e_hw *hw, int vf_id)
+> +{
+> +	u32 reg;
+> +	int i;
+> +
+> +	for (i = 0; i < I40E_VFR_WAIT_COUNT; i++) {
+> +		reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
+> +			   I40E_VFINT_ICR0_ADMINQ_MASK;
+> +		if (reg)
+> +			return 0;
+
+The variable `reg` does not seem to be needed.
+
+> +
+> +		usleep_range(10, 200);
+> +	}
+
+Should an error be logged in case of failure?
+
+> +
+> +	return -EAGAIN;
+> +}
+> +
+>   /**
+>    * i40e_trigger_vf_reset
+>    * @vf: pointer to the VF structure
+> @@ -1311,9 +1337,11 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
+>   	struct i40e_pf *pf = vf->pf;
+>   	struct i40e_hw *hw = &pf->hw;
+>   	u32 reg, reg_idx, bit_idx;
+> +	bool vf_active;
+> +	u32 radq;
+>   
+>   	/* warn the VF */
+> -	clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
+> +	vf_active = test_and_clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
+>   
+>   	/* Disable VF's configuration API during reset. The flag is re-enabled
+>   	 * in i40e_alloc_vf_res(), when it's safe again to access VF's VSI.
+> @@ -1327,7 +1355,19 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
+>   	 * just need to clean up, so don't hit the VFRTRIG register.
+>   	 */
+>   	if (!flr) {
+> -		/* reset VF using VPGEN_VFRTRIG reg */
+> +		/* Sync VFR reset before trigger next one */
+
+triggering
+
+> +		radq = rd32(hw, I40E_VFINT_ICR0_ENA(vf->vf_id)) &
+> +			    I40E_VFINT_ICR0_ADMINQ_MASK;
+> +		if (vf_active && !radq)
+> +			/* waiting for finish reset by virtual driver */
+
+waiting for virtual driver to finish reset
+
+> +			if (i40e_sync_vfr_reset(hw, vf->vf_id))
+> +				dev_info(&pf->pdev->dev,
+> +					 "Reset VF %d never finished\n",
+
+? after X ms.
+
+Also, please add the consequences of that failure. What does it mean for 
+the user, that the reset was unsuccessful?
+
+> +					 vf->vf_id);
+> +
+> +		/* Reset VF using VPGEN_VFRTRIG reg. It is also setting
+> +		 * in progress state in rstat1 register.
+> +		 */
+>   		reg = rd32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id));
+>   		reg |= I40E_VPGEN_VFRTRIG_VFSWR_MASK;
+>   		wr32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id), reg);
+> @@ -1457,6 +1497,7 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
+>   	i40e_cleanup_reset_vf(vf);
+>   
+>   	i40e_flush(hw);
+> +	usleep_range(20000, 40000);
+
+This seems unrelated to the commit?
+
+>   	clear_bit(__I40E_VF_DISABLE, pf->state);
+>   
+>   	return true;
+> @@ -1561,6 +1602,7 @@ bool i40e_reset_all_vfs(struct i40e_pf *pf, bool flr)
+>   		i40e_cleanup_reset_vf(&pf->vf[v]);
+>   
+>   	i40e_flush(hw);
+> +	usleep_range(20000, 40000);
+
+Ditto.
+
+>   	clear_bit(__I40E_VF_DISABLE, pf->state);
+>   
+>   	return true;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> index 5491215..fb4f5db 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> @@ -18,6 +18,8 @@
+>   
+>   #define I40E_MAX_VF_PROMISC_FLAGS	3
+>   
+> +#define I40E_VFR_WAIT_COUNT		100
+
+Why is 100 chosen? The commit message does not say.
+
+> +
+>   /* Various queue ctrls */
+>   enum i40e_queue_ctrl {
+>   	I40E_QUEUE_CTRL_UNKNOWN = 0,
 > 
-> The flows have also been confirmed to be configured correctly on Dell's Latitude
-> and Precision CML systems containing the i219-LM controller, when the kernel also
-> contains the fix for s0i3.2 entry previously submitted here and now part of this
-> series.
-> https://marc.info/?l=linux-netdev&m=160677194809564&w=2
-> 
-> Patches 4 through 7 will turn the behavior on by default for some of Dell's
-> CML and TGL systems.
-
-First of all thank you for working on this.
-
-I must say though that I don't like the approach taken here very
-much.
-
-This is not so much a criticism of this series as it is a criticism
-of the earlier decision to simply disable s0ix on all devices
-with the i219-LM + and active ME.
-
-AFAIK there was a perfectly acceptable patch to workaround those
-broken devices, which increased a timeout:
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
-
-That patch was nacked because it increased the resume time
-*on broken devices*.
-
-So it seems to me that we have a simple choice here:
-
-1. Longer resume time on devices with an improperly configured ME
-2. Higher power-consumption on all non-buggy devices
-
-Your patches 4-7 try to workaround 2. but IMHO those are just
-bandaids for getting the initial priorities *very* wrong.
-
-Instead of penalizing non-buggy devices with a higher power-consumption,
-we should default to penalizing the buggy devices with a higher
-resume time. And if it is decided that the higher resume time is
-a worse problem then the higher power-consumption, then there
-should be a list of broken devices and s0ix can be disabled on those.
-
-The current allow-list approach is simply never going to work well
-leading to too high power-consumption on countless devices.
-This is going to be an endless game of whack-a-mole and as
-such really is a bad idea.
-
-A deny-list for broken devices is a much better approach, esp.
-since missing devices on that list will still work fine, they
-will just have a somewhat larger resume time.
-
-So what needs to happen IMHO is:
-
-1. Merge your fix from patch 1 of this set
-2. Merge "e1000e: bump up timeout to wait when ME un-configure ULP mode"
-3. Drop the e1000e_check_me check.
-
-Then we also do not need the new "s0ix-enabled" ethertool flag
-because we do not need userspace to work-around us doing the
-wrong thing by default.
-
-Note a while ago I had access to one of the devices having suspend/resume
-issues caused by the S0ix support (a Lenovo Thinkpad X1 Carbon gen 7)
-and I can confirm that the "e1000e: bump up timeout to wait when ME
-un-configure ULP mode" patch fixes the suspend/resume problem without
-any noticeable negative side-effects.
-
-Regards,
-
-Hans
 
 
+Kind regards,
 
-
-
-
-
-
-
-> 
-> Changes from v2 to v3:
->  - Correct some grammar and spelling issues caught by Bjorn H.
->    * s/s0ix/S0ix/ in all commit messages
->    * Fix a typo in commit message
->    * Fix capitalization of proper nouns
->  - Add more pre-release systems that pass
->  - Re-order the series to add systems only at the end of the series
->  - Add Fixes tag to a patch in series.
-> 
-> Changes from v1 to v2:
->  - Directly incorporate Vitaly's dependency patch in the series
->  - Split out s0ix code into it's own file
->  - Adjust from DMI matching to PCI subsystem vendor ID/device matching
->  - Remove module parameter and sysfs, use ethtool flag instead.
->  - Export s0ix flag to ethtool private flags
->  - Include more people and lists directly in this submission chain.
-> 
-> Mario Limonciello (6):
->   e1000e: Move all S0ix related code into its own source file
->   e1000e: Export S0ix flags to ethtool
->   e1000e: Add Dell's Comet Lake systems into S0ix heuristics
->   e1000e: Add more Dell CML systems into S0ix heuristics
->   e1000e: Add Dell TGL desktop systems into S0ix heuristics
->   e1000e: Add another Dell TGL notebook system into S0ix heuristics
-> 
-> Vitaly Lifshits (1):
->   e1000e: fix S0ix flow to allow S0i3.2 subset entry
-> 
->  drivers/net/ethernet/intel/e1000e/Makefile  |   2 +-
->  drivers/net/ethernet/intel/e1000e/e1000.h   |   4 +
->  drivers/net/ethernet/intel/e1000e/ethtool.c |  40 +++
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 272 +----------------
->  drivers/net/ethernet/intel/e1000e/s0ix.c    | 311 ++++++++++++++++++++
->  5 files changed, 361 insertions(+), 268 deletions(-)
->  create mode 100644 drivers/net/ethernet/intel/e1000e/s0ix.c
-> 
-> --
-> 2.25.1
-> 
-> 
-
+Paul
