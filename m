@@ -1,84 +1,173 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Mon, 7 Dec 2020 13:54:33 +0100
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com>
- <878sad933c.fsf@toke.dk>
- <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
-Message-ID: <20201207135433.41172202@carbon>
+From: Limonciello, Mario <Mario.Limonciello@dell.com>
+Date: Mon, 7 Dec 2020 15:41:48 +0000
+Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <d0f7e565-05e1-437e-4342-55eb73daa907@redhat.com>
+References: <20201204200920.133780-1-mario.limonciello@dell.com>
+ <d0f7e565-05e1-437e-4342-55eb73daa907@redhat.com>
+Message-ID: <DM6PR19MB2636A4097B68DBB253C416D8FACE0@DM6PR19MB2636.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 4 Dec 2020 16:21:08 +0100
-Daniel Borkmann <daniel@iogearbox.net> wrote:
-
-> On 12/4/20 1:46 PM, Maciej Fijalkowski wrote:
-> > On Fri, Dec 04, 2020 at 01:18:31PM +0100, Toke H?iland-J?rgensen wrote:  
-> >> alardam at gmail.com writes:  
-> >>> From: Marek Majtyka <marekx.majtyka@intel.com>
-> >>>
-> >>> Implement support for checking what kind of xdp functionality a netdev
-> >>> supports. Previously, there was no way to do this other than to try
-> >>> to create an AF_XDP socket on the interface or load an XDP program and see
-> >>> if it worked. This commit changes this by adding a new variable which
-> >>> describes all xdp supported functions on pretty detailed level:  
-> >>
-> >> I like the direction this is going! :)
-
-(Me too, don't get discouraged by our nitpicking, keep working on this! :-))
-
-> >>  
-> >>>   - aborted
-> >>>   - drop
-> >>>   - pass
-> >>>   - tx  
+> First of all thank you for working on this.
 > 
-> I strongly think we should _not_ merge any native XDP driver patchset
-> that does not support/implement the above return codes. 
+> I must say though that I don't like the approach taken here very
+> much.
+> 
+> This is not so much a criticism of this series as it is a criticism
+> of the earlier decision to simply disable s0ix on all devices
+> with the i219-LM + and active ME.
 
-I agree, with above statement.
+I was not happy with that decision either as it did cause regressions
+on all of the "named" Comet Lake laptops that were in the market at
+the time.  The "unnamed" ones are not yet released, and I don't feel
+it's fair to call it a regression on "unreleased" hardware.
 
-> Could we instead group them together and call this something like
-> XDP_BASE functionality to not give a wrong impression?
+> 
+> AFAIK there was a perfectly acceptable patch to workaround those
+> broken devices, which increased a timeout:
+> https://patchwork.ozlabs.org/project/intel-wired-
+> lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
+> 
+> That patch was nacked because it increased the resume time
+> *on broken devices*.
+> 
+> So it seems to me that we have a simple choice here:
+> 
+> 1. Longer resume time on devices with an improperly configured ME
+> 2. Higher power-consumption on all non-buggy devices
+> 
+> Your patches 4-7 try to workaround 2. but IMHO those are just
+> bandaids for getting the initial priorities *very* wrong.
 
-I disagree.  I can accept that XDP_BASE include aborted+drop+pass.
+They were done based upon the discussion in that thread you linked and others.
+If the owners of this driver feel it's possible/scalable to follow your proposal
+I'm happy to resubmit a new v4 series with these sets of patches:
 
-I think we need to keep XDP_TX action separate, because I think that
-there are use-cases where the we want to disable XDP_TX due to end-user
-policy or hardware limitations.
+1) Fixup for the exception corner case referenced in this thread
+2) Patch 1 from this series that fixes cable connected case
+3) Increase the timeout (from your referenced link)
+4) Revert the ME disallow list
 
-Use-case(1): Cloud-provider want to give customers (running VMs) ability
-to load XDP program for DDoS protection (only), but don't want to allow
-customer to use XDP_TX (that can implement LB or cheat their VM
-isolation policy).
+> 
+> Instead of penalizing non-buggy devices with a higher power-consumption,
+> we should default to penalizing the buggy devices with a higher
+> resume time. And if it is decided that the higher resume time is
+> a worse problem then the higher power-consumption, then there
+> should be a list of broken devices and s0ix can be disabled on those.
 
-Use-case(2): Disable XDP_TX on a driver to save hardware TX-queue
-resources, as the use-case is only DDoS.  Today we have this problem
-with the ixgbe hardware, that cannot load XDP programs on systems with
-more than 192 CPUs.
+I'm perfectly happy either way, my primary goal is that Dell's notebooks and
+desktops that meet the architectural and firmware guidelines for appropriate
+low power consumption over s0ix are not penalized.
 
+> 
+> The current allow-list approach is simply never going to work well
+> leading to too high power-consumption on countless devices.
+> This is going to be an endless game of whack-a-mole and as
+> such really is a bad idea.
 
-> If this is properly documented that these are basic must-have
-> _requirements_, then users and driver developers both know what the
-> expectations are.
+I envisioned that it would evolve over time.  For example if by the time Dell
+finished shipping new CML models it was deemed that all the CML hardware was done
+properly it could instead by an allow list of Dell + Comet Point.
+If all of Tiger Lake are done properly 'maybe' by the time the ML ships maybe it
+could be an allow list of Dell + CML or newer.
 
-We can still document that XDP_TX is a must-have requirement, when a
-driver implements XDP.
+But even if the heuristic changed - this particular configuration needs to be tested
+on every single new model.  All of the notebooks that have a Tested-By clause were
+checked by Dell and Dell's partners.
 
+> 
+> A deny-list for broken devices is a much better approach, esp.
+> since missing devices on that list will still work fine, they
+> will just have a somewhat larger resume time.
 
-> >>>   - redirect  
-> >>
+I don't have configuration deemed buggy.  Since you were commenting in that other
+thread with the patch from Aaaron It sounds like you do. Can you perhaps check if
+that proposal actually works?
 
+> 
+> So what needs to happen IMHO is:
+> 
+> 1. Merge your fix from patch 1 of this set
+> 2. Merge "e1000e: bump up timeout to wait when ME un-configure ULP mode"
+> 3. Drop the e1000e_check_me check.
+> 
+> Then we also do not need the new "s0ix-enabled" ethertool flag
+> because we do not need userspace to work-around us doing the
+> wrong thing by default.
 
--- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  LinkedIn: http://www.linkedin.com/in/brouer
+If we collectively agree to keep either an allow list "or" disallow list at
+all I think you need a way check whether enabling this feature works.
+
+If we are making an assertion it will always work properly all the time, I agree
+that there is no need for an ethtool flag.
+
+> 
+> Note a while ago I had access to one of the devices having suspend/resume
+> issues caused by the S0ix support (a Lenovo Thinkpad X1 Carbon gen 7)
+> and I can confirm that the "e1000e: bump up timeout to wait when ME
+> un-configure ULP mode" patch fixes the suspend/resume problem without
+> any noticeable negative side-effects.
+> 
+
+Can you or someone else with this model please check with a current kernel
+w/ reverting ME check and adding the patch from Vitaly (included as patch 1
+in my series)?
+
+> Regards,
+> 
+> Hans
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> >
+> > Changes from v2 to v3:
+> >  - Correct some grammar and spelling issues caught by Bjorn H.
+> >    * s/s0ix/S0ix/ in all commit messages
+> >    * Fix a typo in commit message
+> >    * Fix capitalization of proper nouns
+> >  - Add more pre-release systems that pass
+> >  - Re-order the series to add systems only at the end of the series
+> >  - Add Fixes tag to a patch in series.
+> >
+> > Changes from v1 to v2:
+> >  - Directly incorporate Vitaly's dependency patch in the series
+> >  - Split out s0ix code into it's own file
+> >  - Adjust from DMI matching to PCI subsystem vendor ID/device matching
+> >  - Remove module parameter and sysfs, use ethtool flag instead.
+> >  - Export s0ix flag to ethtool private flags
+> >  - Include more people and lists directly in this submission chain.
+> >
+> > Mario Limonciello (6):
+> >   e1000e: Move all S0ix related code into its own source file
+> >   e1000e: Export S0ix flags to ethtool
+> >   e1000e: Add Dell's Comet Lake systems into S0ix heuristics
+> >   e1000e: Add more Dell CML systems into S0ix heuristics
+> >   e1000e: Add Dell TGL desktop systems into S0ix heuristics
+> >   e1000e: Add another Dell TGL notebook system into S0ix heuristics
+> >
+> > Vitaly Lifshits (1):
+> >   e1000e: fix S0ix flow to allow S0i3.2 subset entry
+> >
+> >  drivers/net/ethernet/intel/e1000e/Makefile  |   2 +-
+> >  drivers/net/ethernet/intel/e1000e/e1000.h   |   4 +
+> >  drivers/net/ethernet/intel/e1000e/ethtool.c |  40 +++
+> >  drivers/net/ethernet/intel/e1000e/netdev.c  | 272 +----------------
+> >  drivers/net/ethernet/intel/e1000e/s0ix.c    | 311 ++++++++++++++++++++
+> >  5 files changed, 361 insertions(+), 268 deletions(-)
+> >  create mode 100644 drivers/net/ethernet/intel/e1000e/s0ix.c
+> >
+> > --
+> > 2.25.1
+> >
+> >
 
