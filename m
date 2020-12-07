@@ -1,100 +1,117 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 8 Dec 2020 03:18:17 +0800
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
- adminq while VF reset
-In-Reply-To: <20201207114223.29030-1-mateusz.palczewski@intel.com>
-References: <20201207114223.29030-1-mateusz.palczewski@intel.com>
-Message-ID: <202012080348.xDUe7ilV-lkp@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Mon, 07 Dec 2020 12:52:22 -0800
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <20201207135433.41172202@carbon>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201204102901.109709-2-marekx.majtyka@intel.com>
+ <878sad933c.fsf@toke.dk>
+ <20201204124618.GA23696@ranger.igk.intel.com>
+ <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+ <20201207135433.41172202@carbon>
+Message-ID: <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Mateusz,
+Jesper Dangaard Brouer wrote:
+> On Fri, 4 Dec 2020 16:21:08 +0100
+> Daniel Borkmann <daniel@iogearbox.net> wrote:
+> 
+> > On 12/4/20 1:46 PM, Maciej Fijalkowski wrote:
+> > > On Fri, Dec 04, 2020 at 01:18:31PM +0100, Toke H?iland-J?rgensen wrote:  
+> > >> alardam at gmail.com writes:  
+> > >>> From: Marek Majtyka <marekx.majtyka@intel.com>
+> > >>>
+> > >>> Implement support for checking what kind of xdp functionality a netdev
+> > >>> supports. Previously, there was no way to do this other than to try
+> > >>> to create an AF_XDP socket on the interface or load an XDP program and see
+> > >>> if it worked. This commit changes this by adding a new variable which
+> > >>> describes all xdp supported functions on pretty detailed level:  
+> > >>
+> > >> I like the direction this is going! :)
+> 
+> (Me too, don't get discouraged by our nitpicking, keep working on this! :-))
+> 
+> > >>  
+> > >>>   - aborted
+> > >>>   - drop
+> > >>>   - pass
+> > >>>   - tx  
+> > 
+> > I strongly think we should _not_ merge any native XDP driver patchset
+> > that does not support/implement the above return codes. 
+> 
+> I agree, with above statement.
+> 
+> > Could we instead group them together and call this something like
+> > XDP_BASE functionality to not give a wrong impression?
+> 
+> I disagree.  I can accept that XDP_BASE include aborted+drop+pass.
+> 
+> I think we need to keep XDP_TX action separate, because I think that
+> there are use-cases where the we want to disable XDP_TX due to end-user
+> policy or hardware limitations.
 
-Thank you for the patch! Yet something to improve:
+How about we discover this at load time though. Meaning if the program
+doesn't use XDP_TX then the hardware can skip resource allocations for
+it. I think we could have verifier or extra pass discover the use of
+XDP_TX and then pass a bit down to driver to enable/disable TX caps.
 
-[auto build test ERROR on net/master]
+> 
+> Use-case(1): Cloud-provider want to give customers (running VMs) ability
+> to load XDP program for DDoS protection (only), but don't want to allow
+> customer to use XDP_TX (that can implement LB or cheat their VM
+> isolation policy).
 
-url:    https://github.com/0day-ci/linux/commits/Mateusz-Palczewski/i40e-Fix-for-failed-to-init-adminq-while-VF-reset/20201207-194429
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git 10c678bd0a035ac2c64a9b26b222f20556227a53
-config: alpha-randconfig-r034-20201207 (attached as .config)
-compiler: alpha-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/3473ae8b20a6b744f90aa0479ad4d66567f8d832
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Mateusz-Palczewski/i40e-Fix-for-failed-to-init-adminq-while-VF-reset/20201207-194429
-        git checkout 3473ae8b20a6b744f90aa0479ad4d66567f8d832
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=alpha 
+Not following. What interface do they want to allow loading on? If its
+the VM interface then I don't see how it matters. From outside the
+VM there should be no way to discover if its done in VM or in tc or
+some other stack.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+If its doing some onloading/offloading I would assume they need to
+ensure the isolation, etc. is still maintained because you can't
+let one VMs program work on other VMs packets safely.
 
-All errors (new ones prefixed by >>):
+So what did I miss, above doesn't make sense to me.
 
-   In file included from drivers/net/ethernet/intel/i40e/i40e_type.h:8,
-                    from drivers/net/ethernet/intel/i40e/i40e.h:40,
-                    from drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:4:
-   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function 'i40e_sync_vfr_reset':
->> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1315:18: error: implicit declaration of function 'I40E_VFINT_ICR0_ENA'; did you mean 'I40E_PFINT_ICR0_ENA'? [-Werror=implicit-function-declaration]
-    1315 |   reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
-         |                  ^~~~~~~~~~~~~~~~~~~
-   drivers/net/ethernet/intel/i40e/i40e_osdep.h:27:45: note: in definition of macro 'rd32'
-      27 | #define rd32(a, reg)  readl((a)->hw_addr + (reg))
-         |                                             ^~~
->> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1316:7: error: 'I40E_VFINT_ICR0_ADMINQ_MASK' undeclared (first use in this function); did you mean 'I40E_PFINT_ICR0_ADMINQ_MASK'?
-    1316 |       I40E_VFINT_ICR0_ADMINQ_MASK;
-         |       ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-         |       I40E_PFINT_ICR0_ADMINQ_MASK
-   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1316:7: note: each undeclared identifier is reported only once for each function it appears in
-   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function 'i40e_trigger_vf_reset':
-   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1360:8: error: 'I40E_VFINT_ICR0_ADMINQ_MASK' undeclared (first use in this function); did you mean 'I40E_PFINT_ICR0_ADMINQ_MASK'?
-    1360 |        I40E_VFINT_ICR0_ADMINQ_MASK;
-         |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-         |        I40E_PFINT_ICR0_ADMINQ_MASK
-   cc1: some warnings being treated as errors
+> 
+> Use-case(2): Disable XDP_TX on a driver to save hardware TX-queue
+> resources, as the use-case is only DDoS.  Today we have this problem
+> with the ixgbe hardware, that cannot load XDP programs on systems with
+> more than 192 CPUs.
 
-vim +1315 drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+The ixgbe issues is just a bug or missing-feature in my opinion.
 
-  1299	
-  1300	/**
-  1301	* i40e_sync_vfr_reset
-  1302	* @hw: pointer to hw struct
-  1303	* @vf_id: VF identifier
-  1304	*
-  1305	* Before trigger hardware reset, we need to know if no other process has
-  1306	* reserved the hardware for any reset operations. This check is done by
-  1307	* examining the status of the ADMINQ bit in VF interrupt register.
-  1308	**/
-  1309	static int i40e_sync_vfr_reset(struct i40e_hw *hw, int vf_id)
-  1310	{
-  1311		u32 reg;
-  1312		int i;
-  1313	
-  1314		for (i = 0; i < I40E_VFR_WAIT_COUNT; i++) {
-> 1315			reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
-> 1316				   I40E_VFINT_ICR0_ADMINQ_MASK;
-  1317			if (reg)
-  1318				return 0;
-  1319	
-  1320			usleep_range(10, 200);
-  1321		}
-  1322	
-  1323		return -EAGAIN;
-  1324	}
-  1325	
+I think we just document that XDP_TX consumes resources and if users
+care they shouldn't use XD_TX in programs and in that case hardware
+should via program discovery not allocate the resource. This seems
+cleaner in my opinion then more bits for features.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 28591 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201208/5cd5ec94/attachment-0001.bin>
+> 
+> 
+> > If this is properly documented that these are basic must-have
+> > _requirements_, then users and driver developers both know what the
+> > expectations are.
+> 
+> We can still document that XDP_TX is a must-have requirement, when a
+> driver implements XDP.
+
++1
+
+> 
+> 
+> > >>>   - redirect  
+> > >>
+> 
+> 
+> -- 
+> Best regards,
+>   Jesper Dangaard Brouer
+>   MSc.CS, Principal Kernel Engineer at Red Hat
+>   LinkedIn: http://www.linkedin.com/in/brouer
+> 
+
+
