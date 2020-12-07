@@ -1,52 +1,140 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 07 Dec 2020 14:49:35 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/9] ethtool: Add support
- for frame preemption
-In-Reply-To: <20201205095021.36e1a24d@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
-References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
- <20201205095021.36e1a24d@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
-Message-ID: <87o8j5z0xs.fsf@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Tue, 8 Dec 2020 00:07:55 +0100
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201204102901.109709-2-marekx.majtyka@intel.com>
+ <878sad933c.fsf@toke.dk>
+ <20201204124618.GA23696@ranger.igk.intel.com>
+ <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+ <20201207135433.41172202@carbon>
+ <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
+Message-ID: <20201207230755.GB27205@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jakub Kicinski <kuba@kernel.org> writes:
+On Mon, Dec 07, 2020 at 12:52:22PM -0800, John Fastabend wrote:
+> Jesper Dangaard Brouer wrote:
+> > On Fri, 4 Dec 2020 16:21:08 +0100
+> > Daniel Borkmann <daniel@iogearbox.net> wrote:
+> > 
+> > > On 12/4/20 1:46 PM, Maciej Fijalkowski wrote:
+> > > > On Fri, Dec 04, 2020 at 01:18:31PM +0100, Toke H?iland-J?rgensen wrote:  
+> > > >> alardam at gmail.com writes:  
+> > > >>> From: Marek Majtyka <marekx.majtyka@intel.com>
+> > > >>>
+> > > >>> Implement support for checking what kind of xdp functionality a netdev
+> > > >>> supports. Previously, there was no way to do this other than to try
+> > > >>> to create an AF_XDP socket on the interface or load an XDP program and see
+> > > >>> if it worked. This commit changes this by adding a new variable which
+> > > >>> describes all xdp supported functions on pretty detailed level:  
+> > > >>
+> > > >> I like the direction this is going! :)
+> > 
+> > (Me too, don't get discouraged by our nitpicking, keep working on this! :-))
+> > 
+> > > >>  
+> > > >>>   - aborted
+> > > >>>   - drop
+> > > >>>   - pass
+> > > >>>   - tx  
+> > > 
+> > > I strongly think we should _not_ merge any native XDP driver patchset
+> > > that does not support/implement the above return codes. 
+> > 
+> > I agree, with above statement.
+> > 
+> > > Could we instead group them together and call this something like
+> > > XDP_BASE functionality to not give a wrong impression?
+> > 
+> > I disagree.  I can accept that XDP_BASE include aborted+drop+pass.
+> > 
+> > I think we need to keep XDP_TX action separate, because I think that
+> > there are use-cases where the we want to disable XDP_TX due to end-user
+> > policy or hardware limitations.
+> 
+> How about we discover this at load time though. Meaning if the program
+> doesn't use XDP_TX then the hardware can skip resource allocations for
+> it. I think we could have verifier or extra pass discover the use of
+> XDP_TX and then pass a bit down to driver to enable/disable TX caps.
 
-> On Tue,  1 Dec 2020 20:53:16 -0800 Vinicius Costa Gomes wrote:
->> $ tc qdisc replace dev $IFACE parent root handle 100 taprio \
->>       num_tc 3 \
->>       map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
->>       queues 1 at 0 1 at 1 2 at 2 \
->>       base-time $BASE_TIME \
->>       sched-entry S 0f 10000000 \
->>       preempt 1110 \
->>       flags 0x2 
->> 
->> The "preempt" parameter is the only difference, it configures which
->> queues are marked as preemptible, in this example, queue 0 is marked
->> as "not preemptible", so it is express, the rest of the four queues
->> are preemptible.
->
-> Does it make more sense for the individual queues to be preemptible 
-> or not, or is it better controlled at traffic class level?
-> I was looking at patch 2, and 32 queues isn't that many these days..
-> We either need a larger type there or configure this based on classes.
++1
 
-I can set more future proof sizes for expressing the queues, sure, but
-the issue, I think, is that frame preemption has dimishing returns with
-link speed: at 2.5G the latency improvements are on the order of single
-digit microseconds. At greater speeds the improvements are even less
-noticeable.
+> 
+> > 
+> > Use-case(1): Cloud-provider want to give customers (running VMs) ability
+> > to load XDP program for DDoS protection (only), but don't want to allow
+> > customer to use XDP_TX (that can implement LB or cheat their VM
+> > isolation policy).
+> 
+> Not following. What interface do they want to allow loading on? If its
+> the VM interface then I don't see how it matters. From outside the
+> VM there should be no way to discover if its done in VM or in tc or
+> some other stack.
+> 
+> If its doing some onloading/offloading I would assume they need to
+> ensure the isolation, etc. is still maintained because you can't
+> let one VMs program work on other VMs packets safely.
+> 
+> So what did I miss, above doesn't make sense to me.
+> 
+> > 
+> > Use-case(2): Disable XDP_TX on a driver to save hardware TX-queue
+> > resources, as the use-case is only DDoS.  Today we have this problem
+> > with the ixgbe hardware, that cannot load XDP programs on systems with
+> > more than 192 CPUs.
+> 
+> The ixgbe issues is just a bug or missing-feature in my opinion.
 
-The only adapters that I see that support frame preemtion have 8 queues
-or less. 
+Not a bug, rather HW limitation?
 
-The idea of configuring frame preemption based on classes is
-interesting. I will play with it, and see how it looks.
+> 
+> I think we just document that XDP_TX consumes resources and if users
+> care they shouldn't use XD_TX in programs and in that case hardware
+> should via program discovery not allocate the resource. This seems
+> cleaner in my opinion then more bits for features.
 
+But what if I'm with some limited HW that actually has a support for XDP
+and I would like to utilize XDP_TX?
 
-Cheers,
--- 
-Vinicius
+Not all drivers that support XDP consume Tx resources. Recently igb got
+support and it shares Tx queues between netstack and XDP.
+
+I feel like we should have a sort-of best effort approach in case we
+stumble upon the XDP_TX in prog being loaded and query the driver if it
+would be able to provide the Tx resources on the current system, given
+that normally we tend to have a queue per core.
+
+In that case igb would say yes, ixgbe would say no and prog would be
+rejected.
+
+> 
+> > 
+> > 
+> > > If this is properly documented that these are basic must-have
+> > > _requirements_, then users and driver developers both know what the
+> > > expectations are.
+> > 
+> > We can still document that XDP_TX is a must-have requirement, when a
+> > driver implements XDP.
+> 
+> +1
+> 
+> > 
+> > 
+> > > >>>   - redirect  
+> > > >>
+> > 
+> > 
+> > -- 
+> > Best regards,
+> >   Jesper Dangaard Brouer
+> >   MSc.CS, Principal Kernel Engineer at Red Hat
+> >   LinkedIn: http://www.linkedin.com/in/brouer
+> > 
+> 
+> 
