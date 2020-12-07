@@ -1,96 +1,84 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 7 Dec 2020 17:00:11 +0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ice: fix array overflow on
- receiving too many fragments for a packet
-In-Reply-To: <20201207011415.463-1-ruc_zhangxiaohui@163.com>
-References: <20201207011415.463-1-ruc_zhangxiaohui@163.com>
-Message-ID: <202012071613.Ht9e6EB9-lkp@intel.com>
+From: Jesper Dangaard Brouer <jbrouer@redhat.com>
+Date: Mon, 7 Dec 2020 13:54:33 +0100
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201204102901.109709-2-marekx.majtyka@intel.com>
+ <878sad933c.fsf@toke.dk>
+ <20201204124618.GA23696@ranger.igk.intel.com>
+ <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+Message-ID: <20201207135433.41172202@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Xiaohui,
+On Fri, 4 Dec 2020 16:21:08 +0100
+Daniel Borkmann <daniel@iogearbox.net> wrote:
 
-Thank you for the patch! Perhaps something to improve:
+> On 12/4/20 1:46 PM, Maciej Fijalkowski wrote:
+> > On Fri, Dec 04, 2020 at 01:18:31PM +0100, Toke H?iland-J?rgensen wrote:  
+> >> alardam at gmail.com writes:  
+> >>> From: Marek Majtyka <marekx.majtyka@intel.com>
+> >>>
+> >>> Implement support for checking what kind of xdp functionality a netdev
+> >>> supports. Previously, there was no way to do this other than to try
+> >>> to create an AF_XDP socket on the interface or load an XDP program and see
+> >>> if it worked. This commit changes this by adding a new variable which
+> >>> describes all xdp supported functions on pretty detailed level:  
+> >>
+> >> I like the direction this is going! :)
 
-[auto build test WARNING on tnguy-next-queue/dev-queue]
-[also build test WARNING on v5.10-rc7 next-20201204]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+(Me too, don't get discouraged by our nitpicking, keep working on this! :-))
 
-url:    https://github.com/0day-ci/linux/commits/Xiaohui-Zhang/ice-fix-array-overflow-on-receiving-too-many-fragments-for-a-packet/20201207-141033
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: riscv-allyesconfig (attached as .config)
-compiler: riscv64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/b3906f69dcad641195cbf1ce9af3e9105a6f72e1
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Xiaohui-Zhang/ice-fix-array-overflow-on-receiving-too-many-fragments-for-a-packet/20201207-141033
-        git checkout b3906f69dcad641195cbf1ce9af3e9105a6f72e1
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=riscv 
+> >>  
+> >>>   - aborted
+> >>>   - drop
+> >>>   - pass
+> >>>   - tx  
+> 
+> I strongly think we should _not_ merge any native XDP driver patchset
+> that does not support/implement the above return codes. 
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+I agree, with above statement.
 
-All warnings (new ones prefixed by >>):
+> Could we instead group them together and call this something like
+> XDP_BASE functionality to not give a wrong impression?
 
-   In file included from include/vdso/processor.h:10,
-                    from arch/riscv/include/asm/processor.h:11,
-                    from include/linux/prefetch.h:15,
-                    from drivers/net/ethernet/intel/ice/ice_txrx.c:6:
-   arch/riscv/include/asm/vdso/processor.h: In function 'cpu_relax':
-   arch/riscv/include/asm/vdso/processor.h:14:2: error: implicit declaration of function 'barrier' [-Werror=implicit-function-declaration]
-      14 |  barrier();
-         |  ^~~~~~~
-   drivers/net/ethernet/intel/ice/ice_txrx.c: In function 'ice_add_rx_frag':
->> drivers/net/ethernet/intel/ice/ice_txrx.c:828:2: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
-     828 |  struct skb_shared_info *shinfo = skb_shinfo(skb);
-         |  ^~~~~~
->> drivers/net/ethernet/intel/ice/ice_txrx.c:831:24: warning: passing argument 2 of 'skb_add_rx_frag' makes integer from pointer without a cast [-Wint-conversion]
-     831 |   skb_add_rx_frag(skb, shinfo, rx_buf->page,
-         |                        ^~~~~~
-         |                        |
-         |                        struct skb_shared_info *
-   In file included from include/net/net_namespace.h:39,
-                    from include/linux/netdevice.h:37,
-                    from include/trace/events/xdp.h:8,
-                    from include/linux/bpf_trace.h:5,
-                    from drivers/net/ethernet/intel/ice/ice_txrx.c:8:
-   include/linux/skbuff.h:2187:47: note: expected 'int' but argument is of type 'struct skb_shared_info *'
-    2187 | void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
-         |                                           ~~~~^
-   cc1: some warnings being treated as errors
+I disagree.  I can accept that XDP_BASE include aborted+drop+pass.
 
-vim +828 drivers/net/ethernet/intel/ice/ice_txrx.c
+I think we need to keep XDP_TX action separate, because I think that
+there are use-cases where the we want to disable XDP_TX due to end-user
+policy or hardware limitations.
 
-   825	
-   826		if (!size)
-   827			return;
- > 828		struct skb_shared_info *shinfo = skb_shinfo(skb);
-   829	
-   830		if (shinfo->nr_frags < ARRAY_SIZE(shinfo->frags)) {
- > 831			skb_add_rx_frag(skb, shinfo, rx_buf->page,
-   832				rx_buf->page_offset, size, truesize);
-   833		}
-   834	
-   835		/* page is being used so we must update the page offset */
-   836		ice_rx_buf_adjust_pg_offset(rx_buf, truesize);
-   837	}
-   838	
+Use-case(1): Cloud-provider want to give customers (running VMs) ability
+to load XDP program for DDoS protection (only), but don't want to allow
+customer to use XDP_TX (that can implement LB or cheat their VM
+isolation policy).
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 67660 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201207/6bef576d/attachment-0001.bin>
+Use-case(2): Disable XDP_TX on a driver to save hardware TX-queue
+resources, as the use-case is only DDoS.  Today we have this problem
+with the ixgbe hardware, that cannot load XDP programs on systems with
+more than 192 CPUs.
+
+
+> If this is properly documented that these are basic must-have
+> _requirements_, then users and driver developers both know what the
+> expectations are.
+
+We can still document that XDP_TX is a must-have requirement, when a
+driver implements XDP.
+
+
+> >>>   - redirect  
+> >>
+
+
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
+
