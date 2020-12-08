@@ -1,78 +1,56 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 07 Dec 2020 16:34:32 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/9] ethtool: Add support
- for frame preemption
-In-Reply-To: <20201207231230.3avhe6yqklsbxsiz@skbuf>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 7 Dec 2020 16:48:53 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/9] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20201208002730.kftox7xvr7d475rp@skbuf>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
- <20201205095021.36e1a24d@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
- <87o8j5z0xs.fsf@intel.com> <20201207231230.3avhe6yqklsbxsiz@skbuf>
-Message-ID: <874kkxyw2v.fsf@intel.com>
+ <20201202045325.3254757-2-vinicius.gomes@intel.com>
+ <20201205094325.790b187f@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+ <87eek11d23.fsf@intel.com>
+ <20201207152126.6f3d1808@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+ <87blf5ywkd.fsf@intel.com> <20201208002730.kftox7xvr7d475rp@skbuf>
+Message-ID: <20201207164853.3a9e6024@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vladimir Oltean <vladimir.oltean@nxp.com> writes:
+On Tue, 8 Dec 2020 00:27:31 +0000 Vladimir Oltean wrote:
+> On Mon, Dec 07, 2020 at 04:24:02PM -0800, Vinicius Costa Gomes wrote:
+> > Jakub Kicinski <kuba@kernel.org> writes:
+> >  
+> > > On Mon, 07 Dec 2020 14:11:48 -0800 Vinicius Costa Gomes wrote:  
+> > >> Jakub Kicinski <kuba@kernel.org> writes:  
+> > >> >> + * @min_frag_size_mult: Minimum size for all non-final fragment size,
+> > >> >> + * expressed in terms of X in '(1 + X)*64 + 4'  
+> > >> >
+> > >> > Is this way of expressing the min frag size from the standard?
+> > >> >  
+> > >>
+> > >> The standard has this: "A 2-bit integer value indicating, in units of 64
+> > >> octets, the minimum number of octets over 64 octets required in
+> > >> non-final fragments by the receiver" from IEEE 802.3br-2016, Table
+> > >> 79-7a.  
+> > >
+> > > Thanks! Let's drop the _mult suffix and add a mention of this
+> > > controlling the addFragSize variable from the standard. Perhaps
+> > > it should in fact be called add_frag_size (with an explanation
+> > > that the "additional" means "above the 64B" which are required in
+> > > Ethernet, and which are accounted for by the "1" in the 1 + X
+> > > formula)?  
+> >
+> > Sounds good :-) Will add a comment with the standard reference and
+> > change the name to 'add_frag_size'.  
+> 
+> I think you should be making references to the IEEE 802.3-2018, that
+> will age better, and a lot more people have that handy.
+> I believe the go-to definition for the additional fragment size can be
+> found in clause 30.12.2.1.37 aLldpXdot3LocAddFragSize.
 
-> On Mon, Dec 07, 2020 at 02:49:35PM -0800, Vinicius Costa Gomes wrote:
->> Jakub Kicinski <kuba@kernel.org> writes:
->>
->> > On Tue,  1 Dec 2020 20:53:16 -0800 Vinicius Costa Gomes wrote:
->> >> $ tc qdisc replace dev $IFACE parent root handle 100 taprio \
->> >>       num_tc 3 \
->> >>       map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
->> >>       queues 1 at 0 1 at 1 2 at 2 \
->> >>       base-time $BASE_TIME \
->> >>       sched-entry S 0f 10000000 \
->> >>       preempt 1110 \
->> >>       flags 0x2
->> >>
->> >> The "preempt" parameter is the only difference, it configures which
->> >> queues are marked as preemptible, in this example, queue 0 is marked
->> >> as "not preemptible", so it is express, the rest of the four queues
->> >> are preemptible.
->> >
->> > Does it make more sense for the individual queues to be preemptible
->> > or not, or is it better controlled at traffic class level?
->> > I was looking at patch 2, and 32 queues isn't that many these days..
->> > We either need a larger type there or configure this based on classes.
->>
->> I can set more future proof sizes for expressing the queues, sure, but
->> the issue, I think, is that frame preemption has dimishing returns with
->> link speed: at 2.5G the latency improvements are on the order of single
->> digit microseconds. At greater speeds the improvements are even less
->> noticeable.
->
-> You could look at it another way.
-> You can enable jumbo frames in your network, and your latency-sensitive
-> traffic would not suffer as long as the jumbo frames are preemptible.
->
+That's the LLDP incarnation of it. The variable is defined in:
 
-Speaking of jumbo frame, that's something that the standards are
-missing, TSN features + jumbo frames will leave a lot of stuff up to the
-implementation.
+99.4.7.3 Variables
 
->> The only adapters that I see that support frame preemtion have 8 queues
->> or less.
->>
->> The idea of configuring frame preemption based on classes is
->> interesting. I will play with it, and see how it looks.
->
-> I admit I never understood why you insist on configuring TSN offloads
-> per hardware queue and not per traffic class.
-
-So, I am sorry that I wasn't able to fully understand what you were
-saying, then.
-
-I always thought that you were thinking more that the driver was
-responsible of making the 'traffic class to queue' translation than the
-configuration interface for frame preemption to the user (taprio,
-mqprio, etc) should be in terms of traffic classes, instead of queues.
-
-My bad.
-
-
-Cheers,
--- 
-Vinicius
+Probably better mention 30.14.1.7 aMACMergeAddFragSize if we want a MIB
+reference.
