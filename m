@@ -1,84 +1,36 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 8 Dec 2020 04:35:23 -0800
-Subject: [Intel-wired-lan] [PATCH v8] i40e: add support for PTP external
- synchronization clock
-In-Reply-To: <20201208154119.106511-1-piotr.kwapulinski@intel.com>
-References: <3dcb78c0-b4cf-8686-20d6-3cd766e7fb1a@molgen.mpg.de>
- <20201208154119.106511-1-piotr.kwapulinski@intel.com>
-Message-ID: <20201208123523.GA17489@hoboy.vegasvil.org>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Tue, 8 Dec 2020 12:47:48 +0000
+Subject: [Intel-wired-lan] [PATCH v4 1/6] igb: XDP xmit back fix error
+ code
+In-Reply-To: <20201111170453.32693-2-sven.auhagen@voleatech.de>
+References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
+ <20201111170453.32693-2-sven.auhagen@voleatech.de>
+Message-ID: <MW3PR11MB45547A2D522453E8ED989AC29CCD0@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 08, 2020 at 03:41:19PM +0000, Piotr Kwapulinski wrote:
-
-> @@ -145,14 +398,35 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
->  static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
->  {
->  	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
-> -	struct timespec64 now, then;
-> +	struct i40e_hw *hw = &pf->hw;
->  
-> -	then = ns_to_timespec64(delta);
->  	mutex_lock(&pf->tmreg_lock);
->  
-> -	i40e_ptp_read(pf, &now, NULL);
-> -	now = timespec64_add(now, then);
-> -	i40e_ptp_write(pf, (const struct timespec64 *)&now);
-> +	if (delta > -999999900LL && delta < 999999900LL) {
-> +		int neg_adj = 0;
-> +		u32 timadj;
-> +		u64 tohw;
-> +
-> +		if (delta < 0) {
-> +			neg_adj = 1;
-> +			tohw = -delta;
-> +		} else {
-> +			tohw = delta;
-> +		}
-> +
-> +		timadj = tohw & 0x3FFFFFFF;
-> +		if (neg_adj)
-> +			timadj |= I40E_ISGN;
-> +		wr32(hw, I40E_PRTTSYN_ADJ, timadj);
-> +	} else {
-> +		struct timespec64 then, now;
-> +
-> +		then = ns_to_timespec64(delta);
-> +		i40e_ptp_read(pf, &now, NULL);
-> +		now = timespec64_add(now, then);
-> +		i40e_ptp_write(pf, (const struct timespec64 *)&now);
-> +		i40e_ptp_set_1pps_signal_hw(pf);
-
-This enables a 1-PPS hardware output unconditionally?
-
-> +	}
->  
->  	mutex_unlock(&pf->tmreg_lock);
->  
-
-> @@ -839,6 +1492,8 @@ void i40e_ptp_init(struct i40e_pf *pf)
->  		/* Restore the clock time based on last known value */
->  		i40e_ptp_restore_hw_time(pf);
->  	}
-> +
-> +	i40e_ptp_set_1pps_signal_hw(pf);
->  }
-
-Here again the 1-PPS is enabled unconditionally.
-
-Instead, why not allow the user to enable/disable this?
-
-There is a new ioctl variant designed for periodic outputs like a PPS.
-
-Bits of the ptp_perout_request.flags field can contain:
-
- PTP_PEROUT_DUTY_CYCLE
- PTP_PEROUT_PHASE
-
-You can enable the PPS when they are present in the request.
-
-Thanks,
-Richard
+> From: sven.auhagen at voleatech.de <sven.auhagen@voleatech.de>
+> Sent: Wednesday, November 11, 2020 10:35 PM
+> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Fijalkowski, Maciej
+> <maciej.fijalkowski@intel.com>; kuba at kernel.org
+> Cc: davem at davemloft.net; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; nhorman at redhat.com; sassmann at redhat.com;
+> Penigalapati, Sandeep <sandeep.penigalapati@intel.com>;
+> brouer at redhat.com; pmenzel at molgen.mpg.de
+> Subject: [PATCH v4 1/6] igb: XDP xmit back fix error code
+> 
+> From: Sven Auhagen <sven.auhagen@voleatech.de>
+> 
+> The igb XDP xmit back function should only return defined error codes.
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Sven Auhagen <sven.auhagen@voleatech.de>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
