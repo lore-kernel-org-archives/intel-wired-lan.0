@@ -1,40 +1,56 @@
-From: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>
-Date: Tue, 8 Dec 2020 11:13:42 +0000
-Subject: [Intel-wired-lan] [PATCH v8] i40e: add support for PTP external
- synchronization clock
-In-Reply-To: <16512022-0b85-5b60-6767-f9b9b6e9cb9f@molgen.mpg.de>
-References: <3dcb78c0-b4cf-8686-20d6-3cd766e7fb1a@molgen.mpg.de>
- <20201208154119.106511-1-piotr.kwapulinski@intel.com>
- <16512022-0b85-5b60-6767-f9b9b6e9cb9f@molgen.mpg.de>
-Message-ID: <DM6PR11MB461075E6A409F14BFFC4FE22F3CD0@DM6PR11MB4610.namprd11.prod.outlook.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Tue, 8 Dec 2020 12:39:01 +0100
+Subject: [Intel-wired-lan] [PATCH v4 2/6] igb: take vlan double header
+ into account
+In-Reply-To: <MW3PR11MB45544E9B9B610CC6553F246B9CCD0@MW3PR11MB4554.namprd11.prod.outlook.com>
+References: <20201111170453.32693-1-sven.auhagen@voleatech.de>
+ <20201111170453.32693-3-sven.auhagen@voleatech.de>
+ <DM6PR11MB454615FDFC4E7B71D9B82FA29CF40@DM6PR11MB4546.namprd11.prod.outlook.com>
+ <20201201095852.2dc1e8f8@carbon>
+ <20201205094213.p64bkcmd3lr4iejl@SvensMacBookAir-2.local>
+ <MW3PR11MB45544E9B9B610CC6553F246B9CCD0@MW3PR11MB4554.namprd11.prod.outlook.com>
+Message-ID: <20201208123901.20e87ee5@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thank you Paul,
-I'll fix it with the next patch.
-Best Regards,
-Piotr
+On Tue, 8 Dec 2020 10:52:28 +0000
+"Penigalapati, Sandeep" <sandeep.penigalapati@intel.com> wrote:
 
------Original Message-----
-From: Paul Menzel <pmenzel@molgen.mpg.de> 
-Sent: Tuesday, December 8, 2020 11:52 AM
-To: Kwapulinski, Piotr <piotr.kwapulinski@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: richardcochran at gmail.com; Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH v8] i40e: add support for PTP external synchronization clock
+> On Tue, Dec 01, 2020 at 09:58:52AM +0100, Jesper Dangaard Brouer wrote:
+> > > On Tue, 1 Dec 2020 08:23:23 +0000
+> > > "Penigalapati, Sandeep" <sandeep.penigalapati@intel.com> wrote:
+> > >  
+> > > > Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>  
+> > >
+> > > Very happy that you are testing this.
+> > >
+> > > Have you also tested that samples/bpf/ xdp_redirect_cpu program works?  
+> > 
+> > Hi Jesper,
+> > 
+> > I have tested the xdp routing example but it would be good if someone can
+> > double check this.
+> > 
+> Hi Jesper, Sven
+> 
+> I have tested xdp_redirect_cpu and it is working.
 
-Dear Piotr,
+Thanks this is great to hear.
 
+You have tested with large frames right?  As cpumap just creates SKBs
+based on xdp_frame, and send them to the normal network stack (on
+remote CPU), you can just to a standard TCP-stream throughput test with
+iperf or netperf.  That should hopefully blowup if we screwed up the
+boundaries of the two packets sharing the same page.  (In principle we
+should verify the content of the TCP transfer, so maybe a scp + md5sum
+is a better test).
 
-Am 08.12.20 um 16:41 schrieb Piotr Kwapulinski:
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
-[?]
-
-Your patch is from the future. Or is it your strategy to keep it at the top of the inbox of the recipients. ;-)
-
-
-Kind regards,
-
-Paul
