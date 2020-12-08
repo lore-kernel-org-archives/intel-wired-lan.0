@@ -1,56 +1,46 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Mon, 7 Dec 2020 23:12:31 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/9] ethtool: Add support
- for frame preemption
-In-Reply-To: <87o8j5z0xs.fsf@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 07 Dec 2020 16:24:02 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/9] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20201207152126.6f3d1808@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
 References: <20201202045325.3254757-1-vinicius.gomes@intel.com>
- <20201205095021.36e1a24d@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
- <87o8j5z0xs.fsf@intel.com>
-Message-ID: <20201207231230.3avhe6yqklsbxsiz@skbuf>
+ <20201202045325.3254757-2-vinicius.gomes@intel.com>
+ <20201205094325.790b187f@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+ <87eek11d23.fsf@intel.com>
+ <20201207152126.6f3d1808@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
+Message-ID: <87blf5ywkd.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Dec 07, 2020 at 02:49:35PM -0800, Vinicius Costa Gomes wrote:
-> Jakub Kicinski <kuba@kernel.org> writes:
->
-> > On Tue,  1 Dec 2020 20:53:16 -0800 Vinicius Costa Gomes wrote:
-> >> $ tc qdisc replace dev $IFACE parent root handle 100 taprio \
-> >>       num_tc 3 \
-> >>       map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
-> >>       queues 1 at 0 1 at 1 2 at 2 \
-> >>       base-time $BASE_TIME \
-> >>       sched-entry S 0f 10000000 \
-> >>       preempt 1110 \
-> >>       flags 0x2
-> >>
-> >> The "preempt" parameter is the only difference, it configures which
-> >> queues are marked as preemptible, in this example, queue 0 is marked
-> >> as "not preemptible", so it is express, the rest of the four queues
-> >> are preemptible.
-> >
-> > Does it make more sense for the individual queues to be preemptible
-> > or not, or is it better controlled at traffic class level?
-> > I was looking at patch 2, and 32 queues isn't that many these days..
-> > We either need a larger type there or configure this based on classes.
->
-> I can set more future proof sizes for expressing the queues, sure, but
-> the issue, I think, is that frame preemption has dimishing returns with
-> link speed: at 2.5G the latency improvements are on the order of single
-> digit microseconds. At greater speeds the improvements are even less
-> noticeable.
+Jakub Kicinski <kuba@kernel.org> writes:
 
-You could look at it another way.
-You can enable jumbo frames in your network, and your latency-sensitive
-traffic would not suffer as long as the jumbo frames are preemptible.
-
-> The only adapters that I see that support frame preemtion have 8 queues
-> or less.
+> On Mon, 07 Dec 2020 14:11:48 -0800 Vinicius Costa Gomes wrote:
+>> Jakub Kicinski <kuba@kernel.org> writes:
+>> >> + * @min_frag_size_mult: Minimum size for all non-final fragment size,
+>> >> + * expressed in terms of X in '(1 + X)*64 + 4'  
+>> >
+>> > Is this way of expressing the min frag size from the standard?
+>> >  
+>> 
+>> The standard has this: "A 2-bit integer value indicating, in units of 64
+>> octets, the minimum number of octets over 64 octets required in
+>> non-final fragments by the receiver" from IEEE 802.3br-2016, Table
+>> 79-7a.
 >
-> The idea of configuring frame preemption based on classes is
-> interesting. I will play with it, and see how it looks.
+> Thanks! Let's drop the _mult suffix and add a mention of this
+> controlling the addFragSize variable from the standard. Perhaps 
+> it should in fact be called add_frag_size (with an explanation 
+> that the "additional" means "above the 64B" which are required in
+> Ethernet, and which are accounted for by the "1" in the 1 + X
+> formula)?
 
-I admit I never understood why you insist on configuring TSN offloads
-per hardware queue and not per traffic class.
+Sounds good :-) Will add a comment with the standard reference and
+change the name to 'add_frag_size'.
+
+
+Cheers,
+-- 
+Vinicius
