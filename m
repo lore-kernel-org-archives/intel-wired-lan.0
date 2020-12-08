@@ -1,65 +1,84 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 8 Dec 2020 15:21:01 +0300
-Subject: [Intel-wired-lan] [bug report] xsk: Propagate napi_id to XDP socket
- Rx path
-Message-ID: <X89vkBAEFET+IchI@mwanda>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 8 Dec 2020 04:35:23 -0800
+Subject: [Intel-wired-lan] [PATCH v8] i40e: add support for PTP external
+ synchronization clock
+In-Reply-To: <20201208154119.106511-1-piotr.kwapulinski@intel.com>
+References: <3dcb78c0-b4cf-8686-20d6-3cd766e7fb1a@molgen.mpg.de>
+ <20201208154119.106511-1-piotr.kwapulinski@intel.com>
+Message-ID: <20201208123523.GA17489@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Bj?rn T?pel,
+On Tue, Dec 08, 2020 at 03:41:19PM +0000, Piotr Kwapulinski wrote:
 
-This is a semi-automatic email about new static checker warnings.
+> @@ -145,14 +398,35 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+>  static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+>  {
+>  	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+> -	struct timespec64 now, then;
+> +	struct i40e_hw *hw = &pf->hw;
+>  
+> -	then = ns_to_timespec64(delta);
+>  	mutex_lock(&pf->tmreg_lock);
+>  
+> -	i40e_ptp_read(pf, &now, NULL);
+> -	now = timespec64_add(now, then);
+> -	i40e_ptp_write(pf, (const struct timespec64 *)&now);
+> +	if (delta > -999999900LL && delta < 999999900LL) {
+> +		int neg_adj = 0;
+> +		u32 timadj;
+> +		u64 tohw;
+> +
+> +		if (delta < 0) {
+> +			neg_adj = 1;
+> +			tohw = -delta;
+> +		} else {
+> +			tohw = delta;
+> +		}
+> +
+> +		timadj = tohw & 0x3FFFFFFF;
+> +		if (neg_adj)
+> +			timadj |= I40E_ISGN;
+> +		wr32(hw, I40E_PRTTSYN_ADJ, timadj);
+> +	} else {
+> +		struct timespec64 then, now;
+> +
+> +		then = ns_to_timespec64(delta);
+> +		i40e_ptp_read(pf, &now, NULL);
+> +		now = timespec64_add(now, then);
+> +		i40e_ptp_write(pf, (const struct timespec64 *)&now);
+> +		i40e_ptp_set_1pps_signal_hw(pf);
 
-The patch b02e5a0ebb17: "xsk: Propagate napi_id to XDP socket Rx 
-path" from Nov 30, 2020, leads to the following Smatch complaint:
+This enables a 1-PPS hardware output unconditionally?
 
-    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:6580 ixgbe_setup_rx_resources()
-    error: we previously assumed 'rx_ring->q_vector' could be null (see line 6550)
+> +	}
+>  
+>  	mutex_unlock(&pf->tmreg_lock);
+>  
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-  6549	
-  6550		if (rx_ring->q_vector)
-                    ^^^^^^^^^^^^^^^^^
-Check for NULL
+> @@ -839,6 +1492,8 @@ void i40e_ptp_init(struct i40e_pf *pf)
+>  		/* Restore the clock time based on last known value */
+>  		i40e_ptp_restore_hw_time(pf);
+>  	}
+> +
+> +	i40e_ptp_set_1pps_signal_hw(pf);
+>  }
 
-  6551			ring_node = rx_ring->q_vector->numa_node;
-  6552	
-  6553		rx_ring->rx_buffer_info = vmalloc_node(size, ring_node);
-  6554		if (!rx_ring->rx_buffer_info)
-  6555			rx_ring->rx_buffer_info = vmalloc(size);
-  6556		if (!rx_ring->rx_buffer_info)
-  6557			goto err;
-  6558	
-  6559		/* Round up to nearest 4K */
-  6560		rx_ring->size = rx_ring->count * sizeof(union ixgbe_adv_rx_desc);
-  6561		rx_ring->size = ALIGN(rx_ring->size, 4096);
-  6562	
-  6563		set_dev_node(dev, ring_node);
-  6564		rx_ring->desc = dma_alloc_coherent(dev,
-  6565						   rx_ring->size,
-  6566						   &rx_ring->dma,
-  6567						   GFP_KERNEL);
-  6568		set_dev_node(dev, orig_node);
-  6569		if (!rx_ring->desc)
-  6570			rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
-  6571							   &rx_ring->dma, GFP_KERNEL);
-  6572		if (!rx_ring->desc)
-  6573			goto err;
-  6574	
-  6575		rx_ring->next_to_clean = 0;
-  6576		rx_ring->next_to_use = 0;
-  6577	
-  6578		/* XDP RX-queue info */
-  6579		if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-  6580				     rx_ring->queue_index, rx_ring->q_vector->napi.napi_id) < 0)
-                                                           ^^^^^^^^^^^^^^^^^^^
-New unchecked dereference.
+Here again the 1-PPS is enabled unconditionally.
 
-  6581			goto err;
-  6582	
+Instead, why not allow the user to enable/disable this?
 
-regards,
-dan carpenter
+There is a new ioctl variant designed for periodic outputs like a PPS.
+
+Bits of the ptp_perout_request.flags field can contain:
+
+ PTP_PEROUT_DUTY_CYCLE
+ PTP_PEROUT_PHASE
+
+You can enable the PPS when they are present in the request.
+
+Thanks,
+Richard
