@@ -1,166 +1,204 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 09 Dec 2020 20:51:24 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 716211e68f0d8678b3e05090d355b0ef9929860f
-Message-ID: <5fd0c84c.7UrHUKNNSD8Evin9%lkp@intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 9 Dec 2020 15:44:22 +0100
+Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <CAKgT0UebNROCeAyyg0Jf-pTfLDd-oNyu2Lo-gkZKWk=nOAYL8g@mail.gmail.com>
+References: <20201204200920.133780-1-mario.limonciello@dell.com>
+ <d0f7e565-05e1-437e-4342-55eb73daa907@redhat.com>
+ <DM6PR19MB2636A4097B68DBB253C416D8FACE0@DM6PR19MB2636.namprd19.prod.outlook.com>
+ <383daf0d-8a9b-c614-aded-6e816f530dcd@intel.com>
+ <e7d57370-e35e-a9e6-2dd9-aa7855c15650@redhat.com>
+ <CAKgT0UebNROCeAyyg0Jf-pTfLDd-oNyu2Lo-gkZKWk=nOAYL8g@mail.gmail.com>
+Message-ID: <f02a02b7-16e7-89e9-f7ca-b6554ef5503e@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
-branch HEAD: 716211e68f0d8678b3e05090d355b0ef9929860f  ixgbe: aggregate all receive errors through netdev's rx_errors
+Hi,
 
-elapsed time: 724m
+On 12/8/20 5:14 PM, Alexander Duyck wrote:
+> On Tue, Dec 8, 2020 at 1:30 AM Hans de Goede <hdegoede@redhat.com> wrote:
+>>
+>> Hi,
+>>
+>> On 12/8/20 6:08 AM, Neftin, Sasha wrote:
+>>> On 12/7/2020 17:41, Limonciello, Mario wrote:
+>>>>> First of all thank you for working on this.
+>>>>>
+>>>>> I must say though that I don't like the approach taken here very
+>>>>> much.
+>>>>>
+>>>>> This is not so much a criticism of this series as it is a criticism
+>>>>> of the earlier decision to simply disable s0ix on all devices
+>>>>> with the i219-LM + and active ME.
+>>>>
+>>>> I was not happy with that decision either as it did cause regressions
+>>>> on all of the "named" Comet Lake laptops that were in the market at
+>>>> the time.  The "unnamed" ones are not yet released, and I don't feel
+>>>> it's fair to call it a regression on "unreleased" hardware.
+>>>>
+>>>>>
+>>>>> AFAIK there was a perfectly acceptable patch to workaround those
+>>>>> broken devices, which increased a timeout:
+>>>>> https://patchwork.ozlabs.org/project/intel-wired-
+>>>>> lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
+>>>>>
+>>>>> That patch was nacked because it increased the resume time
+>>>>> *on broken devices*.
+>>>>>
+>>> Officially CSME/ME not POR for Linux and we haven't interface to the ME. Nobody can tell how long (and why) ME will hold PHY access semaphore ant just increasing the resuming time (ULP configure) won't be solve the problem. This is not reliable approach.
+>>> I would agree users can add ME system on their responsibilities.
+>>
+>> It is not clear to me what you are trying to say here.
+> 
+> Based on the earlier thread you had referenced and his comment here it
+> sounds like while adding time will work for most cases, it doesn't
+> solve it for all cases.
 
-configs tested: 137
-configs skipped: 3
+AFAIK there are 0 documented cases where the suspend/resume issue
+continues to be a problem after the timeout has been increased.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+If you know of actual documented cases (rather then this just being
+a theoretical problem), then please provide links to those cases.
 
-gcc tested configs:
-arm64                               defconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                     redwood_defconfig
-arc                 nsimosci_hs_smp_defconfig
-sh                              ul2_defconfig
-ia64                             alldefconfig
-sh                          lboxre2_defconfig
-m68k                          hp300_defconfig
-powerpc                 mpc832x_rdb_defconfig
-powerpc                 linkstation_defconfig
-arm                            hisi_defconfig
-sh                          rsk7201_defconfig
-powerpc                     rainier_defconfig
-powerpc                     tqm8555_defconfig
-ia64                         bigsur_defconfig
-mips                      loongson3_defconfig
-m68k                        mvme16x_defconfig
-arc                         haps_hs_defconfig
-c6x                         dsk6455_defconfig
-c6x                        evmc6472_defconfig
-mips                       lemote2f_defconfig
-mips                        omega2p_defconfig
-arm                            dove_defconfig
-mips                          ath79_defconfig
-powerpc                     kmeter1_defconfig
-mips                      maltaaprp_defconfig
-sh                                  defconfig
-arm                       imx_v6_v7_defconfig
-arm                            mmp2_defconfig
-mips                      pistachio_defconfig
-sh                           se7751_defconfig
-powerpc                       holly_defconfig
-arm                           h5000_defconfig
-sh                            migor_defconfig
-mips                        bcm63xx_defconfig
-m68k                             alldefconfig
-mips                         bigsur_defconfig
-arm                        vexpress_defconfig
-arm                          pxa168_defconfig
-sh                           se7724_defconfig
-powerpc64                           defconfig
-arm                           omap1_defconfig
-h8300                               defconfig
-powerpc                 xes_mpc85xx_defconfig
-m68k                       bvme6000_defconfig
-sh                           se7619_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20201208
-x86_64               randconfig-a006-20201208
-x86_64               randconfig-a005-20201208
-x86_64               randconfig-a001-20201208
-x86_64               randconfig-a002-20201208
-x86_64               randconfig-a003-20201208
-i386                 randconfig-a004-20201208
-i386                 randconfig-a005-20201208
-i386                 randconfig-a001-20201208
-i386                 randconfig-a002-20201208
-i386                 randconfig-a006-20201208
-i386                 randconfig-a003-20201208
-i386                 randconfig-a004-20201209
-i386                 randconfig-a005-20201209
-i386                 randconfig-a001-20201209
-i386                 randconfig-a002-20201209
-i386                 randconfig-a006-20201209
-i386                 randconfig-a003-20201209
-x86_64               randconfig-a016-20201209
-x86_64               randconfig-a012-20201209
-x86_64               randconfig-a013-20201209
-x86_64               randconfig-a014-20201209
-x86_64               randconfig-a015-20201209
-x86_64               randconfig-a011-20201209
-i386                 randconfig-a013-20201209
-i386                 randconfig-a014-20201209
-i386                 randconfig-a011-20201209
-i386                 randconfig-a015-20201209
-i386                 randconfig-a012-20201209
-i386                 randconfig-a016-20201209
-i386                 randconfig-a013-20201208
-i386                 randconfig-a014-20201208
-i386                 randconfig-a011-20201208
-i386                 randconfig-a015-20201208
-i386                 randconfig-a012-20201208
-i386                 randconfig-a016-20201208
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+> The problem is as a vendor you are usually
+> stuck looking for a solution that will work for all cases which can
+> lead to things like having to drop features because they can be
+> problematic for a few cases.
 
-clang tested configs:
-x86_64               randconfig-a004-20201209
-x86_64               randconfig-a006-20201209
-x86_64               randconfig-a005-20201209
-x86_64               randconfig-a001-20201209
-x86_64               randconfig-a002-20201209
-x86_64               randconfig-a003-20201209
+I disagree, there will/might always be some broken corner case
+laptop-model / hw-design out there on which a feature breaks. Simply
+disabling all features which might cause problems in "a few cases"
+would mean that we pretty much have to disable over half the features
+in the kernel.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Take for example SATA NCQ (command queing) this is know to not work
+on some devices, up to the point of where with some buggy firmwares
+it may cause full systems hangs and/or data-corruption. So this is
+a much bigger problem then the "system won't suspend" issue we
+are talking about here. Still the ATA subsys maintainers have enabled
+this by default because it is an important feature to have and they
+are using a deny-list to avoid enabling this on known broken hardware;
+and yes every know and then we need to add a new model to the deny-list.
+
+And the same for SATA ALPM support (a power-management feature like s0ix)
+that is enabled by default too, combined with a deny-list.
+I'm very familiar with the ALPM case since I pushed of it being
+enabled by default and I've done most of the maintenance work
+of the deny-list since it was enabled by default.
+
+The kernel is full of this pattern, we don't disable an important
+feature (and power-management is important) just because of this
+causing issues in "a few cases". And again you say "a few cases"
+but I know of 0 documented cases where this issue is still a problem
+after bumping the timeout.
+
+>> Are you saying that you insist on keeping the e1000e_check_me check and
+>> thus needlessly penalizing 100s of laptops models with higher
+>> power-consumption unless these 100s of laptops are added manually
+>> to an allow list for this?
+>>
+>> I'm sorry but that is simply unacceptable, the maintenance burden
+>> of that is just way too high.
+> 
+> Think about this the other way though. If it is enabled and there are
+> cases where adding a delay doesn't resolve it then it still doesn't
+> really solve the issue does it?
+
+Again AFAIK that is a theoretical "If it ..." and even if it is not
+theoretical, then we can add a deny-list. Maintaining a deny list for
+"a few cases" being broken is a lot easier then maintaining an allow
+list for allother hardware out there.
+
+Let me put it this way, the allow-list will be orders of magnitude
+longer then the deny lists. Which list would you rather manually
+keep up2date?
+
+
+>> Testing on the models where the timeout issue was first hit has
+>> shown that increasing the timeout does actually fix it on those
+>> models. Sure in theory the ME on some buggy model could hold the
+>> semaphore even longer, but then the right thing would be to
+>> have a deny-list for s0ix where we can add those buggy models
+>> (none of which we have encountered sofar). Just like we have
+>> denylist for buggy hw in other places in the kernel.
+> 
+> This would actually have a higher maintenance burden then just
+> disabling the feature. Having to individually test for and deny-list
+> every one-off system with this bad configuration would be a pretty
+> significant burden. That also implies somebody would have access to
+> such systems and that is not normally the case. Even Intel doesn't
+> have all possible systems that would include this NIC.
+> 
+>> Maintaining an ever growing allow list for the *theoretical*
+>> case of encountering a model where things do not work with
+>> the increased timeout is not a workable and this not an
+>> acceptable solution.
+> 
+> I'm not a fan of the allow-list either, but it is preferable to a
+> deny-list where you have to first trigger the bug before you realize
+> it is there.
+
+IIRC, if the bug is there the system does not suspend, and the e1000e
+driver logs an error that it is the culprit. So this is very easy to spot /
+detect by end users when they hit it.
+
+Again the kernel is full of deny lists to disable some features
+on broken hardware, with sometimes hitting the buggy/broken hw
+scenario having much worse consequences. Yet this is how this is
+done everywhere.
+
+The e1000e driver really is not all that special that it should
+get an exception to how this is normally done.
+
+> Ideally there should be another solution in which the ME
+> could somehow set a flag somewhere in the hardware to indicate that it
+> is alive and the driver could read that order to determine if the ME
+> is actually alive and can skip this workaround. Then this could all be
+> avoided and it can be safely assumed the system is working correctly.
+> 
+>> The initial addition of the e1000e_check_me check instead
+>> of just going with the confirmed fix of bumping the timeout
+>> was already highly controversial and should IMHO never have
+>> been done.
+> 
+> How big was the sample size for the "confirmed" fix? How many
+> different vendors were there within the mix? The problem is while it
+> may have worked for the case you encountered you cannot say with
+> certainty that it worked in all cases unless you had samples of all
+> the different hardware out there.
+> 
+>> Combining this with an ever-growing allow-list on which every
+>> new laptop model needs to be added separately + a new
+>> "s0ix-enabled" ethertool flag, which existence is basically
+>> an admission that the allow-list approach is flawed goes
+>> from controversial to just plain not acceptable.
+> 
+> I don't view this as problematic, however this is some overhead to it.
+> One thing I don't know is if anyone has looked at is if the issue only
+> applies to a few specific system vendors. Currently the allow-list is
+> based on the subdevice ID. One thing we could look at doing is
+> enabling it based on the subvendor ID in which case we could
+> allow-list in large swaths of hardware with certain trusted vendors.
+> The only issue is that it pulls in any future parts as well so it puts
+> the onus on that manufacturer to avoid misconfiguring things in the
+> future.
+
+If we go this route, we will likely get Dell, Lenovo (which had
+the issue without the increased timeout) and maybe HP on the
+allow-list, probably with a finer grained deny-list on top to
+opt out on some models from these vendors where things turn
+out to be buggy after all.
+
+This:
+
+1. Still requires a deny-list on top (at least this is very likely)
+2. Leaves users of all but the 3 big vendors in the cold which
+really is not a nice way to deal with this.
+
+Regards,
+
+Hans
+
