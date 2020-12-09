@@ -1,96 +1,166 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Wed, 09 Dec 2020 11:26:19 +0100
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <5fd065a1479c4_50ce208b1@john-XPS-13-9370.notmuch>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com>
- <878sad933c.fsf@toke.dk> <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
- <20201207135433.41172202@carbon>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <431a53bd-25d7-8535-86e1-aa15bf94e6c3@gmail.com>
- <20201208092803.05b27db3@carbon> <87lfe8ik5c.fsf@toke.dk>
- <5fd065a1479c4_50ce208b1@john-XPS-13-9370.notmuch>
-Message-ID: <87ft4fp96c.fsf@toke.dk>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 09 Dec 2020 20:51:24 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 716211e68f0d8678b3e05090d355b0ef9929860f
+Message-ID: <5fd0c84c.7UrHUKNNSD8Evin9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-John Fastabend <john.fastabend@gmail.com> writes:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: 716211e68f0d8678b3e05090d355b0ef9929860f  ixgbe: aggregate all receive errors through netdev's rx_errors
 
-> Toke H?iland-J?rgensen wrote:
->> Jesper Dangaard Brouer <jbrouer@redhat.com> writes:
->> 
->> > On Mon, 7 Dec 2020 18:01:00 -0700
->> > David Ahern <dsahern@gmail.com> wrote:
->> >
->> >> On 12/7/20 1:52 PM, John Fastabend wrote:
->> >> >>
->> >> >> I think we need to keep XDP_TX action separate, because I think that
->> >> >> there are use-cases where the we want to disable XDP_TX due to end-user
->> >> >> policy or hardware limitations.  
->> >> > 
->> >> > How about we discover this at load time though. 
->> >
->> > Nitpick at XDP "attach" time. The general disconnect between BPF and
->> > XDP is that BPF can verify at "load" time (as kernel knows what it
->> > support) while XDP can have different support/features per driver, and
->> > cannot do this until attachment time. (See later issue with tail calls).
->> > (All other BPF-hooks don't have this issue)
->> >
->> >> > Meaning if the program
->> >> > doesn't use XDP_TX then the hardware can skip resource allocations for
->> >> > it. I think we could have verifier or extra pass discover the use of
->> >> > XDP_TX and then pass a bit down to driver to enable/disable TX caps.
->> >> >   
->> >> 
->> >> This was discussed in the context of virtio_net some months back - it is
->> >> hard to impossible to know a program will not return XDP_TX (e.g., value
->> >> comes from a map).
->> >
->> > It is hard, and sometimes not possible.  For maps the workaround is
->> > that BPF-programmer adds a bound check on values from the map. If not
->> > doing that the verifier have to assume all possible return codes are
->> > used by BPF-prog.
->> >
->> > The real nemesis is program tail calls, that can be added dynamically
->> > after the XDP program is attached.  It is at attachment time that
->> > changing the NIC resources is possible.  So, for program tail calls the
->> > verifier have to assume all possible return codes are used by BPF-prog.
->> 
->> We actually had someone working on a scheme for how to express this for
->> programs some months ago, but unfortunately that stalled out (Jesper
->> already knows this, but FYI to the rest of you). In any case, I view
->> this as a "next step". Just exposing the feature bits to userspace will
->> help users today, and as a side effect, this also makes drivers declare
->> what they support, which we can then incorporate into the core code to,
->> e.g., reject attachment of programs that won't work anyway. But let's
->> do this in increments and not make the perfect the enemy of the good
->> here.
->> 
->> > BPF now have function calls and function replace right(?)  How does
->> > this affect this detection of possible return codes?
->> 
->> It does have the same issue as tail calls, in that the return code of
->> the function being replaced can obviously change. However, the verifier
->> knows the target of a replace, so it can propagate any constraints put
->> upon the caller if we implement it that way.
->
-> OK I'm convinced its not possible to tell at attach time if a program
-> will use XDP_TX or not in general. And in fact for most real programs it
-> likely will not be knowable. At least most programs I look at these days
-> use either tail calls or function calls so seems like a dead end.
->
-> Also above somewhere it was pointed out that XDP_REDIRECT would want
-> the queues and it seems even more challenging to sort that out.
+elapsed time: 724m
 
-Yeah. Doesn't mean that all hope is lost for "reject stuff that doesn't
-work". We could either do pessimistic return code detection (if we don't
-know for sure assume all codes are used), or we could add metadata where
-the program declares what it wants to do...
+configs tested: 137
+configs skipped: 3
 
--Toke
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm64                               defconfig
+arm                                 defconfig
+arm64                            allyesconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                     redwood_defconfig
+arc                 nsimosci_hs_smp_defconfig
+sh                              ul2_defconfig
+ia64                             alldefconfig
+sh                          lboxre2_defconfig
+m68k                          hp300_defconfig
+powerpc                 mpc832x_rdb_defconfig
+powerpc                 linkstation_defconfig
+arm                            hisi_defconfig
+sh                          rsk7201_defconfig
+powerpc                     rainier_defconfig
+powerpc                     tqm8555_defconfig
+ia64                         bigsur_defconfig
+mips                      loongson3_defconfig
+m68k                        mvme16x_defconfig
+arc                         haps_hs_defconfig
+c6x                         dsk6455_defconfig
+c6x                        evmc6472_defconfig
+mips                       lemote2f_defconfig
+mips                        omega2p_defconfig
+arm                            dove_defconfig
+mips                          ath79_defconfig
+powerpc                     kmeter1_defconfig
+mips                      maltaaprp_defconfig
+sh                                  defconfig
+arm                       imx_v6_v7_defconfig
+arm                            mmp2_defconfig
+mips                      pistachio_defconfig
+sh                           se7751_defconfig
+powerpc                       holly_defconfig
+arm                           h5000_defconfig
+sh                            migor_defconfig
+mips                        bcm63xx_defconfig
+m68k                             alldefconfig
+mips                         bigsur_defconfig
+arm                        vexpress_defconfig
+arm                          pxa168_defconfig
+sh                           se7724_defconfig
+powerpc64                           defconfig
+arm                           omap1_defconfig
+h8300                               defconfig
+powerpc                 xes_mpc85xx_defconfig
+m68k                       bvme6000_defconfig
+sh                           se7619_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20201208
+x86_64               randconfig-a006-20201208
+x86_64               randconfig-a005-20201208
+x86_64               randconfig-a001-20201208
+x86_64               randconfig-a002-20201208
+x86_64               randconfig-a003-20201208
+i386                 randconfig-a004-20201208
+i386                 randconfig-a005-20201208
+i386                 randconfig-a001-20201208
+i386                 randconfig-a002-20201208
+i386                 randconfig-a006-20201208
+i386                 randconfig-a003-20201208
+i386                 randconfig-a004-20201209
+i386                 randconfig-a005-20201209
+i386                 randconfig-a001-20201209
+i386                 randconfig-a002-20201209
+i386                 randconfig-a006-20201209
+i386                 randconfig-a003-20201209
+x86_64               randconfig-a016-20201209
+x86_64               randconfig-a012-20201209
+x86_64               randconfig-a013-20201209
+x86_64               randconfig-a014-20201209
+x86_64               randconfig-a015-20201209
+x86_64               randconfig-a011-20201209
+i386                 randconfig-a013-20201209
+i386                 randconfig-a014-20201209
+i386                 randconfig-a011-20201209
+i386                 randconfig-a015-20201209
+i386                 randconfig-a012-20201209
+i386                 randconfig-a016-20201209
+i386                 randconfig-a013-20201208
+i386                 randconfig-a014-20201208
+i386                 randconfig-a011-20201208
+i386                 randconfig-a015-20201208
+i386                 randconfig-a012-20201208
+i386                 randconfig-a016-20201208
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20201209
+x86_64               randconfig-a006-20201209
+x86_64               randconfig-a005-20201209
+x86_64               randconfig-a001-20201209
+x86_64               randconfig-a002-20201209
+x86_64               randconfig-a003-20201209
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
