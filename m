@@ -1,5 +1,5 @@
 From: David Ahern <dsahern@gmail.com>
-Date: Wed, 9 Dec 2020 08:41:05 -0700
+Date: Wed, 9 Dec 2020 08:44:33 -0700
 Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
  properties flag set
 In-Reply-To: <20201209125223.49096d50@carbon>
@@ -13,7 +13,7 @@ References: <20201204102901.109709-1-marekx.majtyka@intel.com>
  <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
  <20201209095454.GA36812@ranger.igk.intel.com>
  <20201209125223.49096d50@carbon>
-Message-ID: <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
+Message-ID: <6913010d-2fd6-6713-94e9-8f5b8ad4b708@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,25 +21,12 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 12/9/20 4:52 AM, Jesper Dangaard Brouer wrote:
->>> still load and either share queues across multiple cores or restirct
->>> down to a subset of CPUs.  
->>
->> And that's the missing piece of logic, I suppose.
->>
->>> Do you need 192 cores for a 10gbps nic, probably not.  
->>
->> Let's hear from Jesper :p
-> 
-> LOL - of-cause you don't need 192 cores.  With XDP I will claim that
-> you only need 2 cores (with high GHz) to forward 10gbps wirespeed small
-> packets.
+> But I have redesigned the ndo_xdp_xmit call to take a bulk of packets
+> (up-to 16) so it should not be a problem to solve this by sharing
+> TX-queue and talking a lock per 16 packets.  I still recommend that,
+> for fallback case,  you allocated a number a TX-queue and distribute
+> this across CPUs to avoid hitting a congested lock (above measurements
+> are the optimal non-congested atomic lock operation)
 
-You don't need 192 for 10G on Rx. However, if you are using XDP_REDIRECT
-from VM tap devices the next device (presumably the host NIC) does need
-to be able to handle the redirect.
-
-My personal experience with this one is mlx5/ConnectX4-LX with a limit
-of 63 queues and a server with 96 logical cpus. If the vhost thread for
-the tap device runs on a cpu that does not have an XDP TX Queue, the
-packet is dropped. This is a really bizarre case to debug as some
-packets go out fine while others are dropped.
+I have been meaning to ask you why 16 for the XDP batching? If the
+netdev budget is 64, why not something higher like 32 or 64?
