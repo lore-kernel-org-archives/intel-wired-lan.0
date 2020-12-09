@@ -1,204 +1,69 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 9 Dec 2020 15:44:22 +0100
-Subject: [Intel-wired-lan] [PATCH v3 0/7] Improve s0ix flows for systems
- i219LM
-In-Reply-To: <CAKgT0UebNROCeAyyg0Jf-pTfLDd-oNyu2Lo-gkZKWk=nOAYL8g@mail.gmail.com>
-References: <20201204200920.133780-1-mario.limonciello@dell.com>
- <d0f7e565-05e1-437e-4342-55eb73daa907@redhat.com>
- <DM6PR19MB2636A4097B68DBB253C416D8FACE0@DM6PR19MB2636.namprd19.prod.outlook.com>
- <383daf0d-8a9b-c614-aded-6e816f530dcd@intel.com>
- <e7d57370-e35e-a9e6-2dd9-aa7855c15650@redhat.com>
- <CAKgT0UebNROCeAyyg0Jf-pTfLDd-oNyu2Lo-gkZKWk=nOAYL8g@mail.gmail.com>
-Message-ID: <f02a02b7-16e7-89e9-f7ca-b6554ef5503e@redhat.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 9 Dec 2020 16:58:19 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] fix possible array overflow on
+ receiving too many fragments for a packet
+In-Reply-To: <20201208040638.40627-1-ruc_zhangxiaohui@163.com>
+References: <20201208040638.40627-1-ruc_zhangxiaohui@163.com>
+Message-ID: <202012091653.tY6HS6tK-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Hi Xiaohui,
 
-On 12/8/20 5:14 PM, Alexander Duyck wrote:
-> On Tue, Dec 8, 2020 at 1:30 AM Hans de Goede <hdegoede@redhat.com> wrote:
->>
->> Hi,
->>
->> On 12/8/20 6:08 AM, Neftin, Sasha wrote:
->>> On 12/7/2020 17:41, Limonciello, Mario wrote:
->>>>> First of all thank you for working on this.
->>>>>
->>>>> I must say though that I don't like the approach taken here very
->>>>> much.
->>>>>
->>>>> This is not so much a criticism of this series as it is a criticism
->>>>> of the earlier decision to simply disable s0ix on all devices
->>>>> with the i219-LM + and active ME.
->>>>
->>>> I was not happy with that decision either as it did cause regressions
->>>> on all of the "named" Comet Lake laptops that were in the market at
->>>> the time.  The "unnamed" ones are not yet released, and I don't feel
->>>> it's fair to call it a regression on "unreleased" hardware.
->>>>
->>>>>
->>>>> AFAIK there was a perfectly acceptable patch to workaround those
->>>>> broken devices, which increased a timeout:
->>>>> https://patchwork.ozlabs.org/project/intel-wired-
->>>>> lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
->>>>>
->>>>> That patch was nacked because it increased the resume time
->>>>> *on broken devices*.
->>>>>
->>> Officially CSME/ME not POR for Linux and we haven't interface to the ME. Nobody can tell how long (and why) ME will hold PHY access semaphore ant just increasing the resuming time (ULP configure) won't be solve the problem. This is not reliable approach.
->>> I would agree users can add ME system on their responsibilities.
->>
->> It is not clear to me what you are trying to say here.
-> 
-> Based on the earlier thread you had referenced and his comment here it
-> sounds like while adding time will work for most cases, it doesn't
-> solve it for all cases.
+Thank you for the patch! Perhaps something to improve:
 
-AFAIK there are 0 documented cases where the suspend/resume issue
-continues to be a problem after the timeout has been increased.
+[auto build test WARNING on tnguy-next-queue/dev-queue]
+[also build test WARNING on linus/master sparc-next/master v5.10-rc7 next-20201208]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-If you know of actual documented cases (rather then this just being
-a theoretical problem), then please provide links to those cases.
+url:    https://github.com/0day-ci/linux/commits/Xiaohui-Zhang/fix-possible-array-overflow-on-receiving-too-many-fragments-for-a-packet/20201209-010457
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+config: riscv-allyesconfig (attached as .config)
+compiler: riscv64-linux-gcc (GCC) 9.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/4bc4508ab14b72993c4e9a927f8e82a1dfdcf39c
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Xiaohui-Zhang/fix-possible-array-overflow-on-receiving-too-many-fragments-for-a-packet/20201209-010457
+        git checkout 4bc4508ab14b72993c4e9a927f8e82a1dfdcf39c
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=riscv 
 
-> The problem is as a vendor you are usually
-> stuck looking for a solution that will work for all cases which can
-> lead to things like having to drop features because they can be
-> problematic for a few cases.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-I disagree, there will/might always be some broken corner case
-laptop-model / hw-design out there on which a feature breaks. Simply
-disabling all features which might cause problems in "a few cases"
-would mean that we pretty much have to disable over half the features
-in the kernel.
+All warnings (new ones prefixed by >>):
 
-Take for example SATA NCQ (command queing) this is know to not work
-on some devices, up to the point of where with some buggy firmwares
-it may cause full systems hangs and/or data-corruption. So this is
-a much bigger problem then the "system won't suspend" issue we
-are talking about here. Still the ATA subsys maintainers have enabled
-this by default because it is an important feature to have and they
-are using a deny-list to avoid enabling this on known broken hardware;
-and yes every know and then we need to add a new model to the deny-list.
+   In file included from include/linux/ip.h:16,
+                    from drivers/net/ethernet/pensando/ionic/ionic_txrx.c:4:
+   drivers/net/ethernet/pensando/ionic/ionic_txrx.c: In function 'ionic_rx_frags':
+>> include/linux/skbuff.h:1431:53: warning: 'skb' is used uninitialized in this function [-Wuninitialized]
+    1431 | #define skb_shinfo(SKB) ((struct skb_shared_info *)(skb_end_pointer(SKB)))
+         |                                                     ^~~~~~~~~~~~~~~
+   drivers/net/ethernet/pensando/ionic/ionic_txrx.c:76:18: note: 'skb' was declared here
+      76 |  struct sk_buff *skb;
+         |                  ^~~
 
-And the same for SATA ALPM support (a power-management feature like s0ix)
-that is enabled by default too, combined with a deny-list.
-I'm very familiar with the ALPM case since I pushed of it being
-enabled by default and I've done most of the maintenance work
-of the deny-list since it was enabled by default.
+vim +/skb +1431 include/linux/skbuff.h
 
-The kernel is full of this pattern, we don't disable an important
-feature (and power-management is important) just because of this
-causing issues in "a few cases". And again you say "a few cases"
-but I know of 0 documented cases where this issue is still a problem
-after bumping the timeout.
+4305b541357ddbd Arnaldo Carvalho de Melo 2007-04-19  1429  
+^1da177e4c3f415 Linus Torvalds           2005-04-16  1430  /* Internal */
+4305b541357ddbd Arnaldo Carvalho de Melo 2007-04-19 @1431  #define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
+^1da177e4c3f415 Linus Torvalds           2005-04-16  1432  
 
->> Are you saying that you insist on keeping the e1000e_check_me check and
->> thus needlessly penalizing 100s of laptops models with higher
->> power-consumption unless these 100s of laptops are added manually
->> to an allow list for this?
->>
->> I'm sorry but that is simply unacceptable, the maintenance burden
->> of that is just way too high.
-> 
-> Think about this the other way though. If it is enabled and there are
-> cases where adding a delay doesn't resolve it then it still doesn't
-> really solve the issue does it?
-
-Again AFAIK that is a theoretical "If it ..." and even if it is not
-theoretical, then we can add a deny-list. Maintaining a deny list for
-"a few cases" being broken is a lot easier then maintaining an allow
-list for allother hardware out there.
-
-Let me put it this way, the allow-list will be orders of magnitude
-longer then the deny lists. Which list would you rather manually
-keep up2date?
-
-
->> Testing on the models where the timeout issue was first hit has
->> shown that increasing the timeout does actually fix it on those
->> models. Sure in theory the ME on some buggy model could hold the
->> semaphore even longer, but then the right thing would be to
->> have a deny-list for s0ix where we can add those buggy models
->> (none of which we have encountered sofar). Just like we have
->> denylist for buggy hw in other places in the kernel.
-> 
-> This would actually have a higher maintenance burden then just
-> disabling the feature. Having to individually test for and deny-list
-> every one-off system with this bad configuration would be a pretty
-> significant burden. That also implies somebody would have access to
-> such systems and that is not normally the case. Even Intel doesn't
-> have all possible systems that would include this NIC.
-> 
->> Maintaining an ever growing allow list for the *theoretical*
->> case of encountering a model where things do not work with
->> the increased timeout is not a workable and this not an
->> acceptable solution.
-> 
-> I'm not a fan of the allow-list either, but it is preferable to a
-> deny-list where you have to first trigger the bug before you realize
-> it is there.
-
-IIRC, if the bug is there the system does not suspend, and the e1000e
-driver logs an error that it is the culprit. So this is very easy to spot /
-detect by end users when they hit it.
-
-Again the kernel is full of deny lists to disable some features
-on broken hardware, with sometimes hitting the buggy/broken hw
-scenario having much worse consequences. Yet this is how this is
-done everywhere.
-
-The e1000e driver really is not all that special that it should
-get an exception to how this is normally done.
-
-> Ideally there should be another solution in which the ME
-> could somehow set a flag somewhere in the hardware to indicate that it
-> is alive and the driver could read that order to determine if the ME
-> is actually alive and can skip this workaround. Then this could all be
-> avoided and it can be safely assumed the system is working correctly.
-> 
->> The initial addition of the e1000e_check_me check instead
->> of just going with the confirmed fix of bumping the timeout
->> was already highly controversial and should IMHO never have
->> been done.
-> 
-> How big was the sample size for the "confirmed" fix? How many
-> different vendors were there within the mix? The problem is while it
-> may have worked for the case you encountered you cannot say with
-> certainty that it worked in all cases unless you had samples of all
-> the different hardware out there.
-> 
->> Combining this with an ever-growing allow-list on which every
->> new laptop model needs to be added separately + a new
->> "s0ix-enabled" ethertool flag, which existence is basically
->> an admission that the allow-list approach is flawed goes
->> from controversial to just plain not acceptable.
-> 
-> I don't view this as problematic, however this is some overhead to it.
-> One thing I don't know is if anyone has looked at is if the issue only
-> applies to a few specific system vendors. Currently the allow-list is
-> based on the subdevice ID. One thing we could look at doing is
-> enabling it based on the subvendor ID in which case we could
-> allow-list in large swaths of hardware with certain trusted vendors.
-> The only issue is that it pulls in any future parts as well so it puts
-> the onus on that manufacturer to avoid misconfiguring things in the
-> future.
-
-If we go this route, we will likely get Dell, Lenovo (which had
-the issue without the increased timeout) and maybe HP on the
-allow-list, probably with a finer grained deny-list on top to
-opt out on some models from these vendors where things turn
-out to be buggy after all.
-
-This:
-
-1. Still requires a deny-list on top (at least this is very likely)
-2. Leaves users of all but the 3 big vendors in the cold which
-really is not a nice way to deal with this.
-
-Regards,
-
-Hans
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 67660 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201209/92687b85/attachment-0001.bin>
