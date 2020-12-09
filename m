@@ -1,78 +1,154 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Tue, 08 Dec 2020 22:03:51 -0800
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <20201207230755.GB27205@ranger.igk.intel.com>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com>
- <878sad933c.fsf@toke.dk>
- <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
- <20201207135433.41172202@carbon>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <20201207230755.GB27205@ranger.igk.intel.com>
-Message-ID: <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 09 Dec 2020 15:59:06 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 5ba3417f84592f15c632f5f05e0d28093b442982
+Message-ID: <5fd083ca.wgMnMhZaJjUBRYUe%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Mon, Dec 07, 2020 at 12:52:22PM -0800, John Fastabend wrote:
-> > Jesper Dangaard Brouer wrote:
-> > > On Fri, 4 Dec 2020 16:21:08 +0100
-> > > Daniel Borkmann <daniel@iogearbox.net> wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: 5ba3417f84592f15c632f5f05e0d28093b442982  iavf: fix double-release of rtnl_lock
 
-[...] pruning the thread to answer Jesper.
+elapsed time: 724m
 
-> > > 
-> > > Use-case(2): Disable XDP_TX on a driver to save hardware TX-queue
-> > > resources, as the use-case is only DDoS.  Today we have this problem
-> > > with the ixgbe hardware, that cannot load XDP programs on systems with
-> > > more than 192 CPUs.
-> > 
-> > The ixgbe issues is just a bug or missing-feature in my opinion.
-> 
-> Not a bug, rather HW limitation?
+configs tested: 125
+configs skipped: 2
 
-Well hardware has some max queue limit. Likely <192 otherwise I would
-have kept doing queue per core on up to 192. But, ideally we should
-still load and either share queues across multiple cores or restirct
-down to a subset of CPUs. Do you need 192 cores for a 10gbps nic,
-probably not. Yes, it requires some extra care, but should be doable
-if someone cares enough. I gather current limitation/bug is because
-no one has that configuration and/or has complained loud enough.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> > 
-> > I think we just document that XDP_TX consumes resources and if users
-> > care they shouldn't use XD_TX in programs and in that case hardware
-> > should via program discovery not allocate the resource. This seems
-> > cleaner in my opinion then more bits for features.
-> 
-> But what if I'm with some limited HW that actually has a support for XDP
-> and I would like to utilize XDP_TX?
-> 
-> Not all drivers that support XDP consume Tx resources. Recently igb got
-> support and it shares Tx queues between netstack and XDP.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                          g5_defconfig
+powerpc                     skiroot_defconfig
+sh                   rts7751r2dplus_defconfig
+sh                     magicpanelr2_defconfig
+powerpc                       maple_defconfig
+arm                             rpc_defconfig
+parisc                generic-32bit_defconfig
+arm                   milbeaut_m10v_defconfig
+powerpc                        warp_defconfig
+sh                          lboxre2_defconfig
+sh                         apsh4a3a_defconfig
+x86_64                           alldefconfig
+powerpc                         wii_defconfig
+powerpc                     mpc83xx_defconfig
+mips                     cu1830-neo_defconfig
+sh                           se7751_defconfig
+arm                            lart_defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                           se7721_defconfig
+mips                      bmips_stb_defconfig
+arm                          ep93xx_defconfig
+mips                  decstation_64_defconfig
+m68k                        mvme16x_defconfig
+arc                         haps_hs_defconfig
+c6x                         dsk6455_defconfig
+c6x                        evmc6472_defconfig
+mips                       lemote2f_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                ecovec24-romimage_defconfig
+arm                      pxa255-idp_defconfig
+arm                         nhk8815_defconfig
+powerpc                      mgcoge_defconfig
+arc                            hsdk_defconfig
+xtensa                              defconfig
+powerpc                      pmac32_defconfig
+arm                            mmp2_defconfig
+powerpc                       holly_defconfig
+arm                           h5000_defconfig
+sh                            migor_defconfig
+mips                        bcm63xx_defconfig
+sh                           se7724_defconfig
+powerpc64                           defconfig
+arm                           omap1_defconfig
+h8300                               defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20201208
+x86_64               randconfig-a006-20201208
+x86_64               randconfig-a005-20201208
+x86_64               randconfig-a001-20201208
+x86_64               randconfig-a002-20201208
+x86_64               randconfig-a003-20201208
+i386                 randconfig-a004-20201208
+i386                 randconfig-a005-20201208
+i386                 randconfig-a001-20201208
+i386                 randconfig-a002-20201208
+i386                 randconfig-a006-20201208
+i386                 randconfig-a003-20201208
+i386                 randconfig-a013-20201208
+i386                 randconfig-a014-20201208
+i386                 randconfig-a011-20201208
+i386                 randconfig-a015-20201208
+i386                 randconfig-a012-20201208
+i386                 randconfig-a016-20201208
+i386                 randconfig-a013-20201209
+i386                 randconfig-a014-20201209
+i386                 randconfig-a011-20201209
+i386                 randconfig-a015-20201209
+i386                 randconfig-a012-20201209
+i386                 randconfig-a016-20201209
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-Makes sense to me.
+clang tested configs:
+x86_64               randconfig-a016-20201208
+x86_64               randconfig-a012-20201208
+x86_64               randconfig-a013-20201208
+x86_64               randconfig-a014-20201208
+x86_64               randconfig-a015-20201208
+x86_64               randconfig-a011-20201208
 
-> 
-> I feel like we should have a sort-of best effort approach in case we
-> stumble upon the XDP_TX in prog being loaded and query the driver if it
-> would be able to provide the Tx resources on the current system, given
-> that normally we tend to have a queue per core.
-
-Why do we need to query? I guess you want some indication from the
-driver its not going to be running in the ideal NIC configuraition?
-I guess printing a warning would be the normal way to show that. But,
-maybe your point is you want something easier to query?
-
-> 
-> In that case igb would say yes, ixgbe would say no and prog would be
-> rejected.
-
-I think the driver should load even if it can't meet the queue per
-core quota. Refusing to load at all or just dropping packets on the
-floor is not very friendly. I think we agree on that point.
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
