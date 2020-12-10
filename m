@@ -1,8 +1,8 @@
 From: David Ahern <dsahern@gmail.com>
-Date: Wed, 9 Dec 2020 20:34:48 -0700
+Date: Thu, 10 Dec 2020 08:30:39 -0700
 Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
  properties flag set
-In-Reply-To: <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
+In-Reply-To: <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
 References: <20201204102901.109709-1-marekx.majtyka@intel.com>
  <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
  <20201204124618.GA23696@ranger.igk.intel.com>
@@ -15,25 +15,41 @@ References: <20201204102901.109709-1-marekx.majtyka@intel.com>
  <20201209125223.49096d50@carbon>
  <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
  <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
-Message-ID: <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+ <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+ <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
+Message-ID: <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/9/20 10:15 AM, Saeed Mahameed wrote:
->> My personal experience with this one is mlx5/ConnectX4-LX with a
->> limit
+On 12/9/20 11:48 PM, Saeed Mahameed wrote:
+> On Wed, 2020-12-09 at 20:34 -0700, David Ahern wrote:
+>> On 12/9/20 10:15 AM, Saeed Mahameed wrote:
+>>>> My personal experience with this one is mlx5/ConnectX4-LX with a
+>>>> limit
+>>>
+>>> This limit was removed from mlx5
+>>> https://patchwork.ozlabs.org/project/netdev/patch/20200107191335.12272-5-saeedm at mellanox.com/
+>>> Note: you still need to use ehttool to increase from 64 to 128 or
+>>> 96 in
+>>> your case.
+>>>
+>>
+>> I asked you about that commit back in May:
+>>
 > 
-> This limit was removed from mlx5
-> https://patchwork.ozlabs.org/project/netdev/patch/20200107191335.12272-5-saeedm at mellanox.com/
-> Note: you still need to use ehttool to increase from 64 to 128 or 96 in
-> your case.
+> :/, sorry i missed this email, must have been the mlnx nvidia email
+> transition.
+> 
+>> https://lore.kernel.org/netdev/198081c2-cb0d-e1d5-901c-446b63c36706 at gmail.com/
+>>
+>> As noted in the thread, it did not work for me.
+> 
+> Still relevant ? I might need to get you some tools to increase #msix
+> in Firmware.
 > 
 
-I asked you about that commit back in May:
-
-https://lore.kernel.org/netdev/198081c2-cb0d-e1d5-901c-446b63c36706 at gmail.com/
-
-As noted in the thread, it did not work for me.
+not for me at the moment, but it would be good to document what a user
+needs to do - especially if it involves vendor specific tools and steps.
