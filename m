@@ -1,77 +1,53 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 10 Dec 2020 08:42:09 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Expose the NVM version
-Message-ID: <20201210064209.1030243-1-sasha.neftin@intel.com>
+From: Saeed Mahameed <saeed@kernel.org>
+Date: Wed, 09 Dec 2020 22:48:01 -0800
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
+ <20201204124618.GA23696@ranger.igk.intel.com>
+ <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+ <20201207135433.41172202@carbon>
+ <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
+ <20201207230755.GB27205@ranger.igk.intel.com>
+ <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
+ <20201209095454.GA36812@ranger.igk.intel.com>
+ <20201209125223.49096d50@carbon>
+ <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
+ <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
+ <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+Message-ID: <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Expose the NVM map version via drvinfo in ethtool
-NVM image version is reported as firmware version for i225 device
-Minor typo fix - remove space
+On Wed, 2020-12-09 at 20:34 -0700, David Ahern wrote:
+> On 12/9/20 10:15 AM, Saeed Mahameed wrote:
+> > > My personal experience with this one is mlx5/ConnectX4-LX with a
+> > > limit
+> > 
+> > This limit was removed from mlx5
+> > https://patchwork.ozlabs.org/project/netdev/patch/20200107191335.12272-5-saeedm at mellanox.com/
+> > Note: you still need to use ehttool to increase from 64 to 128 or
+> > 96 in
+> > your case.
+> > 
+> 
+> I asked you about that commit back in May:
+> 
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc.h         |  1 +
- drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 16 ++++++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+:/, sorry i missed this email, must have been the mlnx nvidia email
+transition.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index cbf85dea8b2e..29be8833956a 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -221,6 +221,7 @@ struct igc_adapter {
- 	ktime_t ptp_reset_start; /* Reset time in clock mono */
- 
- 	struct bpf_prog *xdp_prog;
-+	char fw_version[16];
- };
- 
- void igc_up(struct igc_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index efddb9012439..882e1e272953 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -160,6 +160,7 @@
- #define IGC_NVM_RW_REG_START	1    /* Start operation */
- #define IGC_NVM_RW_ADDR_SHIFT	2    /* Shift to the address bits */
- #define IGC_NVM_POLL_READ	0    /* Flag for polling for read complete */
-+#define IGC_NVM_DEV_STARTER	5    /* Dev_starter Version */
- 
- /* NVM Word Offsets */
- #define NVM_CHECKSUM_REG		0x003F
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 29da2710b500..56997de15a1e 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -129,10 +129,22 @@ static void igc_ethtool_get_drvinfo(struct net_device *netdev,
- 				    struct ethtool_drvinfo *drvinfo)
- {
- 	struct igc_adapter *adapter = netdev_priv(netdev);
-+	struct igc_hw *hw = &adapter->hw;
-+	u16 nvm_version = 0;
-+
-+	strlcpy(drvinfo->driver, igc_driver_name, sizeof(drvinfo->driver));
-+
-+	/* NVM image version is reported as firmware version for i225 device */
-+	hw->nvm.ops.read(hw, IGC_NVM_DEV_STARTER, 1, &nvm_version);
-+
-+	scnprintf(adapter->fw_version,
-+		  sizeof(adapter->fw_version),
-+		  "%x",
-+		  nvm_version);
- 
--	strlcpy(drvinfo->driver,  igc_driver_name, sizeof(drvinfo->driver));
-+	strlcpy(drvinfo->fw_version, adapter->fw_version,
-+		sizeof(drvinfo->fw_version));
- 
--	/* add fw_version here */
- 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
- 		sizeof(drvinfo->bus_info));
- 
--- 
-2.25.1
+> https://lore.kernel.org/netdev/198081c2-cb0d-e1d5-901c-446b63c36706 at gmail.com/
+> 
+> As noted in the thread, it did not work for me.
+
+Still relevant ? I might need to get you some tools to increase #msix
+in Firmware.
+
+
+
 
