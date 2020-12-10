@@ -1,53 +1,145 @@
-From: Saeed Mahameed <saeed@kernel.org>
-Date: Wed, 09 Dec 2020 22:48:01 -0800
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
- <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
- <20201207135433.41172202@carbon>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <20201207230755.GB27205@ranger.igk.intel.com>
- <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
- <20201209095454.GA36812@ranger.igk.intel.com>
- <20201209125223.49096d50@carbon>
- <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
- <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
- <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
-Message-ID: <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 10 Dec 2020 18:58:26 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ cc9da1db426e5b71f2d1cb1a73db8064bf0111ad
+Message-ID: <5fd1ff52.4eJSYWwKUNhigR5m%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2020-12-09 at 20:34 -0700, David Ahern wrote:
-> On 12/9/20 10:15 AM, Saeed Mahameed wrote:
-> > > My personal experience with this one is mlx5/ConnectX4-LX with a
-> > > limit
-> > 
-> > This limit was removed from mlx5
-> > https://patchwork.ozlabs.org/project/netdev/patch/20200107191335.12272-5-saeedm at mellanox.com/
-> > Note: you still need to use ehttool to increase from 64 to 128 or
-> > 96 in
-> > your case.
-> > 
-> 
-> I asked you about that commit back in May:
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: cc9da1db426e5b71f2d1cb1a73db8064bf0111ad  iavf: fix double-release of rtnl_lock
 
-:/, sorry i missed this email, must have been the mlnx nvidia email
-transition.
+elapsed time: 721m
 
-> https://lore.kernel.org/netdev/198081c2-cb0d-e1d5-901c-446b63c36706 at gmail.com/
-> 
-> As noted in the thread, it did not work for me.
+configs tested: 116
+configs skipped: 2
 
-Still relevant ? I might need to get you some tools to increase #msix
-in Firmware.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                          kfr2r09_defconfig
+x86_64                           alldefconfig
+arm                     am200epdkit_defconfig
+arm                  colibri_pxa270_defconfig
+arm                          lpd270_defconfig
+m68k                         apollo_defconfig
+powerpc                     tqm8555_defconfig
+m68k                        mvme16x_defconfig
+mips                        omega2p_defconfig
+ia64                        generic_defconfig
+um                             i386_defconfig
+mips                         tb0219_defconfig
+mips                  maltasmvp_eva_defconfig
+mips                     cu1000-neo_defconfig
+powerpc                     rainier_defconfig
+arm                           viper_defconfig
+arm                          pcm027_defconfig
+mips                          ath25_defconfig
+powerpc                 mpc834x_mds_defconfig
+arm                        oxnas_v6_defconfig
+s390                                defconfig
+arm                        spear6xx_defconfig
+arm                         s3c6400_defconfig
+mips                         db1xxx_defconfig
+mips                            ar7_defconfig
+arm                       versatile_defconfig
+powerpc                        icon_defconfig
+powerpc                      tqm8xx_defconfig
+arc                              allyesconfig
+arm                       imx_v6_v7_defconfig
+arm                           tegra_defconfig
+arm                        multi_v5_defconfig
+mips                          ath79_defconfig
+powerpc                     redwood_defconfig
+powerpc                 linkstation_defconfig
+mips                           mtx1_defconfig
+sh                             shx3_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201209
+i386                 randconfig-a005-20201209
+i386                 randconfig-a001-20201209
+i386                 randconfig-a002-20201209
+i386                 randconfig-a006-20201209
+i386                 randconfig-a003-20201209
+i386                 randconfig-a001-20201210
+i386                 randconfig-a004-20201210
+i386                 randconfig-a003-20201210
+i386                 randconfig-a002-20201210
+i386                 randconfig-a005-20201210
+i386                 randconfig-a006-20201210
+x86_64               randconfig-a016-20201209
+x86_64               randconfig-a012-20201209
+x86_64               randconfig-a013-20201209
+x86_64               randconfig-a014-20201209
+x86_64               randconfig-a015-20201209
+x86_64               randconfig-a011-20201209
+i386                 randconfig-a013-20201209
+i386                 randconfig-a014-20201209
+i386                 randconfig-a011-20201209
+i386                 randconfig-a015-20201209
+i386                 randconfig-a012-20201209
+i386                 randconfig-a016-20201209
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
+clang tested configs:
+x86_64               randconfig-a004-20201209
+x86_64               randconfig-a006-20201209
+x86_64               randconfig-a005-20201209
+x86_64               randconfig-a001-20201209
+x86_64               randconfig-a002-20201209
+x86_64               randconfig-a003-20201209
 
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
