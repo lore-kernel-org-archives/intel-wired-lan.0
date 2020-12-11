@@ -1,45 +1,40 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Fri, 11 Dec 2020 17:49:55 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 7/8] ice: skip NULL check against
- XDP prog in ZC path
+Date: Fri, 11 Dec 2020 17:49:56 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 8/8] i40e,
+ xsk: Simplify the do-while allocation loop
 In-Reply-To: <20201211164956.59628-1-maciej.fijalkowski@intel.com>
 References: <20201211164956.59628-1-maciej.fijalkowski@intel.com>
-Message-ID: <20201211164956.59628-8-maciej.fijalkowski@intel.com>
+Message-ID: <20201211164956.59628-9-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Whole zero-copy variant of clean Rx irq is executed when xsk_pool is
-attached to rx_ring and it can happen only when XDP program is present
-on interface. Therefore it is safe to assume that program is always
-!NULL and there is no need for checking it in ice_run_xdp_zc.
+From: Bj?rn T?pel <bjorn.topel@intel.com>
 
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Fold the count decrement into the while-statement.
+
+Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 797886524054..9aea97ca4a04 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -514,11 +514,10 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
- 	u32 act;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index bfa84bfb0488..679200d94ef8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -215,9 +215,7 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 			bi = i40e_rx_bi(rx_ring, 0);
+ 			ntu = 0;
+ 		}
+-
+-		count--;
+-	} while (count);
++	} while (--count);
  
- 	rcu_read_lock();
-+	/* ZC patch is enabled only when XDP program is set,
-+	 * so here it can not be NULL
-+	 */
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
--	if (!xdp_prog) {
--		rcu_read_unlock();
--		return ICE_XDP_PASS;
--	}
- 
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
- 	switch (act) {
+ no_buffers:
+ 	if (rx_ring->next_to_use != ntu)
 -- 
 2.20.1
 
