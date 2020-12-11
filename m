@@ -1,59 +1,42 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 11 Dec 2020 15:57:12 +0100
-Subject: [Intel-wired-lan] [PATCH net 2/2] i40e,
- xsk: clear the status bits for the next_to_use descriptor
-In-Reply-To: <20201211145712.72957-1-bjorn.topel@gmail.com>
-References: <20201211145712.72957-1-bjorn.topel@gmail.com>
-Message-ID: <20201211145712.72957-3-bjorn.topel@gmail.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Fri, 11 Dec 2020 17:49:48 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 0/8] i40e/ice cleanups
+Message-ID: <20201211164956.59628-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+Hi,
 
-On the Rx side, the next_to_use index points to the next item in the
-HW ring to be refilled/allocated, and next_to_clean points to the next
-item to potentially be processed.
+This series is mostly about the cleanups on Rx (ZC/normal) paths both in
+ice and i40e drivers. Things that stand out are the simplifactions of
+ice_change_mtu and i40e_xdp_setup.
 
-When the HW Rx ring is fully refilled, i.e. no packets has been
-processed, the next_to_use will be next_to_clean - 1. When the ring is
-fully processed next_to_clean will be equal to next_to_use. The latter
-case is where a bug is triggered.
+Thanks!
 
-If the next_to_use bits are not cleared, and the "fully processed"
-state is entered, a stale descriptor can be processed.
+Bj?rn T?pel (1):
+  i40e, xsk: Simplify the do-while allocation loop
 
-The skb-path correctly clear the status bit for the next_to_use
-descriptor, but the AF_XDP zero-copy path did not do that.
+Maciej Fijalkowski (7):
+  i40e: drop redundant check when setting xdp prog
+  i40e: drop misleading function comments
+  i40e: adjust i40e_is_non_eop
+  ice: simplify ice_run_xdp
+  ice: move skb pointer from rx_buf to rx_ring
+  ice: remove redundant checks in ice_change_mtu
+  ice: skip NULL check against XDP prog in ZC path
 
-This change adds the status bits clearing of the next_to_use
-descriptor.
+ drivers/net/ethernet/intel/i40e/i40e_main.c |  3 --
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 56 +++++----------------
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c  |  4 +-
+ drivers/net/ethernet/intel/ice/ice_main.c   |  9 ----
+ drivers/net/ethernet/intel/ice/ice_txrx.c   | 43 +++++++---------
+ drivers/net/ethernet/intel/ice/ice_txrx.h   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c    |  7 ++-
+ 7 files changed, 34 insertions(+), 90 deletions(-)
 
-Fixes: 3b4f0b66c2b3 ("i40e, xsk: Migrate to new MEM_TYPE_XSK_BUFF_POOL")
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 567fd67e900e..e402c62eb313 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -219,8 +219,11 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
- 	} while (count);
- 
- no_buffers:
--	if (rx_ring->next_to_use != ntu)
-+	if (rx_ring->next_to_use != ntu) {
-+		/* clear the status bits for the next_to_use descriptor */
-+		rx_desc->wb.qword1.status_error_len = 0;
- 		i40e_release_rx_desc(rx_ring, ntu);
-+	}
- 
- 	return ok;
- }
 -- 
-2.27.0
+2.20.1
 
