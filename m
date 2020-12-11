@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 11 Dec 2020 15:57:11 +0100
-Subject: [Intel-wired-lan] [PATCH net 1/2] ice,
+Date: Fri, 11 Dec 2020 15:57:12 +0100
+Subject: [Intel-wired-lan] [PATCH net 2/2] i40e,
  xsk: clear the status bits for the next_to_use descriptor
 In-Reply-To: <20201211145712.72957-1-bjorn.topel@gmail.com>
 References: <20201211145712.72957-1-bjorn.topel@gmail.com>
-Message-ID: <20201211145712.72957-2-bjorn.topel@gmail.com>
+Message-ID: <20201211145712.72957-3-bjorn.topel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -31,28 +31,28 @@ descriptor, but the AF_XDP zero-copy path did not do that.
 This change adds the status bits clearing of the next_to_use
 descriptor.
 
-Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
+Fixes: 3b4f0b66c2b3 ("i40e, xsk: Migrate to new MEM_TYPE_XSK_BUFF_POOL")
 Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 5 ++++-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 797886524054..98101a8e2952 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -446,8 +446,11 @@ bool ice_alloc_rx_bufs_zc(struct ice_ring *rx_ring, u16 count)
- 		}
- 	} while (--count);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 567fd67e900e..e402c62eb313 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -219,8 +219,11 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 	} while (count);
  
+ no_buffers:
 -	if (rx_ring->next_to_use != ntu)
 +	if (rx_ring->next_to_use != ntu) {
 +		/* clear the status bits for the next_to_use descriptor */
-+		rx_desc->wb.status_error0 = 0;
- 		ice_release_rx_desc(rx_ring, ntu);
++		rx_desc->wb.qword1.status_error_len = 0;
+ 		i40e_release_rx_desc(rx_ring, ntu);
 +	}
  
- 	return ret;
+ 	return ok;
  }
 -- 
 2.27.0
