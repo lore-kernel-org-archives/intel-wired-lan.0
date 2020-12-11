@@ -1,59 +1,189 @@
-From: =?unknown-8bit?q?Bj=C3=B6rn_T=C3=B6pel?= <bjorn.topel@gmail.com>
-Date: Fri, 11 Dec 2020 09:54:10 +0100
-Subject: [Intel-wired-lan] [PATCH v2 net-next] ice,
- xsk: Move Rx allocation out of while-loop
-Message-ID: <20201211085410.59350-1-bjorn.topel@gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 11 Dec 2020 20:09:45 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 48d91eba0c7d674de08e9c66fcd67a2b742f8b7a
+Message-ID: <5fd36189.DEMmGgxmmPp0r/2x%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bj?rn T?pel <bjorn.topel@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: 48d91eba0c7d674de08e9c66fcd67a2b742f8b7a  ixgbe: aggregate all receive errors through netdev's rx_errors
 
-Instead doing the check for allocation in each loop, move it outside
-the while loop and do it every NAPI loop.
+elapsed time: 720m
 
-This change boosts the xdpsock rxdrop scenario with 15% more
-packets-per-second.
+configs tested: 160
+configs skipped: 2
 
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Bj?rn T?pel <bjorn.topel@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                       omap2plus_defconfig
+mips                         db1xxx_defconfig
+powerpc                      cm5200_defconfig
+mips                        maltaup_defconfig
+powerpc                     skiroot_defconfig
+mips                        workpad_defconfig
+arm                        shmobile_defconfig
+powerpc                     ep8248e_defconfig
+arm                          pcm027_defconfig
+powerpc                 mpc836x_mds_defconfig
+mips                         bigsur_defconfig
+powerpc                 canyonlands_defconfig
+mips                           ci20_defconfig
+m68k                                defconfig
+xtensa                  nommu_kc705_defconfig
+arc                        vdk_hs38_defconfig
+sh                           sh2007_defconfig
+powerpc                     tqm8560_defconfig
+arm                           viper_defconfig
+arm                          collie_defconfig
+sh                 kfr2r09-romimage_defconfig
+um                             i386_defconfig
+arc                            hsdk_defconfig
+mips                    maltaup_xpa_defconfig
+arm                          ep93xx_defconfig
+arm                            zeus_defconfig
+sh                           se7343_defconfig
+sh                            migor_defconfig
+mips                        vocore2_defconfig
+arm                         orion5x_defconfig
+xtensa                    xip_kc705_defconfig
+sh                          kfr2r09_defconfig
+sparc                            alldefconfig
+mips                        bcm47xx_defconfig
+microblaze                      mmu_defconfig
+arc                          axs103_defconfig
+arm                     eseries_pxa_defconfig
+arm                      tct_hammer_defconfig
+powerpc                    mvme5100_defconfig
+powerpc                      acadia_defconfig
+sh                             shx3_defconfig
+arm                          imote2_defconfig
+mips                           gcw0_defconfig
+sparc                            allyesconfig
+powerpc                     asp8347_defconfig
+arm                          simpad_defconfig
+powerpc                         ps3_defconfig
+sh                           se7705_defconfig
+sh                        sh7763rdp_defconfig
+sparc64                          alldefconfig
+h8300                               defconfig
+sh                          rsk7201_defconfig
+alpha                            alldefconfig
+sh                         microdev_defconfig
+arm                           u8500_defconfig
+powerpc                        icon_defconfig
+c6x                                 defconfig
+mips                          rb532_defconfig
+sh                          urquell_defconfig
+sh                          sdk7786_defconfig
+powerpc                      ppc64e_defconfig
+arm                         palmz72_defconfig
+sh                  sh7785lcr_32bit_defconfig
+arm                         shannon_defconfig
+sh                               j2_defconfig
+m68k                       m5249evb_defconfig
+arm                       versatile_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                 mpc834x_itx_defconfig
+sh                               alldefconfig
+m68k                          amiga_defconfig
+powerpc                      ppc40x_defconfig
+mips                           ip27_defconfig
+arm                          gemini_defconfig
+arm                      pxa255-idp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201209
+i386                 randconfig-a005-20201209
+i386                 randconfig-a001-20201209
+i386                 randconfig-a002-20201209
+i386                 randconfig-a006-20201209
+i386                 randconfig-a003-20201209
+i386                 randconfig-a001-20201210
+i386                 randconfig-a004-20201210
+i386                 randconfig-a003-20201210
+i386                 randconfig-a002-20201210
+i386                 randconfig-a005-20201210
+i386                 randconfig-a006-20201210
+x86_64               randconfig-a016-20201209
+x86_64               randconfig-a012-20201209
+x86_64               randconfig-a013-20201209
+x86_64               randconfig-a014-20201209
+x86_64               randconfig-a015-20201209
+x86_64               randconfig-a011-20201209
+i386                 randconfig-a013-20201209
+i386                 randconfig-a014-20201209
+i386                 randconfig-a011-20201209
+i386                 randconfig-a015-20201209
+i386                 randconfig-a012-20201209
+i386                 randconfig-a016-20201209
+i386                 randconfig-a014-20201210
+i386                 randconfig-a013-20201210
+i386                 randconfig-a012-20201210
+i386                 randconfig-a011-20201210
+i386                 randconfig-a016-20201210
+i386                 randconfig-a015-20201210
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20201209
+x86_64               randconfig-a006-20201209
+x86_64               randconfig-a005-20201209
+x86_64               randconfig-a001-20201209
+x86_64               randconfig-a002-20201209
+x86_64               randconfig-a003-20201209
+
 ---
-v2: Fixed spelling and reworked the commit message. (Maciej)
----
- drivers/net/ethernet/intel/ice/ice_xsk.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 797886524054..39757b4cf8f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -570,12 +570,6 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
- 		u16 vlan_tag = 0;
- 		u8 rx_ptype;
- 
--		if (cleaned_count >= ICE_RX_BUF_WRITE) {
--			failure |= ice_alloc_rx_bufs_zc(rx_ring,
--							cleaned_count);
--			cleaned_count = 0;
--		}
--
- 		rx_desc = ICE_RX_DESC(rx_ring, rx_ring->next_to_clean);
- 
- 		stat_err_bits = BIT(ICE_RX_FLEX_DESC_STATUS0_DD_S);
-@@ -642,6 +636,9 @@ int ice_clean_rx_irq_zc(struct ice_ring *rx_ring, int budget)
- 		ice_receive_skb(rx_ring, skb, vlan_tag);
- 	}
- 
-+	if (cleaned_count >= ICE_RX_BUF_WRITE)
-+		failure = !ice_alloc_rx_bufs_zc(rx_ring, cleaned_count);
-+
- 	ice_finalize_xdp_rx(rx_ring, xdp_xmit);
- 	ice_update_rx_ring_stats(rx_ring, total_rx_packets, total_rx_bytes);
- 
-
-base-commit: d9838b1d39283c1200c13f9076474c7624b8ec34
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
