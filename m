@@ -1,123 +1,161 @@
-From: Saeed Mahameed <saeed@kernel.org>
-Date: Thu, 10 Dec 2020 11:20:31 -0800
-Subject: [Intel-wired-lan] Explaining XDP redirect bulk size design
- (Was: [PATCH v2 bpf 1/5] net: ethtool: add xdp properties flag set)
-In-Reply-To: <20201210143211.2490f7f4@carbon>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
- <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
- <20201207135433.41172202@carbon>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <20201207230755.GB27205@ranger.igk.intel.com>
- <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
- <20201209095454.GA36812@ranger.igk.intel.com>
- <20201209125223.49096d50@carbon>
- <6913010d-2fd6-6713-94e9-8f5b8ad4b708@gmail.com>
- <20201210143211.2490f7f4@carbon>
-Message-ID: <e8d17e650f641be4aabf119753aa07cacfda2182.camel@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 11 Dec 2020 13:55:36 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ b08a73fbd797d2d71a9b4bb18b769d3113f90909
+Message-ID: <5fd309d8.Dar4YwQyfPd7tXLb%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2020-12-10 at 14:32 +0100, Jesper Dangaard Brouer wrote:
-> On Wed, 9 Dec 2020 08:44:33 -0700
-> David Ahern <dsahern@gmail.com> wrote:
-> 
-> > On 12/9/20 4:52 AM, Jesper Dangaard Brouer wrote:
-> > > But I have redesigned the ndo_xdp_xmit call to take a bulk of
-> > > packets
-> > > (up-to 16) so it should not be a problem to solve this by sharing
-> > > TX-queue and talking a lock per 16 packets.  I still recommend
-> > > that,
-> > > for fallback case,  you allocated a number a TX-queue and
-> > > distribute
-> > > this across CPUs to avoid hitting a congested lock (above
-> > > measurements
-> > > are the optimal non-congested atomic lock operation)  
-> > 
-> > I have been meaning to ask you why 16 for the XDP batching? If the
-> > netdev budget is 64, why not something higher like 32 or 64?
-> 
-> Thanks you for asking as there are multiple good reasons and
-> consideration for this 16 batch size.  Notice cpumap have batch size
-> 8,
-> which is also an explicit choice.  And AF_XDP went in the wrong
-> direction IMHO and I think have 256.  I designed this to be a choice
-> in
-> the map code, for the level of bulking it needs/wants.
-> 
-> The low level explanation is that these 8 and 16 batch sizes are
-> optimized towards cache sizes and Intel's Line-Fill-Buffer
-> (prefetcher
-> with 10 elements).  I'm betting on that memory backing these 8 or 16
-> packets have higher chance to remain/being in cache, and I can
-> prefetch
-> them without evicting them from cache again.  In some cases the
-> pointer
-> to these packets are queued into a ptr_ring, and it is more optimal
-> to
-> write cacheline sizes 1 (8 pointers) or 2 (16 pointers) into the
-> ptr_ring.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: b08a73fbd797d2d71a9b4bb18b769d3113f90909  iavf: fix double-release of rtnl_lock
 
-I've warned people about this once or twice on the mailing list, for
-example re-populating the rx ring, a common mistake is to use the napi
-budget, which has the exact side effects as you are explaining here
-Jesper !
+elapsed time: 721m
 
-these 8/16 numbers are used in more than one place in the stack, xdp,
-gro, hw buffer re-population, etc..
-how can we enforce such numbers and a uniform handling in all drivers?
-1. have a clear documentation ? well know defines, for people to copy?
+configs tested: 132
+configs skipped: 2
 
-2. for XDP we must keep track on the memory backing of the xdp bulked
-data as Jesper pointed out, so we always make sure whatever bulk-size
-we define it always remains cache friendly, especially now where people
-stated working on  multi-buff and other features that will extend the
-xdp_buff and xdp_frame, do we need a selftest that maybe runs pahole to
-see the those data strcutre remain within reasonable format/sizes ?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                 kfr2r09-romimage_defconfig
+um                             i386_defconfig
+arc                            hsdk_defconfig
+mips                    maltaup_xpa_defconfig
+arm                          ep93xx_defconfig
+arm                            zeus_defconfig
+sh                           se7343_defconfig
+sh                            migor_defconfig
+mips                        vocore2_defconfig
+arm                         orion5x_defconfig
+powerpc                 mpc836x_mds_defconfig
+mips                      fuloong2e_defconfig
+arm                        realview_defconfig
+powerpc                      ppc6xx_defconfig
+arm                       spear13xx_defconfig
+powerpc                     mpc512x_defconfig
+xtensa                    xip_kc705_defconfig
+sh                          kfr2r09_defconfig
+sparc                            alldefconfig
+mips                        bcm47xx_defconfig
+microblaze                      mmu_defconfig
+arc                          axs103_defconfig
+arm                     eseries_pxa_defconfig
+arm                      tct_hammer_defconfig
+powerpc                    mvme5100_defconfig
+powerpc                      acadia_defconfig
+sh                             shx3_defconfig
+arm                          imote2_defconfig
+mips                           rs90_defconfig
+arm                          collie_defconfig
+openrisc                    or1ksim_defconfig
+mips                        bcm63xx_defconfig
+m68k                             alldefconfig
+sh                          r7785rp_defconfig
+sh                   secureedge5410_defconfig
+ia64                          tiger_defconfig
+arm                        mini2440_defconfig
+sh                              ul2_defconfig
+c6x                                 defconfig
+mips                             allyesconfig
+mips                          rb532_defconfig
+arm                       omap2plus_defconfig
+powerpc                       ebony_defconfig
+arc                         haps_hs_defconfig
+arm                         s5pv210_defconfig
+powerpc                      makalu_defconfig
+mips                          rm200_defconfig
+arm                             mxs_defconfig
+riscv                            alldefconfig
+powerpc                      arches_defconfig
+m68k                        m5272c3_defconfig
+powerpc                 mpc837x_rdb_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                                defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201209
+i386                 randconfig-a005-20201209
+i386                 randconfig-a001-20201209
+i386                 randconfig-a002-20201209
+i386                 randconfig-a006-20201209
+i386                 randconfig-a003-20201209
+i386                 randconfig-a001-20201210
+i386                 randconfig-a004-20201210
+i386                 randconfig-a003-20201210
+i386                 randconfig-a002-20201210
+i386                 randconfig-a005-20201210
+i386                 randconfig-a006-20201210
+x86_64               randconfig-a016-20201209
+x86_64               randconfig-a012-20201209
+x86_64               randconfig-a013-20201209
+x86_64               randconfig-a014-20201209
+x86_64               randconfig-a015-20201209
+x86_64               randconfig-a011-20201209
+i386                 randconfig-a013-20201209
+i386                 randconfig-a014-20201209
+i386                 randconfig-a011-20201209
+i386                 randconfig-a015-20201209
+i386                 randconfig-a012-20201209
+i386                 randconfig-a016-20201209
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
+clang tested configs:
+x86_64               randconfig-a004-20201209
+x86_64               randconfig-a006-20201209
+x86_64               randconfig-a005-20201209
+x86_64               randconfig-a001-20201209
+x86_64               randconfig-a002-20201209
+x86_64               randconfig-a003-20201209
 
-> The general explanation is my goal to do bulking without adding
-> latency.
-> This is explicitly stated in my presentation[1] as of Feb 2016, slide
-> 20.
-> Sure, you/we can likely make the micro-benchmarks look better by
-> using
-> 64 batch size, but that will introduce added latency and likely shoot
-> our-selves in the foot for real workloads.  With experience from
-> bufferbloat and real networks, we know that massive TX bulking have
-> bad
-> effects.  Still XDP-redirect does massive bulking (NIC flush is after
-> full 64 budget) and we don't have pushback or a queue mechanism (so I
-> know we are already shooting ourselves in the foot) ...  Fortunately
-> we
-> now have a PhD student working on queuing for XDP.
-> 
-> It is also important to understand that this is an adaptive bulking
-> scheme, which comes from NAPI.  We don't wait for packets arriving
-> shortly, we pickup what NIC have available, but by only taking 8 or
-> 16
-> packets (instead of emptying the entire RX-queue), and then spending
-> some time to send them along, I'm hoping that NIC could have gotten
-> some more frame.  For cpumap and veth (in-some-cases) they can start
-> to
-> consume packets from these batches, but NIC drivers gets
-> XDP_XMIT_FLUSH
-> signal at NAPI-end (xdp_do_flush). Still design allows NIC drivers to
-> update their internal queue state (and BQL), and if it gets close to
-> full they can choose to flush/doorbell the NIC earlier.  When doing
-> queuing for XDP we need to expose these NIC queue states, and having
-> 4
-> calls with 16 packets (64 budget) also gives us more chances to get
-> NIC
-> queue state info which the NIC already touch.
-> 
-> 
-> [1] 
-> https://people.netfilter.org/hawk/presentations/devconf2016/net_stack_challenges_100G_Feb2016.pdf
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
