@@ -1,8 +1,10 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Mon, 14 Dec 2020 13:29:31 -0600
-Subject: [Intel-wired-lan] [PATCH v5 0/4] Improve s0ix flows for systems
- i219LM
-Message-ID: <20201214192935.895174-1-mario.limonciello@dell.com>
+Date: Mon, 14 Dec 2020 13:29:34 -0600
+Subject: [Intel-wired-lan] [PATCH v5 3/4] Revert "e1000e: disable s0ix entry
+ and exit flows for ME systems"
+In-Reply-To: <20201214192935.895174-1-mario.limonciello@dell.com>
+References: <20201214192935.895174-1-mario.limonciello@dell.com>
+Message-ID: <20201214192935.895174-4-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,57 +13,104 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
 disabled s0ix flows for systems that have various incarnations of the
-i219-LM ethernet controller.  This was done because of some regressions
-caused by an earlier
-commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-with i219-LM controller.
+i219-LM ethernet controller.  This changed caused power consumption regressions
+on the following shipping Dell Comet Lake based laptops:
+* Latitude 5310
+* Latitude 5410
+* Latitude 5410
+* Latitude 5510
+* Precision 3550
+* Latitude 5411
+* Latitude 5511
+* Precision 3551
+* Precision 7550
+* Precision 7750
 
-Per discussion with Intel architecture team this direction should be changed and
-allow S0ix flows to be used by default.  This patch series includes directional
-changes for their conclusions in https://lkml.org/lkml/2020/12/13/15.
+This commit was introduced because of some regressions on certain Thinkpad
+laptops.  This comment was potentially caused by an earlier
+commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case").
+or it was possibly caused by a system not meeting platform architectural
+requirements for low power consumption.  Other changes made in the driver
+with extended timeouts are expected to make the driver more impervious to
+platform firmware behavior.
 
-Changes from v4 to v5:
- - If setting S0ix to enabled in ethtool examine the hardware generation.
-   If running on hardware older than Cannon Point return an error.
- - Increase ULP timeout to 2.5 seconds, but show a warning after 1 second.
-Changes from v3 to v4:
- - Drop patch 1 for proper s0i3.2 entry, it was separated and is now merged in kernel
- - Add patch to only run S0ix flows if shutdown succeeded which was suggested in
-   thread
- - Adjust series for guidance from https://lkml.org/lkml/2020/12/13/15
-   * Revert i219-LM disallow-list.
-   * Drop all patches for systems tested by Dell in an allow list
-   * Increase ULP timeout to 1000ms
-Changes from v2 to v3:
- - Correct some grammar and spelling issues caught by Bjorn H.
-   * s/s0ix/S0ix/ in all commit messages
-   * Fix a typo in commit message
-   * Fix capitalization of proper nouns
- - Add more pre-release systems that pass
- - Re-order the series to add systems only at the end of the series
- - Add Fixes tag to a patch in series.
+Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+Reviewed-by: Alexander Duyck <alexander.duyck@gmail.com>
+Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 45 +---------------------
+ 1 file changed, 2 insertions(+), 43 deletions(-)
 
-Changes from v1 to v2:
- - Directly incorporate Vitaly's dependency patch in the series
- - Split out s0ix code into it's own file
- - Adjust from DMI matching to PCI subsystem vendor ID/device matching
- - Remove module parameter and sysfs, use ethtool flag instead.
- - Export s0ix flag to ethtool private flags
- - Include more people and lists directly in this submission chain.
-
-
-Mario Limonciello (4):
-  e1000e: Only run S0ix flows if shutdown succeeded
-  e1000e: bump up timeout to wait when ME un-configures ULP mode
-  Revert "e1000e: disable s0ix entry and exit flows for ME systems"
-  e1000e: Export S0ix flags to ethtool
-
- drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
- drivers/net/ethernet/intel/e1000e/ethtool.c | 46 ++++++++++++++++
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 16 ++++--
- drivers/net/ethernet/intel/e1000e/netdev.c  | 59 ++++-----------------
- 4 files changed, 70 insertions(+), 52 deletions(-)
-
---
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 6588f5d4a2be..b9800ba2006c 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -103,45 +103,6 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
+ 	{0, NULL}
+ };
+ 
+-struct e1000e_me_supported {
+-	u16 device_id;		/* supported device ID */
+-};
+-
+-static const struct e1000e_me_supported me_supported[] = {
+-	{E1000_DEV_ID_PCH_LPT_I217_LM},
+-	{E1000_DEV_ID_PCH_LPTLP_I218_LM},
+-	{E1000_DEV_ID_PCH_I218_LM2},
+-	{E1000_DEV_ID_PCH_I218_LM3},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM2},
+-	{E1000_DEV_ID_PCH_LBG_I219_LM3},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM4},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM5},
+-	{E1000_DEV_ID_PCH_CNP_I219_LM6},
+-	{E1000_DEV_ID_PCH_CNP_I219_LM7},
+-	{E1000_DEV_ID_PCH_ICP_I219_LM8},
+-	{E1000_DEV_ID_PCH_ICP_I219_LM9},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM10},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM11},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM12},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM13},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM14},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM15},
+-	{0}
+-};
+-
+-static bool e1000e_check_me(u16 device_id)
+-{
+-	struct e1000e_me_supported *id;
+-
+-	for (id = (struct e1000e_me_supported *)me_supported;
+-	     id->device_id; id++)
+-		if (device_id == id->device_id)
+-			return true;
+-
+-	return false;
+-}
+-
+ /**
+  * __ew32_prepare - prepare to write to MAC CSR register on certain parts
+  * @hw: pointer to the HW structure
+@@ -6974,8 +6935,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 		e1000e_pm_thaw(dev);
+ 	} else {
+ 		/* Introduce S0ix implementation */
+-		if (hw->mac.type >= e1000_pch_cnp &&
+-		    !e1000e_check_me(hw->adapter->pdev->device))
++		if (hw->mac.type >= e1000_pch_cnp)
+ 			e1000e_s0ix_entry_flow(adapter);
+ 	}
+ 
+@@ -6991,8 +6951,7 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	int rc;
+ 
+ 	/* Introduce S0ix implementation */
+-	if (hw->mac.type >= e1000_pch_cnp &&
+-	    !e1000e_check_me(hw->adapter->pdev->device))
++	if (hw->mac.type >= e1000_pch_cnp)
+ 		e1000e_s0ix_exit_flow(adapter);
+ 
+ 	rc = __e1000_resume(pdev);
+-- 
 2.25.1
 
