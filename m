@@ -1,98 +1,68 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 14 Dec 2020 08:31:35 -0800
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Added ICR clearing by
- corresponding IMS bit.
-In-Reply-To: <CABcq3pG78o4ttn8R_a-4hHVaqnx9MXg4CyA0ozS2W9trK4qJPg@mail.gmail.com>
-References: <20201203133236.222207-1-andrew@daynix.com>
- <CAKgT0UeoKDcDeMMG7KGMSKXP26txrwNuc73HKFPa57y=Vuo-kg@mail.gmail.com>
- <CABcq3pG78o4ttn8R_a-4hHVaqnx9MXg4CyA0ozS2W9trK4qJPg@mail.gmail.com>
-Message-ID: <CAKgT0Uc9Z93M_7QtbJMRzJ6k6Pr=bi8MsoteDhV_GVA2Eceb=A@mail.gmail.com>
+Date: Mon, 14 Dec 2020 08:39:01 -0800
+Subject: [Intel-wired-lan] [PATCH v4 0/4] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <20201214153450.874339-1-mario.limonciello@dell.com>
+References: <20201214153450.874339-1-mario.limonciello@dell.com>
+Message-ID: <CAKgT0UfSeW_mod5kqNFL71Nepbk+Kg65Vw_HeLVLjykX98u=xg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Okay. That sounds reasonable. You should repost this with your more
-thorough explanation of the problem and how this solves it in the
-patch description.
-
-Thanks.
-
-- Alex
-
-On Mon, Dec 14, 2020 at 3:09 AM Andrew Melnichenko <andrew@daynix.com> wrote:
+On Mon, Dec 14, 2020 at 7:35 AM Mario Limonciello
+<mario.limonciello@dell.com> wrote:
 >
-> Hi,
-> The issue is in LSC clearing. So, after "link up"(during initialization), the next LSC event is masked and can't be processed.
-> Technically, the event should be 'cleared' during ICR read.
-> On Windows guest, everything works well, mostly because of different interrupt routines(ICR clears during register write).
-> So, I've added ICR clearing during read, according to the note by
-> section 13.3.27 of the 8257X developers manual.
+> commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+> disabled s0ix flows for systems that have various incarnations of the
+> i219-LM ethernet controller.  This was done because of some regressions
+> caused by an earlier
+> commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
+> with i219-LM controller.
 >
-> On Thu, Dec 3, 2020 at 7:57 PM Alexander Duyck <alexander.duyck@gmail.com> wrote:
->>
->> On Thu, Dec 3, 2020 at 5:00 AM Andrew Melnychenko <andrew@daynix.com> wrote:
->> >
->> > Buglink: https://bugzilla.redhat.com/show_bug.cgi?id=1707441
->>
->> So the bugzilla seems to be reporting that the NIC operstate is being
->> misreported when qemu has configured the link down. Based on the
->> description it isn't clear to me how this patch addresses that. Some
->> documentation on how you reproduced the issue, and what was seen
->> before and after this patch would be useful.
->>
->> > Added ICR clearing if there is IMS bit - according to the note by
->>
->> Should probably be "Add" instead of "Added". Same for the title of the patch.
->>
->> > section 13.3.27 of the 8257X developers manual.
->> >
->> > Signed-off-by: Andrew Melnychenko <andrew@daynix.com>
->> > ---
->> >  hw/net/e1000e_core.c | 10 ++++++++++
->> >  hw/net/trace-events  |  1 +
->> >  2 files changed, 11 insertions(+)
->> >
->> > diff --git a/hw/net/e1000e_core.c b/hw/net/e1000e_core.c
->> > index 095c01ebc6..9705f5c52e 100644
->> > --- a/hw/net/e1000e_core.c
->> > +++ b/hw/net/e1000e_core.c
->> > @@ -2624,6 +2624,16 @@ e1000e_mac_icr_read(E1000ECore *core, int index)
->> >          e1000e_clear_ims_bits(core, core->mac[IAM]);
->> >      }
->> >
->> > +    /*
->> > +     * PCIe* GbE Controllers Open Source Software Developer's Manual
->> > +     * 13.3.27 Interrupt Cause Read Register
->> > +     */
->> > +    if ((core->mac[ICR] & E1000_ICR_ASSERTED) &&
->> > +        (core->mac[ICR] & core->mac[IMS])) {
->> > +        trace_e1000e_irq_icr_clear_icr_bit_ims(core->mac[ICR], core->mac[IMS]);
->> > +        core->mac[ICR] = 0;
->> > +    }
->> > +
->> >      trace_e1000e_irq_icr_read_exit(core->mac[ICR]);
->> >      e1000e_update_interrupt_state(core);
->> >      return ret;
->>
->> Changes like this have historically been problematic. I am curious
->> what testing had been done on this and with what drivers? Keep in mind
->> that we have to support several flavors of BSD, Windows, and Linux
->> with this.
->>
->> > diff --git a/hw/net/trace-events b/hw/net/trace-events
->> > index 5db45456d9..2c3521a19c 100644
->> > --- a/hw/net/trace-events
->> > +++ b/hw/net/trace-events
->> > @@ -237,6 +237,7 @@ e1000e_irq_icr_read_entry(uint32_t icr) "Starting ICR read. Current ICR: 0x%x"
->> >  e1000e_irq_icr_read_exit(uint32_t icr) "Ending ICR read. Current ICR: 0x%x"
->> >  e1000e_irq_icr_clear_zero_ims(void) "Clearing ICR on read due to zero IMS"
->> >  e1000e_irq_icr_clear_iame(void) "Clearing ICR on read due to IAME"
->> > +e1000e_irq_icr_clear_icr_bit_ims(uint32_t icr, uint32_t ims) "Clearing ICR on read due corresponding IMS bit: 0x%x & 0x%x"
->> >  e1000e_irq_iam_clear_eiame(uint32_t iam, uint32_t cause) "Clearing IMS due to EIAME, IAM: 0x%X, cause: 0x%X"
->> >  e1000e_irq_icr_clear_eiac(uint32_t icr, uint32_t eiac) "Clearing ICR bits due to EIAC, ICR: 0x%X, EIAC: 0x%X"
->> >  e1000e_irq_ims_clear_set_imc(uint32_t val) "Clearing IMS bits due to IMC write 0x%x"
->> > --
->> > 2.29.2
->> >
+> Per discussion with Intel architecture team this direction should be changed and
+> allow S0ix flows to be used by default.  This patch series includes directional
+> changes for their conclusions in https://lkml.org/lkml/2020/12/13/15.
+>
+> Changes from v3 to v4:
+>  - Drop patch 1 for proper s0i3.2 entry, it was separated and is now merged in kernel
+>  - Add patch to only run S0ix flows if shutdown succeeded which was suggested in
+>    thread
+>  - Adjust series for guidance from https://lkml.org/lkml/2020/12/13/15
+>    * Revert i219-LM disallow-list.
+>    * Drop all patches for systems tested by Dell in an allow list
+>    * Increase ULP timeout to 1000ms
+> Changes from v2 to v3:
+>  - Correct some grammar and spelling issues caught by Bjorn H.
+>    * s/s0ix/S0ix/ in all commit messages
+>    * Fix a typo in commit message
+>    * Fix capitalization of proper nouns
+>  - Add more pre-release systems that pass
+>  - Re-order the series to add systems only at the end of the series
+>  - Add Fixes tag to a patch in series.
+>
+> Changes from v1 to v2:
+>  - Directly incorporate Vitaly's dependency patch in the series
+>  - Split out s0ix code into it's own file
+>  - Adjust from DMI matching to PCI subsystem vendor ID/device matching
+>  - Remove module parameter and sysfs, use ethtool flag instead.
+>  - Export s0ix flag to ethtool private flags
+>  - Include more people and lists directly in this submission chain.
+>
+> Mario Limonciello (4):
+>   e1000e: Only run S0ix flows if shutdown succeeded
+>   e1000e: bump up timeout to wait when ME un-configure ULP mode
+>   Revert "e1000e: disable s0ix entry and exit flows for ME systems"
+>   e1000e: Export S0ix flags to ethtool
+>
+>  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
+>  drivers/net/ethernet/intel/e1000e/ethtool.c | 40 ++++++++++++++
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 +-
+>  drivers/net/ethernet/intel/e1000e/netdev.c  | 59 ++++-----------------
+>  4 files changed, 53 insertions(+), 51 deletions(-)
+>
+
+The changes look good to me.
+
+Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
