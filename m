@@ -1,139 +1,185 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 14 Dec 2020 19:24:48 +0100
-Subject: [Intel-wired-lan] [PATCH v4 0/4] Improve s0ix flows for systems
- i219LM
-In-Reply-To: <20201214153450.874339-1-mario.limonciello@dell.com>
+Date: Mon, 14 Dec 2020 19:30:10 +0100
+Subject: [Intel-wired-lan] [PATCH 4/4] e1000e: Export S0ix flags to
+ ethtool
+In-Reply-To: <20201214153450.874339-5-mario.limonciello@dell.com>
 References: <20201214153450.874339-1-mario.limonciello@dell.com>
-Message-ID: <80862f70-18a4-4f96-1b96-e2fad7cc2b35@redhat.com>
+ <20201214153450.874339-5-mario.limonciello@dell.com>
+Message-ID: <015f0d3c-57fa-06bc-4139-e4512201eb92@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi All,
+Hi,
 
-Sasha (and the other intel-wired-lan folks), thank you for investigating this
-further and for coming up with a better solution.
+On 12/14/20 4:34 PM, Mario Limonciello wrote:
+> This flag can be used by an end user to disable S0ix flows on a
+> buggy system or by an OEM for development purposes.
+> 
+> If you need this flag to be persisted across reboots, it's suggested
+> to use a udev rule to call adjust it until the kernel could have your
+> configuration in a disallow list.
+> 
+> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
+>  drivers/net/ethernet/intel/e1000e/ethtool.c | 40 +++++++++++++++++++++
+>  drivers/net/ethernet/intel/e1000e/netdev.c  |  9 ++---
+>  3 files changed, 46 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+> index ba7a0f8f6937..5b2143f4b1f8 100644
+> --- a/drivers/net/ethernet/intel/e1000e/e1000.h
+> +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+> @@ -436,6 +436,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
+>  #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
+>  #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
+>  #define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
+> +#define FLAG2_ENABLE_S0IX_FLOWS           BIT(15)
+>  
+>  #define E1000_RX_DESC_PS(R, i)	    \
+>  	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
+> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> index 03215b0aee4b..eb683949ebfe 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> @@ -23,6 +23,13 @@ struct e1000_stats {
+>  	int stat_offset;
+>  };
+>  
+> +static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
+> +#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
+> +	"s0ix-enabled",
+> +};
+> +
+> +#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
+> +
+>  #define E1000_STAT(str, m) { \
+>  		.stat_string = str, \
+>  		.type = E1000_STATS, \
+> @@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
+>  		return E1000_TEST_LEN;
+>  	case ETH_SS_STATS:
+>  		return E1000_STATS_LEN;
+> +	case ETH_SS_PRIV_FLAGS:
+> +		return E1000E_PRIV_FLAGS_STR_LEN;
+>  	default:
+>  		return -EOPNOTSUPP;
+>  	}
+> @@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
+>  			p += ETH_GSTRING_LEN;
+>  		}
+>  		break;
+> +	case ETH_SS_PRIV_FLAGS:
+> +		memcpy(data, e1000e_priv_flags_strings,
+> +		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
+> +		break;
+>  	}
+>  }
+>  
+> @@ -2305,6 +2318,31 @@ static int e1000e_get_ts_info(struct net_device *netdev,
+>  	return 0;
+>  }
+>  
+> +static u32 e1000e_get_priv_flags(struct net_device *netdev)
+> +{
+> +	struct e1000_adapter *adapter = netdev_priv(netdev);
+> +	u32 priv_flags = 0;
+> +
+> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
+> +		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
+> +
+> +	return priv_flags;
+> +}
+> +
+> +static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+> +{
+> +	struct e1000_adapter *adapter = netdev_priv(netdev);
+> +	unsigned int flags2 = adapter->flags2;
+> +
+> +	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
+> +	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED)
+> +		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
+> +	if (flags2 != adapter->flags2)
+> +		adapter->flags2 = flags2;
 
-Mario, thank you for implementing the new scheme.
 
-I've tested this patch set on a Lenovo X1C8 with vPRO and AMT enabled in the BIOS
-(the previous issues were soon on a X1C7).
+This will allow ethtool to enable the s0ix code on hw which does not
+support this. I believe that this needs a
 
-I have good and bad news:
+	if (hw->mac.type >= e1000_pch_cnp)
 
-The good news is that after reverting the
-"e1000e: disable s0ix entry and exit flows for ME systems"
-I can reproduce the original issue on the X1C8 (I no longer have
-a X1C7 to test on).
-
-The bad news is that increasing the timeout to 1 second does
-not fix the issue. Suspend/resume is still broken after one
-suspend/resume cycle, as described in the original bug-report:
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1865570
-
-More good news though, bumping the timeout to 250 poll iterations
-(approx 2.5 seconds) as done in Aaron Ma's original patch for
-this fixes this on the X1C8 just as it did on the X1C7
-(it takes 2 seconds for ULP_CONFIG_DONE to clear).
-
-I've ran some extra tests and the poll loop succeeds on its
-first iteration when an ethernet-cable is connected. It seems
-that Lenovo's variant of the ME firmware waits up to 2 seconds
-for a link, causing the long wait for ULP_CONFIG_DONE to clear.
-
-I think that for now the best fix would be to increase the timeout
-to 2.5 seconds as done in  Aaron Ma's original patch. Combined
-with a broken-firmware warning when we waited longer then 1 second,
-to make it clear that there is a firmware issue here and that
-the long wait / slow resume is not the fault of the driver.
-
-###
-
-I've added Mark Pearson from Lenovo to the Cc so that Lenovo
-can investigate this issue further.
-
-Mark, this thread is about an issue with enabling S0ix support for
-e1000e (i219lm) controllers. This was enabled in the kernel a
-while ago, but then got disabled again on vPro / AMT enabled
-systems because on some systems (Lenovo X1C7 and now also X1C8)
-this lead to suspend/resume issues.
-
-When AMT is active then there is a handover handshake for the
-OS to get access to the ethernet controller from the ME. The
-Intel folks have checked and the Windows driver is using a timeout
-of 1 second for this handshake, yet on Lenovo systems this is
-taking 2 seconds. This likely has something to do with the
-ME firmware on these Lenovo models, can you get the firmware
-team at Lenovo to investigate this further ?
+Check to avoid this scenario. And probably return -EINVAL when
+a user tries to enable this on hw where it is not supported.
 
 Regards,
 
 Hans
 
-p.s.
-
-I also have a small review remark on patch 4/4 I will
-reply to that patch separately.
 
 
 
-
-
-
-
-
-On 12/14/20 4:34 PM, Mario Limonciello wrote:
-> commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-> disabled s0ix flows for systems that have various incarnations of the
-> i219-LM ethernet controller.  This was done because of some regressions
-> caused by an earlier
-> commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-> with i219-LM controller.
-> 
-> Per discussion with Intel architecture team this direction should be changed and
-> allow S0ix flows to be used by default.  This patch series includes directional
-> changes for their conclusions in https://lkml.org/lkml/2020/12/13/15.
-> 
-> Changes from v3 to v4:
->  - Drop patch 1 for proper s0i3.2 entry, it was separated and is now merged in kernel
->  - Add patch to only run S0ix flows if shutdown succeeded which was suggested in
->    thread
->  - Adjust series for guidance from https://lkml.org/lkml/2020/12/13/15
->    * Revert i219-LM disallow-list.
->    * Drop all patches for systems tested by Dell in an allow list
->    * Increase ULP timeout to 1000ms
-> Changes from v2 to v3:
->  - Correct some grammar and spelling issues caught by Bjorn H.
->    * s/s0ix/S0ix/ in all commit messages
->    * Fix a typo in commit message
->    * Fix capitalization of proper nouns
->  - Add more pre-release systems that pass
->  - Re-order the series to add systems only at the end of the series
->  - Add Fixes tag to a patch in series.
-> 
-> Changes from v1 to v2:
->  - Directly incorporate Vitaly's dependency patch in the series
->  - Split out s0ix code into it's own file
->  - Adjust from DMI matching to PCI subsystem vendor ID/device matching
->  - Remove module parameter and sysfs, use ethtool flag instead.
->  - Export s0ix flag to ethtool private flags
->  - Include more people and lists directly in this submission chain.
-> 
-> Mario Limonciello (4):
->   e1000e: Only run S0ix flows if shutdown succeeded
->   e1000e: bump up timeout to wait when ME un-configure ULP mode
->   Revert "e1000e: disable s0ix entry and exit flows for ME systems"
->   e1000e: Export S0ix flags to ethtool
-> 
->  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
->  drivers/net/ethernet/intel/e1000e/ethtool.c | 40 ++++++++++++++
->  drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 +-
->  drivers/net/ethernet/intel/e1000e/netdev.c  | 59 ++++-----------------
->  4 files changed, 53 insertions(+), 51 deletions(-)
-> 
-> --
-> 2.25.1
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct ethtool_ops e1000_ethtool_ops = {
+>  	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
+>  	.get_drvinfo		= e1000_get_drvinfo,
+> @@ -2336,6 +2374,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
+>  	.set_eee		= e1000e_set_eee,
+>  	.get_link_ksettings	= e1000_get_link_ksettings,
+>  	.set_link_ksettings	= e1000_set_link_ksettings,
+> +	.get_priv_flags		= e1000e_get_priv_flags,
+> +	.set_priv_flags		= e1000e_set_priv_flags,
+>  };
+>  
+>  void e1000e_set_ethtool_ops(struct net_device *netdev)
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index b9800ba2006c..e9b82c209c2d 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -6923,7 +6923,6 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+>  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+>  	struct e1000_adapter *adapter = netdev_priv(netdev);
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+> -	struct e1000_hw *hw = &adapter->hw;
+>  	int rc;
+>  
+>  	e1000e_flush_lpic(pdev);
+> @@ -6935,7 +6934,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+>  		e1000e_pm_thaw(dev);
+>  	} else {
+>  		/* Introduce S0ix implementation */
+> -		if (hw->mac.type >= e1000_pch_cnp)
+> +		if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
+>  			e1000e_s0ix_entry_flow(adapter);
+>  	}
+>  
+> @@ -6947,11 +6946,10 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+>  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+>  	struct e1000_adapter *adapter = netdev_priv(netdev);
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+> -	struct e1000_hw *hw = &adapter->hw;
+>  	int rc;
+>  
+>  	/* Introduce S0ix implementation */
+> -	if (hw->mac.type >= e1000_pch_cnp)
+> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
+>  		e1000e_s0ix_exit_flow(adapter);
+>  
+>  	rc = __e1000_resume(pdev);
+> @@ -7615,6 +7613,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	if (!(adapter->flags & FLAG_HAS_AMT))
+>  		e1000e_get_hw_control(adapter);
+>  
+> +	if (hw->mac.type >= e1000_pch_cnp)
+> +		adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
+> +
+>  	strlcpy(netdev->name, "eth%d", sizeof(netdev->name));
+>  	err = register_netdev(netdev);
+>  	if (err)
 > 
 
