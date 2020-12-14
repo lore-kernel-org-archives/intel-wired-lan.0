@@ -1,116 +1,166 @@
-From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Mon, 14 Dec 2020 13:29:34 -0600
-Subject: [Intel-wired-lan] [PATCH v5 3/4] Revert "e1000e: disable s0ix entry
- and exit flows for ME systems"
-In-Reply-To: <20201214192935.895174-1-mario.limonciello@dell.com>
-References: <20201214192935.895174-1-mario.limonciello@dell.com>
-Message-ID: <20201214192935.895174-4-mario.limonciello@dell.com>
+From: Limonciello, Mario <Mario.Limonciello@dell.com>
+Date: Mon, 14 Dec 2020 19:36:18 +0000
+Subject: [Intel-wired-lan] [PATCH v4 0/4] Improve s0ix flows for systems
+ i219LM
+In-Reply-To: <80862f70-18a4-4f96-1b96-e2fad7cc2b35@redhat.com>
+References: <20201214153450.874339-1-mario.limonciello@dell.com>
+ <80862f70-18a4-4f96-1b96-e2fad7cc2b35@redhat.com>
+Message-ID: <MN2PR19MB26376EA92CE14DC3ADD328BEFAC70@MN2PR19MB2637.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-disabled s0ix flows for systems that have various incarnations of the
-i219-LM ethernet controller.  This changed caused power consumption regressions
-on the following shipping Dell Comet Lake based laptops:
-* Latitude 5310
-* Latitude 5410
-* Latitude 5410
-* Latitude 5510
-* Precision 3550
-* Latitude 5411
-* Latitude 5511
-* Precision 3551
-* Precision 7550
-* Precision 7750
+> Hi All,
+> 
+> Sasha (and the other intel-wired-lan folks), thank you for investigating this
+> further and for coming up with a better solution.
+> 
+> Mario, thank you for implementing the new scheme.
+> 
 
-This commit was introduced because of some regressions on certain Thinkpad
-laptops.  This comment was potentially caused by an earlier
-commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case").
-or it was possibly caused by a system not meeting platform architectural
-requirements for low power consumption.  Other changes made in the driver
-with extended timeouts are expected to make the driver more impervious to
-platform firmware behavior.
+Sure.
 
-Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-Reviewed-by: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 45 +---------------------
- 1 file changed, 2 insertions(+), 43 deletions(-)
+> I've tested this patch set on a Lenovo X1C8 with vPRO and AMT enabled in the
+> BIOS
+> (the previous issues were soon on a X1C7).
+> 
+> I have good and bad news:
+> 
+> The good news is that after reverting the
+> "e1000e: disable s0ix entry and exit flows for ME systems"
+> I can reproduce the original issue on the X1C8 (I no longer have
+> a X1C7 to test on).
+> 
+> The bad news is that increasing the timeout to 1 second does
+> not fix the issue. Suspend/resume is still broken after one
+> suspend/resume cycle, as described in the original bug-report:
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1865570
+> 
+> More good news though, bumping the timeout to 250 poll iterations
+> (approx 2.5 seconds) as done in Aaron Ma's original patch for
+> this fixes this on the X1C8 just as it did on the X1C7
+> (it takes 2 seconds for ULP_CONFIG_DONE to clear).
+> 
+> I've ran some extra tests and the poll loop succeeds on its
+> first iteration when an ethernet-cable is connected. It seems
+> that Lenovo's variant of the ME firmware waits up to 2 seconds
+> for a link, causing the long wait for ULP_CONFIG_DONE to clear.
+> 
+> I think that for now the best fix would be to increase the timeout
+> to 2.5 seconds as done in  Aaron Ma's original patch. Combined
+> with a broken-firmware warning when we waited longer then 1 second,
+> to make it clear that there is a firmware issue here and that
+> the long wait / slow resume is not the fault of the driver.
+> 
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 6588f5d4a2be..b9800ba2006c 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -103,45 +103,6 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
- 	{0, NULL}
- };
- 
--struct e1000e_me_supported {
--	u16 device_id;		/* supported device ID */
--};
--
--static const struct e1000e_me_supported me_supported[] = {
--	{E1000_DEV_ID_PCH_LPT_I217_LM},
--	{E1000_DEV_ID_PCH_LPTLP_I218_LM},
--	{E1000_DEV_ID_PCH_I218_LM2},
--	{E1000_DEV_ID_PCH_I218_LM3},
--	{E1000_DEV_ID_PCH_SPT_I219_LM},
--	{E1000_DEV_ID_PCH_SPT_I219_LM2},
--	{E1000_DEV_ID_PCH_LBG_I219_LM3},
--	{E1000_DEV_ID_PCH_SPT_I219_LM4},
--	{E1000_DEV_ID_PCH_SPT_I219_LM5},
--	{E1000_DEV_ID_PCH_CNP_I219_LM6},
--	{E1000_DEV_ID_PCH_CNP_I219_LM7},
--	{E1000_DEV_ID_PCH_ICP_I219_LM8},
--	{E1000_DEV_ID_PCH_ICP_I219_LM9},
--	{E1000_DEV_ID_PCH_CMP_I219_LM10},
--	{E1000_DEV_ID_PCH_CMP_I219_LM11},
--	{E1000_DEV_ID_PCH_CMP_I219_LM12},
--	{E1000_DEV_ID_PCH_TGP_I219_LM13},
--	{E1000_DEV_ID_PCH_TGP_I219_LM14},
--	{E1000_DEV_ID_PCH_TGP_I219_LM15},
--	{0}
--};
--
--static bool e1000e_check_me(u16 device_id)
--{
--	struct e1000e_me_supported *id;
--
--	for (id = (struct e1000e_me_supported *)me_supported;
--	     id->device_id; id++)
--		if (device_id == id->device_id)
--			return true;
--
--	return false;
--}
--
- /**
-  * __ew32_prepare - prepare to write to MAC CSR register on certain parts
-  * @hw: pointer to the HW structure
-@@ -6974,8 +6935,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
- 		e1000e_pm_thaw(dev);
- 	} else {
- 		/* Introduce S0ix implementation */
--		if (hw->mac.type >= e1000_pch_cnp &&
--		    !e1000e_check_me(hw->adapter->pdev->device))
-+		if (hw->mac.type >= e1000_pch_cnp)
- 			e1000e_s0ix_entry_flow(adapter);
- 	}
- 
-@@ -6991,8 +6951,7 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
- 	int rc;
- 
- 	/* Introduce S0ix implementation */
--	if (hw->mac.type >= e1000_pch_cnp &&
--	    !e1000e_check_me(hw->adapter->pdev->device))
-+	if (hw->mac.type >= e1000_pch_cnp)
- 		e1000e_s0ix_exit_flow(adapter);
- 
- 	rc = __e1000_resume(pdev);
--- 
-2.25.1
+OK.  I've submitted v5 with this suggestion.
+
+> ###
+> 
+> I've added Mark Pearson from Lenovo to the Cc so that Lenovo
+> can investigate this issue further.
+> 
+> Mark, this thread is about an issue with enabling S0ix support for
+> e1000e (i219lm) controllers. This was enabled in the kernel a
+> while ago, but then got disabled again on vPro / AMT enabled
+> systems because on some systems (Lenovo X1C7 and now also X1C8)
+> this lead to suspend/resume issues.
+> 
+> When AMT is active then there is a handover handshake for the
+> OS to get access to the ethernet controller from the ME. The
+> Intel folks have checked and the Windows driver is using a timeout
+> of 1 second for this handshake, yet on Lenovo systems this is
+> taking 2 seconds. This likely has something to do with the
+> ME firmware on these Lenovo models, can you get the firmware
+> team at Lenovo to investigate this further ?
+> 
+
+Please be very careful with nomenclature.  AMT active, or AMT capable?
+The goal for this series is to support AMT capable systems with an i219LM
+where AMT has not been provisioned by the end user or organization.
+OEMs do not ship systems with AMD provisioned.
+
+I don't know that this series will work properly with AMT active, and
+we will need more guidance from Intel's team to enable that feature.
+Please lets keep that discussion separate from this series.
+
+
+> Regards,
+> 
+> Hans
+> 
+> p.s.
+> 
+> I also have a small review remark on patch 4/4 I will
+> reply to that patch separately.
+> 
+
+Thanks.
+
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> On 12/14/20 4:34 PM, Mario Limonciello wrote:
+> > commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME
+> systems")
+> > disabled s0ix flows for systems that have various incarnations of the
+> > i219-LM ethernet controller.  This was done because of some regressions
+> > caused by an earlier
+> > commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
+> > with i219-LM controller.
+> >
+> > Per discussion with Intel architecture team this direction should be changed
+> and
+> > allow S0ix flows to be used by default.  This patch series includes
+> directional
+> > changes for their conclusions in https://lkml.org/lkml/2020/12/13/15.
+> >
+> > Changes from v3 to v4:
+> >  - Drop patch 1 for proper s0i3.2 entry, it was separated and is now merged
+> in kernel
+> >  - Add patch to only run S0ix flows if shutdown succeeded which was
+> suggested in
+> >    thread
+> >  - Adjust series for guidance from https://lkml.org/lkml/2020/12/13/15
+> >    * Revert i219-LM disallow-list.
+> >    * Drop all patches for systems tested by Dell in an allow list
+> >    * Increase ULP timeout to 1000ms
+> > Changes from v2 to v3:
+> >  - Correct some grammar and spelling issues caught by Bjorn H.
+> >    * s/s0ix/S0ix/ in all commit messages
+> >    * Fix a typo in commit message
+> >    * Fix capitalization of proper nouns
+> >  - Add more pre-release systems that pass
+> >  - Re-order the series to add systems only at the end of the series
+> >  - Add Fixes tag to a patch in series.
+> >
+> > Changes from v1 to v2:
+> >  - Directly incorporate Vitaly's dependency patch in the series
+> >  - Split out s0ix code into it's own file
+> >  - Adjust from DMI matching to PCI subsystem vendor ID/device matching
+> >  - Remove module parameter and sysfs, use ethtool flag instead.
+> >  - Export s0ix flag to ethtool private flags
+> >  - Include more people and lists directly in this submission chain.
+> >
+> > Mario Limonciello (4):
+> >   e1000e: Only run S0ix flows if shutdown succeeded
+> >   e1000e: bump up timeout to wait when ME un-configure ULP mode
+> >   Revert "e1000e: disable s0ix entry and exit flows for ME systems"
+> >   e1000e: Export S0ix flags to ethtool
+> >
+> >  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
+> >  drivers/net/ethernet/intel/e1000e/ethtool.c | 40 ++++++++++++++
+> >  drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 +-
+> >  drivers/net/ethernet/intel/e1000e/netdev.c  | 59 ++++-----------------
+> >  4 files changed, 53 insertions(+), 51 deletions(-)
+> >
+> > --
+> > 2.25.1
+> >
 
