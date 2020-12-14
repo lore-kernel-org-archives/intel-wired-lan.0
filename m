@@ -1,79 +1,171 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Mon, 14 Dec 2020 13:29:33 -0600
-Subject: [Intel-wired-lan] [PATCH v5 2/4] e1000e: bump up timeout to wait
- when ME un-configures ULP mode
+Date: Mon, 14 Dec 2020 13:29:35 -0600
+Subject: [Intel-wired-lan] [PATCH v5 4/4] e1000e: Export S0ix flags to
+ ethtool
 In-Reply-To: <20201214192935.895174-1-mario.limonciello@dell.com>
 References: <20201214192935.895174-1-mario.limonciello@dell.com>
-Message-ID: <20201214192935.895174-3-mario.limonciello@dell.com>
+Message-ID: <20201214192935.895174-5-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Per guidance from Intel ethernet architecture team, it may take
-up to 1 second for unconfiguring ULP mode.
+This flag can be used by an end user to disable S0ix flows on a
+buggy system or by an OEM for development purposes.
 
-However in practice this seems to be taking up to 2 seconds on
-some Lenovo machines.  Detect scenarios that take more than 1 second
-but less than 2.5 seconds and emit a warning on resume for those
-scenarios.
+If you need this flag to be persisted across reboots, it's suggested
+to use a udev rule to call adjust it until the kernel could have your
+configuration in a disallow list.
 
-Suggested-by: Aaron Ma <aaron.ma@canonical.com>
-Suggested-by: Sasha Netfin <sasha.neftin@intel.com>
-Suggested-by: Hans de Goede <hdegoede@redhat.com>
-CC: Mark Pearson <markpearson@lenovo.com>
-Fixes: f15bb6dde738cc8fa0 ("e1000e: Add support for S0ix")
-BugLink: https://bugs.launchpad.net/bugs/1865570
-Link: https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
-Link: https://lkml.org/lkml/2020/12/13/15
-Link: https://lkml.org/lkml/2020/12/14/708
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 46 +++++++++++++++++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  |  9 ++--
+ 3 files changed, 52 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 9aa6fad8ed47..fdf23d20c954 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1240,6 +1240,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index ba7a0f8f6937..5b2143f4b1f8 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -436,6 +436,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
+ #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
+ #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
+ #define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
++#define FLAG2_ENABLE_S0IX_FLOWS           BIT(15)
  
- 	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID) {
-+		struct e1000_adapter *adapter = hw->adapter;
-+		bool firmware_bug = false;
+ #define E1000_RX_DESC_PS(R, i)	    \
+ 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 03215b0aee4b..06442e6bef73 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -23,6 +23,13 @@ struct e1000_stats {
+ 	int stat_offset;
+ };
+ 
++static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
++#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
++	"s0ix-enabled",
++};
 +
- 		if (force) {
- 			/* Request ME un-configure ULP mode in the PHY */
- 			mac_reg = er32(H2ME);
-@@ -1248,16 +1251,23 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
- 			ew32(H2ME, mac_reg);
++#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
++
+ #define E1000_STAT(str, m) { \
+ 		.stat_string = str, \
+ 		.type = E1000_STATS, \
+@@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
+ 		return E1000_TEST_LEN;
+ 	case ETH_SS_STATS:
+ 		return E1000_STATS_LEN;
++	case ETH_SS_PRIV_FLAGS:
++		return E1000E_PRIV_FLAGS_STR_LEN;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
+ 			p += ETH_GSTRING_LEN;
  		}
+ 		break;
++	case ETH_SS_PRIV_FLAGS:
++		memcpy(data, e1000e_priv_flags_strings,
++		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
++		break;
+ 	}
+ }
  
--		/* Poll up to 300msec for ME to clear ULP_CFG_DONE. */
-+		/* Poll up to 2.5 seconds for ME to clear ULP_CFG_DONE.
-+		 * If this takes more than 1 second, show a warning indicating a firmware
-+		 * bug */
- 		while (er32(FWSM) & E1000_FWSM_ULP_CFG_DONE) {
--			if (i++ == 30) {
-+			if (i++ == 250) {
- 				ret_val = -E1000_ERR_PHY;
- 				goto out;
- 			}
-+			if (i > 100 && !firmware_bug)
-+				firmware_bug = true;
+@@ -2305,6 +2318,37 @@ static int e1000e_get_ts_info(struct net_device *netdev,
+ 	return 0;
+ }
  
- 			usleep_range(10000, 11000);
- 		}
--		e_dbg("ULP_CONFIG_DONE cleared after %dmsec\n", i * 10);
-+		if (firmware_bug)
-+			e_warn("ULP_CONFIG_DONE took %dmsec.  This is a firmware bug\n", i * 10);
-+		else
-+			e_dbg("ULP_CONFIG_DONE cleared after %dmsec\n", i * 10);
++static u32 e1000e_get_priv_flags(struct net_device *netdev)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	u32 priv_flags = 0;
++
++	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
++		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
++
++	return priv_flags;
++}
++
++static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	unsigned int flags2 = adapter->flags2;
++
++	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
++	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED) {
++		struct e1000_hw *hw = &adapter->hw;
++
++		if (hw->mac.type < e1000_pch_cnp)
++			return -EINVAL;
++		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
++	}
++
++	if (flags2 != adapter->flags2)
++		adapter->flags2 = flags2;
++
++	return 0;
++}
++
+ static const struct ethtool_ops e1000_ethtool_ops = {
+ 	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
+ 	.get_drvinfo		= e1000_get_drvinfo,
+@@ -2336,6 +2380,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
+ 	.set_eee		= e1000e_set_eee,
+ 	.get_link_ksettings	= e1000_get_link_ksettings,
+ 	.set_link_ksettings	= e1000_set_link_ksettings,
++	.get_priv_flags		= e1000e_get_priv_flags,
++	.set_priv_flags		= e1000e_set_priv_flags,
+ };
  
- 		if (force) {
- 			mac_reg = er32(H2ME);
+ void e1000e_set_ethtool_ops(struct net_device *netdev)
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b9800ba2006c..e9b82c209c2d 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6923,7 +6923,6 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct e1000_hw *hw = &adapter->hw;
+ 	int rc;
+ 
+ 	e1000e_flush_lpic(pdev);
+@@ -6935,7 +6934,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 		e1000e_pm_thaw(dev);
+ 	} else {
+ 		/* Introduce S0ix implementation */
+-		if (hw->mac.type >= e1000_pch_cnp)
++		if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
+ 			e1000e_s0ix_entry_flow(adapter);
+ 	}
+ 
+@@ -6947,11 +6946,10 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct e1000_hw *hw = &adapter->hw;
+ 	int rc;
+ 
+ 	/* Introduce S0ix implementation */
+-	if (hw->mac.type >= e1000_pch_cnp)
++	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
+ 		e1000e_s0ix_exit_flow(adapter);
+ 
+ 	rc = __e1000_resume(pdev);
+@@ -7615,6 +7613,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (!(adapter->flags & FLAG_HAS_AMT))
+ 		e1000e_get_hw_control(adapter);
+ 
++	if (hw->mac.type >= e1000_pch_cnp)
++		adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
++
+ 	strlcpy(netdev->name, "eth%d", sizeof(netdev->name));
+ 	err = register_netdev(netdev);
+ 	if (err)
 -- 
 2.25.1
 
