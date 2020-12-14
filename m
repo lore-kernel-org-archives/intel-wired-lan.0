@@ -1,50 +1,115 @@
 From: Mario Limonciello <mario.limonciello@dell.com>
-Date: Mon, 14 Dec 2020 09:34:47 -0600
-Subject: [Intel-wired-lan] [PATCH 1/4] e1000e: Only run S0ix flows if
- shutdown succeeded
+Date: Mon, 14 Dec 2020 09:34:49 -0600
+Subject: [Intel-wired-lan] [PATCH 3/4] Revert "e1000e: disable s0ix entry
+ and exit flows for ME systems"
 In-Reply-To: <20201214153450.874339-1-mario.limonciello@dell.com>
 References: <20201214153450.874339-1-mario.limonciello@dell.com>
-Message-ID: <20201214153450.874339-2-mario.limonciello@dell.com>
+Message-ID: <20201214153450.874339-4-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the shutdown failed, the part will be thawed and running
-S0ix flows will put it into an undefined state.
+commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
+disabled s0ix flows for systems that have various incarnations of the
+i219-LM ethernet controller.  This changed caused power consumption regressions
+on the following shipping Dell Comet Lake based laptops:
+* Latitude 5310
+* Latitude 5410
+* Latitude 5410
+* Latitude 5510
+* Precision 3550
+* Latitude 5411
+* Latitude 5511
+* Precision 3551
+* Precision 7550
+* Precision 7750
 
-Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+This commit was introduced because of some regressions on certain Thinkpad
+laptops.  This comment was potentially caused by an earlier
+commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case").
+or it was possibly caused by a system not meeting platform architectural
+requirements for low power consumption.  Other changes made in the driver
+with extended timeouts are expected to make the driver more impervious to
+platform firmware behavior.
+
+Fixes: e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 45 +---------------------
+ 1 file changed, 2 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 128ab6898070..6588f5d4a2be 100644
+index 6588f5d4a2be..b9800ba2006c 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6970,13 +6970,14 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
- 	e1000e_pm_freeze(dev);
+@@ -103,45 +103,6 @@ static const struct e1000_reg_info e1000_reg_info_tbl[] = {
+ 	{0, NULL}
+ };
  
- 	rc = __e1000_shutdown(pdev, false);
--	if (rc)
-+	if (rc) {
- 		e1000e_pm_thaw(dev);
+-struct e1000e_me_supported {
+-	u16 device_id;		/* supported device ID */
+-};
 -
--	/* Introduce S0ix implementation */
+-static const struct e1000e_me_supported me_supported[] = {
+-	{E1000_DEV_ID_PCH_LPT_I217_LM},
+-	{E1000_DEV_ID_PCH_LPTLP_I218_LM},
+-	{E1000_DEV_ID_PCH_I218_LM2},
+-	{E1000_DEV_ID_PCH_I218_LM3},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM2},
+-	{E1000_DEV_ID_PCH_LBG_I219_LM3},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM4},
+-	{E1000_DEV_ID_PCH_SPT_I219_LM5},
+-	{E1000_DEV_ID_PCH_CNP_I219_LM6},
+-	{E1000_DEV_ID_PCH_CNP_I219_LM7},
+-	{E1000_DEV_ID_PCH_ICP_I219_LM8},
+-	{E1000_DEV_ID_PCH_ICP_I219_LM9},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM10},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM11},
+-	{E1000_DEV_ID_PCH_CMP_I219_LM12},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM13},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM14},
+-	{E1000_DEV_ID_PCH_TGP_I219_LM15},
+-	{0}
+-};
+-
+-static bool e1000e_check_me(u16 device_id)
+-{
+-	struct e1000e_me_supported *id;
+-
+-	for (id = (struct e1000e_me_supported *)me_supported;
+-	     id->device_id; id++)
+-		if (device_id == id->device_id)
+-			return true;
+-
+-	return false;
+-}
+-
+ /**
+  * __ew32_prepare - prepare to write to MAC CSR register on certain parts
+  * @hw: pointer to the HW structure
+@@ -6974,8 +6935,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 		e1000e_pm_thaw(dev);
+ 	} else {
+ 		/* Introduce S0ix implementation */
+-		if (hw->mac.type >= e1000_pch_cnp &&
+-		    !e1000e_check_me(hw->adapter->pdev->device))
++		if (hw->mac.type >= e1000_pch_cnp)
+ 			e1000e_s0ix_entry_flow(adapter);
+ 	}
+ 
+@@ -6991,8 +6951,7 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	int rc;
+ 
+ 	/* Introduce S0ix implementation */
 -	if (hw->mac.type >= e1000_pch_cnp &&
 -	    !e1000e_check_me(hw->adapter->pdev->device))
--		e1000e_s0ix_entry_flow(adapter);
-+	} else {
-+		/* Introduce S0ix implementation */
-+		if (hw->mac.type >= e1000_pch_cnp &&
-+		    !e1000e_check_me(hw->adapter->pdev->device))
-+			e1000e_s0ix_entry_flow(adapter);
-+	}
++	if (hw->mac.type >= e1000_pch_cnp)
+ 		e1000e_s0ix_exit_flow(adapter);
  
- 	return rc;
- }
+ 	rc = __e1000_resume(pdev);
 -- 
 2.25.1
 
