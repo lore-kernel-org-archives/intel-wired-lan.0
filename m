@@ -1,183 +1,112 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 15 Dec 2020 13:49:17 +0100
-Subject: [Intel-wired-lan] [PATCH v5 4/4] e1000e: Export S0ix flags to
- ethtool
-In-Reply-To: <20201214192935.895174-5-mario.limonciello@dell.com>
-References: <20201214192935.895174-1-mario.limonciello@dell.com>
- <20201214192935.895174-5-mario.limonciello@dell.com>
-Message-ID: <71cd8bc2-2a34-5a27-64d8-56e5ac9c2b22@redhat.com>
+From: Ian Kumlien <ian.kumlien@gmail.com>
+Date: Tue, 15 Dec 2020 14:09:12 +0100
+Subject: [Intel-wired-lan] [PATCH 1/3] PCI/ASPM: Use the path max in L1
+ ASPM latency check
+In-Reply-To: <20201215004004.GA280628@bjorn-Precision-5520>
+References: <CAA85sZs8Li7+8BQWj0e+Qrxes1VF6K_Ukqrqgs1E3hHmaXqsbQ@mail.gmail.com>
+ <20201215004004.GA280628@bjorn-Precision-5520>
+Message-ID: <CAA85sZvUvUTtyKR8rTDwGa=1sNrhv4cA8LQ+6TXi20Sq9Yn8fw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Tue, Dec 15, 2020 at 1:40 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> On Mon, Dec 14, 2020 at 11:56:31PM +0100, Ian Kumlien wrote:
+> > On Mon, Dec 14, 2020 at 8:19 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> > > If you're interested, you could probably unload the Realtek drivers,
+> > > remove the devices, and set the PCI_EXP_LNKCTL_LD (Link Disable) bit
+> > > in 02:04.0, e.g.,
+> > >
+> > >   # RT=/sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/0000:02:04.0
+> > >   # echo 1 > $RT/0000:04:00.0/remove
+> > >   # echo 1 > $RT/0000:04:00.1/remove
+> > >   # echo 1 > $RT/0000:04:00.2/remove
+> > >   # echo 1 > $RT/0000:04:00.4/remove
+> > >   # echo 1 > $RT/0000:04:00.7/remove
+> > >   # setpci -s02:04.0 CAP_EXP+0x10.w=0x0010
+> > >
+> > > That should take 04:00.x out of the picture.
+> >
+> > Didn't actually change the behaviour, I'm suspecting an errata for AMD pcie...
+> >
+> > So did this, with unpatched kernel:
+> > [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+> > [  5]   0.00-1.00   sec  4.56 MBytes  38.2 Mbits/sec    0   67.9 KBytes
+> > [  5]   1.00-2.00   sec  4.47 MBytes  37.5 Mbits/sec    0   96.2 KBytes
+> > [  5]   2.00-3.00   sec  4.85 MBytes  40.7 Mbits/sec    0   50.9 KBytes
+> > [  5]   3.00-4.00   sec  4.23 MBytes  35.4 Mbits/sec    0   70.7 KBytes
+> > [  5]   4.00-5.00   sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
+> > [  5]   5.00-6.00   sec  4.23 MBytes  35.4 Mbits/sec    0   45.2 KBytes
+> > [  5]   6.00-7.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
+> > [  5]   7.00-8.00   sec  3.98 MBytes  33.4 Mbits/sec    0   36.8 KBytes
+> > [  5]   8.00-9.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
+> > [  5]   9.00-10.00  sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
+> > - - - - - - - - - - - - - - - - - - - - - - - - -
+> > [ ID] Interval           Transfer     Bitrate         Retr
+> > [  5]   0.00-10.00  sec  43.2 MBytes  36.2 Mbits/sec    0             sender
+> > [  5]   0.00-10.00  sec  42.7 MBytes  35.8 Mbits/sec                  receiver
+> >
+> > and:
+> > echo 0 > /sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/link/l1_aspm
+>
+> BTW, thanks a lot for testing out the "l1_aspm" sysfs file.  I'm very
+> pleased that it seems to be working as intended.
 
-On 12/14/20 8:29 PM, Mario Limonciello wrote:
-> This flag can be used by an end user to disable S0ix flows on a
-> buggy system or by an OEM for development purposes.
-> 
-> If you need this flag to be persisted across reboots, it's suggested
-> to use a udev rule to call adjust it until the kernel could have your
-> configuration in a disallow list.
-> 
-> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+It was nice to find it for easy disabling :)
 
-Thanks, patch looks good to me:
+> > and:
+> > [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+> > [  5]   0.00-1.00   sec   113 MBytes   951 Mbits/sec  153    772 KBytes
+> > [  5]   1.00-2.00   sec   109 MBytes   912 Mbits/sec  276    550 KBytes
+> > [  5]   2.00-3.00   sec   111 MBytes   933 Mbits/sec  123    625 KBytes
+> > [  5]   3.00-4.00   sec   111 MBytes   933 Mbits/sec   31    687 KBytes
+> > [  5]   4.00-5.00   sec   110 MBytes   923 Mbits/sec    0    679 KBytes
+> > [  5]   5.00-6.00   sec   110 MBytes   923 Mbits/sec  136    577 KBytes
+> > [  5]   6.00-7.00   sec   110 MBytes   923 Mbits/sec  214    645 KBytes
+> > [  5]   7.00-8.00   sec   110 MBytes   923 Mbits/sec   32    628 KBytes
+> > [  5]   8.00-9.00   sec   110 MBytes   923 Mbits/sec   81    537 KBytes
+> > [  5]   9.00-10.00  sec   110 MBytes   923 Mbits/sec   10    577 KBytes
+> > - - - - - - - - - - - - - - - - - - - - - - - - -
+> > [ ID] Interval           Transfer     Bitrate         Retr
+> > [  5]   0.00-10.00  sec  1.08 GBytes   927 Mbits/sec  1056             sender
+> > [  5]   0.00-10.00  sec  1.07 GBytes   923 Mbits/sec                  receiver
+> >
+> > But this only confirms that the fix i experience is a side effect.
+> >
+> > The original code is still wrong :)
+>
+> What exactly is this machine?  Brand, model, config?  Maybe you could
+> add this and a dmesg log to the buzilla?  It seems like other people
+> should be seeing the same problem, so I'm hoping to grub around on the
+> web to see if there are similar reports involving these devices.
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+ASUS Pro WS X570-ACE with AMD Ryzen 9 3900X
 
-Regards,
+> https://bugzilla.kernel.org/show_bug.cgi?id=209725
+>
+> Here's one that is superficially similar:
+> https://linux-hardware.org/index.php?probe=e5f24075e5&log=lspci_all
+> in that it has a RP -- switch -- I211 path.  Interestingly, the switch
+> here advertises <64us L1 exit latency instead of the <32us latency
+> your switch advertises.  Of course, I can't tell if it's exactly the
+> same switch.
 
-Hans
+Same chipset it seems
 
-> ---
->  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
->  drivers/net/ethernet/intel/e1000e/ethtool.c | 46 +++++++++++++++++++++
->  drivers/net/ethernet/intel/e1000e/netdev.c  |  9 ++--
->  3 files changed, 52 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-> index ba7a0f8f6937..5b2143f4b1f8 100644
-> --- a/drivers/net/ethernet/intel/e1000e/e1000.h
-> +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-> @@ -436,6 +436,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
->  #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
->  #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
->  #define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
-> +#define FLAG2_ENABLE_S0IX_FLOWS           BIT(15)
->  
->  #define E1000_RX_DESC_PS(R, i)	    \
->  	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index 03215b0aee4b..06442e6bef73 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -23,6 +23,13 @@ struct e1000_stats {
->  	int stat_offset;
->  };
->  
-> +static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
-> +#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
-> +	"s0ix-enabled",
-> +};
-> +
-> +#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
-> +
->  #define E1000_STAT(str, m) { \
->  		.stat_string = str, \
->  		.type = E1000_STATS, \
-> @@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
->  		return E1000_TEST_LEN;
->  	case ETH_SS_STATS:
->  		return E1000_STATS_LEN;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		return E1000E_PRIV_FLAGS_STR_LEN;
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-> @@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
->  			p += ETH_GSTRING_LEN;
->  		}
->  		break;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		memcpy(data, e1000e_priv_flags_strings,
-> +		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-> +		break;
->  	}
->  }
->  
-> @@ -2305,6 +2318,37 @@ static int e1000e_get_ts_info(struct net_device *netdev,
->  	return 0;
->  }
->  
-> +static u32 e1000e_get_priv_flags(struct net_device *netdev)
-> +{
-> +	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	u32 priv_flags = 0;
-> +
-> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-> +		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
-> +
-> +	return priv_flags;
-> +}
-> +
-> +static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
-> +{
-> +	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	unsigned int flags2 = adapter->flags2;
-> +
-> +	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
-> +	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED) {
-> +		struct e1000_hw *hw = &adapter->hw;
-> +
-> +		if (hw->mac.type < e1000_pch_cnp)
-> +			return -EINVAL;
-> +		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-> +	}
-> +
-> +	if (flags2 != adapter->flags2)
-> +		adapter->flags2 = flags2;
-> +
-> +	return 0;
-> +}
-> +
->  static const struct ethtool_ops e1000_ethtool_ops = {
->  	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
->  	.get_drvinfo		= e1000_get_drvinfo,
-> @@ -2336,6 +2380,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
->  	.set_eee		= e1000e_set_eee,
->  	.get_link_ksettings	= e1000_get_link_ksettings,
->  	.set_link_ksettings	= e1000_set_link_ksettings,
-> +	.get_priv_flags		= e1000e_get_priv_flags,
-> +	.set_priv_flags		= e1000e_set_priv_flags,
->  };
->  
->  void e1000e_set_ethtool_ops(struct net_device *netdev)
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b9800ba2006c..e9b82c209c2d 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6923,7 +6923,6 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
->  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->  	struct e1000_adapter *adapter = netdev_priv(netdev);
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
->  	int rc;
->  
->  	e1000e_flush_lpic(pdev);
-> @@ -6935,7 +6934,7 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
->  		e1000e_pm_thaw(dev);
->  	} else {
->  		/* Introduce S0ix implementation */
-> -		if (hw->mac.type >= e1000_pch_cnp)
-> +		if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
->  			e1000e_s0ix_entry_flow(adapter);
->  	}
->  
-> @@ -6947,11 +6946,10 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
->  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->  	struct e1000_adapter *adapter = netdev_priv(netdev);
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
->  	int rc;
->  
->  	/* Introduce S0ix implementation */
-> -	if (hw->mac.type >= e1000_pch_cnp)
-> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
->  		e1000e_s0ix_exit_flow(adapter);
->  
->  	rc = __e1000_resume(pdev);
-> @@ -7615,6 +7613,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  	if (!(adapter->flags & FLAG_HAS_AMT))
->  		e1000e_get_hw_control(adapter);
->  
-> +	if (hw->mac.type >= e1000_pch_cnp)
-> +		adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-> +
->  	strlcpy(netdev->name, "eth%d", sizeof(netdev->name));
->  	err = register_netdev(netdev);
->  	if (err)
-> 
+I'm running bios version:
+        Version: 2206
+        Release Date: 08/13/2020
 
+ANd latest is:
+Version 3003
+2020/12/07
+
+Will test upgrading that as well, but it could be that they report the
+incorrect latency of the switch - I don't know how many things AGESA
+changes but... It's been updated twice since my upgrade.
+
+> Bjorn
