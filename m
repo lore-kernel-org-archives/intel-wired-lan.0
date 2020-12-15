@@ -1,11 +1,11 @@
 From: Shen, Yijun <Yijun.Shen@dell.com>
-Date: Tue, 15 Dec 2020 14:46:59 +0000
-Subject: [Intel-wired-lan] [PATCH v5 1/4] e1000e: Only run S0ix flows if
- shutdown succeeded
-In-Reply-To: <20201214192935.895174-2-mario.limonciello@dell.com>
+Date: Tue, 15 Dec 2020 14:47:07 +0000
+Subject: [Intel-wired-lan] [PATCH v5 2/4] e1000e: bump up timeout to
+ wait when ME un-configures ULP mode
+In-Reply-To: <20201214192935.895174-3-mario.limonciello@dell.com>
 References: <20201214192935.895174-1-mario.limonciello@dell.com>
- <20201214192935.895174-2-mario.limonciello@dell.com>
-Message-ID: <SJ0PR19MB4463871A880C165310ED8ABA9AC60@SJ0PR19MB4463.namprd19.prod.outlook.com>
+ <20201214192935.895174-3-mario.limonciello@dell.com>
+Message-ID: <SJ0PR19MB4463FFE194AC6662975C23909AC60@SJ0PR19MB4463.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,51 +19,85 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: linux-kernel at vger.kernel.org; Netdev; Alexander Duyck; Jakub Kicinski;
 > Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller;
 > darcari at redhat.com; Shen, Yijun; Yuan, Perry;
-> anthony.wong at canonical.com; Hans de Goede; Limonciello, Mario
-> Subject: [PATCH v5 1/4] e1000e: Only run S0ix flows if shutdown succeeded
+> anthony.wong at canonical.com; Hans de Goede; Limonciello, Mario; Aaron
+> Ma; Mark Pearson
+> Subject: [PATCH v5 2/4] e1000e: bump up timeout to wait when ME un-
+> configures ULP mode
 > 
-> If the shutdown failed, the part will be thawed and running S0ix flows will
-> put it into an undefined state.
+> Per guidance from Intel ethernet architecture team, it may take up to 1
+> second for unconfiguring ULP mode.
 > 
-> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
-> Reviewed-by: Alexander Duyck <alexander.duyck@gmail.com>
+> However in practice this seems to be taking up to 2 seconds on some Lenovo
+> machines.  Detect scenarios that take more than 1 second but less than 2.5
+> seconds and emit a warning on resume for those scenarios.
+> 
+> Suggested-by: Aaron Ma <aaron.ma@canonical.com>
+> Suggested-by: Sasha Netfin <sasha.neftin@intel.com>
+> Suggested-by: Hans de Goede <hdegoede@redhat.com>
+> CC: Mark Pearson <markpearson@lenovo.com>
+> Fixes: f15bb6dde738cc8fa0 ("e1000e: Add support for S0ix")
+> BugLink: https://bugs.launchpad.net/bugs/1865570
+> Link: https://patchwork.ozlabs.org/project/intel-wired-
+> lan/patch/20200323191639.48826-1-aaron.ma at canonical.com/
+> Link: https://lkml.org/lkml/2020/12/13/15
+> Link: https://lkml.org/lkml/2020/12/14/708
 > Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 
-Verified this series patch on Dell Systems.
+Verified this series patches with Dell Systems.
 
 Tested-By: Yijun Shen <Yijun.shen@dell.com>
 
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c | 16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 128ab6898070..6588f5d4a2be 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6970,13 +6970,14 @@ static __maybe_unused int
-> e1000e_pm_suspend(struct device *dev)
->  	e1000e_pm_freeze(dev);
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index 9aa6fad8ed47..fdf23d20c954 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -1240,6 +1240,9 @@ static s32 e1000_disable_ulp_lpt_lp(struct
+> e1000_hw *hw, bool force)
+>  		return 0;
 > 
->  	rc = __e1000_shutdown(pdev, false);
-> -	if (rc)
-> +	if (rc) {
->  		e1000e_pm_thaw(dev);
-> -
-> -	/* Introduce S0ix implementation */
-> -	if (hw->mac.type >= e1000_pch_cnp &&
-> -	    !e1000e_check_me(hw->adapter->pdev->device))
-> -		e1000e_s0ix_entry_flow(adapter);
-> +	} else {
-> +		/* Introduce S0ix implementation */
-> +		if (hw->mac.type >= e1000_pch_cnp &&
-> +		    !e1000e_check_me(hw->adapter->pdev->device))
-> +			e1000e_s0ix_entry_flow(adapter);
-> +	}
+>  	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID) {
+> +		struct e1000_adapter *adapter = hw->adapter;
+> +		bool firmware_bug = false;
+> +
+>  		if (force) {
+>  			/* Request ME un-configure ULP mode in the PHY */
+>  			mac_reg = er32(H2ME);
+> @@ -1248,16 +1251,23 @@ static s32 e1000_disable_ulp_lpt_lp(struct
+> e1000_hw *hw, bool force)
+>  			ew32(H2ME, mac_reg);
+>  		}
 > 
->  	return rc;
->  }
+> -		/* Poll up to 300msec for ME to clear ULP_CFG_DONE. */
+> +		/* Poll up to 2.5 seconds for ME to clear ULP_CFG_DONE.
+> +		 * If this takes more than 1 second, show a warning indicating
+> a firmware
+> +		 * bug */
+>  		while (er32(FWSM) & E1000_FWSM_ULP_CFG_DONE) {
+> -			if (i++ == 30) {
+> +			if (i++ == 250) {
+>  				ret_val = -E1000_ERR_PHY;
+>  				goto out;
+>  			}
+> +			if (i > 100 && !firmware_bug)
+> +				firmware_bug = true;
+> 
+>  			usleep_range(10000, 11000);
+>  		}
+> -		e_dbg("ULP_CONFIG_DONE cleared after %dmsec\n", i * 10);
+> +		if (firmware_bug)
+> +			e_warn("ULP_CONFIG_DONE took %dmsec.  This is a
+> firmware bug\n", i * 10);
+> +		else
+> +			e_dbg("ULP_CONFIG_DONE cleared after %dmsec\n",
+> i * 10);
+> 
+>  		if (force) {
+>  			mac_reg = er32(H2ME);
 > --
 > 2.25.1
 
