@@ -1,90 +1,38 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Mon, 14 Dec 2020 18:40:04 -0600
-Subject: [Intel-wired-lan] [PATCH 1/3] PCI/ASPM: Use the path max in L1
- ASPM latency check
-In-Reply-To: <CAA85sZs8Li7+8BQWj0e+Qrxes1VF6K_Ukqrqgs1E3hHmaXqsbQ@mail.gmail.com>
-Message-ID: <20201215004004.GA280628@bjorn-Precision-5520>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Tue, 15 Dec 2020 02:00:08 +0000
+Subject: [Intel-wired-lan] [PATCH v2 net-next] ice,
+ xsk: Move Rx allocation out of while-loop
+In-Reply-To: <20201211085410.59350-1-bjorn.topel@gmail.com>
+References: <20201211085410.59350-1-bjorn.topel@gmail.com>
+Message-ID: <160799760821.15807.11906942397903153665.git-patchwork-notify@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Dec 14, 2020 at 11:56:31PM +0100, Ian Kumlien wrote:
-> On Mon, Dec 14, 2020 at 8:19 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+Hello:
 
-> > If you're interested, you could probably unload the Realtek drivers,
-> > remove the devices, and set the PCI_EXP_LNKCTL_LD (Link Disable) bit
-> > in 02:04.0, e.g.,
-> >
-> >   # RT=/sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/0000:02:04.0
-> >   # echo 1 > $RT/0000:04:00.0/remove
-> >   # echo 1 > $RT/0000:04:00.1/remove
-> >   # echo 1 > $RT/0000:04:00.2/remove
-> >   # echo 1 > $RT/0000:04:00.4/remove
-> >   # echo 1 > $RT/0000:04:00.7/remove
-> >   # setpci -s02:04.0 CAP_EXP+0x10.w=0x0010
-> >
-> > That should take 04:00.x out of the picture.
+This patch was applied to netdev/net-next.git (refs/heads/master):
+
+On Fri, 11 Dec 2020 09:54:10 +0100 you wrote:
+> From: Bj?rn T?pel <bjorn.topel@intel.com>
 > 
-> Didn't actually change the behaviour, I'm suspecting an errata for AMD pcie...
+> Instead doing the check for allocation in each loop, move it outside
+> the while loop and do it every NAPI loop.
 > 
-> So did this, with unpatched kernel:
-> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> [  5]   0.00-1.00   sec  4.56 MBytes  38.2 Mbits/sec    0   67.9 KBytes
-> [  5]   1.00-2.00   sec  4.47 MBytes  37.5 Mbits/sec    0   96.2 KBytes
-> [  5]   2.00-3.00   sec  4.85 MBytes  40.7 Mbits/sec    0   50.9 KBytes
-> [  5]   3.00-4.00   sec  4.23 MBytes  35.4 Mbits/sec    0   70.7 KBytes
-> [  5]   4.00-5.00   sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
-> [  5]   5.00-6.00   sec  4.23 MBytes  35.4 Mbits/sec    0   45.2 KBytes
-> [  5]   6.00-7.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
-> [  5]   7.00-8.00   sec  3.98 MBytes  33.4 Mbits/sec    0   36.8 KBytes
-> [  5]   8.00-9.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
-> [  5]   9.00-10.00  sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bitrate         Retr
-> [  5]   0.00-10.00  sec  43.2 MBytes  36.2 Mbits/sec    0             sender
-> [  5]   0.00-10.00  sec  42.7 MBytes  35.8 Mbits/sec                  receiver
+> This change boosts the xdpsock rxdrop scenario with 15% more
+> packets-per-second.
 > 
-> and:
-> echo 0 > /sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/link/l1_aspm
+> [...]
 
-BTW, thanks a lot for testing out the "l1_aspm" sysfs file.  I'm very
-pleased that it seems to be working as intended.
+Here is the summary with links:
+  - [v2,net-next] ice, xsk: Move Rx allocation out of while-loop
+    https://git.kernel.org/netdev/net-next/c/5bb0c4b5eb61
 
-> and:
-> [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> [  5]   0.00-1.00   sec   113 MBytes   951 Mbits/sec  153    772 KBytes
-> [  5]   1.00-2.00   sec   109 MBytes   912 Mbits/sec  276    550 KBytes
-> [  5]   2.00-3.00   sec   111 MBytes   933 Mbits/sec  123    625 KBytes
-> [  5]   3.00-4.00   sec   111 MBytes   933 Mbits/sec   31    687 KBytes
-> [  5]   4.00-5.00   sec   110 MBytes   923 Mbits/sec    0    679 KBytes
-> [  5]   5.00-6.00   sec   110 MBytes   923 Mbits/sec  136    577 KBytes
-> [  5]   6.00-7.00   sec   110 MBytes   923 Mbits/sec  214    645 KBytes
-> [  5]   7.00-8.00   sec   110 MBytes   923 Mbits/sec   32    628 KBytes
-> [  5]   8.00-9.00   sec   110 MBytes   923 Mbits/sec   81    537 KBytes
-> [  5]   9.00-10.00  sec   110 MBytes   923 Mbits/sec   10    577 KBytes
-> - - - - - - - - - - - - - - - - - - - - - - - - -
-> [ ID] Interval           Transfer     Bitrate         Retr
-> [  5]   0.00-10.00  sec  1.08 GBytes   927 Mbits/sec  1056             sender
-> [  5]   0.00-10.00  sec  1.07 GBytes   923 Mbits/sec                  receiver
-> 
-> But this only confirms that the fix i experience is a side effect.
-> 
-> The original code is still wrong :)
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-What exactly is this machine?  Brand, model, config?  Maybe you could
-add this and a dmesg log to the buzilla?  It seems like other people
-should be seeing the same problem, so I'm hoping to grub around on the
-web to see if there are similar reports involving these devices.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=209725
-
-Here's one that is superficially similar:
-https://linux-hardware.org/index.php?probe=e5f24075e5&log=lspci_all
-in that it has a RP -- switch -- I211 path.  Interestingly, the switch
-here advertises <64us L1 exit latency instead of the <32us latency
-your switch advertises.  Of course, I can't tell if it's exactly the
-same switch.
-
-Bjorn
