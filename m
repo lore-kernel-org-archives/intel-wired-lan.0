@@ -1,199 +1,208 @@
-From: Shen, Yijun <Yijun.Shen@dell.com>
-Date: Tue, 15 Dec 2020 14:47:32 +0000
-Subject: [Intel-wired-lan] [PATCH v5 4/4] e1000e: Export S0ix flags to
- ethtool
-In-Reply-To: <20201214192935.895174-5-mario.limonciello@dell.com>
-References: <20201214192935.895174-1-mario.limonciello@dell.com>
- <20201214192935.895174-5-mario.limonciello@dell.com>
-Message-ID: <SJ0PR19MB4463F48834736D724D357A6E9AC60@SJ0PR19MB4463.namprd19.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 15 Dec 2020 23:11:50 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING d2c2bbad93b818020657a82121a147e9ace1230d
+Message-ID: <5fd8d236.SC6MIXu3FBoyLETP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> Sent: Tuesday, December 15, 2020 3:30 AM
-> To: Jeff Kirsher; Tony Nguyen; intel-wired-lan at lists.osuosl.org
-> Cc: linux-kernel at vger.kernel.org; Netdev; Alexander Duyck; Jakub Kicinski;
-> Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller;
-> darcari at redhat.com; Shen, Yijun; Yuan, Perry;
-> anthony.wong at canonical.com; Hans de Goede; Limonciello, Mario
-> Subject: [PATCH v5 4/4] e1000e: Export S0ix flags to ethtool
-> 
-> This flag can be used by an end user to disable S0ix flows on a buggy system
-> or by an OEM for development purposes.
-> 
-> If you need this flag to be persisted across reboots, it's suggested to use a
-> udev rule to call adjust it until the kernel could have your configuration in a
-> disallow list.
-> 
-> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: d2c2bbad93b818020657a82121a147e9ace1230d  i40e, xsk: Simplify the do-while allocation loop
 
-Verified this series patches with Dell Systems.
+Warning in current branch:
 
-Tested-By: Yijun Shen <Yijun.shen@dell.com>
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:547:6: warning: variable 'ret' set but not used [-Wunused-but-set-variable]
 
-> ---
->  drivers/net/ethernet/intel/e1000e/e1000.h   |  1 +
->  drivers/net/ethernet/intel/e1000e/ethtool.c | 46 +++++++++++++++++++++
-> drivers/net/ethernet/intel/e1000e/netdev.c  |  9 ++--
->  3 files changed, 52 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h
-> b/drivers/net/ethernet/intel/e1000e/e1000.h
-> index ba7a0f8f6937..5b2143f4b1f8 100644
-> --- a/drivers/net/ethernet/intel/e1000e/e1000.h
-> +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-> @@ -436,6 +436,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter
-> *adapter, u32 *timinca);
->  #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
->  #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
->  #define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
-> +#define FLAG2_ENABLE_S0IX_FLOWS           BIT(15)
-> 
->  #define E1000_RX_DESC_PS(R, i)	    \
->  	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i])) diff --git
-> a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index 03215b0aee4b..06442e6bef73 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -23,6 +23,13 @@ struct e1000_stats {
->  	int stat_offset;
->  };
-> 
-> +static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
-> +#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
-> +	"s0ix-enabled",
-> +};
-> +
-> +#define E1000E_PRIV_FLAGS_STR_LEN
-> ARRAY_SIZE(e1000e_priv_flags_strings)
-> +
->  #define E1000_STAT(str, m) { \
->  		.stat_string = str, \
->  		.type = E1000_STATS, \
-> @@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device
-> __always_unused *netdev,
->  		return E1000_TEST_LEN;
->  	case ETH_SS_STATS:
->  		return E1000_STATS_LEN;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		return E1000E_PRIV_FLAGS_STR_LEN;
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-> @@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device
-> __always_unused *netdev,
->  			p += ETH_GSTRING_LEN;
->  		}
->  		break;
-> +	case ETH_SS_PRIV_FLAGS:
-> +		memcpy(data, e1000e_priv_flags_strings,
-> +		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-> +		break;
->  	}
->  }
-> 
-> @@ -2305,6 +2318,37 @@ static int e1000e_get_ts_info(struct net_device
-> *netdev,
->  	return 0;
->  }
-> 
-> +static u32 e1000e_get_priv_flags(struct net_device *netdev) {
-> +	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	u32 priv_flags = 0;
-> +
-> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-> +		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
-> +
-> +	return priv_flags;
-> +}
-> +
-> +static int e1000e_set_priv_flags(struct net_device *netdev, u32
-> +priv_flags) {
-> +	struct e1000_adapter *adapter = netdev_priv(netdev);
-> +	unsigned int flags2 = adapter->flags2;
-> +
-> +	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
-> +	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED) {
-> +		struct e1000_hw *hw = &adapter->hw;
-> +
-> +		if (hw->mac.type < e1000_pch_cnp)
-> +			return -EINVAL;
-> +		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-> +	}
-> +
-> +	if (flags2 != adapter->flags2)
-> +		adapter->flags2 = flags2;
-> +
-> +	return 0;
-> +}
-> +
->  static const struct ethtool_ops e1000_ethtool_ops = {
->  	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
->  	.get_drvinfo		= e1000_get_drvinfo,
-> @@ -2336,6 +2380,8 @@ static const struct ethtool_ops e1000_ethtool_ops
-> = {
->  	.set_eee		= e1000e_set_eee,
->  	.get_link_ksettings	= e1000_get_link_ksettings,
->  	.set_link_ksettings	= e1000_set_link_ksettings,
-> +	.get_priv_flags		= e1000e_get_priv_flags,
-> +	.set_priv_flags		= e1000e_set_priv_flags,
->  };
-> 
->  void e1000e_set_ethtool_ops(struct net_device *netdev) diff --git
-> a/drivers/net/ethernet/intel/e1000e/netdev.c
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index b9800ba2006c..e9b82c209c2d 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6923,7 +6923,6 @@ static __maybe_unused int
-> e1000e_pm_suspend(struct device *dev)
->  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->  	struct e1000_adapter *adapter = netdev_priv(netdev);
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
->  	int rc;
-> 
->  	e1000e_flush_lpic(pdev);
-> @@ -6935,7 +6934,7 @@ static __maybe_unused int
-> e1000e_pm_suspend(struct device *dev)
->  		e1000e_pm_thaw(dev);
->  	} else {
->  		/* Introduce S0ix implementation */
-> -		if (hw->mac.type >= e1000_pch_cnp)
-> +		if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
->  			e1000e_s0ix_entry_flow(adapter);
->  	}
-> 
-> @@ -6947,11 +6946,10 @@ static __maybe_unused int
-> e1000e_pm_resume(struct device *dev)
->  	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->  	struct e1000_adapter *adapter = netdev_priv(netdev);
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
->  	int rc;
-> 
->  	/* Introduce S0ix implementation */
-> -	if (hw->mac.type >= e1000_pch_cnp)
-> +	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
->  		e1000e_s0ix_exit_flow(adapter);
-> 
->  	rc = __e1000_resume(pdev);
-> @@ -7615,6 +7613,9 @@ static int e1000_probe(struct pci_dev *pdev, const
-> struct pci_device_id *ent)
->  	if (!(adapter->flags & FLAG_HAS_AMT))
->  		e1000e_get_hw_control(adapter);
-> 
-> +	if (hw->mac.type >= e1000_pch_cnp)
-> +		adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-> +
->  	strlcpy(netdev->name, "eth%d", sizeof(netdev->name));
->  	err = register_netdev(netdev);
->  	if (err)
-> --
-> 2.25.1
+Warning ids grouped by kconfigs:
 
+gcc_recent_errors
+|-- alpha-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- arc-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- arm-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- arm-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- arm64-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- i386-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- mips-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- mips-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- powerpc-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- riscv-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- riscv-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- s390-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- x86_64-allmodconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+|-- x86_64-allyesconfig
+|   `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+`-- xtensa-allyesconfig
+    `-- drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:variable-ret-set-but-not-used
+
+elapsed time: 722m
+
+configs tested: 138
+configs skipped: 2
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arc                      axs103_smp_defconfig
+powerpc                      walnut_defconfig
+sparc                               defconfig
+m68k                          atari_defconfig
+powerpc                 mpc8560_ads_defconfig
+mips                         rt305x_defconfig
+arm                      tct_hammer_defconfig
+arm                       cns3420vb_defconfig
+alpha                            allyesconfig
+mips                      pistachio_defconfig
+arc                        nsimosci_defconfig
+h8300                       h8s-sim_defconfig
+arm                     eseries_pxa_defconfig
+sparc                            allyesconfig
+m68k                          amiga_defconfig
+arm                            dove_defconfig
+xtensa                    xip_kc705_defconfig
+mips                           xway_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                     ppa8548_defconfig
+microblaze                    nommu_defconfig
+powerpc                       maple_defconfig
+h8300                     edosk2674_defconfig
+sh                          sdk7780_defconfig
+m68k                           sun3_defconfig
+arm                            u300_defconfig
+i386                             alldefconfig
+arc                            hsdk_defconfig
+m68k                          sun3x_defconfig
+powerpc                      acadia_defconfig
+arm                          pxa168_defconfig
+xtensa                         virt_defconfig
+sparc                       sparc32_defconfig
+arm                          badge4_defconfig
+powerpc                     pq2fads_defconfig
+m68k                       m5475evb_defconfig
+parisc                           alldefconfig
+m68k                        m5407c3_defconfig
+arm                         orion5x_defconfig
+powerpc                         ps3_defconfig
+powerpc                      obs600_defconfig
+sh                ecovec24-romimage_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                     kmeter1_defconfig
+mips                        nlm_xlp_defconfig
+sh                        edosk7760_defconfig
+mips                       capcella_defconfig
+sh                          lboxre2_defconfig
+sh                          sdk7786_defconfig
+sh                            titan_defconfig
+powerpc                    gamecube_defconfig
+c6x                        evmc6472_defconfig
+sh                          rsk7264_defconfig
+powerpc                          g5_defconfig
+powerpc                   currituck_defconfig
+arm                           sunxi_defconfig
+sh                         ap325rxa_defconfig
+sh                         microdev_defconfig
+powerpc64                        alldefconfig
+mips                 decstation_r4k_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20201214
+i386                 randconfig-a004-20201214
+i386                 randconfig-a003-20201214
+i386                 randconfig-a002-20201214
+i386                 randconfig-a006-20201214
+i386                 randconfig-a005-20201214
+x86_64               randconfig-a016-20201214
+x86_64               randconfig-a012-20201214
+x86_64               randconfig-a013-20201214
+x86_64               randconfig-a015-20201214
+x86_64               randconfig-a014-20201214
+x86_64               randconfig-a011-20201214
+i386                 randconfig-a014-20201214
+i386                 randconfig-a013-20201214
+i386                 randconfig-a012-20201214
+i386                 randconfig-a011-20201214
+i386                 randconfig-a015-20201214
+i386                 randconfig-a016-20201214
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a003-20201214
+x86_64               randconfig-a006-20201214
+x86_64               randconfig-a002-20201214
+x86_64               randconfig-a005-20201214
+x86_64               randconfig-a004-20201214
+x86_64               randconfig-a001-20201214
+x86_64               randconfig-a016-20201213
+x86_64               randconfig-a012-20201213
+x86_64               randconfig-a013-20201213
+x86_64               randconfig-a015-20201213
+x86_64               randconfig-a014-20201213
+x86_64               randconfig-a011-20201213
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
