@@ -1,127 +1,76 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 15 Dec 2020 13:10:41 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix Error
- I40E_AQ_RC_EINVAL when removing VFs
-In-Reply-To: <20201022103936.1586-1-mateusz.palczewski@intel.com>
-References: <20201022103936.1586-1-mateusz.palczewski@intel.com>
-Message-ID: <CY4PR11MB157694B1D4911821E01B0682ABC60@CY4PR11MB1576.namprd11.prod.outlook.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 15 Dec 2020 15:23:01 +0200
+Subject: [Intel-wired-lan] Fw: [External] Re: [PATCH v4 0/4] Improve
+ s0ix flows for systems i219LM
+In-Reply-To: <ae436f90-45b8-ba70-be57-d17641c4f79d@lenovo.com>
+References: <20201214153450.874339-1-mario.limonciello@dell.com>
+ <80862f70-18a4-4f96-1b96-e2fad7cc2b35@redhat.com>
+ <PS2PR03MB37505A15D3C9B7505D679D7BBDC70@PS2PR03MB3750.apcprd03.prod.outlook.com>
+ <ae436f90-45b8-ba70-be57-d17641c4f79d@lenovo.com>
+Message-ID: <18c1c152-9298-a4c5-c4ed-92c9fd91ea8a@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: czwartek, 22 pa?dziernika 2020 12:40
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>; Dziedziuch,
-> SylwesterX <sylwesterx.dziedziuch@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix Error I40E_AQ_RC_EINVAL
-> when removing VFs
+On 12/14/2020 20:40, Mark Pearson wrote:
+> Thanks Hans
 > 
-> When removing VFs for PF added to bridge there was an error
-> I40E_AQ_RC_EINVAL. It was caused by not properly resetting and
-> reinitializing PF when adding/removing VFs.
-> Changed how reset is performed when adding/removing VFs to properly
-> reinitialize PFs VSI.
+> On 14/12/2020 13:31, Mark Pearson wrote:
+>>
+>>
+>> ------------------------------------------------------------------------
+>> *From:* Hans de Goede <hdegoede@redhat.com>
+>> *Sent:* December 14, 2020 13:24
+>> *To:* Mario Limonciello <mario.limonciello@dell.com>; Jeff Kirsher
+>> <jeffrey.t.kirsher@intel.com>; Tony Nguyen <anthony.l.nguyen@intel.com>;
+>> intel-wired-lan at lists.osuosl.org <intel-wired-lan@lists.osuosl.org>;
+>> David Miller <davem@davemloft.net>; Aaron Ma <aaron.ma@canonical.com>;
+>> Mark Pearson <mpearson@lenovo.com>
+>> *Cc:* linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>;
+>> Netdev <netdev@vger.kernel.org>; Alexander Duyck
+>> <alexander.duyck@gmail.com>; Jakub Kicinski <kuba@kernel.org>; Sasha
+>> Netfin <sasha.neftin@intel.com>; Aaron Brown <aaron.f.brown@intel.com>;
+>> Stefan Assmann <sassmann@redhat.com>; darcari at redhat.com
+>> <darcari@redhat.com>; Yijun.Shen at dell.com <Yijun.Shen@dell.com>;
+>> Perry.Yuan at dell.com <Perry.Yuan@dell.com>; anthony.wong at canonical.com
+>> <anthony.wong@canonical.com>
+>> *Subject:* [External] Re: [PATCH v4 0/4] Improve s0ix flows for systems
+>> i219LM
+>>   
+>> Hi All,
+>>
+> <snip>
+>>
+>> ###
+>>
+>> I've added Mark Pearson from Lenovo to the Cc so that Lenovo
+>> can investigate this issue further.
+>>
+>> Mark, this thread is about an issue with enabling S0ix support for
+>> e1000e (i219lm) controllers. This was enabled in the kernel a
+>> while ago, but then got disabled again on vPro / AMT enabled
+>> systems because on some systems (Lenovo X1C7 and now also X1C8)
+>> this lead to suspend/resume issues.
+>>
+>> When AMT is active then there is a handover handshake for the
+>> OS to get access to the ethernet controller from the ME. The
+>> Intel folks have checked and the Windows driver is using a timeout
+>> of 1 second for this handshake, yet on Lenovo systems this is
+>> taking 2 seconds. This likely has something to do with the
+>> ME firmware on these Lenovo models, can you get the firmware
+>> team at Lenovo to investigate this further ?
+> Absolutely - I'll ask them to look into this again.
 > 
-> Fixes: fc60861e9b00 ("i40e: start up in VEPA mode by default")
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Reported-by: kernel test robot <lkp@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |  3 +++
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 10 ++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  4 ++--
->  3 files changed, 15 insertions(+), 2 deletions(-)
+we need to explain why on Windows systems required 1s and on Linux 
+systems up to 2.5s - otherwise it is not reliable approach - you will 
+encounter others buggy system.
+(ME not POR on the Linux systems - is only one possible answer)
+> We did try to make progress with this previously - but it got a bit
+> stuck and hence the need for these patches....but I believe things may
+> have changed a bit so it's worth trying again
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
-> b/drivers/net/ethernet/intel/i40e/i40e.h
-> index c517c47..f1f0fe2 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> @@ -120,6 +120,7 @@ enum i40e_state_t {
->  	__I40E_RESET_INTR_RECEIVED,
->  	__I40E_REINIT_REQUESTED,
->  	__I40E_PF_RESET_REQUESTED,
-> +	__I40E_PF_RESET_AND_REBUILD_REQUESTED,
->  	__I40E_CORE_RESET_REQUESTED,
->  	__I40E_GLOBAL_RESET_REQUESTED,
->  	__I40E_EMP_RESET_INTR_RECEIVED,
-> @@ -145,6 +146,8 @@ enum i40e_state_t {
->  };
+> Mark
 > 
->  #define I40E_PF_RESET_FLAG	BIT_ULL(__I40E_PF_RESET_REQUESTED)
-> +#define I40E_PF_RESET_AND_REBUILD_FLAG	\
-> +	BIT_ULL(__I40E_PF_RESET_AND_REBUILD_REQUESTED)
-> 
->  /* VSI state flags */
->  enum i40e_vsi_state_t {
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 672dc2c..5fef34f 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -36,6 +36,8 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf);
-> static void i40e_determine_queue_usage(struct i40e_pf *pf);  static int
-> i40e_setup_pf_filter_control(struct i40e_pf *pf);  static void
-> i40e_prep_for_reset(struct i40e_pf *pf, bool lock_acquired);
-> +static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
-> +				   bool lock_acquired);
->  static int i40e_reset(struct i40e_pf *pf);  static void i40e_rebuild(struct
-> i40e_pf *pf, bool reinit, bool lock_acquired);  static int
-> i40e_setup_misc_vector_for_recovery_mode(struct i40e_pf *pf); @@ -
-> 8581,6 +8583,14 @@ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags,
-> bool lock_acquired)
->  			 "FW LLDP is disabled\n" :
->  			 "FW LLDP is enabled\n");
-> 
-> +	} else if (reset_flags & I40E_PF_RESET_AND_REBUILD_FLAG) {
-> +		/* Request a PF Reset
-> +		 *
-> +		 * Resets PF and reinitializes PFs VSI.
-> +		 */
-> +		i40e_prep_for_reset(pf, lock_acquired);
-> +		i40e_reset_and_rebuild(pf, true, lock_acquired);
-> +
->  	} else if (reset_flags & BIT_ULL(__I40E_REINIT_REQUESTED)) {
->  		int v;
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 8951740..8987295 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -1776,7 +1776,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev,
-> int num_vfs)
->  	if (num_vfs) {
->  		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
->  			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-> -			i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
-> +			i40e_do_reset_safe(pf,
-> I40E_PF_RESET_AND_REBUILD_FLAG);
->  		}
->  		ret = i40e_pci_sriov_enable(pdev, num_vfs);
->  		goto sriov_configure_out;
-> @@ -1785,7 +1785,7 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev,
-> int num_vfs)
->  	if (!pci_vfs_assigned(pf->pdev)) {
->  		i40e_free_vfs(pf);
->  		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
-> -		i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
-> +		i40e_do_reset_safe(pf,
-> I40E_PF_RESET_AND_REBUILD_FLAG);
->  	} else {
->  		dev_warn(&pdev->dev, "Unable to free VFs because some
-> are assigned to VMs.\n");
->  		ret = -EINVAL;
-> --
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
-
+Sasha
