@@ -1,76 +1,69 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 15 Dec 2020 15:23:01 +0200
-Subject: [Intel-wired-lan] Fw: [External] Re: [PATCH v4 0/4] Improve
- s0ix flows for systems i219LM
-In-Reply-To: <ae436f90-45b8-ba70-be57-d17641c4f79d@lenovo.com>
-References: <20201214153450.874339-1-mario.limonciello@dell.com>
- <80862f70-18a4-4f96-1b96-e2fad7cc2b35@redhat.com>
- <PS2PR03MB37505A15D3C9B7505D679D7BBDC70@PS2PR03MB3750.apcprd03.prod.outlook.com>
- <ae436f90-45b8-ba70-be57-d17641c4f79d@lenovo.com>
-Message-ID: <18c1c152-9298-a4c5-c4ed-92c9fd91ea8a@intel.com>
+From: Shen, Yijun <Yijun.Shen@dell.com>
+Date: Tue, 15 Dec 2020 14:46:59 +0000
+Subject: [Intel-wired-lan] [PATCH v5 1/4] e1000e: Only run S0ix flows if
+ shutdown succeeded
+In-Reply-To: <20201214192935.895174-2-mario.limonciello@dell.com>
+References: <20201214192935.895174-1-mario.limonciello@dell.com>
+ <20201214192935.895174-2-mario.limonciello@dell.com>
+Message-ID: <SJ0PR19MB4463871A880C165310ED8ABA9AC60@SJ0PR19MB4463.namprd19.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/14/2020 20:40, Mark Pearson wrote:
-> Thanks Hans
+> -----Original Message-----
+> From: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> Sent: Tuesday, December 15, 2020 3:30 AM
+> To: Jeff Kirsher; Tony Nguyen; intel-wired-lan at lists.osuosl.org
+> Cc: linux-kernel at vger.kernel.org; Netdev; Alexander Duyck; Jakub Kicinski;
+> Sasha Netfin; Aaron Brown; Stefan Assmann; David Miller;
+> darcari at redhat.com; Shen, Yijun; Yuan, Perry;
+> anthony.wong at canonical.com; Hans de Goede; Limonciello, Mario
+> Subject: [PATCH v5 1/4] e1000e: Only run S0ix flows if shutdown succeeded
 > 
-> On 14/12/2020 13:31, Mark Pearson wrote:
->>
->>
->> ------------------------------------------------------------------------
->> *From:* Hans de Goede <hdegoede@redhat.com>
->> *Sent:* December 14, 2020 13:24
->> *To:* Mario Limonciello <mario.limonciello@dell.com>; Jeff Kirsher
->> <jeffrey.t.kirsher@intel.com>; Tony Nguyen <anthony.l.nguyen@intel.com>;
->> intel-wired-lan at lists.osuosl.org <intel-wired-lan@lists.osuosl.org>;
->> David Miller <davem@davemloft.net>; Aaron Ma <aaron.ma@canonical.com>;
->> Mark Pearson <mpearson@lenovo.com>
->> *Cc:* linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>;
->> Netdev <netdev@vger.kernel.org>; Alexander Duyck
->> <alexander.duyck@gmail.com>; Jakub Kicinski <kuba@kernel.org>; Sasha
->> Netfin <sasha.neftin@intel.com>; Aaron Brown <aaron.f.brown@intel.com>;
->> Stefan Assmann <sassmann@redhat.com>; darcari at redhat.com
->> <darcari@redhat.com>; Yijun.Shen at dell.com <Yijun.Shen@dell.com>;
->> Perry.Yuan at dell.com <Perry.Yuan@dell.com>; anthony.wong at canonical.com
->> <anthony.wong@canonical.com>
->> *Subject:* [External] Re: [PATCH v4 0/4] Improve s0ix flows for systems
->> i219LM
->>   
->> Hi All,
->>
-> <snip>
->>
->> ###
->>
->> I've added Mark Pearson from Lenovo to the Cc so that Lenovo
->> can investigate this issue further.
->>
->> Mark, this thread is about an issue with enabling S0ix support for
->> e1000e (i219lm) controllers. This was enabled in the kernel a
->> while ago, but then got disabled again on vPro / AMT enabled
->> systems because on some systems (Lenovo X1C7 and now also X1C8)
->> this lead to suspend/resume issues.
->>
->> When AMT is active then there is a handover handshake for the
->> OS to get access to the ethernet controller from the ME. The
->> Intel folks have checked and the Windows driver is using a timeout
->> of 1 second for this handshake, yet on Lenovo systems this is
->> taking 2 seconds. This likely has something to do with the
->> ME firmware on these Lenovo models, can you get the firmware
->> team at Lenovo to investigate this further ?
-> Absolutely - I'll ask them to look into this again.
+> If the shutdown failed, the part will be thawed and running S0ix flows will
+> put it into an undefined state.
 > 
-we need to explain why on Windows systems required 1s and on Linux 
-systems up to 2.5s - otherwise it is not reliable approach - you will 
-encounter others buggy system.
-(ME not POR on the Linux systems - is only one possible answer)
-> We did try to make progress with this previously - but it got a bit
-> stuck and hence the need for these patches....but I believe things may
-> have changed a bit so it's worth trying again
+> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Reviewed-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+
+Verified this series patch on Dell Systems.
+
+Tested-By: Yijun Shen <Yijun.shen@dell.com>
+
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 13 +++++++------
+>  1 file changed, 7 insertions(+), 6 deletions(-)
 > 
-> Mark
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 128ab6898070..6588f5d4a2be 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -6970,13 +6970,14 @@ static __maybe_unused int
+> e1000e_pm_suspend(struct device *dev)
+>  	e1000e_pm_freeze(dev);
 > 
-Sasha
+>  	rc = __e1000_shutdown(pdev, false);
+> -	if (rc)
+> +	if (rc) {
+>  		e1000e_pm_thaw(dev);
+> -
+> -	/* Introduce S0ix implementation */
+> -	if (hw->mac.type >= e1000_pch_cnp &&
+> -	    !e1000e_check_me(hw->adapter->pdev->device))
+> -		e1000e_s0ix_entry_flow(adapter);
+> +	} else {
+> +		/* Introduce S0ix implementation */
+> +		if (hw->mac.type >= e1000_pch_cnp &&
+> +		    !e1000e_check_me(hw->adapter->pdev->device))
+> +			e1000e_s0ix_entry_flow(adapter);
+> +	}
+> 
+>  	return rc;
+>  }
+> --
+> 2.25.1
+
