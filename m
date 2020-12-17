@@ -1,145 +1,133 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Wed, 16 Dec 2020 17:21:03 -0600
-Subject: [Intel-wired-lan] [PATCH 1/3] PCI/ASPM: Use the path max in L1
- ASPM latency check
-In-Reply-To: <CAA85sZsiuE9rN7uVCuhgiki-rffo4mYbh6BKvuGaJAK5CsPgKw@mail.gmail.com>
-Message-ID: <20201216232103.GA368161@bjorn-Precision-5520>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 17 Dec 2020 18:57:13 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 35/111]
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c:1639:6: warning: 'mfs_max' is
+ used uninitialized in this function
+Message-ID: <202012171805.EEcYU4af-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 16, 2020 at 12:20:53PM +0100, Ian Kumlien wrote:
-> On Wed, Dec 16, 2020 at 1:08 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Tue, Dec 15, 2020 at 02:09:12PM +0100, Ian Kumlien wrote:
-> > > On Tue, Dec 15, 2020 at 1:40 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > > > On Mon, Dec 14, 2020 at 11:56:31PM +0100, Ian Kumlien wrote:
-> > > > > On Mon, Dec 14, 2020 at 8:19 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > > >
-> > > > > > If you're interested, you could probably unload the Realtek drivers,
-> > > > > > remove the devices, and set the PCI_EXP_LNKCTL_LD (Link Disable) bit
-> > > > > > in 02:04.0, e.g.,
-> > > > > >
-> > > > > >   # RT=/sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/0000:02:04.0
-> > > > > >   # echo 1 > $RT/0000:04:00.0/remove
-> > > > > >   # echo 1 > $RT/0000:04:00.1/remove
-> > > > > >   # echo 1 > $RT/0000:04:00.2/remove
-> > > > > >   # echo 1 > $RT/0000:04:00.4/remove
-> > > > > >   # echo 1 > $RT/0000:04:00.7/remove
-> > > > > >   # setpci -s02:04.0 CAP_EXP+0x10.w=0x0010
-> > > > > >
-> > > > > > That should take 04:00.x out of the picture.
-> > > > >
-> > > > > Didn't actually change the behaviour, I'm suspecting an errata for AMD pcie...
-> > > > >
-> > > > > So did this, with unpatched kernel:
-> > > > > [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> > > > > [  5]   0.00-1.00   sec  4.56 MBytes  38.2 Mbits/sec    0   67.9 KBytes
-> > > > > [  5]   1.00-2.00   sec  4.47 MBytes  37.5 Mbits/sec    0   96.2 KBytes
-> > > > > [  5]   2.00-3.00   sec  4.85 MBytes  40.7 Mbits/sec    0   50.9 KBytes
-> > > > > [  5]   3.00-4.00   sec  4.23 MBytes  35.4 Mbits/sec    0   70.7 KBytes
-> > > > > [  5]   4.00-5.00   sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
-> > > > > [  5]   5.00-6.00   sec  4.23 MBytes  35.4 Mbits/sec    0   45.2 KBytes
-> > > > > [  5]   6.00-7.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
-> > > > > [  5]   7.00-8.00   sec  3.98 MBytes  33.4 Mbits/sec    0   36.8 KBytes
-> > > > > [  5]   8.00-9.00   sec  4.23 MBytes  35.4 Mbits/sec    0   36.8 KBytes
-> > > > > [  5]   9.00-10.00  sec  4.23 MBytes  35.4 Mbits/sec    0   48.1 KBytes
-> > > > > - - - - - - - - - - - - - - - - - - - - - - - - -
-> > > > > [ ID] Interval           Transfer     Bitrate         Retr
-> > > > > [  5]   0.00-10.00  sec  43.2 MBytes  36.2 Mbits/sec    0             sender
-> > > > > [  5]   0.00-10.00  sec  42.7 MBytes  35.8 Mbits/sec                  receiver
-> > > > >
-> > > > > and:
-> > > > > echo 0 > /sys/devices/pci0000:00/0000:00:01.2/0000:01:00.0/link/l1_aspm
-> > > >
-> > > > BTW, thanks a lot for testing out the "l1_aspm" sysfs file.  I'm very
-> > > > pleased that it seems to be working as intended.
-> > >
-> > > It was nice to find it for easy disabling :)
-> > >
-> > > > > and:
-> > > > > [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-> > > > > [  5]   0.00-1.00   sec   113 MBytes   951 Mbits/sec  153    772 KBytes
-> > > > > [  5]   1.00-2.00   sec   109 MBytes   912 Mbits/sec  276    550 KBytes
-> > > > > [  5]   2.00-3.00   sec   111 MBytes   933 Mbits/sec  123    625 KBytes
-> > > > > [  5]   3.00-4.00   sec   111 MBytes   933 Mbits/sec   31    687 KBytes
-> > > > > [  5]   4.00-5.00   sec   110 MBytes   923 Mbits/sec    0    679 KBytes
-> > > > > [  5]   5.00-6.00   sec   110 MBytes   923 Mbits/sec  136    577 KBytes
-> > > > > [  5]   6.00-7.00   sec   110 MBytes   923 Mbits/sec  214    645 KBytes
-> > > > > [  5]   7.00-8.00   sec   110 MBytes   923 Mbits/sec   32    628 KBytes
-> > > > > [  5]   8.00-9.00   sec   110 MBytes   923 Mbits/sec   81    537 KBytes
-> > > > > [  5]   9.00-10.00  sec   110 MBytes   923 Mbits/sec   10    577 KBytes
-> > > > > - - - - - - - - - - - - - - - - - - - - - - - - -
-> > > > > [ ID] Interval           Transfer     Bitrate         Retr
-> > > > > [  5]   0.00-10.00  sec  1.08 GBytes   927 Mbits/sec  1056             sender
-> > > > > [  5]   0.00-10.00  sec  1.07 GBytes   923 Mbits/sec                  receiver
-> > > > >
-> > > > > But this only confirms that the fix i experience is a side effect.
-> > > > >
-> > > > > The original code is still wrong :)
-> > > >
-> > > > What exactly is this machine?  Brand, model, config?  Maybe you could
-> > > > add this and a dmesg log to the buzilla?  It seems like other people
-> > > > should be seeing the same problem, so I'm hoping to grub around on the
-> > > > web to see if there are similar reports involving these devices.
-> > >
-> > > ASUS Pro WS X570-ACE with AMD Ryzen 9 3900X
-> >
-> > Possible similar issues:
-> >
-> >   https://forums.unraid.net/topic/94274-hardware-upgrade-woes/
-> >   https://forums.servethehome.com/index.php?threads/upgraded-my-home-server-from-intel-to-amd-virtual-disk-stuck-in-degraded-unhealty-state.25535/ (Windows)
-> 
-> Could be, I suspect that we need a workaround (is there a quirk for
-> "reporting wrong latency"?) and the patches.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+head:   c929b995e9037188f8ebd7f2f8df8b60da940e0d
+commit: 0345779cc859e3a8f2f727b24dfbf2a07f0683b9 [35/111] i40e: Add hardware configuration for software based DCB
+config: arc-randconfig-r036-20201217 (attached as .config)
+compiler: arc-elf-gcc (GCC) 9.3.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=0345779cc859e3a8f2f727b24dfbf2a07f0683b9
+        git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
+        git fetch --no-tags tnguy-next-queue dev-queue
+        git checkout 0345779cc859e3a8f2f727b24dfbf2a07f0683b9
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arc 
 
-I don't think there's currently a quirk mechanism that would work for
-correcting latencies, but there should be, and we could add one if we
-can figure out for sure what's wrong.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-I found this:
+All warnings (new ones prefixed by >>):
 
-  https://www.reddit.com/r/VFIO/comments/hgk3cz/x570_pcieclassic_pci_bridge_woes/
+   drivers/net/ethernet/intel/i40e/i40e_dcb.c: In function 'i40e_dcb_hw_calculate_pool_sizes':
+>> drivers/net/ethernet/intel/i40e/i40e_dcb.c:1639:6: warning: 'mfs_max' is used uninitialized in this function [-Wuninitialized]
+    1639 |  u32 mfs_max;
+         |      ^~~~~~~
 
-which looks like it should be the same hardware (if you can collect a
-dmesg log or "lspci -nnvv" output we could tell for sure) and is
-interesting because it includes some lspci output that shows different
-L1 exit latencies than what you see.
 
-> > > > https://bugzilla.kernel.org/show_bug.cgi?id=209725
-> > > >
-> > > > Here's one that is superficially similar:
-> > > > https://linux-hardware.org/index.php?probe=e5f24075e5&log=lspci_all
-> > > > in that it has a RP -- switch -- I211 path.  Interestingly, the switch
-> > > > here advertises <64us L1 exit latency instead of the <32us latency
-> > > > your switch advertises.  Of course, I can't tell if it's exactly the
-> > > > same switch.
-> > >
-> > > Same chipset it seems
-> > >
-> > > I'm running bios version:
-> > >         Version: 2206
-> > >         Release Date: 08/13/2020
-> > >
-> > > ANd latest is:
-> > > Version 3003
-> > > 2020/12/07
-> > >
-> > > Will test upgrading that as well, but it could be that they report the
-> > > incorrect latency of the switch - I don't know how many things AGESA
-> > > changes but... It's been updated twice since my upgrade.
-> >
-> > I wouldn't be surprised if the advertised exit latencies are writable
-> > by the BIOS because it probably depends on electrical characteristics
-> > outside the switch.  If so, it's possible ASUS just screwed it up.
-> 
-> Not surprisingly, nothing changed.
-> (There was a lot of "stability improvements")
+vim +/mfs_max +1639 drivers/net/ethernet/intel/i40e/i40e_dcb.c
 
-I wouldn't be totally surprised if ASUS didn't test that I211 NIC
-under Linux, but I'm sure it must work well under Windows.  If you
-happen to have Windows, a free trial version of AIDA64 should be able
-to give us the equivalent of "lspci -vv".
+  1615	
+  1616	/**
+  1617	 * i40e_dcb_hw_calculate_pool_sizes - configure dcb pool sizes
+  1618	 * @hw: pointer to the hw struct
+  1619	 * @num_ports: Number of available ports on the device
+  1620	 * @eee_enabled: EEE enabled for the given port
+  1621	 * @pfc_en: Bit map of PFC enabled traffic classes
+  1622	 * @mfs_tc: Array of max frame size for each traffic class
+  1623	 * @pb_cfg: pointer to packet buffer configuration
+  1624	 *
+  1625	 * Calculate the shared and dedicated per TC pool sizes,
+  1626	 * watermarks and threshold values.
+  1627	 **/
+  1628	void i40e_dcb_hw_calculate_pool_sizes(struct i40e_hw *hw,
+  1629					      u8 num_ports, bool eee_enabled,
+  1630					      u8 pfc_en, u32 *mfs_tc,
+  1631					      struct i40e_rx_pb_config *pb_cfg)
+  1632	{
+  1633		u32 pool_size[I40E_MAX_TRAFFIC_CLASS];
+  1634		u32 high_wm[I40E_MAX_TRAFFIC_CLASS];
+  1635		u32 low_wm[I40E_MAX_TRAFFIC_CLASS];
+  1636		u32 total_pool_size = 0;
+  1637		int shared_pool_size; /* Need signed variable */
+  1638		u32 port_pb_size;
+> 1639		u32 mfs_max;
+  1640		u32 pcirtt;
+  1641		u8 i;
+  1642	
+  1643		/* Get the MFS(max) for the port */
+  1644		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+  1645			if (mfs_tc[i] > mfs_max)
+  1646				mfs_max = mfs_tc[i];
+  1647		}
+  1648	
+  1649		pcirtt = I40E_BT2B(I40E_PCIRTT_LINK_SPEED_10G);
+  1650	
+  1651		/* Calculate effective Rx PB size per port */
+  1652		port_pb_size = I40E_DEVICE_RPB_SIZE / num_ports;
+  1653		if (eee_enabled)
+  1654			port_pb_size -= I40E_BT2B(I40E_EEE_TX_LPI_EXIT_TIME);
+  1655		port_pb_size -= mfs_max;
+  1656	
+  1657		/* Step 1 Calculating tc pool/shared pool sizes and watermarks */
+  1658		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+  1659			if (pfc_en & BIT(i)) {
+  1660				low_wm[i] = (I40E_DCB_WATERMARK_START_FACTOR *
+  1661					     mfs_tc[i]) + pcirtt;
+  1662				high_wm[i] = low_wm[i];
+  1663				high_wm[i] += ((mfs_max > I40E_MAX_FRAME_SIZE)
+  1664						? mfs_max : I40E_MAX_FRAME_SIZE);
+  1665				pool_size[i] = high_wm[i];
+  1666				pool_size[i] += I40E_BT2B(I40E_STD_DV_TC(mfs_max,
+  1667									mfs_tc[i]));
+  1668			} else {
+  1669				low_wm[i] = 0;
+  1670				pool_size[i] = (I40E_DCB_WATERMARK_START_FACTOR *
+  1671						mfs_tc[i]) + pcirtt;
+  1672				high_wm[i] = pool_size[i];
+  1673			}
+  1674			total_pool_size += pool_size[i];
+  1675		}
+  1676	
+  1677		shared_pool_size = port_pb_size - total_pool_size;
+  1678		if (shared_pool_size > 0) {
+  1679			pb_cfg->shared_pool_size = shared_pool_size;
+  1680			pb_cfg->shared_pool_high_wm = shared_pool_size;
+  1681			pb_cfg->shared_pool_low_wm = 0;
+  1682			for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+  1683				pb_cfg->shared_pool_low_thresh[i] = 0;
+  1684				pb_cfg->shared_pool_high_thresh[i] = shared_pool_size;
+  1685				pb_cfg->tc_pool_size[i] = pool_size[i];
+  1686				pb_cfg->tc_pool_high_wm[i] = high_wm[i];
+  1687				pb_cfg->tc_pool_low_wm[i] = low_wm[i];
+  1688			}
+  1689	
+  1690		} else {
+  1691			i40e_debug(hw, I40E_DEBUG_DCB,
+  1692				   "The shared pool size for the port is negative %d.\n",
+  1693				   shared_pool_size);
+  1694		}
+  1695	}
+  1696	
 
-Bjorn
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 26678 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201217/0089ee75/attachment-0001.bin>
