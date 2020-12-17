@@ -1,63 +1,63 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 17 Dec 2020 12:24:11 -0800
-Subject: [Intel-wired-lan] [PATCH 06/10] igc: Introduce igc_update_tx_stats()
+Date: Thu, 17 Dec 2020 12:24:10 -0800
+Subject: [Intel-wired-lan] [PATCH 05/10] igc: Introduce igc_update_rx_stats()
 In-Reply-To: <20201217202415.77891-1-andre.guedes@intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
-Message-ID: <20201217202415.77891-7-andre.guedes@intel.com>
+Message-ID: <20201217202415.77891-6-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Likewise we do with the RX stats, this patch encapsulates the code that
-updates the driver TX stats in its own local helper.
+In preparation for AF_XDP zero-copy support, this patch encapsulates the
+code that updates the driver RX stats so it can be reused in the zero-copy
+path.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index e5cdebbe5637..26c2fc9977cc 100644
+index 1870ca37d650..e5cdebbe5637 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2263,6 +2263,20 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 	return total_packets;
+@@ -2118,6 +2118,20 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
+ 		xdp_do_flush();
  }
  
-+static void igc_update_tx_stats(struct igc_q_vector *q_vector,
++static void igc_update_rx_stats(struct igc_q_vector *q_vector,
 +				unsigned int packets, unsigned int bytes)
 +{
-+	struct igc_ring *ring = q_vector->tx.ring;
++	struct igc_ring *ring = q_vector->rx.ring;
 +
-+	u64_stats_update_begin(&ring->tx_syncp);
-+	ring->tx_stats.bytes += bytes;
-+	ring->tx_stats.packets += packets;
-+	u64_stats_update_end(&ring->tx_syncp);
++	u64_stats_update_begin(&ring->rx_syncp);
++	ring->rx_stats.packets += packets;
++	ring->rx_stats.bytes += bytes;
++	u64_stats_update_end(&ring->rx_syncp);
 +
-+	q_vector->tx.total_bytes += bytes;
-+	q_vector->tx.total_packets += packets;
++	q_vector->rx.total_packets += packets;
++	q_vector->rx.total_bytes += bytes;
 +}
 +
- /**
-  * igc_clean_tx_irq - Reclaim resources after transmit completes
-  * @q_vector: pointer to q_vector containing needed info
-@@ -2365,12 +2379,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ {
+ 	unsigned int total_bytes = 0, total_packets = 0;
+@@ -2241,12 +2255,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 	/* place incomplete frames back on ring for completion */
+ 	rx_ring->skb = skb;
  
- 	i += tx_ring->count;
- 	tx_ring->next_to_clean = i;
--	u64_stats_update_begin(&tx_ring->tx_syncp);
--	tx_ring->tx_stats.bytes += total_bytes;
--	tx_ring->tx_stats.packets += total_packets;
--	u64_stats_update_end(&tx_ring->tx_syncp);
--	q_vector->tx.total_bytes += total_bytes;
--	q_vector->tx.total_packets += total_packets;
-+
-+	igc_update_tx_stats(q_vector, total_packets, total_bytes);
+-	u64_stats_update_begin(&rx_ring->rx_syncp);
+-	rx_ring->rx_stats.packets += total_packets;
+-	rx_ring->rx_stats.bytes += total_bytes;
+-	u64_stats_update_end(&rx_ring->rx_syncp);
+-	q_vector->rx.total_packets += total_packets;
+-	q_vector->rx.total_bytes += total_bytes;
++	igc_update_rx_stats(q_vector, total_packets, total_bytes);
  
- 	if (test_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
- 		struct igc_hw *hw = &adapter->hw;
+ 	if (cleaned_count)
+ 		igc_alloc_rx_buffers(rx_ring, cleaned_count);
 -- 
 2.29.2
 
