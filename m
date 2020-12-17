@@ -1,128 +1,127 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 17 Dec 2020 12:24:13 -0800
-Subject: [Intel-wired-lan] [PATCH 08/10] igc: Replace IGC_TX_FLAGS_XDP flag
- by an enum
+Date: Thu, 17 Dec 2020 12:24:12 -0800
+Subject: [Intel-wired-lan] [PATCH 07/10] igc: Introduce
+ igc_unmap_tx_buffer() helper
 In-Reply-To: <20201217202415.77891-1-andre.guedes@intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
-Message-ID: <20201217202415.77891-9-andre.guedes@intel.com>
+Message-ID: <20201217202415.77891-8-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Up to this point, tx buffers are associated with either a skb or a xdpf,
-and the IGC_TX_FLAGS_XDP flag was enough to distinguish between these
-two case. However, with upcoming patches that will add AF_XDP zero-copy
-support, a third case will be introduced so this flag-based approach
-won't fit well.
-
-In preparation to land AF_XDP zero-copy support, this patch replaces the
-IGC_TX_FLAGS_XDP flag by an enum which will be extended once zero-copy
-support is introduced to the driver.
+In preparation for AF_XDP zero-copy support, this patch encapsulates the
+code that unmaps tx buffers into its own local helper so we can reuse it
+when adding zero-copy support, avoiding code duplication.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  8 +++++--
- drivers/net/ethernet/intel/igc/igc_main.c | 27 ++++++++++++++++++-----
- 2 files changed, 28 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 49 +++++++----------------
+ 1 file changed, 15 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 29be8833956a..b537488f5bae 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -376,8 +376,6 @@ enum igc_tx_flags {
- 	/* olinfo flags */
- 	IGC_TX_FLAGS_IPV4	= 0x10,
- 	IGC_TX_FLAGS_CSUM	= 0x20,
--
--	IGC_TX_FLAGS_XDP	= 0x100,
- };
- 
- enum igc_boards {
-@@ -394,12 +392,18 @@ enum igc_boards {
- #define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
- #define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
- 
-+enum igc_tx_buffer_type {
-+	IGC_TX_BUFFER_TYPE_SKB,
-+	IGC_TX_BUFFER_TYPE_XDP,
-+};
-+
- /* wrapper around a pointer to a socket buffer,
-  * so a DMA handle can be stored along with the buffer
-  */
- struct igc_tx_buffer {
- 	union igc_adv_tx_desc *next_to_watch;
- 	unsigned long time_stamp;
-+	enum igc_tx_buffer_type type;
- 	union {
- 		struct sk_buff *skb;
- 		struct xdp_frame *xdpf;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 60987a5b4b72..ec366643f996 100644
+index 26c2fc9977cc..60987a5b4b72 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
- 	while (i != tx_ring->next_to_use) {
- 		union igc_adv_tx_desc *eop_desc, *tx_desc;
+@@ -171,6 +171,14 @@ static void igc_get_hw_control(struct igc_adapter *adapter)
+ 	     ctrl_ext | IGC_CTRL_EXT_DRV_LOAD);
+ }
  
--		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+		switch (tx_buffer->type) {
-+		case IGC_TX_BUFFER_TYPE_XDP:
- 			xdp_return_frame(tx_buffer->xdpf);
--		else
-+			break;
-+		case IGC_TX_BUFFER_TYPE_SKB:
++static void igc_unmap_tx_buffer(struct device *dev, struct igc_tx_buffer *buf)
++{
++	dma_unmap_single(dev, dma_unmap_addr(buf, dma),
++			 dma_unmap_len(buf, len), DMA_TO_DEVICE);
++
++	dma_unmap_len_set(buf, len, 0);
++}
++
+ /**
+  * igc_clean_tx_ring - Free Tx Buffers
+  * @tx_ring: ring to be cleaned
+@@ -188,11 +196,7 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 		else
  			dev_kfree_skb_any(tx_buffer->skb);
-+			break;
-+		default:
-+			netdev_warn_once(tx_ring->netdev,
-+					 "Unknown tx buffer type\n");
-+			break;
-+		}
  
- 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+-		/* unmap skb header data */
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
  
-@@ -1371,6 +1379,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 		/* check for eop_desc to determine the end of the packet */
+ 		eop_desc = tx_buffer->next_to_watch;
+@@ -211,10 +215,7 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
  
- 	/* record the location of the first descriptor for this packet */
- 	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
-+	first->type = IGC_TX_BUFFER_TYPE_SKB;
- 	first->skb = skb;
- 	first->bytecount = skb->len;
- 	first->gso_segs = 1;
-@@ -1950,8 +1959,8 @@ static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
- 		return -ENOMEM;
+ 			/* unmap any remaining paged data */
+ 			if (dma_unmap_len(tx_buffer, len))
+-				dma_unmap_page(tx_ring->dev,
+-					       dma_unmap_addr(tx_buffer, dma),
+-					       dma_unmap_len(tx_buffer, len),
+-					       DMA_TO_DEVICE);
++				igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 		}
+ 
+ 		/* move us one more past the eop_desc for start of next pkt */
+@@ -1229,11 +1230,7 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+ 	/* clear dma mappings for failed tx_buffer_info map */
+ 	while (tx_buffer != first) {
+ 		if (dma_unmap_len(tx_buffer, len))
+-			dma_unmap_page(tx_ring->dev,
+-				       dma_unmap_addr(tx_buffer, dma),
+-				       dma_unmap_len(tx_buffer, len),
+-				       DMA_TO_DEVICE);
+-		dma_unmap_len_set(tx_buffer, len, 0);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
+ 		if (i-- == 0)
+ 			i += tx_ring->count;
+@@ -1241,11 +1238,7 @@ static int igc_tx_map(struct igc_ring *tx_ring,
  	}
  
-+	buffer->type = IGC_TX_BUFFER_TYPE_XDP;
- 	buffer->xdpf = xdpf;
--	buffer->tx_flags = IGC_TX_FLAGS_XDP;
- 	buffer->protocol = 0;
- 	buffer->bytecount = xdpf->len;
- 	buffer->gso_segs = 1;
-@@ -2315,10 +2324,18 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 		total_bytes += tx_buffer->bytecount;
- 		total_packets += tx_buffer->gso_segs;
+ 	if (dma_unmap_len(tx_buffer, len))
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
+-	dma_unmap_len_set(tx_buffer, len, 0);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
  
--		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+		switch (tx_buffer->type) {
-+		case IGC_TX_BUFFER_TYPE_XDP:
- 			xdp_return_frame(tx_buffer->xdpf);
--		else
-+			break;
-+		case IGC_TX_BUFFER_TYPE_SKB:
+ 	dev_kfree_skb_any(tx_buffer->skb);
+ 	tx_buffer->skb = NULL;
+@@ -2327,14 +2320,7 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 		else
  			napi_consume_skb(tx_buffer->skb, napi_budget);
-+			break;
-+		default:
-+			netdev_warn_once(tx_ring->netdev,
-+					 "Unknown tx buffer type\n");
-+			break;
-+		}
  
- 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+-		/* unmap skb header data */
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
+-
+-		/* clear tx_buffer data */
+-		dma_unmap_len_set(tx_buffer, len, 0);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
  
+ 		/* clear last DMA location and unmap remaining buffers */
+ 		while (tx_desc != eop_desc) {
+@@ -2348,13 +2334,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 			}
+ 
+ 			/* unmap any remaining paged data */
+-			if (dma_unmap_len(tx_buffer, len)) {
+-				dma_unmap_page(tx_ring->dev,
+-					       dma_unmap_addr(tx_buffer, dma),
+-					       dma_unmap_len(tx_buffer, len),
+-					       DMA_TO_DEVICE);
+-				dma_unmap_len_set(tx_buffer, len, 0);
+-			}
++			if (dma_unmap_len(tx_buffer, len))
++				igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 		}
+ 
+ 		/* move us one more past the eop_desc for start of next pkt */
 -- 
 2.29.2
 
