@@ -1,132 +1,365 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 17 Dec 2020 12:24:09 -0800
-Subject: [Intel-wired-lan] [PATCH 04/10] igc: Refactor XDP rxq info
- registration
+Date: Thu, 17 Dec 2020 12:24:15 -0800
+Subject: [Intel-wired-lan] [PATCH 10/10] igc: Enable TX via AF_XDP zero-copy
 In-Reply-To: <20201217202415.77891-1-andre.guedes@intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
-Message-ID: <20201217202415.77891-5-andre.guedes@intel.com>
+Message-ID: <20201217202415.77891-11-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch does a refactoring on the XDP rxq info registration code,
-preparing the driver for AF_XDP zero-copy support which is added by
-upcoming patches.
+This patch adds support for transmitting packets via AF_XDP zero-copy
+mechanism.
 
-Currently, xdp_rxq and memory model are both registered during RX
-resource setup time by igc_xdp_register_rxq_info() helper. With AF_XDP,
-we want to register the memory model later on while configuring the ring
-because we will know which memory model type to register
-(MEM_TYPE_PAGE_SHARED or MEM_TYPE_XSK_BUFF_POOL).
+The packet transmission itself is implemented by igc_xdp_xmit_zc() which
+is called from igc_clean_tx_irq() when the ring has AF_XDP zero-copy
+enabled. Likewise i40e and ice drivers, the transmission budget used is
+the number of descriptors available on the ring.
 
-The helpers igc_xdp_register_rxq_info() and igc_xdp_unregister_rxq_
-info() are not useful anymore so they are removed.
+A new tx buffer type is introduced to 'enum igc_tx_buffer_type' to
+indicate the tx buffer uses memory from xsk pool so it can be properly
+cleaned after transmission or when the ring is cleaned.
+
+The I225 controller has only 4 Tx hardware queues so the main difference
+between igc and other Intel drivers that support AF_XDP zero-copy is
+that there is no tx ring dedicated exclusively to XDP. Instead, tx
+rings are shared between the network stack and XDP, and netdev queue
+lock is used to ensure mutual exclusion. This is the same approach
+implemented to support XDP_TX and XDP_REDIRECT actions.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 14 ++++++++----
- drivers/net/ethernet/intel/igc/igc_xdp.c  | 27 -----------------------
- drivers/net/ethernet/intel/igc/igc_xdp.h  |  3 ---
- 3 files changed, 10 insertions(+), 34 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      |   3 +
+ drivers/net/ethernet/intel/igc/igc_base.h |   1 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 115 +++++++++++++++++++++-
+ drivers/net/ethernet/intel/igc/igc_xdp.c  |  20 +++-
+ 4 files changed, 131 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index d4b0e1db9804..dced32a098c0 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -244,6 +244,8 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx);
+ void igc_update_stats(struct igc_adapter *adapter);
+ void igc_disable_rx_ring(struct igc_ring *ring);
+ void igc_enable_rx_ring(struct igc_ring *ring);
++void igc_disable_tx_ring(struct igc_ring *ring);
++void igc_enable_tx_ring(struct igc_ring *ring);
+ int igc_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags);
+ 
+ /* igc_dump declarations */
+@@ -399,6 +401,7 @@ enum igc_boards {
+ enum igc_tx_buffer_type {
+ 	IGC_TX_BUFFER_TYPE_SKB,
+ 	IGC_TX_BUFFER_TYPE_XDP,
++	IGC_TX_BUFFER_TYPE_XSK,
+ };
+ 
+ /* wrapper around a pointer to a socket buffer,
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.h b/drivers/net/ethernet/intel/igc/igc_base.h
+index 15d0086be949..4c12d514b448 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.h
++++ b/drivers/net/ethernet/intel/igc/igc_base.h
+@@ -78,6 +78,7 @@ union igc_adv_rx_desc {
+ 
+ /* Additional Transmit Descriptor Control definitions */
+ #define IGC_TXDCTL_QUEUE_ENABLE	0x02000000 /* Ena specific Tx Queue */
++#define IGC_TXDCTL_SWFLUSH	0x04000000 /* Transmit Software Flush */
+ 
+ /* Additional Receive Descriptor Control definitions */
+ #define IGC_RXDCTL_QUEUE_ENABLE	0x02000000 /* Ena specific Rx Queue */
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d591c1e0581f..1870ca37d650 100644
+index 74b6138e5f2c..ef95078af38f 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -419,7 +419,7 @@ void igc_free_rx_resources(struct igc_ring *rx_ring)
+@@ -187,16 +187,22 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
  {
- 	igc_clean_rx_ring(rx_ring);
+ 	u16 i = tx_ring->next_to_clean;
+ 	struct igc_tx_buffer *tx_buffer = &tx_ring->tx_buffer_info[i];
++	u32 xsk_frames = 0;
  
--	igc_xdp_unregister_rxq_info(rx_ring);
-+	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+ 	while (i != tx_ring->next_to_use) {
+ 		union igc_adv_tx_desc *eop_desc, *tx_desc;
  
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
-@@ -460,9 +460,12 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
- 	struct device *dev = rx_ring->dev;
- 	int size, desc_len, res;
+ 		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XSK:
++			xsk_frames++;
++			break;
+ 		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 			break;
+ 		case IGC_TX_BUFFER_TYPE_SKB:
+ 			dev_kfree_skb_any(tx_buffer->skb);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 			break;
+ 		default:
+ 			netdev_warn_once(tx_ring->netdev,
+@@ -204,8 +210,6 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 			break;
+ 		}
  
--	res = igc_xdp_register_rxq_info(rx_ring);
--	if (res < 0)
-+	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, ndev, rx_ring->queue_index,
-+			       0);
-+	if (res < 0) {
-+		netdev_err(ndev, "Failed to register xdp rxq info\n");
- 		return res;
-+	}
+-		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+-
+ 		/* check for eop_desc to determine the end of the packet */
+ 		eop_desc = tx_buffer->next_to_watch;
+ 		tx_desc = IGC_TX_DESC(tx_ring, i);
+@@ -235,6 +239,9 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 		}
+ 	}
  
- 	size = sizeof(struct igc_rx_buffer) * rx_ring->count;
- 	rx_ring->rx_buffer_info = vzalloc(size);
-@@ -488,7 +491,7 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
- 	return 0;
- 
- err:
--	igc_xdp_unregister_rxq_info(rx_ring);
-+	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
- 	vfree(rx_ring->rx_buffer_info);
- 	rx_ring->rx_buffer_info = NULL;
- 	netdev_err(ndev, "Unable to allocate memory for Rx descriptor ring\n");
-@@ -536,6 +539,9 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
- 	u32 srrctl = 0, rxdctl = 0;
- 	u64 rdba = ring->dma;
- 
-+	WARN_ON(xdp_rxq_info_reg_mem_model(&ring->xdp_rxq,
-+					   MEM_TYPE_PAGE_SHARED, NULL));
++	if (tx_ring->xsk_pool && xsk_frames)
++		xsk_tx_completed(tx_ring->xsk_pool, xsk_frames);
 +
- 	if (igc_xdp_is_enabled(adapter))
- 		set_ring_uses_large_buffer(ring);
+ 	/* reset BQL for queue */
+ 	netdev_tx_reset_queue(txring_txq(tx_ring));
  
+@@ -675,6 +682,8 @@ static void igc_configure_tx_ring(struct igc_adapter *adapter,
+ 	u64 tdba = ring->dma;
+ 	u32 txdctl = 0;
+ 
++	ring->xsk_pool = igc_get_xsk_pool(adapter, ring);
++
+ 	/* disable the queue */
+ 	wr32(IGC_TXDCTL(reg_idx), 0);
+ 	wrfl();
+@@ -2509,6 +2518,67 @@ static void igc_update_tx_stats(struct igc_q_vector *q_vector,
+ 	q_vector->tx.total_packets += packets;
+ }
+ 
++static void igc_xdp_xmit_zc(struct igc_ring *ring)
++{
++	struct xsk_buff_pool *pool = ring->xsk_pool;
++	struct netdev_queue *nq = txring_txq(ring);
++	int cpu = smp_processor_id();
++	struct xdp_desc xdp_desc;
++	bool work_done;
++	u16 budget;
++
++	if (!netif_carrier_ok(ring->netdev))
++		return;
++
++	__netif_tx_lock(nq, cpu);
++
++	budget = igc_desc_unused(ring);
++	work_done = false;
++
++	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
++		u32 cmd_type, olinfo_status;
++		union igc_adv_tx_desc *desc;
++		struct igc_tx_buffer *bi;
++		dma_addr_t dma;
++
++		cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
++			   IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
++			   xdp_desc.len;
++		olinfo_status = xdp_desc.len << IGC_ADVTXD_PAYLEN_SHIFT;
++
++		dma = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
++		xsk_buff_raw_dma_sync_for_device(pool, dma, xdp_desc.len);
++
++		desc = IGC_TX_DESC(ring, ring->next_to_use);
++		desc->read.cmd_type_len = cpu_to_le32(cmd_type);
++		desc->read.olinfo_status = cpu_to_le32(olinfo_status);
++		desc->read.buffer_addr = cpu_to_le64(dma);
++
++		bi = &ring->tx_buffer_info[ring->next_to_use];
++		bi->type = IGC_TX_BUFFER_TYPE_XSK;
++		bi->protocol = 0;
++		bi->bytecount = xdp_desc.len;
++		bi->gso_segs = 1;
++		bi->time_stamp = jiffies;
++		bi->next_to_watch = desc;
++
++		netdev_tx_sent_queue(txring_txq(ring), xdp_desc.len);
++
++		ring->next_to_use++;
++		if (ring->next_to_use == ring->count)
++			ring->next_to_use = 0;
++
++		work_done = true;
++	}
++
++	if (work_done) {
++		igc_flush_tx_descriptors(ring);
++		xsk_tx_release(pool);
++	}
++
++	__netif_tx_unlock(nq);
++}
++
+ /**
+  * igc_clean_tx_irq - Reclaim resources after transmit completes
+  * @q_vector: pointer to q_vector containing needed info
+@@ -2525,6 +2595,7 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 	unsigned int i = tx_ring->next_to_clean;
+ 	struct igc_tx_buffer *tx_buffer;
+ 	union igc_adv_tx_desc *tx_desc;
++	u32 xsk_frames = 0;
+ 
+ 	if (test_bit(__IGC_DOWN, &adapter->state))
+ 		return true;
+@@ -2555,11 +2626,16 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 		total_packets += tx_buffer->gso_segs;
+ 
+ 		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XSK:
++			xsk_frames++;
++			break;
+ 		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 			break;
+ 		case IGC_TX_BUFFER_TYPE_SKB:
+ 			napi_consume_skb(tx_buffer->skb, napi_budget);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 			break;
+ 		default:
+ 			netdev_warn_once(tx_ring->netdev,
+@@ -2567,8 +2643,6 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 			break;
+ 		}
+ 
+-		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+-
+ 		/* clear last DMA location and unmap remaining buffers */
+ 		while (tx_desc != eop_desc) {
+ 			tx_buffer++;
+@@ -2610,6 +2684,14 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 
+ 	igc_update_tx_stats(q_vector, total_packets, total_bytes);
+ 
++	if (tx_ring->xsk_pool) {
++		if (xsk_frames)
++			xsk_tx_completed(tx_ring->xsk_pool, xsk_frames);
++		if (xsk_uses_need_wakeup(tx_ring->xsk_pool))
++			xsk_set_tx_need_wakeup(tx_ring->xsk_pool);
++		igc_xdp_xmit_zc(tx_ring);
++	}
++
+ 	if (test_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
+ 		struct igc_hw *hw = &adapter->hw;
+ 
+@@ -6282,6 +6364,31 @@ void igc_enable_rx_ring(struct igc_ring *ring)
+ 		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
+ }
+ 
++static void igc_disable_tx_ring_hw(struct igc_ring *ring)
++{
++	struct igc_hw *hw = &ring->q_vector->adapter->hw;
++	u8 idx = ring->reg_idx;
++	u32 txdctl;
++
++	txdctl = rd32(IGC_TXDCTL(idx));
++	txdctl &= ~IGC_TXDCTL_QUEUE_ENABLE;
++	txdctl |= IGC_TXDCTL_SWFLUSH;
++	wr32(IGC_TXDCTL(idx), txdctl);
++}
++
++void igc_disable_tx_ring(struct igc_ring *ring)
++{
++	igc_disable_tx_ring_hw(ring);
++	igc_clean_tx_ring(ring);
++}
++
++void igc_enable_tx_ring(struct igc_ring *ring)
++{
++	struct igc_adapter *adapter = ring->q_vector->adapter;
++
++	igc_configure_tx_ring(adapter, ring);
++}
++
+ /**
+  * igc_init_module - Driver Registration Routine
+  *
 diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.c b/drivers/net/ethernet/intel/igc/igc_xdp.c
-index 11133c4619bb..27c886a254f1 100644
+index 9515906d54e0..5ee31b32df7a 100644
 --- a/drivers/net/ethernet/intel/igc/igc_xdp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_xdp.c
-@@ -31,30 +31,3 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
+@@ -39,13 +39,14 @@ static int igc_xdp_enable_pool(struct igc_adapter *adapter,
+ {
+ 	struct net_device *ndev = adapter->netdev;
+ 	struct device *dev = &adapter->pdev->dev;
+-	struct igc_ring *rx_ring;
++	struct igc_ring *rx_ring, *tx_ring;
+ 	struct napi_struct *napi;
+ 	bool needs_reset;
+ 	u32 frame_size;
+ 	int err;
+ 
+-	if (queue_id >= adapter->num_rx_queues)
++	if (queue_id >= adapter->num_rx_queues ||
++	    queue_id >= adapter->num_tx_queues)
+ 		return -EINVAL;
+ 
+ 	frame_size = xsk_pool_get_rx_frame_size(pool);
+@@ -67,18 +68,23 @@ static int igc_xdp_enable_pool(struct igc_adapter *adapter,
+ 	needs_reset = netif_running(adapter->netdev) && igc_xdp_is_enabled(adapter);
+ 
+ 	rx_ring = adapter->rx_ring[queue_id];
++	tx_ring = adapter->tx_ring[queue_id];
++	/* Rx and Tx rings share the same napi context. */
+ 	napi = &rx_ring->q_vector->napi;
+ 
+ 	if (needs_reset) {
+ 		igc_disable_rx_ring(rx_ring);
++		igc_disable_tx_ring(tx_ring);
+ 		napi_disable(napi);
+ 	}
+ 
+ 	set_bit(IGC_RING_FLAG_AF_XDP_ZC, &rx_ring->flags);
++	set_bit(IGC_RING_FLAG_AF_XDP_ZC, &tx_ring->flags);
+ 
+ 	if (needs_reset) {
+ 		napi_enable(napi);
+ 		igc_enable_rx_ring(rx_ring);
++		igc_enable_tx_ring(tx_ring);
+ 
+ 		err = igc_xsk_wakeup(ndev, queue_id, XDP_WAKEUP_RX);
+ 		if (err)
+@@ -90,12 +96,13 @@ static int igc_xdp_enable_pool(struct igc_adapter *adapter,
+ 
+ static int igc_xdp_disable_pool(struct igc_adapter *adapter, u16 queue_id)
+ {
++	struct igc_ring *rx_ring, *tx_ring;
+ 	struct xsk_buff_pool *pool;
+-	struct igc_ring *rx_ring;
+ 	struct napi_struct *napi;
+ 	bool needs_reset;
+ 
+-	if (queue_id >= adapter->num_rx_queues)
++	if (queue_id >= adapter->num_rx_queues ||
++	    queue_id >= adapter->num_tx_queues)
+ 		return -EINVAL;
+ 
+ 	pool = xsk_get_pool_from_qid(adapter->netdev, queue_id);
+@@ -105,19 +112,24 @@ static int igc_xdp_disable_pool(struct igc_adapter *adapter, u16 queue_id)
+ 	needs_reset = netif_running(adapter->netdev) && igc_xdp_is_enabled(adapter);
+ 
+ 	rx_ring = adapter->rx_ring[queue_id];
++	tx_ring = adapter->tx_ring[queue_id];
++	/* Rx and Tx rings share the same napi context. */
+ 	napi = &rx_ring->q_vector->napi;
+ 
+ 	if (needs_reset) {
+ 		igc_disable_rx_ring(rx_ring);
++		igc_disable_tx_ring(tx_ring);
+ 		napi_disable(napi);
+ 	}
+ 
+ 	xsk_pool_dma_unmap(pool, IGC_RX_DMA_ATTR);
+ 	clear_bit(IGC_RING_FLAG_AF_XDP_ZC, &rx_ring->flags);
++	clear_bit(IGC_RING_FLAG_AF_XDP_ZC, &tx_ring->flags);
+ 
+ 	if (needs_reset) {
+ 		napi_enable(napi);
+ 		igc_enable_rx_ring(rx_ring);
++		igc_enable_tx_ring(tx_ring);
+ 	}
  
  	return 0;
- }
--
--int igc_xdp_register_rxq_info(struct igc_ring *ring)
--{
--	struct net_device *dev = ring->netdev;
--	int err;
--
--	err = xdp_rxq_info_reg(&ring->xdp_rxq, dev, ring->queue_index, 0);
--	if (err) {
--		netdev_err(dev, "Failed to register xdp rxq info\n");
--		return err;
--	}
--
--	err = xdp_rxq_info_reg_mem_model(&ring->xdp_rxq, MEM_TYPE_PAGE_SHARED,
--					 NULL);
--	if (err) {
--		netdev_err(dev, "Failed to register xdp rxq mem model\n");
--		xdp_rxq_info_unreg(&ring->xdp_rxq);
--		return err;
--	}
--
--	return 0;
--}
--
--void igc_xdp_unregister_rxq_info(struct igc_ring *ring)
--{
--	xdp_rxq_info_unreg(&ring->xdp_rxq);
--}
-diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
-index 412aa369e6ba..cdaa2c39b03a 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.h
-+++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
-@@ -7,9 +7,6 @@
- int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
- 		     struct netlink_ext_ack *extack);
- 
--int igc_xdp_register_rxq_info(struct igc_ring *ring);
--void igc_xdp_unregister_rxq_info(struct igc_ring *ring);
--
- static inline bool igc_xdp_is_enabled(struct igc_adapter *adapter)
- {
- 	return !!adapter->xdp_prog;
 -- 
 2.29.2
 
