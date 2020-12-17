@@ -1,37 +1,37 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 17 Dec 2020 21:50:05 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 7eb000bdbe7c7da811ef51942b356f6e819b13ba
-Message-ID: <5fdb620d.G9NuHSLJ3MsE/W7S%lkp@intel.com>
+Date: Thu, 17 Dec 2020 21:50:09 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 61b513f1cf38a45b129536548b836432fdfe7259
+Message-ID: <5fdb6211.69tIQ8TBAr1R+wbA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  master
-branch HEAD: 7eb000bdbe7c7da811ef51942b356f6e819b13ba  net: korina: fix return value
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: 61b513f1cf38a45b129536548b836432fdfe7259  e1000e: Export S0ix flags to ethtool
 
-elapsed time: 722m
+elapsed time: 723m
 
-configs tested: 115
-configs skipped: 3
+configs tested: 111
+configs skipped: 2
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 gcc tested configs:
-arm64                               defconfig
 arm                                 defconfig
 arm64                            allyesconfig
+arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-c6x                                 defconfig
-mips                        jmr3927_defconfig
-arm                       versatile_defconfig
-arm                        magician_defconfig
-xtensa                  nommu_kc705_defconfig
-ia64                             allmodconfig
+powerpc                      chrp32_defconfig
+sh                          landisk_defconfig
+powerpc               mpc834x_itxgp_defconfig
+powerpc                     taishan_defconfig
+arm                       multi_v4t_defconfig
+h8300                               defconfig
 powerpc                  mpc885_ads_defconfig
 arm                         hackkit_defconfig
 powerpc                     tqm5200_defconfig
@@ -43,31 +43,26 @@ powerpc                     pq2fads_defconfig
 sh                         apsh4a3a_defconfig
 arm                        keystone_defconfig
 arm                         mv78xx0_defconfig
-arm                       multi_v4t_defconfig
-h8300                     edosk2674_defconfig
-sh                ecovec24-romimage_defconfig
-ia64                        generic_defconfig
-arc                         haps_hs_defconfig
-powerpc                     tqm8548_defconfig
-ia64                      gensparse_defconfig
-sh                            hp6xx_defconfig
-powerpc                        icon_defconfig
-ia64                          tiger_defconfig
-arc                           tb10x_defconfig
-xtensa                       common_defconfig
-arm                          pxa168_defconfig
-mips                        nlm_xlp_defconfig
-nios2                               defconfig
-arm                          moxart_defconfig
-mips                           rs90_defconfig
-sh                            shmin_defconfig
-ia64                            zx1_defconfig
-sh                     sh7710voipgw_defconfig
-powerpc                       maple_defconfig
-arm                         s3c6400_defconfig
-sh                          sdk7786_defconfig
-powerpc                     ppa8548_defconfig
-powerpc                      ppc44x_defconfig
+mips                           jazz_defconfig
+mips                     cu1000-neo_defconfig
+sh                         microdev_defconfig
+arc                        nsim_700_defconfig
+mips                         mpc30x_defconfig
+powerpc                     mpc83xx_defconfig
+powerpc                      pcm030_defconfig
+mips                     decstation_defconfig
+arm                             ezx_defconfig
+mips                        vocore2_defconfig
+mips                           ip22_defconfig
+powerpc                    adder875_defconfig
+powerpc                        fsp2_defconfig
+sparc64                             defconfig
+arm                       aspeed_g4_defconfig
+sh                         ap325rxa_defconfig
+arm                          badge4_defconfig
+h8300                    h8300h-sim_defconfig
+mips                   sb1250_swarm_defconfig
+ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
@@ -86,6 +81,7 @@ parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
 s390                                defconfig
+nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
@@ -117,19 +113,19 @@ i386                 randconfig-a012-20201217
 i386                 randconfig-a011-20201217
 i386                 randconfig-a015-20201217
 i386                 randconfig-a016-20201217
-riscv                    nommu_virt_defconfig
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                            allmodconfig
 x86_64                                   rhel
 x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
 x86_64                              defconfig
+x86_64                                  kexec
+x86_64                    rhel-7.6-kselftests
 x86_64                               rhel-8.3
 x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
 
 clang tested configs:
 x86_64               randconfig-a016-20201217
