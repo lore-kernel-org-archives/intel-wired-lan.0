@@ -1,74 +1,128 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Thu, 17 Dec 2020 12:24:08 -0800
-Subject: [Intel-wired-lan] [PATCH 03/10] igc: Refactor igc_clean_rx_ring()
+Date: Thu, 17 Dec 2020 12:24:13 -0800
+Subject: [Intel-wired-lan] [PATCH 08/10] igc: Replace IGC_TX_FLAGS_XDP flag
+ by an enum
 In-Reply-To: <20201217202415.77891-1-andre.guedes@intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
-Message-ID: <20201217202415.77891-4-andre.guedes@intel.com>
+Message-ID: <20201217202415.77891-9-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch refactors igc_clean_rx_ring() helper, preparing the code for
-AF_XDP zero-copy support which is added by upcoming patches.
+Up to this point, tx buffers are associated with either a skb or a xdpf,
+and the IGC_TX_FLAGS_XDP flag was enough to distinguish between these
+two case. However, with upcoming patches that will add AF_XDP zero-copy
+support, a third case will be introduced so this flag-based approach
+won't fit well.
 
-The refactor consists of encapsulating page-shared specific code into
-its own helper and leave common code that will be shared by both
-page-shared and xsk pool in igc_clean_rx_ring().
+In preparation to land AF_XDP zero-copy support, this patch replaces the
+IGC_TX_FLAGS_XDP flag by an enum which will be extended once zero-copy
+support is introduced to the driver.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 25 ++++++++++++++---------
- 1 file changed, 15 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      |  8 +++++--
+ drivers/net/ethernet/intel/igc/igc_main.c | 27 ++++++++++++++++++-----
+ 2 files changed, 28 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 29be8833956a..b537488f5bae 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -376,8 +376,6 @@ enum igc_tx_flags {
+ 	/* olinfo flags */
+ 	IGC_TX_FLAGS_IPV4	= 0x10,
+ 	IGC_TX_FLAGS_CSUM	= 0x20,
+-
+-	IGC_TX_FLAGS_XDP	= 0x100,
+ };
+ 
+ enum igc_boards {
+@@ -394,12 +392,18 @@ enum igc_boards {
+ #define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
+ #define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
+ 
++enum igc_tx_buffer_type {
++	IGC_TX_BUFFER_TYPE_SKB,
++	IGC_TX_BUFFER_TYPE_XDP,
++};
++
+ /* wrapper around a pointer to a socket buffer,
+  * so a DMA handle can be stored along with the buffer
+  */
+ struct igc_tx_buffer {
+ 	union igc_adv_tx_desc *next_to_watch;
+ 	unsigned long time_stamp;
++	enum igc_tx_buffer_type type;
+ 	union {
+ 		struct sk_buff *skb;
+ 		struct xdp_frame *xdpf;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 56b791b356dc..d591c1e0581f 100644
+index 60987a5b4b72..ec366643f996 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -346,16 +346,10 @@ static int igc_setup_all_tx_resources(struct igc_adapter *adapter)
- 	return err;
- }
+@@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 	while (i != tx_ring->next_to_use) {
+ 		union igc_adv_tx_desc *eop_desc, *tx_desc;
  
--/**
-- * igc_clean_rx_ring - Free Rx Buffers per Queue
-- * @rx_ring: ring to free buffers from
-- */
--static void igc_clean_rx_ring(struct igc_ring *rx_ring)
-+static void igc_clean_rx_ring_page_shared(struct igc_ring *rx_ring)
- {
- 	u16 i = rx_ring->next_to_clean;
+-		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
++		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
+-		else
++			break;
++		case IGC_TX_BUFFER_TYPE_SKB:
+ 			dev_kfree_skb_any(tx_buffer->skb);
++			break;
++		default:
++			netdev_warn_once(tx_ring->netdev,
++					 "Unknown tx buffer type\n");
++			break;
++		}
  
--	clear_ring_uses_large_buffer(rx_ring);
--
- 	dev_kfree_skb(rx_ring->skb);
- 	rx_ring->skb = NULL;
+ 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
  
-@@ -385,10 +379,21 @@ static void igc_clean_rx_ring(struct igc_ring *rx_ring)
- 		if (i == rx_ring->count)
- 			i = 0;
+@@ -1371,6 +1379,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 
+ 	/* record the location of the first descriptor for this packet */
+ 	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
++	first->type = IGC_TX_BUFFER_TYPE_SKB;
+ 	first->skb = skb;
+ 	first->bytecount = skb->len;
+ 	first->gso_segs = 1;
+@@ -1950,8 +1959,8 @@ static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
+ 		return -ENOMEM;
  	}
-+}
  
--	rx_ring->next_to_alloc = 0;
--	rx_ring->next_to_clean = 0;
--	rx_ring->next_to_use = 0;
-+/**
-+ * igc_clean_rx_ring - Free Rx Buffers per Queue
-+ * @ring: ring to free buffers from
-+ */
-+static void igc_clean_rx_ring(struct igc_ring *ring)
-+{
-+	clear_ring_uses_large_buffer(ring);
-+
-+	igc_clean_rx_ring_page_shared(ring);
-+
-+	ring->next_to_alloc = 0;
-+	ring->next_to_clean = 0;
-+	ring->next_to_use = 0;
- }
++	buffer->type = IGC_TX_BUFFER_TYPE_XDP;
+ 	buffer->xdpf = xdpf;
+-	buffer->tx_flags = IGC_TX_FLAGS_XDP;
+ 	buffer->protocol = 0;
+ 	buffer->bytecount = xdpf->len;
+ 	buffer->gso_segs = 1;
+@@ -2315,10 +2324,18 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 		total_bytes += tx_buffer->bytecount;
+ 		total_packets += tx_buffer->gso_segs;
  
- /**
+-		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
++		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
+-		else
++			break;
++		case IGC_TX_BUFFER_TYPE_SKB:
+ 			napi_consume_skb(tx_buffer->skb, napi_budget);
++			break;
++		default:
++			netdev_warn_once(tx_ring->netdev,
++					 "Unknown tx buffer type\n");
++			break;
++		}
+ 
+ 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
 -- 
 2.29.2
 
