@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Dec 2020 16:39:16 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- caf5876592122a2a31a309e5d3679a18deca8822
-Message-ID: <5fdc6ab4./1hqhTgdaDcRUBvC%lkp@intel.com>
+Date: Fri, 18 Dec 2020 17:07:35 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ c724288107e0e19680843efb430a60b1d0905d27
+Message-ID: <5fdc7157.4HdR45G4Xf47yWSB%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
-branch HEAD: caf5876592122a2a31a309e5d3679a18deca8822  i40e, xsk: Simplify the do-while allocation loop
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: c724288107e0e19680843efb430a60b1d0905d27  e1000e: Export S0ix flags to ethtool
 
-elapsed time: 724m
+elapsed time: 725m
 
-configs tested: 117
+configs tested: 101
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,55 +26,41 @@ arm64                            allyesconfig
 arm                              allyesconfig
 arm                              allmodconfig
 arm64                               defconfig
-arm                         cm_x300_defconfig
-powerpc                      pasemi_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                     rainier_defconfig
-s390                       zfcpdump_defconfig
-riscv                    nommu_k210_defconfig
-c6x                         dsk6455_defconfig
-arm                            mps2_defconfig
-powerpc                         ps3_defconfig
-mips                malta_kvm_guest_defconfig
-mips                  cavium_octeon_defconfig
-mips                      bmips_stb_defconfig
-mips                       capcella_defconfig
+m68k                          hp300_defconfig
+s390                          debug_defconfig
+xtensa                    smp_lx200_defconfig
+arm                         palmz72_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                  mpc885_ads_defconfig
+sh                          landisk_defconfig
+arm                        shmobile_defconfig
+m68k                          sun3x_defconfig
+arm                       mainstone_defconfig
+arm                          prima2_defconfig
+mips                    maltaup_xpa_defconfig
+powerpc                     mpc512x_defconfig
 openrisc                         alldefconfig
 powerpc                      ppc64e_defconfig
 arm                          imote2_defconfig
-m68k                          hp300_defconfig
-powerpc                    amigaone_defconfig
-sh                          rsk7269_defconfig
-h8300                               defconfig
-arm                      jornada720_defconfig
-powerpc                           allnoconfig
-xtensa                generic_kc705_defconfig
-powerpc                    mvme5100_defconfig
-powerpc                 mpc832x_mds_defconfig
-arm                         lubbock_defconfig
-ia64                      gensparse_defconfig
-sh                            migor_defconfig
 powerpc                     tqm8541_defconfig
 powerpc                 mpc8313_rdb_defconfig
 powerpc                      ppc6xx_defconfig
 xtensa                           alldefconfig
-mips                      malta_kvm_defconfig
-mips                           jazz_defconfig
-xtensa                    smp_lx200_defconfig
-mips                          ath25_defconfig
-ia64                            zx1_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                      bamboo_defconfig
-arm                        mvebu_v7_defconfig
-powerpc                     ksi8560_defconfig
-ia64                             alldefconfig
-sh                     magicpanelr2_defconfig
+arm                  colibri_pxa300_defconfig
+mips                         bigsur_defconfig
+arm                        realview_defconfig
+mips                        qi_lb60_defconfig
+powerpc64                        alldefconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -84,10 +70,6 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
 parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
@@ -101,6 +83,7 @@ mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
+powerpc                           allnoconfig
 x86_64               randconfig-a003-20201217
 x86_64               randconfig-a006-20201217
 x86_64               randconfig-a002-20201217
@@ -119,6 +102,7 @@ i386                 randconfig-a012-20201217
 i386                 randconfig-a011-20201217
 i386                 randconfig-a015-20201217
 i386                 randconfig-a016-20201217
+riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
