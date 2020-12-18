@@ -1,50 +1,24 @@
-From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
-Date: Fri, 18 Dec 2020 18:20:24 +0100
-Subject: [Intel-wired-lan] Maintainer of ./drivers/dca?
-In-Reply-To: <CAPcyv4gXZ1bV-ZKfPwuq+atHP1JKnuCCWmYQYF+3eBKfeN3uCA@mail.gmail.com>
-References: <CAKXUXMx7+DGUc4LLWa+BXAkgrp9bQxCQoo_c98RNxKtw69BTSg@mail.gmail.com>
- <CAPcyv4hqdiLci3xBa=UafJVec_YKZL2aw68DKgUf1RSz8BbFaw@mail.gmail.com>
- <CAKXUXMwEp=jfprB9T2vr+GeqBn8KkUFm3iOG2L9MFfUuN-5Cqw@mail.gmail.com>
- <CAPcyv4gXZ1bV-ZKfPwuq+atHP1JKnuCCWmYQYF+3eBKfeN3uCA@mail.gmail.com>
-Message-ID: <CAKXUXMwHQ-gpQea02_browQd7qjUXnbrQCXzJw2UWkGNaOmn+w@mail.gmail.com>
+From: Ben Greear <greearb@candelatech.com>
+Date: Fri, 18 Dec 2020 10:08:18 -0800
+Subject: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link
+ negotiation?
+Message-ID: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 18, 2020 at 6:12 PM Dan Williams <dan.j.williams@intel.com>
-wrote:
+Hello,
 
-> On Fri, Dec 18, 2020 at 9:03 AM Lukas Bulwahn <lukas.bulwahn@gmail.com>
-> wrote:
-> >
-> >
-> >
-> > On Fri, Dec 18, 2020 at 5:53 PM Dan Williams <dan.j.williams@intel.com>
-> wrote:
-> >>
-> >> To my knowledge DCA is effectively abandoned ever since Chris Leech
-> >> and Shannon Nelson moved on to new roles outside Intel.
-> >>
-> >
-> > Thanks for the quick response; and too bad to hear that it is abandoned.
-> >
-> > But it is good as a potential user relying on that to know that it is
-> not actively maintained. Maybe that is a motivation to get engaged, build
-> some basic tests and grow towards becoming a maintainer for that small
-> piece of code I (and my employer and its customers) could rely on in the
-> future.
-> >
-> > If there is no other news, I will send a MAINTAINERS section marking it
-> orphan for now, so everyone knows the current state.
->
-> I believe the replacement for DCA is DDIO.
->
+One of our users reports that our 5.10 kernel negotiates the 1/2.5/5/10g NIC to 1Gbps
+instead of 2.5Gbps.  Booting the 5.4 kernel shows 2.5Gbps as expected.
 
-Thanks, I check that option as well.
+I have not yet tried to bisect this...is it a known issue?
 
-Lukas
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201218/2fff7731/attachment.html>
+Thanks,
+Ben
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
