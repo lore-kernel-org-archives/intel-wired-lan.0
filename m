@@ -1,132 +1,56 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Dec 2020 19:29:25 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- f1340265726e0edf8a8cef28e665b28ad6302ce9
-Message-ID: <5fdc9295.3QSsmOluEYlvWWjk%lkp@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Fri, 18 Dec 2020 14:40:04 +0100
+Subject: [Intel-wired-lan] [PATCH net v4 0/2] Flow director support for
+ IPv6 and VLAN field
+In-Reply-To: <20201218103608.4359-1-mateusz.palczewski@intel.com>
+References: <20201218103608.4359-1-mateusz.palczewski@intel.com>
+Message-ID: <20201218134004.GA39364@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  40GbE
-branch HEAD: f1340265726e0edf8a8cef28e665b28ad6302ce9  iavf: fix double-release of rtnl_lock
+On Fri, Dec 18, 2020 at 10:36:08AM +0000, Mateusz Palczewski wrote:
+> This series focuses on adding flow director for both IPv6 support and
+> VLAN field.
+> 
+> Patch 1/2 focuses on implementing a flow director support for IPv6 by
+> adding packet templates, handlers and refactoring the code to make it
+> more generic.
+> 
+> Patch 2/2 allows user to specify VLAN field and add it to flow
+> director by showing vlan field in "ethtool -n ethx" command. It also
+> refactors static static arrays with runtime dummy packet creation.
+> 
+> v4: Changed the name of patch series to keep the upstream integrity
 
-elapsed time: 722m
+Keep the whole history of revision changes. Also, in patch descriptions
+you have a 'v2' change but it's v4 right now.
 
-configs tested: 103
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                  mpc885_ads_defconfig
-m68k                          hp300_defconfig
-sh                          landisk_defconfig
-arm                        shmobile_defconfig
-m68k                          sun3x_defconfig
-sh                         ap325rxa_defconfig
-parisc                generic-64bit_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                     taishan_defconfig
-arm                         assabet_defconfig
-c6x                              alldefconfig
-openrisc                         alldefconfig
-powerpc                      ppc64e_defconfig
-arm                          imote2_defconfig
-powerpc                    amigaone_defconfig
-sh                          rsk7269_defconfig
-h8300                               defconfig
-arm                      jornada720_defconfig
-powerpc                           allnoconfig
-arm                          moxart_defconfig
-powerpc                    socrates_defconfig
-arm                          ep93xx_defconfig
-sh                           se7750_defconfig
-arm                         hackkit_defconfig
-arm64                            alldefconfig
-mips                        jmr3927_defconfig
-powerpc                     tqm8548_defconfig
-um                            kunit_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-i386                 randconfig-a001-20201217
-i386                 randconfig-a004-20201217
-i386                 randconfig-a003-20201217
-i386                 randconfig-a002-20201217
-i386                 randconfig-a006-20201217
-i386                 randconfig-a005-20201217
-x86_64               randconfig-a003-20201217
-x86_64               randconfig-a006-20201217
-x86_64               randconfig-a002-20201217
-x86_64               randconfig-a005-20201217
-x86_64               randconfig-a004-20201217
-x86_64               randconfig-a001-20201217
-i386                 randconfig-a014-20201217
-i386                 randconfig-a013-20201217
-i386                 randconfig-a012-20201217
-i386                 randconfig-a011-20201217
-i386                 randconfig-a015-20201217
-i386                 randconfig-a016-20201217
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a016-20201217
-x86_64               randconfig-a012-20201217
-x86_64               randconfig-a013-20201217
-x86_64               randconfig-a015-20201217
-x86_64               randconfig-a014-20201217
-x86_64               randconfig-a011-20201217
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> 
+> Przemyslaw Patynowski (2):
+>   i40e: Add flow director support for IPv6
+>   i40e: VLAN field for flow director
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h        |  11 +-
+>  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 239 +++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |  79 ++-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 534 +++++++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |   2 +
+>  5 files changed, 647 insertions(+), 218 deletions(-)
+> 
+> -- 
+> 2.17.1
+> 
+> ---------------------------------------------------------------------
+> Intel Technology Poland sp. z o.o.
+> ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+> Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+> This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+>  
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
