@@ -1,27 +1,29 @@
 From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Sat, 19 Dec 2020 16:07:13 +0000
-Subject: [Intel-wired-lan] ixgbe: 5.10.0 kernel regression for 2.5Gbps
- link negotiation?
-In-Reply-To: <86fb482f-81b0-8a5f-1580-ed5b6f13c743@molgen.mpg.de>
+Date: Sat, 19 Dec 2020 16:19:21 +0000
+Subject: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link
+ negotiation?
+In-Reply-To: <8635a2db-0d38-c088-321b-27bc4bb21ec4@candelatech.com>
 References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
  <BYAPR11MB3606E48BA821185142354D67EFC30@BYAPR11MB3606.namprd11.prod.outlook.com>
  <3bcba0ca-8f3b-8428-861a-86aaff1688b6@molgen.mpg.de>
  <c54c8f2c-a295-c691-466e-07ae8f41b0ac@candelatech.com>
  <3c8510fb-af8c-b5f9-2af1-64584a667ac8@molgen.mpg.de>
  <BYAPR11MB36060F3889C66AE55092DA01EFC20@BYAPR11MB3606.namprd11.prod.outlook.com>
- <86fb482f-81b0-8a5f-1580-ed5b6f13c743@molgen.mpg.de>
-Message-ID: <MN2PR11MB361416A8BFB904EC0149C178EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
+ <8635a2db-0d38-c088-321b-27bc4bb21ec4@candelatech.com>
+Message-ID: <MN2PR11MB3614FD0C52705864C05EFDF8EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Well, actually, we considered defeaturing 2.5G and 5G in hardware. Would that have been better for you?
+This is a bad case with no ideal solution. Detecting the case is not possible as autonegotiation happens in the hardware without software involvement.
 
-I am stripping the maintainers because they're on the mailing list already and multiple copies of the same email means they get annoyed and likely ignore the email.
+One solution was to update the switch firmware for the a switch that is is the link partner that give us the most trouble. The issue appears to be in competing or half-implemented standards. 2.5G and 5G were initially non-IEEE standards that different manufacturers hacked onto 1G in different ways. We implemented it to one of the standards which should be interoperable, but the corner case of the widely-deployed switch will take the link from 10G to 1G with no automated way to fix it.
 
-And if you do put it back, we will likely have to disable the feature in hardware and have variants that allow it for the people who need it. You really want that outcome?
+Updating switches means a lot of downtime for a lot of datacenters and the OEMs we deal with would not accept that answer.
+
+Our solution was to disable 2.5G and 5G by default. This fixes 10G linking at 1G on that switch, but 2.5G and 5G will link at 1G by default. And, as I said, I've had very little contact with people using 2.5G and 5G and I'm the guy on all the mailing lists. I apologize for making your life harder, but it seems like it's just you so far. Paul seems to be arguing with me just for the fun of it.
 
 Todd Fujinaka
 Software Application Engineer
@@ -30,64 +32,54 @@ Intel Corporation
 todd.fujinaka at intel.com
 
 -----Original Message-----
-From: Paul Menzel <pmenzel@molgen.mpg.de> 
-Sent: Friday, December 18, 2020 11:55 PM
-To: Fujinaka, Todd <todd.fujinaka@intel.com>; Ben Greear <greearb@candelatech.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>; intel-wired-lan at lists.osuosl.org; Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Linus Torvalds <torvalds@linux-foundation.org>; Tyl, RadoslawX <radoslawx.tyl@intel.com>
-Subject: Re: [Intel-wired-lan] ixgbe: 5.10.0 kernel regression for 2.5Gbps link negotiation?
+From: Ben Greear <greearb@candelatech.com> 
+Sent: Friday, December 18, 2020 4:47 PM
+To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 
-Dear Todd,
-
-
-Thank you for your reply.
-
-What is the reason you stripped the maintainers from Cc list again?
-
-Also, please adhere to mailing list etiquette, and do not top post, but use interleaved style.
-
-For context: Commit a296d665ea (ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support), present since 5.9-rc1, introduced a regression, that link negotiation now defaults to 1 Gbps, and ethtool has to be run to enable higher speeds 2.5.
-
-
-Am 19.12.20 um 01:09 schrieb Fujinaka, Todd:
-> What do you consider a regression? Having to enable 2.5G and 5G using 
-> ethtool which can be done at boot time?
-
-Well, Linux? no regression policy should be well known by Linux kernel developers and maintainers.
-
-People can always update to the mainline Linux kernel, and expect their setup to work as with the old Linux kernel. Even if the behavior before was a bug.
-
-But maybe I am wrong, so Linus is in the Cc list now.
-
-> We had more than a few datacenters with issues because of competing 
-> standards. I checked with our marketing people and, on the whole, no 
-> one could think of a large number of 2.5G or 5G customers.
+On 12/18/20 4:09 PM, Fujinaka, Todd wrote:
+> What do you consider a regression? Having to enable 2.5G and 5G using ethtool which can be done at boot time?
 > 
-> We had several escalations from major OEMs and this was the solution 
-> they wanted.
+> We had more than a few datacenters with issues because of competing standards. I checked with our marketing people and, on the whole, no one could think of a large number of 2.5G or 5G customers.
+> 
+> We had several escalations from major OEMs and this was the solution they wanted.
 > 
 > We consider this necessary for interoperability.
 
-As written, this does not matter, as far as I know. You have to find a way to not regress working setups. It also shows, that your process should be more open.
+Can you detect this case somehow and automatically fall-back to 1Gbps?
 
-In this case, I am particularly upset, that the commit changed the defaults without any mentioning in the commit message, and the commit message misses all the information and context, which now took a while to gather from you.
+For my own purposes, I will just hack that commit, but it is likely to be confusing to other people who had a system that worked at 2.5 previously and then suddenly it is slower.  There is no easy way to know from the symptom that you need to dig up an obscure readme and run an obscure ethtool command.
 
-Additionally, in my opinion, additionally, a warning or notice should be printed by Linux about this issue.
+Thanks,
+Ben
 
-
-Kind regards,
-
-Paul
-
-
+> 
+> Todd Fujinaka
+> Software Application Engineer
+> Data Center Group
+> Intel Corporation
+> todd.fujinaka at intel.com
+> 
 > -----Original Message-----
-> From: Paul Menzel <pmenzel@molgen.mpg.de> Sent: Friday, December 18, 2020 3:19 PM
-> To: Ben Greear <greearb@candelatech.com>; Fujinaka, Todd <todd.fujinaka@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Brandeburg, Jesse <jesse.brandeburg@intel.com>; Tyl, RadoslawX <radoslawx.tyl@intel.com>; Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Mclean, Arthur F <arthur.f.mclean@intel.com>; Skajewski, PiotrX <piotrx.skajewski@intel.com>
+> From: Paul Menzel <pmenzel@molgen.mpg.de>
+> Sent: Friday, December 18, 2020 3:19 PM
+> To: Ben Greear <greearb@candelatech.com>; Fujinaka, Todd 
+> <todd.fujinaka@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
+> <gregkh@linuxfoundation.org>; Nguyen, Anthony L 
+> <anthony.l.nguyen@intel.com>; Brandeburg, Jesse 
+> <jesse.brandeburg@intel.com>; Tyl, RadoslawX 
+> <radoslawx.tyl@intel.com>; Loktionov, Aleksandr 
+> <aleksandr.loktionov@intel.com>; Mclean, Arthur F 
+> <arthur.f.mclean@intel.com>; Skajewski, PiotrX 
+> <piotrx.skajewski@intel.com>
 > Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 > 
 > [+cc Radoslaw, Aleksandr, Piotr]
 > 
-> Am 19.12.20 um 00:07 schrieb Ben Greear:> On 12/18/20 11:43 AM, Paul Menzel wrote:
+> Am 19.12.20 um 00:07 schrieb Ben Greear:
+>> On 12/18/20 11:43 AM, Paul Menzel wrote:
 > 
 >>> Am 18.12.20 um 20:27 schrieb Fujinaka, Todd:
 >>>> Yes, and I'm plugging the hole in the README right now. Here's the 
@@ -101,11 +93,11 @@ Paul
 >>>>
 >>>> where N is a combination of the following.
 >>>>
->>>> 100baseTFull    0x008
->>>> 1000baseTFull   0x020
->>>> 2500baseTFull   0x800000000000
->>>> 5000baseTFull   0x1000000000000
->>>> 10000baseTFull  0x1000
+>>>> 100baseTFull??? 0x008
+>>>> 1000baseTFull?? 0x020
+>>>> 2500baseTFull?? 0x800000000000
+>>>> 5000baseTFull?? 0x1000000000000
+>>>> 10000baseTFull? 0x1000
 >>>>
 >>>> For example, to turn on all modes:
 >>>> ethtool -s <ethX> advertise 0x1800000001028
@@ -115,22 +107,27 @@ Paul
 >>> What commit introduced this regression. Please bear in mind, that 
 >>> this contradicts Linux? no-regression policy, and the commit should 
 >>> therefore be reverted as soon as possible.
->> 
+>>
 >> Looks like it is at the end of this patch, though the description 
 >> doesn't mention changing defaults:
->> 
+>>
 >> Commit a296d665eae1e8ec6445683bfb999c884058426a
 >> Author: Radoslaw Tyl <radoslawx.tyl@intel.com>
->> Date:   Fri Jun 26 15:28:14 2020 +0200
->> 
->>      ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support
->> 
->>      Added full support for new version Ethtool API. New API allow use
->>      2500Gbase-T and 5000base-T supported and advertised link speed modes.
->> 
->>      Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
->>      Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
->>      Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
->> 
+>> Date:?? Fri Jun 26 15:28:14 2020 +0200
+>>
+>>   ??? ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support
+>>
+>>   ??? Added full support for new version Ethtool API. New API allow use
+>>   ??? 2500Gbase-T and 5000base-T supported and advertised link speed modes.
+>>
+>>   ??? Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
+>>   ??? Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+>>   ??? Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+>>
 >> Thanks,
 >> Ben
+
+
+--
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
