@@ -1,34 +1,32 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 19 Dec 2020 12:59:18 -0800
-Subject: [Intel-wired-lan] ixgbe: 5.10.0 kernel regression for 2.5Gbps
- link negotiation?
-In-Reply-To: <MN2PR11MB361416A8BFB904EC0149C178EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
-References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
- <BYAPR11MB3606E48BA821185142354D67EFC30@BYAPR11MB3606.namprd11.prod.outlook.com>
- <3bcba0ca-8f3b-8428-861a-86aaff1688b6@molgen.mpg.de>
- <c54c8f2c-a295-c691-466e-07ae8f41b0ac@candelatech.com>
- <3c8510fb-af8c-b5f9-2af1-64584a667ac8@molgen.mpg.de>
- <BYAPR11MB36060F3889C66AE55092DA01EFC20@BYAPR11MB3606.namprd11.prod.outlook.com>
- <86fb482f-81b0-8a5f-1580-ed5b6f13c743@molgen.mpg.de>
- <MN2PR11MB361416A8BFB904EC0149C178EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
-Message-ID: <CAHk-=wiCOBCW-eKVuag6FOjarYnYAG8E2Rak2Qn2=qYJBjCTgA@mail.gmail.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 20 Dec 2020 11:15:36 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused FUNC_1 mask
+Message-ID: <20201220091536.2149986-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Dec 19, 2020 at 8:07 AM Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
->
-> I am stripping the maintainers because they're on the mailing list already and multiple copies of the same email means they get annoyed and likely ignore the email.
+FUNC_1 mask not in use in i225 device and could be removed
 
-Don't do that. This is what "Message-ID" is for. People don't get
-multiple copies of the email, because any sane MUA will see that they
-are the same message even when they came in through two different
-paths.
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-Of course, if some maintainer has a broken MUA, that's one thing, but
-I would expect kernel maintainers that deal with a lot of email to not
-have quite _that_ broken a setup.
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 84355a5f79e8..4fc9ef978ad3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -179,7 +179,6 @@
+ #define IGC_STATUS_LU		0x00000002      /* Link up.0=no,1=link */
+ #define IGC_STATUS_FUNC_MASK	0x0000000C      /* PCI Function Mask */
+ #define IGC_STATUS_FUNC_SHIFT	2
+-#define IGC_STATUS_FUNC_1	0x00000004      /* Function 1 */
+ #define IGC_STATUS_TXOFF	0x00000010      /* transmission paused */
+ #define IGC_STATUS_SPEED_100	0x00000040      /* Speed 100Mb/s */
+ #define IGC_STATUS_SPEED_1000	0x00000080      /* Speed 1000Mb/s */
+-- 
+2.25.1
 
-            Linus
