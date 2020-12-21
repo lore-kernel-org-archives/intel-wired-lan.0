@@ -1,8 +1,8 @@
 From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Mon, 21 Dec 2020 15:16:47 +0000
-Subject: [Intel-wired-lan] ixgbe: 5.10.0 kernel regression for 2.5Gbps
- link negotiation?
-In-Reply-To: <07a977b0-c3f9-4cbe-482e-350d8b42cda7@molgen.mpg.de>
+Date: Mon, 21 Dec 2020 15:20:04 +0000
+Subject: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link
+ negotiation?
+In-Reply-To: <2108932e-ee2e-cadf-52cd-0cd11a6aeba4@candelatech.com>
 References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
  <BYAPR11MB3606E48BA821185142354D67EFC30@BYAPR11MB3606.namprd11.prod.outlook.com>
  <3bcba0ca-8f3b-8428-861a-86aaff1688b6@molgen.mpg.de>
@@ -11,15 +11,19 @@ References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
  <BYAPR11MB36060F3889C66AE55092DA01EFC20@BYAPR11MB3606.namprd11.prod.outlook.com>
  <8635a2db-0d38-c088-321b-27bc4bb21ec4@candelatech.com>
  <MN2PR11MB3614FD0C52705864C05EFDF8EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
- <07a977b0-c3f9-4cbe-482e-350d8b42cda7@molgen.mpg.de>
-Message-ID: <BYAPR11MB3606001E3832B5A04F9787E6EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <2108932e-ee2e-cadf-52cd-0cd11a6aeba4@candelatech.com>
+Message-ID: <BYAPR11MB3606A702240D0A1614AA6585EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I would listen to you on Linus' list, but this is Intel-wired-lan.
+Nope. The timing of the PHYs means the switch times out while we're trying 2.5G and 5G and the switch goes to its default lowest speed of 1G. Then we go to 1G and by that time bonding is broken in several of the cases we ran into.
+
+Basically, we can have that switch work, or we can have 2.5G and 5G on by default. Not both. And since we're selling a 10G device with other speeds as a bonus, we're prioritizing the highest speed. That plus the very high profile customers who wanted this solution.
+
+The solution for one camp or the other is to use the ethtool command at boot (I've forgotten exactly what that was) but the high profile customers refused to do that. Sounds like you're refusing as well?
 
 Todd Fujinaka
 Software Application Engineer
@@ -28,59 +32,146 @@ Intel Corporation
 todd.fujinaka at intel.com
 
 -----Original Message-----
-From: Paul Menzel <pmenzel@molgen.mpg.de> 
-Sent: Monday, December 21, 2020 7:10 AM
-To: Fujinaka, Todd <todd.fujinaka@intel.com>; Ben Greear <greearb@candelatech.com>
-Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>; Linus Torvalds <torvalds@linux-foundation.org>; Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Subject: Re: [Intel-wired-lan] ixgbe: 5.10.0 kernel regression for 2.5Gbps link negotiation?
+From: Ben Greear <greearb@candelatech.com> 
+Sent: Saturday, December 19, 2020 8:48 AM
+To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 
-Dear Todd,
-
-
-I kindly ask you again, please do not top-post. It?s impolite, and more importantly, it wastes the readers time as it looses context, and results in misunderstandings.
-
-Am 19.12.20 um 17:19 schrieb Fujinaka, Todd:
-> This is a bad case with no ideal solution. Detecting the case is not 
-> possible as autonegotiation happens in the hardware without software 
-> involvement.
+On 12/19/20 8:19 AM, Fujinaka, Todd wrote:
+> This is a bad case with no ideal solution. Detecting the case is not possible as autonegotiation happens in the hardware without software involvement.
 > 
-> One solution was to update the switch firmware for the a switch that 
-> is is the link partner that give us the most trouble. The issue 
-> appears to be in competing or half-implemented standards. 2.5G and 5G 
-> were initially non-IEEE standards that different manufacturers hacked 
-> onto 1G in different ways. We implemented it to one of the standards 
-> which should be interoperable, but the corner case of the 
-> widely-deployed switch will take the link from 10G to 1G with no 
-> automated way to fix it.
 
-Thank you for the background, which should have been in the commit message.
+So, after it negotiates to 2.5, what happens?  Do you see lots of low-level crc errors or similar?
+Maybe you can use that to determine link is bad and force it back to 1Gbps and re-negotiate link?
 
-Can you please tell us the problematic switch name and the problematic firmware version and the one, where this issues is fixed?
+(And with nice visible warning in dmesg about what is going on)
 
-> Updating switches means a lot of downtime for a lot of datacenters and 
-> the OEMs we deal with would not accept that answer.
+> One solution was to update the switch firmware for the a switch that is is the link partner that give us the most trouble. The issue appears to be in competing or half-implemented standards. 2.5G and 5G were initially non-IEEE standards that different manufacturers hacked onto 1G in different ways. We implemented it to one of the standards which should be interoperable, but the corner case of the widely-deployed switch will take the link from 10G to 1G with no automated way to fix it.
+> 
+> Updating switches means a lot of downtime for a lot of datacenters and the OEMs we deal with would not accept that answer.
+> 
+> Our solution was to disable 2.5G and 5G by default. This fixes 10G linking at 1G on that switch, but 2.5G and 5G will link at 1G by default. And, as I said, I've had very little contact with people using 2.5G and 5G and I'm the guy on all the mailing lists. I apologize for making your life harder, but it seems like it's just you so far. Paul seems to be arguing with me just for the fun of it.
 
-Well, then please discuss the problem and possible solutions on the mailing list. Breaking other peoples setups is unacceptable. A Linux kernel runtime parameter would be one solution, your customers could have used.
+Well, when things work, no one talks about it. :)
 
-> Our solution was to disable 2.5G and 5G by default. This fixes 10G 
-> linking at 1G on that switch, but 2.5G and 5G will link at 1G by 
-> default. And, as I said, I've had very little contact with people 
-> using 2.5G and 5G and I'm the guy on all the mailing lists.
+Are you able to determine that peer is advertising 2.5, and local NIC is forced to 1G, and then put a visible warning in dmesg about this case and link to how to enable 2.5/5G rates?  That might help people realize what is going on.  And when you do this commit, put a lot of notes about why and about what commit changed things since it is not at all obvious from the original commit message.
 
-Unfortunately, a lot of users are not on the mailing list.
+Thanks,
+Ben
 
-> I apologize for making your life harder, but it seems like it's just 
-> you so far. Paul seems to be arguing with me just for the fun of it.
+> 
+> Todd Fujinaka
+> Software Application Engineer
+> Data Center Group
+> Intel Corporation
+> todd.fujinaka at intel.com
+> 
+> -----Original Message-----
+> From: Ben Greear <greearb@candelatech.com>
+> Sent: Friday, December 18, 2020 4:47 PM
+> To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel 
+> <pmenzel@molgen.mpg.de>
+> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
+> <gregkh@linuxfoundation.org>
+> Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
+> 
+> On 12/18/20 4:09 PM, Fujinaka, Todd wrote:
+>> What do you consider a regression? Having to enable 2.5G and 5G using ethtool which can be done at boot time?
+>>
+>> We had more than a few datacenters with issues because of competing standards. I checked with our marketing people and, on the whole, no one could think of a large number of 2.5G or 5G customers.
+>>
+>> We had several escalations from major OEMs and this was the solution they wanted.
+>>
+>> We consider this necessary for interoperability.
+> 
+> Can you detect this case somehow and automatically fall-back to 1Gbps?
+> 
+> For my own purposes, I will just hack that commit, but it is likely to be confusing to other people who had a system that worked at 2.5 previously and then suddenly it is slower.  There is no easy way to know from the symptom that you need to dig up an obscure readme and run an obscure ethtool command.
+> 
+> Thanks,
+> Ben
+> 
+>>
+>> Todd Fujinaka
+>> Software Application Engineer
+>> Data Center Group
+>> Intel Corporation
+>> todd.fujinaka at intel.com
+>>
+>> -----Original Message-----
+>> From: Paul Menzel <pmenzel@molgen.mpg.de>
+>> Sent: Friday, December 18, 2020 3:19 PM
+>> To: Ben Greear <greearb@candelatech.com>; Fujinaka, Todd 
+>> <todd.fujinaka@intel.com>
+>> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
+>> <gregkh@linuxfoundation.org>; Nguyen, Anthony L 
+>> <anthony.l.nguyen@intel.com>; Brandeburg, Jesse 
+>> <jesse.brandeburg@intel.com>; Tyl, RadoslawX 
+>> <radoslawx.tyl@intel.com>; Loktionov, Aleksandr 
+>> <aleksandr.loktionov@intel.com>; Mclean, Arthur F 
+>> <arthur.f.mclean@intel.com>; Skajewski, PiotrX 
+>> <piotrx.skajewski@intel.com>
+>> Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
+>>
+>> [+cc Radoslaw, Aleksandr, Piotr]
+>>
+>> Am 19.12.20 um 00:07 schrieb Ben Greear:
+>>> On 12/18/20 11:43 AM, Paul Menzel wrote:
+>>
+>>>> Am 18.12.20 um 20:27 schrieb Fujinaka, Todd:
+>>>>> Yes, and I'm plugging the hole in the README right now. Here's the 
+>>>>> proposed text:
+>>>>>
+>>>>> Advertisements for 2.5G and 5G on the x550 were turned off by 
+>>>>> default due to interoperability issues with certain switches. To 
+>>>>> turn them back on, use
+>>>>>
+>>>>> ethtool -s <ethX> advertise N
+>>>>>
+>>>>> where N is a combination of the following.
+>>>>>
+>>>>> 100baseTFull??? 0x008
+>>>>> 1000baseTFull?? 0x020
+>>>>> 2500baseTFull?? 0x800000000000
+>>>>> 5000baseTFull?? 0x1000000000000
+>>>>> 10000baseTFull? 0x1000
+>>>>>
+>>>>> For example, to turn on all modes:
+>>>>> ethtool -s <ethX> advertise 0x1800000001028
+>>>>>
+>>>>> For more details please see the ethtool man page.
+>>>>
+>>>> What commit introduced this regression. Please bear in mind, that 
+>>>> this contradicts Linux? no-regression policy, and the commit should 
+>>>> therefore be reverted as soon as possible.
+>>>
+>>> Looks like it is at the end of this patch, though the description 
+>>> doesn't mention changing defaults:
+>>>
+>>> Commit a296d665eae1e8ec6445683bfb999c884058426a
+>>> Author: Radoslaw Tyl <radoslawx.tyl@intel.com>
+>>> Date:?? Fri Jun 26 15:28:14 2020 +0200
+>>>
+>>>    ??? ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support
+>>>
+>>>    ??? Added full support for new version Ethtool API. New API allow use
+>>>    ??? 2500Gbase-T and 5000base-T supported and advertised link speed modes.
+>>>
+>>>    ??? Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
+>>>    ??? Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+>>>    ??? Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+>>>
+>>> Thanks,
+>>> Ben
+> 
+> 
+> --
+> Ben Greear <greearb@candelatech.com>
+> Candela Technologies Inc  http://www.candelatech.com
+> 
 
-Please keep the discussion respectful, and do not insult others.
 
-Unfortunately, at work we have now been bitten several times by regressions updating to the current mainline Linux kernel, causing frictions in the team about what Linux kernel to use.
-
-I am missing a statement by you, acknowledging that the commit and the whole communication was a big fail, and how you will fix the regression. 
-Additionally, an analysis would be nice, where the process failed ? why was the commit message incomplete and why did the test (Tested-by
-present) not spot the issue ? and how to improve it to avoid such a situation in the future.
-
-
-Kind regards,
-
-Paul
+--
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
