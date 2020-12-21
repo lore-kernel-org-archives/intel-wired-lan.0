@@ -1,8 +1,8 @@
-From: Ben Greear <greearb@candelatech.com>
-Date: Mon, 21 Dec 2020 07:52:54 -0800
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Mon, 21 Dec 2020 15:58:20 +0000
 Subject: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link
  negotiation?
-In-Reply-To: <BYAPR11MB3606A702240D0A1614AA6585EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
+In-Reply-To: <1d9e12e5-56a5-7921-e4b6-b67bcc180942@candelatech.com>
 References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
  <BYAPR11MB3606E48BA821185142354D67EFC30@BYAPR11MB3606.namprd11.prod.outlook.com>
  <3bcba0ca-8f3b-8428-861a-86aaff1688b6@molgen.mpg.de>
@@ -13,12 +13,30 @@ References: <7bb485c3-9556-d9f1-e70f-a4b3a05909c9@candelatech.com>
  <MN2PR11MB3614FD0C52705864C05EFDF8EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
  <2108932e-ee2e-cadf-52cd-0cd11a6aeba4@candelatech.com>
  <BYAPR11MB3606A702240D0A1614AA6585EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
-Message-ID: <1d9e12e5-56a5-7921-e4b6-b67bcc180942@candelatech.com>
+ <1d9e12e5-56a5-7921-e4b6-b67bcc180942@candelatech.com>
+Message-ID: <BYAPR11MB360628704A4938C481F6EA41EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+For the standalone driver? I can certainly ask for the change. It might take a while (knowing what's going on here) but I can champion that.
+
+As for in-kernel, I think Intel wants to keep it this way. Not saying Intel won't be outvoted, but this is what has been demanded by the customer so far.
+
+Todd Fujinaka
+Software Application Engineer
+Data Center Group
+Intel Corporation
+todd.fujinaka at intel.com
+
+-----Original Message-----
+From: Ben Greear <greearb@candelatech.com> 
+Sent: Monday, December 21, 2020 7:53 AM
+To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 
 On 12/21/20 7:20 AM, Fujinaka, Todd wrote:
 > Nope. The timing of the PHYs means the switch times out while we're trying 2.5G and 5G and the switch goes to its default lowest speed of 1G. Then we go to 1G and by that time bonding is broken in several of the cases we ran into.
@@ -27,14 +45,11 @@ On 12/21/20 7:20 AM, Fujinaka, Todd wrote:
 > 
 > The solution for one camp or the other is to use the ethtool command at boot (I've forgotten exactly what that was) but the high profile customers refused to do that. Sounds like you're refusing as well?
 
-I'm not refusing, I just would rather patch my kernels than use ethtool, that way my older user-space
-would work fine on newer kernels.
+I'm not refusing, I just would rather patch my kernels than use ethtool, that way my older user-space would work fine on newer kernels.
 
-Would you accept a patch that makes this a module option, defaulted to disable 2.5/5, but which
-a user could enabled to enable 2.5/5 by default?
+Would you accept a patch that makes this a module option, defaulted to disable 2.5/5, but which a user could enabled to enable 2.5/5 by default?
 
-I'd find that easier to use that the ethtool modification, and of course ethtool could still
-override things as desired.
+I'd find that easier to use that the ethtool modification, and of course ethtool could still override things as desired.
 
 Thanks,
 Ben
@@ -49,8 +64,10 @@ Ben
 > -----Original Message-----
 > From: Ben Greear <greearb@candelatech.com>
 > Sent: Saturday, December 19, 2020 8:48 AM
-> To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel <pmenzel@molgen.mpg.de>
-> Cc: intel-wired-lan at lists.osuosl.org; Greg KH <gregkh@linuxfoundation.org>
+> To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel 
+> <pmenzel@molgen.mpg.de>
+> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
+> <gregkh@linuxfoundation.org>
 > Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 > 
 > On 12/19/20 8:19 AM, Fujinaka, Todd wrote:
@@ -85,9 +102,9 @@ Ben
 >> -----Original Message-----
 >> From: Ben Greear <greearb@candelatech.com>
 >> Sent: Friday, December 18, 2020 4:47 PM
->> To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel
+>> To: Fujinaka, Todd <todd.fujinaka@intel.com>; Paul Menzel 
 >> <pmenzel@molgen.mpg.de>
->> Cc: intel-wired-lan at lists.osuosl.org; Greg KH
+>> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
 >> <gregkh@linuxfoundation.org>
 >> Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 >>
@@ -117,15 +134,15 @@ Ben
 >>> -----Original Message-----
 >>> From: Paul Menzel <pmenzel@molgen.mpg.de>
 >>> Sent: Friday, December 18, 2020 3:19 PM
->>> To: Ben Greear <greearb@candelatech.com>; Fujinaka, Todd
+>>> To: Ben Greear <greearb@candelatech.com>; Fujinaka, Todd 
 >>> <todd.fujinaka@intel.com>
->>> Cc: intel-wired-lan at lists.osuosl.org; Greg KH
->>> <gregkh@linuxfoundation.org>; Nguyen, Anthony L
->>> <anthony.l.nguyen@intel.com>; Brandeburg, Jesse
->>> <jesse.brandeburg@intel.com>; Tyl, RadoslawX
->>> <radoslawx.tyl@intel.com>; Loktionov, Aleksandr
->>> <aleksandr.loktionov@intel.com>; Mclean, Arthur F
->>> <arthur.f.mclean@intel.com>; Skajewski, PiotrX
+>>> Cc: intel-wired-lan at lists.osuosl.org; Greg KH 
+>>> <gregkh@linuxfoundation.org>; Nguyen, Anthony L 
+>>> <anthony.l.nguyen@intel.com>; Brandeburg, Jesse 
+>>> <jesse.brandeburg@intel.com>; Tyl, RadoslawX 
+>>> <radoslawx.tyl@intel.com>; Loktionov, Aleksandr 
+>>> <aleksandr.loktionov@intel.com>; Mclean, Arthur F 
+>>> <arthur.f.mclean@intel.com>; Skajewski, PiotrX 
 >>> <piotrx.skajewski@intel.com>
 >>> Subject: Re: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link negotiation?
 >>>
@@ -135,11 +152,11 @@ Ben
 >>>> On 12/18/20 11:43 AM, Paul Menzel wrote:
 >>>
 >>>>> Am 18.12.20 um 20:27 schrieb Fujinaka, Todd:
->>>>>> Yes, and I'm plugging the hole in the README right now. Here's the
->>>>>> proposed text:
+>>>>>> Yes, and I'm plugging the hole in the README right now. Here's 
+>>>>>> the proposed text:
 >>>>>>
->>>>>> Advertisements for 2.5G and 5G on the x550 were turned off by
->>>>>> default due to interoperability issues with certain switches. To
+>>>>>> Advertisements for 2.5G and 5G on the x550 were turned off by 
+>>>>>> default due to interoperability issues with certain switches. To 
 >>>>>> turn them back on, use
 >>>>>>
 >>>>>> ethtool -s <ethX> advertise N
@@ -157,18 +174,19 @@ Ben
 >>>>>>
 >>>>>> For more details please see the ethtool man page.
 >>>>>
->>>>> What commit introduced this regression. Please bear in mind, that
->>>>> this contradicts Linux? no-regression policy, and the commit should
->>>>> therefore be reverted as soon as possible.
+>>>>> What commit introduced this regression. Please bear in mind, that 
+>>>>> this contradicts Linux? no-regression policy, and the commit 
+>>>>> should therefore be reverted as soon as possible.
 >>>>
->>>> Looks like it is at the end of this patch, though the description
+>>>> Looks like it is at the end of this patch, though the description 
 >>>> doesn't mention changing defaults:
 >>>>
 >>>> Commit a296d665eae1e8ec6445683bfb999c884058426a
 >>>> Author: Radoslaw Tyl <radoslawx.tyl@intel.com>
 >>>> Date:?? Fri Jun 26 15:28:14 2020 +0200
 >>>>
->>>>     ??? ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support
+>>>>     ??? ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps 
+>>>> support
 >>>>
 >>>>     ??? Added full support for new version Ethtool API. New API allow use
 >>>>     ??? 2500Gbase-T and 5000base-T supported and advertised link speed modes.
@@ -193,6 +211,6 @@ Ben
 > 
 
 
--- 
+--
 Ben Greear <greearb@candelatech.com>
 Candela Technologies Inc  http://www.candelatech.com
