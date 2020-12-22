@@ -1,109 +1,59 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Tue, 22 Dec 2020 15:16:44 +0100
-Subject: [Intel-wired-lan] [PATCH 10/10] igc: Enable TX via AF_XDP
+Date: Tue, 22 Dec 2020 15:20:45 +0100
+Subject: [Intel-wired-lan] [PATCH 00/10] igc: Add support for AF_XDP
  zero-copy
-In-Reply-To: <20201217202415.77891-11-andre.guedes@intel.com>
+In-Reply-To: <20201217202415.77891-1-andre.guedes@intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
- <20201217202415.77891-11-andre.guedes@intel.com>
-Message-ID: <20201222141644.GH2943@ranger.igk.intel.com>
+Message-ID: <20201222142045.GI2943@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Dec 17, 2020 at 12:24:15PM -0800, Andre Guedes wrote:
-> This patch adds support for transmitting packets via AF_XDP zero-copy
-> mechanism.
+On Thu, Dec 17, 2020 at 12:24:05PM -0800, Andre Guedes wrote:
+> Hi,
 > 
-> The packet transmission itself is implemented by igc_xdp_xmit_zc() which
-> is called from igc_clean_tx_irq() when the ring has AF_XDP zero-copy
-> enabled. Likewise i40e and ice drivers, the transmission budget used is
-> the number of descriptors available on the ring.
+> This series adds AF_XDP zero-copy feature to igc driver.
 > 
-> A new tx buffer type is introduced to 'enum igc_tx_buffer_type' to
-> indicate the tx buffer uses memory from xsk pool so it can be properly
-> cleaned after transmission or when the ring is cleaned.
+> The initial patches do some code refactoring, preparing the code base to
+> land the AF_XDP zero-copy feature, avoiding code duplications. The last
+> patches of the series are the ones implementing the feature.
 > 
-> The I225 controller has only 4 Tx hardware queues so the main difference
-> between igc and other Intel drivers that support AF_XDP zero-copy is
-> that there is no tx ring dedicated exclusively to XDP. Instead, tx
-> rings are shared between the network stack and XDP, and netdev queue
-> lock is used to ensure mutual exclusion. This is the same approach
-> implemented to support XDP_TX and XDP_REDIRECT actions.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc.h      |   3 +
->  drivers/net/ethernet/intel/igc/igc_base.h |   1 +
->  drivers/net/ethernet/intel/igc/igc_main.c | 115 +++++++++++++++++++++-
->  drivers/net/ethernet/intel/igc/igc_xdp.c  |  20 +++-
->  4 files changed, 131 insertions(+), 8 deletions(-)
-> 
+> The last patch which indeed implements AF_XDP zero-copy support was
+> originally way too lengthy so, for the sake of code review, I broke it
+> up into two patches: one adding support for the RX functionality and the
+> other one adding TX support. Feel free to squash those two patches when
+> pushing the series to net-next if you find appropriate.
 
-[...]
+Generally this looks good! I had only minor comments.
 
->  
-> +static void igc_xdp_xmit_zc(struct igc_ring *ring)
-> +{
-> +	struct xsk_buff_pool *pool = ring->xsk_pool;
-> +	struct netdev_queue *nq = txring_txq(ring);
-> +	int cpu = smp_processor_id();
-> +	struct xdp_desc xdp_desc;
-> +	bool work_done;
-> +	u16 budget;
-> +
-> +	if (!netif_carrier_ok(ring->netdev))
-> +		return;
-> +
-> +	__netif_tx_lock(nq, cpu);
-> +
-> +	budget = igc_desc_unused(ring);
-> +	work_done = false;
-> +
-> +	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
-> +		u32 cmd_type, olinfo_status;
-> +		union igc_adv_tx_desc *desc;
-> +		struct igc_tx_buffer *bi;
-> +		dma_addr_t dma;
-> +
-> +		cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
-> +			   IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
-> +			   xdp_desc.len;
-> +		olinfo_status = xdp_desc.len << IGC_ADVTXD_PAYLEN_SHIFT;
-> +
-> +		dma = xsk_buff_raw_get_dma(pool, xdp_desc.addr);
-> +		xsk_buff_raw_dma_sync_for_device(pool, dma, xdp_desc.len);
-> +
-> +		desc = IGC_TX_DESC(ring, ring->next_to_use);
-> +		desc->read.cmd_type_len = cpu_to_le32(cmd_type);
-> +		desc->read.olinfo_status = cpu_to_le32(olinfo_status);
-> +		desc->read.buffer_addr = cpu_to_le64(dma);
-> +
-> +		bi = &ring->tx_buffer_info[ring->next_to_use];
-> +		bi->type = IGC_TX_BUFFER_TYPE_XSK;
-> +		bi->protocol = 0;
-> +		bi->bytecount = xdp_desc.len;
-> +		bi->gso_segs = 1;
-> +		bi->time_stamp = jiffies;
-> +		bi->next_to_watch = desc;
-> +
-> +		netdev_tx_sent_queue(txring_txq(ring), xdp_desc.len);
-> +
-> +		ring->next_to_use++;
-> +		if (ring->next_to_use == ring->count)
-> +			ring->next_to_use = 0;
-> +
-> +		work_done = true;
+I'm interested how are you going to utilize the AF_XDP ZC, probably
+something related to TSN ;)
 
-nit: setting it on each iteration feels semi-optimal.
-
-> +	}
-> +
-> +	if (work_done) {
-> +		igc_flush_tx_descriptors(ring);
-> +		xsk_tx_release(pool);
-> +	}
-> +
-> +	__netif_tx_unlock(nq);
-> +}
+> 
+> Best,
+> Andre
+> 
+> Andre Guedes (10):
+>   igc: Move igc_xdp_is_enabled()
+>   igc: Refactor igc_xdp_run_prog()
+>   igc: Refactor igc_clean_rx_ring()
+>   igc: Refactor XDP rxq info registration
+>   igc: Introduce igc_update_rx_stats()
+>   igc: Introduce igc_update_tx_stats()
+>   igc: Introduce igc_unmap_tx_buffer() helper
+>   igc: Replace IGC_TX_FLAGS_XDP flag by an enum
+>   igc: Enable RX via AF_XDP zero-copy
+>   igc: Enable TX via AF_XDP zero-copy
+> 
+>  drivers/net/ethernet/intel/igc/igc.h      |  33 +-
+>  drivers/net/ethernet/intel/igc/igc_base.h |   2 +
+>  drivers/net/ethernet/intel/igc/igc_main.c | 650 ++++++++++++++++++----
+>  drivers/net/ethernet/intel/igc/igc_xdp.c  | 107 +++-
+>  drivers/net/ethernet/intel/igc/igc_xdp.h  |   8 +-
+>  5 files changed, 672 insertions(+), 128 deletions(-)
+> 
+> -- 
+> 2.29.2
+> 
