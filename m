@@ -1,23 +1,41 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Mon, 21 Dec 2020 17:13:44 -0800
-Subject: [Intel-wired-lan] [PATCH 06/10] igc: Introduce
- igc_update_tx_stats()
-In-Reply-To: <20201221225811.GC2943@ranger.igk.intel.com>
+Date: Mon, 21 Dec 2020 17:13:48 -0800
+Subject: [Intel-wired-lan] [PATCH 08/10] igc: Replace IGC_TX_FLAGS_XDP
+ flag by an enum
+In-Reply-To: <20201221230905.GD2943@ranger.igk.intel.com>
 References: <20201217202415.77891-1-andre.guedes@intel.com>
- <20201217202415.77891-7-andre.guedes@intel.com>
- <20201221225811.GC2943@ranger.igk.intel.com>
-Message-ID: <160859962405.45139.5477040596348797483@bgdudka-mobl.amr.corp.intel.com>
+ <20201217202415.77891-9-andre.guedes@intel.com>
+ <20201221230905.GD2943@ranger.igk.intel.com>
+Message-ID: <160859962833.45139.11189791470425967959@bgdudka-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Maciej Fijalkowski (2020-12-21 14:58:11)
-> On Thu, Dec 17, 2020 at 12:24:11PM -0800, Andre Guedes wrote:
-> > Likewise we do with the RX stats, this patch encapsulates the code that
-> > updates the driver TX stats in its own local helper.
+Quoting Maciej Fijalkowski (2020-12-21 15:09:05)
+> > @@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+> >       while (i != tx_ring->next_to_use) {
+> >               union igc_adv_tx_desc *eop_desc, *tx_desc;
+> >  
+> > -             if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
+> > +             switch (tx_buffer->type) {
+> > +             case IGC_TX_BUFFER_TYPE_XDP:
+> >                       xdp_return_frame(tx_buffer->xdpf);
+> > -             else
+> > +                     break;
+> > +             case IGC_TX_BUFFER_TYPE_SKB:
+> >                       dev_kfree_skb_any(tx_buffer->skb);
+> > +                     break;
+> > +             default:
+> > +                     netdev_warn_once(tx_ring->netdev,
+> > +                                      "Unknown tx buffer type\n");
+> > +                     break;
+> > +             }
 > 
-> I think you can squash this onto previous patch.
+> nit: you've been doing some effort in order to reduce the code duplication
+> as much as it's possible, yet here you introduce duplicated code for that
+> desc cleanup :p maybe add a little helper for that as well?
 
-I can do that.
+Note that the handling in IGC_TX_BUFFER_TYPE_SKB case is different in
+igc_clean_tx_irq(): dev_kfree_skb_any() vs napi_consume_skb().
