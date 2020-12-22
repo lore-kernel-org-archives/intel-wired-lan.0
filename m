@@ -1,41 +1,43 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Mon, 21 Dec 2020 17:13:48 -0800
-Subject: [Intel-wired-lan] [PATCH 08/10] igc: Replace IGC_TX_FLAGS_XDP
- flag by an enum
-In-Reply-To: <20201221230905.GD2943@ranger.igk.intel.com>
-References: <20201217202415.77891-1-andre.guedes@intel.com>
- <20201217202415.77891-9-andre.guedes@intel.com>
- <20201221230905.GD2943@ranger.igk.intel.com>
-Message-ID: <160859962833.45139.11189791470425967959@bgdudka-mobl.amr.corp.intel.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 22 Dec 2020 09:59:05 +0100
+Subject: [Intel-wired-lan] 5.10.0 kernel regression for 2.5Gbps link
+ negotiation?
+In-Reply-To: <1d9e12e5-56a5-7921-e4b6-b67bcc180942@candelatech.com>
+References: <BYAPR11MB3606E48BA821185142354D67EFC30@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <3bcba0ca-8f3b-8428-861a-86aaff1688b6@molgen.mpg.de>
+ <c54c8f2c-a295-c691-466e-07ae8f41b0ac@candelatech.com>
+ <3c8510fb-af8c-b5f9-2af1-64584a667ac8@molgen.mpg.de>
+ <BYAPR11MB36060F3889C66AE55092DA01EFC20@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <8635a2db-0d38-c088-321b-27bc4bb21ec4@candelatech.com>
+ <MN2PR11MB3614FD0C52705864C05EFDF8EFC20@MN2PR11MB3614.namprd11.prod.outlook.com>
+ <2108932e-ee2e-cadf-52cd-0cd11a6aeba4@candelatech.com>
+ <BYAPR11MB3606A702240D0A1614AA6585EFC00@BYAPR11MB3606.namprd11.prod.outlook.com>
+ <1d9e12e5-56a5-7921-e4b6-b67bcc180942@candelatech.com>
+Message-ID: <X+G1WVz0qorjegSa@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Maciej Fijalkowski (2020-12-21 15:09:05)
-> > @@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
-> >       while (i != tx_ring->next_to_use) {
-> >               union igc_adv_tx_desc *eop_desc, *tx_desc;
-> >  
-> > -             if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-> > +             switch (tx_buffer->type) {
-> > +             case IGC_TX_BUFFER_TYPE_XDP:
-> >                       xdp_return_frame(tx_buffer->xdpf);
-> > -             else
-> > +                     break;
-> > +             case IGC_TX_BUFFER_TYPE_SKB:
-> >                       dev_kfree_skb_any(tx_buffer->skb);
-> > +                     break;
-> > +             default:
-> > +                     netdev_warn_once(tx_ring->netdev,
-> > +                                      "Unknown tx buffer type\n");
-> > +                     break;
-> > +             }
+On Mon, Dec 21, 2020 at 07:52:54AM -0800, Ben Greear wrote:
+> On 12/21/20 7:20 AM, Fujinaka, Todd wrote:
+> > Nope. The timing of the PHYs means the switch times out while we're trying 2.5G and 5G and the switch goes to its default lowest speed of 1G. Then we go to 1G and by that time bonding is broken in several of the cases we ran into.
+> > 
+> > Basically, we can have that switch work, or we can have 2.5G and 5G on by default. Not both. And since we're selling a 10G device with other speeds as a bonus, we're prioritizing the highest speed. That plus the very high profile customers who wanted this solution.
+> > 
+> > The solution for one camp or the other is to use the ethtool command at boot (I've forgotten exactly what that was) but the high profile customers refused to do that. Sounds like you're refusing as well?
 > 
-> nit: you've been doing some effort in order to reduce the code duplication
-> as much as it's possible, yet here you introduce duplicated code for that
-> desc cleanup :p maybe add a little helper for that as well?
+> I'm not refusing, I just would rather patch my kernels than use ethtool, that way my older user-space
+> would work fine on newer kernels.
+> 
+> Would you accept a patch that makes this a module option, defaulted to disable 2.5/5, but which
+> a user could enabled to enable 2.5/5 by default?
 
-Note that the handling in IGC_TX_BUFFER_TYPE_SKB case is different in
-igc_clean_tx_irq(): dev_kfree_skb_any() vs napi_consume_skb().
+Module options are not ok, this is not the 1990's.  Please use the
+proper configuration methods instead that can work on a per-device
+basis.
+
+thanks,
+
+greg k-h
