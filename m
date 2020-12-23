@@ -1,39 +1,52 @@
-From: trix@redhat.com <trix@redhat.com>
-Date: Wed, 23 Dec 2020 11:44:25 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: remove h from printk format specifier
-Message-ID: <20201223194425.125605-1-trix@redhat.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Wed, 23 Dec 2020 12:36:56 -0800
+Subject: [Intel-wired-lan] [PATCH v2 0/9] igc: Add support for AF_XDP
+ zero-copy
+Message-ID: <20201223203705.78705-1-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tom Rix <trix@redhat.com>
+Hi all,
 
-This change fixes the checkpatch warning described in this commit
-commit cbacb5ab0aa0 ("docs: printk-formats: Stop encouraging use of unnecessary %h[xudi] and %hh[xudi]")
+This is the second version of this series which adds AF_XDP zero-copy support
+to igc driver.
 
-Standard integer promotion is already done and %hx and %hhx is useless
-so do not encourage the use of %hh[xudi] or %h[xudi].
+The main changes from v1 are:
 
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+    - Fixed commit messages to describe changes in imperative mood, e.g. "make
+      xyzzy do frotz" instead of "[This patch] makes xyzzy do frotz".
+    - Added queue index to error message in igc_setup_rx_resources().
+    - Improved comment about xsk frame size check in igc_xdp_enable_pool(). 
+    - Fixed typos.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 03f78fdb0dcd..cb682232df16 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3156,7 +3156,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * the PCIe SR-IOV capability.
- 	 */
- 	if (pdev->is_virtfn) {
--		WARN(1, KERN_ERR "%s (%hx:%hx) should not be a VF!\n",
-+		WARN(1, KERN_ERR "%s (%x:%x) should not be a VF!\n",
- 			pci_name(pdev), pdev->vendor, pdev->device);
- 		return -EINVAL;
- 	}
+v1 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201217202415.77891-1-andre.guedes at intel.com/
+
+Best,
+Andre
+
+Andre Guedes (9):
+  igc: Move igc_xdp_is_enabled()
+  igc: Refactor igc_xdp_run_prog()
+  igc: Refactor igc_clean_rx_ring()
+  igc: Refactor XDP rxq info registration
+  igc: Introduce tx/rx stats helpers
+  igc: Introduce igc_unmap_tx_buffer() helper
+  igc: Replace IGC_TX_FLAGS_XDP flag by an enum
+  igc: Enable RX via AF_XDP zero-copy
+  igc: Enable TX via AF_XDP zero-copy
+
+ drivers/net/ethernet/intel/igc/igc.h      |  33 +-
+ drivers/net/ethernet/intel/igc/igc_base.h |   2 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 651 ++++++++++++++++++----
+ drivers/net/ethernet/intel/igc/igc_xdp.c  | 107 +++-
+ drivers/net/ethernet/intel/igc/igc_xdp.h  |   8 +-
+ 5 files changed, 673 insertions(+), 128 deletions(-)
+
 -- 
-2.27.0
+2.29.2
 
