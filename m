@@ -1,67 +1,39 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed, 23 Dec 2020 11:27:04 -0800
-Subject: [Intel-wired-lan] [PATCH 09/10] igc: Enable RX via AF_XDP
- zero-copy
-In-Reply-To: <20201222205925.GA10157@ranger.igk.intel.com>
-References: <20201217202415.77891-1-andre.guedes@intel.com>
- <20201217202415.77891-10-andre.guedes@intel.com>
- <20201222131428.GG2943@ranger.igk.intel.com>
- <160865901948.65485.17595669491129234170@ticela-az-003.amr.corp.intel.com>
- <20201222205925.GA10157@ranger.igk.intel.com>
-Message-ID: <160875162462.73444.8887896326456165945@gstoner1-mobl1.amr.corp.intel.com>
+From: trix@redhat.com <trix@redhat.com>
+Date: Wed, 23 Dec 2020 11:44:25 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: remove h from printk format specifier
+Message-ID: <20201223194425.125605-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Quoting Maciej Fijalkowski (2020-12-22 12:59:25)
-> > > > +static int igc_xdp_enable_pool(struct igc_adapter *adapter,
-> > > > +                            struct xsk_buff_pool *pool, u16 queue_id)
-> > > > +{
-> > > > +     struct net_device *ndev = adapter->netdev;
-> > > > +     struct device *dev = &adapter->pdev->dev;
-> > > > +     struct igc_ring *rx_ring;
-> > > > +     struct napi_struct *napi;
-> > > > +     bool needs_reset;
-> > > > +     u32 frame_size;
-> > > > +     int err;
-> > > > +
-> > > > +     if (queue_id >= adapter->num_rx_queues)
-> > > > +             return -EINVAL;
-> > > > +
-> > > > +     frame_size = xsk_pool_get_rx_frame_size(pool);
-> > > > +     if (frame_size < ETH_FRAME_LEN + VLAN_HLEN * 2) {
-> > > > +             /* For now, when XDP is enabled, the driver doesn't support
-> > > > +              * frames that span over multiple buffers. The max frame size
-> > > > +              * considered here is the ethernet frame size + vlan double
-> > > > +              * tagging.
-> > > > +              */
-> > > 
-> > > I don't really follow that. You check if chunk size is less than
-> > > ETH_FRAME_LEN + VLAN_HLEN * 2. chunk size will be at least 2k if I recall
-> > > correctly. How is that related to fragmented buffers?
-> > 
-> > Note that the code above checks the xsk frame size, not chunk size.
-> > 
-> > Yes, the chunk mim size is 2k indeed. However, if I'm reading the code
-> > correctly, the umem headroom can have an arbitrary value defined by the user
-> > (see xdp_umem_reg()). In this case, the xsk frame size could potentially be
-> > less than the ethernet frame size.
-> 
-> Ok I see. So you actually meant that for lower frame size given to HW we
-> would start to fragment the frames?
+From: Tom Rix <trix@redhat.com>
 
-Yes.
+This change fixes the checkpatch warning described in this commit
+commit cbacb5ab0aa0 ("docs: printk-formats: Stop encouraging use of unnecessary %h[xudi] and %hh[xudi]")
 
-> Comment was a bit unclear, hence my confusion.
+Standard integer promotion is already done and %hx and %hhx is useless
+so do not encourage the use of %hh[xudi] or %h[xudi].
 
-I'll try to make that comment more clear in the v2.
+Signed-off-by: Tom Rix <trix@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Anyway, I feel like this is something generic that should be checked
-> earlier at xsk code? Meaning, when we actually create the umem with user
-> provided config at setsockopt?
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 03f78fdb0dcd..cb682232df16 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3156,7 +3156,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 * the PCIe SR-IOV capability.
+ 	 */
+ 	if (pdev->is_virtfn) {
+-		WARN(1, KERN_ERR "%s (%hx:%hx) should not be a VF!\n",
++		WARN(1, KERN_ERR "%s (%x:%x) should not be a VF!\n",
+ 			pci_name(pdev), pdev->vendor, pdev->device);
+ 		return -EINVAL;
+ 	}
+-- 
+2.27.0
 
-Yeah, that might be a good idea. For now, I'll keep the check in the driver
-since it doesn't work properly with smaller sizes. In the future, if we have
-that check in xsk layer, we can remove it from the driver.
