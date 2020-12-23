@@ -1,99 +1,110 @@
 From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed, 23 Dec 2020 12:37:01 -0800
-Subject: [Intel-wired-lan] [PATCH v2 5/9] igc: Introduce tx/rx stats helpers
+Date: Wed, 23 Dec 2020 12:36:58 -0800
+Subject: [Intel-wired-lan] [PATCH v2 2/9] igc: Refactor igc_xdp_run_prog()
 In-Reply-To: <20201223203705.78705-1-andre.guedes@intel.com>
 References: <20201223203705.78705-1-andre.guedes@intel.com>
-Message-ID: <20201223203705.78705-6-andre.guedes@intel.com>
+Message-ID: <20201223203705.78705-3-andre.guedes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In preparation for AF_XDP zero-copy support, encapsulate the code that
-updates the driver RX stats in its own local helper so it can be reused
-in the zero-copy path. Likewise, encapsulate TX stats code as well.
+Refactor igc_xdp_run_prog() helper, preparing the code for AF_XDP
+zero-copy support which is added by upcoming patches.
+
+With AF_XDP zero-copy support, igc_poll() will have a dedicated path
+when rx ring's memory model is MEM_TYPE_XSK_BUFF_POOL. To avoid code
+duplication as much as possible, encapsulate the code specific to
+handling XDP program actions into a local helper so it can be reused by
+the zero-copy path.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 43 ++++++++++++++++-------
- 1 file changed, 31 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 0bc87cd46fd9..630ef97ebabb 100644
+index 0e582a4ee986..56b791b356dc 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2119,6 +2119,20 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
- 		xdp_do_flush();
+@@ -2029,38 +2029,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
+ 	return res;
  }
  
-+static void igc_update_rx_stats(struct igc_q_vector *q_vector,
-+				unsigned int packets, unsigned int bytes)
-+{
-+	struct igc_ring *ring = q_vector->rx.ring;
-+
-+	u64_stats_update_begin(&ring->rx_syncp);
-+	ring->rx_stats.packets += packets;
-+	ring->rx_stats.bytes += bytes;
-+	u64_stats_update_end(&ring->rx_syncp);
-+
-+	q_vector->rx.total_packets += packets;
-+	q_vector->rx.total_bytes += bytes;
-+}
-+
- static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+-static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+-					struct xdp_buff *xdp)
++/* This function assumes rcu_read_lock() is held by the caller. */
++static int igc_xdp_do_run_prog(struct igc_adapter *adapter,
++			       struct bpf_prog *prog,
++			       struct xdp_buff *xdp)
  {
- 	unsigned int total_bytes = 0, total_packets = 0;
-@@ -2242,12 +2256,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 	/* place incomplete frames back on ring for completion */
- 	rx_ring->skb = skb;
+-	struct bpf_prog *prog;
+-	int res;
+-	u32 act;
+-
+-	rcu_read_lock();
+-
+-	prog = READ_ONCE(adapter->xdp_prog);
+-	if (!prog) {
+-		res = IGC_XDP_PASS;
+-		goto unlock;
+-	}
++	u32 act = bpf_prog_run_xdp(prog, xdp);
  
--	u64_stats_update_begin(&rx_ring->rx_syncp);
--	rx_ring->rx_stats.packets += total_packets;
--	rx_ring->rx_stats.bytes += total_bytes;
--	u64_stats_update_end(&rx_ring->rx_syncp);
--	q_vector->rx.total_packets += total_packets;
--	q_vector->rx.total_bytes += total_bytes;
-+	igc_update_rx_stats(q_vector, total_packets, total_bytes);
- 
- 	if (cleaned_count)
- 		igc_alloc_rx_buffers(rx_ring, cleaned_count);
-@@ -2255,6 +2264,20 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 	return total_packets;
- }
- 
-+static void igc_update_tx_stats(struct igc_q_vector *q_vector,
-+				unsigned int packets, unsigned int bytes)
-+{
-+	struct igc_ring *ring = q_vector->tx.ring;
-+
-+	u64_stats_update_begin(&ring->tx_syncp);
-+	ring->tx_stats.bytes += bytes;
-+	ring->tx_stats.packets += packets;
-+	u64_stats_update_end(&ring->tx_syncp);
-+
-+	q_vector->tx.total_bytes += bytes;
-+	q_vector->tx.total_packets += packets;
+-	act = bpf_prog_run_xdp(prog, xdp);
+ 	switch (act) {
+ 	case XDP_PASS:
+-		res = IGC_XDP_PASS;
+-		break;
++		return IGC_XDP_PASS;
+ 	case XDP_TX:
+-		if (igc_xdp_xmit_back(adapter, xdp) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_TX;
+-		break;
++		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_TX;
+ 	case XDP_REDIRECT:
+-		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_REDIRECT;
+-		break;
++		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+@@ -2068,9 +2052,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+ 		trace_xdp_exception(adapter->netdev, prog, act);
+ 		fallthrough;
+ 	case XDP_DROP:
+-		res = IGC_XDP_CONSUMED;
+-		break;
++		return IGC_XDP_CONSUMED;
+ 	}
 +}
 +
- /**
-  * igc_clean_tx_irq - Reclaim resources after transmit completes
-  * @q_vector: pointer to q_vector containing needed info
-@@ -2357,12 +2380,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 
- 	i += tx_ring->count;
- 	tx_ring->next_to_clean = i;
--	u64_stats_update_begin(&tx_ring->tx_syncp);
--	tx_ring->tx_stats.bytes += total_bytes;
--	tx_ring->tx_stats.packets += total_packets;
--	u64_stats_update_end(&tx_ring->tx_syncp);
--	q_vector->tx.total_bytes += total_bytes;
--	q_vector->tx.total_packets += total_packets;
++static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++					struct xdp_buff *xdp)
++{
++	struct bpf_prog *prog;
++	int res;
 +
-+	igc_update_tx_stats(q_vector, total_packets, total_bytes);
++	rcu_read_lock();
++
++	prog = READ_ONCE(adapter->xdp_prog);
++	if (!prog) {
++		res = IGC_XDP_PASS;
++		goto unlock;
++	}
++
++	res = igc_xdp_do_run_prog(adapter, prog, xdp);
  
- 	if (test_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
- 		struct igc_hw *hw = &adapter->hw;
+ unlock:
+ 	rcu_read_unlock();
 -- 
 2.29.2
 
