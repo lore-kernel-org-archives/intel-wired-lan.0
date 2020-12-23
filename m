@@ -1,50 +1,67 @@
-From: Xing, Beilei <beilei.xing@intel.com>
-Date: Wed, 23 Dec 2020 01:37:27 +0000
-Subject: [Intel-wired-lan] X710 NIC can't do IPv6 VXLAN TSO offload
-In-Reply-To: <c38c0e82b9314dff9ae59c10ca5292e8@inspur.com>
-References: <c38c0e82b9314dff9ae59c10ca5292e8@inspur.com>
-Message-ID: <MN2PR11MB38071BE26150EDE0F0C3FF95F7DE0@MN2PR11MB3807.namprd11.prod.outlook.com>
+From: Andre Guedes <andre.guedes@intel.com>
+Date: Wed, 23 Dec 2020 11:27:04 -0800
+Subject: [Intel-wired-lan] [PATCH 09/10] igc: Enable RX via AF_XDP
+ zero-copy
+In-Reply-To: <20201222205925.GA10157@ranger.igk.intel.com>
+References: <20201217202415.77891-1-andre.guedes@intel.com>
+ <20201217202415.77891-10-andre.guedes@intel.com>
+ <20201222131428.GG2943@ranger.igk.intel.com>
+ <160865901948.65485.17595669491129234170@ticela-az-003.amr.corp.intel.com>
+ <20201222205925.GA10157@ranger.igk.intel.com>
+Message-ID: <160875162462.73444.8887896326456165945@gstoner1-mobl1.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-+Guanghua.
+Quoting Maciej Fijalkowski (2020-12-22 12:59:25)
+> > > > +static int igc_xdp_enable_pool(struct igc_adapter *adapter,
+> > > > +                            struct xsk_buff_pool *pool, u16 queue_id)
+> > > > +{
+> > > > +     struct net_device *ndev = adapter->netdev;
+> > > > +     struct device *dev = &adapter->pdev->dev;
+> > > > +     struct igc_ring *rx_ring;
+> > > > +     struct napi_struct *napi;
+> > > > +     bool needs_reset;
+> > > > +     u32 frame_size;
+> > > > +     int err;
+> > > > +
+> > > > +     if (queue_id >= adapter->num_rx_queues)
+> > > > +             return -EINVAL;
+> > > > +
+> > > > +     frame_size = xsk_pool_get_rx_frame_size(pool);
+> > > > +     if (frame_size < ETH_FRAME_LEN + VLAN_HLEN * 2) {
+> > > > +             /* For now, when XDP is enabled, the driver doesn't support
+> > > > +              * frames that span over multiple buffers. The max frame size
+> > > > +              * considered here is the ethernet frame size + vlan double
+> > > > +              * tagging.
+> > > > +              */
+> > > 
+> > > I don't really follow that. You check if chunk size is less than
+> > > ETH_FRAME_LEN + VLAN_HLEN * 2. chunk size will be at least 2k if I recall
+> > > correctly. How is that related to fragmented buffers?
+> > 
+> > Note that the code above checks the xsk frame size, not chunk size.
+> > 
+> > Yes, the chunk mim size is 2k indeed. However, if I'm reading the code
+> > correctly, the umem headroom can have an arbitrary value defined by the user
+> > (see xdp_umem_reg()). In this case, the xsk frame size could potentially be
+> > less than the ethernet frame size.
+> 
+> Ok I see. So you actually meant that for lower frame size given to HW we
+> would start to fragment the frames?
 
-Hi Yi,
+Yes.
 
-Could you please detail your test steps?
+> Comment was a bit unclear, hence my confusion.
 
-BR,
-Beilei
+I'll try to make that comment more clear in the v2.
 
-From: Yi Yang (??)-????? <yangyi01@inspur.com>
-Sent: Wednesday, December 23, 2020 9:29 AM
-To: intel-wired-lan@lists.osuosl.org
-Cc: Yi Yang (??)-????? <yangyi01@inspur.com>; Xing, Beilei <beilei.xing@intel.com>
-Subject: X710 NIC can't do IPv6 VXLAN TSO offload
-Importance: High
+> Anyway, I feel like this is something generic that should be checked
+> earlier at xsk code? Meaning, when we actually create the umem with user
+> provided config at setsockopt?
 
-Hi, folks
-
-Anybody can tell me why IPv6 VXLAN TSO offload can?t work for me? I have tried OVS DPDK and Linux kernel, the result is same, how can we fix it? By firmware update or other ways?
-
-BTW,  IPv4 VXLAN TSO is ok no matter inner packet is IPv4 or IPv6.
-
-07:00.0 Ethernet controller: Intel Corporation Ethernet Controller X710 for 10GbE SFP+ (rev 02)
-
-$ ethtool -i enp7s0f0
-driver: i40e
-version: 2.1.14-k
-firmware-version: 6.01 0x80003d3b 1.1862.0
-expansion-rom-version:
-bus-info: 0000:07:00.0
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20201223/af5c3244/attachment.html>
+Yeah, that might be a good idea. For now, I'll keep the check in the driver
+since it doesn't work properly with smaller sizes. In the future, if we have
+that check in xsk layer, we can remove it from the driver.
