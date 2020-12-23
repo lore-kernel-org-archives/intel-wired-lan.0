@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 22 Dec 2020 21:17:11 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 068/130] i40e: report correct
+Date: Tue, 22 Dec 2020 21:20:23 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 47/87] i40e: report correct
  VF link speed when link state is set to enable
-In-Reply-To: <20201223021813.2791612-1-sashal@kernel.org>
-References: <20201223021813.2791612-1-sashal@kernel.org>
-Message-ID: <20201223021813.2791612-68-sashal@kernel.org>
+In-Reply-To: <20201223022103.2792705-1-sashal@kernel.org>
+References: <20201223022103.2792705-1-sashal@kernel.org>
+Message-ID: <20201223022103.2792705-47-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -44,11 +44,11 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 09ff3f335ffa6..7e93ff0a31344 100644
+index dd0c9604d3c92..bf2a1ae428610 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -63,7 +63,7 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
- 	} else if (vf->link_forced) {
+@@ -58,7 +58,7 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+ 	if (vf->link_forced) {
  		pfe.event_data.link_event.link_status = vf->link_up;
  		pfe.event_data.link_event.link_speed =
 -			(vf->link_up ? VIRTCHNL_LINK_SPEED_40GB : 0);
@@ -56,7 +56,7 @@ index 09ff3f335ffa6..7e93ff0a31344 100644
  	} else {
  		pfe.event_data.link_event.link_status =
  			ls->link_info & I40E_AQ_LINK_UP;
-@@ -4375,6 +4375,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+@@ -4204,6 +4204,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
  {
  	struct i40e_netdev_priv *np = netdev_priv(netdev);
  	struct i40e_pf *pf = np->vsi->back;
@@ -64,7 +64,7 @@ index 09ff3f335ffa6..7e93ff0a31344 100644
  	struct virtchnl_pf_event pfe;
  	struct i40e_hw *hw = &pf->hw;
  	struct i40e_vf *vf;
-@@ -4412,7 +4413,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+@@ -4236,7 +4237,7 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
  		vf->link_forced = true;
  		vf->link_up = true;
  		pfe.event_data.link_event.link_status = true;
