@@ -1,110 +1,139 @@
-From: Andre Guedes <andre.guedes@intel.com>
-Date: Wed, 23 Dec 2020 12:36:58 -0800
-Subject: [Intel-wired-lan] [PATCH v2 2/9] igc: Refactor igc_xdp_run_prog()
-In-Reply-To: <20201223203705.78705-1-andre.guedes@intel.com>
-References: <20201223203705.78705-1-andre.guedes@intel.com>
-Message-ID: <20201223203705.78705-3-andre.guedes@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 24 Dec 2020 15:10:56 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ d2a64a382e7ca8a8b1f984baadbeebf992416db0
+Message-ID: <5fe43f00.qePpD7K6iciG6RJE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Refactor igc_xdp_run_prog() helper, preparing the code for AF_XDP
-zero-copy support which is added by upcoming patches.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git  dev-queue
+branch HEAD: d2a64a382e7ca8a8b1f984baadbeebf992416db0  igc: Expose the gPHY firmware version
 
-With AF_XDP zero-copy support, igc_poll() will have a dedicated path
-when rx ring's memory model is MEM_TYPE_XSK_BUFF_POOL. To avoid code
-duplication as much as possible, encapsulate the code specific to
-handling XDP program actions into a local helper so it can be reused by
-the zero-copy path.
+elapsed time: 723m
 
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+configs tested: 110
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                            zeus_defconfig
+nds32                               defconfig
+sh                          landisk_defconfig
+arc                    vdk_hs38_smp_defconfig
+ia64                             allyesconfig
+arm                        neponset_defconfig
+parisc                              defconfig
+c6x                                 defconfig
+sh                             shx3_defconfig
+mips                      loongson3_defconfig
+powerpc                 mpc8315_rdb_defconfig
+arm                          prima2_defconfig
+sparc                            alldefconfig
+mips                       bmips_be_defconfig
+powerpc                mpc7448_hpc2_defconfig
+microblaze                      mmu_defconfig
+sh                  sh7785lcr_32bit_defconfig
+m68k                            q40_defconfig
+sh                             sh03_defconfig
+m68k                         amcore_defconfig
+arc                        nsim_700_defconfig
+m68k                            mac_defconfig
+mips                malta_kvm_guest_defconfig
+s390                          debug_defconfig
+mips                           mtx1_defconfig
+sparc64                          alldefconfig
+arm                        clps711x_defconfig
+sh                         ap325rxa_defconfig
+xtensa                       common_defconfig
+arm                       multi_v4t_defconfig
+xtensa                           alldefconfig
+mips                        nlm_xlp_defconfig
+arm                             pxa_defconfig
+mips                     loongson1b_defconfig
+sparc64                             defconfig
+alpha                               defconfig
+arm                           tegra_defconfig
+mips                  decstation_64_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20201223
+i386                 randconfig-a005-20201223
+i386                 randconfig-a006-20201223
+i386                 randconfig-a004-20201223
+i386                 randconfig-a003-20201223
+i386                 randconfig-a001-20201223
+i386                 randconfig-a011-20201223
+i386                 randconfig-a016-20201223
+i386                 randconfig-a014-20201223
+i386                 randconfig-a012-20201223
+i386                 randconfig-a015-20201223
+i386                 randconfig-a013-20201223
+x86_64               randconfig-a001-20201223
+x86_64               randconfig-a006-20201223
+x86_64               randconfig-a002-20201223
+x86_64               randconfig-a004-20201223
+x86_64               randconfig-a003-20201223
+x86_64               randconfig-a005-20201223
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a015-20201223
+x86_64               randconfig-a014-20201223
+x86_64               randconfig-a016-20201223
+x86_64               randconfig-a012-20201223
+x86_64               randconfig-a013-20201223
+x86_64               randconfig-a011-20201223
+
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
- 1 file changed, 28 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 0e582a4ee986..56b791b356dc 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2029,38 +2029,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
- 	return res;
- }
- 
--static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
--					struct xdp_buff *xdp)
-+/* This function assumes rcu_read_lock() is held by the caller. */
-+static int igc_xdp_do_run_prog(struct igc_adapter *adapter,
-+			       struct bpf_prog *prog,
-+			       struct xdp_buff *xdp)
- {
--	struct bpf_prog *prog;
--	int res;
--	u32 act;
--
--	rcu_read_lock();
--
--	prog = READ_ONCE(adapter->xdp_prog);
--	if (!prog) {
--		res = IGC_XDP_PASS;
--		goto unlock;
--	}
-+	u32 act = bpf_prog_run_xdp(prog, xdp);
- 
--	act = bpf_prog_run_xdp(prog, xdp);
- 	switch (act) {
- 	case XDP_PASS:
--		res = IGC_XDP_PASS;
--		break;
-+		return IGC_XDP_PASS;
- 	case XDP_TX:
--		if (igc_xdp_xmit_back(adapter, xdp) < 0)
--			res = IGC_XDP_CONSUMED;
--		else
--			res = IGC_XDP_TX;
--		break;
-+		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
-+			IGC_XDP_CONSUMED : IGC_XDP_TX;
- 	case XDP_REDIRECT:
--		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
--			res = IGC_XDP_CONSUMED;
--		else
--			res = IGC_XDP_REDIRECT;
--		break;
-+		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
-+			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
- 		fallthrough;
-@@ -2068,9 +2052,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 		trace_xdp_exception(adapter->netdev, prog, act);
- 		fallthrough;
- 	case XDP_DROP:
--		res = IGC_XDP_CONSUMED;
--		break;
-+		return IGC_XDP_CONSUMED;
- 	}
-+}
-+
-+static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
-+					struct xdp_buff *xdp)
-+{
-+	struct bpf_prog *prog;
-+	int res;
-+
-+	rcu_read_lock();
-+
-+	prog = READ_ONCE(adapter->xdp_prog);
-+	if (!prog) {
-+		res = IGC_XDP_PASS;
-+		goto unlock;
-+	}
-+
-+	res = igc_xdp_do_run_prog(adapter, prog, xdp);
- 
- unlock:
- 	rcu_read_unlock();
--- 
-2.29.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
