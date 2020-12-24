@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 25 Dec 2020 00:14:27 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 1f45dc22066797479072978feeada0852502e180
-Message-ID: <5fe4be63.FNT4ryGSsdmQtBsz%lkp@intel.com>
+Date: Fri, 25 Dec 2020 00:14:31 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:1GbE] BUILD SUCCESS
+ 3c98cbf22a96c1b12f48c1b2a4680dfe5cb280f9
+Message-ID: <5fe4be67.jryHB9RcM22hmVlr%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  master
-branch HEAD: 1f45dc22066797479072978feeada0852502e180  ibmvnic: continue fatal error reset after passive init
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  1GbE
+branch HEAD: 3c98cbf22a96c1b12f48c1b2a4680dfe5cb280f9  e1000e: Export S0ix flags to ethtool
 
-elapsed time: 1146m
+elapsed time: 723m
 
-configs tested: 134
+configs tested: 110
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -31,28 +31,8 @@ m68k                        m5407c3_defconfig
 openrisc                            defconfig
 sh                           se7343_defconfig
 mips                      maltasmvp_defconfig
-arm                  colibri_pxa300_defconfig
-arm                         hackkit_defconfig
-sh                               alldefconfig
-arm                        keystone_defconfig
-arc                     nsimosci_hs_defconfig
-arm                      jornada720_defconfig
 mips                       capcella_defconfig
 powerpc                   currituck_defconfig
-powerpc                    ge_imp3a_defconfig
-arm                           corgi_defconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                      ppc40x_defconfig
-c6x                        evmc6474_defconfig
-parisc                              defconfig
-c6x                                 defconfig
-sh                             shx3_defconfig
-mips                      loongson3_defconfig
-powerpc                 mpc8315_rdb_defconfig
-arc                        vdk_hs38_defconfig
-arm                          pcm027_defconfig
-arm                         mv78xx0_defconfig
-arm                        trizeps4_defconfig
 arm                          prima2_defconfig
 sparc                            alldefconfig
 mips                       bmips_be_defconfig
@@ -65,16 +45,11 @@ xtensa                       common_defconfig
 arm                       multi_v4t_defconfig
 xtensa                           alldefconfig
 mips                        nlm_xlp_defconfig
-arm                              zx_defconfig
-powerpc                     taishan_defconfig
-powerpc                     mpc83xx_defconfig
-h8300                            alldefconfig
-powerpc                 mpc834x_mds_defconfig
-sh                           se7705_defconfig
-arm                          pxa3xx_defconfig
-m68k                        mvme16x_defconfig
-sh                        sh7763rdp_defconfig
+s390                          debug_defconfig
+powerpc                    adder875_defconfig
+powerpc                 mpc832x_mds_defconfig
 sh                             espt_defconfig
+m68k                          sun3x_defconfig
 arm                             pxa_defconfig
 mips                     loongson1b_defconfig
 sparc64                             defconfig
@@ -98,6 +73,7 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
 s390                                defconfig
@@ -111,30 +87,30 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a001-20201223
-x86_64               randconfig-a006-20201223
-x86_64               randconfig-a002-20201223
-x86_64               randconfig-a004-20201223
-x86_64               randconfig-a003-20201223
-x86_64               randconfig-a005-20201223
 i386                 randconfig-a005-20201224
 i386                 randconfig-a002-20201224
 i386                 randconfig-a006-20201224
 i386                 randconfig-a004-20201224
 i386                 randconfig-a003-20201224
 i386                 randconfig-a001-20201224
-i386                 randconfig-a002-20201223
-i386                 randconfig-a005-20201223
-i386                 randconfig-a006-20201223
-i386                 randconfig-a004-20201223
-i386                 randconfig-a003-20201223
-i386                 randconfig-a001-20201223
 i386                 randconfig-a011-20201223
 i386                 randconfig-a016-20201223
 i386                 randconfig-a014-20201223
 i386                 randconfig-a012-20201223
 i386                 randconfig-a015-20201223
 i386                 randconfig-a013-20201223
+i386                 randconfig-a016-20201224
+i386                 randconfig-a011-20201224
+i386                 randconfig-a012-20201224
+i386                 randconfig-a014-20201224
+i386                 randconfig-a015-20201224
+i386                 randconfig-a013-20201224
+x86_64               randconfig-a001-20201223
+x86_64               randconfig-a006-20201223
+x86_64               randconfig-a002-20201223
+x86_64               randconfig-a004-20201223
+x86_64               randconfig-a003-20201223
+x86_64               randconfig-a005-20201223
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
