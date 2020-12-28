@@ -1,40 +1,59 @@
-From: Kevin Lo <kevlo@kevlo.org>
-Date: Sun, 20 Dec 2020 22:18:19 +0800
-Subject: [Intel-wired-lan] [PATCH v2] igc: set the default return value to
- -IGC_ERR_NVM in igc_write_nvm_srwr
-Message-ID: <20201220141819.GA85707@ns.kevlo.org>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Mon, 28 Dec 2020 10:36:33 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] virtchnl: Fix layout of RSS
+ structures
+Message-ID: <20201228103633.11621-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch sets the default return value to -IGC_ERR_NVM in igc_write_nvm_srwr.
-Without this change it wouldn't lead to a shadow RAM write EEWR timeout.
+From: Norbert Ciosek <norbertx.ciosek@intel.com>
 
-Fixes: ab4056126813 ("igc: Add NVM support")
-Signed-off-by: Kevin Lo <kevlo@kevlo.org>
+Move "key" and "lut" fields at the end of RSS structures.
+They are arrays of size 1 used to fill in the data
+in dynamically allocated memory located after both structures.
+Previous layout could lead to unwanted compiler optimizations
+in loops when iterating over these arrays.
+
+Fixes: 65ece6de0114 ("virtchnl: Add missing explicit padding to structures")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
 ---
-v2: Add a Fixes tag.
----
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
-index 8b67d9b49a83..b0a5cd31683e 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.c
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.c
-@@ -221,7 +221,7 @@ static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
- 	struct igc_nvm_info *nvm = &hw->nvm;
- 	u32 attempts = 100000;
- 	u32 i, k, eewr = 0;
--	s32 ret_val = 0;
-+	s32 ret_val = -IGC_ERR_NVM;
+ include/linux/avf/virtchnl.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index ac4a1d3..44945d6 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -529,8 +529,8 @@ struct virtchnl_eth_stats {
+ struct virtchnl_rss_key {
+ 	u16 vsi_id;
+ 	u16 key_len;
+-	u8 key[1];         /* RSS hash key, packed bytes */
+ 	u8 pad[1];
++	u8 key[1];         /* RSS hash key, packed bytes */
+ };
  
- 	/* A check for invalid values:  offset too large, too many words,
- 	 * too many words for the offset, and not enough words.
-@@ -229,7 +229,6 @@ static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
- 	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
- 	    words == 0) {
- 		hw_dbg("nvm parameter(s) out of bounds\n");
--		ret_val = -IGC_ERR_NVM;
- 		goto out;
- 	}
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+@@ -538,8 +538,8 @@ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
+ struct virtchnl_rss_lut {
+ 	u16 vsi_id;
+ 	u16 lut_entries;
+-	u8 lut[1];        /* RSS lookup table */
+ 	u8 pad[1];
++	u8 lut[1];        /* RSS lookup table */
+ };
  
+ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+-- 
+2.17.1
+
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
+
