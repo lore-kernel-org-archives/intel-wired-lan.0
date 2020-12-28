@@ -1,54 +1,51 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Mon, 28 Dec 2020 10:36:33 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] virtchnl: Fix layout of RSS
- structures
-Message-ID: <20201228103633.11621-1-mateusz.palczewski@intel.com>
+Date: Mon, 28 Dec 2020 11:38:00 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix add tc filter for IPv6
+Message-ID: <20201228103800.11303-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Norbert Ciosek <norbertx.ciosek@intel.com>
+Fix insufficient distinction between IPv4 and IPv6 addresses
+when creating a filter.
+IPv4 and IPv6 are kept in the same memory area. If IPv6 is added,
+then it's caught by IPv4 check, which leads to err -95.
 
-Move "key" and "lut" fields at the end of RSS structures.
-They are arrays of size 1 used to fill in the data
-in dynamically allocated memory located after both structures.
-Previous layout could lead to unwanted compiler optimizations
-in loops when iterating over these arrays.
-
-Fixes: 65ece6de0114 ("virtchnl: Add missing explicit padding to structures")
-Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+Fixes: 2f4b411a3d67("i40e: Enable cloud filters via tc-flower")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
 ---
- include/linux/avf/virtchnl.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index ac4a1d3..44945d6 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -529,8 +529,8 @@ struct virtchnl_eth_stats {
- struct virtchnl_rss_key {
- 	u16 vsi_id;
- 	u16 key_len;
--	u8 key[1];         /* RSS hash key, packed bytes */
- 	u8 pad[1];
-+	u8 key[1];         /* RSS hash key, packed bytes */
- };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 630258e..bb87164 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8115,7 +8115,8 @@ int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
+ 		return -EOPNOTSUPP;
  
- VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
-@@ -538,8 +538,8 @@ VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
- struct virtchnl_rss_lut {
- 	u16 vsi_id;
- 	u16 lut_entries;
--	u8 lut[1];        /* RSS lookup table */
- 	u8 pad[1];
-+	u8 lut[1];        /* RSS lookup table */
- };
+ 	/* adding filter using src_port/src_ip is not supported at this stage */
+-	if (filter->src_port || filter->src_ipv4 ||
++	if (filter->src_port ||
++	    (filter->src_ipv4 && filter->n_proto != ETH_P_IPV6) ||
+ 	    !ipv6_addr_any(&filter->ip.v6.src_ip6))
+ 		return -EOPNOTSUPP;
  
- VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+@@ -8144,7 +8145,7 @@ int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
+ 			cpu_to_le16(I40E_AQC_ADD_CLOUD_FILTER_MAC_VLAN_PORT);
+ 		}
+ 
+-	} else if (filter->dst_ipv4 ||
++	} else if ((filter->dst_ipv4 && filter->n_proto != ETH_P_IPV6) ||
+ 		   !ipv6_addr_any(&filter->ip.v6.dst_ip6)) {
+ 		cld_filter.element.flags =
+ 				cpu_to_le16(I40E_AQC_ADD_CLOUD_FILTER_IP_PORT);
 -- 
-2.17.1
+2.18.4
 
 ---------------------------------------------------------------------
 Intel Technology Poland sp. z o.o.
