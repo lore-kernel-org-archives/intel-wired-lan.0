@@ -1,10 +1,10 @@
 From: Vladimir Oltean <olteanv@gmail.com>
-Date: Tue,  5 Jan 2021 20:59:01 +0200
-Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 11/12] net: mark
- ndo_get_stats64 as being able to sleep
+Date: Tue,  5 Jan 2021 20:59:02 +0200
+Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 12/12] net: remove
+ obsolete comments about ndo_get_stats64 context from eth drivers
 In-Reply-To: <20210105185902.3922928-1-olteanv@gmail.com>
 References: <20210105185902.3922928-1-olteanv@gmail.com>
-Message-ID: <20210105185902.3922928-12-olteanv@gmail.com>
+Message-ID: <20210105185902.3922928-13-olteanv@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,69 +13,66 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-Now that all callers have been converted to not use atomic context when
-calling dev_get_stats, it is time to update the documentation and put a
-notice in the function that it expects process context.
+Now that we have a good summary in Documentation/networking/netdevices.rst,
+these comments serve no purpose and are actually distracting/confusing.
 
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 ---
- Documentation/networking/netdevices.rst | 8 ++++++--
- Documentation/networking/statistics.rst | 9 ++++-----
- net/core/dev.c                          | 2 ++
- 3 files changed, 12 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/cisco/enic/enic_main.c | 1 -
+ drivers/net/ethernet/nvidia/forcedeth.c     | 2 --
+ drivers/net/ethernet/sfc/efx_common.c       | 1 -
+ drivers/net/ethernet/sfc/falcon/efx.c       | 1 -
+ 4 files changed, 5 deletions(-)
 
-diff --git a/Documentation/networking/netdevices.rst b/Documentation/networking/netdevices.rst
-index 5a85fcc80c76..944599722c76 100644
---- a/Documentation/networking/netdevices.rst
-+++ b/Documentation/networking/netdevices.rst
-@@ -64,8 +64,12 @@ ndo_do_ioctl:
- 	Context: process
+diff --git a/drivers/net/ethernet/cisco/enic/enic_main.c b/drivers/net/ethernet/cisco/enic/enic_main.c
+index fb269d587b74..7425f94f9091 100644
+--- a/drivers/net/ethernet/cisco/enic/enic_main.c
++++ b/drivers/net/ethernet/cisco/enic/enic_main.c
+@@ -870,7 +870,6 @@ static netdev_tx_t enic_hard_start_xmit(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ }
  
- ndo_get_stats:
--	Synchronization: dev_base_lock rwlock.
--	Context: nominally process, but don't sleep inside an rwlock
-+	Synchronization:
-+		none. netif_lists_lock(net) might be held, but not guaranteed.
-+		It is illegal to hold rtnl_lock() in this method, since it will
-+		cause a lock inversion with netif_lists_lock and a deadlock.
-+	Context:
-+		process
- 
- ndo_start_xmit:
- 	Synchronization: __netif_tx_lock spinlock.
-diff --git a/Documentation/networking/statistics.rst b/Documentation/networking/statistics.rst
-index 234abedc29b2..ad3e353df0dd 100644
---- a/Documentation/networking/statistics.rst
-+++ b/Documentation/networking/statistics.rst
-@@ -155,11 +155,10 @@ Drivers must ensure best possible compliance with
- Please note for example that detailed error statistics must be
- added into the general `rx_error` / `tx_error` counters.
- 
--The `.ndo_get_stats64` callback can not sleep because of accesses
--via `/proc/net/dev`. If driver may sleep when retrieving the statistics
--from the device it should do so periodically asynchronously and only return
--a recent copy from `.ndo_get_stats64`. Ethtool interrupt coalescing interface
--allows setting the frequency of refreshing statistics, if needed.
-+Drivers may sleep when retrieving the statistics from the device, or they might
-+read the counters periodically and only return in `.ndo_get_stats64` a recent
-+copy collected asynchronously. In the latter case, the ethtool interrupt
-+coalescing interface allows setting the frequency of refreshing statistics.
- 
- Retrieving ethtool statistics is a multi-syscall process, drivers are advised
- to keep the number of statistics constant to avoid race conditions with
-diff --git a/net/core/dev.c b/net/core/dev.c
-index d48b75479b3e..6b7cdf8ab875 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -10389,6 +10389,8 @@ void dev_get_stats(struct net_device *dev, struct rtnl_link_stats64 *storage)
+-/* dev_base_lock rwlock held, nominally process context */
+ static void enic_get_stats(struct net_device *netdev,
+ 			   struct rtnl_link_stats64 *net_stats)
  {
- 	const struct net_device_ops *ops = dev->netdev_ops;
+diff --git a/drivers/net/ethernet/nvidia/forcedeth.c b/drivers/net/ethernet/nvidia/forcedeth.c
+index 8724d6a9ed02..8fa254dc64e9 100644
+--- a/drivers/net/ethernet/nvidia/forcedeth.c
++++ b/drivers/net/ethernet/nvidia/forcedeth.c
+@@ -1761,8 +1761,6 @@ static void nv_get_stats(int cpu, struct fe_priv *np,
+ /*
+  * nv_get_stats64: dev->ndo_get_stats64 function
+  * Get latest stats value from the nic.
+- * Called with read_lock(&dev_base_lock) held for read -
+- * only synchronized against unregister_netdevice.
+  */
+ static void
+ nv_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *storage)
+diff --git a/drivers/net/ethernet/sfc/efx_common.c b/drivers/net/ethernet/sfc/efx_common.c
+index de797e1ac5a9..4d8047b35fb2 100644
+--- a/drivers/net/ethernet/sfc/efx_common.c
++++ b/drivers/net/ethernet/sfc/efx_common.c
+@@ -596,7 +596,6 @@ void efx_stop_all(struct efx_nic *efx)
+ 	efx_stop_datapath(efx);
+ }
  
-+	might_sleep();
-+
- 	if (ops->ndo_get_stats64) {
- 		memset(storage, 0, sizeof(*storage));
- 		ops->ndo_get_stats64(dev, storage);
+-/* Context: process, dev_base_lock or RTNL held, non-blocking. */
+ void efx_net_stats(struct net_device *net_dev, struct rtnl_link_stats64 *stats)
+ {
+ 	struct efx_nic *efx = netdev_priv(net_dev);
+diff --git a/drivers/net/ethernet/sfc/falcon/efx.c b/drivers/net/ethernet/sfc/falcon/efx.c
+index f8979991970e..6db2b6583dec 100644
+--- a/drivers/net/ethernet/sfc/falcon/efx.c
++++ b/drivers/net/ethernet/sfc/falcon/efx.c
+@@ -2096,7 +2096,6 @@ int ef4_net_stop(struct net_device *net_dev)
+ 	return 0;
+ }
+ 
+-/* Context: process, dev_base_lock or RTNL held, non-blocking. */
+ static void ef4_net_stats(struct net_device *net_dev,
+ 			  struct rtnl_link_stats64 *stats)
+ {
 -- 
 2.25.1
 
