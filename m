@@ -1,78 +1,61 @@
-From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-Date: Tue, 5 Jan 2021 10:53:02 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] virtchnl: Fix layout of RSS
- structures
-In-Reply-To: <CAKgT0Uf-Exy1qhZYhKTe=mWf6i8L-FcaUYT0zGnyVWDq-pnfqw@mail.gmail.com>
-References: <20201228103633.11621-1-mateusz.palczewski@intel.com>
- <CAKgT0Uf-Exy1qhZYhKTe=mWf6i8L-FcaUYT0zGnyVWDq-pnfqw@mail.gmail.com>
-Message-ID: <BL0PR11MB35241617E21D17136107E0D187D10@BL0PR11MB3524.namprd11.prod.outlook.com>
+From: Marek Majtyka <alardam@gmail.com>
+Date: Tue, 5 Jan 2021 12:56:30 +0100
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201204102901.109709-2-marekx.majtyka@intel.com> <878sad933c.fsf@toke.dk>
+ <20201204124618.GA23696@ranger.igk.intel.com>
+ <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
+ <20201207135433.41172202@carbon>
+ <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
+ <20201207230755.GB27205@ranger.igk.intel.com>
+ <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
+ <20201209095454.GA36812@ranger.igk.intel.com> <20201209125223.49096d50@carbon>
+ <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
+ <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
+ <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+ <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
+ <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
+ <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
+Message-ID: <CAAOQfrHN1-oHmbOksDv-BKWv4gDF2zHZ5dTew6R_QTh6s_1abg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello, 
-No, it will not break any functionality of the in-tree drivers. This patch fixes commit 65ece6de0114 ("virtchnl: Add missing explicit padding to structures") which added padding in the wrong place of both structures as key/lut fields should be at the end. Drivers code assumes that size of both is equal to 1 and allocates memory with (sizeof(virtchnl_rss_lut/virtchnl_rss_key) - 1 + (array size)). Changing lut[1]/key[1] to flexible array members lut[]/key[] is possible but this will require more changes in the drivers as compiler cannot guarantee that size of these fields will be 1. These modifications should be done in other commit.
+I would like to thank you for your time, comments, nitpicking as well
+as encouraging.
 
-Regards,
-Mateusz Palczewski
+One thing needs clarification I think, that is, that those flags
+describe driver static feature sets - which are read-only. They have
+nothing in common with driver runtime configuration change yet.
+Runtime change of this state can be added but it needs a new variable
+and it can be done later on if someone needs it.
 
------Original Message-----
-From: Alexander Duyck <alexander.duyck@gmail.com> 
-Sent: poniedzia?ek, 28 grudnia 2020 19:34
-To: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Ciosek, NorbertX <norbertx.ciosek@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH net v1] virtchnl: Fix layout of RSS structures
+Obviously, it is not possible to make everybody happy, especially with
+XDP_BASE flags set. To be honest, this XDP_BASE definition is a
+syntactic sugar for me and I can live without it. We can either remove
+it completely, from
+which IMO we all and other developers will suffer later on, or maybe
+we can agree on these two helper set of flags: XDP_BASE (TX, ABORTED,
+PASS, DROP) and XDP_LIMITED_BASE(ABORTED,PASS_DROP).
+What do you think?
 
-On Mon, Dec 28, 2020 at 2:36 AM Mateusz Palczewski <mateusz.palczewski@intel.com> wrote:
->
-> From: Norbert Ciosek <norbertx.ciosek@intel.com>
->
-> Move "key" and "lut" fields at the end of RSS structures.
-> They are arrays of size 1 used to fill in the data in dynamically 
-> allocated memory located after both structures.
-> Previous layout could lead to unwanted compiler optimizations in loops 
-> when iterating over these arrays.
->
-> Fixes: 65ece6de0114 ("virtchnl: Add missing explicit padding to 
-> structures")
-> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-> ---
->  include/linux/avf/virtchnl.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/include/linux/avf/virtchnl.h 
-> b/include/linux/avf/virtchnl.h index ac4a1d3..44945d6 100644
-> --- a/include/linux/avf/virtchnl.h
-> +++ b/include/linux/avf/virtchnl.h
-> @@ -529,8 +529,8 @@ struct virtchnl_eth_stats {  struct 
-> virtchnl_rss_key {
->         u16 vsi_id;
->         u16 key_len;
-> -       u8 key[1];         /* RSS hash key, packed bytes */
->         u8 pad[1];
-> +       u8 key[1];         /* RSS hash key, packed bytes */
->  };
->
->  VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key); @@ -538,8 +538,8 @@ 
-> VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);  struct 
-> virtchnl_rss_lut {
->         u16 vsi_id;
->         u16 lut_entries;
-> -       u8 lut[1];        /* RSS lookup table */
->         u8 pad[1];
-> +       u8 lut[1];        /* RSS lookup table */
->  };
->
->  VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+I am also going to add a new XDP_REDIRECT_TARGET flag and retrieving
+XDP flags over rtnelink interface.
 
-This makes absolutely no sense. Isn't it going to break compatibility with existing devices that already have the old definitions? If the key and lut are meant to be dynamically allocated it doesn't make sense to have it size 1. Defining them with a length of 1 is incorrect for how these are handled in the kernel. It just looks wrong as my first instinct was to ask about why you would define an array of size 1? You should be defining the key and lut without size, so "key[]" and "lut[]". That is how we define dynamically allocated fields at the end of structure.
+I also think that for completeness, ethtool implementation should be
+kept  together with rtnelink part in order to cover both ip and
+ethtool tools. Do I have your approval or disagreement? Please let me know.
 
-If the lut and key are supposed to be dynamically allocated you shouldn't have the pad at all. You should remove it from the structures in question.
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+Both AF_XDP_ZEROCOPY and XDP_SOCK_ZEROCOPY are good to me. I will pick
+the one XDP_SOCK_ZEROCOPY unless there are protests.
+
+I don't think that HEADROOM parameter should be passed via the flags.
+It is by nature a number and an attempt to quantize with flags seems
+to be an unnatural limitation for the future.
+
+Thanks
+Marek
