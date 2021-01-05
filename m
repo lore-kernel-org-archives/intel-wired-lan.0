@@ -1,59 +1,94 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Tue, 5 Jan 2021 18:48:30 +0100
-Subject: [Intel-wired-lan] [PATCH v2 0/9] igc: Add support for AF_XDP
- zero-copy
-In-Reply-To: <20201223203705.78705-1-andre.guedes@intel.com>
-References: <20201223203705.78705-1-andre.guedes@intel.com>
-Message-ID: <20210105174830.GD13327@ranger.igk.intel.com>
+From: Vladimir Oltean <olteanv@gmail.com>
+Date: Tue,  5 Jan 2021 20:58:50 +0200
+Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 00/12] Make
+ .ndo_get_stats64 sleepable
+Message-ID: <20210105185902.3922928-1-olteanv@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 23, 2020 at 12:36:56PM -0800, Andre Guedes wrote:
-> Hi all,
-> 
-> This is the second version of this series which adds AF_XDP zero-copy support
-> to igc driver.
-> 
-> The main changes from v1 are:
-> 
->     - Fixed commit messages to describe changes in imperative mood, e.g. "make
->       xyzzy do frotz" instead of "[This patch] makes xyzzy do frotz".
->     - Added queue index to error message in igc_setup_rx_resources().
->     - Improved comment about xsk frame size check in igc_xdp_enable_pool(). 
->     - Fixed typos.
-> 
-> v1 is here:
-> 
->     https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201217202415.77891-1-andre.guedes at intel.com/
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-For the series:
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Changes in v2:
+- Addressed the recursion issues in .ndo_get_stats64 from bonding and
+  net_failover.
+- Renamed netdev_lists_lock to netif_lists_lock
+- Stopped taking netif_lists_lock from drivers as much as possible.
 
-> 
-> Best,
-> Andre
-> 
-> Andre Guedes (9):
->   igc: Move igc_xdp_is_enabled()
->   igc: Refactor igc_xdp_run_prog()
->   igc: Refactor igc_clean_rx_ring()
->   igc: Refactor XDP rxq info registration
->   igc: Introduce tx/rx stats helpers
->   igc: Introduce igc_unmap_tx_buffer() helper
->   igc: Replace IGC_TX_FLAGS_XDP flag by an enum
->   igc: Enable RX via AF_XDP zero-copy
->   igc: Enable TX via AF_XDP zero-copy
-> 
->  drivers/net/ethernet/intel/igc/igc.h      |  33 +-
->  drivers/net/ethernet/intel/igc/igc_base.h |   2 +
->  drivers/net/ethernet/intel/igc/igc_main.c | 651 ++++++++++++++++++----
->  drivers/net/ethernet/intel/igc/igc_xdp.c  | 107 +++-
->  drivers/net/ethernet/intel/igc/igc_xdp.h  |   8 +-
->  5 files changed, 673 insertions(+), 128 deletions(-)
-> 
-> -- 
-> 2.29.2
-> 
+This series converts all callers of dev_get_stats() to be in sleepable
+context, so that we can do more work in the .ndo_get_stats64 method.
+
+The situation today is that if we have hardware that needs to be
+accessed through a slow bus like SPI, or through a firmware, we cannot
+do that directly in .ndo_get_stats64, so we have to poll counters
+periodically and return a cached (not up to date) copy in the atomic NDO
+callback. This is undesirable on both ends: more work than strictly
+needed is being done, and the end result is also worse (not guaranteed
+to be up to date). So converting the code paths to be compatible with
+sleeping seems to make more sense.
+
+This is marked as Request For Comments for a reason.
+
+Cc: Leon Romanovsky <leon@kernel.org>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: linux-s390 at vger.kernel.org
+Cc: Jay Vosburgh <j.vosburgh@gmail.com>
+Cc: Veaceslav Falico <vfalico@gmail.com>
+Cc: Andy Gospodarek <andy@greyhouse.net>
+Cc: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-parisc at vger.kernel.org
+Cc: Christian Brauner <christian.brauner@ubuntu.com>
+
+Vladimir Oltean (12):
+  net: mark dev_base_lock for deprecation
+  net: introduce a mutex for the netns interface lists
+  net: procfs: hold netif_lists_lock when retrieving device statistics
+  net: sysfs: don't hold dev_base_lock while retrieving device
+    statistics
+  s390/appldata_net_sum: hold the netdev lists lock when retrieving
+    device statistics
+  parisc/led: reindent the code that gathers device statistics
+  parisc/led: hold the netdev lists lock when retrieving device
+    statistics
+  net: make dev_get_stats return void
+  net: net_failover: ensure .ndo_get_stats64 can sleep
+  net: bonding: ensure .ndo_get_stats64 can sleep
+  net: mark ndo_get_stats64 as being able to sleep
+  net: remove obsolete comments about ndo_get_stats64 context from eth
+    drivers
+
+ Documentation/networking/netdevices.rst       |   8 +-
+ Documentation/networking/statistics.rst       |   9 +-
+ arch/s390/appldata/appldata_net_sum.c         |  33 ++---
+ drivers/leds/trigger/ledtrig-netdev.c         |   9 +-
+ drivers/net/bonding/bond_main.c               | 121 +++++++++---------
+ drivers/net/ethernet/cisco/enic/enic_main.c   |   1 -
+ .../net/ethernet/hisilicon/hns/hns_ethtool.c  |  51 ++++----
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |   7 +-
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c  |   7 +-
+ drivers/net/ethernet/nvidia/forcedeth.c       |   2 -
+ drivers/net/ethernet/sfc/efx_common.c         |   1 -
+ drivers/net/ethernet/sfc/falcon/efx.c         |   1 -
+ drivers/net/net_failover.c                    |  63 ++++++---
+ drivers/parisc/led.c                          |  37 +++---
+ drivers/scsi/fcoe/fcoe_transport.c            |   6 +-
+ drivers/usb/gadget/function/rndis.c           |  45 +++----
+ include/linux/netdevice.h                     |  13 +-
+ include/net/bonding.h                         |  52 +++++++-
+ include/net/net_failover.h                    |   9 +-
+ include/net/net_namespace.h                   |   6 +
+ net/8021q/vlanproc.c                          |  15 +--
+ net/core/dev.c                                |  69 ++++++----
+ net/core/net-procfs.c                         |  48 +++----
+ net/core/net-sysfs.c                          |  10 +-
+ net/openvswitch/vport.c                       |  25 ++--
+ 25 files changed, 372 insertions(+), 276 deletions(-)
+
+-- 
+2.25.1
+
