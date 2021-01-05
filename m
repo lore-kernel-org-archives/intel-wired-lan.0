@@ -1,10 +1,10 @@
 From: Vladimir Oltean <olteanv@gmail.com>
-Date: Tue,  5 Jan 2021 20:58:51 +0200
-Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 01/12] net: mark
- dev_base_lock for deprecation
+Date: Tue,  5 Jan 2021 20:58:53 +0200
+Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 03/12] net: procfs: hold
+ netif_lists_lock when retrieving device statistics
 In-Reply-To: <20210105185902.3922928-1-olteanv@gmail.com>
 References: <20210105185902.3922928-1-olteanv@gmail.com>
-Message-ID: <20210105185902.3922928-2-olteanv@gmail.com>
+Message-ID: <20210105185902.3922928-4-olteanv@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,93 +13,64 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-There is a movement to eliminate the usage of dev_base_lock, which
-exists since as far as I could track the kernel history down (the
-"7a2deb329241 Import changeset" commit from the bitkeeper branch).
+In the effort of making .ndo_get_stats64 be able to sleep, we need to
+ensure the callers of dev_get_stats do not use atomic context.
 
-The dev_base_lock approach has multiple issues:
-- It is global and not per netns.
-- Its meaning has mutated over the years and the vast majority of
-  current users is using it to protect against changes of network device
-  state, as opposed to changes of the interface list.
-- It is overlapping with other protection mechanisms introduced in the
-  meantime, which have higher performance for readers, like RCU
-  introduced in 2009 by Eric Dumazet for kernel 2.6.
+The /proc/net/dev file uses an RCU read-side critical section to ensure
+the integrity of the list of network interfaces, because it iterates
+through all net devices in the netns to show their statistics.
 
-The old comment that I just deleted made this distinction: writers
-protect only against readers by holding dev_base_lock, whereas they need
-to protect against other writers by holding the RTNL mutex. This is
-slightly confusing/incorrect, since a rwlock_t cannot have more than one
-concurrently running writer, so that explanation does not justify why
-the RTNL mutex would be necessary.
+To offer the equivalent protection against an interface registering or
+deregistering, while also remaining in sleepable context, we can use the
+netns mutex for the interface lists.
 
-Instead, Stephen Hemminger makes this clarification here:
-https://lore.kernel.org/netdev/20201129211230.4d704931 at hermes.local/T/#u
-
-| There are really two different domains being covered by locks here.
-|
-| The first area is change of state of network devices. This has traditionally
-| been covered by RTNL because there are places that depend on coordinating
-| state between multiple devices. RTNL is too big and held too long but getting
-| rid of it is hard because there are corner cases (like state changes from userspace
-| for VPN devices).
-|
-| The other area is code that wants to do read access to look at list of devices.
-| These pure readers can/should be converted to RCU by now. Writers should hold RTNL.
-
-This patch edits the comment for dev_base_lock, minimizing its role in
-the protection of network interface lists, and clarifies that it is has
-other purposes as well.
-
+Cc: Cong Wang <xiyou.wangcong@gmail.com>
+Cc: Eric Dumazet <edumazet@google.com>
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 ---
- net/core/dev.c | 33 ++++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ net/core/net-procfs.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index a46334906c94..2aa613d22318 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -169,23 +169,22 @@ static int call_netdevice_notifiers_extack(unsigned long val,
- static struct napi_struct *napi_by_id(unsigned int napi_id);
+diff --git a/net/core/net-procfs.c b/net/core/net-procfs.c
+index c714e6a9dad4..4784703c1e39 100644
+--- a/net/core/net-procfs.c
++++ b/net/core/net-procfs.c
+@@ -21,7 +21,7 @@ static inline struct net_device *dev_from_same_bucket(struct seq_file *seq, loff
+ 	unsigned int count = 0, offset = get_offset(*pos);
  
- /*
-- * The @dev_base_head list is protected by @dev_base_lock and the rtnl
-- * semaphore.
-- *
-- * Pure readers hold dev_base_lock for reading, or rcu_read_lock()
-- *
-- * Writers must hold the rtnl semaphore while they loop through the
-- * dev_base_head list, and hold dev_base_lock for writing when they do the
-- * actual updates.  This allows pure readers to access the list even
-- * while a writer is preparing to update it.
-- *
-- * To put it another way, dev_base_lock is held for writing only to
-- * protect against pure readers; the rtnl semaphore provides the
-- * protection against other writers.
-- *
-- * See, for example usages, register_netdevice() and
-- * unregister_netdevice(), which must be called with the rtnl
-- * semaphore held.
-+ * The network interface list of a netns (@net->dev_base_head) and the hash
-+ * tables per ifindex (@net->dev_index_head) and per name (@net->dev_name_head)
-+ * are protected using the following rules:
-+ *
-+ * Pure readers should hold rcu_read_lock() which should protect them against
-+ * concurrent changes to the interface lists made by the writers. Pure writers
-+ * must serialize by holding the RTNL mutex while they loop through the list
-+ * and make changes to it.
-+ *
-+ * It is also possible to hold the global rwlock_t @dev_base_lock for
-+ * protection (holding its read side as an alternative to rcu_read_lock, and
-+ * its write side as an alternative to the RTNL mutex), however this should not
-+ * be done in new code, since it is deprecated and pending removal.
-+ *
-+ * One other role of @dev_base_lock is to protect against changes in the
-+ * operational state of a network interface.
+ 	h = &net->dev_index_head[get_bucket(*pos)];
+-	hlist_for_each_entry_rcu(dev, h, index_hlist) {
++	hlist_for_each_entry(dev, h, index_hlist) {
+ 		if (++count == offset)
+ 			return dev;
+ 	}
+@@ -51,9 +51,11 @@ static inline struct net_device *dev_from_bucket(struct seq_file *seq, loff_t *p
+  *	in detail.
   */
- DEFINE_RWLOCK(dev_base_lock);
- EXPORT_SYMBOL(dev_base_lock);
+ static void *dev_seq_start(struct seq_file *seq, loff_t *pos)
+-	__acquires(RCU)
+ {
+-	rcu_read_lock();
++	struct net *net = seq_file_net(seq);
++
++	netif_lists_lock(net);
++
+ 	if (!*pos)
+ 		return SEQ_START_TOKEN;
+ 
+@@ -70,9 +72,10 @@ static void *dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ }
+ 
+ static void dev_seq_stop(struct seq_file *seq, void *v)
+-	__releases(RCU)
+ {
+-	rcu_read_unlock();
++	struct net *net = seq_file_net(seq);
++
++	netif_lists_unlock(net);
+ }
+ 
+ static void dev_seq_printf_stats(struct seq_file *seq, struct net_device *dev)
 -- 
 2.25.1
 
