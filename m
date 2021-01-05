@@ -1,10 +1,11 @@
 From: Vladimir Oltean <olteanv@gmail.com>
-Date: Tue,  5 Jan 2021 20:58:54 +0200
-Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 04/12] net: sysfs: don't
- hold dev_base_lock while retrieving device statistics
+Date: Tue,  5 Jan 2021 20:58:55 +0200
+Subject: [Intel-wired-lan] [RFC PATCH v2 net-next 05/12]
+ s390/appldata_net_sum: hold the netdev lists lock when retrieving device
+ statistics
 In-Reply-To: <20210105185902.3922928-1-olteanv@gmail.com>
 References: <20210105185902.3922928-1-olteanv@gmail.com>
-Message-ID: <20210105185902.3922928-5-olteanv@gmail.com>
+Message-ID: <20210105185902.3922928-6-olteanv@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,46 +17,51 @@ From: Vladimir Oltean <vladimir.oltean@nxp.com>
 In the effort of making .ndo_get_stats64 be able to sleep, we need to
 ensure the callers of dev_get_stats do not use atomic context.
 
-I need to preface this by saying that I have no idea why netstat_show
-takes the dev_base_lock rwlock. Two things can be observed:
-(a) it does not appear to be due to dev_isalive requiring it for some
-    reason, because broadcast_show() also calls dev_isalive() and has
-    had no problem existing since the beginning of git.
-(b) the dev_get_stats function definitely does not need dev_base_lock
-    protection either. In fact, holding the dev_base_lock is the entire
-    problem here, because we want to make dev_get_stats sleepable, and
-    holding a rwlock gives us atomic context.
+In the case of the appldata driver, an RCU read-side critical section is
+used to ensure the integrity of the list of network interfaces, because
+the driver iterates through all net devices in the netns to aggregate
+statistics. We still need some protection against an interface
+registering or deregistering, and the writer-side lock, the netns's
+mutex, is fine for that, because it offers sleepable context.
 
-So since no protection seems to be necessary, just run unlocked while
-retrieving the /sys/class/net/eth0/statistics/* values.
+The ops->callback function is called from under appldata_ops_mutex
+protection, so this is proof that the context is sleepable and holding
+a mutex is therefore fine.
 
-Cc: Christian Brauner <christian.brauner@ubuntu.com>
-Cc: Eric Dumazet <edumazet@google.com>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: linux-s390 at vger.kernel.org
 Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 ---
- net/core/net-sysfs.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/s390/appldata/appldata_net_sum.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 999b70c59761..0782a476b424 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -585,14 +585,13 @@ static ssize_t netstat_show(const struct device *d,
- 	WARN_ON(offset > sizeof(struct rtnl_link_stats64) ||
- 		offset % sizeof(u64) != 0);
+diff --git a/arch/s390/appldata/appldata_net_sum.c b/arch/s390/appldata/appldata_net_sum.c
+index 59c282ca002f..4db886980cba 100644
+--- a/arch/s390/appldata/appldata_net_sum.c
++++ b/arch/s390/appldata/appldata_net_sum.c
+@@ -78,8 +78,9 @@ static void appldata_get_net_sum_data(void *data)
+ 	tx_dropped = 0;
+ 	collisions = 0;
  
--	read_lock(&dev_base_lock);
- 	if (dev_isalive(dev)) {
- 		struct rtnl_link_stats64 temp;
- 		const struct rtnl_link_stats64 *stats = dev_get_stats(dev, &temp);
- 
- 		ret = sprintf(buf, fmt_u64, *(u64 *)(((u8 *)stats) + offset));
- 	}
--	read_unlock(&dev_base_lock);
+-	rcu_read_lock();
+-	for_each_netdev_rcu(&init_net, dev) {
++	netif_lists_lock(&init_net);
 +
- 	return ret;
- }
++	for_each_netdev(&init_net, dev) {
+ 		const struct rtnl_link_stats64 *stats;
+ 		struct rtnl_link_stats64 temp;
  
+@@ -95,7 +96,8 @@ static void appldata_get_net_sum_data(void *data)
+ 		collisions += stats->collisions;
+ 		i++;
+ 	}
+-	rcu_read_unlock();
++
++	netif_lists_unlock(&init_net);
+ 
+ 	net_data->nr_interfaces = i;
+ 	net_data->rx_packets = rx_packets;
 -- 
 2.25.1
 
