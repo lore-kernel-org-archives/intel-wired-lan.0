@@ -1,53 +1,35 @@
-From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
-Date: Wed, 6 Jan 2021 08:18:25 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Add error message when MTU on
- device is out of the range
-In-Reply-To: <20201218165255.6393-1-eryk.roch.rybak@intel.com>
-References: <20201218165255.6393-1-eryk.roch.rybak@intel.com>
-Message-ID: <SN6PR11MB3008D9DDF45209E14ED85C50E2D00@SN6PR11MB3008.namprd11.prod.outlook.com>
+From: Gal Hammer <ghammer@redhat.com>
+Date: Wed,  6 Jan 2021 11:28:26 +0200
+Subject: [Intel-wired-lan] [PATCH] igb: fix TDBAL register show incorrect
+ value
+Message-ID: <20210106092826.345172-1-ghammer@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Eryk
+Fixed a typo which caused the registers dump function to read the
+RDBAL register when printing TDBAL register values.
 
-> Rybak
+Signed-off-by: Gal Hammer <ghammer@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Sent: Friday, December 18, 2020 10:23 PM
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 03f78fdb0dcd..006f5cb839f3 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -316,7 +316,7 @@ static void igb_regdump(struct e1000_hw *hw, struct igb_reg_info *reginfo)
+ 		break;
+ 	case E1000_TDBAL(0):
+ 		for (n = 0; n < 4; n++)
+-			regs[n] = rd32(E1000_RDBAL(n));
++			regs[n] = rd32(E1000_TDBAL(n));
+ 		break;
+ 	case E1000_TDBAH(0):
+ 		for (n = 0; n < 4; n++)
+-- 
+2.26.2
 
-> To: intel-wired-lan at lists.osuosl.org
-
-> Cc: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>
-
-> Subject: [Intel-wired-lan] [PATCH] i40e: Add error message when MTU on device
-
-> is out of the range
-
->
-
-> When attempting to link XDP prog with MTU larger than supported, user is not
-
-> informed why XDP linking fails. Adding proper error message.
-
->
-
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski at intel.com<mailto:arkadiusz.kubalewski@intel.com>>
-
-> Signed-off-by: Eryk Rybak <eryk.roch.rybak at intel.com<mailto:eryk.roch.rybak@intel.com>>
-
-> ---
-
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++----
-
->  1 file changed, 7 insertions(+), 4 deletions(-)
-
->
-
-
-
-Tested-by: George Kuruvinakunnel <george.kuruvinakunnel at intel.com<mailto:george.kuruvinakunnel@intel.com>>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210106/81de3cde/attachment-0001.html>
