@@ -1,38 +1,34 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  6 Jan 2021 19:27:04 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Fix TDBAL register show
- incorrect value
-Message-ID: <20210106172704.3106880-1-sasha.neftin@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed,  6 Jan 2021 13:55:37 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] GRO drop accounting
+Message-ID: <20210106215539.2103688-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fixed a typo which caused the registers dump function to read the
-RDBAL register when printing TDBAL register values.
-_reg_dump method has been partially derived from i210 and have
-same typo.
+Add some accounting for when the stack drops a packet
+that a driver tried to indicate with a gro* call. This
+helps users track where packets might have disappeared
+to and will show up in the netdevice stats that already
+exist.
 
-Suggested-by: Gal Hammer <ghammer@redhat.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_dump.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+After that, remove the driver specific workaround
+that was added to do the same, just scoped too small.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_dump.c b/drivers/net/ethernet/intel/igc/igc_dump.c
-index 4b9ec7d0b727..495bed47ed0a 100644
---- a/drivers/net/ethernet/intel/igc/igc_dump.c
-+++ b/drivers/net/ethernet/intel/igc/igc_dump.c
-@@ -75,7 +75,7 @@ static void igc_regdump(struct igc_hw *hw, struct igc_reg_info *reginfo)
- 		break;
- 	case IGC_TDBAL(0):
- 		for (n = 0; n < 4; n++)
--			regs[n] = rd32(IGC_RDBAL(n));
-+			regs[n] = rd32(IGC_TDBAL(n));
- 		break;
- 	case IGC_TDBAH(0):
- 		for (n = 0; n < 4; n++)
+Jesse Brandeburg (2):
+  net: core: count drops from GRO
+  ice: remove GRO drop accounting
+
+ drivers/net/ethernet/intel/ice/ice.h          | 1 -
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 1 -
+ drivers/net/ethernet/intel/ice/ice_main.c     | 4 +---
+ drivers/net/ethernet/intel/ice/ice_txrx.h     | 1 -
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 2 --
+ net/core/dev.c                                | 2 ++
+ 6 files changed, 3 insertions(+), 8 deletions(-)
+
 -- 
-2.25.1
+2.29.2
 
