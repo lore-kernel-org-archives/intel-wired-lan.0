@@ -1,57 +1,29 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed,  6 Jan 2021 13:55:38 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] net: core: count drops
- from GRO
-In-Reply-To: <20210106215539.2103688-1-jesse.brandeburg@intel.com>
-References: <20210106215539.2103688-1-jesse.brandeburg@intel.com>
-Message-ID: <20210106215539.2103688-2-jesse.brandeburg@intel.com>
+From: Kevin Lo <kevlo@kevlo.org>
+Date: Thu, 7 Jan 2021 14:10:38 +0800
+Subject: [Intel-wired-lan] [PATCH] igc: check return value of ret_val in
+ igc_config_fc_after_link_up
+Message-ID: <X/al3kv9JKN8nhFw@ns.kevlo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When drivers call the various receive upcalls to receive an skb
-to the stack, sometimes that stack can drop the packet. The good
-news is that the return code is given to all the drivers of
-NET_RX_DROP or GRO_DROP. The bad news is that no drivers except
-the one "ice" driver that I changed, check the stat and increment
-the dropped count. This is currently leading to packets that
-arrive at the edge interface and are fully handled by the driver
-and then mysteriously disappear.
+Check return value from ret_val to make error check actually work.
 
-Rather than fix all drivers to increment the drop stat when
-handling the return code, emulate the already existing statistic
-update for NET_RX_DROP events for the two GRO_DROP locations, and
-increment the dev->rx_dropped associated with the skb.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Eric Dumazet <edumazet@google.com>
-Cc: Jamal Hadi Salim <jhs@mojatatu.com>
+Fixes: 4eb8080143a9 ("igc: Add setup link functionality")
+Signed-off-by: Kevin Lo <kevlo@kevlo.org>
 ---
- net/core/dev.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 8fa739259041..ef34043a9550 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -6071,6 +6071,7 @@ static gro_result_t napi_skb_finish(struct napi_struct *napi,
- 		break;
+diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
+index 09cd0ec7ee87..67b8ffd21d8a 100644
+--- a/drivers/net/ethernet/intel/igc/igc_mac.c
++++ b/drivers/net/ethernet/intel/igc/igc_mac.c
+@@ -638,7 +638,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
+ 	}
  
- 	case GRO_DROP:
-+		atomic_long_inc(&skb->dev->rx_dropped);
- 		kfree_skb(skb);
- 		break;
+ out:
+-	return 0;
++	return ret_val;
+ }
  
-@@ -6159,6 +6160,7 @@ static gro_result_t napi_frags_finish(struct napi_struct *napi,
- 		break;
- 
- 	case GRO_DROP:
-+		atomic_long_inc(&skb->dev->rx_dropped);
- 		napi_reuse_skb(napi, skb);
- 		break;
- 
--- 
-2.29.2
-
+ /**
