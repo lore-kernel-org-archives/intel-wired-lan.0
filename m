@@ -1,29 +1,105 @@
-From: Kevin Lo <kevlo@kevlo.org>
-Date: Thu, 7 Jan 2021 14:10:38 +0800
-Subject: [Intel-wired-lan] [PATCH] igc: check return value of ret_val in
- igc_config_fc_after_link_up
-Message-ID: <X/al3kv9JKN8nhFw@ns.kevlo.org>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 7 Jan 2021 10:28:28 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: Add error message when MTU on
+ device is out of the range
+In-Reply-To: <e983a9eb-3d87-8fb4-3221-1f012e04d5a6@molgen.mpg.de>
+References: <20201218165255.6393-1-eryk.roch.rybak@intel.com>
+ <e983a9eb-3d87-8fb4-3221-1f012e04d5a6@molgen.mpg.de>
+Message-ID: <20210107092828.GA30484@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check return value from ret_val to make error check actually work.
+On Wed, Jan 06, 2021 at 10:36:23AM +0100, Paul Menzel wrote:
+> Dear Eryk,
 
-Fixes: 4eb8080143a9 ("igc: Add setup link functionality")
-Signed-off-by: Kevin Lo <kevlo@kevlo.org>
----
-diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-index 09cd0ec7ee87..67b8ffd21d8a 100644
---- a/drivers/net/ethernet/intel/igc/igc_mac.c
-+++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-@@ -638,7 +638,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
- 	}
- 
- out:
--	return 0;
-+	return ret_val;
- }
- 
- /**
+Eryk, you still haven't specified the tree that this patch is supposed to
+land (nit - it will be net-next :))
+
+> 
+> 
+> Am 18.12.20 um 17:52 schrieb Eryk Rybak:
+> 
+> Maybe a shorter summary:
+> 
+> > i40e: Log error for oversized MTU on device
+> 
+> > When attempting to link XDP prog with MTU larger than supported,
+> > user is not informed why XDP linking fails. Adding proper
+> 
+> Nit: Imperative mood could be used instead: Add proper ?
+
++1, thanks Paul!
+
+> 
+> > error message.
+> 
+> Personally, when adding new log message, I find it nice to see them in the
+> commit message too.
+> 
+> > Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> > Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++----
+> >   1 file changed, 7 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > index 630258e..4fdef00 100644
+> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > @@ -12933,9 +12933,10 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
+> >    * i40e_xdp_setup - add/remove an XDP program
+> >    * @vsi: VSI to changed
+> >    * @prog: XDP program
+> > + * @extack: netlink extended ack
+> >    **/
+> > -static int i40e_xdp_setup(struct i40e_vsi *vsi,
+> > -			  struct bpf_prog *prog)
+> > +static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+> > +			  struct netlink_ext_ack *extack)
+> >   {
+> >   	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+> >   	struct i40e_pf *pf = vsi->back;
+> > @@ -12944,8 +12945,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
+> >   	int i;
+> >   	/* Don't allow frames that span over multiple buffers */
+> > -	if (frame_size > vsi->rx_buf_len)
+> > +	if (frame_size > vsi->rx_buf_len) {
+> > +		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
+> 
+> Could you please also print out both values? Maybe (unsure about the units):
+> 
+>    MTU of %u bytes(?) too large to enable XDP (maximum: %u bytes)
+
+No, extack does not support printf-like format specifiers, unfortunately
+:<
+
+Maybe we can double the message and have a separate dev_info() in here?
+
+> 
+> 
+> Kind regards,
+> 
+> Paul
+> 
+> 
+> >   		return -EINVAL;
+> > +	}
+> >   	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
+> >   	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog);
+> > @@ -13254,7 +13257,7 @@ static int i40e_xdp(struct net_device *dev,
+> >   	switch (xdp->command) {
+> >   	case XDP_SETUP_PROG:
+> > -		return i40e_xdp_setup(vsi, xdp->prog);
+> > +		return i40e_xdp_setup(vsi, xdp->prog, xdp->extack);
+> >   	case XDP_SETUP_XSK_POOL:
+> >   		return i40e_xsk_pool_setup(vsi, xdp->xsk.pool,
+> >   					   xdp->xsk.queue_id);
+> > 
+> > base-commit: d2c2bbad93b818020657a82121a147e9ace1230d
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
