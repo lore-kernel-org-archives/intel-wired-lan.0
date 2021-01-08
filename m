@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 09 Jan 2021 07:06:25 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 0565ff56cd0543bacb5d3ec2ee0f979813ea1841
-Message-ID: <5ff8e571.B5NQgvcHGSe8AZoT%lkp@intel.com>
+Date: Sat, 09 Jan 2021 07:07:33 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ c88f9a09f666bb7fec4da10fa91ad2cdb02d14cf
+Message-ID: <5ff8e5b5.fCy5oYVdCyZD3/+K%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  master
-branch HEAD: 0565ff56cd0543bacb5d3ec2ee0f979813ea1841  Merge https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git  dev-queue
+branch HEAD: c88f9a09f666bb7fec4da10fa91ad2cdb02d14cf  i40e: Fix setting PF MAC filters when changing MAC address
 
-elapsed time: 1133m
+elapsed time: 1134m
 
-configs tested: 145
+configs tested: 150
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -37,6 +37,12 @@ mips                        qi_lb60_defconfig
 powerpc                     sbc8548_defconfig
 openrisc                 simple_smp_defconfig
 sh                           se7780_defconfig
+mips                           ip28_defconfig
+riscv                            alldefconfig
+mips                        jmr3927_defconfig
+arm                           spitz_defconfig
+arm                        magician_defconfig
+sh                            migor_defconfig
 arm                       imx_v4_v5_defconfig
 sh                         ap325rxa_defconfig
 m68k                         amcore_defconfig
@@ -46,7 +52,6 @@ arm                         socfpga_defconfig
 powerpc                       ebony_defconfig
 mips                         bigsur_defconfig
 arm                        realview_defconfig
-sh                            migor_defconfig
 arm                           h3600_defconfig
 m68k                          atari_defconfig
 sparc                       sparc64_defconfig
@@ -113,10 +118,10 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+parisc                              defconfig
 s390                             allyesconfig
 parisc                           allyesconfig
 s390                                defconfig
-parisc                              defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
