@@ -1,85 +1,124 @@
-From: Eric Dumazet <edumazet@google.com>
-Date: Fri, 8 Jan 2021 10:25:42 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] net: core: count
- drops from GRO
-In-Reply-To: <20210106215539.2103688-2-jesse.brandeburg@intel.com>
-References: <20210106215539.2103688-1-jesse.brandeburg@intel.com>
- <20210106215539.2103688-2-jesse.brandeburg@intel.com>
-Message-ID: <CANn89iLcRrmXW_MGjuMMnNxWS+kaEnY=Y79hCPuiwiDd_G9=EA@mail.gmail.com>
+From: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>
+Date: Fri, 8 Jan 2021 11:18:42 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Add error message when MTU on
+ device is out of the range
+In-Reply-To: <20210107092828.GA30484@ranger.igk.intel.com>
+References: <20201218165255.6393-1-eryk.roch.rybak@intel.com>
+ <e983a9eb-3d87-8fb4-3221-1f012e04d5a6@molgen.mpg.de>
+ <20210107092828.GA30484@ranger.igk.intel.com>
+Message-ID: <CY4PR11MB162177CD462300F781703059BFAE0@CY4PR11MB1621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 6, 2021 at 10:56 PM Jesse Brandeburg
-<jesse.brandeburg@intel.com> wrote:
+>-----Original Message-----
+>From: Fijalkowski, Maciej <maciej.fijalkowski@intel.com> 
+>Sent: Thursday, January 7, 2021 10:28 AM
+>To: Paul Menzel <pmenzel@molgen.mpg.de>
+>Cc: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>; intel-wired-lan at lists.osuosl.org
+>Subject: Re: [Intel-wired-lan] [PATCH] i40e: Add error message when MTU on device is out of the range
 >
-> When drivers call the various receive upcalls to receive an skb
-> to the stack, sometimes that stack can drop the packet. The good
-> news is that the return code is given to all the drivers of
-> NET_RX_DROP or GRO_DROP. The bad news is that no drivers except
-> the one "ice" driver that I changed, check the stat and increment
-> the dropped count. This is currently leading to packets that
-> arrive at the edge interface and are fully handled by the driver
-> and then mysteriously disappear.
+>On Wed, Jan 06, 2021 at 10:36:23AM +0100, Paul Menzel wrote:
+>> Dear Eryk,
 >
-> Rather than fix all drivers to increment the drop stat when
-> handling the return code, emulate the already existing statistic
-> update for NET_RX_DROP events for the two GRO_DROP locations, and
-> increment the dev->rx_dropped associated with the skb.
+>Eryk, you still haven't specified the tree that this patch is supposed to land (nit - it will be net-next :))
 >
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Cc: Eric Dumazet <edumazet@google.com>
-> Cc: Jamal Hadi Salim <jhs@mojatatu.com>
-> ---
->  net/core/dev.c | 2 ++
->  1 file changed, 2 insertions(+)
+Sure I will add to the second version of patch, thanks for hint.
+>> 
+>> 
+>> Am 18.12.20 um 17:52 schrieb Eryk Rybak:
+>> 
+>> Maybe a shorter summary:
+>> 
+>> > i40e: Log error for oversized MTU on device
+>> 
+>> > When attempting to link XDP prog with MTU larger than supported, 
+>> > user is not informed why XDP linking fails. Adding proper
+>> 
+>> Nit: Imperative mood could be used instead: Add proper ?
 >
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 8fa739259041..ef34043a9550 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -6071,6 +6071,7 @@ static gro_result_t napi_skb_finish(struct napi_struct *napi,
->                 break;
+>+1, thanks Paul!
+Thanks guys, expect better commit message in next version of this patch.
 >
->         case GRO_DROP:
-> +               atomic_long_inc(&skb->dev->rx_dropped);
->                 kfree_skb(skb);
->                 break;
+>> 
+>> > error message.
+>> 
+>> Personally, when adding new log message, I find it nice to see them in 
+>> the commit message too.
+>> 
+>> > Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+>> > Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+>> > ---
+>> >   drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++++----
+>> >   1 file changed, 7 insertions(+), 4 deletions(-)
+>> > 
+>> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c 
+>> > b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> > index 630258e..4fdef00 100644
+>> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> > @@ -12933,9 +12933,10 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
+>> >    * i40e_xdp_setup - add/remove an XDP program
+>> >    * @vsi: VSI to changed
+>> >    * @prog: XDP program
+>> > + * @extack: netlink extended ack
+>> >    **/
+>> > -static int i40e_xdp_setup(struct i40e_vsi *vsi,
+>> > -			  struct bpf_prog *prog)
+>> > +static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+>> > +			  struct netlink_ext_ack *extack)
+>> >   {
+>> >   	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
+>> >   	struct i40e_pf *pf = vsi->back;
+>> > @@ -12944,8 +12945,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi,
+>> >   	int i;
+>> >   	/* Don't allow frames that span over multiple buffers */
+>> > -	if (frame_size > vsi->rx_buf_len)
+>> > +	if (frame_size > vsi->rx_buf_len) {
+>> > +		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
+>> 
+>> Could you please also print out both values? Maybe (unsure about the units):
+>> 
+>>    MTU of %u bytes(?) too large to enable XDP (maximum: %u bytes)
 >
-> @@ -6159,6 +6160,7 @@ static gro_result_t napi_frags_finish(struct napi_struct *napi,
->                 break;
+>No, extack does not support printf-like format specifiers, unfortunately :<
 >
->         case GRO_DROP:
-> +               atomic_long_inc(&skb->dev->rx_dropped);
->                 napi_reuse_skb(napi, skb);
->                 break;
+>Maybe we can double the message and have a separate dev_info() in here?
+
+IMHO, double the log message is not the best solution here. However, I suggest to prepare string on stack earlier and send it as extrack then.
+What do you think guys, Maciej/Paul?
+
 >
-
-
-This is not needed. I think we should clean up ice instead.
-
-Drivers are supposed to have allocated the skb (using
-napi_get_frags()) before calling napi_gro_frags()
-
-Only napi_gro_frags() would return GRO_DROP, but we supposedly could
-crash at that point, since a driver is clearly buggy.
-
-We probably can remove GRO_DROP completely, assuming lazy drivers are fixed.
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 8fa739259041aaa03585b5a7b8ebce862f4b7d1d..c9460c9597f1de51957fdcfc7a64ca45bce5af7c
-100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -6223,9 +6223,6 @@ gro_result_t napi_gro_frags(struct napi_struct *napi)
-        gro_result_t ret;
-        struct sk_buff *skb = napi_frags_skb(napi);
-
--       if (!skb)
--               return GRO_DROP;
--
-        trace_napi_gro_frags_entry(skb);
-
-        ret = napi_frags_finish(napi, skb, dev_gro_receive(napi, skb));
+>> 
+>> 
+>> Kind regards,
+>> 
+>> Paul
+>> 
+>> 
+>> >   		return -EINVAL;
+>> > +	}
+>> >   	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
+>> >   	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog); @@ -13254,7 
+>> > +13257,7 @@ static int i40e_xdp(struct net_device *dev,
+>> >   	switch (xdp->command) {
+>> >   	case XDP_SETUP_PROG:
+>> > -		return i40e_xdp_setup(vsi, xdp->prog);
+>> > +		return i40e_xdp_setup(vsi, xdp->prog, xdp->extack);
+>> >   	case XDP_SETUP_XSK_POOL:
+>> >   		return i40e_xsk_pool_setup(vsi, xdp->xsk.pool,
+>> >   					   xdp->xsk.queue_id);
+>> > 
+>> > base-commit: d2c2bbad93b818020657a82121a147e9ace1230d
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
