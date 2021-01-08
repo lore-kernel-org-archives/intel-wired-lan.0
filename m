@@ -1,27 +1,42 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 8 Jan 2021 10:23:22 -0800
+Date: Fri, 8 Jan 2021 10:26:30 -0800
 Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] net: core: count
  drops from GRO
-In-Reply-To: <5badc441-6de9-54cf-2b72-d67572cbb105@intel.com>
+In-Reply-To: <1e4ee1cf-c2b7-8ba3-7cb1-5c5cb3ff1e84@pensando.io>
 References: <20210106215539.2103688-1-jesse.brandeburg@intel.com>
  <20210106215539.2103688-2-jesse.brandeburg@intel.com>
- <5badc441-6de9-54cf-2b72-d67572cbb105@intel.com>
-Message-ID: <20210108102322.00004b93@intel.com>
+ <1e4ee1cf-c2b7-8ba3-7cb1-5c5cb3ff1e84@pensando.io>
+Message-ID: <20210108102630.00004202@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jacob Keller wrote:
+Shannon Nelson wrote:
 
-> >  	case GRO_DROP:
-> > +		atomic_long_inc(&skb->dev->rx_dropped);
-> >  		kfree_skb(skb);
-> >  		break;
+> On 1/6/21 1:55 PM, Jesse Brandeburg wrote:
+> > When drivers call the various receive upcalls to receive an skb
+> > to the stack, sometimes that stack can drop the packet. The good
+> > news is that the return code is given to all the drivers of
+> > NET_RX_DROP or GRO_DROP. The bad news is that no drivers except
+> > the one "ice" driver that I changed, check the stat and increment
 > 
-> Would it makes sense to have this be a different stat? or is it really
-> basically the same as the existing rx_dropped, so treating it
-> differently wouldn't make much sense..
+> If the stack is dropping the packet, isn't it up to the stack to track 
+> that, perhaps with something that shows up in netstat -s?? We don't 
+> really want to make the driver responsible for any drops that happen 
+> above its head, do we?
 
-not sure, was hoping to get feedback here. More later in the thread...
+I totally agree!
+
+In patch 2/2 I revert the driver-specific changes I had made in an
+earlier patch, and this patch *was* my effort to make the stack show the
+drops.
+
+Maybe I wasn't clear. I'm seeing packets disappear during TCP
+workloads, and this GRO_DROP code was the source of the drops (I see it
+returning infrequently but regularly)
+
+The driver processes the packet but the stack never sees it, and there
+were no drop counters anywhere tracking it.
+
