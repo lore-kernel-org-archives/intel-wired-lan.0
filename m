@@ -1,39 +1,32 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sat, 9 Jan 2021 18:57:35 +0200
-Subject: [Intel-wired-lan] [PATCH] igc: check return value of ret_val in
- igc_config_fc_after_link_up
-In-Reply-To: <X/al3kv9JKN8nhFw@ns.kevlo.org>
-References: <X/al3kv9JKN8nhFw@ns.kevlo.org>
-Message-ID: <a444142a-564a-163c-8624-fec143fe0027@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 10 Jan 2021 16:51:14 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused MII_CR_RESET
+Message-ID: <20210110145114.3493608-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/7/2021 08:10, Kevin Lo wrote:
-> Check return value from ret_val to make error check actually work.
-> 
-> Fixes: 4eb8080143a9 ("igc: Add setup link functionality")
-> Signed-off-by: Kevin Lo <kevlo@kevlo.org>
-> ---
-> diff --git a/drivers/net/ethernet/intel/igc/igc_mac.c b/drivers/net/ethernet/intel/igc/igc_mac.c
-> index 09cd0ec7ee87..67b8ffd21d8a 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_mac.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_mac.c
-> @@ -638,7 +638,7 @@ s32 igc_config_fc_after_link_up(struct igc_hw *hw)
->   	}
->   
->   out:
-> -	return 0;
-> +	return ret_val;
->   }
->   
->   /**
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-Thanks for your patch.
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+MII_CR_RESET mask not in use in i225 device and could be removed
+
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 4fc9ef978ad3..58fc207dc995 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -442,7 +442,6 @@
+ #define MII_CR_POWER_DOWN	0x0800  /* Power down */
+ #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
+ #define MII_CR_LOOPBACK		0x4000  /* 0 = normal, 1 = loopback */
+-#define MII_CR_RESET		0x8000  /* 0 = normal, 1 = PHY reset */
+ #define MII_CR_SPEED_1000	0x0040
+ #define MII_CR_SPEED_100	0x2000
+ #define MII_CR_SPEED_10		0x0000
+-- 
+2.25.1
+
