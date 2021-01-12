@@ -1,7 +1,7 @@
 From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Tue, 12 Jan 2021 17:04:51 +0000
-Subject: [Intel-wired-lan] [PATCH v2] i40e: Fix for link-flapping
-Message-ID: <20210112170451.445703-1-arkadiusz.kubalewski@intel.com>
+Date: Tue, 12 Jan 2021 17:14:31 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix for link-flapping
+Message-ID: <20210112171431.457524-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,6 +21,7 @@ separate helper function i40e_set_vf_link_state().
 Otherwise VNF implementation was broken and caused a link flap.
 
 v2: improve commit message
+v3: net tree target
 
 Fixes: 2ad1274fa35a ("i40e: don't report link up for a VF who hasn't
 enabled")
