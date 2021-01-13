@@ -1,40 +1,45 @@
-From: Li,Rongqing <lirongqing@baidu.com>
-Date: Wed, 13 Jan 2021 01:36:58 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: avoid premature Rx buffer reuse
-In-Reply-To: <CAKgT0UccR7Mh4efd+d193bvQNP2-QMdBxP0uk0__0Z+dYepNjg@mail.gmail.com>
-References: <1609990905-29220-1-git-send-email-lirongqing@baidu.com>
- <CAKgT0Ucar6h-V2pQK6Gx4wrwFzJqySfv-MGXtW1yEc6Jq3uNSQ@mail.gmail.com>
- <65a7da2dc20c4fa5b69270f078026100@baidu.com>
- <CAKgT0UccR7Mh4efd+d193bvQNP2-QMdBxP0uk0__0Z+dYepNjg@mail.gmail.com>
-Message-ID: <005b033dad0a47d7858a9d71d20acda0@baidu.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 12 Jan 2021 19:41:07 -0800
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix for link-flapping
+In-Reply-To: <20210112171431.457524-1-arkadiusz.kubalewski@intel.com>
+References: <20210112171431.457524-1-arkadiusz.kubalewski@intel.com>
+Message-ID: <20210112194107.00002d0b@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Arkadiusz Kubalewski wrote:
 
-
-> -----Original Message-----
-> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> Sent: Wednesday, January 13, 2021 5:23 AM
-> To: Li,Rongqing <lirongqing@baidu.com>
-> Cc: Netdev <netdev@vger.kernel.org>; intel-wired-lan
-> <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel <bjorn.topel@intel.com>
-> Subject: Re: [PATCH] igb: avoid premature Rx buffer r 
-> Okay, this explanation makes much more sense. Could you please either include
-> this explanation in your patch, or include a reference to this patch as this
-> explains clearly what the issue is while yours didn't and led to the confusion as I
-> was assuming the freeing was happening closer to the t0 case, and really the
-> problem is t1.
+> VF queues were not brought up when PF was brought up after being downed
+> if the VF driver disabled VFs queues during PF down. This could happen
+> in some older or external VF driver implementations.
+> The problem was that PF driver used vf->queues_enabled as a condition
+> to decide what link-state it would send out which caused the issue.
+> Remove the check for vf->queues_enabled in the VF link notify. Now VF
+> will always be notified of the current link status. Also remove
+> the queues_enabled member from i40e_vf structure as it is not used
+> anymore. Also refactor repeated link state reporting code into a
+> separate helper function i40e_set_vf_link_state().
+> Otherwise VNF implementation was broken and caused a link flap.
 > 
-> Thanks.
+> v2: improve commit message
+> v3: net tree target
+
+For future patches, please put vX: messages after a ---
+which will allow git am to strip the vX: comments.  You can optionally
+put the vX: messages in the same section as the diffstat info.
+
 > 
-> - Alex
+> Fixes: 2ad1274fa35a ("i40e: don't report link up for a VF who hasn't
+> enabled")
 
+You probably don't need to wrap the Fixes line, but it probably
+doesn't hurt either.
 
-Ok, I will send V2
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
-Thanks
-
--Li
+The patch sender's signoff should be last (think chronological order
+starting with oldest at the top)
