@@ -1,80 +1,62 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 13 Jan 2021 08:19:33 -0800
-Subject: [Intel-wired-lan] [PATCH][v2] igb: avoid premature Rx buffer
- reuse
-In-Reply-To: <1610538220-25980-1-git-send-email-lirongqing@baidu.com>
-References: <1610538220-25980-1-git-send-email-lirongqing@baidu.com>
-Message-ID: <CAKgT0Udh8_m=MpDLsWfAeWh2uvFq4ksJ=00e8zMB-v7=P4XLMg@mail.gmail.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Thu, 14 Jan 2021 09:57:28 +0000
+Subject: [Intel-wired-lan] [net-next] net: iavf: Use the ARRAY_SIZE
+ macro for aq_to_posix
+In-Reply-To: <1599641471-204919-1-git-send-email-xuwei5@hisilicon.com>
+References: <1599641471-204919-1-git-send-email-xuwei5@hisilicon.com>
+Message-ID: <CY4PR11MB15769D5697074F230C8742CAABA80@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 13, 2021 at 3:47 AM Li RongQing <lirongqing@baidu.com> wrote:
->
-> Igb needs a similar fix as commit 75aab4e10ae6a ("i40e: avoid
-> premature Rx buffer reuse")
->
-> The page recycle code, incorrectly, relied on that a page fragment
-> could not be freed inside xdp_do_redirect(). This assumption leads to
-> that page fragments that are used by the stack/XDP redirect can be
-> reused and overwritten.
->
-> To avoid this, store the page count prior invoking xdp_do_redirect().
->
-> Longer explanation:
->
-> Intel NICs have a recycle mechanism. The main idea is that a page is
-> split into two parts. One part is owned by the driver, one part might
-> be owned by someone else, such as the stack.
->
-> t0: Page is allocated, and put on the Rx ring
->               +---------------
-> used by NIC ->| upper buffer
-> (rx_buffer)   +---------------
->               | lower buffer
->               +---------------
->   page count  == USHRT_MAX
->   rx_buffer->pagecnt_bias == USHRT_MAX
->
-> t1: Buffer is received, and passed to the stack (e.g.)
->               +---------------
->               | upper buff (skb)
->               +---------------
-> used by NIC ->| lower buffer
-> (rx_buffer)   +---------------
->   page count  == USHRT_MAX
->   rx_buffer->pagecnt_bias == USHRT_MAX - 1
->
-> t2: Buffer is received, and redirected
->               +---------------
->               | upper buff (skb)
->               +---------------
-> used by NIC ->| lower buffer
-> (rx_buffer)   +---------------
->
-> Now, prior calling xdp_do_redirect():
->   page count  == USHRT_MAX
->   rx_buffer->pagecnt_bias == USHRT_MAX - 2
->
-> This means that buffer *cannot* be flipped/reused, because the skb is
-> still using it.
->
-> The problem arises when xdp_do_redirect() actually frees the
-> segment. Then we get:
->   page count  == USHRT_MAX - 1
->   rx_buffer->pagecnt_bias == USHRT_MAX - 2
->
-> From a recycle perspective, the buffer can be flipped and reused,
-> which means that the skb data area is passed to the Rx HW ring!
->
-> To work around this, the page count is stored prior calling
-> xdp_do_redirect().
->
-> Fixes: 9cbc948b5a20 ("igb: add XDP support")
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
 
-Looks good.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Wei Xu
+> Sent: ?roda, 9 wrze?nia 2020 10:51
+> To: netdev at vger.kernel.org
+> Cc: salil.mehta at huawei.com; jinying at hisilicon.com;
+> tangkunshan at huawei.com; huangdaode at hisilicon.com;
+> john.garry at huawei.com; linux-kernel at vger.kernel.org;
+> linuxarm at huawei.com; shameerali.kolothum.thodi at huawei.com;
+> zhangyi.ac at huawei.com; intel-wired-lan at lists.osuosl.org;
+> xuwei5 at hisilicon.com; jonathan.cameron at huawei.com; Jakub Kicinski
+> <kuba@kernel.org>; liguozhu at hisilicon.com; davem at davemloft.net;
+> shiju.jose at huawei.com
+> Subject: [Intel-wired-lan] [net-next] net: iavf: Use the ARRAY_SIZE macro for
+> aq_to_posix
+> 
+> Use the ARRAY_SIZE macro to calculate the size of an array.
+> This code was detected with the help of Coccinelle.
+> 
+> Signed-off-by: Wei Xu <xuwei5@hisilicon.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_adminq.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+> b/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+> index baf2fe2..eead12c 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.h
+> @@ -120,7 +120,7 @@ static inline int iavf_aq_rc_to_posix(int aq_ret, int
+> aq_rc)
+>  	if (aq_ret == IAVF_ERR_ADMIN_QUEUE_TIMEOUT)
+>  		return -EAGAIN;
+> 
+> -	if (!((u32)aq_rc < (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0]))))
+> +	if (!((u32)aq_rc < ARRAY_SIZE(aq_to_posix)))
+>  		return -ERANGE;
+> 
+>  	return aq_to_posix[aq_rc];
 
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
+
