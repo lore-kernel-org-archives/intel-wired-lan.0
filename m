@@ -1,10 +1,10 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Thu, 14 Jan 2021 19:13:00 +0800
-Subject: [Intel-wired-lan] [Patch v1 10/20] ice: Add FDIR pattern action
- parser for VF
+Date: Thu, 14 Jan 2021 19:13:02 +0800
+Subject: [Intel-wired-lan] [Patch v1 12/20] ice: Add non-IP Layer2 protocol
+ FDIR filter for AVF
 In-Reply-To: <20210114111310.97121-1-haiyue.wang@intel.com>
 References: <20210114111310.97121-1-haiyue.wang@intel.com>
-Message-ID: <20210114111310.97121-11-haiyue.wang@intel.com>
+Message-ID: <20210114111310.97121-13-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,83 +13,169 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Qi Zhang <qi.z.zhang@intel.com>
 
-Add basic FDIR flow list and pattern / action parse functions for VF.
+Add new filter type that allow forward non-IP Ethernet packets base on its
+ethertype. The filter is only enabled when COMMS DDP package is loaded.
 
 Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 353 +++++++++++++++++-
- 1 file changed, 351 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_fdir.c     | 15 ++++++++
+ drivers/net/ethernet/intel/ice/ice_fdir.h     |  2 +
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 17 ++++++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  1 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 38 +++++++++++++++++--
+ 6 files changed, 70 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+index 5f8d7a9ca068..b9c65d0c9271 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+@@ -40,6 +40,12 @@ static const u8 ice_fdir_ipv4_pkt[] = {
+ 	0x00, 0x00
+ };
+ 
++static const u8 ice_fdir_non_ip_l2_pkt[] = {
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++};
++
+ static const u8 ice_fdir_tcpv6_pkt[] = {
+ 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
+@@ -238,6 +244,11 @@ static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
+ 		sizeof(ice_fdir_ipv4_pkt), ice_fdir_ipv4_pkt,
+ 		sizeof(ice_fdir_ip4_tun_pkt), ice_fdir_ip4_tun_pkt,
+ 	},
++	{
++		ICE_FLTR_PTYPE_NON_IP_L2,
++		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
++		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
++	},
+ 	{
+ 		ICE_FLTR_PTYPE_NONF_IPV6_TCP,
+ 		sizeof(ice_fdir_tcpv6_pkt), ice_fdir_tcpv6_pkt,
+@@ -674,6 +685,10 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+ 				  input->ip.v4.proto);
+ 		ice_pkt_insert_mac_addr(loc, input->ext_data.dst_mac);
+ 		break;
++	case ICE_FLTR_PTYPE_NON_IP_L2:
++		ice_pkt_insert_u16(loc, ICE_MAC_ETHTYPE_OFFSET,
++				   input->ext_data.ether_type);
++		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
+ 		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
+ 					 input->ip.v6.src_ip);
+diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
+index adf237925b3c..58c927cbc953 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fdir.h
++++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
+@@ -30,6 +30,7 @@
+ #define ICE_IPV6_TC_OFFSET		14
+ #define ICE_IPV6_HLIM_OFFSET		21
+ #define ICE_IPV6_PROTO_OFFSET		20
++#define ICE_MAC_ETHTYPE_OFFSET		12
+ 
+ #define ICE_FDIR_MAX_FLTRS		16384
+ 
+@@ -116,6 +117,7 @@ struct ice_fdir_v6 {
+ struct ice_fdir_extra {
+ 	u8 dst_mac[ETH_ALEN];	/* dest MAC address */
+ 	u8 src_mac[ETH_ALEN];	/* src MAC address */
++	__be16 ether_type;      /* for NON_IP_L2 */
+ 	u32 usr_def[2];		/* user data */
+ 	__be16 vlan_type;	/* VLAN ethertype */
+ 	__be16 vlan_tag;	/* VLAN tag info */
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 6bf467e09307..b06758c5ad93 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -571,6 +571,17 @@ static const u32 ice_ptypes_nat_t_esp[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
+ 
++static const u32 ice_ptypes_mac_non_ip_ofos[] = {
++	0x00000846, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00400000, 0x03FFF000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
+ /* Manage parameters and info. used during the creation of a flow profile */
+ struct ice_flow_prof_params {
+ 	enum ice_block blk;
+@@ -760,7 +771,11 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		}
+ 
+-		if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
++		if (hdrs & ICE_FLOW_SEG_HDR_ETH_NON_IP) {
++			src = (const unsigned long *)ice_ptypes_mac_non_ip_ofos;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
+ 			src = (const unsigned long *)ice_ptypes_pppoe;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index d5e7f2dadd56..f1bed16abc64 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -138,6 +138,7 @@ enum ice_flow_seg_hdr {
+ 	ICE_FLOW_SEG_HDR_ESP		= 0x00100000,
+ 	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
+ 	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
++	ICE_FLOW_SEG_HDR_ETH_NON_IP	= 0x00800000,
+ 	/* The following is an additive bit for ICE_FLOW_SEG_HDR_IPV4 and
+ 	 * ICE_FLOW_SEG_HDR_IPV6 which include the IPV4 other PTYPEs
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 7a57d5f88c96..dc8b6cb8e9f2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -192,6 +192,7 @@ enum ice_fltr_ptype {
+ 	ICE_FLTR_PTYPE_NONF_IPV4_TCP,
+ 	ICE_FLTR_PTYPE_NONF_IPV4_SCTP,
+ 	ICE_FLTR_PTYPE_NONF_IPV4_OTHER,
++	ICE_FLTR_PTYPE_NON_IP_L2,
+ 	ICE_FLTR_PTYPE_FRAG_IPV4,
+ 	ICE_FLTR_PTYPE_NONF_IPV6_UDP,
+ 	ICE_FLTR_PTYPE_NONF_IPV6_TCP,
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index 98d70e51456d..de6ec56223e8 100644
+index f06820af6153..f302458037a2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -27,6 +27,77 @@ struct virtchnl_fdir_fltr_conf {
+@@ -27,6 +27,11 @@ struct virtchnl_fdir_fltr_conf {
  	struct ice_fdir_fltr input;
  };
  
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv4[] = {
++static enum virtchnl_proto_hdr_type vc_pattern_ether[] = {
 +	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV4,
 +	VIRTCHNL_PROTO_HDR_NONE,
 +};
 +
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv4_tcp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV4,
-+	VIRTCHNL_PROTO_HDR_TCP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv4_udp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV4,
-+	VIRTCHNL_PROTO_HDR_UDP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv4_sctp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV4,
-+	VIRTCHNL_PROTO_HDR_SCTP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv6[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV6,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv6_tcp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV6,
-+	VIRTCHNL_PROTO_HDR_TCP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv6_udp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV6,
-+	VIRTCHNL_PROTO_HDR_UDP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+static enum virtchnl_proto_hdr_type vc_pattern_ipv6_sctp[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_IPV6,
-+	VIRTCHNL_PROTO_HDR_SCTP,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
-+
-+struct virtchnl_fdir_pattern_match_item {
-+	enum virtchnl_proto_hdr_type *list;
-+	u64 input_set;
-+	u64 *meta;
-+};
-+
-+static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
+ static enum virtchnl_proto_hdr_type vc_pattern_ipv4[] = {
+ 	VIRTCHNL_PROTO_HDR_ETH,
+ 	VIRTCHNL_PROTO_HDR_IPV4,
+@@ -87,7 +92,7 @@ struct virtchnl_fdir_pattern_match_item {
+ 	u64 *meta;
+ };
+ 
+-static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
++static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_os[] = {
+ 	{vc_pattern_ipv4,                     0,         NULL},
+ 	{vc_pattern_ipv4_tcp,                 0,         NULL},
+ 	{vc_pattern_ipv4_udp,                 0,         NULL},
+@@ -98,6 +103,18 @@ static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
+ 	{vc_pattern_ipv6_sctp,                0,         NULL},
+ };
+ 
++static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_comms[] = {
 +	{vc_pattern_ipv4,                     0,         NULL},
 +	{vc_pattern_ipv4_tcp,                 0,         NULL},
 +	{vc_pattern_ipv4_udp,                 0,         NULL},
@@ -98,307 +184,56 @@ index 98d70e51456d..de6ec56223e8 100644
 +	{vc_pattern_ipv6_tcp,                 0,         NULL},
 +	{vc_pattern_ipv6_udp,                 0,         NULL},
 +	{vc_pattern_ipv6_sctp,                0,         NULL},
++	{vc_pattern_ether,                    0,         NULL},
 +};
 +
  struct virtchnl_fdir_inset_map {
  	enum virtchnl_proto_hdr_field field;
  	enum ice_flow_field fld;
-@@ -599,6 +670,275 @@ ice_vc_fdir_config_input_set(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 	return ret;
- }
+@@ -372,6 +389,9 @@ ice_vc_fdir_set_flow_hdr(struct ice_vf *vf,
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
  
-+/**
-+ * ice_vc_fdir_match_pattern
-+ * @fltr: virtual channel add cmd buffer
-+ * @type: virtual channel protocol filter header type
-+ *
-+ * Matching the header type by comparing fltr and type's value.
-+ *
-+ * Return: true on success, and false on error.
-+ */
-+static bool
-+ice_vc_fdir_match_pattern(struct virtchnl_fdir_add *fltr,
-+			  enum virtchnl_proto_hdr_type *type)
-+{
-+	struct virtchnl_proto_hdrs *proto = &fltr->rule_cfg.proto_hdrs;
-+	int i = 0;
-+
-+	while ((i < proto->count) &&
-+	       (*type == proto->proto_hdr[i].type) &&
-+	       (*type != VIRTCHNL_PROTO_HDR_NONE)) {
-+		type++;
-+		i++;
-+	}
-+
-+	return ((i == proto->count) &&
-+		(*type == VIRTCHNL_PROTO_HDR_NONE));
-+}
-+
-+/**
-+ * ice_vc_fdir_get_pattern - get while list pattern
-+ * @vf: pointer to the VF info
-+ * @len: filter list length
-+ *
-+ * Return: pointer to allowed filter list
-+ */
-+static const struct virtchnl_fdir_pattern_match_item *
-+ice_vc_fdir_get_pattern(struct ice_vf *vf, int *len)
-+{
-+	const struct virtchnl_fdir_pattern_match_item *item;
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_hw *hw;
-+
-+	hw = &pf->hw;
-+	item = vc_fdir_pattern;
-+	*len = ARRAY_SIZE(vc_fdir_pattern);
-+
-+	return item;
-+}
-+
-+/**
-+ * ice_vc_fdir_search_pattern
-+ * @vf: pointer to the VF info
-+ * @fltr: virtual channel add cmd buffer
-+ *
-+ * Search for matched pattern from supported pattern list
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_fdir_search_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr)
-+{
-+	const struct virtchnl_fdir_pattern_match_item *pattern;
-+	int len, i;
-+
-+	pattern = ice_vc_fdir_get_pattern(vf, &len);
-+
-+	for (i = 0; i < len; i++)
-+		if (ice_vc_fdir_match_pattern(fltr, pattern[i].list))
-+			return 0;
-+
-+	return -EINVAL;
-+}
-+
-+/**
-+ * ice_vc_fdir_parse_pattern
-+ * @vf: pointer to the VF info
-+ * @fltr: virtual channel add cmd buffer
-+ * @conf: FDIR configuration for each filter
-+ *
-+ * Parse the virtual channel filter's pattern and store them into conf
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
-+			  struct virtchnl_fdir_fltr_conf *conf)
-+{
-+	struct virtchnl_proto_hdrs *proto = &fltr->rule_cfg.proto_hdrs;
-+	enum virtchnl_proto_hdr_type l3 = VIRTCHNL_PROTO_HDR_NONE;
-+	enum virtchnl_proto_hdr_type l4 = VIRTCHNL_PROTO_HDR_NONE;
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	struct ice_fdir_fltr *input = &conf->input;
-+	int i;
-+
-+	if (proto->count > VIRTCHNL_MAX_NUM_PROTO_HDRS) {
-+		dev_dbg(dev, "Invalid protocol count:0x%x for VF %d\n",
-+			proto->count, vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < proto->count; i++) {
-+		struct virtchnl_proto_hdr *hdr = &proto->proto_hdr[i];
-+		struct sctphdr *sctph;
-+		struct ipv6hdr *ip6h;
-+		struct udphdr *udph;
-+		struct tcphdr *tcph;
-+		struct iphdr *iph;
-+
-+		switch (hdr->type) {
-+		case VIRTCHNL_PROTO_HDR_ETH:
-+			break;
-+		case VIRTCHNL_PROTO_HDR_IPV4:
-+			iph = (struct iphdr *)hdr->buffer;
-+			l3 = VIRTCHNL_PROTO_HDR_IPV4;
-+			input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_OTHER;
-+
-+			if (hdr->field_selector) {
-+				input->ip.v4.src_ip = iph->saddr;
-+				input->ip.v4.dst_ip = iph->daddr;
-+				input->ip.v4.tos = iph->tos;
-+				input->ip.v4.proto = iph->protocol;
-+			}
-+			break;
-+		case VIRTCHNL_PROTO_HDR_IPV6:
-+			ip6h = (struct ipv6hdr *)hdr->buffer;
-+			l3 = VIRTCHNL_PROTO_HDR_IPV6;
-+			input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_OTHER;
-+
-+			if (hdr->field_selector) {
-+				memcpy(input->ip.v6.src_ip,
-+				       ip6h->saddr.in6_u.u6_addr8,
-+				       sizeof(ip6h->saddr));
-+				memcpy(input->ip.v6.dst_ip,
-+				       ip6h->daddr.in6_u.u6_addr8,
-+				       sizeof(ip6h->daddr));
-+				input->ip.v6.tc = ((u8)(ip6h->priority) << 4) |
-+						  (ip6h->flow_lbl[0] >> 4);
-+				input->ip.v6.proto = ip6h->nexthdr;
-+			}
-+			break;
-+		case VIRTCHNL_PROTO_HDR_TCP:
-+			tcph = (struct tcphdr *)hdr->buffer;
-+			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
-+				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_TCP;
-+			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
-+				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_TCP;
-+
-+			if (hdr->field_selector) {
-+				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
-+					input->ip.v4.src_port = tcph->source;
-+					input->ip.v4.dst_port = tcph->dest;
-+				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
-+					input->ip.v6.src_port = tcph->source;
-+					input->ip.v6.dst_port = tcph->dest;
-+				}
-+			}
-+			break;
-+		case VIRTCHNL_PROTO_HDR_UDP:
-+			udph = (struct udphdr *)hdr->buffer;
-+			l4 = VIRTCHNL_PROTO_HDR_UDP;
-+			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
-+				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV4_UDP;
-+			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
-+				input->flow_type = ICE_FLTR_PTYPE_NONF_IPV6_UDP;
-+
-+			if (hdr->field_selector) {
-+				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
-+					input->ip.v4.src_port = udph->source;
-+					input->ip.v4.dst_port = udph->dest;
-+				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
-+					input->ip.v6.src_port = udph->source;
-+					input->ip.v6.dst_port = udph->dest;
-+				}
-+			}
-+			break;
-+		case VIRTCHNL_PROTO_HDR_SCTP:
-+			sctph = (struct sctphdr *)hdr->buffer;
-+			if (l3 == VIRTCHNL_PROTO_HDR_IPV4)
-+				input->flow_type =
-+					ICE_FLTR_PTYPE_NONF_IPV4_SCTP;
-+			else if (l3 == VIRTCHNL_PROTO_HDR_IPV6)
-+				input->flow_type =
-+					ICE_FLTR_PTYPE_NONF_IPV6_SCTP;
-+
-+			if (hdr->field_selector) {
-+				if (l3 == VIRTCHNL_PROTO_HDR_IPV4) {
-+					input->ip.v4.src_port = sctph->source;
-+					input->ip.v4.dst_port = sctph->dest;
-+				} else if (l3 == VIRTCHNL_PROTO_HDR_IPV6) {
-+					input->ip.v6.src_port = sctph->source;
-+					input->ip.v6.dst_port = sctph->dest;
-+				}
-+			}
-+			break;
-+		default:
-+			dev_dbg(dev, "Invalid header type 0x:%x for VF %d\n",
-+				hdr->type, vf->vf_id);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_vc_fdir_parse_action
-+ * @vf: pointer to the VF info
-+ * @fltr: virtual channel add cmd buffer
-+ * @conf: FDIR configuration for each filter
-+ *
-+ * Parse the virtual channel filter's action and store them into conf
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_fdir_parse_action(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
-+			 struct virtchnl_fdir_fltr_conf *conf)
-+{
-+	struct virtchnl_filter_action_set *as = &fltr->rule_cfg.action_set;
-+	struct device *dev = ice_pf_to_dev(vf->pf);
-+	struct ice_fdir_fltr *input = &conf->input;
-+	u32 dest_num = 0;
-+	u32 mark_num = 0;
-+	int i;
-+
-+	if (as->count > VIRTCHNL_MAX_NUM_ACTIONS) {
-+		dev_dbg(dev, "Invalid action numbers:0x%x for VF %d\n",
-+			as->count, vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < as->count; i++) {
-+		struct virtchnl_filter_action *action = &as->actions[i];
-+
-+		switch (action->type) {
-+		case VIRTCHNL_ACTION_DROP:
-+			dest_num++;
-+			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DROP_PKT;
-+			break;
-+		case VIRTCHNL_ACTION_QUEUE:
-+			dest_num++;
-+			input->dest_ctl = ICE_FLTR_PRGM_DESC_DEST_DIRECT_PKT_QINDEX;
-+			input->q_index = action->act_conf.queue.index;
-+			break;
-+		case VIRTCHNL_ACTION_MARK:
-+			mark_num++;
-+			input->fltr_id = action->act_conf.mark_id;
-+			input->fdid_prio = ICE_FXD_FLTR_QW1_FDID_PRI_THREE;
-+			break;
-+		default:
-+			dev_dbg(dev, "Invalid action type:0x%x for VF %d\n",
-+				action->type, vf->vf_id);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (dest_num == 0 || dest_num >= 2) {
-+		dev_dbg(dev, "Invalid destination action for VF %d\n",
-+			vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	if (mark_num >= 2) {
-+		dev_dbg(dev, "Too many mark actions for VF %d\n", vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * ice_vc_validate_fdir_fltr - validate the virtual channel filter
-  * @vf: pointer to the VF info
-@@ -611,8 +951,17 @@ static int
- ice_vc_validate_fdir_fltr(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 			  struct virtchnl_fdir_fltr_conf *conf)
- {
--	/* Todo: rule validation */
--	return -EINVAL;
-+	int ret;
-+
-+	ret = ice_vc_fdir_search_pattern(vf, fltr);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_vc_fdir_parse_pattern(vf, fltr, conf);
-+	if (ret)
-+		return ret;
-+
-+	return ice_vc_fdir_parse_action(vf, fltr, conf);
- }
+ 	switch (flow) {
++	case ICE_FLTR_PTYPE_NON_IP_L2:
++		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_ETH_NON_IP);
++		break;
+ 	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
+ 		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 |
+ 				  ICE_FLOW_SEG_HDR_IPV_OTHER);
+@@ -712,8 +732,14 @@ ice_vc_fdir_get_pattern(struct ice_vf *vf, int *len)
+ 	struct ice_hw *hw;
  
- /**
+ 	hw = &pf->hw;
+-	item = vc_fdir_pattern;
+-	*len = ARRAY_SIZE(vc_fdir_pattern);
++	if (!strncmp(hw->active_pkg_name, "ICE COMMS Package",
++		     sizeof(hw->active_pkg_name))) {
++		item = vc_fdir_pattern_comms;
++		*len = ARRAY_SIZE(vc_fdir_pattern_comms);
++	} else {
++		item = vc_fdir_pattern_os;
++		*len = ARRAY_SIZE(vc_fdir_pattern_os);
++	}
+ 
+ 	return item;
+ }
+@@ -775,10 +801,16 @@ ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
+ 		struct ipv6hdr *ip6h;
+ 		struct udphdr *udph;
+ 		struct tcphdr *tcph;
++		struct ethhdr *eth;
+ 		struct iphdr *iph;
+ 
+ 		switch (hdr->type) {
+ 		case VIRTCHNL_PROTO_HDR_ETH:
++			eth = (struct ethhdr *)hdr->buffer;
++			input->flow_type = ICE_FLTR_PTYPE_NON_IP_L2;
++
++			if (hdr->field_selector)
++				input->ext_data.ether_type = eth->h_proto;
+ 			break;
+ 		case VIRTCHNL_PROTO_HDR_IPV4:
+ 			iph = (struct iphdr *)hdr->buffer;
 -- 
 2.30.0
 
