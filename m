@@ -1,43 +1,27 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Thu, 14 Jan 2021 03:40:08 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: fix potential NULL pointer
- dereferencing
-In-Reply-To: <20210111181138.49757-1-cristian.dumitrescu@intel.com>
-References: <20210111181138.49757-1-cristian.dumitrescu@intel.com>
-Message-ID: <161059560818.8885.13113581154759603172.git-patchwork-notify@kernel.org>
+From: Cristian Dumitrescu <cristian.dumitrescu@intel.com>
+Date: Thu, 14 Jan 2021 14:33:14 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/4] i40e: small improvements on
+ XDP path
+Message-ID: <20210114143318.2171-1-cristian.dumitrescu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+This patchset introduces some small and straightforward improvements
+to the Intel i40e driver XDP path. Each improvement is fully described
+in its associated patch.
 
-This patch was applied to netdev/net.git (refs/heads/master):
+Cristian Dumitrescu (4):
+  i40e: remove unnecessary memory writes of the next to clean pointer
+  i40e: remove unnecessary cleaned_count updates
+  i40e: remove the redundant buffer info updates
+  i40: consolidate handling of XDP program actions
 
-On Mon, 11 Jan 2021 18:11:38 +0000 you wrote:
-> Currently, the function i40e_construct_skb_zc only frees the input xdp
-> buffer when the output skb is successfully built. On error, the
-> function i40e_clean_rx_irq_zc does not commit anything for the current
-> packet descriptor and simply exits the packet descriptor processing
-> loop, with the plan to restart the processing of this descriptor on
-> the next invocation. Therefore, on error the ring next-to-clean
-> pointer should not advance, the xdp i.e. *bi buffer should not be
-> freed and the current buffer info should not be invalidated by setting
-> *bi to NULL. Therefore, the *bi should only be set to NULL when the
-> function i40e_construct_skb_zc is successful, otherwise a NULL *bi
-> will be dereferenced when the work for the current descriptor is
-> eventually restarted.
-> 
-> [...]
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 149 +++++++++++----------
+ 1 file changed, 79 insertions(+), 70 deletions(-)
 
-Here is the summary with links:
-  - [net] i40e: fix potential NULL pointer dereferencing
-    https://git.kernel.org/netdev/net/c/7128c834d30e
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+-- 
+2.25.1
 
