@@ -1,71 +1,62 @@
 From: Xin Long <lucien.xin@gmail.com>
-Date: Sat, 16 Jan 2021 14:13:37 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 1/6] net: add inline function
- skb_csum_is_sctp
-In-Reply-To: <cover.1610777159.git.lucien.xin@gmail.com>
+Date: Sat, 16 Jan 2021 14:13:38 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 2/6] net: igb: use
+ skb_csum_is_sctp instead of protocol check
+In-Reply-To: <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
 References: <cover.1610777159.git.lucien.xin@gmail.com>
-Message-ID: <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
+ <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
+Message-ID: <aa69157e286b0178bf115124f4b2da254e07a291.1610777159.git.lucien.xin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is to define a inline function skb_csum_is_sctp(), and
-also replace all places where it checks if it's a SCTP CSUM skb.
-This function would be used later in many networking drivers in
-the following patches.
+Using skb_csum_is_sctp is a easier way to validate it's a SCTP
+CRC checksum offload packet, and there is no need to parse the
+packet to check its proto field, especially when it's a UDP or
+GRE encapped packet.
 
-Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+So this patch also makes igb support SCTP CRC checksum offload
+for UDP and GRE encapped packets.
+
 Signed-off-by: Xin Long <lucien.xin@gmail.com>
 ---
- drivers/net/ethernet/pensando/ionic/ionic_txrx.c | 2 +-
- include/linux/skbuff.h                           | 5 +++++
- net/core/dev.c                                   | 2 +-
- 3 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
-index ac4cd5d..162a1ff 100644
---- a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
-+++ b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
-@@ -979,7 +979,7 @@ static int ionic_tx_calc_csum(struct ionic_queue *q, struct sk_buff *skb)
- 		stats->vlan_inserted++;
- 	}
- 
--	if (skb->csum_not_inet)
-+	if (skb_csum_is_sctp(skb))
- 		stats->crc32_csum++;
- 	else
- 		stats->csum++;
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index c9568cf..46f901a 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -4621,6 +4621,11 @@ static inline void skb_reset_redirect(struct sk_buff *skb)
- #endif
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 03f78fd..8757ad0 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -5959,15 +5959,6 @@ static int igb_tso(struct igb_ring *tx_ring,
+ 	return 1;
  }
  
-+static inline bool skb_csum_is_sctp(struct sk_buff *skb)
-+{
-+	return skb->csum_not_inet;
-+}
-+
- static inline void skb_set_kcov_handle(struct sk_buff *skb,
- 				       const u64 kcov_handle)
+-static inline bool igb_ipv6_csum_is_sctp(struct sk_buff *skb)
+-{
+-	unsigned int offset = 0;
+-
+-	ipv6_find_hdr(skb, &offset, IPPROTO_SCTP, NULL, NULL);
+-
+-	return offset == skb_checksum_start_offset(skb);
+-}
+-
+ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
  {
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 0a31d4e..bbd306f 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3617,7 +3617,7 @@ static struct sk_buff *validate_xmit_vlan(struct sk_buff *skb,
- int skb_csum_hwoffload_help(struct sk_buff *skb,
- 			    const netdev_features_t features)
- {
--	if (unlikely(skb->csum_not_inet))
-+	if (unlikely(skb_csum_is_sctp(skb)))
- 		return !!(features & NETIF_F_SCTP_CRC) ? 0 :
- 			skb_crc32c_csum_help(skb);
- 
+ 	struct sk_buff *skb = first->skb;
+@@ -5990,10 +5981,7 @@ static void igb_tx_csum(struct igb_ring *tx_ring, struct igb_tx_buffer *first)
+ 		break;
+ 	case offsetof(struct sctphdr, checksum):
+ 		/* validate that this is actually an SCTP request */
+-		if (((first->protocol == htons(ETH_P_IP)) &&
+-		     (ip_hdr(skb)->protocol == IPPROTO_SCTP)) ||
+-		    ((first->protocol == htons(ETH_P_IPV6)) &&
+-		     igb_ipv6_csum_is_sctp(skb))) {
++		if (skb_csum_is_sctp(skb)) {
+ 			type_tucmd = E1000_ADVTXD_TUCMD_L4T_SCTP;
+ 			break;
+ 		}
 -- 
 2.1.0
 
