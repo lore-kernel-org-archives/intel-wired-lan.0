@@ -1,119 +1,36 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 15 Jan 2021 17:57:21 -0600
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <3b101fff85ec1c490e9a14305a999cbe@walle.cc>
-Message-ID: <20210115235721.GA1862880@bjorn-Precision-5520>
+From: Xin Long <lucien.xin@gmail.com>
+Date: Sat, 16 Jan 2021 14:13:36 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 0/6] net: support SCTP CRC csum
+ offload for tunneling packets in some drivers
+Message-ID: <cover.1610777159.git.lucien.xin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
-> Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
-> > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
-> > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
+This patchset introduces inline function skb_csum_is_sctp(), and uses it
+to validate it's a sctp CRC csum offload packet, to make SCTP CRC csum
+offload for tunneling packets supported in some HW drivers.
 
-> > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
-> > > > that overlaps another BAR, a quirk might be the right fix. But my
-> > > > guess is the device is working correctly per spec and there's
-> > > > something wrong in how firmware/Linux is assigning things.  That would
-> > > > mean we need a more generic fix that's not a quirk and not tied to the
-> > > > Intel i210.
-> > > 
-> > > Agreed, but as you already stated (and I've also found that in
-> > > the PCI spec) the Expansion ROM address decoder can be shared by
-> > > the other BARs and it shouldn't matter as long as the ExpROM BAR
-> > > is disabled, which is the case here.
-> > 
-> > My point is just that if this could theoretically affect devices
-> > other than the i210, the fix should not be an i210-specific quirk.
-> > I'll assume this is a general problem and wait for a generic PCI
-> > core solution unless it's i210-specific.
-> 
-> I guess the culprit here is that linux skips the programming of the
-> BAR because of some broken Matrox card. That should have been a
-> quirk instead, right? But I don't know if we want to change that, do
-> we? How many other cards depend on that?
+Xin Long (6):
+  net: add inline function skb_csum_is_sctp
+  net: igb: use skb_csum_is_sctp instead of protocol check
+  net: igbvf: use skb_csum_is_sctp instead of protocol check
+  net: igc: use skb_csum_is_sctp instead of protocol check
+  net: ixgbe: use skb_csum_is_sctp instead of protocol check
+  net: ixgbevf: use skb_csum_is_sctp instead of protocol check
 
-Oh, right.  There's definitely some complicated history there that
-makes me a little scared to change things.  But it's also unfortunate
-if we have to pile quirks on top of quirks.
+ drivers/net/ethernet/intel/igb/igb_main.c         | 14 +-------------
+ drivers/net/ethernet/intel/igbvf/netdev.c         | 14 +-------------
+ drivers/net/ethernet/intel/igc/igc_main.c         | 14 +-------------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 14 +-------------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 14 +-------------
+ drivers/net/ethernet/pensando/ionic/ionic_txrx.c  |  2 +-
+ include/linux/skbuff.h                            |  5 +++++
+ net/core/dev.c                                    |  2 +-
+ 8 files changed, 12 insertions(+), 67 deletions(-)
 
-> And still, how do we find out that the i210 is behaving correctly?
-> In my opinion it is clearly not. You can change the ExpROM BAR value
-> during runtime and it will start working (while keeping it
-> disabled).  Am I missing something here?
+-- 
+2.1.0
 
-I agree; if the ROM BAR is disabled, I don't think it should matter at
-all what it contains, so this does look like an i210 defect.
-
-Would you mind trying the patch below?  It should update the ROM BAR
-value even when it is disabled.  With the current pci_enable_rom()
-code that doesn't rely on the value read from the BAR, I *think* this
-should be safe even on the Matrox and similar devices.
-
-Bjorn
-
-
-commit 0ca2233eb71f ("PCI: Update ROM BAR even if disabled")
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Fri Jan 15 17:17:44 2021 -0600
-
-    PCI: Update ROM BAR even if disabled
-    
-    Test patch for i210 issue reported by Michael Walle:
-    https://lore.kernel.org/r/20201230185317.30915-1-michael at walle.cc
-
-diff --git a/drivers/pci/rom.c b/drivers/pci/rom.c
-index 8fc9a4e911e3..fc638034628c 100644
---- a/drivers/pci/rom.c
-+++ b/drivers/pci/rom.c
-@@ -35,9 +35,8 @@ int pci_enable_rom(struct pci_dev *pdev)
- 		return 0;
- 
- 	/*
--	 * Ideally pci_update_resource() would update the ROM BAR address,
--	 * and we would only set the enable bit here.  But apparently some
--	 * devices have buggy ROM BARs that read as zero when disabled.
-+	 * Some ROM BARs read as zero when disabled, so we can't simply
-+	 * read the BAR, set the enable bit, and write it back.
- 	 */
- 	pcibios_resource_to_bus(pdev->bus, &region, res);
- 	pci_read_config_dword(pdev, pdev->rom_base_reg, &rom_addr);
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 7f1acb3918d0..f69b7d179617 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -69,18 +69,10 @@ static void pci_std_update_resource(struct pci_dev *dev, int resno)
- 	if (resno < PCI_ROM_RESOURCE) {
- 		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
- 	} else if (resno == PCI_ROM_RESOURCE) {
--
--		/*
--		 * Apparently some Matrox devices have ROM BARs that read
--		 * as zero when disabled, so don't update ROM BARs unless
--		 * they're enabled.  See
--		 * https://lore.kernel.org/r/43147B3D.1030309@vc.cvut.cz/
--		 */
--		if (!(res->flags & IORESOURCE_ROM_ENABLE))
--			return;
-+		if (res->flags & IORESOURCE_ROM_ENABLE)
-+			new |= PCI_ROM_ADDRESS_ENABLE;
- 
- 		reg = dev->rom_base_reg;
--		new |= PCI_ROM_ADDRESS_ENABLE;
- 	} else
- 		return;
- 
-@@ -99,7 +91,8 @@ static void pci_std_update_resource(struct pci_dev *dev, int resno)
- 	pci_write_config_dword(dev, reg, new);
- 	pci_read_config_dword(dev, reg, &check);
- 
--	if ((new ^ check) & mask) {
-+	/* Some ROM BARs read as zero when disabled */
-+	if (resno != PCI_ROM_RESOURCE && (new ^ check) & mask) {
- 		pci_err(dev, "BAR %d: error updating (%#08x != %#08x)\n",
- 			resno, new, check);
- 	}
