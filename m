@@ -1,63 +1,35 @@
-From: Xin Long <lucien.xin@gmail.com>
-Date: Sat, 16 Jan 2021 14:13:42 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 6/6] net: ixgbevf: use
- skb_csum_is_sctp instead of protocol check
-In-Reply-To: <f58d50ef96eb1504f4a952cc75a19d21dcf85827.1610777159.git.lucien.xin@gmail.com>
-References: <cover.1610777159.git.lucien.xin@gmail.com>
- <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
- <aa69157e286b0178bf115124f4b2da254e07a291.1610777159.git.lucien.xin@gmail.com>
- <c1a1972ea509a7559a8900e1a33212d09f58f3c9.1610777159.git.lucien.xin@gmail.com>
- <7b4d84fe32d588884fcd75c2f6f84eb8cd052622.1610777159.git.lucien.xin@gmail.com>
- <f58d50ef96eb1504f4a952cc75a19d21dcf85827.1610777159.git.lucien.xin@gmail.com>
-Message-ID: <c7cd3ae7df46d579a11c277f9cb258b7955415b2.1610777159.git.lucien.xin@gmail.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 17 Jan 2021 09:31:06 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused MII_CR_SPEED
+Message-ID: <20210117073106.4102905-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Using skb_csum_is_sctp is a easier way to validate it's a SCTP CRC
-checksum offload packet, and yet it also makes ixgbevf support SCTP
-CRC checksum offload for UDP and GRE encapped packets, just as it
-does in igb driver.
+Foce PHY speed not supported for i225 devices.
+MII_CR_SPEED masks not in use in i225 device and can be removed.
 
-Signed-off-by: Xin Long <lucien.xin@gmail.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_defines.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 4061cd7..cd9d79f 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3844,15 +3844,6 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
- 	return 1;
- }
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 58fc207dc995..c5b36ec7bcff 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -442,9 +442,6 @@
+ #define MII_CR_POWER_DOWN	0x0800  /* Power down */
+ #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
+ #define MII_CR_LOOPBACK		0x4000  /* 0 = normal, 1 = loopback */
+-#define MII_CR_SPEED_1000	0x0040
+-#define MII_CR_SPEED_100	0x2000
+-#define MII_CR_SPEED_10		0x0000
  
--static inline bool ixgbevf_ipv6_csum_is_sctp(struct sk_buff *skb)
--{
--	unsigned int offset = 0;
--
--	ipv6_find_hdr(skb, &offset, IPPROTO_SCTP, NULL, NULL);
--
--	return offset == skb_checksum_start_offset(skb);
--}
--
- static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 			    struct ixgbevf_tx_buffer *first,
- 			    struct ixgbevf_ipsec_tx_data *itd)
-@@ -3873,10 +3864,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 		break;
- 	case offsetof(struct sctphdr, checksum):
- 		/* validate that this is actually an SCTP request */
--		if (((first->protocol == htons(ETH_P_IP)) &&
--		     (ip_hdr(skb)->protocol == IPPROTO_SCTP)) ||
--		    ((first->protocol == htons(ETH_P_IPV6)) &&
--		     ixgbevf_ipv6_csum_is_sctp(skb))) {
-+		if (skb_csum_is_sctp(skb)) {
- 			type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_SCTP;
- 			break;
- 		}
+ /* PHY Status Register */
+ #define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
 -- 
-2.1.0
+2.25.1
 
