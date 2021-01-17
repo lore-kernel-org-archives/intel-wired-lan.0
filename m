@@ -1,14 +1,14 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 17 Jan 2021 09:31:06 +0200
+Date: Sun, 17 Jan 2021 10:16:45 +0200
 Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused MII_CR_SPEED
-Message-ID: <20210117073106.4102905-1-sasha.neftin@intel.com>
+Message-ID: <20210117081645.4120780-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Foce PHY speed not supported for i225 devices.
+Force PHY speed not supported for i225 devices.
 MII_CR_SPEED masks not in use in i225 device and can be removed.
 
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
