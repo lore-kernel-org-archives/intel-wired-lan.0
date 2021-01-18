@@ -1,78 +1,82 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Mon, 18 Jan 2021 16:13:10 +0100
-Subject: [Intel-wired-lan] [PATCH v3 net-next 03/11] i40e: adjust
- i40e_is_non_eop
+Date: Mon, 18 Jan 2021 16:13:09 +0100
+Subject: [Intel-wired-lan] [PATCH v3 net-next 02/11] i40e: drop misleading
+ function comments
 In-Reply-To: <20210118151318.12324-1-maciej.fijalkowski@intel.com>
 References: <20210118151318.12324-1-maciej.fijalkowski@intel.com>
-Message-ID: <20210118151318.12324-4-maciej.fijalkowski@intel.com>
+Message-ID: <20210118151318.12324-3-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e_is_non_eop had a leftover comment and unused skb argument which was
-used for placing the skb onto rx_buf in case when current buffer was
-non-eop one. This is not relevant anymore as commit e72e56597ba1
-("i40e/i40evf: Moves skb from i40e_rx_buffer to i40e_ring") pulled the
-non-complete skb handling out of rx_bufs up to rx_ring.  Therefore,
-let's adjust the function arguments that i40e_is_non_eop takes.
+i40e_cleanup_headers has a statement about check against skb being
+linear or not which is not relevant anymore, so let's remove it.
 
-Furthermore, since there is already a function responsible for bumping
-the ntc, make use of that and drop that logic from i40e_is_non_eop so
-that the scope of this function is limited to what the name actually
-states.
+Same case for i40e_can_reuse_rx_page, it references things that are not
+present there anymore.
 
 Reviewed-by: Bj?rn T?pel <bjorn.topel@intel.com>
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 23 ++++++---------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 33 ++++-----------------
+ 1 file changed, 6 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f8aa68f2a7fd..7e008dbbef97 100644
+index 2574e78f7597..f8aa68f2a7fd 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2130,25 +2130,13 @@ static void i40e_put_rx_buffer(struct i40e_ring *rx_ring,
-  * i40e_is_non_eop - process handling of non-EOP buffers
-  * @rx_ring: Rx ring being processed
-  * @rx_desc: Rx descriptor for current buffer
-- * @skb: Current socket buffer containing buffer in progress
+@@ -1809,9 +1809,6 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+  * @skb: pointer to current skb being fixed
+  * @rx_desc: pointer to the EOP Rx descriptor
   *
-- * This function updates next to clean.  If the buffer is an EOP buffer
-- * this function exits returning false, otherwise it will place the
-- * sk_buff in the next buffer to be chained and return true indicating
-- * that this is in fact a non-EOP buffer.
+- * Also address the case where we are pulling data in on pages only
+- * and as such no data is present in the skb header.
+- *
+  * In addition if skb is not at least 60 bytes we need to pad it so that
+  * it is large enough to qualify as a valid Ethernet frame.
+  *
+@@ -1857,33 +1854,15 @@ static inline bool i40e_page_is_reusable(struct page *page)
+ }
+ 
+ /**
+- * i40e_can_reuse_rx_page - Determine if this page can be reused by
+- * the adapter for another receive
+- *
++ * i40e_can_reuse_rx_page - Determine if page can be reused for another Rx
+  * @rx_buffer: buffer containing the page
+  * @rx_buffer_pgcnt: buffer page refcount pre xdp_do_redirect() call
+  *
+- * If page is reusable, rx_buffer->page_offset is adjusted to point to
+- * an unused region in the page.
+- *
+- * For small pages, @truesize will be a constant value, half the size
+- * of the memory at page.  We'll attempt to alternate between high and
+- * low halves of the page, with one half ready for use by the hardware
+- * and the other half being consumed by the stack.  We use the page
+- * ref count to determine whether the stack has finished consuming the
+- * portion of this page that was passed up with a previous packet.  If
+- * the page ref count is >1, we'll assume the "other" half page is
+- * still busy, and this page cannot be reused.
+- *
+- * For larger pages, @truesize will be the actual space used by the
+- * received packet (adjusted upward to an even multiple of the cache
+- * line size).  This will advance through the page by the amount
+- * actually consumed by the received packets while there is still
+- * space for a buffer.  Each region of larger pages will be used at
+- * most once, after which the page will not be reused.
+- *
+- * In either case, if the page is reusable its refcount is increased.
 - **/
-+ * If the buffer is an EOP buffer, this function exits returning false,
-+ * otherwise return true indicating that this is in fact a non-EOP buffer.
++ * If page is reusable, we have a green light for calling i40e_reuse_rx_page,
++ * which will assign the current buffer to the buffer that next_to_alloc is
++ * pointing to; otherwise, the DMA mapping needs to be destroyed and
++ * page freed
 + */
- static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
--			    union i40e_rx_desc *rx_desc,
--			    struct sk_buff *skb)
-+			    union i40e_rx_desc *rx_desc)
+ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
+ 				   int rx_buffer_pgcnt)
  {
--	u32 ntc = rx_ring->next_to_clean + 1;
--
--	/* fetch, update, and store next to clean */
--	ntc = (ntc < rx_ring->count) ? ntc : 0;
--	rx_ring->next_to_clean = ntc;
--
--	prefetch(I40E_RX_DESC(rx_ring, ntc));
--
- 	/* if we are the last buffer then there is nothing else to do */
- #define I40E_RXD_EOF BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)
- 	if (likely(i40e_test_staterr(rx_desc, I40E_RXD_EOF)))
-@@ -2427,7 +2415,8 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		i40e_put_rx_buffer(rx_ring, rx_buffer, rx_buffer_pgcnt);
- 		cleaned_count++;
- 
--		if (i40e_is_non_eop(rx_ring, rx_desc, skb))
-+		i40e_inc_ntc(rx_ring);
-+		if (i40e_is_non_eop(rx_ring, rx_desc))
- 			continue;
- 
- 		if (i40e_cleanup_headers(rx_ring, skb, rx_desc)) {
 -- 
 2.20.1
 
