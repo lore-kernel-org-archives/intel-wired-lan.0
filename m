@@ -1,82 +1,69 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Mon, 18 Jan 2021 16:13:09 +0100
-Subject: [Intel-wired-lan] [PATCH v3 net-next 02/11] i40e: drop misleading
- function comments
+Date: Mon, 18 Jan 2021 16:13:11 +0100
+Subject: [Intel-wired-lan] [PATCH v3 net-next 04/11] ice: simplify
+ ice_run_xdp
 In-Reply-To: <20210118151318.12324-1-maciej.fijalkowski@intel.com>
 References: <20210118151318.12324-1-maciej.fijalkowski@intel.com>
-Message-ID: <20210118151318.12324-3-maciej.fijalkowski@intel.com>
+Message-ID: <20210118151318.12324-5-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e_cleanup_headers has a statement about check against skb being
-linear or not which is not relevant anymore, so let's remove it.
-
-Same case for i40e_can_reuse_rx_page, it references things that are not
-present there anymore.
+There's no need for 'result' variable, we can directly return the
+internal status based on action returned by xdp prog.
 
 Reviewed-by: Bj?rn T?pel <bjorn.topel@intel.com>
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 33 ++++-----------------
- 1 file changed, 6 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 2574e78f7597..f8aa68f2a7fd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1809,9 +1809,6 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-  * @skb: pointer to current skb being fixed
-  * @rx_desc: pointer to the EOP Rx descriptor
-  *
-- * Also address the case where we are pulling data in on pages only
-- * and as such no data is present in the skb header.
-- *
-  * In addition if skb is not at least 60 bytes we need to pad it so that
-  * it is large enough to qualify as a valid Ethernet frame.
-  *
-@@ -1857,33 +1854,15 @@ static inline bool i40e_page_is_reusable(struct page *page)
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 422f53997c02..dc1ad45eac8d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -537,22 +537,20 @@ static int
+ ice_run_xdp(struct ice_ring *rx_ring, struct xdp_buff *xdp,
+ 	    struct bpf_prog *xdp_prog)
+ {
+-	int err, result = ICE_XDP_PASS;
+ 	struct ice_ring *xdp_ring;
++	int err;
+ 	u32 act;
+ 
+ 	act = bpf_prog_run_xdp(xdp_prog, xdp);
+ 	switch (act) {
+ 	case XDP_PASS:
+-		break;
++		return ICE_XDP_PASS;
+ 	case XDP_TX:
+ 		xdp_ring = rx_ring->vsi->xdp_rings[smp_processor_id()];
+-		result = ice_xmit_xdp_buff(xdp, xdp_ring);
+-		break;
++		return ice_xmit_xdp_buff(xdp, xdp_ring);
+ 	case XDP_REDIRECT:
+ 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
+-		break;
++		return !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+@@ -560,11 +558,8 @@ ice_run_xdp(struct ice_ring *rx_ring, struct xdp_buff *xdp,
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+ 		fallthrough;
+ 	case XDP_DROP:
+-		result = ICE_XDP_CONSUMED;
+-		break;
++		return ICE_XDP_CONSUMED;
+ 	}
+-
+-	return result;
  }
  
  /**
-- * i40e_can_reuse_rx_page - Determine if this page can be reused by
-- * the adapter for another receive
-- *
-+ * i40e_can_reuse_rx_page - Determine if page can be reused for another Rx
-  * @rx_buffer: buffer containing the page
-  * @rx_buffer_pgcnt: buffer page refcount pre xdp_do_redirect() call
-  *
-- * If page is reusable, rx_buffer->page_offset is adjusted to point to
-- * an unused region in the page.
-- *
-- * For small pages, @truesize will be a constant value, half the size
-- * of the memory at page.  We'll attempt to alternate between high and
-- * low halves of the page, with one half ready for use by the hardware
-- * and the other half being consumed by the stack.  We use the page
-- * ref count to determine whether the stack has finished consuming the
-- * portion of this page that was passed up with a previous packet.  If
-- * the page ref count is >1, we'll assume the "other" half page is
-- * still busy, and this page cannot be reused.
-- *
-- * For larger pages, @truesize will be the actual space used by the
-- * received packet (adjusted upward to an even multiple of the cache
-- * line size).  This will advance through the page by the amount
-- * actually consumed by the received packets while there is still
-- * space for a buffer.  Each region of larger pages will be used at
-- * most once, after which the page will not be reused.
-- *
-- * In either case, if the page is reusable its refcount is increased.
-- **/
-+ * If page is reusable, we have a green light for calling i40e_reuse_rx_page,
-+ * which will assign the current buffer to the buffer that next_to_alloc is
-+ * pointing to; otherwise, the DMA mapping needs to be destroyed and
-+ * page freed
-+ */
- static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
- 				   int rx_buffer_pgcnt)
- {
 -- 
 2.20.1
 
