@@ -1,57 +1,89 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 19 Jan 2021 15:03:42 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/8] ethtool: Add support
- for configuring frame preemption
-In-Reply-To: <20210119005224.yqrpyr2d7xawhbtf@skbuf>
-References: <20210119004028.2809425-1-vinicius.gomes@intel.com>
- <20210119004028.2809425-2-vinicius.gomes@intel.com>
- <20210119005224.yqrpyr2d7xawhbtf@skbuf>
-Message-ID: <87v9bszfzl.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: Shannon Nelson <snelson@pensando.io>
+Date: Tue, 19 Jan 2021 15:35:14 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 1/6] net: add inline function
+ skb_csum_is_sctp
+In-Reply-To: <CAKgT0UduX4M-N1Kyo-M2=05EO_rAs2c_CDrUwWMKk2oDOgxd2Q@mail.gmail.com>
+References: <cover.1610777159.git.lucien.xin@gmail.com>
+ <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
+ <CAKgT0UduX4M-N1Kyo-M2=05EO_rAs2c_CDrUwWMKk2oDOgxd2Q@mail.gmail.com>
+Message-ID: <41658acb-6607-8b4c-d29d-f71892434e0b@pensando.io>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Vladimir,
-
-Vladimir Oltean <vladimir.oltean@nxp.com> writes:
-
-> On Mon, Jan 18, 2021 at 04:40:21PM -0800, Vinicius Costa Gomes wrote:
->> +int ethnl_set_preempt(struct sk_buff *skb, struct genl_info *info)
->> +{
->> +	struct ethnl_req_info req_info = {};
->> +	struct nlattr **tb = info->attrs;
->> +	struct ethtool_fp preempt = {};
->> +	struct net_device *dev;
->> +	bool mod = false;
->> +	int ret;
->> +
->> +	ret = ethnl_parse_header_dev_get(&req_info,
->> +					 tb[ETHTOOL_A_PREEMPT_HEADER],
->> +					 genl_info_net(info), info->extack,
->> +					 true);
->> +	if (ret < 0)
->> +		return ret;
->> +	dev = req_info.dev;
->> +	ret = -EOPNOTSUPP;
->> +	if (!dev->ethtool_ops->get_preempt ||
->> +	    !dev->ethtool_ops->set_preempt)
->> +		goto out_dev;
->> +
->> +	rtnl_lock();
+On 1/19/21 2:23 PM, Alexander Duyck wrote:
+> On Fri, Jan 15, 2021 at 10:13 PM Xin Long <lucien.xin@gmail.com> wrote:
+>> This patch is to define a inline function skb_csum_is_sctp(), and
+>> also replace all places where it checks if it's a SCTP CSUM skb.
+>> This function would be used later in many networking drivers in
+>> the following patches.
+>>
+>> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+>> Signed-off-by: Xin Long <lucien.xin@gmail.com>
+> One minor nit. If you had to resubmit this I might move the ionic
+> driver code into a separate patch. However It can probably be accepted
+> as is.
 >
-> I'm a bit of a noob when it comes to ethtool (netlink or otherwise).
-> Why do you take the rtnl_mutex when updating some purely hardware
-> values, what netdev state is there to protect? Can this get->modify->set
-> sequence be serialized using other locking mechanism than rtnl_mutex?
+> Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 
-From what I understand, configuration changes to netdevice should be
-protected by rtnl_mutex, for example, to avoid the device disappearing
-while the configuration is in progress. I don't think there's any other
-finer grained lock that can be used here.
+Alex has a good point - if you repost, please split out the ionic bits 
+to a separate patch.
+
+Either way, for ionic:
+Acked-by: Shannon Nelson <snelson@pensando.io>
 
 
-Cheers,
--- 
-Vinicius
+>> ---
+>>   drivers/net/ethernet/pensando/ionic/ionic_txrx.c | 2 +-
+>>   include/linux/skbuff.h                           | 5 +++++
+>>   net/core/dev.c                                   | 2 +-
+>>   3 files changed, 7 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+>> index ac4cd5d..162a1ff 100644
+>> --- a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+>> +++ b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+>> @@ -979,7 +979,7 @@ static int ionic_tx_calc_csum(struct ionic_queue *q, struct sk_buff *skb)
+>>                  stats->vlan_inserted++;
+>>          }
+>>
+>> -       if (skb->csum_not_inet)
+>> +       if (skb_csum_is_sctp(skb))
+>>                  stats->crc32_csum++;
+>>          else
+>>                  stats->csum++;
+>> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+>> index c9568cf..46f901a 100644
+>> --- a/include/linux/skbuff.h
+>> +++ b/include/linux/skbuff.h
+>> @@ -4621,6 +4621,11 @@ static inline void skb_reset_redirect(struct sk_buff *skb)
+>>   #endif
+>>   }
+>>
+>> +static inline bool skb_csum_is_sctp(struct sk_buff *skb)
+>> +{
+>> +       return skb->csum_not_inet;
+>> +}
+>> +
+>>   static inline void skb_set_kcov_handle(struct sk_buff *skb,
+>>                                         const u64 kcov_handle)
+>>   {
+>> diff --git a/net/core/dev.c b/net/core/dev.c
+>> index 0a31d4e..bbd306f 100644
+>> --- a/net/core/dev.c
+>> +++ b/net/core/dev.c
+>> @@ -3617,7 +3617,7 @@ static struct sk_buff *validate_xmit_vlan(struct sk_buff *skb,
+>>   int skb_csum_hwoffload_help(struct sk_buff *skb,
+>>                              const netdev_features_t features)
+>>   {
+>> -       if (unlikely(skb->csum_not_inet))
+>> +       if (unlikely(skb_csum_is_sctp(skb)))
+>>                  return !!(features & NETIF_F_SCTP_CRC) ? 0 :
+>>                          skb_crc32c_csum_help(skb);
+>>
+>> --
+>> 2.1.0
+>>
+
