@@ -1,66 +1,59 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Tue, 19 Jan 2021 17:17:15 +0100
-Subject: [Intel-wired-lan] ixgbe limits on core count
-In-Reply-To: <7F3D0A12-F9FE-4386-9D35-D1C89BD84227@gmail.com>
-References: <7F3D0A12-F9FE-4386-9D35-D1C89BD84227@gmail.com>
-Message-ID: <20210119161715.GA22141@ranger.igk.intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 19 Jan 2021 09:05:39 -0800
+Subject: [Intel-wired-lan] [PATCH 2/2] ethernet: igb: e1000_phy: Check
+ for ops.force_speed_duplex existence
+In-Reply-To: <19eab284-b7b0-7053-1aa7-5fedcee04263@molgen.mpg.de>
+References: <20201102231307.13021-1-pmenzel@molgen.mpg.de>
+ <20201102231307.13021-3-pmenzel@molgen.mpg.de>
+ <20201102161943.343586b1@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+ <36ce1f2e-843c-4995-8bb2-2c2676f01b9d@molgen.mpg.de>
+ <20201103103940.2ed27fa2@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+ <c1ad26c6-a4a6-d161-1b18-476b380f4e58@molgen.mpg.de>
+ <X/ShBVXp32Y+Jeds@kroah.com>
+ <19eab284-b7b0-7053-1aa7-5fedcee04263@molgen.mpg.de>
+Message-ID: <20210119090539.22c3d29e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jan 18, 2021 at 04:19:23AM -0700, Brian Topping wrote:
-> Hello experts! 
+On Tue, 19 Jan 2021 07:55:19 +0100 Paul Menzel wrote:
+> Am 05.01.21 um 18:25 schrieb Greg KH:
+> > On Tue, Jan 05, 2021 at 06:16:59PM +0100, Paul Menzel wrote:  
+> >> Am 03.11.20 um 19:39 schrieb Jakub Kicinski:  
+> >>> On Tue, 3 Nov 2020 08:35:09 +0100 Paul Menzel wrote:  
+> >>>> According to *Developer's Certificate of Origin 1.1* [3], it?s my
+> >>>> understanding, that it is *not* required. The items (a), (b), and (c)
+> >>>> are connected by an *or*.
+> >>>>  
+> >>>>>           (b) The contribution is based upon previous work that, to the best
+> >>>>>               of my knowledge, is covered under an appropriate open source
+> >>>>>               license and I have the right under that license to submit that
+> >>>>>               work with modifications, whether created in whole or in part
+> >>>>>               by me, under the same open source license (unless I am
+> >>>>>               permitted to submit under a different license), as indicated
+> >>>>>               in the file; or  
+> >>>
+> >>> Ack, but then you need to put yourself as the author, because it's
+> >>> you certifying that the code falls under (b).
+> >>>
+> >>> At least that's my understanding.  
+> >>
+> >> Greg, can you please clarify, if it?s fine, if I upstream a patch authored
+> >> by somebody else and distributed under the GPLv2? I put them as the author
+> >> and signed it off.  
+> > 
+> > You can't add someone else's signed-off-by, but you can add your own and
+> > keep them as the author, has happened lots of time in the past.
+> > 
+> > Or, you can make the From: line be from you if the original author
+> > doesn't want their name/email in the changelog, we've done that as well,
+> > both are fine.  
 > 
-> I?m setting up a machine with two E5-2696 v3 CPUs using XDP on kernel
-> 5.10.6-051006-generic and running into the constraint at
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c#n10136
-> <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c#n10136>. 
+> Greg, thank you for the clarification.
 > 
+> Jakub, with that out of the way, can you please take patch 2/2?
 
-Hi Brian,
-we're aware of this issue, thanks for bringing this up. We plan to address
-this in some near future.
-
-> Any advice what the most practical long term solution is?
-> 
-> Short term, I can dial back the number of usable cores. I haven?t dug
-> into the bits to understand if this constraint is based on hardware
-> limits on the card or this was a choice that was made when processors
-> had fewer cores.
-
-ixgbe has only 128 Tx HW queues AFAIK, so currently we have a check
-against cpu count and do not load XDP for case when machine has more than
-64 cpus as XDP needs to have a dedicated HW Tx queue so that it is fully
-operational.
-
-I think that solution (or workaround, not sure how to relate to that) is
-picking what is left in terms of HW Tx resources and assigning it to XDP.
-
-If sending happens on a cpu nr 70:
-
-cpu_nr = 70
-cpu_cnt = 72;
-xdp_tx_cnt = 56;
-
-then we pick (cpu_nr % xdp_tx_cnt) + cpu_cnt = (70 % 56) + 72 = 86 HW Tx
-queue. At the same time, same queue could be accessed from cpu 14 if I am
-not mistaken, so this brings the need for locking. We would be detecting
-such configuration at the time when XDP prog is being loaded onto
-interface and picking that 'fallback' mode. For < 64 cpu machines, current
-scheme will be picked so we wouldn't be hurting performance via unneeded
-lock acquiring for such systems.
-
-Maciej
-
-> 
-> Thanks kindly!
-> 
-> Brian
-
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
+Please repost the patches, if you know how please add a lore link to
+this posting, thanks!
