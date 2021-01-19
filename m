@@ -1,59 +1,81 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 19 Jan 2021 09:05:39 -0800
-Subject: [Intel-wired-lan] [PATCH 2/2] ethernet: igb: e1000_phy: Check
- for ops.force_speed_duplex existence
-In-Reply-To: <19eab284-b7b0-7053-1aa7-5fedcee04263@molgen.mpg.de>
-References: <20201102231307.13021-1-pmenzel@molgen.mpg.de>
- <20201102231307.13021-3-pmenzel@molgen.mpg.de>
- <20201102161943.343586b1@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
- <36ce1f2e-843c-4995-8bb2-2c2676f01b9d@molgen.mpg.de>
- <20201103103940.2ed27fa2@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
- <c1ad26c6-a4a6-d161-1b18-476b380f4e58@molgen.mpg.de>
- <X/ShBVXp32Y+Jeds@kroah.com>
- <19eab284-b7b0-7053-1aa7-5fedcee04263@molgen.mpg.de>
-Message-ID: <20210119090539.22c3d29e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 19 Jan 2021 14:23:31 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 1/6] net: add inline function
+ skb_csum_is_sctp
+In-Reply-To: <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
+References: <cover.1610777159.git.lucien.xin@gmail.com>
+ <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
+Message-ID: <CAKgT0UduX4M-N1Kyo-M2=05EO_rAs2c_CDrUwWMKk2oDOgxd2Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 19 Jan 2021 07:55:19 +0100 Paul Menzel wrote:
-> Am 05.01.21 um 18:25 schrieb Greg KH:
-> > On Tue, Jan 05, 2021 at 06:16:59PM +0100, Paul Menzel wrote:  
-> >> Am 03.11.20 um 19:39 schrieb Jakub Kicinski:  
-> >>> On Tue, 3 Nov 2020 08:35:09 +0100 Paul Menzel wrote:  
-> >>>> According to *Developer's Certificate of Origin 1.1* [3], it?s my
-> >>>> understanding, that it is *not* required. The items (a), (b), and (c)
-> >>>> are connected by an *or*.
-> >>>>  
-> >>>>>           (b) The contribution is based upon previous work that, to the best
-> >>>>>               of my knowledge, is covered under an appropriate open source
-> >>>>>               license and I have the right under that license to submit that
-> >>>>>               work with modifications, whether created in whole or in part
-> >>>>>               by me, under the same open source license (unless I am
-> >>>>>               permitted to submit under a different license), as indicated
-> >>>>>               in the file; or  
-> >>>
-> >>> Ack, but then you need to put yourself as the author, because it's
-> >>> you certifying that the code falls under (b).
-> >>>
-> >>> At least that's my understanding.  
-> >>
-> >> Greg, can you please clarify, if it?s fine, if I upstream a patch authored
-> >> by somebody else and distributed under the GPLv2? I put them as the author
-> >> and signed it off.  
-> > 
-> > You can't add someone else's signed-off-by, but you can add your own and
-> > keep them as the author, has happened lots of time in the past.
-> > 
-> > Or, you can make the From: line be from you if the original author
-> > doesn't want their name/email in the changelog, we've done that as well,
-> > both are fine.  
-> 
-> Greg, thank you for the clarification.
-> 
-> Jakub, with that out of the way, can you please take patch 2/2?
+On Fri, Jan 15, 2021 at 10:13 PM Xin Long <lucien.xin@gmail.com> wrote:
+>
+> This patch is to define a inline function skb_csum_is_sctp(), and
+> also replace all places where it checks if it's a SCTP CSUM skb.
+> This function would be used later in many networking drivers in
+> the following patches.
+>
+> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Xin Long <lucien.xin@gmail.com>
 
-Please repost the patches, if you know how please add a lore link to
-this posting, thanks!
+One minor nit. If you had to resubmit this I might move the ionic
+driver code into a separate patch. However It can probably be accepted
+as is.
+
+Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+
+> ---
+>  drivers/net/ethernet/pensando/ionic/ionic_txrx.c | 2 +-
+>  include/linux/skbuff.h                           | 5 +++++
+>  net/core/dev.c                                   | 2 +-
+>  3 files changed, 7 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+> index ac4cd5d..162a1ff 100644
+> --- a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+> +++ b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
+> @@ -979,7 +979,7 @@ static int ionic_tx_calc_csum(struct ionic_queue *q, struct sk_buff *skb)
+>                 stats->vlan_inserted++;
+>         }
+>
+> -       if (skb->csum_not_inet)
+> +       if (skb_csum_is_sctp(skb))
+>                 stats->crc32_csum++;
+>         else
+>                 stats->csum++;
+> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+> index c9568cf..46f901a 100644
+> --- a/include/linux/skbuff.h
+> +++ b/include/linux/skbuff.h
+> @@ -4621,6 +4621,11 @@ static inline void skb_reset_redirect(struct sk_buff *skb)
+>  #endif
+>  }
+>
+> +static inline bool skb_csum_is_sctp(struct sk_buff *skb)
+> +{
+> +       return skb->csum_not_inet;
+> +}
+> +
+>  static inline void skb_set_kcov_handle(struct sk_buff *skb,
+>                                        const u64 kcov_handle)
+>  {
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 0a31d4e..bbd306f 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -3617,7 +3617,7 @@ static struct sk_buff *validate_xmit_vlan(struct sk_buff *skb,
+>  int skb_csum_hwoffload_help(struct sk_buff *skb,
+>                             const netdev_features_t features)
+>  {
+> -       if (unlikely(skb->csum_not_inet))
+> +       if (unlikely(skb_csum_is_sctp(skb)))
+>                 return !!(features & NETIF_F_SCTP_CRC) ? 0 :
+>                         skb_crc32c_csum_help(skb);
+>
+> --
+> 2.1.0
+>
