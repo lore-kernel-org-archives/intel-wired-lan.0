@@ -1,89 +1,52 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Tue, 19 Jan 2021 15:35:14 -0800
-Subject: [Intel-wired-lan] [PATCH net-next 1/6] net: add inline function
- skb_csum_is_sctp
-In-Reply-To: <CAKgT0UduX4M-N1Kyo-M2=05EO_rAs2c_CDrUwWMKk2oDOgxd2Q@mail.gmail.com>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Tue, 19 Jan 2021 23:40:09 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/6] net: support SCTP CRC
+ csum offload for tunneling packets in some drivers
+In-Reply-To: <cover.1610777159.git.lucien.xin@gmail.com>
 References: <cover.1610777159.git.lucien.xin@gmail.com>
- <34c9f5b8c31610687925d9db1f151d5bc87deba7.1610777159.git.lucien.xin@gmail.com>
- <CAKgT0UduX4M-N1Kyo-M2=05EO_rAs2c_CDrUwWMKk2oDOgxd2Q@mail.gmail.com>
-Message-ID: <41658acb-6607-8b4c-d29d-f71892434e0b@pensando.io>
+Message-ID: <161109960900.4067.12876636834749313206.git-patchwork-notify@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/19/21 2:23 PM, Alexander Duyck wrote:
-> On Fri, Jan 15, 2021 at 10:13 PM Xin Long <lucien.xin@gmail.com> wrote:
->> This patch is to define a inline function skb_csum_is_sctp(), and
->> also replace all places where it checks if it's a SCTP CSUM skb.
->> This function would be used later in many networking drivers in
->> the following patches.
->>
->> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
->> Signed-off-by: Xin Long <lucien.xin@gmail.com>
-> One minor nit. If you had to resubmit this I might move the ionic
-> driver code into a separate patch. However It can probably be accepted
-> as is.
->
-> Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+Hello:
 
-Alex has a good point - if you repost, please split out the ionic bits 
-to a separate patch.
+This series was applied to netdev/net-next.git (refs/heads/master):
 
-Either way, for ionic:
-Acked-by: Shannon Nelson <snelson@pensando.io>
+On Sat, 16 Jan 2021 14:13:36 +0800 you wrote:
+> This patchset introduces inline function skb_csum_is_sctp(), and uses it
+> to validate it's a sctp CRC csum offload packet, to make SCTP CRC csum
+> offload for tunneling packets supported in some HW drivers.
+> 
+> Xin Long (6):
+>   net: add inline function skb_csum_is_sctp
+>   net: igb: use skb_csum_is_sctp instead of protocol check
+>   net: igbvf: use skb_csum_is_sctp instead of protocol check
+>   net: igc: use skb_csum_is_sctp instead of protocol check
+>   net: ixgbe: use skb_csum_is_sctp instead of protocol check
+>   net: ixgbevf: use skb_csum_is_sctp instead of protocol check
+> 
+> [...]
 
+Here is the summary with links:
+  - [net-next,1/6] net: add inline function skb_csum_is_sctp
+    https://git.kernel.org/netdev/net-next/c/fa8211701043
+  - [net-next,2/6] net: igb: use skb_csum_is_sctp instead of protocol check
+    https://git.kernel.org/netdev/net-next/c/8bcf02035bd5
+  - [net-next,3/6] net: igbvf: use skb_csum_is_sctp instead of protocol check
+    https://git.kernel.org/netdev/net-next/c/d2de44443caf
+  - [net-next,4/6] net: igc: use skb_csum_is_sctp instead of protocol check
+    https://git.kernel.org/netdev/net-next/c/609d29a9d242
+  - [net-next,5/6] net: ixgbe: use skb_csum_is_sctp instead of protocol check
+    https://git.kernel.org/netdev/net-next/c/f8c4b01d3a68
+  - [net-next,6/6] net: ixgbevf: use skb_csum_is_sctp instead of protocol check
+    https://git.kernel.org/netdev/net-next/c/fc186d0a4ef8
 
->> ---
->>   drivers/net/ethernet/pensando/ionic/ionic_txrx.c | 2 +-
->>   include/linux/skbuff.h                           | 5 +++++
->>   net/core/dev.c                                   | 2 +-
->>   3 files changed, 7 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
->> index ac4cd5d..162a1ff 100644
->> --- a/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
->> +++ b/drivers/net/ethernet/pensando/ionic/ionic_txrx.c
->> @@ -979,7 +979,7 @@ static int ionic_tx_calc_csum(struct ionic_queue *q, struct sk_buff *skb)
->>                  stats->vlan_inserted++;
->>          }
->>
->> -       if (skb->csum_not_inet)
->> +       if (skb_csum_is_sctp(skb))
->>                  stats->crc32_csum++;
->>          else
->>                  stats->csum++;
->> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
->> index c9568cf..46f901a 100644
->> --- a/include/linux/skbuff.h
->> +++ b/include/linux/skbuff.h
->> @@ -4621,6 +4621,11 @@ static inline void skb_reset_redirect(struct sk_buff *skb)
->>   #endif
->>   }
->>
->> +static inline bool skb_csum_is_sctp(struct sk_buff *skb)
->> +{
->> +       return skb->csum_not_inet;
->> +}
->> +
->>   static inline void skb_set_kcov_handle(struct sk_buff *skb,
->>                                         const u64 kcov_handle)
->>   {
->> diff --git a/net/core/dev.c b/net/core/dev.c
->> index 0a31d4e..bbd306f 100644
->> --- a/net/core/dev.c
->> +++ b/net/core/dev.c
->> @@ -3617,7 +3617,7 @@ static struct sk_buff *validate_xmit_vlan(struct sk_buff *skb,
->>   int skb_csum_hwoffload_help(struct sk_buff *skb,
->>                              const netdev_features_t features)
->>   {
->> -       if (unlikely(skb->csum_not_inet))
->> +       if (unlikely(skb_csum_is_sctp(skb)))
->>                  return !!(features & NETIF_F_SCTP_CRC) ? 0 :
->>                          skb_crc32c_csum_help(skb);
->>
->> --
->> 2.1.0
->>
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
