@@ -1,184 +1,117 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 20 Jan 2021 21:42:41 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 9f23de418f7e999cc48be915c514db9c54166c0e
-Message-ID: <60083351.ngYOQ01tuO+RUDp3%lkp@intel.com>
+From: Jiapeng Zhong <abaci-bugfix@linux.alibaba.com>
+Date: Wed, 20 Jan 2021 14:22:58 +0800
+Subject: [Intel-wired-lan] [PATCH] igc: Assign boolean values to a bool
+ variable
+Message-ID: <1611123778-104125-1-git-send-email-abaci-bugfix@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 9f23de418f7e999cc48be915c514db9c54166c0e  Merge branch 'net-support-sctp-crc-csum-offload-for-tunneling-packets-in-some-drivers'
+Fix the following coccicheck warnings:
 
-elapsed time: 841m
+./drivers/net/ethernet/intel/igc/igc_main.c:4961:2-14: WARNING:
+Assignment of 0/1 to bool variable.
 
-configs tested: 155
-configs skipped: 2
+./drivers/net/ethernet/intel/igc/igc_main.c:4955:2-14: WARNING:
+Assignment of 0/1 to bool variable.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+./drivers/net/ethernet/intel/igc/igc_main.c:4933:1-13: WARNING:
+Assignment of 0/1 to bool variable.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                         ap325rxa_defconfig
-c6x                        evmc6678_defconfig
-arc                 nsimosci_hs_smp_defconfig
-mips                          rm200_defconfig
-arm                         s5pv210_defconfig
-sh                              ul2_defconfig
-mips                           gcw0_defconfig
-openrisc                            defconfig
-sh                        sh7763rdp_defconfig
-powerpc                      bamboo_defconfig
-sh                           sh2007_defconfig
-sh                          polaris_defconfig
-powerpc                      pasemi_defconfig
-sparc64                             defconfig
-arc                           tb10x_defconfig
-m68k                        m5272c3_defconfig
-c6x                        evmc6474_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                 mpc8313_rdb_defconfig
-riscv                            alldefconfig
-m68k                            q40_defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-arm                        neponset_defconfig
-sh                   rts7751r2dplus_defconfig
-powerpc                       holly_defconfig
-h8300                    h8300h-sim_defconfig
-mips                malta_kvm_guest_defconfig
-m68k                         amcore_defconfig
-mips                  decstation_64_defconfig
-ia64                            zx1_defconfig
-sh                           se7721_defconfig
-xtensa                         virt_defconfig
-sh                         apsh4a3a_defconfig
-m68k                       m5249evb_defconfig
-mips                      loongson3_defconfig
-powerpc                     sbc8548_defconfig
-i386                                defconfig
-c6x                        evmc6472_defconfig
-powerpc                 mpc837x_mds_defconfig
-mips                         cobalt_defconfig
-sh                           se7206_defconfig
-powerpc                 mpc8540_ads_defconfig
-arc                    vdk_hs38_smp_defconfig
-mips                        maltaup_defconfig
-powerpc                       ppc64_defconfig
-powerpc                        cell_defconfig
-arm                           corgi_defconfig
-m68k                        m5407c3_defconfig
-m68k                          amiga_defconfig
-powerpc                      cm5200_defconfig
-arm                       omap2plus_defconfig
-powerpc                     pq2fads_defconfig
-powerpc                       eiger_defconfig
-arc                              alldefconfig
-mips                         tb0287_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                       maple_defconfig
-parisc                generic-64bit_defconfig
-arm                            hisi_defconfig
-mips                     loongson1b_defconfig
-mips                           jazz_defconfig
-mips                        omega2p_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                      tqm8xx_defconfig
-arm                            lart_defconfig
-mips                     cu1000-neo_defconfig
-arm                       cns3420vb_defconfig
-um                             i386_defconfig
-xtensa                           alldefconfig
-riscv                    nommu_k210_defconfig
-parisc                generic-32bit_defconfig
-arm                             ezx_defconfig
-arm                          pxa168_defconfig
-riscv                          rv32_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arm                        spear6xx_defconfig
-powerpc                     skiroot_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210120
-i386                 randconfig-a002-20210120
-i386                 randconfig-a004-20210120
-i386                 randconfig-a006-20210120
-i386                 randconfig-a005-20210120
-i386                 randconfig-a003-20210120
-x86_64               randconfig-a012-20210120
-x86_64               randconfig-a015-20210120
-x86_64               randconfig-a016-20210120
-x86_64               randconfig-a011-20210120
-x86_64               randconfig-a013-20210120
-x86_64               randconfig-a014-20210120
-i386                 randconfig-a013-20210120
-i386                 randconfig-a011-20210120
-i386                 randconfig-a012-20210120
-i386                 randconfig-a014-20210120
-i386                 randconfig-a015-20210120
-i386                 randconfig-a016-20210120
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+./drivers/net/ethernet/intel/igc/igc_main.c:4592:1-24: WARNING:
+Assignment of 0/1 to bool variable.
 
-clang tested configs:
-x86_64               randconfig-a002-20210120
-x86_64               randconfig-a003-20210120
-x86_64               randconfig-a001-20210120
-x86_64               randconfig-a005-20210120
-x86_64               randconfig-a006-20210120
-x86_64               randconfig-a004-20210120
-x86_64               randconfig-a015-20210119
-x86_64               randconfig-a013-20210119
-x86_64               randconfig-a012-20210119
-x86_64               randconfig-a016-20210119
-x86_64               randconfig-a011-20210119
-x86_64               randconfig-a014-20210119
+./drivers/net/ethernet/intel/igc/igc_main.c:4438:2-25: WARNING:
+Assignment of 0/1 to bool variable.
 
+./drivers/net/ethernet/intel/igc/igc_main.c:4396:2-25: WARNING:
+Assignment of 0/1 to bool variable.
+
+./drivers/net/ethernet/intel/igc/igc_main.c:4018:2-25: WARNING:
+Assignment of 0/1 to bool variable.
+
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Jiapeng Zhong <abaci-bugfix@linux.alibaba.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc_main.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index afd6a62..6abb331 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3597,7 +3597,7 @@ void igc_up(struct igc_adapter *adapter)
+ 	netif_tx_start_all_queues(adapter->netdev);
+ 
+ 	/* start the watchdog. */
+-	hw->mac.get_link_status = 1;
++	hw->mac.get_link_status = true;
+ 	schedule_work(&adapter->watchdog_task);
+ }
+ 
+@@ -4016,7 +4016,7 @@ static irqreturn_t igc_msix_other(int irq, void *data)
+ 	}
+ 
+ 	if (icr & IGC_ICR_LSC) {
+-		hw->mac.get_link_status = 1;
++		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__IGC_DOWN, &adapter->state))
+ 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+@@ -4394,7 +4394,7 @@ static irqreturn_t igc_intr_msi(int irq, void *data)
+ 	}
+ 
+ 	if (icr & (IGC_ICR_RXSEQ | IGC_ICR_LSC)) {
+-		hw->mac.get_link_status = 1;
++		hw->mac.get_link_status = true;
+ 		if (!test_bit(__IGC_DOWN, &adapter->state))
+ 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+ 	}
+@@ -4436,7 +4436,7 @@ static irqreturn_t igc_intr(int irq, void *data)
+ 	}
+ 
+ 	if (icr & (IGC_ICR_RXSEQ | IGC_ICR_LSC)) {
+-		hw->mac.get_link_status = 1;
++		hw->mac.get_link_status = true;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__IGC_DOWN, &adapter->state))
+ 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+@@ -4590,7 +4590,7 @@ static int __igc_open(struct net_device *netdev, bool resuming)
+ 	netif_tx_start_all_queues(netdev);
+ 
+ 	/* start the watchdog. */
+-	hw->mac.get_link_status = 1;
++	hw->mac.get_link_status = true;
+ 	schedule_work(&adapter->watchdog_task);
+ 
+ 	return IGC_SUCCESS;
+@@ -4931,7 +4931,7 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+ {
+ 	struct igc_mac_info *mac = &adapter->hw.mac;
+ 
+-	mac->autoneg = 0;
++	mac->autoneg = false;
+ 
+ 	/* Make sure dplx is at most 1 bit and lsb of speed is not set
+ 	 * for the switch() below to work
+@@ -4953,13 +4953,13 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+ 		mac->forced_speed_duplex = ADVERTISE_100_FULL;
+ 		break;
+ 	case SPEED_1000 + DUPLEX_FULL:
+-		mac->autoneg = 1;
++		mac->autoneg = true;
+ 		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
+ 		break;
+ 	case SPEED_1000 + DUPLEX_HALF: /* not supported */
+ 		goto err_inval;
+ 	case SPEED_2500 + DUPLEX_FULL:
+-		mac->autoneg = 1;
++		mac->autoneg = true;
+ 		adapter->hw.phy.autoneg_advertised = ADVERTISE_2500_FULL;
+ 		break;
+ 	case SPEED_2500 + DUPLEX_HALF: /* not supported */
+-- 
+1.8.3.1
+
