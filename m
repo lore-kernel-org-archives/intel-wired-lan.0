@@ -1,117 +1,36 @@
-From: Jiapeng Zhong <abaci-bugfix@linux.alibaba.com>
-Date: Wed, 20 Jan 2021 14:22:58 +0800
-Subject: [Intel-wired-lan] [PATCH] igc: Assign boolean values to a bool
- variable
-Message-ID: <1611123778-104125-1-git-send-email-abaci-bugfix@linux.alibaba.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 20 Jan 2021 22:17:05 +0000
+Subject: [Intel-wired-lan] [PATCH net v4 1/2] i40e: Revert "i40e: don't
+ report link up for a VF who hasn't enabled queues"
+In-Reply-To: <DM6PR11MB2876AD6ADFBAB24F8BA8D631E5A29@DM6PR11MB2876.namprd11.prod.outlook.com>
+References: <20210118193454.275037-1-arkadiusz.kubalewski@intel.com>
+ <20210118193454.275037-2-arkadiusz.kubalewski@intel.com>
+ <a1480517830b533099bf5ce90e09a9fd5c00504e.camel@intel.com>
+ <DM6PR11MB2876AD6ADFBAB24F8BA8D631E5A29@DM6PR11MB2876.namprd11.prod.outlook.com>
+Message-ID: <b7c9cd467a21cd531e3d22c6388c1f95d582bb38.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the following coccicheck warnings:
+On Wed, 2021-01-20 at 10:17 +0000, Loktionov, Aleksandr wrote:
+> Good day Anthony
+> 
+> This is the first time we push a revert commit. /*we thought that CL
+> should be enough, and provided standard revert commit message from
+> GIT*/
+> Can you link us to example of good revert commit message?
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4961:2-14: WARNING:
-Assignment of 0/1 to bool variable.
+Here are a few links to some reverts to Intel drivers:
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4955:2-14: WARNING:
-Assignment of 0/1 to bool variable.
+https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-
+queue.git/commit/?id=6cecf02e77ab9bf97e9252f9fcb8f0738a6de12c
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4933:1-13: WARNING:
-Assignment of 0/1 to bool variable.
+https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=caff422ea81e144842bc44bab408d85ac449377b
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4592:1-24: WARNING:
-Assignment of 0/1 to bool variable.
+https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=0a92892c69bd01b1a9481ef49587f60e97c64042
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4438:2-25: WARNING:
-Assignment of 0/1 to bool variable.
 
-./drivers/net/ethernet/intel/igc/igc_main.c:4396:2-25: WARNING:
-Assignment of 0/1 to bool variable.
-
-./drivers/net/ethernet/intel/igc/igc_main.c:4018:2-25: WARNING:
-Assignment of 0/1 to bool variable.
-
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Signed-off-by: Jiapeng Zhong <abaci-bugfix@linux.alibaba.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index afd6a62..6abb331 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3597,7 +3597,7 @@ void igc_up(struct igc_adapter *adapter)
- 	netif_tx_start_all_queues(adapter->netdev);
- 
- 	/* start the watchdog. */
--	hw->mac.get_link_status = 1;
-+	hw->mac.get_link_status = true;
- 	schedule_work(&adapter->watchdog_task);
- }
- 
-@@ -4016,7 +4016,7 @@ static irqreturn_t igc_msix_other(int irq, void *data)
- 	}
- 
- 	if (icr & IGC_ICR_LSC) {
--		hw->mac.get_link_status = 1;
-+		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__IGC_DOWN, &adapter->state))
- 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
-@@ -4394,7 +4394,7 @@ static irqreturn_t igc_intr_msi(int irq, void *data)
- 	}
- 
- 	if (icr & (IGC_ICR_RXSEQ | IGC_ICR_LSC)) {
--		hw->mac.get_link_status = 1;
-+		hw->mac.get_link_status = true;
- 		if (!test_bit(__IGC_DOWN, &adapter->state))
- 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
- 	}
-@@ -4436,7 +4436,7 @@ static irqreturn_t igc_intr(int irq, void *data)
- 	}
- 
- 	if (icr & (IGC_ICR_RXSEQ | IGC_ICR_LSC)) {
--		hw->mac.get_link_status = 1;
-+		hw->mac.get_link_status = true;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__IGC_DOWN, &adapter->state))
- 			mod_timer(&adapter->watchdog_timer, jiffies + 1);
-@@ -4590,7 +4590,7 @@ static int __igc_open(struct net_device *netdev, bool resuming)
- 	netif_tx_start_all_queues(netdev);
- 
- 	/* start the watchdog. */
--	hw->mac.get_link_status = 1;
-+	hw->mac.get_link_status = true;
- 	schedule_work(&adapter->watchdog_task);
- 
- 	return IGC_SUCCESS;
-@@ -4931,7 +4931,7 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
- {
- 	struct igc_mac_info *mac = &adapter->hw.mac;
- 
--	mac->autoneg = 0;
-+	mac->autoneg = false;
- 
- 	/* Make sure dplx is at most 1 bit and lsb of speed is not set
- 	 * for the switch() below to work
-@@ -4953,13 +4953,13 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
- 		mac->forced_speed_duplex = ADVERTISE_100_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_FULL:
--		mac->autoneg = 1;
-+		mac->autoneg = true;
- 		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_HALF: /* not supported */
- 		goto err_inval;
- 	case SPEED_2500 + DUPLEX_FULL:
--		mac->autoneg = 1;
-+		mac->autoneg = true;
- 		adapter->hw.phy.autoneg_advertised = ADVERTISE_2500_FULL;
- 		break;
- 	case SPEED_2500 + DUPLEX_HALF: /* not supported */
--- 
-1.8.3.1
-
+Thanks,
+Tony
