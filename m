@@ -1,50 +1,144 @@
-From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Date: Wed, 20 Jan 2021 10:17:46 +0000
-Subject: [Intel-wired-lan] [PATCH net v4 1/2] i40e: Revert "i40e: don't
- report link up for a VF who hasn't enabled queues"
-In-Reply-To: <a1480517830b533099bf5ce90e09a9fd5c00504e.camel@intel.com>
-References: <20210118193454.275037-1-arkadiusz.kubalewski@intel.com>
- <20210118193454.275037-2-arkadiusz.kubalewski@intel.com>
- <a1480517830b533099bf5ce90e09a9fd5c00504e.camel@intel.com>
-Message-ID: <DM6PR11MB2876AD6ADFBAB24F8BA8D631E5A29@DM6PR11MB2876.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 20 Jan 2021 21:42:43 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 373c2fab031161fb33e74f61aafbc8d0e75407a1
+Message-ID: <60083353.u7UXyajfj180JfBE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Good day Anthony
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 373c2fab031161fb33e74f61aafbc8d0e75407a1  i40: consolidate handling of XDP program actions
 
-This is the first time we push a revert commit. /*we thought that CL should be enough, and provided standard revert commit message from GIT*/
-Can you link us to example of good revert commit message?
+elapsed time: 721m
 
-Thank you
-Alex
-ND ITP Linux 40G base driver TL 
+configs tested: 115
+configs skipped: 2
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                        sh7763rdp_defconfig
+powerpc                      bamboo_defconfig
+sh                           sh2007_defconfig
+mips                           gcw0_defconfig
+openrisc                            defconfig
+sh                          polaris_defconfig
+powerpc                      pasemi_defconfig
+sparc64                             defconfig
+arc                           tb10x_defconfig
+m68k                        m5272c3_defconfig
+c6x                        evmc6474_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                       holly_defconfig
+arm                         s5pv210_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                         virt_defconfig
+sh                         apsh4a3a_defconfig
+m68k                       m5249evb_defconfig
+mips                      loongson3_defconfig
+arm                       omap2plus_defconfig
+powerpc                     pq2fads_defconfig
+powerpc                       eiger_defconfig
+arc                              alldefconfig
+mips                     loongson1b_defconfig
+mips                           jazz_defconfig
+mips                        omega2p_defconfig
+powerpc                 canyonlands_defconfig
+riscv                    nommu_k210_defconfig
+parisc                generic-32bit_defconfig
+arm                             ezx_defconfig
+arm                          pxa168_defconfig
+riscv                          rv32_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arm                        spear6xx_defconfig
+powerpc                     skiroot_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210120
+i386                 randconfig-a002-20210120
+i386                 randconfig-a004-20210120
+i386                 randconfig-a006-20210120
+i386                 randconfig-a005-20210120
+i386                 randconfig-a003-20210120
+x86_64               randconfig-a012-20210120
+x86_64               randconfig-a015-20210120
+x86_64               randconfig-a016-20210120
+x86_64               randconfig-a011-20210120
+x86_64               randconfig-a013-20210120
+x86_64               randconfig-a014-20210120
+i386                 randconfig-a013-20210120
+i386                 randconfig-a011-20210120
+i386                 randconfig-a012-20210120
+i386                 randconfig-a014-20210120
+i386                 randconfig-a015-20210120
+i386                 randconfig-a016-20210120
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+riscv                    nommu_virt_defconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
------Original Message-----
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com> 
-Sent: Wednesday, January 20, 2021 2:30 AM
-To: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH net v4 1/2] i40e: Revert "i40e: don't report link up for a VF who hasn't enabled queues"
+clang tested configs:
+x86_64               randconfig-a002-20210120
+x86_64               randconfig-a003-20210120
+x86_64               randconfig-a001-20210120
+x86_64               randconfig-a005-20210120
+x86_64               randconfig-a006-20210120
+x86_64               randconfig-a004-20210120
+x86_64               randconfig-a015-20210119
+x86_64               randconfig-a013-20210119
+x86_64               randconfig-a012-20210119
+x86_64               randconfig-a016-20210119
+x86_64               randconfig-a011-20210119
+x86_64               randconfig-a014-20210119
 
-On Mon, 2021-01-18 at 19:34 +0000, Arkadiusz Kubalewski wrote:
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> 
-> This reverts commit 2ad1274fa35ace5c6360762ba48d33b63da2396c
-
-Can you provide more info on why we are reverting? Some of the information from the cover letter would probably be useful here.
-
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> ---
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
