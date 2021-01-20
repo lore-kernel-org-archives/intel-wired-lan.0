@@ -1,26 +1,79 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 20 Jan 2021 01:29:40 +0000
-Subject: [Intel-wired-lan] [PATCH net v4 1/2] i40e: Revert "i40e: don't
- report link up for a VF who hasn't enabled queues"
-In-Reply-To: <20210118193454.275037-2-arkadiusz.kubalewski@intel.com>
-References: <20210118193454.275037-1-arkadiusz.kubalewski@intel.com>
- <20210118193454.275037-2-arkadiusz.kubalewski@intel.com>
-Message-ID: <a1480517830b533099bf5ce90e09a9fd5c00504e.camel@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 19 Jan 2021 18:17:12 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v2 1/8] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20210119004028.2809425-2-vinicius.gomes@intel.com>
+References: <20210119004028.2809425-1-vinicius.gomes@intel.com>
+ <20210119004028.2809425-2-vinicius.gomes@intel.com>
+Message-ID: <20210119181712.18f0ee24@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-01-18 at 19:34 +0000, Arkadiusz Kubalewski wrote:
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> 
-> This reverts commit 2ad1274fa35ace5c6360762ba48d33b63da2396c
+On Mon, 18 Jan 2021 16:40:21 -0800 Vinicius Costa Gomes wrote:
+> +  ====================================  ======  ==========================
+> +  ``ETHTOOL_A_CHANNELS_HEADER``         nested  request header
 
-Can you provide more info on why we are reverting? Some of the
-information from the cover letter would probably be useful here.
+ETHTOOL_A_PREEMPT_HEADER
 
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> ---
+> +  ====================================  ======  ==========================
+> +
+> +Kernel response contents:
+> +
+> +  =====================================  ======  ==========================
+> +  ``ETHTOOL_A_CHANNELS_HEADER``          nested  reply header
 
+here as well
+
+> +  ``ETHTOOL_A_PREEMPT_ENABLED``          u8      frame preemption enabled
+> +  ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE``    u32     Min additional frag size
+> +  =====================================  ======  ==========================
+> +
+> +``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE`` configures the minimum non-final
+> +fragment size that the receiver device supports.
+> +
+> +PREEMPT_SET
+> +============
+> +
+> +Sets frame preemption parameters.
+> +
+> +Request contents:
+> +
+> +  =====================================  ======  ==========================
+> +  ``ETHTOOL_A_CHANNELS_HEADER``          nested  reply header
+
+and here
+
+> +  ``ETHTOOL_A_PREEMPT_ENABLED``          u8      frame preemption enabled
+> +  ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE``    u32     Min additional frag size
+> +  =====================================  ======  ==========================
+
+> +struct netlink_ext_ack;
+
+Let's move it all the way to the top, right after header includes, so
+we don't have to move it again.
+
+> +/**
+> + * Convert from a Frame Preemption Additional Fragment size in bytes
+> + * to a multiplier. The multiplier is defined as:
+> + *	"A 2-bit integer value used to indicate the minimum size of
+> + *	non-final fragments supported by the receiver on the given port
+> + *	associated with the local System. This value is expressed in units
+> + *	of 64 octets of additional fragment length."
+> + *	Equivalent to `30.14.1.7 aMACMergeAddFragSize` from the IEEE 802.3-2018
+> + *	standard.
+
+Please double check the correct format for kdoc:
+
+https://www.kernel.org/doc/html/latest/doc-guide/kernel-doc.html
+
+This comment should also be next to the definition of the function, 
+not in the header.
+
+> + * @frag_size: minimum non-final fragment size in bytes
+> + *
+> + * Returns the multiplier.
+> + */
+> +u8 ethtool_frag_size_to_mult(u32 frag_size);
