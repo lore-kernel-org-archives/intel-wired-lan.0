@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 20 Jan 2021 21:42:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 373c2fab031161fb33e74f61aafbc8d0e75407a1
-Message-ID: <60083353.u7UXyajfj180JfBE%lkp@intel.com>
+Date: Wed, 20 Jan 2021 21:42:41 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 9f23de418f7e999cc48be915c514db9c54166c0e
+Message-ID: <60083351.ngYOQ01tuO+RUDp3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 373c2fab031161fb33e74f61aafbc8d0e75407a1  i40: consolidate handling of XDP program actions
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 9f23de418f7e999cc48be915c514db9c54166c0e  Merge branch 'net-support-sctp-crc-csum-offload-for-tunneling-packets-in-some-drivers'
 
-elapsed time: 721m
+elapsed time: 841m
 
-configs tested: 115
+configs tested: 155
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,11 +26,17 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
+sh                         ap325rxa_defconfig
+c6x                        evmc6678_defconfig
+arc                 nsimosci_hs_smp_defconfig
+mips                          rm200_defconfig
+arm                         s5pv210_defconfig
+sh                              ul2_defconfig
+mips                           gcw0_defconfig
+openrisc                            defconfig
 sh                        sh7763rdp_defconfig
 powerpc                      bamboo_defconfig
 sh                           sh2007_defconfig
-mips                           gcw0_defconfig
-openrisc                            defconfig
 sh                          polaris_defconfig
 powerpc                      pasemi_defconfig
 sparc64                             defconfig
@@ -38,21 +44,58 @@ arc                           tb10x_defconfig
 m68k                        m5272c3_defconfig
 c6x                        evmc6474_defconfig
 powerpc                      mgcoge_defconfig
+powerpc                 mpc8313_rdb_defconfig
+riscv                            alldefconfig
+m68k                            q40_defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+arm                        neponset_defconfig
+sh                   rts7751r2dplus_defconfig
 powerpc                       holly_defconfig
-arm                         s5pv210_defconfig
 h8300                    h8300h-sim_defconfig
+mips                malta_kvm_guest_defconfig
+m68k                         amcore_defconfig
+mips                  decstation_64_defconfig
+ia64                            zx1_defconfig
+sh                           se7721_defconfig
 xtensa                         virt_defconfig
 sh                         apsh4a3a_defconfig
 m68k                       m5249evb_defconfig
 mips                      loongson3_defconfig
+powerpc                     sbc8548_defconfig
+i386                                defconfig
+c6x                        evmc6472_defconfig
+powerpc                 mpc837x_mds_defconfig
+mips                         cobalt_defconfig
+sh                           se7206_defconfig
+powerpc                 mpc8540_ads_defconfig
+arc                    vdk_hs38_smp_defconfig
+mips                        maltaup_defconfig
+powerpc                       ppc64_defconfig
+powerpc                        cell_defconfig
+arm                           corgi_defconfig
+m68k                        m5407c3_defconfig
+m68k                          amiga_defconfig
+powerpc                      cm5200_defconfig
 arm                       omap2plus_defconfig
 powerpc                     pq2fads_defconfig
 powerpc                       eiger_defconfig
 arc                              alldefconfig
+mips                         tb0287_defconfig
+arm                       aspeed_g4_defconfig
+powerpc                       maple_defconfig
+parisc                generic-64bit_defconfig
+arm                            hisi_defconfig
 mips                     loongson1b_defconfig
 mips                           jazz_defconfig
 mips                        omega2p_defconfig
 powerpc                 canyonlands_defconfig
+powerpc                      tqm8xx_defconfig
+arm                            lart_defconfig
+mips                     cu1000-neo_defconfig
+arm                       cns3420vb_defconfig
+um                             i386_defconfig
+xtensa                           alldefconfig
 riscv                    nommu_k210_defconfig
 parisc                generic-32bit_defconfig
 arm                             ezx_defconfig
@@ -72,9 +115,7 @@ arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
 nds32                               defconfig
-nios2                            allyesconfig
 csky                                defconfig
-alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
@@ -88,7 +129,6 @@ i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                               tinyconfig
-i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
@@ -113,10 +153,10 @@ i386                 randconfig-a014-20210120
 i386                 randconfig-a015-20210120
 i386                 randconfig-a016-20210120
 riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                            allmodconfig
-riscv                    nommu_virt_defconfig
 x86_64                                   rhel
 x86_64                           allyesconfig
 x86_64                    rhel-7.6-kselftests
