@@ -1,52 +1,64 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Tue, 19 Jan 2021 23:40:09 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 0/6] net: support SCTP CRC
- csum offload for tunneling packets in some drivers
-In-Reply-To: <cover.1610777159.git.lucien.xin@gmail.com>
-References: <cover.1610777159.git.lucien.xin@gmail.com>
-Message-ID: <161109960900.4067.12876636834749313206.git-patchwork-notify@kernel.org>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 20 Jan 2021 01:25:04 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: Log error for
+ oversized MTU on device
+In-Reply-To: <20210114161706.9224-1-eryk.roch.rybak@intel.com>
+References: <20210114161706.9224-1-eryk.roch.rybak@intel.com>
+Message-ID: <2d2bb2958990986810e419119649dbf6a6606446.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
-
-This series was applied to netdev/net-next.git (refs/heads/master):
-
-On Sat, 16 Jan 2021 14:13:36 +0800 you wrote:
-> This patchset introduces inline function skb_csum_is_sctp(), and uses it
-> to validate it's a sctp CRC csum offload packet, to make SCTP CRC csum
-> offload for tunneling packets supported in some HW drivers.
+On Thu, 2021-01-14 at 16:17 +0000, Eryk Rybak wrote:
+> When attempting to link XDP prog with MTU larger than supported,
+> user is not informed why XDP linking fails. Adding proper
+> error message: "MTU too large to enable XDP".
+> Due to the lack of support for non-static variables in netlinks
+> extended ACK feature, additional information has been added to dmesg
+> to better inform about invalid MTU setting.
 > 
-> Xin Long (6):
->   net: add inline function skb_csum_is_sctp
->   net: igb: use skb_csum_is_sctp instead of protocol check
->   net: igbvf: use skb_csum_is_sctp instead of protocol check
->   net: igc: use skb_csum_is_sctp instead of protocol check
->   net: ixgbe: use skb_csum_is_sctp instead of protocol check
->   net: ixgbevf: use skb_csum_is_sctp instead of protocol check
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+> ---
+> v2: add dmesg trace, change commit message
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
 > 
-> [...]
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 2a7e116..0ea04cb 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -12933,9 +12933,10 @@ static netdev_features_t
+> i40e_features_check(struct sk_buff *skb,
+>   * i40e_xdp_setup - add/remove an XDP program
+>   * @vsi: VSI to changed
+>   * @prog: XDP program
+> + * @extack: netlink extended ack
+>   **/
+> -static int i40e_xdp_setup(struct i40e_vsi *vsi,
+> -			  struct bpf_prog *prog)
+> +static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog
+> *prog,
+> +			  struct netlink_ext_ack *extack)
+>  {
+>  	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN +
+> VLAN_HLEN;
+>  	struct i40e_pf *pf = vsi->back;
+> @@ -12944,8 +12945,12 @@ static int i40e_xdp_setup(struct i40e_vsi
+> *vsi,
+>  	int i;
+>  
+>  	/* Don't allow frames that span over multiple buffers */
+> -	if (frame_size > vsi->rx_buf_len)
+> +	if (frame_size > vsi->rx_buf_len) {
+> +		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable
+> XDP");
+> +		dev_info(&pf->pdev->dev,
+> +			 "MTU of %u bytes is too large to enable XDP
+> (maximum: %u bytes)\n", vsi->netdev->mtu, vsi->rx_buf_len);
 
-Here is the summary with links:
-  - [net-next,1/6] net: add inline function skb_csum_is_sctp
-    https://git.kernel.org/netdev/net-next/c/fa8211701043
-  - [net-next,2/6] net: igb: use skb_csum_is_sctp instead of protocol check
-    https://git.kernel.org/netdev/net-next/c/8bcf02035bd5
-  - [net-next,3/6] net: igbvf: use skb_csum_is_sctp instead of protocol check
-    https://git.kernel.org/netdev/net-next/c/d2de44443caf
-  - [net-next,4/6] net: igc: use skb_csum_is_sctp instead of protocol check
-    https://git.kernel.org/netdev/net-next/c/609d29a9d242
-  - [net-next,5/6] net: ixgbe: use skb_csum_is_sctp instead of protocol check
-    https://git.kernel.org/netdev/net-next/c/f8c4b01d3a68
-  - [net-next,6/6] net: ixgbevf: use skb_csum_is_sctp instead of protocol check
-    https://git.kernel.org/netdev/net-next/c/fc186d0a4ef8
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+This is over 100 char, I've already fixed it up though so no need to
+resend.
