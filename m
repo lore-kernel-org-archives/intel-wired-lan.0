@@ -1,162 +1,55 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 21 Jan 2021 13:54:23 -0800
-Subject: [Intel-wired-lan] [RESEND PATCH net-queue v2] igb: avoid premature
- Rx buffer reuse
-Message-ID: <20210121215423.3599429-1-anthony.l.nguyen@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Thu, 21 Jan 2021 15:17:14 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/8] taprio: Add support
+ for frame preemption offload
+In-Reply-To: <20210119182133.038fbfc3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210119004028.2809425-1-vinicius.gomes@intel.com>
+ <20210119004028.2809425-3-vinicius.gomes@intel.com>
+ <20210119182133.038fbfc3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <878s8lyj5x.fsf@vcostago-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Li RongQing <lirongqing@baidu.com>
+Jakub Kicinski <kuba@kernel.org> writes:
 
-Igb needs a similar fix as commit 75aab4e10ae6a ("i40e: avoid
-premature Rx buffer reuse")
+> On Mon, 18 Jan 2021 16:40:22 -0800 Vinicius Costa Gomes wrote:
+>> Adds a way to configure which traffic classes are marked as
+>> preemptible and which are marked as express.
+>> 
+>> Even if frame preemption is not a "real" offload, because it can't be
+>> executed purely in software, having this information near where the
+>> mapping of traffic classes to queues is specified, makes it,
+>> hopefully, easier to use.
+>> 
+>> taprio will receive the information of which traffic classes are
+>> marked as express/preemptible, and when offloading frame preemption to
+>> the driver will convert the information, so the driver receives which
+>> queues are marked as express/preemptible.
+>> 
+>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>
+>> @@ -1286,13 +1289,15 @@ static int taprio_disable_offload(struct net_device *dev,
+>>  	offload->enable = 0;
+>>  
+>>  	err = ops->ndo_setup_tc(dev, TC_SETUP_QDISC_TAPRIO, offload);
+>> -	if (err < 0) {
+>> +	if (err < 0)
+>> +		NL_SET_ERR_MSG(extack,
+>> +			       "Device failed to disable offload");
+>> +
+>> +	err = ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT, &preempt);
+>> +	if (err < 0)
+>>  		NL_SET_ERR_MSG(extack,
+>>  			       "Device failed to disable offload");
+>
+> This was meant to say something else?
 
-The page recycle code, incorrectly, relied on that a page fragment
-could not be freed inside xdp_do_redirect(). This assumption leads to
-that page fragments that are used by the stack/XDP redirect can be
-reused and overwritten.
+Yeah, better to say which offload failed to be disabled. Will fix.
 
-To avoid this, store the page count prior invoking xdp_do_redirect().
 
-Longer explanation:
-
-Intel NICs have a recycle mechanism. The main idea is that a page is
-split into two parts. One part is owned by the driver, one part might
-be owned by someone else, such as the stack.
-
-t0: Page is allocated, and put on the Rx ring
-              +---------------
-used by NIC ->| upper buffer
-(rx_buffer)   +---------------
-              | lower buffer
-              +---------------
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX
-
-t1: Buffer is received, and passed to the stack (e.g.)
-              +---------------
-              | upper buff (skb)
-              +---------------
-used by NIC ->| lower buffer
-(rx_buffer)   +---------------
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX - 1
-
-t2: Buffer is received, and redirected
-              +---------------
-              | upper buff (skb)
-              +---------------
-used by NIC ->| lower buffer
-(rx_buffer)   +---------------
-
-Now, prior calling xdp_do_redirect():
-  page count  == USHRT_MAX
-  rx_buffer->pagecnt_bias == USHRT_MAX - 2
-
-This means that buffer *cannot* be flipped/reused, because the skb is
-still using it.
-
-The problem arises when xdp_do_redirect() actually frees the
-segment. Then we get:
-  page count  == USHRT_MAX - 1
-  rx_buffer->pagecnt_bias == USHRT_MAX - 2
-
-From a recycle perspective, the buffer can be flipped and reused,
-which means that the skb data area is passed to the Rx HW ring!
-
-To work around this, the page count is stored prior calling
-xdp_do_redirect().
-
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 57818953e289..8ec17a754db7 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8238,7 +8238,8 @@ static inline bool igb_page_is_reserved(struct page *page)
- 	return (page_to_nid(page) != numa_mem_id()) || page_is_pfmemalloc(page);
- }
- 
--static bool igb_can_reuse_rx_page(struct igb_rx_buffer *rx_buffer)
-+static bool igb_can_reuse_rx_page(struct igb_rx_buffer *rx_buffer,
-+				  int rx_buf_pgcnt)
- {
- 	unsigned int pagecnt_bias = rx_buffer->pagecnt_bias;
- 	struct page *page = rx_buffer->page;
-@@ -8249,7 +8250,7 @@ static bool igb_can_reuse_rx_page(struct igb_rx_buffer *rx_buffer)
- 
- #if (PAGE_SIZE < 8192)
- 	/* if we are only owner of page we can reuse it */
--	if (unlikely((page_ref_count(page) - pagecnt_bias) > 1))
-+	if (unlikely((rx_buf_pgcnt - pagecnt_bias) > 1))
- 		return false;
- #else
- #define IGB_LAST_OFFSET \
-@@ -8638,11 +8639,17 @@ static unsigned int igb_rx_offset(struct igb_ring *rx_ring)
- }
- 
- static struct igb_rx_buffer *igb_get_rx_buffer(struct igb_ring *rx_ring,
--					       const unsigned int size)
-+					       const unsigned int size, int *rx_buf_pgcnt)
- {
- 	struct igb_rx_buffer *rx_buffer;
- 
- 	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
-+	*rx_buf_pgcnt =
-+#if (PAGE_SIZE < 8192)
-+		page_count(rx_buffer->page);
-+#else
-+		0;
-+#endif
- 	prefetchw(rx_buffer->page);
- 
- 	/* we are reusing so sync this buffer for CPU use */
-@@ -8658,9 +8665,9 @@ static struct igb_rx_buffer *igb_get_rx_buffer(struct igb_ring *rx_ring,
- }
- 
- static void igb_put_rx_buffer(struct igb_ring *rx_ring,
--			      struct igb_rx_buffer *rx_buffer)
-+			      struct igb_rx_buffer *rx_buffer, int rx_buf_pgcnt)
- {
--	if (igb_can_reuse_rx_page(rx_buffer)) {
-+	if (igb_can_reuse_rx_page(rx_buffer, rx_buf_pgcnt)) {
- 		/* hand second half of page back to the ring */
- 		igb_reuse_rx_page(rx_ring, rx_buffer);
- 	} else {
-@@ -8687,6 +8694,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	u16 cleaned_count = igb_desc_unused(rx_ring);
- 	unsigned int xdp_xmit = 0;
- 	struct xdp_buff xdp;
-+	int rx_buf_pgcnt;
- 
- 	xdp.rxq = &rx_ring->xdp_rxq;
- 
-@@ -8717,7 +8725,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		 */
- 		dma_rmb();
- 
--		rx_buffer = igb_get_rx_buffer(rx_ring, size);
-+		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
- 
- 		/* retrieve a buffer from the ring */
- 		if (!skb) {
-@@ -8760,7 +8768,7 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 			break;
- 		}
- 
--		igb_put_rx_buffer(rx_ring, rx_buffer);
-+		igb_put_rx_buffer(rx_ring, rx_buffer, rx_buf_pgcnt);
- 		cleaned_count++;
- 
- 		/* fetch next buffer in frame if non-eop */
+Cheers,
 -- 
-2.26.2
-
+Vinicius
