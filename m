@@ -1,107 +1,117 @@
 From: Eryk Rybak <eryk.roch.rybak@intel.com>
-Date: Thu, 21 Jan 2021 16:06:05 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] iavf: Fix asynchronous tasks
- during driver remove
-Message-ID: <20210121160605.86278-1-eryk.roch.rybak@intel.com>
+Date: Thu, 21 Jan 2021 16:17:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: Fix correct max_pkt_size
+ on VF RX queue
+Message-ID: <20210121161722.1875-1-eryk.roch.rybak@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Although rare, is possible for unexpected driver watchdog or Admin
-Queue tasks to run during the execution of iavf_remove function.
-Then, is not possible to obtain the standard __IAVF_IN_CRITICAL_TASK
-lock and difficult to ensure that the driver state stays consistent
-during the full removal process.
+Setting VLAN port increasing RX queue max_pkt_size
+by 4 bytes to take VLAN tag into account.
+Trigger the VF reset when setting port VLAN for
+VF to renegotiate its capabilities and reinitialize.
 
-Fully stops all asynchronous tasks in the beginning of iavf_remove,
-and uses a single-threaded flow to shut down the driver.
-
-Fixes: fdd4044ffdc8("iavf: Remove timer for work triggering, use delaying work instead")
-Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+Fixes: ba4e003d29c1("i40e: don't hold spinlock while resetting VF")
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 29 ++++++++++++++++-----
- 1 file changed, 23 insertions(+), 6 deletions(-)
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 53 ++++---------------
+ 1 file changed, 9 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 21a354e..84430a3 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1903,6 +1903,12 @@ static void iavf_watchdog_task(struct work_struct *work)
- 	struct iavf_hw *hw = &adapter->hw;
- 	u32 reg_val;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 7efc61a..4a4be04 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -621,14 +621,13 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
+ 				    u16 vsi_queue_id,
+ 				    struct virtchnl_rxq_info *info)
+ {
++	u16 pf_queue_id = i40e_vc_get_pf_queue_id(vf, vsi_id, vsi_queue_id);
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
++	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
+ 	struct i40e_hmc_obj_rxq rx_ctx;
+-	u16 pf_queue_id;
+ 	int ret = 0;
  
-+	/* If the driver is in the process of being removed then don't run or
-+	 * reschedule the watchdog task.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return;
-+
- 	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section))
- 		goto restart_watchdog;
+-	pf_queue_id = i40e_vc_get_pf_queue_id(vf, vsi_id, vsi_queue_id);
+-
+ 	/* clear the context structure first */
+ 	memset(&rx_ctx, 0, sizeof(struct i40e_hmc_obj_rxq));
  
-@@ -2283,6 +2289,12 @@ static void iavf_adminq_task(struct work_struct *work)
- 	u32 val, oldval;
- 	u16 pending;
- 
-+	/* If the driver is in the process of being removed then return
-+	 * immediately and don't re-enable the Admin Queue interrupt.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return;
-+
- 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
- 		goto out;
- 
-@@ -3261,6 +3273,13 @@ static int iavf_close(struct net_device *netdev)
- 
- 	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- 
-+	/* If the interface is closing as part of driver removal it doesn't
-+	 * wait. The VF resources will be reinitialized when the hardware is
-+	 * reset.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return 0;
-+
- 	/* We explicitly don't free resources here because the hardware is
- 	 * still active and can DMA into memory. Resources are cleared in
- 	 * iavf_virtchnl_completion() after we get confirmation from the PF
-@@ -3869,11 +3888,14 @@ static void iavf_remove(struct pci_dev *pdev)
- 	struct iavf_cloud_filter *cf, *cftmp;
- 	struct iavf_hw *hw = &adapter->hw;
- 	int err;
--	/* Indicate we are in remove and not to run reset_task */
-+	/* Indicate that program driver is remove task and not
-+	 * to run/schedule any driver tasks
-+	 */
- 	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
- 	cancel_delayed_work_sync(&adapter->init_task);
- 	cancel_work_sync(&adapter->reset_task);
- 	cancel_delayed_work_sync(&adapter->client_task);
-+	iavf_misc_irq_disable(adapter);
- 	if (adapter->netdev_registered) {
- 		unregister_netdev(netdev);
- 		adapter->netdev_registered = false;
-@@ -3898,15 +3920,10 @@ static void iavf_remove(struct pci_dev *pdev)
+@@ -666,6 +665,10 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
  	}
- 	iavf_free_all_tx_resources(adapter);
- 	iavf_free_all_rx_resources(adapter);
--	iavf_misc_irq_disable(adapter);
- 	iavf_free_misc_irq(adapter);
- 	iavf_reset_interrupt_capability(adapter);
- 	iavf_free_q_vectors(adapter);
+ 	rx_ctx.rxmax = info->max_pkt_size;
  
--	cancel_delayed_work_sync(&adapter->watchdog_task);
--
--	cancel_work_sync(&adapter->adminq_task);
--
- 	iavf_free_rss(adapter);
++	/* if port VLAN is configured increase the max packet size */
++	if (vsi->info.pvid)
++		rx_ctx.rxmax += VLAN_HLEN;
++
+ 	/* enable 32bytes desc always */
+ 	rx_ctx.dsize = 1;
  
- 	if (hw->aq.asq.count)
+@@ -4118,34 +4121,6 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	return ret;
+ }
+ 
+-/**
+- * i40e_vsi_has_vlans - True if VSI has configured VLANs
+- * @vsi: pointer to the vsi
+- *
+- * Check if a VSI has configured any VLANs. False if we have a port VLAN or if
+- * we have no configured VLANs. Do not call while holding the
+- * mac_filter_hash_lock.
+- */
+-static bool i40e_vsi_has_vlans(struct i40e_vsi *vsi)
+-{
+-	bool have_vlans;
+-
+-	/* If we have a port VLAN, then the VSI cannot have any VLANs
+-	 * configured, as all MAC/VLAN filters will be assigned to the PVID.
+-	 */
+-	if (vsi->info.pvid)
+-		return false;
+-
+-	/* Since we don't have a PVID, we know that if the device is in VLAN
+-	 * mode it must be because of a VLAN filter configured on this VSI.
+-	 */
+-	spin_lock_bh(&vsi->mac_filter_hash_lock);
+-	have_vlans = i40e_is_vsi_in_vlan(vsi);
+-	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-
+-	return have_vlans;
+-}
+-
+ /**
+  * i40e_ndo_set_vf_port_vlan
+  * @netdev: network interface device structure
+@@ -4202,19 +4177,9 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
+ 		/* duplicate request, so just return success */
+ 		goto error_pvid;
+ 
+-	if (i40e_vsi_has_vlans(vsi)) {
+-		dev_err(&pf->pdev->dev,
+-			"VF %d has already configured VLAN filters and the administrator is requesting a port VLAN override.\nPlease unload and reload the VF driver for this change to take effect.\n",
+-			vf_id);
+-		/* Administrator Error - knock the VF offline until he does
+-		 * the right thing by reconfiguring his network correctly
+-		 * and then reloading the VF driver.
+-		 */
+-		i40e_vc_disable_vf(vf);
+-		/* During reset the VF got a new VSI, so refresh the pointer. */
+-		vsi = pf->vsi[vf->lan_vsi_idx];
+-	}
+-
++	i40e_vc_disable_vf(vf);
++	/* During reset the VF got a new VSI, so refresh a pointer. */
++	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	/* Locked once because multiple functions below iterate list */
+ 	spin_lock_bh(&vsi->mac_filter_hash_lock);
+ 
 
 base-commit: 53959a962308c53a02a89dab13e42c3b69f8c51c
 -- 
