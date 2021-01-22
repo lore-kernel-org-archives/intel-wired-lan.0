@@ -1,65 +1,34 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 22 Jan 2021 09:54:06 -0800
-Subject: [Intel-wired-lan] [PATCH net v2] ixgbe: add NULL pointer check
- before calling xdp_rxq_info_reg
-In-Reply-To: <1611322105-30688-1-git-send-email-wangyunjian@huawei.com>
-References: <1611322105-30688-1-git-send-email-wangyunjian@huawei.com>
-Message-ID: <CAKgT0UcpQpGLCdRbaEzyb4Q4gC9gmefg4bMFcgrQoRwy6UJvrQ@mail.gmail.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Fri, 22 Jan 2021 18:33:35 +0000
+Subject: [Intel-wired-lan] [PATCH net 1/2] ice: Don't allow more
+ channels than LAN MSI-X available
+In-Reply-To: <20210121183806.23030-1-brett.creeley@intel.com>
+References: <20210121183806.23030-1-brett.creeley@intel.com>
+Message-ID: <CO1PR11MB510587057BC9603577D272CBFAA09@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 22, 2021 at 5:29 AM wangyunjian <wangyunjian@huawei.com> wrote:
->
-> From: Yunjian Wang <wangyunjian@huawei.com>
->
-> The rx_ring->q_vector could be NULL, so it needs to be checked before
-> calling xdp_rxq_info_reg.
->
-> Fixes: b02e5a0ebb172 ("xsk: Propagate napi_id to XDP socket Rx path")
-> Addresses-Coverity: ("Dereference after null check")
-> Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Brett Creeley
+Sent: Thursday, January 21, 2021 10:38 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH net 1/2] ice: Don't allow more channels than LAN MSI-X available
 
-This is kind of a big escape for the driver. From what I can tell it
-looks like the "ethtool -t" test now causes a NULL pointer
-dereference.
+Currently users could create more channels than LAN MSI-X available.
+This is happening because there is no check against pf->num_lan_msix when checking the max allowed channels and will cause performance issues if multiple Tx and Rx queues are tied to a single MSI-X. Fix this by not allowing more channels than LAN MSI-X available in pf->num_lan_msix.
 
-As far as the patch itself it looks good to me. This should probably
-be pushed for any of the other Intel drivers that follow a similar
-model as I suspect they were exhibit the same symptom with "ethtool
--t" triggering a NULL pointer dereference.
+Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 41427302332c..aebebd2102da 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
 
-> ---
-> v2:
->   * fix commit log
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 6cbbe09ce8a0..7b76b3f448f7 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -6586,8 +6586,9 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
->         rx_ring->next_to_use = 0;
->
->         /* XDP RX-queue info */
-> -       if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-> -                            rx_ring->queue_index, rx_ring->q_vector->napi.napi_id) < 0)
-> +       if (rx_ring->q_vector && xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
-> +                                                 rx_ring->queue_index,
-> +                                                 rx_ring->q_vector->napi.napi_id) < 0)
->                 goto err;
->
->         rx_ring->xdp_prog = adapter->xdp_prog;
-> --
-> 2.23.0
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
