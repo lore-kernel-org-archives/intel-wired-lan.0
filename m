@@ -1,28 +1,42 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Thu, 21 Jan 2021 15:18:56 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v2 6/8] igc: Add support for
- tuning frame preemption via ethtool
-In-Reply-To: <20210119182352.17635829@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20210119004028.2809425-1-vinicius.gomes@intel.com>
- <20210119004028.2809425-7-vinicius.gomes@intel.com>
- <20210119182352.17635829@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <87v9bpx4in.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: wangyunjian <wangyunjian@huawei.com>
+Date: Fri, 22 Jan 2021 19:23:55 +0800
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: add NULL pointer check before
+ calling xdp_rxq_info_reg
+Message-ID: <1611314635-25592-1-git-send-email-wangyunjian@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jakub Kicinski <kuba@kernel.org> writes:
+From: Yunjian Wang <wangyunjian@huawei.com>
 
-> On Mon, 18 Jan 2021 16:40:26 -0800 Vinicius Costa Gomes wrote:
->> +		NL_SET_ERR_MSG(extack, "Invalid value for add-frag-size");
->
-> NL_SET_ERR_MSG_MOD
+The rx_ring->q_vector could be NULL, so it need to be checked before
+calling xdp_rxq_info_reg.
 
-Will fix. Thanks.
+Fixes: b02e5a0ebb172 ("xsk: Propagate napi_id to XDP socket Rx path")
+Addresses-Coverity: ("Dereference after null check")
+Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-
-Cheers,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 6cbbe09ce8a0..7b76b3f448f7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6586,8 +6586,9 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
+ 	rx_ring->next_to_use = 0;
+ 
+ 	/* XDP RX-queue info */
+-	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
+-			     rx_ring->queue_index, rx_ring->q_vector->napi.napi_id) < 0)
++	if (rx_ring->q_vector && xdp_rxq_info_reg(&rx_ring->xdp_rxq, adapter->netdev,
++						  rx_ring->queue_index,
++						  rx_ring->q_vector->napi.napi_id) < 0)
+ 		goto err;
+ 
+ 	rx_ring->xdp_prog = adapter->xdp_prog;
 -- 
-Vinicius
+2.23.0
+
