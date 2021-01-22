@@ -1,47 +1,86 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 22 Jan 2021 18:34:53 +0000
-Subject: [Intel-wired-lan] [PATCH net 2/2] ice: Fix MSI-X vector
- fallback logic
-In-Reply-To: <20210121183806.23030-2-brett.creeley@intel.com>
-References: <20210121183806.23030-1-brett.creeley@intel.com>
- <20210121183806.23030-2-brett.creeley@intel.com>
-Message-ID: <CO1PR11MB5105059157EA22D0915D0379FAA09@CO1PR11MB5105.namprd11.prod.outlook.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 22 Jan 2021 14:44:48 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v3 3/8] igc: Set the RX packet
+ buffer size for TSN mode
+In-Reply-To: <20210122224453.4161729-1-vinicius.gomes@intel.com>
+References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
+Message-ID: <20210122224453.4161729-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Brett Creeley
-Sent: Thursday, January 21, 2021 10:38 AM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH net 2/2] ice: Fix MSI-X vector fallback logic
+In preparation for supporting frame preemption, when entering TSN mode
+set the receive packet buffer to 16KB for the Express MAC, 16KB for
+the Preemptible MAC and 2KB for the BMC, according to the datasheet
+section 7.1.3.2.
 
-The current MSI-X enablement logic tries to enable best-case MSI-X vectors and if that fails we only support a bare-minimum set. This includes a single MSI-X for 1 Tx and 1 Rx queue and a single MSI-X for the OICR interrupt. Unfortunately, the driver fails to load when we don't get as many MSI-X as requested for a couple reasons.
-
-First, the code to allocate MSI-X in the driver tries to allocate
-num_online_cpus() MSI-X for LAN traffic without caring about the number of MSI-X actually enabled/requested from the kernel for LAN traffic.
-So, when calling ice_get_res() for the PF VSI, it returns failure because the number of available vectors is less than requested. Fix this by not allowing the PF VSI to allocation  more than
-pf->num_lan_msix MSI-X vectors and pf->num_lan_msix Rx/Tx queues.
-Limiting the number of queues is done because we don't want more than
-1 Tx/Rx queue per interrupt due to performance conerns.
-
-Second, the driver assigns pf->num_lan_msix = 2, to account for LAN traffic and the OICR. However, pf->num_lan_msix is only meant for LAN MSI-X. This is causing a failure when the PF VSI tries to allocate/reserve the minimum pf->num_lan_msix because the OICR MSI-X has already been reserved, so there may not be enough MSI-X vectors left.
-Fix this by setting pf->num_lan_msix = 1 for the failure case. Then the ICE_MIN_MSIX accounts for the LAN MSI-X and the OICR MSI-X needed for the failure case.
-
-Update the related defines used in ice_ena_msix_range() to align with the above behavior and remove the unused RDMA defines because RDMA is currently not supported. Also, remove the now incorrect comment.
-
-Fixes: 152b978a1f90 ("ice: Rework ice_ena_msix_range")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  4 +++-
- drivers/net/ethernet/intel/ice/ice_lib.c  | 14 +++++++++-----  drivers/net/ethernet/intel/ice/ice_main.c |  8 ++------
- 3 files changed, 14 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_defines.h |  2 ++
+ drivers/net/ethernet/intel/igc/igc_tsn.c     | 14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6efafe7d8a62..619d93f8b54c 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index 32f5fd684139..0e78abfd99ee 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -351,6 +351,8 @@
+ #define IGC_RXPBS_CFG_TS_EN	0x80000000 /* Timestamp in Rx buffer */
+ 
+ #define IGC_TXPBSIZE_TSN	0x04145145 /* 5k bytes buffer for each queue */
++#define IGC_RXPBSIZE_TSN	0x00010090 /* 16KB for EXP + 16KB for BE + 2KB for BMC */
++#define IGC_RXPBSIZE_SIZE_MASK	0x0001FFFF
+ 
+ #define IGC_DTXMXPKTSZ_TSN	0x19 /* 1600 bytes of max TX DMA packet size */
+ #define IGC_DTXMXPKTSZ_DEFAULT	0x98 /* 9728-byte Jumbo frames */
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index 174103c4bea6..38451cf05ac6 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -24,7 +24,7 @@ static bool is_any_launchtime(struct igc_adapter *adapter)
+ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
+-	u32 tqavctrl;
++	u32 tqavctrl, rxpbs;
+ 	int i;
+ 
+ 	if (!(adapter->flags & IGC_FLAG_TSN_QBV_ENABLED))
+@@ -35,6 +35,11 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
+ 	wr32(IGC_TXPBS, I225_TXPBSIZE_DEFAULT);
+ 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_DEFAULT);
+ 
++	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
++	rxpbs |= I225_RXPBSIZE_DEFAULT;
++
++	wr32(IGC_RXPBS, rxpbs);
++
+ 	tqavctrl = rd32(IGC_TQAVCTRL);
+ 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
+ 		      IGC_TQAVCTRL_ENHANCED_QAV);
+@@ -64,7 +69,7 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ {
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 tqavctrl, baset_l, baset_h;
+-	u32 sec, nsec, cycle;
++	u32 sec, nsec, cycle, rxpbs;
+ 	ktime_t base_time, systim;
+ 	int i;
+ 
+@@ -79,6 +84,11 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
+ 
+ 	tqavctrl = rd32(IGC_TQAVCTRL);
++	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
++	rxpbs |= IGC_RXPBSIZE_TSN;
++
++	wr32(IGC_RXPBS, rxpbs);
++
+ 	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
+ 	wr32(IGC_TQAVCTRL, tqavctrl);
+ 
+-- 
+2.30.0
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
