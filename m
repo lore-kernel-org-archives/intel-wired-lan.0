@@ -1,35 +1,139 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Sat, 23 Jan 2021 01:16:42 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 10/11] ice: store the
- result of ice_rx_offset() onto ice_ring
-In-Reply-To: <20210118151318.12324-11-maciej.fijalkowski@intel.com>
-References: <20210118151318.12324-1-maciej.fijalkowski@intel.com>
- <20210118151318.12324-11-maciej.fijalkowski@intel.com>
-Message-ID: <CO1PR11MB51056372C125FC21F669DE4AFABF9@CO1PR11MB5105.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 24 Jan 2021 13:11:23 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 4026d80142b644c107586f279fa319ff5c6e0d18
+Message-ID: <600d017b.P2dnWNQr3Z7FdL4J%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Maciej Fijalkowski
-Sent: Monday, January 18, 2021 7:13 AM
-To: intel-wired-lan@lists.osuosl.org
-Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org; Topel, Bjorn <bjorn.topel@intel.com>; Karlsson, Magnus <magnus.karlsson@intel.com>
-Subject: [Intel-wired-lan] [PATCH v3 net-next 10/11] ice: store the result of ice_rx_offset() onto ice_ring
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 4026d80142b644c107586f279fa319ff5c6e0d18  MAINTAINERS: add entry for Arrow SpeedChips XRS7000 driver
 
-Output of ice_rx_offset() is based on ethtool's priv flag setting, which when changed, causes PF reset (disables napi, frees irqs, loads different Rx mem model, etc.). This means that within napi its result is constant and there is no reason to call it per each processed frame.
+elapsed time: 3311m
 
-Add new 'rx_offset' field to ice_ring that is meant to hold the
-ice_rx_offset() result and use it within ice_clean_rx_irq().
-Furthermore, use it within ice_alloc_mapped_page().
+configs tested: 110
+configs skipped: 2
 
-Reviewed-by: Bj?rn T?pel <bjorn.topel@intel.com>
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm64                            allyesconfig
+arm64                               defconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                    amigaone_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                        maltaup_defconfig
+powerpc                     tqm8560_defconfig
+powerpc                 mpc8315_rdb_defconfig
+h8300                       h8s-sim_defconfig
+c6x                        evmc6678_defconfig
+mips                          rb532_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                       holly_defconfig
+powerpc                  storcenter_defconfig
+powerpc                     taishan_defconfig
+arm64                            alldefconfig
+arm                         palmz72_defconfig
+arm                         assabet_defconfig
+powerpc                   currituck_defconfig
+powerpc                     ppa8548_defconfig
+sh                           se7712_defconfig
+mips                        bcm47xx_defconfig
+arm                        spear3xx_defconfig
+powerpc                 mpc836x_rdk_defconfig
+sh                   sh7724_generic_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a002-20210121
+x86_64               randconfig-a003-20210121
+x86_64               randconfig-a001-20210121
+x86_64               randconfig-a005-20210121
+x86_64               randconfig-a004-20210121
+x86_64               randconfig-a006-20210121
+i386                 randconfig-a001-20210121
+i386                 randconfig-a002-20210121
+i386                 randconfig-a004-20210121
+i386                 randconfig-a006-20210121
+i386                 randconfig-a005-20210121
+i386                 randconfig-a003-20210121
+i386                 randconfig-a001-20210122
+i386                 randconfig-a002-20210122
+i386                 randconfig-a004-20210122
+i386                 randconfig-a006-20210122
+i386                 randconfig-a003-20210122
+i386                 randconfig-a005-20210122
+i386                 randconfig-a013-20210121
+i386                 randconfig-a011-20210121
+i386                 randconfig-a012-20210121
+i386                 randconfig-a014-20210121
+i386                 randconfig-a015-20210121
+i386                 randconfig-a016-20210121
+i386                 randconfig-a013-20210122
+i386                 randconfig-a011-20210122
+i386                 randconfig-a012-20210122
+i386                 randconfig-a014-20210122
+i386                 randconfig-a015-20210122
+i386                 randconfig-a016-20210122
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a002-20210122
+x86_64               randconfig-a003-20210122
+x86_64               randconfig-a001-20210122
+x86_64               randconfig-a005-20210122
+x86_64               randconfig-a006-20210122
+x86_64               randconfig-a004-20210122
+
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c | 43 ++++++++++++-----------  drivers/net/ethernet/intel/ice/ice_txrx.h |  1 +
- 2 files changed, 23 insertions(+), 21 deletions(-)
-
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
-
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
