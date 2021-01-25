@@ -1,65 +1,71 @@
-From: Alexander Lobakin <alobakin@pm.me>
-Date: Mon, 25 Jan 2021 18:27:33 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/3] net: constify
- page_is_pfmemalloc() argument at call sites
-In-Reply-To: <85978330-9753-f7a-f263-7a1cfd95b851@google.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Mon, 25 Jan 2021 20:22:19 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 3/3] net: page_pool: simplify
+ page recycling condition tests
+In-Reply-To: <20210125164612.243838-4-alobakin@pm.me>
 References: <20210125164612.243838-1-alobakin@pm.me>
- <20210125164612.243838-3-alobakin@pm.me>
- <85978330-9753-f7a-f263-7a1cfd95b851@google.com>
-Message-ID: <20210125182702.247232-1-alobakin@pm.me>
+ <20210125164612.243838-4-alobakin@pm.me>
+Message-ID: <20210125202219.43d3d0f0@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: David Rientjes <rientjes@google.com>
-Date: Mon, 25 Jan 2021 10:19:48 -0800 (PST)
+On Mon, 25 Jan 2021 16:47:20 +0000
+Alexander Lobakin <alobakin@pm.me> wrote:
 
-> On Mon, 25 Jan 2021, Alexander Lobakin wrote:
+> pool_page_reusable() is a leftover from pre-NUMA-aware times. For now,
+> this function is just a redundant wrapper over page_is_pfmemalloc(),
+> so Inline it into its sole call site.
 > 
-> > Constify "page" argument for page_is_pfmemalloc() users where applicable.
-> >
-> > Signed-off-by: Alexander Lobakin <alobakin@pm.me>
-> > ---
-> >  drivers/net/ethernet/hisilicon/hns3/hns3_enet.c   | 2 +-
-> >  drivers/net/ethernet/intel/fm10k/fm10k_main.c     | 2 +-
-> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 2 +-
-> >  drivers/net/ethernet/intel/iavf/iavf_txrx.c       | 2 +-
-> >  drivers/net/ethernet/intel/ice/ice_txrx.c         | 2 +-
-> >  drivers/net/ethernet/intel/igb/igb_main.c         | 2 +-
-> >  drivers/net/ethernet/intel/igc/igc_main.c         | 2 +-
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 2 +-
-> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
-> >  drivers/net/ethernet/mellanox/mlx5/core/en_rx.c   | 2 +-
-> >  include/linux/skbuff.h                            | 4 ++--
-> >  11 files changed, 12 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c b/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-> > index 512080640cbc..0f8e962b5010 100644
-> > --- a/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-> > +++ b/drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-> > @@ -2800,7 +2800,7 @@ static void hns3_nic_alloc_rx_buffers(struct hns3_enet_ring *ring,
-> >  	writel(i, ring->tqp->io_base + HNS3_RING_RX_RING_HEAD_REG);
-> >  }
-> >
-> > -static bool hns3_page_is_reusable(struct page *page)
-> > +static bool hns3_page_is_reusable(const struct page *page)
-> >  {
-> >  	return page_to_nid(page) == numa_mem_id() &&
-> >  		!page_is_pfmemalloc(page);
+> Signed-off-by: Alexander Lobakin <alobakin@pm.me>
+> ---
+>  net/core/page_pool.c | 14 ++++----------
+>  1 file changed, 4 insertions(+), 10 deletions(-)
+
+Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
+
 > 
-> Hi Alexander,
+> diff --git a/net/core/page_pool.c b/net/core/page_pool.c
+> index f3c690b8c8e3..ad8b0707af04 100644
+> --- a/net/core/page_pool.c
+> +++ b/net/core/page_pool.c
+> @@ -350,14 +350,6 @@ static bool page_pool_recycle_in_cache(struct page *page,
+>  	return true;
+>  }
+>  
+> -/* page is NOT reusable when:
+> - * 1) allocated when system is under some pressure. (page_is_pfmemalloc)
+> - */
+> -static bool pool_page_reusable(struct page_pool *pool, struct page *page)
+> -{
+> -	return !page_is_pfmemalloc(page);
+> -}
+> -
+>  /* If the page refcnt == 1, this will try to recycle the page.
+>   * if PP_FLAG_DMA_SYNC_DEV is set, we'll try to sync the DMA area for
+>   * the configured size min(dma_sync_size, pool->max_len).
+> @@ -373,9 +365,11 @@ __page_pool_put_page(struct page_pool *pool, struct page *page,
+>  	 * regular page allocator APIs.
+>  	 *
+>  	 * refcnt == 1 means page_pool owns page, and can recycle it.
+> +	 *
+> +	 * page is NOT reusable when allocated when system is under
+> +	 * some pressure. (page_is_pfmemalloc)
+>  	 */
+> -	if (likely(page_ref_count(page) == 1 &&
+> -		   pool_page_reusable(pool, page))) {
+> +	if (likely(page_ref_count(page) == 1 && !page_is_pfmemalloc(page))) {
+>  		/* Read barrier done in page_ref_count / READ_ONCE */
+>  
+>  		if (pool->p.flags & PP_FLAG_DMA_SYNC_DEV)
 
-Hi David!
 
-> All of these functions appear to be doing the same thing, would it make
-> sense to simply add this to a header file and remove all the code
-> duplication as well?
 
-That's an interesting idea. I'll be glad to do this if drivers'
-maintainers agree it's okay for them.
-
-Thanks,
-Al
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
