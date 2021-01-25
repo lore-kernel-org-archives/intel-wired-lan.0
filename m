@@ -1,56 +1,40 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Mon, 25 Jan 2021 16:09:42 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] virtchnl: Fix layout of RSS
- structures
-Message-ID: <20210125160942.20551-1-mateusz.palczewski@intel.com>
+From: Alexander Lobakin <alobakin@pm.me>
+Date: Mon, 25 Jan 2021 16:46:48 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] net: constify
+ page_is_pfmemalloc() and its users
+Message-ID: <20210125164612.243838-1-alobakin@pm.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Norbert Ciosek <norbertx.ciosek@intel.com>
+page_is_pfmemalloc() is used mostly by networking drivers. It doesn't
+write anything to the struct page itself, so constify its argument and
+a bunch of callers and wrappers around this function in drivers.
+In Page Pool core code, it can be simply inlined instead.
 
-Remove padding from RSS structures. Previous layout
-could lead to unwanted compiler optimizations
-in loops when iterating over key and lut arrays.
+Alexander Lobakin (3):
+  mm: constify page_is_pfmemalloc() argument
+  net: constify page_is_pfmemalloc() argument at call sites
+  net: page_pool: simplify page recycling condition tests
 
-Fixes: 65ece6de0114 ("virtchnl: Add missing explicit padding to structures")
-Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
----
-v2: Removed padding instead of moving "key" and "lut" fields
-at the end of RSS structures.
----
- include/linux/avf/virtchnl.h | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/hisilicon/hns3/hns3_enet.c   |  2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c       |  2 +-
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c       |  2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c         |  2 +-
+ drivers/net/ethernet/intel/igb/igb_main.c         |  2 +-
+ drivers/net/ethernet/intel/igc/igc_main.c         |  2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  2 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  2 +-
+ drivers/net/ethernet/mellanox/mlx5/core/en_rx.c   |  2 +-
+ include/linux/mm.h                                |  2 +-
+ include/linux/skbuff.h                            |  4 ++--
+ net/core/page_pool.c                              | 14 ++++----------
+ 13 files changed, 17 insertions(+), 23 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index e49a063..21c5b2d 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -503,7 +503,6 @@ struct virtchnl_rss_key {
- 	u16 vsi_id;
- 	u16 key_len;
- 	u8 key[1];         /* RSS hash key, packed bytes */
--	u8 pad[1];
- };
- 
- VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
-@@ -512,7 +511,6 @@ struct virtchnl_rss_lut {
- 	u16 vsi_id;
- 	u16 lut_entries;
- 	u8 lut[1];        /* RSS lookup table */
--	u8 pad[1];
- };
- 
- VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
 -- 
-2.17.1
+2.30.0
 
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
 
