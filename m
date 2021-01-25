@@ -1,71 +1,58 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 25 Jan 2021 20:22:19 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] net: page_pool: simplify
- page recycling condition tests
-In-Reply-To: <20210125164612.243838-4-alobakin@pm.me>
-References: <20210125164612.243838-1-alobakin@pm.me>
- <20210125164612.243838-4-alobakin@pm.me>
-Message-ID: <20210125202219.43d3d0f0@carbon>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Mon, 25 Jan 2021 14:20:09 -0800
+Subject: [Intel-wired-lan] Fw: [Bug 211335] New: Network connectivity issues
+ after hibernation
+Message-ID: <20210125142009.01b6278d@hermes.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 25 Jan 2021 16:47:20 +0000
-Alexander Lobakin <alobakin@pm.me> wrote:
-
-> pool_page_reusable() is a leftover from pre-NUMA-aware times. For now,
-> this function is just a redundant wrapper over page_is_pfmemalloc(),
-> so Inline it into its sole call site.
-> 
-> Signed-off-by: Alexander Lobakin <alobakin@pm.me>
-> ---
->  net/core/page_pool.c | 14 ++++----------
->  1 file changed, 4 insertions(+), 10 deletions(-)
-
-Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
-
-> 
-> diff --git a/net/core/page_pool.c b/net/core/page_pool.c
-> index f3c690b8c8e3..ad8b0707af04 100644
-> --- a/net/core/page_pool.c
-> +++ b/net/core/page_pool.c
-> @@ -350,14 +350,6 @@ static bool page_pool_recycle_in_cache(struct page *page,
->  	return true;
->  }
->  
-> -/* page is NOT reusable when:
-> - * 1) allocated when system is under some pressure. (page_is_pfmemalloc)
-> - */
-> -static bool pool_page_reusable(struct page_pool *pool, struct page *page)
-> -{
-> -	return !page_is_pfmemalloc(page);
-> -}
-> -
->  /* If the page refcnt == 1, this will try to recycle the page.
->   * if PP_FLAG_DMA_SYNC_DEV is set, we'll try to sync the DMA area for
->   * the configured size min(dma_sync_size, pool->max_len).
-> @@ -373,9 +365,11 @@ __page_pool_put_page(struct page_pool *pool, struct page *page,
->  	 * regular page allocator APIs.
->  	 *
->  	 * refcnt == 1 means page_pool owns page, and can recycle it.
-> +	 *
-> +	 * page is NOT reusable when allocated when system is under
-> +	 * some pressure. (page_is_pfmemalloc)
->  	 */
-> -	if (likely(page_ref_count(page) == 1 &&
-> -		   pool_page_reusable(pool, page))) {
-> +	if (likely(page_ref_count(page) == 1 && !page_is_pfmemalloc(page))) {
->  		/* Read barrier done in page_ref_count / READ_ONCE */
->  
->  		if (pool->p.flags & PP_FLAG_DMA_SYNC_DEV)
 
 
+Begin forwarded message:
+
+Date: Mon, 25 Jan 2021 08:41:52 +0000
+From: bugzilla-daemon@bugzilla.kernel.org
+To: stephen@networkplumber.org
+Subject: [Bug 211335] New: Network connectivity issues after hibernation
+
+
+https://bugzilla.kernel.org/show_bug.cgi?id=211335
+
+            Bug ID: 211335
+           Summary: Network connectivity issues after hibernation
+           Product: Networking
+           Version: 2.5
+    Kernel Version: 5.10.10
+          Hardware: x86-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: high
+          Priority: P1
+         Component: Other
+          Assignee: stephen at networkplumber.org
+          Reporter: morfikov at gmail.com
+        Regression: No
+
+Created attachment 294843
+  --> https://bugzilla.kernel.org/attachment.cgi?id=294843&action=edit  
+hibernation log
+
+I not sure where to put it, but whenever I hibernate my machine, the process is
+interrupted with the two kernel warnings. One is "TPM returned invalid status"
+and the other is "NETDEV WATCHDOG: eth0 (e1000e): transmit queue 0 timed out".
+After this happens, I'm able to hibernate the machine again without this warns,
+but when I resume the machine from sleep, the network doesn't seem to work well
+-- I get bunch of errors when I try to visit some http/https pages in firefox. 
+
+I attached the full hibernation log as well as lspci/lsusb. The machine is
+Lenovo Thinkpad T430.
 
 -- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  LinkedIn: http://www.linkedin.com/in/brouer
+You may reply to this email to add a comment.
 
+You are receiving this mail because:
+You are the assignee for the bug.
