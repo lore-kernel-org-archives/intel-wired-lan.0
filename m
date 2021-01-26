@@ -1,103 +1,63 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Tue, 26 Jan 2021 00:32:44 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 6/8] igc: Add support for
- tuning frame preemption via ethtool
-In-Reply-To: <20210122224453.4161729-7-vinicius.gomes@intel.com>
-References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-7-vinicius.gomes@intel.com>
-Message-ID: <20210126003243.x3c44pmxmieqsa6e@skbuf>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Tue, 26 Jan 2021 13:08:28 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 3/3] net: page_pool: simplify
+ page recycling condition tests
+In-Reply-To: <20210125164612.243838-4-alobakin@pm.me>
+References: <20210125164612.243838-1-alobakin@pm.me>
+ <20210125164612.243838-4-alobakin@pm.me>
+Message-ID: <YA/4LNJPEQJv++mo@apalos.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 22, 2021 at 02:44:51PM -0800, Vinicius Costa Gomes wrote:
-> The tc subsystem sets which queues are marked as preemptible, it's the
-> role of ethtool to control more hardware specific parameters. These
-> parameters include:
+On Mon, Jan 25, 2021 at 04:47:20PM +0000, Alexander Lobakin wrote:
+> pool_page_reusable() is a leftover from pre-NUMA-aware times. For now,
+> this function is just a redundant wrapper over page_is_pfmemalloc(),
+> so Inline it into its sole call site.
 > 
->  - enabling the frame preemption hardware: As enabling frame
->  preemption may have other requirements before it can be enabled, it's
->  exposed via the ethtool API;
-> 
->  - mininum fragment size multiplier: expressed in usually in the form
->  of (1 + N)*64, this number indicates what's the size of the minimum
->  fragment that can be preempted.
-
-And not one word has been said about the patch...
-
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: Alexander Lobakin <alobakin@pm.me>
 > ---
->  drivers/net/ethernet/intel/igc/igc.h         | 12 +++++
->  drivers/net/ethernet/intel/igc/igc_defines.h |  4 ++
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 53 ++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_tsn.c     | 25 +++++++--
->  4 files changed, 91 insertions(+), 3 deletions(-)
+>  net/core/page_pool.c | 14 ++++----------
+>  1 file changed, 4 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-> index 35baae900c1f..1067c46e0bc2 100644
-> --- a/drivers/net/ethernet/intel/igc/igc.h
-> +++ b/drivers/net/ethernet/intel/igc/igc.h
-> @@ -87,6 +87,7 @@ struct igc_ring {
->  	u8 queue_index;                 /* logical index of the ring*/
->  	u8 reg_idx;                     /* physical index of the ring */
->  	bool launchtime_enable;         /* true if LaunchTime is enabled */
-> +	bool preemptible;		/* true if not express */
-
-Mixing tabs and spaces?
-
-> +static int igc_ethtool_set_preempt(struct net_device *netdev,
-> +				   struct ethtool_fp *fpcmd,
-> +				   struct netlink_ext_ack *extack)
-> +{
-> +	struct igc_adapter *adapter = netdev_priv(netdev);
-> +	int i;
-> +
-> +	if (fpcmd->add_frag_size < 68 || fpcmd->add_frag_size > 260) {
-> +		NL_SET_ERR_MSG_MOD(extack, "Invalid value for add-frag-size");
-> +		return -EINVAL;
-> +	}
-
-This check should belong in ethtool, since there's nothing unusual about
-this supported range.
-
-Also, I believe that Jakub requested the min-frag-size to be passed as
-0, 1, 2, 3 as the standard specifies it, and not its multiplied version?
-
-> +
-> +	adapter->frame_preemption_active = fpcmd->enabled;
-> +	adapter->add_frag_size = fpcmd->add_frag_size;
-> +
-> +	if (!adapter->frame_preemption_active)
-> +		goto done;
-> +
-> +	/* Enabling frame preemption requires TSN mode to be enabled,
-> +	 * which requires a schedule to be active. So, if there isn't
-> +	 * a schedule already configured, configure a simple one, with
-> +	 * all queues open, with 1ms cycle time.
-> +	 */
-> +	if (adapter->base_time)
-> +		goto done;
-
-Unless I'm missing something, you are interpreting an adapter->base_time
-value of zero as "no Qbv schedule on port", as if it was invalid to have
-a base-time of zero, which it isn't.
-
-> @@ -115,6 +130,9 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
->  		if (ring->launchtime_enable)
->  			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
+> diff --git a/net/core/page_pool.c b/net/core/page_pool.c
+> index f3c690b8c8e3..ad8b0707af04 100644
+> --- a/net/core/page_pool.c
+> +++ b/net/core/page_pool.c
+> @@ -350,14 +350,6 @@ static bool page_pool_recycle_in_cache(struct page *page,
+>  	return true;
+>  }
 >  
-> +		if (ring->preemptible)
-> +			txqctl |= IGC_TXQCTL_PREEMPTABLE;
+> -/* page is NOT reusable when:
+> - * 1) allocated when system is under some pressure. (page_is_pfmemalloc)
+> - */
+> -static bool pool_page_reusable(struct page_pool *pool, struct page *page)
+> -{
+> -	return !page_is_pfmemalloc(page);
+> -}
+> -
+>  /* If the page refcnt == 1, this will try to recycle the page.
+>   * if PP_FLAG_DMA_SYNC_DEV is set, we'll try to sync the DMA area for
+>   * the configured size min(dma_sync_size, pool->max_len).
+> @@ -373,9 +365,11 @@ __page_pool_put_page(struct page_pool *pool, struct page *page,
+>  	 * regular page allocator APIs.
+>  	 *
+>  	 * refcnt == 1 means page_pool owns page, and can recycle it.
+> +	 *
+> +	 * page is NOT reusable when allocated when system is under
+> +	 * some pressure. (page_is_pfmemalloc)
+>  	 */
+> -	if (likely(page_ref_count(page) == 1 &&
+> -		   pool_page_reusable(pool, page))) {
+> +	if (likely(page_ref_count(page) == 1 && !page_is_pfmemalloc(page))) {
+>  		/* Read barrier done in page_ref_count / READ_ONCE */
+>  
+>  		if (pool->p.flags & PP_FLAG_DMA_SYNC_DEV)
+> -- 
+> 2.30.0
+> 
+> 
 
-I think this is the only place in the series where you use PREEMPTABLE
-instead of PREEMPTIBLE.
-
-> +
->  		wr32(IGC_TXQCTL(i), txqctl);
->  	}
-
-Out of curiosity, where is the ring to traffic class mapping configured
-in the igc driver? I suppose that you have more rings than traffic classes.
+Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
