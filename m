@@ -1,25 +1,47 @@
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Tue, 26 Jan 2021 00:02:29 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 5/8] igc: Avoid TX Hangs
- because long cycles
-In-Reply-To: <20210122224453.4161729-6-vinicius.gomes@intel.com>
+Date: Tue, 26 Jan 2021 00:09:25 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/8] taprio: Add support
+ for frame preemption offload
+In-Reply-To: <20210122224453.4161729-3-vinicius.gomes@intel.com>
 References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-6-vinicius.gomes@intel.com>
-Message-ID: <20210126000228.gpyh3rrp662wysit@skbuf>
+ <20210122224453.4161729-3-vinicius.gomes@intel.com>
+Message-ID: <20210126000924.jjkjruzmh5lgrkry@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 22, 2021 at 02:44:50PM -0800, Vinicius Costa Gomes wrote:
-> Avoid possible TX Hangs caused by using long Qbv cycles. In some
-> cases, using long cycles (more than 1 second) can cause transmissions
-> to be blocked for that time. As the TX Hang timeout is close to 1
-> second, we may need to reduce the cycle time to something more
-> reasonable: the value chosen is 1ms.
-> 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
+On Fri, Jan 22, 2021 at 02:44:47PM -0800, Vinicius Costa Gomes wrote:
+> +	/* It's valid to enable frame preemption without any kind of
+> +	 * offloading being enabled, so keep it separated.
+> +	 */
+> +	if (tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]) {
+> +		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]);
+> +		struct tc_preempt_qopt_offload qopt = { };
+> +
+> +		if (preempt == U32_MAX) {
+> +			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
+> +			err = -EINVAL;
+> +			goto free_sched;
+> +		}
+> +
+> +		qopt.preemptible_queues = tc_map_to_queue_mask(dev, preempt);
+> +
+> +		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
+> +						    &qopt);
+> +		if (err)
+> +			goto free_sched;
+> +
+> +		q->preemptible_tcs = preempt;
+> +	}
+> +
 
-Don't you want this patch to go to 'net' and be backported?
+First I'm interested in the means: why check for preempt == U32_MAX when
+you determine that all traffic classes are preemptible? What if less
+than 32 traffic classes are used by the netdev? The check will be
+bypassed, won't it?
+
+Secondly, why should at least one queue be preemptible? What's wrong
+with frame preemption being triggered by a tc-taprio window smaller than
+the packet size? This can happen regardless of traffic class.
