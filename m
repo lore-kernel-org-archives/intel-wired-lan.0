@@ -1,97 +1,438 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Tue, 26 Jan 2021 11:30:37 +0100
-Subject: [Intel-wired-lan] igc: fix link speed advertising
-In-Reply-To: <20201117195040.178651-1-vinschen@redhat.com>
-References: <20201117195040.178651-1-vinschen@redhat.com>
-Message-ID: <20210126103037.GH4393@calimero.vinschen.de>
+From: Sokolowski, Jan <jan.sokolowski@intel.com>
+Date: Tue, 26 Jan 2021 11:30:58 +0000
+Subject: [Intel-wired-lan] [RFC 16/20] iavf: Add framework to enable
+ ethtool ntuple filters
+In-Reply-To: <20201124062410.6824-17-haiyue.wang@intel.com>
+References: <20201124062410.6824-1-haiyue.wang@intel.com>
+ <20201124062410.6824-17-haiyue.wang@intel.com>
+Message-ID: <DM5PR11MB17054DF9D34224A5483FDF0999BC9@DM5PR11MB1705.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Ping?
+Would it be possible to move these new flags to bits 35 and 36? Currently OOT uses bits up to 34, and as the changes are being prepared for upstreaming, there might be a conflict there.
 
-It looks like this patch got lost somehow.  Without this patch,
-setting link speed advertising is broken.
+Jan
 
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Haiyue Wang
+Sent: Tuesday, November 24, 2020 7:24 AM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Liang, Cunming <cunming.liang@intel.com>; Zhang, Qi Z <qi.z.zhang@intel.com>; kuba at kernel.org; davem at davemloft.net
+Subject: [Intel-wired-lan] [RFC 16/20] iavf: Add framework to enable ethtool ntuple filters
 
-Thanks,
-Corinna
+Enable ethtool ntuple filter support on the VF driver using the virtchnl
+interface to the PF driver and the Flow director functionality in the
+hardware.
 
+Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf.h        |  12 ++
+ drivers/net/ethernet/intel/iavf/iavf_fdir.h   |  33 ++++
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  27 +++
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 187 ++++++++++++++++++
+ 4 files changed, 259 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_fdir.h
 
-On Nov 17 20:50, Corinna Vinschen wrote:
-> Link speed advertising in igc has two problems:
-> 
-> - When setting the advertisement via ethtool, the link speed is converted
->   to the legacy 32 bit representation for the intel PHY code.
->   This inadvertently drops ETHTOOL_LINK_MODE_2500baseT_Full_BIT (being
->   beyond bit 31).  As a result, any call to `ethtool -s ...' drops the
->   2500Mbit/s link speed from the PHY settings.  Only reloading the driver
->   alleviates that problem.
-> 
->   Fix this by converting the ETHTOOL_LINK_MODE_2500baseT_Full_BIT to the
->   Intel PHY ADVERTISE_2500_FULL bit explicitely.
-> 
-> - Rather than checking the actual PHY setting, the .get_link_ksettings
->   function always fills link_modes.advertising with all link speeds
->   the device is capable of.
-> 
->   Fix this by checking the PHY autoneg_advertised settings and report
->   only the actually advertised speeds up to ethtool.
-> 
-> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_ethtool.c | 24 +++++++++++++++-----
->  1 file changed, 18 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> index 61d331ce38cd..75cb4ca36bac 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> @@ -1675,12 +1675,18 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
->  	cmd->base.phy_address = hw->phy.addr;
->  
->  	/* advertising link modes */
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Half);
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Full);
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Half);
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Full);
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 1000baseT_Full);
-> -	ethtool_link_ksettings_add_link_mode(cmd, advertising, 2500baseT_Full);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Half);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_10_FULL)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 10baseT_Full);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_100_HALF)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Half);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_100_FULL)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 100baseT_Full);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_1000_FULL)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 1000baseT_Full);
-> +	if (hw->phy.autoneg_advertised & ADVERTISE_2500_FULL)
-> +		ethtool_link_ksettings_add_link_mode(cmd, advertising, 2500baseT_Full);
->  
->  	/* set autoneg settings */
->  	if (hw->mac.autoneg == 1) {
-> @@ -1792,6 +1798,12 @@ igc_ethtool_set_link_ksettings(struct net_device *netdev,
->  
->  	ethtool_convert_link_mode_to_legacy_u32(&advertising,
->  						cmd->link_modes.advertising);
-> +	/* Converting to legacy u32 drops ETHTOOL_LINK_MODE_2500baseT_Full_BIT.
-> +	 * We have to check this and convert it to ADVERTISE_2500_FULL
-> +	 * (aka ETHTOOL_LINK_MODE_2500baseX_Full_BIT) explicitely.
-> +	 */
-> +	if (ethtool_link_ksettings_test_link_mode(cmd, advertising, 2500baseT_Full))
-> +		advertising |= ADVERTISE_2500_FULL;
->  
->  	if (cmd->base.autoneg == AUTONEG_ENABLE) {
->  		hw->mac.autoneg = 1;
-> -- 
-> 2.27.0
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 8a65525a7c0d..bda2a900df8e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -37,6 +37,7 @@
+ #include "iavf_type.h"
+ #include <linux/avf/virtchnl.h>
+ #include "iavf_txrx.h"
++#include "iavf_fdir.h"
+ 
+ #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+ #define PFX "iavf: "
+@@ -300,6 +301,8 @@ struct iavf_adapter {
+ #define IAVF_FLAG_AQ_DISABLE_CHANNELS		BIT(22)
+ #define IAVF_FLAG_AQ_ADD_CLOUD_FILTER		BIT(23)
+ #define IAVF_FLAG_AQ_DEL_CLOUD_FILTER		BIT(24)
++#define IAVF_FLAG_AQ_ADD_FDIR_FILTER		BIT(25)
++#define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
+ 
+ 	/* OS defined structs */
+ 	struct net_device *netdev;
+@@ -340,6 +343,8 @@ struct iavf_adapter {
+ 			  VIRTCHNL_VF_OFFLOAD_VLAN)
+ #define ADV_LINK_SUPPORT(_a) ((_a)->vf_res->vf_cap_flags & \
+ 			      VIRTCHNL_VF_CAP_ADV_LINK_SPEED)
++#define FDIR_FLTR_SUPPORT(_a) ((_a)->vf_res->vf_cap_flags & \
++			       VIRTCHNL_VF_OFFLOAD_FDIR_PF)
+ 	struct virtchnl_vf_resource *vf_res; /* incl. all VSIs */
+ 	struct virtchnl_vsi_resource *vsi_res; /* our LAN VSI */
+ 	struct virtchnl_version_info pf_version;
+@@ -362,6 +367,11 @@ struct iavf_adapter {
+ 	/* lock to protect access to the cloud filter list */
+ 	spinlock_t cloud_filter_list_lock;
+ 	u16 num_cloud_filters;
++
++#define IAVF_MAX_FDIR_FILTERS 128	/* max allowed Flow Director filters */
++	u16 fdir_active_fltr;
++	struct list_head fdir_list_head;
++	spinlock_t fdir_fltr_lock;	/* protect the Flow Director filter list */
+ };
+ 
+ 
+@@ -432,6 +442,8 @@ void iavf_enable_channels(struct iavf_adapter *adapter);
+ void iavf_disable_channels(struct iavf_adapter *adapter);
+ void iavf_add_cloud_filter(struct iavf_adapter *adapter);
+ void iavf_del_cloud_filter(struct iavf_adapter *adapter);
++void iavf_add_fdir_filter(struct iavf_adapter *adapter);
++void iavf_del_fdir_filter(struct iavf_adapter *adapter);
+ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ 					const u8 *macaddr);
+ #endif /* _IAVF_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.h b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+new file mode 100644
+index 000000000000..429bc025d45a
+--- /dev/null
++++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2020, Intel Corporation. */
++
++#ifndef _IAVF_FDIR_H_
++#define _IAVF_FDIR_H_
++
++struct iavf_adapter;
++
++/* State of Flow Director filter */
++enum iavf_fdir_fltr_state_t {
++	IAVF_FDIR_FLTR_ADD_REQUEST,	/* User requests to add Flow Director filter */
++	IAVF_FDIR_FLTR_ADD_PENDING,	/* Flow Director filter pending add by the PF */
++	IAVF_FDIR_FLTR_DEL_REQUEST,	/* User requests to delete Flow Director filter */
++	IAVF_FDIR_FLTR_DEL_PENDING,	/* Flow Director filter pending delete by the PF */
++	IAVF_FDIR_FLTR_ACTIVE,		/* Flow Director filter is active */
++};
++
++/* bookkeeping of Flow Director filters */
++struct iavf_fdir_fltr {
++	enum iavf_fdir_fltr_state_t state;
++	struct list_head list;
++
++	u32 flow_id;
++
++	struct virtchnl_fdir_add vc_add_msg;
++};
++
++int iavf_fill_fdir_add_msg(struct iavf_adapter *adapter, struct iavf_fdir_fltr *fltr);
++void iavf_print_fdir_fltr(struct iavf_adapter *adapter, struct iavf_fdir_fltr *fltr);
++bool iavf_fdir_is_dup_fltr(struct iavf_adapter *adapter, struct iavf_fdir_fltr *fltr);
++void iavf_fdir_list_add_fltr(struct iavf_adapter *adapter, struct iavf_fdir_fltr *fltr);
++struct iavf_fdir_fltr *iavf_find_fdir_fltr_by_loc(struct iavf_adapter *adapter, u32 loc);
++#endif /* _IAVF_FDIR_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 814e59bf2c94..d9f9085421df 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -958,6 +958,7 @@ static void iavf_up_complete(struct iavf_adapter *adapter)
+ void iavf_down(struct iavf_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
++	struct iavf_fdir_fltr *fdir;
+ 	struct iavf_vlan_filter *vlf;
+ 	struct iavf_mac_filter *f;
+ 	struct iavf_cloud_filter *cf;
+@@ -996,6 +997,13 @@ void iavf_down(struct iavf_adapter *adapter)
+ 	}
+ 	spin_unlock_bh(&adapter->cloud_filter_list_lock);
+ 
++	/* remove all Flow Director filters */
++	spin_lock_bh(&adapter->fdir_fltr_lock);
++	list_for_each_entry(fdir, &adapter->fdir_list_head, list) {
++		fdir->state = IAVF_FDIR_FLTR_DEL_REQUEST;
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_lock);
++
+ 	if (!(adapter->flags & IAVF_FLAG_PF_COMMS_FAILED) &&
+ 	    adapter->state != __IAVF_RESETTING) {
+ 		/* cancel any current operation */
+@@ -1007,6 +1015,7 @@ void iavf_down(struct iavf_adapter *adapter)
+ 		adapter->aq_required = IAVF_FLAG_AQ_DEL_MAC_FILTER;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
++		adapter->aq_required |= IAVF_FLAG_AQ_DEL_FDIR_FILTER;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
+ 	}
+ 
+@@ -1629,6 +1638,14 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
+ 		iavf_add_cloud_filter(adapter);
+ 		return 0;
+ 	}
++	if (adapter->aq_required & IAVF_FLAG_AQ_ADD_FDIR_FILTER) {
++		iavf_add_fdir_filter(adapter);
++		return IAVF_SUCCESS;
++	}
++	if (adapter->aq_required & IAVF_FLAG_AQ_DEL_FDIR_FILTER) {
++		iavf_del_fdir_filter(adapter);
++		return IAVF_SUCCESS;
++	}
+ 	return -EAGAIN;
+ }
+ 
+@@ -3739,10 +3756,12 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	spin_lock_init(&adapter->mac_vlan_list_lock);
+ 	spin_lock_init(&adapter->cloud_filter_list_lock);
++	spin_lock_init(&adapter->fdir_fltr_lock);
+ 
+ 	INIT_LIST_HEAD(&adapter->mac_filter_list);
+ 	INIT_LIST_HEAD(&adapter->vlan_filter_list);
+ 	INIT_LIST_HEAD(&adapter->cloud_filter_list);
++	INIT_LIST_HEAD(&adapter->fdir_list_head);
+ 
+ 	INIT_WORK(&adapter->reset_task, iavf_reset_task);
+ 	INIT_WORK(&adapter->adminq_task, iavf_adminq_task);
+@@ -3846,6 +3865,7 @@ static void iavf_remove(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
++	struct iavf_fdir_fltr *fdir, *fdirtmp;
+ 	struct iavf_vlan_filter *vlf, *vlftmp;
+ 	struct iavf_mac_filter *f, *ftmp;
+ 	struct iavf_cloud_filter *cf, *cftmp;
+@@ -3927,6 +3947,13 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	}
+ 	spin_unlock_bh(&adapter->cloud_filter_list_lock);
+ 
++	spin_lock_bh(&adapter->fdir_fltr_lock);
++	list_for_each_entry_safe(fdir, fdirtmp, &adapter->fdir_list_head, list) {
++		list_del(&fdir->list);
++		kfree(fdir);
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_lock);
++
+ 	free_netdev(netdev);
+ 
+ 	pci_disable_pcie_error_reporting(pdev);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index ed08ace4f05a..eb687081e94f 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -140,6 +140,7 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
+ 	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
+ 	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES |
+ 	       VIRTCHNL_VF_OFFLOAD_ADQ |
++	       VIRTCHNL_VF_OFFLOAD_FDIR_PF |
+ 	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
+ 
+ 	adapter->current_op = VIRTCHNL_OP_GET_VF_RESOURCES;
+@@ -1197,6 +1198,101 @@ void iavf_del_cloud_filter(struct iavf_adapter *adapter)
+ 	kfree(f);
+ }
+ 
++/**
++ * iavf_add_fdir_filter
++ * @adapter: the VF adapter structure
++ *
++ * Request that the PF add Flow Director filters as specified
++ * by the user via ethtool.
++ **/
++void iavf_add_fdir_filter(struct iavf_adapter *adapter)
++{
++	struct iavf_fdir_fltr *fdir;
++	struct virtchnl_fdir_add *f;
++	bool process_fltr = false;
++	int len;
++
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev, "Cannot add Flow Director filter, command %d pending\n",
++			adapter->current_op);
++		return;
++	}
++
++	len = sizeof(struct virtchnl_fdir_add);
++	f = kzalloc(len, GFP_KERNEL);
++	if (!f)
++		return;
++
++	spin_lock_bh(&adapter->fdir_fltr_lock);
++	list_for_each_entry(fdir, &adapter->fdir_list_head, list) {
++		if (fdir->state == IAVF_FDIR_FLTR_ADD_REQUEST) {
++			process_fltr = true;
++			fdir->state = IAVF_FDIR_FLTR_ADD_PENDING;
++			memcpy(f, &fdir->vc_add_msg, len);
++			break;
++		}
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_lock);
++
++	if (!process_fltr) {
++		/* prevent iavf_add_fdir_filter() from being called when there
++		 * are no filters to add
++		 */
++		adapter->aq_required &= ~IAVF_FLAG_AQ_ADD_FDIR_FILTER;
++		kfree(f);
++		return;
++	}
++	adapter->current_op = VIRTCHNL_OP_ADD_FDIR_FILTER;
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_ADD_FDIR_FILTER, (u8 *)f, len);
++	kfree(f);
++}
++
++/**
++ * iavf_del_fdir_filter
++ * @adapter: the VF adapter structure
++ *
++ * Request that the PF delete Flow Director filters as specified
++ * by the user via ethtool.
++ **/
++void iavf_del_fdir_filter(struct iavf_adapter *adapter)
++{
++	struct iavf_fdir_fltr *fdir;
++	struct virtchnl_fdir_del f;
++	bool process_fltr = false;
++	int len;
++
++	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
++		/* bail because we already have a command pending */
++		dev_err(&adapter->pdev->dev, "Cannot remove Flow Director filter, command %d pending\n",
++			adapter->current_op);
++		return;
++	}
++
++	len = sizeof(struct virtchnl_fdir_del);
++
++	spin_lock_bh(&adapter->fdir_fltr_lock);
++	list_for_each_entry(fdir, &adapter->fdir_list_head, list) {
++		if (fdir->state == IAVF_FDIR_FLTR_DEL_REQUEST) {
++			process_fltr = true;
++			memset(&f, 0, len);
++			f.vsi_id = fdir->vc_add_msg.vsi_id;
++			f.flow_id = fdir->flow_id;
++			fdir->state = IAVF_FDIR_FLTR_DEL_PENDING;
++			break;
++		}
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_lock);
++
++	if (!process_fltr) {
++		adapter->aq_required &= ~IAVF_FLAG_AQ_DEL_FDIR_FILTER;
++		return;
++	}
++
++	adapter->current_op = VIRTCHNL_OP_DEL_FDIR_FILTER;
++	iavf_send_pf_msg(adapter, VIRTCHNL_OP_DEL_FDIR_FILTER, (u8 *)&f, len);
++}
++
+ /**
+  * iavf_request_reset
+  * @adapter: adapter structure
+@@ -1357,6 +1453,49 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			}
+ 			}
+ 			break;
++		case VIRTCHNL_OP_ADD_FDIR_FILTER: {
++			struct iavf_fdir_fltr *fdir, *fdir_tmp;
++
++			spin_lock_bh(&adapter->fdir_fltr_lock);
++			list_for_each_entry_safe(fdir, fdir_tmp,
++						 &adapter->fdir_list_head,
++						 list) {
++				if (fdir->state == IAVF_FDIR_FLTR_ADD_PENDING) {
++					dev_info(&adapter->pdev->dev, "Failed to add Flow Director filter, error %s\n",
++						 iavf_stat_str(&adapter->hw,
++							       v_retval));
++					if (msglen)
++						dev_err(&adapter->pdev->dev,
++							"%s\n", msg);
++					list_del(&fdir->list);
++					kfree(fdir);
++					adapter->fdir_active_fltr--;
++				}
++			}
++			spin_unlock_bh(&adapter->fdir_fltr_lock);
++			}
++			break;
++		case VIRTCHNL_OP_DEL_FDIR_FILTER: {
++			struct iavf_fdir_fltr *fdir;
++
++			spin_lock_bh(&adapter->fdir_fltr_lock);
++			list_for_each_entry(fdir, &adapter->fdir_list_head,
++					    list) {
++				if (fdir->state == IAVF_FDIR_FLTR_DEL_PENDING) {
++					fdir->state = IAVF_FDIR_FLTR_ACTIVE;
++					dev_info(&adapter->pdev->dev, "Failed to del Flow Director filter, error %s\n",
++						 iavf_stat_str(&adapter->hw,
++							       v_retval));
++				}
++			}
++			spin_unlock_bh(&adapter->fdir_fltr_lock);
++			}
++			break;
++		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++			dev_warn(&adapter->pdev->dev,
++				 "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+ 				v_retval, iavf_stat_str(&adapter->hw, v_retval),
+@@ -1490,6 +1629,54 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		}
+ 		}
+ 		break;
++	case VIRTCHNL_OP_ADD_FDIR_FILTER: {
++		struct virtchnl_fdir_add *add_fltr = (struct virtchnl_fdir_add *)msg;
++		struct iavf_fdir_fltr *fdir, *fdir_tmp;
++
++		spin_lock_bh(&adapter->fdir_fltr_lock);
++		list_for_each_entry_safe(fdir, fdir_tmp,
++					 &adapter->fdir_list_head,
++					 list) {
++			if (fdir->state == IAVF_FDIR_FLTR_ADD_PENDING) {
++				if (add_fltr->status == VIRTCHNL_FDIR_SUCCESS) {
++					fdir->state = IAVF_FDIR_FLTR_ACTIVE;
++					fdir->flow_id = add_fltr->flow_id;
++				} else {
++					dev_info(&adapter->pdev->dev,
++						 "Failed to add Flow Director filter with status : %d\n",
++						 add_fltr->status);
++					list_del(&fdir->list);
++					kfree(fdir);
++					adapter->fdir_active_fltr--;
++				}
++			}
++		}
++		spin_unlock_bh(&adapter->fdir_fltr_lock);
++		}
++		break;
++	case VIRTCHNL_OP_DEL_FDIR_FILTER: {
++		struct virtchnl_fdir_del *del_fltr = (struct virtchnl_fdir_del *)msg;
++		struct iavf_fdir_fltr *fdir, *fdir_tmp;
++
++		spin_lock_bh(&adapter->fdir_fltr_lock);
++		list_for_each_entry_safe(fdir, fdir_tmp, &adapter->fdir_list_head,
++					 list) {
++			if (fdir->state == IAVF_FDIR_FLTR_DEL_PENDING) {
++				if (del_fltr->status == VIRTCHNL_FDIR_SUCCESS) {
++					list_del(&fdir->list);
++					kfree(fdir);
++					adapter->fdir_active_fltr--;
++				} else {
++					fdir->state = IAVF_FDIR_FLTR_ACTIVE;
++					dev_info(&adapter->pdev->dev,
++						 "Failed to delete Flow Director filter with status : %d\n",
++						 del_fltr->status);
++				}
++			}
++		}
++		spin_unlock_bh(&adapter->fdir_fltr_lock);
++		}
++		break;
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+-- 
+2.29.2
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
