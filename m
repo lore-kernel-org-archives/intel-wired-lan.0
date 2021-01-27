@@ -1,29 +1,32 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 27 Jan 2021 13:52:11 -0800
-Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] net: consolidate
- page_is_pfmemalloc() usage
-In-Reply-To: <20210127201031.98544-1-alobakin@pm.me>
-References: <20210127201031.98544-1-alobakin@pm.me>
-Message-ID: <20210127135211.00005620@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 27 Jan 2021 23:37:21 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: remove redundant null
+ check on pf
+In-Reply-To: <1611748244-20592-1-git-send-email-wangyunjian@huawei.com>
+References: <1611748244-20592-1-git-send-email-wangyunjian@huawei.com>
+Message-ID: <f8a08a517fbe6977c1777c77067d800d0bbbc9ad.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alexander Lobakin wrote:
+On Wed, 2021-01-27 at 19:50 +0800, wangyunjian wrote:
+> From: Yunjian Wang <wangyunjian@huawei.com>
+> 
+> Before calling ice_set_dflt_mib(), the 'pf' has been dereferenced.
+> So the additional check is unnecessary, just remove it.
+> 
+> Addresses-Coverity: ("Dereference before null check")
+> Fixes: 7d9c9b791f9e ("ice: Implement LFC workaround")
+> Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+> ---
 
-> page_is_pfmemalloc() is used mostly by networking drivers to test
-> if a page can be considered for reusing/recycling.
-> It doesn't write anything to the struct page itself, so its sole
-> argument can be constified, as well as the first argument of
-> skb_propagate_pfmemalloc().
-> In Page Pool core code, it can be simply inlined instead.
-> Most of the callers from NIC drivers were just doppelgangers of
-> the same condition tests. Derive them into a new common function
-> do deduplicate the code.
+Thanks for the patch Yunjian. However, we do have a patch coming[1]
+that fixes this issue.
 
-This is a useful cleanup! Thanks.
+Thanks,
+Tony
 
-For the series:
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+[1] https://patchwork.ozlabs.org/project/intel-wired-
+lan/patch/20201012225326.15722-1-anthony.l.nguyen at intel.com/
