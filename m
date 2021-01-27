@@ -1,298 +1,191 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 27 Jan 2021 17:54:49 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 07d46d93c9acdfe0614071d73c415dd5f745cc6e
-Message-ID: <60113869.ptFbK26pckwHaUi6%lkp@intel.com>
+From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Date: Wed, 27 Jan 2021 10:58:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5] i40e: refactor repeated link
+ state reporting code
+Message-ID: <20210127105836.18944-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 07d46d93c9acdfe0614071d73c415dd5f745cc6e  uapi: fix big endian definition of ipv6_rpl_sr_hdr
+Refactor repeated link state reporting code into a separate helper
+functions: i40e_set_vf_link_state() i40e_vc_link_speed2mbps().
+Add support of VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
 
-elapsed time: 2038m
-
-configs tested: 269
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          landisk_defconfig
-powerpc                     redwood_defconfig
-m68k                          atari_defconfig
-m68k                             allmodconfig
-powerpc                     tqm8540_defconfig
-mips                 decstation_r4k_defconfig
-mips                           xway_defconfig
-mips                      bmips_stb_defconfig
-ia64                        generic_defconfig
-riscv                    nommu_virt_defconfig
-powerpc                     tqm8555_defconfig
-mips                             allmodconfig
-powerpc                 mpc832x_mds_defconfig
-powerpc                        warp_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                      ep88xc_defconfig
-sh                          kfr2r09_defconfig
-powerpc                    klondike_defconfig
-powerpc                    mvme5100_defconfig
-mips                           ip22_defconfig
-openrisc                    or1ksim_defconfig
-xtensa                generic_kc705_defconfig
-nios2                         10m50_defconfig
-powerpc                 mpc8315_rdb_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                  mpc885_ads_defconfig
-s390                          debug_defconfig
-mips                        omega2p_defconfig
-arm                           stm32_defconfig
-mips                  decstation_64_defconfig
-microblaze                      mmu_defconfig
-arm                        clps711x_defconfig
-mips                     decstation_defconfig
-powerpc                  storcenter_defconfig
-arm                          ep93xx_defconfig
-powerpc                         wii_defconfig
-sh                           se7780_defconfig
-powerpc                   bluestone_defconfig
-riscv                             allnoconfig
-arm                  colibri_pxa270_defconfig
-sh                           se7722_defconfig
-mips                         db1xxx_defconfig
-m68k                       m5249evb_defconfig
-powerpc                          g5_defconfig
-sh                           se7343_defconfig
-sh                             sh03_defconfig
-arm                      footbridge_defconfig
-m68k                        m5272c3_defconfig
-sh                        edosk7705_defconfig
-mips                         tb0287_defconfig
-sh                          polaris_defconfig
-xtensa                    smp_lx200_defconfig
-parisc                generic-32bit_defconfig
-powerpc                     stx_gp3_defconfig
-powerpc                     kilauea_defconfig
-powerpc                     tqm8541_defconfig
-arm                            lart_defconfig
-openrisc                            defconfig
-c6x                         dsk6455_defconfig
-powerpc                        cell_defconfig
-riscv                            allmodconfig
-powerpc                   motionpro_defconfig
-powerpc                      chrp32_defconfig
-mips                             allyesconfig
-arm                          tango4_defconfig
-sh                                  defconfig
-arm                       cns3420vb_defconfig
-arm                             ezx_defconfig
-m68k                        mvme147_defconfig
-xtensa                    xip_kc705_defconfig
-arm                       imx_v6_v7_defconfig
-arm                        realview_defconfig
-arm                         vf610m4_defconfig
-alpha                               defconfig
-mips                           ci20_defconfig
-mips                         rt305x_defconfig
-mips                  cavium_octeon_defconfig
-arm                       netwinder_defconfig
-powerpc                      katmai_defconfig
-arm                           viper_defconfig
-arm                        trizeps4_defconfig
-s390                             allyesconfig
-powerpc                       holly_defconfig
-arm                        keystone_defconfig
-arm                            u300_defconfig
-powerpc                     ppa8548_defconfig
-mips                      fuloong2e_defconfig
-powerpc                     tqm5200_defconfig
-arm                         palmz72_defconfig
-powerpc                    gamecube_defconfig
-riscv                          rv32_defconfig
-arm                  colibri_pxa300_defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                                 defconfig
-powerpc                     taishan_defconfig
-arm                            hisi_defconfig
-powerpc                     pq2fads_defconfig
-mips                            ar7_defconfig
-sh                              ul2_defconfig
-sh                     magicpanelr2_defconfig
-arm                        shmobile_defconfig
-i386                                defconfig
-h8300                    h8300h-sim_defconfig
-arm                       multi_v4t_defconfig
-arm                         bcm2835_defconfig
-powerpc                     rainier_defconfig
-powerpc                     pseries_defconfig
-mips                    maltaup_xpa_defconfig
-arm                        oxnas_v6_defconfig
-sh                           se7705_defconfig
-sparc                               defconfig
-arm                          lpd270_defconfig
-powerpc                    adder875_defconfig
-um                            kunit_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                            mmp2_defconfig
-ia64                      gensparse_defconfig
-arm                              alldefconfig
-mips                   sb1250_swarm_defconfig
-sh                         ap325rxa_defconfig
-sh                           se7751_defconfig
-arm                           h5000_defconfig
-mips                           ip32_defconfig
-microblaze                          defconfig
-arc                     nsimosci_hs_defconfig
-arm                         lpc18xx_defconfig
-sh                        sh7763rdp_defconfig
-arm                             pxa_defconfig
-sh                           se7712_defconfig
-sparc                            alldefconfig
-powerpc                      bamboo_defconfig
-arm                         assabet_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                     powernv_defconfig
-arm                          pcm027_defconfig
-mips                       capcella_defconfig
-arm                           corgi_defconfig
-powerpc                      walnut_defconfig
-arm                        mvebu_v7_defconfig
-mips                         mpc30x_defconfig
-parisc                           alldefconfig
-arm                         lubbock_defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm                        spear6xx_defconfig
-powerpc                           allnoconfig
-arm                        spear3xx_defconfig
-powerpc                         ps3_defconfig
-arm                     eseries_pxa_defconfig
-sparc64                          alldefconfig
-sh                        dreamcast_defconfig
-xtensa                  cadence_csp_defconfig
-arc                         haps_hs_defconfig
-mips                        nlm_xlr_defconfig
-arm                        neponset_defconfig
-arm                        multi_v7_defconfig
-nds32                               defconfig
-mips                  maltasmvp_eva_defconfig
-arc                            hsdk_defconfig
-powerpc                     mpc83xx_defconfig
-arm                          imote2_defconfig
-powerpc                      acadia_defconfig
-powerpc                 mpc834x_mds_defconfig
-mips                       lemote2f_defconfig
-arm                            qcom_defconfig
-powerpc               mpc834x_itxgp_defconfig
-m68k                            q40_defconfig
-mips                malta_qemu_32r6_defconfig
-c6x                              allyesconfig
-m68k                                defconfig
-sh                           se7750_defconfig
-mips                           mtx1_defconfig
-m68k                          sun3x_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                               tinyconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a003-20210125
-x86_64               randconfig-a002-20210125
-x86_64               randconfig-a001-20210125
-x86_64               randconfig-a005-20210125
-x86_64               randconfig-a006-20210125
-x86_64               randconfig-a004-20210125
-x86_64               randconfig-a003-20210127
-x86_64               randconfig-a002-20210127
-x86_64               randconfig-a001-20210127
-x86_64               randconfig-a005-20210127
-x86_64               randconfig-a006-20210127
-x86_64               randconfig-a004-20210127
-i386                 randconfig-a001-20210125
-i386                 randconfig-a002-20210125
-i386                 randconfig-a004-20210125
-i386                 randconfig-a006-20210125
-i386                 randconfig-a005-20210125
-i386                 randconfig-a003-20210125
-i386                 randconfig-a001-20210126
-i386                 randconfig-a002-20210126
-i386                 randconfig-a004-20210126
-i386                 randconfig-a006-20210126
-i386                 randconfig-a003-20210126
-i386                 randconfig-a005-20210126
-x86_64               randconfig-a012-20210126
-x86_64               randconfig-a016-20210126
-x86_64               randconfig-a015-20210126
-x86_64               randconfig-a011-20210126
-x86_64               randconfig-a013-20210126
-x86_64               randconfig-a014-20210126
-i386                 randconfig-a013-20210125
-i386                 randconfig-a011-20210125
-i386                 randconfig-a012-20210125
-i386                 randconfig-a015-20210125
-i386                 randconfig-a014-20210125
-i386                 randconfig-a016-20210125
-i386                 randconfig-a013-20210126
-i386                 randconfig-a011-20210126
-i386                 randconfig-a012-20210126
-i386                 randconfig-a015-20210126
-i386                 randconfig-a014-20210126
-i386                 randconfig-a016-20210126
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                               defconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a003-20210126
-x86_64               randconfig-a002-20210126
-x86_64               randconfig-a001-20210126
-x86_64               randconfig-a005-20210126
-x86_64               randconfig-a006-20210126
-x86_64               randconfig-a004-20210126
-x86_64               randconfig-a012-20210125
-x86_64               randconfig-a016-20210125
-x86_64               randconfig-a015-20210125
-x86_64               randconfig-a011-20210125
-x86_64               randconfig-a013-20210125
-x86_64               randconfig-a014-20210125
-x86_64               randconfig-a012-20210127
-x86_64               randconfig-a016-20210127
-x86_64               randconfig-a015-20210127
-x86_64               randconfig-a011-20210127
-x86_64               randconfig-a013-20210127
-x86_64               randconfig-a014-20210127
-
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+v2: improve commit message
+v3: net tree target
+v4: split into 2 patches
+v5: separate refactor commit
+---
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 108 +++++++++++-------
+ 1 file changed, 69 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 1b6ec9b..6621943 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -39,6 +39,66 @@ static void i40e_vc_vf_broadcast(struct i40e_pf *pf,
+ 	}
+ }
+ 
++/**
++ * i40e_vc_link_speed2mbps
++ * converts i40e_aq_link_speed to integer value of Mbps
++ * @link_speed: the speed to convert
++ *
++ * return the speed as direct value of Mbps.
++ **/
++static u32
++i40e_vc_link_speed2mbps(enum i40e_aq_link_speed link_speed)
++{
++	switch (link_speed) {
++	case I40E_LINK_SPEED_100MB:
++		return SPEED_100;
++	case I40E_LINK_SPEED_1GB:
++		return SPEED_1000;
++	case I40E_LINK_SPEED_2_5GB:
++		return SPEED_2500;
++	case I40E_LINK_SPEED_5GB:
++		return SPEED_5000;
++	case I40E_LINK_SPEED_10GB:
++		return SPEED_10000;
++	case I40E_LINK_SPEED_20GB:
++		return SPEED_20000;
++	case I40E_LINK_SPEED_25GB:
++		return SPEED_25000;
++	case I40E_LINK_SPEED_40GB:
++		return SPEED_40000;
++	case I40E_LINK_SPEED_UNKNOWN:
++		return SPEED_UNKNOWN;
++	}
++	return SPEED_UNKNOWN;
++}
++
++/**
++ * i40e_set_vf_link_state
++ * @vf: pointer to the VF structure
++ * @pfe: pointer to PF event structure
++ * @ls: pointer to link status structure
++ *
++ * set a link state on a single vf
++ **/
++static void i40e_set_vf_link_state(struct i40e_vf *vf,
++				   struct virtchnl_pf_event *pfe, struct i40e_link_status *ls)
++{
++	u8 link_status = ls->link_info & I40E_AQ_LINK_UP;
++
++	if (vf->link_forced)
++		link_status = vf->link_up;
++
++	if (vf->driver_caps & VIRTCHNL_VF_CAP_ADV_LINK_SPEED) {
++		pfe->event_data.link_event_adv.link_speed = link_status ?
++			i40e_vc_link_speed2mbps(ls->link_speed) : 0;
++		pfe->event_data.link_event_adv.link_status = link_status;
++	} else {
++		pfe->event_data.link_event.link_speed = link_status ?
++			i40e_virtchnl_link_speed(ls->link_speed) : 0;
++		pfe->event_data.link_event.link_status = link_status;
++	}
++}
++
+ /**
+  * i40e_vc_notify_vf_link_state
+  * @vf: pointer to the VF structure
+@@ -55,16 +115,9 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+ 
+ 	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
+ 	pfe.severity = PF_EVENT_SEVERITY_INFO;
+-	if (vf->link_forced) {
+-		pfe.event_data.link_event.link_status = vf->link_up;
+-		pfe.event_data.link_event.link_speed =
+-			(vf->link_up ? i40e_virtchnl_link_speed(ls->link_speed) : 0);
+-	} else {
+-		pfe.event_data.link_event.link_status =
+-			ls->link_info & I40E_AQ_LINK_UP;
+-		pfe.event_data.link_event.link_speed =
+-			i40e_virtchnl_link_speed(ls->link_speed);
+-	}
++
++	i40e_set_vf_link_state(vf, &pfe, ls);
++
+ 	i40e_aq_send_msg_to_vf(hw, abs_vf_id, VIRTCHNL_OP_EVENT,
+ 			       0, (u8 *)&pfe, sizeof(pfe), NULL);
+ }
+@@ -1940,6 +1993,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 				  VIRTCHNL_VF_OFFLOAD_VLAN;
+ 
+ 	vfres->vf_cap_flags = VIRTCHNL_VF_OFFLOAD_L2;
++	vfres->vf_cap_flags |= VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!vsi->info.pvid)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
+@@ -3687,26 +3741,8 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
+ 	}
+ 
+ 	/* get link speed in MB to validate rate limit */
+-	switch (ls->link_speed) {
+-	case VIRTCHNL_LINK_SPEED_100MB:
+-		speed = SPEED_100;
+-		break;
+-	case VIRTCHNL_LINK_SPEED_1GB:
+-		speed = SPEED_1000;
+-		break;
+-	case VIRTCHNL_LINK_SPEED_10GB:
+-		speed = SPEED_10000;
+-		break;
+-	case VIRTCHNL_LINK_SPEED_20GB:
+-		speed = SPEED_20000;
+-		break;
+-	case VIRTCHNL_LINK_SPEED_25GB:
+-		speed = SPEED_25000;
+-		break;
+-	case VIRTCHNL_LINK_SPEED_40GB:
+-		speed = SPEED_40000;
+-		break;
+-	default:
++	speed = i40e_vc_link_speed2mbps(ls->link_speed);
++	if (speed == SPEED_UNKNOWN) {
+ 		dev_err(&pf->pdev->dev,
+ 			"Cannot detect link speed\n");
+ 		aq_ret = I40E_ERR_PARAM;
+@@ -4455,23 +4491,17 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 	switch (link) {
+ 	case IFLA_VF_LINK_STATE_AUTO:
+ 		vf->link_forced = false;
+-		pfe.event_data.link_event.link_status =
+-			pf->hw.phy.link_info.link_info & I40E_AQ_LINK_UP;
+-		pfe.event_data.link_event.link_speed =
+-			(enum virtchnl_link_speed)
+-			pf->hw.phy.link_info.link_speed;
++		i40e_set_vf_link_state(vf, &pfe, ls);
+ 		break;
+ 	case IFLA_VF_LINK_STATE_ENABLE:
+ 		vf->link_forced = true;
+ 		vf->link_up = true;
+-		pfe.event_data.link_event.link_status = true;
+-		pfe.event_data.link_event.link_speed = i40e_virtchnl_link_speed(ls->link_speed);
++		i40e_set_vf_link_state(vf, &pfe, ls);
+ 		break;
+ 	case IFLA_VF_LINK_STATE_DISABLE:
+ 		vf->link_forced = true;
+ 		vf->link_up = false;
+-		pfe.event_data.link_event.link_status = false;
+-		pfe.event_data.link_event.link_speed = 0;
++		i40e_set_vf_link_state(vf, &pfe, ls);
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
+-- 
+2.18.4
+
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
+
