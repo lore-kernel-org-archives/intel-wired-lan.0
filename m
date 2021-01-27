@@ -1,51 +1,43 @@
-From: Alexander Lobakin <alobakin@pm.me>
-Date: Wed, 27 Jan 2021 20:23:48 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] net: constify
- page_is_pfmemalloc() and its users
-In-Reply-To: <20210125164612.243838-1-alobakin@pm.me>
-References: <20210125164612.243838-1-alobakin@pm.me>
-Message-ID: <20210127202322.99523-1-alobakin@pm.me>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 27 Jan 2021 13:47:26 -0800
+Subject: [Intel-wired-lan] [PATCH v2 net-next 3/4] net: introduce common
+ dev_page_is_reserved()
+In-Reply-To: <20210127201031.98544-4-alobakin@pm.me>
+References: <20210127201031.98544-1-alobakin@pm.me>
+ <20210127201031.98544-4-alobakin@pm.me>
+Message-ID: <20210127134726.00003605@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Lobakin <alobakin@pm.me>
-Date: Mon, 25 Jan 2021 16:46:48 +0000
+Alexander Lobakin wrote:
 
-> page_is_pfmemalloc() is used mostly by networking drivers. It doesn't
-> write anything to the struct page itself, so constify its argument and
-> a bunch of callers and wrappers around this function in drivers.
-> In Page Pool core code, it can be simply inlined instead.
+> A bunch of drivers test the page before reusing/recycling for two
+> common conditions:
+>  - if a page was allocated under memory pressure (pfmemalloc page);
+>  - if a page was allocated at a distant memory node (to exclude
+>    slowdowns).
 > 
-> Alexander Lobakin (3):
->   mm: constify page_is_pfmemalloc() argument
->   net: constify page_is_pfmemalloc() argument at call sites
->   net: page_pool: simplify page recycling condition tests
-
-Superseded with v2 [0].
-
->  drivers/net/ethernet/hisilicon/hns3/hns3_enet.c   |  2 +-
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c       |  2 +-
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c       |  2 +-
->  drivers/net/ethernet/intel/ice/ice_txrx.c         |  2 +-
->  drivers/net/ethernet/intel/igb/igb_main.c         |  2 +-
->  drivers/net/ethernet/intel/igc/igc_main.c         |  2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  2 +-
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  2 +-
->  drivers/net/ethernet/mellanox/mlx5/core/en_rx.c   |  2 +-
->  include/linux/mm.h                                |  2 +-
->  include/linux/skbuff.h                            |  4 ++--
->  net/core/page_pool.c                              | 14 ++++----------
->  13 files changed, 17 insertions(+), 23 deletions(-)
+> Introduce and use a new common function for doing this and eliminate
+> all functions-duplicates from drivers.
 > 
-> -- 
-> 2.30.0
+> Suggested-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Alexander Lobakin <alobakin@pm.me>
+> ---
+>  drivers/net/ethernet/hisilicon/hns3/hns3_enet.c   | 10 ++--------
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c     |  9 ++-------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 15 +--------------
+>  drivers/net/ethernet/intel/iavf/iavf_txrx.c       | 15 +--------------
+>  drivers/net/ethernet/intel/ice/ice_txrx.c         | 11 +----------
+>  drivers/net/ethernet/intel/igb/igb_main.c         |  7 +------
+>  drivers/net/ethernet/intel/igc/igc_main.c         |  7 +------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  7 +------
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  7 +------
+>  drivers/net/ethernet/mellanox/mlx5/core/en_rx.c   |  7 +------
+>  include/linux/skbuff.h                            | 15 +++++++++++++++
+>  11 files changed, 27 insertions(+), 83 deletions(-)
 
-[0] https://lore.kernel.org/netdev/20210127201031.98544-1-alobakin at pm.me
-
-Thanks,
-Al
-
+For the patch, and esp. for the Intel drivers:
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
