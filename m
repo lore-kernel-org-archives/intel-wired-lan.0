@@ -1,32 +1,125 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 27 Jan 2021 23:37:21 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ice: remove redundant null
- check on pf
-In-Reply-To: <1611748244-20592-1-git-send-email-wangyunjian@huawei.com>
-References: <1611748244-20592-1-git-send-email-wangyunjian@huawei.com>
-Message-ID: <f8a08a517fbe6977c1777c77067d800d0bbbc9ad.camel@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Thu, 28 Jan 2021 10:47:26 +0000
+Subject: [Intel-wired-lan] [PATCH net v5 1/2] i40e: Revert "i40e: don't
+ report link up for a VF who hasn't enabled queues"
+In-Reply-To: <20210123002223.361450-1-arkadiusz.kubalewski@intel.com>
+References: <20210123002223.361450-1-arkadiusz.kubalewski@intel.com>
+Message-ID: <CY4PR11MB15769360346088EE2F8C1D61ABBA9@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-01-27 at 19:50 +0800, wangyunjian wrote:
-> From: Yunjian Wang <wangyunjian@huawei.com>
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Arkadiusz Kubalewski
+> Sent: sobota, 23 stycznia 2021 01:22
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v5 1/2] i40e: Revert "i40e: don't report
+> link up for a VF who hasn't enabled queues"
 > 
-> Before calling ice_set_dflt_mib(), the 'pf' has been dereferenced.
-> So the additional check is unnecessary, just remove it.
+> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > 
-> Addresses-Coverity: ("Dereference before null check")
-> Fixes: 7d9c9b791f9e ("ice: Implement LFC workaround")
-> Signed-off-by: Yunjian Wang <wangyunjian@huawei.com>
+> This reverts commit 2ad1274fa35ace5c6360762ba48d33b63da2396c
+> 
+> VF queues were not brought up when PF was brought up after being
+> downed if the VF driver disabled VFs queues during PF down.
+> This could happen in some older or external VF driver implementations.
+> The problem was that PF driver used vf->queues_enabled as a condition to
+> decide what link-state it would send out which caused the issue.
+> 
+> Remove the check for vf->queues_enabled in the VF link notify.
+> Now VF will always be notified of the current link status.
+> Also remove the queues_enabled member from i40e_vf structure as it is not
+> used anymore. Otherwise VNF implementation was broken and caused a link
+> flap.
+> 
+> Fixes: 2ad1274fa35a ("i40e: don't report link up for a VF who hasn't enabled")
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 > ---
+> v2: improve commit message
+> v3: net tree target
+> v4: split into 2 patches
+> v5: improve explanation of revert commit
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 13 +------------
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  1 -
+>  2 files changed, 1 insertion(+), 13 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 7efc61a..1b6ec9b 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -55,12 +55,7 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf
+> *vf)
+> 
+>  	pfe.event = VIRTCHNL_EVENT_LINK_CHANGE;
+>  	pfe.severity = PF_EVENT_SEVERITY_INFO;
+> -
+> -	/* Always report link is down if the VF queues aren't enabled */
+> -	if (!vf->queues_enabled) {
+> -		pfe.event_data.link_event.link_status = false;
+> -		pfe.event_data.link_event.link_speed = 0;
+> -	} else if (vf->link_forced) {
+> +	if (vf->link_forced) {
+>  		pfe.event_data.link_event.link_status = vf->link_up;
+>  		pfe.event_data.link_event.link_speed =
+>  			(vf->link_up ? i40e_virtchnl_link_speed(ls-
+> >link_speed) : 0); @@ -70,7 +65,6 @@ static void
+> i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+>  		pfe.event_data.link_event.link_speed =
+>  			i40e_virtchnl_link_speed(ls->link_speed);
+>  	}
+> -
+>  	i40e_aq_send_msg_to_vf(hw, abs_vf_id, VIRTCHNL_OP_EVENT,
+>  			       0, (u8 *)&pfe, sizeof(pfe), NULL);  } @@ -2443,8
+> +2437,6 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8
+> *msg)
+>  		}
+>  	}
+> 
+> -	vf->queues_enabled = true;
+> -
+>  error_param:
+>  	/* send the response to the VF */
+>  	return i40e_vc_send_resp_to_vf(vf,
+> VIRTCHNL_OP_ENABLE_QUEUES, @@ -2466,9 +2458,6 @@ static int
+> i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
+>  	struct i40e_pf *pf = vf->pf;
+>  	i40e_status aq_ret = 0;
+> 
+> -	/* Immediately mark queues as disabled */
+> -	vf->queues_enabled = false;
+> -
+>  	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
+>  		aq_ret = I40E_ERR_PARAM;
+>  		goto error_param;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> index 5491215..091e32c 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> @@ -98,7 +98,6 @@ struct i40e_vf {
+>  	unsigned int tx_rate;	/* Tx bandwidth limit in Mbps */
+>  	bool link_forced;
+>  	bool link_up;		/* only valid if VF link is forced */
+> -	bool queues_enabled;	/* true if the VF queues are enabled */
+>  	bool spoofchk;
+>  	u16 num_vlan;
+> 
+> --
 
-Thanks for the patch Yunjian. However, we do have a patch coming[1]
-that fixes this issue.
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
 
-Thanks,
-Tony
-
-[1] https://patchwork.ozlabs.org/project/intel-wired-
-lan/patch/20201012225326.15722-1-anthony.l.nguyen at intel.com/
