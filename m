@@ -1,64 +1,136 @@
-From: Chris Friesen <chris.friesen@windriver.com>
-Date: Fri, 29 Jan 2021 09:41:09 -0600
-Subject: [Intel-wired-lan] IRQ affinity not working properly?
-Message-ID: <aa48b21f-c8da-0b9c-b7de-f100069ccba2@windriver.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 29 Jan 2021 13:27:28 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v3 6/8] igc: Add support for
+ tuning frame preemption via ethtool
+In-Reply-To: <20210126003243.x3c44pmxmieqsa6e@skbuf>
+References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
+ <20210122224453.4161729-7-vinicius.gomes@intel.com>
+ <20210126003243.x3c44pmxmieqsa6e@skbuf>
+Message-ID: <87pn1nsabj.fsf@vcostago-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Vladimir Oltean <vladimir.oltean@nxp.com> writes:
 
-I have a CentOS 7 linux system with 48 logical CPUs and a number of 
-Intel NICs running the i40e driver.  It was booted with 
-irqaffinity=0-1,24-25 in the kernel boot args, resulting in 
-/proc/irq/default_smp_affinity showing "0000,03000003".   CPUs 2-11 are 
-set as "isolated" in the kernel boot args.  The irqbalance daemon is not 
-running.
+> On Fri, Jan 22, 2021 at 02:44:51PM -0800, Vinicius Costa Gomes wrote:
+>> The tc subsystem sets which queues are marked as preemptible, it's the
+>> role of ethtool to control more hardware specific parameters. These
+>> parameters include:
+>> 
+>>  - enabling the frame preemption hardware: As enabling frame
+>>  preemption may have other requirements before it can be enabled, it's
+>>  exposed via the ethtool API;
+>> 
+>>  - mininum fragment size multiplier: expressed in usually in the form
+>>  of (1 + N)*64, this number indicates what's the size of the minimum
+>>  fragment that can be preempted.
+>
+> And not one word has been said about the patch...
 
-The iavf driver is 3.7.61.20 and the i40e driver is 2.10.19.82
+If I am undertanding this right. Will fix the commit message.
 
-The problem I'm seeing is that /proc/interrupts shows iavf interrupts on 
-other CPUs than the expected affinity.  For example, here are some 
-interrupts on CPU 4 where I would not expect to see any interrupts given 
-that "cat /proc/irq/<NUM>/smp_affinity_list" reports "0-1,24-25" for all 
-these interrupts.  (Sorry for the line wrapping.)
+>
+>> 
+>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/igc/igc.h         | 12 +++++
+>>  drivers/net/ethernet/intel/igc/igc_defines.h |  4 ++
+>>  drivers/net/ethernet/intel/igc/igc_ethtool.c | 53 ++++++++++++++++++++
+>>  drivers/net/ethernet/intel/igc/igc_tsn.c     | 25 +++++++--
+>>  4 files changed, 91 insertions(+), 3 deletions(-)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+>> index 35baae900c1f..1067c46e0bc2 100644
+>> --- a/drivers/net/ethernet/intel/igc/igc.h
+>> +++ b/drivers/net/ethernet/intel/igc/igc.h
+>> @@ -87,6 +87,7 @@ struct igc_ring {
+>>  	u8 queue_index;                 /* logical index of the ring*/
+>>  	u8 reg_idx;                     /* physical index of the ring */
+>>  	bool launchtime_enable;         /* true if LaunchTime is enabled */
+>> +	bool preemptible;		/* true if not express */
+>
+> Mixing tabs and spaces?
 
-cat /proc/interrupts | grep -e CPU -e 941: -e 942: -e 943: -e 944: -e 
-945: -e 961: -e 962: -e 963: -e 964: -e 965:
+Ugh. Will fix. Thanks.
 
-              CPU0       CPU1       CPU2       CPU3 CPU4       CPU5
-941:          0          0          0          0 28490          0 
-   IR-PCI-MSI-edge iavf-0000:b5:03.6:mbx
-942:          0          0          0          0 333832         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-0
-943:          0          0          0          0 300842         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-1
-944:          0          0          0          0 333845         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-2
-945:          0          0          0          0 333822         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-3
-961:          0          0          0          0 28492         0 
-  IR-PCI-MSI-edge iavf-0000:b5:02.7:mbx
-962:          0          0          0          0 435608         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-0
-963:          0          0          0          0 394832         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-1
-964:          0          0          0          0 398414         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-2
-965:          0          0          0          0 192847         0 
-   IR-PCI-MSI-edge      iavf-net1-TxRx-3
+>
+>> +static int igc_ethtool_set_preempt(struct net_device *netdev,
+>> +				   struct ethtool_fp *fpcmd,
+>> +				   struct netlink_ext_ack *extack)
+>> +{
+>> +	struct igc_adapter *adapter = netdev_priv(netdev);
+>> +	int i;
+>> +
+>> +	if (fpcmd->add_frag_size < 68 || fpcmd->add_frag_size > 260) {
+>> +		NL_SET_ERR_MSG_MOD(extack, "Invalid value for add-frag-size");
+>> +		return -EINVAL;
+>> +	}
+>
+> This check should belong in ethtool, since there's nothing unusual about
+> this supported range.
+>
+> Also, I believe that Jakub requested the min-frag-size to be passed as
+> 0, 1, 2, 3 as the standard specifies it, and not its multiplied
+> version?
 
-There were IRQs coming in on the "iavf-0000:b5:02.7:mbx" interrupt at 
-roughly 1 per second without any traffic, while the interrupt rate on 
-the "iavf-net1-TxRx-<X>" seemed to be related to traffic.
+Later, Michal Kubechek suggested using the multiplied value, to be
+future proof and less dependent on some specific standard version.
 
-Is this expected?  It seems like the iavf and/or the i40e aren't 
-respecting the configured SMP affinity for the interrupt in question.
+>
+>> +
+>> +	adapter->frame_preemption_active = fpcmd->enabled;
+>> +	adapter->add_frag_size = fpcmd->add_frag_size;
+>> +
+>> +	if (!adapter->frame_preemption_active)
+>> +		goto done;
+>> +
+>> +	/* Enabling frame preemption requires TSN mode to be enabled,
+>> +	 * which requires a schedule to be active. So, if there isn't
+>> +	 * a schedule already configured, configure a simple one, with
+>> +	 * all queues open, with 1ms cycle time.
+>> +	 */
+>> +	if (adapter->base_time)
+>> +		goto done;
+>
+> Unless I'm missing something, you are interpreting an adapter->base_time
+> value of zero as "no Qbv schedule on port", as if it was invalid to have
+> a base-time of zero, which it isn't.
 
-Anyone have any ideas?
+This HW has specific limitations, it doesn't allow a base_time in the
+past. So a base_time of zero can be used to signify "No Qbv".
 
-Thanks,
+>
+>> @@ -115,6 +130,9 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+>>  		if (ring->launchtime_enable)
+>>  			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
+>>  
+>> +		if (ring->preemptible)
+>> +			txqctl |= IGC_TXQCTL_PREEMPTABLE;
+>
+> I think this is the only place in the series where you use PREEMPTABLE
+> instead of PREEMPTIBLE.
 
-Chris
+Yeah, on the datasheet it's written PREEMPTABLE, I chose to use this
+spelling to make it easier to search for this bit in the datasheet.
+
+>
+>> +
+>>  		wr32(IGC_TXQCTL(i), txqctl);
+>>  	}
+>
+> Out of curiosity, where is the ring to traffic class mapping configured
+> in the igc driver? I suppose that you have more rings than traffic classes.
+
+The driver follows the default behaviour, that netdev->queue[0] maps to
+ring[0], queue[1] to ring[1], and so on. And by default ring[0] has
+higher priority than ring[1], ring[1] higher than ring[2], and so on.
+
+The HW only has 4 rings/queues.
+
+
+Cheers,
+-- 
+Vinicius
