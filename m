@@ -1,68 +1,64 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 29 Jan 2021 13:13:24 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/8] taprio: Add support
- for frame preemption offload
-In-Reply-To: <20210126000924.jjkjruzmh5lgrkry@skbuf>
-References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-3-vinicius.gomes@intel.com>
- <20210126000924.jjkjruzmh5lgrkry@skbuf>
-Message-ID: <87wnvvsayz.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: Chris Friesen <chris.friesen@windriver.com>
+Date: Fri, 29 Jan 2021 09:41:09 -0600
+Subject: [Intel-wired-lan] IRQ affinity not working properly?
+Message-ID: <aa48b21f-c8da-0b9c-b7de-f100069ccba2@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vladimir Oltean <vladimir.oltean@nxp.com> writes:
+Hi,
 
-> On Fri, Jan 22, 2021 at 02:44:47PM -0800, Vinicius Costa Gomes wrote:
->> +	/* It's valid to enable frame preemption without any kind of
->> +	 * offloading being enabled, so keep it separated.
->> +	 */
->> +	if (tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]) {
->> +		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]);
->> +		struct tc_preempt_qopt_offload qopt = { };
->> +
->> +		if (preempt == U32_MAX) {
->> +			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
->> +			err = -EINVAL;
->> +			goto free_sched;
->> +		}
->> +
->> +		qopt.preemptible_queues = tc_map_to_queue_mask(dev, preempt);
->> +
->> +		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
->> +						    &qopt);
->> +		if (err)
->> +			goto free_sched;
->> +
->> +		q->preemptible_tcs = preempt;
->> +	}
->> +
->
-> First I'm interested in the means: why check for preempt == U32_MAX when
-> you determine that all traffic classes are preemptible? What if less
-> than 32 traffic classes are used by the netdev? The check will be
-> bypassed, won't it?
+I have a CentOS 7 linux system with 48 logical CPUs and a number of 
+Intel NICs running the i40e driver.  It was booted with 
+irqaffinity=0-1,24-25 in the kernel boot args, resulting in 
+/proc/irq/default_smp_affinity showing "0000,03000003".   CPUs 2-11 are 
+set as "isolated" in the kernel boot args.  The irqbalance daemon is not 
+running.
 
-Good catch :-)
+The iavf driver is 3.7.61.20 and the i40e driver is 2.10.19.82
 
-I wanted to have this (at least one express queue) handled in a
-centralized way, but perhaps this should be handled best per driver.
+The problem I'm seeing is that /proc/interrupts shows iavf interrupts on 
+other CPUs than the expected affinity.  For example, here are some 
+interrupts on CPU 4 where I would not expect to see any interrupts given 
+that "cat /proc/irq/<NUM>/smp_affinity_list" reports "0-1,24-25" for all 
+these interrupts.  (Sorry for the line wrapping.)
 
->
-> Secondly, why should at least one queue be preemptible? What's wrong
-> with frame preemption being triggered by a tc-taprio window smaller than
-> the packet size? This can happen regardless of traffic class.
+cat /proc/interrupts | grep -e CPU -e 941: -e 942: -e 943: -e 944: -e 
+945: -e 961: -e 962: -e 963: -e 964: -e 965:
 
-It's the opposite, at least one queue needs to be marked
-express/non-preemptible. But as I said above, perhaps this should be
-handled in a per-driver way. I will remove this from taprio.
+              CPU0       CPU1       CPU2       CPU3 CPU4       CPU5
+941:          0          0          0          0 28490          0 
+   IR-PCI-MSI-edge iavf-0000:b5:03.6:mbx
+942:          0          0          0          0 333832         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-0
+943:          0          0          0          0 300842         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-1
+944:          0          0          0          0 333845         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-2
+945:          0          0          0          0 333822         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-3
+961:          0          0          0          0 28492         0 
+  IR-PCI-MSI-edge iavf-0000:b5:02.7:mbx
+962:          0          0          0          0 435608         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-0
+963:          0          0          0          0 394832         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-1
+964:          0          0          0          0 398414         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-2
+965:          0          0          0          0 192847         0 
+   IR-PCI-MSI-edge      iavf-net1-TxRx-3
 
-I think removing this check/limitation from taprio should solve the
-second part of your question, right?
+There were IRQs coming in on the "iavf-0000:b5:02.7:mbx" interrupt at 
+roughly 1 per second without any traffic, while the interrupt rate on 
+the "iavf-net1-TxRx-<X>" seemed to be related to traffic.
 
+Is this expected?  It seems like the iavf and/or the i40e aren't 
+respecting the configured SMP affinity for the interrupt in question.
 
-Cheers,
--- 
-Vinicius
+Anyone have any ideas?
+
+Thanks,
+
+Chris
