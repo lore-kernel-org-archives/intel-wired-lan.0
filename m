@@ -1,37 +1,38 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Fri, 29 Jan 2021 16:27:42 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/8] taprio: Add support
- for frame preemption offload
-In-Reply-To: <878s8bs5fp.fsf@vcostago-mobl2.amr.corp.intel.com>
-References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-3-vinicius.gomes@intel.com>
- <20210126000924.jjkjruzmh5lgrkry@skbuf>
- <87wnvvsayz.fsf@vcostago-mobl2.amr.corp.intel.com>
- <20210129135702.0f8cf702@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <878s8bs5fp.fsf@vcostago-mobl2.amr.corp.intel.com>
-Message-ID: <20210129162742.6092753b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Date: Fri, 29 Jan 2021 18:30:51 -0800
+Subject: [Intel-wired-lan] [PATCH v2 net-next 1/4] mm: constify
+ page_is_pfmemalloc() argument
+In-Reply-To: <20210127201031.98544-2-alobakin@pm.me>
+References: <20210127201031.98544-1-alobakin@pm.me>
+ <20210127201031.98544-2-alobakin@pm.me>
+Message-ID: <20210129183051.62874a6d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 29 Jan 2021 15:12:58 -0800 Vinicius Costa Gomes wrote:
-> Jakub Kicinski <kuba@kernel.org> writes:
-> >> Good catch :-)
-> >> 
-> >> I wanted to have this (at least one express queue) handled in a
-> >> centralized way, but perhaps this should be handled best per driver.  
-> >
-> > Centralized is good. Much easier than reviewing N drivers to make sure
-> > they all behave the same, and right.  
+On Wed, 27 Jan 2021 20:11:01 +0000 Alexander Lobakin wrote:
+> The function only tests for page->index, so its argument should be
+> const.
 > 
-> The issue is that it seems that not all drivers/hw have the same
-> limitation: that at least one queue needs to be configured as
-> express/not preemptible.
+> Signed-off-by: Alexander Lobakin <alobakin@pm.me>
+> ---
+>  include/linux/mm.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index ecdf8a8cd6ae..078633d43af9 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1584,7 +1584,7 @@ struct address_space *page_mapping_file(struct page *page);
+>   * ALLOC_NO_WATERMARKS and the low watermark was not
+>   * met implying that the system is under some pressure.
+>   */
+> -static inline bool page_is_pfmemalloc(struct page *page)
+> +static inline bool page_is_pfmemalloc(const struct page *page)
+>  {
+>  	/*
+>  	 * Page index cannot be this large so this must be
 
-Oh, I thought that was something driven by the standard.
-For HW specific checks driver doing it is obviously fine.
-
-> That's the point I was trying to make when I suggested for the check to
-> be done per-driver, different limitations.
+No objections for this going via net-next?
