@@ -1,63 +1,58 @@
-From: John Hubbard <jhubbard@nvidia.com>
-Date: Sat, 30 Jan 2021 13:23:30 -0800
-Subject: [Intel-wired-lan] [PATCH v2 net-next 3/4] net: introduce common
- dev_page_is_reserved()
-In-Reply-To: <20210130194459.37837-1-alobakin@pm.me>
-References: <20210127201031.98544-1-alobakin@pm.me>
- <20210127201031.98544-4-alobakin@pm.me>
- <20210129183907.2ae5ca3d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210130154149.8107-1-alobakin@pm.me>
- <20210130110707.3122a360@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210130194459.37837-1-alobakin@pm.me>
-Message-ID: <752a57a6-3f45-8b9b-e8b1-939bc9450947@nvidia.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 30 Jan 2021 15:49:49 -0800
+Subject: [Intel-wired-lan] [PATCH] csky: change a Kconfig symbol name to fix
+ e1000 build error
+Message-ID: <20210130234949.21090-1-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+e1000's #define of CONFIG_RAM_BASE conflicts with a Kconfig symbol in
+arch/csky/Kconfig.
+The symbol in e1000 has been around longer, so change arch/csky/
+to use DRAM_BASE instead of RAM_BASE to remove the conflict.
+(although e1000 is also a 2-line change)
 
-On 1/30/21 11:45 AM, Alexander Lobakin wrote:
-> From: Jakub Kicinski <kuba@kernel.org>
-> Date: Sat, 30 Jan 2021 11:07:07 -0800
-> 
->> On Sat, 30 Jan 2021 15:42:29 +0000 Alexander Lobakin wrote:
->>>> On Wed, 27 Jan 2021 20:11:23 +0000 Alexander Lobakin wrote:
->>>>> + * dev_page_is_reserved - check whether a page can be reused for network Rx
->>>>> + * @page: the page to test
->>>>> + *
->>>>> + * A page shouldn't be considered for reusing/recycling if it was allocated
->>>>> + * under memory pressure or at a distant memory node.
->>>>> + *
->>>>> + * Returns true if this page should be returned to page allocator, false
->>>>> + * otherwise.
->>>>> + */
->>>>> +static inline bool dev_page_is_reserved(const struct page *page)
->>>>
->>>> Am I the only one who feels like "reusable" is a better term than
->>>> "reserved".
->>>
->>> I thought about it, but this will need to inverse the conditions in
->>> most of the drivers. I decided to keep it as it is.
->>> I can redo if "reusable" is preferred.
->>
->> Naming is hard. As long as the condition is not a double negative it
->> reads fine to me, but that's probably personal preference.
->> The thing that doesn't sit well is the fact that there is nothing
->> "reserved" about a page from another NUMA node.. But again, if nobody
->> +1s this it's whatever...
-> 
-> Agree on NUMA and naming. I'm a bit surprised that 95% of drivers
-> have this helper called "reserved" (one of the reasons why I finished
-> with this variant).
-> Let's say, if anybody else will vote for "reusable", I'll pick it for
-> v3.
+Not tested: I don't have a build toolchain for CSKY.
 
-Definitely "reusable" seems better to me, and especially anything *other*
-than "reserved" is a good idea, IMHO.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: Guo Ren <guoren@linux.alibaba.com>
+Cc: Guo Ren <guoren@kernel.org>
+Cc: linux-csky at vger.kernel.org
+---
+IMO "CONFIG_" namespace should belong to Kconfig files, not
+individual drivers, but e1000 isn't the only driver that uses
+CONFIG_ symbols.
 
+ arch/csky/Kconfig            |    2 +-
+ arch/csky/include/asm/page.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-thanks,
--- 
-John Hubbard
-NVIDIA
+--- linux-next-20210129.orig/arch/csky/include/asm/page.h
++++ linux-next-20210129/arch/csky/include/asm/page.h
+@@ -28,7 +28,7 @@
+ #define SSEG_SIZE	0x20000000
+ #define LOWMEM_LIMIT	(SSEG_SIZE * 2)
+ 
+-#define PHYS_OFFSET_OFFSET (CONFIG_RAM_BASE & (SSEG_SIZE - 1))
++#define PHYS_OFFSET_OFFSET (CONFIG_DRAM_BASE & (SSEG_SIZE - 1))
+ 
+ #ifndef __ASSEMBLY__
+ 
+--- linux-next-20210129.orig/arch/csky/Kconfig
++++ linux-next-20210129/arch/csky/Kconfig
+@@ -314,7 +314,7 @@ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+ 	default "11"
+ 
+-config RAM_BASE
++config DRAM_BASE
+ 	hex "DRAM start addr (the same with memory-section in dts)"
+ 	default 0x0
+ 
