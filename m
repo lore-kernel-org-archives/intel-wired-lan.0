@@ -1,73 +1,55 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Sun, 31 Jan 2021 10:08:34 +0800
-Subject: [Intel-wired-lan] [PATCH] csky: change a Kconfig symbol name to
- fix e1000 build error
-In-Reply-To: <20210130234949.21090-1-rdunlap@infradead.org>
-References: <20210130234949.21090-1-rdunlap@infradead.org>
-Message-ID: <CAJF2gTR9pdgmYv8tV9ncjHYQ-LAA75f_Yc0BMyOQjiR-TAW4TA@mail.gmail.com>
+From: Matt Corallo <linux-wired-list@bluematt.me>
+Date: Sun, 31 Jan 2021 18:17:11 -0500
+Subject: [Intel-wired-lan] [PATCH net] igb: Enable RSS for Intel I211
+ Ethernet Controller
+In-Reply-To: <20201221222502.1706-1-nick.lowe@gmail.com>
+References: <20201221222502.1706-1-nick.lowe@gmail.com>
+Message-ID: <379d4ef3-02e5-f08a-1b04-21848e11a365@bluematt.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Acked-by
+Given this fixes a major (albeit ancient) performance regression, is it not a candidate for backport? It landed on 
+Tony's dev-queue branch with a Fixes tag but no stable CC.
 
-Thx
+Thanks,
+Matt
 
-On Sun, Jan 31, 2021 at 7:50 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->
-> e1000's #define of CONFIG_RAM_BASE conflicts with a Kconfig symbol in
-> arch/csky/Kconfig.
-> The symbol in e1000 has been around longer, so change arch/csky/
-> to use DRAM_BASE instead of RAM_BASE to remove the conflict.
-> (although e1000 is also a 2-line change)
->
-> Not tested: I don't have a build toolchain for CSKY.
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Reported-by: kernel test robot <lkp@intel.com>
-> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Cc: Guo Ren <guoren@linux.alibaba.com>
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: linux-csky at vger.kernel.org
+On 12/21/20 5:25 PM, Nick Lowe wrote:
+> The Intel I211 Ethernet Controller supports 2 Receive Side Scaling (RSS) queues.
+> It should not be excluded from having this feature enabled.
+> 
+> Via commit c883de9fd787b6f49bf825f3de3601aeb78a7114
+> E1000_MRQC_ENABLE_RSS_4Q was renamed to E1000_MRQC_ENABLE_RSS_MQ to
+> indicate that this is a generic bit flag to enable queues and not
+> a flag that is specific to devices that support 4 queues
+> 
+> The bit flag enables 2, 4 or 8 queues appropriately depending on the part.
+> 
+> Tested with a multicore CPU and frames were then distributed as expected.
+> 
+> This issue appears to have been introduced because of confusion caused
+> by the prior name.
+> 
+> Signed-off-by: Nick Lowe <nick.lowe@gmail.com>
 > ---
-> IMO "CONFIG_" namespace should belong to Kconfig files, not
-> individual drivers, but e1000 isn't the only driver that uses
-> CONFIG_ symbols.
->
->  arch/csky/Kconfig            |    2 +-
->  arch/csky/include/asm/page.h |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> --- linux-next-20210129.orig/arch/csky/include/asm/page.h
-> +++ linux-next-20210129/arch/csky/include/asm/page.h
-> @@ -28,7 +28,7 @@
->  #define SSEG_SIZE      0x20000000
->  #define LOWMEM_LIMIT   (SSEG_SIZE * 2)
->
-> -#define PHYS_OFFSET_OFFSET (CONFIG_RAM_BASE & (SSEG_SIZE - 1))
-> +#define PHYS_OFFSET_OFFSET (CONFIG_DRAM_BASE & (SSEG_SIZE - 1))
->
->  #ifndef __ASSEMBLY__
->
-> --- linux-next-20210129.orig/arch/csky/Kconfig
-> +++ linux-next-20210129/arch/csky/Kconfig
-> @@ -314,7 +314,7 @@ config FORCE_MAX_ZONEORDER
->         int "Maximum zone order"
->         default "11"
->
-> -config RAM_BASE
-> +config DRAM_BASE
->         hex "DRAM start addr (the same with memory-section in dts)"
->         default 0x0
->
-
-
--- 
-Best Regards
- Guo Ren
-
-ML: https://lore.kernel.org/linux-csky/
+>   drivers/net/ethernet/intel/igb/igb_main.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 03f78fdb0dcd..87ac1d3e25cb 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -4482,8 +4482,7 @@ static void igb_setup_mrqc(struct igb_adapter *adapter)
+>   		else
+>   			mrqc |= E1000_MRQC_ENABLE_VMDQ;
+>   	} else {
+> -		if (hw->mac.type != e1000_i211)
+> -			mrqc |= E1000_MRQC_ENABLE_RSS_MQ;
+> +		mrqc |= E1000_MRQC_ENABLE_RSS_MQ;
+>   	}
+>   	igb_vmm_control(adapter);
+>   
+> 
