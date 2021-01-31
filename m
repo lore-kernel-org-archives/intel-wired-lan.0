@@ -1,21 +1,31 @@
-From: Matthew Wilcox <willy@infradead.org>
-Date: Sun, 31 Jan 2021 12:23:48 +0000
+From: Alexander Lobakin <alobakin@pm.me>
+Date: Sun, 31 Jan 2021 12:48:28 +0000
 Subject: [Intel-wired-lan] [PATCH v3 net-next 5/5] net: page_pool:
  simplify page recycling condition tests
-In-Reply-To: <20210131120844.7529-6-alobakin@pm.me>
+In-Reply-To: <20210131122348.GM308988@casper.infradead.org>
 References: <20210131120844.7529-1-alobakin@pm.me>
  <20210131120844.7529-6-alobakin@pm.me>
-Message-ID: <20210131122348.GM308988@casper.infradead.org>
+ <20210131122348.GM308988@casper.infradead.org>
+Message-ID: <20210131124802.8430-1-alobakin@pm.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Jan 31, 2021 at 12:12:11PM +0000, Alexander Lobakin wrote:
-> pool_page_reusable() is a leftover from pre-NUMA-aware times. For now,
-> this function is just a redundant wrapper over page_is_pfmemalloc(),
-> so inline it into its sole call site.
+From: Matthew Wilcox <willy@infradead.org>
+Date: Sun, 31 Jan 2021 12:23:48 +0000
 
-Why doesn't this want to use {dev_}page_is_reusable()?
+> On Sun, Jan 31, 2021 at 12:12:11PM +0000, Alexander Lobakin wrote:
+> > pool_page_reusable() is a leftover from pre-NUMA-aware times. For now,
+> > this function is just a redundant wrapper over page_is_pfmemalloc(),
+> > so inline it into its sole call site.
+> 
+> Why doesn't this want to use {dev_}page_is_reusable()?
+
+Page Pool handles NUMA on its own. Replacing plain page_is_pfmemalloc()
+with dev_page_is_reusable() will only add a completely redundant and
+always-false check on the fastpath.
+
+Al
 
