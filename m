@@ -1,67 +1,73 @@
-From: Alexander Lobakin <alobakin@pm.me>
-Date: Sun, 31 Jan 2021 12:57:29 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 3/5] net: introduce common
- dev_page_is_reusable()
-In-Reply-To: <20210131122205.GL308988@casper.infradead.org>
-References: <20210131120844.7529-1-alobakin@pm.me>
- <20210131120844.7529-4-alobakin@pm.me>
- <20210131122205.GL308988@casper.infradead.org>
-Message-ID: <20210131125713.8710-1-alobakin@pm.me>
+From: Guo Ren <guoren@kernel.org>
+Date: Sun, 31 Jan 2021 10:08:34 +0800
+Subject: [Intel-wired-lan] [PATCH] csky: change a Kconfig symbol name to
+ fix e1000 build error
+In-Reply-To: <20210130234949.21090-1-rdunlap@infradead.org>
+References: <20210130234949.21090-1-rdunlap@infradead.org>
+Message-ID: <CAJF2gTR9pdgmYv8tV9ncjHYQ-LAA75f_Yc0BMyOQjiR-TAW4TA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Matthew Wilcox <willy@infradead.org>
-Date: Sun, 31 Jan 2021 12:22:05 +0000
+Acked-by
 
-> On Sun, Jan 31, 2021 at 12:11:52PM +0000, Alexander Lobakin wrote:
-> > A bunch of drivers test the page before reusing/recycling for two
-> > common conditions:
-> >  - if a page was allocated under memory pressure (pfmemalloc page);
-> >  - if a page was allocated at a distant memory node (to exclude
-> >    slowdowns).
-> >
-> > Introduce a new common inline for doing this, with likely() already
-> > folded inside to make driver code a bit simpler.
-> 
-> I don't see the need for the 'dev_' prefix.  That actually confuses me
-> because it makes me think this is tied to ZONE_DEVICE or some such.
+Thx
 
-Several functions right above this one also use 'dev_' prefix. It's
-a rather old mark that it's about network devices.
+On Sun, Jan 31, 2021 at 7:50 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+>
+> e1000's #define of CONFIG_RAM_BASE conflicts with a Kconfig symbol in
+> arch/csky/Kconfig.
+> The symbol in e1000 has been around longer, so change arch/csky/
+> to use DRAM_BASE instead of RAM_BASE to remove the conflict.
+> (although e1000 is also a 2-line change)
+>
+> Not tested: I don't have a build toolchain for CSKY.
+>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: Guo Ren <guoren@linux.alibaba.com>
+> Cc: Guo Ren <guoren@kernel.org>
+> Cc: linux-csky at vger.kernel.org
+> ---
+> IMO "CONFIG_" namespace should belong to Kconfig files, not
+> individual drivers, but e1000 isn't the only driver that uses
+> CONFIG_ symbols.
+>
+>  arch/csky/Kconfig            |    2 +-
+>  arch/csky/include/asm/page.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> --- linux-next-20210129.orig/arch/csky/include/asm/page.h
+> +++ linux-next-20210129/arch/csky/include/asm/page.h
+> @@ -28,7 +28,7 @@
+>  #define SSEG_SIZE      0x20000000
+>  #define LOWMEM_LIMIT   (SSEG_SIZE * 2)
+>
+> -#define PHYS_OFFSET_OFFSET (CONFIG_RAM_BASE & (SSEG_SIZE - 1))
+> +#define PHYS_OFFSET_OFFSET (CONFIG_DRAM_BASE & (SSEG_SIZE - 1))
+>
+>  #ifndef __ASSEMBLY__
+>
+> --- linux-next-20210129.orig/arch/csky/Kconfig
+> +++ linux-next-20210129/arch/csky/Kconfig
+> @@ -314,7 +314,7 @@ config FORCE_MAX_ZONEORDER
+>         int "Maximum zone order"
+>         default "11"
+>
+> -config RAM_BASE
+> +config DRAM_BASE
+>         hex "DRAM start addr (the same with memory-section in dts)"
+>         default 0x0
+>
 
-> So how about calling it just 'page_is_reusable' and putting it in mm.h
-> with page_is_pfmemalloc() and making the comment a little less network-centric?
 
-This pair of conditions (!pfmemalloc + local memory node) is really
-specific to network drivers. I didn't see any other instances of such
-tests, so I don't see a reason to place it in a more common mm.h.
+-- 
+Best Regards
+ Guo Ren
 
-> Or call it something like skb_page_is_recyclable() since it's only used
-> by networking today.  But I bet it could/should be used more widely.
-
-There's nothing about skb. Tested page is just a memory chunk for DMA
-transaction. It can be used as skb head/frag, for XDP buffer/frame or
-for XSK umem.
-
-> > +/**
-> > + * dev_page_is_reusable - check whether a page can be reused for network Rx
-> > + * @page: the page to test
-> > + *
-> > + * A page shouldn't be considered for reusing/recycling if it was allocated
-> > + * under memory pressure or at a distant memory node.
-> > + *
-> > + * Returns false if this page should be returned to page allocator, true
-> > + * otherwise.
-> > + */
-> > +static inline bool dev_page_is_reusable(const struct page *page)
-> > +{
-> > +	return likely(page_to_nid(page) == numa_mem_id() &&
-> > +		      !page_is_pfmemalloc(page));
-> > +}
-> > +
-
-Al
-
+ML: https://lore.kernel.org/linux-csky/
