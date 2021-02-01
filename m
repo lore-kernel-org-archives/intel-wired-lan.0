@@ -1,5 +1,5 @@
-From: Nick Lowe <nick.lowe@gmail.com>
-Date: Mon, 1 Feb 2021 20:06:16 +0000
+From: Matt Corallo <linux-wired-list@bluematt.me>
+Date: Mon, 1 Feb 2021 15:21:46 -0500
 Subject: [Intel-wired-lan] [PATCH net] igb: Enable RSS for Intel I211
  Ethernet Controller
 In-Reply-To: <20210201114545.6278ae5c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
@@ -8,33 +8,27 @@ References: <20201221222502.1706-1-nick.lowe@gmail.com>
  <20210201084747.2cb64c3f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <a7a89e90bf6c3f383fa236b1128db8d012223da0.camel@intel.com>
  <20210201114545.6278ae5c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <CADSoG1uRKexjQJ7Oxqyspzbpx=Qyq2dTbOMp-dEjTSMMySmkFg@mail.gmail.com>
+Message-ID: <69e92a09-d597-2385-2391-fee100464c59@bluematt.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
 
-It is correct that this is not a regression, it instead has never worked.
 
-My suggestion would be to merge it during the 5.11 cycle rather than
-5.12 where possible because the patch is non-invasive and should be
-lower risk.
+On 2/1/21 2:45 PM, Jakub Kicinski wrote:
+> Matt, would you mind clarifying if this is indeed a regression for i211?
+> 
 
-There are significant and tangible real-world benefits to RSS
-functioning with the i211 so I do not personally think, on balance,
-that it is proportionate and worth waiting for 5.12 to conclude here.
-Any thoughts?
+Admittedly, I didn't go all the way back to test that it is, indeed, a regression. The Fixes commit that it was tagged 
+with on Tony's tree was something more recent than initial igb landing (its a refactor of RSS) and there are numerous 
+posts online indicating common I211 hardware (eg PCEngines APU2) support RSS and properly load multiple cores, so I 
+naively assumed that it is a regression of some form.
 
-More importantly though, after this does release in a stable kernel
-(regardless of whether that is 5.11 or 5.12) and this change has had
-some time to soak in the field, I do suggest consideration to then
-backport this to the 5.4 and 5.10 LTS kernels so that RSS starts to
-function there. 5.4 and 5.10 are the release branches that will, of
-course, get far more use for the next couple of years.
+Did you test kernels odler than c883de9fd787, Nick?
 
-Best,
+Given that, and the non-invasive nature of the patch, I figured it was worth trying to land on LTS trees and going ahead 
+with it for 5.11, but I don't feel strongly on how it ends up on LTS, it just seems a waste to not land it there.
 
-Nick
+Matt
