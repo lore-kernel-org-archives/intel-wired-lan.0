@@ -1,68 +1,71 @@
-From: Ronak Doshi <doshir@vmware.com>
-Date: Mon, 1 Feb 2021 20:23:27 +0000
-Subject: [Intel-wired-lan] Security issue with vmxnet3 and e100 for AMD
- SEV(-SNP) / Intel TDX
-In-Reply-To: <AM7P194MB0900E443CEBD6EF2EE37325ED9AE0@AM7P194MB0900.EURP194.PROD.OUTLOOK.COM>
-References: <AM7P194MB0900E443CEBD6EF2EE37325ED9AE0@AM7P194MB0900.EURP194.PROD.OUTLOOK.COM>
-Message-ID: <733C4800-E161-4BDE-8706-12606E070F5D@vmware.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 1 Feb 2021 16:20:10 -0600
+Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
+ overlapping of BARs
+In-Reply-To: <e8647a2cd4bfbcd42c27183d1c8984a0@walle.cc>
+Message-ID: <20210201222010.GA31234@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vmxnet3 patch has been committed to mainline Linux
-https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git/commit/drivers/net/vmxnet3?id=de1da8bcf40564a2adada2d5d5426e05355f66e8
+On Mon, Feb 01, 2021 at 08:49:16PM +0100, Michael Walle wrote:
+> Am 2021-01-17 20:27, schrieb Michael Walle:
+> > Am 2021-01-16 00:57, schrieb Bjorn Helgaas:
+> > > On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
+> > > > Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
+> > > > > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
+> > > > > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
+> > > 
+> > > > > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
+> > > > > > > that overlaps another BAR, a quirk might be the right fix. But my
+> > > > > > > guess is the device is working correctly per spec and there's
+> > > > > > > something wrong in how firmware/Linux is assigning things.  That would
+> > > > > > > mean we need a more generic fix that's not a quirk and not tied to the
+> > > > > > > Intel i210.
+> > > > > >
+> > > > > > Agreed, but as you already stated (and I've also found that in
+> > > > > > the PCI spec) the Expansion ROM address decoder can be shared by
+> > > > > > the other BARs and it shouldn't matter as long as the ExpROM BAR
+> > > > > > is disabled, which is the case here.
+> > > > >
+> > > > > My point is just that if this could theoretically affect devices
+> > > > > other than the i210, the fix should not be an i210-specific quirk.
+> > > > > I'll assume this is a general problem and wait for a generic PCI
+> > > > > core solution unless it's i210-specific.
+> > > > 
+> > > > I guess the culprit here is that linux skips the programming of the
+> > > > BAR because of some broken Matrox card. That should have been a
+> > > > quirk instead, right? But I don't know if we want to change that, do
+> > > > we? How many other cards depend on that?
+> > > 
+> > > Oh, right.  There's definitely some complicated history there that
+> > > makes me a little scared to change things.  But it's also unfortunate
+> > > if we have to pile quirks on top of quirks.
+> > > 
+> > > > And still, how do we find out that the i210 is behaving correctly?
+> > > > In my opinion it is clearly not. You can change the ExpROM BAR value
+> > > > during runtime and it will start working (while keeping it
+> > > > disabled).  Am I missing something here?
+> > > 
+> > > I agree; if the ROM BAR is disabled, I don't think it should matter at
+> > > all what it contains, so this does look like an i210 defect.
+> > > 
+> > > Would you mind trying the patch below?  It should update the ROM BAR
+> > > value even when it is disabled.  With the current pci_enable_rom()
+> > > code that doesn't rely on the value read from the BAR, I *think* this
+> > > should be safe even on the Matrox and similar devices.
+> > 
+> > Your patch will fix my issue:
+> > 
+> > Tested-by: Michael Walle <michael@walle.cc>
+> 
+> any news on this?
 
+Thanks for the reminder.  I was thinking this morning that I need to
+get back to this.  I'm trying to convince myself that doing this
+wouldn't break the problem fixed by 755528c860b0 ("Ignore disabled ROM
+resources at setup").  So far I haven't quite succeeded.
 
-Thanks,
-Ronak
-
-
-From: "Radev, Martin" <martin.radev@aisec.fraunhofer.de>
-Date: Friday, January 8, 2021 at 3:57 AM
-To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "intel-wired-lan at lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Cc: Ronak Doshi <doshir@vmware.com>, "jesse.brandeburg at intel.com" <jesse.brandeburg@intel.com>, "anthony.l.nguyen at intel.com" <anthony.l.nguyen@intel.com>, "Morbitzer, Mathias" <mathias.morbitzer@aisec.fraunhofer.de>, Robert Buhren <robert.buhren@sect.tu-berlin.de>, "file at sect.tu-berlin.de" <file@sect.tu-berlin.de>, "Banse, Christian" <christian.banse@aisec.fraunhofer.de>, "brijesh.singh at amd.com" <brijesh.singh@amd.com>, "Thomas.Lendacky at amd.com" <Thomas.Lendacky@amd.com>, Pv-drivers <Pv-drivers@vmware.com>, "martin.b.radev at gmail.com" <martin.b.radev@gmail.com>
-Subject: Security issue with vmxnet3 and e100 for AMD SEV(-SNP) / Intel TDX
-
-Hello everybody,
-
-tldr: Both drivers expose skb GVAs to untrusted devices which gives RIP
-         control to a malicious e100 / vmxnet3 device implementation. This is
-         an issue for AMD SEV (-SNP) [1] and likely Intel TDX [2].
-
-Felicitas and Robert have started a project on fuzzing device drivers which
-may have negative security impact on solutions like AMD SEV Secure
-Nested Paging and Intel Trusted Domain Extensions. These solutions protect
-a VM from a malicious Hypervisor in various way.
-
-There are a couple of devices which carry security issues under the attacker
-models of SEV-SNP / Intel TDX, but here we're only discussing VMXNET3 and
-e100, because we have detailed PoCs for both.
-
-Maintainers of both vmxnet3 and e100 were added in this email because the
-discussion will likely be the same. The issues were already sent to AMD PSIRT,
-and Tom Lendacky and Brijesh Singh have volunteered to be part of the email
-communication with the maintainers. Both have been working on AMD SEV.
-
-Please check the two attached files: vmxnet3_report.txt and e100_report.txt.
-Both contain detailed information about what the issue is and how it can be
-exploited by a malicious HV or attacker who has access to the QEMU process.
-
-Fix:
-In an earlier discussion with AMD, there was the idea of making a list of
-allowed devices with SEV and forbidding everything else. This would avoid
-issues with other drivers whose implementation has not been yet scrutinized
-under the threat model of SEV-SNP and Intel Trusted Domain Extensions.
-
-Let us know what you think.
-
-Kind regards,
-Martin
-
-[1]: https://www.amd.com/system/files/TechDocs/SEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf<https://nam04.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.amd.com%2Fsystem%2Ffiles%2FTechDocs%2FSEV-SNP-strengthening-vm-isolation-with-integrity-protection-and-more.pdf&data=04%7C01%7Cdoshir%40vmware.com%7C321954cba3ff43a816da08d8b3cc8c8e%7Cb39138ca3cee4b4aa4d6cd83d9dd62f0%7C0%7C0%7C637457038522201270%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000&sdata=BamituKoHDWFzZ%2FYVH5FQU93BblvsuNEcLWLBQIHaxQ%3D&reserved=0>
-[2]: https://software.intel.com/content/www/us/en/develop/articles/intel-trust-domain-extensions.html<https://nam04.safelinks.protection.outlook.com/?url=https%3A%2F%2Fsoftware.intel.com%2Fcontent%2Fwww%2Fus%2Fen%2Fdevelop%2Farticles%2Fintel-trust-domain-extensions.html&data=04%7C01%7Cdoshir%40vmware.com%7C321954cba3ff43a816da08d8b3cc8c8e%7Cb39138ca3cee4b4aa4d6cd83d9dd62f0%7C0%7C0%7C637457038522211265%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000&sdata=DKfk6PXESru%2Fq4U3Ct3HkmqAn%2BwCHLnzVKL7lCDMiDI%3D&reserved=0>
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210201/5eb48d98/attachment-0001.html>
+Bjorn
