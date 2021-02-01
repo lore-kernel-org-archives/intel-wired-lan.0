@@ -1,69 +1,40 @@
-From: Michael Walle <michael@walle.cc>
-Date: Mon, 01 Feb 2021 20:49:16 +0100
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <2477c66eafbd97207693b83b60fa0a3c@walle.cc>
-References: <20210115235721.GA1862880@bjorn-Precision-5520>
- <2477c66eafbd97207693b83b60fa0a3c@walle.cc>
-Message-ID: <e8647a2cd4bfbcd42c27183d1c8984a0@walle.cc>
+From: Nick Lowe <nick.lowe@gmail.com>
+Date: Mon, 1 Feb 2021 20:06:16 +0000
+Subject: [Intel-wired-lan] [PATCH net] igb: Enable RSS for Intel I211
+ Ethernet Controller
+In-Reply-To: <20210201114545.6278ae5c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20201221222502.1706-1-nick.lowe@gmail.com>
+ <379d4ef3-02e5-f08a-1b04-21848e11a365@bluematt.me>
+ <20210201084747.2cb64c3f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <a7a89e90bf6c3f383fa236b1128db8d012223da0.camel@intel.com>
+ <20210201114545.6278ae5c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <CADSoG1uRKexjQJ7Oxqyspzbpx=Qyq2dTbOMp-dEjTSMMySmkFg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Bjorn,
+Hi all,
 
-Am 2021-01-17 20:27, schrieb Michael Walle:
-> Am 2021-01-16 00:57, schrieb Bjorn Helgaas:
->> On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
->>> Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
->>> > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
->>> > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
->> 
->>> > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
->>> > > > that overlaps another BAR, a quirk might be the right fix. But my
->>> > > > guess is the device is working correctly per spec and there's
->>> > > > something wrong in how firmware/Linux is assigning things.  That would
->>> > > > mean we need a more generic fix that's not a quirk and not tied to the
->>> > > > Intel i210.
->>> > >
->>> > > Agreed, but as you already stated (and I've also found that in
->>> > > the PCI spec) the Expansion ROM address decoder can be shared by
->>> > > the other BARs and it shouldn't matter as long as the ExpROM BAR
->>> > > is disabled, which is the case here.
->>> >
->>> > My point is just that if this could theoretically affect devices
->>> > other than the i210, the fix should not be an i210-specific quirk.
->>> > I'll assume this is a general problem and wait for a generic PCI
->>> > core solution unless it's i210-specific.
->>> 
->>> I guess the culprit here is that linux skips the programming of the
->>> BAR because of some broken Matrox card. That should have been a
->>> quirk instead, right? But I don't know if we want to change that, do
->>> we? How many other cards depend on that?
->> 
->> Oh, right.  There's definitely some complicated history there that
->> makes me a little scared to change things.  But it's also unfortunate
->> if we have to pile quirks on top of quirks.
->> 
->>> And still, how do we find out that the i210 is behaving correctly?
->>> In my opinion it is clearly not. You can change the ExpROM BAR value
->>> during runtime and it will start working (while keeping it
->>> disabled).  Am I missing something here?
->> 
->> I agree; if the ROM BAR is disabled, I don't think it should matter at
->> all what it contains, so this does look like an i210 defect.
->> 
->> Would you mind trying the patch below?  It should update the ROM BAR
->> value even when it is disabled.  With the current pci_enable_rom()
->> code that doesn't rely on the value read from the BAR, I *think* this
->> should be safe even on the Matrox and similar devices.
-> 
-> Your patch will fix my issue:
-> 
-> Tested-by: Michael Walle <michael@walle.cc>
+It is correct that this is not a regression, it instead has never worked.
 
-any news on this?
+My suggestion would be to merge it during the 5.11 cycle rather than
+5.12 where possible because the patch is non-invasive and should be
+lower risk.
 
--michael
+There are significant and tangible real-world benefits to RSS
+functioning with the i211 so I do not personally think, on balance,
+that it is proportionate and worth waiting for 5.12 to conclude here.
+Any thoughts?
+
+More importantly though, after this does release in a stable kernel
+(regardless of whether that is 5.11 or 5.12) and this change has had
+some time to soak in the field, I do suggest consideration to then
+backport this to the 5.4 and 5.10 LTS kernels so that RSS starts to
+function there. 5.4 and 5.10 are the release branches that will, of
+course, get far more use for the next couple of years.
+
+Best,
+
+Nick
