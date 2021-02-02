@@ -1,71 +1,25 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Mon, 1 Feb 2021 16:20:10 -0600
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <e8647a2cd4bfbcd42c27183d1c8984a0@walle.cc>
-Message-ID: <20210201222010.GA31234@bjorn-Precision-5520>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 1 Feb 2021 17:18:35 -0800
+Subject: [Intel-wired-lan] [PATCH v3 net-next 0/5] net: consolidate
+ page_is_pfmemalloc() usage
+In-Reply-To: <20210131120844.7529-1-alobakin@pm.me>
+References: <20210131120844.7529-1-alobakin@pm.me>
+Message-ID: <20210201171835.690558df@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 01, 2021 at 08:49:16PM +0100, Michael Walle wrote:
-> Am 2021-01-17 20:27, schrieb Michael Walle:
-> > Am 2021-01-16 00:57, schrieb Bjorn Helgaas:
-> > > On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
-> > > > Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
-> > > > > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
-> > > > > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
-> > > 
-> > > > > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
-> > > > > > > that overlaps another BAR, a quirk might be the right fix. But my
-> > > > > > > guess is the device is working correctly per spec and there's
-> > > > > > > something wrong in how firmware/Linux is assigning things.  That would
-> > > > > > > mean we need a more generic fix that's not a quirk and not tied to the
-> > > > > > > Intel i210.
-> > > > > >
-> > > > > > Agreed, but as you already stated (and I've also found that in
-> > > > > > the PCI spec) the Expansion ROM address decoder can be shared by
-> > > > > > the other BARs and it shouldn't matter as long as the ExpROM BAR
-> > > > > > is disabled, which is the case here.
-> > > > >
-> > > > > My point is just that if this could theoretically affect devices
-> > > > > other than the i210, the fix should not be an i210-specific quirk.
-> > > > > I'll assume this is a general problem and wait for a generic PCI
-> > > > > core solution unless it's i210-specific.
-> > > > 
-> > > > I guess the culprit here is that linux skips the programming of the
-> > > > BAR because of some broken Matrox card. That should have been a
-> > > > quirk instead, right? But I don't know if we want to change that, do
-> > > > we? How many other cards depend on that?
-> > > 
-> > > Oh, right.  There's definitely some complicated history there that
-> > > makes me a little scared to change things.  But it's also unfortunate
-> > > if we have to pile quirks on top of quirks.
-> > > 
-> > > > And still, how do we find out that the i210 is behaving correctly?
-> > > > In my opinion it is clearly not. You can change the ExpROM BAR value
-> > > > during runtime and it will start working (while keeping it
-> > > > disabled).  Am I missing something here?
-> > > 
-> > > I agree; if the ROM BAR is disabled, I don't think it should matter at
-> > > all what it contains, so this does look like an i210 defect.
-> > > 
-> > > Would you mind trying the patch below?  It should update the ROM BAR
-> > > value even when it is disabled.  With the current pci_enable_rom()
-> > > code that doesn't rely on the value read from the BAR, I *think* this
-> > > should be safe even on the Matrox and similar devices.
-> > 
-> > Your patch will fix my issue:
-> > 
-> > Tested-by: Michael Walle <michael@walle.cc>
-> 
-> any news on this?
+On Sun, 31 Jan 2021 12:11:16 +0000 Alexander Lobakin wrote:
+> page_is_pfmemalloc() is used mostly by networking drivers to test
+> if a page can be considered for reusing/recycling.
+> It doesn't write anything to the struct page itself, so its sole
+> argument can be constified, as well as the first argument of
+> skb_propagate_pfmemalloc().
+> In Page Pool core code, it can be simply inlined instead.
+> Most of the callers from NIC drivers were just doppelgangers of
+> the same condition tests. Derive them into a new common function
+> do deduplicate the code.
 
-Thanks for the reminder.  I was thinking this morning that I need to
-get back to this.  I'm trying to convince myself that doing this
-wouldn't break the problem fixed by 755528c860b0 ("Ignore disabled ROM
-resources at setup").  So far I haven't quite succeeded.
-
-Bjorn
+Please resend, this did not get into patchwork :/
