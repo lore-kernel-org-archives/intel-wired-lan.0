@@ -1,55 +1,35 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Tue, 02 Feb 2021 13:05:34 +0100
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <CAAOQfrHA+-BsikeQzXYcK_32BZMbm54x5p5YhAiBj==uaZvG1w@mail.gmail.com>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <20201204102901.109709-2-marekx.majtyka@intel.com>
- <878sad933c.fsf@toke.dk> <20201204124618.GA23696@ranger.igk.intel.com>
- <048bd986-2e05-ee5b-2c03-cd8c473f6636@iogearbox.net>
- <20201207135433.41172202@carbon>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <20201207230755.GB27205@ranger.igk.intel.com>
- <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
- <20201209095454.GA36812@ranger.igk.intel.com>
- <20201209125223.49096d50@carbon>
- <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
- <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
- <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
- <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
- <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
- <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
- <CAAOQfrHN1-oHmbOksDv-BKWv4gDF2zHZ5dTew6R_QTh6s_1abg@mail.gmail.com>
- <87h7mvsr0e.fsf@toke.dk>
- <CAAOQfrHA+-BsikeQzXYcK_32BZMbm54x5p5YhAiBj==uaZvG1w@mail.gmail.com>
-Message-ID: <87bld2smi9.fsf@toke.dk>
+From: Alexander Lobakin <alobakin@pm.me>
+Date: Tue, 02 Feb 2021 13:13:06 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net-next 0/5] net: consolidate
+ page_is_pfmemalloc() usage
+In-Reply-To: <20210201171835.690558df@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210131120844.7529-1-alobakin@pm.me>
+ <20210201171835.690558df@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <20210202131233.4180-1-alobakin@pm.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Marek Majtyka <alardam@gmail.com> writes:
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 1 Feb 2021 17:18:35 -0800
 
-> Thanks Toke,
->
-> In fact, I was waiting for a single confirmation, disagreement or
-> comment. I have it now. As there are no more comments, I am getting
-> down to work right away.
+> On Sun, 31 Jan 2021 12:11:16 +0000 Alexander Lobakin wrote:
+> > page_is_pfmemalloc() is used mostly by networking drivers to test
+> > if a page can be considered for reusing/recycling.
+> > It doesn't write anything to the struct page itself, so its sole
+> > argument can be constified, as well as the first argument of
+> > skb_propagate_pfmemalloc().
+> > In Page Pool core code, it can be simply inlined instead.
+> > Most of the callers from NIC drivers were just doppelgangers of
+> > the same condition tests. Derive them into a new common function
+> > do deduplicate the code.
+> 
+> Please resend, this did not get into patchwork :/
 
-Awesome! And sorry for not replying straight away - I hate it when I
-send out something myself and receive no replies, so I suppose I should
-get better at not doing that myself :)
+I suspected it would be so as I got reports about undelivered mails
+due to unavailability of vger.kernel.org for some reasons Will do.
 
-As for the inclusion of the XDP_BASE / XDP_LIMITED_BASE sets (which I
-just realised I didn't reply to), I am fine with defining XDP_BASE as a
-shortcut for TX/ABORTED/PASS/DROP, but think we should skip
-XDP_LIMITED_BASE and instead require all new drivers to implement the
-full XDP_BASE set straight away. As long as we're talking about
-features *implemented* by the driver, at least; i.e., it should still be
-possible to *deactivate* XDP_TX if you don't want to use the HW
-resources, but I don't think there's much benefit from defining the
-LIMITED_BASE set as a shortcut for this mode...
-
--Toke
+Al
 
