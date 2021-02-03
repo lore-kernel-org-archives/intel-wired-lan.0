@@ -1,76 +1,41 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 3 Feb 2021 09:02:32 -0800
-Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
- properties flag set
-In-Reply-To: <CAAOQfrGqcsn3wu5oxzHYxtE8iK3=gFdTka5HSh5Fe9Hc6HWRWA@mail.gmail.com>
-References: <20201204102901.109709-1-marekx.majtyka@intel.com>
- <5fce960682c41_5a96208e4@john-XPS-13-9370.notmuch>
- <20201207230755.GB27205@ranger.igk.intel.com>
- <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
- <20201209095454.GA36812@ranger.igk.intel.com>
- <20201209125223.49096d50@carbon>
- <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
- <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
- <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
- <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
- <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
- <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
- <CAAOQfrHN1-oHmbOksDv-BKWv4gDF2zHZ5dTew6R_QTh6s_1abg@mail.gmail.com>
- <87h7mvsr0e.fsf@toke.dk>
- <CAAOQfrHA+-BsikeQzXYcK_32BZMbm54x5p5YhAiBj==uaZvG1w@mail.gmail.com>
- <87bld2smi9.fsf@toke.dk>
- <20210202113456.30cfe21e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <CAAOQfrGqcsn3wu5oxzHYxtE8iK3=gFdTka5HSh5Fe9Hc6HWRWA@mail.gmail.com>
-Message-ID: <20210203090232.4a259958@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Date: Wed, 3 Feb 2021 09:08:42 -0800
+Subject: [Intel-wired-lan] [5.10] i40e/udp_tunnel: RTNL: assertion
+ failed at net/ipv4/udp_tunnel_nic.c
+In-Reply-To: <DB8PR04MB6460398CFCE47ADD5EE773E1EAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
+References: <DB8PR04MB6460F61AE67E17CC9189D067EAB99@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <20210129192750.7b2d8b25@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <DB8PR04MB6460DD3585CE95CB77A2B650EAB59@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <20210202083035.3d54f97c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <DM5PR11MB1705DDAEC74CA8918438EBA599B49@DM5PR11MB1705.namprd11.prod.outlook.com>
+ <DB8PR04MB646092D87F51C2ACD180841EEAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <DB8PR04MB6460398CFCE47ADD5EE773E1EAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
+Message-ID: <20210203090842.22e5ccb4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 3 Feb 2021 13:50:59 +0100 Marek Majtyka wrote:
-> On Tue, Feb 2, 2021 at 8:34 PM Jakub Kicinski <kuba@kernel.org> wrote:
-> > On Tue, 02 Feb 2021 13:05:34 +0100 Toke H?iland-J?rgensen wrote:  
-> > > Awesome! And sorry for not replying straight away - I hate it when I
-> > > send out something myself and receive no replies, so I suppose I should
-> > > get better at not doing that myself :)
-> > >
-> > > As for the inclusion of the XDP_BASE / XDP_LIMITED_BASE sets (which I
-> > > just realised I didn't reply to), I am fine with defining XDP_BASE as a
-> > > shortcut for TX/ABORTED/PASS/DROP, but think we should skip
-> > > XDP_LIMITED_BASE and instead require all new drivers to implement the
-> > > full XDP_BASE set straight away. As long as we're talking about
-> > > features *implemented* by the driver, at least; i.e., it should still be
-> > > possible to *deactivate* XDP_TX if you don't want to use the HW
-> > > resources, but I don't think there's much benefit from defining the
-> > > LIMITED_BASE set as a shortcut for this mode...  
-> >
-> > I still have mixed feelings about these flags. The first step IMO
-> > should be adding validation tests. I bet^W pray every vendor has
-> > validation tests but since they are not unified we don't know what
-> > level of interoperability we're achieving in practice. That doesn't
-> > matter for trivial feature like base actions, but we'll inevitably
-> > move on to defining more advanced capabilities and the question of
-> > "what supporting X actually mean" will come up (3 years later, when
-> > we don't remember ourselves).  
+On Wed, 3 Feb 2021 16:05:40 +0000 Pierre Cheynier wrote:
+> On Wed, 3 Feb 2021 16:25:12 +0100 Pierre Cheynier wrote:
+> > On Wed, 3 Feb 2021 15:23:54 +0100 Sokolowski, Jan wrote:
+> >   
+> > > It has been mentioned that the error only appeared recently, after upgrade to 5.10.X. What's the last known working configuration it was tested on? A bisection could help us investigate.  
+> > 
+> > I unfortunately moved from one LTS to another, meaning I was in 5.4 before, and this UDP tunnel offloading feature landed in 5.9 as far as I know.
+> > 
+> > Maybe Jakub can give pointers to specific 5.9 or 5.10 kernel versions I can eventually try, so that I can help refine where this was introduced (or if it was present from the start)?  
 > 
-> I am a bit confused now. Did you mean validation tests of those XDP
-> flags, which I am working on or some other validation tests?
-> What should these tests verify? Can you please elaborate more on the
-> topic, please - just a few sentences how are you see it?
+> So I think I was incorrect, the support of this infrastructure for i40e appears in 5.10.
+> From what I'm seeing, and Jakub will confirm, I think this started with the
+> initial implementation for i40e (see 40a98cb6f01f013b8ab0ce7b28f705423ee16836).
 
-Conformance tests can be written for all features, whether they have 
-an explicit capability in the uAPI or not. But for those that do IMO
-the tests should be required.
+Yup! I'm pretty sure it's my conversion. The full commit quote upstream:
 
-Let me give you an example. This set adds a bit that says Intel NICs 
-can do XDP_TX and XDP_REDIRECT, yet we both know of the Tx queue
-shenanigans. So can i40e do XDP_REDIRECT or can it not?
+40a98cb6f01f ("i40e: convert to new udp_tunnel infrastructure")
 
-If we have exhaustive conformance tests we can confidently answer that
-question. And the answer may not be "yes" or "no", it may actually be
-"we need more options because many implementations fall in between".
+It should trigger if you have vxlan module loaded (or built in) 
+and then reload or re-probe i40e.
 
-I think readable (IOW not written in some insane DSL) tests can also 
-be useful for users who want to check which features their program /
-deployment will require.
+Let us know if you can't repro it should pop up pretty reliably.
