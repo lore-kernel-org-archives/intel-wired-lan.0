@@ -1,167 +1,208 @@
-From: Ederson de Souza <ederson.desouza@intel.com>
-Date: Wed,  3 Feb 2021 17:50:25 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v1] igb: Redistribute memory
- for transmit packet buffers when in Qav mode
-Message-ID: <20210204015025.40275-1-ederson.desouza@intel.com>
+From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+Date: Thu, 4 Feb 2021 12:05:37 +0200
+Subject: [Intel-wired-lan] igc: fix link speed advertising
+In-Reply-To: <79cb04f0-1a93-f463-3131-ad7772eab202@intel.com>
+References: <20210127092421.GS4393@calimero.vinschen.de>
+ <79cb04f0-1a93-f463-3131-ad7772eab202@intel.com>
+Message-ID: <e955280d-305a-70a4-f74a-8cf9b2a07e1f@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i210 has a total of 24KB of transmit packet buffer. When in Qav mode,
-this buffer is divided into four pieces, one for each Tx queue.
-Currently, 8KB are given to each of the two SR queues and 4KB are given
-to each of the two SP queues.
-
-However, it was noticed that such distribution can make best effort
-traffic (which would usually go to the SP queues when Qav is enabled, as
-the SR queues would be used by ETF or CBS qdiscs for TSN-aware traffic)
-perform poorly. Using iperf3 to measure, one could see the performance
-of best effort traffic drop by nearly a third (from 935Mbps to 578Mbps),
-with no TSN traffic competing.
-
-This patch redistributes the 24KB to each queue equally: 6KB each. On
-tests, there was no notable performance reduction of best effort traffic
-performance when there was no TSN traffic competing.
-
-Below, more details about the data collected:
-
-All experiments were run using the following qdisc setup:
-
-qdisc taprio 100: root refcnt 9 tc 4 map 3 3 3 2 3 0 0 3 3 3 3 3 3 3 3 3
-    queues offset 0 count 1 offset 1 count 1 offset 2 count 1 offset 3 count 1
-    clockid TAI base-time 0 cycle-time 10000000 cycle-time-extension 0
-    index 0 cmd S gatemask 0xf interval 10000000
-
-qdisc etf 8045: parent 100:1 clockid TAI delta 1000000 offload on
-    deadline_mode off skip_sock_check off
-
-TSN traffic, when enabled, had this characteristics:
- Packet size: 1500 bytes
- Transmission interval: 125us
-
-----------------------------------
-Without this patch:
-----------------------------------
-- TCP data:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.35 GBytes   578 Mbits/sec    0
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.07 GBytes   460 Mbits/sec    1
-
-- TCP data limiting iperf3 buffer size to 4K:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.35 GBytes   579 Mbits/sec    0
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.08 GBytes   462 Mbits/sec    0
-
-- TCP data limiting iperf3 buffer size to 192 bytes (smallest size without
- serious performance degradation):
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.34 GBytes   577 Mbits/sec    0
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.07 GBytes   461 Mbits/sec    1
-
-- UDP data at 1000Mbit/sec:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-        [  5]   0.00-20.00  sec  1.36 GBytes   586 Mbits/sec  0.000 ms  0/1011407 (0%)
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-        [  5]   0.00-20.00  sec  1.05 GBytes   451 Mbits/sec  0.000 ms  0/778672 (0%)
-
-----------------------------------
-With this patch:
-----------------------------------
-
-- TCP data:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  2.17 GBytes   932 Mbits/sec    0
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.50 GBytes   646 Mbits/sec    1
-
-- TCP data limiting iperf3 buffer size to 4K:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  2.17 GBytes   931 Mbits/sec    0
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.50 GBytes   645 Mbits/sec    0
-
-- TCP data limiting iperf3 buffer size to 192 bytes (smallest size without
- serious performance degradation):
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  2.17 GBytes   932 Mbits/sec    1
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Retr
-        [  5]   0.00-20.00  sec  1.50 GBytes   645 Mbits/sec    0
-
-- UDP data at 1000Mbit/sec:
-    - No TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-        [  5]   0.00-20.00  sec  2.23 GBytes   956 Mbits/sec  0.000 ms  0/1650226 (0%)
-
-    - With TSN traffic:
-        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-        [  5]   0.00-20.00  sec  1.51 GBytes   649 Mbits/sec  0.000 ms  0/1120264 (0%)
-
-Signed-off-by: Ederson de Souza <ederson.desouza@intel.com>
----
- drivers/net/ethernet/intel/igb/e1000_defines.h | 8 ++++----
- drivers/net/ethernet/intel/igb/igb_main.c      | 4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index d2e2c50ce257..ca5429774994 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -340,10 +340,10 @@
- #define I210_RXPBSIZE_PB_32KB		0x00000020
- #define I210_TXPBSIZE_DEFAULT		0x04000014 /* TXPBSIZE default */
- #define I210_TXPBSIZE_MASK		0xC0FFFFFF
--#define I210_TXPBSIZE_PB0_8KB		(8 << 0)
--#define I210_TXPBSIZE_PB1_8KB		(8 << 6)
--#define I210_TXPBSIZE_PB2_4KB		(4 << 12)
--#define I210_TXPBSIZE_PB3_4KB		(4 << 18)
-+#define I210_TXPBSIZE_PB0_6KB		(6 << 0)
-+#define I210_TXPBSIZE_PB1_6KB		(6 << 6)
-+#define I210_TXPBSIZE_PB2_6KB		(6 << 12)
-+#define I210_TXPBSIZE_PB3_6KB		(6 << 18)
- 
- #define I210_DTXMXPKTSZ_DEFAULT		0x00000098
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0ace791d40d7..a05736e0874d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1921,8 +1921,8 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
- 		 */
- 		val = rd32(E1000_TXPBS);
- 		val &= ~I210_TXPBSIZE_MASK;
--		val |= I210_TXPBSIZE_PB0_8KB | I210_TXPBSIZE_PB1_8KB |
--			I210_TXPBSIZE_PB2_4KB | I210_TXPBSIZE_PB3_4KB;
-+		val |= I210_TXPBSIZE_PB0_6KB | I210_TXPBSIZE_PB1_6KB |
-+			I210_TXPBSIZE_PB2_6KB | I210_TXPBSIZE_PB3_6KB;
- 		wr32(E1000_TXPBS, val);
- 
- 		val = rd32(E1000_RXPBS);
--- 
-2.30.0
-
+> 
+> 
+> 
+> -------- Forwarded Message --------
+> Subject: Re: [Fwd: igc: fix link speed advertising]
+> Date: Wed, 27 Jan 2021 10:24:21 +0100
+> From: Corinna Vinschen <vinschen@redhat.com>
+> To: Yang, Lihong <lihong.yang@intel.com>
+> CC: Pathi, Pragyansri <pragyansri.pathi@intel.com>, Don Bayly 
+> <dbayly@redhat.com>, Neftin, Sasha <sasha.neftin@intel.com>, Nguyen, 
+> Anthony L <anthony.l.nguyen@intel.com>
+> 
+> Hi Lihong,
+> Hi Tony,
+> 
+> 
+> Thanks a lot to both of you!
+> 
+> 
+> Corinna
+> 
+> 
+> On Jan 26 23:58, Yang, Lihong wrote:
+>> Hi Corinna,
+>>
+>> A quick update. Your patch[1] was just sent by Tony to net as part of 
+>> the bug-fix series. Hopefully it will be accepted soon.
+>> Thanks,
+>> Lihong
+>>
+>> [1] 
+>> https://patchwork.kernel.org/project/netdevbpf/patch/20210126221035.658124-8-anthony.l.nguyen at intel.com/ 
+>>
+>>
+>>
+>> > -----Original Message-----
+>> > From: Yang, Lihong
+>> > Sent: Tuesday, January 26, 2021 11:02 AM
+>> > To: Corinna Vinschen <vinschen@redhat.com>
+>> > Cc: Pathi, Pragyansri <pragyansri.pathi@intel.com>; Don Bayly
+>> > <dbayly@redhat.com>; Neftin, Sasha <sasha.neftin@intel.com>; Nguyen,
+>> > Anthony L <anthony.l.nguyen@intel.com>
+>> > Subject: RE: [Fwd: igc: fix link speed advertising]
+>> > > Hi Corinna,
+>> > > From the info I gathered, the reason your patch has not been sent 
+>> Linux
+>> > upstream is because it has not been validated from Intel side. Once 
+>> it is
+>> > tagged with a Tested-by, it should be ready to go up.
+>> > > I am adding Sasha from the igc driver team to be aware of your 
+>> inquiry,
+>> > and Tony our Networking maintainer as an FYI.
+>> > > Thanks,
+>> > Lihong
+>> > > > -----Original Message-----
+>> > > From: Corinna Vinschen <vinschen@redhat.com>
+>> > > Sent: Tuesday, January 26, 2021 02:37 AM
+>> > > To: Yang, Lihong <lihong.yang@intel.com>
+>> > > Subject: [Fwd: igc: fix link speed advertising]
+>> > >
+>> > > Hi Lihong,
+>> > >
+>> > > I sent this patch to the Intel-wired-lan and netdev mailing lists
+>> > > in November already.? I got no reply but it looked like it had been
+>> > > included into the test runs from the "kernel test robot" output.
+>> > >
+>> > > So I expected this is going upstream for the next kernel version, 
+>> but it
+>> > > didn't make it into net-next yet.? I was hoping this can go into RHEL
+>> > > 8.4, but it's getting really late now.
+>> > >
+>> > > I pinged the mailing lists again, but, would you mind to check
+>> > > internally, if there's some reason not to include it?
+>> > >
+>> > >
+>> > > Thanks a lot!
+>> > > Corinna
+>> > >
+>> > >
+>> > > ----- Forwarded message from Corinna Vinschen 
+>> <vinschen@redhat.com> ----
+>> > -
+>> > >
+>> > > > Date: Tue, 17 Nov 2020 20:50:40 +0100
+>> > > > From: Corinna Vinschen <vinschen@redhat.com>
+>> > > > To: intel-wired-lan at lists.osuosl.org, netdev at vger.kernel.org
+>> > > > Subject: [Intel-wired-lan] igc: fix link speed advertising
+>> > > >
+>> > > > Link speed advertising in igc has two problems:
+>> > > >
+>> > > > - When setting the advertisement via ethtool, the link speed is
+>> > > converted
+>> > > >?? to the legacy 32 bit representation for the intel PHY code.
+>> > > >?? This inadvertently drops ETHTOOL_LINK_MODE_2500baseT_Full_BIT 
+>> (being
+>> > > >?? beyond bit 31).? As a result, any call to `ethtool -s ...' 
+>> drops the
+>> > > >?? 2500Mbit/s link speed from the PHY settings.? Only reloading the
+>> > > driver
+>> > > >?? alleviates that problem.
+>> > > >
+>> > > >?? Fix this by converting the 
+>> ETHTOOL_LINK_MODE_2500baseT_Full_BIT to
+>> > the
+>> > > >?? Intel PHY ADVERTISE_2500_FULL bit explicitely.
+>> > > >
+>> > > > - Rather than checking the actual PHY setting, the 
+>> .get_link_ksettings
+>> > > >?? function always fills link_modes.advertising with all link speeds
+>> > > >?? the device is capable of.
+>> > > >
+>> > > >?? Fix this by checking the PHY autoneg_advertised settings and 
+>> report
+>> > > >?? only the actually advertised speeds up to ethtool.
+>> > > >
+>> > > > Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+>> > > > ---
+>> > > >? drivers/net/ethernet/intel/igc/igc_ethtool.c | 24 
+>> +++++++++++++++----
+>> > -
+>> > > >? 1 file changed, 18 insertions(+), 6 deletions(-)
+>> > > >
+>> > > > diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+>> > > b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+>> > > > index 61d331ce38cd..75cb4ca36bac 100644
+>> > > > --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+>> > > > +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+>> > > > @@ -1675,12 +1675,18 @@ static int
+>> > igc_ethtool_get_link_ksettings(struct
+>> > > net_device *netdev,
+>> > > >????? cmd->base.phy_address = hw->phy.addr;
+>> > > >
+>> > > >????? /* advertising link modes */
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising, 
+>> 10baseT_Half);
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising, 
+>> 10baseT_Full);
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 100baseT_Half);
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 100baseT_Full);
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 1000baseT_Full);
+>> > > > -??? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 2500baseT_Full);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 10baseT_Half);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_10_FULL)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 10baseT_Full);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_100_HALF)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 100baseT_Half);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_100_FULL)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 100baseT_Full);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_1000_FULL)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 1000baseT_Full);
+>> > > > +??? if (hw->phy.autoneg_advertised & ADVERTISE_2500_FULL)
+>> > > > +??????? ethtool_link_ksettings_add_link_mode(cmd, advertising,
+>> > > 2500baseT_Full);
+>> > > >
+>> > > >????? /* set autoneg settings */
+>> > > >????? if (hw->mac.autoneg == 1) {
+>> > > > @@ -1792,6 +1798,12 @@ igc_ethtool_set_link_ksettings(struct
+>> > net_device
+>> > > *netdev,
+>> > > >
+>> > > >????? ethtool_convert_link_mode_to_legacy_u32(&advertising,
+>> > > >????????????????????????? cmd->link_modes.advertising);
+>> > > > +??? /* Converting to legacy u32 drops
+>> > > ETHTOOL_LINK_MODE_2500baseT_Full_BIT.
+>> > > > +???? * We have to check this and convert it to ADVERTISE_2500_FULL
+>> > > > +???? * (aka ETHTOOL_LINK_MODE_2500baseX_Full_BIT) explicitely.
+>> > > > +???? */
+>> > > > +??? if (ethtool_link_ksettings_test_link_mode(cmd, advertising,
+>> > > 2500baseT_Full))
+>> > > > +??????? advertising |= ADVERTISE_2500_FULL;
+>> > > >
+>> > > >????? if (cmd->base.autoneg == AUTONEG_ENABLE) {
+>> > > >????????? hw->mac.autoneg = 1;
+>> > > > --
+>> > > > 2.27.0
+>> > > >
+>> > > > _______________________________________________
+>> > > > Intel-wired-lan mailing list
+>> > > > Intel-wired-lan at osuosl.org
+>> > > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>> > >
+>> > > ----- End forwarded message -----
+>>
+> 
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
