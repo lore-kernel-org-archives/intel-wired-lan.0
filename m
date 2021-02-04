@@ -1,28 +1,167 @@
-From: Pierre Cheynier <p.cheynier@criteo.com>
-Date: Wed, 3 Feb 2021 15:25:20 +0000
-Subject: [Intel-wired-lan] [5.10] i40e/udp_tunnel: RTNL: assertion
- failed at net/ipv4/udp_tunnel_nic.c
-In-Reply-To: <DM5PR11MB1705DDAEC74CA8918438EBA599B49@DM5PR11MB1705.namprd11.prod.outlook.com>
-References: <DB8PR04MB6460F61AE67E17CC9189D067EAB99@DB8PR04MB6460.eurprd04.prod.outlook.com>
- <20210129192750.7b2d8b25@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <DB8PR04MB6460DD3585CE95CB77A2B650EAB59@DB8PR04MB6460.eurprd04.prod.outlook.com>
- <20210202083035.3d54f97c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>,
- <DM5PR11MB1705DDAEC74CA8918438EBA599B49@DM5PR11MB1705.namprd11.prod.outlook.com>
-Message-ID: <DB8PR04MB646092D87F51C2ACD180841EEAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
+From: Ederson de Souza <ederson.desouza@intel.com>
+Date: Wed,  3 Feb 2021 17:50:25 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue v1] igb: Redistribute memory
+ for transmit packet buffers when in Qav mode
+Message-ID: <20210204015025.40275-1-ederson.desouza@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+i210 has a total of 24KB of transmit packet buffer. When in Qav mode,
+this buffer is divided into four pieces, one for each Tx queue.
+Currently, 8KB are given to each of the two SR queues and 4KB are given
+to each of the two SP queues.
 
-On Wed, 3 Feb 2021 15:23:54 +0100 Sokolowski, Jan wrote:
+However, it was noticed that such distribution can make best effort
+traffic (which would usually go to the SP queues when Qav is enabled, as
+the SR queues would be used by ETF or CBS qdiscs for TSN-aware traffic)
+perform poorly. Using iperf3 to measure, one could see the performance
+of best effort traffic drop by nearly a third (from 935Mbps to 578Mbps),
+with no TSN traffic competing.
 
-> It has been mentioned that the error only appeared recently, after upgrade to 5.10.X. What's the last known working configuration it was tested on? A bisection could help us investigate.
+This patch redistributes the 24KB to each queue equally: 6KB each. On
+tests, there was no notable performance reduction of best effort traffic
+performance when there was no TSN traffic competing.
 
-I unfortunately moved from one LTS to another, meaning I was in 5.4 before, and this UDP tunnel offloading feature landed in 5.9 as far as I know.
+Below, more details about the data collected:
 
-Maybe Jakub can give pointers to specific 5.9 or 5.10 kernel versions I can eventually try, so that I can help refine where this was introduced (or if it was present from the start)?
+All experiments were run using the following qdisc setup:
 
---
-Pierre
+qdisc taprio 100: root refcnt 9 tc 4 map 3 3 3 2 3 0 0 3 3 3 3 3 3 3 3 3
+    queues offset 0 count 1 offset 1 count 1 offset 2 count 1 offset 3 count 1
+    clockid TAI base-time 0 cycle-time 10000000 cycle-time-extension 0
+    index 0 cmd S gatemask 0xf interval 10000000
+
+qdisc etf 8045: parent 100:1 clockid TAI delta 1000000 offload on
+    deadline_mode off skip_sock_check off
+
+TSN traffic, when enabled, had this characteristics:
+ Packet size: 1500 bytes
+ Transmission interval: 125us
+
+----------------------------------
+Without this patch:
+----------------------------------
+- TCP data:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.35 GBytes   578 Mbits/sec    0
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.07 GBytes   460 Mbits/sec    1
+
+- TCP data limiting iperf3 buffer size to 4K:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.35 GBytes   579 Mbits/sec    0
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.08 GBytes   462 Mbits/sec    0
+
+- TCP data limiting iperf3 buffer size to 192 bytes (smallest size without
+ serious performance degradation):
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.34 GBytes   577 Mbits/sec    0
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.07 GBytes   461 Mbits/sec    1
+
+- UDP data at 1000Mbit/sec:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+        [  5]   0.00-20.00  sec  1.36 GBytes   586 Mbits/sec  0.000 ms  0/1011407 (0%)
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+        [  5]   0.00-20.00  sec  1.05 GBytes   451 Mbits/sec  0.000 ms  0/778672 (0%)
+
+----------------------------------
+With this patch:
+----------------------------------
+
+- TCP data:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  2.17 GBytes   932 Mbits/sec    0
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.50 GBytes   646 Mbits/sec    1
+
+- TCP data limiting iperf3 buffer size to 4K:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  2.17 GBytes   931 Mbits/sec    0
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.50 GBytes   645 Mbits/sec    0
+
+- TCP data limiting iperf3 buffer size to 192 bytes (smallest size without
+ serious performance degradation):
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  2.17 GBytes   932 Mbits/sec    1
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Retr
+        [  5]   0.00-20.00  sec  1.50 GBytes   645 Mbits/sec    0
+
+- UDP data at 1000Mbit/sec:
+    - No TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+        [  5]   0.00-20.00  sec  2.23 GBytes   956 Mbits/sec  0.000 ms  0/1650226 (0%)
+
+    - With TSN traffic:
+        [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+        [  5]   0.00-20.00  sec  1.51 GBytes   649 Mbits/sec  0.000 ms  0/1120264 (0%)
+
+Signed-off-by: Ederson de Souza <ederson.desouza@intel.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_defines.h | 8 ++++----
+ drivers/net/ethernet/intel/igb/igb_main.c      | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index d2e2c50ce257..ca5429774994 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -340,10 +340,10 @@
+ #define I210_RXPBSIZE_PB_32KB		0x00000020
+ #define I210_TXPBSIZE_DEFAULT		0x04000014 /* TXPBSIZE default */
+ #define I210_TXPBSIZE_MASK		0xC0FFFFFF
+-#define I210_TXPBSIZE_PB0_8KB		(8 << 0)
+-#define I210_TXPBSIZE_PB1_8KB		(8 << 6)
+-#define I210_TXPBSIZE_PB2_4KB		(4 << 12)
+-#define I210_TXPBSIZE_PB3_4KB		(4 << 18)
++#define I210_TXPBSIZE_PB0_6KB		(6 << 0)
++#define I210_TXPBSIZE_PB1_6KB		(6 << 6)
++#define I210_TXPBSIZE_PB2_6KB		(6 << 12)
++#define I210_TXPBSIZE_PB3_6KB		(6 << 18)
+ 
+ #define I210_DTXMXPKTSZ_DEFAULT		0x00000098
+ 
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 0ace791d40d7..a05736e0874d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1921,8 +1921,8 @@ static void igb_setup_tx_mode(struct igb_adapter *adapter)
+ 		 */
+ 		val = rd32(E1000_TXPBS);
+ 		val &= ~I210_TXPBSIZE_MASK;
+-		val |= I210_TXPBSIZE_PB0_8KB | I210_TXPBSIZE_PB1_8KB |
+-			I210_TXPBSIZE_PB2_4KB | I210_TXPBSIZE_PB3_4KB;
++		val |= I210_TXPBSIZE_PB0_6KB | I210_TXPBSIZE_PB1_6KB |
++			I210_TXPBSIZE_PB2_6KB | I210_TXPBSIZE_PB3_6KB;
+ 		wr32(E1000_TXPBS, val);
+ 
+ 		val = rd32(E1000_RXPBS);
+-- 
+2.30.0
+
