@@ -1,17 +1,16 @@
 From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Thu, 4 Feb 2021 12:05:37 +0200
+Date: Thu, 4 Feb 2021 12:14:42 +0200
 Subject: [Intel-wired-lan] igc: fix link speed advertising
 In-Reply-To: <79cb04f0-1a93-f463-3131-ad7772eab202@intel.com>
 References: <20210127092421.GS4393@calimero.vinschen.de>
  <79cb04f0-1a93-f463-3131-ad7772eab202@intel.com>
-Message-ID: <e955280d-305a-70a4-f74a-8cf9b2a07e1f@linux.intel.com>
+Message-ID: <4ab4202a-d211-e76e-fdac-ac39eb9fc834@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> 
 > 
 > 
 > -------- Forwarded Message --------
