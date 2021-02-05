@@ -1,108 +1,61 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Fri,  5 Feb 2021 10:09:04 +0100
-Subject: [Intel-wired-lan] [PATCH intel-net] ice: fix napi work done
- reporting in xsk path
-Message-ID: <20210205090904.20794-1-magnus.karlsson@gmail.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Fri,  5 Feb 2021 09:41:15 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix return of set the new
+ channel count
+Message-ID: <20210205094115.15222-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
+Fixed return correct code from set the new channel count.
+Implemented by check if reset is done in appropriate time.
+This solution give a extra time to pf for reset vf in case
+when user want set new channel count for all vfs.
+Without this patch it is possible to return misleading output
+code to user and vf reset not to be correctly performed by pf.
 
-Fix the wrong napi work done reporting in the xsk path of the ice
-driver. The code in the main Rx processing loop was written to assume
-that the buffer allocation code returns true if all allocations where
-successful and false if not. In contrast with all other Intel NIC xsk
-drivers, the ice_alloc_rx_bufs_zc() has the inverted logic messing up
-the work done reporting in the napi loop.
-
-This can be fixed either by inverting the return value from
-ice_alloc_rx_bufs_zc() in the function that uses this in an incorrect
-way, or by changing the return value of ice_alloc_rx_bufs_zc(). We
-chose the latter as it makes all the xsk allocation functions for
-Intel NICs behave in the same way. My guess is that it was this
-unexpected discrepancy that gave rise to this bug in the first place.
-
-Fixes: 5bb0c4b5eb61 ("ice, xsk: Move Rx allocation out of while-loop")
-Reported-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+Fixes: 5520deb15326("iavf: Enable support for up to 16 queues")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_base.c |  6 ++++--
- drivers/net/ethernet/intel/ice/ice_xsk.c  | 10 +++++-----
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 3124a3bf519a..952e41a1e001 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -418,6 +418,8 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 	writel(0, ring->tail);
- 
- 	if (ring->xsk_pool) {
-+		bool ok;
-+
- 		if (!xsk_buff_can_alloc(ring->xsk_pool, num_bufs)) {
- 			dev_warn(dev, "XSK buffer pool does not provide enough addresses to fill %d buffers on Rx ring %d\n",
- 				 num_bufs, ring->q_index);
-@@ -426,8 +428,8 @@ int ice_setup_rx_ctx(struct ice_ring *ring)
- 			return 0;
- 		}
- 
--		err = ice_alloc_rx_bufs_zc(ring, num_bufs);
--		if (err)
-+		ok = ice_alloc_rx_bufs_zc(ring, num_bufs);
-+		if (!ok)
- 			dev_info(dev, "Failed to allocate some buffers on XSK buffer pool enabled Rx ring %d (pf_q %d)\n",
- 				 ring->q_index, pf_q);
- 		return 0;
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 1782146db644..69ee1a8e87ab 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -408,18 +408,18 @@ int ice_xsk_pool_setup(struct ice_vsi *vsi, struct xsk_buff_pool *pool, u16 qid)
-  * This function allocates a number of Rx buffers from the fill ring
-  * or the internal recycle mechanism and places them on the Rx ring.
-  *
-- * Returns false if all allocations were successful, true if any fail.
-+ * Returns true if all allocations were successful, false if any fail.
-  */
- bool ice_alloc_rx_bufs_zc(struct ice_ring *rx_ring, u16 count)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 3ebfef7..d9ed4d4 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -1522,6 +1522,7 @@ static int iavf_set_channels(struct net_device *netdev,
  {
- 	union ice_32b_rx_flex_desc *rx_desc;
- 	u16 ntu = rx_ring->next_to_use;
- 	struct ice_rx_buf *rx_buf;
--	bool ret = false;
-+	bool ok = true;
- 	dma_addr_t dma;
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u32 num_req = ch->combined_count;
++	int i;
  
- 	if (!count)
--		return false;
-+		return true;
- 
- 	rx_desc = ICE_RX_DESC(rx_ring, ntu);
- 	rx_buf = &rx_ring->rx_buf[ntu];
-@@ -427,7 +427,7 @@ bool ice_alloc_rx_bufs_zc(struct ice_ring *rx_ring, u16 count)
- 	do {
- 		rx_buf->xdp = xsk_buff_alloc(rx_ring->xsk_pool);
- 		if (!rx_buf->xdp) {
--			ret = true;
-+			ok = false;
- 			break;
- 		}
- 
-@@ -452,7 +452,7 @@ bool ice_alloc_rx_bufs_zc(struct ice_ring *rx_ring, u16 count)
- 		ice_release_rx_desc(rx_ring, ntu);
- 	}
- 
--	return ret;
-+	return ok;
+ 	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
+ 	    adapter->num_tc) {
+@@ -1544,6 +1545,20 @@ static int iavf_set_channels(struct net_device *netdev,
+ 	adapter->num_req_queues = num_req;
+ 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	iavf_schedule_reset(adapter);
++
++	/* wait for the reset is done */
++	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
++		msleep(IAVF_RESET_WAIT_MS);
++		if (adapter->flags & IAVF_FLAG_RESET_PENDING)
++			continue;
++		break;
++	}
++	if (i == IAVF_RESET_WAIT_COUNT) {
++		adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
++		adapter->num_active_queues = num_req;
++		return -EOPNOTSUPP;
++	}
++
+ 	return 0;
  }
  
- /**
-
-base-commit: b3d2c7b876d450e1d2624fd67658acc96465a9e6
 -- 
-2.29.0
+2.17.1
 
