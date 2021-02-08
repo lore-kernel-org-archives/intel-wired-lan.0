@@ -1,36 +1,66 @@
-From: Pierre Cheynier <p.cheynier@criteo.com>
-Date: Mon, 8 Feb 2021 09:09:42 +0000
-Subject: [Intel-wired-lan] [5.10] i40e/udp_tunnel: RTNL: assertion
- failed at net/ipv4/udp_tunnel_nic.c
-In-Reply-To: <20210203090842.22e5ccb4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <DB8PR04MB6460F61AE67E17CC9189D067EAB99@DB8PR04MB6460.eurprd04.prod.outlook.com>
- <20210129192750.7b2d8b25@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <DB8PR04MB6460DD3585CE95CB77A2B650EAB59@DB8PR04MB6460.eurprd04.prod.outlook.com>
- <20210202083035.3d54f97c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <DM5PR11MB1705DDAEC74CA8918438EBA599B49@DM5PR11MB1705.namprd11.prod.outlook.com>
- <DB8PR04MB646092D87F51C2ACD180841EEAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
- <DB8PR04MB6460398CFCE47ADD5EE773E1EAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>,
- <20210203090842.22e5ccb4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <DB8PR04MB64608A64EA7B4ABAC3A15EE1EA8F9@DB8PR04MB6460.eurprd04.prod.outlook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Mon, 8 Feb 2021 18:42:16 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix VFs not created
+In-Reply-To: <20201127112301.32478-1-mateusz.palczewski@intel.com>
+References: <20201127112301.32478-1-mateusz.palczewski@intel.com>
+Message-ID: <CY4PR11MB15767CD15BCF51F92104E281AB8F9@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-On Wed, 3 Feb 2021 18:08:31 +0100 Jakub Kicinski wrote:
-> Yup! I'm pretty sure it's my conversion. The full commit quote upstream:
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mateusz Palczewski
+> Sent: pi?tek, 27 listopada 2020 12:23
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix VFs not created
 > 
-> 40a98cb6f01f ("i40e: convert to new udp_tunnel infrastructure")
+> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 > 
-> It should trigger if you have vxlan module loaded (or built in)
-> and then reload or re-probe i40e.
+> When creating VFs they were sometimes not getting resources.
+> It was caused by not executing i40e_reset_all_vfs due to flag
+> __I40E_VF_DISABLE being set on PF. Because of this IAVF was never able to
+> finish setup sequence never getting reset indication from PF.
+> Changed test_and_set_bit __I40E_VF_DISABLE in i40e_sync_filters_subtask
+> to test_bit and removed clear_bit.
+> This function should not set this bit it should only check if it hasn't been
+> already set.
 > 
-> Let us know if you can't repro it should pop up pretty reliably.
+> Fixes: a7542b876075 ("i40e: check __I40E_VF_DISABLE bit in
+> i40e_sync_filters_subtask")
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 5bee1de..a926331 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -2623,7 +2623,7 @@ static void i40e_sync_filters_subtask(struct i40e_pf
+> *pf)
+>  		return;
+>  	if (!test_and_clear_bit(__I40E_MACVLAN_SYNC_PENDING, pf-
+> >state))
+>  		return;
+> -	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state)) {
+> +	if (test_bit(__I40E_VF_DISABLE, pf->state)) {
+>  		set_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state);
+>  		return;
+>  	}
+> @@ -2641,7 +2641,6 @@ static void i40e_sync_filters_subtask(struct i40e_pf
+> *pf)
+>  			}
+>  		}
+>  	}
+> -	clear_bit(__I40E_VF_DISABLE, pf->state);
+>  }
+> 
+>  /**
+> --
 
-Not sure if this is under investigation on Intel side, I can help to test patches
-or provide more info if needed.
-
---
-Pierre
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
