@@ -1,10 +1,10 @@
 From: Vedang Patel <vedang.patel@intel.com>
-Date: Mon,  8 Feb 2021 18:42:39 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3 5/9] igc: Introduce tx/rx
- stats helpers
+Date: Mon,  8 Feb 2021 18:42:40 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v3 6/9] igc: Introduce
+ igc_unmap_tx_buffer() helper
 In-Reply-To: <20210209024243.23406-1-vedang.patel@intel.com>
 References: <20210209024243.23406-1-vedang.patel@intel.com>
-Message-ID: <20210209024243.23406-6-vedang.patel@intel.com>
+Message-ID: <20210209024243.23406-7-vedang.patel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,90 +14,117 @@ List-ID: <intel-wired-lan.osuosl.org>
 From: Andre Guedes <andre.guedes@intel.com>
 
 In preparation for AF_XDP zero-copy support, encapsulate the code that
-updates the driver RX stats in its own local helper so it can be reused
-in the zero-copy path. Likewise, encapsulate TX stats code as well.
+unmaps tx buffers into its own local helper so we can reuse it, avoiding
+code duplication.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 43 ++++++++++++++++-------
- 1 file changed, 31 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 49 +++++++----------------
+ 1 file changed, 15 insertions(+), 34 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 43bd3b3f7e49..f13ef54b9c7a 100644
+index f13ef54b9c7a..9049456d2410 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2102,6 +2102,20 @@ static void igc_finalize_xdp(struct igc_adapter *adapter, int status)
- 		xdp_do_flush();
+@@ -171,6 +171,14 @@ static void igc_get_hw_control(struct igc_adapter *adapter)
+ 	     ctrl_ext | IGC_CTRL_EXT_DRV_LOAD);
  }
  
-+static void igc_update_rx_stats(struct igc_q_vector *q_vector,
-+				unsigned int packets, unsigned int bytes)
++static void igc_unmap_tx_buffer(struct device *dev, struct igc_tx_buffer *buf)
 +{
-+	struct igc_ring *ring = q_vector->rx.ring;
++	dma_unmap_single(dev, dma_unmap_addr(buf, dma),
++			 dma_unmap_len(buf, len), DMA_TO_DEVICE);
 +
-+	u64_stats_update_begin(&ring->rx_syncp);
-+	ring->rx_stats.packets += packets;
-+	ring->rx_stats.bytes += bytes;
-+	u64_stats_update_end(&ring->rx_syncp);
-+
-+	q_vector->rx.total_packets += packets;
-+	q_vector->rx.total_bytes += bytes;
-+}
-+
- static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- {
- 	unsigned int total_bytes = 0, total_packets = 0;
-@@ -2225,12 +2239,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 	/* place incomplete frames back on ring for completion */
- 	rx_ring->skb = skb;
- 
--	u64_stats_update_begin(&rx_ring->rx_syncp);
--	rx_ring->rx_stats.packets += total_packets;
--	rx_ring->rx_stats.bytes += total_bytes;
--	u64_stats_update_end(&rx_ring->rx_syncp);
--	q_vector->rx.total_packets += total_packets;
--	q_vector->rx.total_bytes += total_bytes;
-+	igc_update_rx_stats(q_vector, total_packets, total_bytes);
- 
- 	if (cleaned_count)
- 		igc_alloc_rx_buffers(rx_ring, cleaned_count);
-@@ -2238,6 +2247,20 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
- 	return total_packets;
- }
- 
-+static void igc_update_tx_stats(struct igc_q_vector *q_vector,
-+				unsigned int packets, unsigned int bytes)
-+{
-+	struct igc_ring *ring = q_vector->tx.ring;
-+
-+	u64_stats_update_begin(&ring->tx_syncp);
-+	ring->tx_stats.bytes += bytes;
-+	ring->tx_stats.packets += packets;
-+	u64_stats_update_end(&ring->tx_syncp);
-+
-+	q_vector->tx.total_bytes += bytes;
-+	q_vector->tx.total_packets += packets;
++	dma_unmap_len_set(buf, len, 0);
 +}
 +
  /**
-  * igc_clean_tx_irq - Reclaim resources after transmit completes
-  * @q_vector: pointer to q_vector containing needed info
-@@ -2340,12 +2363,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+  * igc_clean_tx_ring - Free Tx Buffers
+  * @tx_ring: ring to be cleaned
+@@ -188,11 +196,7 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 		else
+ 			dev_kfree_skb_any(tx_buffer->skb);
  
- 	i += tx_ring->count;
- 	tx_ring->next_to_clean = i;
--	u64_stats_update_begin(&tx_ring->tx_syncp);
--	tx_ring->tx_stats.bytes += total_bytes;
--	tx_ring->tx_stats.packets += total_packets;
--	u64_stats_update_end(&tx_ring->tx_syncp);
--	q_vector->tx.total_bytes += total_bytes;
--	q_vector->tx.total_packets += total_packets;
-+
-+	igc_update_tx_stats(q_vector, total_packets, total_bytes);
+-		/* unmap skb header data */
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
  
- 	if (test_bit(IGC_RING_FLAG_TX_DETECT_HANG, &tx_ring->flags)) {
- 		struct igc_hw *hw = &adapter->hw;
+ 		/* check for eop_desc to determine the end of the packet */
+ 		eop_desc = tx_buffer->next_to_watch;
+@@ -211,10 +215,7 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 
+ 			/* unmap any remaining paged data */
+ 			if (dma_unmap_len(tx_buffer, len))
+-				dma_unmap_page(tx_ring->dev,
+-					       dma_unmap_addr(tx_buffer, dma),
+-					       dma_unmap_len(tx_buffer, len),
+-					       DMA_TO_DEVICE);
++				igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 		}
+ 
+ 		/* move us one more past the eop_desc for start of next pkt */
+@@ -1218,11 +1219,7 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+ 	/* clear dma mappings for failed tx_buffer_info map */
+ 	while (tx_buffer != first) {
+ 		if (dma_unmap_len(tx_buffer, len))
+-			dma_unmap_page(tx_ring->dev,
+-				       dma_unmap_addr(tx_buffer, dma),
+-				       dma_unmap_len(tx_buffer, len),
+-				       DMA_TO_DEVICE);
+-		dma_unmap_len_set(tx_buffer, len, 0);
++			igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
+ 		if (i-- == 0)
+ 			i += tx_ring->count;
+@@ -1230,11 +1227,7 @@ static int igc_tx_map(struct igc_ring *tx_ring,
+ 	}
+ 
+ 	if (dma_unmap_len(tx_buffer, len))
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
+-	dma_unmap_len_set(tx_buffer, len, 0);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
+ 	dev_kfree_skb_any(tx_buffer->skb);
+ 	tx_buffer->skb = NULL;
+@@ -2311,14 +2304,7 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 		else
+ 			napi_consume_skb(tx_buffer->skb, napi_budget);
+ 
+-		/* unmap skb header data */
+-		dma_unmap_single(tx_ring->dev,
+-				 dma_unmap_addr(tx_buffer, dma),
+-				 dma_unmap_len(tx_buffer, len),
+-				 DMA_TO_DEVICE);
+-
+-		/* clear tx_buffer data */
+-		dma_unmap_len_set(tx_buffer, len, 0);
++		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
+ 		/* clear last DMA location and unmap remaining buffers */
+ 		while (tx_desc != eop_desc) {
+@@ -2332,13 +2318,8 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 			}
+ 
+ 			/* unmap any remaining paged data */
+-			if (dma_unmap_len(tx_buffer, len)) {
+-				dma_unmap_page(tx_ring->dev,
+-					       dma_unmap_addr(tx_buffer, dma),
+-					       dma_unmap_len(tx_buffer, len),
+-					       DMA_TO_DEVICE);
+-				dma_unmap_len_set(tx_buffer, len, 0);
+-			}
++			if (dma_unmap_len(tx_buffer, len))
++				igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 		}
+ 
+ 		/* move us one more past the eop_desc for start of next pkt */
 -- 
 2.17.1
 
