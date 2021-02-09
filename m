@@ -1,130 +1,76 @@
-From: Vedang Patel <vedang.patel@intel.com>
-Date: Mon,  8 Feb 2021 18:42:41 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3 7/9] igc: Replace
- IGC_TX_FLAGS_XDP flag by an enum
-In-Reply-To: <20210209024243.23406-1-vedang.patel@intel.com>
-References: <20210209024243.23406-1-vedang.patel@intel.com>
-Message-ID: <20210209024243.23406-8-vedang.patel@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Tue,  9 Feb 2021 11:59:38 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix return of set the new
+ channel count
+Message-ID: <20210209115938.2266-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Andre Guedes <andre.guedes@intel.com>
+Fixed return correct code from set the new channel count.
+Implemented by check if reset is done in appropriate time.
+This solution give a extra time to pf for reset vf in case
+when user want set new channel count for all vfs.
+Without this patch it is possible to return misleading output
+code to user and vf reset not to be correctly performed by pf.
 
-Up to this point, tx buffers are associated with either a skb or a xdpf,
-and the IGC_TX_FLAGS_XDP flag was enough to distinguish between these
-two case. However, with upcoming patches that will add AF_XDP zero-copy
-support, a third case will be introduced so this flag-based approach
-won't fit well.
-
-In preparation to land AF_XDP zero-copy support, replace the
-IGC_TX_FLAGS_XDP flag by an enum which will be extended once zero-copy
-support is introduced to the driver.
-
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+Fixes: 5520deb15326("iavf: Enable support for up to 16 queues")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  8 +++++--
- drivers/net/ethernet/intel/igc/igc_main.c | 27 ++++++++++++++++++-----
- 2 files changed, 28 insertions(+), 7 deletions(-)
+v2: 
+ - added missing define in iavf.h file 
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 3f0d8377d661..5b14cd4aafe6 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -377,8 +377,6 @@ enum igc_tx_flags {
- 	/* olinfo flags */
- 	IGC_TX_FLAGS_IPV4	= 0x10,
- 	IGC_TX_FLAGS_CSUM	= 0x20,
--
--	IGC_TX_FLAGS_XDP	= 0x100,
+ drivers/net/ethernet/intel/iavf/iavf.h         |  1 +
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index bda2a90..09e5b9c 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -220,6 +220,7 @@ struct iavf_cloud_filter {
+ 	bool add;		/* filter needs to be added */
  };
  
- enum igc_boards {
-@@ -395,12 +393,18 @@ enum igc_boards {
- #define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
- #define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
++#define IAVF_RESET_WAIT_COUNT 500
+ #define IAVF_RESET_WAIT_MS 10
+ #define IAVF_RESET_WAIT_DETECTED_COUNT 500
+ #define IAVF_RESET_WAIT_COMPLETE_COUNT 2000
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 3ebfef7..d9ed4d4 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -1522,6 +1522,7 @@ static int iavf_set_channels(struct net_device *netdev,
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u32 num_req = ch->combined_count;
++	int i;
  
-+enum igc_tx_buffer_type {
-+	IGC_TX_BUFFER_TYPE_SKB,
-+	IGC_TX_BUFFER_TYPE_XDP,
-+};
+ 	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ) &&
+ 	    adapter->num_tc) {
+@@ -1544,6 +1545,20 @@ static int iavf_set_channels(struct net_device *netdev,
+ 	adapter->num_req_queues = num_req;
+ 	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	iavf_schedule_reset(adapter);
 +
- /* wrapper around a pointer to a socket buffer,
-  * so a DMA handle can be stored along with the buffer
-  */
- struct igc_tx_buffer {
- 	union igc_adv_tx_desc *next_to_watch;
- 	unsigned long time_stamp;
-+	enum igc_tx_buffer_type type;
- 	union {
- 		struct sk_buff *skb;
- 		struct xdp_frame *xdpf;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 9049456d2410..5874936b7c59 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
- 	while (i != tx_ring->next_to_use) {
- 		union igc_adv_tx_desc *eop_desc, *tx_desc;
- 
--		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+		switch (tx_buffer->type) {
-+		case IGC_TX_BUFFER_TYPE_XDP:
- 			xdp_return_frame(tx_buffer->xdpf);
--		else
-+			break;
-+		case IGC_TX_BUFFER_TYPE_SKB:
- 			dev_kfree_skb_any(tx_buffer->skb);
-+			break;
-+		default:
-+			netdev_warn_once(tx_ring->netdev,
-+					 "Unknown tx buffer type\n");
-+			break;
-+		}
- 
- 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
- 
-@@ -1360,6 +1368,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 
- 	/* record the location of the first descriptor for this packet */
- 	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
-+	first->type = IGC_TX_BUFFER_TYPE_SKB;
- 	first->skb = skb;
- 	first->bytecount = skb->len;
- 	first->gso_segs = 1;
-@@ -1934,8 +1943,8 @@ static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
- 		return -ENOMEM;
- 	}
- 
-+	buffer->type = IGC_TX_BUFFER_TYPE_XDP;
- 	buffer->xdpf = xdpf;
--	buffer->tx_flags = IGC_TX_FLAGS_XDP;
- 	buffer->protocol = 0;
- 	buffer->bytecount = xdpf->len;
- 	buffer->gso_segs = 1;
-@@ -2299,10 +2308,18 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
- 		total_bytes += tx_buffer->bytecount;
- 		total_packets += tx_buffer->gso_segs;
- 
--		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
-+		switch (tx_buffer->type) {
-+		case IGC_TX_BUFFER_TYPE_XDP:
- 			xdp_return_frame(tx_buffer->xdpf);
--		else
-+			break;
-+		case IGC_TX_BUFFER_TYPE_SKB:
- 			napi_consume_skb(tx_buffer->skb, napi_budget);
-+			break;
-+		default:
-+			netdev_warn_once(tx_ring->netdev,
-+					 "Unknown tx buffer type\n");
-+			break;
-+		}
- 
- 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
++	/* wait for the reset is done */
++	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
++		msleep(IAVF_RESET_WAIT_MS);
++		if (adapter->flags & IAVF_FLAG_RESET_PENDING)
++			continue;
++		break;
++	}
++	if (i == IAVF_RESET_WAIT_COUNT) {
++		adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
++		adapter->num_active_queues = num_req;
++		return -EOPNOTSUPP;
++	}
++
+ 	return 0;
+ }
  
 -- 
 2.17.1
