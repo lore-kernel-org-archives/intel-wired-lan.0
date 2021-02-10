@@ -1,139 +1,69 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 10 Feb 2021 09:29:28 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD REGRESSION
- 613142b0bb8840016c7a41b3b681f6130cc49c86
-Message-ID: <602336f8.SdQKX6v+iCOuanR3%lkp@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 10 Feb 2021 01:47:25 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 9/9] igc: Add support for
+ XDP_REDIRECT action
+In-Reply-To: <20210209024141.23298-10-vedang.patel@intel.com>
+References: <20210209024141.23298-1-vedang.patel@intel.com>
+ <20210209024141.23298-10-vedang.patel@intel.com>
+Message-ID: <8c6e414e03c2bdd01916ee63f6912df3b24e86fa.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: 613142b0bb8840016c7a41b3b681f6130cc49c86  i40e: Log error for oversized MTU on device
+On Mon, 2021-02-08 at 18:41 -0800, Vedang Patel wrote:
+> From: Andre Guedes <andre.guedes@intel.com>
+> 
+> This patch adds support for the XDP_REDIRECT action which enables XDP
+> programs to redirect packets arriving at I225 NIC. It also implements
+> the ndo_xdp_xmit ops, enabling the igc driver to transmit packets
+> forwarded to it by xdp programs running on other interfaces.
+> 
+> The patch tweaks the driver's page counting scheme (as described in
+> '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
+> implemented by other Intel drivers) in order to properly support
+> XDP_REDIRECT action.
+> 
+> This patch has been tested with the sample apps "xdp_redirect_cpu"
+> and
+> "xdp_redirect_map" located in samples/bpf/.
+> 
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 59
+> +++++++++++++++++++++--
+>  1 file changed, 56 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
+> b/drivers/net/ethernet/intel/igc/igc_main.c
+> index d34d35789e2e..8bb1f8a54368 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -26,6 +26,7 @@
+>  #define IGC_XDP_PASS		0
+>  #define IGC_XDP_CONSUMED	BIT(0)
+>  #define IGC_XDP_TX		BIT(1)
+> +#define IGC_XDP_REDIRECT	BIT(2)
+>  
+>  static int debug = -1;
+>  
+> @@ -1708,8 +1709,8 @@ static bool igc_can_reuse_rx_page(struct
+> igc_rx_buffer *rx_buffer)
+>  	 * the pagecnt_bias and page count so that we fully restock the
+>  	 * number of references the driver holds.
+>  	 */
+> -	if (unlikely(!pagecnt_bias)) {
+> -		page_ref_add(page, USHRT_MAX);
+> +	if (unlikely(pagecnt_bias == 1)) {
+> +		page_ref_add(page, USHRT_MAX - 1);
+>  		rx_buffer->pagecnt_bias = USHRT_MAX;
+>  	}
 
-possible Error/Warning in current branch:
+All of our drivers have needed this fix[1]. I suspect this will need it
+as well.
 
-net/rxrpc/local_object.c:124:12: error: 'struct udp_port_cfg' has no member named 'local_ip6'; did you mean 'local_ip'?
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- c6x-randconfig-r011-20210209
-|   `-- net-rxrpc-local_object.c:error:struct-udp_port_cfg-has-no-member-named-local_ip6
-`-- x86_64-randconfig-a002-20210209
-    `-- net-rxrpc-local_object.c:error:struct-udp_port_cfg-has-no-member-named-local_ip6
-
-elapsed time: 723m
-
-configs tested: 101
-configs skipped: 2
-
-gcc tested configs:
-arm                              allyesconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allmodconfig
-m68k                       m5249evb_defconfig
-sh                   sh7770_generic_defconfig
-c6x                        evmc6472_defconfig
-mips                         cobalt_defconfig
-arc                        nsimosci_defconfig
-arm                       versatile_defconfig
-powerpc                     stx_gp3_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                      pasemi_defconfig
-arm                             mxs_defconfig
-arc                              alldefconfig
-mips                          ath79_defconfig
-c6x                        evmc6474_defconfig
-xtensa                  audio_kc705_defconfig
-arm                            zeus_defconfig
-powerpc                     pq2fads_defconfig
-arm                       aspeed_g5_defconfig
-mips                            e55_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arm                       imx_v4_v5_defconfig
-arm                     am200epdkit_defconfig
-powerpc                        cell_defconfig
-microblaze                      mmu_defconfig
-sh                  sh7785lcr_32bit_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-xtensa                           allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-sparc                            allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210209
-x86_64               randconfig-a001-20210209
-x86_64               randconfig-a005-20210209
-x86_64               randconfig-a004-20210209
-x86_64               randconfig-a002-20210209
-x86_64               randconfig-a003-20210209
-i386                 randconfig-a001-20210209
-i386                 randconfig-a005-20210209
-i386                 randconfig-a003-20210209
-i386                 randconfig-a002-20210209
-i386                 randconfig-a006-20210209
-i386                 randconfig-a004-20210209
-i386                 randconfig-a016-20210209
-i386                 randconfig-a013-20210209
-i386                 randconfig-a012-20210209
-i386                 randconfig-a014-20210209
-i386                 randconfig-a011-20210209
-i386                 randconfig-a015-20210209
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a013-20210209
-x86_64               randconfig-a014-20210209
-x86_64               randconfig-a015-20210209
-x86_64               randconfig-a012-20210209
-x86_64               randconfig-a016-20210209
-x86_64               randconfig-a011-20210209
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+[1]https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-
+next.git/commit/?id=75aab4e10ae6a4593a60f66d13de755d4e91f400
