@@ -1,10 +1,10 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Wed, 10 Feb 2021 11:43:25 +0000
+Date: Wed, 10 Feb 2021 11:47:03 +0000
 Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: Log error for
  oversized MTU on device
 In-Reply-To: <20210114161706.9224-1-eryk.roch.rybak@intel.com>
 References: <20210114161706.9224-1-eryk.roch.rybak@intel.com>
-Message-ID: <DM6PR11MB3292BC885388F810F7E5D956F18D9@DM6PR11MB3292.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB32927882DF0FA774BCF6DBCAF18D9@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -33,10 +33,6 @@ List-ID: <intel-wired-lan.osuosl.org>
 > v2: add dmesg trace, change commit message
 > drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++++----
 >  1 file changed, 9 insertions(+), 4 deletions(-)
->
+> 
 
 Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
