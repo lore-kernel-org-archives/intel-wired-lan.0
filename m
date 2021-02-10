@@ -1,57 +1,59 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 10 Feb 2021 09:29:34 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- a851dfa8dfa72c1781667140ba1796597be27f3b
-Message-ID: <602336fe.Fw/HqBiLtMwY7SEO%lkp@intel.com>
+Date: Wed, 10 Feb 2021 09:29:28 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD REGRESSION
+ 613142b0bb8840016c7a41b3b681f6130cc49c86
+Message-ID: <602336f8.SdQKX6v+iCOuanR3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: a851dfa8dfa72c1781667140ba1796597be27f3b  Documentation: ice: update documentation
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
+branch HEAD: 613142b0bb8840016c7a41b3b681f6130cc49c86  i40e: Log error for oversized MTU on device
+
+possible Error/Warning in current branch:
+
+net/rxrpc/local_object.c:124:12: error: 'struct udp_port_cfg' has no member named 'local_ip6'; did you mean 'local_ip'?
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- c6x-randconfig-r011-20210209
+|   `-- net-rxrpc-local_object.c:error:struct-udp_port_cfg-has-no-member-named-local_ip6
+`-- x86_64-randconfig-a002-20210209
+    `-- net-rxrpc-local_object.c:error:struct-udp_port_cfg-has-no-member-named-local_ip6
 
 elapsed time: 723m
 
-configs tested: 107
+configs tested: 101
 configs skipped: 2
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
 gcc tested configs:
+arm                              allyesconfig
 arm                                 defconfig
 arm64                            allyesconfig
 arm64                               defconfig
-arm                              allyesconfig
 arm                              allmodconfig
 m68k                       m5249evb_defconfig
 sh                   sh7770_generic_defconfig
 c6x                        evmc6472_defconfig
 mips                         cobalt_defconfig
 arc                        nsimosci_defconfig
-s390                       zfcpdump_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                  colibri_pxa270_defconfig
-sh                            migor_defconfig
+arm                       versatile_defconfig
+powerpc                     stx_gp3_defconfig
+sh                        sh7785lcr_defconfig
 powerpc                      pasemi_defconfig
 arm                             mxs_defconfig
 arc                              alldefconfig
 mips                          ath79_defconfig
 c6x                        evmc6474_defconfig
-riscv                    nommu_k210_defconfig
-mips                          rm200_defconfig
-arm                       aspeed_g5_defconfig
-powerpc                      bamboo_defconfig
-x86_64                           alldefconfig
-powerpc                 mpc85xx_cds_defconfig
 xtensa                  audio_kc705_defconfig
-arm                    vt8500_v6_v7_defconfig
-arm                             pxa_defconfig
-mips                           xway_defconfig
-arm                       netwinder_defconfig
-mips                            gpr_defconfig
+arm                            zeus_defconfig
+powerpc                     pq2fads_defconfig
+arm                       aspeed_g5_defconfig
+mips                            e55_defconfig
+powerpc                 mpc837x_rdb_defconfig
 arm                       imx_v4_v5_defconfig
 arm                     am200epdkit_defconfig
 powerpc                        cell_defconfig
@@ -67,11 +69,11 @@ nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
 c6x                              allyesconfig
-nios2                            allyesconfig
 nds32                               defconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
+nios2                            allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 xtensa                           allyesconfig
@@ -109,6 +111,7 @@ i386                 randconfig-a012-20210209
 i386                 randconfig-a014-20210209
 i386                 randconfig-a011-20210209
 i386                 randconfig-a015-20210209
+riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
