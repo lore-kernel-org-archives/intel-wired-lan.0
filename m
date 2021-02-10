@@ -1,78 +1,90 @@
-From: Patel, Vedang <vedang.patel@intel.com>
-Date: Wed, 10 Feb 2021 17:50:42 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 9/9] igc: Add support for
- XDP_REDIRECT action
-In-Reply-To: <8c6e414e03c2bdd01916ee63f6912df3b24e86fa.camel@intel.com>
-References: <20210209024141.23298-1-vedang.patel@intel.com>
- <20210209024141.23298-10-vedang.patel@intel.com>
- <8c6e414e03c2bdd01916ee63f6912df3b24e86fa.camel@intel.com>
-Message-ID: <CE2BD7EB-B2A0-42AA-BA29-59130804C121@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 10 Feb 2021 10:31:35 -0800
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <874kikry66.fsf@toke.dk>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <5fd068c75b92d_50ce20814@john-XPS-13-9370.notmuch>
+ <20201209095454.GA36812@ranger.igk.intel.com>
+ <20201209125223.49096d50@carbon>
+ <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
+ <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
+ <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+ <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
+ <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
+ <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
+ <CAAOQfrHN1-oHmbOksDv-BKWv4gDF2zHZ5dTew6R_QTh6s_1abg@mail.gmail.com>
+ <87h7mvsr0e.fsf@toke.dk>
+ <CAAOQfrHA+-BsikeQzXYcK_32BZMbm54x5p5YhAiBj==uaZvG1w@mail.gmail.com>
+ <87bld2smi9.fsf@toke.dk>
+ <20210202113456.30cfe21e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <CAAOQfrGqcsn3wu5oxzHYxtE8iK3=gFdTka5HSh5Fe9Hc6HWRWA@mail.gmail.com>
+ <20210203090232.4a259958@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <874kikry66.fsf@toke.dk>
+Message-ID: <20210210103135.38921f85@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> On Feb 9, 2021, at 5:47 PM, Nguyen, Anthony L <anthony.l.nguyen@intel.com> wrote:
+On Wed, 10 Feb 2021 11:53:53 +0100 Toke H?iland-J?rgensen wrote:
+> >> I am a bit confused now. Did you mean validation tests of those XDP
+> >> flags, which I am working on or some other validation tests?
+> >> What should these tests verify? Can you please elaborate more on the
+> >> topic, please - just a few sentences how are you see it?  
+> >
+> > Conformance tests can be written for all features, whether they have 
+> > an explicit capability in the uAPI or not. But for those that do IMO
+> > the tests should be required.
+> >
+> > Let me give you an example. This set adds a bit that says Intel NICs 
+> > can do XDP_TX and XDP_REDIRECT, yet we both know of the Tx queue
+> > shenanigans. So can i40e do XDP_REDIRECT or can it not?
+> >
+> > If we have exhaustive conformance tests we can confidently answer that
+> > question. And the answer may not be "yes" or "no", it may actually be
+> > "we need more options because many implementations fall in between".
+> >
+> > I think readable (IOW not written in some insane DSL) tests can also 
+> > be useful for users who want to check which features their program /
+> > deployment will require.  
 > 
-> On Mon, 2021-02-08 at 18:41 -0800, Vedang Patel wrote:
->> From: Andre Guedes <andre.guedes@intel.com>
->> 
->> This patch adds support for the XDP_REDIRECT action which enables XDP
->> programs to redirect packets arriving at I225 NIC. It also implements
->> the ndo_xdp_xmit ops, enabling the igc driver to transmit packets
->> forwarded to it by xdp programs running on other interfaces.
->> 
->> The patch tweaks the driver's page counting scheme (as described in
->> '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
->> implemented by other Intel drivers) in order to properly support
->> XDP_REDIRECT action.
->> 
->> This patch has been tested with the sample apps "xdp_redirect_cpu"
->> and
->> "xdp_redirect_map" located in samples/bpf/.
->> 
->> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
->> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
->> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
->> ---
->> drivers/net/ethernet/intel/igc/igc_main.c | 59
->> +++++++++++++++++++++--
->> 1 file changed, 56 insertions(+), 3 deletions(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
->> b/drivers/net/ethernet/intel/igc/igc_main.c
->> index d34d35789e2e..8bb1f8a54368 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->> @@ -26,6 +26,7 @@
->> #define IGC_XDP_PASS		0
->> #define IGC_XDP_CONSUMED	BIT(0)
->> #define IGC_XDP_TX		BIT(1)
->> +#define IGC_XDP_REDIRECT	BIT(2)
->> 
->> static int debug = -1;
->> 
->> @@ -1708,8 +1709,8 @@ static bool igc_can_reuse_rx_page(struct
->> igc_rx_buffer *rx_buffer)
->> 	 * the pagecnt_bias and page count so that we fully restock the
->> 	 * number of references the driver holds.
->> 	 */
->> -	if (unlikely(!pagecnt_bias)) {
->> -		page_ref_add(page, USHRT_MAX);
->> +	if (unlikely(pagecnt_bias == 1)) {
->> +		page_ref_add(page, USHRT_MAX - 1);
->> 		rx_buffer->pagecnt_bias = USHRT_MAX;
->> 	}
-> 
-> All of our drivers have needed this fix[1]. I suspect this will need it
-> as well.
-> 
-> [1]https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-
-> next.git/commit/?id=75aab4e10ae6a4593a60f66d13de755d4e91f400
-I am taking a look at this. I will send out the updated version today.
+> While I do agree that that kind of conformance test would be great, I
+> don't think it has to hold up this series (the perfect being the enemy
+> of the good, and all that). We have a real problem today that userspace
+> can't tell if a given driver implements, say, XDP_REDIRECT, and so
+> people try to use it and spend days wondering which black hole their
+> packets disappear into. And for things like container migration we need
+> to be able to predict whether a given host supports a feature *before*
+> we start the migration and try to use it.
 
-Thanks,
-Vedang
+Unless you have a strong definition of what XDP_REDIRECT means the flag
+itself is not worth much. We're not talking about normal ethtool feature
+flags which are primarily stack-driven, XDP is implemented mostly by
+the driver, each vendor can do their own thing. Maybe I've seen one
+vendor incompatibility too many at my day job to hope for the best...
+
+> I view the feature flags as a list of features *implemented* by the
+> driver. Which should be pretty static in a given kernel, but may be
+> different than the features currently *enabled* on a given system (due
+> to, e.g., the TX queue stuff).
+
+Hm, maybe I'm not being clear enough. The way XDP_REDIRECT (your
+example) is implemented across drivers differs in a meaningful ways. 
+Hence the need for conformance testing. We don't have a golden SW
+standard to fall back on, like we do with HW offloads.
+
+Also IDK why those tests are considered such a huge ask. As I said most
+vendors probably already have them, and so I'd guess do good distros.
+So let's work together.
+
+> The simple way to expose the latter would be to just have a second set
+> of flags indicating the current configured state; and for that I guess
+> we should at least agree what "enabled" means; and a conformance test
+> would be a way to do this, of course.
+> 
+> I don't see why we can't do this in stages, though; start with the first
+> set of flags ('implemented'), move on to the second one ('enabled'), and
+> then to things like making the kernel react to the flags by rejecting
+> insertion into devmaps for invalid interfaces...
