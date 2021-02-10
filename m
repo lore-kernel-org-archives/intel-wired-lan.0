@@ -1,105 +1,69 @@
-From: JD <jdtxs00@gmail.com>
-Date: Wed, 10 Feb 2021 14:56:34 -0600
-Subject: [Intel-wired-lan] iavf null packets and arbitrary memory reads
-Message-ID: <CAMnf+PgVx-bg87KCV0NbtSi_FRMokVVXLEwuA_XCH6UxR57rKQ@mail.gmail.com>
+From: Vedang Patel <vedang.patel@intel.com>
+Date: Wed, 10 Feb 2021 13:58:39 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v6 0/9] igc: Add XDP support
+Message-ID: <20210210215848.24514-1-vedang.patel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+Hi all,
 
-I've encountered a NIC driver bug that leads to null packets being
-transmitted and arbitrary/OOB memory reads by the iavf driver.
+This is the sixth version of this series which adds XDP support
+to igc driver.
 
-I'm unfortunately not sure how the issue starts, but it has been
-happening across many different AMD servers and virtual machines.
+Changes from v5 are:
 
-Running a tcpdump (tcpdump -i bond0 -nne ether host 00:00:00:00:00:00)
-on bond0 results in these packets being produced at a high rate:
+    - Avoid premature Rx buffer re-use in XDP_REDIRECT action by storing
+      page count prior to invoking xdp_do_redirect. This is similar to
+      what has been done for other Intel drivers.
 
-13:04:14.826298 00:00:00:00:00:00 > 00:00:00:00:00:00, 802.3, length
-0: LLC, dsap Null (0x00) Individual, ssap Null (0x00) Command, ctrl
-0x0000: Information, send seq 0, rcv seq 0, Flags [Command], length
-144
-        0x0000:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0010:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0020:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0030:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0040:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0050:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0060:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0070:  0000 0000 0000 0000 0000 0000 0000 0000  ................
-        0x0080:  0000 0000 0000 0000 0000 0000 0000 0000  ................
+v5 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210209024243.23406-1-vedang.patel at intel.com/
+
+v4 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201104031210.27772-1-andre.guedes at intel.com/
+
+v3 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201030210351.46482-1-andre.guedes at intel.com/
+
+v2 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201028201943.93147-1-andre.guedes at intel.com/
+
+v1 is here:
+
+    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201009025349.4037-1-andre.guedes at intel.com/
+
+Thanks,
+Vedang
 
 
-As you can see, they have a dest/src ether of 00:00:00:00:00:00 and
-are completely null.  This doesn't happen on every virtual machine,
-some return absolutely nothing.
+Andre Guedes (9):
+  igc: Fix igc_ptp_rx_pktstamp()
+  igc: Remove unused argument from igc_tx_cmd_type()
+  igc: Introduce igc_rx_buffer_flip() helper
+  igc: Introduce igc_get_rx_frame_truesize() helper
+  igc: Refactor Rx timestamp handling
+  igc: Add set/clear large buffer helpers
+  igc: Add initial XDP support
+  igc: Add support for XDP_TX action
+  igc: Add support for XDP_REDIRECT action
 
-If I filter the tcpdump command to ignore empty packets (all dots),
-some other interesting items begin to appear:
+ drivers/net/ethernet/intel/igc/Makefile   |   2 +-
+ drivers/net/ethernet/intel/igc/igc.h      |  18 +-
+ drivers/net/ethernet/intel/igc/igc_main.c | 458 +++++++++++++++++++---
+ drivers/net/ethernet/intel/igc/igc_ptp.c  |  87 ++--
+ drivers/net/ethernet/intel/igc/igc_xdp.c  |  60 +++
+ drivers/net/ethernet/intel/igc/igc_xdp.h  |  13 +
+ 6 files changed, 531 insertions(+), 107 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
+ create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
 
-        0x0500:  0000 0000 0000 0029 0100 071b 0473 656c  .......).....sel
-        0x0510:  696e 7578 7379 7374 656d 5f75 3a6f 626a  inuxsystem_u:obj
-        0x0520:  6563 745f 723a 6269 6e5f 743a 7330 0000  ect_r:bin_t:s0..
-[...]
-        0x0080:  0000 2f75 7372 2f6c 6962 3634 2f70 6572  ../usr/lib64/per
-        0x0090:  6c35 2f76 656e 646f 725f 7065 726c 2f46  l5/vendor_perl/F
-        0x00a0:  696c 652f 5370 6563 2f55 6e69 782e 706d  ile/Spec/Unix.pm
+-- 
+2.17.1
 
-To me, that looks like it's reading data from memory and attempting to
-send from 00:00:00:00:00:00 to 00:00:00:00:00:00.
-
-If I run that same tcpdump on a different servers exhibiting the null
-packets, completely different items show up which also appear to be
-from memory.
-
-Keeping a tcpdump results in the same items from memory being repeated
-infinitely with no observable variation.
-
-So, it seems like the iavf driver is encountering some bug with memory
-management and ends up transmitting null packets or arbitrary data
-from memory over bond0.
-
-How/why did I notice this behavior? The VM's seem to perform worse
-over the network when this occurs. They usually exhibit small amounts
-of packet loss, or poor SSH responsiveness. Oddly, I have seen this
-bug in the past, and it resulted in dmesg on the parent printing
-Spoofed packet warnings for the i40e driver. Now it does not, yet the
-null packets still occur.
-
-I would like to help in any way I can to resolve this in the iavf/i40e
-driver. I'm happy to provide information from the servers if it's
-needed.
-
-For reference, here is the setup on every single AMD server:
-VM:
-CentOS 7.9
-NIC driver: iavf 4.0.1
-Kernel 4.19.163
-
-KVM parent:
-CentOS 7.9
-NIC driver: i40e 2.12.6
-Kernel: 4.19.163
-2x Intel XXV710 for 25GbE SFP28 @ 25Gbps BONDED (Mode 4, LACP)
-Vendor: Supermicro Network Adapter AOC-S25G-i2S
-Firmware version: 7.20 0x800082b3 1.2585.0
-MOBO: Supermicro H11DSU-iN
-CPU: AMD EPYC 7352
-
-And here is the dmesg log (grepped for iavf) from a server that has the issue:
-iavf: loading out-of-tree module taints kernel.
-iavf: Intel(R) Ethernet Adaptive Virtual Function Network Driver - version 4.0.1
-iavf 0000:00:06.0: Multiqueue Enabled: Queue pair count = 4
-iavf 0000:00:06.0: MAC address: 52:54:00:7f:bc:39
-iavf 0000:00:06.0: GRO is enabled
-iavf 0000:00:05.0: Multiqueue Enabled: Queue pair count = 4
-iavf 0000:00:05.0: MAC address: 52:54:00:a6:3e:62
-iavf 0000:00:05.0: GRO is enabled
-iavf 0000:00:06.0 eth0: NIC Link is Up Speed is 25 Gbps Full Duplex
-iavf 0000:00:05.0 eth1: NIC Link is Up Speed is 25 Gbps Full Duplex
-
-Thank you.
