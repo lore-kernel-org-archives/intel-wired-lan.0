@@ -1,69 +1,48 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 10 Feb 2021 01:47:25 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 9/9] igc: Add support for
- XDP_REDIRECT action
-In-Reply-To: <20210209024141.23298-10-vedang.patel@intel.com>
-References: <20210209024141.23298-1-vedang.patel@intel.com>
- <20210209024141.23298-10-vedang.patel@intel.com>
-Message-ID: <8c6e414e03c2bdd01916ee63f6912df3b24e86fa.camel@intel.com>
+From: Sokolowski, Jan <jan.sokolowski@intel.com>
+Date: Wed, 10 Feb 2021 08:23:49 +0000
+Subject: [Intel-wired-lan] [5.10] i40e/udp_tunnel: RTNL: assertion
+ failed at net/ipv4/udp_tunnel_nic.c
+In-Reply-To: <DB8PR04MB64608A64EA7B4ABAC3A15EE1EA8F9@DB8PR04MB6460.eurprd04.prod.outlook.com>
+References: <DB8PR04MB6460F61AE67E17CC9189D067EAB99@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <20210129192750.7b2d8b25@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <DB8PR04MB6460DD3585CE95CB77A2B650EAB59@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <20210202083035.3d54f97c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <DM5PR11MB1705DDAEC74CA8918438EBA599B49@DM5PR11MB1705.namprd11.prod.outlook.com>
+ <DB8PR04MB646092D87F51C2ACD180841EEAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>
+ <DB8PR04MB6460398CFCE47ADD5EE773E1EAB49@DB8PR04MB6460.eurprd04.prod.outlook.com>,
+ <20210203090842.22e5ccb4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <DB8PR04MB64608A64EA7B4ABAC3A15EE1EA8F9@DB8PR04MB6460.eurprd04.prod.outlook.com>
+Message-ID: <DM5PR11MB17055BD7528EFFBE73C7B61C998D9@DM5PR11MB1705.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-02-08 at 18:41 -0800, Vedang Patel wrote:
-> From: Andre Guedes <andre.guedes@intel.com>
-> 
-> This patch adds support for the XDP_REDIRECT action which enables XDP
-> programs to redirect packets arriving at I225 NIC. It also implements
-> the ndo_xdp_xmit ops, enabling the igc driver to transmit packets
-> forwarded to it by xdp programs running on other interfaces.
-> 
-> The patch tweaks the driver's page counting scheme (as described in
-> '8ce29c679a6e i40e: tweak page counting for XDP_REDIRECT' and
-> implemented by other Intel drivers) in order to properly support
-> XDP_REDIRECT action.
-> 
-> This patch has been tested with the sample apps "xdp_redirect_cpu"
-> and
-> "xdp_redirect_map" located in samples/bpf/.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 59
-> +++++++++++++++++++++--
->  1 file changed, 56 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
-> b/drivers/net/ethernet/intel/igc/igc_main.c
-> index d34d35789e2e..8bb1f8a54368 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -26,6 +26,7 @@
->  #define IGC_XDP_PASS		0
->  #define IGC_XDP_CONSUMED	BIT(0)
->  #define IGC_XDP_TX		BIT(1)
-> +#define IGC_XDP_REDIRECT	BIT(2)
->  
->  static int debug = -1;
->  
-> @@ -1708,8 +1709,8 @@ static bool igc_can_reuse_rx_page(struct
-> igc_rx_buffer *rx_buffer)
->  	 * the pagecnt_bias and page count so that we fully restock the
->  	 * number of references the driver holds.
->  	 */
-> -	if (unlikely(!pagecnt_bias)) {
-> -		page_ref_add(page, USHRT_MAX);
-> +	if (unlikely(pagecnt_bias == 1)) {
-> +		page_ref_add(page, USHRT_MAX - 1);
->  		rx_buffer->pagecnt_bias = USHRT_MAX;
->  	}
+Issue has been reproduced and is under investigation, once we get more information/potential fixes, we'll contact you again.
 
-All of our drivers have needed this fix[1]. I suspect this will need it
-as well.
+Jan
 
-[1]https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-
-next.git/commit/?id=75aab4e10ae6a4593a60f66d13de755d4e91f400
+-----Original Message-----
+From: Pierre Cheynier <p.cheynier@criteo.com> 
+Sent: Monday, February 8, 2021 10:10 AM
+To: Jakub Kicinski <kuba@kernel.org>; Sokolowski, Jan <jan.sokolowski@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+Subject: RE: [Intel-wired-lan] [5.10] i40e/udp_tunnel: RTNL: assertion failed at net/ipv4/udp_tunnel_nic.c
+
+
+On Wed, 3 Feb 2021 18:08:31 +0100 Jakub Kicinski wrote:
+> Yup! I'm pretty sure it's my conversion. The full commit quote upstream:
+> 
+> 40a98cb6f01f ("i40e: convert to new udp_tunnel infrastructure")
+> 
+> It should trigger if you have vxlan module loaded (or built in)
+> and then reload or re-probe i40e.
+> 
+> Let us know if you can't repro it should pop up pretty reliably.
+
+Not sure if this is under investigation on Intel side, I can help to test patches
+or provide more info if needed.
+
+--
+Pierre
