@@ -1,179 +1,94 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 11 Feb 2021 18:35:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 1a7c9d6706327d616b023efabdc333ee5df57976
-Message-ID: <6025087f.jlSvPcme0J5zbeFy%lkp@intel.com>
+From: =?unknown-8bit?q?Micha=C5=82_Ma=C5=82oszewski?= <michal.maloszewski@intel.com>
+Date: Thu, 11 Feb 2021 11:29:01 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix NULL ptr dereference on
+ VSI filter sync
+Message-ID: <1613042941-31948-1-git-send-email-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 1a7c9d6706327d616b023efabdc333ee5df57976  ice: fix napi work done reporting in xsk path
+Remove the reason of null pointer dereference in sync vsi filters.
+Added new I40E_VSI_RELEASING flag to signalize deleting and releasing
+of VSI resources to sync this thread with sync filters subtask.
+Without this patch it is possible to start update the vsi filter list
+after vsi is removed, that's causing a kernel oops.
 
-elapsed time: 727m
-
-configs tested: 150
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                           sama5_defconfig
-m68k                        mvme147_defconfig
-arm                          badge4_defconfig
-sh                        dreamcast_defconfig
-openrisc                         alldefconfig
-arm                         bcm2835_defconfig
-powerpc                    klondike_defconfig
-c6x                         dsk6455_defconfig
-mips                          malta_defconfig
-powerpc                        cell_defconfig
-m68k                       m5249evb_defconfig
-powerpc                     sbc8548_defconfig
-sh                            shmin_defconfig
-arm                          pxa168_defconfig
-openrisc                  or1klitex_defconfig
-powerpc                      obs600_defconfig
-powerpc                mpc7448_hpc2_defconfig
-arc                     haps_hs_smp_defconfig
-mips                         bigsur_defconfig
-arc                        nsimosci_defconfig
-mips                      maltaaprp_defconfig
-arc                          axs103_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc64                           defconfig
-mips                           xway_defconfig
-mips                            e55_defconfig
-sh                  sh7785lcr_32bit_defconfig
-mips                        nlm_xlp_defconfig
-xtensa                         virt_defconfig
-arm                        magician_defconfig
-mips                           ip32_defconfig
-powerpc                     tqm8540_defconfig
-sh                          kfr2r09_defconfig
-nios2                         10m50_defconfig
-mips                 decstation_r4k_defconfig
-powerpc                  mpc885_ads_defconfig
-arc                         haps_hs_defconfig
-arm                          prima2_defconfig
-powerpc                          g5_defconfig
-arm                          gemini_defconfig
-powerpc                     taishan_defconfig
-mips                         tb0287_defconfig
-powerpc                    socrates_defconfig
-mips                            ar7_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                          allmodconfig
-powerpc                         ps3_defconfig
-powerpc                      walnut_defconfig
-powerpc                    mvme5100_defconfig
-sh                         microdev_defconfig
-mips                     loongson1c_defconfig
-powerpc                 xes_mpc85xx_defconfig
-m68k                        m5407c3_defconfig
-sh                         apsh4a3a_defconfig
-powerpc                     ep8248e_defconfig
-mips                        omega2p_defconfig
-powerpc                          allyesconfig
-nios2                            alldefconfig
-mips                           ip27_defconfig
-powerpc                      katmai_defconfig
-arm                           tegra_defconfig
-xtensa                       common_defconfig
-riscv                            alldefconfig
-arm                        vexpress_defconfig
-m68k                            mac_defconfig
-m68k                             alldefconfig
-m68k                         apollo_defconfig
-m68k                       bvme6000_defconfig
-mips                           ci20_defconfig
-m68k                                defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210209
-x86_64               randconfig-a001-20210209
-x86_64               randconfig-a005-20210209
-x86_64               randconfig-a004-20210209
-x86_64               randconfig-a002-20210209
-x86_64               randconfig-a003-20210209
-i386                 randconfig-a001-20210209
-i386                 randconfig-a005-20210209
-i386                 randconfig-a003-20210209
-i386                 randconfig-a002-20210209
-i386                 randconfig-a006-20210209
-i386                 randconfig-a004-20210209
-x86_64               randconfig-a016-20210211
-x86_64               randconfig-a013-20210211
-x86_64               randconfig-a012-20210211
-x86_64               randconfig-a015-20210211
-x86_64               randconfig-a014-20210211
-x86_64               randconfig-a011-20210211
-i386                 randconfig-a016-20210209
-i386                 randconfig-a013-20210209
-i386                 randconfig-a012-20210209
-i386                 randconfig-a014-20210209
-i386                 randconfig-a011-20210209
-i386                 randconfig-a015-20210209
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a013-20210209
-x86_64               randconfig-a014-20210209
-x86_64               randconfig-a015-20210209
-x86_64               randconfig-a012-20210209
-x86_64               randconfig-a016-20210209
-x86_64               randconfig-a011-20210209
+Fixes: 17652c6336fd("i40e: remove unused argument")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off by: Michal Maloszewski <michal.maloszewski@intel.com>
+Reviewed-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Reviewed-by: Fijalkowski, WitoldX <witoldx.fijalkowski@intel.com>
+Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+v2: permissions are changed
+
+ drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+ mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e.h
+ mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e_main.c
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+old mode 100644
+new mode 100755
+index b6830e3..558b0ae
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -158,6 +158,7 @@ enum i40e_vsi_state_t {
+ 	__I40E_VSI_OVERFLOW_PROMISC,
+ 	__I40E_VSI_REINIT_REQUESTED,
+ 	__I40E_VSI_DOWN_REQUESTED,
++	__I40E_VSI_RELEASING,
+ 	/* This must be last as it determines the size of the BITMAP */
+ 	__I40E_VSI_STATE_SIZE__,
+ };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+old mode 100644
+new mode 100755
+index 60e68fc..de7b6f5
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2634,9 +2634,9 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
+ 
+ 	for (v = 0; v < pf->num_alloc_vsi; v++) {
+ 		if (pf->vsi[v] &&
+-		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED)) {
++		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED) &&
++		    !test_bit(__I40E_VSI_RELEASING, pf->vsi[v]->state)) {
+ 			int ret = i40e_sync_vsi_filters(pf->vsi[v]);
+-
+ 			if (ret) {
+ 				/* come back and try again later */
+ 				set_bit(__I40E_MACVLAN_SYNC_PENDING,
+@@ -12955,6 +12955,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+ 	/* Don't allow frames that span over multiple buffers */
+ 	if (frame_size > vsi->rx_buf_len) {
+ 		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
++		dev_info(&pf->pdev->dev,
++			 "MTU of %u bytes is too large to enable XDP (maximum: %u bytes)\n",
++			 vsi->netdev->mtu, vsi->rx_buf_len);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -13785,6 +13788,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
+ 		return -ENODEV;
+ 	}
+ 
++	set_bit(__I40E_VSI_RELEASING, vsi->state);
+ 	uplink_seid = vsi->uplink_seid;
+ 	if (vsi->type != I40E_VSI_SRIOV) {
+ 		if (vsi->netdev_registered) {
+-- 
+1.8.3.1
+
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
+Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+ 
+
