@@ -1,131 +1,49 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Thu, 11 Feb 2021 01:31:13 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/9] igc: Refactor
- igc_xdp_run_prog()
-In-Reply-To: <20210209024243.23406-3-vedang.patel@intel.com>
-References: <20210209024243.23406-1-vedang.patel@intel.com>
- <20210209024243.23406-3-vedang.patel@intel.com>
-Message-ID: <20210211003113.GA44042@ranger.igk.intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Thu, 11 Feb 2021 00:59:19 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix endianness
+ conversions
+In-Reply-To: <20210205084852.28545-1-mateusz.palczewski@intel.com>
+References: <20210205084852.28545-1-mateusz.palczewski@intel.com>
+Message-ID: <CO1PR11MB5105CCB57B069F3ADD9140D1FA8C9@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 08, 2021 at 06:42:36PM -0800, Vedang Patel wrote:
-> From: Andre Guedes <andre.guedes@intel.com>
-> 
-> Refactor igc_xdp_run_prog() helper, preparing the code for AF_XDP
-> zero-copy support which is added by upcoming patches.
-> 
-> With AF_XDP zero-copy support, igc_poll() will have a dedicated path
-> when rx ring's memory model is MEM_TYPE_XSK_BUFF_POOL. To avoid code
-> duplication as much as possible, encapsulate the code specific to
-> handling XDP program actions into a local helper so it can be reused by
-> the zero-copy path.
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Mateusz Palczewski
+Sent: Friday, February 5, 2021 12:49 AM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Ciosek, NorbertX <norbertx.ciosek@intel.com>
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix endianness conversions
 
-Hey Vedang, I'm not sure why you didn't include my reviewed-by tag for the
-series from v2, so I'm looking at that again.
+From: Norbert Ciosek <norbertx.ciosek@intel.com>
 
-Please mention that the ZC path can assume that bpf_prog will always be
-!NULL and we don't have to check that explicitly, therefore it makes sense
-to pull out the common logic.
+Fixes the following sparse warnings:
+i40e_main.c:5953:32: warning: cast from restricted __le16
+i40e_main.c:8008:29: warning: incorrect type in assignment (different base types)
+i40e_main.c:8008:29:    expected unsigned int [assigned] [usertype] ipa
+i40e_main.c:8008:29:    got restricted __le32 [usertype]
+i40e_main.c:8008:29: warning: incorrect type in assignment (different base types)
+i40e_main.c:8008:29:    expected unsigned int [assigned] [usertype] ipa
+i40e_main.c:8008:29:    got restricted __le32 [usertype]
+i40e_txrx.c:1950:59: warning: incorrect type in initializer (different base types)
+i40e_txrx.c:1950:59:    expected unsigned short [usertype] vlan_tag
+i40e_txrx.c:1950:59:    got restricted __le16 [usertype] l2tag1
+i40e_txrx.c:1953:40: warning: cast to restricted __le16
+i40e_xsk.c:448:38: warning: invalid assignment: |=
+i40e_xsk.c:448:38:    left side has type restricted __le64
+i40e_xsk.c:448:38:    right side has type int
 
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
->  1 file changed, 28 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 59a341566bc6..151ac078df48 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -2012,38 +2012,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
->  	return res;
->  }
->  
-> -static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
-> -					struct xdp_buff *xdp)
-> +/* This function assumes rcu_read_lock() is held by the caller. */
-> +static int igc_xdp_do_run_prog(struct igc_adapter *adapter,
+Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+Fixes: 2a508c64ad27 ("i40e: fix VLAN.TCI == 0 RX HW offload")
+Fixes: 3106c580fb7c ("i40e: Use batched xsk Tx interfaces to increase performance")
+Fixes: 8f88b3034db3 ("i40e: Add infrastructure for queue channel support")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++------  drivers/net/ethernet/intel/i40e/i40e_txrx.c |  2 +-  drivers/net/ethernet/intel/i40e/i40e_xsk.c  |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-nit: I feel like __igc_xdp_run_prog would be a better fit
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
-> +			       struct bpf_prog *prog,
-> +			       struct xdp_buff *xdp)
->  {
-> -	struct bpf_prog *prog;
-> -	int res;
-> -	u32 act;
-> -
-> -	rcu_read_lock();
-> -
-> -	prog = READ_ONCE(adapter->xdp_prog);
-> -	if (!prog) {
-> -		res = IGC_XDP_PASS;
-> -		goto unlock;
-> -	}
-> +	u32 act = bpf_prog_run_xdp(prog, xdp);
->  
-> -	act = bpf_prog_run_xdp(prog, xdp);
->  	switch (act) {
->  	case XDP_PASS:
-> -		res = IGC_XDP_PASS;
-> -		break;
-> +		return IGC_XDP_PASS;
->  	case XDP_TX:
-> -		if (igc_xdp_xmit_back(adapter, xdp) < 0)
-> -			res = IGC_XDP_CONSUMED;
-> -		else
-> -			res = IGC_XDP_TX;
-> -		break;
-> +		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
-> +			IGC_XDP_CONSUMED : IGC_XDP_TX;
->  	case XDP_REDIRECT:
-> -		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
-> -			res = IGC_XDP_CONSUMED;
-> -		else
-> -			res = IGC_XDP_REDIRECT;
-> -		break;
-> +		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
-> +			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
->  	default:
->  		bpf_warn_invalid_xdp_action(act);
->  		fallthrough;
-> @@ -2051,9 +2035,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
->  		trace_xdp_exception(adapter->netdev, prog, act);
->  		fallthrough;
->  	case XDP_DROP:
-> -		res = IGC_XDP_CONSUMED;
-> -		break;
-> +		return IGC_XDP_CONSUMED;
->  	}
-> +}
-> +
-> +static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
-> +					struct xdp_buff *xdp)
-> +{
-> +	struct bpf_prog *prog;
-> +	int res;
-> +
-> +	rcu_read_lock();
-> +
-> +	prog = READ_ONCE(adapter->xdp_prog);
-> +	if (!prog) {
-> +		res = IGC_XDP_PASS;
-> +		goto unlock;
-> +	}
-> +
-> +	res = igc_xdp_do_run_prog(adapter, prog, xdp);
->  
->  unlock:
->  	rcu_read_unlock();
-> -- 
-> 2.17.1
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
