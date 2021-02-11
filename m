@@ -1,143 +1,131 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 11 Feb 2021 00:30:39 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v6 1/9] igc: Fix
- igc_ptp_rx_pktstamp()
-In-Reply-To: <20210210215848.24514-2-vedang.patel@intel.com>
-References: <20210210215848.24514-1-vedang.patel@intel.com>
- <20210210215848.24514-2-vedang.patel@intel.com>
-Message-ID: <578c9ceb86e0d6007cab529c4215372f61d023d3.camel@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 11 Feb 2021 01:31:13 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/9] igc: Refactor
+ igc_xdp_run_prog()
+In-Reply-To: <20210209024243.23406-3-vedang.patel@intel.com>
+References: <20210209024243.23406-1-vedang.patel@intel.com>
+ <20210209024243.23406-3-vedang.patel@intel.com>
+Message-ID: <20210211003113.GA44042@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-02-10 at 13:58 -0800, Vedang Patel wrote:
+On Mon, Feb 08, 2021 at 06:42:36PM -0800, Vedang Patel wrote:
 > From: Andre Guedes <andre.guedes@intel.com>
 > 
-> The comment describing the timestamps layout in the packet buffer is
-> wrong and the code is actually retrieving the timestamp in Timer 1
-> reference instead of Timer 0. This hasn't been a big issue so far
-> because hardware is configured to report both timestamps using Timer
-> 0
-> (see IGC_SRRCTL register configuration in
-> igc_ptp_enable_rx_timestamp()
-> helper). This patch fixes the comment and the code so we retrieve the
-> timestamp in Timer 0 reference as expected.
+> Refactor igc_xdp_run_prog() helper, preparing the code for AF_XDP
+> zero-copy support which is added by upcoming patches.
 > 
-> This patch also takes the opportunity to get rid of the hw.mac.type
-> check
-> since it is not required.
+> With AF_XDP zero-copy support, igc_poll() will have a dedicated path
+> when rx ring's memory model is MEM_TYPE_XSK_BUFF_POOL. To avoid code
+> duplication as much as possible, encapsulate the code specific to
+> handling XDP program actions into a local helper so it can be reused by
+> the zero-copy path.
+
+Hey Vedang, I'm not sure why you didn't include my reviewed-by tag for the
+series from v2, so I'm looking at that again.
+
+Please mention that the ZC path can assume that bpf_prog will always be
+!NULL and we don't have to check that explicitly, therefore it makes sense
+to pull out the common logic.
+
 > 
-> Fixes: 81b055205e8ba ("igc: Add support for RX timestamping")
-
-This seems better suited for net. I can split it and send it that
-route, but is there a reason that it needs to stay in this series?
-
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 > ---
->  drivers/net/ethernet/intel/igc/igc.h     |  2 +-
->  drivers/net/ethernet/intel/igc/igc_ptp.c | 72 +++++++++++++---------
-> --
->  2 files changed, 41 insertions(+), 33 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
+>  1 file changed, 28 insertions(+), 28 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc.h
-> b/drivers/net/ethernet/intel/igc/igc.h
-> index 5d2809dfd06a..fbd8c414c3c8 100644
-> --- a/drivers/net/ethernet/intel/igc/igc.h
-> +++ b/drivers/net/ethernet/intel/igc/igc.h
-> @@ -547,7 +547,7 @@ void igc_ptp_init(struct igc_adapter *adapter);
->  void igc_ptp_reset(struct igc_adapter *adapter);
->  void igc_ptp_suspend(struct igc_adapter *adapter);
->  void igc_ptp_stop(struct igc_adapter *adapter);
-> -void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
-> +void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
->  			 struct sk_buff *skb);
->  int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq
-> *ifr);
->  int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq
-> *ifr);
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c
-> b/drivers/net/ethernet/intel/igc/igc_ptp.c
-> index ac0b9c85da7c..b6a640bfc991 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-> @@ -152,46 +152,54 @@ static void igc_ptp_systim_to_hwtstamp(struct
-> igc_adapter *adapter,
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 59a341566bc6..151ac078df48 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -2012,38 +2012,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
+>  	return res;
 >  }
 >  
->  /**
-> - * igc_ptp_rx_pktstamp - retrieve Rx per packet timestamp
-> + * igc_ptp_rx_pktstamp - Retrieve timestamp from Rx packet buffer
->   * @q_vector: Pointer to interrupt specific structure
->   * @va: Pointer to address containing Rx buffer
->   * @skb: Buffer containing timestamp and packet
->   *
-> - * This function is meant to retrieve the first timestamp from the
-> - * first buffer of an incoming frame. The value is stored in little
-> - * endian format starting on byte 0. There's a second timestamp
-> - * starting on byte 8.
-> - **/
-> -void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
-> + * This function retrieves the timestamp saved in the beginning of
-> packet
-> + * buffer. While two timestamps are available, one in timer0
-> reference and the
-> + * other in timer1 reference, this function considers only the
-> timestamp in
-> + * timer0 reference.
-> + */
-> +void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
->  			 struct sk_buff *skb)
->  {
->  	struct igc_adapter *adapter = q_vector->adapter;
-> -	__le64 *regval = (__le64 *)va;
-> -	int adjust = 0;
-> -
-> -	/* The timestamp is recorded in little endian format.
-> -	 * DWORD: | 0          | 1           | 2          | 3
-> -	 * Field: | Timer0 Low | Timer0 High | Timer1 Low | Timer1 High
-> +	u64 regval;
-> +	int adjust;
-> +
-> +	/* Timestamps are saved in little endian at the beginning of
-> the packet
-> +	 * buffer following the layout:
-> +	 *
-> +	 * DWORD: | 0              | 1              | 2              |
-> 3              |
-> +	 * Field: | Timer1 SYSTIML | Timer1 SYSTIMH | Timer0 SYSTIML |
-> Timer0 SYSTIMH |
-> +	 *
-> +	 * SYSTIML holds the nanoseconds part while SYSTIMH holds the
-> seconds
-> +	 * part of the timestamp.
->  	 */
-> -	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
-> -				   le64_to_cpu(regval[0]));
-> -
-> -	/* adjust timestamp for the RX latency based on link speed */
-> -	if (adapter->hw.mac.type == igc_i225) {
-> -		switch (adapter->link_speed) {
-> -		case SPEED_10:
-> -			adjust = IGC_I225_RX_LATENCY_10;
-> -			break;
-> -		case SPEED_100:
-> -			adjust = IGC_I225_RX_LATENCY_100;
-> -			break;
-> -		case SPEED_1000:
-> -			adjust = IGC_I225_RX_LATENCY_1000;
-> -			break;
-> -		case SPEED_2500:
-> -			adjust = IGC_I225_RX_LATENCY_2500;
-> -			break;
-> -		}
-> +	regval = le32_to_cpu(va[2]);
-> +	regval |= (u64)le32_to_cpu(va[3]) << 32;
+> -static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+> -					struct xdp_buff *xdp)
+> +/* This function assumes rcu_read_lock() is held by the caller. */
+> +static int igc_xdp_do_run_prog(struct igc_adapter *adapter,
 
-drivers/net/ethernet/intel/igc/igc_ptp.c:181:18: warning: cast to
-restricted __le32
-drivers/net/ethernet/intel/igc/igc_ptp.c:182:24: warning: cast to
-restricted __le32
+nit: I feel like __igc_xdp_run_prog would be a better fit
+
+> +			       struct bpf_prog *prog,
+> +			       struct xdp_buff *xdp)
+>  {
+> -	struct bpf_prog *prog;
+> -	int res;
+> -	u32 act;
+> -
+> -	rcu_read_lock();
+> -
+> -	prog = READ_ONCE(adapter->xdp_prog);
+> -	if (!prog) {
+> -		res = IGC_XDP_PASS;
+> -		goto unlock;
+> -	}
+> +	u32 act = bpf_prog_run_xdp(prog, xdp);
+>  
+> -	act = bpf_prog_run_xdp(prog, xdp);
+>  	switch (act) {
+>  	case XDP_PASS:
+> -		res = IGC_XDP_PASS;
+> -		break;
+> +		return IGC_XDP_PASS;
+>  	case XDP_TX:
+> -		if (igc_xdp_xmit_back(adapter, xdp) < 0)
+> -			res = IGC_XDP_CONSUMED;
+> -		else
+> -			res = IGC_XDP_TX;
+> -		break;
+> +		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
+> +			IGC_XDP_CONSUMED : IGC_XDP_TX;
+>  	case XDP_REDIRECT:
+> -		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+> -			res = IGC_XDP_CONSUMED;
+> -		else
+> -			res = IGC_XDP_REDIRECT;
+> -		break;
+> +		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
+> +			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
+>  	default:
+>  		bpf_warn_invalid_xdp_action(act);
+>  		fallthrough;
+> @@ -2051,9 +2035,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+>  		trace_xdp_exception(adapter->netdev, prog, act);
+>  		fallthrough;
+>  	case XDP_DROP:
+> -		res = IGC_XDP_CONSUMED;
+> -		break;
+> +		return IGC_XDP_CONSUMED;
+>  	}
+> +}
+> +
+> +static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+> +					struct xdp_buff *xdp)
+> +{
+> +	struct bpf_prog *prog;
+> +	int res;
+> +
+> +	rcu_read_lock();
+> +
+> +	prog = READ_ONCE(adapter->xdp_prog);
+> +	if (!prog) {
+> +		res = IGC_XDP_PASS;
+> +		goto unlock;
+> +	}
+> +
+> +	res = igc_xdp_do_run_prog(adapter, prog, xdp);
+>  
+>  unlock:
+>  	rcu_read_unlock();
+> -- 
+> 2.17.1
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
