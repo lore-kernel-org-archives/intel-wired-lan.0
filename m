@@ -1,137 +1,184 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 11 Feb 2021 02:30:37 +0000
-Subject: [Intel-wired-lan] iavf null packets and arbitrary memory reads
-In-Reply-To: <CAMnf+PgVx-bg87KCV0NbtSi_FRMokVVXLEwuA_XCH6UxR57rKQ@mail.gmail.com>
-References: <CAMnf+PgVx-bg87KCV0NbtSi_FRMokVVXLEwuA_XCH6UxR57rKQ@mail.gmail.com>
-Message-ID: <e73bcf37b214af6c8267622a49a7c9166522f3d0.camel@intel.com>
+Date: Thu, 11 Feb 2021 02:46:53 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix not showing opcode
+ msg on unsuccessful VF MAC change
+In-Reply-To: <20210209121745.8840-1-mateusz.palczewski@intel.com>
+References: <20210209121745.8840-1-mateusz.palczewski@intel.com>
+Message-ID: <af49217051d461d29142a7de7c1232eda735db3b.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-02-10 at 14:56 -0600, JD wrote:
-> Hello,
-> 
-> I've encountered a NIC driver bug that leads to null packets being
-> transmitted and arbitrary/OOB memory reads by the iavf driver.
-> 
-> I'm unfortunately not sure how the issue starts, but it has been
-> happening across many different AMD servers and virtual machines.
-> 
-> Running a tcpdump (tcpdump -i bond0 -nne ether host
-> 00:00:00:00:00:00)
-> on bond0 results in these packets being produced at a high rate:
-> 
-> 13:04:14.826298 00:00:00:00:00:00 > 00:00:00:00:00:00, 802.3, length
-> 0: LLC, dsap Null (0x00) Individual, ssap Null (0x00) Command, ctrl
-> 0x0000: Information, send seq 0, rcv seq 0, Flags [Command], length
-> 144
->         0x0000:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0010:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0020:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0030:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0040:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0050:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0060:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0070:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
->         0x0080:  0000 0000 0000 0000 0000 0000 0000
-> 0000  ................
-> 
-> 
-> As you can see, they have a dest/src ether of 00:00:00:00:00:00 and
-> are completely null.  This doesn't happen on every virtual machine,
-> some return absolutely nothing.
-> 
-> If I filter the tcpdump command to ignore empty packets (all dots),
-> some other interesting items begin to appear:
-> 
->         0x0500:  0000 0000 0000 0029 0100 071b 0473
-> 656c  .......).....sel
->         0x0510:  696e 7578 7379 7374 656d 5f75 3a6f
-> 626a  inuxsystem_u:obj
->         0x0520:  6563 745f 723a 6269 6e5f 743a 7330
-> 0000  ect_r:bin_t:s0..
-> [...]
->         0x0080:  0000 2f75 7372 2f6c 6962 3634 2f70
-> 6572  ../usr/lib64/per
->         0x0090:  6c35 2f76 656e 646f 725f 7065 726c
-> 2f46  l5/vendor_perl/F
->         0x00a0:  696c 652f 5370 6563 2f55 6e69 782e
-> 706d  ile/Spec/Unix.pm
-> 
-> To me, that looks like it's reading data from memory and attempting
-> to
-> send from 00:00:00:00:00:00 to 00:00:00:00:00:00.
-> 
-> If I run that same tcpdump on a different servers exhibiting the null
-> packets, completely different items show up which also appear to be
-> from memory.
-> 
-> Keeping a tcpdump results in the same items from memory being
-> repeated
-> infinitely with no observable variation.
-> 
-> So, it seems like the iavf driver is encountering some bug with
-> memory
-> management and ends up transmitting null packets or arbitrary data
-> from memory over bond0.
-> 
-> How/why did I notice this behavior? The VM's seem to perform worse
-> over the network when this occurs. They usually exhibit small amounts
-> of packet loss, or poor SSH responsiveness. Oddly, I have seen this
-> bug in the past, and it resulted in dmesg on the parent printing
-> Spoofed packet warnings for the i40e driver. Now it does not, yet the
-> null packets still occur.
-> 
-> I would like to help in any way I can to resolve this in the
-> iavf/i40e
-> driver. I'm happy to provide information from the servers if it's
-> needed.
-> 
-> For reference, here is the setup on every single AMD server:
-> VM:
-> CentOS 7.9
-> NIC driver: iavf 4.0.1
-> Kernel 4.19.163
-> 
-> KVM parent:
-> CentOS 7.9
-> NIC driver: i40e 2.12.6
-> Kernel: 4.19.163
-> 2x Intel XXV710 for 25GbE SFP28 @ 25Gbps BONDED (Mode 4, LACP)
-> Vendor: Supermicro Network Adapter AOC-S25G-i2S
-> Firmware version: 7.20 0x800082b3 1.2585.0
-> MOBO: Supermicro H11DSU-iN
-> CPU: AMD EPYC 7352
-> 
-> And here is the dmesg log (grepped for iavf) from a server that has
-> the issue:
-> iavf: loading out-of-tree module taints kernel.
-> iavf: Intel(R) Ethernet Adaptive Virtual Function Network Driver -
-> version 4.0.1
-> iavf 0000:00:06.0: Multiqueue Enabled: Queue pair count = 4
-> iavf 0000:00:06.0: MAC address: 52:54:00:7f:bc:39
-> iavf 0000:00:06.0: GRO is enabled
-> iavf 0000:00:05.0: Multiqueue Enabled: Queue pair count = 4
-> iavf 0000:00:05.0: MAC address: 52:54:00:a6:3e:62
-> iavf 0000:00:05.0: GRO is enabled
-> iavf 0000:00:06.0 eth0: NIC Link is Up Speed is 25 Gbps Full Duplex
-> iavf 0000:00:05.0 eth1: NIC Link is Up Speed is 25 Gbps Full Duplex
-> 
+On Tue, 2021-02-09 at 12:17 +0000, Mateusz Palczewski wrote:
+> Hide i40e opcode information sent during response to VF in case when
+> untrusted VF tried to change MAC on the VF interface.
 
-Hi JD,
+The title and description seem to contradict.
+"Fix not showing opcode" and "Hide i40e opcode information"
 
-I will check and see we're aware of this issue or have any information
-about it. If not, I'll see if we can work on a reproduction.
+> This is implemented by adding an additional parameter 'hide' to the
+> response sent to VF function that hides the display of error
+> information, but forwards the error code to VF.
+> 
+> Previously it was not possible to send response with some error code
+> to VF without displaying opcode information.
+> 
+> Fixes: 5c3c48ac6bf5("i40e:implement virtual device interface")
 
-Thanks,
-Tony
+nit: There's a missing space
+Fixes: 5c3c48ac6bf5("i40e: implement virtual device interface")
+
+It's not clear to me what the bug is.
+
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Reviewed-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 44 +++++++++++++++
+> ----
+>  1 file changed, 35 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index b40ce62..b47159a 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -1792,17 +1792,18 @@ sriov_configure_out:
+>  /***********************virtual channel routines******************/
+>  
+>  /**
+> - * i40e_vc_send_msg_to_vf
+> + * i40e_vc_send_msg_to_vf_ex
+>   * @vf: pointer to the VF info
+>   * @v_opcode: virtual channel opcode
+>   * @v_retval: virtual channel return value
+>   * @msg: pointer to the msg buffer
+>   * @msglen: msg length
+> - *
+> + * @is_quiet: true for not printing unsuccessful return values,
+> false otherwise
+>   * send msg to VF
+>   **/
+> -static int i40e_vc_send_msg_to_vf(struct i40e_vf *vf, u32 v_opcode,
+> -				  u32 v_retval, u8 *msg, u16 msglen)
+> +static int i40e_vc_send_msg_to_vf_ex(struct i40e_vf *vf, u32
+> v_opcode,
+> +				     u32 v_retval, u8 *msg, u16 msglen,
+> +				     bool is_quiet)
+>  {
+>  	struct i40e_pf *pf;
+>  	struct i40e_hw *hw;
+> @@ -1818,7 +1819,7 @@ static int i40e_vc_send_msg_to_vf(struct
+> i40e_vf *vf, u32 v_opcode,
+>  	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
+>  
+>  	/* single place to detect unsuccessful return values */
+> -	if (v_retval) {
+> +	if (v_retval && !is_quiet) {
+>  		vf->num_invalid_msgs++;
+>  		dev_info(&pf->pdev->dev, "VF %d failed opcode %d,
+> retval: %d\n",
+>  			 vf->vf_id, v_opcode, v_retval);
+> @@ -1848,6 +1849,23 @@ static int i40e_vc_send_msg_to_vf(struct
+> i40e_vf *vf, u32 v_opcode,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * i40e_vc_send_msg_to_vf
+> + * @vf: pointer to the VF info
+> + * @v_opcode: virtual channel opcode
+> + * @v_retval: virtual channel return value
+> + * @msg: pointer to the msg buffer
+> + * @msglen: msg length
+> + *
+> + * send msg to VF
+> + **/
+> +static int i40e_vc_send_msg_to_vf(struct i40e_vf *vf, u32 v_opcode,
+> +				  u32 v_retval, u8 *msg, u16 msglen)
+> +{
+> +	return i40e_vc_send_msg_to_vf_ex(vf, v_opcode, v_retval,
+> +					 msg, msglen, false);
+> +}
+> +
+>  /**
+>   * i40e_vc_send_resp_to_vf
+>   * @vf: pointer to the VF info
+> @@ -2591,6 +2609,7 @@ error_param:
+>   * i40e_check_vf_permission
+>   * @vf: pointer to the VF info
+>   * @al: MAC address list from virtchnl
+> + * @is_quiet: set true for printing msg without opcode info, false
+> otherwise
+>   *
+>   * Check that the given list of MAC addresses is allowed. Will
+> return -EPERM
+>   * if any address in the list is not valid. Checks the following
+> conditions:
+> @@ -2605,13 +2624,18 @@ error_param:
+>   * addresses might not be accurate.
+>   **/
+>  static inline int i40e_check_vf_permission(struct i40e_vf *vf,
+> -					   struct
+> virtchnl_ether_addr_list *al)
+> +					   struct
+> virtchnl_ether_addr_list *al,
+> +					   bool *is_quiet)
+>  {
+>  	struct i40e_pf *pf = vf->pf;
+>  	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
+>  	int mac2add_cnt = 0;
+>  	int i;
+>  
+> +	if (!is_quiet)
+> +		return -EINVAL;
+> +
+> +	*is_quiet = false;
+>  	for (i = 0; i < al->num_elements; i++) {
+>  		struct i40e_mac_filter *f;
+>  		u8 *addr = al->list[i].addr;
+> @@ -2635,6 +2659,7 @@ static inline int
+> i40e_check_vf_permission(struct i40e_vf *vf,
+>  		    !ether_addr_equal(addr, vf->default_lan_addr.addr)) 
+> {
+>  			dev_err(&pf->pdev->dev,
+>  				"VF attempting to override
+> administratively set MAC address, bring down and up the VF interface
+> to resume normal operation\n");
+> +			*is_quiet = true;
+>  			return -EPERM;
+>  		}
+>  
+> @@ -2671,6 +2696,7 @@ static int i40e_vc_add_mac_addr_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  	    (struct virtchnl_ether_addr_list *)msg;
+>  	struct i40e_pf *pf = vf->pf;
+>  	struct i40e_vsi *vsi = NULL;
+> +	bool is_quiet = false;
+>  	i40e_status ret = 0;
+>  	int i;
+>  
+> @@ -2687,7 +2713,7 @@ static int i40e_vc_add_mac_addr_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  	 */
+>  	spin_lock_bh(&vsi->mac_filter_hash_lock);
+>  
+> -	ret = i40e_check_vf_permission(vf, al);
+> +	ret = i40e_check_vf_permission(vf, al, &is_quiet);
+>  	if (ret) {
+>  		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+>  		goto error_param;
+> @@ -2725,8 +2751,8 @@ static int i40e_vc_add_mac_addr_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  
+>  error_param:
+>  	/* send the response to the VF */
+> -	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_ADD_ETH_ADDR,
+> -				       ret);
+> +	return i40e_vc_send_msg_to_vf_ex(vf, VIRTCHNL_OP_ADD_ETH_ADDR,
+> +				       ret, NULL, 0, is_quiet);
+>  }
+>  
+>  /**
