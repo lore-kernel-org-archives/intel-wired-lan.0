@@ -1,184 +1,179 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 11 Feb 2021 02:46:53 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix not showing opcode
- msg on unsuccessful VF MAC change
-In-Reply-To: <20210209121745.8840-1-mateusz.palczewski@intel.com>
-References: <20210209121745.8840-1-mateusz.palczewski@intel.com>
-Message-ID: <af49217051d461d29142a7de7c1232eda735db3b.camel@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 11 Feb 2021 18:35:43 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 1a7c9d6706327d616b023efabdc333ee5df57976
+Message-ID: <6025087f.jlSvPcme0J5zbeFy%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2021-02-09 at 12:17 +0000, Mateusz Palczewski wrote:
-> Hide i40e opcode information sent during response to VF in case when
-> untrusted VF tried to change MAC on the VF interface.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 1a7c9d6706327d616b023efabdc333ee5df57976  ice: fix napi work done reporting in xsk path
 
-The title and description seem to contradict.
-"Fix not showing opcode" and "Hide i40e opcode information"
+elapsed time: 727m
 
-> This is implemented by adding an additional parameter 'hide' to the
-> response sent to VF function that hides the display of error
-> information, but forwards the error code to VF.
-> 
-> Previously it was not possible to send response with some error code
-> to VF without displaying opcode information.
-> 
-> Fixes: 5c3c48ac6bf5("i40e:implement virtual device interface")
+configs tested: 150
+configs skipped: 2
 
-nit: There's a missing space
-Fixes: 5c3c48ac6bf5("i40e: implement virtual device interface")
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-It's not clear to me what the bug is.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                           sama5_defconfig
+m68k                        mvme147_defconfig
+arm                          badge4_defconfig
+sh                        dreamcast_defconfig
+openrisc                         alldefconfig
+arm                         bcm2835_defconfig
+powerpc                    klondike_defconfig
+c6x                         dsk6455_defconfig
+mips                          malta_defconfig
+powerpc                        cell_defconfig
+m68k                       m5249evb_defconfig
+powerpc                     sbc8548_defconfig
+sh                            shmin_defconfig
+arm                          pxa168_defconfig
+openrisc                  or1klitex_defconfig
+powerpc                      obs600_defconfig
+powerpc                mpc7448_hpc2_defconfig
+arc                     haps_hs_smp_defconfig
+mips                         bigsur_defconfig
+arc                        nsimosci_defconfig
+mips                      maltaaprp_defconfig
+arc                          axs103_defconfig
+powerpc               mpc834x_itxgp_defconfig
+powerpc64                           defconfig
+mips                           xway_defconfig
+mips                            e55_defconfig
+sh                  sh7785lcr_32bit_defconfig
+mips                        nlm_xlp_defconfig
+xtensa                         virt_defconfig
+arm                        magician_defconfig
+mips                           ip32_defconfig
+powerpc                     tqm8540_defconfig
+sh                          kfr2r09_defconfig
+nios2                         10m50_defconfig
+mips                 decstation_r4k_defconfig
+powerpc                  mpc885_ads_defconfig
+arc                         haps_hs_defconfig
+arm                          prima2_defconfig
+powerpc                          g5_defconfig
+arm                          gemini_defconfig
+powerpc                     taishan_defconfig
+mips                         tb0287_defconfig
+powerpc                    socrates_defconfig
+mips                            ar7_defconfig
+powerpc                     tqm8555_defconfig
+powerpc                          allmodconfig
+powerpc                         ps3_defconfig
+powerpc                      walnut_defconfig
+powerpc                    mvme5100_defconfig
+sh                         microdev_defconfig
+mips                     loongson1c_defconfig
+powerpc                 xes_mpc85xx_defconfig
+m68k                        m5407c3_defconfig
+sh                         apsh4a3a_defconfig
+powerpc                     ep8248e_defconfig
+mips                        omega2p_defconfig
+powerpc                          allyesconfig
+nios2                            alldefconfig
+mips                           ip27_defconfig
+powerpc                      katmai_defconfig
+arm                           tegra_defconfig
+xtensa                       common_defconfig
+riscv                            alldefconfig
+arm                        vexpress_defconfig
+m68k                            mac_defconfig
+m68k                             alldefconfig
+m68k                         apollo_defconfig
+m68k                       bvme6000_defconfig
+mips                           ci20_defconfig
+m68k                                defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20210209
+x86_64               randconfig-a001-20210209
+x86_64               randconfig-a005-20210209
+x86_64               randconfig-a004-20210209
+x86_64               randconfig-a002-20210209
+x86_64               randconfig-a003-20210209
+i386                 randconfig-a001-20210209
+i386                 randconfig-a005-20210209
+i386                 randconfig-a003-20210209
+i386                 randconfig-a002-20210209
+i386                 randconfig-a006-20210209
+i386                 randconfig-a004-20210209
+x86_64               randconfig-a016-20210211
+x86_64               randconfig-a013-20210211
+x86_64               randconfig-a012-20210211
+x86_64               randconfig-a015-20210211
+x86_64               randconfig-a014-20210211
+x86_64               randconfig-a011-20210211
+i386                 randconfig-a016-20210209
+i386                 randconfig-a013-20210209
+i386                 randconfig-a012-20210209
+i386                 randconfig-a014-20210209
+i386                 randconfig-a011-20210209
+i386                 randconfig-a015-20210209
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Reviewed-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 44 +++++++++++++++
-> ----
->  1 file changed, 35 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index b40ce62..b47159a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -1792,17 +1792,18 @@ sriov_configure_out:
->  /***********************virtual channel routines******************/
->  
->  /**
-> - * i40e_vc_send_msg_to_vf
-> + * i40e_vc_send_msg_to_vf_ex
->   * @vf: pointer to the VF info
->   * @v_opcode: virtual channel opcode
->   * @v_retval: virtual channel return value
->   * @msg: pointer to the msg buffer
->   * @msglen: msg length
-> - *
-> + * @is_quiet: true for not printing unsuccessful return values,
-> false otherwise
->   * send msg to VF
->   **/
-> -static int i40e_vc_send_msg_to_vf(struct i40e_vf *vf, u32 v_opcode,
-> -				  u32 v_retval, u8 *msg, u16 msglen)
-> +static int i40e_vc_send_msg_to_vf_ex(struct i40e_vf *vf, u32
-> v_opcode,
-> +				     u32 v_retval, u8 *msg, u16 msglen,
-> +				     bool is_quiet)
->  {
->  	struct i40e_pf *pf;
->  	struct i40e_hw *hw;
-> @@ -1818,7 +1819,7 @@ static int i40e_vc_send_msg_to_vf(struct
-> i40e_vf *vf, u32 v_opcode,
->  	abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
->  
->  	/* single place to detect unsuccessful return values */
-> -	if (v_retval) {
-> +	if (v_retval && !is_quiet) {
->  		vf->num_invalid_msgs++;
->  		dev_info(&pf->pdev->dev, "VF %d failed opcode %d,
-> retval: %d\n",
->  			 vf->vf_id, v_opcode, v_retval);
-> @@ -1848,6 +1849,23 @@ static int i40e_vc_send_msg_to_vf(struct
-> i40e_vf *vf, u32 v_opcode,
->  	return 0;
->  }
->  
-> +/**
-> + * i40e_vc_send_msg_to_vf
-> + * @vf: pointer to the VF info
-> + * @v_opcode: virtual channel opcode
-> + * @v_retval: virtual channel return value
-> + * @msg: pointer to the msg buffer
-> + * @msglen: msg length
-> + *
-> + * send msg to VF
-> + **/
-> +static int i40e_vc_send_msg_to_vf(struct i40e_vf *vf, u32 v_opcode,
-> +				  u32 v_retval, u8 *msg, u16 msglen)
-> +{
-> +	return i40e_vc_send_msg_to_vf_ex(vf, v_opcode, v_retval,
-> +					 msg, msglen, false);
-> +}
-> +
->  /**
->   * i40e_vc_send_resp_to_vf
->   * @vf: pointer to the VF info
-> @@ -2591,6 +2609,7 @@ error_param:
->   * i40e_check_vf_permission
->   * @vf: pointer to the VF info
->   * @al: MAC address list from virtchnl
-> + * @is_quiet: set true for printing msg without opcode info, false
-> otherwise
->   *
->   * Check that the given list of MAC addresses is allowed. Will
-> return -EPERM
->   * if any address in the list is not valid. Checks the following
-> conditions:
-> @@ -2605,13 +2624,18 @@ error_param:
->   * addresses might not be accurate.
->   **/
->  static inline int i40e_check_vf_permission(struct i40e_vf *vf,
-> -					   struct
-> virtchnl_ether_addr_list *al)
-> +					   struct
-> virtchnl_ether_addr_list *al,
-> +					   bool *is_quiet)
->  {
->  	struct i40e_pf *pf = vf->pf;
->  	struct i40e_vsi *vsi = pf->vsi[vf->lan_vsi_idx];
->  	int mac2add_cnt = 0;
->  	int i;
->  
-> +	if (!is_quiet)
-> +		return -EINVAL;
-> +
-> +	*is_quiet = false;
->  	for (i = 0; i < al->num_elements; i++) {
->  		struct i40e_mac_filter *f;
->  		u8 *addr = al->list[i].addr;
-> @@ -2635,6 +2659,7 @@ static inline int
-> i40e_check_vf_permission(struct i40e_vf *vf,
->  		    !ether_addr_equal(addr, vf->default_lan_addr.addr)) 
-> {
->  			dev_err(&pf->pdev->dev,
->  				"VF attempting to override
-> administratively set MAC address, bring down and up the VF interface
-> to resume normal operation\n");
-> +			*is_quiet = true;
->  			return -EPERM;
->  		}
->  
-> @@ -2671,6 +2696,7 @@ static int i40e_vc_add_mac_addr_msg(struct
-> i40e_vf *vf, u8 *msg)
->  	    (struct virtchnl_ether_addr_list *)msg;
->  	struct i40e_pf *pf = vf->pf;
->  	struct i40e_vsi *vsi = NULL;
-> +	bool is_quiet = false;
->  	i40e_status ret = 0;
->  	int i;
->  
-> @@ -2687,7 +2713,7 @@ static int i40e_vc_add_mac_addr_msg(struct
-> i40e_vf *vf, u8 *msg)
->  	 */
->  	spin_lock_bh(&vsi->mac_filter_hash_lock);
->  
-> -	ret = i40e_check_vf_permission(vf, al);
-> +	ret = i40e_check_vf_permission(vf, al, &is_quiet);
->  	if (ret) {
->  		spin_unlock_bh(&vsi->mac_filter_hash_lock);
->  		goto error_param;
-> @@ -2725,8 +2751,8 @@ static int i40e_vc_add_mac_addr_msg(struct
-> i40e_vf *vf, u8 *msg)
->  
->  error_param:
->  	/* send the response to the VF */
-> -	return i40e_vc_send_resp_to_vf(vf, VIRTCHNL_OP_ADD_ETH_ADDR,
-> -				       ret);
-> +	return i40e_vc_send_msg_to_vf_ex(vf, VIRTCHNL_OP_ADD_ETH_ADDR,
-> +				       ret, NULL, 0, is_quiet);
->  }
->  
->  /**
+clang tested configs:
+x86_64               randconfig-a013-20210209
+x86_64               randconfig-a014-20210209
+x86_64               randconfig-a015-20210209
+x86_64               randconfig-a012-20210209
+x86_64               randconfig-a016-20210209
+x86_64               randconfig-a011-20210209
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
