@@ -1,94 +1,34 @@
-From: =?unknown-8bit?q?Micha=C5=82_Ma=C5=82oszewski?= <michal.maloszewski@intel.com>
-Date: Thu, 11 Feb 2021 11:29:01 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix NULL ptr dereference on
- VSI filter sync
-Message-ID: <1613042941-31948-1-git-send-email-michal.maloszewski@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 11 Feb 2021 10:25:13 -0800
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix NULL ptr dereference
+ on VSI filter sync
+In-Reply-To: <1613042941-31948-1-git-send-email-michal.maloszewski@intel.com>
+References: <1613042941-31948-1-git-send-email-michal.maloszewski@intel.com>
+Message-ID: <20210211102513.00003b57@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove the reason of null pointer dereference in sync vsi filters.
-Added new I40E_VSI_RELEASING flag to signalize deleting and releasing
-of VSI resources to sync this thread with sync filters subtask.
-Without this patch it is possible to start update the vsi filter list
-after vsi is removed, that's causing a kernel oops.
+Micha? Ma?oszewski wrote:
 
-Fixes: 17652c6336fd("i40e: remove unused argument")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off by: Michal Maloszewski <michal.maloszewski@intel.com>
-Reviewed-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Reviewed-by: Fijalkowski, WitoldX <witoldx.fijalkowski@intel.com>
-Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+> v2: permissions are changed
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++--
+>  2 files changed, 7 insertions(+), 2 deletions(-)
+>  mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e.h
+>  mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e_main.c
 
----
-v2: permissions are changed
+Please fix your git commit, this file permission change making the
+files 100755 (executable!) doesn't make any sense and will be rejected
+upstream, so I'm rejecting it here.
 
- drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
- mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e.h
- mode change 100644 => 100755 drivers/net/ethernet/intel/i40e/i40e_main.c
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-old mode 100644
-new mode 100755
-index b6830e3..558b0ae
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -158,6 +158,7 @@ enum i40e_vsi_state_t {
- 	__I40E_VSI_OVERFLOW_PROMISC,
- 	__I40E_VSI_REINIT_REQUESTED,
- 	__I40E_VSI_DOWN_REQUESTED,
-+	__I40E_VSI_RELEASING,
- 	/* This must be last as it determines the size of the BITMAP */
- 	__I40E_VSI_STATE_SIZE__,
- };
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-old mode 100644
-new mode 100755
-index 60e68fc..de7b6f5
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2634,9 +2634,9 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
- 
- 	for (v = 0; v < pf->num_alloc_vsi; v++) {
- 		if (pf->vsi[v] &&
--		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED)) {
-+		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED) &&
-+		    !test_bit(__I40E_VSI_RELEASING, pf->vsi[v]->state)) {
- 			int ret = i40e_sync_vsi_filters(pf->vsi[v]);
--
- 			if (ret) {
- 				/* come back and try again later */
- 				set_bit(__I40E_MACVLAN_SYNC_PENDING,
-@@ -12955,6 +12955,9 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 	/* Don't allow frames that span over multiple buffers */
- 	if (frame_size > vsi->rx_buf_len) {
- 		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
-+		dev_info(&pf->pdev->dev,
-+			 "MTU of %u bytes is too large to enable XDP (maximum: %u bytes)\n",
-+			 vsi->netdev->mtu, vsi->rx_buf_len);
- 		return -EINVAL;
- 	}
- 
-@@ -13785,6 +13788,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
- 		return -ENODEV;
- 	}
- 
-+	set_bit(__I40E_VSI_RELEASING, vsi->state);
- 	uplink_seid = vsi->uplink_seid;
- 	if (vsi->type != I40E_VSI_SRIOV) {
- 		if (vsi->netdev_registered) {
--- 
-1.8.3.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Sowackiego 173 | 80-298 Gdask | Sd Rejonowy Gdask Pnoc | VII Wydzia Gospodarczy Krajowego Rejestru Sdowego - KRS 101882 | NIP 957-07-52-316 | Kapita zakadowy 200.000 PLN.
-Ta wiadomo wraz z zacznikami jest przeznaczona dla okrelonego adresata i moe zawiera informacje poufne. W razie przypadkowego otrzymania tej wiadomoci, prosimy o powiadomienie nadawcy oraz trwae jej usunicie; jakiekolwiek przegldanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
- 
+You must resubmit a v3 please without the 755 changes.
+in your tree:
+chmod 644 drivers/net/ethernet/intel/i40e/i40e.h drivers/net/ethernet/intel/i40e/i40e_main.c
+git add -u
+git commit --amend
 
