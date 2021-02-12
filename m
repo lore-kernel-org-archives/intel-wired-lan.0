@@ -1,52 +1,43 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 Feb 2021 17:49:37 -0800
-Subject: [Intel-wired-lan] 710/i40e, RSS and 802.1ad (double vlan)
-In-Reply-To: <5ff376e94c76a9b475242d829ca7b7d2e1786620.camel@coverfire.com>
-References: <fc55ca6fb012c9e36e53d2ab80d47894c38e85a8.camel@coverfire.com>
- <AB117487-C2C3-47EF-A3C4-FDCED9304282@intel.com>
- <8c7d255047890290948cf51450b1f860e013b48c.camel@coverfire.com>
- <d3f0614118192ba0df5ec0e845f61e092f187744.camel@coverfire.com>
- <20210209120223.000041ca@intel.com>
- <5ff376e94c76a9b475242d829ca7b7d2e1786620.camel@coverfire.com>
-Message-ID: <20210211174937.00006632@intel.com>
+From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Date: Thu, 11 Feb 2021 18:05:41 -0800
+Subject: [Intel-wired-lan] [PATCH v2 bpf 1/5] net: ethtool: add xdp
+ properties flag set
+In-Reply-To: <20210211172603.17d6a8f6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20201204102901.109709-1-marekx.majtyka@intel.com>
+ <20201209125223.49096d50@carbon>
+ <e1573338-17c0-48f4-b4cd-28eeb7ce699a@gmail.com>
+ <1e5e044c8382a68a8a547a1892b48fb21d53dbb9.camel@kernel.org>
+ <cb6b6f50-7cf1-6519-a87a-6b0750c24029@gmail.com>
+ <f4eb614ac91ee7623d13ea77ff3c005f678c512b.camel@kernel.org>
+ <d5be0627-6a11-9c1f-8507-cc1a1421dade@gmail.com>
+ <6f8c23d4ac60525830399754b4891c12943b63ac.camel@kernel.org>
+ <CAAOQfrHN1-oHmbOksDv-BKWv4gDF2zHZ5dTew6R_QTh6s_1abg@mail.gmail.com>
+ <87h7mvsr0e.fsf@toke.dk>
+ <CAAOQfrHA+-BsikeQzXYcK_32BZMbm54x5p5YhAiBj==uaZvG1w@mail.gmail.com>
+ <87bld2smi9.fsf@toke.dk>
+ <20210202113456.30cfe21e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <CAAOQfrGqcsn3wu5oxzHYxtE8iK3=gFdTka5HSh5Fe9Hc6HWRWA@mail.gmail.com>
+ <20210203090232.4a259958@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <874kikry66.fsf@toke.dk>
+ <20210210103135.38921f85@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <87czx7r0w8.fsf@toke.dk>
+ <20210211172603.17d6a8f6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <CAADnVQJ_juVMxSKUvHBEsLNQoJ4mvkqyAV8XF4mmz-dO8saUzQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dan Siemon wrote:
+On Thu, Feb 11, 2021 at 5:26 PM Jakub Kicinski <kuba@kernel.org> wrote:
+>
+> Perhaps I had seen one too many vendor incompatibility to trust that
+> adding a driver API without a validation suite will result in something
+> usable in production settings.
 
-> On Tue, 2021-02-09 at 12:02 -0800, Jesse Brandeburg wrote:
-> > Please provide us with which driver/kernel/firmware you're running,
-> > uname -a
-> > ethtool -i ethx
-> > lspci -vvv -s < your pci bus:dev.fn>
-> 
-> We are ok to update to the latest 710 firmware and we follow the kernel
-> releases closely.
-> 
-> As we haven't had problems related to firmware, we still have many 710s
-> in the field that are on 6.01 firmware. Below are dumps from a couple
-> of our test boxes where I have upgraded the firmware.
+I agree with Jakub. I don't see how extra ethtool reporting will help.
+Anyone who wants to know whether eth0 supports XDP_REDIRECT can already do so:
+ethtool -S eth0 | grep xdp_redirect
 
-Hi Dan, thanks for the detail, I think your firmware is new enough, but
-I'm pretty sure our driver isn't configuring enough (it's currently an
-unsupported feature in Linux i40e) to get it working. Newer than 6.01 is
-all I know of that is required for firmware based on what I know right
-now.
-
-I've filed an internal issue tracker against i40e and sometime
-(hopefully) soon we'll have the team looking into details. I don't have
-any timeline for you currently, sorry.
-
-I agree this is an important use case. We appreciate your reporting the
-issue to us. Based on what I found when doing some initial triage, it
-doesn't seem like a simple fix in the code, so I can't offer you a
-patch to fix the issue like I wish I could.
-
-Please keep us posted if you find any other relevant details, and I'll
-try to update this thread if we find any info or get a test patch up
-and running.
-
--Jesse
+I think converging on the same stat names across the drivers will make
+the whole thing much more user friendly than new apis.
