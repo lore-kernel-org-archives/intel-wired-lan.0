@@ -1,128 +1,32 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 14 Feb 2021 01:24:12 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- c0d4e9d223c5f4a31bd0146739dcc88e8ac62dd5
-Message-ID: <60280b3c.NVGDcOiPJ+NgzoJ+%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 14 Feb 2021 09:17:49 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused MII_CR_LOOPBACK
+Message-ID: <20210214071749.4068885-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: c0d4e9d223c5f4a31bd0146739dcc88e8ac62dd5  ixgbe: store the result of ixgbe_rx_offset() onto ixgbe_ring
+MII_CR_LOOPBACK masks not in use in i225 device and can be removed.
 
-elapsed time: 724m
-
-configs tested: 99
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                               defconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                     mpc5200_defconfig
-mips                         tb0287_defconfig
-arm                       mainstone_defconfig
-m68k                       m5208evb_defconfig
-mips                      malta_kvm_defconfig
-powerpc                        warp_defconfig
-openrisc                         alldefconfig
-sh                           se7712_defconfig
-h8300                               defconfig
-sh                            hp6xx_defconfig
-arm                          simpad_defconfig
-powerpc                 mpc8315_rdb_defconfig
-powerpc                 mpc832x_mds_defconfig
-powerpc                        fsp2_defconfig
-powerpc                      ppc64e_defconfig
-mips                           ci20_defconfig
-arm                         cm_x300_defconfig
-xtensa                         virt_defconfig
-mips                         tb0219_defconfig
-c6x                        evmc6678_defconfig
-powerpc                      walnut_defconfig
-arc                        nsim_700_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210209
-i386                 randconfig-a005-20210209
-i386                 randconfig-a003-20210209
-i386                 randconfig-a002-20210209
-i386                 randconfig-a006-20210209
-i386                 randconfig-a004-20210209
-i386                 randconfig-a016-20210209
-i386                 randconfig-a013-20210209
-i386                 randconfig-a012-20210209
-i386                 randconfig-a014-20210209
-i386                 randconfig-a011-20210209
-i386                 randconfig-a015-20210209
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a003-20210211
-x86_64               randconfig-a002-20210211
-x86_64               randconfig-a001-20210211
-x86_64               randconfig-a004-20210211
-x86_64               randconfig-a005-20210211
-x86_64               randconfig-a006-20210211
-x86_64               randconfig-a013-20210209
-x86_64               randconfig-a014-20210209
-x86_64               randconfig-a015-20210209
-x86_64               randconfig-a012-20210209
-x86_64               randconfig-a016-20210209
-x86_64               randconfig-a011-20210209
-
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+index c5b36ec7bcff..153561291166 100644
+--- a/drivers/net/ethernet/intel/igc/igc_defines.h
++++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+@@ -441,7 +441,6 @@
+ #define MII_CR_RESTART_AUTO_NEG	0x0200  /* Restart auto negotiation */
+ #define MII_CR_POWER_DOWN	0x0800  /* Power down */
+ #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
+-#define MII_CR_LOOPBACK		0x4000  /* 0 = normal, 1 = loopback */
+ 
+ /* PHY Status Register */
+ #define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
+-- 
+2.25.1
+
