@@ -1,54 +1,40 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 15 Feb 2021 08:46:08 +0100
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix VFs not created
-In-Reply-To: <20201127112301.32478-1-mateusz.palczewski@intel.com>
-References: <20201127112301.32478-1-mateusz.palczewski@intel.com>
-Message-ID: <7305a403-4163-4af9-5f20-b73d54a98fc8@molgen.mpg.de>
+Date: Mon, 15 Feb 2021 11:05:17 +0100
+Subject: [Intel-wired-lan] [PATCH next-queue v1 2/2] igc: enable
+ auxiliary PHC functions for the i225
+In-Reply-To: <20210212014212.41570-3-ederson.desouza@intel.com>
+References: <20210212014212.41570-1-ederson.desouza@intel.com>
+ <20210212014212.41570-3-ederson.desouza@intel.com>
+Message-ID: <bd0bfa55-de44-82e9-337a-e6254d3a8405@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[+cc Stefan as author of commit under Fixes:]
+Dear Ederson,
 
-Am 27.11.20 um 12:23 schrieb Mateusz Palczewski:
-> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+
+Am 12.02.21 um 02:42 schrieb Ederson de Souza:
+> The i225 device offers a number of special PTP Hardware Clock features on
+> the Software Defined Pins (SDPs). This patch adds support for two of the
+> possible functions, namely time stamping external events, and periodic
+> output signals.
 > 
-> When creating VFs they were sometimes not getting resources.
-> It was caused by not executing i40e_reset_all_vfs due to
-> flag __I40E_VF_DISABLE being set on PF. Because of this
-> IAVF was never able to finish setup sequence never
-> getting reset indication from PF.
-> Changed test_and_set_bit __I40E_VF_DISABLE in
-> i40e_sync_filters_subtask to test_bit and removed clear_bit.
-> This function should not set this bit it should only check
-> if it hasn't been already set.
+> The assignment of PHC functions to the four SDP can be freely chosen by
+> the user.
 > 
-> Fixes: a7542b876075 ("i40e: check __I40E_VF_DISABLE bit in i40e_sync_filters_subtask")
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 5bee1de..a926331 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -2623,7 +2623,7 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
->   		return;
->   	if (!test_and_clear_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state))
->   		return;
-> -	if (test_and_set_bit(__I40E_VF_DISABLE, pf->state)) {
-> +	if (test_bit(__I40E_VF_DISABLE, pf->state)) {
->   		set_bit(__I40E_MACVLAN_SYNC_PENDING, pf->state);
->   		return;
->   	}
-> @@ -2641,7 +2641,6 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
->   			}
->   		}
->   	}
-> -	clear_bit(__I40E_VF_DISABLE, pf->state);
->   }
->   
->   /**
+> While i225 allows up to four timers to be used to source the time used
+> on the external events or output signals, this patch uses only one of
+> those timers.
+
+Why is that? Because it?s simpler to implement? Please add the reason to 
+the commit message.
+
+It?d be also great, if you mentioned the datasheet name and revision 
+used for implementing this.
+
+
+Kind regards,
+
+Paul
