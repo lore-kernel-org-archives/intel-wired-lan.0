@@ -1,40 +1,158 @@
-From: Colin King <colin.king@canonical.com>
-Date: Mon, 15 Feb 2021 16:19:23 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix incorrect use of ip6src due to
- copy-paste coding error
-Message-ID: <20210215161923.83682-1-colin.king@canonical.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 16 Feb 2021 05:18:25 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 9db0da9087c3dcf2f0b2b93b4e5e652310f1bbcd
+Message-ID: <602ae521.4AYMJdmrTyepkAFn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 9db0da9087c3dcf2f0b2b93b4e5e652310f1bbcd  iavf: Fix return of set the new channel count
 
-It appears that the call of ipv6_add_any for the destination address
-is using ip6src instead of ip6dst, this looks like a copy-paste
-coding error. Fix this by replacing ip6src with ip6dst.
+elapsed time: 725m
 
-Addresses-Coverity: ("Copy-paste error")
-Fixes: efca91e89b67 ("i40e: Add flow director support for IPv6")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+configs tested: 129
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                  mpc885_ads_defconfig
+m68k                          hp300_defconfig
+sh                          rsk7264_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                     rainier_defconfig
+arm                         nhk8815_defconfig
+arm                      tct_hammer_defconfig
+sh                           se7751_defconfig
+ia64                      gensparse_defconfig
+arm                           viper_defconfig
+sh                           se7721_defconfig
+arm                             pxa_defconfig
+mips                          rm200_defconfig
+powerpc                     pseries_defconfig
+arm                          badge4_defconfig
+powerpc64                        alldefconfig
+xtensa                    xip_kc705_defconfig
+m68k                       m5208evb_defconfig
+openrisc                            defconfig
+mips                        omega2p_defconfig
+sh                                  defconfig
+sh                           se7722_defconfig
+sh                          landisk_defconfig
+arm                         socfpga_defconfig
+mips                       bmips_be_defconfig
+sh                           se7343_defconfig
+arm                        neponset_defconfig
+powerpc                      walnut_defconfig
+arm                         s3c6400_defconfig
+riscv                    nommu_virt_defconfig
+arm                           tegra_defconfig
+s390                                defconfig
+riscv                    nommu_k210_defconfig
+mips                           ip27_defconfig
+arm                            pleb_defconfig
+arm                      jornada720_defconfig
+powerpc                      chrp32_defconfig
+arm                         hackkit_defconfig
+c6x                        evmc6457_defconfig
+arc                      axs103_smp_defconfig
+powerpc                   lite5200b_defconfig
+m68k                        mvme147_defconfig
+powerpc                      obs600_defconfig
+powerpc                     sbc8548_defconfig
+xtensa                  audio_kc705_defconfig
+arm                         vf610m4_defconfig
+mips                          ath79_defconfig
+powerpc                    sam440ep_defconfig
+powerpc                   motionpro_defconfig
+powerpc                 mpc832x_rdb_defconfig
+m68k                          atari_defconfig
+mips                           ci20_defconfig
+powerpc                       maple_defconfig
+powerpc                      cm5200_defconfig
+arm                        multi_v7_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a003-20210215
+i386                 randconfig-a005-20210215
+i386                 randconfig-a002-20210215
+i386                 randconfig-a006-20210215
+i386                 randconfig-a004-20210215
+i386                 randconfig-a001-20210215
+x86_64               randconfig-a016-20210215
+x86_64               randconfig-a013-20210215
+x86_64               randconfig-a012-20210215
+x86_64               randconfig-a015-20210215
+x86_64               randconfig-a014-20210215
+x86_64               randconfig-a011-20210215
+i386                 randconfig-a016-20210215
+i386                 randconfig-a014-20210215
+i386                 randconfig-a012-20210215
+i386                 randconfig-a013-20210215
+i386                 randconfig-a011-20210215
+i386                 randconfig-a015-20210215
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a003-20210215
+x86_64               randconfig-a002-20210215
+x86_64               randconfig-a001-20210215
+x86_64               randconfig-a004-20210215
+x86_64               randconfig-a005-20210215
+x86_64               randconfig-a006-20210215
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 8a4dd77a12da..a8a2b5f683a2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4250,7 +4250,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
- 				    (struct in6_addr *)&ipv6_full_mask))
- 			new_mask |= I40E_L3_V6_DST_MASK;
- 		else if (ipv6_addr_any((struct in6_addr *)
--				       &tcp_ip6_spec->ip6src))
-+				       &tcp_ip6_spec->ip6dst))
- 			new_mask &= ~I40E_L3_V6_DST_MASK;
- 		else
- 			return -EOPNOTSUPP;
--- 
-2.30.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
