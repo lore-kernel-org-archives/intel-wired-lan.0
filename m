@@ -1,40 +1,134 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Mon, 15 Feb 2021 23:20:09 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix incorrect use of ip6src due
- to copy-paste coding error
-In-Reply-To: <20210215161923.83682-1-colin.king@canonical.com>
-References: <20210215161923.83682-1-colin.king@canonical.com>
-Message-ID: <161343120902.10830.1258291646017278044.git-patchwork-notify@kernel.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 16 Feb 2021 10:38:04 +0100
+Subject: [Intel-wired-lan] [PATCH next-queue v1 1/2] igc: Enable
+ internal i225 PPS
+In-Reply-To: <20210212014212.41570-2-ederson.desouza@intel.com>
+References: <20210212014212.41570-1-ederson.desouza@intel.com>
+ <20210212014212.41570-2-ederson.desouza@intel.com>
+Message-ID: <83c274f0-4b5a-b5d5-4722-5f0f79cb2c76@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+Dear Ederson,
 
-This patch was applied to netdev/net-next.git (refs/heads/master):
 
-On Mon, 15 Feb 2021 16:19:23 +0000 you wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+Am 12.02.21 um 02:42 schrieb Ederson de Souza:
+> The i225 device can produce one interrupt on the full second. This patch
+
+Please reference the spec.
+
+> allows using this interrupt to generate an internal PPS event for
+> adjusting the kernel system time.
+
+How can this be tested?
+
+A more elaborate description of the implementation would be useful in 
+commit messages.
+
+> Signed-off-by: Ederson de Souza <ederson.desouza@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc.h      |  2 ++
+>   drivers/net/ethernet/intel/igc/igc_main.c |  8 +++++++
+>   drivers/net/ethernet/intel/igc/igc_ptp.c  | 28 ++++++++++++++++++++++-
+>   3 files changed, 37 insertions(+), 1 deletion(-)
 > 
-> It appears that the call of ipv6_add_any for the destination address
-> is using ip6src instead of ip6dst, this looks like a copy-paste
-> coding error. Fix this by replacing ip6src with ip6dst.
-> 
-> Addresses-Coverity: ("Copy-paste error")
-> Fixes: efca91e89b67 ("i40e: Add flow director support for IPv6")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> 
-> [...]
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index 415cfea27718..fa81cec80711 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -224,6 +224,8 @@ struct igc_adapter {
+>   	char fw_version[32];
+>   
+>   	struct bpf_prog *xdp_prog;
+> +
+> +	bool pps_sys_wrap_on;
+>   };
+>   
+>   void igc_up(struct igc_adapter *adapter);
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index c363f7fd1aaa..5e3b6ac00b3a 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -4599,9 +4599,17 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
+>   static void igc_tsync_interrupt(struct igc_adapter *adapter)
+>   {
+>   	struct igc_hw *hw = &adapter->hw;
+> +	struct ptp_clock_event event;
+>   	u32 tsicr = rd32(IGC_TSICR);
+>   	u32 ack = 0;
+>   
+> +	if (tsicr & IGC_TSICR_SYS_WRAP) {
+> +		event.type = PTP_CLOCK_PPS;
+> +		if (adapter->ptp_caps.pps)
+> +			ptp_clock_event(adapter->ptp_clock, &event);
+> +		ack |= IGC_TSICR_SYS_WRAP;
+> +	}
+> +
+>   	if (tsicr & IGC_TSICR_TXTS) {
+>   		/* retrieve hardware timestamp */
+>   		schedule_work(&adapter->ptp_tx_work);
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> index 7301a7b3fadc..868cd51909e9 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> @@ -123,6 +123,29 @@ static int igc_ptp_settime_i225(struct ptp_clock_info *ptp,
+>   static int igc_ptp_feature_enable_i225(struct ptp_clock_info *ptp,
+>   				       struct ptp_clock_request *rq, int on)
+>   {
+> +	struct igc_adapter *igc =
+> +		container_of(ptp, struct igc_adapter, ptp_caps);
+> +	struct igc_hw *hw = &igc->hw;
+> +	unsigned long flags;
+> +	u32 tsim;
+> +
+> +	switch (rq->type) {
+> +	case PTP_CLK_REQ_PPS:
+> +		spin_lock_irqsave(&igc->tmreg_lock, flags);
+> +		tsim = rd32(IGC_TSIM);
+> +		if (on)
+> +			tsim |= IGC_TSICR_SYS_WRAP;
+> +		else
+> +			tsim &= ~IGC_TSICR_SYS_WRAP;
+> +		igc->pps_sys_wrap_on = !!on;
+> +		wr32(IGC_TSIM, tsim);
+> +		spin_unlock_irqrestore(&igc->tmreg_lock, flags);
+> +		return 0;
+> +
+> +	default:
+> +		break;
+> +	}
+> +
+>   	return -EOPNOTSUPP;
+>   }
+>   
+> @@ -497,6 +520,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+>   		adapter->ptp_caps.gettimex64 = igc_ptp_gettimex64_i225;
+>   		adapter->ptp_caps.settime64 = igc_ptp_settime_i225;
+>   		adapter->ptp_caps.enable = igc_ptp_feature_enable_i225;
+> +		adapter->ptp_caps.pps = 1;
+>   		break;
+>   	default:
+>   		adapter->ptp_clock = NULL;
+> @@ -598,7 +622,9 @@ void igc_ptp_reset(struct igc_adapter *adapter)
+>   	case igc_i225:
+>   		wr32(IGC_TSAUXC, 0x0);
+>   		wr32(IGC_TSSDP, 0x0);
+> -		wr32(IGC_TSIM, IGC_TSICR_INTERRUPTS);
+> +		wr32(IGC_TSIM,
+> +		     IGC_TSICR_INTERRUPTS |
+> +		     (adapter->pps_sys_wrap_on ? IGC_TSICR_SYS_WRAP : 0));
+>   		wr32(IGC_IMS, IGC_IMS_TS);
+>   		break;
+>   	default:
 
-Here is the summary with links:
-  - i40e: Fix incorrect use of ip6src due to copy-paste coding error
-    https://git.kernel.org/netdev/net-next/c/7f76963b692d
+Otherwise, this looks good.
 
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
 
+Kind regards,
+
+Paul
