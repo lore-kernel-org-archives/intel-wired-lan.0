@@ -1,145 +1,74 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 18 Feb 2021 04:34:05 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 4da500b8a3239e0c11aa7c9543579761874688e5
-Message-ID: <602d7dbd.glyJ5Gdk3P90B3vB%lkp@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 17 Feb 2021 22:26:06 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix NULL ptr dereference
+ on VSI filter sync
+In-Reply-To: <1613561124-15464-1-git-send-email-michal.maloszewski@intel.com>
+References: <1613561124-15464-1-git-send-email-michal.maloszewski@intel.com>
+Message-ID: <e423d17ef916b7e81dbbca4eb81f746babbfdf1a.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 4da500b8a3239e0c11aa7c9543579761874688e5  iavf: Fix return of set the new channel count
+On Wed, 2021-02-17 at 11:25 +0000, Micha? Ma?oszewski wrote:
+> Remove the reason of null pointer dereference in sync vsi filters.
+> Added new I40E_VSI_RELEASING flag to signalize deleting and releasing
+> of VSI resources to sync this thread with sync filters subtask.
+> Without this patch it is possible to start update the vsi filter list
+> after vsi is removed, that's causing a kernel oops.
+> 
+> Fixes: 17652c6336fd("i40e: remove unused argument")
+> Reviewed-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+> Reviewed-by: Fijalkowski, WitoldX <witoldx.fijalkowski@intel.com>
+> Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 79
+> +++++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 60 ++++++++++++++++---
+> ---
+>  2 files changed, 124 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+> b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 425d620..558b0ae 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -158,6 +158,7 @@ enum i40e_vsi_state_t {
+>  	__I40E_VSI_OVERFLOW_PROMISC,
+>  	__I40E_VSI_REINIT_REQUESTED,
+>  	__I40E_VSI_DOWN_REQUESTED,
+> +	__I40E_VSI_RELEASING,
+>  	/* This must be last as it determines the size of the BITMAP */
+>  	__I40E_VSI_STATE_SIZE__,
+>  };
+> @@ -425,6 +426,8 @@ struct i40e_channel {
+>  	struct i40e_vsi *parent_vsi;
+>  };
+>  
+> +struct i40e_ptp_pins_settings;
+> +
+>  static inline bool i40e_is_channel_macvlan(struct i40e_channel *ch)
+>  {
+>  	return !!ch->fwd;
+> @@ -641,12 +644,83 @@ struct i40e_pf {
+>  	struct i40e_rx_pb_config pb_cfg; /* Current Rx packet buffer
+> config */
+>  	struct i40e_dcbx_config tmp_cfg;
+>  
+> +/* GPIO defines used by PTP */
+> +#define I40E_SDP3_2			18
+> +#define I40E_SDP3_3			19
 
-elapsed time: 724m
+...
 
-configs tested: 116
-configs skipped: 2
+There's a lot of code here that isn't related to the patch and not
+mentioned in the commit message. It also wasn't in your v1. It looks
+like pieces of other patches. Please review your patch before sending
+it.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-xtensa                generic_kc705_defconfig
-powerpc                     redwood_defconfig
-arm                        shmobile_defconfig
-c6x                        evmc6678_defconfig
-powerpc                      walnut_defconfig
-ia64                            zx1_defconfig
-arm                       imx_v4_v5_defconfig
-ia64                          tiger_defconfig
-xtensa                    smp_lx200_defconfig
-arm                      pxa255-idp_defconfig
-arm                          exynos_defconfig
-arm                          pxa168_defconfig
-m68k                        m5307c3_defconfig
-powerpc64                           defconfig
-c6x                                 defconfig
-powerpc                     rainier_defconfig
-mips                        maltaup_defconfig
-h8300                            alldefconfig
-xtensa                           allyesconfig
-mips                         tb0287_defconfig
-arm                     eseries_pxa_defconfig
-arm                             rpc_defconfig
-powerpc                     sbc8548_defconfig
-sh                        apsh4ad0a_defconfig
-m68k                                defconfig
-arm                      jornada720_defconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                 mpc832x_mds_defconfig
-um                            kunit_defconfig
-mips                           ci20_defconfig
-mips                      maltaaprp_defconfig
-xtensa                    xip_kc705_defconfig
-mips                            ar7_defconfig
-powerpc                     pseries_defconfig
-arm                        mvebu_v7_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20210216
-i386                 randconfig-a005-20210216
-i386                 randconfig-a002-20210216
-i386                 randconfig-a006-20210216
-i386                 randconfig-a001-20210216
-i386                 randconfig-a004-20210216
-i386                 randconfig-a016-20210216
-i386                 randconfig-a014-20210216
-i386                 randconfig-a012-20210216
-i386                 randconfig-a013-20210216
-i386                 randconfig-a011-20210216
-i386                 randconfig-a015-20210216
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a013-20210216
-x86_64               randconfig-a016-20210216
-x86_64               randconfig-a012-20210216
-x86_64               randconfig-a015-20210216
-x86_64               randconfig-a014-20210216
-x86_64               randconfig-a011-20210216
-x86_64               randconfig-a003-20210217
-x86_64               randconfig-a002-20210217
-x86_64               randconfig-a004-20210217
-x86_64               randconfig-a001-20210217
-x86_64               randconfig-a005-20210217
-x86_64               randconfig-a006-20210217
-x86_64               randconfig-a003-20210215
-x86_64               randconfig-a002-20210215
-x86_64               randconfig-a001-20210215
-x86_64               randconfig-a004-20210215
-x86_64               randconfig-a005-20210215
-x86_64               randconfig-a006-20210215
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Thanks,
+Tony
