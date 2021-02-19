@@ -1,122 +1,127 @@
-From: Ederson de Souza <ederson.desouza@intel.com>
-Date: Thu, 18 Feb 2021 17:31:03 -0800
-Subject: [Intel-wired-lan] [PATCH next-queue v2 1/2] igc: Enable internal
- i225 PPS
-In-Reply-To: <20210219013104.54436-1-ederson.desouza@intel.com>
-References: <20210219013104.54436-1-ederson.desouza@intel.com>
-Message-ID: <20210219013104.54436-2-ederson.desouza@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 19 Feb 2021 18:40:50 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 48fb4d20552fa8fbc970601bf08470d66a49c4c4
+Message-ID: <602f95b2.jQwcbUV/mOLcsbp8%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The i225 device can produce one interrupt on the full second, much
-like i210 - from where this patch is inspired.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 48fb4d20552fa8fbc970601bf08470d66a49c4c4  i40e: Fix inconsistent indenting
 
-This patch sets up the full second interruption on the i225 and when
-receiving it, it sends a PPS event to PTP (Precision Time Protocol)
-kernel subsystem.
+elapsed time: 726m
 
-The PTP subsystem exposes the PPS events via ioctl and sysfs, and one
-can use the `testptp` tool (tools/testing/selftests/ptp) to check that
-the events are being generated.
+configs tested: 98
+configs skipped: 2
 
-Signed-off-by: Ederson de Souza <ederson.desouza@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                     akebono_defconfig
+m68k                            q40_defconfig
+um                           x86_64_defconfig
+powerpc64                           defconfig
+sparc                            alldefconfig
+powerpc                      ppc44x_defconfig
+mips                         tb0219_defconfig
+sh                             sh03_defconfig
+m68k                        m5272c3_defconfig
+arm                          pxa168_defconfig
+mips                       lemote2f_defconfig
+arm                            zeus_defconfig
+powerpc                   bluestone_defconfig
+m68k                        m5407c3_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arc                 nsimosci_hs_smp_defconfig
+arm                          collie_defconfig
+s390                       zfcpdump_defconfig
+powerpc                          g5_defconfig
+powerpc                      ppc6xx_defconfig
+sh                           sh2007_defconfig
+sh                        sh7757lcr_defconfig
+m68k                             allyesconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a003-20210218
+x86_64               randconfig-a001-20210218
+x86_64               randconfig-a004-20210218
+x86_64               randconfig-a002-20210218
+x86_64               randconfig-a005-20210218
+x86_64               randconfig-a006-20210218
+i386                 randconfig-a005-20210218
+i386                 randconfig-a003-20210218
+i386                 randconfig-a002-20210218
+i386                 randconfig-a004-20210218
+i386                 randconfig-a001-20210218
+i386                 randconfig-a006-20210218
+i386                 randconfig-a016-20210218
+i386                 randconfig-a012-20210218
+i386                 randconfig-a014-20210218
+i386                 randconfig-a013-20210218
+i386                 randconfig-a011-20210218
+i386                 randconfig-a015-20210218
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a012-20210218
+x86_64               randconfig-a016-20210218
+x86_64               randconfig-a013-20210218
+x86_64               randconfig-a015-20210218
+x86_64               randconfig-a011-20210218
+x86_64               randconfig-a014-20210218
+
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  2 ++
- drivers/net/ethernet/intel/igc/igc_main.c |  8 +++++++
- drivers/net/ethernet/intel/igc/igc_ptp.c  | 28 ++++++++++++++++++++++-
- 3 files changed, 37 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 415cfea27718..fa81cec80711 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -224,6 +224,8 @@ struct igc_adapter {
- 	char fw_version[32];
- 
- 	struct bpf_prog *xdp_prog;
-+
-+	bool pps_sys_wrap_on;
- };
- 
- void igc_up(struct igc_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c363f7fd1aaa..5e3b6ac00b3a 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4599,9 +4599,17 @@ igc_features_check(struct sk_buff *skb, struct net_device *dev,
- static void igc_tsync_interrupt(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
-+	struct ptp_clock_event event;
- 	u32 tsicr = rd32(IGC_TSICR);
- 	u32 ack = 0;
- 
-+	if (tsicr & IGC_TSICR_SYS_WRAP) {
-+		event.type = PTP_CLOCK_PPS;
-+		if (adapter->ptp_caps.pps)
-+			ptp_clock_event(adapter->ptp_clock, &event);
-+		ack |= IGC_TSICR_SYS_WRAP;
-+	}
-+
- 	if (tsicr & IGC_TSICR_TXTS) {
- 		/* retrieve hardware timestamp */
- 		schedule_work(&adapter->ptp_tx_work);
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 7301a7b3fadc..98a6ce322f67 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -123,6 +123,29 @@ static int igc_ptp_settime_i225(struct ptp_clock_info *ptp,
- static int igc_ptp_feature_enable_i225(struct ptp_clock_info *ptp,
- 				       struct ptp_clock_request *rq, int on)
- {
-+	struct igc_adapter *igc =
-+		container_of(ptp, struct igc_adapter, ptp_caps);
-+	struct igc_hw *hw = &igc->hw;
-+	unsigned long flags;
-+	u32 tsim;
-+
-+	switch (rq->type) {
-+	case PTP_CLK_REQ_PPS:
-+		spin_lock_irqsave(&igc->tmreg_lock, flags);
-+		tsim = rd32(IGC_TSIM);
-+		if (on)
-+			tsim |= IGC_TSICR_SYS_WRAP;
-+		else
-+			tsim &= ~IGC_TSICR_SYS_WRAP;
-+		igc->pps_sys_wrap_on = on;
-+		wr32(IGC_TSIM, tsim);
-+		spin_unlock_irqrestore(&igc->tmreg_lock, flags);
-+		return 0;
-+
-+	default:
-+		break;
-+	}
-+
- 	return -EOPNOTSUPP;
- }
- 
-@@ -497,6 +520,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
- 		adapter->ptp_caps.gettimex64 = igc_ptp_gettimex64_i225;
- 		adapter->ptp_caps.settime64 = igc_ptp_settime_i225;
- 		adapter->ptp_caps.enable = igc_ptp_feature_enable_i225;
-+		adapter->ptp_caps.pps = 1;
- 		break;
- 	default:
- 		adapter->ptp_clock = NULL;
-@@ -598,7 +622,9 @@ void igc_ptp_reset(struct igc_adapter *adapter)
- 	case igc_i225:
- 		wr32(IGC_TSAUXC, 0x0);
- 		wr32(IGC_TSSDP, 0x0);
--		wr32(IGC_TSIM, IGC_TSICR_INTERRUPTS);
-+		wr32(IGC_TSIM,
-+		     IGC_TSICR_INTERRUPTS |
-+		     (adapter->pps_sys_wrap_on ? IGC_TSICR_SYS_WRAP : 0));
- 		wr32(IGC_IMS, IGC_IMS_TS);
- 		break;
- 	default:
--- 
-2.30.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
