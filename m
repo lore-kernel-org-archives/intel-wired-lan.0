@@ -1,10 +1,10 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Fri, 19 Feb 2021 20:59:47 +0800
-Subject: [Intel-wired-lan] [Patch v4 04/18] ice: Support to separate GTP-U
- uplink and downlink
+Date: Fri, 19 Feb 2021 20:59:49 +0800
+Subject: [Intel-wired-lan] [Patch v4 06/18] ice: Add support for per VF ctrl
+ VSI enabling
 In-Reply-To: <20210219130001.49600-1-haiyue.wang@intel.com>
 References: <20210219130001.49600-1-haiyue.wang@intel.com>
-Message-ID: <20210219130001.49600-5-haiyue.wang@intel.com>
+Message-ID: <20210219130001.49600-7-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,446 +13,334 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Qi Zhang <qi.z.zhang@intel.com>
 
-To apply different input set for GTP-U packet with or without extend
-header as well as GTP-U uplink and downlink, we need to add TCAM mask
-matching capability. This allows comprehending different PTYPE
-attributes by examining flags from the parser. Using this method,
-different profiles can be used by examining flag values from the parser.
+We are going to enable FDIR configure for AVF through virtual channel.
+The first step is to add helper functions to support control VSI setup.
+A control VSI will be allocated for a VF when AVF creates its
+first FDIR rule through ice_vf_ctrl_vsi_setup().
+The patch will also allocate FDIR rule space for VF's control VSI.
+If a VF asks for flow director rules, then those should come entirely
+from the best effort pool and not from the guaranteed pool. The patch
+allow a VF VSI to have only space in the best effort rules.
 
-Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
+Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_flex_pipe.c    | 106 +++++++++++++++---
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   1 +
- .../net/ethernet/intel/ice/ice_flex_type.h    |  61 ++++++++++
- drivers/net/ethernet/intel/ice/ice_flow.c     |  88 ++++++++++++++-
- 4 files changed, 241 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h          |  4 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 64 ++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_main.c     |  9 ++-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 62 ++++++++++++++++++
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  2 +
+ 5 files changed, 130 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 0511772f4710..88a0c2daf29f 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -2506,20 +2506,22 @@ static bool ice_tcam_ent_rsrc_type(enum ice_block blk, u16 *rsrc_type)
-  * ice_alloc_tcam_ent - allocate hardware TCAM entry
-  * @hw: pointer to the HW struct
-  * @blk: the block to allocate the TCAM for
-+ * @btm: true to allocate from bottom of table, false to allocate from top
-  * @tcam_idx: pointer to variable to receive the TCAM entry
-  *
-  * This function allocates a new entry in a Profile ID TCAM for a specific
-  * block.
-  */
- static enum ice_status
--ice_alloc_tcam_ent(struct ice_hw *hw, enum ice_block blk, u16 *tcam_idx)
-+ice_alloc_tcam_ent(struct ice_hw *hw, enum ice_block blk, bool btm,
-+		   u16 *tcam_idx)
- {
- 	u16 res_type;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 357706444dd5..7b45f2ab4036 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -73,7 +73,7 @@
+ #define ICE_MIN_LAN_TXRX_MSIX	1
+ #define ICE_MIN_LAN_OICR_MSIX	1
+ #define ICE_MIN_MSIX		(ICE_MIN_LAN_TXRX_MSIX + ICE_MIN_LAN_OICR_MSIX)
+-#define ICE_FDIR_MSIX		1
++#define ICE_FDIR_MSIX		2
+ #define ICE_NO_VSI		0xffff
+ #define ICE_VSI_MAP_CONTIG	0
+ #define ICE_VSI_MAP_SCATTER	1
+@@ -84,6 +84,8 @@
+ #define ICE_MAX_LG_RSS_QS	256
+ #define ICE_RES_VALID_BIT	0x8000
+ #define ICE_RES_MISC_VEC_ID	(ICE_RES_VALID_BIT - 1)
++/* All VF control VSIs share the same IRQ, so assign a unique ID for them */
++#define ICE_RES_VF_CTRL_VEC_ID	(ICE_RES_MISC_VEC_ID - 1)
+ #define ICE_INVAL_Q_INDEX	0xffff
+ #define ICE_INVAL_VFID		256
  
- 	if (!ice_tcam_ent_rsrc_type(blk, &res_type))
- 		return ICE_ERR_PARAM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 9857cc933877..d67cf205ebca 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -343,6 +343,9 @@ static int ice_vsi_clear(struct ice_vsi *vsi)
+ 	pf->vsi[vsi->idx] = NULL;
+ 	if (vsi->idx < pf->next_vsi && vsi->type != ICE_VSI_CTRL)
+ 		pf->next_vsi = vsi->idx;
++	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL &&
++	    vsi->vf_id != ICE_INVAL_VFID)
++		pf->next_vsi = vsi->idx;
  
--	return ice_alloc_hw_res(hw, res_type, 1, true, tcam_idx);
-+	return ice_alloc_hw_res(hw, res_type, 1, btm, tcam_idx);
- }
+ 	ice_vsi_free_arrays(vsi);
+ 	mutex_unlock(&pf->sw_mutex);
+@@ -454,8 +457,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
+ 		goto unlock_pf;
+ 	}
  
- /**
-@@ -4113,12 +4115,67 @@ ice_update_fd_swap(struct ice_hw *hw, u16 prof_id, struct ice_fv_word *es)
+-	if (vsi->type == ICE_VSI_CTRL) {
+-		/* Use the last VSI slot as the index for the control VSI */
++	if (vsi->type == ICE_VSI_CTRL && vf_id == ICE_INVAL_VFID) {
++		/* Use the last VSI slot as the index for PF control VSI */
+ 		vsi->idx = pf->num_alloc_vsi - 1;
+ 		pf->ctrl_vsi_idx = vsi->idx;
+ 		pf->vsi[vsi->idx] = vsi;
+@@ -468,6 +471,9 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
+ 		pf->next_vsi = ice_get_free_slot(pf->vsi, pf->num_alloc_vsi,
+ 						 pf->next_vsi);
+ 	}
++
++	if (vsi->type == ICE_VSI_CTRL && vf_id != ICE_INVAL_VFID)
++		pf->vf[vf_id].ctrl_vsi_idx = vsi->idx;
+ 	goto unlock_pf;
+ 
+ err_rings:
+@@ -506,7 +512,7 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
+ 	if (!b_val)
+ 		return -EPERM;
+ 
+-	if (vsi->type != ICE_VSI_PF)
++	if (!(vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_VF))
+ 		return -EPERM;
+ 
+ 	if (!test_bit(ICE_FLAG_FD_ENA, pf->flags))
+@@ -517,6 +523,13 @@ static int ice_alloc_fd_res(struct ice_vsi *vsi)
+ 	/* each VSI gets same "best_effort" quota */
+ 	vsi->num_bfltr = b_val;
+ 
++	if (vsi->type == ICE_VSI_VF) {
++		vsi->num_gfltr = 0;
++
++		/* each VSI gets same "best_effort" quota */
++		vsi->num_bfltr = b_val;
++	}
++
  	return 0;
  }
  
-+/* The entries here needs to match the order of enum ice_ptype_attrib */
-+static const struct ice_ptype_attrib_info ice_ptype_attributes[] = {
-+	{ ICE_GTP_PDU_EH,	ICE_GTP_PDU_FLAG_MASK },
-+	{ ICE_GTP_SESSION,	ICE_GTP_FLAGS_MASK },
-+	{ ICE_GTP_DOWNLINK,	ICE_GTP_FLAGS_MASK },
-+	{ ICE_GTP_UPLINK,	ICE_GTP_FLAGS_MASK },
-+};
+@@ -856,7 +869,8 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
+ 	u8 dflt_q_group, dflt_q_prio;
+ 	u16 dflt_q, report_q, val;
+ 
+-	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL)
++	if (vsi->type != ICE_VSI_PF && vsi->type != ICE_VSI_CTRL &&
++	    vsi->type != ICE_VSI_VF)
+ 		return;
+ 
+ 	val = ICE_AQ_VSI_PROP_FLOW_DIR_VALID;
+@@ -1179,7 +1193,24 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
+ 
+ 	num_q_vectors = vsi->num_q_vectors;
+ 	/* reserve slots from OS requested IRQs */
+-	base = ice_get_res(pf, pf->irq_tracker, num_q_vectors, vsi->idx);
++	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
++		struct ice_vf *vf;
++		int i;
 +
++		ice_for_each_vf(pf, i) {
++			vf = &pf->vf[i];
++			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI) {
++				base = pf->vsi[vf->ctrl_vsi_idx]->base_vector;
++				break;
++			}
++		}
++		if (i == pf->num_alloc_vfs)
++			base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
++					   ICE_RES_VF_CTRL_VEC_ID);
++	} else {
++		base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
++				   vsi->idx);
++	}
+ 
+ 	if (base < 0) {
+ 		dev_err(dev, "%d MSI-X interrupts available. %s %d failed to get %d MSI-X vectors\n",
+@@ -2302,7 +2333,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	struct ice_vsi *vsi;
+ 	int ret, i;
+ 
+-	if (vsi_type == ICE_VSI_VF)
++	if (vsi_type == ICE_VSI_VF || vsi_type == ICE_VSI_CTRL)
+ 		vsi = ice_vsi_alloc(pf, vsi_type, vf_id);
+ 	else
+ 		vsi = ice_vsi_alloc(pf, vsi_type, ICE_INVAL_VFID);
+@@ -2317,7 +2348,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 	if (vsi->type == ICE_VSI_PF)
+ 		vsi->ethtype = ETH_P_PAUSE;
+ 
+-	if (vsi->type == ICE_VSI_VF)
++	if (vsi->type == ICE_VSI_VF || vsi->type == ICE_VSI_CTRL)
+ 		vsi->vf_id = vf_id;
+ 
+ 	ice_alloc_fd_res(vsi);
+@@ -2764,7 +2795,24 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	 * many interrupts each VF needs. SR-IOV MSIX resources are also
+ 	 * cleared in the same manner.
+ 	 */
+-	if (vsi->type != ICE_VSI_VF) {
++	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
++		struct ice_vf *vf;
++		int i;
++
++		ice_for_each_vf(pf, i) {
++			vf = &pf->vf[i];
++			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI)
++				break;
++		}
++		if (i == pf->num_alloc_vfs) {
++			/* No other VFs left that have control VSI, reclaim SW
++			 * interrupts back to the common pool
++			 */
++			ice_free_res(pf->irq_tracker, vsi->base_vector,
++				     ICE_RES_VF_CTRL_VEC_ID);
++			pf->num_avail_sw_msix += vsi->num_q_vectors;
++		}
++	} else if (vsi->type != ICE_VSI_VF) {
+ 		/* reclaim SW interrupts back to the common pool */
+ 		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
+ 		pf->num_avail_sw_msix += vsi->num_q_vectors;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 43c69219cacb..0ac509eaaad8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -2220,8 +2220,13 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
+ 			/* skip this unused q_vector */
+ 			continue;
+ 		}
+-		err = devm_request_irq(dev, irq_num, vsi->irq_handler, 0,
+-				       q_vector->name, q_vector);
++		if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID)
++			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
++					       IRQF_SHARED, q_vector->name,
++					       q_vector);
++		else
++			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
++					       0, q_vector->name, q_vector);
+ 		if (err) {
+ 			netdev_err(vsi->netdev, "MSIX request_irq failed, error: %d\n",
+ 				   err);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 2d5d6c766035..08e09206a282 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -201,6 +201,25 @@ static void ice_vf_vsi_release(struct ice_vf *vf)
+ 	ice_vf_invalidate_vsi(vf);
+ }
+ 
 +/**
-+ * ice_get_ptype_attrib_info - get ptype attribute information
-+ * @type: attribute type
-+ * @info: pointer to variable to the attribute information
++ * ice_vf_ctrl_invalidate_vsi - invalidate ctrl_vsi_idx to remove VSI access
++ * @vf: VF that control VSI is being invalidated on
 + */
-+static void
-+ice_get_ptype_attrib_info(enum ice_ptype_attrib_type type,
-+			  struct ice_ptype_attrib_info *info)
++static void ice_vf_ctrl_invalidate_vsi(struct ice_vf *vf)
 +{
-+	*info = ice_ptype_attributes[type];
++	vf->ctrl_vsi_idx = ICE_NO_VSI;
 +}
 +
 +/**
-+ * ice_add_prof_attrib - add any PTG with attributes to profile
-+ * @prof: pointer to the profile to which PTG entries will be added
-+ * @ptg: PTG to be added
-+ * @ptype: PTYPE that needs to be looked up
-+ * @attr: array of attributes that will be considered
-+ * @attr_cnt: number of elements in the attribute array
++ * ice_vf_ctrl_vsi_release - invalidate the VF's control VSI after freeing it
++ * @vf: VF that control VSI is being released on
 + */
-+static enum ice_status
-+ice_add_prof_attrib(struct ice_prof_map *prof, u8 ptg, u16 ptype,
-+		    const struct ice_ptype_attributes *attr, u16 attr_cnt)
++static void ice_vf_ctrl_vsi_release(struct ice_vf *vf)
 +{
-+	bool found = false;
-+	u16 i;
-+
-+	for (i = 0; i < attr_cnt; i++)
-+		if (attr[i].ptype == ptype) {
-+			found = true;
-+
-+			prof->ptg[prof->ptg_cnt] = ptg;
-+			ice_get_ptype_attrib_info(attr[i].attrib,
-+						  &prof->attr[prof->ptg_cnt]);
-+
-+			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
-+				return ICE_ERR_MAX_LIMIT;
-+		}
-+
-+	if (!found)
-+		return ICE_ERR_DOES_NOT_EXIST;
-+
-+	return 0;
++	ice_vsi_release(vf->pf->vsi[vf->ctrl_vsi_idx]);
++	ice_vf_ctrl_invalidate_vsi(vf);
 +}
 +
  /**
-  * ice_add_prof - add profile
-  * @hw: pointer to the HW struct
-  * @blk: hardware block
-  * @id: profile tracking ID
-  * @ptypes: array of bitmaps indicating ptypes (ICE_FLOW_PTYPE_MAX bits)
-+ * @attr: array of attributes
-+ * @attr_cnt: number of elements in attrib array
-  * @es: extraction sequence (length of array is determined by the block)
-  * @masks: mask for extraction sequence
-  *
-@@ -4129,6 +4186,7 @@ ice_update_fd_swap(struct ice_hw *hw, u16 prof_id, struct ice_fv_word *es)
-  */
- enum ice_status
- ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
-+	     const struct ice_ptype_attributes *attr, u16 attr_cnt,
- 	     struct ice_fv_word *es, u16 *masks)
- {
- 	u32 bytes = DIV_ROUND_UP(ICE_FLOW_PTYPE_MAX, BITS_PER_BYTE);
-@@ -4198,7 +4256,6 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
- 				 BITS_PER_BYTE) {
- 			u16 ptype;
- 			u8 ptg;
--			u8 m;
+  * ice_free_vf_res - Free a VF's resources
+  * @vf: pointer to the VF info
+@@ -214,6 +233,9 @@ static void ice_free_vf_res(struct ice_vf *vf)
+ 	 * accessing the VF's VSI after it's freed or invalidated.
+ 	 */
+ 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
++	/* free VF control VSI */
++	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
++		ice_vf_ctrl_vsi_release(vf);
  
- 			ptype = byte * BITS_PER_BYTE + bit;
+ 	/* free VSI and disconnect it from the parent uplink */
+ 	if (vf->lan_vsi_idx != ICE_NO_VSI) {
+@@ -559,6 +581,29 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
+ 	return vsi;
+ }
  
-@@ -4213,15 +4270,25 @@ ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
- 				continue;
++/**
++ * ice_vf_ctrl_vsi_setup - Set up a VF control VSI
++ * @vf: VF to setup control VSI for
++ *
++ * Returns pointer to the successfully allocated VSI struct on success,
++ * otherwise returns NULL on failure.
++ */
++struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf)
++{
++	struct ice_port_info *pi = ice_vf_get_port_info(vf);
++	struct ice_pf *pf = vf->pf;
++	struct ice_vsi *vsi;
++
++	vsi = ice_vsi_setup(pf, pi, ICE_VSI_CTRL, vf->vf_id);
++
++	if (!vsi) {
++		dev_err(ice_pf_to_dev(pf), "Failed to create VF control VSI\n");
++		ice_vf_ctrl_invalidate_vsi(vf);
++	}
++
++	return vsi;
++}
++
+ /**
+  * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
+  * @pf: pointer to PF structure
+@@ -1258,6 +1303,12 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	ice_for_each_vf(pf, v) {
+ 		vf = &pf->vf[v];
  
- 			set_bit(ptg, ptgs_used);
--			prof->ptg[prof->ptg_cnt] = ptg;
--
--			if (++prof->ptg_cnt >= ICE_MAX_PTG_PER_PROFILE)
-+			/* Check to see there are any attributes for
-+			 * this ptype, and add them if found.
-+			 */
-+			status = ice_add_prof_attrib(prof, ptg, ptype,
-+						     attr, attr_cnt);
-+			if (status == ICE_ERR_MAX_LIMIT)
- 				break;
-+			if (status) {
-+				/* This is simple a ptype/PTG with no
-+				 * attribute
-+				 */
-+				prof->ptg[prof->ptg_cnt] = ptg;
-+				prof->attr[prof->ptg_cnt].flags = 0;
-+				prof->attr[prof->ptg_cnt].mask = 0;
- 
--			/* nothing left in byte, then exit */
--			m = ~(u8)((1 << (bit + 1)) - 1);
--			if (!(ptypes[byte] & m))
--				break;
-+				if (++prof->ptg_cnt >=
-+				    ICE_MAX_PTG_PER_PROFILE)
-+					break;
-+			}
- 		}
- 
- 		bytes--;
-@@ -4732,7 +4799,12 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
++		/* clean VF control VSI when resetting VFs since it should be
++		 * setup only when iAVF creates its first FDIR rule.
++		 */
++		if (vf->ctrl_vsi_idx != ICE_NO_VSI)
++			ice_vf_ctrl_invalidate_vsi(vf);
++
+ 		ice_vf_pre_vsi_rebuild(vf);
+ 		ice_vf_rebuild_vsi(vf);
+ 		ice_vf_post_vsi_rebuild(vf);
+@@ -1376,6 +1427,12 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 			dev_err(dev, "disabling promiscuous mode failed\n");
  	}
  
- 	/* for re-enabling, reallocate a TCAM */
--	status = ice_alloc_tcam_ent(hw, blk, &tcam->tcam_idx);
-+	/* for entries with empty attribute masks, allocate entry from
-+	 * the bottom of the TCAM table; otherwise, allocate from the
-+	 * top of the table in order to give it higher priority
++	/* clean VF control VSI when resetting VF since it should be setup
++	 * only when iAVF creates its first FDIR rule.
 +	 */
-+	status = ice_alloc_tcam_ent(hw, blk, tcam->attr.mask == 0,
-+				    &tcam->tcam_idx);
- 	if (status)
- 		return status;
- 
-@@ -4742,8 +4814,8 @@ ice_prof_tcam_ena_dis(struct ice_hw *hw, enum ice_block blk, bool enable,
- 		return ICE_ERR_NO_MEMORY;
- 
- 	status = ice_tcam_write_entry(hw, blk, tcam->tcam_idx, tcam->prof_id,
--				      tcam->ptg, vsig, 0, 0, vl_msk, dc_msk,
--				      nm_msk);
-+				      tcam->ptg, vsig, 0, tcam->attr.flags,
-+				      vl_msk, dc_msk, nm_msk);
- 	if (status)
- 		goto err_ice_prof_tcam_ena_dis;
- 
-@@ -4891,7 +4963,12 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
- 		}
- 
- 		/* allocate the TCAM entry index */
--		status = ice_alloc_tcam_ent(hw, blk, &tcam_idx);
-+		/* for entries with empty attribute masks, allocate entry from
-+		 * the bottom of the TCAM table; otherwise, allocate from the
-+		 * top of the table in order to give it higher priority
++	if (vf->ctrl_vsi_idx != ICE_NO_VSI)
++		ice_vf_ctrl_vsi_release(vf);
++
+ 	ice_vf_pre_vsi_rebuild(vf);
+ 	ice_vf_rebuild_vsi_with_release(vf);
+ 	ice_vf_post_vsi_rebuild(vf);
+@@ -1551,6 +1608,11 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
+ 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
+ 		vf->spoofchk = true;
+ 		vf->num_vf_qs = pf->num_qps_per_vf;
++
++		/* ctrl_vsi_idx will be set to a valid value only when iAVF
++		 * creates its first fdir rule.
 +		 */
-+		status = ice_alloc_tcam_ent(hw, blk, map->attr[i].mask == 0,
-+					    &tcam_idx);
- 		if (status) {
- 			devm_kfree(ice_hw_to_dev(hw), p);
- 			goto err_ice_add_prof_id_vsig;
-@@ -4900,6 +4977,7 @@ ice_add_prof_id_vsig(struct ice_hw *hw, enum ice_block blk, u16 vsig, u64 hdl,
- 		t->tcam[i].ptg = map->ptg[i];
- 		t->tcam[i].prof_id = map->prof_id;
- 		t->tcam[i].tcam_idx = tcam_idx;
-+		t->tcam[i].attr = map->attr[i];
- 		t->tcam[i].in_use = true;
++		ice_vf_ctrl_invalidate_vsi(vf);
+ 	}
+ }
  
- 		p->type = ICE_TCAM_ADD;
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 08c5b4386536..8a58e79729b9 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -27,6 +27,7 @@ int ice_udp_tunnel_unset_port(struct net_device *netdev, unsigned int table,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index f379d13acc97..ece63268eb25 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -75,6 +75,7 @@ struct ice_vf {
  
- enum ice_status
- ice_add_prof(struct ice_hw *hw, enum ice_block blk, u64 id, u8 ptypes[],
-+	     const struct ice_ptype_attributes *attr, u16 attr_cnt,
- 	     struct ice_fv_word *es, u16 *masks);
- enum ice_status
- ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-index 48e24c8bd219..2221ae3b22f6 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -190,6 +190,64 @@ enum ice_sect {
- 	ICE_SECT_COUNT
- };
- 
-+#define ICE_MAC_IPV4_GTPU_IPV4_FRAG	331
-+#define ICE_MAC_IPV4_GTPU_IPV4_PAY	332
-+#define ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY	333
-+#define ICE_MAC_IPV4_GTPU_IPV4_TCP	334
-+#define ICE_MAC_IPV4_GTPU_IPV4_ICMP	335
-+#define ICE_MAC_IPV6_GTPU_IPV4_FRAG	336
-+#define ICE_MAC_IPV6_GTPU_IPV4_PAY	337
-+#define ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY	338
-+#define ICE_MAC_IPV6_GTPU_IPV4_TCP	339
-+#define ICE_MAC_IPV6_GTPU_IPV4_ICMP	340
-+#define ICE_MAC_IPV4_GTPU_IPV6_FRAG	341
-+#define ICE_MAC_IPV4_GTPU_IPV6_PAY	342
-+#define ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY	343
-+#define ICE_MAC_IPV4_GTPU_IPV6_TCP	344
-+#define ICE_MAC_IPV4_GTPU_IPV6_ICMPV6	345
-+#define ICE_MAC_IPV6_GTPU_IPV6_FRAG	346
-+#define ICE_MAC_IPV6_GTPU_IPV6_PAY	347
-+#define ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY	348
-+#define ICE_MAC_IPV6_GTPU_IPV6_TCP	349
-+#define ICE_MAC_IPV6_GTPU_IPV6_ICMPV6	350
-+
-+/* Attributes that can modify PTYPE definitions.
-+ *
-+ * These values will represent special attributes for PTYPES, which will
-+ * resolve into metadata packet flags definitions that can be used in the TCAM
-+ * for identifying a PTYPE with specific characteristics.
-+ */
-+enum ice_ptype_attrib_type {
-+	/* GTP PTYPES */
-+	ICE_PTYPE_ATTR_GTP_PDU_EH,
-+	ICE_PTYPE_ATTR_GTP_SESSION,
-+	ICE_PTYPE_ATTR_GTP_DOWNLINK,
-+	ICE_PTYPE_ATTR_GTP_UPLINK,
-+};
-+
-+struct ice_ptype_attrib_info {
-+	u16 flags;
-+	u16 mask;
-+};
-+
-+/* TCAM flag definitions */
-+#define ICE_GTP_PDU			BIT(14)
-+#define ICE_GTP_PDU_LINK		BIT(13)
-+
-+/* GTP attributes */
-+#define ICE_GTP_PDU_FLAG_MASK		(ICE_GTP_PDU)
-+#define ICE_GTP_PDU_EH			ICE_GTP_PDU
-+
-+#define ICE_GTP_FLAGS_MASK		(ICE_GTP_PDU | ICE_GTP_PDU_LINK)
-+#define ICE_GTP_SESSION			0
-+#define ICE_GTP_DOWNLINK		ICE_GTP_PDU
-+#define ICE_GTP_UPLINK			(ICE_GTP_PDU | ICE_GTP_PDU_LINK)
-+
-+struct ice_ptype_attributes {
-+	u16 ptype;
-+	enum ice_ptype_attrib_type attrib;
-+};
-+
- /* package labels */
- struct ice_label {
- 	__le16 value;
-@@ -373,12 +431,14 @@ struct ice_prof_map {
- 	u8 prof_id;
- 	u8 ptg_cnt;
- 	u8 ptg[ICE_MAX_PTG_PER_PROFILE];
-+	struct ice_ptype_attrib_info attr[ICE_MAX_PTG_PER_PROFILE];
- };
- 
- #define ICE_INVALID_TCAM	0xFFFF
- 
- struct ice_tcam_inf {
- 	u16 tcam_idx;
-+	struct ice_ptype_attrib_info attr;
- 	u8 ptg;
- 	u8 prof_id;
- 	u8 in_use;
-@@ -530,6 +590,7 @@ struct ice_chs_chg {
- 	u16 vsig;
- 	u16 orig_vsig;
- 	u16 tcam_idx;
-+	struct ice_ptype_attrib_info attr;
- };
- 
- #define ICE_FLOW_PTYPE_MAX		ICE_XLT1_CNT
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 40fa628bd448..0892022a16ef 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -378,6 +378,76 @@ static const u32 ice_ptypes_gtpc_tid[] = {
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
- };
- 
-+/* Packet types for GTPU */
-+static const struct ice_ptype_attributes ice_attr_gtpu_eh[] = {
-+	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_PDU_EH },
-+};
-+
-+static const struct ice_ptype_attributes ice_attr_gtpu_down[] = {
-+	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_DOWNLINK },
-+};
-+
-+static const struct ice_ptype_attributes ice_attr_gtpu_up[] = {
-+	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_UPLINK },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_UPLINK },
-+};
-+
- static const u32 ice_ptypes_gtpu[] = {
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-@@ -484,6 +554,9 @@ u16 entry_length; /* # of bytes formatted entry will require */
- 	 * This will give us the direction flags.
- 	 */
- 	struct ice_fv_word es[ICE_MAX_FV_WORDS];
-+	/* attributes can be used to add attributes to a particular PTYPE */
-+	const struct ice_ptype_attributes *attr;
-+	u16 attr_cnt;
- 
- 	u16 mask[ICE_MAX_FV_WORDS];
- 	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
-@@ -690,14 +763,26 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
- 			src = (const unsigned long *)ice_ptypes_gtpu;
- 			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
-+
-+			/* Attributes for GTP packet with downlink */
-+			params->attr = ice_attr_gtpu_down;
-+			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_down);
- 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_UP) {
- 			src = (const unsigned long *)ice_ptypes_gtpu;
- 			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
-+
-+			/* Attributes for GTP packet with uplink */
-+			params->attr = ice_attr_gtpu_up;
-+			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_up);
- 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_EH) {
- 			src = (const unsigned long *)ice_ptypes_gtpu;
- 			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
-+
-+			/* Attributes for GTP packet with Extension Header */
-+			params->attr = ice_attr_gtpu_eh;
-+			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_eh);
- 		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_IP) {
- 			src = (const unsigned long *)ice_ptypes_gtpu;
- 			bitmap_and(params->ptypes, params->ptypes, src,
-@@ -1260,7 +1345,8 @@ ice_flow_add_prof_sync(struct ice_hw *hw, enum ice_block blk,
- 
- 	/* Add a HW profile for this flow profile */
- 	status = ice_add_prof(hw, blk, prof_id, (u8 *)params->ptypes,
--			      params->es, params->mask);
-+			      params->attr, params->attr_cnt, params->es,
-+			      params->mask);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_FLOW, "Error adding a HW flow profile\n");
- 		goto out;
+ 	u16 vf_id;			/* VF ID in the PF space */
+ 	u16 lan_vsi_idx;		/* index into PF struct */
++	u16 ctrl_vsi_idx;
+ 	/* first vector index of this VF in the PF space */
+ 	int first_vector_idx;
+ 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
+@@ -145,6 +146,7 @@ void
+ ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event);
+ void ice_print_vfs_mdd_events(struct ice_pf *pf);
+ void ice_print_vf_rx_mdd_event(struct ice_vf *vf);
++struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf);
+ #else /* CONFIG_PCI_IOV */
+ #define ice_process_vflr_event(pf) do {} while (0)
+ #define ice_free_vfs(pf) do {} while (0)
 -- 
 2.30.0
 
