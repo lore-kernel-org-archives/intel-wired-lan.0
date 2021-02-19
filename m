@@ -1,70 +1,39 @@
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Thu, 18 Feb 2021 21:55:35 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix oops at i40e_rebuild()
-Message-ID: <20210218215535.277482-1-arkadiusz.kubalewski@intel.com>
+From: Ederson de Souza <ederson.desouza@intel.com>
+Date: Thu, 18 Feb 2021 17:31:02 -0800
+Subject: [Intel-wired-lan] [PATCH next-queue v2 0/2] PPS and SDP support for
+ i225
+Message-ID: <20210219013104.54436-1-ederson.desouza@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Setup TC before the i40e_setup_pf_switch() call.
-Memory must be inititalized for all the queues
-before using its resources.
+The i225 device has some PHC Hardware Clock features such as Pulse Per
+Seconds interrupts or Software Defined Pins signals. This series add
+support to some of them.
 
-Previously it could be possible that a call:
-xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-rx_ring->queue_index, rx_ring->q_vector->napi.napi_id);
-was made with q_vector being null.
+Changes from v1:
+  - Addressed some checkpatch issues. However, most of them were about
+  using BIT macro in code blocks whose readability would get worse in
+  case I used it. Think of a some (1 << X) in the middle of (2 << Y).
 
-Oops could show up with the following sequence:
-- no driver loaded
-- FW LLDP agent is on (flag disable-fw-lldp:off)
-- link is up
-- DCB configured with number of Traffic Classes that will not divide
-  completely the default number of queues (usually cpu cores)
-- driver load
-- set private flag: disable-fw-lldp:on
+  - Added more information on commit messages - trying to highlight some
+  implementation details. However, the datasheet that is reference for
+  these changes is not public yet, so I didn't mention it. As a
+  workaround, I mention that most of it is the same as i210.
 
-Fixes: 4b208eaa8078 ("i40e: Add init and default config of software based DCB")
-Fixes: b02e5a0ebb17 ("xsk: Propagate napi_id to XDP socket Rx path")
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Ederson de Souza (2):
+  igc: Enable internal i225 PPS
+  igc: enable auxiliary PHC functions for the i225
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 65fed08..a9fdaee 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10574,12 +10574,6 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 		goto end_core_reset;
- 	}
- 
--	if (!lock_acquired)
--		rtnl_lock();
--	ret = i40e_setup_pf_switch(pf, reinit);
--	if (ret)
--		goto end_unlock;
--
- #ifdef CONFIG_I40E_DCB
- 	/* Enable FW to write a default DCB config on link-up
- 	 * unless I40E_FLAG_TC_MQPRIO was enabled or DCB
-@@ -10608,6 +10602,11 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	}
- 
- #endif /* CONFIG_I40E_DCB */
-+	if (!lock_acquired)
-+		rtnl_lock();
-+	ret = i40e_setup_pf_switch(pf, reinit);
-+	if (ret)
-+		goto end_unlock;
- 
- 	/* The driver only wants link up/down and module qualification
- 	 * reports from firmware.  Note the negative logic.
+ drivers/net/ethernet/intel/igc/igc.h         |  13 +
+ drivers/net/ethernet/intel/igc/igc_defines.h |  63 ++++
+ drivers/net/ethernet/intel/igc/igc_main.c    |  63 +++-
+ drivers/net/ethernet/intel/igc/igc_ptp.c     | 295 ++++++++++++++++++-
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  10 +
+ 5 files changed, 441 insertions(+), 3 deletions(-)
 
-base-commit: acad41d948db537ceac9d50c132653d82222343c
 -- 
-2.18.4
+2.30.1
 
