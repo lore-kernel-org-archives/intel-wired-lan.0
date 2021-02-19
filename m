@@ -1,127 +1,163 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 19 Feb 2021 18:40:50 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 48fb4d20552fa8fbc970601bf08470d66a49c4c4
-Message-ID: <602f95b2.jQwcbUV/mOLcsbp8%lkp@intel.com>
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Fri, 19 Feb 2021 20:59:48 +0800
+Subject: [Intel-wired-lan] [Patch v4 05/18] ice: Enhanced IPv4 and IPv6 flow
+ filter
+In-Reply-To: <20210219130001.49600-1-haiyue.wang@intel.com>
+References: <20210219130001.49600-1-haiyue.wang@intel.com>
+Message-ID: <20210219130001.49600-6-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 48fb4d20552fa8fbc970601bf08470d66a49c4c4  i40e: Fix inconsistent indenting
+From: Qi Zhang <qi.z.zhang@intel.com>
 
-elapsed time: 726m
+Separate IPv4 and IPv6 ptype bit mask table into 2 tables:
+With or without L4 protocols.
 
-configs tested: 98
-configs skipped: 2
+When a flow filter without any l4 type is specified, the
+ICE_FLOW_SEG_HDR_IPV_OTHER flag can be used to describe if user
+want to create a IP rule target for all IP packet or just IP
+packet without l4 header.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                     akebono_defconfig
-m68k                            q40_defconfig
-um                           x86_64_defconfig
-powerpc64                           defconfig
-sparc                            alldefconfig
-powerpc                      ppc44x_defconfig
-mips                         tb0219_defconfig
-sh                             sh03_defconfig
-m68k                        m5272c3_defconfig
-arm                          pxa168_defconfig
-mips                       lemote2f_defconfig
-arm                            zeus_defconfig
-powerpc                   bluestone_defconfig
-m68k                        m5407c3_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arc                 nsimosci_hs_smp_defconfig
-arm                          collie_defconfig
-s390                       zfcpdump_defconfig
-powerpc                          g5_defconfig
-powerpc                      ppc6xx_defconfig
-sh                           sh2007_defconfig
-sh                        sh7757lcr_defconfig
-m68k                             allyesconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20210218
-x86_64               randconfig-a001-20210218
-x86_64               randconfig-a004-20210218
-x86_64               randconfig-a002-20210218
-x86_64               randconfig-a005-20210218
-x86_64               randconfig-a006-20210218
-i386                 randconfig-a005-20210218
-i386                 randconfig-a003-20210218
-i386                 randconfig-a002-20210218
-i386                 randconfig-a004-20210218
-i386                 randconfig-a001-20210218
-i386                 randconfig-a006-20210218
-i386                 randconfig-a016-20210218
-i386                 randconfig-a012-20210218
-i386                 randconfig-a014-20210218
-i386                 randconfig-a013-20210218
-i386                 randconfig-a011-20210218
-i386                 randconfig-a015-20210218
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a012-20210218
-x86_64               randconfig-a016-20210218
-x86_64               randconfig-a013-20210218
-x86_64               randconfig-a015-20210218
-x86_64               randconfig-a011-20210218
-x86_64               randconfig-a014-20210218
-
+Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_flow.c | 54 ++++++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_flow.h |  4 ++
+ 2 files changed, 53 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 0892022a16ef..6260650ba809 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -156,7 +156,9 @@ static const u32 ice_ptypes_macvlan_il[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
+ 
+-/* Packet types for packets with an Outer/First/Single IPv4 header */
++/* Packet types for packets with an Outer/First/Single IPv4 header, does NOT
++ * include IPV4 other PTYPEs
++ */
+ static const u32 ice_ptypes_ipv4_ofos[] = {
+ 	0x1DC00000, 0x04000800, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000155, 0x00000000, 0x00000000,
+@@ -166,6 +168,18 @@ static const u32 ice_ptypes_ipv4_ofos[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Outer/First/Single IPv4 header, includes
++ * IPV4 other PTYPEs
++ */
++static const u32 ice_ptypes_ipv4_ofos_all[] = {
++	0x1DC00000, 0x04000800, 0x00000000, 0x00000000,
++	0x00000000, 0x00000155, 0x00000000, 0x00000000,
++	0x00000000, 0x000FC000, 0x83E0F800, 0x00000101,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
+@@ -182,7 +196,9 @@ static const u32 ice_ptypes_ipv4_il[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
+ 
+-/* Packet types for packets with an Outer/First/Single IPv6 header */
++/* Packet types for packets with an Outer/First/Single IPv6 header, does NOT
++ * include IVP6 other PTYPEs
++ */
+ static const u32 ice_ptypes_ipv6_ofos[] = {
+ 	0x00000000, 0x00000000, 0x77000000, 0x10002000,
+ 	0x00000000, 0x000002AA, 0x00000000, 0x00000000,
+@@ -192,6 +208,18 @@ static const u32 ice_ptypes_ipv6_ofos[] = {
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with an Outer/First/Single IPv6 header, includes
++ * IPV6 other PTYPEs
++ */
++static const u32 ice_ptypes_ipv6_ofos_all[] = {
++	0x00000000, 0x00000000, 0x77000000, 0x10002000,
++	0x00000000, 0x000002AA, 0x00000000, 0x00000000,
++	0x00080F00, 0x03F00000, 0x7C1F0000, 0x00000206,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ };
+@@ -577,6 +605,9 @@ u16 entry_length; /* # of bytes formatted entry will require */
+ #define ICE_FLOW_SEG_HDRS_L4_MASK	\
+ 	(ICE_FLOW_SEG_HDR_ICMP | ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_UDP | \
+ 	 ICE_FLOW_SEG_HDR_SCTP)
++/* mask for L4 protocols that are NOT part of IPV4/6 OTHER PTYPE groups */
++#define ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER	\
++	(ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_UDP | ICE_FLOW_SEG_HDR_SCTP)
+ 
+ /**
+  * ice_flow_val_hdrs - validates packet segments for valid protocol headers
+@@ -692,8 +723,21 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				   (const unsigned long *)ice_ptypes_arp_of,
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		}
++
+ 		if ((hdrs & ICE_FLOW_SEG_HDR_IPV4) &&
+-		    !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK)) {
++		    (hdrs & ICE_FLOW_SEG_HDR_IPV_OTHER)) {
++			src = i ? (const unsigned long *)ice_ptypes_ipv4_il :
++				(const unsigned long *)ice_ptypes_ipv4_ofos_all;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV6) &&
++			   (hdrs & ICE_FLOW_SEG_HDR_IPV_OTHER)) {
++			src = i ? (const unsigned long *)ice_ptypes_ipv6_il :
++				(const unsigned long *)ice_ptypes_ipv6_ofos_all;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV4) &&
++			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
+ 			src = !i ? (const unsigned long *)ice_ipv4_ofos_no_l4 :
+ 				(const unsigned long *)ice_ipv4_il_no_l4;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+@@ -704,7 +748,7 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV6) &&
+-			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK)) {
++			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
+ 			src = !i ? (const unsigned long *)ice_ipv6_ofos_no_l4 :
+ 				(const unsigned long *)ice_ipv6_il_no_l4;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+@@ -1793,7 +1837,7 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
+ 	ICE_FLOW_SET_HDRS(segs, flow_hdr);
+ 
+ 	if (segs->hdrs & ~ICE_FLOW_RSS_SEG_HDR_VAL_MASKS &
+-	    ~ICE_FLOW_RSS_HDRS_INNER_MASK)
++	    ~ICE_FLOW_RSS_HDRS_INNER_MASK & ~ICE_FLOW_SEG_HDR_IPV_OTHER)
+ 		return ICE_ERR_PARAM;
+ 
+ 	val = (u64)(segs->hdrs & ICE_FLOW_RSS_SEG_HDR_L3_MASKS);
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index ed8b8dcf8fee..a5434fcbce25 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -135,6 +135,10 @@ enum ice_flow_seg_hdr {
+ 	ICE_FLOW_SEG_HDR_ESP		= 0x00100000,
+ 	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
+ 	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
++	/* The following is an additive bit for ICE_FLOW_SEG_HDR_IPV4 and
++	 * ICE_FLOW_SEG_HDR_IPV6 which include the IPV4 other PTYPEs
++	 */
++	ICE_FLOW_SEG_HDR_IPV_OTHER      = 0x20000000,
+ };
+ 
+ /* These segments all have the same PTYPES, but are otherwise distinguished by
+-- 
+2.30.0
+
