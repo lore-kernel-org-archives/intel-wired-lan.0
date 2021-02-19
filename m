@@ -1,47 +1,50 @@
-From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-Date: Sat, 20 Feb 2021 00:36:48 +0800
-Subject: [Intel-wired-lan] [PATCH net v1 2/2] igc: Fix Supported Pause Frame
- Link Setting
-In-Reply-To: <20210219163648.14581-1-muhammad.husaini.zulkifli@intel.com>
-References: <20210219163648.14581-1-muhammad.husaini.zulkifli@intel.com>
-Message-ID: <20210219163648.14581-3-muhammad.husaini.zulkifli@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 19 Feb 2021 13:13:19 -0800
+Subject: [Intel-wired-lan] [Patch v4 00/18] Enable Intel VF flow
+ director with DDP
+In-Reply-To: <20210219130001.49600-1-haiyue.wang@intel.com>
+References: <20210219130001.49600-1-haiyue.wang@intel.com>
+Message-ID: <20210219131319.00000079@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The Supported Pause Frame always display "No" eventhough the Advertised
-pause frame showing the correct setting based on the pause parameters via
-ethtool. Set bit in link_ksettings to "Supported" for Pause Frame.
+Haiyue Wang wrote:
 
-Before output:
-Supported pause frame use: No
+> The Intel E810 Series supports a programmable pipeline for a domain
+> specific protocols classification, for example GTP by Dynamic Device
+> Personalization (DDP) profile.
+> 
+> The E810 PF has introduced flex-bytes support by ethtool user-def option
+> allowing for packet deeper matching based on an offset and value for DDP
+> usage.
+> 
+> For making VF also benefit from this flexible protocol classification, some
+> new virtchnl messages are defined and handled by PF, so VF can query this
+> new flow director capability, and use ethtool with extending the user-def
+> option to configure Rx flow classification.
+> 
+> The new user-def 0xAAAABBBBCCCCDDDD: BBBB is the 2 byte pattern while AAAA
+> corresponds to its offset in the packet. Similarly DDDD is the 2 byte
+> pattern with CCCC being the corresponding offset. The offset ranges from
+> 0x0 to 0x1F7 (up to 504 bytes into the packet). The offset starts from
+> the beginning of the packet.
 
-Expected output:
-Supported pause frame use: Symmetric
+Why must you use the ethtool user-def interface like this? I suspect
+that you should be using tc-u32.
 
-Fixes: 8c5ad0dae93c ("igc: Add ethtool support")
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-Reviewed-by: Malli C <mallikarjuna.chilakala@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 3 +++
- 1 file changed, 3 insertions(+)
+At the very least you should cover why you're *not* using u32 in the
+cover letter, otherwise I'm sure the question will come up.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 67a4aed45fc2..8722294ab90c 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1711,6 +1711,9 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
- 						     Autoneg);
- 	}
  
-+	/* Set pause flow control settings */
-+	ethtool_link_ksettings_add_link_mode(cmd, supported, Pause);
-+
- 	switch (hw->fc.requested_mode) {
- 	case igc_fc_full:
- 		ethtool_link_ksettings_add_link_mode(cmd, advertising, Pause);
--- 
-2.17.1
+> This feature can be used to allow customers to set flow director rules
+> for protocols headers that are beyond standard ones supported by ethtool
+> (e.g. PFCP or GTP-U).
+> 
+> Like for matching GTP-U's TEID value 0x10203040:
+> ethtool -N ens787f0v0 flow-type udp4 dst-port 2152 \
+>
+
 
