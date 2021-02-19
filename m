@@ -1,10 +1,10 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Fri, 19 Feb 2021 20:59:53 +0800
-Subject: [Intel-wired-lan] [Patch v4 10/18] ice: Add non-IP Layer2 protocol
- FDIR filter for AVF
+Date: Fri, 19 Feb 2021 20:59:46 +0800
+Subject: [Intel-wired-lan] [Patch v4 03/18] ice: Add more advanced protocol
+ support in flow filter
 In-Reply-To: <20210219130001.49600-1-haiyue.wang@intel.com>
 References: <20210219130001.49600-1-haiyue.wang@intel.com>
-Message-ID: <20210219130001.49600-11-haiyue.wang@intel.com>
+Message-ID: <20210219130001.49600-4-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,92 +13,238 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Qi Zhang <qi.z.zhang@intel.com>
 
-Add new filter type that allow forward non-IP Ethernet packets base on its
-ethertype. The filter is only enabled when COMMS DDP package is loaded.
+The patch add more protocol support in flow filter, these
+include PPPoE, L2TPv3, GTP, PFCP, ESP and AH.
 
+Signed-off-by: Ting Xu <ting.xu@intel.com>
 Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_fdir.c     | 15 +++++++
- drivers/net/ethernet/intel/ice/ice_fdir.h     |  2 +
- drivers/net/ethernet/intel/ice/ice_flow.c     | 17 +++++++-
- drivers/net/ethernet/intel/ice/ice_flow.h     |  1 +
- drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 41 +++++++++++++++++--
- 6 files changed, 73 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 270 +++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h     | 128 ++++++++-
+ .../ethernet/intel/ice/ice_protocol_type.h    |   4 +
+ 3 files changed, 396 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
-index 5f8d7a9ca068..b9c65d0c9271 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
-@@ -40,6 +40,12 @@ static const u8 ice_fdir_ipv4_pkt[] = {
- 	0x00, 0x00
- };
- 
-+static const u8 ice_fdir_non_ip_l2_pkt[] = {
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+};
-+
- static const u8 ice_fdir_tcpv6_pkt[] = {
- 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00, 0x86, 0xDD, 0x60, 0x00,
-@@ -238,6 +244,11 @@ static const struct ice_fdir_base_pkt ice_fdir_pkt[] = {
- 		sizeof(ice_fdir_ipv4_pkt), ice_fdir_ipv4_pkt,
- 		sizeof(ice_fdir_ip4_tun_pkt), ice_fdir_ip4_tun_pkt,
- 	},
-+	{
-+		ICE_FLTR_PTYPE_NON_IP_L2,
-+		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
-+		sizeof(ice_fdir_non_ip_l2_pkt), ice_fdir_non_ip_l2_pkt,
-+	},
- 	{
- 		ICE_FLTR_PTYPE_NONF_IPV6_TCP,
- 		sizeof(ice_fdir_tcpv6_pkt), ice_fdir_tcpv6_pkt,
-@@ -674,6 +685,10 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
- 				  input->ip.v4.proto);
- 		ice_pkt_insert_mac_addr(loc, input->ext_data.dst_mac);
- 		break;
-+	case ICE_FLTR_PTYPE_NON_IP_L2:
-+		ice_pkt_insert_u16(loc, ICE_MAC_ETHTYPE_OFFSET,
-+				   input->ext_data.ether_type);
-+		break;
- 	case ICE_FLTR_PTYPE_NONF_IPV6_TCP:
- 		ice_pkt_insert_ipv6_addr(loc, ICE_IPV6_DST_ADDR_OFFSET,
- 					 input->ip.v6.src_ip);
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.h b/drivers/net/ethernet/intel/ice/ice_fdir.h
-index adf237925b3c..58c927cbc953 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.h
-@@ -30,6 +30,7 @@
- #define ICE_IPV6_TC_OFFSET		14
- #define ICE_IPV6_HLIM_OFFSET		21
- #define ICE_IPV6_PROTO_OFFSET		20
-+#define ICE_MAC_ETHTYPE_OFFSET		12
- 
- #define ICE_FDIR_MAX_FLTRS		16384
- 
-@@ -116,6 +117,7 @@ struct ice_fdir_v6 {
- struct ice_fdir_extra {
- 	u8 dst_mac[ETH_ALEN];	/* dest MAC address */
- 	u8 src_mac[ETH_ALEN];	/* src MAC address */
-+	__be16 ether_type;      /* for NON_IP_L2 */
- 	u32 usr_def[2];		/* user data */
- 	__be16 vlan_type;	/* VLAN ethertype */
- 	__be16 vlan_tag;	/* VLAN tag info */
 diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index 6260650ba809..d191619df320 100644
+index b27d92d685ba..40fa628bd448 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flow.c
 +++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -571,6 +571,17 @@ static const u32 ice_ptypes_nat_t_esp[] = {
+@@ -96,6 +96,37 @@ struct ice_flow_field_info ice_flds_info[ICE_FLOW_FIELD_IDX_MAX] = {
+ 	/* ICE_FLOW_FIELD_IDX_GRE_KEYID */
+ 	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GRE, 12,
+ 			  sizeof_field(struct gre_full_hdr, key)),
++	/* GTP */
++	/* ICE_FLOW_FIELD_IDX_GTPC_TEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPC_TEID, 12, sizeof(__be32)),
++	/* ICE_FLOW_FIELD_IDX_GTPU_IP_TEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_IP, 12, sizeof(__be32)),
++	/* ICE_FLOW_FIELD_IDX_GTPU_EH_TEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_EH, 12, sizeof(__be32)),
++	/* ICE_FLOW_FIELD_IDX_GTPU_EH_QFI */
++	ICE_FLOW_FLD_INFO_MSK(ICE_FLOW_SEG_HDR_GTPU_EH, 22, sizeof(__be16), 0x3f00),
++	/* ICE_FLOW_FIELD_IDX_GTPU_UP_TEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_UP, 12, sizeof(__be32)),
++	/* ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_GTPU_DWN, 12, sizeof(__be32)),
++	/* PPPOE */
++	/* ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_PPPOE, 2, sizeof(__be16)),
++	/* PFCP */
++	/* ICE_FLOW_FIELD_IDX_PFCP_SEID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_PFCP_SESSION, 12, sizeof(__be64)),
++	/* L2TPV3 */
++	/* ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_L2TPV3, 0, sizeof(__be32)),
++	/* ESP */
++	/* ICE_FLOW_FIELD_IDX_ESP_SPI */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_ESP, 0, sizeof(__be32)),
++	/* AH */
++	/* ICE_FLOW_FIELD_IDX_AH_SPI */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_AH, 4, sizeof(__be32)),
++	/* NAT_T_ESP */
++	/* ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI */
++	ICE_FLOW_FLD_INFO(ICE_FLOW_SEG_HDR_NAT_T_ESP, 8, sizeof(__be32)),
+ };
+ 
+ /* Bitmaps indicating relevant packet types for a particular protocol header
+@@ -128,6 +159,8 @@ static const u32 ice_ptypes_macvlan_il[] = {
+ /* Packet types for packets with an Outer/First/Single IPv4 header */
+ static const u32 ice_ptypes_ipv4_ofos[] = {
+ 	0x1DC00000, 0x04000800, 0x00000000, 0x00000000,
++	0x00000000, 0x00000155, 0x00000000, 0x00000000,
++	0x00000000, 0x000FC000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -141,7 +174,7 @@ static const u32 ice_ptypes_ipv4_ofos[] = {
+ static const u32 ice_ptypes_ipv4_il[] = {
+ 	0xE0000000, 0xB807700E, 0x80000003, 0xE01DC03B,
+ 	0x0000000E, 0x00000000, 0x00000000, 0x00000000,
+-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x001FF800, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -152,6 +185,8 @@ static const u32 ice_ptypes_ipv4_il[] = {
+ /* Packet types for packets with an Outer/First/Single IPv6 header */
+ static const u32 ice_ptypes_ipv6_ofos[] = {
+ 	0x00000000, 0x00000000, 0x77000000, 0x10002000,
++	0x00000000, 0x000002AA, 0x00000000, 0x00000000,
++	0x00000000, 0x03F00000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -165,7 +200,7 @@ static const u32 ice_ptypes_ipv6_ofos[] = {
+ static const u32 ice_ptypes_ipv6_il[] = {
+ 	0x00000000, 0x03B80770, 0x000001DC, 0x0EE00000,
+ 	0x00000770, 0x00000000, 0x00000000, 0x00000000,
+-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x7FE00000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -239,7 +274,7 @@ static const u32 ice_ipv6_il_no_l4[] = {
+ static const u32 ice_ptypes_udp_il[] = {
+ 	0x81000000, 0x20204040, 0x04000010, 0x80810102,
+ 	0x00000040, 0x00000000, 0x00000000, 0x00000000,
+-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00410000, 0x90842000, 0x00000007,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -251,7 +286,7 @@ static const u32 ice_ptypes_udp_il[] = {
+ static const u32 ice_ptypes_tcp_il[] = {
+ 	0x04000000, 0x80810102, 0x10000040, 0x02040408,
+ 	0x00000102, 0x00000000, 0x00000000, 0x00000000,
+-	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00820000, 0x21084000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -263,6 +298,7 @@ static const u32 ice_ptypes_tcp_il[] = {
+ static const u32 ice_ptypes_sctp_il[] = {
+ 	0x08000000, 0x01020204, 0x20000081, 0x04080810,
+ 	0x00000204, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x01040000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -318,6 +354,125 @@ static const u32 ice_ptypes_mac_il[] = {
  	0x00000000, 0x00000000, 0x00000000, 0x00000000,
  };
  
-+static const u32 ice_ptypes_mac_non_ip_ofos[] = {
-+	0x00000846, 0x00000000, 0x00000000, 0x00000000,
++/* Packet types for GTPC */
++static const u32 ice_ptypes_gtpc[] = {
 +	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-+	0x00400000, 0x03FFF000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000180, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for GTPC with TEID */
++static const u32 ice_ptypes_gtpc_tid[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000060, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++static const u32 ice_ptypes_gtpu[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x7FFFFE00, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for pppoe */
++static const u32 ice_ptypes_pppoe[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x03ffe000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with PFCP NODE header */
++static const u32 ice_ptypes_pfcp_node[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x80000000, 0x00000002,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with PFCP SESSION header */
++static const u32 ice_ptypes_pfcp_session[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000005,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for l2tpv3 */
++static const u32 ice_ptypes_l2tpv3[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000300,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for esp */
++static const u32 ice_ptypes_esp[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000003, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for ah */
++static const u32 ice_ptypes_ah[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x0000000C, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++};
++
++/* Packet types for packets with NAT_T ESP header */
++static const u32 ice_ptypes_nat_t_esp[] = {
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
++	0x00000000, 0x00000030, 0x00000000, 0x00000000,
++	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 +	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 +	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 +	0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -109,135 +255,321 @@ index 6260650ba809..d191619df320 100644
  /* Manage parameters and info. used during the creation of a flow profile */
  struct ice_flow_prof_params {
  	enum ice_block blk;
-@@ -760,7 +771,11 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+@@ -334,6 +489,15 @@ u16 entry_length; /* # of bytes formatted entry will require */
+ 	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
+ };
+ 
++#define ICE_FLOW_RSS_HDRS_INNER_MASK \
++	(ICE_FLOW_SEG_HDR_PPPOE | ICE_FLOW_SEG_HDR_GTPC | \
++	ICE_FLOW_SEG_HDR_GTPC_TEID | ICE_FLOW_SEG_HDR_GTPU | \
++	ICE_FLOW_SEG_HDR_PFCP_SESSION | ICE_FLOW_SEG_HDR_L2TPV3 | \
++	ICE_FLOW_SEG_HDR_ESP | ICE_FLOW_SEG_HDR_AH | \
++	ICE_FLOW_SEG_HDR_NAT_T_ESP)
++
++#define ICE_FLOW_SEG_HDRS_L2_MASK	\
++	(ICE_FLOW_SEG_HDR_ETH | ICE_FLOW_SEG_HDR_VLAN)
+ #define ICE_FLOW_SEG_HDRS_L3_MASK	\
+ 	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6 | \
+ 	 ICE_FLOW_SEG_HDR_ARP)
+@@ -479,6 +643,16 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
  				   ICE_FLOW_PTYPE_MAX);
  		}
  
--		if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
-+		if (hdrs & ICE_FLOW_SEG_HDR_ETH_NON_IP) {
-+			src = (const unsigned long *)ice_ptypes_mac_non_ip_ofos;
++		if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
++			src = (const unsigned long *)ice_ptypes_pppoe;
 +			bitmap_and(params->ptypes, params->ptypes, src,
 +				   ICE_FLOW_PTYPE_MAX);
-+		} else if (hdrs & ICE_FLOW_SEG_HDR_PPPOE) {
- 			src = (const unsigned long *)ice_ptypes_pppoe;
++		} else {
++			src = (const unsigned long *)ice_ptypes_pppoe;
++			bitmap_andnot(params->ptypes, params->ptypes, src,
++				      ICE_FLOW_PTYPE_MAX);
++		}
++
+ 		if (hdrs & ICE_FLOW_SEG_HDR_UDP) {
+ 			src = (const unsigned long *)ice_ptypes_udp_il;
  			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
+@@ -504,6 +678,64 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				bitmap_and(params->ptypes, params->ptypes,
+ 					   src, ICE_FLOW_PTYPE_MAX);
+ 			}
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPC) {
++			src = (const unsigned long *)ice_ptypes_gtpc;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPC_TEID) {
++			src = (const unsigned long *)ice_ptypes_gtpc_tid;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_DWN) {
++			src = (const unsigned long *)ice_ptypes_gtpu;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_UP) {
++			src = (const unsigned long *)ice_ptypes_gtpu;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_EH) {
++			src = (const unsigned long *)ice_ptypes_gtpu;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_GTPU_IP) {
++			src = (const unsigned long *)ice_ptypes_gtpu;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_L2TPV3) {
++			src = (const unsigned long *)ice_ptypes_l2tpv3;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_ESP) {
++			src = (const unsigned long *)ice_ptypes_esp;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_AH) {
++			src = (const unsigned long *)ice_ptypes_ah;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else if (hdrs & ICE_FLOW_SEG_HDR_NAT_T_ESP) {
++			src = (const unsigned long *)ice_ptypes_nat_t_esp;
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		}
++
++		if (hdrs & ICE_FLOW_SEG_HDR_PFCP) {
++			if (hdrs & ICE_FLOW_SEG_HDR_PFCP_NODE)
++				src = (const unsigned long *)ice_ptypes_pfcp_node;
++			else
++				src = (const unsigned long *)ice_ptypes_pfcp_session;
++
++			bitmap_and(params->ptypes, params->ptypes, src,
++				   ICE_FLOW_PTYPE_MAX);
++		} else {
++			src = (const unsigned long *)ice_ptypes_pfcp_node;
++			bitmap_andnot(params->ptypes, params->ptypes, src,
++				      ICE_FLOW_PTYPE_MAX);
++
++			src = (const unsigned long *)ice_ptypes_pfcp_session;
++			bitmap_andnot(params->ptypes, params->ptypes, src,
++				      ICE_FLOW_PTYPE_MAX);
+ 		}
+ 	}
+ 
+@@ -612,6 +844,33 @@ ice_flow_xtract_fld(struct ice_hw *hw, struct ice_flow_prof_params *params,
+ 	case ICE_FLOW_FIELD_IDX_SCTP_DST_PORT:
+ 		prot_id = ICE_PROT_SCTP_IL;
+ 		break;
++	case ICE_FLOW_FIELD_IDX_GTPC_TEID:
++	case ICE_FLOW_FIELD_IDX_GTPU_IP_TEID:
++	case ICE_FLOW_FIELD_IDX_GTPU_UP_TEID:
++	case ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID:
++	case ICE_FLOW_FIELD_IDX_GTPU_EH_TEID:
++	case ICE_FLOW_FIELD_IDX_GTPU_EH_QFI:
++		/* GTP is accessed through UDP OF protocol */
++		prot_id = ICE_PROT_UDP_OF;
++		break;
++	case ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID:
++		prot_id = ICE_PROT_PPPOE;
++		break;
++	case ICE_FLOW_FIELD_IDX_PFCP_SEID:
++		prot_id = ICE_PROT_UDP_IL_OR_S;
++		break;
++	case ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID:
++		prot_id = ICE_PROT_L2TPV3;
++		break;
++	case ICE_FLOW_FIELD_IDX_ESP_SPI:
++		prot_id = ICE_PROT_ESP_F;
++		break;
++	case ICE_FLOW_FIELD_IDX_AH_SPI:
++		prot_id = ICE_PROT_ESP_2;
++		break;
++	case ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI:
++		prot_id = ICE_PROT_UDP_IL_OR_S;
++		break;
+ 	case ICE_FLOW_FIELD_IDX_ARP_SIP:
+ 	case ICE_FLOW_FIELD_IDX_ARP_DIP:
+ 	case ICE_FLOW_FIELD_IDX_ARP_SHA:
+@@ -1447,7 +1706,8 @@ ice_flow_set_rss_seg_info(struct ice_flow_seg_info *segs, u64 hash_fields,
+ 
+ 	ICE_FLOW_SET_HDRS(segs, flow_hdr);
+ 
+-	if (segs->hdrs & ~ICE_FLOW_RSS_SEG_HDR_VAL_MASKS)
++	if (segs->hdrs & ~ICE_FLOW_RSS_SEG_HDR_VAL_MASKS &
++	    ~ICE_FLOW_RSS_HDRS_INNER_MASK)
+ 		return ICE_ERR_PARAM;
+ 
+ 	val = (u64)(segs->hdrs & ICE_FLOW_RSS_SEG_HDR_L3_MASKS);
 diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index a5434fcbce25..6d668216423c 100644
+index 612ea3be21a9..ed8b8dcf8fee 100644
 --- a/drivers/net/ethernet/intel/ice/ice_flow.h
 +++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -135,6 +135,7 @@ enum ice_flow_seg_hdr {
- 	ICE_FLOW_SEG_HDR_ESP		= 0x00100000,
- 	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
- 	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
-+	ICE_FLOW_SEG_HDR_ETH_NON_IP	= 0x00800000,
- 	/* The following is an additive bit for ICE_FLOW_SEG_HDR_IPV4 and
- 	 * ICE_FLOW_SEG_HDR_IPV6 which include the IPV4 other PTYPEs
- 	 */
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 7a57d5f88c96..dc8b6cb8e9f2 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -192,6 +192,7 @@ enum ice_fltr_ptype {
- 	ICE_FLTR_PTYPE_NONF_IPV4_TCP,
- 	ICE_FLTR_PTYPE_NONF_IPV4_SCTP,
- 	ICE_FLTR_PTYPE_NONF_IPV4_OTHER,
-+	ICE_FLTR_PTYPE_NON_IP_L2,
- 	ICE_FLTR_PTYPE_FRAG_IPV4,
- 	ICE_FLTR_PTYPE_NONF_IPV6_UDP,
- 	ICE_FLTR_PTYPE_NONF_IPV6_TCP,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index 9eeff91f9998..634481accddf 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -26,6 +26,11 @@ struct virtchnl_fdir_fltr_conf {
- 	struct ice_fdir_fltr input;
+@@ -30,6 +30,80 @@
+ #define ICE_HASH_UDP_IPV4	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_UDP_PORT)
+ #define ICE_HASH_UDP_IPV6	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_UDP_PORT)
+ 
++#define ICE_FLOW_HASH_GTP_TEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPC_TEID))
++
++#define ICE_FLOW_HASH_GTP_IPV4_TEID \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_TEID)
++#define ICE_FLOW_HASH_GTP_IPV6_TEID \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_TEID)
++
++#define ICE_FLOW_HASH_GTP_U_TEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_IP_TEID))
++
++#define ICE_FLOW_HASH_GTP_U_IPV4_TEID \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_U_TEID)
++#define ICE_FLOW_HASH_GTP_U_IPV6_TEID \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_U_TEID)
++
++#define ICE_FLOW_HASH_GTP_U_EH_TEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_EH_TEID))
++
++#define ICE_FLOW_HASH_GTP_U_EH_QFI \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_EH_QFI))
++
++#define ICE_FLOW_HASH_GTP_U_IPV4_EH \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_U_EH_TEID | \
++	 ICE_FLOW_HASH_GTP_U_EH_QFI)
++#define ICE_FLOW_HASH_GTP_U_IPV6_EH \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_U_EH_TEID | \
++	 ICE_FLOW_HASH_GTP_U_EH_QFI)
++
++#define ICE_FLOW_HASH_PPPOE_SESS_ID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID))
++
++#define ICE_FLOW_HASH_PPPOE_SESS_ID_ETH \
++	(ICE_FLOW_HASH_ETH | ICE_FLOW_HASH_PPPOE_SESS_ID)
++#define ICE_FLOW_HASH_PPPOE_TCP_ID \
++	(ICE_FLOW_HASH_TCP_PORT | ICE_FLOW_HASH_PPPOE_SESS_ID)
++#define ICE_FLOW_HASH_PPPOE_UDP_ID \
++	(ICE_FLOW_HASH_UDP_PORT | ICE_FLOW_HASH_PPPOE_SESS_ID)
++
++#define ICE_FLOW_HASH_PFCP_SEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_PFCP_SEID))
++#define ICE_FLOW_HASH_PFCP_IPV4_SEID \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_PFCP_SEID)
++#define ICE_FLOW_HASH_PFCP_IPV6_SEID \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_PFCP_SEID)
++
++#define ICE_FLOW_HASH_L2TPV3_SESS_ID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID))
++#define ICE_FLOW_HASH_L2TPV3_IPV4_SESS_ID \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_L2TPV3_SESS_ID)
++#define ICE_FLOW_HASH_L2TPV3_IPV6_SESS_ID \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_L2TPV3_SESS_ID)
++
++#define ICE_FLOW_HASH_ESP_SPI \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_ESP_SPI))
++#define ICE_FLOW_HASH_ESP_IPV4_SPI \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_ESP_SPI)
++#define ICE_FLOW_HASH_ESP_IPV6_SPI \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_ESP_SPI)
++
++#define ICE_FLOW_HASH_AH_SPI \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_AH_SPI))
++#define ICE_FLOW_HASH_AH_IPV4_SPI \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_AH_SPI)
++#define ICE_FLOW_HASH_AH_IPV6_SPI \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_AH_SPI)
++
++#define ICE_FLOW_HASH_NAT_T_ESP_SPI \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI))
++#define ICE_FLOW_HASH_NAT_T_ESP_IPV4_SPI \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_NAT_T_ESP_SPI)
++#define ICE_FLOW_HASH_NAT_T_ESP_IPV6_SPI \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_NAT_T_ESP_SPI)
++
+ /* Protocol header fields within a packet segment. A segment consists of one or
+  * more protocol headers that make up a logical group of protocol headers. Each
+  * logical group of protocol headers encapsulates or is encapsulated using/by
+@@ -48,8 +122,37 @@ enum ice_flow_seg_hdr {
+ 	ICE_FLOW_SEG_HDR_UDP		= 0x00000080,
+ 	ICE_FLOW_SEG_HDR_SCTP		= 0x00000100,
+ 	ICE_FLOW_SEG_HDR_GRE		= 0x00000200,
++	ICE_FLOW_SEG_HDR_GTPC		= 0x00000400,
++	ICE_FLOW_SEG_HDR_GTPC_TEID	= 0x00000800,
++	ICE_FLOW_SEG_HDR_GTPU_IP	= 0x00001000,
++	ICE_FLOW_SEG_HDR_GTPU_EH	= 0x00002000,
++	ICE_FLOW_SEG_HDR_GTPU_DWN	= 0x00004000,
++	ICE_FLOW_SEG_HDR_GTPU_UP	= 0x00008000,
++	ICE_FLOW_SEG_HDR_PPPOE		= 0x00010000,
++	ICE_FLOW_SEG_HDR_PFCP_NODE	= 0x00020000,
++	ICE_FLOW_SEG_HDR_PFCP_SESSION	= 0x00040000,
++	ICE_FLOW_SEG_HDR_L2TPV3		= 0x00080000,
++	ICE_FLOW_SEG_HDR_ESP		= 0x00100000,
++	ICE_FLOW_SEG_HDR_AH		= 0x00200000,
++	ICE_FLOW_SEG_HDR_NAT_T_ESP	= 0x00400000,
  };
  
-+static enum virtchnl_proto_hdr_type vc_pattern_ether[] = {
-+	VIRTCHNL_PROTO_HDR_ETH,
-+	VIRTCHNL_PROTO_HDR_NONE,
-+};
++/* These segments all have the same PTYPES, but are otherwise distinguished by
++ * the value of the gtp_eh_pdu and gtp_eh_pdu_link flags:
++ *
++ *                                gtp_eh_pdu     gtp_eh_pdu_link
++ * ICE_FLOW_SEG_HDR_GTPU_IP           0              0
++ * ICE_FLOW_SEG_HDR_GTPU_EH           1              don't care
++ * ICE_FLOW_SEG_HDR_GTPU_DWN          1              0
++ * ICE_FLOW_SEG_HDR_GTPU_UP           1              1
++ */
++#define ICE_FLOW_SEG_HDR_GTPU (ICE_FLOW_SEG_HDR_GTPU_IP | \
++			       ICE_FLOW_SEG_HDR_GTPU_EH | \
++			       ICE_FLOW_SEG_HDR_GTPU_DWN | \
++			       ICE_FLOW_SEG_HDR_GTPU_UP)
++#define ICE_FLOW_SEG_HDR_PFCP (ICE_FLOW_SEG_HDR_PFCP_NODE | \
++			       ICE_FLOW_SEG_HDR_PFCP_SESSION)
 +
- static enum virtchnl_proto_hdr_type vc_pattern_ipv4[] = {
- 	VIRTCHNL_PROTO_HDR_ETH,
- 	VIRTCHNL_PROTO_HDR_IPV4,
-@@ -86,7 +91,18 @@ struct virtchnl_fdir_pattern_match_item {
- 	u64 *meta;
+ enum ice_flow_field {
+ 	/* L2 */
+ 	ICE_FLOW_FIELD_IDX_ETH_DA,
+@@ -87,7 +190,30 @@ enum ice_flow_field {
+ 	ICE_FLOW_FIELD_IDX_ICMP_CODE,
+ 	/* GRE */
+ 	ICE_FLOW_FIELD_IDX_GRE_KEYID,
+-	/* The total number of enums must not exceed 64 */
++	/* GTPC_TEID */
++	ICE_FLOW_FIELD_IDX_GTPC_TEID,
++	/* GTPU_IP */
++	ICE_FLOW_FIELD_IDX_GTPU_IP_TEID,
++	/* GTPU_EH */
++	ICE_FLOW_FIELD_IDX_GTPU_EH_TEID,
++	ICE_FLOW_FIELD_IDX_GTPU_EH_QFI,
++	/* GTPU_UP */
++	ICE_FLOW_FIELD_IDX_GTPU_UP_TEID,
++	/* GTPU_DWN */
++	ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID,
++	/* PPPOE */
++	ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID,
++	/* PFCP */
++	ICE_FLOW_FIELD_IDX_PFCP_SEID,
++	/* L2TPV3 */
++	ICE_FLOW_FIELD_IDX_L2TPV3_SESS_ID,
++	/* ESP */
++	ICE_FLOW_FIELD_IDX_ESP_SPI,
++	/* AH */
++	ICE_FLOW_FIELD_IDX_AH_SPI,
++	/* NAT_T ESP */
++	ICE_FLOW_FIELD_IDX_NAT_T_ESP_SPI,
++	 /* The total number of enums must not exceed 64 */
+ 	ICE_FLOW_FIELD_IDX_MAX
  };
  
--static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
-+static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_os[] = {
-+	{vc_pattern_ipv4,                     0,         NULL},
-+	{vc_pattern_ipv4_tcp,                 0,         NULL},
-+	{vc_pattern_ipv4_udp,                 0,         NULL},
-+	{vc_pattern_ipv4_sctp,                0,         NULL},
-+	{vc_pattern_ipv6,                     0,         NULL},
-+	{vc_pattern_ipv6_tcp,                 0,         NULL},
-+	{vc_pattern_ipv6_udp,                 0,         NULL},
-+	{vc_pattern_ipv6_sctp,                0,         NULL},
-+};
-+
-+static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern_comms[] = {
- 	{vc_pattern_ipv4,                     0,         NULL},
- 	{vc_pattern_ipv4_tcp,                 0,         NULL},
- 	{vc_pattern_ipv4_udp,                 0,         NULL},
-@@ -95,6 +111,7 @@ static const struct virtchnl_fdir_pattern_match_item vc_fdir_pattern[] = {
- 	{vc_pattern_ipv6_tcp,                 0,         NULL},
- 	{vc_pattern_ipv6_udp,                 0,         NULL},
- 	{vc_pattern_ipv6_sctp,                0,         NULL},
-+	{vc_pattern_ether,                    0,         NULL},
- };
- 
- struct virtchnl_fdir_inset_map {
-@@ -371,6 +388,9 @@ ice_vc_fdir_set_flow_hdr(struct ice_vf *vf,
- 	struct device *dev = ice_pf_to_dev(vf->pf);
- 
- 	switch (flow) {
-+	case ICE_FLTR_PTYPE_NON_IP_L2:
-+		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_ETH_NON_IP);
-+		break;
- 	case ICE_FLTR_PTYPE_NONF_IPV4_OTHER:
- 		ICE_FLOW_SET_HDRS(seg, ICE_FLOW_SEG_HDR_IPV4 |
- 				  ICE_FLOW_SEG_HDR_IPV_OTHER);
-@@ -707,9 +727,18 @@ static const struct virtchnl_fdir_pattern_match_item *
- ice_vc_fdir_get_pattern(struct ice_vf *vf, int *len)
- {
- 	const struct virtchnl_fdir_pattern_match_item *item;
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_hw *hw;
- 
--	item = vc_fdir_pattern;
--	*len = ARRAY_SIZE(vc_fdir_pattern);
-+	hw = &pf->hw;
-+	if (!strncmp(hw->active_pkg_name, "ICE COMMS Package",
-+		     sizeof(hw->active_pkg_name))) {
-+		item = vc_fdir_pattern_comms;
-+		*len = ARRAY_SIZE(vc_fdir_pattern_comms);
-+	} else {
-+		item = vc_fdir_pattern_os;
-+		*len = ARRAY_SIZE(vc_fdir_pattern_os);
-+	}
- 
- 	return item;
- }
-@@ -770,10 +799,16 @@ ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 		struct ipv6hdr *ip6h;
- 		struct udphdr *udph;
- 		struct tcphdr *tcph;
-+		struct ethhdr *eth;
- 		struct iphdr *iph;
- 
- 		switch (hdr->type) {
- 		case VIRTCHNL_PROTO_HDR_ETH:
-+			eth = (struct ethhdr *)hdr->buffer;
-+			input->flow_type = ICE_FLTR_PTYPE_NON_IP_L2;
-+
-+			if (hdr->field_selector)
-+				input->ext_data.ether_type = eth->h_proto;
- 			break;
- 		case VIRTCHNL_PROTO_HDR_IPV4:
- 			iph = (struct iphdr *)hdr->buffer;
+diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+index fac5f15a692c..199aa5b71540 100644
+--- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+@@ -24,9 +24,13 @@ enum ice_prot_id {
+ 	ICE_PROT_UDP_OF		= 52,
+ 	ICE_PROT_UDP_IL_OR_S	= 53,
+ 	ICE_PROT_GRE_OF		= 64,
++	ICE_PROT_ESP_F		= 88,
++	ICE_PROT_ESP_2		= 89,
+ 	ICE_PROT_SCTP_IL	= 96,
+ 	ICE_PROT_ICMP_IL	= 98,
+ 	ICE_PROT_ICMPV6_IL	= 100,
++	ICE_PROT_PPPOE		= 103,
++	ICE_PROT_L2TPV3		= 104,
+ 	ICE_PROT_ARP_OF		= 118,
+ 	ICE_PROT_META_ID	= 255, /* when offset == metadata */
+ 	ICE_PROT_INVALID	= 255  /* when offset == ICE_FV_OFFSET_INVAL */
 -- 
 2.30.0
 
