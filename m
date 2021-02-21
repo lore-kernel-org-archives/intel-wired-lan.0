@@ -1,49 +1,35 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sat, 20 Feb 2021 19:31:52 +0200
-Subject: [Intel-wired-lan] [PATCH net v1 1/2] igc: Fix Pause Frame
- Advertising
-In-Reply-To: <20210219163648.14581-2-muhammad.husaini.zulkifli@intel.com>
-References: <20210219163648.14581-1-muhammad.husaini.zulkifli@intel.com>
- <20210219163648.14581-2-muhammad.husaini.zulkifli@intel.com>
-Message-ID: <4b2f2fd8-7446-ce64-644c-93f6aba62623@intel.com>
+From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+Date: Sun, 21 Feb 2021 10:38:23 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused
+ MII_CR_LOOPBACK
+In-Reply-To: <20210214071749.4068885-1-sasha.neftin@intel.com>
+References: <20210214071749.4068885-1-sasha.neftin@intel.com>
+Message-ID: <4b510df9-4f6b-0c16-beaf-30bc718421f7@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/19/2021 18:36, Muhammad Husaini Zulkifli wrote:
-> Fix Pause Frame Advertising when getting the advertisement via ethtool.
-> Remove setting the "advertising" bit in link_ksettings during default
-> case when tx and rx are in off state with Auto Negotiatiate off.
+On 14/02/2021 09:17, Sasha Neftin wrote:
+> MII_CR_LOOPBACK masks not in use in i225 device and can be removed.
 > 
-> Below is the original output of advertisement link during tx and rx off:
-> Advertised pause frame use: Symmetric Receive-only
-> 
-> Expected output:
-> Advertised pause frame use: No
-> 
-> Fixes: 8c5ad0dae93c ("igc: Add ethtool support")
-> Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-> Reviewed-by: Malli C <mallikarjuna.chilakala@intel.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_ethtool.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
+>   1 file changed, 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> index 824a6c454bca..67a4aed45fc2 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> @@ -1725,9 +1725,7 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
->   						     Asym_Pause);
->   		break;
->   	default:
-> -		ethtool_link_ksettings_add_link_mode(cmd, advertising, Pause);
-> -		ethtool_link_ksettings_add_link_mode(cmd, advertising,
-> -						     Asym_Pause);
-> +		break;
->   	}
+> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
+> index c5b36ec7bcff..153561291166 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
+> @@ -441,7 +441,6 @@
+>   #define MII_CR_RESTART_AUTO_NEG	0x0200  /* Restart auto negotiation */
+>   #define MII_CR_POWER_DOWN	0x0800  /* Power down */
+>   #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
+> -#define MII_CR_LOOPBACK		0x4000  /* 0 = normal, 1 = loopback */
 >   
->   	status = pm_runtime_suspended(&adapter->pdev->dev) ?
+>   /* PHY Status Register */
+>   #define MII_SR_LINK_STATUS	0x0004 /* Link Status 1 = link */
 > 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
