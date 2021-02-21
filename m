@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 21 Feb 2021 17:50:31 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- dbf6182dbea6fb836e882ea53202248338323f75
-Message-ID: <60322ce7.SKtAtwZ7g8zEO2Fc%lkp@intel.com>
+Date: Sun, 21 Feb 2021 17:50:33 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
+ b32cddd2247cf730731f93f1967d0147a40682c7
+Message-ID: <60322ce9.xIpR/nlTUDcTs3h9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: dbf6182dbea6fb836e882ea53202248338323f75  igc: Fix Supported Pause Frame Link Setting
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
+branch HEAD: b32cddd2247cf730731f93f1967d0147a40682c7  i40e: Fix endianness conversions
 
 elapsed time: 720m
 
-configs tested: 108
+configs tested: 105
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,12 +26,6 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arm                        shmobile_defconfig
-m68k                          atari_defconfig
-arm                            mmp2_defconfig
-arm                             rpc_defconfig
-x86_64                           alldefconfig
-mips                       bmips_be_defconfig
 powerpc                   motionpro_defconfig
 mips                     decstation_defconfig
 mips                      malta_kvm_defconfig
@@ -57,10 +51,13 @@ mips                           jazz_defconfig
 arm                            xcep_defconfig
 mips                        nlm_xlr_defconfig
 mips                      maltaaprp_defconfig
-alpha                            allyesconfig
+powerpc                 mpc8272_ads_defconfig
+arm                          prima2_defconfig
+m68k                        stmark2_defconfig
 arm                            u300_defconfig
 um                            kunit_defconfig
 arm                        oxnas_v6_defconfig
+alpha                            allyesconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
