@@ -1,9 +1,9 @@
 From: Jithu Joseph <jithu.joseph@intel.com>
-Date: Mon, 22 Feb 2021 01:09:28 -0800
-Subject: [Intel-wired-lan] [PATCH v4 1/9] igc: Move igc_xdp_is_enabled()
+Date: Mon, 22 Feb 2021 01:09:29 -0800
+Subject: [Intel-wired-lan] [PATCH v4 2/9] igc: Refactor __igc_xdp_run_prog()
 In-Reply-To: <20210222090936.6768-1-jithu.joseph@intel.com>
 References: <20210222090936.6768-1-jithu.joseph@intel.com>
-Message-ID: <20210222090936.6768-2-jithu.joseph@intel.com>
+Message-ID: <20210222090936.6768-3-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,49 +12,105 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Andre Guedes <andre.guedes@intel.com>
 
-Move the helper igc_xdp_is_enabled() to igc_xdp.h so it can be reused in
-igc_xdp.c by upcoming patches that will introduce AF_XDP zero-copy
-support to the driver.
+Refactor __igc_xdp_run_prog() helper from igc_xdp_run_prog(),
+preparing the code for AF_XDP zero-copy support which is added
+by upcoming patches.
+
+The existing igc_xdp_run_prog() caters to regular XDP rx path
+which has to verify if bpf_prog is not NULL. Zero-copy
+path assumes that bpf_prog is not NULL and hence this check is
+not required. Therefore it makes sense to refactor the common
+code into a helper function, to avoid code duplication.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
 Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 5 -----
- drivers/net/ethernet/intel/igc/igc_xdp.h  | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 1b497d3c952c..a659e6f24886 100644
+index a659e6f24886..d9d60c6c6726 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -515,11 +515,6 @@ static int igc_setup_all_rx_resources(struct igc_adapter *adapter)
- 	return err;
+@@ -2021,38 +2021,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
+ 	return res;
  }
  
--static bool igc_xdp_is_enabled(struct igc_adapter *adapter)
--{
--	return !!adapter->xdp_prog;
--}
+-static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+-					struct xdp_buff *xdp)
++/* This function assumes rcu_read_lock() is held by the caller. */
++static int __igc_xdp_run_prog(struct igc_adapter *adapter,
++			      struct bpf_prog *prog,
++			      struct xdp_buff *xdp)
+ {
+-	struct bpf_prog *prog;
+-	int res;
+-	u32 act;
 -
- /**
-  * igc_configure_rx_ring - Configure a receive ring after Reset
-  * @adapter: board private structure
-diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
-index cfecb515b718..412aa369e6ba 100644
---- a/drivers/net/ethernet/intel/igc/igc_xdp.h
-+++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
-@@ -10,4 +10,9 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
- int igc_xdp_register_rxq_info(struct igc_ring *ring);
- void igc_xdp_unregister_rxq_info(struct igc_ring *ring);
+-	rcu_read_lock();
+-
+-	prog = READ_ONCE(adapter->xdp_prog);
+-	if (!prog) {
+-		res = IGC_XDP_PASS;
+-		goto unlock;
+-	}
++	u32 act = bpf_prog_run_xdp(prog, xdp);
  
-+static inline bool igc_xdp_is_enabled(struct igc_adapter *adapter)
-+{
-+	return !!adapter->xdp_prog;
+-	act = bpf_prog_run_xdp(prog, xdp);
+ 	switch (act) {
+ 	case XDP_PASS:
+-		res = IGC_XDP_PASS;
+-		break;
++		return IGC_XDP_PASS;
+ 	case XDP_TX:
+-		if (igc_xdp_xmit_back(adapter, xdp) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_TX;
+-		break;
++		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_TX;
+ 	case XDP_REDIRECT:
+-		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_REDIRECT;
+-		break;
++		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+@@ -2060,9 +2044,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+ 		trace_xdp_exception(adapter->netdev, prog, act);
+ 		fallthrough;
+ 	case XDP_DROP:
+-		res = IGC_XDP_CONSUMED;
+-		break;
++		return IGC_XDP_CONSUMED;
+ 	}
 +}
 +
- #endif /* _IGC_XDP_H_ */
++static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++					struct xdp_buff *xdp)
++{
++	struct bpf_prog *prog;
++	int res;
++
++	rcu_read_lock();
++
++	prog = READ_ONCE(adapter->xdp_prog);
++	if (!prog) {
++		res = IGC_XDP_PASS;
++		goto unlock;
++	}
++
++	res = __igc_xdp_run_prog(adapter, prog, xdp);
+ 
+ unlock:
+ 	rcu_read_unlock();
 -- 
 2.17.1
 
