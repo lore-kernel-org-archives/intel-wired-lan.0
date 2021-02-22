@@ -1,48 +1,75 @@
-From: Tom Seewald <tseewald@gmail.com>
-Date: Sun, 21 Feb 2021 22:00:05 -0600
-Subject: [Intel-wired-lan] [PATCH net 2/2] igb: Fix duplicate include guard
-In-Reply-To: <20210222040005.20126-1-tseewald@gmail.com>
-References: <20210222040005.20126-1-tseewald@gmail.com>
-Message-ID: <20210222040005.20126-2-tseewald@gmail.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Mon, 22 Feb 2021 09:30:49 -0800
+Subject: [Intel-wired-lan] Fw: [Bug 211859] New: Difficulties with macvlan
+ on igc network driver
+Message-ID: <20210222093049.395aea61@hermes.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The include guard "_E1000_HW_H_" is used by two separate header files in
-two different drivers (e1000/e1000_hw.h and igb/e1000_hw.h). Using the
-same include guard macro in more than one header file may cause
-unexpected behavior from the compiler. Fix this by renaming the
-duplicate guard in the igb driver.
 
-Fixes: 9d5c824399de ("igb: PCI-Express 82575 Gigabit Ethernet driver")
-Signed-off-by: Tom Seewald <tseewald@gmail.com>
----
- drivers/net/ethernet/intel/igb/e1000_hw.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
-index 5d87957b2627..44111f65afc7 100644
---- a/drivers/net/ethernet/intel/igb/e1000_hw.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
-@@ -1,8 +1,8 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- /* Copyright(c) 2007 - 2018 Intel Corporation. */
- 
--#ifndef _E1000_HW_H_
--#define _E1000_HW_H_
-+#ifndef _E1000_IGB_HW_H_
-+#define _E1000_IGB_HW_H_
- 
- #include <linux/types.h>
- #include <linux/delay.h>
-@@ -551,4 +551,4 @@ s32 igb_write_pcie_cap_reg(struct e1000_hw *hw, u32 reg, u16 *value);
- 
- void igb_read_pci_cfg(struct e1000_hw *hw, u32 reg, u16 *value);
- void igb_write_pci_cfg(struct e1000_hw *hw, u32 reg, u16 *value);
--#endif /* _E1000_HW_H_ */
-+#endif /* _E1000_IGB_HW_H_ */
+Begin forwarded message:
+
+Date: Sat, 20 Feb 2021 01:21:32 +0000
+From: bugzilla-daemon@bugzilla.kernel.org
+To: stephen@networkplumber.org
+Subject: [Bug 211859] New: Difficulties with macvlan on igc network driver
+
+
+https://bugzilla.kernel.org/show_bug.cgi?id=211859
+
+            Bug ID: 211859
+           Summary: Difficulties with macvlan on igc network driver
+           Product: Networking
+           Version: 2.5
+    Kernel Version: 5.4.0-65-generic (x86_64)
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: IPV4
+          Assignee: stephen at networkplumber.org
+          Reporter: pjw at rhyme.com.au
+        Regression: No
+
+Driver: igc
+NIC: Ethernet controller: Intel Corporation Device 15f3 (rev 02)
+Mobo: ASUS Z490-H
+Firmware: 1.45 (latest from Intel)
+
+
+This NIC is known to have some hardware problems, so this may be
+insurmountable. That said:
+
+
+Creating a macvlan attached to this NIC results in failure to route Layer 2
+messages correctly (specifically, DHCPOFFER). The config used was:
+
+
+ip link add mvlan_name link eth_name type macvlan mode bridge
+
+
+When the link is brought up, virtualbox VMs connected to the ?mvlan_name?
+interface in bridged mode can send DHCPREQUEST messages, which are sent
+correctly over the interface, and received by the server. The response
+(DHCPOFFER) is never routed to the VM.
+
+
+Further, attaching the VM to the NIC interface directly in bridged mode has a
+similar result.
+
+
+Performing exactly the same tests on a different NIC (Intel Corporation I350
+Gigabit Network Connection (rev 01)), results in correct functioning: the vlan
+setup works, as direct VM bridging to the NIC.
+
 -- 
-2.20.1
+You may reply to this email to add a comment.
 
+You are receiving this mail because:
+You are the assignee for the bug.
