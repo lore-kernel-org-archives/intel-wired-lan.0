@@ -1,7 +1,7 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Tue, 23 Feb 2021 14:02:44 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix add tc filter for IPv6
-Message-ID: <20210223140244.20862-1-mateusz.palczewski@intel.com>
+Date: Tue, 23 Feb 2021 14:29:23 +0000
+Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix add tc filter for IPv6
+Message-ID: <20210223142923.30001-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,12 +13,12 @@ when creating a filter.
 IPv4 and IPv6 are kept in the same memory area. If IPv6 is added,
 then it's caught by IPv4 check, which leads to err -95.
 
-Fixes: 2f4b411a3d67("i40e: Enable cloud filters via tc-flower")
+Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
 Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
 ---
-v3: Fixed commit message
+v4: Added space after Fixes tag hash
 ---
  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
