@@ -1,51 +1,72 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Tue, 23 Feb 2021 14:29:23 +0000
-Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix add tc filter for IPv6
-Message-ID: <20210223142923.30001-1-mateusz.palczewski@intel.com>
+From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Date: Tue, 23 Feb 2021 15:15:27 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v1] igb: Add double-check
+ MTA_REGISTER for i210 and i211
+Message-ID: <1614089727-337500-1-git-send-email-grzegorz.siwik@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix insufficient distinction between IPv4 and IPv6 addresses
-when creating a filter.
-IPv4 and IPv6 are kept in the same memory area. If IPv6 is added,
-then it's caught by IPv4 check, which leads to err -95.
+Add new function which checks MTA_REGISTER if its filled correctly.
+If not then writes again to same register.
+There is possibility that i210 and i211 could not accept
+MTA_REGISTER settings, specially when you add and remove
+many of multicast addresses in short time.
+Without this patch there is possibility that multicast settings will be
+not always set correctly in hardware.
 
-Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 ---
-v4: Added space after Fixes tag hash
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_mac.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 630258e..bb87164 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8115,7 +8115,8 @@ int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
- 		return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.c b/drivers/net/ethernet/intel/igb/e1000_mac.c
+index fd8eb2f..2ed6a00 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mac.c
++++ b/drivers/net/ethernet/intel/igb/e1000_mac.c
+@@ -484,6 +484,31 @@ static u32 igb_hash_mc_addr(struct e1000_hw *hw, u8 *mc_addr)
+ }
  
- 	/* adding filter using src_port/src_ip is not supported at this stage */
--	if (filter->src_port || filter->src_ipv4 ||
-+	if (filter->src_port ||
-+	    (filter->src_ipv4 && filter->n_proto != ETH_P_IPV6) ||
- 	    !ipv6_addr_any(&filter->ip.v6.src_ip6))
- 		return -EOPNOTSUPP;
+ /**
++* igb_i21x_hw_doublecheck - double checks potential HW issue in i21X
++* @hw: pointer to the HW structure
++*
++* Checks if multicast array is wrote correctly
++* If not then rewrites again to register
++**/
++static void igb_i21x_hw_doublecheck(struct e1000_hw *hw)
++{
++	bool is_failed;
++	int i;
++
++	do {
++		is_failed = false;
++		for (i = hw->mac.mta_reg_count - 1; i >= 0; i--) {
++			if (array_rd32(E1000_MTA, i) != hw->mac.mta_shadow[i]) {
++				is_failed = true;
++				array_wr32(E1000_MTA, i, hw->mac.mta_shadow[i]);
++				wrfl();
++				break;
++			}
++		}
++	} while (is_failed);
++}
++
++/**
+  *  igb_update_mc_addr_list - Update Multicast addresses
+  *  @hw: pointer to the HW structure
+  *  @mc_addr_list: array of multicast addresses to program
+@@ -516,6 +541,8 @@ void igb_update_mc_addr_list(struct e1000_hw *hw,
+ 	for (i = hw->mac.mta_reg_count - 1; i >= 0; i--)
+ 		array_wr32(E1000_MTA, i, hw->mac.mta_shadow[i]);
+ 	wrfl();
++	if (hw->mac.type == e1000_i210 || hw->mac.type == e1000_i211)
++		igb_i21x_hw_doublecheck(hw);
+ }
  
-@@ -8144,7 +8145,7 @@ int i40e_add_del_cloud_filter_big_buf(struct i40e_vsi *vsi,
- 			cpu_to_le16(I40E_AQC_ADD_CLOUD_FILTER_MAC_VLAN_PORT);
- 		}
- 
--	} else if (filter->dst_ipv4 ||
-+	} else if ((filter->dst_ipv4 && filter->n_proto != ETH_P_IPV6) ||
- 		   !ipv6_addr_any(&filter->ip.v6.dst_ip6)) {
- 		cld_filter.element.flags =
- 				cpu_to_le16(I40E_AQC_ADD_CLOUD_FILTER_IP_PORT);
+ /**
 -- 
-2.17.1
+1.8.3.1
 
