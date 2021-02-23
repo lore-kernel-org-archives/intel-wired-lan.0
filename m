@@ -1,29 +1,39 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 23 Feb 2021 12:22:07 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 4/4] i40e: don't open i40iw client
- for kdump
-In-Reply-To: <20210222070701.16416-5-coxu@redhat.com>
-References: <20210222070701.16416-1-coxu@redhat.com>
- <20210222070701.16416-5-coxu@redhat.com>
-Message-ID: <20210223122207.08835e0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 23 Feb 2021 15:47:04 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/3] intel: packet type table
+ simplification
+Message-ID: <20210223234707.1170711-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 22 Feb 2021 15:07:01 +0800 Coiby Xu wrote:
-> i40iw consumes huge amounts of memory. For example, on a x86_64 machine,
-> i40iw consumed 1.5GB for Intel Corporation Ethernet Connection X722 for
-> for 1GbE while "craskernel=auto" only reserved 160M. With the module
-> parameter "resource_profile=2", we can reduce the memory usage of i40iw
-> to ~300M which is still too much for kdump.
-> 
-> Disabling the client registration would spare us the client interface
-> operation open , i.e., i40iw_open for iwarp/uda device. Thus memory is
-> saved for kdump.
-> 
-> Signed-off-by: Coiby Xu <coxu@redhat.com>
+Update three of the Intel Ethernet drivers with similar (but not the
+same) improvements to simplify the packet type table init, while removing
+an unused structure entry. For the ice driver, the table is extended
+to 10 bits, which is the hardware limit, and for now is initialized
+to zero.
 
-Is i40iw or whatever the client is not itself under a CONFIG which
-kdump() kernels could be reasonably expected to disable?
+The end result is slightly reduced memory usage, removal of a bunch
+of code, and more specific initialization.
+
+Jesse Brandeburg (3):
+  ice: report hash type such as L2/L3/L4
+  i40e: clean up packet type lookup table
+  iavf: clean up packet type lookup table
+
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 124 +--------------
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |   1 -
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 124 +--------------
+ drivers/net/ethernet/intel/iavf/iavf_type.h   |   1 -
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 147 ++++--------------
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  23 ++-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h |   2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      |   2 +-
+ 9 files changed, 62 insertions(+), 364 deletions(-)
+
+-- 
+2.29.2
+
