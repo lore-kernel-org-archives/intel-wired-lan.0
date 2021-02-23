@@ -1,40 +1,24 @@
-From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-Date: Tue, 23 Feb 2021 14:00:46 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix add tc filter for
- IPv6
-In-Reply-To: <20210223135828.19179-1-mateusz.palczewski@intel.com>
-References: <20210223135828.19179-1-mateusz.palczewski@intel.com>
-Message-ID: <BN8PR11MB3554BB48A6D2B81BACB56BFD87809@BN8PR11MB3554.namprd11.prod.outlook.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Tue, 23 Feb 2021 14:02:44 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix add tc filter for IPv6
+Message-ID: <20210223140244.20862-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sent the wrong version of the patch, will resent the v3 version. 
+Fix insufficient distinction between IPv4 and IPv6 addresses
+when creating a filter.
+IPv4 and IPv6 are kept in the same memory area. If IPv6 is added,
+then it's caught by IPv4 check, which leads to err -95.
 
------Original Message-----
-From: Palczewski, Mateusz <mateusz.palczewski@intel.com> 
-Sent: wtorek, 23 lutego 2021 14:58
-To: intel-wired-lan@lists.osuosl.org
-Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>; Szczurek, GrzegorzX <grzegorzx.szczurek@intel.com>
-Subject: [PATCH net v2] i40e: Fix add tc filter for IPv6
-
-Fix insufficient distinction between IPv4 and IPv6 addresses when creating a filter.
-IPv4 and IPv6 are kept in the same memory area. If IPv6 is added, then it's caught by IPv4 check, which leads to err -95.
-
-Change-Id: I92412cb419d29bb6ce4decbc7c1cd73df9b4db5d
-Title: i40e: Fix add tc filter for IPv6
-Change-type: DefectResolution
-HSDES-Number: 1806493117
-HSDES-Tenant: server_platf_lan.bug
-Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+Fixes: 2f4b411a3d67("i40e: Enable cloud filters via tc-flower")
 Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Tested-by: nosbuild <nosbuild@intel.com>
 Reviewed-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
 ---
-v2: Added space after Fixes tag hash
+v3: Fixed commit message
 ---
  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
@@ -62,6 +46,6 @@ index 630258e..bb87164 100644
  		   !ipv6_addr_any(&filter->ip.v6.dst_ip6)) {
  		cld_filter.element.flags =
  				cpu_to_le16(I40E_AQC_ADD_CLOUD_FILTER_IP_PORT);
---
+-- 
 2.17.1
 
