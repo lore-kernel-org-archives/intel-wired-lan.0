@@ -1,16 +1,16 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 23 Feb 2021 21:08:34 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- c0593e1d6e66c973b4d67a33d094a2f77cfbfd64
-Message-ID: <6034fe52.6NCsJ+BwPReDjgza%lkp@intel.com>
+Date: Tue, 23 Feb 2021 21:08:36 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 0393e46ac48a6832b1011c233ebcef84f8dbe4f5
+Message-ID: <6034fe54.4B/Gvc1Jp984YJxo%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: c0593e1d6e66c973b4d67a33d094a2f77cfbfd64  igb: Fix duplicate include guard
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 0393e46ac48a6832b1011c233ebcef84f8dbe4f5  ice: update the number of available RSS queues
 
 elapsed time: 726m
 
@@ -31,10 +31,10 @@ mips                      pic32mzda_defconfig
 m68k                          atari_defconfig
 powerpc                        cell_defconfig
 mips                           ip22_defconfig
-sh                             sh03_defconfig
-powerpc                        warp_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                 mpc837x_rdb_defconfig
+powerpc                     akebono_defconfig
+x86_64                           alldefconfig
+mips                            gpr_defconfig
+powerpc                 mpc836x_mds_defconfig
 mips                         db1xxx_defconfig
 powerpc                   lite5200b_defconfig
 mips                  decstation_64_defconfig
