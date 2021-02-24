@@ -1,139 +1,44 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 24 Feb 2021 13:29:41 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 2bfe1da03115beca458954c1918e7811d9c2160e
-Message-ID: <6035e445.kUMj9u+9uD79JJRu%lkp@intel.com>
+From: Coiby Xu <coxu@redhat.com>
+Date: Wed, 24 Feb 2021 19:41:41 +0800
+Subject: [Intel-wired-lan] [RFC PATCH 4/4] i40e: don't open i40iw client
+ for kdump
+In-Reply-To: <20210223122207.08835e0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210222070701.16416-1-coxu@redhat.com>
+ <20210222070701.16416-5-coxu@redhat.com>
+ <20210223122207.08835e0b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <20210224114141.ziywca4dvn5fs6js@Rk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 2bfe1da03115beca458954c1918e7811d9c2160e  igb: Fix duplicate include guard
+Hi Jakub,
 
-elapsed time: 721m
+Thank you for reviewing the patch!
 
-configs tested: 110
-configs skipped: 2
+On Tue, Feb 23, 2021 at 12:22:07PM -0800, Jakub Kicinski wrote:
+>On Mon, 22 Feb 2021 15:07:01 +0800 Coiby Xu wrote:
+>> i40iw consumes huge amounts of memory. For example, on a x86_64 machine,
+>> i40iw consumed 1.5GB for Intel Corporation Ethernet Connection X722 for
+>> for 1GbE while "craskernel=auto" only reserved 160M. With the module
+>> parameter "resource_profile=2", we can reduce the memory usage of i40iw
+>> to ~300M which is still too much for kdump.
+>>
+>> Disabling the client registration would spare us the client interface
+>> operation open , i.e., i40iw_open for iwarp/uda device. Thus memory is
+>> saved for kdump.
+>>
+>> Signed-off-by: Coiby Xu <coxu@redhat.com>
+>
+>Is i40iw or whatever the client is not itself under a CONFIG which
+>kdump() kernels could be reasonably expected to disable?
+>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I'm not sure if I understand you correctly. Do you mean we shouldn't
+disable i40iw for kdump?
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                           ip27_defconfig
-powerpc                       ebony_defconfig
-h8300                    h8300h-sim_defconfig
-powerpc                     stx_gp3_defconfig
-m68k                          hp300_defconfig
-sh                          r7785rp_defconfig
-powerpc                     rainier_defconfig
-arm                          badge4_defconfig
-sh                           se7750_defconfig
-i386                             alldefconfig
-sh                 kfr2r09-romimage_defconfig
-m68k                        mvme16x_defconfig
-sh                        edosk7705_defconfig
-arm64                            alldefconfig
-mips                    maltaup_xpa_defconfig
-arm                            hisi_defconfig
-sh                           se7619_defconfig
-nios2                         3c120_defconfig
-powerpc                      arches_defconfig
-parisc                generic-64bit_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                        oxnas_v6_defconfig
-arm                           sama5_defconfig
-arm                         s3c2410_defconfig
-arm                              alldefconfig
-sh                          lboxre2_defconfig
-arm                            zeus_defconfig
-parisc                generic-32bit_defconfig
-openrisc                    or1ksim_defconfig
-sh                     magicpanelr2_defconfig
-mips                     cu1830-neo_defconfig
-arm                     am200epdkit_defconfig
-mips                        bcm47xx_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210223
-i386                 randconfig-a006-20210223
-i386                 randconfig-a004-20210223
-i386                 randconfig-a003-20210223
-i386                 randconfig-a001-20210223
-i386                 randconfig-a002-20210223
-x86_64               randconfig-a015-20210223
-x86_64               randconfig-a011-20210223
-x86_64               randconfig-a012-20210223
-x86_64               randconfig-a016-20210223
-x86_64               randconfig-a014-20210223
-x86_64               randconfig-a013-20210223
-i386                 randconfig-a013-20210223
-i386                 randconfig-a012-20210223
-i386                 randconfig-a011-20210223
-i386                 randconfig-a014-20210223
-i386                 randconfig-a016-20210223
-i386                 randconfig-a015-20210223
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+-- 
+Best regards,
+Coiby
 
-clang tested configs:
-x86_64               randconfig-a001-20210223
-x86_64               randconfig-a002-20210223
-x86_64               randconfig-a003-20210223
-x86_64               randconfig-a005-20210223
-x86_64               randconfig-a006-20210223
-x86_64               randconfig-a004-20210223
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
