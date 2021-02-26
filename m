@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 26 Feb 2021 13:19:22 -0800
-Subject: [Intel-wired-lan] [PATCH net 03/13] ice: Continue probe on link/PHY
- errors
+Date: Fri, 26 Feb 2021 13:19:30 -0800
+Subject: [Intel-wired-lan] [PATCH net 11/13] ice: Use port number instead of
+ PF ID for WoL
 In-Reply-To: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210226211932.46683-3-anthony.l.nguyen@intel.com>
+Message-ID: <20210226211932.46683-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,57 +13,88 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-An incorrect NVM update procedure can result in the driver failing probe.
-In this case, the recommended resolution method is to update the NVM
-using the right procedure. However, if the driver fails probe, the user
-will not be able to update the NVM. So do not fail probe on link/PHY
-errors.
+As per the spec, the WoL control word read from the NVM should be
+interpreted as port numbers, and not PF numbers. So when checking
+if WoL supported, use the port number instead of the PF ID.
 
-Fixes: 1a3571b5938c ("ice: restore PHY settings on media insertion")
+Also, ice_is_wol_supported doesn't really need a pointer to the pf
+struct, but just needs a pointer to the hw instance.
+
+Fixes: 769c500dcc1e ("ice: Add advanced power mgmt for WoL")
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h         | 2 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_main.c    | 9 ++++-----
+ 3 files changed, 7 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 522c7aa61cc7..def5439c3f6c 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -620,7 +620,7 @@ int ice_schedule_reset(struct ice_pf *pf, enum ice_reset_req reset);
+ void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
+ const char *ice_stat_str(enum ice_status stat_err);
+ const char *ice_aq_str(enum ice_aq_err aq_err);
+-bool ice_is_wol_supported(struct ice_pf *pf);
++bool ice_is_wol_supported(struct ice_hw *hw);
+ int
+ ice_fdir_write_fltr(struct ice_pf *pf, struct ice_fdir_fltr *input, bool add,
+ 		    bool is_tun);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 2dcfa685b763..32ba71a16165 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3472,7 +3472,7 @@ static void ice_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
+ 		netdev_warn(netdev, "Wake on LAN is not supported on this interface!\n");
+ 
+ 	/* Get WoL settings based on the HW capability */
+-	if (ice_is_wol_supported(pf)) {
++	if (ice_is_wol_supported(&pf->hw)) {
+ 		wol->supported = WAKE_MAGIC;
+ 		wol->wolopts = pf->wol_ena ? WAKE_MAGIC : 0;
+ 	} else {
+@@ -3492,7 +3492,7 @@ static int ice_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
+ 
+-	if (vsi->type != ICE_VSI_PF || !ice_is_wol_supported(pf))
++	if (vsi->type != ICE_VSI_PF || !ice_is_wol_supported(&pf->hw))
+ 		return -EOPNOTSUPP;
+ 
+ 	/* only magic packet is supported */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 2c23c8f468a5..53e053c997eb 100644
+index 255a07c1e33a..9f1adff85be7 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4192,28 +4192,25 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		goto err_send_version_unroll;
- 	}
+@@ -3537,15 +3537,14 @@ static int ice_init_interrupt_scheme(struct ice_pf *pf)
+ }
  
-+	/* not a fatal error if this fails */
- 	err = ice_init_nvm_phy_type(pf->hw.port_info);
--	if (err) {
-+	if (err)
- 		dev_err(dev, "ice_init_nvm_phy_type failed: %d\n", err);
--		goto err_send_version_unroll;
--	}
+ /**
+- * ice_is_wol_supported - get NVM state of WoL
+- * @pf: board private structure
++ * ice_is_wol_supported - check if WoL is supported
++ * @hw: pointer to hardware info
+  *
+  * Check if WoL is supported based on the HW configuration.
+  * Returns true if NVM supports and enables WoL for this port, false otherwise
+  */
+-bool ice_is_wol_supported(struct ice_pf *pf)
++bool ice_is_wol_supported(struct ice_hw *hw)
+ {
+-	struct ice_hw *hw = &pf->hw;
+ 	u16 wol_ctrl;
  
-+	/* not a fatal error if this fails */
- 	err = ice_update_link_info(pf->hw.port_info);
--	if (err) {
-+	if (err)
- 		dev_err(dev, "ice_update_link_info failed: %d\n", err);
--		goto err_send_version_unroll;
--	}
+ 	/* A bit set to 1 in the NVM Software Reserved Word 2 (WoL control
+@@ -3554,7 +3553,7 @@ bool ice_is_wol_supported(struct ice_pf *pf)
+ 	if (ice_read_sr_word(hw, ICE_SR_NVM_WOL_CFG, &wol_ctrl))
+ 		return false;
  
- 	ice_init_link_dflt_override(pf->hw.port_info);
+-	return !(BIT(hw->pf_id) & wol_ctrl);
++	return !(BIT(hw->port_info->lport) & wol_ctrl);
+ }
  
- 	/* if media available, initialize PHY settings */
- 	if (pf->hw.port_info->phy.link_info.link_info &
- 	    ICE_AQ_MEDIA_AVAILABLE) {
-+		/* not a fatal error if this fails */
- 		err = ice_init_phy_user_cfg(pf->hw.port_info);
--		if (err) {
-+		if (err)
- 			dev_err(dev, "ice_init_phy_user_cfg failed: %d\n", err);
--			goto err_send_version_unroll;
--		}
- 
- 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
- 			struct ice_vsi *vsi = ice_get_main_vsi(pf);
+ /**
 -- 
 2.20.1
 
