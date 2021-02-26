@@ -1,169 +1,69 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 26 Feb 2021 13:19:23 -0800
-Subject: [Intel-wired-lan] [PATCH net 04/13] ice: Fix VF true promiscuous
- mode
+Date: Fri, 26 Feb 2021 13:19:22 -0800
+Subject: [Intel-wired-lan] [PATCH net 03/13] ice: Continue probe on link/PHY
+ errors
 In-Reply-To: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210226211932.46683-4-anthony.l.nguyen@intel.com>
+Message-ID: <20210226211932.46683-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-When a VF requests promiscuous mode and it's trusted and true promiscuous
-mode is enabled the PF driver attempts to enable unicast and/or
-multicast promiscuous mode filters based on the request. This is fine,
-but there are a couple issues with the current code.
+An incorrect NVM update procedure can result in the driver failing probe.
+In this case, the recommended resolution method is to update the NVM
+using the right procedure. However, if the driver fails probe, the user
+will not be able to update the NVM. So do not fail probe on link/PHY
+errors.
 
-[1] The define to configure the unicast promiscuous mode mask also
-    includes bits to configure the multicast promiscuous mode mask, which
-    causes multicast to be set/cleared unintentionally.
-[2] All 4 cases for enable/disable unicast/multicast mode are not
-    handled in the promiscuous mode message handler, which causes
-    unexpected results regarding the current promiscuous mode settings.
-
-To fix [1] make sure any promiscuous mask defines include the correct
-bits for each of the promiscuous modes.
-
-To fix [2] make sure that all 4 cases are handled since there are 2 bits
-(FLAG_VF_UNICAST_PROMISC and FLAG_VF_MULTICAST_PROMISC) that can be
-either set or cleared. Also, since either unicast and/or multicast
-promiscuous configuration can fail, introduce two separate error values
-to handle each of these cases.
-
-Fixes: 01b5e89aab49 ("ice: Add VF promiscuous support")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Fixes: 1a3571b5938c ("ice: restore PHY settings on media insertion")
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |  5 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 78 +++++++++----------
- 2 files changed, 40 insertions(+), 43 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 357706444dd5..264507762dc5 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -125,13 +125,10 @@
- #define ice_for_each_q_vector(vsi, i) \
- 	for ((i) = 0; (i) < (vsi)->num_q_vectors; (i)++)
- 
--#define ICE_UCAST_PROMISC_BITS (ICE_PROMISC_UCAST_TX | ICE_PROMISC_MCAST_TX | \
--				ICE_PROMISC_UCAST_RX | ICE_PROMISC_MCAST_RX)
-+#define ICE_UCAST_PROMISC_BITS (ICE_PROMISC_UCAST_TX | ICE_PROMISC_UCAST_RX)
- 
- #define ICE_UCAST_VLAN_PROMISC_BITS (ICE_PROMISC_UCAST_TX | \
--				     ICE_PROMISC_MCAST_TX | \
- 				     ICE_PROMISC_UCAST_RX | \
--				     ICE_PROMISC_MCAST_RX | \
- 				     ICE_PROMISC_VLAN_TX  | \
- 				     ICE_PROMISC_VLAN_RX)
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 0f2a4d48574e..5a581e759111 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2378,6 +2378,7 @@ bool ice_is_any_vf_in_promisc(struct ice_pf *pf)
- static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
- {
- 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	enum ice_status mcast_status = 0, ucast_status = 0;
- 	bool rm_promisc, alluni = false, allmulti = false;
- 	struct virtchnl_promisc_info *info =
- 	    (struct virtchnl_promisc_info *)msg;
-@@ -2467,52 +2468,51 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
- 			goto error_param;
- 		}
- 	} else {
--		enum ice_status status;
--		u8 promisc_m;
--
--		if (alluni) {
--			if (vf->port_vlan_info || vsi->num_vlan)
--				promisc_m = ICE_UCAST_VLAN_PROMISC_BITS;
--			else
--				promisc_m = ICE_UCAST_PROMISC_BITS;
--		} else if (allmulti) {
--			if (vf->port_vlan_info || vsi->num_vlan)
--				promisc_m = ICE_MCAST_VLAN_PROMISC_BITS;
--			else
--				promisc_m = ICE_MCAST_PROMISC_BITS;
-+		u8 mcast_m, ucast_m;
-+
-+		if (vf->port_vlan_info || vsi->num_vlan > 1) {
-+			mcast_m = ICE_MCAST_VLAN_PROMISC_BITS;
-+			ucast_m = ICE_UCAST_VLAN_PROMISC_BITS;
- 		} else {
--			if (vf->port_vlan_info || vsi->num_vlan)
--				promisc_m = ICE_UCAST_VLAN_PROMISC_BITS;
--			else
--				promisc_m = ICE_UCAST_PROMISC_BITS;
-+			mcast_m = ICE_MCAST_PROMISC_BITS;
-+			ucast_m = ICE_UCAST_PROMISC_BITS;
- 		}
- 
--		/* Configure multicast/unicast with or without VLAN promiscuous
--		 * mode
--		 */
--		status = ice_vf_set_vsi_promisc(vf, vsi, promisc_m, rm_promisc);
--		if (status) {
--			dev_err(dev, "%sable Tx/Rx filter promiscuous mode on VF-%d failed, error: %s\n",
--				rm_promisc ? "dis" : "en", vf->vf_id,
--				ice_stat_str(status));
--			v_ret = ice_err_to_virt_err(status);
--			goto error_param;
--		} else {
--			dev_dbg(dev, "%sable Tx/Rx filter promiscuous mode on VF-%d succeeded\n",
--				rm_promisc ? "dis" : "en", vf->vf_id);
-+		ucast_status = ice_vf_set_vsi_promisc(vf, vsi, ucast_m,
-+						      !alluni);
-+		if (ucast_status) {
-+			dev_err(dev, "%sable Tx/Rx filter promiscuous mode on VF-%d failed\n",
-+				alluni ? "en" : "dis", vf->vf_id);
-+			v_ret = ice_err_to_virt_err(ucast_status);
-+		}
-+
-+		mcast_status = ice_vf_set_vsi_promisc(vf, vsi, mcast_m,
-+						      !allmulti);
-+		if (mcast_status) {
-+			dev_err(dev, "%sable Tx/Rx filter promiscuous mode on VF-%d failed\n",
-+				allmulti ? "en" : "dis", vf->vf_id);
-+			v_ret = ice_err_to_virt_err(mcast_status);
- 		}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 2c23c8f468a5..53e053c997eb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4192,28 +4192,25 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		goto err_send_version_unroll;
  	}
  
--	if (allmulti &&
--	    !test_and_set_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
--		dev_info(dev, "VF %u successfully set multicast promiscuous mode\n", vf->vf_id);
--	else if (!allmulti && test_and_clear_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
--		dev_info(dev, "VF %u successfully unset multicast promiscuous mode\n", vf->vf_id);
-+	if (!mcast_status) {
-+		if (allmulti &&
-+		    !test_and_set_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
-+			dev_info(dev, "VF %u successfully set multicast promiscuous mode\n",
-+				 vf->vf_id);
-+		else if (!allmulti && test_and_clear_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
-+			dev_info(dev, "VF %u successfully unset multicast promiscuous mode\n",
-+				 vf->vf_id);
-+	}
++	/* not a fatal error if this fails */
+ 	err = ice_init_nvm_phy_type(pf->hw.port_info);
+-	if (err) {
++	if (err)
+ 		dev_err(dev, "ice_init_nvm_phy_type failed: %d\n", err);
+-		goto err_send_version_unroll;
+-	}
  
--	if (alluni && !test_and_set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
--		dev_info(dev, "VF %u successfully set unicast promiscuous mode\n", vf->vf_id);
--	else if (!alluni && test_and_clear_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
--		dev_info(dev, "VF %u successfully unset unicast promiscuous mode\n", vf->vf_id);
-+	if (!ucast_status) {
-+		if (alluni && !test_and_set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
-+			dev_info(dev, "VF %u successfully set unicast promiscuous mode\n",
-+				 vf->vf_id);
-+		else if (!alluni && test_and_clear_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
-+			dev_info(dev, "VF %u successfully unset unicast promiscuous mode\n",
-+				 vf->vf_id);
-+	}
++	/* not a fatal error if this fails */
+ 	err = ice_update_link_info(pf->hw.port_info);
+-	if (err) {
++	if (err)
+ 		dev_err(dev, "ice_update_link_info failed: %d\n", err);
+-		goto err_send_version_unroll;
+-	}
  
- error_param:
- 	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
+ 	ice_init_link_dflt_override(pf->hw.port_info);
+ 
+ 	/* if media available, initialize PHY settings */
+ 	if (pf->hw.port_info->phy.link_info.link_info &
+ 	    ICE_AQ_MEDIA_AVAILABLE) {
++		/* not a fatal error if this fails */
+ 		err = ice_init_phy_user_cfg(pf->hw.port_info);
+-		if (err) {
++		if (err)
+ 			dev_err(dev, "ice_init_phy_user_cfg failed: %d\n", err);
+-			goto err_send_version_unroll;
+-		}
+ 
+ 		if (!test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags)) {
+ 			struct ice_vsi *vsi = ice_get_main_vsi(pf);
 -- 
 2.20.1
 
