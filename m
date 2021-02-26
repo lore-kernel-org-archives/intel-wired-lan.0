@@ -1,67 +1,52 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 26 Feb 2021 13:19:21 -0800
-Subject: [Intel-wired-lan] [PATCH net 02/13] ice: Fix VFR issues for AVF
- drivers that expect ATQLEN cleared
+Date: Fri, 26 Feb 2021 13:19:32 -0800
+Subject: [Intel-wired-lan] [PATCH net 13/13] ice: Cleanup fltr list in case
+ of allocation issues
 In-Reply-To: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210226211932.46683-2-anthony.l.nguyen@intel.com>
+Message-ID: <20210226211932.46683-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Robert Malz <robertx.malz@intel.com>
 
-Some AVF drivers expect the VF_MBX_ATQLEN register to be cleared for any
-type of VFR/VFLR. Fix this by clearing the VF_MBX_ATQLEN register at the
-same time as VF_MBX_ARQLEN.
+When ice_remove_vsi_lkup_fltr is called, by calling
+ice_add_to_vsi_fltr_list local copy of vsi filter list
+is created. If any issues during creation of vsi filter
+list occurs it up for the caller to free already
+allocated memory. This patch ensures proper memory
+deallocation in these cases.
 
-Fixes: 82ba01282cf8 ("ice: clear VF ARQLEN register on reset")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Fixes: 80d144c9ac82 ("ice: Refactor switch rule management structures and functions")
+Signed-off-by: Robert Malz <robertx.malz@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  1 +
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 +++++++-----
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 093a1818a392..1998821896c0 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -31,6 +31,7 @@
- #define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
- #define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
- #define VF_MBX_ARQLEN(_VF)			(0x0022BC00 + ((_VF) * 4))
-+#define VF_MBX_ATQLEN(_VF)			(0x0022A800 + ((_VF) * 4))
- #define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
- #define PF_FW_ATQT				0x00080400
- #define PF_MBX_ARQBAH				0x0022E400
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 1f38a8d0c525..0f2a4d48574e 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -435,13 +435,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf, bool is_vflr, bool is_pfr)
- 	 */
- 	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 387d3f6cd71e..834cbd3f7b31 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -2624,7 +2624,7 @@ ice_remove_vsi_lkup_fltr(struct ice_hw *hw, u16 vsi_handle,
+ 					  &remove_list_head);
+ 	mutex_unlock(rule_lock);
+ 	if (status)
+-		return;
++		goto free_fltr_list;
  
--	/* VF_MBX_ARQLEN is cleared by PFR, so the driver needs to clear it
--	 * in the case of VFR. If this is done for PFR, it can mess up VF
--	 * resets because the VF driver may already have started cleanup
--	 * by the time we get here.
-+	/* VF_MBX_ARQLEN and VF_MBX_ATQLEN are cleared by PFR, so the driver
-+	 * needs to clear them in the case of VFR/VFLR. If this is done for
-+	 * PFR, it can mess up VF resets because the VF driver may already
-+	 * have started cleanup by the time we get here.
- 	 */
--	if (!is_pfr)
-+	if (!is_pfr) {
- 		wr32(hw, VF_MBX_ARQLEN(vf->vf_id), 0);
-+		wr32(hw, VF_MBX_ATQLEN(vf->vf_id), 0);
-+	}
+ 	switch (lkup) {
+ 	case ICE_SW_LKUP_MAC:
+@@ -2647,6 +2647,7 @@ ice_remove_vsi_lkup_fltr(struct ice_hw *hw, u16 vsi_handle,
+ 		break;
+ 	}
  
- 	/* In the case of a VFLR, the HW has already reset the VF and we
- 	 * just need to clean up, so don't hit the VFRTRIG register.
++free_fltr_list:
+ 	list_for_each_entry_safe(fm_entry, tmp, &remove_list_head, list_entry) {
+ 		list_del(&fm_entry->list_entry);
+ 		devm_kfree(ice_hw_to_dev(hw), fm_entry);
 -- 
 2.20.1
 
