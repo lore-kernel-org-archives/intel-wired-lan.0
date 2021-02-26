@@ -1,78 +1,116 @@
 From: Jithu Joseph <jithu.joseph@intel.com>
-Date: Thu, 25 Feb 2021 16:22:59 -0800
-Subject: [Intel-wired-lan] [PATCH v5 0/9] igc: Add support for AF_XDP
- zero-copy
-Message-ID: <20210226002308.2348-1-jithu.joseph@intel.com>
+Date: Thu, 25 Feb 2021 16:23:01 -0800
+Subject: [Intel-wired-lan] [PATCH v5 2/9] igc: Refactor __igc_xdp_run_prog()
+In-Reply-To: <20210226002308.2348-1-jithu.joseph@intel.com>
+References: <20210226002308.2348-1-jithu.joseph@intel.com>
+Message-ID: <20210226002308.2348-3-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+From: Andre Guedes <andre.guedes@intel.com>
 
-This is the fifth version of this series which adds AF_XDP zero-copy support
-to igc driver.
+Refactor __igc_xdp_run_prog() helper from igc_xdp_run_prog(),
+preparing the code for AF_XDP zero-copy support which is added
+by upcoming patches.
 
-The only change from v4:
-    - igc_setup_rx_resources() - Modified to pass napi_id as a parameter
-      to xdp_rxq_info_reg(). Earlier we were passing 0 instead, which
-      implies napi_id is was unavailable/unknown.
+The existing igc_xdp_run_prog() caters to regular XDP rx path
+which has to verify if bpf_prog is not NULL. Zero-copy
+path assumes that bpf_prog is not NULL and hence this check is
+not required. Therefore it makes sense to refactor the common
+code into a helper function, to avoid code duplication.
 
-Known issues (carried from v3):
-    When an XDP application is running in Tx-Only mode with Zero-Copy
-    enabled, it is not expected to add the frames to the fill-queue. I have
-    noticed the following two issues in this scenario:
-    - If XDP_USE_NEED_WAKEUP flag is not set by application, igc_poll()
-      will go into infinite loop because the buffer allocation resulting
-      in igc_clean_rx_irq_zc() indicating that all work is not done and NAPI
-      should keep polling. This does not occur if XDP_USE_NEED_WAKEUP
-      flag is set.
-    - Since there are no buffers allocated by userspace for the fill
-      queue, there is no memory allocated for the NIC to copy the data
-      to. If the packet received is destined to the hardware queue where
-      XDP application is running, no packets are received even on other
-      queues.
-    Both these issues can be mitigated by adding a few frames to the
-    fill queue. The second issue can also be mitigated by making sure no
-    packets are being received on the hardware queue where Rx is running.
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
-v4 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210222090936.6768-1-jithu.joseph at intel.com/
-
-v3 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210209024243.23406-1-vedang.patel at intel.com/
-
-v2 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201223203705.78705-1-andre.guedes at intel.com/
-
-v1 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201217202415.77891-1-andre.guedes at intel.com/
-
-Andre Guedes (9):
-  igc: Move igc_xdp_is_enabled()
-  igc: Refactor __igc_xdp_run_prog()
-  igc: Refactor igc_clean_rx_ring()
-  igc: Refactor XDP rxq info registration
-  igc: Introduce TX/RX stats helpers
-  igc: Introduce igc_unmap_tx_buffer() helper
-  igc: Replace IGC_TX_FLAGS_XDP flag by an enum
-  igc: Enable RX via AF_XDP zero-copy
-  igc: Enable TX via AF_XDP zero-copy
-
- drivers/net/ethernet/intel/igc/igc.h      |  33 +-
- drivers/net/ethernet/intel/igc/igc_base.h |   2 +
- drivers/net/ethernet/intel/igc/igc_main.c | 652 ++++++++++++++++++----
- drivers/net/ethernet/intel/igc/igc_xdp.c  | 107 +++-
- drivers/net/ethernet/intel/igc/igc_xdp.h  |   8 +-
- 5 files changed, 675 insertions(+), 127 deletions(-)
-
-
-base-commit: bae0e60bed826a21db719985ceefe1e3eb3f58e5
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index a659e6f24886..d9d60c6c6726 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2021,38 +2021,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
+ 	return res;
+ }
+ 
+-static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+-					struct xdp_buff *xdp)
++/* This function assumes rcu_read_lock() is held by the caller. */
++static int __igc_xdp_run_prog(struct igc_adapter *adapter,
++			      struct bpf_prog *prog,
++			      struct xdp_buff *xdp)
+ {
+-	struct bpf_prog *prog;
+-	int res;
+-	u32 act;
+-
+-	rcu_read_lock();
+-
+-	prog = READ_ONCE(adapter->xdp_prog);
+-	if (!prog) {
+-		res = IGC_XDP_PASS;
+-		goto unlock;
+-	}
++	u32 act = bpf_prog_run_xdp(prog, xdp);
+ 
+-	act = bpf_prog_run_xdp(prog, xdp);
+ 	switch (act) {
+ 	case XDP_PASS:
+-		res = IGC_XDP_PASS;
+-		break;
++		return IGC_XDP_PASS;
+ 	case XDP_TX:
+-		if (igc_xdp_xmit_back(adapter, xdp) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_TX;
+-		break;
++		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_TX;
+ 	case XDP_REDIRECT:
+-		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
+-			res = IGC_XDP_CONSUMED;
+-		else
+-			res = IGC_XDP_REDIRECT;
+-		break;
++		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
++			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+@@ -2060,9 +2044,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+ 		trace_xdp_exception(adapter->netdev, prog, act);
+ 		fallthrough;
+ 	case XDP_DROP:
+-		res = IGC_XDP_CONSUMED;
+-		break;
++		return IGC_XDP_CONSUMED;
+ 	}
++}
++
++static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
++					struct xdp_buff *xdp)
++{
++	struct bpf_prog *prog;
++	int res;
++
++	rcu_read_lock();
++
++	prog = READ_ONCE(adapter->xdp_prog);
++	if (!prog) {
++		res = IGC_XDP_PASS;
++		goto unlock;
++	}
++
++	res = __igc_xdp_run_prog(adapter, prog, xdp);
+ 
+ unlock:
+ 	rcu_read_unlock();
 -- 
 2.17.1
 
