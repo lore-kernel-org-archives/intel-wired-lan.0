@@ -1,82 +1,43 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 26 Feb 2021 13:19:28 -0800
-Subject: [Intel-wired-lan] [PATCH net 09/13] ice: remove DCBNL_DEVRESET bit
- from PF state
-In-Reply-To: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210226211932.46683-9-anthony.l.nguyen@intel.com>
+Date: Fri, 26 Feb 2021 13:19:20 -0800
+Subject: [Intel-wired-lan] [PATCH net 01/13] ice: Fix allowing VF to request
+ more/less queues via virtchnl
+Message-ID: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-The original purpose of the ICE_DCBNL_DEVRESET was to protect
-the driver during DCBNL device resets.  But, the flow for
-DCBNL device resets now consists of only calls up the stack
-such as dev_close() and dev_open() that will result in NDO calls
-to the driver.  These will be handled with state changes from the
-stack.  Also, there is a problem of the dev_close and dev_open
-being blocked by checks for reset in progress also using the
-ICE_DCBNL_DEVRESET bit.
+Commit 12bb018c538c ("ice: Refactor VF reset") caused a regression
+that removes the ability for a VF to request a different amount of
+queues via VIRTCHNL_OP_REQUEST_QUEUES. This prevents VF drivers to
+either increase or decrease the number of queue pairs they are
+allocated. Fix this by using the variable vf->num_req_qs when
+determining the vf->num_vf_qs during VF VSI creation.
 
-Since the ICE_DCBNL_DEVRESET bit is not necessary for protecting
-the driver from DCBNL device resets and it is actually blocking
-changes coming form the DCBNL interface, remove the bit from the
-PF state and don't block driver function based on DCBNL reset in
-progress.
-
-Fixes: b94b013eb626 ("ice: Implement DCBNL support")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Fixes: 12bb018c538c ("ice: Refactor VF reset")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h        | 1 -
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 2 --
- drivers/net/ethernet/intel/ice/ice_lib.c    | 1 -
- 3 files changed, 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index ae1c3a3b0780..522c7aa61cc7 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -193,7 +193,6 @@ enum ice_state {
- 	__ICE_NEEDS_RESTART,
- 	__ICE_PREPARED_FOR_RESET,	/* set by driver when prepared */
- 	__ICE_RESET_OICR_RECV,		/* set by driver after rcv reset OICR */
--	__ICE_DCBNL_DEVRESET,		/* set by dcbnl devreset */
- 	__ICE_PFR_REQ,			/* set by driver and peers */
- 	__ICE_CORER_REQ,		/* set by driver and peers */
- 	__ICE_GLOBR_REQ,		/* set by driver and peers */
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 468a63f7eff9..4180f1f35fb8 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -18,12 +18,10 @@ static void ice_dcbnl_devreset(struct net_device *netdev)
- 	while (ice_is_reset_in_progress(pf->state))
- 		usleep_range(1000, 2000);
- 
--	set_bit(__ICE_DCBNL_DEVRESET, pf->state);
- 	dev_close(netdev);
- 	netdev_state_change(netdev);
- 	dev_open(netdev, NULL);
- 	netdev_state_change(netdev);
--	clear_bit(__ICE_DCBNL_DEVRESET, pf->state);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 638304abef73..d5b9ac620b06 100644
+index 8d4e2ad4328d..116f8556f4a8 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3080,7 +3080,6 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- bool ice_is_reset_in_progress(unsigned long *state)
- {
- 	return test_bit(__ICE_RESET_OICR_RECV, state) ||
--	       test_bit(__ICE_DCBNL_DEVRESET, state) ||
- 	       test_bit(__ICE_PFR_REQ, state) ||
- 	       test_bit(__ICE_CORER_REQ, state) ||
- 	       test_bit(__ICE_GLOBR_REQ, state);
+@@ -192,6 +192,8 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
+ 		break;
+ 	case ICE_VSI_VF:
+ 		vf = &pf->vf[vsi->vf_id];
++		if (vf->num_req_qs)
++			vf->num_vf_qs = vf->num_req_qs;
+ 		vsi->alloc_txq = vf->num_vf_qs;
+ 		vsi->alloc_rxq = vf->num_vf_qs;
+ 		/* pf->num_msix_per_vf includes (VF miscellaneous vector +
 -- 
 2.20.1
 
