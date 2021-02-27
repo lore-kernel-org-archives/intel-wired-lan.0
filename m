@@ -1,124 +1,70 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 27 Feb 2021 23:05:33 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 94c839566603f723f6914a6b23014a6110636ec8
-Message-ID: <603a5fbd.oYtwqLJcusfzVIEG%lkp@intel.com>
+From: Billy Croan <BCroan@unrealservers.net>
+Date: Sat, 27 Feb 2021 16:18:49 -0600
+Subject: [Intel-wired-lan] How to "arm" WoL with OS running?
+In-Reply-To: <20210226094853.0000470c@intel.com>
+References: <CABJL2KoxdiBV6BBOJKfU4pAxANy3F-65c3+mtM2BhS5Lu89vfw@mail.gmail.com>
+ <20210226094853.0000470c@intel.com>
+Message-ID: <CABJL2KqRkGffkF_Q7WKQesOO2G6E3B4-hc_RsiK+jXnbhfq4Nw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 94c839566603f723f6914a6b23014a6110636ec8  igb: unbreak I2C bit-banging on i350
+Thank you Jesse. I agree with the security considerations 100%.
+Unfortunately this hardware does not support ipmi and we have an awful lot
+of it that would can go to waste if we discarded it for that reason.
+Logging into reboot of course with your preferable but our use case for
+reboot on lan is if the system is locked up or unresponsive or SSH is
+broken in other words similar use case for ipmi.
 
-elapsed time: 723m
+I'll check out the e1000e developer manuals on Intel.com.
 
-configs tested: 95
-configs skipped: 2
+On Fri, Feb 26, 2021, 11:48 Jesse Brandeburg <jesse.brandeburg@intel.com>
+wrote:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                           se7724_defconfig
-powerpc                      arches_defconfig
-mips                      bmips_stb_defconfig
-arm                          simpad_defconfig
-sh                     magicpanelr2_defconfig
-arm                             pxa_defconfig
-arm                        shmobile_defconfig
-m68k                            mac_defconfig
-riscv                            allmodconfig
-powerpc                        icon_defconfig
-parisc                generic-32bit_defconfig
-powerpc                     sequoia_defconfig
-xtensa                       common_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                  mpc885_ads_defconfig
-arm                        spear6xx_defconfig
-m68k                        m5407c3_defconfig
-arc                         haps_hs_defconfig
-mips                          malta_defconfig
-powerpc                    gamecube_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210227
-i386                 randconfig-a006-20210227
-i386                 randconfig-a004-20210227
-i386                 randconfig-a001-20210227
-i386                 randconfig-a003-20210227
-i386                 randconfig-a002-20210227
-x86_64               randconfig-a015-20210227
-x86_64               randconfig-a011-20210227
-x86_64               randconfig-a012-20210227
-x86_64               randconfig-a016-20210227
-x86_64               randconfig-a013-20210227
-x86_64               randconfig-a014-20210227
-i386                 randconfig-a013-20210227
-i386                 randconfig-a012-20210227
-i386                 randconfig-a011-20210227
-i386                 randconfig-a014-20210227
-i386                 randconfig-a016-20210227
-i386                 randconfig-a015-20210227
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a001-20210227
-x86_64               randconfig-a002-20210227
-x86_64               randconfig-a003-20210227
-x86_64               randconfig-a005-20210227
-x86_64               randconfig-a004-20210227
-x86_64               randconfig-a006-20210227
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> Billy Croan wrote:
+>
+> > I was reading https://en.wikipedia.org/wiki/Wake-on-LAN and came across
+> > this phrase: "not armed for WOL"
+> >
+> > I have some OpenCompute hardware which uses the WoL signal from the intel
+> > network chip to cause a reset/reboot.
+> >
+> > this works when the system is in bios or in memtest86, but not when an OS
+> > is loaded.  I suspect that the e1000e driver "disarms" WoL on load, and
+> 're
+> > arms' it when unloaded or when the OS shuts down or changes to a lower
+> ACPI
+> > state.
+>
+> That's right, that's the supported use case for WoL.
+>
+> > Is there a technical reason any WoL can not be armed at the same time as
+> OS
+> > is using the nic?
+>
+> The short answer is we don't support it.
+>
+> There are a couple of reasons that you might not want to do this.
+> 1) anyone can reboot your server remotely without authentication
+> 2) IPMI can/should probably be used to control/manage the server
+> instead, if available.  If the server is already available remotely
+> then you can just reboot it after logging in. :-)
+>
+> > I get that it serves no useful purpose of the os is already running, but
+> > does it pose a problem?
+>
+> Functionally the hardware can assert the Wake signal (PME+) any time,
+> and it won't cause a problem (on a normal system). However, we don't
+> support this. The developer manuals for the e1000e hardware should
+> mostly be available from intel.com if you want to learn more about the
+> hardware, but I'm sorry I can't help you much further since this is out
+> of scope for our software support.
+>
+> Good luck and thanks for the question,
+> Jesse
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210227/15778838/attachment.html>
