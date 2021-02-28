@@ -1,37 +1,36 @@
 From: Dinghao Liu <dinghao.liu@zju.edu.cn>
-Date: Sun, 28 Feb 2021 17:44:23 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix error handling in
- e1000_set_d0_lplu_state_82571
-Message-ID: <20210228094424.7884-1-dinghao.liu@zju.edu.cn>
+Date: Sun, 28 Feb 2021 19:50:58 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix error handling in i40e_vsi_open
+Message-ID: <20210228115059.28686-1-dinghao.liu@zju.edu.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There is one e1e_wphy() call in e1000_set_d0_lplu_state_82571
-that we have caught its return value but lack further handling.
-Check and terminate the execution flow just like other e1e_wphy()
-in this function.
+When vsi->type == I40E_VSI_FDIR, we have caught the return value of
+i40e_vsi_request_irq() but without further handling. Check and execute
+memory clean on failure just like the other i40e_vsi_request_irq().
 
+Fixes: 8a9eb7d3cbcab ("i40e: rework fdir setup and teardown")
 Signed-off-by: Dinghao Liu <dinghao.liu@zju.edu.cn>
 ---
- drivers/net/ethernet/intel/e1000e/82571.c | 2 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
-index 88faf05e23ba..0b1e890dd583 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.c
-+++ b/drivers/net/ethernet/intel/e1000e/82571.c
-@@ -899,6 +899,8 @@ static s32 e1000_set_d0_lplu_state_82571(struct e1000_hw *hw, bool active)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 353deae139f9..c3bbc1310f8e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8724,6 +8724,8 @@ int i40e_vsi_open(struct i40e_vsi *vsi)
+ 			 dev_driver_string(&pf->pdev->dev),
+ 			 dev_name(&pf->pdev->dev));
+ 		err = i40e_vsi_request_irq(vsi, int_name);
++		if (err)
++			goto err_setup_rx;
+ 
  	} else {
- 		data &= ~IGP02E1000_PM_D0_LPLU;
- 		ret_val = e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, data);
-+		if (ret_val)
-+			return ret_val;
- 		/* LPLU and SmartSpeed are mutually exclusive.  LPLU is used
- 		 * during Dx states where the power conservation is most
- 		 * important.  During driver activity we should enable
+ 		err = -EINVAL;
 -- 
 2.17.1
 
