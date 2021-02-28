@@ -1,42 +1,135 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 31 Mar 2021 21:58:45 +0000
-Subject: [Intel-wired-lan] [PATCH S57 14/14] ice: Remove unnecessary
- checks in add/kill_vid ndo ops
-In-Reply-To: <20210325223517.17722-14-anthony.l.nguyen@intel.com>
-References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
- <20210325223517.17722-14-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105169B0A49056943BE3A99FA7C9@CO1PR11MB5105.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Mon, 1 Mar 2021 00:01:15 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 93/106]
+ drivers/net/ethernet/intel/iavf/iavf_fdir.c:340:5: warning: format
+ specifies type 'unsigned short' but the argument has type 'int'
+Message-ID: <202103010009.JiDbuoog-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Thursday, March 25, 2021 3:35 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S57 14/14] ice: Remove unnecessary
-> checks in add/kill_vid ndo ops
-> 
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> Currently the driver is doing two unnecessary checks. First both ops are
-> checking if the VLAN ID passed in is less than VLAN_N_VID and second both
-> ops are checking to see if a port VLAN is configured on the VSI.
-> 
-> The first check is already handled by the 8021q driver so this is an
-> unnecessary check. The second check is unnecessary because the PF VSI is
-> never put into a port VLAN.
-> 
-> Remove these checks.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 12 ------------
->  1 file changed, 12 deletions(-)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+head:   94c839566603f723f6914a6b23014a6110636ec8
+commit: 81848f73834d8ebd01f558c9eef8cf002b4b0ae5 [93/106] iavf: Support IPv4 Flow Director filters
+config: riscv-randconfig-r025-20210228 (attached as .config)
+compiler: clang version 13.0.0 (https://github.com/llvm/llvm-project b077d82b00d81934c7c27ac89dd8b0e7f448bded)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install riscv cross compiling tool for clang build
+        # apt-get install binutils-riscv64-linux-gnu
+        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=81848f73834d8ebd01f558c9eef8cf002b4b0ae5
+        git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
+        git fetch --no-tags tnguy-next-queue dev-queue
+        git checkout 81848f73834d8ebd01f558c9eef8cf002b4b0ae5
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=riscv 
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/iavf/iavf_fdir.c:340:5: warning: format specifies type 'unsigned short' but the argument has type 'int' [-Wformat]
+                            ntohs(fltr->ip_data.dst_port),
+                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/dev_printk.h:118:33: note: expanded from macro 'dev_info'
+           _dev_info(dev, dev_fmt(fmt), ##__VA_ARGS__)
+                                  ~~~     ^~~~~~~~~~~
+   include/linux/byteorder/generic.h:142:18: note: expanded from macro 'ntohs'
+   #define ntohs(x) ___ntohs(x)
+                    ^~~~~~~~~~~
+   include/linux/byteorder/generic.h:137:21: note: expanded from macro '___ntohs'
+   #define ___ntohs(x) __be16_to_cpu(x)
+                       ^~~~~~~~~~~~~~~~
+   include/uapi/linux/byteorder/little_endian.h:42:26: note: expanded from macro '__be16_to_cpu'
+   #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
+                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/uapi/linux/swab.h:105:2: note: expanded from macro '__swab16'
+           (__builtin_constant_p((__u16)(x)) ?     \
+           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/iavf/iavf_fdir.c:341:5: warning: format specifies type 'unsigned short' but the argument has type 'int' [-Wformat]
+                            ntohs(fltr->ip_data.src_port));
+                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/dev_printk.h:118:33: note: expanded from macro 'dev_info'
+           _dev_info(dev, dev_fmt(fmt), ##__VA_ARGS__)
+                                  ~~~     ^~~~~~~~~~~
+   include/linux/byteorder/generic.h:142:18: note: expanded from macro 'ntohs'
+   #define ntohs(x) ___ntohs(x)
+                    ^~~~~~~~~~~
+   include/linux/byteorder/generic.h:137:21: note: expanded from macro '___ntohs'
+   #define ___ntohs(x) __be16_to_cpu(x)
+                       ^~~~~~~~~~~~~~~~
+   include/uapi/linux/byteorder/little_endian.h:42:26: note: expanded from macro '__be16_to_cpu'
+   #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
+                            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/uapi/linux/swab.h:105:2: note: expanded from macro '__swab16'
+           (__builtin_constant_p((__u16)(x)) ?     \
+           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   2 warnings generated.
 
 
+vim +340 drivers/net/ethernet/intel/iavf/iavf_fdir.c
+
+   316	
+   317	/**
+   318	 * iavf_print_fdir_fltr
+   319	 * @adapter: adapter structure
+   320	 * @fltr: Flow Director filter to print
+   321	 *
+   322	 * Print the Flow Director filter
+   323	 **/
+   324	void iavf_print_fdir_fltr(struct iavf_adapter *adapter, struct iavf_fdir_fltr *fltr)
+   325	{
+   326		const char *proto = iavf_fdir_flow_proto_name(fltr->flow_type);
+   327	
+   328		if (!proto)
+   329			return;
+   330	
+   331		switch (fltr->flow_type) {
+   332		case IAVF_FDIR_FLOW_IPV4_TCP:
+   333		case IAVF_FDIR_FLOW_IPV4_UDP:
+   334		case IAVF_FDIR_FLOW_IPV4_SCTP:
+   335			dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 %s: dst_port %hu src_port %hu\n",
+   336				 fltr->loc,
+   337				 &fltr->ip_data.v4_addrs.dst_ip,
+   338				 &fltr->ip_data.v4_addrs.src_ip,
+   339				 proto,
+ > 340				 ntohs(fltr->ip_data.dst_port),
+   341				 ntohs(fltr->ip_data.src_port));
+   342			break;
+   343		case IAVF_FDIR_FLOW_IPV4_AH:
+   344		case IAVF_FDIR_FLOW_IPV4_ESP:
+   345			dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 %s: SPI %u\n",
+   346				 fltr->loc,
+   347				 &fltr->ip_data.v4_addrs.dst_ip,
+   348				 &fltr->ip_data.v4_addrs.src_ip,
+   349				 proto,
+   350				 ntohl(fltr->ip_data.spi));
+   351			break;
+   352		case IAVF_FDIR_FLOW_IPV4_OTHER:
+   353			dev_info(&adapter->pdev->dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 proto: %u L4_bytes: 0x%x\n",
+   354				 fltr->loc,
+   355				 &fltr->ip_data.v4_addrs.dst_ip,
+   356				 &fltr->ip_data.v4_addrs.src_ip,
+   357				 fltr->ip_data.proto,
+   358				 ntohl(fltr->ip_data.l4_header));
+   359			break;
+   360		default:
+   361			break;
+   362		}
+   363	}
+   364	
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 29930 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210301/3d4350e3/attachment-0001.bin>
