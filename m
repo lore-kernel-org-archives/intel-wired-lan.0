@@ -1,49 +1,132 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 2 Mar 2021 10:29:23 +0200
-Subject: [Intel-wired-lan] [PATCH net 1/2] e1000e: Fix duplicate include
- guard
-In-Reply-To: <20210222040005.20126-1-tseewald@gmail.com>
-References: <20210222040005.20126-1-tseewald@gmail.com>
-Message-ID: <4b289f9c-b7ca-c48e-de4b-b83b6b540da3@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 02 Mar 2021 19:10:37 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 2a030e0923e08bbfb9a0acdfb9471d344c81f4bb
+Message-ID: <603e1d2d.plKLHxLP4CpT1hD7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/22/2021 06:00, Tom Seewald wrote:
-> The include guard "_E1000_HW_H_" is used by header files in three
-> different drivers (e1000/e1000_hw.h, e1000e/hw.h, and igb/e1000_hw.h).
-> Using the same include guard macro in more than one header file may
-> cause unexpected behavior from the compiler. Fix the duplicate include
-> guard in the e1000e driver by renaming it.
-> 
-> Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (currently for ICH9 devices only)")
-> Signed-off-by: Tom Seewald <tseewald@gmail.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/hw.h | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-> index 69a2329ea463..db79c4e6413e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/hw.h
-> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
-> @@ -1,8 +1,8 @@
->   /* SPDX-License-Identifier: GPL-2.0 */
->   /* Copyright(c) 1999 - 2018 Intel Corporation. */
->   
-> -#ifndef _E1000_HW_H_
-> -#define _E1000_HW_H_
-> +#ifndef _E1000E_HW_H_
-> +#define _E1000E_HW_H_
->   
->   #include "regs.h"
->   #include "defines.h"
-> @@ -714,4 +714,4 @@ struct e1000_hw {
->   #include "80003es2lan.h"
->   #include "ich8lan.h"
->   
-> -#endif
-> +#endif /* _E1000E_HW_H_ */
-> 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 2a030e0923e08bbfb9a0acdfb9471d344c81f4bb  ice: Cleanup fltr list in case of allocation issues
+
+elapsed time: 725m
+
+configs tested: 103
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arc                        nsim_700_defconfig
+arm                        keystone_defconfig
+ia64                             alldefconfig
+arm                            mps2_defconfig
+m68k                                defconfig
+riscv                    nommu_k210_defconfig
+m68k                          amiga_defconfig
+powerpc                      acadia_defconfig
+sh                           se7705_defconfig
+i386                             alldefconfig
+arm                           sama5_defconfig
+powerpc                        warp_defconfig
+arm                          iop32x_defconfig
+powerpc                 mpc8540_ads_defconfig
+c6x                              allyesconfig
+arm                         s3c2410_defconfig
+sh                        dreamcast_defconfig
+mips                      maltaaprp_defconfig
+nios2                         10m50_defconfig
+arm                        realview_defconfig
+sh                   sh7770_generic_defconfig
+arm                         s5pv210_defconfig
+openrisc                 simple_smp_defconfig
+m68k                        stmark2_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20210302
+x86_64               randconfig-a001-20210302
+x86_64               randconfig-a004-20210302
+x86_64               randconfig-a002-20210302
+x86_64               randconfig-a005-20210302
+x86_64               randconfig-a003-20210302
+i386                 randconfig-a005-20210302
+i386                 randconfig-a003-20210302
+i386                 randconfig-a002-20210302
+i386                 randconfig-a004-20210302
+i386                 randconfig-a006-20210302
+i386                 randconfig-a001-20210302
+i386                 randconfig-a016-20210302
+i386                 randconfig-a012-20210302
+i386                 randconfig-a014-20210302
+i386                 randconfig-a013-20210302
+i386                 randconfig-a011-20210302
+i386                 randconfig-a015-20210302
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a006-20210301
+x86_64               randconfig-a001-20210301
+x86_64               randconfig-a004-20210301
+x86_64               randconfig-a002-20210301
+x86_64               randconfig-a005-20210301
+x86_64               randconfig-a003-20210301
+x86_64               randconfig-a013-20210302
+x86_64               randconfig-a016-20210302
+x86_64               randconfig-a015-20210302
+x86_64               randconfig-a014-20210302
+x86_64               randconfig-a012-20210302
+x86_64               randconfig-a011-20210302
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
