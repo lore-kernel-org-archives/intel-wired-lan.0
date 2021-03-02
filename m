@@ -1,329 +1,137 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  2 Mar 2021 10:12:01 -0800
-Subject: [Intel-wired-lan] [PATCH S55 02/14] ice: Allow ignoring opcodes on
- specific VF
-In-Reply-To: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
-References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210302181213.51718-2-anthony.l.nguyen@intel.com>
+Date: Tue,  2 Mar 2021 10:15:33 -0800
+Subject: [Intel-wired-lan] [PATCH S56 01/13] ice: Change
+ ice_vsi_setup_q_map() to not depend on RSS
+Message-ID: <20210302181545.51822-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Declare bitmap of allowed commands on VF. Initialize default
-opcodes list that should be always supported. Declare array of
-supported opcodes for each caps used in virtchnl code.
+Currently, ice_vsi_setup_q_map() depends on the VSI's rss_size. However,
+the Rx Queue Mapping section of the VSI context has no dependency on RSS.
+Instead, limit the maximum number of Rx queues per TC based on the Rx
+Queue mapping section of the VSI context, which currently allows for up
+to 256 Rx queues per TC.
 
-Change allowed bitmap by setting or clearing corresponding
-bit to allowlist (bit set) or denylist (bit clear).
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   2 +-
- .../intel/ice/ice_virtchnl_allowlist.c        | 165 ++++++++++++++++++
- .../intel/ice/ice_virtchnl_allowlist.h        |  13 ++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  18 ++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   1 +
- include/linux/avf/virtchnl.h                  |   1 +
- 6 files changed, 199 insertions(+), 1 deletion(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.h
+ drivers/net/ethernet/intel/ice/ice.h     |  1 +
+ drivers/net/ethernet/intel/ice/ice_lib.c | 50 ++++++++----------------
+ 2 files changed, 17 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index f391691e2c7e..dc24ce7d1c1e 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -26,7 +26,7 @@ ice-y := ice_main.o	\
- 	 ice_fw_update.o \
- 	 ice_lag.o	\
- 	 ice_ethtool.o
--ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_fdir.o
-+ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_allowlist.o ice_virtchnl_fdir.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
- ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
-new file mode 100644
-index 000000000000..64b1314d4761
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.c
-@@ -0,0 +1,165 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2018-2021, Intel Corporation. */
-+
-+#include "ice_virtchnl_allowlist.h"
-+
-+/* Purpose of this file is to share functionality to allowlist or denylist
-+ * opcodes used in PF <-> VF communication. Group of opcodes:
-+ * - default -> should be always allowed after creating VF,
-+ *   default_allowlist_opcodes
-+ * - opcodes needed by VF to work correctly, but not associated with caps ->
-+ *   should be allowed after successful VF resources allocation,
-+ *   working_allowlist_opcodes
-+ * - opcodes needed by VF when caps are activated
-+ *
-+ * Caps that don't use new opcodes (no opcodes should be allowed):
-+ * - VIRTCHNL_VF_OFFLOAD_RSS_AQ
-+ * - VIRTCHNL_VF_OFFLOAD_RSS_REG
-+ * - VIRTCHNL_VF_OFFLOAD_WB_ON_ITR
-+ * - VIRTCHNL_VF_OFFLOAD_CRC
-+ * - VIRTCHNL_VF_OFFLOAD_RX_POLLING
-+ * - VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2
-+ * - VIRTCHNL_VF_OFFLOAD_ENCAP
-+ * - VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM
-+ * - VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM
-+ * - VIRTCHNL_VF_OFFLOAD_USO
-+ */
-+
-+/* default opcodes to communicate with VF */
-+static const u32 default_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_GET_VF_RESOURCES, VIRTCHNL_OP_VERSION, VIRTCHNL_OP_RESET_VF,
-+};
-+
-+/* opcodes supported after successful VIRTCHNL_OP_GET_VF_RESOURCES */
-+static const u32 working_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_CONFIG_TX_QUEUE, VIRTCHNL_OP_CONFIG_RX_QUEUE,
-+	VIRTCHNL_OP_CONFIG_VSI_QUEUES, VIRTCHNL_OP_CONFIG_IRQ_MAP,
-+	VIRTCHNL_OP_ENABLE_QUEUES, VIRTCHNL_OP_DISABLE_QUEUES,
-+	VIRTCHNL_OP_GET_STATS, VIRTCHNL_OP_EVENT,
-+};
-+
-+/* VIRTCHNL_VF_OFFLOAD_L2 */
-+static const u32 l2_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_ADD_ETH_ADDR, VIRTCHNL_OP_DEL_ETH_ADDR,
-+	VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE,
-+};
-+
-+/* VIRTCHNL_VF_OFFLOAD_REQ_QUEUES */
-+static const u32 req_queues_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_REQUEST_QUEUES,
-+};
-+
-+/* VIRTCHNL_VF_OFFLOAD_VLAN */
-+static const u32 vlan_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_ADD_VLAN, VIRTCHNL_OP_DEL_VLAN,
-+	VIRTCHNL_OP_ENABLE_VLAN_STRIPPING, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING,
-+};
-+
-+/* VIRTCHNL_VF_OFFLOAD_RSS_PF */
-+static const u32 rss_pf_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_CONFIG_RSS_KEY, VIRTCHNL_OP_CONFIG_RSS_LUT,
-+	VIRTCHNL_OP_GET_RSS_HENA_CAPS, VIRTCHNL_OP_SET_RSS_HENA,
-+};
-+
-+/* VIRTCHNL_VF_OFFLOAD_FDIR_PF */
-+static const u32 fdir_pf_allowlist_opcodes[] = {
-+	VIRTCHNL_OP_ADD_FDIR_FILTER, VIRTCHNL_OP_DEL_FDIR_FILTER,
-+};
-+
-+struct allowlist_opcode_info {
-+	const u32 *opcodes;
-+	size_t size;
-+};
-+
-+#define BIT_INDEX(caps) (HWEIGHT((caps) - 1))
-+#define ALLOW_ITEM(caps, list) \
-+	[BIT_INDEX(caps)] = { \
-+		.opcodes = list, \
-+		.size = ARRAY_SIZE(list) \
-+	}
-+static const struct allowlist_opcode_info allowlist_opcodes[] = {
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_L2, l2_allowlist_opcodes),
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_REQ_QUEUES, req_queues_allowlist_opcodes),
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_VLAN, vlan_allowlist_opcodes),
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_RSS_PF, rss_pf_allowlist_opcodes),
-+	ALLOW_ITEM(VIRTCHNL_VF_OFFLOAD_FDIR_PF, fdir_pf_allowlist_opcodes),
-+};
-+
-+/**
-+ * ice_vc_opcode_is_allowed - check if this opcode is allowed on this VF
-+ * @vf: pointer to VF structure
-+ * @opcode: virtchnl opcode
-+ *
-+ * Return true if message is allowed on this VF
-+ */
-+bool ice_vc_is_opcode_allowed(struct ice_vf *vf, u32 opcode)
-+{
-+	if (opcode >= VIRTCHNL_OP_MAX)
-+		return false;
-+
-+	return test_bit(opcode, vf->opcodes_allowlist);
-+}
-+
-+/**
-+ * ice_vc_allowlist_opcodes - allowlist selected opcodes
-+ * @vf: pointer to VF structure
-+ * @opcodes: array of opocodes to allowlist
-+ * @size: size of opcodes array
-+ *
-+ * Function should be called to allowlist opcodes on VF.
-+ */
-+static void
-+ice_vc_allowlist_opcodes(struct ice_vf *vf, const u32 *opcodes, size_t size)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < size; i++)
-+		set_bit(opcodes[i], vf->opcodes_allowlist);
-+}
-+
-+/**
-+ * ice_vc_clear_allowlist - clear all allowlist opcodes
-+ * @vf: pointer to VF structure
-+ */
-+static void ice_vc_clear_allowlist(struct ice_vf *vf)
-+{
-+	bitmap_zero(vf->opcodes_allowlist, VIRTCHNL_OP_MAX);
-+}
-+
-+/**
-+ * ice_vc_set_default_allowlist - allowlist default opcodes for VF
-+ * @vf: pointer to VF structure
-+ */
-+void ice_vc_set_default_allowlist(struct ice_vf *vf)
-+{
-+	ice_vc_clear_allowlist(vf);
-+	ice_vc_allowlist_opcodes(vf, default_allowlist_opcodes,
-+				 ARRAY_SIZE(default_allowlist_opcodes));
-+}
-+
-+/**
-+ * ice_vc_set_working_allowlist - allowlist opcodes needed to by VF to work
-+ * @vf: pointer to VF structure
-+ *
-+ * Whitelist opcodes that aren't associated with specific caps, but
-+ * are needed by VF to work.
-+ */
-+void ice_vc_set_working_allowlist(struct ice_vf *vf)
-+{
-+	ice_vc_allowlist_opcodes(vf, working_allowlist_opcodes,
-+				 ARRAY_SIZE(working_allowlist_opcodes));
-+}
-+
-+/**
-+ * ice_vc_set_allowlist_based_on_caps - allowlist VF opcodes according caps
-+ * @vf: pointer to VF structure
-+ */
-+void ice_vc_set_caps_allowlist(struct ice_vf *vf)
-+{
-+	unsigned long caps = vf->driver_caps;
-+	unsigned int i;
-+
-+	for_each_set_bit(i, &caps, ARRAY_SIZE(allowlist_opcodes))
-+		ice_vc_allowlist_opcodes(vf, allowlist_opcodes[i].opcodes,
-+					 allowlist_opcodes[i].size);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.h
-new file mode 100644
-index 000000000000..c33bc6ac3f54
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_allowlist.h
-@@ -0,0 +1,13 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2018-2021, Intel Corporation. */
-+
-+#ifndef _ICE_VIRTCHNL_ALLOWLIST_H_
-+#define _ICE_VIRTCHNL_ALLOWLIST_H_
-+#include "ice.h"
-+
-+bool ice_vc_is_opcode_allowed(struct ice_vf *vf, u32 opcode);
-+
-+void ice_vc_set_default_allowlist(struct ice_vf *vf);
-+void ice_vc_set_working_allowlist(struct ice_vf *vf);
-+void ice_vc_set_caps_allowlist(struct ice_vf *vf);
-+#endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 0da9c84ed30f..f09367eb242a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -5,6 +5,7 @@
- #include "ice_base.h"
- #include "ice_lib.h"
- #include "ice_fltr.h"
-+#include "ice_virtchnl_allowlist.h"
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index a0233962a672..5304296c1e39 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -92,6 +92,7 @@
+ #define ICE_INVAL_Q_INDEX	0xffff
+ #define ICE_INVAL_VFID		256
  
- /**
-  * ice_validate_vf_id - helper to check if VF ID is valid
-@@ -1317,6 +1318,9 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	ice_for_each_vf(pf, v) {
- 		vf = &pf->vf[v];
++#define ICE_MAX_RXQS_PER_TC		256	/* Used when setting VSI context per TC Rx queues */
+ #define ICE_MAX_RESET_WAIT		20
  
-+		vf->driver_caps = 0;
-+		ice_vc_set_default_allowlist(vf);
-+
- 		ice_vf_fdir_exit(vf);
- 		/* clean VF control VSI when resetting VFs since it should be
- 		 * setup only when iAVF creates its first FDIR rule.
-@@ -1421,6 +1425,9 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 		usleep_range(10, 20);
+ #define ICE_VSIQF_HKEY_ARRAY_SIZE	((VSIQF_HKEY_MAX_INDEX + 1) *	4)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index a305dc2c3c10..f67b58a154fa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -744,11 +744,10 @@ static void ice_set_dflt_vsi_ctx(struct ice_vsi_ctx *ctxt)
+  */
+ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ {
+-	u16 offset = 0, qmap = 0, tx_count = 0;
++	u16 offset = 0, qmap = 0, tx_count = 0, pow = 0;
++	u16 num_txq_per_tc, num_rxq_per_tc;
+ 	u16 qcount_tx = vsi->alloc_txq;
+ 	u16 qcount_rx = vsi->alloc_rxq;
+-	u16 tx_numq_tc, rx_numq_tc;
+-	u16 pow = 0, max_rss = 0;
+ 	bool ena_tc0 = false;
+ 	u8 netdev_tc = 0;
+ 	int i;
+@@ -766,12 +765,15 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 		vsi->tc_cfg.ena_tc |= 1;
  	}
  
-+	vf->driver_caps = 0;
-+	ice_vc_set_default_allowlist(vf);
+-	rx_numq_tc = qcount_rx / vsi->tc_cfg.numtc;
+-	if (!rx_numq_tc)
+-		rx_numq_tc = 1;
+-	tx_numq_tc = qcount_tx / vsi->tc_cfg.numtc;
+-	if (!tx_numq_tc)
+-		tx_numq_tc = 1;
++	num_rxq_per_tc = min_t(u16, qcount_rx / vsi->tc_cfg.numtc, ICE_MAX_RXQS_PER_TC);
++	if (!num_rxq_per_tc)
++		num_rxq_per_tc = 1;
++	num_txq_per_tc = qcount_tx / vsi->tc_cfg.numtc;
++	if (!num_txq_per_tc)
++		num_txq_per_tc = 1;
 +
- 	/* Display a warning if VF didn't manage to reset in time, but need to
- 	 * continue on with the operation.
++	/* find the (rounded up) power-of-2 of qcount */
++	pow = (u16)order_base_2(num_rxq_per_tc);
+ 
+ 	/* TC mapping is a function of the number of Rx queues assigned to the
+ 	 * VSI for each traffic class and the offset of these queues.
+@@ -784,26 +786,6 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 	 *
+ 	 * Setup number and offset of Rx queues for all TCs for the VSI
  	 */
-@@ -1633,6 +1640,7 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
- 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
- 		vf->spoofchk = true;
- 		vf->num_vf_qs = pf->num_qps_per_vf;
-+		ice_vc_set_default_allowlist(vf);
+-
+-	qcount_rx = rx_numq_tc;
+-
+-	/* qcount will change if RSS is enabled */
+-	if (test_bit(ICE_FLAG_RSS_ENA, vsi->back->flags)) {
+-		if (vsi->type == ICE_VSI_PF || vsi->type == ICE_VSI_VF) {
+-			if (vsi->type == ICE_VSI_PF)
+-				max_rss = ICE_MAX_LG_RSS_QS;
+-			else
+-				max_rss = ICE_MAX_RSS_QS_PER_VF;
+-			qcount_rx = min_t(u16, rx_numq_tc, max_rss);
+-			if (!vsi->req_rxq)
+-				qcount_rx = min_t(u16, qcount_rx,
+-						  vsi->rss_size);
+-		}
+-	}
+-
+-	/* find the (rounded up) power-of-2 of qcount */
+-	pow = (u16)order_base_2(qcount_rx);
+-
+ 	ice_for_each_traffic_class(i) {
+ 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
+ 			/* TC is not enabled */
+@@ -817,16 +799,16 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
  
- 		/* ctrl_vsi_idx will be set to a valid value only when iAVF
- 		 * creates its first fdir rule.
-@@ -2135,6 +2143,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- 	/* match guest capabilities */
- 	vf->driver_caps = vfres->vf_cap_flags;
+ 		/* TC is enabled */
+ 		vsi->tc_cfg.tc_info[i].qoffset = offset;
+-		vsi->tc_cfg.tc_info[i].qcount_rx = qcount_rx;
+-		vsi->tc_cfg.tc_info[i].qcount_tx = tx_numq_tc;
++		vsi->tc_cfg.tc_info[i].qcount_rx = num_rxq_per_tc;
++		vsi->tc_cfg.tc_info[i].qcount_tx = num_txq_per_tc;
+ 		vsi->tc_cfg.tc_info[i].netdev_tc = netdev_tc++;
  
-+	ice_vc_set_caps_allowlist(vf);
-+	ice_vc_set_working_allowlist(vf);
-+
- 	set_bit(ICE_VF_STATE_ACTIVE, vf->vf_states);
- 
- err:
-@@ -3964,6 +3975,13 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 			err = -EINVAL;
+ 		qmap = ((offset << ICE_AQ_VSI_TC_Q_OFFSET_S) &
+ 			ICE_AQ_VSI_TC_Q_OFFSET_M) |
+ 			((pow << ICE_AQ_VSI_TC_Q_NUM_S) &
+ 			 ICE_AQ_VSI_TC_Q_NUM_M);
+-		offset += qcount_rx;
+-		tx_count += tx_numq_tc;
++		offset += num_rxq_per_tc;
++		tx_count += num_txq_per_tc;
+ 		ctxt->info.tc_mapping[i] = cpu_to_le16(qmap);
  	}
  
-+	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
-+		ice_vc_send_msg_to_vf(vf, v_opcode,
-+				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
-+				      0);
-+		return;
-+	}
-+
- error_handler:
- 	if (err) {
- 		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 53391ac1f068..77ff0023f7be 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -110,6 +110,7 @@ struct ice_vf {
- 	u16 num_vf_qs;			/* num of queue configured per VF */
- 	struct ice_mdd_vf_events mdd_rx_events;
- 	struct ice_mdd_vf_events mdd_tx_events;
-+	DECLARE_BITMAP(opcodes_allowlist, VIRTCHNL_OP_MAX);
- };
+@@ -839,7 +821,7 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 	if (offset)
+ 		vsi->num_rxq = offset;
+ 	else
+-		vsi->num_rxq = qcount_rx;
++		vsi->num_rxq = num_rxq_per_tc;
  
- #ifdef CONFIG_PCI_IOV
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index e3d5ecf7cf41..228b90ef3361 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -139,6 +139,7 @@ enum virtchnl_ops {
- 	/* opcode 34 - 46 are reserved */
- 	VIRTCHNL_OP_ADD_FDIR_FILTER = 47,
- 	VIRTCHNL_OP_DEL_FDIR_FILTER = 48,
-+	VIRTCHNL_OP_MAX,
- };
+ 	vsi->num_txq = tx_count;
  
- /* These macros are used to generate compilation errors if a structure/union
 -- 
 2.20.1
 
