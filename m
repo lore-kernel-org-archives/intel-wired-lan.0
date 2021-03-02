@@ -1,86 +1,83 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  2 Mar 2021 10:12:11 -0800
-Subject: [Intel-wired-lan] [PATCH S55 12/14] ice: rename ptype bitmap
+Date: Tue,  2 Mar 2021 10:12:13 -0800
+Subject: [Intel-wired-lan] [PATCH S55 14/14] iavf: add support for UDP
+ Segmentation Offload
 In-Reply-To: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210302181213.51718-12-anthony.l.nguyen@intel.com>
+Message-ID: <20210302181213.51718-14-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Qi Zhang <qi.z.zhang@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Align all ptype bitmap to follow ice_ptypes_xxx prefix.
+Add code to support UDP segmentation offload (USO) for
+hardware that supports it.
 
-Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flow.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c     |  2 ++
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c     | 15 +++++++++++----
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c |  1 +
+ 3 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index ceb802ab76c0..2eec44ef2346 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -237,7 +237,7 @@ static const u32 ice_ptypes_ipv6_il[] = {
- };
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 84430a304f3e..5a7ebbf0fb42 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3560,6 +3560,8 @@ int iavf_process_config(struct iavf_adapter *adapter)
+ 	/* Enable cloud filter if ADQ is supported */
+ 	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ)
+ 		hw_features |= NETIF_F_HW_TC;
++	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_USO)
++		hw_features |= NETIF_F_GSO_UDP_L4;
  
- /* Packet types for packets with an Outer/First/Single IPv4 header - no L4 */
--static const u32 ice_ipv4_ofos_no_l4[] = {
-+static const u32 ice_ptypes_ipv4_ofos_no_l4[] = {
- 	0x10C00000, 0x04000800, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-@@ -261,7 +261,7 @@ static const u32 ice_ptypes_arp_of[] = {
- };
+ 	netdev->hw_features |= hw_features;
  
- /* Packet types for packets with an Innermost/Last IPv4 header - no L4 */
--static const u32 ice_ipv4_il_no_l4[] = {
-+static const u32 ice_ptypes_ipv4_il_no_l4[] = {
- 	0x60000000, 0x18043008, 0x80000002, 0x6010c021,
- 	0x00000008, 0x00000000, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-@@ -273,7 +273,7 @@ static const u32 ice_ipv4_il_no_l4[] = {
- };
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index ffaf2742a2e0..23a51ebe13c5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -1905,13 +1905,20 @@ static int iavf_tso(struct iavf_tx_buffer *first, u8 *hdr_len,
  
- /* Packet types for packets with an Outer/First/Single IPv6 header - no L4 */
--static const u32 ice_ipv6_ofos_no_l4[] = {
-+static const u32 ice_ptypes_ipv6_ofos_no_l4[] = {
- 	0x00000000, 0x00000000, 0x43000000, 0x10002000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-@@ -285,7 +285,7 @@ static const u32 ice_ipv6_ofos_no_l4[] = {
- };
+ 	/* determine offset of inner transport header */
+ 	l4_offset = l4.hdr - skb->data;
+-
+ 	/* remove payload length from inner checksum */
+ 	paylen = skb->len - l4_offset;
+-	csum_replace_by_diff(&l4.tcp->check, (__force __wsum)htonl(paylen));
  
- /* Packet types for packets with an Innermost/Last IPv6 header - no L4 */
--static const u32 ice_ipv6_il_no_l4[] = {
-+static const u32 ice_ptypes_ipv6_il_no_l4[] = {
- 	0x00000000, 0x02180430, 0x0000010c, 0x086010c0,
- 	0x00000430, 0x00000000, 0x00000000, 0x00000000,
- 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
-@@ -749,8 +749,8 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
- 				   ICE_FLOW_PTYPE_MAX);
- 		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV4) &&
- 			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
--			src = !i ? (const unsigned long *)ice_ipv4_ofos_no_l4 :
--				(const unsigned long *)ice_ipv4_il_no_l4;
-+			src = !i ? (const unsigned long *)ice_ptypes_ipv4_ofos_no_l4 :
-+				(const unsigned long *)ice_ptypes_ipv4_il_no_l4;
- 			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
- 		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV4) {
-@@ -760,8 +760,8 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
- 				   ICE_FLOW_PTYPE_MAX);
- 		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV6) &&
- 			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
--			src = !i ? (const unsigned long *)ice_ipv6_ofos_no_l4 :
--				(const unsigned long *)ice_ipv6_il_no_l4;
-+			src = !i ? (const unsigned long *)ice_ptypes_ipv6_ofos_no_l4 :
-+				(const unsigned long *)ice_ptypes_ipv6_il_no_l4;
- 			bitmap_and(params->ptypes, params->ptypes, src,
- 				   ICE_FLOW_PTYPE_MAX);
- 		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV6) {
+-	/* compute length of segmentation header */
+-	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
++	if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) {
++		csum_replace_by_diff(&l4.udp->check,
++				     (__force __wsum)htonl(paylen));
++		/* compute length of UDP segmentation header */
++		*hdr_len = (u8)sizeof(l4.udp) + l4_offset;
++	} else {
++		csum_replace_by_diff(&l4.tcp->check,
++				     (__force __wsum)htonl(paylen));
++		/* compute length of TCP segmentation header */
++		*hdr_len = (u8)((l4.tcp->doff * 4) + l4_offset);
++	}
+ 
+ 	/* pull values out of skb_shinfo */
+ 	gso_size = skb_shinfo(skb)->gso_size;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index b41dff44f65b..3d7643ea8d46 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -140,6 +140,7 @@ int iavf_send_vf_config_msg(struct iavf_adapter *adapter)
+ 	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
+ 	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES |
+ 	       VIRTCHNL_VF_OFFLOAD_ADQ |
++	       VIRTCHNL_VF_OFFLOAD_USO |
+ 	       VIRTCHNL_VF_OFFLOAD_FDIR_PF |
+ 	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
+ 
 -- 
 2.20.1
 
