@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  2 Mar 2021 06:55:23 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.11 42/52] i40e: Fix memory leak
+Date: Tue,  2 Mar 2021 06:56:37 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.10 38/47] i40e: Fix memory leak
  in i40e_probe
-In-Reply-To: <20210302115534.61800-1-sashal@kernel.org>
-References: <20210302115534.61800-1-sashal@kernel.org>
-Message-ID: <20210302115534.61800-42-sashal@kernel.org>
+In-Reply-To: <20210302115646.62291-1-sashal@kernel.org>
+References: <20210302115646.62291-1-sashal@kernel.org>
+Message-ID: <20210302115646.62291-38-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
