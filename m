@@ -1,49 +1,70 @@
 From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Tue, 2 Mar 2021 09:55:14 +0200
-Subject: [Intel-wired-lan] [PATCH net 1/2] e1000e: Fix duplicate include
- guard
-In-Reply-To: <20210222040005.20126-1-tseewald@gmail.com>
-References: <20210222040005.20126-1-tseewald@gmail.com>
-Message-ID: <fedcd02f-d3d3-763f-0032-dc68ca166a3c@linux.intel.com>
+Date: Tue, 2 Mar 2021 10:19:56 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v6 0/9] igc: Add XDP support
+In-Reply-To: <20210210215848.24514-1-vedang.patel@intel.com>
+References: <20210210215848.24514-1-vedang.patel@intel.com>
+Message-ID: <7264a870-38dd-e785-3d0f-65d21ed9942f@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 22/02/2021 06:00, Tom Seewald wrote:
-> The include guard "_E1000_HW_H_" is used by header files in three
-> different drivers (e1000/e1000_hw.h, e1000e/hw.h, and igb/e1000_hw.h).
-> Using the same include guard macro in more than one header file may
-> cause unexpected behavior from the compiler. Fix the duplicate include
-> guard in the e1000e driver by renaming it.
+On 10/02/2021 23:58, Vedang Patel wrote:
+> Hi all,
 > 
-> Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (currently for ICH9 devices only)")
-> Signed-off-by: Tom Seewald <tseewald@gmail.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/hw.h | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+> This is the sixth version of this series which adds XDP support
+> to igc driver.
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-> index 69a2329ea463..db79c4e6413e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/hw.h
-> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
-> @@ -1,8 +1,8 @@
->   /* SPDX-License-Identifier: GPL-2.0 */
->   /* Copyright(c) 1999 - 2018 Intel Corporation. */
->   
-> -#ifndef _E1000_HW_H_
-> -#define _E1000_HW_H_
-> +#ifndef _E1000E_HW_H_
-> +#define _E1000E_HW_H_
->   
->   #include "regs.h"
->   #include "defines.h"
-> @@ -714,4 +714,4 @@ struct e1000_hw {
->   #include "80003es2lan.h"
->   #include "ich8lan.h"
->   
-> -#endif
-> +#endif /* _E1000E_HW_H_ */
+> Changes from v5 are:
+> 
+>      - Avoid premature Rx buffer re-use in XDP_REDIRECT action by storing
+>        page count prior to invoking xdp_do_redirect. This is similar to
+>        what has been done for other Intel drivers.
+> 
+> v5 is here:
+> 
+>      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210209024243.23406-1-vedang.patel at intel.com/
+> 
+> v4 is here:
+> 
+>      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201104031210.27772-1-andre.guedes at intel.com/
+> 
+> v3 is here:
+> 
+>      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201030210351.46482-1-andre.guedes at intel.com/
+> 
+> v2 is here:
+> 
+>      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201028201943.93147-1-andre.guedes at intel.com/
+> 
+> v1 is here:
+> 
+>      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201009025349.4037-1-andre.guedes at intel.com/
+> 
+> Thanks,
+> Vedang
+> 
+> 
+> Andre Guedes (9):
+>    igc: Fix igc_ptp_rx_pktstamp()
+>    igc: Remove unused argument from igc_tx_cmd_type()
+>    igc: Introduce igc_rx_buffer_flip() helper
+>    igc: Introduce igc_get_rx_frame_truesize() helper
+>    igc: Refactor Rx timestamp handling
+>    igc: Add set/clear large buffer helpers
+>    igc: Add initial XDP support
+>    igc: Add support for XDP_TX action
+>    igc: Add support for XDP_REDIRECT action
+> 
+>   drivers/net/ethernet/intel/igc/Makefile   |   2 +-
+>   drivers/net/ethernet/intel/igc/igc.h      |  18 +-
+>   drivers/net/ethernet/intel/igc/igc_main.c | 458 +++++++++++++++++++---
+>   drivers/net/ethernet/intel/igc/igc_ptp.c  |  87 ++--
+>   drivers/net/ethernet/intel/igc/igc_xdp.c  |  60 +++
+>   drivers/net/ethernet/intel/igc/igc_xdp.h  |  13 +
+>   6 files changed, 531 insertions(+), 107 deletions(-)
+>   create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
+>   create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
