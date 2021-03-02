@@ -1,9 +1,11 @@
 From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Tue, 2 Mar 2021 10:19:56 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v6 0/9] igc: Add XDP support
-In-Reply-To: <20210210215848.24514-1-vedang.patel@intel.com>
+Date: Tue, 2 Mar 2021 10:20:17 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v6 1/9] igc: Fix
+ igc_ptp_rx_pktstamp()
+In-Reply-To: <20210210215848.24514-2-vedang.patel@intel.com>
 References: <20210210215848.24514-1-vedang.patel@intel.com>
-Message-ID: <7264a870-38dd-e785-3d0f-65d21ed9942f@linux.intel.com>
+ <20210210215848.24514-2-vedang.patel@intel.com>
+Message-ID: <63cb3da0-3074-7b39-da49-ea3517128aa7@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,60 +13,131 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 10/02/2021 23:58, Vedang Patel wrote:
-> Hi all,
+> From: Andre Guedes <andre.guedes@intel.com>
 > 
-> This is the sixth version of this series which adds XDP support
-> to igc driver.
+> The comment describing the timestamps layout in the packet buffer is
+> wrong and the code is actually retrieving the timestamp in Timer 1
+> reference instead of Timer 0. This hasn't been a big issue so far
+> because hardware is configured to report both timestamps using Timer 0
+> (see IGC_SRRCTL register configuration in igc_ptp_enable_rx_timestamp()
+> helper). This patch fixes the comment and the code so we retrieve the
+> timestamp in Timer 0 reference as expected.
 > 
-> Changes from v5 are:
+> This patch also takes the opportunity to get rid of the hw.mac.type check
+> since it is not required.
 > 
->      - Avoid premature Rx buffer re-use in XDP_REDIRECT action by storing
->        page count prior to invoking xdp_do_redirect. This is similar to
->        what has been done for other Intel drivers.
+> Fixes: 81b055205e8ba ("igc: Add support for RX timestamping")
+> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc.h     |  2 +-
+>   drivers/net/ethernet/intel/igc/igc_ptp.c | 72 +++++++++++++-----------
+>   2 files changed, 41 insertions(+), 33 deletions(-)
 > 
-> v5 is here:
-> 
->      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210209024243.23406-1-vedang.patel at intel.com/
-> 
-> v4 is here:
-> 
->      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201104031210.27772-1-andre.guedes at intel.com/
-> 
-> v3 is here:
-> 
->      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201030210351.46482-1-andre.guedes at intel.com/
-> 
-> v2 is here:
-> 
->      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201028201943.93147-1-andre.guedes at intel.com/
-> 
-> v1 is here:
-> 
->      https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201009025349.4037-1-andre.guedes at intel.com/
-> 
-> Thanks,
-> Vedang
-> 
-> 
-> Andre Guedes (9):
->    igc: Fix igc_ptp_rx_pktstamp()
->    igc: Remove unused argument from igc_tx_cmd_type()
->    igc: Introduce igc_rx_buffer_flip() helper
->    igc: Introduce igc_get_rx_frame_truesize() helper
->    igc: Refactor Rx timestamp handling
->    igc: Add set/clear large buffer helpers
->    igc: Add initial XDP support
->    igc: Add support for XDP_TX action
->    igc: Add support for XDP_REDIRECT action
-> 
->   drivers/net/ethernet/intel/igc/Makefile   |   2 +-
->   drivers/net/ethernet/intel/igc/igc.h      |  18 +-
->   drivers/net/ethernet/intel/igc/igc_main.c | 458 +++++++++++++++++++---
->   drivers/net/ethernet/intel/igc/igc_ptp.c  |  87 ++--
->   drivers/net/ethernet/intel/igc/igc_xdp.c  |  60 +++
->   drivers/net/ethernet/intel/igc/igc_xdp.h  |  13 +
->   6 files changed, 531 insertions(+), 107 deletions(-)
->   create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
->   create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
+> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+> index 5d2809dfd06a..fbd8c414c3c8 100644
+> --- a/drivers/net/ethernet/intel/igc/igc.h
+> +++ b/drivers/net/ethernet/intel/igc/igc.h
+> @@ -547,7 +547,7 @@ void igc_ptp_init(struct igc_adapter *adapter);
+>   void igc_ptp_reset(struct igc_adapter *adapter);
+>   void igc_ptp_suspend(struct igc_adapter *adapter);
+>   void igc_ptp_stop(struct igc_adapter *adapter);
+> -void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+> +void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+>   			 struct sk_buff *skb);
+>   int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+>   int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> index ac0b9c85da7c..b6a640bfc991 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> @@ -152,46 +152,54 @@ static void igc_ptp_systim_to_hwtstamp(struct igc_adapter *adapter,
+>   }
+>   
+>   /**
+> - * igc_ptp_rx_pktstamp - retrieve Rx per packet timestamp
+> + * igc_ptp_rx_pktstamp - Retrieve timestamp from Rx packet buffer
+>    * @q_vector: Pointer to interrupt specific structure
+>    * @va: Pointer to address containing Rx buffer
+>    * @skb: Buffer containing timestamp and packet
+>    *
+> - * This function is meant to retrieve the first timestamp from the
+> - * first buffer of an incoming frame. The value is stored in little
+> - * endian format starting on byte 0. There's a second timestamp
+> - * starting on byte 8.
+> - **/
+> -void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
+> + * This function retrieves the timestamp saved in the beginning of packet
+> + * buffer. While two timestamps are available, one in timer0 reference and the
+> + * other in timer1 reference, this function considers only the timestamp in
+> + * timer0 reference.
+> + */
+> +void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, u32 *va,
+>   			 struct sk_buff *skb)
+>   {
+>   	struct igc_adapter *adapter = q_vector->adapter;
+> -	__le64 *regval = (__le64 *)va;
+> -	int adjust = 0;
+> -
+> -	/* The timestamp is recorded in little endian format.
+> -	 * DWORD: | 0          | 1           | 2          | 3
+> -	 * Field: | Timer0 Low | Timer0 High | Timer1 Low | Timer1 High
+> +	u64 regval;
+> +	int adjust;
+> +
+> +	/* Timestamps are saved in little endian at the beginning of the packet
+> +	 * buffer following the layout:
+> +	 *
+> +	 * DWORD: | 0              | 1              | 2              | 3              |
+> +	 * Field: | Timer1 SYSTIML | Timer1 SYSTIMH | Timer0 SYSTIML | Timer0 SYSTIMH |
+> +	 *
+> +	 * SYSTIML holds the nanoseconds part while SYSTIMH holds the seconds
+> +	 * part of the timestamp.
+>   	 */
+> -	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
+> -				   le64_to_cpu(regval[0]));
+> -
+> -	/* adjust timestamp for the RX latency based on link speed */
+> -	if (adapter->hw.mac.type == igc_i225) {
+> -		switch (adapter->link_speed) {
+> -		case SPEED_10:
+> -			adjust = IGC_I225_RX_LATENCY_10;
+> -			break;
+> -		case SPEED_100:
+> -			adjust = IGC_I225_RX_LATENCY_100;
+> -			break;
+> -		case SPEED_1000:
+> -			adjust = IGC_I225_RX_LATENCY_1000;
+> -			break;
+> -		case SPEED_2500:
+> -			adjust = IGC_I225_RX_LATENCY_2500;
+> -			break;
+> -		}
+> +	regval = le32_to_cpu(va[2]);
+> +	regval |= (u64)le32_to_cpu(va[3]) << 32;
+> +	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
+> +
+> +	/* Adjust timestamp for the RX latency based on link speed */
+> +	switch (adapter->link_speed) {
+> +	case SPEED_10:
+> +		adjust = IGC_I225_RX_LATENCY_10;
+> +		break;
+> +	case SPEED_100:
+> +		adjust = IGC_I225_RX_LATENCY_100;
+> +		break;
+> +	case SPEED_1000:
+> +		adjust = IGC_I225_RX_LATENCY_1000;
+> +		break;
+> +	case SPEED_2500:
+> +		adjust = IGC_I225_RX_LATENCY_2500;
+> +		break;
+> +	default:
+> +		adjust = 0;
+> +		netdev_warn_once(adapter->netdev, "Imprecise timestamp\n");
+> +		break;
+>   	}
+>   	skb_hwtstamps(skb)->hwtstamp =
+>   		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
