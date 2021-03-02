@@ -1,116 +1,49 @@
-From: Eryk Rybak <eryk.roch.rybak@intel.com>
-Date: Tue,  2 Mar 2021 08:46:27 +0100
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix display statistics for
- veb_tc
-Message-ID: <20210302074627.14349-1-eryk.roch.rybak@intel.com>
+From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+Date: Tue, 2 Mar 2021 09:55:14 +0200
+Subject: [Intel-wired-lan] [PATCH net 1/2] e1000e: Fix duplicate include
+ guard
+In-Reply-To: <20210222040005.20126-1-tseewald@gmail.com>
+References: <20210222040005.20126-1-tseewald@gmail.com>
+Message-ID: <fedcd02f-d3d3-763f-0032-dc68ca166a3c@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If veb-stats was enabled, the ethtool stats triggered a warning
-due to invalid size: 'unexpected stat size for veb.tc_%u_tx_packets'.
-This was due to an incorrect structure definition for the statistics.
-Structures and functions have been improved in line with requirements
-for the presentation of statistics, in particular for the functions:
-'i40e_add_ethtool_stats' and 'i40e_add_stat_strings'.
-
-Fixes: 1510ae0be2a4 ("i40e: convert VEB TC stats to use an i40e_stats array")
-Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 52 ++++++++++++++++---
- 1 file changed, 46 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index a8a2b5f683a2..16301c58466a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -232,6 +232,8 @@ static void __i40e_add_stat_strings(u8 **p, const struct i40e_stats stats[],
- 	I40E_STAT(struct i40e_vsi, _name, _stat)
- #define I40E_VEB_STAT(_name, _stat) \
- 	I40E_STAT(struct i40e_veb, _name, _stat)
-+#define I40E_VEB_TC_STAT(_name, _stat) \
-+	I40E_STAT(struct i40e_cp_veb_tc_stats, _name, _stat)
- #define I40E_PFC_STAT(_name, _stat) \
- 	I40E_STAT(struct i40e_pfc_stats, _name, _stat)
- #define I40E_QUEUE_STAT(_name, _stat) \
-@@ -266,11 +268,18 @@ static const struct i40e_stats i40e_gstrings_veb_stats[] = {
- 	I40E_VEB_STAT("veb.rx_unknown_protocol", stats.rx_unknown_protocol),
- };
- 
-+struct i40e_cp_veb_tc_stats {
-+	u64 tc_rx_packets;
-+	u64 tc_rx_bytes;
-+	u64 tc_tx_packets;
-+	u64 tc_tx_bytes;
-+};
-+
- static const struct i40e_stats i40e_gstrings_veb_tc_stats[] = {
--	I40E_VEB_STAT("veb.tc_%u_tx_packets", tc_stats.tc_tx_packets),
--	I40E_VEB_STAT("veb.tc_%u_tx_bytes", tc_stats.tc_tx_bytes),
--	I40E_VEB_STAT("veb.tc_%u_rx_packets", tc_stats.tc_rx_packets),
--	I40E_VEB_STAT("veb.tc_%u_rx_bytes", tc_stats.tc_rx_bytes),
-+	I40E_VEB_TC_STAT("veb.tc_%u_tx_packets", tc_tx_packets),
-+	I40E_VEB_TC_STAT("veb.tc_%u_tx_bytes", tc_tx_bytes),
-+	I40E_VEB_TC_STAT("veb.tc_%u_rx_packets", tc_rx_packets),
-+	I40E_VEB_TC_STAT("veb.tc_%u_rx_bytes", tc_rx_bytes),
- };
- 
- static const struct i40e_stats i40e_gstrings_misc_stats[] = {
-@@ -2216,6 +2225,29 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
- 	}
- }
- 
-+/**
-+ * i40e_get_veb_tc_stats - copy VEB TC statistics to formatted structure
-+ * @tc: the TC statistics in VEB structure (veb->tc_stats)
-+ * @i: the index of traffic class in (veb->tc_stats) structure to copy
-+ *
-+ * Copy VEB TC statistics from structure of arrays (veb->tc_stats) to
-+ * one dimensional structure i40e_cp_veb_tc_stats.
-+ * Produce formatted i40e_cp_veb_tc_stats structure of the VEB TC
-+ * statistics for the given TC.
-+ **/
-+static struct i40e_cp_veb_tc_stats
-+i40e_get_veb_tc_stats(struct i40e_veb_tc_stats *tc, unsigned int i)
-+{
-+	struct i40e_cp_veb_tc_stats veb_tc = {
-+		.tc_rx_packets = tc->tc_rx_packets[i],
-+		.tc_rx_bytes = tc->tc_rx_bytes[i],
-+		.tc_tx_packets = tc->tc_tx_packets[i],
-+		.tc_tx_bytes = tc->tc_tx_bytes[i],
-+	};
-+
-+	return veb_tc;
-+}
-+
- /**
-  * i40e_get_pfc_stats - copy HW PFC statistics to formatted structure
-  * @pf: the PF device structure
-@@ -2300,8 +2332,16 @@ static void i40e_get_ethtool_stats(struct net_device *netdev,
- 			       i40e_gstrings_veb_stats);
- 
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++)
--		i40e_add_ethtool_stats(&data, veb_stats ? veb : NULL,
--				       i40e_gstrings_veb_tc_stats);
-+		if (veb_stats) {
-+			struct i40e_cp_veb_tc_stats veb_tc =
-+				i40e_get_veb_tc_stats(&veb->tc_stats, i);
-+
-+			i40e_add_ethtool_stats(&data, &veb_tc,
-+					       i40e_gstrings_veb_tc_stats);
-+		} else {
-+			i40e_add_ethtool_stats(&data, NULL,
-+					       i40e_gstrings_veb_tc_stats);
-+		}
- 
- 	i40e_add_ethtool_stats(&data, pf, i40e_gstrings_stats);
- 
-
-base-commit: d310ec03a34e92a77302edb804f7d68ee4f01ba0
--- 
-2.20.1
-
+On 22/02/2021 06:00, Tom Seewald wrote:
+> The include guard "_E1000_HW_H_" is used by header files in three
+> different drivers (e1000/e1000_hw.h, e1000e/hw.h, and igb/e1000_hw.h).
+> Using the same include guard macro in more than one header file may
+> cause unexpected behavior from the compiler. Fix the duplicate include
+> guard in the e1000e driver by renaming it.
+> 
+> Fixes: bc7f75fa9788 ("[E1000E]: New pci-express e1000 driver (currently for ICH9 devices only)")
+> Signed-off-by: Tom Seewald <tseewald@gmail.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/hw.h | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+> index 69a2329ea463..db79c4e6413e 100644
+> --- a/drivers/net/ethernet/intel/e1000e/hw.h
+> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
+> @@ -1,8 +1,8 @@
+>   /* SPDX-License-Identifier: GPL-2.0 */
+>   /* Copyright(c) 1999 - 2018 Intel Corporation. */
+>   
+> -#ifndef _E1000_HW_H_
+> -#define _E1000_HW_H_
+> +#ifndef _E1000E_HW_H_
+> +#define _E1000E_HW_H_
+>   
+>   #include "regs.h"
+>   #include "defines.h"
+> @@ -714,4 +714,4 @@ struct e1000_hw {
+>   #include "80003es2lan.h"
+>   #include "ich8lan.h"
+>   
+> -#endif
+> +#endif /* _E1000E_HW_H_ */
+> 
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
