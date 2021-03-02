@@ -1,218 +1,86 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  2 Mar 2021 10:12:05 -0800
-Subject: [Intel-wired-lan] [PATCH S55 06/14] ice: handle increasing Tx or Rx
- ring sizes
+Date: Tue,  2 Mar 2021 10:12:11 -0800
+Subject: [Intel-wired-lan] [PATCH S55 12/14] ice: rename ptype bitmap
 In-Reply-To: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210302181213.51718-6-anthony.l.nguyen@intel.com>
+Message-ID: <20210302181213.51718-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+From: Qi Zhang <qi.z.zhang@intel.com>
 
-There is an issue when the Tx or Rx ring size increases using
-'ethtool -L ...' where the new rings don't get the correct ITR
-values because when we rebuild the VSI we don't know that some
-of the rings may be new.
+Align all ptype bitmap to follow ice_ptypes_xxx prefix.
 
-Fix this by looking at the original number of rings and
-determining if the rings in ice_vsi_rebuild_set_coalesce()
-were not present in the original rings received in
-ice_vsi_rebuild_get_coalesce().
-
-Also change the code to return an error if we can't allocate
-memory for the coalesce data in ice_vsi_rebuild().
-
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c  | 123 ++++++++++++++++------
- drivers/net/ethernet/intel/ice/ice_txrx.h |   2 +
- 2 files changed, 92 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_flow.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 1fad88b369d3..a305dc2c3c10 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2862,38 +2862,46 @@ int ice_vsi_release(struct ice_vsi *vsi)
- }
- 
- /**
-- * ice_vsi_rebuild_update_coalesce - set coalesce for a q_vector
-+ * ice_vsi_rebuild_update_coalesce_intrl - set interrupt rate limit for a q_vector
-  * @q_vector: pointer to q_vector which is being updated
-- * @coalesce: pointer to array of struct with stored coalesce
-+ * @stored_intrl_setting: original INTRL setting
-  *
-  * Set coalesce param in q_vector and update these parameters in HW.
-  */
- static void
--ice_vsi_rebuild_update_coalesce(struct ice_q_vector *q_vector,
--				struct ice_coalesce_stored *coalesce)
-+ice_vsi_rebuild_update_coalesce_intrl(struct ice_q_vector *q_vector,
-+				      u16 stored_intrl_setting)
- {
--	struct ice_ring_container *rx_rc = &q_vector->rx;
--	struct ice_ring_container *tx_rc = &q_vector->tx;
- 	struct ice_hw *hw = &q_vector->vsi->back->hw;
- 
--	tx_rc->itr_setting = coalesce->itr_tx;
--	rx_rc->itr_setting = coalesce->itr_rx;
--
--	/* dynamic ITR values will be updated during Tx/Rx */
--	if (!ITR_IS_DYNAMIC(tx_rc->itr_setting))
--		wr32(hw, GLINT_ITR(tx_rc->itr_idx, q_vector->reg_idx),
--		     ITR_REG_ALIGN(tx_rc->itr_setting) >>
--		     ICE_ITR_GRAN_S);
--	if (!ITR_IS_DYNAMIC(rx_rc->itr_setting))
--		wr32(hw, GLINT_ITR(rx_rc->itr_idx, q_vector->reg_idx),
--		     ITR_REG_ALIGN(rx_rc->itr_setting) >>
--		     ICE_ITR_GRAN_S);
--
--	q_vector->intrl = coalesce->intrl;
-+	q_vector->intrl = stored_intrl_setting;
- 	wr32(hw, GLINT_RATE(q_vector->reg_idx),
- 	     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
- }
- 
-+/**
-+ * ice_vsi_rebuild_update_coalesce_itr - set coalesce for a q_vector
-+ * @q_vector: pointer to q_vector which is being updated
-+ * @rc: pointer to ring container
-+ * @stored_itr_setting: original ITR setting
-+ *
-+ * Set coalesce param in q_vector and update these parameters in HW.
-+ */
-+static void
-+ice_vsi_rebuild_update_coalesce_itr(struct ice_q_vector *q_vector,
-+				    struct ice_ring_container *rc,
-+				    u16 stored_itr_setting)
-+{
-+	struct ice_hw *hw = &q_vector->vsi->back->hw;
-+
-+	rc->itr_setting = stored_itr_setting;
-+
-+	/* dynamic ITR values will be updated during Tx/Rx */
-+	if (!ITR_IS_DYNAMIC(rc->itr_setting))
-+		wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
-+		     ITR_REG_ALIGN(rc->itr_setting) >> ICE_ITR_GRAN_S);
-+}
-+
- /**
-  * ice_vsi_rebuild_get_coalesce - get coalesce from all q_vectors
-  * @vsi: VSI connected with q_vectors
-@@ -2913,6 +2921,11 @@ ice_vsi_rebuild_get_coalesce(struct ice_vsi *vsi,
- 		coalesce[i].itr_tx = q_vector->tx.itr_setting;
- 		coalesce[i].itr_rx = q_vector->rx.itr_setting;
- 		coalesce[i].intrl = q_vector->intrl;
-+
-+		if (i < vsi->num_txq)
-+			coalesce[i].tx_valid = true;
-+		if (i < vsi->num_rxq)
-+			coalesce[i].rx_valid = true;
- 	}
- 
- 	return vsi->num_q_vectors;
-@@ -2937,17 +2950,59 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
- 	if ((size && !coalesce) || !vsi)
- 		return;
- 
--	for (i = 0; i < size && i < vsi->num_q_vectors; i++)
--		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
--						&coalesce[i]);
--
--	/* number of q_vectors increased, so assume coalesce settings were
--	 * changed globally (i.e. ethtool -C eth0 instead of per-queue) and use
--	 * the previous settings from q_vector 0 for all of the new q_vectors
-+	/* There are a couple of cases that have to be handled here:
-+	 *   1. The case where the number of queue vectors stays the same, but
-+	 *      the number of Tx or Rx rings changes (the first for loop)
-+	 *   2. The case where the number of queue vectors increased (the
-+	 *      second for loop)
- 	 */
--	for (; i < vsi->num_q_vectors; i++)
--		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
--						&coalesce[0]);
-+	for (i = 0; i < size && i < vsi->num_q_vectors; i++) {
-+		/* There are 2 cases to handle here and they are the same for
-+		 * both Tx and Rx:
-+		 *   if the entry was valid previously (coalesce[i].[tr]x_valid
-+		 *   and the loop variable is less than the number of rings
-+		 *   allocated, then write the previous values
-+		 *
-+		 *   if the entry was not valid previously, but the number of
-+		 *   rings is less than are allocated (this means the number of
-+		 *   rings increased from previously), then write out the
-+		 *   values in the first element
-+		 */
-+		if (i < vsi->alloc_rxq && coalesce[i].rx_valid)
-+			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+							    &vsi->q_vectors[i]->rx,
-+							    coalesce[i].itr_rx);
-+		else if (i < vsi->alloc_rxq)
-+			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+							    &vsi->q_vectors[i]->rx,
-+							    coalesce[0].itr_rx);
-+
-+		if (i < vsi->alloc_txq && coalesce[i].tx_valid)
-+			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+							    &vsi->q_vectors[i]->tx,
-+							    coalesce[i].itr_tx);
-+		else if (i < vsi->alloc_txq)
-+			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+							    &vsi->q_vectors[i]->tx,
-+							    coalesce[0].itr_tx);
-+
-+		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
-+						      coalesce[i].intrl);
-+	}
-+
-+	/* the number of queue vectors increased so write whatever is in
-+	 * the first element
-+	 */
-+	for (; i < vsi->num_q_vectors; i++) {
-+		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+						    &vsi->q_vectors[i]->tx,
-+						    coalesce[0].itr_tx);
-+		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
-+						    &vsi->q_vectors[i]->rx,
-+						    coalesce[0].itr_rx);
-+		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
-+						      coalesce[0].intrl);
-+	}
- }
- 
- /**
-@@ -2976,9 +3031,11 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 
- 	coalesce = kcalloc(vsi->num_q_vectors,
- 			   sizeof(struct ice_coalesce_stored), GFP_KERNEL);
--	if (coalesce)
--		prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi,
--								  coalesce);
-+	if (!coalesce)
-+		return -ENOMEM;
-+
-+	prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi, coalesce);
-+
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ice_vsi_free_q_vectors(vsi);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index f72b154b03c5..a13eb8cf1731 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -359,6 +359,8 @@ struct ice_coalesce_stored {
- 	u16 itr_tx;
- 	u16 itr_rx;
- 	u8 intrl;
-+	u8 tx_valid;
-+	u8 rx_valid;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index ceb802ab76c0..2eec44ef2346 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -237,7 +237,7 @@ static const u32 ice_ptypes_ipv6_il[] = {
  };
  
- /* iterator for handling rings in ring container */
+ /* Packet types for packets with an Outer/First/Single IPv4 header - no L4 */
+-static const u32 ice_ipv4_ofos_no_l4[] = {
++static const u32 ice_ptypes_ipv4_ofos_no_l4[] = {
+ 	0x10C00000, 0x04000800, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -261,7 +261,7 @@ static const u32 ice_ptypes_arp_of[] = {
+ };
+ 
+ /* Packet types for packets with an Innermost/Last IPv4 header - no L4 */
+-static const u32 ice_ipv4_il_no_l4[] = {
++static const u32 ice_ptypes_ipv4_il_no_l4[] = {
+ 	0x60000000, 0x18043008, 0x80000002, 0x6010c021,
+ 	0x00000008, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -273,7 +273,7 @@ static const u32 ice_ipv4_il_no_l4[] = {
+ };
+ 
+ /* Packet types for packets with an Outer/First/Single IPv6 header - no L4 */
+-static const u32 ice_ipv6_ofos_no_l4[] = {
++static const u32 ice_ptypes_ipv6_ofos_no_l4[] = {
+ 	0x00000000, 0x00000000, 0x43000000, 0x10002000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -285,7 +285,7 @@ static const u32 ice_ipv6_ofos_no_l4[] = {
+ };
+ 
+ /* Packet types for packets with an Innermost/Last IPv6 header - no L4 */
+-static const u32 ice_ipv6_il_no_l4[] = {
++static const u32 ice_ptypes_ipv6_il_no_l4[] = {
+ 	0x00000000, 0x02180430, 0x0000010c, 0x086010c0,
+ 	0x00000430, 0x00000000, 0x00000000, 0x00000000,
+ 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
+@@ -749,8 +749,8 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV4) &&
+ 			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
+-			src = !i ? (const unsigned long *)ice_ipv4_ofos_no_l4 :
+-				(const unsigned long *)ice_ipv4_il_no_l4;
++			src = !i ? (const unsigned long *)ice_ptypes_ipv4_ofos_no_l4 :
++				(const unsigned long *)ice_ptypes_ipv4_il_no_l4;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV4) {
+@@ -760,8 +760,8 @@ ice_flow_proc_seg_hdrs(struct ice_flow_prof_params *params)
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		} else if ((hdrs & ICE_FLOW_SEG_HDR_IPV6) &&
+ 			   !(hdrs & ICE_FLOW_SEG_HDRS_L4_MASK_NO_OTHER)) {
+-			src = !i ? (const unsigned long *)ice_ipv6_ofos_no_l4 :
+-				(const unsigned long *)ice_ipv6_il_no_l4;
++			src = !i ? (const unsigned long *)ice_ptypes_ipv6_ofos_no_l4 :
++				(const unsigned long *)ice_ptypes_ipv6_il_no_l4;
+ 			bitmap_and(params->ptypes, params->ptypes, src,
+ 				   ICE_FLOW_PTYPE_MAX);
+ 		} else if (hdrs & ICE_FLOW_SEG_HDR_IPV6) {
 -- 
 2.20.1
 
