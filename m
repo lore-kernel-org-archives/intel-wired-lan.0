@@ -1,43 +1,55 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue,  2 Mar 2021 10:12:08 -0800
-Subject: [Intel-wired-lan] [PATCH S55 09/14] ice: remove unnecessary
- duplicated AQ command flag setting
+Date: Tue,  2 Mar 2021 10:12:12 -0800
+Subject: [Intel-wired-lan] [PATCH S55 13/14] ice: Advertise virtchnl UDP
+ segmentation offload capability
 In-Reply-To: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210302181213.51718-9-anthony.l.nguyen@intel.com>
+Message-ID: <20210302181213.51718-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Commit a012dca9f7a2 ("ice: add ethtool -m support for reading i2c eeprom
-modules") unnecessarily added the ICE_AQ_FLAG_BUF flag to the descriptor
-when sending the indirect Read/Write SFF EEPROM AQ command. The flag is
-already added later in the code flow for all indirect AQ commands, i.e.
-commands that provide an additional data buffer.
+As the hardware is capable of supporting UDP segmentation offload, add a
+capability bit to virtchnl.h to communicate this and have the driver
+advertise its support.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 3 +++
+ include/linux/avf/virtchnl.h                     | 1 +
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index a20edf1538a0..105504c8cfe7 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3186,7 +3186,7 @@ ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index f09367eb242a..43d309aa9efe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2126,6 +2126,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	if (vf->driver_caps & VIRTCHNL_VF_CAP_ADV_LINK_SPEED)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
  
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_sff_eeprom);
- 	cmd = &desc.params.read_write_sff_param;
--	desc.flags = cpu_to_le16(ICE_AQ_FLAG_RD | ICE_AQ_FLAG_BUF);
-+	desc.flags = cpu_to_le16(ICE_AQ_FLAG_RD);
- 	cmd->lport_num = (u8)(lport & 0xff);
- 	cmd->lport_num_valid = (u8)((lport >> 8) & 0x01);
- 	cmd->i2c_bus_addr = cpu_to_le16(((bus_addr >> 1) &
++	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_USO)
++		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_USO;
++
+ 	vfres->num_vsis = 1;
+ 	/* Tx and Rx queue are equal for VF */
+ 	vfres->num_queue_pairs = vsi->num_txq;
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 228b90ef3361..ddcff6219b61 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -252,6 +252,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+ #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
+ #define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
+ #define VIRTCHNL_VF_OFFLOAD_FDIR_PF		0X10000000
++#define VIRTCHNL_VF_OFFLOAD_USO			0X02000000
+ 
+ /* Define below the capability flags that are not offloads */
+ #define VIRTCHNL_VF_CAP_ADV_LINK_SPEED		0x00000080
 -- 
 2.20.1
 
