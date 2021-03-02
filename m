@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  2 Mar 2021 06:57:43 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 27/33] i40e: Fix memory leak
+Date: Tue,  2 Mar 2021 06:58:31 -0500
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 17/21] i40e: Fix memory leak
  in i40e_probe
-In-Reply-To: <20210302115749.62653-1-sashal@kernel.org>
-References: <20210302115749.62653-1-sashal@kernel.org>
-Message-ID: <20210302115749.62653-27-sashal@kernel.org>
+In-Reply-To: <20210302115835.63269-1-sashal@kernel.org>
+References: <20210302115835.63269-1-sashal@kernel.org>
+Message-ID: <20210302115835.63269-17-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -30,10 +30,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c19b45a90fcd..fbbf3097f7fc 100644
+index a728b6a7872c..90314f78c204 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -15164,6 +15164,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -13977,6 +13977,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  		if (err) {
  			dev_info(&pdev->dev,
  				 "setup of misc vector failed: %d\n", err);
