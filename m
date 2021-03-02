@@ -1,47 +1,133 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  2 Mar 2021 06:58:31 -0500
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 17/21] i40e: Fix memory leak
- in i40e_probe
-In-Reply-To: <20210302115835.63269-1-sashal@kernel.org>
-References: <20210302115835.63269-1-sashal@kernel.org>
-Message-ID: <20210302115835.63269-17-sashal@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 02 Mar 2021 20:37:15 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
+ 3a3e187b7b489df5ae729aeee86b2db852b76a92
+Message-ID: <603e317b.xBUT/Z5bX8jiiMw6%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Keita Suzuki <keitasuzuki.park@sslab.ics.keio.ac.jp>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 3a3e187b7b489df5ae729aeee86b2db852b76a92  igb: unbreak I2C bit-banging on i350
 
-[ Upstream commit 58cab46c622d6324e47bd1c533693c94498e4172 ]
+Error/Warning in current branch:
 
-Struct i40e_veb is allocated in function i40e_setup_pf_switch, and
-stored to an array field veb inside struct i40e_pf. However when
-i40e_setup_misc_vector fails, this memory leaks.
+drivers/net/ethernet/intel/ice/ice_main.c:2074: undefined reference to `ice_flush_fdir_ctx'
+drivers/net/ethernet/intel/ice/ice_txrx.c:1122: undefined reference to `ice_vc_fdir_irq_handler'
 
-Fix this by calling exit and teardown functions.
+Error/Warning ids grouped by kconfigs:
 
-Signed-off-by: Keita Suzuki <keitasuzuki.park@sslab.ics.keio.ac.jp>
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+gcc_recent_errors
+`-- i386-randconfig-a012-20210302
+    |-- drivers-net-ethernet-intel-ice-ice_main.c:undefined-reference-to-ice_flush_fdir_ctx
+    `-- drivers-net-ethernet-intel-ice-ice_txrx.c:undefined-reference-to-ice_vc_fdir_irq_handler
+
+elapsed time: 722m
+
+configs tested: 95
+configs skipped: 2
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arc                        nsim_700_defconfig
+arm                        keystone_defconfig
+ia64                             alldefconfig
+arm                            mps2_defconfig
+arm                          gemini_defconfig
+arm                         at91_dt_defconfig
+arm                             rpc_defconfig
+ia64                            zx1_defconfig
+powerpc                        cell_defconfig
+arm                        shmobile_defconfig
+parisc                generic-64bit_defconfig
+x86_64                           alldefconfig
+arm                            hisi_defconfig
+powerpc                    gamecube_defconfig
+sh                           se7705_defconfig
+powerpc                      walnut_defconfig
+powerpc                     sbc8548_defconfig
+powerpc                   currituck_defconfig
+m68k                        mvme147_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210302
+i386                 randconfig-a003-20210302
+i386                 randconfig-a002-20210302
+i386                 randconfig-a004-20210302
+i386                 randconfig-a006-20210302
+i386                 randconfig-a001-20210302
+i386                 randconfig-a016-20210302
+i386                 randconfig-a012-20210302
+i386                 randconfig-a014-20210302
+i386                 randconfig-a013-20210302
+i386                 randconfig-a011-20210302
+i386                 randconfig-a015-20210302
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a006-20210301
+x86_64               randconfig-a001-20210301
+x86_64               randconfig-a004-20210301
+x86_64               randconfig-a002-20210301
+x86_64               randconfig-a005-20210301
+x86_64               randconfig-a003-20210301
+x86_64               randconfig-a013-20210302
+x86_64               randconfig-a016-20210302
+x86_64               randconfig-a015-20210302
+x86_64               randconfig-a014-20210302
+x86_64               randconfig-a012-20210302
+x86_64               randconfig-a011-20210302
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a728b6a7872c..90314f78c204 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -13977,6 +13977,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		if (err) {
- 			dev_info(&pdev->dev,
- 				 "setup of misc vector failed: %d\n", err);
-+			i40e_cloud_filter_exit(pf);
-+			i40e_fdir_teardown(pf);
- 			goto err_vsis;
- 		}
- 	}
--- 
-2.30.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
