@@ -1,133 +1,41 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 02 Mar 2021 20:37:15 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
- 3a3e187b7b489df5ae729aeee86b2db852b76a92
-Message-ID: <603e317b.xBUT/Z5bX8jiiMw6%lkp@intel.com>
+From: Vladimir Oltean <olteanv@gmail.com>
+Date: Tue, 2 Mar 2021 16:23:50 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/8] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20210122224453.4161729-2-vinicius.gomes@intel.com>
+References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
+ <20210122224453.4161729-2-vinicius.gomes@intel.com>
+Message-ID: <20210302142350.4tu3n4gay53cjnig@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 3a3e187b7b489df5ae729aeee86b2db852b76a92  igb: unbreak I2C bit-banging on i350
+Hi Vinicius,
 
-Error/Warning in current branch:
+On Fri, Jan 22, 2021 at 02:44:46PM -0800, Vinicius Costa Gomes wrote:
+> Frame preemption (described in IEEE 802.3br-2016) defines the concept
+> of preemptible and express queues. It allows traffic from express
+> queues to "interrupt" traffic from preemptible queues, which are
+> "resumed" after the express traffic has finished transmitting.
+> 
+> Frame preemption can only be used when both the local device and the
+> link partner support it.
+> 
+> Only parameters for enabling/disabling frame preemption and
+> configuring the minimum fragment size are included here. Expressing
+> which queues are marked as preemptible is left to mqprio/taprio, as
+> having that information there should be easier on the user.
+> 
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
 
-drivers/net/ethernet/intel/ice/ice_main.c:2074: undefined reference to `ice_flush_fdir_ctx'
-drivers/net/ethernet/intel/ice/ice_txrx.c:1122: undefined reference to `ice_vc_fdir_irq_handler'
+I just noticed that the aMACMergeStatusVerify variable is not exposed in
+the PREEMPT_GET command, which would allow the user to inspect the state
+of the MAC merge sublayer verification state machine. Also, a way in the
+PREEMPT_SET command to set the disableVerify variable would be nice.
 
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- i386-randconfig-a012-20210302
-    |-- drivers-net-ethernet-intel-ice-ice_main.c:undefined-reference-to-ice_flush_fdir_ctx
-    `-- drivers-net-ethernet-intel-ice-ice_txrx.c:undefined-reference-to-ice_vc_fdir_irq_handler
-
-elapsed time: 722m
-
-configs tested: 95
-configs skipped: 2
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arc                        nsim_700_defconfig
-arm                        keystone_defconfig
-ia64                             alldefconfig
-arm                            mps2_defconfig
-arm                          gemini_defconfig
-arm                         at91_dt_defconfig
-arm                             rpc_defconfig
-ia64                            zx1_defconfig
-powerpc                        cell_defconfig
-arm                        shmobile_defconfig
-parisc                generic-64bit_defconfig
-x86_64                           alldefconfig
-arm                            hisi_defconfig
-powerpc                    gamecube_defconfig
-sh                           se7705_defconfig
-powerpc                      walnut_defconfig
-powerpc                     sbc8548_defconfig
-powerpc                   currituck_defconfig
-m68k                        mvme147_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210302
-i386                 randconfig-a003-20210302
-i386                 randconfig-a002-20210302
-i386                 randconfig-a004-20210302
-i386                 randconfig-a006-20210302
-i386                 randconfig-a001-20210302
-i386                 randconfig-a016-20210302
-i386                 randconfig-a012-20210302
-i386                 randconfig-a014-20210302
-i386                 randconfig-a013-20210302
-i386                 randconfig-a011-20210302
-i386                 randconfig-a015-20210302
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a006-20210301
-x86_64               randconfig-a001-20210301
-x86_64               randconfig-a004-20210301
-x86_64               randconfig-a002-20210301
-x86_64               randconfig-a005-20210301
-x86_64               randconfig-a003-20210301
-x86_64               randconfig-a013-20210302
-x86_64               randconfig-a016-20210302
-x86_64               randconfig-a015-20210302
-x86_64               randconfig-a014-20210302
-x86_64               randconfig-a012-20210302
-x86_64               randconfig-a011-20210302
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Do you still have the iproute2 patch that goes along with this? If you
+don't have the time, I might try to take a stab at adding these extra
+parameters and resending.
