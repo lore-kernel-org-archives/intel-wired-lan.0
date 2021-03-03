@@ -1,57 +1,53 @@
 From: Vladimir Oltean <olteanv@gmail.com>
-Date: Wed, 3 Mar 2021 03:07:26 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v3 6/8] igc: Add support for
- tuning frame preemption via ethtool
-In-Reply-To: <20210122224453.4161729-7-vinicius.gomes@intel.com>
+Date: Wed, 3 Mar 2021 02:51:12 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/8] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <87o8g1nk6g.fsf@vcostago-mobl2.amr.corp.intel.com>
 References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-7-vinicius.gomes@intel.com>
-Message-ID: <20210303010726.7rt6j53zg5xwwtex@skbuf>
+ <20210122224453.4161729-2-vinicius.gomes@intel.com>
+ <20210302142350.4tu3n4gay53cjnig@skbuf>
+ <87o8g1nk6g.fsf@vcostago-mobl2.amr.corp.intel.com>
+Message-ID: <20210303005112.im2zur47553uv2ld@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 22, 2021 at 02:44:51PM -0800, Vinicius Costa Gomes wrote:
-> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-> index 0e78abfd99ee..c2155d109bd6 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-> @@ -410,10 +410,14 @@
->  /* Transmit Scheduling */
->  #define IGC_TQAVCTRL_TRANSMIT_MODE_TSN	0x00000001
->  #define IGC_TQAVCTRL_ENHANCED_QAV	0x00000008
-> +#define IGC_TQAVCTRL_PREEMPT_ENA	0x00000002
-> +#define IGC_TQAVCTRL_MIN_FRAG_MASK	0x0000C000
-> +#define IGC_TQAVCTRL_MIN_FRAG_SHIFT	14
-> @@ -83,13 +89,22 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
->  	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
->  	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
->  
-> -	tqavctrl = rd32(IGC_TQAVCTRL);
->  	rxpbs = rd32(IGC_RXPBS) & ~IGC_RXPBSIZE_SIZE_MASK;
->  	rxpbs |= IGC_RXPBSIZE_TSN;
->  
->  	wr32(IGC_RXPBS, rxpbs);
->  
-> +	tqavctrl = rd32(IGC_TQAVCTRL) &
-> +		~(IGC_TQAVCTRL_MIN_FRAG_MASK | IGC_TQAVCTRL_PREEMPT_ENA);
->  	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
-> +
-> +	if (adapter->frame_preemption_active)
-> +		tqavctrl |= IGC_TQAVCTRL_PREEMPT_ENA;
+On Tue, Mar 02, 2021 at 04:40:55PM -0800, Vinicius Costa Gomes wrote:
+> Hi Vladimir,
+>
+> Vladimir Oltean <olteanv@gmail.com> writes:
+>
+> > Hi Vinicius,
+> >
+> > On Fri, Jan 22, 2021 at 02:44:46PM -0800, Vinicius Costa Gomes wrote:
+> >> Frame preemption (described in IEEE 802.3br-2016) defines the concept
+> >> of preemptible and express queues. It allows traffic from express
+> >> queues to "interrupt" traffic from preemptible queues, which are
+> >> "resumed" after the express traffic has finished transmitting.
+> >>
+> >> Frame preemption can only be used when both the local device and the
+> >> link partner support it.
+> >>
+> >> Only parameters for enabling/disabling frame preemption and
+> >> configuring the minimum fragment size are included here. Expressing
+> >> which queues are marked as preemptible is left to mqprio/taprio, as
+> >> having that information there should be easier on the user.
+> >>
+> >> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> >> ---
+> >
+> > I just noticed that the aMACMergeStatusVerify variable is not exposed in
+> > the PREEMPT_GET command, which would allow the user to inspect the state
+> > of the MAC merge sublayer verification state machine. Also, a way in the
+> > PREEMPT_SET command to set the disableVerify variable would be nice.
+> >
+>
+> The hardware I have won't have support for this.
 
-Question: when adapter->frame_preemption_active is false, does the port
-have the pMAC enabled, and can it receive preemptable frames? Maybe we
-should be very explicit that the ethtool frame preemption only configures
-the egress side, and that a driver capable of FP should always turn on
-the pMAC on RX. Are you aware of any performance downsides?
+What exactly is not supported, FP verification or the disabling of it?
+Does your hardware at least respond to verification frames?
 
-> +
-> +	frag_size_mult = ethtool_frag_size_to_mult(adapter->add_frag_size);
-> +
-> +	tqavctrl |= frag_size_mult << IGC_TQAVCTRL_MIN_FRAG_SHIFT;
-> +
->  	wr32(IGC_TQAVCTRL, tqavctrl);
->  
->  	wr32(IGC_QBVCYCLET_S, cycle);
+> I am going to send the next version of this series soon. Care to send
+> the support for verifyStatus/disableVerify as follow up series?
