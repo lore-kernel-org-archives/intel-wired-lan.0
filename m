@@ -1,25 +1,162 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 3 Mar 2021 10:36:24 -0800
-Subject: [Intel-wired-lan] [PATCH intel-net 0/3] intel: Rx headroom fixes
-In-Reply-To: <20210303153928.11764-1-maciej.fijalkowski@intel.com>
-References: <20210303153928.11764-1-maciej.fijalkowski@intel.com>
-Message-ID: <20210303103624.00003aff@intel.com>
+Date: Wed,  3 Mar 2021 12:51:03 -0800
+Subject: [Intel-wired-lan] [PATCH net v1] igb: check timestamp validity
+Message-ID: <20210303205103.776633-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Maciej Fijalkowski wrote:
+Add a couple of checks to make sure timestamping is on and that the
+timestamp value from DMA is valid. This avoids any functional issues
+that could come from a misinterpreted time stamp.
 
-> Fix Rx headroom by calling *_rx_offset() after the build_skb Rx ring
-> flag is set.
-> 
-> It was reported by Jesper in [0] that XDP_REDIRECT stopped working after
-> [1] patch in i40e.
+One of the functions changed doesn't need a return value added because
+there was no value in checking from the calling locations.
 
-Looks good to me, thanks for the fixes Maciej, and especially to
-Jesper for the report of the issue.
+While here, fix a couple of reverse christmas tree issues next to
+the code being changed.
 
-For the series: 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Fixes: f56e7bba22fa ("igb: Pull timestamp from fragment before adding it to skb")
+Fixes: 9cbc948b5a20 ("igb: add XDP support")
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+Note: this commit message has two fixes notations because it collides
+with some non-fix changes from the XDP support patch, which will make it
+not apply cleanly on stable kernels from before Sep 2020. The
+resolutions are fairly simple however.
+
+This was COMPILE TESTED ONLY before emailing, since I don't have
+hardware to test on, so any testing is greatly appreciated.
+---
+ drivers/net/ethernet/intel/igb/igb.h      |  4 +--
+ drivers/net/ethernet/intel/igb/igb_main.c | 11 ++++----
+ drivers/net/ethernet/intel/igb/igb_ptp.c  | 31 ++++++++++++++++++-----
+ 3 files changed, 32 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index aaa954aae574..7bda8c5edea5 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -748,8 +748,8 @@ void igb_ptp_suspend(struct igb_adapter *adapter);
+ void igb_ptp_rx_hang(struct igb_adapter *adapter);
+ void igb_ptp_tx_hang(struct igb_adapter *adapter);
+ void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
+-void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+-			 struct sk_buff *skb);
++int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
++			struct sk_buff *skb);
+ int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 878b31d534ec..ce4b70378e12 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8301,9 +8301,10 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
+ 		return NULL;
+ 
+ 	if (unlikely(igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))) {
+-		igb_ptp_rx_pktstamp(rx_ring->q_vector, xdp->data, skb);
+-		xdp->data += IGB_TS_HDR_LEN;
+-		size -= IGB_TS_HDR_LEN;
++		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, xdp->data, skb)) {
++			xdp->data += IGB_TS_HDR_LEN;
++			size -= IGB_TS_HDR_LEN;
++		}
+ 	}
+ 
+ 	/* Determine available headroom for copy */
+@@ -8364,8 +8365,8 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
+ 
+ 	/* pull timestamp out of packet data */
+ 	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
+-		igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb);
+-		__skb_pull(skb, IGB_TS_HDR_LEN);
++		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb))
++			__skb_pull(skb, IGB_TS_HDR_LEN);
+ 	}
+ 
+ 	/* update buffer offset */
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 7cc5428c3b3d..86a576201f5f 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -856,6 +856,9 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
+ 	dev_kfree_skb_any(skb);
+ }
+ 
++#define IGB_RET_PTP_DISABLED 1
++#define IGB_RET_PTP_INVALID 2
++
+ /**
+  * igb_ptp_rx_pktstamp - retrieve Rx per packet timestamp
+  * @q_vector: Pointer to interrupt specific structure
+@@ -864,19 +867,29 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
+  *
+  * This function is meant to retrieve a timestamp from the first buffer of an
+  * incoming frame.  The value is stored in little endian format starting on
+- * byte 8.
++ * byte 8
++ *
++ * Returns: 0 if success, nonzero if failure
+  **/
+-void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+-			 struct sk_buff *skb)
++int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
++			struct sk_buff *skb)
+ {
+-	__le64 *regval = (__le64 *)va;
+ 	struct igb_adapter *adapter = q_vector->adapter;
++	__le64 *regval = (__le64 *)va;
+ 	int adjust = 0;
+ 
++	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
++		return IGB_RET_PTP_DISABLED;
++
+ 	/* The timestamp is recorded in little endian format.
+ 	 * DWORD: 0        1        2        3
+ 	 * Field: Reserved Reserved SYSTIML  SYSTIMH
+ 	 */
++
++	/* check reserved dwords are zero, be/le doesn't matter for zero */
++	if (regval[0])
++		return IGB_RET_PTP_INVALID;
++
+ 	igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
+ 				   le64_to_cpu(regval[1]));
+ 
+@@ -896,6 +909,8 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+ 	}
+ 	skb_hwtstamps(skb)->hwtstamp =
+ 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
++
++	return 0;
+ }
+ 
+ /**
+@@ -906,13 +921,15 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+  * This function is meant to retrieve a timestamp from the internal registers
+  * of the adapter and store it in the skb.
+  **/
+-void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector,
+-			 struct sk_buff *skb)
++void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb)
+ {
+ 	struct igb_adapter *adapter = q_vector->adapter;
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u64 regval;
+ 	int adjust = 0;
++	u64 regval;
++
++	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
++		return;
+ 
+ 	/* If this bit is set, then the RX registers contain the time stamp. No
+ 	 * other packet will be time stamped until we read these registers, so
+
+base-commit: dbbe7c962c3a8163bf724dbc3c9fdfc9b16d3117
+-- 
+2.25.4
+
