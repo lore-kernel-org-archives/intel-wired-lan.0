@@ -1,84 +1,146 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu,  4 Mar 2021 10:34:30 +0100
-Subject: [Intel-wired-lan] [PATCH] i40e: improve locking of mac_filter_hash
-Message-ID: <20210304093430.42421-1-sassmann@kpanic.de>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 04 Mar 2021 17:58:07 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 5d43b4f5df60f54cd778687b2bbc6c5625e36242
+Message-ID: <6040af2f.TXyJfFglqRGAGdHh%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e_config_vf_promiscuous_mode() calls
-i40e_getnum_vf_vsi_vlan_filters() without acquiring the
-mac_filter_hash_lock spinlock.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 5d43b4f5df60f54cd778687b2bbc6c5625e36242  ixgbe: move headroom initialization to ixgbe_configure_rx_ring
 
-This is unsafe because mac_filter_hash may get altered in another thread
-while i40e_getnum_vf_vsi_vlan_filters() traverses the hashes.
+elapsed time: 726m
 
-Simply adding the spinlock in i40e_getnum_vf_vsi_vlan_filters() is not
-possible as it already gets called in i40e_get_vlan_list_sync() with the
-spinlock held. Therefore adding a wrapper that acquires the spinlock and
-call the correct function where appropriate.
+configs tested: 117
+configs skipped: 2
 
-Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
-Fix-suggested-by: Paolo Abeni <pabeni@redhat.com>
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                  colibri_pxa300_defconfig
+mips                          malta_defconfig
+h8300                               defconfig
+ia64                      gensparse_defconfig
+powerpc                      pmac32_defconfig
+arc                          axs103_defconfig
+powerpc                    sam440ep_defconfig
+mips                         rt305x_defconfig
+powerpc                      ppc6xx_defconfig
+arm                      integrator_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                       maple_defconfig
+mips                      malta_kvm_defconfig
+h8300                    h8300h-sim_defconfig
+sh                          lboxre2_defconfig
+arm                             pxa_defconfig
+mips                        workpad_defconfig
+sh                           se7751_defconfig
+powerpc                       ebony_defconfig
+mips                     cu1000-neo_defconfig
+sh                         microdev_defconfig
+mips                     decstation_defconfig
+mips                        maltaup_defconfig
+arm                           stm32_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210304
+i386                 randconfig-a003-20210304
+i386                 randconfig-a002-20210304
+i386                 randconfig-a004-20210304
+i386                 randconfig-a006-20210304
+i386                 randconfig-a001-20210304
+i386                 randconfig-a005-20210303
+i386                 randconfig-a003-20210303
+i386                 randconfig-a002-20210303
+i386                 randconfig-a004-20210303
+i386                 randconfig-a006-20210303
+i386                 randconfig-a001-20210303
+x86_64               randconfig-a013-20210303
+x86_64               randconfig-a016-20210303
+x86_64               randconfig-a015-20210303
+x86_64               randconfig-a014-20210303
+x86_64               randconfig-a012-20210303
+x86_64               randconfig-a011-20210303
+i386                 randconfig-a016-20210303
+i386                 randconfig-a012-20210303
+i386                 randconfig-a014-20210303
+i386                 randconfig-a013-20210303
+i386                 randconfig-a011-20210303
+i386                 randconfig-a015-20210303
+i386                 randconfig-a016-20210304
+i386                 randconfig-a012-20210304
+i386                 randconfig-a013-20210304
+i386                 randconfig-a014-20210304
+i386                 randconfig-a011-20210304
+i386                 randconfig-a015-20210304
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a006-20210303
+x86_64               randconfig-a001-20210303
+x86_64               randconfig-a004-20210303
+x86_64               randconfig-a002-20210303
+x86_64               randconfig-a005-20210303
+x86_64               randconfig-a003-20210303
+x86_64               randconfig-a013-20210304
+x86_64               randconfig-a016-20210304
+x86_64               randconfig-a015-20210304
+x86_64               randconfig-a014-20210304
+x86_64               randconfig-a012-20210304
+x86_64               randconfig-a011-20210304
+
 ---
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 23 ++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 1b6ec9be155a..61d3e9a00f65 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1101,12 +1101,12 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
- }
- 
- /**
-- * i40e_getnum_vf_vsi_vlan_filters
-+ * __i40e_getnum_vf_vsi_vlan_filters
-  * @vsi: pointer to the vsi
-  *
-  * called to get the number of VLANs offloaded on this VF
-  **/
--static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
-+static int __i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
- {
- 	struct i40e_mac_filter *f;
- 	u16 num_vlans = 0, bkt;
-@@ -1119,6 +1119,23 @@ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
- 	return num_vlans;
- }
- 
-+/**
-+ * i40e_getnum_vf_vsi_vlan_filters
-+ * @vsi: pointer to the vsi
-+ *
-+ * wrapper for __i40e_getnum_vf_vsi_vlan_filters() with spinlock held
-+ **/
-+static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
-+{
-+	int num_vlans;
-+
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
-+	return num_vlans;
-+}
-+
- /**
-  * i40e_get_vlan_list_sync
-  * @vsi: pointer to the VSI
-@@ -1136,7 +1153,7 @@ static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, u16 *num_vlans,
- 	int bkt;
- 
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
--	*num_vlans = i40e_getnum_vf_vsi_vlan_filters(vsi);
-+	*num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
- 	*vlan_list = kcalloc(*num_vlans, sizeof(**vlan_list), GFP_ATOMIC);
- 	if (!(*vlan_list))
- 		goto err;
--- 
-2.29.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
