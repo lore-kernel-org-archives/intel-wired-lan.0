@@ -1,172 +1,71 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu,  4 Mar 2021 09:38:13 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Add support for Lunar Lake
-Message-ID: <20210304073813.2741545-1-sasha.neftin@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Thu, 4 Mar 2021 09:53:56 +0100
+Subject: [Intel-wired-lan] [PATCH intel-net 1/3] i40e: move headroom
+ initialization to i40e_configure_rx_ring
+In-Reply-To: <20210303153928.11764-2-maciej.fijalkowski@intel.com>
+References: <20210303153928.11764-1-maciej.fijalkowski@intel.com>
+ <20210303153928.11764-2-maciej.fijalkowski@intel.com>
+Message-ID: <20210304095356.054a8778@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add devices IDs for the next LOM generations that will be
-available on the next Intel Client platform (Lunar Lake)
-This patch provides the initial support for these devices
+On Wed,  3 Mar 2021 16:39:26 +0100
+Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/ethtool.c | 2 ++
- drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
- drivers/net/ethernet/intel/e1000e/netdev.c  | 6 ++++++
- drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
- 5 files changed, 21 insertions(+)
+> i40e_rx_offset(), that is supposed to initialize the Rx buffer headroom,
+> relies on I40E_RXR_FLAGS_BUILD_SKB_ENABLED flag.
+> 
+> Currently, the callsite of mentioned function is placed incorrectly
+> within i40e_setup_rx_descriptors() where Rx ring's build skb flag is not
+> set yet. This causes the XDP_REDIRECT to be partially broken due to
+> inability to create xdp_frame in the headroom space, as the headroom is
+> 0.
+> 
+> For the record, below is the call graph:
+> 
+> i40e_vsi_open
+>  i40e_vsi_setup_rx_resources
+>   i40e_setup_rx_descriptors
+>    i40e_rx_offset() <-- sets offset to 0 as build_skb flag is set below
+> 
+>  i40e_vsi_configure_rx
+>   i40e_configure_rx_ring
+>    set_ring_build_skb_enabled(ring) <-- set build_skb flag
+> 
+> Fix this by moving i40e_rx_offset() to i40e_configure_rx_ring() after
+> the flag setting.
+> 
+> Fixes: f7bb0d71d658 ("i40e: store the result of i40e_rx_offset() onto i40e_ring")
+> Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Co-developed-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 ------------
+>  2 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 06442e6bef73..7256b43b7a65 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -903,6 +903,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		mask |= BIT(18);
- 		break;
- 	default:
-@@ -1569,6 +1570,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		fext_nvm11 = er32(FEXTNVM11);
- 		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
- 		ew32(FEXTNVM11, fext_nvm11);
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index 69a2329ea463..d02aebf65554 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -106,6 +106,10 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_MTP_I219_V18		0x550B
- #define E1000_DEV_ID_PCH_MTP_I219_LM19		0x550C
- #define E1000_DEV_ID_PCH_MTP_I219_V19		0x550D
-+#define E1000_DEV_ID_PCH_LNP_I219_LM20		0x550E
-+#define E1000_DEV_ID_PCH_LNP_I219_V20		0x550F
-+#define E1000_DEV_ID_PCH_LNP_I219_LM21		0x5510
-+#define E1000_DEV_ID_PCH_LNP_I219_V21		0x5511
- 
- #define E1000_REVISION_4	4
- 
-@@ -132,6 +136,7 @@ enum e1000_mac_type {
- 	e1000_pch_tgp,
- 	e1000_pch_adp,
- 	e1000_pch_mtp,
-+	e1000_pch_lnp,
- };
- 
- enum e1000_media_type {
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 0ac8d79a7987..8c5aaa523b01 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -321,6 +321,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		if (e1000_phy_is_accessible_pchlan(hw))
- 			break;
- 
-@@ -466,6 +467,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
- 		case e1000_pch_tgp:
- 		case e1000_pch_adp:
- 		case e1000_pch_mtp:
-+		case e1000_pch_lnp:
- 			/* In case the PHY needs to be in mdio slow mode,
- 			 * set slow mode and try to get the PHY id again.
- 			 */
-@@ -711,6 +713,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 	case e1000_pchlan:
- 		/* check management mode */
- 		mac->ops.check_mng_mode = e1000_check_mng_mode_pchlan;
-@@ -1663,6 +1666,7 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		rc = e1000_init_phy_params_pchlan(hw);
- 		break;
- 	default:
-@@ -2118,6 +2122,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG_ICH8M;
- 		break;
- 	default:
-@@ -3162,6 +3167,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		bank1_offset = nvm->flash_bank_size;
- 		act_offset = E1000_ICH_NVM_SIG_WORD;
- 
-@@ -4101,6 +4107,7 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		word = NVM_COMPAT;
- 		valid_csum_mask = NVM_COMPAT_VALID_CSUM;
- 		break;
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index f1c9debd9f3b..ecbe91cb95ed 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3550,6 +3550,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
- 			/* Stable 24MHz frequency */
- 			incperiod = INCPERIOD_24MHZ;
-@@ -4068,6 +4069,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		fc->refresh_time = 0xFFFF;
- 		fc->pause_time = 0xFFFF;
- 
-@@ -7855,6 +7857,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_cnp },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_cnp },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_cnp },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index f3f671311855..41213baee050 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -298,6 +298,7 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
- 	case e1000_pch_tgp:
- 	case e1000_pch_adp:
- 	case e1000_pch_mtp:
-+	case e1000_pch_lnp:
- 		if ((hw->mac.type < e1000_pch_lpt) ||
- 		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
- 			adapter->ptp_clock_info.max_adj = 24000000 - 1;
+Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
+Tested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+
+I'm currently looking at extending samples/bpf/ xdp_redirect_map to
+detect the situation.  As with this bug the redirect tests/sample
+programs will just report really high performance numbers (because
+packets are dropped earlier due to err).   Knowing what performance
+numbers to expect, I could see that they were out-of-spec, and
+investigated the root-cause.
+
+I assume Intel QA tested XDP-redirect and didn't find the bug due to
+this.  Red Hat QA also use samples/bpf/xdp* and based on the reports I
+get from them, I could not blame them if this bug would slip through,
+as the tool reports "good" results.
+
 -- 
-2.25.1
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
