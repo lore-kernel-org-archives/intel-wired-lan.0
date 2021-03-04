@@ -1,59 +1,172 @@
-From: Coiby Xu <coxu@redhat.com>
-Date: Thu,  4 Mar 2021 10:55:43 +0800
-Subject: [Intel-wired-lan] [PATCH v1 3/3] i40e: use minimal admin queue for
- kdump
-In-Reply-To: <20210304025543.334912-1-coxu@redhat.com>
-References: <20210304025543.334912-1-coxu@redhat.com>
-Message-ID: <20210304025543.334912-4-coxu@redhat.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu,  4 Mar 2021 09:38:13 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Add support for Lunar Lake
+Message-ID: <20210304073813.2741545-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The minimum size of admin send/receive queue is 1 and 2 respectively.
-The admin send queue can't be set to 1 because in that case, the
-firmware would fail to init.
+Add devices IDs for the next LOM generations that will be
+available on the next Intel Client platform (Lunar Lake)
+This patch provides the initial support for these devices
 
-Signed-off-by: Coiby Xu <coxu@redhat.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      | 2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 2 ++
+ drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 6 ++++++
+ drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
+ 5 files changed, 21 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index cd53981fa5e0..09217944baa4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -66,6 +66,8 @@
- #define I40E_FDIR_RING_COUNT		32
- #define I40E_MAX_AQ_BUF_SIZE		4096
- #define I40E_AQ_LEN			256
-+#define I40E_MIN_ARQ_LEN		1
-+#define I40E_MIN_ASQ_LEN		2
- #define I40E_AQ_WORK_LIMIT		66 /* max number of VFs + a little */
- #define I40E_MAX_USER_PRIORITY		8
- #define I40E_DEFAULT_TRAFFIC_CLASS	BIT(0)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d6868c7aee05..5d67fb12e576 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -15327,8 +15327,13 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 06442e6bef73..7256b43b7a65 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -903,6 +903,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		mask |= BIT(18);
+ 		break;
+ 	default:
+@@ -1569,6 +1570,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		fext_nvm11 = er32(FEXTNVM11);
+ 		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
+ 		ew32(FEXTNVM11, fext_nvm11);
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index 69a2329ea463..d02aebf65554 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -106,6 +106,10 @@ struct e1000_hw;
+ #define E1000_DEV_ID_PCH_MTP_I219_V18		0x550B
+ #define E1000_DEV_ID_PCH_MTP_I219_LM19		0x550C
+ #define E1000_DEV_ID_PCH_MTP_I219_V19		0x550D
++#define E1000_DEV_ID_PCH_LNP_I219_LM20		0x550E
++#define E1000_DEV_ID_PCH_LNP_I219_V20		0x550F
++#define E1000_DEV_ID_PCH_LNP_I219_LM21		0x5510
++#define E1000_DEV_ID_PCH_LNP_I219_V21		0x5511
  
- 	i40e_check_recovery_mode(pf);
+ #define E1000_REVISION_4	4
  
--	hw->aq.num_arq_entries = I40E_AQ_LEN;
--	hw->aq.num_asq_entries = I40E_AQ_LEN;
-+	if (is_kdump_kernel()) {
-+		hw->aq.num_arq_entries = I40E_MIN_ARQ_LEN;
-+		hw->aq.num_asq_entries = I40E_MIN_ASQ_LEN;
-+	} else {
-+		hw->aq.num_arq_entries = I40E_AQ_LEN;
-+		hw->aq.num_asq_entries = I40E_AQ_LEN;
-+	}
- 	hw->aq.arq_buf_size = I40E_MAX_AQ_BUF_SIZE;
- 	hw->aq.asq_buf_size = I40E_MAX_AQ_BUF_SIZE;
- 	pf->adminq_work_limit = I40E_AQ_WORK_LIMIT;
+@@ -132,6 +136,7 @@ enum e1000_mac_type {
+ 	e1000_pch_tgp,
+ 	e1000_pch_adp,
+ 	e1000_pch_mtp,
++	e1000_pch_lnp,
+ };
+ 
+ enum e1000_media_type {
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 0ac8d79a7987..8c5aaa523b01 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -321,6 +321,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		if (e1000_phy_is_accessible_pchlan(hw))
+ 			break;
+ 
+@@ -466,6 +467,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
+ 		case e1000_pch_tgp:
+ 		case e1000_pch_adp:
+ 		case e1000_pch_mtp:
++		case e1000_pch_lnp:
+ 			/* In case the PHY needs to be in mdio slow mode,
+ 			 * set slow mode and try to get the PHY id again.
+ 			 */
+@@ -711,6 +713,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 	case e1000_pchlan:
+ 		/* check management mode */
+ 		mac->ops.check_mng_mode = e1000_check_mng_mode_pchlan;
+@@ -1663,6 +1666,7 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		rc = e1000_init_phy_params_pchlan(hw);
+ 		break;
+ 	default:
+@@ -2118,6 +2122,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG_ICH8M;
+ 		break;
+ 	default:
+@@ -3162,6 +3167,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		bank1_offset = nvm->flash_bank_size;
+ 		act_offset = E1000_ICH_NVM_SIG_WORD;
+ 
+@@ -4101,6 +4107,7 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		word = NVM_COMPAT;
+ 		valid_csum_mask = NVM_COMPAT_VALID_CSUM;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index f1c9debd9f3b..ecbe91cb95ed 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3550,6 +3550,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+ 			/* Stable 24MHz frequency */
+ 			incperiod = INCPERIOD_24MHZ;
+@@ -4068,6 +4069,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		fc->refresh_time = 0xFFFF;
+ 		fc->pause_time = 0xFFFF;
+ 
+@@ -7855,6 +7857,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_cnp },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
+diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
+index f3f671311855..41213baee050 100644
+--- a/drivers/net/ethernet/intel/e1000e/ptp.c
++++ b/drivers/net/ethernet/intel/e1000e/ptp.c
+@@ -298,6 +298,7 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
+ 	case e1000_pch_tgp:
+ 	case e1000_pch_adp:
+ 	case e1000_pch_mtp:
++	case e1000_pch_lnp:
+ 		if ((hw->mac.type < e1000_pch_lpt) ||
+ 		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
+ 			adapter->ptp_clock_info.max_adj = 24000000 - 1;
 -- 
-2.30.1
+2.25.1
 
