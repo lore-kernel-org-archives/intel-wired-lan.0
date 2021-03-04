@@ -1,71 +1,84 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Thu, 4 Mar 2021 09:53:56 +0100
-Subject: [Intel-wired-lan] [PATCH intel-net 1/3] i40e: move headroom
- initialization to i40e_configure_rx_ring
-In-Reply-To: <20210303153928.11764-2-maciej.fijalkowski@intel.com>
-References: <20210303153928.11764-1-maciej.fijalkowski@intel.com>
- <20210303153928.11764-2-maciej.fijalkowski@intel.com>
-Message-ID: <20210304095356.054a8778@carbon>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Thu,  4 Mar 2021 10:34:30 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: improve locking of mac_filter_hash
+Message-ID: <20210304093430.42421-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed,  3 Mar 2021 16:39:26 +0100
-Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
+i40e_config_vf_promiscuous_mode() calls
+i40e_getnum_vf_vsi_vlan_filters() without acquiring the
+mac_filter_hash_lock spinlock.
 
-> i40e_rx_offset(), that is supposed to initialize the Rx buffer headroom,
-> relies on I40E_RXR_FLAGS_BUILD_SKB_ENABLED flag.
-> 
-> Currently, the callsite of mentioned function is placed incorrectly
-> within i40e_setup_rx_descriptors() where Rx ring's build skb flag is not
-> set yet. This causes the XDP_REDIRECT to be partially broken due to
-> inability to create xdp_frame in the headroom space, as the headroom is
-> 0.
-> 
-> For the record, below is the call graph:
-> 
-> i40e_vsi_open
->  i40e_vsi_setup_rx_resources
->   i40e_setup_rx_descriptors
->    i40e_rx_offset() <-- sets offset to 0 as build_skb flag is set below
-> 
->  i40e_vsi_configure_rx
->   i40e_configure_rx_ring
->    set_ring_build_skb_enabled(ring) <-- set build_skb flag
-> 
-> Fix this by moving i40e_rx_offset() to i40e_configure_rx_ring() after
-> the flag setting.
-> 
-> Fixes: f7bb0d71d658 ("i40e: store the result of i40e_rx_offset() onto i40e_ring")
-> Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> Co-developed-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 12 ------------
->  2 files changed, 13 insertions(+), 12 deletions(-)
+This is unsafe because mac_filter_hash may get altered in another thread
+while i40e_getnum_vf_vsi_vlan_filters() traverses the hashes.
 
-Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Tested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+Simply adding the spinlock in i40e_getnum_vf_vsi_vlan_filters() is not
+possible as it already gets called in i40e_get_vlan_list_sync() with the
+spinlock held. Therefore adding a wrapper that acquires the spinlock and
+call the correct function where appropriate.
 
-I'm currently looking at extending samples/bpf/ xdp_redirect_map to
-detect the situation.  As with this bug the redirect tests/sample
-programs will just report really high performance numbers (because
-packets are dropped earlier due to err).   Knowing what performance
-numbers to expect, I could see that they were out-of-spec, and
-investigated the root-cause.
+Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
+Fix-suggested-by: Paolo Abeni <pabeni@redhat.com>
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 23 ++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-I assume Intel QA tested XDP-redirect and didn't find the bug due to
-this.  Red Hat QA also use samples/bpf/xdp* and based on the reports I
-get from them, I could not blame them if this bug would slip through,
-as the tool reports "good" results.
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 1b6ec9be155a..61d3e9a00f65 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1101,12 +1101,12 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
+ }
+ 
+ /**
+- * i40e_getnum_vf_vsi_vlan_filters
++ * __i40e_getnum_vf_vsi_vlan_filters
+  * @vsi: pointer to the vsi
+  *
+  * called to get the number of VLANs offloaded on this VF
+  **/
+-static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
++static int __i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_mac_filter *f;
+ 	u16 num_vlans = 0, bkt;
+@@ -1119,6 +1119,23 @@ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
+ 	return num_vlans;
+ }
+ 
++/**
++ * i40e_getnum_vf_vsi_vlan_filters
++ * @vsi: pointer to the vsi
++ *
++ * wrapper for __i40e_getnum_vf_vsi_vlan_filters() with spinlock held
++ **/
++static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
++{
++	int num_vlans;
++
++	spin_lock_bh(&vsi->mac_filter_hash_lock);
++	num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
++	spin_unlock_bh(&vsi->mac_filter_hash_lock);
++
++	return num_vlans;
++}
++
+ /**
+  * i40e_get_vlan_list_sync
+  * @vsi: pointer to the VSI
+@@ -1136,7 +1153,7 @@ static void i40e_get_vlan_list_sync(struct i40e_vsi *vsi, u16 *num_vlans,
+ 	int bkt;
+ 
+ 	spin_lock_bh(&vsi->mac_filter_hash_lock);
+-	*num_vlans = i40e_getnum_vf_vsi_vlan_filters(vsi);
++	*num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
+ 	*vlan_list = kcalloc(*num_vlans, sizeof(**vlan_list), GFP_ATOMIC);
+ 	if (!(*vlan_list))
+ 		goto err;
 -- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  LinkedIn: http://www.linkedin.com/in/brouer
+2.29.2
 
