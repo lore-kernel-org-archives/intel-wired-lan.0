@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 05 Mar 2021 15:21:14 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:10GbE] BUILD SUCCESS
- 7a766381634da19fc837619b0a34590498d9d29a
-Message-ID: <6041dbea.+m/BC/05shL7B5K1%lkp@intel.com>
+Date: Fri, 05 Mar 2021 15:21:11 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 186a1a583de24452bb9e93c9e4cdf53aaa577e69
+Message-ID: <6041dbe7.e/4Sc1adDucZ8DT/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 10GbE
-branch HEAD: 7a766381634da19fc837619b0a34590498d9d29a  ixgbe: Fix memleak in ixgbe_configure_clsu32
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 186a1a583de24452bb9e93c9e4cdf53aaa577e69  ixgbe: move headroom initialization to ixgbe_configure_rx_ring
 
 elapsed time: 721m
 
-configs tested: 123
+configs tested: 136
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -55,6 +55,15 @@ mips                           jazz_defconfig
 csky                                defconfig
 powerpc                     taishan_defconfig
 powerpc                         wii_defconfig
+mips                     cu1830-neo_defconfig
+arc                      axs103_smp_defconfig
+m68k                          amiga_defconfig
+powerpc                     tqm8540_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                     pq2fads_defconfig
+arm                           h3600_defconfig
+arm                        cerfcube_defconfig
+sh                            shmin_defconfig
 ia64                        generic_defconfig
 riscv             nommu_k210_sdcard_defconfig
 h8300                               defconfig
@@ -63,6 +72,10 @@ powerpc                  mpc885_ads_defconfig
 powerpc                     pseries_defconfig
 parisc                generic-32bit_defconfig
 arm                            mps2_defconfig
+arm                        shmobile_defconfig
+m68k                          atari_defconfig
+arm                            mmp2_defconfig
+powerpc                 mpc836x_mds_defconfig
 mips                         rt305x_defconfig
 arm                         cm_x300_defconfig
 sh                   secureedge5410_defconfig
