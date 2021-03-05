@@ -1,38 +1,64 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Fri, 05 Mar 2021 21:10:09 +0000
-Subject: [Intel-wired-lan] [PATCH] net: intel: iavf: fix error return
- code of iavf_init_get_resources()
-In-Reply-To: <20210305031010.5396-1-baijiaju1990@gmail.com>
-References: <20210305031010.5396-1-baijiaju1990@gmail.com>
-Message-ID: <161497860930.24588.6617205222590161114.git-patchwork-notify@kernel.org>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 05 Mar 2021 14:38:24 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/8] ethtool: Add support
+ for configuring frame preemption
+In-Reply-To: <20210303005112.im2zur47553uv2ld@skbuf>
+References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
+ <20210122224453.4161729-2-vinicius.gomes@intel.com>
+ <20210302142350.4tu3n4gay53cjnig@skbuf>
+ <87o8g1nk6g.fsf@vcostago-mobl2.amr.corp.intel.com>
+ <20210303005112.im2zur47553uv2ld@skbuf>
+Message-ID: <874khpns4f.fsf@vcostago-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+Vladimir Oltean <olteanv@gmail.com> writes:
 
-This patch was applied to netdev/net.git (refs/heads/master):
+> On Tue, Mar 02, 2021 at 04:40:55PM -0800, Vinicius Costa Gomes wrote:
+>> Hi Vladimir,
+>>
+>> Vladimir Oltean <olteanv@gmail.com> writes:
+>>
+>> > Hi Vinicius,
+>> >
+>> > On Fri, Jan 22, 2021 at 02:44:46PM -0800, Vinicius Costa Gomes wrote:
+>> >> Frame preemption (described in IEEE 802.3br-2016) defines the concept
+>> >> of preemptible and express queues. It allows traffic from express
+>> >> queues to "interrupt" traffic from preemptible queues, which are
+>> >> "resumed" after the express traffic has finished transmitting.
+>> >>
+>> >> Frame preemption can only be used when both the local device and the
+>> >> link partner support it.
+>> >>
+>> >> Only parameters for enabling/disabling frame preemption and
+>> >> configuring the minimum fragment size are included here. Expressing
+>> >> which queues are marked as preemptible is left to mqprio/taprio, as
+>> >> having that information there should be easier on the user.
+>> >>
+>> >> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>> >> ---
+>> >
+>> > I just noticed that the aMACMergeStatusVerify variable is not exposed in
+>> > the PREEMPT_GET command, which would allow the user to inspect the state
+>> > of the MAC merge sublayer verification state machine. Also, a way in the
+>> > PREEMPT_SET command to set the disableVerify variable would be nice.
+>> >
+>>
+>> The hardware I have won't have support for this.
+>
+> What exactly is not supported, FP verification or the disabling of it?
+> Does your hardware at least respond to verification frames?
+>
 
-On Thu,  4 Mar 2021 19:10:10 -0800 you wrote:
-> When iavf_process_config() fails, no error return code of
-> iavf_init_get_resources() is assigned.
-> To fix this bug, err is assigned with the return value of
-> iavf_process_config(), and then err is checked.
-> 
-> Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
-> 
-> [...]
+Not supported in the sense that the NIC doesn't expose those variables
+into registers.
 
-Here is the summary with links:
-  - net: intel: iavf: fix error return code of iavf_init_get_resources()
-    https://git.kernel.org/netdev/net/c/6650d31f21b8
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+About the behavior, I am asking our hardware folks.
 
 
+Cheers,
+-- 
+Vinicius
