@@ -1,83 +1,50 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Fri, 5 Mar 2021 03:00:00 -0600
-Subject: [Intel-wired-lan] [PATCH RESEND][next] ixgbe: Fix fall-through
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Fri, 5 Mar 2021 10:03:58 +0100
+Subject: [Intel-wired-lan] [PATCH RESEND][next] ice: Fix fall-through
  warnings for Clang
-Message-ID: <20210305090000.GA138882@embeddedor>
+In-Reply-To: <20210305085257.GA138498@embeddedor>
+References: <20210305085257.GA138498@embeddedor>
+Message-ID: <833549f5-a191-b532-50bf-4ec343c48dd0@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In preparation to enable -Wimplicit-fallthrough for Clang, fix multiple
-warnings by explicitly adding multiple break statements instead of just
-letting the code fall through to the next case.
+Dear Gustavo,
 
-Link: https://github.com/KSPP/linux/issues/115
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  | 2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c    | 1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c    | 1 +
- 4 files changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index 8d3798a32f0e..cdfff510a27b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -1542,6 +1542,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
- 	switch (input_mask->formatted.vm_pool & 0x7F) {
- 	case 0x0:
- 		fdirm |= IXGBE_FDIRM_POOL;
-+		break;
- 	case 0x7F:
- 		break;
- 	default:
-@@ -1557,6 +1558,7 @@ s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
- 			hw_dbg(hw, " Error on src/dst port mask\n");
- 			return IXGBE_ERR_CONFIG;
- 		}
-+		break;
- 	case IXGBE_ATR_L4TYPE_MASK:
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 62ddb452f862..8d5a01be1d99 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -93,6 +93,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
- 		default:
- 			break;
- 		}
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index df389a11d3af..0218f6c9b925 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -132,6 +132,7 @@ static void ixgbe_get_first_reg_idx(struct ixgbe_adapter *adapter, u8 tc,
- 			else
- 				*tx = (tc + 4) << 4;	/* 96, 112 */
- 		}
-+		break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index 22a874eee2e8..23ddfd79fc8b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -999,6 +999,7 @@ static int ixgbe_ptp_set_timestamp_mode(struct ixgbe_adapter *adapter,
- 	switch (config->tx_type) {
- 	case HWTSTAMP_TX_OFF:
- 		tsync_tx_ctl = 0;
-+		break;
- 	case HWTSTAMP_TX_ON:
- 		break;
- 	default:
--- 
-2.27.0
+Thank you for working on that.
 
+Am 05.03.21 um 09:52 schrieb Gustavo A. R. Silva:
+> In preparation to enable -Wimplicit-fallthrough for Clang, fix a warning
+> by explicitly adding a break statement instead of just letting the code
+> fall through to the next case.
+
+It would be nice to have a short summary of the discrepancy between GCC 
+and clang, and it was decided to go with the ?clang decision?, and not 
+have clang adapt to GCC.
+
+> Link: https://github.com/KSPP/linux/issues/115
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>   drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+> index 02b12736ea80..207f6ee3a7f6 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+> @@ -143,6 +143,7 @@ ice_rx_csum(struct ice_ring *ring, struct sk_buff *skb,
+>   	case ICE_RX_PTYPE_INNER_PROT_UDP:
+>   	case ICE_RX_PTYPE_INNER_PROT_SCTP:
+>   		skb->ip_summed = CHECKSUM_UNNECESSARY;
+> +		break;
+>   	default:
+>   		break;
+>   	}
+
+
+Kind regards,
+
+Paul
