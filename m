@@ -1,64 +1,127 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 05 Mar 2021 14:38:24 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/8] ethtool: Add support
- for configuring frame preemption
-In-Reply-To: <20210303005112.im2zur47553uv2ld@skbuf>
-References: <20210122224453.4161729-1-vinicius.gomes@intel.com>
- <20210122224453.4161729-2-vinicius.gomes@intel.com>
- <20210302142350.4tu3n4gay53cjnig@skbuf>
- <87o8g1nk6g.fsf@vcostago-mobl2.amr.corp.intel.com>
- <20210303005112.im2zur47553uv2ld@skbuf>
-Message-ID: <874khpns4f.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 7 Mar 2021 10:39:16 +0200
+Subject: [Intel-wired-lan] [PATCH] platform/x86: intel_pmc: Ignore GBE
+ LTR on Tiger Lake platforms
+In-Reply-To: <20210305190608.1834164-1-david.e.box@linux.intel.com>
+References: <20210305190608.1834164-1-david.e.box@linux.intel.com>
+Message-ID: <113b08b2-ead1-7f4c-1b09-4f3572d6134f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vladimir Oltean <olteanv@gmail.com> writes:
+On 3/5/2021 21:06, David E. Box wrote:
+> Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
+> programmed in the Tiger Lake GBE controller is not large enough to allow
+> the platform to enter Package C10, which in turn prevents the platform from
+> achieving its low power target during suspend-to-idle.  Ignore the GBE LTR
+> value on Tiger Lake. LTR ignore functionality is currently performed solely
+> by a debugfs write call. Split out the LTR code into its own function that
+> can be called by both the debugfs writer and by this work around.
+> 
+> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+> Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> ---
+>   drivers/platform/x86/intel_pmc_core.c | 55 ++++++++++++++++++++-------
+>   1 file changed, 42 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
+> index ee2f757515b0..ab31eb646a1a 100644
+> --- a/drivers/platform/x86/intel_pmc_core.c
+> +++ b/drivers/platform/x86/intel_pmc_core.c
+> @@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
+>   }
+>   DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
+>   
+> -static ssize_t pmc_core_ltr_ignore_write(struct file *file,
+> -					 const char __user *userbuf,
+> -					 size_t count, loff_t *ppos)
+> +static int pmc_core_write_ltr_ignore(u32 value)
+>   {
+>   	struct pmc_dev *pmcdev = &pmc;
+>   	const struct pmc_reg_map *map = pmcdev->map;
+> -	u32 val, buf_size, fd;
+> -	int err;
+> -
+> -	buf_size = count < 64 ? count : 64;
+> -
+> -	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
+> -	if (err)
+> -		return err;
+> +	u32 fd;
+> +	int err = 0;
+>   
+>   	mutex_lock(&pmcdev->lock);
+>   
+> -	if (val > map->ltr_ignore_max) {
+> +	if (fls(value) > map->ltr_ignore_max) {
+>   		err = -EINVAL;
+>   		goto out_unlock;
+>   	}
+>   
+>   	fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
+> -	fd |= (1U << val);
+> +	fd |= value;
+>   	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
+>   
+>   out_unlock:
+>   	mutex_unlock(&pmcdev->lock);
+> +
+> +	return err;
+> +}
+> +
+> +static ssize_t pmc_core_ltr_ignore_write(struct file *file,
+> +					 const char __user *userbuf,
+> +					 size_t count, loff_t *ppos)
+> +{
+> +	u32 buf_size, val;
+> +	int err;
+> +
+> +	buf_size = count < 64 ? count : 64;
+> +
+> +	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
+> +	if (err)
+> +		return err;
+> +
+> +	err = pmc_core_write_ltr_ignore(1U << val);
+> +
+>   	return err == 0 ? count : err;
+>   }
+>   
+> @@ -1189,6 +1200,15 @@ static int quirk_xtal_ignore(const struct dmi_system_id *id)
+>   	return 0;
+>   }
+>   
+> +static int quirk_ltr_ignore(u32 val)
+> +{
+> +	int err;
+> +
+> +	err = pmc_core_write_ltr_ignore(val);
+> +
+> +	return err;
+> +}
+> +
+>   static const struct dmi_system_id pmc_core_dmi_table[]  = {
+>   	{
+>   	.callback = quirk_xtal_ignore,
+> @@ -1244,6 +1264,15 @@ static int pmc_core_probe(struct platform_device *pdev)
+>   	pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
+>   	dmi_check_system(pmc_core_dmi_table);
+>   
+> +	/*
+> +	 * On TGL, due to a hardware limitation, the GBE LTR blocks PC10 when
+> +	 * a cable is attached. Tell the PMC to ignore it.
+> +	 */
+> +	if (pmcdev->map == &tgl_reg_map) {
+I would suggest: if (pmcdev->map >= &tgl_reg_map)
+> +		dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
+> +		quirk_ltr_ignore(1U << 3);
+> +	}
+> +
+>   	pmc_core_dbgfs_register(pmcdev);
+>   
+>   	device_initialized = true;
+> 
 
-> On Tue, Mar 02, 2021 at 04:40:55PM -0800, Vinicius Costa Gomes wrote:
->> Hi Vladimir,
->>
->> Vladimir Oltean <olteanv@gmail.com> writes:
->>
->> > Hi Vinicius,
->> >
->> > On Fri, Jan 22, 2021 at 02:44:46PM -0800, Vinicius Costa Gomes wrote:
->> >> Frame preemption (described in IEEE 802.3br-2016) defines the concept
->> >> of preemptible and express queues. It allows traffic from express
->> >> queues to "interrupt" traffic from preemptible queues, which are
->> >> "resumed" after the express traffic has finished transmitting.
->> >>
->> >> Frame preemption can only be used when both the local device and the
->> >> link partner support it.
->> >>
->> >> Only parameters for enabling/disabling frame preemption and
->> >> configuring the minimum fragment size are included here. Expressing
->> >> which queues are marked as preemptible is left to mqprio/taprio, as
->> >> having that information there should be easier on the user.
->> >>
->> >> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->> >> ---
->> >
->> > I just noticed that the aMACMergeStatusVerify variable is not exposed in
->> > the PREEMPT_GET command, which would allow the user to inspect the state
->> > of the MAC merge sublayer verification state machine. Also, a way in the
->> > PREEMPT_SET command to set the disableVerify variable would be nice.
->> >
->>
->> The hardware I have won't have support for this.
->
-> What exactly is not supported, FP verification or the disabling of it?
-> Does your hardware at least respond to verification frames?
->
-
-Not supported in the sense that the NIC doesn't expose those variables
-into registers.
-
-About the behavior, I am asking our hardware folks.
-
-
-Cheers,
--- 
-Vinicius
