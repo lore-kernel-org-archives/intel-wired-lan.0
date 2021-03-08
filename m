@@ -1,157 +1,40 @@
-From: David E. Box <david.e.box@linux.intel.com>
-Date: Sun, 07 Mar 2021 11:09:14 -0800
-Subject: [Intel-wired-lan] [PATCH] platform/x86: intel_pmc: Ignore GBE
- LTR on Tiger Lake platforms
-In-Reply-To: <113b08b2-ead1-7f4c-1b09-4f3572d6134f@intel.com>
-References: <20210305190608.1834164-1-david.e.box@linux.intel.com>
- <113b08b2-ead1-7f4c-1b09-4f3572d6134f@intel.com>
-Message-ID: <35bca0efb7d485f66e3cacdac113ab9e42058846.camel@linux.intel.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Mon, 8 Mar 2021 07:43:26 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: Fix error handling in
+ e1000_set_d0_lplu_state_82571
+In-Reply-To: <20210228094424.7884-1-dinghao.liu@zju.edu.cn>
+References: <20210228094424.7884-1-dinghao.liu@zju.edu.cn>
+Message-ID: <57bae851-e735-d015-114b-aeacd602f623@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Sasha,
-
-On Sun, 2021-03-07 at 10:39 +0200, Neftin, Sasha wrote:
-> On 3/5/2021 21:06, David E. Box wrote:
-> > Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
-> > programmed in the Tiger Lake GBE controller is not large enough to
-> > allow
-> > the platform to enter Package C10, which in turn prevents the
-> > platform from
-> > achieving its low power target during suspend-to-idle.? Ignore the
-> > GBE LTR
-> > value on Tiger Lake. LTR ignore functionality is currently
-> > performed solely
-> > by a debugfs write call. Split out the LTR code into its own
-> > function that
-> > can be called by both the debugfs writer and by this work around.
-> > 
-> > Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-> > Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
-> > Cc: intel-wired-lan at lists.osuosl.org
-> > ---
-> > ? drivers/platform/x86/intel_pmc_core.c | 55 ++++++++++++++++++++--
-> > -----
-> > ? 1 file changed, 42 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/drivers/platform/x86/intel_pmc_core.c
-> > b/drivers/platform/x86/intel_pmc_core.c
-> > index ee2f757515b0..ab31eb646a1a 100644
-> > --- a/drivers/platform/x86/intel_pmc_core.c
-> > +++ b/drivers/platform/x86/intel_pmc_core.c
-> > @@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file
-> > *s, void *unused)
-> > ? }
-> > ? DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
-> > ? 
-> > -static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-> > -??????????????????????????????????????? const char __user
-> > *userbuf,
-> > -??????????????????????????????????????? size_t count, loff_t
-> > *ppos)
-> > +static int pmc_core_write_ltr_ignore(u32 value)
-> > ? {
-> > ????????struct pmc_dev *pmcdev = &pmc;
-> > ????????const struct pmc_reg_map *map = pmcdev->map;
-> > -???????u32 val, buf_size, fd;
-> > -???????int err;
-> > -
-> > -???????buf_size = count < 64 ? count : 64;
-> > -
-> > -???????err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
-> > -???????if (err)
-> > -???????????????return err;
-> > +???????u32 fd;
-> > +???????int err = 0;
-> > ? 
-> > ????????mutex_lock(&pmcdev->lock);
-> > ? 
-> > -???????if (val > map->ltr_ignore_max) {
-> > +???????if (fls(value) > map->ltr_ignore_max) {
-> > ????????????????err = -EINVAL;
-> > ????????????????goto out_unlock;
-> > ????????}
-> > ? 
-> > ????????fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-> > -???????fd |= (1U << val);
-> > +???????fd |= value;
-> > ????????pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
-> > ? 
-> > ? out_unlock:
-> > ????????mutex_unlock(&pmcdev->lock);
-> > +
-> > +???????return err;
-> > +}
-> > +
-> > +static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-> > +??????????????????????????????????????? const char __user
-> > *userbuf,
-> > +??????????????????????????????????????? size_t count, loff_t
-> > *ppos)
-> > +{
-> > +???????u32 buf_size, val;
-> > +???????int err;
-> > +
-> > +???????buf_size = count < 64 ? count : 64;
-> > +
-> > +???????err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
-> > +???????if (err)
-> > +???????????????return err;
-> > +
-> > +???????err = pmc_core_write_ltr_ignore(1U << val);
-> > +
-> > ????????return err == 0 ? count : err;
-> > ? }
-> > ? 
-> > @@ -1189,6 +1200,15 @@ static int quirk_xtal_ignore(const struct
-> > dmi_system_id *id)
-> > ????????return 0;
-> > ? }
-> > ? 
-> > +static int quirk_ltr_ignore(u32 val)
-> > +{
-> > +???????int err;
-> > +
-> > +???????err = pmc_core_write_ltr_ignore(val);
-> > +
-> > +???????return err;
-> > +}
-> > +
-> > ? static const struct dmi_system_id pmc_core_dmi_table[]? = {
-> > ????????{
-> > ????????.callback = quirk_xtal_ignore,
-> > @@ -1244,6 +1264,15 @@ static int pmc_core_probe(struct
-> > platform_device *pdev)
-> > ????????pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
-> > ????????dmi_check_system(pmc_core_dmi_table);
-> > ? 
-> > +???????/*
-> > +??????? * On TGL, due to a hardware limitation, the GBE LTR blocks
-> > PC10 when
-> > +??????? * a cable is attached. Tell the PMC to ignore it.
-> > +??????? */
-> > +???????if (pmcdev->map == &tgl_reg_map) {
-> I would suggest: if (pmcdev->map >= &tgl_reg_map)
-
-This will already cover Rocket Lake since it uses Tiger Lake PCH. Those
-are the newest platforms this driver covers. Otherwise, I don't want to
-rely on this as the permanent solution. We can evaluate this on a per
-platform basis while persuing other measures to more properly resolve
-it.
-
-David
-
-> > +???????????????dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
-> > +???????????????quirk_ltr_ignore(1U << 3);
-> > +???????}
-> > +
-> > ????????pmc_core_dbgfs_register(pmcdev);
-> > ? 
-> > ????????device_initialized = true;
-> > 
+On 2/28/2021 11:44, Dinghao Liu wrote:
+> There is one e1e_wphy() call in e1000_set_d0_lplu_state_82571
+> that we have caught its return value but lack further handling.
+> Check and terminate the execution flow just like other e1e_wphy()
+> in this function.
 > 
-
-
+> Signed-off-by: Dinghao Liu <dinghao.liu@zju.edu.cn>
+> ---
+>   drivers/net/ethernet/intel/e1000e/82571.c | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
+> index 88faf05e23ba..0b1e890dd583 100644
+> --- a/drivers/net/ethernet/intel/e1000e/82571.c
+> +++ b/drivers/net/ethernet/intel/e1000e/82571.c
+> @@ -899,6 +899,8 @@ static s32 e1000_set_d0_lplu_state_82571(struct e1000_hw *hw, bool active)
+>   	} else {
+>   		data &= ~IGP02E1000_PM_D0_LPLU;
+>   		ret_val = e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, data);
+> +		if (ret_val)
+> +			return ret_val;
+>   		/* LPLU and SmartSpeed are mutually exclusive.  LPLU is used
+>   		 * during Dx states where the power conservation is most
+>   		 * important.  During driver activity we should enable
+> 
+Good for me.
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
