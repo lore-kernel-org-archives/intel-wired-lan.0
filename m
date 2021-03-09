@@ -1,48 +1,54 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 9 Mar 2021 14:17:38 -0800
-Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
-In-Reply-To: <20210308162858.00004535@intel.com>
-References: <20210308162858.00004535@intel.com>
-Message-ID: <20210309141738.379feab3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Tue, 9 Mar 2021 23:42:57 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice: report hash type
+ such as L2/L3/L4
+In-Reply-To: <20210223234707.1170711-2-jesse.brandeburg@intel.com>
+References: <20210223234707.1170711-1-jesse.brandeburg@intel.com>
+ <20210223234707.1170711-2-jesse.brandeburg@intel.com>
+Message-ID: <CO1PR11MB5105FC921482051B3485413EFA929@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 8 Mar 2021 16:28:58 -0800 Jesse Brandeburg wrote:
-> Hello,
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jesse Brandeburg
+> Sent: Tuesday, February 23, 2021 3:47 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice: report hash type such
+> as L2/L3/L4
 > 
-> We plan to refactor the iavf module and would appreciate community and
-> maintainer feedback on our plans.  We want to do this to realize the
-> usefulness of the common code module for multiple drivers.  This
-> proposal aims to avoid disrupting current users.
+> The hardware is reporting the type of the hash used for RSS as a PTYPE field
+> in the receive descriptor. Use this value to set the skb packet hash type by
+> extending the hash type table to cover all 10-bits of possible values (requiring
+> some variables to be changed from u8 to u16), and then use that table to
+> convert to one of the possible values in enum pkt_hash_types.
 > 
-> The steps we plan are something like:
-> 1) Continue upstreaming of the iecm module (common module) and
->    the initial feature set for the idpf driver[1] utilizing iecm.
-
-Oh, that's still going? there wasn't any revision for such a long time
-I deleted my notes :-o
-
-> 2) Introduce the refactored iavf code as a "new" iavf driver with the
->    same device ID, but Kconfig default to =n to enable testing. 
-> 	a. Make this exclusive so if someone opts in to "new" iavf,
-> 	   then it disables the original iavf (?) 
-> 	b. If we do make it exclusive in Kconfig can we use the same
-> 	   name? 
-> 3) Plan is to make the "new" iavf driver the default iavf once
->    extensive regression testing can be completed. 
-> 	a. Current proposal is to make CONFIG_IAVF have a sub-option
-> 	   CONFIG_IAVF_V2 that lets the user adopt the new code,
-> 	   without changing the config for existing users or breaking
-> 	   them.
+> While we're here, remove the unused ptype struct value, which makes table
+> init easier for the zero entries, and use ranged initializer to remove a bunch
+> of code (works with gcc and clang).
 > 
-> We are looking to make sure that the mode of our refactoring will meet
-> the community's expectations. Any advice or feedback is appreciated.
+> Without this change, the kernel will recalculate the hash in software, which
+> can consume extra CPU cycles.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+> v2: [IWL] updated the initializer of the ptype table to remove PTYPE
+> 
+> NOTE: this patch generates an expected checkpatch error due to the tricky
+> structure initializer macro.
+> ---
+>  .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 147 ++++--------------
+>  drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  23 ++-
+>  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_xsk.c      |   2 +-
+>  5 files changed, 50 insertions(+), 126 deletions(-)
 
-Sounds like a slow, drawn out process painful to everyone involved.
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
-The driver is upstream. My humble preference is that Intel sends small
-logical changes we can review, and preserve a meaningful git history.
 
