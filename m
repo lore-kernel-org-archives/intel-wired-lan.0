@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 9 Mar 2021 23:47:38 +0000
-Subject: [Intel-wired-lan] [PATCH net 08/13] ice: fix memory allocation
- call
-In-Reply-To: <20210226211932.46683-8-anthony.l.nguyen@intel.com>
+Date: Tue, 9 Mar 2021 23:49:32 +0000
+Subject: [Intel-wired-lan] [PATCH net 10/13] ice: Fix for dereference of
+ NULL pointer
+In-Reply-To: <20210226211932.46683-10-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
- <20210226211932.46683-8-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105F6D775DA2332379FB3E9FA929@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210226211932.46683-10-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51059383037E6B0CB0DA18D9FA929@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, February 26, 2021 1:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 08/13] ice: fix memory allocation call
+> Subject: [Intel-wired-lan] [PATCH net 10/13] ice: Fix for dereference of NULL
+> pointer
 > 
-> From: Bruce Allan <bruce.w.allan@intel.com>
+> From: Jacek Bu?atek <jacekx.bulatek@intel.com>
 > 
-> Fix the order of number of array members and member size parameters in a
-> *calloc() call.
+> Add handling of allocation fault for ice_vsi_list_map_info.
 > 
-> Fixes: b3c3890489f6 ("ice: avoid unnecessary single-member variable-length
-> structs")
-> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Also *fi should not be NULL pointer, it is a reference to raw data field, so
+> remove this variable and use the reference directly.
+> 
+> Fixes: 9daf8208dd4d ("ice: Add support for switch filter programming")
+> Signed-off-by: Jacek Bu?atek <jacekx.bulatek@intel.com>
+> Co-developed-by: Haiyue Wang <haiyue.wang@intel.com>
+> Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
