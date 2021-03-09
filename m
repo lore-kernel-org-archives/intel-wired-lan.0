@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 9 Mar 2021 23:42:57 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice: report hash type
- such as L2/L3/L4
-In-Reply-To: <20210223234707.1170711-2-jesse.brandeburg@intel.com>
-References: <20210223234707.1170711-1-jesse.brandeburg@intel.com>
- <20210223234707.1170711-2-jesse.brandeburg@intel.com>
-Message-ID: <CO1PR11MB5105FC921482051B3485413EFA929@CO1PR11MB5105.namprd11.prod.outlook.com>
+Date: Tue, 9 Mar 2021 23:45:11 +0000
+Subject: [Intel-wired-lan] [PATCH net 05/13] ice: Increase control queue
+ timeout
+In-Reply-To: <20210226211932.46683-5-anthony.l.nguyen@intel.com>
+References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
+ <20210226211932.46683-5-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105E66798DA6CE50D0BC542FA929@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,40 +14,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jesse Brandeburg
-> Sent: Tuesday, February 23, 2021 3:47 PM
+> Tony Nguyen
+> Sent: Friday, February 26, 2021 1:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice: report hash type such
-> as L2/L3/L4
+> Subject: [Intel-wired-lan] [PATCH net 05/13] ice: Increase control queue
+> timeout
 > 
-> The hardware is reporting the type of the hash used for RSS as a PTYPE field
-> in the receive descriptor. Use this value to set the skb packet hash type by
-> extending the hash type table to cover all 10-bits of possible values (requiring
-> some variables to be changed from u8 to u16), and then use that table to
-> convert to one of the possible values in enum pkt_hash_types.
+> From: Fabio Pricoco <fabio.pricoco@intel.com>
 > 
-> While we're here, remove the unused ptype struct value, which makes table
-> init easier for the zero entries, and use ranged initializer to remove a bunch
-> of code (works with gcc and clang).
+> 250 msec timeout is insufficient for some AQ commands. Advice from FW
+> team was to increase the timeout. Increase to 1 second.
 > 
-> Without this change, the kernel will recalculate the hash in software, which
-> can consume extra CPU cycles.
-> 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Fixes: 7ec59eeac804 ("ice: Add support for control queues")
+> Signed-off-by: Fabio Pricoco <fabio.pricoco@intel.com>
 > ---
-> v2: [IWL] updated the initializer of the ptype table to remove PTYPE
-> 
-> NOTE: this patch generates an expected checkpatch error due to the tricky
-> structure initializer macro.
-> ---
->  .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 147 ++++--------------
->  drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  23 ++-
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |   2 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c      |   2 +-
->  5 files changed, 50 insertions(+), 126 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_controlq.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
