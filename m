@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Tue, 9 Mar 2021 23:45:11 +0000
-Subject: [Intel-wired-lan] [PATCH net 05/13] ice: Increase control queue
- timeout
-In-Reply-To: <20210226211932.46683-5-anthony.l.nguyen@intel.com>
+Date: Tue, 9 Mar 2021 23:47:38 +0000
+Subject: [Intel-wired-lan] [PATCH net 08/13] ice: fix memory allocation
+ call
+In-Reply-To: <20210226211932.46683-8-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
- <20210226211932.46683-5-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105E66798DA6CE50D0BC542FA929@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210226211932.46683-8-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105F6D775DA2332379FB3E9FA929@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Friday, February 26, 2021 1:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 05/13] ice: Increase control queue
-> timeout
+> Subject: [Intel-wired-lan] [PATCH net 08/13] ice: fix memory allocation call
 > 
-> From: Fabio Pricoco <fabio.pricoco@intel.com>
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> 250 msec timeout is insufficient for some AQ commands. Advice from FW
-> team was to increase the timeout. Increase to 1 second.
+> Fix the order of number of array members and member size parameters in a
+> *calloc() call.
 > 
-> Fixes: 7ec59eeac804 ("ice: Add support for control queues")
-> Signed-off-by: Fabio Pricoco <fabio.pricoco@intel.com>
+> Fixes: b3c3890489f6 ("ice: avoid unnecessary single-member variable-length
+> structs")
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_controlq.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
