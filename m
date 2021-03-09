@@ -1,54 +1,175 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Tue, 9 Mar 2021 08:09:34 +0200
-Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
-In-Reply-To: <20210308162858.00004535@intel.com>
-References: <20210308162858.00004535@intel.com>
-Message-ID: <YEcRHkhJIkZnTgza@unreal>
+From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+Date: Tue, 9 Mar 2021 08:46:08 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Add support for Lunar
+ Lake
+In-Reply-To: <20210304073813.2741545-1-sasha.neftin@intel.com>
+References: <20210304073813.2741545-1-sasha.neftin@intel.com>
+Message-ID: <5541b467-3699-2ca6-86cd-a60619af34eb@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Mar 08, 2021 at 04:28:58PM -0800, Jesse Brandeburg wrote:
-> Hello,
->
-> We plan to refactor the iavf module and would appreciate community and
-> maintainer feedback on our plans.  We want to do this to realize the
-> usefulness of the common code module for multiple drivers.  This
-> proposal aims to avoid disrupting current users.
->
-> The steps we plan are something like:
-> 1) Continue upstreaming of the iecm module (common module) and
->    the initial feature set for the idpf driver[1] utilizing iecm.
-> 2) Introduce the refactored iavf code as a "new" iavf driver with the
->    same device ID, but Kconfig default to =n to enable testing.
-> 	a. Make this exclusive so if someone opts in to "new" iavf,
-> 	   then it disables the original iavf (?)
-> 	b. If we do make it exclusive in Kconfig can we use the same
-> 	   name?
-> 3) Plan is to make the "new" iavf driver the default iavf once
->    extensive regression testing can be completed.
-> 	a. Current proposal is to make CONFIG_IAVF have a sub-option
-> 	   CONFIG_IAVF_V2 that lets the user adopt the new code,
-> 	   without changing the config for existing users or breaking
-> 	   them.
-
-I don't think that .config options are considered ABIs, so it is unclear
-what do you mean by saying "disrupting current users". Instead of the
-complication wrote above, do like any other driver does: perform your
-testing, submit the code and switch to the new code at the same time.
-
->
-> We are looking to make sure that the mode of our refactoring will meet
-> the community's expectations. Any advice or feedback is appreciated.
->
-> Thanks,
-> Jesse, Alice, Alan
->
-> [1]
-> https://lore.kernel.org/netdev/20200824173306.3178343-1-anthony.l.nguyen at intel.com/
-
-Please don't introduce module parameters in new code.
-
-Thanks
+On 04/03/2021 09:38, Sasha Neftin wrote:
+> Add devices IDs for the next LOM generations that will be
+> available on the next Intel Client platform (Lunar Lake)
+> This patch provides the initial support for these devices
+> 
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/ethtool.c | 2 ++
+>   drivers/net/ethernet/intel/e1000e/hw.h      | 5 +++++
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 7 +++++++
+>   drivers/net/ethernet/intel/e1000e/netdev.c  | 6 ++++++
+>   drivers/net/ethernet/intel/e1000e/ptp.c     | 1 +
+>   5 files changed, 21 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> index 06442e6bef73..7256b43b7a65 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> @@ -903,6 +903,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		mask |= BIT(18);
+>   		break;
+>   	default:
+> @@ -1569,6 +1570,7 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		fext_nvm11 = er32(FEXTNVM11);
+>   		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
+>   		ew32(FEXTNVM11, fext_nvm11);
+> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+> index 69a2329ea463..d02aebf65554 100644
+> --- a/drivers/net/ethernet/intel/e1000e/hw.h
+> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
+> @@ -106,6 +106,10 @@ struct e1000_hw;
+>   #define E1000_DEV_ID_PCH_MTP_I219_V18		0x550B
+>   #define E1000_DEV_ID_PCH_MTP_I219_LM19		0x550C
+>   #define E1000_DEV_ID_PCH_MTP_I219_V19		0x550D
+> +#define E1000_DEV_ID_PCH_LNP_I219_LM20		0x550E
+> +#define E1000_DEV_ID_PCH_LNP_I219_V20		0x550F
+> +#define E1000_DEV_ID_PCH_LNP_I219_LM21		0x5510
+> +#define E1000_DEV_ID_PCH_LNP_I219_V21		0x5511
+>   
+>   #define E1000_REVISION_4	4
+>   
+> @@ -132,6 +136,7 @@ enum e1000_mac_type {
+>   	e1000_pch_tgp,
+>   	e1000_pch_adp,
+>   	e1000_pch_mtp,
+> +	e1000_pch_lnp,
+>   };
+>   
+>   enum e1000_media_type {
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index 0ac8d79a7987..8c5aaa523b01 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -321,6 +321,7 @@ static s32 e1000_init_phy_workarounds_pchlan(struct e1000_hw *hw)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		if (e1000_phy_is_accessible_pchlan(hw))
+>   			break;
+>   
+> @@ -466,6 +467,7 @@ static s32 e1000_init_phy_params_pchlan(struct e1000_hw *hw)
+>   		case e1000_pch_tgp:
+>   		case e1000_pch_adp:
+>   		case e1000_pch_mtp:
+> +		case e1000_pch_lnp:
+>   			/* In case the PHY needs to be in mdio slow mode,
+>   			 * set slow mode and try to get the PHY id again.
+>   			 */
+> @@ -711,6 +713,7 @@ static s32 e1000_init_mac_params_ich8lan(struct e1000_hw *hw)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   	case e1000_pchlan:
+>   		/* check management mode */
+>   		mac->ops.check_mng_mode = e1000_check_mng_mode_pchlan;
+> @@ -1663,6 +1666,7 @@ static s32 e1000_get_variants_ich8lan(struct e1000_adapter *adapter)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		rc = e1000_init_phy_params_pchlan(hw);
+>   		break;
+>   	default:
+> @@ -2118,6 +2122,7 @@ static s32 e1000_sw_lcd_config_ich8lan(struct e1000_hw *hw)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		sw_cfg_mask = E1000_FEXTNVM_SW_CONFIG_ICH8M;
+>   		break;
+>   	default:
+> @@ -3162,6 +3167,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		bank1_offset = nvm->flash_bank_size;
+>   		act_offset = E1000_ICH_NVM_SIG_WORD;
+>   
+> @@ -4101,6 +4107,7 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		word = NVM_COMPAT;
+>   		valid_csum_mask = NVM_COMPAT_VALID_CSUM;
+>   		break;
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index f1c9debd9f3b..ecbe91cb95ed 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -3550,6 +3550,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+>   			/* Stable 24MHz frequency */
+>   			incperiod = INCPERIOD_24MHZ;
+> @@ -4068,6 +4069,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		fc->refresh_time = 0xFFFF;
+>   		fc->pause_time = 0xFFFF;
+>   
+> @@ -7855,6 +7857,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_cnp },
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_cnp },
+>   	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_cnp },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_cnp },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_cnp },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_cnp },
+> +	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_cnp },
+>   
+>   	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+>   };
+> diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
+> index f3f671311855..41213baee050 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ptp.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ptp.c
+> @@ -298,6 +298,7 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
+>   	case e1000_pch_tgp:
+>   	case e1000_pch_adp:
+>   	case e1000_pch_mtp:
+> +	case e1000_pch_lnp:
+>   		if ((hw->mac.type < e1000_pch_lpt) ||
+>   		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
+>   			adapter->ptp_clock_info.max_adj = 24000000 - 1;
+> 
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
