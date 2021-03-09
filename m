@@ -1,41 +1,103 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 8 Mar 2021 16:28:58 -0800
-Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
-Message-ID: <20210308162858.00004535@intel.com>
+From: Haiyue Wang <haiyue.wang@intel.com>
+Date: Tue,  9 Mar 2021 11:07:57 +0800
+Subject: [Intel-wired-lan] [Patch v5 00/18] Enable Intel VF flow director
+ with DDP
+Message-ID: <20210309030815.5299-1-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+The Intel E810 Series supports a programmable pipeline for a domain
+specific protocols classification, for example GTP by Dynamic Device
+Personalization (DDP) profile.
 
-We plan to refactor the iavf module and would appreciate community and
-maintainer feedback on our plans.  We want to do this to realize the
-usefulness of the common code module for multiple drivers.  This
-proposal aims to avoid disrupting current users.
+The E810 PF has introduced flex-bytes support by ethtool user-def option
+allowing for packet deeper matching based on an offset and value for DDP
+usage.
 
-The steps we plan are something like:
-1) Continue upstreaming of the iecm module (common module) and
-   the initial feature set for the idpf driver[1] utilizing iecm.
-2) Introduce the refactored iavf code as a "new" iavf driver with the
-   same device ID, but Kconfig default to =n to enable testing. 
-	a. Make this exclusive so if someone opts in to "new" iavf,
-	   then it disables the original iavf (?) 
-	b. If we do make it exclusive in Kconfig can we use the same
-	   name? 
-3) Plan is to make the "new" iavf driver the default iavf once
-   extensive regression testing can be completed. 
-	a. Current proposal is to make CONFIG_IAVF have a sub-option
-	   CONFIG_IAVF_V2 that lets the user adopt the new code,
-	   without changing the config for existing users or breaking
-	   them.
+For making VF also benefit from this flexible protocol classification, some
+new virtchnl messages are defined and handled by PF, so VF can query this
+new flow director capability, and use ethtool with extending the user-def
+option to configure Rx flow classification.
 
-We are looking to make sure that the mode of our refactoring will meet
-the community's expectations. Any advice or feedback is appreciated.
+The new user-def 0xAAAABBBBCCCCDDDD: BBBB is the 2 byte pattern while AAAA
+corresponds to its offset in the packet. Similarly DDDD is the 2 byte
+pattern with CCCC being the corresponding offset. The offset ranges from
+0x0 to 0x1F7 (up to 504 bytes into the packet). The offset starts from
+the beginning of the packet.
 
-Thanks,
-Jesse, Alice, Alan
+This feature can be used to allow customers to set flow director rules
+for protocols headers that are beyond standard ones supported by ethtool
+(e.g. PFCP or GTP-U).
 
-[1]
-https://lore.kernel.org/netdev/20200824173306.3178343-1-anthony.l.nguyen at intel.com/
+Like for matching GTP-U's TEID value 0x10203040:
+ethtool -N ens787f0v0 flow-type udp4 dst-port 2152 \
+    user-def 0x002e102000303040 action 13
+
+v5: Fix compile with CONFIG_PCI_IOV not defined
+v4: Refactor the patch set.
+v3: Fix the flags bit conflict
+v2: Fix the building and checkpatch warnings.
+
+Haiyue Wang (5):
+  iavf: Add framework to enable ethtool ntuple filters
+  iavf: Support IPv4 Flow Director filters
+  iavf: Support IPv6 Flow Director filters
+  iavf: Support Ethernet Type Flow Director filters
+  iavf: Enable flex-bytes support
+
+Qi Zhang (13):
+  ice: Add more basic protocol support for flow filter
+  ice: Support non word aligned input set field
+  ice: Add more advanced protocol support in flow filter
+  ice: Support to separate GTP-U uplink and downlink
+  ice: Enhanced IPv4 and IPv6 flow filter
+  ice: Add support for per VF ctrl VSI enabling
+  ice: Enable FDIR Configure for AVF
+  ice: Add FDIR pattern action parser for VF
+  ice: Add new actions support for VF FDIR
+  ice: Add non-IP Layer2 protocol FDIR filter for AVF
+  ice: Add GTPU FDIR filter for AVF
+  ice: Add more FDIR filter type for AVF
+  ice: Check FDIR program status for AVF
+
+ drivers/net/ethernet/intel/iavf/Makefile      |    2 +-
+ drivers/net/ethernet/intel/iavf/iavf.h        |   12 +
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    |  631 +++++
+ drivers/net/ethernet/intel/iavf/iavf_fdir.c   |  773 ++++++
+ drivers/net/ethernet/intel/iavf/iavf_fdir.h   |  113 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |   27 +
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  195 ++
+ drivers/net/ethernet/intel/ice/Makefile       |    2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |    5 +-
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c |    4 +
+ drivers/net/ethernet/intel/ice/ice_fdir.c     |  486 +++-
+ drivers/net/ethernet/intel/ice/ice_fdir.h     |   58 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  528 +++-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |    3 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   78 +
+ drivers/net/ethernet/intel/ice/ice_flow.c     |  725 +++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  160 +-
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   19 +
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |   22 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   64 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   11 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    |   10 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |    5 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   18 +
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 2206 +++++++++++++++++
+ .../ethernet/intel/ice/ice_virtchnl_fdir.h    |   55 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   79 +-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |    8 +
+ include/linux/avf/virtchnl.h                  |  278 +++
+ 29 files changed, 6494 insertions(+), 83 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_fdir.c
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_fdir.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.h
+
+-- 
+2.30.1
+
