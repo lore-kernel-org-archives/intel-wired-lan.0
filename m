@@ -1,43 +1,48 @@
-From: Jambekar, Vishakha <vishakha.jambekar@intel.com>
-Date: Tue, 9 Mar 2021 16:27:50 +0000
-Subject: [Intel-wired-lan] [PATCH intel-net 3/3] ixgbe: move headroom
- initialization to ixgbe_configure_rx_ring
-In-Reply-To: <20210303153928.11764-4-maciej.fijalkowski@intel.com>
-References: <20210303153928.11764-1-maciej.fijalkowski@intel.com>
- <20210303153928.11764-4-maciej.fijalkowski@intel.com>
-Message-ID: <SA2PR11MB4940862C67B9242DB23C4B86FF929@SA2PR11MB4940.namprd11.prod.outlook.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 9 Mar 2021 14:17:38 -0800
+Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
+In-Reply-To: <20210308162858.00004535@intel.com>
+References: <20210308162858.00004535@intel.com>
+Message-ID: <20210309141738.379feab3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Wednesday, March 3, 2021 9:09 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; brouer at redhat.com; kuba at kernel.org;
-> bpf at vger.kernel.org; Topel, Bjorn <bjorn.topel@intel.com>; Karlsson,
-> Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-net 3/3] ixgbe: move headroom
-> initialization to ixgbe_configure_rx_ring
+On Mon, 8 Mar 2021 16:28:58 -0800 Jesse Brandeburg wrote:
+> Hello,
 > 
-> ixgbe_rx_offset(), that is supposed to initialize the Rx buffer headroom, relies
-> on __IXGBE_RX_BUILD_SKB_ENABLED flag.
+> We plan to refactor the iavf module and would appreciate community and
+> maintainer feedback on our plans.  We want to do this to realize the
+> usefulness of the common code module for multiple drivers.  This
+> proposal aims to avoid disrupting current users.
 > 
-> Currently, the callsite of mentioned function is placed incorrectly within
-> ixgbe_setup_rx_resources() where Rx ring's build skb flag is not set yet. This
-> causes the XDP_REDIRECT to be partially broken due to inability to create
-> xdp_frame in the headroom space, as the headroom is 0.
+> The steps we plan are something like:
+> 1) Continue upstreaming of the iecm module (common module) and
+>    the initial feature set for the idpf driver[1] utilizing iecm.
+
+Oh, that's still going? there wasn't any revision for such a long time
+I deleted my notes :-o
+
+> 2) Introduce the refactored iavf code as a "new" iavf driver with the
+>    same device ID, but Kconfig default to =n to enable testing. 
+> 	a. Make this exclusive so if someone opts in to "new" iavf,
+> 	   then it disables the original iavf (?) 
+> 	b. If we do make it exclusive in Kconfig can we use the same
+> 	   name? 
+> 3) Plan is to make the "new" iavf driver the default iavf once
+>    extensive regression testing can be completed. 
+> 	a. Current proposal is to make CONFIG_IAVF have a sub-option
+> 	   CONFIG_IAVF_V2 that lets the user adopt the new code,
+> 	   without changing the config for existing users or breaking
+> 	   them.
 > 
-> Fix this by moving ixgbe_rx_offset() to ixgbe_configure_rx_ring() after the
-> flag setting, which happens to be set in ixgbe_set_rx_buffer_len.
-> 
-> Fixes: c0d4e9d223c5 ("ixgbe: store the result of ixgbe_rx_offset() onto
-> ixgbe_ring")
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-Tested-by: Vishakha Jambekar <vishakha.jambekar@intel.com>
+> We are looking to make sure that the mode of our refactoring will meet
+> the community's expectations. Any advice or feedback is appreciated.
+
+Sounds like a slow, drawn out process painful to everyone involved.
+
+The driver is upstream. My humble preference is that Intel sends small
+logical changes we can review, and preserve a meaningful git history.
+
