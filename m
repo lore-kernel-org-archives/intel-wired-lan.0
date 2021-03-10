@@ -1,175 +1,59 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 10 Mar 2021 13:06:38 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- aae42c90452d0909429efbe43123c5aef5c19ceb
-Message-ID: <604853de.QMZNb+yl/KhU+ftH%lkp@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 9 Mar 2021 21:11:46 -0800
+Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
+In-Reply-To: <YEcRHkhJIkZnTgza@unreal>
+References: <20210308162858.00004535@intel.com>
+	<YEcRHkhJIkZnTgza@unreal>
+Message-ID: <20210309211146.00002f2d@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: aae42c90452d0909429efbe43123c5aef5c19ceb  ixgbe: Fix NULL pointer dereference in ethtool loopback test
+Leon Romanovsky wrote:
 
-elapsed time: 727m
+> > 3) Plan is to make the "new" iavf driver the default iavf once
+> >    extensive regression testing can be completed.
+> > 	a. Current proposal is to make CONFIG_IAVF have a sub-option
+> > 	   CONFIG_IAVF_V2 that lets the user adopt the new code,
+> > 	   without changing the config for existing users or breaking
+> > 	   them.
+> 
+> I don't think that .config options are considered ABIs, so it is unclear
+> what do you mean by saying "disrupting current users". Instead of the
+> complication wrote above, do like any other driver does: perform your
+> testing, submit the code and switch to the new code at the same time.
 
-configs tested: 146
-configs skipped: 2
+Because this VF driver runs on multiple hardware PFs (they all expose
+the same VF device ID) the testing matrix is quite huge and will take
+us a while to get through it. We aim to avoid making users's life hard
+by having CONFIG_IAVF=m become a surprise new code base behind the back
+of the user.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I've always thought that the .config options *are* a sort of ABI,
+because when you do "make oldconfig" it tries to pick up your previous
+configuration and if, for instance, a driver changes it's Kconfig name,
+it will not pick up the old value of the old driver Kconfig name for
+the new build, and with either default or ask the user. The way we're
+proposing I think will allow the old driver to stay default until the
+user answers Y to the "new option" for the new, iecm based code.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sparc                            allyesconfig
-mips                         db1xxx_defconfig
-powerpc                     tqm8540_defconfig
-powerpc                      ppc44x_defconfig
-mips                         tb0287_defconfig
-mips                     cu1830-neo_defconfig
-powerpc                 mpc8540_ads_defconfig
-mips                           jazz_defconfig
-sh                          r7785rp_defconfig
-arm                            zeus_defconfig
-powerpc                          allyesconfig
-arc                         haps_hs_defconfig
-mips                     cu1000-neo_defconfig
-mips                        omega2p_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                          landisk_defconfig
-sh                          rsk7264_defconfig
-sh                          r7780mp_defconfig
-m68k                        mvme16x_defconfig
-powerpc                    mvme5100_defconfig
-sh                                  defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm                       cns3420vb_defconfig
-m68k                       m5275evb_defconfig
-h8300                               defconfig
-mips                        bcm63xx_defconfig
-sh                           se7750_defconfig
-arm                     eseries_pxa_defconfig
-sh                               alldefconfig
-powerpc                      katmai_defconfig
-sh                        dreamcast_defconfig
-arm                       omap2plus_defconfig
-arm                      tct_hammer_defconfig
-arm                         lubbock_defconfig
-arm                            hisi_defconfig
-mips                           ip32_defconfig
-sh                          lboxre2_defconfig
-powerpc                     pq2fads_defconfig
-arc                 nsimosci_hs_smp_defconfig
-mips                            ar7_defconfig
-powerpc                     asp8347_defconfig
-powerpc                         wii_defconfig
-arm                       versatile_defconfig
-arc                      axs103_smp_defconfig
-riscv                            alldefconfig
-m68k                       m5249evb_defconfig
-ia64                      gensparse_defconfig
-arm                  colibri_pxa300_defconfig
-arm                         at91_dt_defconfig
-arm                          pcm027_defconfig
-arm                          ep93xx_defconfig
-sh                          rsk7201_defconfig
-sh                         ap325rxa_defconfig
-arm                        multi_v5_defconfig
-m68k                        m5272c3_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210308
-x86_64               randconfig-a001-20210308
-x86_64               randconfig-a004-20210308
-x86_64               randconfig-a002-20210308
-x86_64               randconfig-a005-20210308
-x86_64               randconfig-a003-20210308
-i386                 randconfig-a005-20210309
-i386                 randconfig-a003-20210309
-i386                 randconfig-a002-20210309
-i386                 randconfig-a006-20210309
-i386                 randconfig-a004-20210309
-i386                 randconfig-a001-20210309
-x86_64               randconfig-a013-20210309
-x86_64               randconfig-a016-20210309
-x86_64               randconfig-a015-20210309
-x86_64               randconfig-a014-20210309
-x86_64               randconfig-a011-20210309
-x86_64               randconfig-a012-20210309
-x86_64               randconfig-a011-20210310
-x86_64               randconfig-a016-20210310
-x86_64               randconfig-a013-20210310
-x86_64               randconfig-a015-20210310
-x86_64               randconfig-a014-20210310
-x86_64               randconfig-a012-20210310
-i386                 randconfig-a016-20210309
-i386                 randconfig-a012-20210309
-i386                 randconfig-a014-20210309
-i386                 randconfig-a013-20210309
-i386                 randconfig-a011-20210309
-i386                 randconfig-a015-20210309
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+> > [1]
+> > https://lore.kernel.org/netdev/20200824173306.3178343-1-anthony.l.nguyen at intel.com/
+> 
+> Please don't introduce module parameters in new code.
 
-clang tested configs:
-x86_64               randconfig-a006-20210309
-x86_64               randconfig-a001-20210309
-x86_64               randconfig-a004-20210309
-x86_64               randconfig-a002-20210309
-x86_64               randconfig-a005-20210309
-x86_64               randconfig-a003-20210309
-x86_64               randconfig-a013-20210308
-x86_64               randconfig-a016-20210308
-x86_64               randconfig-a015-20210308
-x86_64               randconfig-a014-20210308
-x86_64               randconfig-a011-20210308
-x86_64               randconfig-a012-20210308
+Thanks, we certainly won't. :-)
+I'm not sure why you commented about module parameters, but the above
+link is to the previous submission for a new driver that uses some
+common code as a module (iecm) for a new device driver (idpf) we had
+sent. The point of this email was to solicit feedback and give notice
+about doing a complicated refactor/replace where we end up re-using
+iecm for the new version of the iavf code, with the intent to be up
+front and working with the community throughout the process. Because of
+the complexity, we want do the right thing the first time so we can to
+avoid a restart/redesign.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Thanks,
+ Jesse
