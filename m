@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 10 Mar 2021 23:06:34 +0000
-Subject: [Intel-wired-lan] [PATCH net 11/13] ice: Use port number
- instead of PF ID for WoL
-In-Reply-To: <20210226211932.46683-11-anthony.l.nguyen@intel.com>
-References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
- <20210226211932.46683-11-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105E7E9DEDB3C9641731B10FA919@CO1PR11MB5105.namprd11.prod.outlook.com>
+Date: Wed, 10 Mar 2021 23:44:21 +0000
+Subject: [Intel-wired-lan] [PATCH S55 04/14] ice: Delay netdev
+ registration
+In-Reply-To: <20210302181213.51718-4-anthony.l.nguyen@intel.com>
+References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
+ <20210302181213.51718-4-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105FE8E1D7FB8A90ACD0DEAFA919@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,28 +15,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Tony Nguyen
-> Sent: Friday, February 26, 2021 1:20 PM
+> Sent: Tuesday, March 2, 2021 10:12 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 11/13] ice: Use port number instead of
-> PF ID for WoL
+> Subject: [Intel-wired-lan] [PATCH S55 04/14] ice: Delay netdev registration
 > 
 > From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> As per the spec, the WoL control word read from the NVM should be
-> interpreted as port numbers, and not PF numbers. So when checking if WoL
-> supported, use the port number instead of the PF ID.
+> Once a netdev is registered, the corresponding network interface can be
+> immediately used by userspace utilities (like say NetworkManager).
+> This can be problematic if the driver technically isn't fully up yet.
 > 
-> Also, ice_is_wol_supported doesn't really need a pointer to the pf struct, but
-> just needs a pointer to the hw instance.
+> Move netdev registration to the end of probe, as by this time the driver data
+> structures and device will be initialized as expected.
 > 
-> Fixes: 769c500dcc1e ("ice: Add advanced power mgmt for WoL")
+> However, delaying netdev registration causes a failure in the aRFS flow
+> where netdev->reg_state == NETREG_REGISTERED condition is checked. It's
+> not clear why this check was added to begin with, so remove it.
+> Local testing didn't indicate any issues with this change.
+> 
+> The state bit check in ice_open was put in as a stop-gap measure to prevent
+> a premature interface up operation. This is no longer needed, so remove it.
+> 
 > Signed-off-by: Anirudh Venkataramanan
 > <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h         | 2 +-
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
->  drivers/net/ethernet/intel/ice/ice_main.c    | 9 ++++-----
->  3 files changed, 7 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_arfs.c |  6 +-
+> drivers/net/ethernet/intel/ice/ice_main.c | 93 +++++++++++------------
+>  2 files changed, 47 insertions(+), 52 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
