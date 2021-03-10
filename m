@@ -1,76 +1,111 @@
 From: Jithu Joseph <jithu.joseph@intel.com>
-Date: Tue,  9 Mar 2021 23:13:14 -0800
-Subject: [Intel-wired-lan] [PATCH v7 0/8] igc: Add XDP support
-Message-ID: <20210310071322.15425-1-jithu.joseph@intel.com>
+Date: Tue,  9 Mar 2021 23:13:16 -0800
+Subject: [Intel-wired-lan] [PATCH v7 2/8] igc: Introduce
+ igc_rx_buffer_flip() helper
+In-Reply-To: <20210310071322.15425-1-jithu.joseph@intel.com>
+References: <20210310071322.15425-1-jithu.joseph@intel.com>
+Message-ID: <20210310071322.15425-3-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+From: Andre Guedes <andre.guedes@intel.com>
 
-This is the seventh version of this series which adds XDP support
-to igc driver.
+The igc driver implements the same page recycling scheme from other
+Intel drivers which reuses the page by flipping the buffer. The code
+to handle buffer flips is duplicated in many locations so introduce
+the igc_rx_buffer_flip() helper and use it where applicable.
 
-This series has to be applied after the patch below:
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20210310064256.15299-1-jithu.joseph at intel.com/
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 43 +++++++++++------------
+ 1 file changed, 21 insertions(+), 22 deletions(-)
 
-Changes in v7
-  - First patch from the v6 series "igc: Fix igc_ptp_rx_pktstamp()"
-    was separated from this v7 series as the maintainer wants that one patch
-    to take a different upstream path
-  - Minor reabasing change in igc_ptp_rx_pktstamp() touched by the patch
-    "igc: Refactor Rx timestamp handling", due to a sparse warning
-    fix in the separated patch
-  - Added Tested-by: Dvora Fuxbrumer
-
-v6 is here
-   https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210210215848.24514-1-vedang.patel at intel.com/
-
-v5 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210209024243.23406-1-vedang.patel at intel.com/
-
-v4 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201104031210.27772-1-andre.guedes at intel.com/
-
-v3 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201030210351.46482-1-andre.guedes at intel.com/
-
-v2 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201028201943.93147-1-andre.guedes at intel.com/
-
-v1 is here:
-
-    https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20201009025349.4037-1-andre.guedes at intel.com/
-
-Thanks,
-Jithu
-
-Andre Guedes (8):
-  igc: Remove unused argument from igc_tx_cmd_type()
-  igc: Introduce igc_rx_buffer_flip() helper
-  igc: Introduce igc_get_rx_frame_truesize() helper
-  igc: Refactor Rx timestamp handling
-  igc: Add set/clear large buffer helpers
-  igc: Add initial XDP support
-  igc: Add support for XDP_TX action
-  igc: Add support for XDP_REDIRECT action
-
- drivers/net/ethernet/intel/igc/Makefile   |   2 +-
- drivers/net/ethernet/intel/igc/igc.h      |  18 +-
- drivers/net/ethernet/intel/igc/igc_main.c | 458 +++++++++++++++++++---
- drivers/net/ethernet/intel/igc/igc_ptp.c  |  25 +-
- drivers/net/ethernet/intel/igc/igc_xdp.c  |  60 +++
- drivers/net/ethernet/intel/igc/igc_xdp.h  |  13 +
- 6 files changed, 496 insertions(+), 80 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.c
- create mode 100644 drivers/net/ethernet/intel/igc/igc_xdp.h
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 261672797346..1157a24f6d26 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1500,6 +1500,16 @@ static struct igc_rx_buffer *igc_get_rx_buffer(struct igc_ring *rx_ring,
+ 	return rx_buffer;
+ }
+ 
++static void igc_rx_buffer_flip(struct igc_rx_buffer *buffer,
++			       unsigned int truesize)
++{
++#if (PAGE_SIZE < 8192)
++	buffer->page_offset ^= truesize;
++#else
++	buffer->page_offset += truesize;
++#endif
++}
++
+ /**
+  * igc_add_rx_frag - Add contents of Rx buffer to sk_buff
+  * @rx_ring: rx descriptor ring to transact packets on
+@@ -1514,20 +1524,19 @@ static void igc_add_rx_frag(struct igc_ring *rx_ring,
+ 			    struct sk_buff *skb,
+ 			    unsigned int size)
+ {
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
++	unsigned int truesize;
+ 
+-	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
+-			rx_buffer->page_offset, size, truesize);
+-	rx_buffer->page_offset ^= truesize;
++#if (PAGE_SIZE < 8192)
++	truesize = igc_rx_pg_size(rx_ring) / 2;
+ #else
+-	unsigned int truesize = ring_uses_build_skb(rx_ring) ?
+-				SKB_DATA_ALIGN(IGC_SKB_PAD + size) :
+-				SKB_DATA_ALIGN(size);
++	truesize = ring_uses_build_skb(rx_ring) ?
++		   SKB_DATA_ALIGN(IGC_SKB_PAD + size) :
++		   SKB_DATA_ALIGN(size);
++#endif
+ 	skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags, rx_buffer->page,
+ 			rx_buffer->page_offset, size, truesize);
+-	rx_buffer->page_offset += truesize;
+-#endif
++
++	igc_rx_buffer_flip(rx_buffer, truesize);
+ }
+ 
+ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+@@ -1556,13 +1565,7 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 	skb_reserve(skb, IGC_SKB_PAD);
+ 	__skb_put(skb, size);
+ 
+-	/* update buffer offset */
+-#if (PAGE_SIZE < 8192)
+-	rx_buffer->page_offset ^= truesize;
+-#else
+-	rx_buffer->page_offset += truesize;
+-#endif
+-
++	igc_rx_buffer_flip(rx_buffer, truesize);
+ 	return skb;
+ }
+ 
+@@ -1608,11 +1611,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 		skb_add_rx_frag(skb, 0, rx_buffer->page,
+ 				(va + headlen) - page_address(rx_buffer->page),
+ 				size, truesize);
+-#if (PAGE_SIZE < 8192)
+-		rx_buffer->page_offset ^= truesize;
+-#else
+-		rx_buffer->page_offset += truesize;
+-#endif
++		igc_rx_buffer_flip(rx_buffer, truesize);
+ 	} else {
+ 		rx_buffer->pagecnt_bias++;
+ 	}
 -- 
 2.17.1
 
