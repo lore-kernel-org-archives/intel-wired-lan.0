@@ -1,10 +1,10 @@
 From: Jithu Joseph <jithu.joseph@intel.com>
-Date: Tue,  9 Mar 2021 23:13:19 -0800
-Subject: [Intel-wired-lan] [PATCH v7 5/8] igc: Add set/clear large buffer
- helpers
+Date: Tue,  9 Mar 2021 23:13:17 -0800
+Subject: [Intel-wired-lan] [PATCH v7 3/8] igc: Introduce
+ igc_get_rx_frame_truesize() helper
 In-Reply-To: <20210310071322.15425-1-jithu.joseph@intel.com>
 References: <20210310071322.15425-1-jithu.joseph@intel.com>
-Message-ID: <20210310071322.15425-6-jithu.joseph@intel.com>
+Message-ID: <20210310071322.15425-4-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,10 +13,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Andre Guedes <andre.guedes@intel.com>
 
-While commit 13b5b7fd6a4a ("igc: Add support for Tx/Rx rings")
-introduced code to handle larger packet buffers, it missed the
-set/clear helpers which enable/disable that feature. Introduce
-the missing helpers which will be use in the next patch.
+The RX frame truesize calculation is scattered throughout the RX code.
+This patch creates the helper function igc_get_rx_frame_truesize() and
+uses it where applicable.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
@@ -24,24 +23,63 @@ Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
 Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/igc/igc_main.c | 29 ++++++++++++++---------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index c6d38c6a1a6a..b00cd8696b6d 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -504,6 +504,10 @@ enum igc_ring_flags_t {
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 1157a24f6d26..d1fc5baadf9b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1510,6 +1510,22 @@ static void igc_rx_buffer_flip(struct igc_rx_buffer *buffer,
+ #endif
+ }
  
- #define ring_uses_large_buffer(ring) \
- 	test_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
-+#define set_ring_uses_large_buffer(ring) \
-+	set_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
-+#define clear_ring_uses_large_buffer(ring) \
-+	clear_bit(IGC_RING_FLAG_RX_3K_BUFFER, &(ring)->flags)
++static unsigned int igc_get_rx_frame_truesize(struct igc_ring *ring,
++					      unsigned int size)
++{
++	unsigned int truesize;
++
++#if (PAGE_SIZE < 8192)
++	truesize = igc_rx_pg_size(ring) / 2;
++#else
++	truesize = ring_uses_build_skb(ring) ?
++		   SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
++		   SKB_DATA_ALIGN(IGC_SKB_PAD + size) :
++		   SKB_DATA_ALIGN(size);
++#endif
++	return truesize;
++}
++
+ /**
+  * igc_add_rx_frag - Add contents of Rx buffer to sk_buff
+  * @rx_ring: rx descriptor ring to transact packets on
+@@ -1545,12 +1561,7 @@ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 				     unsigned int size)
+ {
+ 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
+-#else
+-	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+-				SKB_DATA_ALIGN(IGC_SKB_PAD + size);
+-#endif
++	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	struct sk_buff *skb;
  
- #define ring_uses_build_skb(ring) \
- 	test_bit(IGC_RING_FLAG_RX_BUILD_SKB_ENABLED, &(ring)->flags)
+ 	/* prefetch first cache line of first page */
+@@ -1575,11 +1586,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 unsigned int size)
+ {
+ 	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = igc_rx_pg_size(rx_ring) / 2;
+-#else
+-	unsigned int truesize = SKB_DATA_ALIGN(size);
+-#endif
++	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
+ 
 -- 
 2.17.1
 
