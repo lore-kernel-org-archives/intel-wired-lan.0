@@ -1,87 +1,151 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 10 Mar 2021 07:50:50 +0200
-Subject: [Intel-wired-lan] [RFC net-next] iavf: refactor plan proposal
-In-Reply-To: <20210309211146.00002f2d@intel.com>
-References: <20210308162858.00004535@intel.com> <YEcRHkhJIkZnTgza@unreal>
- <20210309211146.00002f2d@intel.com>
-Message-ID: <YEheOtKsKm1DfCR8@unreal>
+From: Jithu Joseph <jithu.joseph@intel.com>
+Date: Tue,  9 Mar 2021 22:42:56 -0800
+Subject: [Intel-wired-lan] [PATCH v7 1/1] igc: Fix igc_ptp_rx_pktstamp()
+Message-ID: <20210310064256.15299-1-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Mar 09, 2021 at 09:11:46PM -0800, Jesse Brandeburg wrote:
-> Leon Romanovsky wrote:
->
-> > > 3) Plan is to make the "new" iavf driver the default iavf once
-> > >    extensive regression testing can be completed.
-> > > 	a. Current proposal is to make CONFIG_IAVF have a sub-option
-> > > 	   CONFIG_IAVF_V2 that lets the user adopt the new code,
-> > > 	   without changing the config for existing users or breaking
-> > > 	   them.
-> >
-> > I don't think that .config options are considered ABIs, so it is unclear
-> > what do you mean by saying "disrupting current users". Instead of the
-> > complication wrote above, do like any other driver does: perform your
-> > testing, submit the code and switch to the new code at the same time.
->
-> Because this VF driver runs on multiple hardware PFs (they all expose
-> the same VF device ID) the testing matrix is quite huge and will take
-> us a while to get through it. We aim to avoid making users's life hard
-> by having CONFIG_IAVF=m become a surprise new code base behind the back
-> of the user.
+From: Andre Guedes <andre.guedes@intel.com>
 
-Don't you already test your patches against that testing DB?
-Like Jakub said, do incremental changes and it will be much saner for everyone.
+The comment describing the timestamps layout in the packet buffer is
+wrong and the code is actually retrieving the timestamp in Timer 1
+reference instead of Timer 0. This hasn't been a big issue so far
+because hardware is configured to report both timestamps using Timer 0
+(see IGC_SRRCTL register configuration in igc_ptp_enable_rx_timestamp()
+helper). This patch fixes the comment and the code so we retrieve the
+timestamp in Timer 0 reference as expected.
 
->
-> I've always thought that the .config options *are* a sort of ABI,
-> because when you do "make oldconfig" it tries to pick up your previous
-> configuration and if, for instance, a driver changes it's Kconfig name,
-> it will not pick up the old value of the old driver Kconfig name for
-> the new build, and with either default or ask the user. The way we're
-> proposing I think will allow the old driver to stay default until the
-> user answers Y to the "new option" for the new, iecm based code.
+This patch also takes the opportunity to get rid of the hw.mac.type check
+since it is not required.
 
-I understand the rationale, but no - .config is not ABI at all.
-There are three types of "users" who are messing with configs:
-1. Distro people
-2. Kernel developers
-3. "Experts" who wants/needs rebuild kernel
+Fixes: 81b055205e8ba ("igc: Add support for RX timestamping")
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+---
+Changes in v7:
+ - Split this patch from the rest of the "igc: Add XDP support" series
+   https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20210210215848.24514-1-vedang.patel at intel.com/
+   as the maintainer wants this patch to take a different upstream path
+ - Fix sparse warnings in igc_ptp_rx_pktstamp() by changing
+   the function parameter type from u32 *va to __le32 *va
+ - Added Tested-by: Dvora Fuxbrumer
+---
+ drivers/net/ethernet/intel/igc/igc.h     |  2 +-
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 72 +++++++++++++-----------
+ 2 files changed, 41 insertions(+), 33 deletions(-)
 
-All of them are expected to be proficient enough to handle changes
-in CONFIG_* land. In your proposal you are trying to solve non-existent
-problem of having users who are building their own kernel, but dumb
-enough do not understand what they are doing.
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 5d2809dfd06a..1b08a7dc7bc4 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -547,7 +547,7 @@ void igc_ptp_init(struct igc_adapter *adapter);
+ void igc_ptp_reset(struct igc_adapter *adapter);
+ void igc_ptp_suspend(struct igc_adapter *adapter);
+ void igc_ptp_stop(struct igc_adapter *adapter);
+-void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
++void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, __le32 *va,
+ 			 struct sk_buff *skb);
+ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index ac0b9c85da7c..545f4d0e67cf 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -152,46 +152,54 @@ static void igc_ptp_systim_to_hwtstamp(struct igc_adapter *adapter,
+ }
+ 
+ /**
+- * igc_ptp_rx_pktstamp - retrieve Rx per packet timestamp
++ * igc_ptp_rx_pktstamp - Retrieve timestamp from Rx packet buffer
+  * @q_vector: Pointer to interrupt specific structure
+  * @va: Pointer to address containing Rx buffer
+  * @skb: Buffer containing timestamp and packet
+  *
+- * This function is meant to retrieve the first timestamp from the
+- * first buffer of an incoming frame. The value is stored in little
+- * endian format starting on byte 0. There's a second timestamp
+- * starting on byte 8.
+- **/
+-void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, void *va,
++ * This function retrieves the timestamp saved in the beginning of packet
++ * buffer. While two timestamps are available, one in timer0 reference and the
++ * other in timer1 reference, this function considers only the timestamp in
++ * timer0 reference.
++ */
++void igc_ptp_rx_pktstamp(struct igc_q_vector *q_vector, __le32 *va,
+ 			 struct sk_buff *skb)
+ {
+ 	struct igc_adapter *adapter = q_vector->adapter;
+-	__le64 *regval = (__le64 *)va;
+-	int adjust = 0;
+-
+-	/* The timestamp is recorded in little endian format.
+-	 * DWORD: | 0          | 1           | 2          | 3
+-	 * Field: | Timer0 Low | Timer0 High | Timer1 Low | Timer1 High
++	u64 regval;
++	int adjust;
++
++	/* Timestamps are saved in little endian at the beginning of the packet
++	 * buffer following the layout:
++	 *
++	 * DWORD: | 0              | 1              | 2              | 3              |
++	 * Field: | Timer1 SYSTIML | Timer1 SYSTIMH | Timer0 SYSTIML | Timer0 SYSTIMH |
++	 *
++	 * SYSTIML holds the nanoseconds part while SYSTIMH holds the seconds
++	 * part of the timestamp.
+ 	 */
+-	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
+-				   le64_to_cpu(regval[0]));
+-
+-	/* adjust timestamp for the RX latency based on link speed */
+-	if (adapter->hw.mac.type == igc_i225) {
+-		switch (adapter->link_speed) {
+-		case SPEED_10:
+-			adjust = IGC_I225_RX_LATENCY_10;
+-			break;
+-		case SPEED_100:
+-			adjust = IGC_I225_RX_LATENCY_100;
+-			break;
+-		case SPEED_1000:
+-			adjust = IGC_I225_RX_LATENCY_1000;
+-			break;
+-		case SPEED_2500:
+-			adjust = IGC_I225_RX_LATENCY_2500;
+-			break;
+-		}
++	regval = le32_to_cpu(va[2]);
++	regval |= (u64)le32_to_cpu(va[3]) << 32;
++	igc_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
++
++	/* Adjust timestamp for the RX latency based on link speed */
++	switch (adapter->link_speed) {
++	case SPEED_10:
++		adjust = IGC_I225_RX_LATENCY_10;
++		break;
++	case SPEED_100:
++		adjust = IGC_I225_RX_LATENCY_100;
++		break;
++	case SPEED_1000:
++		adjust = IGC_I225_RX_LATENCY_1000;
++		break;
++	case SPEED_2500:
++		adjust = IGC_I225_RX_LATENCY_2500;
++		break;
++	default:
++		adjust = 0;
++		netdev_warn_once(adapter->netdev, "Imprecise timestamp\n");
++		break;
+ 	}
+ 	skb_hwtstamps(skb)->hwtstamp =
+ 		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
 
-We are removing/adding/renaming CONFIG_* all the time, this is no
-different.
+base-commit: 86ce6656ac13cf8448cf90550fcdaba8b708aade
+-- 
+2.17.1
 
->
-> > > [1]
-> > > https://lore.kernel.org/netdev/20200824173306.3178343-1-anthony.l.nguyen at intel.com/
-> >
-> > Please don't introduce module parameters in new code.
->
-> Thanks, we certainly won't. :-)
-> I'm not sure why you commented about module parameters, but the above
-> link is to the previous submission for a new driver that uses some
-> common code as a module (iecm) for a new device driver (idpf) we had
-> sent. The point of this email was to solicit feedback and give notice
-> about doing a complicated refactor/replace where we end up re-using
-> iecm for the new version of the iavf code, with the intent to be up
-> front and working with the community throughout the process. Because of
-> the complexity, we want do the right thing the first time so we can to
-> avoid a restart/redesign.
-
-I commented simply because it jumped in front of my eyes when I looked
-on the patches in that link. It was general enough to write it here,
-rest of my comments are too specific and better to be posted as a reply
-to the patches itself.
-
-Thanks
-
->
-> Thanks,
->  Jesse
