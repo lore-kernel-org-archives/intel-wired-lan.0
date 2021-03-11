@@ -1,26 +1,45 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 11 Mar 2021 19:27:30 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix autoneg disabling
- for non-10GBaseT links
-In-Reply-To: <20210310111254.7610-1-mateusz.palczewski@intel.com>
-References: <20210310111254.7610-1-mateusz.palczewski@intel.com>
-Message-ID: <678fa0dee1a3fb7d276905165ac186212571ef37.camel@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 11 Mar 2021 12:32:29 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 02/10] intel: Update drivers to
+ use ethtool_gsprintf
+In-Reply-To: <161542652605.13546.13143472024905128153.stgit@localhost.localdomain>
+References: <161542634192.13546.4185974647834631704.stgit@localhost.localdomain>
+ <161542652605.13546.13143472024905128153.stgit@localhost.localdomain>
+Message-ID: <20210311123229.00007580@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-03-10 at 11:12 +0000, Mateusz Palczewski wrote:
-> Disabling autonegotiation was allowed only for 10GBaseT PHY.
-> The condition was changed to check if link media type is BaseT.
+Alexander Duyck wrote:
+
+> From: Alexander Duyck <alexanderduyck@fb.com>
 > 
-> Fixes: 3ce12ee9d8f9("i40e: Fix order of checks when
-> enabling/disabling autoneg in ethtool")
+> Update the Intel drivers to make use of ethtool_gsprintf. The general idea
+> is to reduce code size and overhead by replacing the repeated pattern of
+> string printf statements and ETH_STRING_LEN counter increments.
+> 
+> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |   16 ++----
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c     |   55 +++++++---------------
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c     |   40 ++++++----------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   40 ++++++----------
+>  4 files changed, 50 insertions(+), 101 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> index c70dec65a572..932c6635cfd6 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+> @@ -2368,21 +2368,15 @@ static void i40e_get_priv_flag_strings(struct net_device *netdev, u8 *data)
+>  	struct i40e_netdev_priv *np = netdev_priv(netdev);
+>  	struct i40e_vsi *vsi = np->vsi;
+>  	struct i40e_pf *pf = vsi->back;
+> -	char *p = (char *)data;
+> +	u8 *p = data;
+>  	unsigned int i;
 
-This is missing a space after the hash
+As Jakub said, RCT... :-)
 
-> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Reviewed-by: Karen Sornek <karen.sornek@intel.com>
-> Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+no other comments on the rest of the patch, looks good and Thanks!
