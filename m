@@ -1,47 +1,198 @@
-From: Kiyanovski, Arthur <akiyano@amazon.com>
-Date: Thu, 11 Mar 2021 13:42:21 +0000
-Subject: [Intel-wired-lan] [RFC PATCH 05/10] ena: Update driver to use
+From: Shannon Nelson <snelson@pensando.io>
+Date: Thu, 11 Mar 2021 09:19:18 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 10/10] ionic: Update driver to use
  ethtool_gsprintf
-In-Reply-To: <161542654541.13546.817443057977441498.stgit@localhost.localdomain>
+In-Reply-To: <161542657729.13546.14928347259921159903.stgit@localhost.localdomain>
 References: <161542634192.13546.4185974647834631704.stgit@localhost.localdomain>
- <161542654541.13546.817443057977441498.stgit@localhost.localdomain>
-Message-ID: <a8d66ff7d2034b75ada799de8b9de448@EX13D22EUA004.ant.amazon.com>
+ <161542657729.13546.14928347259921159903.stgit@localhost.localdomain>
+Message-ID: <a9839652-1dac-0ff4-a9a6-84d69d1a4f3d@pensando.io>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Alexander Duyck <alexander.duyck@gmail.com>
-> Sent: Thursday, March 11, 2021 3:36 AM
-> To: kuba at kernel.org
-> Cc: netdev at vger.kernel.org; oss-drivers at netronome.com;
-> simon.horman at netronome.com; yisen.zhuang at huawei.com;
-> salil.mehta at huawei.com; intel-wired-lan at lists.osuosl.org;
-> jesse.brandeburg at intel.com; anthony.l.nguyen at intel.com;
-> drivers at pensando.io; snelson at pensando.io; Belgazal, Netanel
-> <netanel@amazon.com>; Kiyanovski, Arthur <akiyano@amazon.com>;
-> Tzalik, Guy <gtzalik@amazon.com>; Bshara, Saeed <saeedb@amazon.com>;
-> GR-Linux-NIC-Dev at marvell.com; skalluru at marvell.com;
-> rmody at marvell.com; kys at microsoft.com; haiyangz at microsoft.com;
-> sthemmin at microsoft.com; wei.liu at kernel.org; mst at redhat.com;
-> jasowang at redhat.com; pv-drivers at vmware.com; doshir at vmware.com;
-> alexanderduyck at fb.com
-> Subject: [EXTERNAL] [RFC PATCH 05/10] ena: Update driver to use
-> ethtool_gsprintf
-> 
-> CAUTION: This email originated from outside of the organization. Do not click
-> links or open attachments unless you can confirm the sender and know the
-> content is safe.
-> 
-> 
-> 
+On 3/10/21 5:36 PM, Alexander Duyck wrote:
 > From: Alexander Duyck <alexanderduyck@fb.com>
-> 
-> Replace instances of snprintf or memcpy with a pointer update with
-> ethtool_gsprintf.
-> 
+>
+> Update the ionic driver to make use of ethtool_gsprintf. In addition add
+> separate functions for Tx/Rx stats strings in order to reduce the total
+> amount of indenting needed in the driver code.
+>
 > Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
 
-Acked-by: Arthur Kiyanovski <akiyano@amazon.com>
+Thanks, Alex!
+
+Acked-by: Shannon Nelson <snelson@pensando.io>
+
+
+> ---
+>   drivers/net/ethernet/pensando/ionic/ionic_stats.c |  145 +++++++++------------
+>   1 file changed, 60 insertions(+), 85 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_stats.c b/drivers/net/ethernet/pensando/ionic/ionic_stats.c
+> index 6ae75b771a15..1dac960386df 100644
+> --- a/drivers/net/ethernet/pensando/ionic/ionic_stats.c
+> +++ b/drivers/net/ethernet/pensando/ionic/ionic_stats.c
+> @@ -246,98 +246,73 @@ static u64 ionic_sw_stats_get_count(struct ionic_lif *lif)
+>   	return total;
+>   }
+>   
+> +static void ionic_sw_stats_get_tx_strings(struct ionic_lif *lif, u8 **buf,
+> +					  int q_num)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < IONIC_NUM_TX_STATS; i++)
+> +		ethtool_gsprintf(buf, "tx_%d_%s", q_num,
+> +				 ionic_tx_stats_desc[i].name);
+> +
+> +	if (!test_bit(IONIC_LIF_F_UP, lif->state) ||
+> +	    !test_bit(IONIC_LIF_F_SW_DEBUG_STATS, lif->state))
+> +		return;
+> +
+> +	for (i = 0; i < IONIC_NUM_TX_Q_STATS; i++)
+> +		ethtool_gsprintf(buf, "txq_%d_%s", q_num,
+> +				 ionic_txq_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_NUM_DBG_CQ_STATS; i++)
+> +		ethtool_gsprintf(buf, "txq_%d_cq_%s", q_num,
+> +				 ionic_dbg_cq_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_NUM_DBG_INTR_STATS; i++)
+> +		ethtool_gsprintf(buf, "txq_%d_intr_%s", q_num,
+> +				 ionic_dbg_intr_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_MAX_NUM_SG_CNTR; i++)
+> +		ethtool_gsprintf(buf, "txq_%d_sg_cntr_%d", q_num, i);
+> +}
+> +
+> +static void ionic_sw_stats_get_rx_strings(struct ionic_lif *lif, u8 **buf,
+> +					  int q_num)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < IONIC_NUM_RX_STATS; i++)
+> +		ethtool_gsprintf(buf, "rx_%d_%s", q_num,
+> +				 ionic_rx_stats_desc[i].name);
+> +
+> +	if (!test_bit(IONIC_LIF_F_UP, lif->state) ||
+> +	    !test_bit(IONIC_LIF_F_SW_DEBUG_STATS, lif->state))
+> +		return;
+> +
+> +	for (i = 0; i < IONIC_NUM_DBG_CQ_STATS; i++)
+> +		ethtool_gsprintf(buf, "rxq_%d_cq_%s", q_num,
+> +				 ionic_dbg_cq_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_NUM_DBG_INTR_STATS; i++)
+> +		ethtool_gsprintf(buf, "rxq_%d_intr_%s", q_num,
+> +				 ionic_dbg_intr_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_NUM_DBG_NAPI_STATS; i++)
+> +		ethtool_gsprintf(buf, "rxq_%d_napi_%s", q_num,
+> +				 ionic_dbg_napi_stats_desc[i].name);
+> +	for (i = 0; i < IONIC_MAX_NUM_NAPI_CNTR; i++)
+> +		ethtool_gsprintf(buf, "rxq_%d_napi_work_done_%d", q_num, i);
+> +}
+> +
+>   static void ionic_sw_stats_get_strings(struct ionic_lif *lif, u8 **buf)
+>   {
+>   	int i, q_num;
+>   
+> -	for (i = 0; i < IONIC_NUM_LIF_STATS; i++) {
+> -		snprintf(*buf, ETH_GSTRING_LEN, ionic_lif_stats_desc[i].name);
+> -		*buf += ETH_GSTRING_LEN;
+> -	}
+> +	for (i = 0; i < IONIC_NUM_LIF_STATS; i++)
+> +		ethtool_gsprintf(buf, ionic_lif_stats_desc[i].name);
+>   
+> -	for (i = 0; i < IONIC_NUM_PORT_STATS; i++) {
+> -		snprintf(*buf, ETH_GSTRING_LEN,
+> -			 ionic_port_stats_desc[i].name);
+> -		*buf += ETH_GSTRING_LEN;
+> -	}
+> +	for (i = 0; i < IONIC_NUM_PORT_STATS; i++)
+> +		ethtool_gsprintf(buf, ionic_port_stats_desc[i].name);
+>   
+> -	for (q_num = 0; q_num < MAX_Q(lif); q_num++) {
+> -		for (i = 0; i < IONIC_NUM_TX_STATS; i++) {
+> -			snprintf(*buf, ETH_GSTRING_LEN, "tx_%d_%s",
+> -				 q_num, ionic_tx_stats_desc[i].name);
+> -			*buf += ETH_GSTRING_LEN;
+> -		}
+> +	for (q_num = 0; q_num < MAX_Q(lif); q_num++)
+> +		ionic_sw_stats_get_tx_strings(lif, buf, q_num);
+>   
+> -		if (test_bit(IONIC_LIF_F_UP, lif->state) &&
+> -		    test_bit(IONIC_LIF_F_SW_DEBUG_STATS, lif->state)) {
+> -			for (i = 0; i < IONIC_NUM_TX_Q_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "txq_%d_%s",
+> -					 q_num,
+> -					 ionic_txq_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_NUM_DBG_CQ_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "txq_%d_cq_%s",
+> -					 q_num,
+> -					 ionic_dbg_cq_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_NUM_DBG_INTR_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "txq_%d_intr_%s",
+> -					 q_num,
+> -					 ionic_dbg_intr_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_MAX_NUM_SG_CNTR; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "txq_%d_sg_cntr_%d",
+> -					 q_num, i);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -		}
+> -	}
+> -	for (q_num = 0; q_num < MAX_Q(lif); q_num++) {
+> -		for (i = 0; i < IONIC_NUM_RX_STATS; i++) {
+> -			snprintf(*buf, ETH_GSTRING_LEN,
+> -				 "rx_%d_%s",
+> -				 q_num, ionic_rx_stats_desc[i].name);
+> -			*buf += ETH_GSTRING_LEN;
+> -		}
+> -
+> -		if (test_bit(IONIC_LIF_F_UP, lif->state) &&
+> -		    test_bit(IONIC_LIF_F_SW_DEBUG_STATS, lif->state)) {
+> -			for (i = 0; i < IONIC_NUM_DBG_CQ_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "rxq_%d_cq_%s",
+> -					 q_num,
+> -					 ionic_dbg_cq_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_NUM_DBG_INTR_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "rxq_%d_intr_%s",
+> -					 q_num,
+> -					 ionic_dbg_intr_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_NUM_DBG_NAPI_STATS; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "rxq_%d_napi_%s",
+> -					 q_num,
+> -					 ionic_dbg_napi_stats_desc[i].name);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -			for (i = 0; i < IONIC_MAX_NUM_NAPI_CNTR; i++) {
+> -				snprintf(*buf, ETH_GSTRING_LEN,
+> -					 "rxq_%d_napi_work_done_%d",
+> -					 q_num, i);
+> -				*buf += ETH_GSTRING_LEN;
+> -			}
+> -		}
+> -	}
+> +	for (q_num = 0; q_num < MAX_Q(lif); q_num++)
+> +		ionic_sw_stats_get_rx_strings(lif, buf, q_num);
+>   }
+>   
+>   static void ionic_sw_stats_get_values(struct ionic_lif *lif, u64 **buf)
+>
+>
+
