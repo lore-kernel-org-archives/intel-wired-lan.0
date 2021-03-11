@@ -1,45 +1,41 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 Mar 2021 12:32:29 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 02/10] intel: Update drivers to
- use ethtool_gsprintf
-In-Reply-To: <161542652605.13546.13143472024905128153.stgit@localhost.localdomain>
+Date: Thu, 11 Mar 2021 12:37:21 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 01/10] ethtool: Add common
+ function for filling out strings
+In-Reply-To: <20210310180807.5fb1752d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 References: <161542634192.13546.4185974647834631704.stgit@localhost.localdomain>
- <161542652605.13546.13143472024905128153.stgit@localhost.localdomain>
-Message-ID: <20210311123229.00007580@intel.com>
+ <161542651749.13546.3959589547085613076.stgit@localhost.localdomain>
+ <20210310180807.5fb1752d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <20210311123721.00005913@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alexander Duyck wrote:
+Jakub Kicinski wrote:
 
-> From: Alexander Duyck <alexanderduyck@fb.com>
+> On Wed, 10 Mar 2021 17:35:17 -0800 Alexander Duyck wrote:
+> > From: Alexander Duyck <alexanderduyck@fb.com>
+> > +/**
+> > + * ethtool_gsprintf - Write formatted string to ethtool string data
+> > + * @data: Pointer to start of string to update
+> > + * @fmt: Format of string to write
+> > + *
+> > + * Write formatted string to data. Update data to point at start of
+> > + * next string.
+> > + */
+> > +extern __printf(2, 3) void ethtool_gsprintf(u8 **data, const char *fmt, ...);
 > 
-> Update the Intel drivers to make use of ethtool_gsprintf. The general idea
-> is to reduce code size and overhead by replacing the repeated pattern of
-> string printf statements and ETH_STRING_LEN counter increments.
+> I'd drop the 'g' TBH, it seems to have made its way from the ethtool
+> command ('gstrings') to various places but without the 'string' after
+> it - it becomes less and less meaningful. Just ethtool_sprintf() would
+> be fine IMHO.
 > 
-> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |   16 ++----
->  drivers/net/ethernet/intel/ice/ice_ethtool.c     |   55 +++++++---------------
->  drivers/net/ethernet/intel/igb/igb_ethtool.c     |   40 ++++++----------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   40 ++++++----------
->  4 files changed, 50 insertions(+), 101 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index c70dec65a572..932c6635cfd6 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -2368,21 +2368,15 @@ static void i40e_get_priv_flag_strings(struct net_device *netdev, u8 *data)
->  	struct i40e_netdev_priv *np = netdev_priv(netdev);
->  	struct i40e_vsi *vsi = np->vsi;
->  	struct i40e_pf *pf = vsi->back;
-> -	char *p = (char *)data;
-> +	u8 *p = data;
->  	unsigned int i;
+> Other than that there is a minor rev xmas tree violation in patch 2 :)
 
-As Jakub said, RCT... :-)
 
-no other comments on the rest of the patch, looks good and Thanks!
+I agree with Jakub, and I really like this series, it's a good clean up.
+
+I'll be glad to add a reviewed by tag to v2.
+
