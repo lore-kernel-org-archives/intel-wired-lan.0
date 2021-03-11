@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Thu, 11 Mar 2021 00:02:34 +0000
-Subject: [Intel-wired-lan] [PATCH S55 05/14] ice: Update to use package
- info from ice segment
-In-Reply-To: <20210302181213.51718-5-anthony.l.nguyen@intel.com>
+Date: Thu, 11 Mar 2021 00:27:11 +0000
+Subject: [Intel-wired-lan] [PATCH S55 06/14] ice: handle increasing Tx
+ or Rx ring sizes
+In-Reply-To: <20210302181213.51718-6-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
- <20210302181213.51718-5-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB51057CFF8FF377AD5CB890A1FA909@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210302181213.51718-6-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51054A06063DC01953AC6045FA909@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Tuesday, March 2, 2021 10:12 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S55 05/14] ice: Update to use package info
-> from ice segment
+> Subject: [Intel-wired-lan] [PATCH S55 06/14] ice: handle increasing Tx or Rx
+> ring sizes
 > 
-> From: Dan Nowlin <dan.nowlin@intel.com>
+> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 > 
-> There are two package versions in the package binary. Today, these two
-> version numbers are the same. However, in the future that may change.
+> There is an issue when the Tx or Rx ring size increases using 'ethtool -L ...'
+> where the new rings don't get the correct ITR values because when we
+> rebuild the VSI we don't know that some of the rings may be new.
 > 
-> Update code to use the package info from the ice segment metadata
-> section, which is the package information that is actually downloaded to the
-> firmware during the download package process.
+> Fix this by looking at the original number of rings and determining if the rings
+> in ice_vsi_rebuild_set_coalesce() were not present in the original rings
+> received in ice_vsi_rebuild_get_coalesce().
 > 
-> Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+> Also change the code to return an error if we can't allocate memory for the
+> coalesce data in ice_vsi_rebuild().
+> 
+> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
->  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 40 ++++++++++---------
->  .../net/ethernet/intel/ice/ice_flex_type.h    |  9 +++++
->  drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++--
->  4 files changed, 36 insertions(+), 22 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 123 ++++++++++++++++------
+>  drivers/net/ethernet/intel/ice/ice_txrx.h |   2 +
+>  2 files changed, 92 insertions(+), 33 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
