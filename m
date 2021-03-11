@@ -1,26 +1,50 @@
-From: Simon Horman <simon.horman@netronome.com>
-Date: Thu, 11 Mar 2021 12:51:15 +0100
-Subject: [Intel-wired-lan] [RFC PATCH 03/10] nfp: Replace nfp_pr_et with
- ethtool_gsprintf
-In-Reply-To: <161542653266.13546.11914667071718045956.stgit@localhost.localdomain>
-References: <161542634192.13546.4185974647834631704.stgit@localhost.localdomain>
- <161542653266.13546.11914667071718045956.stgit@localhost.localdomain>
-Message-ID: <20210311115115.GA12530@netronome.com>
+From: Bhandare, KiranX <kiranx.bhandare@intel.com>
+Date: Thu, 11 Mar 2021 12:06:36 +0000
+Subject: [Intel-wired-lan] [PATCH intel-net] ice: fix napi work done
+ reporting in xsk path
+In-Reply-To: <20210205090904.20794-1-magnus.karlsson@gmail.com>
+References: <20210205090904.20794-1-magnus.karlsson@gmail.com>
+Message-ID: <DM6PR11MB3292201BF7BF036D5A55D9AAF1909@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 10, 2021 at 05:35:32PM -0800, Alexander Duyck wrote:
-> From: Alexander Duyck <alexanderduyck@fb.com>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Magnus Karlsson
+> Sent: Friday, February 5, 2021 2:39 PM
+> To: Karlsson, Magnus <magnus.karlsson@intel.com>; Topel, Bjorn
+> <bjorn.topel@intel.com>; intel-wired-lan at lists.osuosl.org; Nguyen, Anthony
+> L <anthony.l.nguyen@intel.com>; Fijalkowski, Maciej
+> <maciej.fijalkowski@intel.com>; maciejromanfijalkowski at gmail.com
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH intel-net] ice: fix napi work done reporting
+> in xsk path
 > 
-> The nfp_pr_et function is nearly identical to ethtool_gsprintf except for
-> the fact that it passes the pointer by value and as a return whereas
-> ethtool_gsprintf passes it as a pointer.
+> From: Magnus Karlsson <magnus.karlsson@intel.com>
 > 
-> Since they are so close just update nfp to make use of ethtool_gsprintf
+> Fix the wrong napi work done reporting in the xsk path of the ice driver. The
+> code in the main Rx processing loop was written to assume that the buffer
+> allocation code returns true if all allocations where successful and false if
+> not. In contrast with all other Intel NIC xsk drivers, the ice_alloc_rx_bufs_zc()
+> has the inverted logic messing up the work done reporting in the napi loop.
 > 
-> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
+> This can be fixed either by inverting the return value from
+> ice_alloc_rx_bufs_zc() in the function that uses this in an incorrect way, or by
+> changing the return value of ice_alloc_rx_bufs_zc(). We chose the latter as it
+> makes all the xsk allocation functions for Intel NICs behave in the same way.
+> My guess is that it was this unexpected discrepancy that gave rise to this bug
+> in the first place.
+> 
+> Fixes: 5bb0c4b5eb61 ("ice, xsk: Move Rx allocation out of while-loop")
+> Reported-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_base.c |  6 ++++--
+> drivers/net/ethernet/intel/ice/ice_xsk.c  | 10 +++++-----
+>  2 files changed, 9 insertions(+), 7 deletions(-)
+> 
 
-Reviewed-by: Simon Horman <simon.horman@netronome.com>
+Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
