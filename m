@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 10 Mar 2021 23:44:21 +0000
-Subject: [Intel-wired-lan] [PATCH S55 04/14] ice: Delay netdev
- registration
-In-Reply-To: <20210302181213.51718-4-anthony.l.nguyen@intel.com>
+Date: Thu, 11 Mar 2021 00:02:34 +0000
+Subject: [Intel-wired-lan] [PATCH S55 05/14] ice: Update to use package
+ info from ice segment
+In-Reply-To: <20210302181213.51718-5-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
- <20210302181213.51718-4-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105FE8E1D7FB8A90ACD0DEAFA919@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210302181213.51718-5-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51057CFF8FF377AD5CB890A1FA909@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,31 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Tuesday, March 2, 2021 10:12 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S55 04/14] ice: Delay netdev registration
+> Subject: [Intel-wired-lan] [PATCH S55 05/14] ice: Update to use package info
+> from ice segment
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Dan Nowlin <dan.nowlin@intel.com>
 > 
-> Once a netdev is registered, the corresponding network interface can be
-> immediately used by userspace utilities (like say NetworkManager).
-> This can be problematic if the driver technically isn't fully up yet.
+> There are two package versions in the package binary. Today, these two
+> version numbers are the same. However, in the future that may change.
 > 
-> Move netdev registration to the end of probe, as by this time the driver data
-> structures and device will be initialized as expected.
+> Update code to use the package info from the ice segment metadata
+> section, which is the package information that is actually downloaded to the
+> firmware during the download package process.
 > 
-> However, delaying netdev registration causes a failure in the aRFS flow
-> where netdev->reg_state == NETREG_REGISTERED condition is checked. It's
-> not clear why this check was added to begin with, so remove it.
-> Local testing didn't indicate any issues with this change.
-> 
-> The state bit check in ice_open was put in as a stop-gap measure to prevent
-> a premature interface up operation. This is no longer needed, so remove it.
-> 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_arfs.c |  6 +-
-> drivers/net/ethernet/intel/ice/ice_main.c | 93 +++++++++++------------
->  2 files changed, 47 insertions(+), 52 deletions(-)
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+>  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 40 ++++++++++---------
+>  .../net/ethernet/intel/ice/ice_flex_type.h    |  9 +++++
+>  drivers/net/ethernet/intel/ice/ice_type.h     |  8 ++--
+>  4 files changed, 36 insertions(+), 22 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
