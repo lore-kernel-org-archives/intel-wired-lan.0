@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 12 Mar 2021 09:48:33 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 05/10] ena: Update driver to use
- ethtool_sprintf
+Date: Fri, 12 Mar 2021 09:48:40 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 06/10] netvsc: Update driver to
+ use ethtool_sprintf
 In-Reply-To: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
 References: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
-Message-ID: <161557131360.10304.1549281998235246752.stgit@localhost.localdomain>
+Message-ID: <161557132005.10304.543531678348828381.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,76 +13,63 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexanderduyck@fb.com>
 
-Replace instances of snprintf or memcpy with a pointer update with
+Replace instances of sprintf or memcpy with a pointer update with
 ethtool_sprintf.
 
-Acked-by: Arthur Kiyanovski <akiyano@amazon.com>
 Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
 ---
- drivers/net/ethernet/amazon/ena/ena_ethtool.c |   25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ drivers/net/hyperv/netvsc_drv.c |   33 +++++++++++----------------------
+ 1 file changed, 11 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/amazon/ena/ena_ethtool.c b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
-index d6cc7aa612b7..2fe7ccee55b2 100644
---- a/drivers/net/ethernet/amazon/ena/ena_ethtool.c
-+++ b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
-@@ -251,10 +251,10 @@ static void ena_queue_strings(struct ena_adapter *adapter, u8 **data)
- 		for (j = 0; j < ENA_STATS_ARRAY_TX; j++) {
- 			ena_stats = &ena_stats_tx_strings[j];
+diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
+index 15f262b70489..97b5c9b60503 100644
+--- a/drivers/net/hyperv/netvsc_drv.c
++++ b/drivers/net/hyperv/netvsc_drv.c
+@@ -1612,34 +1612,23 @@ static void netvsc_get_strings(struct net_device *dev, u32 stringset, u8 *data)
  
--			snprintf(*data, ETH_GSTRING_LEN,
--				 "queue_%u_%s_%s", i,
--				 is_xdp ? "xdp_tx" : "tx", ena_stats->name);
--			(*data) += ETH_GSTRING_LEN;
-+			ethtool_sprintf(data,
-+					"queue_%u_%s_%s", i,
-+					is_xdp ? "xdp_tx" : "tx",
-+					ena_stats->name);
+ 	switch (stringset) {
+ 	case ETH_SS_STATS:
+-		for (i = 0; i < ARRAY_SIZE(netvsc_stats); i++) {
+-			memcpy(p, netvsc_stats[i].name, ETH_GSTRING_LEN);
+-			p += ETH_GSTRING_LEN;
+-		}
++		for (i = 0; i < ARRAY_SIZE(netvsc_stats); i++)
++			ethtool_sprintf(&p, netvsc_stats[i].name);
+ 
+-		for (i = 0; i < ARRAY_SIZE(vf_stats); i++) {
+-			memcpy(p, vf_stats[i].name, ETH_GSTRING_LEN);
+-			p += ETH_GSTRING_LEN;
+-		}
++		for (i = 0; i < ARRAY_SIZE(vf_stats); i++)
++			ethtool_sprintf(&p, vf_stats[i].name);
+ 
+ 		for (i = 0; i < nvdev->num_chn; i++) {
+-			sprintf(p, "tx_queue_%u_packets", i);
+-			p += ETH_GSTRING_LEN;
+-			sprintf(p, "tx_queue_%u_bytes", i);
+-			p += ETH_GSTRING_LEN;
+-			sprintf(p, "rx_queue_%u_packets", i);
+-			p += ETH_GSTRING_LEN;
+-			sprintf(p, "rx_queue_%u_bytes", i);
+-			p += ETH_GSTRING_LEN;
+-			sprintf(p, "rx_queue_%u_xdp_drop", i);
+-			p += ETH_GSTRING_LEN;
++			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
++			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
++			ethtool_sprintf(&p, "rx_queue_%u_packets", i);
++			ethtool_sprintf(&p, "rx_queue_%u_bytes", i);
++			ethtool_sprintf(&p, "rx_queue_%u_xdp_drop", i);
  		}
  
- 		if (!is_xdp) {
-@@ -264,9 +264,9 @@ static void ena_queue_strings(struct ena_adapter *adapter, u8 **data)
- 			for (j = 0; j < ENA_STATS_ARRAY_RX; j++) {
- 				ena_stats = &ena_stats_rx_strings[j];
- 
--				snprintf(*data, ETH_GSTRING_LEN,
--					 "queue_%u_rx_%s", i, ena_stats->name);
--				(*data) += ETH_GSTRING_LEN;
-+				ethtool_sprintf(data,
-+						"queue_%u_rx_%s", i,
-+						ena_stats->name);
- 			}
+ 		for_each_present_cpu(cpu) {
+-			for (i = 0; i < ARRAY_SIZE(pcpu_stats); i++) {
+-				sprintf(p, pcpu_stats[i].name, cpu);
+-				p += ETH_GSTRING_LEN;
+-			}
++			for (i = 0; i < ARRAY_SIZE(pcpu_stats); i++)
++				ethtool_sprintf(&p, pcpu_stats[i].name, cpu);
  		}
- 	}
-@@ -280,9 +280,8 @@ static void ena_com_dev_strings(u8 **data)
- 	for (i = 0; i < ENA_STATS_ARRAY_ENA_COM; i++) {
- 		ena_stats = &ena_stats_ena_com_strings[i];
  
--		snprintf(*data, ETH_GSTRING_LEN,
--			 "ena_admin_q_%s", ena_stats->name);
--		(*data) += ETH_GSTRING_LEN;
-+		ethtool_sprintf(data,
-+				"ena_admin_q_%s", ena_stats->name);
- 	}
- }
- 
-@@ -295,15 +294,13 @@ static void ena_get_strings(struct ena_adapter *adapter,
- 
- 	for (i = 0; i < ENA_STATS_ARRAY_GLOBAL; i++) {
- 		ena_stats = &ena_stats_global_strings[i];
--		memcpy(data, ena_stats->name, ETH_GSTRING_LEN);
--		data += ETH_GSTRING_LEN;
-+		ethtool_sprintf(&data, ena_stats->name);
- 	}
- 
- 	if (eni_stats_needed) {
- 		for (i = 0; i < ENA_STATS_ARRAY_ENI(adapter); i++) {
- 			ena_stats = &ena_stats_eni_strings[i];
--			memcpy(data, ena_stats->name, ETH_GSTRING_LEN);
--			data += ETH_GSTRING_LEN;
-+			ethtool_sprintf(&data, ena_stats->name);
- 		}
- 	}
- 
+ 		break;
 
 
