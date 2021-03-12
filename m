@@ -1,130 +1,64 @@
-From: Stefan Assmann <sassmann@redhat.com>
-Date: Fri, 12 Mar 2021 13:36:15 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
- during driver remove
-In-Reply-To: <20210312093337.68364-1-eryk.roch.rybak@intel.com>
-References: <20210312093337.68364-1-eryk.roch.rybak@intel.com>
-Message-ID: <20210312123615.7fcvoayobcslko74@p50.fritz.box>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 12 Mar 2021 09:48:00 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 00/10] ethtool: Factor out common
+ code related to writing ethtool strings
+Message-ID: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2021-03-12 10:33, Eryk Rybak wrote:
-> Although rare, is possible for unexpected driver watchdog or Admin
-> Queue tasks to run during the execution of iavf_remove function.
-> Then, is not possible to obtain the standard __IAVF_IN_CRITICAL_TASK
-> lock and difficult to ensure that the driver state stays consistent
-> during the full removal process.
+This patch set is meant to be a cleanup and refactoring of common code bits
+from several drivers. Specifically a number of drivers engage in a pattern
+where they will use some variant on an sprintf or memcpy to write a string
+into the ethtool string array and then they will increment their pointer by
+ETH_GSTRING_LEN.
 
-If you shutdown the watchdog task before closing the device, how do you
-ensure the client task is properly shutdown?
+Instead of having each driver implement this independently I am refactoring
+the code so that we have one central function, ethtool_sprintf that does
+all this and takes a double pointer to access the data, a formatted string
+to print, and the variable arguments that are associated with the string.
 
-Calling iavf_close() sets the IAVF_FLAG_CLIENT_NEEDS_CLOSE flag, which
-would call iavf_notify_client_close(&adapter->vsi, false); in the
-client task, but the client task does no longer get scheduled by the
-watchdog task because it has been shutdown already.
+Changes from RFC:
+Renamed ethtool_gsprintf to ethtool_sprintf
+Fixed reverse xmas tree issue in patch 2
+Added Acked-by/Reviewed-by tags from RFC review
 
-  Stefan
+---
 
-> Fully stops all asynchronous tasks in the beginning of iavf_remove,
-> and uses a single-threaded flow to shut down the driver.
-> 
-> Fixes: fdd4044ffdc8("iavf: Remove timer for work triggering, use delaying work instead")
-> Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 31 +++++++++++++++++----
->  1 file changed, 25 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index dc5b3c06d1e0..e752ecb7ad89 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -1887,6 +1887,12 @@ static void iavf_watchdog_task(struct work_struct *work)
->  	struct iavf_hw *hw = &adapter->hw;
->  	u32 reg_val;
->  
-> +	/* If the driver is in the process of being removed then don't run or
-> +	 * reschedule the watchdog task.
-> +	 */
-> +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-> +		return;
-> +
->  	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section))
->  		goto restart_watchdog;
->  
-> @@ -2267,6 +2273,12 @@ static void iavf_adminq_task(struct work_struct *work)
->  	u32 val, oldval;
->  	u16 pending;
->  
-> +	/* If the driver is in the process of being removed then return
-> +	 * immediately and don't re-enable the Admin Queue interrupt.
-> +	 */
-> +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-> +		return;
-> +
->  	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
->  		goto out;
->  
-> @@ -3245,6 +3257,13 @@ static int iavf_close(struct net_device *netdev)
->  
->  	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
->  
-> +	/* If the interface is closing as part of driver removal it doesn't
-> +	 * wait. The VF resources will be reinitialized when the hardware is
-> +	 * reset.
-> +	 */
-> +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-> +		return 0;
-> +
->  	/* We explicitly don't free resources here because the hardware is
->  	 * still active and can DMA into memory. Resources are cleared in
->  	 * iavf_virtchnl_completion() after we get confirmation from the PF
-> @@ -3850,11 +3869,16 @@ static void iavf_remove(struct pci_dev *pdev)
->  	struct iavf_cloud_filter *cf, *cftmp;
->  	struct iavf_hw *hw = &adapter->hw;
->  	int err;
-> -	/* Indicate we are in remove and not to run reset_task */
-> +	/* Indicate that program driver is remove task and not
-> +	 * to run/schedule any driver tasks
-> +	 */
->  	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
->  	cancel_delayed_work_sync(&adapter->init_task);
->  	cancel_work_sync(&adapter->reset_task);
->  	cancel_delayed_work_sync(&adapter->client_task);
-> +	cancel_work_sync(&adapter->adminq_task);
-> +	cancel_delayed_work_sync(&adapter->watchdog_task);
-> +	iavf_misc_irq_disable(adapter);
->  	if (adapter->netdev_registered) {
->  		unregister_netdev(netdev);
->  		adapter->netdev_registered = false;
-> @@ -3879,15 +3903,10 @@ static void iavf_remove(struct pci_dev *pdev)
->  	}
->  	iavf_free_all_tx_resources(adapter);
->  	iavf_free_all_rx_resources(adapter);
-> -	iavf_misc_irq_disable(adapter);
->  	iavf_free_misc_irq(adapter);
->  	iavf_reset_interrupt_capability(adapter);
->  	iavf_free_q_vectors(adapter);
->  
-> -	cancel_delayed_work_sync(&adapter->watchdog_task);
-> -
-> -	cancel_work_sync(&adapter->adminq_task);
-> -
->  	iavf_free_rss(adapter);
->  
->  	if (hw->aq.asq.count)
-> 
-> base-commit: c1acda9807e2bbe1d2026b44f37d959d6d8266c8
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
+Alexander Duyck (10):
+      ethtool: Add common function for filling out strings
+      intel: Update drivers to use ethtool_sprintf
+      nfp: Replace nfp_pr_et with ethtool_sprintf
+      hisilicon: Update drivers to use ethtool_sprintf
+      ena: Update driver to use ethtool_sprintf
+      netvsc: Update driver to use ethtool_sprintf
+      virtio_net: Update driver to use ethtool_sprintf
+      vmxnet3: Update driver to use ethtool_sprintf
+      bna: Update driver to use ethtool_sprintf
+      ionic: Update driver to use ethtool_sprintf
+
+
+ drivers/net/ethernet/amazon/ena/ena_ethtool.c |  25 +-
+ .../net/ethernet/brocade/bna/bnad_ethtool.c   | 266 +++++++-----------
+ .../ethernet/hisilicon/hns/hns_dsaf_gmac.c    |   7 +-
+ .../net/ethernet/hisilicon/hns/hns_dsaf_ppe.c |  37 +--
+ .../net/ethernet/hisilicon/hns/hns_dsaf_rcb.c |  89 ++----
+ .../ethernet/hisilicon/hns/hns_dsaf_xgmac.c   |   6 +-
+ .../net/ethernet/hisilicon/hns/hns_ethtool.c  |  97 +++----
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  16 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  55 ++--
+ drivers/net/ethernet/intel/igb/igb_ethtool.c  |  40 +--
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  40 +--
+ drivers/net/ethernet/netronome/nfp/abm/main.c |   4 +-
+ .../ethernet/netronome/nfp/nfp_net_ethtool.c  |  79 +++---
+ drivers/net/ethernet/netronome/nfp/nfp_port.h |   2 -
+ .../net/ethernet/pensando/ionic/ionic_stats.c | 145 ++++------
+ drivers/net/hyperv/netvsc_drv.c               |  33 +--
+ drivers/net/virtio_net.c                      |  18 +-
+ drivers/net/vmxnet3/vmxnet3_ethtool.c         |  53 ++--
+ 18 files changed, 381 insertions(+), 631 deletions(-)
+
+--
 
