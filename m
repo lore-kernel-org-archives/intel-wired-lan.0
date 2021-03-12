@@ -1,111 +1,77 @@
-From: Eryk Rybak <eryk.roch.rybak@intel.com>
-Date: Fri, 12 Mar 2021 10:33:37 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
- during driver remove
-Message-ID: <20210312093337.68364-1-eryk.roch.rybak@intel.com>
+From: Jambekar, Vishakha <vishakha.jambekar@intel.com>
+Date: Fri, 12 Mar 2021 10:24:06 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: avoid premature Rx buffer reuse
+In-Reply-To: <65a7da2dc20c4fa5b69270f078026100@baidu.com>
+References: <1609990905-29220-1-git-send-email-lirongqing@baidu.com>
+ <CAKgT0Ucar6h-V2pQK6Gx4wrwFzJqySfv-MGXtW1yEc6Jq3uNSQ@mail.gmail.com>
+ <65a7da2dc20c4fa5b69270f078026100@baidu.com>
+Message-ID: <SA2PR11MB4940B65641B2D901330B4E40FF6F9@SA2PR11MB4940.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Although rare, is possible for unexpected driver watchdog or Admin
-Queue tasks to run during the execution of iavf_remove function.
-Then, is not possible to obtain the standard __IAVF_IN_CRITICAL_TASK
-lock and difficult to ensure that the driver state stays consistent
-during the full removal process.
-
-Fully stops all asynchronous tasks in the beginning of iavf_remove,
-and uses a single-threaded flow to shut down the driver.
-
-Fixes: fdd4044ffdc8("iavf: Remove timer for work triggering, use delaying work instead")
-Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 31 +++++++++++++++++----
- 1 file changed, 25 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index dc5b3c06d1e0..e752ecb7ad89 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1887,6 +1887,12 @@ static void iavf_watchdog_task(struct work_struct *work)
- 	struct iavf_hw *hw = &adapter->hw;
- 	u32 reg_val;
- 
-+	/* If the driver is in the process of being removed then don't run or
-+	 * reschedule the watchdog task.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return;
-+
- 	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section))
- 		goto restart_watchdog;
- 
-@@ -2267,6 +2273,12 @@ static void iavf_adminq_task(struct work_struct *work)
- 	u32 val, oldval;
- 	u16 pending;
- 
-+	/* If the driver is in the process of being removed then return
-+	 * immediately and don't re-enable the Admin Queue interrupt.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return;
-+
- 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
- 		goto out;
- 
-@@ -3245,6 +3257,13 @@ static int iavf_close(struct net_device *netdev)
- 
- 	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- 
-+	/* If the interface is closing as part of driver removal it doesn't
-+	 * wait. The VF resources will be reinitialized when the hardware is
-+	 * reset.
-+	 */
-+	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		return 0;
-+
- 	/* We explicitly don't free resources here because the hardware is
- 	 * still active and can DMA into memory. Resources are cleared in
- 	 * iavf_virtchnl_completion() after we get confirmation from the PF
-@@ -3850,11 +3869,16 @@ static void iavf_remove(struct pci_dev *pdev)
- 	struct iavf_cloud_filter *cf, *cftmp;
- 	struct iavf_hw *hw = &adapter->hw;
- 	int err;
--	/* Indicate we are in remove and not to run reset_task */
-+	/* Indicate that program driver is remove task and not
-+	 * to run/schedule any driver tasks
-+	 */
- 	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
- 	cancel_delayed_work_sync(&adapter->init_task);
- 	cancel_work_sync(&adapter->reset_task);
- 	cancel_delayed_work_sync(&adapter->client_task);
-+	cancel_work_sync(&adapter->adminq_task);
-+	cancel_delayed_work_sync(&adapter->watchdog_task);
-+	iavf_misc_irq_disable(adapter);
- 	if (adapter->netdev_registered) {
- 		unregister_netdev(netdev);
- 		adapter->netdev_registered = false;
-@@ -3879,15 +3903,10 @@ static void iavf_remove(struct pci_dev *pdev)
- 	}
- 	iavf_free_all_tx_resources(adapter);
- 	iavf_free_all_rx_resources(adapter);
--	iavf_misc_irq_disable(adapter);
- 	iavf_free_misc_irq(adapter);
- 	iavf_reset_interrupt_capability(adapter);
- 	iavf_free_q_vectors(adapter);
- 
--	cancel_delayed_work_sync(&adapter->watchdog_task);
--
--	cancel_work_sync(&adapter->adminq_task);
--
- 	iavf_free_rss(adapter);
- 
- 	if (hw->aq.asq.count)
-
-base-commit: c1acda9807e2bbe1d2026b44f37d959d6d8266c8
--- 
-2.20.1
-
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Li,Rongqing
+> Sent: Tuesday, January 12, 2021 8:24 AM
+> To: Alexander Duyck <alexander.duyck@gmail.com>
+> Cc: Netdev <netdev@vger.kernel.org>; Topel, Bjorn <bjorn.topel@intel.com>;
+> intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH] igb: avoid premature Rx buffer reuse
+> 
+> 
+> 
+> > -----Original Message-----
+> > From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> > Sent: Tuesday, January 12, 2021 4:54 AM
+> > To: Li,Rongqing <lirongqing@baidu.com>
+> > Cc: Netdev <netdev@vger.kernel.org>; intel-wired-lan
+> > <intel-wired-lan@lists.osuosl.org>; Bj?rn T?pel
+> > <bjorn.topel@intel.com>
+> > Subject: Re: [PATCH] igb: avoid premature Rx buffer reuse
+> >
+> > On Wed, Jan 6, 2021 at 7:53 PM Li RongQing <lirongqing@baidu.com> wrote:
+> > >
+> > > The page recycle code, incorrectly, relied on that a page fragment
+> > > could not be freed inside xdp_do_redirect(). This assumption leads
+> > > to that page fragments that are used by the stack/XDP redirect can
+> > > be reused and overwritten.
+> > >
+> > > To avoid this, store the page count prior invoking xdp_do_redirect().
+> > >
+> > > Fixes: 9cbc948b5a20 ("igb: add XDP support")
+> > > Signed-off-by: Li RongQing <lirongqing@baidu.com>
+> > > Cc: Bj?rn T?pel <bjorn.topel@intel.com>
+> >
+> > I'm not sure what you are talking about here. We allow for a 0 to 1
+> > count difference in the pagecount bias. The idea is the driver should
+> > be holding onto at least one reference from the driver at all times.
+> > Are you saying that is not the case?
+> >
+> > As far as the code itself we hold onto the page as long as our
+> > difference does not exceed 1. So specifically if the XDP call is
+> > freeing the page the page itself should still be valid as the
+> > reference count shouldn't drop below 1, and in that case the driver should be
+> holding that one reference to the page.
+> >
+> > When we perform our check we are performing it such at output of
+> > either 0 if the page is freed, or 1 if the page is not freed are
+> > acceptable for us to allow reuse. The key bit is in igb_clean_rx_irq
+> > where we will flip the buffer for the IGB_XDP_TX | IGB_XDP_REDIR case
+> > and just increment the pagecnt_bias indicating that the page was dropped in
+> the non-flipped case.
+> >
+> > Are you perhaps seeing a function that is returning an error and still
+> > consuming the page? If so that might explain what you are seeing.
+> > However the bug would be in the other driver not this one. The
+> > xdp_do_redirect function is not supposed to free the page if it returns an
+> error.
+> > It is supposed to leave that up to the function that called xdp_do_redirect.
+> >
+> > > ---
+> > >  drivers/net/ethernet/intel/igb/igb_main.c | 22
+> > > +++++++++++++++-------
+> > >  1 file changed, 15 insertions(+), 7 deletions(-)
+> > >
+> Tested-by: Vishakha Jambekar <vishakha.jambekar@intel.com>
