@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 12 Mar 2021 09:48:40 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 06/10] netvsc: Update driver to
- use ethtool_sprintf
+Date: Fri, 12 Mar 2021 09:48:46 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 07/10] virtio_net: Update driver
+ to use ethtool_sprintf
 In-Reply-To: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
 References: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
-Message-ID: <161557132005.10304.543531678348828381.stgit@localhost.localdomain>
+Message-ID: <161557132651.10304.9382850626606060019.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,63 +13,53 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexanderduyck@fb.com>
 
-Replace instances of sprintf or memcpy with a pointer update with
-ethtool_sprintf.
+Update the code to replace instances of snprintf and a pointer update with
+just calling ethtool_sprintf.
+
+Also replace the char pointer with a u8 pointer to avoid having to recast
+the pointer type.
 
 Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
 ---
- drivers/net/hyperv/netvsc_drv.c |   33 +++++++++++----------------------
- 1 file changed, 11 insertions(+), 22 deletions(-)
+ drivers/net/virtio_net.c |   18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
-index 15f262b70489..97b5c9b60503 100644
---- a/drivers/net/hyperv/netvsc_drv.c
-+++ b/drivers/net/hyperv/netvsc_drv.c
-@@ -1612,34 +1612,23 @@ static void netvsc_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index e97288dd6e5a..77ba8e2fc11c 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -2138,25 +2138,21 @@ static int virtnet_set_channels(struct net_device *dev,
+ static void virtnet_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ {
+ 	struct virtnet_info *vi = netdev_priv(dev);
+-	char *p = (char *)data;
+ 	unsigned int i, j;
++	u8 *p = data;
  
  	switch (stringset) {
  	case ETH_SS_STATS:
--		for (i = 0; i < ARRAY_SIZE(netvsc_stats); i++) {
--			memcpy(p, netvsc_stats[i].name, ETH_GSTRING_LEN);
--			p += ETH_GSTRING_LEN;
--		}
-+		for (i = 0; i < ARRAY_SIZE(netvsc_stats); i++)
-+			ethtool_sprintf(&p, netvsc_stats[i].name);
- 
--		for (i = 0; i < ARRAY_SIZE(vf_stats); i++) {
--			memcpy(p, vf_stats[i].name, ETH_GSTRING_LEN);
--			p += ETH_GSTRING_LEN;
--		}
-+		for (i = 0; i < ARRAY_SIZE(vf_stats); i++)
-+			ethtool_sprintf(&p, vf_stats[i].name);
- 
- 		for (i = 0; i < nvdev->num_chn; i++) {
--			sprintf(p, "tx_queue_%u_packets", i);
--			p += ETH_GSTRING_LEN;
--			sprintf(p, "tx_queue_%u_bytes", i);
--			p += ETH_GSTRING_LEN;
--			sprintf(p, "rx_queue_%u_packets", i);
--			p += ETH_GSTRING_LEN;
--			sprintf(p, "rx_queue_%u_bytes", i);
--			p += ETH_GSTRING_LEN;
--			sprintf(p, "rx_queue_%u_xdp_drop", i);
--			p += ETH_GSTRING_LEN;
-+			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
-+			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
-+			ethtool_sprintf(&p, "rx_queue_%u_packets", i);
-+			ethtool_sprintf(&p, "rx_queue_%u_bytes", i);
-+			ethtool_sprintf(&p, "rx_queue_%u_xdp_drop", i);
- 		}
- 
- 		for_each_present_cpu(cpu) {
--			for (i = 0; i < ARRAY_SIZE(pcpu_stats); i++) {
--				sprintf(p, pcpu_stats[i].name, cpu);
+ 		for (i = 0; i < vi->curr_queue_pairs; i++) {
+-			for (j = 0; j < VIRTNET_RQ_STATS_LEN; j++) {
+-				snprintf(p, ETH_GSTRING_LEN, "rx_queue_%u_%s",
+-					 i, virtnet_rq_stats_desc[j].desc);
 -				p += ETH_GSTRING_LEN;
 -			}
-+			for (i = 0; i < ARRAY_SIZE(pcpu_stats); i++)
-+				ethtool_sprintf(&p, pcpu_stats[i].name, cpu);
++			for (j = 0; j < VIRTNET_RQ_STATS_LEN; j++)
++				ethtool_sprintf(&p, "rx_queue_%u_%s", i,
++						virtnet_rq_stats_desc[j].desc);
  		}
  
+ 		for (i = 0; i < vi->curr_queue_pairs; i++) {
+-			for (j = 0; j < VIRTNET_SQ_STATS_LEN; j++) {
+-				snprintf(p, ETH_GSTRING_LEN, "tx_queue_%u_%s",
+-					 i, virtnet_sq_stats_desc[j].desc);
+-				p += ETH_GSTRING_LEN;
+-			}
++			for (j = 0; j < VIRTNET_SQ_STATS_LEN; j++)
++				ethtool_sprintf(&p, "tx_queue_%u_%s", i,
++						virtnet_sq_stats_desc[j].desc);
+ 		}
  		break;
+ 	}
 
 
