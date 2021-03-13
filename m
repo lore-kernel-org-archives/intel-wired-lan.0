@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Sat, 13 Mar 2021 00:07:29 +0000
-Subject: [Intel-wired-lan] [PATCH S56 04/13] ice: Refactor
- ice_set/get_rss into LUT and key specific functions
-In-Reply-To: <20210302181545.51822-4-anthony.l.nguyen@intel.com>
+Date: Sat, 13 Mar 2021 00:09:46 +0000
+Subject: [Intel-wired-lan] [PATCH S56 05/13] ice: Consolidate VSI state
+ and flags
+In-Reply-To: <20210302181545.51822-5-anthony.l.nguyen@intel.com>
 References: <20210302181545.51822-1-anthony.l.nguyen@intel.com>
- <20210302181545.51822-4-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB510535CB4726ADE8689FF3BAFA6E9@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210302181545.51822-5-anthony.l.nguyen@intel.com>
+Message-ID: <SA2PR11MB51146BD79EADA5F14198E9BCFA6E9@SA2PR11MB5114.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Tuesday, March 2, 2021 10:16 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S56 04/13] ice: Refactor ice_set/get_rss
-> into LUT and key specific functions
+> Subject: [Intel-wired-lan] [PATCH S56 05/13] ice: Consolidate VSI state and
+> flags
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> Currently ice_set/get_rss are used to set/get the RSS LUT and/or RSS key.
-> However nearly everywhere these functions are called only the LUT or key
-> are set/get. Also, making this change reduces how many things
-> ice_set/get_rss are doing. Fix this by adding ice_set/get_rss_lut and
-> ice_set/get_rss_key functions.
+> struct ice_vsi has two fields, state and flags which seem to be serving the
+> same purpose. Consolidate them into one field 'state'.
 > 
-> Also, consolidate all calls for setting/getting the RSS LUT and RSS Key to use
-> ice_set/get_rss_lut() and ice_set/get_rss_key().
+> enum ice_state is used to represent state information of the PF.
+> While some of these enum values can be use to represent VSI state, it makes
+> more sense to represent VSI state with its own enum. So derive a new enum
+> ice_vsi_state from ice_vsi_flags and ice_state and use it. Also rename enum
+> ice_state to ice_pf_state for clarity.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h          |   6 +-
->  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  43 +++---
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  42 ++----
->  drivers/net/ethernet/intel/ice/ice_main.c     | 139 ++++++++++--------
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   4 +-
->  5 files changed, 117 insertions(+), 117 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h         | 21 ++++----
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_lib.c     | 14 +++---
+>  drivers/net/ethernet/intel/ice/ice_main.c    | 50 ++++++++++----------
+>  drivers/net/ethernet/intel/ice/ice_txrx.c    |  6 +--
+>  5 files changed, 47 insertions(+), 46 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
