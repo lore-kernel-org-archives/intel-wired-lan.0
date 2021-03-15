@@ -1,12 +1,11 @@
-From: Chen, BoX C <box.c.chen@intel.com>
-Date: Mon, 15 Mar 2021 08:18:07 +0000
-Subject: [Intel-wired-lan] [Patch v5 03/18] ice: Add more advanced
- protocol support in flow filter
-In-Reply-To: <BN8PR11MB3795B1E52DF1CE8056E7CB37F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
+From: Wang, Haiyue <haiyue.wang@intel.com>
+Date: Mon, 15 Mar 2021 08:18:11 +0000
+Subject: [Intel-wired-lan] [Patch v5 06/18] ice: Add support for per VF
+ ctrl VSI enabling
+In-Reply-To: <20210309030815.5299-7-haiyue.wang@intel.com>
 References: <20210309030815.5299-1-haiyue.wang@intel.com>
- <20210309030815.5299-4-haiyue.wang@intel.com>
- <BN8PR11MB3795B1E52DF1CE8056E7CB37F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
-Message-ID: <DM6PR11MB3099167C93D61DC92BCD67FAD96C9@DM6PR11MB3099.namprd11.prod.outlook.com>
+ <20210309030815.5299-7-haiyue.wang@intel.com>
+Message-ID: <BN8PR11MB379511C9ACA9E6FDA41D0597F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,52 +13,42 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Wang, Haiyue <haiyue.wang@intel.com>
-> Sent: March 15, 2021 16:16
-> To: intel-wired-lan at lists.osuosl.org; Chen, BoX C <box.c.chen@intel.com>
-> Cc: Liang, Cunming <cunming.liang@intel.com>; Xu, Ting
-> <ting.xu@intel.com>; Cao, Yahui <yahui.cao@intel.com>; Zhang, Qi Z
-> <qi.z.zhang@intel.com>
-> Subject: RE: [Intel-wired-lan] [Patch v5 03/18] ice: Add more advanced
-> protocol support in flow filter
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Haiyue Wang
+> Sent: Tuesday, March 9, 2021 11:08
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Liang, Cunming <cunming.liang@intel.com>; Li, Xiaoyun <xiaoyun.li@intel.com>; Cao, Yahui
+> <yahui.cao@intel.com>; Zhang, Qi Z <qi.z.zhang@intel.com>
+> Subject: [Intel-wired-lan] [Patch v5 06/18] ice: Add support for per VF ctrl VSI enabling
 > 
-> > -----Original Message-----
-> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
-> > Of Haiyue Wang
-> > Sent: Tuesday, March 9, 2021 11:08
-> > To: intel-wired-lan at lists.osuosl.org
-> > Cc: Liang, Cunming <cunming.liang@intel.com>; Xu, Ting
-> > <ting.xu@intel.com>; Cao, Yahui <yahui.cao@intel.com>; Zhang, Qi Z
-> > <qi.z.zhang@intel.com>
-> > Subject: [Intel-wired-lan] [Patch v5 03/18] ice: Add more advanced
-> > protocol support in flow filter
-> >
-> > From: Qi Zhang <qi.z.zhang@intel.com>
-> >
-> > The patch add more protocol support in flow filter, these include
-> > PPPoE, L2TPv3, GTP, PFCP, ESP and AH.
-> >
-> > Signed-off-by: Ting Xu <ting.xu@intel.com>
-> > Signed-off-by: Yahui Cao <yahui.cao@intel.com>
-> > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_flow.c     | 270 +++++++++++++++++-
-> >  drivers/net/ethernet/intel/ice/ice_flow.h     | 128 ++++++++-
-> >  .../ethernet/intel/ice/ice_protocol_type.h    |   4 +
-> >  3 files changed, 396 insertions(+), 6 deletions(-)
-> >
+> From: Qi Zhang <qi.z.zhang@intel.com>
 > 
-> Re-send to Bo, as a new member.
+> We are going to enable FDIR configure for AVF through virtual channel.
+> The first step is to add helper functions to support control VSI setup.
+> A control VSI will be allocated for a VF when AVF creates its
+> first FDIR rule through ice_vf_ctrl_vsi_setup().
+> The patch will also allocate FDIR rule space for VF's control VSI.
+> If a VF asks for flow director rules, then those should come entirely
+> from the best effort pool and not from the guaranteed pool. The patch
+> allow a VF VSI to have only space in the best effort rules.
+> 
+> Signed-off-by: Xiaoyun Li <xiaoyun.li@intel.com>
+> Signed-off-by: Yahui Cao <yahui.cao@intel.com>
+> Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |  4 +-
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 64 ++++++++++++++++---
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  9 ++-
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 62 ++++++++++++++++++
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  2 +
+>  5 files changed, 130 insertions(+), 11 deletions(-)
 > 
 
-Tested-by: Chen Bo <BoX.C.Chen@intel.com>
+Re-send to Bo, as a new member.
 
-BRs,
-Chen Bo
-
-> > 2.30.1
-> >
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at osuosl.org
-> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> --
+> 2.30.1
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
