@@ -1,12 +1,12 @@
 From: Chen, BoX C <box.c.chen@intel.com>
-Date: Mon, 15 Mar 2021 08:18:24 +0000
-Subject: [Intel-wired-lan] [Patch v5 04/18] ice: Support to separate
- GTP-U uplink and downlink
-In-Reply-To: <BN8PR11MB379543076ACA37D78FF48E18F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
+Date: Mon, 15 Mar 2021 08:18:45 +0000
+Subject: [Intel-wired-lan] [Patch v5 05/18] ice: Enhanced IPv4 and IPv6
+ flow filter
+In-Reply-To: <BN8PR11MB37950F0CA25E18DFD462BBE5F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
 References: <20210309030815.5299-1-haiyue.wang@intel.com>
- <20210309030815.5299-5-haiyue.wang@intel.com>
- <BN8PR11MB379543076ACA37D78FF48E18F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
-Message-ID: <DM6PR11MB30991B6E2BDB1E054C6C8896D96C9@DM6PR11MB3099.namprd11.prod.outlook.com>
+ <20210309030815.5299-6-haiyue.wang@intel.com>
+ <BN8PR11MB37950F0CA25E18DFD462BBE5F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB3099158750BD3C715254E854D96C9@DM6PR11MB3099.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,13 +15,13 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Wang, Haiyue <haiyue.wang@intel.com>
-> Sent: March 15, 2021 16:17
+> Sent: March 15, 2021 16:18
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Nowlin, Dan <dan.nowlin@intel.com>; Liang, Cunming
 > <cunming.liang@intel.com>; Zhang, Qi Z <qi.z.zhang@intel.com>; Chen, BoX
 > C <box.c.chen@intel.com>
-> Subject: RE: [Intel-wired-lan] [Patch v5 04/18] ice: Support to separate GTP-U
-> uplink and downlink
+> Subject: RE: [Intel-wired-lan] [Patch v5 05/18] ice: Enhanced IPv4 and IPv6
+> flow filter
 > 
 > > -----Original Message-----
 > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
@@ -30,25 +30,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > > To: intel-wired-lan at lists.osuosl.org
 > > Cc: Nowlin, Dan <dan.nowlin@intel.com>; Liang, Cunming
 > > <cunming.liang@intel.com>; Zhang, Qi Z <qi.z.zhang@intel.com>
-> > Subject: [Intel-wired-lan] [Patch v5 04/18] ice: Support to separate
-> > GTP-U uplink and downlink
+> > Subject: [Intel-wired-lan] [Patch v5 05/18] ice: Enhanced IPv4 and
+> > IPv6 flow filter
 > >
 > > From: Qi Zhang <qi.z.zhang@intel.com>
 > >
-> > To apply different input set for GTP-U packet with or without extend
-> > header as well as GTP-U uplink and downlink, we need to add TCAM mask
-> > matching capability. This allows comprehending different PTYPE
-> > attributes by examining flags from the parser. Using this method,
-> > different profiles can be used by examining flag values from the parser.
+> > Separate IPv4 and IPv6 ptype bit mask table into 2 tables:
+> > With or without L4 protocols.
+> >
+> > When a flow filter without any l4 type is specified, the
+> > ICE_FLOW_SEG_HDR_IPV_OTHER flag can be used to describe if user want
+> > to create a IP rule target for all IP packet or just IP packet without
+> > l4 header.
 > >
 > > Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
 > > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > > ---
-> >  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 106 +++++++++++++++---
-> >  .../net/ethernet/intel/ice/ice_flex_pipe.h    |   1 +
-> >  .../net/ethernet/intel/ice/ice_flex_type.h    |  61 ++++++++++
-> >  drivers/net/ethernet/intel/ice/ice_flow.c     |  88 ++++++++++++++-
-> >  4 files changed, 241 insertions(+), 15 deletions(-)
+> >  drivers/net/ethernet/intel/ice/ice_flow.c | 54
+> > ++++++++++++++++++++---  drivers/net/ethernet/intel/ice/ice_flow.h |
+> > 4 ++
+> >  2 files changed, 53 insertions(+), 5 deletions(-)
 > >
 > 
 > Re-send to Bo, as a new member.
