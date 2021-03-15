@@ -1,11 +1,11 @@
 From: Wang, Haiyue <haiyue.wang@intel.com>
-Date: Mon, 15 Mar 2021 08:19:26 +0000
-Subject: [Intel-wired-lan] [Patch v5 08/18] ice: Add FDIR pattern action
- parser for VF
-In-Reply-To: <20210309030815.5299-9-haiyue.wang@intel.com>
+Date: Mon, 15 Mar 2021 08:19:52 +0000
+Subject: [Intel-wired-lan] [Patch v5 09/18] ice: Add new actions support
+ for VF FDIR
+In-Reply-To: <20210309030815.5299-10-haiyue.wang@intel.com>
 References: <20210309030815.5299-1-haiyue.wang@intel.com>
- <20210309030815.5299-9-haiyue.wang@intel.com>
-Message-ID: <BN8PR11MB37959E6CB9A88E2DE3F40403F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
+ <20210309030815.5299-10-haiyue.wang@intel.com>
+Message-ID: <BN8PR11MB379576494123FB2B157ADF7FF76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,17 +18,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Liang, Cunming <cunming.liang@intel.com>; Cao, Yahui <yahui.cao@intel.com>; Zhang, Qi Z
 > <qi.z.zhang@intel.com>
-> Subject: [Intel-wired-lan] [Patch v5 08/18] ice: Add FDIR pattern action parser for VF
+> Subject: [Intel-wired-lan] [Patch v5 09/18] ice: Add new actions support for VF FDIR
 > 
 > From: Qi Zhang <qi.z.zhang@intel.com>
 > 
-> Add basic FDIR flow list and pattern / action parse functions for VF.
+> Add two new actions support for VF FDIR:
+> 
+> A passthrough action does not specify the destination queue, but
+> just allow the packet go to next pipeline stage, a typical use
+> cases is combined with a software mark (FDID) action.
+> 
+> Allow specify a 2^n continuous queues as the destination of a FDIR rule.
+> Packet distribution is based on current RSS configure.
 > 
 > Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 > Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 > ---
->  .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 348 +++++++++++++++++-
->  1 file changed, 346 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_fdir.c          | 12 +++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_fdir.h          |  4 ++++
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 10 ++++++++++
+>  3 files changed, 25 insertions(+), 1 deletion(-)
 > 
 
 Re-send to Bo, as a new member.
