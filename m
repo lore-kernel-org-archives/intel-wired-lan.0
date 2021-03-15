@@ -1,22 +1,17 @@
 From: Chen, BoX C <box.c.chen@intel.com>
-Date: Mon, 15 Mar 2021 07:55:04 +0000
+Date: Mon, 15 Mar 2021 07:59:20 +0000
 Subject: [Intel-wired-lan] [Patch v5 01/18] ice: Add more basic protocol
  support for flow filter
 In-Reply-To: <BN8PR11MB379501B38731F992A3B366A8F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
 References: <20210309030815.5299-1-haiyue.wang@intel.com>
  <20210309030815.5299-2-haiyue.wang@intel.com>
  <BN8PR11MB379501B38731F992A3B366A8F76C9@BN8PR11MB3795.namprd11.prod.outlook.com>
-Message-ID: <DM6PR11MB30998C5FF7E93F7CFB3EB137D96C9@DM6PR11MB3099.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB3099329BB5A927590FB08F99D96C9@DM6PR11MB3099.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
-
-Tested-by: Chen, Bo <BoX.C.Chen@intel.com>
-
-Regards,
-Chen Bo
 
 > -----Original Message-----
 > From: Wang, Haiyue <haiyue.wang@intel.com>
@@ -56,6 +51,9 @@ Chen Bo
 > >
 > 
 > Re-send to Bo, as a new member.
+
+Tested-by: Chen Bo <BoX.C.Chen@intel.com>
+
 > 
 > > diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c
 > > b/drivers/net/ethernet/intel/ice/ice_fdir.c
