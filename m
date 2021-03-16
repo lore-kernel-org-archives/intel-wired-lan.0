@@ -1,11 +1,11 @@
 From: Wang, Haiyue <haiyue.wang@intel.com>
-Date: Tue, 16 Mar 2021 16:31:53 +0000
-Subject: [Intel-wired-lan] [Patch v5 17/18] iavf: Support Ethernet Type
- Flow Director filters
-In-Reply-To: <20210309030815.5299-18-haiyue.wang@intel.com>
+Date: Tue, 16 Mar 2021 16:32:20 +0000
+Subject: [Intel-wired-lan] [Patch v5 18/18] iavf: Enable flex-bytes
+ support
+In-Reply-To: <20210309030815.5299-19-haiyue.wang@intel.com>
 References: <20210309030815.5299-1-haiyue.wang@intel.com>
- <20210309030815.5299-18-haiyue.wang@intel.com>
-Message-ID: <BN8PR11MB3795C42ADD6041DAD7B8EE31F76B9@BN8PR11MB3795.namprd11.prod.outlook.com>
+ <20210309030815.5299-19-haiyue.wang@intel.com>
+Message-ID: <BN8PR11MB3795A5F55D3DA1581C7D46F1F76B9@BN8PR11MB3795.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,23 +18,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Zhang, Qi Z <qi.z.zhang@intel.com>; Liang, Cunming <cunming.liang@intel.com>; Nguyen, Anthony L
 > <anthony.l.nguyen@intel.com>; Wang, Haiyue <haiyue.wang@intel.com>
-> Subject: [Patch v5 17/18] iavf: Support Ethernet Type Flow Director filters
+> Subject: [Patch v5 18/18] iavf: Enable flex-bytes support
 > 
-> Support the addition and deletion of Ethernet filters.
+> Flex-bytes allows for packet matching based on an offset and value. This
+> is supported via the ethtool user-def option.
 > 
-> Supported fields are: proto
-> Supported flow-types are: ether
+> The user-def 0xAAAABBBBCCCCDDDD: BBBB is the 2 byte pattern while AAAA
+> corresponds to its offset in the packet. Similarly DDDD is the 2 byte
+> pattern with CCCC being the corresponding offset. The offset ranges from
+> 0x0 to 0x1F7 (up to 504 bytes into the packet). The offset starts from
+> the beginning of the packet.
 > 
-> Example usage:
-> ethtool -N ens787f0v0 flow-type ether proto 0x8863 action 6
-> ethtool -N ens787f0v0 flow-type ether proto 0x8864 action 7
+> This feature can be used to allow customers to set flow director rules
+> for protocols headers that are beyond standard ones supported by ethtool
+> (e.g. PFCP or GTP-U).
+> 
+> Like for matching GTP-U's TEID value 0x10203040:
+> ethtool -N ens787f0v0 flow-type udp4 dst-port 2152 \
+> user-def 0x002e102000303040 action 13
 > 
 > Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 > ---
->  .../net/ethernet/intel/iavf/iavf_ethtool.c    | 12 ++++++++++
->  drivers/net/ethernet/intel/iavf/iavf_fdir.c   | 23 ++++++++++++++++++-
->  drivers/net/ethernet/intel/iavf/iavf_fdir.h   |  8 +++++++
->  3 files changed, 42 insertions(+), 1 deletion(-)
+>  .../net/ethernet/intel/iavf/iavf_ethtool.c    |  93 ++++++++
+>  drivers/net/ethernet/intel/iavf/iavf_fdir.c   | 217 +++++++++++++++++-
+>  drivers/net/ethernet/intel/iavf/iavf_fdir.h   |  19 ++
+>  3 files changed, 327 insertions(+), 2 deletions(-)
 > 
 
 Re-send to Bo, as a new member.
