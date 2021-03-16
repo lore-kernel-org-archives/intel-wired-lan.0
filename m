@@ -1,10 +1,10 @@
 From: David E. Box <david.e.box@linux.intel.com>
-Date: Tue, 16 Mar 2021 14:49:34 -0700
-Subject: [Intel-wired-lan] [PATCH V2 2/2] platform/x86: intel_pmc: Ignore
+Date: Tue, 16 Mar 2021 14:55:29 -0700
+Subject: [Intel-wired-lan] [PATCH V3 2/2] platform/x86: intel_pmc: Ignore
  GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210316214934.2992637-1-david.e.box@linux.intel.com>
-References: <20210316214934.2992637-1-david.e.box@linux.intel.com>
-Message-ID: <20210316214934.2992637-2-david.e.box@linux.intel.com>
+In-Reply-To: <20210316215529.2992734-1-david.e.box@linux.intel.com>
+References: <20210316215529.2992734-1-david.e.box@linux.intel.com>
+Message-ID: <20210316215529.2992734-2-david.e.box@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,6 +24,9 @@ Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
 Cc: intel-wired-lan at lists.osuosl.org
 Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
 ---
+Changes in V3:
+	- None
+
 Changes in V2:
 	- Pass the bit position instead of the entire mask to the ltr_ignore
 	  fuction
