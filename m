@@ -1,163 +1,178 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 16 Mar 2021 17:32:23 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- bb52073645a618ab4d93c8d932fb8faf114c55bc
-Message-ID: <60507b27.eTr970dOFn41xL+H%lkp@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue, 16 Mar 2021 11:01:41 +0100
+Subject: [Intel-wired-lan] [PATCH] iavf: fix locking of critical sections
+Message-ID: <20210316100141.53551-1-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: bb52073645a618ab4d93c8d932fb8faf114c55bc  ice: optimize for XDP_REDIRECT in xsk path
+To avoid races between iavf_init_task(), iavf_reset_task(),
+iavf_watchdog_task(), iavf_adminq_task() as well as the shutdown and
+remove functions more locking is required.
+The current protection by __IAVF_IN_CRITICAL_TASK is needed in
+additional places.
 
-elapsed time: 721m
+- The reset task performs state transitions, therefore needs locking.
+- The adminq task acts on replies from the PF in
+  iavf_virtchnl_completion() which may alter the states.
+- The init task is not only run during probe but also if a VF gets stuck
+  to reinitialize it.
+- The shutdown function performs a state transition.
+- The remove function perorms a state transition and also free's
+  resources.
 
-configs tested: 134
-configs skipped: 2
+iavf_lock_timeout() is introduced to avoid waiting infinitely
+and cause a deadlock. Rather unlock and print a warning.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-h8300                     edosk2674_defconfig
-powerpc                    amigaone_defconfig
-powerpc                 linkstation_defconfig
-m68k                        m5407c3_defconfig
-arc                 nsimosci_hs_smp_defconfig
-openrisc                 simple_smp_defconfig
-mips                      malta_kvm_defconfig
-arm                          exynos_defconfig
-ia64                         bigsur_defconfig
-arm                            dove_defconfig
-ia64                      gensparse_defconfig
-arm                       spear13xx_defconfig
-powerpc                     skiroot_defconfig
-parisc                           allyesconfig
-sh                         ecovec24_defconfig
-powerpc                  iss476-smp_defconfig
-nds32                            alldefconfig
-arc                      axs103_smp_defconfig
-arm                           u8500_defconfig
-powerpc                      ppc6xx_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                         ps3_defconfig
-arm                       omap2plus_defconfig
-powerpc                        fsp2_defconfig
-powerpc                     tqm8555_defconfig
-sh                            migor_defconfig
-mips                         bigsur_defconfig
-mips                      bmips_stb_defconfig
-sh                             espt_defconfig
-arm                            xcep_defconfig
-mips                        workpad_defconfig
-mips                      fuloong2e_defconfig
-mips                      pic32mzda_defconfig
-m68k                          amiga_defconfig
-arc                         haps_hs_defconfig
-mips                           xway_defconfig
-arm                       versatile_defconfig
-arm                         lpc32xx_defconfig
-sh                            shmin_defconfig
-mips                           ip32_defconfig
-powerpc                     mpc5200_defconfig
-parisc                generic-64bit_defconfig
-arm                            hisi_defconfig
-riscv                               defconfig
-powerpc                 mpc836x_mds_defconfig
-arc                          axs101_defconfig
-sh                           se7206_defconfig
-mips                      maltasmvp_defconfig
-arm                          imote2_defconfig
-powerpc                   motionpro_defconfig
-arm                           h3600_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc                          g5_defconfig
-arm                         orion5x_defconfig
-powerpc                 mpc837x_rdb_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210315
-x86_64               randconfig-a001-20210315
-x86_64               randconfig-a005-20210315
-x86_64               randconfig-a004-20210315
-x86_64               randconfig-a002-20210315
-x86_64               randconfig-a003-20210315
-i386                 randconfig-a001-20210315
-i386                 randconfig-a005-20210315
-i386                 randconfig-a003-20210315
-i386                 randconfig-a002-20210315
-i386                 randconfig-a004-20210315
-i386                 randconfig-a006-20210315
-i386                 randconfig-a001-20210316
-i386                 randconfig-a005-20210316
-i386                 randconfig-a002-20210316
-i386                 randconfig-a003-20210316
-i386                 randconfig-a004-20210316
-i386                 randconfig-a006-20210316
-i386                 randconfig-a013-20210315
-i386                 randconfig-a016-20210315
-i386                 randconfig-a011-20210315
-i386                 randconfig-a012-20210315
-i386                 randconfig-a014-20210315
-i386                 randconfig-a015-20210315
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a011-20210315
-x86_64               randconfig-a016-20210315
-x86_64               randconfig-a013-20210315
-x86_64               randconfig-a015-20210315
-x86_64               randconfig-a014-20210315
-x86_64               randconfig-a012-20210315
-
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 57 ++++++++++++++++++---
+ 1 file changed, 50 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index dc5b3c06d1e0..538b7aa43fa5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -131,6 +131,30 @@ enum iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw,
+ 	return 0;
+ }
+ 
++/**
++ * iavf_timeout - try to set bit but give up after timeout
++ * @adapter: board private structure
++ * @bit: bit to set
++ * @msecs: timeout in msecs
++ *
++ * Returns 0 on success, negative on failure
++ **/
++static inline int iavf_lock_timeout(struct iavf_adapter *adapter,
++				    enum iavf_critical_section_t bit,
++				    unsigned int msecs)
++{
++	unsigned int wait, delay = 10;
++
++	for (wait = 0; wait < msecs; wait += delay) {
++		if (!test_and_set_bit(bit, &adapter->crit_section))
++			return 0;
++
++		msleep(delay);
++	}
++
++	return -1;
++}
++
+ /**
+  * iavf_schedule_reset - Set the flags and schedule a reset event
+  * @adapter: board private structure
+@@ -2069,6 +2093,10 @@ static void iavf_reset_task(struct work_struct *work)
+ 	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+ 		return;
+ 
++	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200)) {
++		schedule_work(&adapter->reset_task);
++		return;
++	}
+ 	while (test_and_set_bit(__IAVF_IN_CLIENT_TASK,
+ 				&adapter->crit_section))
+ 		usleep_range(500, 1000);
+@@ -2275,6 +2303,8 @@ static void iavf_adminq_task(struct work_struct *work)
+ 	if (!event.msg_buf)
+ 		goto out;
+ 
++	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200))
++		goto freedom;
+ 	do {
+ 		ret = iavf_clean_arq_element(hw, &event, &pending);
+ 		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
+@@ -2288,6 +2318,7 @@ static void iavf_adminq_task(struct work_struct *work)
+ 		if (pending != 0)
+ 			memset(event.msg_buf, 0, IAVF_MAX_AQ_BUF_SIZE);
+ 	} while (pending);
++	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ 
+ 	if ((adapter->flags &
+ 	     (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) ||
+@@ -3590,6 +3621,10 @@ static void iavf_init_task(struct work_struct *work)
+ 						    init_task.work);
+ 	struct iavf_hw *hw = &adapter->hw;
+ 
++	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000)) {
++		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
++		return;
++	}
+ 	switch (adapter->state) {
+ 	case __IAVF_STARTUP:
+ 		if (iavf_startup(adapter) < 0)
+@@ -3602,14 +3637,14 @@ static void iavf_init_task(struct work_struct *work)
+ 	case __IAVF_INIT_GET_RESOURCES:
+ 		if (iavf_init_get_resources(adapter) < 0)
+ 			goto init_failed;
+-		return;
++		goto out;
+ 	default:
+ 		goto init_failed;
+ 	}
+ 
+ 	queue_delayed_work(iavf_wq, &adapter->init_task,
+ 			   msecs_to_jiffies(30));
+-	return;
++	goto out;
+ init_failed:
+ 	if (++adapter->aq_wait_count > IAVF_AQ_MAX_ERR) {
+ 		dev_err(&adapter->pdev->dev,
+@@ -3618,9 +3653,11 @@ static void iavf_init_task(struct work_struct *work)
+ 		iavf_shutdown_adminq(hw);
+ 		adapter->state = __IAVF_STARTUP;
+ 		queue_delayed_work(iavf_wq, &adapter->init_task, HZ * 5);
+-		return;
++		goto out;
+ 	}
+ 	queue_delayed_work(iavf_wq, &adapter->init_task, HZ);
++out:
++	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ }
+ 
+ /**
+@@ -3637,9 +3674,12 @@ static void iavf_shutdown(struct pci_dev *pdev)
+ 	if (netif_running(netdev))
+ 		iavf_close(netdev);
+ 
++	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
++		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
+ 	/* Prevent the watchdog from running. */
+ 	adapter->state = __IAVF_REMOVE;
+ 	adapter->aq_required = 0;
++	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ 
+ #ifdef CONFIG_PM
+ 	pci_save_state(pdev);
+@@ -3866,10 +3906,6 @@ static void iavf_remove(struct pci_dev *pdev)
+ 				 err);
+ 	}
+ 
+-	/* Shut down all the garbage mashers on the detention level */
+-	adapter->state = __IAVF_REMOVE;
+-	adapter->aq_required = 0;
+-	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	iavf_request_reset(adapter);
+ 	msleep(50);
+ 	/* If the FW isn't responding, kick it once, but only once. */
+@@ -3877,6 +3913,13 @@ static void iavf_remove(struct pci_dev *pdev)
+ 		iavf_request_reset(adapter);
+ 		msleep(50);
+ 	}
++	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
++		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
++
++	/* Shut down all the garbage mashers on the detention level */
++	adapter->state = __IAVF_REMOVE;
++	adapter->aq_required = 0;
++	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	iavf_free_all_tx_resources(adapter);
+ 	iavf_free_all_rx_resources(adapter);
+ 	iavf_misc_irq_disable(adapter);
+-- 
+2.29.2
+
