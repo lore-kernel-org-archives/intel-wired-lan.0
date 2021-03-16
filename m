@@ -1,139 +1,43 @@
-From: David E. Box <david.e.box@linux.intel.com>
-Date: Tue, 16 Mar 2021 14:55:29 -0700
-Subject: [Intel-wired-lan] [PATCH V3 2/2] platform/x86: intel_pmc: Ignore
- GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210316215529.2992734-1-david.e.box@linux.intel.com>
-References: <20210316215529.2992734-1-david.e.box@linux.intel.com>
-Message-ID: <20210316215529.2992734-2-david.e.box@linux.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 16 Mar 2021 15:02:10 -0700
+Subject: [Intel-wired-lan] [PATCH] iavf: fix locking of critical sections
+In-Reply-To: <20210316132905.5d0f90dd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210316100141.53551-1-sassmann@kpanic.de>
+ <20210316101443.56b87cf6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <44b3f5f0-93f8-29e2-ab21-5fd7cc14c755@kpanic.de>
+ <20210316132905.5d0f90dd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <20210316150210.00007249@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
-programmed in the Tiger Lake GBE controller is not large enough to allow
-the platform to enter Package C10, which in turn prevents the platform from
-achieving its low power target during suspend-to-idle.  Ignore the GBE LTR
-value on Tiger Lake. LTR ignore functionality is currently performed solely
-by a debugfs write call. Split out the LTR code into its own function that
-can be called by both the debugfs writer and by this work around.
+Jakub Kicinski wrote:
+> > > I personally think that the overuse of flags in Intel drivers brings
+> > > nothing but trouble. At which point does it make sense to just add a
+> > > lock / semaphore here rather than open code all this with no clear
+> > > semantics? No code seems to just test the __IAVF_IN_CRITICAL_TASK flag,
+> > > all the uses look like poor man's locking at a quick grep. What am I
+> > > missing?
+> > 
+> > I agree with you that the locking could be done with other locking
+> > mechanisms just as good. I didn't invent the current method so I'll let
+> > Intel comment on that part, but I'd like to point out that what I'm
+> > making use of is fixing what is currently in the driver.
+> 
+> Right, I should have made it clear that I don't blame you for the
+> current state of things. Would you mind sending a patch on top of 
+> this one to do a conversion to a semaphore? 
+> 
+> Intel folks any opinions?
 
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
----
-Changes in V3:
-	- None
+I know Slawomir has been working closely with Stefan on figuring out
+the right ways to fix this code.  Hopefully he can speak for himself,
+but I know he's on Europe time.
 
-Changes in V2:
-	- Pass the bit position instead of the entire mask to the ltr_ignore
-	  fuction
-	- Rename the write_ltr_ignore to send_ltr_ignore to differentiate it
-	  from the caller, ltr_ignore_write.
-	- Rename variables for clarity
-
- drivers/platform/x86/intel_pmc_core.c | 59 ++++++++++++++++++++-------
- 1 file changed, 44 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
-index ee2f757515b0..8d799cfa0e9f 100644
---- a/drivers/platform/x86/intel_pmc_core.c
-+++ b/drivers/platform/x86/intel_pmc_core.c
-@@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
- }
- DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
- 
--static ssize_t pmc_core_ltr_ignore_write(struct file *file,
--					 const char __user *userbuf,
--					 size_t count, loff_t *ppos)
-+static int pmc_core_send_ltr_ignore(u32 value)
- {
- 	struct pmc_dev *pmcdev = &pmc;
- 	const struct pmc_reg_map *map = pmcdev->map;
--	u32 val, buf_size, fd;
--	int err;
--
--	buf_size = count < 64 ? count : 64;
--
--	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
--	if (err)
--		return err;
-+	u32 reg;
-+	int err = 0;
- 
- 	mutex_lock(&pmcdev->lock);
- 
--	if (val > map->ltr_ignore_max) {
-+	if (value > map->ltr_ignore_max) {
- 		err = -EINVAL;
- 		goto out_unlock;
- 	}
- 
--	fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
--	fd |= (1U << val);
--	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
-+	reg = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-+	reg |= (1U << value);
-+	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, reg);
- 
- out_unlock:
- 	mutex_unlock(&pmcdev->lock);
-+
-+	return err;
-+}
-+
-+static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-+					 const char __user *userbuf,
-+					 size_t count, loff_t *ppos)
-+{
-+	u32 buf_size, value;
-+	int err;
-+
-+	buf_size = count < 64 ? count : 64;
-+
-+	err = kstrtou32_from_user(userbuf, buf_size, 10, &value);
-+	if (err)
-+		return err;
-+
-+	err = pmc_core_send_ltr_ignore(value);
-+
- 	return err == 0 ? count : err;
- }
- 
-@@ -1189,6 +1200,15 @@ static int quirk_xtal_ignore(const struct dmi_system_id *id)
- 	return 0;
- }
- 
-+static int quirk_ltr_ignore(u32 value)
-+{
-+	int err;
-+
-+	err = pmc_core_send_ltr_ignore(value);
-+
-+	return err;
-+}
-+
- static const struct dmi_system_id pmc_core_dmi_table[]  = {
- 	{
- 	.callback = quirk_xtal_ignore,
-@@ -1244,6 +1264,15 @@ static int pmc_core_probe(struct platform_device *pdev)
- 	pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
- 	dmi_check_system(pmc_core_dmi_table);
- 
-+	/*
-+	 * On TGL, due to a hardware limitation, the GBE LTR blocks PC10 when
-+	 * a cable is attached. Tell the PMC to ignore it.
-+	 */
-+	if (pmcdev->map == &tgl_reg_map) {
-+		dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
-+		quirk_ltr_ignore(3);
-+	}
-+
- 	pmc_core_dbgfs_register(pmcdev);
- 
- 	device_initialized = true;
--- 
-2.25.1
+As for conversion to mutexes I'm a big fan, and as long as we don't
+have too many collisions with the RTNL lock I think it's a reasonable
+improvement to do, and if Stefan doesn't want to work on it, we can
+look into whether Slawomir or his team can.
 
