@@ -1,157 +1,43 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 16 Mar 2021 14:26:56 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- a47b5f323c7cc3567ff2ef29eed43cdd86fb3ffc
-Message-ID: <60504fb0.TnROrSrfcY6+eQyL%lkp@intel.com>
+From: Wang, Haiyue <haiyue.wang@intel.com>
+Date: Tue, 16 Mar 2021 06:56:32 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 02/10] intel: Update drivers
+ to use ethtool_sprintf
+In-Reply-To: <161557129416.10304.13389129491117212311.stgit@localhost.localdomain>
+References: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
+ <161557129416.10304.13389129491117212311.stgit@localhost.localdomain>
+Message-ID: <BN8PR11MB37957A1DA6915E9E6A532A69F76B9@BN8PR11MB3795.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: a47b5f323c7cc3567ff2ef29eed43cdd86fb3ffc  iavf: remove duplicate free resources calls
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Alexander Duyck
+> Sent: Saturday, March 13, 2021 01:48
+> To: davem at davemloft.net; kuba at kernel.org
+> Cc: doshir at vmware.com; mst at redhat.com; oss-drivers at netronome.com; jasowang at redhat.com;
+> alexanderduyck at fb.com; akiyano at amazon.com; wei.liu at kernel.org; sthemmin at microsoft.com; pv-
+> drivers at vmware.com; intel-wired-lan at lists.osuosl.org; Kernel-team at fb.com; yisen.zhuang at huawei.com;
+> gtzalik at amazon.com; simon.horman at netronome.com; haiyangz at microsoft.com; drivers at pensando.io;
+> salil.mehta at huawei.com; GR-Linux-NIC-Dev at marvell.com; rmody at marvell.com; netdev at vger.kernel.org;
+> netanel at amazon.com; saeedb at amazon.com; snelson at pensando.io; skalluru at marvell.com
+> Subject: [Intel-wired-lan] [net-next PATCH 02/10] intel: Update drivers to use ethtool_sprintf
+> 
+> From: Alexander Duyck <alexanderduyck@fb.com>
+> 
+> Update the Intel drivers to make use of ethtool_sprintf. The general idea
+> is to reduce code size and overhead by replacing the repeated pattern of
+> string printf statements and ETH_STRING_LEN counter increments.
+                                   ^
+                               ETH_GSTRING_LEN
+> 
+> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
+> ---
 
-elapsed time: 721m
 
-configs tested: 128
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-h8300                     edosk2674_defconfig
-powerpc                    amigaone_defconfig
-powerpc                 linkstation_defconfig
-m68k                        m5407c3_defconfig
-arc                 nsimosci_hs_smp_defconfig
-openrisc                 simple_smp_defconfig
-mips                         bigsur_defconfig
-mips                      bmips_stb_defconfig
-sh                             espt_defconfig
-arm                            xcep_defconfig
-arm                            zeus_defconfig
-powerpc                    socrates_defconfig
-m68k                        mvme16x_defconfig
-arc                           tb10x_defconfig
-s390                             alldefconfig
-mips                malta_kvm_guest_defconfig
-sh                         ap325rxa_defconfig
-mips                     cu1000-neo_defconfig
-mips                           xway_defconfig
-arm                       versatile_defconfig
-arm                         lpc32xx_defconfig
-sh                            shmin_defconfig
-mips                           ip32_defconfig
-parisc                           alldefconfig
-sh                           se7712_defconfig
-arm                         lubbock_defconfig
-x86_64                              defconfig
-sh                   rts7751r2dplus_defconfig
-powerpc                      tqm8xx_defconfig
-xtensa                         virt_defconfig
-sh                           se7722_defconfig
-arm                     eseries_pxa_defconfig
-m68k                       bvme6000_defconfig
-powerpc                     rainier_defconfig
-parisc                generic-32bit_defconfig
-arm                        mini2440_defconfig
-i386                                defconfig
-arc                          axs101_defconfig
-sh                           se7206_defconfig
-mips                      malta_kvm_defconfig
-arm                       spear13xx_defconfig
-mips                      maltasmvp_defconfig
-arm                          imote2_defconfig
-powerpc                   motionpro_defconfig
-arm                           h3600_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc                          g5_defconfig
-arm                         orion5x_defconfig
-powerpc                 mpc837x_rdb_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210315
-x86_64               randconfig-a001-20210315
-x86_64               randconfig-a005-20210315
-x86_64               randconfig-a004-20210315
-x86_64               randconfig-a002-20210315
-x86_64               randconfig-a003-20210315
-i386                 randconfig-a001-20210315
-i386                 randconfig-a005-20210315
-i386                 randconfig-a003-20210315
-i386                 randconfig-a002-20210315
-i386                 randconfig-a004-20210315
-i386                 randconfig-a006-20210315
-i386                 randconfig-a001-20210316
-i386                 randconfig-a005-20210316
-i386                 randconfig-a002-20210316
-i386                 randconfig-a003-20210316
-i386                 randconfig-a004-20210316
-i386                 randconfig-a006-20210316
-i386                 randconfig-a013-20210315
-i386                 randconfig-a016-20210315
-i386                 randconfig-a011-20210315
-i386                 randconfig-a012-20210315
-i386                 randconfig-a014-20210315
-i386                 randconfig-a015-20210315
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a011-20210315
-x86_64               randconfig-a016-20210315
-x86_64               randconfig-a013-20210315
-x86_64               randconfig-a015-20210315
-x86_64               randconfig-a014-20210315
-x86_64               randconfig-a012-20210315
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
