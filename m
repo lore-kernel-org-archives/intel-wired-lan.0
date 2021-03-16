@@ -1,137 +1,198 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 17 Mar 2021 00:14:28 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- 3335369bad99c40b3513da2d165e6ae83f3f3c8b
-Message-ID: <6050d964.f7QG0W71OUj9ea5m%lkp@intel.com>
+From: Nunley, Nicholas D <nicholas.d.nunley@intel.com>
+Date: Tue, 16 Mar 2021 16:23:37 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
+ during driver remove
+In-Reply-To: <20210316073311.xbssn43q3r52e2e7@p50.fritz.box>
+References: <20210312093337.68364-1-eryk.roch.rybak@intel.com>
+ <20210312123615.7fcvoayobcslko74@p50.fritz.box>
+ <DM5PR1101MB20742AB907C04D1B6A6C6A4FB36C9@DM5PR1101MB2074.namprd11.prod.outlook.com>
+ <20210316073311.xbssn43q3r52e2e7@p50.fritz.box>
+Message-ID: <DM5PR1101MB2074AA792E3C0D732A204C30B36B9@DM5PR1101MB2074.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: 3335369bad99c40b3513da2d165e6ae83f3f3c8b  e1000e: Remove the runtime suspend restriction on CNP+
+> -----Original Message-----
+> From: Stefan Assmann <sassmann@redhat.com>
+> Sent: Tuesday, March 16, 2021 12:33 AM
+> To: Nunley, Nicholas D <nicholas.d.nunley@intel.com>
+> Cc: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>; Loktionov, Aleksandr
+> <aleksandr.loktionov@intel.com>; intel-wired-lan at lists.osuosl.org; Nguyen,
+> Anthony L <anthony.l.nguyen@intel.com>
+> Subject: Re: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
+> during driver remove
+> 
+> On 2021-03-15 23:31, Nunley, Nicholas D wrote:
+> > Thanks for pointing this out. This was an accidental oversight, although I
+> think part of my reason for not paying close enough attention is that the
+> client code is never actually used. Since there aren't any plans to use the
+> client code in the future, we discussed this here and the plan is to remove
+> that code from the iavf driver. We'll be submitting a patch for that soon, but
+> in the meantime I think we'll be all right if this patch goes in as-is, since the
+> bug is purely hypothetical and has no real-world impact.
+> 
+> Hi Nick,
+> 
+> the other question I have here is. How do you properly communicate the
+> device close to the PF if the watchdog and adminq tasks are already
+> shutdown?
+> 
+> iavf_close() calls iavf_down() which queues these adminq commands
+>                 adapter->aq_required = IAVF_FLAG_AQ_DEL_MAC_FILTER;
+>                 adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+>                 adapter->aq_required |= IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
+>                 adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES; which
+> can never be handled. IOW, is i40e still able to properly clean up in this case?
 
-elapsed time: 725m
+Hi Stefan,
 
-configs tested: 108
-configs skipped: 2
+This should be handled by the PF driver in response to the reset request later in iavf_remove(). As part of the VF reset handling process the PF driver needs to reinitialize the VF hardware (clear filters, stop queues, etc.) to put it back into a clean state, and the PF driver should be doing this already for VF resets, if it's not then that would be a bug. Note that although the VF watchdog and adminq tasks are shut down at the time it calls iavf_request_reset(), the admin send queue hardware/firmware mechanism is still operational and able to pass messages, so the PF driver will see the reset request and handle it.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks,
+Nick
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-m68k                             alldefconfig
-sh                          urquell_defconfig
-powerpc                      obs600_defconfig
-arm                         s3c6400_defconfig
-arm                           u8500_defconfig
-arm                          imote2_defconfig
-sh                          rsk7269_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                       imx_v6_v7_defconfig
-sh                             espt_defconfig
-arm                         palmz72_defconfig
-sh                           se7705_defconfig
-h8300                       h8s-sim_defconfig
-mips                        bcm47xx_defconfig
-ia64                             alldefconfig
-xtensa                           allyesconfig
-powerpc                     mpc5200_defconfig
-powerpc                     pq2fads_defconfig
-arm                       netwinder_defconfig
-arm                         orion5x_defconfig
-openrisc                            defconfig
-sh                   secureedge5410_defconfig
-arm                             rpc_defconfig
-arm                          exynos_defconfig
-powerpc                     skiroot_defconfig
-powerpc                      bamboo_defconfig
-arm                         lubbock_defconfig
-powerpc                     taishan_defconfig
-arm                            mps2_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                   lite5200b_defconfig
-m68k                          sun3x_defconfig
-powerpc                      acadia_defconfig
-m68k                            mac_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210316
-i386                 randconfig-a005-20210316
-i386                 randconfig-a002-20210316
-i386                 randconfig-a003-20210316
-i386                 randconfig-a004-20210316
-i386                 randconfig-a006-20210316
-x86_64               randconfig-a011-20210316
-x86_64               randconfig-a016-20210316
-x86_64               randconfig-a013-20210316
-x86_64               randconfig-a014-20210316
-x86_64               randconfig-a015-20210316
-x86_64               randconfig-a012-20210316
-i386                 randconfig-a013-20210316
-i386                 randconfig-a016-20210316
-i386                 randconfig-a011-20210316
-i386                 randconfig-a012-20210316
-i386                 randconfig-a015-20210316
-i386                 randconfig-a014-20210316
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+> > > -----Original Message-----
+> > > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> > > Of Stefan Assmann
+> > > Sent: Friday, March 12, 2021 4:36 AM
+> > > To: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>
+> > > Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>;
+> > > intel-wired- lan at lists.osuosl.org
+> > > Subject: Re: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous
+> > > tasks during driver remove
+> > >
+> > > On 2021-03-12 10:33, Eryk Rybak wrote:
+> > > > Although rare, is possible for unexpected driver watchdog or Admin
+> > > > Queue tasks to run during the execution of iavf_remove function.
+> > > > Then, is not possible to obtain the standard
+> > > > __IAVF_IN_CRITICAL_TASK lock and difficult to ensure that the
+> > > > driver state stays consistent during the full removal process.
+> > >
+> > > If you shutdown the watchdog task before closing the device, how do
+> > > you ensure the client task is properly shutdown?
+> > >
+> > > Calling iavf_close() sets the IAVF_FLAG_CLIENT_NEEDS_CLOSE flag,
+> > > which would call iavf_notify_client_close(&adapter->vsi, false); in
+> > > the client task, but the client task does no longer get scheduled by
+> > > the watchdog task because it has been shutdown already.
+> > >
+> > >   Stefan
+> > >
+> > > > Fully stops all asynchronous tasks in the beginning of
+> > > > iavf_remove, and uses a single-threaded flow to shut down the driver.
+> > > >
+> > > > Fixes: fdd4044ffdc8("iavf: Remove timer for work triggering, use
+> > > > delaying work instead")
+> > > > Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+> > > > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> > > > Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+> > > > ---
+> > > >  drivers/net/ethernet/intel/iavf/iavf_main.c | 31
+> > > > +++++++++++++++++----
+> > > >  1 file changed, 25 insertions(+), 6 deletions(-)
+> > > >
+> > > > diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > > b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > > index dc5b3c06d1e0..e752ecb7ad89 100644
+> > > > --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > > +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > > @@ -1887,6 +1887,12 @@ static void iavf_watchdog_task(struct
+> > > work_struct *work)
+> > > >  	struct iavf_hw *hw = &adapter->hw;
+> > > >  	u32 reg_val;
+> > > >
+> > > > +	/* If the driver is in the process of being removed then don't run or
+> > > > +	 * reschedule the watchdog task.
+> > > > +	 */
+> > > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > > +		return;
+> > > > +
+> > > >  	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter-
+> > > >crit_section))
+> > > >  		goto restart_watchdog;
+> > > >
+> > > > @@ -2267,6 +2273,12 @@ static void iavf_adminq_task(struct
+> > > > work_struct
+> > > *work)
+> > > >  	u32 val, oldval;
+> > > >  	u16 pending;
+> > > >
+> > > > +	/* If the driver is in the process of being removed then return
+> > > > +	 * immediately and don't re-enable the Admin Queue interrupt.
+> > > > +	 */
+> > > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > > +		return;
+> > > > +
+> > > >  	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+> > > >  		goto out;
+> > > >
+> > > > @@ -3245,6 +3257,13 @@ static int iavf_close(struct net_device
+> > > > *netdev)
+> > > >
+> > > >  	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+> > > >
+> > > > +	/* If the interface is closing as part of driver removal it doesn't
+> > > > +	 * wait. The VF resources will be reinitialized when the hardware is
+> > > > +	 * reset.
+> > > > +	 */
+> > > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > > +		return 0;
+> > > > +
+> > > >  	/* We explicitly don't free resources here because the hardware is
+> > > >  	 * still active and can DMA into memory. Resources are cleared in
+> > > >  	 * iavf_virtchnl_completion() after we get confirmation from the
+> > > > PF @@ -3850,11 +3869,16 @@ static void iavf_remove(struct pci_dev
+> *pdev)
+> > > >  	struct iavf_cloud_filter *cf, *cftmp;
+> > > >  	struct iavf_hw *hw = &adapter->hw;
+> > > >  	int err;
+> > > > -	/* Indicate we are in remove and not to run reset_task */
+> > > > +	/* Indicate that program driver is remove task and not
+> > > > +	 * to run/schedule any driver tasks
+> > > > +	 */
+> > > >  	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+> > > >  	cancel_delayed_work_sync(&adapter->init_task);
+> > > >  	cancel_work_sync(&adapter->reset_task);
+> > > >  	cancel_delayed_work_sync(&adapter->client_task);
+> > > > +	cancel_work_sync(&adapter->adminq_task);
+> > > > +	cancel_delayed_work_sync(&adapter->watchdog_task);
+> > > > +	iavf_misc_irq_disable(adapter);
+> > > >  	if (adapter->netdev_registered) {
+> > > >  		unregister_netdev(netdev);
+> > > >  		adapter->netdev_registered = false; @@ -3879,15 +3903,10
+> > > @@ static
+> > > > void iavf_remove(struct pci_dev *pdev)
+> > > >  	}
+> > > >  	iavf_free_all_tx_resources(adapter);
+> > > >  	iavf_free_all_rx_resources(adapter);
+> > > > -	iavf_misc_irq_disable(adapter);
+> > > >  	iavf_free_misc_irq(adapter);
+> > > >  	iavf_reset_interrupt_capability(adapter);
+> > > >  	iavf_free_q_vectors(adapter);
+> > > >
+> > > > -	cancel_delayed_work_sync(&adapter->watchdog_task);
+> > > > -
+> > > > -	cancel_work_sync(&adapter->adminq_task);
+> > > > -
+> > > >  	iavf_free_rss(adapter);
+> > > >
+> > > >  	if (hw->aq.asq.count)
+> > > >
+> > > > base-commit: c1acda9807e2bbe1d2026b44f37d959d6d8266c8
+> > > > --
+> > > > 2.20.1
+> > > >
+> > > > _______________________________________________
+> > > > Intel-wired-lan mailing list
+> > > > Intel-wired-lan at osuosl.org
+> > > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> > > >
+> > >
+> > > _______________________________________________
+> > > Intel-wired-lan mailing list
+> > > Intel-wired-lan at osuosl.org
+> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> >
 
-clang tested configs:
-x86_64               randconfig-a006-20210316
-x86_64               randconfig-a001-20210316
-x86_64               randconfig-a005-20210316
-x86_64               randconfig-a004-20210316
-x86_64               randconfig-a003-20210316
-x86_64               randconfig-a002-20210316
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
