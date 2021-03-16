@@ -1,43 +1,176 @@
-From: Wang, Haiyue <haiyue.wang@intel.com>
-Date: Tue, 16 Mar 2021 06:56:32 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 02/10] intel: Update drivers
- to use ethtool_sprintf
-In-Reply-To: <161557129416.10304.13389129491117212311.stgit@localhost.localdomain>
-References: <161557111604.10304.1798900949114188676.stgit@localhost.localdomain>
- <161557129416.10304.13389129491117212311.stgit@localhost.localdomain>
-Message-ID: <BN8PR11MB37957A1DA6915E9E6A532A69F76B9@BN8PR11MB3795.namprd11.prod.outlook.com>
+From: Stefan Assmann <sassmann@redhat.com>
+Date: Tue, 16 Mar 2021 08:33:11 +0100
+Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
+ during driver remove
+In-Reply-To: <DM5PR1101MB20742AB907C04D1B6A6C6A4FB36C9@DM5PR1101MB2074.namprd11.prod.outlook.com>
+References: <20210312093337.68364-1-eryk.roch.rybak@intel.com>
+ <20210312123615.7fcvoayobcslko74@p50.fritz.box>
+ <DM5PR1101MB20742AB907C04D1B6A6C6A4FB36C9@DM5PR1101MB2074.namprd11.prod.outlook.com>
+Message-ID: <20210316073311.xbssn43q3r52e2e7@p50.fritz.box>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Alexander Duyck
-> Sent: Saturday, March 13, 2021 01:48
-> To: davem at davemloft.net; kuba at kernel.org
-> Cc: doshir at vmware.com; mst at redhat.com; oss-drivers at netronome.com; jasowang at redhat.com;
-> alexanderduyck at fb.com; akiyano at amazon.com; wei.liu at kernel.org; sthemmin at microsoft.com; pv-
-> drivers at vmware.com; intel-wired-lan at lists.osuosl.org; Kernel-team at fb.com; yisen.zhuang at huawei.com;
-> gtzalik at amazon.com; simon.horman at netronome.com; haiyangz at microsoft.com; drivers at pensando.io;
-> salil.mehta at huawei.com; GR-Linux-NIC-Dev at marvell.com; rmody at marvell.com; netdev at vger.kernel.org;
-> netanel at amazon.com; saeedb at amazon.com; snelson at pensando.io; skalluru at marvell.com
-> Subject: [Intel-wired-lan] [net-next PATCH 02/10] intel: Update drivers to use ethtool_sprintf
-> 
-> From: Alexander Duyck <alexanderduyck@fb.com>
-> 
-> Update the Intel drivers to make use of ethtool_sprintf. The general idea
-> is to reduce code size and overhead by replacing the repeated pattern of
-> string printf statements and ETH_STRING_LEN counter increments.
-                                   ^
-                               ETH_GSTRING_LEN
-> 
-> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
-> ---
+On 2021-03-15 23:31, Nunley, Nicholas D wrote:
+> Thanks for pointing this out. This was an accidental oversight, although I think part of my reason for not paying close enough attention is that the client code is never actually used. Since there aren't any plans to use the client code in the future, we discussed this here and the plan is to remove that code from the iavf driver. We'll be submitting a patch for that soon, but in the meantime I think we'll be all right if this patch goes in as-is, since the bug is purely hypothetical and has no real-world impact.
 
+Hi Nick,
 
+the other question I have here is. How do you properly communicate the
+device close to the PF if the watchdog and adminq tasks are already
+shutdown?
+
+iavf_close() calls iavf_down() which queues these adminq commands
+                adapter->aq_required = IAVF_FLAG_AQ_DEL_MAC_FILTER;
+                adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+                adapter->aq_required |= IAVF_FLAG_AQ_DEL_CLOUD_FILTER;
+                adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
+which can never be handled. IOW, is i40e still able to properly clean up
+in this case?
+
+  Stefan
+
+> Nick
+> > -----Original Message-----
+> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> > Stefan Assmann
+> > Sent: Friday, March 12, 2021 4:36 AM
+> > To: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>
+> > Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; intel-wired-
+> > lan at lists.osuosl.org
+> > Subject: Re: [Intel-wired-lan] [PATCH net v2] iavf: Fix asynchronous tasks
+> > during driver remove
+> > 
+> > On 2021-03-12 10:33, Eryk Rybak wrote:
+> > > Although rare, is possible for unexpected driver watchdog or Admin
+> > > Queue tasks to run during the execution of iavf_remove function.
+> > > Then, is not possible to obtain the standard __IAVF_IN_CRITICAL_TASK
+> > > lock and difficult to ensure that the driver state stays consistent
+> > > during the full removal process.
+> > 
+> > If you shutdown the watchdog task before closing the device, how do you
+> > ensure the client task is properly shutdown?
+> > 
+> > Calling iavf_close() sets the IAVF_FLAG_CLIENT_NEEDS_CLOSE flag, which
+> > would call iavf_notify_client_close(&adapter->vsi, false); in the client task,
+> > but the client task does no longer get scheduled by the watchdog task
+> > because it has been shutdown already.
+> > 
+> >   Stefan
+> > 
+> > > Fully stops all asynchronous tasks in the beginning of iavf_remove,
+> > > and uses a single-threaded flow to shut down the driver.
+> > >
+> > > Fixes: fdd4044ffdc8("iavf: Remove timer for work triggering, use
+> > > delaying work instead")
+> > > Signed-off-by: Nick Nunley <nicholas.d.nunley@intel.com>
+> > > Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> > > Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/iavf/iavf_main.c | 31
+> > > +++++++++++++++++----
+> > >  1 file changed, 25 insertions(+), 6 deletions(-)
+> > >
+> > > diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > index dc5b3c06d1e0..e752ecb7ad89 100644
+> > > --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> > > @@ -1887,6 +1887,12 @@ static void iavf_watchdog_task(struct
+> > work_struct *work)
+> > >  	struct iavf_hw *hw = &adapter->hw;
+> > >  	u32 reg_val;
+> > >
+> > > +	/* If the driver is in the process of being removed then don't run or
+> > > +	 * reschedule the watchdog task.
+> > > +	 */
+> > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > +		return;
+> > > +
+> > >  	if (test_and_set_bit(__IAVF_IN_CRITICAL_TASK, &adapter-
+> > >crit_section))
+> > >  		goto restart_watchdog;
+> > >
+> > > @@ -2267,6 +2273,12 @@ static void iavf_adminq_task(struct work_struct
+> > *work)
+> > >  	u32 val, oldval;
+> > >  	u16 pending;
+> > >
+> > > +	/* If the driver is in the process of being removed then return
+> > > +	 * immediately and don't re-enable the Admin Queue interrupt.
+> > > +	 */
+> > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > +		return;
+> > > +
+> > >  	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+> > >  		goto out;
+> > >
+> > > @@ -3245,6 +3257,13 @@ static int iavf_close(struct net_device
+> > > *netdev)
+> > >
+> > >  	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+> > >
+> > > +	/* If the interface is closing as part of driver removal it doesn't
+> > > +	 * wait. The VF resources will be reinitialized when the hardware is
+> > > +	 * reset.
+> > > +	 */
+> > > +	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
+> > > +		return 0;
+> > > +
+> > >  	/* We explicitly don't free resources here because the hardware is
+> > >  	 * still active and can DMA into memory. Resources are cleared in
+> > >  	 * iavf_virtchnl_completion() after we get confirmation from the PF
+> > > @@ -3850,11 +3869,16 @@ static void iavf_remove(struct pci_dev *pdev)
+> > >  	struct iavf_cloud_filter *cf, *cftmp;
+> > >  	struct iavf_hw *hw = &adapter->hw;
+> > >  	int err;
+> > > -	/* Indicate we are in remove and not to run reset_task */
+> > > +	/* Indicate that program driver is remove task and not
+> > > +	 * to run/schedule any driver tasks
+> > > +	 */
+> > >  	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+> > >  	cancel_delayed_work_sync(&adapter->init_task);
+> > >  	cancel_work_sync(&adapter->reset_task);
+> > >  	cancel_delayed_work_sync(&adapter->client_task);
+> > > +	cancel_work_sync(&adapter->adminq_task);
+> > > +	cancel_delayed_work_sync(&adapter->watchdog_task);
+> > > +	iavf_misc_irq_disable(adapter);
+> > >  	if (adapter->netdev_registered) {
+> > >  		unregister_netdev(netdev);
+> > >  		adapter->netdev_registered = false; @@ -3879,15 +3903,10
+> > @@ static
+> > > void iavf_remove(struct pci_dev *pdev)
+> > >  	}
+> > >  	iavf_free_all_tx_resources(adapter);
+> > >  	iavf_free_all_rx_resources(adapter);
+> > > -	iavf_misc_irq_disable(adapter);
+> > >  	iavf_free_misc_irq(adapter);
+> > >  	iavf_reset_interrupt_capability(adapter);
+> > >  	iavf_free_q_vectors(adapter);
+> > >
+> > > -	cancel_delayed_work_sync(&adapter->watchdog_task);
+> > > -
+> > > -	cancel_work_sync(&adapter->adminq_task);
+> > > -
+> > >  	iavf_free_rss(adapter);
+> > >
+> > >  	if (hw->aq.asq.count)
+> > >
+> > > base-commit: c1acda9807e2bbe1d2026b44f37d959d6d8266c8
+> > > --
+> > > 2.20.1
+> > >
+> > > _______________________________________________
+> > > Intel-wired-lan mailing list
+> > > Intel-wired-lan at osuosl.org
+> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> > >
+> > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at osuosl.org
+> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 > 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
