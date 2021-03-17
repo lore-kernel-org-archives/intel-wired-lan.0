@@ -1,43 +1,27 @@
-From: 'w00385741 <weiyongjun1@huawei.com>
-Date: Wed, 17 Mar 2021 14:52:34 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] e1000e: Mark e1000e_pm_prepare()
- as __maybe_unused
-Message-ID: <20210317145234.3171021-1-weiyongjun1@huawei.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 17 Mar 2021 09:36:24 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 02/10] intel: Update
+ drivers to use ethtool_sprintf
+In-Reply-To: <161594104491.5644.18446437902161792108.stgit@localhost.localdomain>
+References: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
+ <161594104491.5644.18446437902161792108.stgit@localhost.localdomain>
+Message-ID: <20210317093624.00005020@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
+Alexander Duyck wrote:
 
-The function e1000e_pm_prepare() may have no callers depending
-on configuration, so it must be marked __maybe_unused to avoid
-harmless warning:
+> From: Alexander Duyck <alexanderduyck@fb.com>
+> 
+> Update the Intel drivers to make use of ethtool_sprintf. The general idea
+> is to reduce code size and overhead by replacing the repeated pattern of
+> string printf statements and ETH_STRING_LEN counter increments.
+> 
+> Signed-off-by: Alexander Duyck <alexanderduyck@fb.com>
 
-drivers/net/ethernet/intel/e1000e/netdev.c:6926:12:
- warning: 'e1000e_pm_prepare' defined but not used [-Wunused-function]
- 6926 | static int e1000e_pm_prepare(struct device *dev)
-      |            ^~~~~~~~~~~~~~~~~
+Thanks!
 
-Fixes: ccf8b940e5fd ("e1000e: Leverage direct_complete to speed up s2ram")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index f1c9debd9f3b..d2e4653536c5 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6923,7 +6923,7 @@ static int __e1000_resume(struct pci_dev *pdev)
- 	return 0;
- }
- 
--static int e1000e_pm_prepare(struct device *dev)
-+static __maybe_unused int e1000e_pm_prepare(struct device *dev)
- {
- 	return pm_runtime_suspended(dev) &&
- 		pm_suspend_via_firmware();
-
+Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
