@@ -1,74 +1,132 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 17 Mar 2021 16:23:39 +0300
-Subject: [Intel-wired-lan] [bug report] igc: Add NVM support
-Message-ID: <YFIC27QOoIaVkDYL@mwanda>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 17 Mar 2021 22:16:27 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 1d6c0c9c33e8a72d75b254af8247cdc1cd203345
+Message-ID: <60520f3b.z7wqAwWWwDua/lNL%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Sasha Neftin,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 1d6c0c9c33e8a72d75b254af8247cdc1cd203345  e1000e: Fix prototype warning
 
-The patch ab4056126813: "igc: Add NVM support" from Oct 11, 2018,
-leads to the following static checker warning:
+elapsed time: 722m
 
-	drivers/net/ethernet/intel/igc/igc_i225.c:235 igc_write_nvm_srwr()
-	warn: loop overwrites return value 'ret_val'
+configs tested: 103
+configs skipped: 3
 
-drivers/net/ethernet/intel/igc/igc_i225.c
-   218  static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
-   219                                u16 *data)
-   220  {
-   221          struct igc_nvm_info *nvm = &hw->nvm;
-   222          s32 ret_val = -IGC_ERR_NVM;
-   223          u32 attempts = 100000;
-   224          u32 i, k, eewr = 0;
-   225  
-   226          /* A check for invalid values:  offset too large, too many words,
-   227           * too many words for the offset, and not enough words.
-   228           */
-   229          if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
-   230              words == 0) {
-   231                  hw_dbg("nvm parameter(s) out of bounds\n");
-   232                  goto out;
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I really don't care for "goto out;" labels.  They add a level of
-misdirection and ambiguity.  This should be "return -EINVAL;" instead
-of "return -IGC_ERR_NVM;".  Eventually it gets propogated back to the
-user via dev_ethtool() and it becomes -EPERM to the user.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+powerpc                     akebono_defconfig
+powerpc                          g5_defconfig
+mips                      loongson3_defconfig
+microblaze                          defconfig
+arm                          pxa910_defconfig
+s390                          debug_defconfig
+sh                         apsh4a3a_defconfig
+m68k                        mvme16x_defconfig
+m68k                       bvme6000_defconfig
+arm                        neponset_defconfig
+sh                          sdk7786_defconfig
+mips                         mpc30x_defconfig
+powerpc                 mpc836x_mds_defconfig
+openrisc                  or1klitex_defconfig
+powerpc                     redwood_defconfig
+powerpc                      katmai_defconfig
+powerpc                      acadia_defconfig
+powerpc                    adder875_defconfig
+powerpc                      cm5200_defconfig
+powerpc                  storcenter_defconfig
+sh                   sh7770_generic_defconfig
+mips                    maltaup_xpa_defconfig
+powerpc                      tqm8xx_defconfig
+mips                         tb0287_defconfig
+powerpc                     pq2fads_defconfig
+powerpc                 mpc8560_ads_defconfig
+arm                          pcm027_defconfig
+arm                        spear3xx_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20210317
+x86_64               randconfig-a001-20210317
+x86_64               randconfig-a005-20210317
+x86_64               randconfig-a004-20210317
+x86_64               randconfig-a003-20210317
+x86_64               randconfig-a002-20210317
+i386                 randconfig-a001-20210317
+i386                 randconfig-a005-20210317
+i386                 randconfig-a002-20210317
+i386                 randconfig-a003-20210317
+i386                 randconfig-a004-20210317
+i386                 randconfig-a006-20210317
+i386                 randconfig-a013-20210317
+i386                 randconfig-a016-20210317
+i386                 randconfig-a011-20210317
+i386                 randconfig-a012-20210317
+i386                 randconfig-a015-20210317
+i386                 randconfig-a014-20210317
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
-   233          }
-   234  
-   235          for (i = 0; i < words; i++) {
-   236                  eewr = ((offset + i) << IGC_NVM_RW_ADDR_SHIFT) |
-   237                          (data[i] << IGC_NVM_RW_REG_DATA) |
-   238                          IGC_NVM_RW_REG_START;
-   239  
-   240                  wr32(IGC_SRWR, eewr);
-   241  
-   242                  for (k = 0; k < attempts; k++) {
-   243                          if (IGC_NVM_RW_REG_DONE &
-   244                              rd32(IGC_SRWR)) {
-   245                                  ret_val = 0;
-   246                                  break;
-   247                          }
-   248                          udelay(5);
-   249                  }
-   250  
-   251                  if (ret_val) {
-   252                          hw_dbg("Shadow RAM write EEWR timed out\n");
-   253                          break;
-   254                  }
+clang tested configs:
+x86_64               randconfig-a011-20210317
+x86_64               randconfig-a016-20210317
+x86_64               randconfig-a013-20210317
+x86_64               randconfig-a014-20210317
+x86_64               randconfig-a015-20210317
+x86_64               randconfig-a012-20210317
 
-If there is a read error on subsequent iterations through the loop then
-this code will return success.
-
-   255          }
-   256  
-   257  out:
-   258          return ret_val;
-   259  }
-
-regards,
-dan carpenter
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
