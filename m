@@ -1,79 +1,59 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Wed, 17 Mar 2021 19:14:52 +0100
-Subject: [Intel-wired-lan] [PATCH] iavf: fix locking of critical sections
-In-Reply-To: <DM6PR11MB3113AB6CE1D93EF28B3A7345876A9@DM6PR11MB3113.namprd11.prod.outlook.com>
-References: <20210316100141.53551-1-sassmann@kpanic.de>
- <20210316101443.56b87cf6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <44b3f5f0-93f8-29e2-ab21-5fd7cc14c755@kpanic.de>
- <20210316132905.5d0f90dd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210316150210.00007249@intel.com>
- <3a4078fe-0be5-745c-91a3-ed83d4dc372f@kpanic.de>
- <DM6PR11MB3113AB6CE1D93EF28B3A7345876A9@DM6PR11MB3113.namprd11.prod.outlook.com>
-Message-ID: <e28db42e-a55a-6f7f-7622-add296b1035e@kpanic.de>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Wed, 17 Mar 2021 18:50:09 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v2 00/10] ethtool: Factor out
+ common code related to writing ethtool strings
+In-Reply-To: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
+References: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
+Message-ID: <161600700946.1265.8041343414246655720.git-patchwork-notify@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 17.03.21 18:27, Laba, SlawomirX wrote:
-> We were discussing introducing mutexes in those critical spots for a long time now (in my team).
-> Stefan, if you find time, you are most welcome to offer your solution with mutexes.
+Hello:
 
-Hi Slawek,
+This series was applied to netdev/net-next.git (refs/heads/master):
 
-I'll work on that conversion once the current patch went through Intel
-testing and is merged. Smaller patches, smaller steps are usually
-better, so let's make one change at a time.
+On Tue, 16 Mar 2021 17:30:26 -0700 you wrote:
+> This patch set is meant to be a cleanup and refactoring of common code bits
+> from several drivers. Specificlly a number of drivers engage in a pattern
+> where they will use some variant on an sprintf or memcpy to write a string
+> into the ethtool string array and then they will increment their pointer by
+> ETH_GSTRING_LEN.
+> 
+> Instead of having each driver implement this independently I am refactoring
+> the code so that we have one central function, ethtool_sprintf that does
+> all this and takes a double pointer to access the data, a formatted string
+> to print, and the variable arguments that are associated with the string.
+> 
+> [...]
 
-Thanks!
+Here is the summary with links:
+  - [net-next,v2,01/10] ethtool: Add common function for filling out strings
+    https://git.kernel.org/netdev/net-next/c/7888fe53b706
+  - [net-next,v2,02/10] intel: Update drivers to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/c8d4725e985d
+  - [net-next,v2,03/10] nfp: Replace nfp_pr_et with ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/6a143a7cf947
+  - [net-next,v2,04/10] hisilicon: Update drivers to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/83cd23974a73
+  - [net-next,v2,05/10] ena: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/efbbe4fb5976
+  - [net-next,v2,06/10] netvsc: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/3ae0ed376d1c
+  - [net-next,v2,07/10] virtio_net: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/d7a9a01b4e21
+  - [net-next,v2,08/10] vmxnet3: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/3b78b3067f38
+  - [net-next,v2,09/10] bna: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/b82e8118c540
+  - [net-next,v2,10/10] ionic: Update driver to use ethtool_sprintf
+    https://git.kernel.org/netdev/net-next/c/acebe5b6107c
 
-  Stefan
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-> Slawek
-> 
-> 
-> -----Original Message-----
-> From: Stefan Assmann <sassmann@kpanic.de> 
-> Sent: Wednesday, March 17, 2021 8:50 AM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Jakub Kicinski <kuba@kernel.org>
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Yang, Lihong <lihong.yang@intel.com>; Laba, SlawomirX <slawomirx.laba@intel.com>; Nunley, Nicholas D <nicholas.d.nunley@intel.com>
-> Subject: Re: [PATCH] iavf: fix locking of critical sections
-> 
-> On 16.03.21 23:02, Jesse Brandeburg wrote:
->> Jakub Kicinski wrote:
->>>>> I personally think that the overuse of flags in Intel drivers 
->>>>> brings nothing but trouble. At which point does it make sense to 
->>>>> just add a lock / semaphore here rather than open code all this 
->>>>> with no clear semantics? No code seems to just test the 
->>>>> __IAVF_IN_CRITICAL_TASK flag, all the uses look like poor man's 
->>>>> locking at a quick grep. What am I missing?
->>>>
->>>> I agree with you that the locking could be done with other locking 
->>>> mechanisms just as good. I didn't invent the current method so I'll 
->>>> let Intel comment on that part, but I'd like to point out that what 
->>>> I'm making use of is fixing what is currently in the driver.
->>>
->>> Right, I should have made it clear that I don't blame you for the 
->>> current state of things. Would you mind sending a patch on top of 
->>> this one to do a conversion to a semaphore?
-> 
-> Sure, I'm happy to help working on the conversion once the current issue is resolved.
-> 
->>> Intel folks any opinions?
->>
->> I know Slawomir has been working closely with Stefan on figuring out 
->> the right ways to fix this code.  Hopefully he can speak for himself, 
->> but I know he's on Europe time.
->>
->> As for conversion to mutexes I'm a big fan, and as long as we don't 
->> have too many collisions with the RTNL lock I think it's a reasonable 
->> improvement to do, and if Stefan doesn't want to work on it, we can 
->> look into whether Slawomir or his team can.
-> 
-> I'd appreciate to be involved.
-> Thanks!
-> 
->   Stefan
-> 
 
