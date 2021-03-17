@@ -1,193 +1,66 @@
-From: David E. Box <david.e.box@linux.intel.com>
-Date: Tue, 16 Mar 2021 17:16:33 -0700
-Subject: [Intel-wired-lan] [PATCH V2 2/2] platform/x86: intel_pmc:
- Ignore GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210316151032.000002d2@intel.com>
-References: <20210316214934.2992637-1-david.e.box@linux.intel.com>
- <20210316214934.2992637-2-david.e.box@linux.intel.com>
- <20210316151032.000002d2@intel.com>
-Message-ID: <f1643467b66463833d4c7656570931d595ab2533.camel@linux.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 16 Mar 2021 17:30:26 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 00/10] ethtool: Factor out
+ common code related to writing ethtool strings
+Message-ID: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2021-03-16 at 15:10 -0700, Jesse Brandeburg wrote:
-> David E. Box wrote:
-> 
-> > Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
-> > programmed in the Tiger Lake GBE controller is not large enough to
-> > allow
-> > the platform to enter Package C10, which in turn prevents the
-> > platform from
-> > achieving its low power target during suspend-to-idle.? Ignore the
-> > GBE LTR
-> > value on Tiger Lake. LTR ignore functionality is currently
-> > performed solely
-> > by a debugfs write call. Split out the LTR code into its own
-> > function that
-> > can be called by both the debugfs writer and by this work around.
-> 
-> Hi David, thanks for looking into this. A few review comments follow,
-> and then I'll Ack it.
+This patch set is meant to be a cleanup and refactoring of common code bits
+from several drivers. Specificlly a number of drivers engage in a pattern
+where they will use some variant on an sprintf or memcpy to write a string
+into the ethtool string array and then they will increment their pointer by
+ETH_GSTRING_LEN.
 
-Hi Jesse. Thanks for reviewing.
+Instead of having each driver implement this independently I am refactoring
+the code so that we have one central function, ethtool_sprintf that does
+all this and takes a double pointer to access the data, a formatted string
+to print, and the variable arguments that are associated with the string.
 
-> ?
-> > Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-> > Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
-> > Cc: intel-wired-lan at lists.osuosl.org
-> > Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
-> > ---
-> > Changes in V2:
-> > ????????- Pass the bit position instead of the entire mask to the
-> > ltr_ignore
-> > ????????? fuction
-> > ????????- Rename the write_ltr_ignore to send_ltr_ignore to
-> > differentiate it
-> > ????????? from the caller, ltr_ignore_write.
-> > ????????- Rename variables for clarity
-> > 
-> > ?drivers/platform/x86/intel_pmc_core.c | 59 ++++++++++++++++++++---
-> > ----
-> > ?1 file changed, 44 insertions(+), 15 deletions(-)
-> > 
-> > diff --git a/drivers/platform/x86/intel_pmc_core.c
-> > b/drivers/platform/x86/intel_pmc_core.c
-> > index ee2f757515b0..8d799cfa0e9f 100644
-> > --- a/drivers/platform/x86/intel_pmc_core.c
-> > +++ b/drivers/platform/x86/intel_pmc_core.c
-> > @@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file
-> > *s, void *unused)
-> > ?}
-> > ?DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
-> > ?
-> > -static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-> > -??????????????????????????????????????? const char __user
-> > *userbuf,
-> > -??????????????????????????????????????? size_t count, loff_t
-> > *ppos)
-> > +static int pmc_core_send_ltr_ignore(u32 value)
-> > ?{
-> > ????????struct pmc_dev *pmcdev = &pmc;
-> > ????????const struct pmc_reg_map *map = pmcdev->map;
-> > -???????u32 val, buf_size, fd;
-> > -???????int err;
-> > -
-> > -???????buf_size = count < 64 ? count : 64;
-> > -
-> > -???????err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
-> > -???????if (err)
-> > -???????????????return err;
-> > +???????u32 reg;
-> > +???????int err = 0;
-> > ?
-> > ????????mutex_lock(&pmcdev->lock);
-> > ?
-> > -???????if (val > map->ltr_ignore_max) {
-> > +???????if (value > map->ltr_ignore_max) {
-> > ????????????????err = -EINVAL;
-> > ????????????????goto out_unlock;
-> > ????????}
-> > ?
-> > -???????fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-> > -???????fd |= (1U << val);
-> > -???????pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
-> > +???????reg = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-> > +???????reg |= (1U << value);
-> 
-> This should just be BIT(value).
+Changes from v1:
+Fixed usage of char ** vs  unsigned char ** in hisilicon drivers
 
-Ack
+Changes from RFC:
+Renamed ethtool_gsprintf to ethtool_sprintf
+Fixed reverse xmas tree issue in patch 2
 
-> 
-> > +???????pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, reg);
-> > ?
-> > ?out_unlock:
-> > ????????mutex_unlock(&pmcdev->lock);
-> > +
-> > +???????return err;
-> > +}
-> > +
-> > +static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-> > +??????????????????????????????????????? const char __user
-> > *userbuf,
-> > +??????????????????????????????????????? size_t count, loff_t
-> > *ppos)
-> > +{
-> > +???????u32 buf_size, value;
-> > +???????int err;
-> > +
-> > +???????buf_size = count < 64 ? count : 64;
-> 
-> isn't this just an open coded buf_size = min_t(u32, count, 64); ?
+---
 
-Ack
+Alexander Duyck (10):
+      ethtool: Add common function for filling out strings
+      intel: Update drivers to use ethtool_sprintf
+      nfp: Replace nfp_pr_et with ethtool_sprintf
+      hisilicon: Update drivers to use ethtool_sprintf
+      ena: Update driver to use ethtool_sprintf
+      netvsc: Update driver to use ethtool_sprintf
+      virtio_net: Update driver to use ethtool_sprintf
+      vmxnet3: Update driver to use ethtool_sprintf
+      bna: Update driver to use ethtool_sprintf
+      ionic: Update driver to use ethtool_sprintf
 
-> 
-> > +
-> > +???????err = kstrtou32_from_user(userbuf, buf_size, 10, &value);
-> > +???????if (err)
-> > +???????????????return err;
-> 
-> Why is there no range check or checking on &value?
 
-This is range checked in pmc_core_send_ltr_ignore which has multiple
-callers.
+ drivers/net/ethernet/amazon/ena/ena_ethtool.c |  25 +-
+ .../net/ethernet/brocade/bna/bnad_ethtool.c   | 266 +++++++-----------
+ .../ethernet/hisilicon/hns/hns_dsaf_gmac.c    |   9 +-
+ .../net/ethernet/hisilicon/hns/hns_dsaf_ppe.c |  41 +--
+ .../net/ethernet/hisilicon/hns/hns_dsaf_rcb.c |  91 +++---
+ .../ethernet/hisilicon/hns/hns_dsaf_xgmac.c   |   8 +-
+ .../net/ethernet/hisilicon/hns/hns_ethtool.c  | 103 +++----
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  16 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  55 ++--
+ drivers/net/ethernet/intel/igb/igb_ethtool.c  |  40 +--
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  40 +--
+ drivers/net/ethernet/netronome/nfp/abm/main.c |   4 +-
+ .../ethernet/netronome/nfp/nfp_net_ethtool.c  |  79 +++---
+ drivers/net/ethernet/netronome/nfp/nfp_port.h |   2 -
+ .../net/ethernet/pensando/ionic/ionic_stats.c | 145 ++++------
+ drivers/net/hyperv/netvsc_drv.c               |  33 +--
+ drivers/net/virtio_net.c                      |  18 +-
+ drivers/net/vmxnet3/vmxnet3_ethtool.c         |  53 ++--
+ 18 files changed, 389 insertions(+), 639 deletions(-)
 
-> 
-> 
-> > +
-> > +???????err = pmc_core_send_ltr_ignore(value);
-> > +
-> > ????????return err == 0 ? count : err;
-> > ?}
-> > ?
-> > @@ -1189,6 +1200,15 @@ static int quirk_xtal_ignore(const struct
-> > dmi_system_id *id)
-> > ????????return 0;
-> > ?}
-> > ?
-> > +static int quirk_ltr_ignore(u32 value)
-> > +{
-> > +???????int err;
-> > +
-> > +???????err = pmc_core_send_ltr_ignore(value);
-> > +
-> > +???????return err;
-> 
-> return pmc_core_send_ltr_ignore(value); ?
-
-Doh! We'll just call directly and get rid of this wrapper.
-
-Thanks.
-
-> 
-> > +}
-> > +
-> > ?static const struct dmi_system_id pmc_core_dmi_table[]? = {
-> > ????????{
-> > ????????.callback = quirk_xtal_ignore,
-> > @@ -1244,6 +1264,15 @@ static int pmc_core_probe(struct
-> > platform_device *pdev)
-> > ????????pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
-> > ????????dmi_check_system(pmc_core_dmi_table);
-> > ?
-> > +???????/*
-> > +??????? * On TGL, due to a hardware limitation, the GBE LTR blocks
-> > PC10 when
-> > +??????? * a cable is attached. Tell the PMC to ignore it.
-> > +??????? */
-> > +???????if (pmcdev->map == &tgl_reg_map) {
-> > +???????????????dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
-> > +???????????????quirk_ltr_ignore(3);
-> > +???????}
-> > +
-> > ????????pmc_core_dbgfs_register(pmcdev);
-> > ?
-> > ????????device_initialized = true;
-> 
-> 
-
+--
 
