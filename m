@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 16 Mar 2021 20:58:32 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.19 06/23] ixgbe: Fix memleak in
+Date: Tue, 16 Mar 2021 20:59:05 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 06/21] ixgbe: Fix memleak in
  ixgbe_configure_clsu32
-In-Reply-To: <20210317005850.726479-1-sashal@kernel.org>
-References: <20210317005850.726479-1-sashal@kernel.org>
-Message-ID: <20210317005850.726479-6-sashal@kernel.org>
+In-Reply-To: <20210317005920.726931-1-sashal@kernel.org>
+References: <20210317005920.726931-1-sashal@kernel.org>
+Message-ID: <20210317005920.726931-6-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,10 +29,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index faee77fa0804..8fcd3ffb43e0 100644
+index 9c3fa0b55551..e9205c893531 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9487,8 +9487,10 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+@@ -9266,8 +9266,10 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
  	ixgbe_atr_compute_perfect_hash_82599(&input->filter, mask);
  	err = ixgbe_fdir_write_perfect_filter_82599(hw, &input->filter,
  						    input->sw_idx, queue);
