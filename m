@@ -1,59 +1,76 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Wed, 17 Mar 2021 18:50:09 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v2 00/10] ethtool: Factor out
- common code related to writing ethtool strings
-In-Reply-To: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
-References: <161594093708.5644.11391417312031401152.stgit@localhost.localdomain>
-Message-ID: <161600700946.1265.8041343414246655720.git-patchwork-notify@kernel.org>
+From: Jann Horn <jannh@google.com>
+Date: Wed, 17 Mar 2021 19:57:44 +0100
+Subject: [Intel-wired-lan] [PATCH][next] ixgbe: Fix out-of-bounds
+ warning in ixgbe_host_interface_command()
+In-Reply-To: <3bd8d009-2ad2-c24d-5c34-5970c52502de@embeddedor.com>
+References: <20210317064148.GA55123@embeddedor>
+ <CAG48ez2RDqKwx=umOHjo_1mYyNQgzvcP=KOw1HgSo4Prs_VQDw@mail.gmail.com>
+ <3bd8d009-2ad2-c24d-5c34-5970c52502de@embeddedor.com>
+Message-ID: <CAG48ez2jr_8MbY_sNXfwvs7WsF-5f9j=U4-66dTcgXd2msr39A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+On Wed, Mar 17, 2021 at 7:27 PM Gustavo A. R. Silva
+<gustavo@embeddedor.com> wrote:
+> On 3/17/21 12:11, Jann Horn wrote:
+> > On Wed, Mar 17, 2021 at 8:43 AM Gustavo A. R. Silva
+> > <gustavoars@kernel.org> wrote:
+> >> Fix the following out-of-bounds warning by replacing the one-element
+> >> array in an anonymous union with a pointer:
+> >>
+> >>   CC [M]  drivers/net/ethernet/intel/ixgbe/ixgbe_common.o
+> >> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c: In function ?ixgbe_host_interface_command?:
+> >> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3729:13: warning: array subscript 1 is above array bounds of ?u32[1]? {aka ?unsigned int[1]?} [-Warray-bounds]
+> >>  3729 |   bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
+> >>       |   ~~~~~~~~~~^~~~
+> >> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3682:7: note: while referencing ?u32arr?
+> >>  3682 |   u32 u32arr[1];
+> >>       |       ^~~~~~
+> >>
+> >> This helps with the ongoing efforts to globally enable -Warray-bounds.
+> >>
+> >> Notice that, the usual approach to fix these sorts of issues is to
+> >> replace the one-element array with a flexible-array member. However,
+> >> flexible arrays should not be used in unions. That, together with the
+> >> fact that the array notation is not being affected in any ways, is why
+> >> the pointer approach was chosen in this case.
+> >>
+> >> Link: https://github.com/KSPP/linux/issues/109
+> >> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> >> ---
+> >>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> >> index 62ddb452f862..bff3dc1af702 100644
+> >> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> >> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> >> @@ -3679,7 +3679,7 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
+> >>         u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
+> >>         union {
+> >>                 struct ixgbe_hic_hdr hdr;
+> >> -               u32 u32arr[1];
+> >> +               u32 *u32arr;
+> >>         } *bp = buffer;
+> >>         u16 buf_len, dword_len;
+> >>         s32 status;
+> >
+> > This looks bogus. An array is inline, a pointer points elsewhere -
+> > they're not interchangeable.
+>
+> Yep; but in this case these are the only places in the code where _u32arr_ is
+> being used:
+>
+> 3707         /* first pull in the header so we know the buffer length */
+> 3708         for (bi = 0; bi < dword_len; bi++) {
+> 3709                 bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
+> 3710                 le32_to_cpus(&bp->u32arr[bi]);
+> 3711         }
 
-This series was applied to netdev/net-next.git (refs/heads/master):
-
-On Tue, 16 Mar 2021 17:30:26 -0700 you wrote:
-> This patch set is meant to be a cleanup and refactoring of common code bits
-> from several drivers. Specificlly a number of drivers engage in a pattern
-> where they will use some variant on an sprintf or memcpy to write a string
-> into the ethtool string array and then they will increment their pointer by
-> ETH_GSTRING_LEN.
-> 
-> Instead of having each driver implement this independently I am refactoring
-> the code so that we have one central function, ethtool_sprintf that does
-> all this and takes a double pointer to access the data, a formatted string
-> to print, and the variable arguments that are associated with the string.
-> 
-> [...]
-
-Here is the summary with links:
-  - [net-next,v2,01/10] ethtool: Add common function for filling out strings
-    https://git.kernel.org/netdev/net-next/c/7888fe53b706
-  - [net-next,v2,02/10] intel: Update drivers to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/c8d4725e985d
-  - [net-next,v2,03/10] nfp: Replace nfp_pr_et with ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/6a143a7cf947
-  - [net-next,v2,04/10] hisilicon: Update drivers to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/83cd23974a73
-  - [net-next,v2,05/10] ena: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/efbbe4fb5976
-  - [net-next,v2,06/10] netvsc: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/3ae0ed376d1c
-  - [net-next,v2,07/10] virtio_net: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/d7a9a01b4e21
-  - [net-next,v2,08/10] vmxnet3: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/3b78b3067f38
-  - [net-next,v2,09/10] bna: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/b82e8118c540
-  - [net-next,v2,10/10] ionic: Update driver to use ethtool_sprintf
-    https://git.kernel.org/netdev/net-next/c/acebe5b6107c
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+So now line 3709 means: Read a pointer from bp->u32arr (the value
+being read from there is not actually a valid pointer), and write to
+that pointer at offset `bi`. I don't see how that line could execute
+without crashing.
