@@ -1,15 +1,10 @@
-From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Wed, 17 Mar 2021 14:50:27 -0500
-Subject: [Intel-wired-lan] [PATCH][next] ixgbe: Fix out-of-bounds
- warning in ixgbe_host_interface_command()
-In-Reply-To: <CAG48ez1heVw2WRUMrGskUyJV0wH4YfgbF=raFKWXXM7oY1zKDA@mail.gmail.com>
-References: <20210317064148.GA55123@embeddedor>
- <CAG48ez2RDqKwx=umOHjo_1mYyNQgzvcP=KOw1HgSo4Prs_VQDw@mail.gmail.com>
- <3bd8d009-2ad2-c24d-5c34-5970c52502de@embeddedor.com>
- <CAG48ez2jr_8MbY_sNXfwvs7WsF-5f9j=U4-66dTcgXd2msr39A@mail.gmail.com>
- <03c013b8-4ddb-8e9f-af86-3c43cd746dbb@embeddedor.com>
- <CAG48ez1heVw2WRUMrGskUyJV0wH4YfgbF=raFKWXXM7oY1zKDA@mail.gmail.com>
-Message-ID: <944f3971-544f-49b4-1351-2eb3ee20588b@embeddedor.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Thu, 18 Mar 2021 09:18:00 +0000
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix kernel oops when i40e
+ driver removes VF's
+In-Reply-To: <20210218111526.71493-1-eryk.roch.rybak@intel.com>
+References: <20210218111526.71493-1-eryk.roch.rybak@intel.com>
+Message-ID: <CY4PR11MB1576F34E5E813013AEC8FC0EAB699@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,107 +13,87 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 3/17/21 15:10, Jann Horn wrote:
-> On Wed, Mar 17, 2021 at 9:04 PM Gustavo A. R. Silva
-> <gustavo@embeddedor.com> wrote:
->> On 3/17/21 13:57, Jann Horn wrote:
->>>>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
->>>>>> index 62ddb452f862..bff3dc1af702 100644
->>>>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
->>>>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
->>>>>> @@ -3679,7 +3679,7 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
->>>>>>         u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
->>>>>>         union {
->>>>>>                 struct ixgbe_hic_hdr hdr;
->>>>>> -               u32 u32arr[1];
->>>>>> +               u32 *u32arr;
->>>>>>         } *bp = buffer;
->>>>>>         u16 buf_len, dword_len;
->>>>>>         s32 status;
->>>>>
->>>>> This looks bogus. An array is inline, a pointer points elsewhere -
->>>>> they're not interchangeable.
->>>>
->>>> Yep; but in this case these are the only places in the code where _u32arr_ is
->>>> being used:
->>>>
->>>> 3707         /* first pull in the header so we know the buffer length */
->>>> 3708         for (bi = 0; bi < dword_len; bi++) {
->>>> 3709                 bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
->>>> 3710                 le32_to_cpus(&bp->u32arr[bi]);
->>>> 3711         }
->>>
->>> So now line 3709 means: Read a pointer from bp->u32arr (the value
->>> being read from there is not actually a valid pointer), and write to
->>> that pointer at offset `bi`. I don't see how that line could execute
->>> without crashing.
->>
->> Yeah; you're right. I see my confusion now. Apparently, there is no escape
->> from allocating heap memory to fix this issue, as I was proposing in my
->> last email.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Eryk Rybak
+> Sent: czwartek, 18 lutego 2021 12:15
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>; Loktionov, Aleksandr
+> <aleksandr.loktionov@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net] i40e: Fix kernel oops when i40e driver
+> removes VF's
 > 
-> Why? Can't you do something like this?
-
-Yep; it seems you're right. I was thinking in terms of a flexible array. Also,
-I think I needed more coffee in my system this morning and I need to stop
-working after midnight. :)
-
-I'll send a proper patch for this, shortly. I'll add your Proposed-by
-and Co-developed-by tags to the changelog text.
-
-Thanks a lot for the feedback. I really appreciate it. :)
---
-Gustavo
-
-
+> Fix the reason of kernel oops when i40e driver removed VFs.
+> Added new __I40E_VFS_RELEASING state to signalize releasing process by
+> PF, that it makes possible to exit of reset VF procedure.
+> Without this patch, it is possible to suspend the VFs reset by releasing VFs
+> resources procedure. Retrying the reset after the timeout works on the
+> freed VF memory causing a kernel oops.
 > 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> index 62ddb452f862..768fa124105b 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> @@ -3677,10 +3677,8 @@ s32 ixgbe_host_interface_command(struct
-> ixgbe_hw *hw, void *buffer,
->                                  bool return_data)
->  {
->         u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
-> -       union {
-> -               struct ixgbe_hic_hdr hdr;
-> -               u32 u32arr[1];
-> -       } *bp = buffer;
-> +       u32 *bp = buffer;
-> +       struct ixgbe_hic_hdr hdr;
->         u16 buf_len, dword_len;
->         s32 status;
->         u32 bi;
-> @@ -3706,12 +3704,13 @@ s32 ixgbe_host_interface_command(struct
-> ixgbe_hw *hw, void *buffer,
+> Fixes: d43d60e5eb95("i40e: ensure reset occurs when disabling VF")
+> Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 9 +++++++++
+>  2 files changed, 10 insertions(+)
 > 
->         /* first pull in the header so we know the buffer length */
->         for (bi = 0; bi < dword_len; bi++) {
-> -               bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-> -               le32_to_cpus(&bp->u32arr[bi]);
-> +               bp[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-> +               le32_to_cpus(&bp[bi]);
->         }
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+> b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 118473d..fe12587 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -142,6 +142,7 @@ enum i40e_state_t {
+>  	__I40E_VIRTCHNL_OP_PENDING,
+>  	__I40E_RECOVERY_MODE,
+>  	__I40E_VF_RESETS_DISABLED,	/* disable resets during i40e_remove
+> */
+> +	__I40E_VFS_RELEASING,
+>  	/* This must be last as it determines the size of the BITMAP */
+>  	__I40E_STATE_SIZE__,
+>  };
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 1b6ec9b..0c6cbe9 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -137,6 +137,7 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
+>   **/
+>  static inline void i40e_vc_disable_vf(struct i40e_vf *vf)  {
+> +	struct i40e_pf *pf = vf->pf;
+>  	int i;
 > 
->         /* If there is any thing in data position pull it in */
-> -       buf_len = bp->hdr.buf_len;
-> +       memcpy(&hdr, bp, sizeof(hdr));
-> +       buf_len = hdr.buf_len;
->         if (!buf_len)
->                 goto rel_out;
+>  	i40e_vc_notify_vf_reset(vf);
+> @@ -147,6 +148,11 @@ static inline void i40e_vc_disable_vf(struct i40e_vf
+> *vf)
+>  	 * ensure a reset.
+>  	 */
+>  	for (i = 0; i < 20; i++) {
+> +		/* If pf is in vfs releasing state reset vf is impossible,
+> +		 * so leave it.
+> +		 */
+> +		if (test_bit(__I40E_VFS_RELEASING, pf->state))
+> +			return;
+>  		if (i40e_reset_vf(vf, false))
+>  			return;
+>  		usleep_range(10000, 20000);
+> @@ -1574,6 +1580,8 @@ void i40e_free_vfs(struct i40e_pf *pf)
 > 
-> @@ -3726,8 +3725,8 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw
-> *hw, void *buffer,
+>  	if (!pf->vf)
+>  		return;
+> +
+> +	set_bit(__I40E_VFS_RELEASING, pf->state);
+>  	while (test_and_set_bit(__I40E_VF_DISABLE, pf->state))
+>  		usleep_range(1000, 2000);
 > 
->         /* Pull in the rest of the buffer (bi is where we left off) */
->         for (; bi <= dword_len; bi++) {
-> -               bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-> -               le32_to_cpus(&bp->u32arr[bi]);
-> +               bp[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-> +               le32_to_cpus(&bp[bi]);
->         }
+> @@ -1631,6 +1639,7 @@ void i40e_free_vfs(struct i40e_pf *pf)
+>  		}
+>  	}
+>  	clear_bit(__I40E_VF_DISABLE, pf->state);
+> +	clear_bit(__I40E_VFS_RELEASING, pf->state);
+>  }
 > 
->  rel_out:
+>  #ifdef CONFIG_PCI_IOV
 > 
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
