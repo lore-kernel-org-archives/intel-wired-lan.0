@@ -1,8 +1,8 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 18 Mar 2021 15:18:43 -0700
-Subject: [Intel-wired-lan] [PATCH net-next dev-queue v1 1/2] intel: clean up
+Date: Thu, 18 Mar 2021 16:18:52 -0700
+Subject: [Intel-wired-lan] [PATCH net-next dev-queue v2 1/1] intel: clean up
  mismatched header comments
-Message-ID: <20210318221844.1795558-1-jesse.brandeburg@intel.com>
+Message-ID: <20210318231852.1796288-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,8 +12,6 @@ List-ID: <intel-wired-lan.osuosl.org>
 A bunch of header comments were showing warnings when compiling
 with W=1. Fix them all at once. This changes only comments.
 
-Co-developed-by: Dave Ertman <david.m.ertman@intel.com> # for the ice driver changes
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com> # for the ice driver changes
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
 Warning examples look like this:
