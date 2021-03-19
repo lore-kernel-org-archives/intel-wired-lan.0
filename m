@@ -1,66 +1,63 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Fri, 19 Mar 2021 10:44:10 +0100
-Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix receiving of single
- packets in xsk zero-copy mode
-Message-ID: <20210319094410.3633-1-magnus.karlsson@gmail.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Fri, 19 Mar 2021 10:20:57 +0000
+Subject: [Intel-wired-lan] [net-queue v3] virtchnl: Fix layout of RSS
+ structures
+In-Reply-To: <20210128181702.1941534-1-anthony.l.nguyen@intel.com>
+References: <20210128181702.1941534-1-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB157670FF2CECC96A4CEE21D5AB689@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Fix so that single packets are received immediately instead of in
-batches of 8. If you sent 1 pss to a system, you received 8 packets
-every 8 seconds instead of 1 packet every second. The problem behind
-this was that the work_done reporting from the Tx part of the driver
-was broken. The work_done reporting in i40e controls not only the
-reporting back to the napi logic but also the setting of the interrupt
-throttling logic. When Tx or Rx reports that it has more to do,
-interrupts are throttled or coalesced and when they both report that
-they are done, interrupts are armed right away. If the wrong work_done
-value is returned, the logic will start to throttle interrupts in a
-situation where it should have just enabled them. This leads to the
-undesired batching behavior seen in user-space.
 
-Fix this by returning the correct boolean value from the Tx xsk
-zero-copy path. Return true if there is nothing to do or if we got
-fewer packets to process than we asked for. Return false if we got as
-many packets as the budget since there might be more packets we can
-process.
-
-Fixes: 3106c580fb7c ("i40e: Use batched xsk Tx interfaces to increase performance")
-Reported-by: Sreedevi Joshi <sreedevi.joshi@intel.com>
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index fc32c5019b0f..12ca84113587 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -471,7 +471,7 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
- 
- 	nb_pkts = xsk_tx_peek_release_desc_batch(xdp_ring->xsk_pool, descs, budget);
- 	if (!nb_pkts)
--		return false;
-+		return true;
- 
- 	if (xdp_ring->next_to_use + nb_pkts >= xdp_ring->count) {
- 		nb_processed = xdp_ring->count - xdp_ring->next_to_use;
-@@ -488,7 +488,7 @@ static bool i40e_xmit_zc(struct i40e_ring *xdp_ring, unsigned int budget)
- 
- 	i40e_update_tx_stats(xdp_ring, nb_pkts, total_bytes);
- 
--	return true;
-+	return nb_pkts < budget;
- }
- 
- /**
-
-base-commit: c79a707072fe3fea0e3c92edee6ca85c1e53c29f
--- 
-2.29.0
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: czwartek, 28 stycznia 2021 19:17
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Ciosek, NorbertX <norbertx.ciosek@intel.com>
+> Subject: [Intel-wired-lan] [net-queue v3] virtchnl: Fix layout of RSS structures
+> 
+> From: Norbert Ciosek <norbertx.ciosek@intel.com>
+> 
+> Remove padding from RSS structures. Previous layout could lead to
+> unwanted compiler optimizations in loops when iterating over key and lut
+> arrays.
+> 
+> Fixes: 65ece6de0114 ("virtchnl: Add missing explicit padding to structures")
+> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+> ---
+> v3: Removed footer
+> v2: Removed padding instead of moving "key" and "lut" fields at the end of
+> RSS structures.
+> 
+>  include/linux/avf/virtchnl.h | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h index
+> 40bad71865ea..532bcbfc4716 100644
+> --- a/include/linux/avf/virtchnl.h
+> +++ b/include/linux/avf/virtchnl.h
+> @@ -476,7 +476,6 @@ struct virtchnl_rss_key {
+>  	u16 vsi_id;
+>  	u16 key_len;
+>  	u8 key[1];         /* RSS hash key, packed bytes */
+> -	u8 pad[1];
+>  };
+> 
+>  VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key); @@ -485,7 +484,6 @@
+> struct virtchnl_rss_lut {
+>  	u16 vsi_id;
+>  	u16 lut_entries;
+>  	u8 lut[1];        /* RSS lookup table */
+> -	u8 pad[1];
+>  };
+> 
+>  VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_lut);
+> --
+> 2.26.2
+> 
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
