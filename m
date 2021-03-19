@@ -1,56 +1,39 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 19 Mar 2021 21:49:43 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: Fix parameters in
- aq_get_phy_register()
-In-Reply-To: <1616158405-95495-1-git-send-email-grzegorz.siwik@intel.com>
-References: <1616158405-95495-1-git-send-email-grzegorz.siwik@intel.com>
-Message-ID: <a5e0b544180dede5aeae7d40b1a242281373a7a1.camel@intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Fri, 19 Mar 2021 22:43:29 +0000
+Subject: [Intel-wired-lan] [PATCH S55 07/14] ice: use kernel definitions
+ for IANA protocol ports and ether-types
+In-Reply-To: <20210302181213.51718-7-anthony.l.nguyen@intel.com>
+References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
+ <20210302181213.51718-7-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105B8247DCA9B3AECBD25BEFA689@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-03-19 at 13:53 +0100, Grzegorz Siwik wrote:
-> Change parameters order in aq_get_phy_register() due to wrong
-> statistics in PHY reported by ethtool. Previosly all PHY statistics 
-
-s/Previosly/Previously
-
-> were
-> exactly the same for all interfaces
-> Now statistics are reported correctly - different for different
-> interfaces
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Tuesday, March 2, 2021 10:12 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S55 07/14] ice: use kernel definitions for
+> IANA protocol ports and ether-types
 > 
-> Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
-
-Since this has a fixes, I beleive it's for net, but you marked this as
-net-next. Which tree are you targeting?
-
-> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
-> ---
-> v2:
-> -Fixed typos in commit message
-
-This is marked as v2, but I don't recall seeing a v1 on this mailing
-list.
-
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> From: Bruce Allan <bruce.w.allan@intel.com>
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index 96d5202..0e92668 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -5480,7 +5480,7 @@ static int i40e_get_module_eeprom(struct
-> net_device *netdev,
->  
->  		status = i40e_aq_get_phy_register(hw,
->  				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
-> -				true, addr, offset, &value, NULL);
-> +				addr, true, offset, &value, NULL);
->  		if (status)
->  			return -EIO;
->  		data[i] = value;
+> The well-known IANA protocol port 3260 (iscsi-target 0x0cbc) and the ether-
+> types 0x8906 (ETH_P_FCOE) and 0x8914 (ETH_P_FIP) are already defined in
+> kernel header files.  Use those definitions instead of open-coding the same.
+> 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h         | 3 +++
+>  drivers/net/ethernet/intel/ice/ice_dcb.c     | 8 ++++----
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_type.h    | 3 ---
+>  4 files changed, 8 insertions(+), 8 deletions(-)
+
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
+
+
