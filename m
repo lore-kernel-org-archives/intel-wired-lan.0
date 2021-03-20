@@ -1,24 +1,64 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 20 Mar 2021 18:38:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- f2d75b178532087c15b2a86ec79e443177611b7a
-Message-ID: <6055d0b3.c9yYBWvhDQqlzR/3%lkp@intel.com>
+Date: Sat, 20 Mar 2021 19:55:12 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING 8138882557813215cdad24e43c85f516ff251071
+Message-ID: <6055e2a0.w4Sk4AUr5gfjRyKf%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: f2d75b178532087c15b2a86ec79e443177611b7a  e1000e: Mark e1000e_pm_prepare() as __maybe_unused
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 8138882557813215cdad24e43c85f516ff251071  intel: clean up mismatched header comments
 
-elapsed time: 720m
+Warning in current branch:
 
-configs tested: 127
+drivers/net/ethernet/intel/iavf/iavf_fdir.c:399: warning: expecting prototype for iavf_fdir_fltr_by_loc(). Prototype was for iavf_find_fdir_fltr_by_loc() instead
+drivers/net/ethernet/intel/iavf/iavf_fdir.c:744: warning: expecting prototype for iavf_fdir_fltr_by_loc(). Prototype was for iavf_find_fdir_fltr_by_loc() instead
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- alpha-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- arc-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- i386-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- ia64-allmodconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- ia64-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- mips-allmodconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- mips-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- parisc-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- powerpc-allmodconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- powerpc-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- riscv-allmodconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- riscv-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- s390-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- sparc-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- x86_64-allyesconfig
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+|-- x86_64-rhel-7.6-kselftests
+|   `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+`-- xtensa-allyesconfig
+    `-- drivers-net-ethernet-intel-iavf-iavf_fdir.c:warning:expecting-prototype-for-iavf_fdir_fltr_by_loc().-Prototype-was-for-iavf_find_fdir_fltr_by_loc()-instead
+
+elapsed time: 796m
+
+configs tested: 119
 configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -40,12 +80,6 @@ mips                malta_kvm_guest_defconfig
 arm                         lubbock_defconfig
 arm                          ep93xx_defconfig
 sh                            hp6xx_defconfig
-arm                  colibri_pxa300_defconfig
-arm                            qcom_defconfig
-powerpc                     redwood_defconfig
-nds32                             allnoconfig
-powerpc                   lite5200b_defconfig
-powerpc                 canyonlands_defconfig
 powerpc                  mpc885_ads_defconfig
 arm                         cm_x300_defconfig
 powerpc                     pq2fads_defconfig
@@ -76,9 +110,6 @@ ia64                            zx1_defconfig
 powerpc                     skiroot_defconfig
 powerpc                     ksi8560_defconfig
 sh                     magicpanelr2_defconfig
-powerpc                     tqm5200_defconfig
-powerpc                 linkstation_defconfig
-arm                       versatile_defconfig
 arm                        clps711x_defconfig
 powerpc               mpc834x_itxgp_defconfig
 parisc                generic-64bit_defconfig
@@ -91,6 +122,7 @@ m68k                                defconfig
 m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
+nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
