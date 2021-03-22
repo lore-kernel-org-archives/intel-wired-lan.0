@@ -1,41 +1,51 @@
-From: Grzegorz Siwik <grzegorz.siwik@intel.com>
-Date: Mon, 22 Mar 2021 16:11:47 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix parameters in
- aq_get_phy_register()
-Message-ID: <1616425907-12165-1-git-send-email-grzegorz.siwik@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 22 Mar 2021 08:36:26 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v2 3/3] igc: Add support
+ for PTP getcrosststamp()
+In-Reply-To: <20201118125451.GC23320@hoboy.vegasvil.org>
+References: <20201114025704.GA15240@hoboy.vegasvil.org>
+ <874klo7pwp.fsf@intel.com> <20201117014926.GA26272@hoboy.vegasvil.org>
+ <87d00b5uj7.fsf@intel.com> <20201118125451.GC23320@hoboy.vegasvil.org>
+Message-ID: <87czvrkxol.fsf@vcostago-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change parameters order in aq_get_phy_register() due to wrong
-statistics in PHY reported by ethtool. Previosly all PHY statistics were
-exactly the same for all interfaces
-Now statistics are reported correctly - different for different interfaces
+Hi,
 
-Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
-Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
----
-v2:
--Changed target tree to net
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Richard Cochran <richardcochran@gmail.com> writes:
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 96d5202..0e92668 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5480,7 +5480,7 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
- 
- 		status = i40e_aq_get_phy_register(hw,
- 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
--				true, addr, offset, &value, NULL);
-+				addr, true, offset, &value, NULL);
- 		if (status)
- 			return -EIO;
- 		data[i] = value;
+> On Tue, Nov 17, 2020 at 05:21:48PM -0800, Vinicius Costa Gomes wrote:
+>> Agreed that would be easiest/simplest. But what I have in hand seems to
+>> not like it, i.e. I have an earlier series implementing this "one shot" way
+>> and it's not reliable over long periods of time or against having the
+>> system time adjusted.
+>
+> Before we go inventing a new API, I think we should first understand
+> why the one shot thing fails.
+
+After a long time, a couple of internal misunderstandings, fixing some
+typos in the delay adjustment constants and better error handling, this
+one shot method is working well.
+
+I will propose a new version, implementing PTP_SYS_OFFSET_PRECISE using
+the one shot way.
+
+>
+> If there is problem with the system time being adjusted during PTM,
+> then that needs solving in any case!
+
+The new series uses shorter cycles, is able to restart the PTM dialogs
+if an error is detected (the clock adjustment in the end causes the NIC
+to report a PTM timeout), so things are working better.
+
+>
+> Thanks,
+> Richard
+
+
+Cheers,
 -- 
-1.8.3.1
-
+Vinicius
