@@ -1,9 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Mon, 22 Mar 2021 23:50:42 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix oops at i40e_rebuild()
-In-Reply-To: <20210218215535.277482-1-arkadiusz.kubalewski@intel.com>
-References: <20210218215535.277482-1-arkadiusz.kubalewski@intel.com>
-Message-ID: <CO1PR11MB51051A93C99852BF71889D38FA659@CO1PR11MB5105.namprd11.prod.outlook.com>
+Date: Mon, 22 Mar 2021 23:58:34 +0000
+Subject: [Intel-wired-lan] [PATCH net 09/13] ice: remove DCBNL_DEVRESET
+ bit from PF state
+In-Reply-To: <20210226211932.46683-9-anthony.l.nguyen@intel.com>
+References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
+ <20210226211932.46683-9-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105C9324DE7B831ED1DE1D4FA659@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,36 +14,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Arkadiusz Kubalewski
-> Sent: Thursday, February 18, 2021 1:56 PM
+> Tony Nguyen
+> Sent: Friday, February 26, 2021 1:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net] i40e: Fix oops at i40e_rebuild()
+> Subject: [Intel-wired-lan] [PATCH net 09/13] ice: remove DCBNL_DEVRESET
+> bit from PF state
 > 
-> Setup TC before the i40e_setup_pf_switch() call.
-> Memory must be inititalized for all the queues before using its resources.
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> Previously it could be possible that a call:
-> xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev, rx_ring-
-> >queue_index, rx_ring->q_vector->napi.napi_id); was made with q_vector
-> being null.
+> The original purpose of the ICE_DCBNL_DEVRESET was to protect the driver
+> during DCBNL device resets.  But, the flow for DCBNL device resets now
+> consists of only calls up the stack such as dev_close() and dev_open() that
+> will result in NDO calls to the driver.  These will be handled with state changes
+> from the stack.  Also, there is a problem of the dev_close and dev_open
+> being blocked by checks for reset in progress also using the
+> ICE_DCBNL_DEVRESET bit.
 > 
-> Oops could show up with the following sequence:
-> - no driver loaded
-> - FW LLDP agent is on (flag disable-fw-lldp:off)
-> - link is up
-> - DCB configured with number of Traffic Classes that will not divide
->   completely the default number of queues (usually cpu cores)
-> - driver load
-> - set private flag: disable-fw-lldp:on
+> Since the ICE_DCBNL_DEVRESET bit is not necessary for protecting the driver
+> from DCBNL device resets and it is actually blocking changes coming form the
+> DCBNL interface, remove the bit from the PF state and don't block driver
+> function based on DCBNL reset in progress.
 > 
-> Fixes: 4b208eaa8078 ("i40e: Add init and default config of software based
-> DCB")
-> Fixes: b02e5a0ebb17 ("xsk: Propagate napi_id to XDP socket Rx path")
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Fixes: b94b013eb626 ("ice: Implement DCBNL support")
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h        | 1 -
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 2 --
+>  drivers/net/ethernet/intel/ice/ice_lib.c    | 1 -
+>  3 files changed, 4 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
+
+
