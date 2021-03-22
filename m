@@ -1,52 +1,96 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 22 Mar 2021 08:56:17 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] e1000e: Mark
- e1000e_pm_prepare() as __maybe_unused
-In-Reply-To: <20210317145234.3171021-1-weiyongjun1@huawei.com>
-References: <20210317145234.3171021-1-weiyongjun1@huawei.com>
-Message-ID: <80dcead2-f0e1-c1a4-037c-6215f960f32f@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Mon, 22 Mar 2021 21:53:40 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ d16b2cf332bb2869fb648e846e9089e322f05c26
+Message-ID: <6058a164.LqYJYeqY8iRMc6hf%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/17/2021 16:52, 'w00385741 wrote:
-> From: Wei Yongjun <weiyongjun1@huawei.com>
-> 
-> The function e1000e_pm_prepare() may have no callers depending
-> on configuration, so it must be marked __maybe_unused to avoid
-> harmless warning:
-> 
-> drivers/net/ethernet/intel/e1000e/netdev.c:6926:12:
->   warning: 'e1000e_pm_prepare' defined but not used [-Wunused-function]
->   6926 | static int e1000e_pm_prepare(struct device *dev)
->        |            ^~~~~~~~~~~~~~~~~
-> 
-> Fixes: ccf8b940e5fd ("e1000e: Leverage direct_complete to speed up s2ram")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index f1c9debd9f3b..d2e4653536c5 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6923,7 +6923,7 @@ static int __e1000_resume(struct pci_dev *pdev)
->   	return 0;
->   }
->   
-> -static int e1000e_pm_prepare(struct device *dev)
-> +static __maybe_unused int e1000e_pm_prepare(struct device *dev)
->   {
->   	return pm_runtime_suspended(dev) &&
->   		pm_suspend_via_firmware();
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: d16b2cf332bb2869fb648e846e9089e322f05c26  iavf: Enable flex-bytes support
+
+elapsed time: 724m
+
+configs tested: 69
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+nds32                            alldefconfig
+arm                          pcm027_defconfig
+powerpc                       ppc64_defconfig
+mips                       lemote2f_defconfig
+powerpc                     mpc5200_defconfig
+arm                         cm_x300_defconfig
+sh                           se7722_defconfig
+powerpc                    socrates_defconfig
+mips                      maltasmvp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20210322
+i386                 randconfig-a003-20210322
+i386                 randconfig-a001-20210322
+i386                 randconfig-a002-20210322
+i386                 randconfig-a006-20210322
+i386                 randconfig-a005-20210322
+x86_64               randconfig-a015-20210322
+x86_64               randconfig-a014-20210322
+x86_64               randconfig-a016-20210322
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
