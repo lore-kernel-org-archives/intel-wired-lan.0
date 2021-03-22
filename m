@@ -1,61 +1,41 @@
-From: Yongxin Liu <yongxin.liu@windriver.com>
-Date: Mon, 22 Mar 2021 15:14:48 +0800
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: fix unbalanced device
- enable/disable in suspend/resume
-Message-ID: <20210322071448.12023-1-yongxin.liu@windriver.com>
+From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Date: Mon, 22 Mar 2021 16:11:47 +0100
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix parameters in
+ aq_get_phy_register()
+Message-ID: <1616425907-12165-1-git-send-email-grzegorz.siwik@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-pci_disable_device() called in __ixgbe_shutdown() decreases
-dev->enable_cnt by 1. pci_enable_device_mem() which increases
-dev->enable_cnt by 1, was removed from ixgbe_resume() in commit
-6f82b2558735 ("ixgbe: use generic power management"). This caused
-unbalanced increase/decrease. So add pci_enable_device_mem() back.
+Change parameters order in aq_get_phy_register() due to wrong
+statistics in PHY reported by ethtool. Previosly all PHY statistics were
+exactly the same for all interfaces
+Now statistics are reported correctly - different for different interfaces
 
-Fix the following call trace.
-
-  ixgbe 0000:17:00.1: disabling already-disabled device
-  Call Trace:
-   __ixgbe_shutdown+0x10a/0x1e0 [ixgbe]
-   ixgbe_suspend+0x32/0x70 [ixgbe]
-   pci_pm_suspend+0x87/0x160
-   ? pci_pm_freeze+0xd0/0xd0
-   dpm_run_callback+0x42/0x170
-   __device_suspend+0x114/0x460
-   async_suspend+0x1f/0xa0
-   async_run_entry_fn+0x3c/0xf0
-   process_one_work+0x1dd/0x410
-   worker_thread+0x34/0x3f0
-   ? cancel_delayed_work+0x90/0x90
-   kthread+0x14c/0x170
-   ? kthread_park+0x90/0x90
-   ret_from_fork+0x1f/0x30
-
-Fixes: 6f82b2558735 ("ixgbe: use generic power management")
-Signed-off-by: Yongxin Liu <yongxin.liu@windriver.com>
+Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
+Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+v2:
+-Changed target tree to net
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 9f3f12e2ccf2..b0a8f7a43f06 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6891,6 +6891,11 @@ static int __maybe_unused ixgbe_resume(struct device *dev_d)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 96d5202..0e92668 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5480,7 +5480,7 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
  
- 	adapter->hw.hw_addr = adapter->io_addr;
- 
-+	err = pci_enable_device_mem(pdev);
-+	if (err) {
-+		e_dev_err("Cannot enable PCI device from suspend\n");
-+		return err;
-+	}
- 	smp_mb__before_atomic();
- 	clear_bit(__IXGBE_DISABLED, &adapter->state);
- 	pci_set_master(pdev);
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				true, addr, offset, &value, NULL);
++				addr, true, offset, &value, NULL);
+ 		if (status)
+ 			return -EIO;
+ 		data[i] = value;
 -- 
-2.14.5
+1.8.3.1
 
