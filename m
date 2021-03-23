@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 23 Mar 2021 19:53:27 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- be4dabd08146bb482df94ef03b171aa6e11364c4
-Message-ID: <6059d6b7.smftHVE4pCy0I9vx%lkp@intel.com>
+Date: Tue, 23 Mar 2021 21:47:50 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 2c5aa250826a16cf65add9b8084bfed7ca7353d7
+Message-ID: <6059f186.obWkFvfTLqbfjPKP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: be4dabd08146bb482df94ef03b171aa6e11364c4  i40e: Fix parameters in aq_get_phy_register()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 2c5aa250826a16cf65add9b8084bfed7ca7353d7  i40e: Fix parameters in aq_get_phy_register()
 
-elapsed time: 721m
+elapsed time: 722m
 
-configs tested: 111
+configs tested: 90
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,57 +26,30 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
 i386                             allyesconfig
 riscv                            allyesconfig
-powerpc                     powernv_defconfig
-sh                           se7712_defconfig
-arm                         lubbock_defconfig
-sparc64                          alldefconfig
-powerpc                      ppc44x_defconfig
-mips                      maltaaprp_defconfig
-mips                           ip28_defconfig
-arm                             mxs_defconfig
-riscv                            alldefconfig
+x86_64                           allyesconfig
+m68k                       m5208evb_defconfig
+arc                         haps_hs_defconfig
 powerpc                      katmai_defconfig
-sh                        edosk7705_defconfig
-powerpc                       maple_defconfig
-parisc                              defconfig
-sh                            titan_defconfig
+sh                   rts7751r2dplus_defconfig
+arm                         shannon_defconfig
+powerpc                    adder875_defconfig
+parisc                           alldefconfig
+mips                        omega2p_defconfig
 arm                      pxa255-idp_defconfig
-arc                           tb10x_defconfig
-mips                          ath79_defconfig
-powerpc                     akebono_defconfig
-powerpc                     redwood_defconfig
-arm                            lart_defconfig
-arm                         palmz72_defconfig
-arm                        mvebu_v7_defconfig
-sh                           se7780_defconfig
-nios2                            alldefconfig
-powerpc                 linkstation_defconfig
-powerpc                    gamecube_defconfig
-arm                           tegra_defconfig
-xtensa                  cadence_csp_defconfig
-powerpc                 mpc836x_rdk_defconfig
+powerpc                         ps3_defconfig
+sh                           se7750_defconfig
+sh                          urquell_defconfig
 openrisc                         alldefconfig
-m68k                       m5249evb_defconfig
-mips                        maltaup_defconfig
-arm                           omap1_defconfig
-i386                                defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                     rainier_defconfig
-arm                          pxa168_defconfig
-arm                          collie_defconfig
+parisc                generic-64bit_defconfig
+sh                           se7343_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -86,13 +59,18 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
 parisc                           allyesconfig
 s390                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                               tinyconfig
+i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
@@ -121,6 +99,7 @@ riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
+riscv                            allmodconfig
 x86_64                    rhel-7.6-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
