@@ -1,26 +1,56 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Tue, 23 Mar 2021 18:45:30 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue v3 1/3] Revert "PCI: Make
- pci_enable_ptm() private"
-In-Reply-To: <87zgytk92s.fsf@vcostago-mobl2.amr.corp.intel.com>
-References: <20210322161822.1546454-1-vinicius.gomes@intel.com>
- <20210322161822.1546454-2-vinicius.gomes@intel.com>
- <20210323160122.GC2438080@infradead.org>
- <87zgytk92s.fsf@vcostago-mobl2.amr.corp.intel.com>
-Message-ID: <20210323184530.GA2483289@infradead.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 23 Mar 2021 14:29:20 -0500
+Subject: [Intel-wired-lan] [PATCH next-queue v3 2/3] igc: Enable PCIe PTM
+In-Reply-To: <20210322161822.1546454-3-vinicius.gomes@intel.com>
+Message-ID: <20210323192920.GA597326@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Mar 23, 2021 at 11:40:11AM -0700, Vinicius Costa Gomes wrote:
-> > Without an EXPORT_SYMBOL_GPL this is not going to be very useful for
-> > your driver.
-> 
-> Unless I am missing something here, the commit that made
-> 'pci_enable_ptm()' private didn't remove the 'EXPORT_SYMBOL' from the
-> function definition in drivers/pci/pcie/ptm.c.
+On Mon, Mar 22, 2021 at 09:18:21AM -0700, Vinicius Costa Gomes wrote:
+> In practice, enabling PTM also sets the enabled_ptm flag in the PCI
+> device, the flag will be used for detecting if PTM is enabled before
+> adding support for the SYSOFFSET_PRECISE ioctl() (which is added by
+> implementing the getcrosststamp() PTP function).
 
-OOPS, indeed.  Looks like right now the function is nindeed exported,
-but has no single user at all.
+I think you're referring to the "pci_dev.ptm_enabled" flag.  I'm not
+sure what the connection to this patch is.  The SYSOFFSET_PRECISE
+stuff also seems to belong with some other patch.
+
+This patch merely enables PTM if it's supported (might be worth
+expanding Precision Time Measurement for context).
+
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index f77feadde8d2..04319ffae288 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -12,6 +12,8 @@
+>  #include <net/pkt_sched.h>
+>  #include <linux/bpf_trace.h>
+>  #include <net/xdp_sock_drv.h>
+> +#include <linux/pci.h>
+> +
+>  #include <net/ipv6.h>
+>  
+>  #include "igc.h"
+> @@ -5792,6 +5794,10 @@ static int igc_probe(struct pci_dev *pdev,
+>  
+>  	pci_enable_pcie_error_reporting(pdev);
+>  
+> +	err = pci_enable_ptm(pdev, NULL);
+> +	if (err < 0)
+> +		dev_err(&pdev->dev, "PTM not supported\n");
+> +
+>  	pci_set_master(pdev);
+>  
+>  	err = -ENOMEM;
+> -- 
+> 2.31.0
+> 
