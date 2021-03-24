@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 24 Mar 2021 16:00:32 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 67831a08a778818350cd4cd6d27dcd989b0321e7
-Message-ID: <605af1a0.ET5/l52oc5wO9kKL%lkp@intel.com>
+Date: Wed, 24 Mar 2021 16:00:30 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 648b0107460167f25637ff2dd0304c1d2e9edf0a
+Message-ID: <605af19e./TjJg6lUT1hhJ8Ba%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 67831a08a778818350cd4cd6d27dcd989b0321e7  e1000: Fix fall-through warnings for Clang
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 648b0107460167f25637ff2dd0304c1d2e9edf0a  ixgbe: fix unbalanced device enable/disable in suspend/resume
 
-elapsed time: 723m
+elapsed time: 722m
 
-configs tested: 115
+configs tested: 93
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,57 +26,33 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-powerpc                         ps3_defconfig
-um                           x86_64_defconfig
-s390                             allmodconfig
-ia64                         bigsur_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                     redwood_defconfig
-mips                            ar7_defconfig
-m68k                            mac_defconfig
-arm                          imote2_defconfig
-mips                     cu1000-neo_defconfig
-mips                      bmips_stb_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                         mv78xx0_defconfig
-arm                           h5000_defconfig
-arm                        spear3xx_defconfig
-sh                 kfr2r09-romimage_defconfig
-powerpc                    klondike_defconfig
-sh                           se7712_defconfig
-ia64                          tiger_defconfig
-mips                          ath25_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                            lart_defconfig
+arm                         lubbock_defconfig
+mips                         tb0287_defconfig
+sh                          sdk7780_defconfig
+powerpc                  storcenter_defconfig
+powerpc                     kilauea_defconfig
+mips                   sb1250_swarm_defconfig
 powerpc                   bluestone_defconfig
-arm                      pxa255-idp_defconfig
-arm                            hisi_defconfig
-arm                          exynos_defconfig
-arm                      tct_hammer_defconfig
-mips                      malta_kvm_defconfig
-arm                           stm32_defconfig
 arc                     haps_hs_smp_defconfig
 s390                             alldefconfig
 mips                            e55_defconfig
 sh                     sh7710voipgw_defconfig
 m68k                        stmark2_defconfig
-mips                        workpad_defconfig
-mips                     cu1830-neo_defconfig
-arm                        shmobile_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                      makalu_defconfig
-arm                             pxa_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                       eiger_defconfig
-arm                          pxa168_defconfig
+sh                ecovec24-romimage_defconfig
+m68k                       m5275evb_defconfig
+mips                         mpc30x_defconfig
+arc                              alldefconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -88,26 +64,19 @@ arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
+s390                             allmodconfig
 parisc                           allyesconfig
 s390                                defconfig
+i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                               tinyconfig
 i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a002-20210323
-x86_64               randconfig-a003-20210323
-x86_64               randconfig-a006-20210323
-x86_64               randconfig-a001-20210323
-x86_64               randconfig-a004-20210323
-x86_64               randconfig-a005-20210323
 i386                 randconfig-a003-20210323
 i386                 randconfig-a004-20210323
 i386                 randconfig-a001-20210323
@@ -120,11 +89,20 @@ i386                 randconfig-a015-20210323
 i386                 randconfig-a016-20210323
 i386                 randconfig-a012-20210323
 i386                 randconfig-a013-20210323
+x86_64               randconfig-a002-20210323
+x86_64               randconfig-a003-20210323
+x86_64               randconfig-a006-20210323
+x86_64               randconfig-a001-20210323
+x86_64               randconfig-a004-20210323
+x86_64               randconfig-a005-20210323
 riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                           allyesconfig
 x86_64                    rhel-7.6-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
