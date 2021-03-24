@@ -1,47 +1,44 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 24 Mar 2021 10:05:31 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Fix overwrites return value
-Message-ID: <20210324080531.2051963-1-sasha.neftin@intel.com>
+From: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Date: Wed, 24 Mar 2021 09:58:27 +0100
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix parameters in
+ aq_get_phy_register()
+Message-ID: <1616576307-54213-1-git-send-email-grzegorz.siwik@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-drivers/net/ethernet/intel/igc/igc_i225.c:235 igc_write_nvm_srwr()
-warn: loop overwrites return value 'ret_val'
+Change parameters order in aq_get_phy_register() due to wrong
+statistics in PHY reported by ethtool. Previously all PHY statistics were
+exactly the same for all interfaces
+Now statistics are reported correctly - different for different interfaces
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
+Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_i225.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+v2:
+-Changed target tree to net
+---
+v3:
+-Fixed typo in commit message
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
-index cc83bb5c15e8..b2ef9fde97b3 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.c
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.c
-@@ -229,10 +229,11 @@ static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
- 	if (offset >= nvm->word_size || (words > (nvm->word_size - offset)) ||
- 	    words == 0) {
- 		hw_dbg("nvm parameter(s) out of bounds\n");
--		goto out;
-+		return ret_val;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 96d5202..0e92668 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5480,7 +5480,7 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
  
- 	for (i = 0; i < words; i++) {
-+		ret_val = -IGC_ERR_NVM;
- 		eewr = ((offset + i) << IGC_NVM_RW_ADDR_SHIFT) |
- 			(data[i] << IGC_NVM_RW_REG_DATA) |
- 			IGC_NVM_RW_REG_START;
-@@ -254,7 +255,6 @@ static s32 igc_write_nvm_srwr(struct igc_hw *hw, u16 offset, u16 words,
- 		}
- 	}
- 
--out:
- 	return ret_val;
- }
- 
+ 		status = i40e_aq_get_phy_register(hw,
+ 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
+-				true, addr, offset, &value, NULL);
++				addr, true, offset, &value, NULL);
+ 		if (status)
+ 			return -EIO;
+ 		data[i] = value;
 -- 
-2.25.1
+1.8.3.1
 
