@@ -1,44 +1,36 @@
-From: Grzegorz Siwik <grzegorz.siwik@intel.com>
-Date: Wed, 24 Mar 2021 09:58:27 +0100
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix parameters in
- aq_get_phy_register()
-Message-ID: <1616576307-54213-1-git-send-email-grzegorz.siwik@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 24 Mar 2021 15:15:25 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Expose LPI counters
+Message-ID: <20210324131525.2196955-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change parameters order in aq_get_phy_register() due to wrong
-statistics in PHY reported by ethtool. Previously all PHY statistics were
-exactly the same for all interfaces
-Now statistics are reported correctly - different for different interfaces
+Expose EEE tx and rx low power idle counters via ethtool
+A EEE TX or RX LPI event occurs when the transmitter or the receiver
+enters EEE (IEEE802.3az) LPI state.
+ethtool --statistics <iface>
 
-Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
-Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-v2:
--Changed target tree to net
----
-v3:
--Fixed typo in commit message
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 96d5202..0e92668 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -5480,7 +5480,7 @@ static int i40e_get_module_eeprom(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 8722294ab90c..9722449d7633 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -65,6 +65,8 @@ static const struct igc_stats igc_gstrings_stats[] = {
+ 	IGC_STAT("tx_hwtstamp_timeouts", tx_hwtstamp_timeouts),
+ 	IGC_STAT("tx_hwtstamp_skipped", tx_hwtstamp_skipped),
+ 	IGC_STAT("rx_hwtstamp_cleared", rx_hwtstamp_cleared),
++	IGC_STAT("tx_lpi_counter", stats.tlpic),
++	IGC_STAT("rx_lpi_counter", stats.rlpic),
+ };
  
- 		status = i40e_aq_get_phy_register(hw,
- 				I40E_AQ_PHY_REG_ACCESS_EXTERNAL_MODULE,
--				true, addr, offset, &value, NULL);
-+				addr, true, offset, &value, NULL);
- 		if (status)
- 			return -EIO;
- 		data[i] = value;
+ #define IGC_NETDEV_STAT(_net_stat) { \
 -- 
-1.8.3.1
+2.25.1
 
