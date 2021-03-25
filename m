@@ -1,64 +1,63 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Mar 2021 15:35:13 -0700
-Subject: [Intel-wired-lan] [PATCH S57 10/14] ice: Limit forced overrides
- based on FW version
+Date: Thu, 25 Mar 2021 15:35:17 -0700
+Subject: [Intel-wired-lan] [PATCH S57 14/14] ice: Remove unnecessary checks
+ in add/kill_vid ndo ops
 In-Reply-To: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
 References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210325223517.17722-10-anthony.l.nguyen@intel.com>
+Message-ID: <20210325223517.17722-14-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jeb Cramer <jeb.j.cramer@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
 
-Beyond a specific version of firmware, there is no need to provide
-override values to the firmware when setting PHY capabilities.  In this
-case, we do not need to indicate whether we're in Strict or Lenient Link
-Mode.
+Currently the driver is doing two unnecessary checks. First both ops are
+checking if the VLAN ID passed in is less than VLAN_N_VID and second
+both ops are checking to see if a port VLAN is configured on the VSI.
 
-In the case of translating capabilities to the configuration structure,
-the module compliance enforcement is already correctly set by firmware,
-so the extra code block is redundant.
+The first check is already handled by the 8021q driver so this is an
+unnecessary check. The second check is unnecessary because the PF VSI is
+never put into a port VLAN.
 
-Signed-off-by: Jeb Cramer <jeb.j.cramer@intel.com>
+Remove these checks.
+
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 8bbd28ddd56c..e93b1e40f627 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3013,17 +3013,6 @@ ice_copy_phy_caps_to_cfg(struct ice_port_info *pi,
- 	cfg->link_fec_opt = caps->link_fec_options;
- 	cfg->module_compliance_enforcement =
- 		caps->module_compliance_enforcement;
--
--	if (ice_fw_supports_link_override(pi->hw)) {
--		struct ice_link_default_override_tlv tlv;
--
--		if (ice_get_link_default_override(&tlv, pi))
--			return;
--
--		if (tlv.options & ICE_LINK_OVERRIDE_STRICT_MODE)
--			cfg->module_compliance_enforcement |=
--				ICE_LINK_OVERRIDE_STRICT_MODE;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index b3229202a300..47a7531f517d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3097,15 +3097,6 @@ ice_vlan_rx_add_vid(struct net_device *netdev, __always_unused __be16 proto,
+ 	struct ice_vsi *vsi = np->vsi;
+ 	int ret;
+ 
+-	if (vid >= VLAN_N_VID) {
+-		netdev_err(netdev, "VLAN id requested %d is out of range %d\n",
+-			   vid, VLAN_N_VID);
+-		return -EINVAL;
 -	}
- }
+-
+-	if (vsi->info.pvid)
+-		return -EINVAL;
+-
+ 	/* VLAN 0 is added by default during load/reset */
+ 	if (!vid)
+ 		return 0;
+@@ -3143,9 +3134,6 @@ ice_vlan_rx_kill_vid(struct net_device *netdev, __always_unused __be16 proto,
+ 	struct ice_vsi *vsi = np->vsi;
+ 	int ret;
  
- /**
-@@ -3091,7 +3080,8 @@ ice_cfg_phy_fec(struct ice_port_info *pi, struct ice_aqc_set_phy_cfg_data *cfg,
- 		break;
- 	}
- 
--	if (fec == ICE_FEC_AUTO && ice_fw_supports_link_override(pi->hw)) {
-+	if (fec == ICE_FEC_AUTO && ice_fw_supports_link_override(hw) &&
-+	    !ice_fw_supports_report_dflt_cfg(hw)) {
- 		struct ice_link_default_override_tlv tlv;
- 
- 		if (ice_get_link_default_override(&tlv, pi))
+-	if (vsi->info.pvid)
+-		return -EINVAL;
+-
+ 	/* don't allow removal of VLAN 0 */
+ 	if (!vid)
+ 		return 0;
 -- 
 2.20.1
 
