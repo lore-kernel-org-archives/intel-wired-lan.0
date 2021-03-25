@@ -1,93 +1,159 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Mar 2021 15:35:10 -0700
-Subject: [Intel-wired-lan] [PATCH S57 07/14] ice: Fix error return codes in
- ice_set_link_ksettings
-In-Reply-To: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
-References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210325223517.17722-7-anthony.l.nguyen@intel.com>
+Date: Thu, 25 Mar 2021 15:35:04 -0700
+Subject: [Intel-wired-lan] [PATCH S57 01/14] ice: Re-send some AQ commands,
+ as result of EBUSY AQ error
+Message-ID: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+From: Chinh T Cao <chinh.t.cao@intel.com>
 
-Return more appropriate error codes so that the right error
-message is communicated to the user by ethtool.
+Retry sending some AQ commands, as result of EBUSY AQ error.
+ice_aqc_opc_get_link_topo
+ice_aqc_opc_lldp_stop
+ice_aqc_opc_lldp_start
+ice_aqc_opc_lldp_filter_ctrl
 
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+This change follows the latest guidelines from HW team. It is
+better to retry the same AQ command several times, as the result
+of EBUSY, instead of returning error to the caller right away.
+
+Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c   | 81 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |  3 +
+ drivers/net/ethernet/intel/ice/ice_controlq.c |  2 +-
+ 3 files changed, 84 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 989b0b0e3cad..643012b0cc67 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2212,7 +2212,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	pi = np->vsi->port_info;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 34fddbc30822..f1573d653321 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1292,6 +1292,85 @@ const struct ice_ctx_ele ice_tlan_ctx_info[] = {
+  */
+ DEFINE_MUTEX(ice_global_cfg_lock_sw);
  
- 	if (!pi)
--		return -EOPNOTSUPP;
-+		return -EIO;
- 
- 	if (pi->phy.media_type != ICE_MEDIA_BASET &&
- 	    pi->phy.media_type != ICE_MEDIA_FIBER &&
-@@ -2229,7 +2229,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
- 				     phy_caps, NULL);
- 	if (status) {
--		err = -EAGAIN;
-+		err = -EIO;
- 		goto done;
++/**
++ * ice_should_retry_sq_send_cmd
++ * @opcode: AQ opcode
++ *
++ * Decide if we should retry the send command routine for the ATQ, depending
++ * on the opcode.
++ */
++static bool ice_should_retry_sq_send_cmd(u16 opcode)
++{
++	switch (opcode) {
++	case ice_aqc_opc_get_link_topo:
++	case ice_aqc_opc_lldp_stop:
++	case ice_aqc_opc_lldp_start:
++	case ice_aqc_opc_lldp_filter_ctrl:
++		return true;
++	}
++
++	return false;
++}
++
++/**
++ * ice_sq_send_cmd_retry - send command to Control Queue (ATQ)
++ * @hw: pointer to the HW struct
++ * @cq: pointer to the specific Control queue
++ * @desc: prefilled descriptor describing the command
++ * @buf: buffer to use for indirect commands (or NULL for direct commands)
++ * @buf_size: size of buffer for indirect commands (or 0 for direct commands)
++ * @cd: pointer to command details structure
++ *
++ * Retry sending the FW Admin Queue command, multiple times, to the FW Admin
++ * Queue if the EBUSY AQ error is returned.
++ */
++static enum ice_status
++ice_sq_send_cmd_retry(struct ice_hw *hw, struct ice_ctl_q_info *cq,
++		      struct ice_aq_desc *desc, void *buf, u16 buf_size,
++		      struct ice_sq_cd *cd)
++{
++	struct ice_aq_desc desc_cpy;
++	enum ice_status status;
++	bool is_cmd_for_retry;
++	u8 *buf_cpy = NULL;
++	u8 idx = 0;
++	u16 opcode;
++
++	opcode = le16_to_cpu(desc->opcode);
++	is_cmd_for_retry = ice_should_retry_sq_send_cmd(opcode);
++	memset(&desc_cpy, 0, sizeof(desc_cpy));
++
++	if (is_cmd_for_retry) {
++		if (buf) {
++			buf_cpy = kzalloc(buf_size, GFP_KERNEL);
++			if (!buf_cpy)
++				return ICE_ERR_NO_MEMORY;
++		}
++
++		memcpy(&desc_cpy, desc, sizeof(desc_cpy));
++	}
++
++	do {
++		status = ice_sq_send_cmd(hw, cq, desc, buf, buf_size, cd);
++
++		if (!is_cmd_for_retry || !status ||
++		    hw->adminq.sq_last_status != ICE_AQ_RC_EBUSY)
++			break;
++
++		if (buf_cpy)
++			memcpy(buf, buf_cpy, buf_size);
++
++		memcpy(desc, &desc_cpy, sizeof(desc_cpy));
++
++		mdelay(ICE_SQ_SEND_DELAY_TIME_MS);
++
++	} while (++idx < ICE_SQ_SEND_MAX_EXECUTE);
++
++	kfree(buf_cpy);
++
++	return status;
++}
++
+ /**
+  * ice_aq_send_cmd - send FW Admin Queue command to FW Admin Queue
+  * @hw: pointer to the HW struct
+@@ -1333,7 +1412,7 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
+ 		break;
  	}
  
-@@ -2252,7 +2252,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 			   __ETHTOOL_LINK_MODE_MASK_NBITS)) {
- 		if (!test_bit(ICE_FLAG_LINK_LENIENT_MODE_ENA, pf->flags))
- 			netdev_info(netdev, "The selected speed is not supported by the current media. Please select a link speed that is supported by the current media.\n");
--		err = -EINVAL;
-+		err = -EOPNOTSUPP;
- 		goto done;
- 	}
+-	status = ice_sq_send_cmd(hw, &hw->adminq, desc, buf, buf_size, cd);
++	status = ice_sq_send_cmd_retry(hw, &hw->adminq, desc, buf, buf_size, cd);
+ 	if (lock_acquired)
+ 		mutex_unlock(&ice_global_cfg_lock_sw);
  
-@@ -2304,7 +2304,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	pi->phy.get_link_info = true;
- 	status = ice_get_link_status(pi, &linkup);
- 	if (status) {
--		err = -EAGAIN;
-+		err = -EIO;
- 		goto done;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 81fd69cb1485..d14406b11c92 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -11,6 +11,9 @@
+ #include "ice_switch.h"
+ #include <linux/avf/virtchnl.h>
  
-@@ -2335,7 +2335,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	/* check if there is a PHY type for the requested advertised speed */
- 	if (!(phy_type_low || phy_type_high)) {
- 		netdev_info(netdev, "The selected speed is not supported by the current media. Please select a link speed that is supported by the current media.\n");
--		err = -EAGAIN;
-+		err = -EOPNOTSUPP;
- 		goto done;
- 	}
- 
-@@ -2359,7 +2359,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 					      pf->nvm_phy_type_lo;
- 		} else {
- 			netdev_info(netdev, "The selected speed is not supported by the current media. Please select a link speed that is supported by the current media.\n");
--			err = -EAGAIN;
-+			err = -EOPNOTSUPP;
- 			goto done;
- 		}
- 	}
-@@ -2378,7 +2378,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	status = ice_aq_set_phy_cfg(&pf->hw, pi, &config, NULL);
- 	if (status) {
- 		netdev_info(netdev, "Set phy config failed,\n");
--		err = -EAGAIN;
-+		err = -EIO;
- 		goto done;
- 	}
- 
++#define ICE_SQ_SEND_DELAY_TIME_MS	10
++#define ICE_SQ_SEND_MAX_EXECUTE		3
++
+ enum ice_status ice_init_hw(struct ice_hw *hw);
+ void ice_deinit_hw(struct ice_hw *hw);
+ enum ice_status ice_check_reset(struct ice_hw *hw);
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index b2d8a5932b1d..0f207a42ea77 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -892,7 +892,7 @@ static bool ice_sq_done(struct ice_hw *hw, struct ice_ctl_q_info *cq)
+  * ice_sq_send_cmd - send command to Control Queue (ATQ)
+  * @hw: pointer to the HW struct
+  * @cq: pointer to the specific Control queue
+- * @desc: prefilled descriptor describing the command (non DMA mem)
++ * @desc: prefilled descriptor describing the command
+  * @buf: buffer to use for indirect commands (or NULL for direct commands)
+  * @buf_size: size of buffer for indirect commands (or 0 for direct commands)
+  * @cd: pointer to command details structure
 -- 
 2.20.1
 
