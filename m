@@ -1,9 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Mar 2021 15:35:16 -0700
-Subject: [Intel-wired-lan] [PATCH S57 13/14] ice: Remove rx_gro_dropped stat
+Date: Thu, 25 Mar 2021 15:35:12 -0700
+Subject: [Intel-wired-lan] [PATCH S57 09/14] ice: Use default configuration
+ mode for PHY configuration
 In-Reply-To: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
 References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210325223517.17722-13-anthony.l.nguyen@intel.com>
+Message-ID: <20210325223517.17722-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,84 +13,333 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Tracking of the rx_gro_dropped statistic was removed in
-commit f73fc40327c0 ("ice: drop dead code in ice_receive_skb()").
-Remove the associated variables and its reporting to ethtool stats.
+Recent firmware supports a new "get PHY capabilities" mode
+ICE_AQC_REPORT_DFLT_CFG which makes it unnecessary for the driver
+to track and apply NVM based default link overrides.
 
+If FW AQ API version supports it, use Report Default Configuration.
+Add check function for Report Default Configuration support and update
+accordingly.
+
+Also change adv_phy_type_[lo|hi] to advert_phy_type[lo|hi] for
+clarity.
+
+Co-developed-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
+Signed-off-by: Mateusz Pacuszka <mateuszx.pacuszka@intel.com>
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         | 1 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 -
- drivers/net/ethernet/intel/ice/ice_main.c    | 4 +---
- drivers/net/ethernet/intel/ice/ice_txrx.h    | 1 -
- 4 files changed, 1 insertion(+), 6 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 12 ++--
+ drivers/net/ethernet/intel/ice/ice_common.c   | 33 ++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 59 +++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_main.c     | 35 +++++++----
+ drivers/net/ethernet/intel/ice/ice_type.h     |  5 ++
+ 6 files changed, 103 insertions(+), 42 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 79652b72c38b..a3289dc3bcbf 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -266,7 +266,6 @@ struct ice_vsi {
- 	u32 tx_busy;
- 	u32 rx_buf_failed;
- 	u32 rx_page_failed;
--	u32 rx_gro_dropped;
- 	u16 num_q_vectors;
- 	u16 base_vector;		/* IRQ base for OS reserved vectors */
- 	enum ice_vsi_type type;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index f65e509f582c..9151ddb5234f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -877,16 +877,18 @@ struct ice_aqc_get_phy_caps {
+ 	__le16 param0;
+ 	/* 18.0 - Report qualified modules */
+ #define ICE_AQC_GET_PHY_RQM		BIT(0)
+-	/* 18.1 - 18.2 : Report mode
+-	 * 00b - Report NVM capabilities
+-	 * 01b - Report topology capabilities
+-	 * 10b - Report SW configured
++	/* 18.1 - 18.3 : Report mode
++	 * 000b - Report NVM capabilities
++	 * 001b - Report topology capabilities
++	 * 010b - Report SW configured
++	 * 100b - Report default capabilities
+ 	 */
+ #define ICE_AQC_REPORT_MODE_S			1
+-#define ICE_AQC_REPORT_MODE_M			(3 << ICE_AQC_REPORT_MODE_S)
++#define ICE_AQC_REPORT_MODE_M			(7 << ICE_AQC_REPORT_MODE_S)
+ #define ICE_AQC_REPORT_TOPO_CAP_NO_MEDIA	0
+ #define ICE_AQC_REPORT_TOPO_CAP_MEDIA		BIT(1)
+ #define ICE_AQC_REPORT_ACTIVE_CFG		BIT(2)
++#define ICE_AQC_REPORT_DFLT_CFG		BIT(3)
+ 	__le32 reserved1;
+ 	__le32 addr_high;
+ 	__le32 addr_low;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 1d744d2456d4..8bbd28ddd56c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -158,6 +158,10 @@ ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
+ 		return ICE_ERR_PARAM;
+ 	hw = pi->hw;
+ 
++	if (report_mode == ICE_AQC_REPORT_DFLT_CFG &&
++	    !ice_fw_supports_report_dflt_cfg(hw))
++		return ICE_ERR_PARAM;
++
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_phy_caps);
+ 
+ 	if (qual_mods)
+@@ -3034,16 +3038,21 @@ ice_cfg_phy_fec(struct ice_port_info *pi, struct ice_aqc_set_phy_cfg_data *cfg,
+ {
+ 	struct ice_aqc_get_phy_caps_data *pcaps;
+ 	enum ice_status status;
++	struct ice_hw *hw;
+ 
+ 	if (!pi || !cfg)
+ 		return ICE_ERR_BAD_PTR;
+ 
++	hw = pi->hw;
++
+ 	pcaps = kzalloc(sizeof(*pcaps), GFP_KERNEL);
+ 	if (!pcaps)
+ 		return ICE_ERR_NO_MEMORY;
+ 
+-	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA, pcaps,
+-				     NULL);
++	status = ice_aq_get_phy_caps(pi, false,
++				     (ice_fw_supports_report_dflt_cfg(hw) ?
++				      ICE_AQC_REPORT_DFLT_CFG :
++				      ICE_AQC_REPORT_TOPO_CAP_MEDIA), pcaps, NULL);
+ 	if (status)
+ 		goto out;
+ 
+@@ -4492,3 +4501,23 @@ ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add)
+ 
+ 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+ }
++
++/**
++ * ice_fw_supports_report_dflt_cfg
++ * @hw: pointer to the hardware structure
++ *
++ * Checks if the firmware supports report default configuration
++ */
++bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw)
++{
++	if (hw->api_maj_ver == ICE_FW_API_REPORT_DFLT_CFG_MAJ) {
++		if (hw->api_min_ver > ICE_FW_API_REPORT_DFLT_CFG_MIN)
++			return true;
++		if (hw->api_min_ver == ICE_FW_API_REPORT_DFLT_CFG_MIN &&
++		    hw->api_patch >= ICE_FW_API_REPORT_DFLT_CFG_PATCH)
++			return true;
++	} else if (hw->api_maj_ver > ICE_FW_API_REPORT_DFLT_CFG_MAJ) {
++		return true;
++	}
++	return false;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index d14406b11c92..7a9d2dfb21a2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -179,4 +179,5 @@ ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
+ bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw);
+ enum ice_status
+ ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add);
++bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw);
+ #endif /* _ICE_COMMON_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index d5b20764d24a..f2bc8f1e86cc 100644
+index 273647188f69..d5b20764d24a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -60,7 +60,6 @@ static const struct ice_stats ice_gstrings_vsi_stats[] = {
- 	ICE_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
- 	ICE_VSI_STAT("rx_alloc_fail", rx_buf_failed),
- 	ICE_VSI_STAT("rx_pg_alloc_fail", rx_page_failed),
--	ICE_VSI_STAT("rx_gro_dropped", rx_gro_dropped),
- 	ICE_VSI_STAT("tx_errors", eth_stats.tx_errors),
- 	ICE_VSI_STAT("tx_linearize", tx_linearize),
- 	ICE_VSI_STAT("tx_busy", tx_busy),
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d84a0e05a0c0..b3229202a300 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5375,7 +5375,6 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
- 	vsi->tx_linearize = 0;
- 	vsi->rx_buf_failed = 0;
- 	vsi->rx_page_failed = 0;
--	vsi->rx_gro_dropped = 0;
+@@ -1445,8 +1445,8 @@ void ice_mask_min_supported_speeds(u64 phy_types_high, u64 *phy_types_low)
+ 	do {								     \
+ 		if (req_speeds & (aq_link_speed) ||			     \
+ 		    (!req_speeds &&					     \
+-		     (adv_phy_type_lo & phy_type_mask_lo ||		     \
+-		      adv_phy_type_hi & phy_type_mask_hi)))		     \
++		     (advert_phy_type_lo & phy_type_mask_lo ||		     \
++		      advert_phy_type_hi & phy_type_mask_hi)))		     \
+ 			ethtool_link_ksettings_add_link_mode(ks, advertising,\
+ 							ethtool_link_mode);  \
+ 	} while (0)
+@@ -1463,10 +1463,10 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
++	u64 advert_phy_type_lo = 0;
++	u64 advert_phy_type_hi = 0;
+ 	u64 phy_type_mask_lo = 0;
+ 	u64 phy_type_mask_hi = 0;
+-	u64 adv_phy_type_lo = 0;
+-	u64 adv_phy_type_hi = 0;
+ 	u64 phy_types_high = 0;
+ 	u64 phy_types_low = 0;
+ 	u16 req_speeds;
+@@ -1484,28 +1484,35 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	 * requested by user.
+ 	 */
+ 	if (test_bit(ICE_FLAG_LINK_LENIENT_MODE_ENA, pf->flags)) {
+-		struct ice_link_default_override_tlv *ldo;
+-
+-		ldo = &pf->link_dflt_override;
+ 		phy_types_low = le64_to_cpu(pf->nvm_phy_type_lo);
+ 		phy_types_high = le64_to_cpu(pf->nvm_phy_type_hi);
  
- 	rcu_read_lock();
- 
-@@ -5390,7 +5389,6 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
- 		vsi_stats->rx_bytes += bytes;
- 		vsi->rx_buf_failed += ring->rx_stats.alloc_buf_failed;
- 		vsi->rx_page_failed += ring->rx_stats.alloc_page_failed;
--		vsi->rx_gro_dropped += ring->rx_stats.gro_dropped;
+ 		ice_mask_min_supported_speeds(phy_types_high, &phy_types_low);
+-
+-		/* If override enabled and PHY mask set, then
+-		 * Advertising link mode is the intersection of the PHY
+-		 * types without media and the override PHY mask.
++		/* determine advertised modes based on link override only
++		 * if it's supported and if the FW doesn't abstract the
++		 * driver from having to account for link overrides
+ 		 */
+-		if (ldo->options & ICE_LINK_OVERRIDE_EN &&
+-		    (ldo->phy_type_low || ldo->phy_type_high)) {
+-			adv_phy_type_lo =
+-				le64_to_cpu(pf->nvm_phy_type_lo) &
+-				ldo->phy_type_low;
+-			adv_phy_type_hi =
+-				le64_to_cpu(pf->nvm_phy_type_hi) &
+-				ldo->phy_type_high;
++		if (ice_fw_supports_link_override(&pf->hw) &&
++		    !ice_fw_supports_report_dflt_cfg(&pf->hw)) {
++			struct ice_link_default_override_tlv *ldo;
++
++			ldo = &pf->link_dflt_override;
++			/* If override enabled and PHY mask set, then
++			 * Advertising link mode is the intersection of the PHY
++			 * types without media and the override PHY mask.
++			 */
++			if (ldo->options & ICE_LINK_OVERRIDE_EN &&
++			    (ldo->phy_type_low || ldo->phy_type_high)) {
++				advert_phy_type_lo =
++					le64_to_cpu(pf->nvm_phy_type_lo) &
++					ldo->phy_type_low;
++				advert_phy_type_hi =
++					le64_to_cpu(pf->nvm_phy_type_hi) &
++					ldo->phy_type_high;
++			}
+ 		}
+ 	} else {
++		/* strict mode */
+ 		phy_types_low = vsi->port_info->phy.phy_type_low;
+ 		phy_types_high = vsi->port_info->phy.phy_type_high;
+ 	}
+@@ -1513,9 +1520,9 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+ 	/* If Advertising link mode PHY type is not using override PHY type,
+ 	 * then use PHY type with media.
+ 	 */
+-	if (!adv_phy_type_lo && !adv_phy_type_hi) {
+-		adv_phy_type_lo = vsi->port_info->phy.phy_type_low;
+-		adv_phy_type_hi = vsi->port_info->phy.phy_type_high;
++	if (!advert_phy_type_lo && !advert_phy_type_hi) {
++		advert_phy_type_lo = vsi->port_info->phy.phy_type_low;
++		advert_phy_type_hi = vsi->port_info->phy.phy_type_high;
  	}
  
- 	/* update XDP Tx rings counters */
-@@ -5422,7 +5420,7 @@ void ice_update_vsi_stats(struct ice_vsi *vsi)
- 	ice_update_eth_stats(vsi);
+ 	ethtool_link_ksettings_zero_link_mode(ks, supported);
+@@ -2227,8 +2234,12 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 		return -ENOMEM;
  
- 	cur_ns->tx_errors = cur_es->tx_errors;
--	cur_ns->rx_dropped = cur_es->rx_discards + vsi->rx_gro_dropped;
-+	cur_ns->rx_dropped = cur_es->rx_discards;
- 	cur_ns->tx_dropped = cur_es->tx_discards;
- 	cur_ns->multicast = cur_es->rx_multicast;
+ 	/* Get the PHY capabilities based on media */
+-	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
+-				     phy_caps, NULL);
++	if (ice_fw_supports_report_dflt_cfg(pi->hw))
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_DFLT_CFG,
++					     phy_caps, NULL);
++	else
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
++					     phy_caps, NULL);
+ 	if (status) {
+ 		err = -EIO;
+ 		goto done;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index fc95b634fee9..1e31940a4717 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1751,7 +1751,7 @@ static void ice_init_link_dflt_override(struct ice_port_info *pi)
+  * ice_init_phy_cfg_dflt_override - Initialize PHY cfg default override settings
+  * @pi: port info structure
+  *
+- * If default override is enabled, initialized the user PHY cfg speed and FEC
++ * If default override is enabled, initialize the user PHY cfg speed and FEC
+  * settings using the default override mask from the NVM.
+  *
+  * The PHY should only be configured with the default override settings the
+@@ -1760,6 +1760,9 @@ static void ice_init_link_dflt_override(struct ice_port_info *pi)
+  * and the PHY has not been configured with the default override settings. The
+  * state is set here, and cleared in ice_configure_phy the first time the PHY is
+  * configured.
++ *
++ * This function should be called only if the FW doesn't support default
++ * configuration mode, as reported by ice_fw_supports_report_dflt_cfg.
+  */
+ static void ice_init_phy_cfg_dflt_override(struct ice_port_info *pi)
+ {
+@@ -1821,8 +1824,12 @@ static int ice_init_phy_user_cfg(struct ice_port_info *pi)
+ 	if (!pcaps)
+ 		return -ENOMEM;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index a13eb8cf1731..681cc4a3ece7 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -192,7 +192,6 @@ struct ice_rxq_stats {
- 	u64 non_eop_descs;
- 	u64 alloc_page_failed;
- 	u64 alloc_buf_failed;
--	u64 gro_dropped; /* GRO returned dropped */
- };
+-	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA, pcaps,
+-				     NULL);
++	if (ice_fw_supports_report_dflt_cfg(pi->hw))
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_DFLT_CFG,
++					     pcaps, NULL);
++	else
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
++					     pcaps, NULL);
+ 	if (status) {
+ 		dev_err(ice_pf_to_dev(pf), "Get PHY capability failed.\n");
+ 		err = -EIO;
+@@ -1837,17 +1844,19 @@ static int ice_init_phy_user_cfg(struct ice_port_info *pi)
+ 	      ICE_AQC_MOD_ENFORCE_STRICT_MODE)) {
+ 		set_bit(ICE_FLAG_LINK_LENIENT_MODE_ENA, pf->flags);
  
- enum ice_ring_state_t {
+-		/* if link default override is enabled, initialize user PHY
+-		 * configuration with link default override values
++		/* if the FW supports default PHY configuration mode, then the driver
++		 * does not have to apply link override settings. If not,
++		 * initialize user PHY configuration with link override values
+ 		 */
+-		if (pf->link_dflt_override.options & ICE_LINK_OVERRIDE_EN) {
++		if (!ice_fw_supports_report_dflt_cfg(pi->hw) &&
++		    (pf->link_dflt_override.options & ICE_LINK_OVERRIDE_EN)) {
+ 			ice_init_phy_cfg_dflt_override(pi);
+ 			goto out;
+ 		}
+ 	}
+ 
+-	/* if link default override is not enabled, initialize PHY using
+-	 * topology with media
++	/* if link default override is not enabled, set user flow control and
++	 * FEC settings based on what get_phy_caps returned
+ 	 */
+ 	phy->curr_user_fec_req = ice_caps_to_fec_mode(pcaps->caps,
+ 						      pcaps->link_fec_options);
+@@ -1918,10 +1927,14 @@ static int ice_configure_phy(struct ice_vsi *vsi)
+ 
+ 	/* Use PHY topology as baseline for configuration */
+ 	memset(pcaps, 0, sizeof(*pcaps));
+-	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA, pcaps,
+-				     NULL);
++	if (ice_fw_supports_report_dflt_cfg(pi->hw))
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_DFLT_CFG,
++					     pcaps, NULL);
++	else
++		status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
++					     pcaps, NULL);
+ 	if (status) {
+-		dev_err(dev, "Failed to get PHY topology, VSI %d error %s\n",
++		dev_err(dev, "Failed to get PHY caps, VSI %d error %s\n",
+ 			vsi->vsi_num, ice_stat_str(status));
+ 		err = -EIO;
+ 		goto done;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index b99c815f2bd0..b0bd8effa941 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -1024,4 +1024,9 @@ struct ice_aq_get_set_rss_lut_params {
+ #define ICE_FW_API_LLDP_FLTR_MIN	7
+ #define ICE_FW_API_LLDP_FLTR_PATCH	1
+ 
++/* AQ API version for report default configuration */
++#define ICE_FW_API_REPORT_DFLT_CFG_MAJ		1
++#define ICE_FW_API_REPORT_DFLT_CFG_MIN		7
++#define ICE_FW_API_REPORT_DFLT_CFG_PATCH	3
++
+ #endif /* _ICE_TYPE_H_ */
 -- 
 2.20.1
 
