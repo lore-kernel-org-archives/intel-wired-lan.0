@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 25 Mar 2021 15:35:15 -0700
-Subject: [Intel-wired-lan] [PATCH S57 12/14] ice: Use local variable instead
- of pointer derefs
+Date: Thu, 25 Mar 2021 15:35:09 -0700
+Subject: [Intel-wired-lan] [PATCH S57 06/14] ice: Rename a couple of
+ variables
 In-Reply-To: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
 References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210325223517.17722-12-anthony.l.nguyen@intel.com>
+Message-ID: <20210325223517.17722-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,105 +13,154 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Replace multiple instances of vsi->back and pi->phy with equivalent
-local variables
+In ice_set_link_ksettings, change 'abilities' to 'phy_caps' and 'p' to
+'pi'. This is more consistent with similar usages elsewhere in the
+driver.
 
 Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 32 ++++++++++-------------
- 1 file changed, 14 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 50 ++++++++++----------
+ 1 file changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d54e88cb9600..d84a0e05a0c0 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1876,27 +1876,24 @@ static int ice_init_phy_user_cfg(struct ice_port_info *pi)
- static int ice_configure_phy(struct ice_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index b942ff36f772..989b0b0e3cad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2196,12 +2196,12 @@ ice_set_link_ksettings(struct net_device *netdev,
  {
- 	struct device *dev = ice_pf_to_dev(vsi->back);
-+	struct ice_port_info *pi = vsi->port_info;
- 	struct ice_aqc_get_phy_caps_data *pcaps;
- 	struct ice_aqc_set_phy_cfg_data *cfg;
--	struct ice_port_info *pi;
-+	struct ice_phy_info *phy = &pi->phy;
-+	struct ice_pf *pf = vsi->back;
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ethtool_link_ksettings safe_ks, copy_ks;
+-	struct ice_aqc_get_phy_caps_data *abilities;
+ 	u8 autoneg, timeout = TEST_SET_BITS_TIMEOUT;
++	struct ice_aqc_get_phy_caps_data *phy_caps;
+ 	struct ice_aqc_set_phy_cfg_data config;
+ 	u16 adv_link_speed, curr_link_speed;
+ 	struct ice_pf *pf = np->vsi->back;
+-	struct ice_port_info *p;
++	struct ice_port_info *pi;
+ 	u8 autoneg_changed = 0;
  	enum ice_status status;
+ 	u64 phy_type_high = 0;
+@@ -2209,25 +2209,25 @@ ice_set_link_ksettings(struct net_device *netdev,
  	int err = 0;
+ 	bool linkup;
  
--	pi = vsi->port_info;
--	if (!pi)
--		return -EINVAL;
--
- 	/* Ensure we have media as we cannot configure a medialess port */
--	if (!(pi->phy.link_info.link_info & ICE_AQ_MEDIA_AVAILABLE))
-+	if (!(phy->link_info.link_info & ICE_AQ_MEDIA_AVAILABLE))
- 		return -EPERM;
+-	p = np->vsi->port_info;
++	pi = np->vsi->port_info;
  
- 	ice_print_topo_conflict(vsi);
+-	if (!p)
++	if (!pi)
+ 		return -EOPNOTSUPP;
  
--	if (vsi->port_info->phy.link_info.topo_media_conflict ==
--	    ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
-+	if (phy->link_info.topo_media_conflict == ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
- 		return -EPERM;
+-	if (p->phy.media_type != ICE_MEDIA_BASET &&
+-	    p->phy.media_type != ICE_MEDIA_FIBER &&
+-	    p->phy.media_type != ICE_MEDIA_BACKPLANE &&
+-	    p->phy.media_type != ICE_MEDIA_DA &&
+-	    p->phy.link_info.link_info & ICE_AQ_LINK_UP)
++	if (pi->phy.media_type != ICE_MEDIA_BASET &&
++	    pi->phy.media_type != ICE_MEDIA_FIBER &&
++	    pi->phy.media_type != ICE_MEDIA_BACKPLANE &&
++	    pi->phy.media_type != ICE_MEDIA_DA &&
++	    pi->phy.link_info.link_info & ICE_AQ_LINK_UP)
+ 		return -EOPNOTSUPP;
  
--	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, vsi->back->flags))
-+	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags))
- 		return ice_force_phys_link_state(vsi, true);
+-	abilities = kzalloc(sizeof(*abilities), GFP_KERNEL);
+-	if (!abilities)
++	phy_caps = kzalloc(sizeof(*phy_caps), GFP_KERNEL);
++	if (!phy_caps)
+ 		return -ENOMEM;
  
- 	pcaps = kzalloc(sizeof(*pcaps), GFP_KERNEL);
-@@ -1917,7 +1914,7 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 	 * there's nothing to do
+ 	/* Get the PHY capabilities based on media */
+-	status = ice_aq_get_phy_caps(p, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
+-				     abilities, NULL);
++	status = ice_aq_get_phy_caps(pi, false, ICE_AQC_REPORT_TOPO_CAP_MEDIA,
++				     phy_caps, NULL);
+ 	if (status) {
+ 		err = -EAGAIN;
+ 		goto done;
+@@ -2289,26 +2289,26 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	 * configuration is initialized during probe from PHY capabilities
+ 	 * software mode, and updated on set PHY configuration.
  	 */
- 	if (pcaps->caps & ICE_AQC_PHY_EN_LINK &&
--	    ice_phy_caps_equals_cfg(pcaps, &pi->phy.curr_user_phy_cfg))
-+	    ice_phy_caps_equals_cfg(pcaps, &phy->curr_user_phy_cfg))
+-	memcpy(&config, &p->phy.curr_user_phy_cfg, sizeof(config));
++	memcpy(&config, &pi->phy.curr_user_phy_cfg, sizeof(config));
+ 
+ 	config.caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT;
+ 
+ 	/* Check autoneg */
+-	err = ice_setup_autoneg(p, &safe_ks, &config, autoneg, &autoneg_changed,
++	err = ice_setup_autoneg(pi, &safe_ks, &config, autoneg, &autoneg_changed,
+ 				netdev);
+ 
+ 	if (err)
  		goto done;
  
- 	/* Use PHY topology as baseline for configuration */
-@@ -1946,15 +1943,14 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 	/* Speed - If default override pending, use curr_user_phy_cfg set in
- 	 * ice_init_phy_user_cfg_ldo.
- 	 */
--	if (test_and_clear_bit(ICE_LINK_DEFAULT_OVERRIDE_PENDING,
--			       vsi->back->state)) {
--		cfg->phy_type_low = pi->phy.curr_user_phy_cfg.phy_type_low;
--		cfg->phy_type_high = pi->phy.curr_user_phy_cfg.phy_type_high;
-+	if (test_and_clear_bit(ICE_LINK_DEFAULT_OVERRIDE_PENDING, pf->state)) {
-+		cfg->phy_type_low = phy->curr_user_phy_cfg.phy_type_low;
-+		cfg->phy_type_high = phy->curr_user_phy_cfg.phy_type_high;
- 	} else {
- 		u64 phy_low = 0, phy_high = 0;
- 
- 		ice_update_phy_type(&phy_low, &phy_high,
--				    pi->phy.curr_user_speed_req);
-+				    phy->curr_user_speed_req);
- 		cfg->phy_type_low = pcaps->phy_type_low & cpu_to_le64(phy_low);
- 		cfg->phy_type_high = pcaps->phy_type_high &
- 				     cpu_to_le64(phy_high);
-@@ -1967,7 +1963,7 @@ static int ice_configure_phy(struct ice_vsi *vsi)
+ 	/* Call to get the current link speed */
+-	p->phy.get_link_info = true;
+-	status = ice_get_link_status(p, &linkup);
++	pi->phy.get_link_info = true;
++	status = ice_get_link_status(pi, &linkup);
+ 	if (status) {
+ 		err = -EAGAIN;
+ 		goto done;
  	}
  
- 	/* FEC */
--	ice_cfg_phy_fec(pi, cfg, pi->phy.curr_user_fec_req);
-+	ice_cfg_phy_fec(pi, cfg, phy->curr_user_fec_req);
+-	curr_link_speed = p->phy.link_info.link_speed;
++	curr_link_speed = pi->phy.link_info.link_speed;
+ 	adv_link_speed = ice_ksettings_find_adv_link_speed(ks);
  
- 	/* Can't provide what was requested; use PHY capabilities */
- 	if (cfg->link_fec_opt !=
-@@ -1979,12 +1975,12 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 	/* Flow Control - always supported; no need to check against
- 	 * capabilities
+ 	/* If speed didn't get set, set it to what it currently is.
+@@ -2327,7 +2327,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	}
+ 
+ 	/* save the requested speeds */
+-	p->phy.link_info.req_speeds = adv_link_speed;
++	pi->phy.link_info.req_speeds = adv_link_speed;
+ 
+ 	/* set link and auto negotiation so changes take effect */
+ 	config.caps |= ICE_AQ_PHY_ENA_LINK;
+@@ -2343,9 +2343,9 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	 * for set PHY configuration
  	 */
--	ice_cfg_phy_fc(pi, cfg, pi->phy.curr_user_fc_req);
-+	ice_cfg_phy_fc(pi, cfg, phy->curr_user_fc_req);
+ 	config.phy_type_high = cpu_to_le64(phy_type_high) &
+-			abilities->phy_type_high;
++			phy_caps->phy_type_high;
+ 	config.phy_type_low = cpu_to_le64(phy_type_low) &
+-			abilities->phy_type_low;
++			phy_caps->phy_type_low;
  
- 	/* Enable link and link update */
- 	cfg->caps |= ICE_AQ_PHY_ENA_AUTO_LINK_UPDT | ICE_AQ_PHY_ENA_LINK;
+ 	if (!(config.phy_type_high || config.phy_type_low)) {
+ 		/* If there is no intersection and lenient mode is enabled, then
+@@ -2365,7 +2365,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	}
  
--	status = ice_aq_set_phy_cfg(&vsi->back->hw, pi, cfg, NULL);
-+	status = ice_aq_set_phy_cfg(&pf->hw, pi, cfg, NULL);
+ 	/* If link is up put link down */
+-	if (p->phy.link_info.link_info & ICE_AQ_LINK_UP) {
++	if (pi->phy.link_info.link_info & ICE_AQ_LINK_UP) {
+ 		/* Tell the OS link is going down, the link will go
+ 		 * back up when fw says it is ready asynchronously
+ 		 */
+@@ -2375,7 +2375,7 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	}
+ 
+ 	/* make the aq call */
+-	status = ice_aq_set_phy_cfg(&pf->hw, p, &config, NULL);
++	status = ice_aq_set_phy_cfg(&pf->hw, pi, &config, NULL);
  	if (status) {
- 		dev_err(dev, "Failed to set phy config, VSI %d error %s\n",
- 			vsi->vsi_num, ice_stat_str(status));
+ 		netdev_info(netdev, "Set phy config failed,\n");
+ 		err = -EAGAIN;
+@@ -2383,9 +2383,9 @@ ice_set_link_ksettings(struct net_device *netdev,
+ 	}
+ 
+ 	/* Save speed request */
+-	p->phy.curr_user_speed_req = adv_link_speed;
++	pi->phy.curr_user_speed_req = adv_link_speed;
+ done:
+-	kfree(abilities);
++	kfree(phy_caps);
+ 	clear_bit(ICE_CFG_BUSY, pf->state);
+ 
+ 	return err;
 -- 
 2.20.1
 
