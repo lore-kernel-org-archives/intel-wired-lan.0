@@ -1,64 +1,91 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 25 Mar 2021 17:38:33 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 10/11] ixgbe: use checker safe
- conversions
-In-Reply-To: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
+From: Shannon Nelson <snelson@pensando.io>
+Date: Thu, 25 Mar 2021 18:32:25 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 11/11] ixgbe: reduce
+ checker warnings
+In-Reply-To: <20210326003834.3886241-12-jesse.brandeburg@intel.com>
 References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
-Message-ID: <20210326003834.3886241-11-jesse.brandeburg@intel.com>
+ <20210326003834.3886241-12-jesse.brandeburg@intel.com>
+Message-ID: <955f389f-a672-52c5-39d1-e73a149b01f4@pensando.io>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ixgbe hardware needs some very specific programming for
-certain registers, which led to some misguided usage of ntohs
-instead of using be16_to_cpu(), as well as a home grown swap
-followed by an ntohs. Sparse didn't like this at all, and this
-fixes the C=2 build, with code that uses native kernel interface.
+On 3/25/21 5:38 PM, Jesse Brandeburg wrote:
+> Fix the sparse warnings in the ixgbe crypto offload code. These
+> changes were made in the most conservative way (force cast)
+> in order to hopefully not break the code. I suspect that the
+> code might still be broken on big-endian architectures, but
+> no one is complaining, so I'm just leaving it functionally
+> the same.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
-Warning Details:
-.../ixgbe/ixgbe_82599.c:1660:20: warning: cast to restricted __be16
-.../ixgbe/ixgbe_82599.c:1660:20: warning: cast to restricted __be16
-.../ixgbe/ixgbe_82599.c:1660:20: warning: cast to restricted __be16
-.../ixgbe/ixgbe_82599.c:1660:20: warning: cast to restricted __be16
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+Thanks for poking at this one.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index e324e42fab2d..58ea959a4482 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -1514,8 +1514,7 @@ static u32 ixgbe_get_fdirtcpm_82599(union ixgbe_atr_input *input_mask)
- #define IXGBE_WRITE_REG_BE32(a, reg, value) \
- 	IXGBE_WRITE_REG((a), (reg), IXGBE_STORE_AS_BE32(ntohl(value)))
- 
--#define IXGBE_STORE_AS_BE16(_value) \
--	ntohs(((u16)(_value) >> 8) | ((u16)(_value) << 8))
-+#define IXGBE_STORE_AS_BE16(_value) __swab16(ntohs((_value)))
- 
- s32 ixgbe_fdir_set_input_mask_82599(struct ixgbe_hw *hw,
- 				    union ixgbe_atr_input *input_mask)
-@@ -1651,13 +1650,13 @@ s32 ixgbe_fdir_write_perfect_filter_82599(struct ixgbe_hw *hw,
- 	IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPDA, input->formatted.dst_ip[0]);
- 
- 	/* record source and destination port (little-endian)*/
--	fdirport = ntohs(input->formatted.dst_port);
-+	fdirport = be16_to_cpu(input->formatted.dst_port);
- 	fdirport <<= IXGBE_FDIRPORT_DESTINATION_SHIFT;
--	fdirport |= ntohs(input->formatted.src_port);
-+	fdirport |= be16_to_cpu(input->formatted.src_port);
- 	IXGBE_WRITE_REG(hw, IXGBE_FDIRPORT, fdirport);
- 
- 	/* record vlan (little-endian) and flex_bytes(big-endian) */
--	fdirvlan = IXGBE_STORE_AS_BE16((__force u16)input->formatted.flex_bytes);
-+	fdirvlan = IXGBE_STORE_AS_BE16(input->formatted.flex_bytes);
- 	fdirvlan <<= IXGBE_FDIRVLAN_FLEX_SHIFT;
- 	fdirvlan |= ntohs(input->formatted.vlan_id);
- 	IXGBE_WRITE_REG(hw, IXGBE_FDIRVLAN, fdirvlan);
--- 
-2.30.2
+Yeah, this is a funky one where these specific register contents are in 
+BE order in niantic, as are the address array entries, but 
+IXGBE_READ_REG() is defined as returning u32.? The point is that we want 
+to compare the register contents directly to the array entries with no 
+byteswapping.? I don't think this is broken on BE arch, but I can't 
+remember if I tested it on SPARC things when I wrote this at my previous 
+employer.
+
+It might make more sense in this context to define reg as __be32 and 
+then force the cast on the return from IXGBE_READ_REG().? Maybe even 
+change the name of 'reg' to 'be_reg' or 'bigend' just to be obnoxiously 
+clear that this is a weird register.
+
+sln
+
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Cc: Shannon Nelson <snelson@pensando.io>
+> ---
+> Warning Detail:
+> .../ixgbe/ixgbe_ipsec.c:514:56: warning: restricted __be32 degrades to integer
+> .../ixgbe/ixgbe_ipsec.c:521:48: warning: restricted __be32 degrades to integer
+> .../ixgbe/ixgbe_ipsec.c:536:59: warning: restricted __be32 degrades to integer
+> .../ixgbe/ixgbe_ipsec.c:546:59: warning: restricted __be32 degrades to integer
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> index 54d47265a7ac..e596e1a9fc75 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+> @@ -511,14 +511,14 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+>   					continue;
+>   
+>   				reg = IXGBE_READ_REG(hw, MIPAF_ARR(3, i));
+> -				if (reg == xs->id.daddr.a4)
+> +				if (reg == (__force u32)xs->id.daddr.a4)
+>   					return 1;
+>   			}
+>   		}
+>   
+>   		if ((bmcipval & BMCIP_MASK) == BMCIP_V4) {
+>   			reg = IXGBE_READ_REG(hw, IXGBE_BMCIP(3));
+> -			if (reg == xs->id.daddr.a4)
+> +			if (reg == (__force u32)xs->id.daddr.a4)
+>   				return 1;
+>   		}
+>   
+> @@ -533,7 +533,7 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+>   
+>   			for (j = 0; j < 4; j++) {
+>   				reg = IXGBE_READ_REG(hw, MIPAF_ARR(i, j));
+> -				if (reg != xs->id.daddr.a6[j])
+> +				if (reg != (__force u32)xs->id.daddr.a6[j])
+>   					break;
+>   			}
+>   			if (j == 4)   /* did we match all 4 words? */
+> @@ -543,7 +543,7 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
+>   		if ((bmcipval & BMCIP_MASK) == BMCIP_V6) {
+>   			for (j = 0; j < 4; j++) {
+>   				reg = IXGBE_READ_REG(hw, IXGBE_BMCIP(j));
+> -				if (reg != xs->id.daddr.a6[j])
+> +				if (reg != (__force u32)xs->id.daddr.a6[j])
+>   					break;
+>   			}
+>   			if (j == 4)   /* did we match all 4 words? */
 
