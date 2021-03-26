@@ -1,62 +1,59 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 25 Mar 2021 17:38:26 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 03/11] fm10k: move error check
+Date: Thu, 25 Mar 2021 17:38:29 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 06/11] igb: fix assignment on
+ big endian machines
 In-Reply-To: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
 References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
-Message-ID: <20210326003834.3886241-4-jesse.brandeburg@intel.com>
+Message-ID: <20210326003834.3886241-7-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The error check and set_bit are placed in such a way that sparse (C=2)
-warns:
-.../fm10k_pci.c:1395:9: warning: context imbalance in 'fm10k_msix_mbx_pf' - different lock contexts for basic block
+The igb driver was trying hard to be sparse correct, but somehow
+ended up converting a variable into little endian order and then
+tries to OR something with it.
 
-Which seems a little odd, but the code can obviously be moved
-to where the variable is being set without changing functionality
-at all, and it even seems to make a bit more sense with the check
-closer to the set.
+A much plainer way of doing things is to leave all variables and
+OR operations in CPU (non-endian) mode, and then convert to
+little endian only once, which is what this change does.
+
+This probably fixes a bug that might have been seen only on
+big endian systems.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Warning Detail:
+.../igb/igb_main.c:6286:23: warning: incorrect type in assignment (different base types)
+.../igb/igb_main.c:6286:23:    expected unsigned int [usertype] olinfo_status
+.../igb/igb_main.c:6286:23:    got restricted __le32 [usertype]
+.../igb/igb_main.c:6291:37: warning: incorrect type in assignment (different base types)
+.../igb/igb_main.c:6291:37:    expected restricted __le32 [usertype] olinfo_status
+.../igb/igb_main.c:6291:37:    got unsigned int [assigned] [usertype] olinfo_status
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 9e3103fae723..dbcae92bb18d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1370,7 +1370,6 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
- 	struct fm10k_hw *hw = &interface->hw;
- 	struct fm10k_mbx_info *mbx = &hw->mbx;
- 	u32 eicr;
--	s32 err = 0;
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 1f82cf22fcc0..55051a492dd0 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6283,12 +6283,12 @@ int igb_xmit_xdp_ring(struct igb_adapter *adapter,
+ 	cmd_type |= len | IGB_TXD_DCMD;
+ 	tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
  
- 	/* unmask any set bits related to this interrupt */
- 	eicr = fm10k_read_reg(hw, FM10K_EICR);
-@@ -1386,15 +1385,16 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+-	olinfo_status = cpu_to_le32(len << E1000_ADVTXD_PAYLEN_SHIFT);
++	olinfo_status = len << E1000_ADVTXD_PAYLEN_SHIFT;
+ 	/* 82575 requires a unique index per ring */
+ 	if (test_bit(IGB_RING_FLAG_TX_CTX_IDX, &tx_ring->flags))
+ 		olinfo_status |= tx_ring->reg_idx << 4;
  
- 	/* service mailboxes */
- 	if (fm10k_mbx_trylock(interface)) {
--		err = mbx->ops.process(hw, mbx);
-+		s32 err = mbx->ops.process(hw, mbx);
-+
-+		if (err == FM10K_ERR_RESET_REQUESTED)
-+			set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
-+
- 		/* handle VFLRE events */
- 		fm10k_iov_event(interface);
- 		fm10k_mbx_unlock(interface);
- 	}
+-	tx_desc->read.olinfo_status = olinfo_status;
++	tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
  
--	if (err == FM10K_ERR_RESET_REQUESTED)
--		set_bit(FM10K_FLAG_RESET_REQUESTED, interface->flags);
--
- 	/* if switch toggled state we should reset GLORTs */
- 	if (eicr & FM10K_EICR_SWITCHNOTREADY) {
- 		/* force link down for at least 4 seconds */
+ 	netdev_tx_sent_queue(txring_txq(tx_ring), tx_buffer->bytecount);
+ 
 -- 
 2.30.2
 
