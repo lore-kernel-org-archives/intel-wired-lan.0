@@ -1,91 +1,178 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Thu, 25 Mar 2021 18:32:25 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 11/11] ixgbe: reduce
- checker warnings
-In-Reply-To: <20210326003834.3886241-12-jesse.brandeburg@intel.com>
-References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
- <20210326003834.3886241-12-jesse.brandeburg@intel.com>
-Message-ID: <955f389f-a672-52c5-39d1-e73a149b01f4@pensando.io>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 26 Mar 2021 13:30:23 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 1e0da94d7b20a403b8d0eb538ca450f8ca305787
+Message-ID: <605d716f.0OEdSxvSTTNENVtk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/25/21 5:38 PM, Jesse Brandeburg wrote:
-> Fix the sparse warnings in the ixgbe crypto offload code. These
-> changes were made in the most conservative way (force cast)
-> in order to hopefully not break the code. I suspect that the
-> code might still be broken on big-endian architectures, but
-> no one is complaining, so I'm just leaving it functionally
-> the same.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 1e0da94d7b20a403b8d0eb538ca450f8ca305787  ixgbe: fix unbalanced device enable/disable in suspend/resume
 
-Thanks for poking at this one.
+elapsed time: 728m
 
-Yeah, this is a funky one where these specific register contents are in 
-BE order in niantic, as are the address array entries, but 
-IXGBE_READ_REG() is defined as returning u32.? The point is that we want 
-to compare the register contents directly to the array entries with no 
-byteswapping.? I don't think this is broken on BE arch, but I can't 
-remember if I tested it on SPARC things when I wrote this at my previous 
-employer.
+configs tested: 149
+configs skipped: 2
 
-It might make more sense in this context to define reg as __be32 and 
-then force the cast on the return from IXGBE_READ_REG().? Maybe even 
-change the name of 'reg' to 'be_reg' or 'bigend' just to be obnoxiously 
-clear that this is a weird register.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-sln
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+powerpc                       maple_defconfig
+powerpc                      obs600_defconfig
+sparc64                             defconfig
+arm                         assabet_defconfig
+xtensa                              defconfig
+sh                         ecovec24_defconfig
+powerpc                     mpc5200_defconfig
+arm                          pxa3xx_defconfig
+sh                          rsk7264_defconfig
+csky                                defconfig
+sh                     sh7710voipgw_defconfig
+m68k                        stmark2_defconfig
+arm                       aspeed_g5_defconfig
+arm                            pleb_defconfig
+arm                            mmp2_defconfig
+s390                             alldefconfig
+xtensa                  cadence_csp_defconfig
+powerpc                         ps3_defconfig
+parisc                generic-64bit_defconfig
+mips                        qi_lb60_defconfig
+sh                   sh7770_generic_defconfig
+mips                        vocore2_defconfig
+m68k                       m5475evb_defconfig
+parisc                           alldefconfig
+arm                        shmobile_defconfig
+powerpc                       ppc64_defconfig
+arm                           spitz_defconfig
+arm                        keystone_defconfig
+arm                          lpd270_defconfig
+mips                      maltaaprp_defconfig
+arm                        spear3xx_defconfig
+arm                       imx_v6_v7_defconfig
+mips                     loongson1c_defconfig
+powerpc                     sequoia_defconfig
+powerpc                      katmai_defconfig
+arm                        multi_v7_defconfig
+mips                  cavium_octeon_defconfig
+m68k                           sun3_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                 linkstation_defconfig
+powerpc64                           defconfig
+mips                          malta_defconfig
+csky                             alldefconfig
+nds32                            alldefconfig
+riscv                    nommu_k210_defconfig
+powerpc                      ep88xc_defconfig
+xtensa                    xip_kc705_defconfig
+mips                        omega2p_defconfig
+sh                     magicpanelr2_defconfig
+mips                       capcella_defconfig
+powerpc                      ppc6xx_defconfig
+arm                       versatile_defconfig
+arm                           tegra_defconfig
+arm                          pcm027_defconfig
+sh                   secureedge5410_defconfig
+powerpc                     stx_gp3_defconfig
+mips                           ip22_defconfig
+sh                           se7712_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                        multi_v5_defconfig
+mips                         cobalt_defconfig
+powerpc                        icon_defconfig
+powerpc                     tqm8548_defconfig
+sh                          polaris_defconfig
+mips                       lemote2f_defconfig
+powerpc                     tqm8541_defconfig
+m68k                            q40_defconfig
+xtensa                    smp_lx200_defconfig
+arm                  colibri_pxa270_defconfig
+powerpc                 mpc837x_mds_defconfig
+um                            kunit_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                               tinyconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a002-20210325
+x86_64               randconfig-a003-20210325
+x86_64               randconfig-a006-20210325
+x86_64               randconfig-a001-20210325
+x86_64               randconfig-a005-20210325
+x86_64               randconfig-a004-20210325
+i386                 randconfig-a003-20210325
+i386                 randconfig-a004-20210325
+i386                 randconfig-a001-20210325
+i386                 randconfig-a002-20210325
+i386                 randconfig-a006-20210325
+i386                 randconfig-a005-20210325
+i386                 randconfig-a014-20210325
+i386                 randconfig-a011-20210325
+i386                 randconfig-a015-20210325
+i386                 randconfig-a016-20210325
+i386                 randconfig-a013-20210325
+i386                 randconfig-a012-20210325
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Cc: Shannon Nelson <snelson@pensando.io>
-> ---
-> Warning Detail:
-> .../ixgbe/ixgbe_ipsec.c:514:56: warning: restricted __be32 degrades to integer
-> .../ixgbe/ixgbe_ipsec.c:521:48: warning: restricted __be32 degrades to integer
-> .../ixgbe/ixgbe_ipsec.c:536:59: warning: restricted __be32 degrades to integer
-> .../ixgbe/ixgbe_ipsec.c:546:59: warning: restricted __be32 degrades to integer
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> index 54d47265a7ac..e596e1a9fc75 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> @@ -511,14 +511,14 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
->   					continue;
->   
->   				reg = IXGBE_READ_REG(hw, MIPAF_ARR(3, i));
-> -				if (reg == xs->id.daddr.a4)
-> +				if (reg == (__force u32)xs->id.daddr.a4)
->   					return 1;
->   			}
->   		}
->   
->   		if ((bmcipval & BMCIP_MASK) == BMCIP_V4) {
->   			reg = IXGBE_READ_REG(hw, IXGBE_BMCIP(3));
-> -			if (reg == xs->id.daddr.a4)
-> +			if (reg == (__force u32)xs->id.daddr.a4)
->   				return 1;
->   		}
->   
-> @@ -533,7 +533,7 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
->   
->   			for (j = 0; j < 4; j++) {
->   				reg = IXGBE_READ_REG(hw, MIPAF_ARR(i, j));
-> -				if (reg != xs->id.daddr.a6[j])
-> +				if (reg != (__force u32)xs->id.daddr.a6[j])
->   					break;
->   			}
->   			if (j == 4)   /* did we match all 4 words? */
-> @@ -543,7 +543,7 @@ static int ixgbe_ipsec_check_mgmt_ip(struct xfrm_state *xs)
->   		if ((bmcipval & BMCIP_MASK) == BMCIP_V6) {
->   			for (j = 0; j < 4; j++) {
->   				reg = IXGBE_READ_REG(hw, IXGBE_BMCIP(j));
-> -				if (reg != xs->id.daddr.a6[j])
-> +				if (reg != (__force u32)xs->id.daddr.a6[j])
->   					break;
->   			}
->   			if (j == 4)   /* did we match all 4 words? */
+clang tested configs:
+x86_64               randconfig-a012-20210325
+x86_64               randconfig-a015-20210325
+x86_64               randconfig-a014-20210325
+x86_64               randconfig-a013-20210325
+x86_64               randconfig-a011-20210325
+x86_64               randconfig-a016-20210325
 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
