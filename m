@@ -1,135 +1,80 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 27 Mar 2021 01:01:56 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 4390eafe5ee738a90ab2ae0e3eb2c81330107d05
-Message-ID: <605e1384.Bo17/3jS5cEqmHTP%lkp@intel.com>
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Fri, 26 Mar 2021 19:43:40 +0100
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix sparse errors in i40e_txrx.c
+Message-ID: <20210326184343.133396-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 4390eafe5ee738a90ab2ae0e3eb2c81330107d05  igc: Expose LPI counters
+Remove error handling through pointers. Instead use plain int
+to return value from i40e_run_xdp(...).
 
-elapsed time: 913m
+Previously:
+- sparse errors were produced during compilation:
+i40e_txrx.c:2338 i40e_run_xdp() error: (-2147483647) too low for ERR_PTR
+i40e_txrx.c:2558 i40e_clean_rx_irq() error: 'skb' dereferencing possible ERR_PTR()
 
-configs tested: 106
-configs skipped: 2
+- sk_buff* was used to return value, but it has never had valid
+pointer to sk_buff. Returned value was always int handeled as
+a pointer.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-i386                             allyesconfig
-powerpc                 mpc836x_rdk_defconfig
-mips                           gcw0_defconfig
-arc                         haps_hs_defconfig
-um                             i386_defconfig
-arm                          badge4_defconfig
-sh                           se7780_defconfig
-powerpc                     mpc5200_defconfig
-m68k                        m5307c3_defconfig
-sh                               j2_defconfig
-powerpc                      acadia_defconfig
-mips                         cobalt_defconfig
-powerpc                  iss476-smp_defconfig
-h8300                       h8s-sim_defconfig
-sh                           se7750_defconfig
-arm                           h3600_defconfig
-arm                        mvebu_v7_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                     ppa8548_defconfig
-arm                           corgi_defconfig
-powerpc                    amigaone_defconfig
-m68k                       m5208evb_defconfig
-powerpc                   currituck_defconfig
-s390                          debug_defconfig
-xtensa                generic_kc705_defconfig
-m68k                          atari_defconfig
-ia64                         bigsur_defconfig
-mips                   sb1250_swarm_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20210325
-x86_64               randconfig-a003-20210325
-x86_64               randconfig-a001-20210325
-i386                 randconfig-a003-20210325
-i386                 randconfig-a004-20210325
-i386                 randconfig-a001-20210325
-i386                 randconfig-a002-20210325
-i386                 randconfig-a006-20210325
-i386                 randconfig-a005-20210325
-i386                 randconfig-a014-20210325
-i386                 randconfig-a011-20210325
-i386                 randconfig-a015-20210325
-i386                 randconfig-a016-20210325
-i386                 randconfig-a013-20210325
-i386                 randconfig-a012-20210325
-x86_64               randconfig-a006-20210325
-x86_64               randconfig-a005-20210325
-x86_64               randconfig-a004-20210325
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a012-20210325
-x86_64               randconfig-a015-20210325
-x86_64               randconfig-a014-20210325
-x86_64               randconfig-a013-20210325
-x86_64               randconfig-a011-20210325
-x86_64               randconfig-a016-20210325
-
+Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop actions")
+Fixes: 2e6893123830 ("i40e: split XDP_TX tail and XDP_REDIRECT map flushing")
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 5747a99..4345e45 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2295,7 +2295,7 @@ int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring)
+  * @rx_ring: Rx ring being processed
+  * @xdp: XDP buffer containing the frame
+  **/
+-static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
++static int i40e_run_xdp(struct i40e_ring *rx_ring,
+ 				    struct xdp_buff *xdp)
+ {
+ 	int err, result = I40E_XDP_PASS;
+@@ -2335,7 +2335,7 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
+ 	}
+ xdp_out:
+ 	rcu_read_unlock();
+-	return ERR_PTR(-result);
++	return result;
+ }
+ 
+ /**
+@@ -2448,6 +2448,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 	unsigned int xdp_xmit = 0;
+ 	bool failure = false;
+ 	struct xdp_buff xdp;
++	int xdp_res = 0;
+ 
+ #if (PAGE_SIZE < 8192)
+ 	frame_sz = i40e_rx_frame_truesize(rx_ring, 0);
+@@ -2513,12 +2514,10 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
+ 			/* At larger PAGE_SIZE, frame_sz depend on len size */
+ 			xdp.frame_sz = i40e_rx_frame_truesize(rx_ring, size);
+ #endif
+-			skb = i40e_run_xdp(rx_ring, &xdp);
++			xdp_res = i40e_run_xdp(rx_ring, &xdp);
+ 		}
+ 
+-		if (IS_ERR(skb)) {
+-			unsigned int xdp_res = -PTR_ERR(skb);
+-
++		if (xdp_res) {
+ 			if (xdp_res & (I40E_XDP_TX | I40E_XDP_REDIR)) {
+ 				xdp_xmit |= xdp_res;
+ 				i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+
+base-commit: ca4303103f33952646218db4e0869e6f6aa1c840
+-- 
+2.26.0
+
