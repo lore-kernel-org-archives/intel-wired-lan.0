@@ -1,49 +1,80 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 25 Mar 2021 17:38:23 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 00/11] warning cleanups
-Message-ID: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
+Date: Thu, 25 Mar 2021 17:38:24 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2 01/11] e100: handle eeprom as
+ little endian
+In-Reply-To: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
+References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
+Message-ID: <20210326003834.3886241-2-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In this series I address the C=2 (sparse) warnings. The goal is to be
-completely sparse clean in the drivers/net/ethernet/intel directory.
-This can help us run this tool for every patch, and helps the kernel
-code by reducing technical debt.
+Sparse tool was warning on some implicit conversions from
+little endian data read from the EEPROM on the e100 cards.
 
-NOTE: there is one warning left in ixgbe XDP code using
-rcu_assign_pointer().
+Fix these by being explicit about the conversions using
+le16_to_cpu().
 
-Jesse Brandeburg (11):
-  e100: handle eeprom as little endian
-  intel: remove checker warning
-  fm10k: move error check
-  igb/igc: use strongly typed pointer
-  igb: handle vlan types with checker enabled
-  igb: fix assignment on big endian machines
-  igb: override two checker warnings
-  intel: call csum functions with well formatted arguments
-  igbvf: convert to strongly typed descriptors
-  ixgbe: use checker safe conversions
-  ixgbe: reduce checker warnings
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+Warning Detail:
+  CHECK   .../intel/e100.c
+.../intel/e100.c:1398:32: warning: restricted __le16 degrades to integer
+.../intel/e100.c:1518:29: warning: restricted __le16 degrades to integer
+.../intel/e100.c:2272:24: warning: restricted __le16 degrades to integer
+.../intel/e100.c:2273:25: warning: restricted __le16 degrades to integer
+.../intel/e100.c:2274:25: warning: restricted __le16 degrades to integer
+.../intel/e100.c:2929:24: warning: restricted __le16 degrades to integer
+---
+ drivers/net/ethernet/intel/e100.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- drivers/net/ethernet/intel/e100.c             | 12 +++---
- .../net/ethernet/intel/e1000/e1000_ethtool.c  |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 10 ++---
- drivers/net/ethernet/intel/igb/igb_ethtool.c  |  2 +-
- drivers/net/ethernet/intel/igb/igb_main.c     | 11 ++---
- drivers/net/ethernet/intel/igb/igb_ptp.c      |  4 +-
- drivers/net/ethernet/intel/igbvf/netdev.c     |  6 +--
- drivers/net/ethernet/intel/igbvf/vf.h         | 42 +++++++++----------
- drivers/net/ethernet/intel/igc/igc_dump.c     |  2 +-
- drivers/net/ethernet/intel/igc/igc_ethtool.c  |  2 +-
- .../net/ethernet/intel/ixgbe/ixgbe_82599.c    |  9 ++--
- .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  8 ++--
- .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |  2 +-
- 13 files changed, 56 insertions(+), 56 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index f8d78af76d7d..1b0958bd24f6 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -1395,7 +1395,7 @@ static int e100_phy_check_without_mii(struct nic *nic)
+ 	u8 phy_type;
+ 	int without_mii;
+ 
+-	phy_type = (nic->eeprom[eeprom_phy_iface] >> 8) & 0x0f;
++	phy_type = (le16_to_cpu(nic->eeprom[eeprom_phy_iface]) >> 8) & 0x0f;
+ 
+ 	switch (phy_type) {
+ 	case NoSuchPhy: /* Non-MII PHY; UNTESTED! */
+@@ -1515,7 +1515,7 @@ static int e100_phy_init(struct nic *nic)
+ 		mdio_write(netdev, nic->mii.phy_id, MII_BMCR, bmcr);
+ 	} else if ((nic->mac >= mac_82550_D102) || ((nic->flags & ich) &&
+ 	   (mdio_read(netdev, nic->mii.phy_id, MII_TPISTATUS) & 0x8000) &&
+-		(nic->eeprom[eeprom_cnfg_mdix] & eeprom_mdix_enabled))) {
++	   (le16_to_cpu(nic->eeprom[eeprom_cnfg_mdix]) & eeprom_mdix_enabled))) {
+ 		/* enable/disable MDI/MDI-X auto-switching. */
+ 		mdio_write(netdev, nic->mii.phy_id, MII_NCONFIG,
+ 				nic->mii.force_media ? 0 : NCONFIG_AUTO_SWITCH);
+@@ -2269,9 +2269,9 @@ static int e100_asf(struct nic *nic)
+ {
+ 	/* ASF can be enabled from eeprom */
+ 	return (nic->pdev->device >= 0x1050) && (nic->pdev->device <= 0x1057) &&
+-	   (nic->eeprom[eeprom_config_asf] & eeprom_asf) &&
+-	   !(nic->eeprom[eeprom_config_asf] & eeprom_gcl) &&
+-	   ((nic->eeprom[eeprom_smbus_addr] & 0xFF) != 0xFE);
++	   (le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_asf) &&
++	   !(le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_gcl) &&
++	   ((le16_to_cpu(nic->eeprom[eeprom_smbus_addr]) & 0xFF) != 0xFE);
+ }
+ 
+ static int e100_up(struct nic *nic)
+@@ -2926,7 +2926,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* Wol magic packet can be enabled from eeprom */
+ 	if ((nic->mac >= mac_82558_D101_A4) &&
+-	   (nic->eeprom[eeprom_id] & eeprom_id_wol)) {
++	   (le16_to_cpu(nic->eeprom[eeprom_id]) & eeprom_id_wol)) {
+ 		nic->flags |= wol_magic;
+ 		device_set_wakeup_enable(&pdev->dev, true);
+ 	}
 
 base-commit: 4390eafe5ee738a90ab2ae0e3eb2c81330107d05
 -- 
