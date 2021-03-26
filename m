@@ -1,78 +1,45 @@
 From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Fri, 26 Mar 2021 19:43:40 +0100
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix sparse errors in i40e_txrx.c
-Message-ID: <20210326184343.133396-1-arkadiusz.kubalewski@intel.com>
+Date: Fri, 26 Mar 2021 19:43:42 +0100
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix sparse error: 'vsi->netdev'
+ could be null
+In-Reply-To: <20210326184343.133396-1-arkadiusz.kubalewski@intel.com>
+References: <20210326184343.133396-1-arkadiusz.kubalewski@intel.com>
+Message-ID: <20210326184343.133396-3-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove error handling through pointers. Instead use plain int
-to return value from i40e_run_xdp(...).
+Remove vsi->netdev->name from the trace.
+This is redundant information. With the devinfo trace, the adapter
+is already identifiable.
 
-Previously:
-- sparse errors were produced during compilation:
-i40e_txrx.c:2338 i40e_run_xdp() error: (-2147483647) too low for ERR_PTR
-i40e_txrx.c:2558 i40e_clean_rx_irq() error: 'skb' dereferencing possible ERR_PTR()
+Previously following error was produced when compiling against sparse.
+i40e_main.c:2571 i40e_sync_vsi_filters() error:
+	we previously assumed 'vsi->netdev' could be null (see line 2323)
 
-- sk_buff* was used to return value, but it has never had valid
-pointer to sk_buff. Returned value was always int handeled as
-a pointer.
-
-Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop actions")
-Fixes: 2e6893123830 ("i40e: split XDP_TX tail and XDP_REDIRECT map flushing")
+Fixes: b603f9dc20af ("i40e: Log info when PF is entering and leaving Allmulti mode.")
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 5747a99..4345e45 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2295,7 +2295,7 @@ int i40e_xmit_xdp_tx_ring(struct xdp_buff *xdp, struct i40e_ring *xdp_ring)
-  * @rx_ring: Rx ring being processed
-  * @xdp: XDP buffer containing the frame
-  **/
--static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
-+static int i40e_run_xdp(struct i40e_ring *rx_ring,
- 				    struct xdp_buff *xdp)
- {
- 	int err, result = I40E_XDP_PASS;
-@@ -2335,7 +2335,7 @@ static struct sk_buff *i40e_run_xdp(struct i40e_ring *rx_ring,
- 	}
- xdp_out:
- 	rcu_read_unlock();
--	return ERR_PTR(-result);
-+	return result;
- }
- 
- /**
-@@ -2448,6 +2448,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 	unsigned int xdp_xmit = 0;
- 	bool failure = false;
- 	struct xdp_buff xdp;
-+	int xdp_res = 0;
- 
- #if (PAGE_SIZE < 8192)
- 	frame_sz = i40e_rx_frame_truesize(rx_ring, 0);
-@@ -2513,12 +2514,10 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 			/* At larger PAGE_SIZE, frame_sz depend on len size */
- 			xdp.frame_sz = i40e_rx_frame_truesize(rx_ring, size);
- #endif
--			skb = i40e_run_xdp(rx_ring, &xdp);
-+			xdp_res = i40e_run_xdp(rx_ring, &xdp);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d0feb47..2e9c22c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2568,8 +2568,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 				 i40e_stat_str(hw, aq_ret),
+ 				 i40e_aq_str(hw, hw->aq.asq_last_status));
+ 		} else {
+-			dev_info(&pf->pdev->dev, "%s is %s allmulti mode.\n",
+-				 vsi->netdev->name,
++			dev_info(&pf->pdev->dev, "%s allmulti mode.\n",
+ 				 cur_multipromisc ? "entering" : "leaving");
  		}
- 
--		if (IS_ERR(skb)) {
--			unsigned int xdp_res = -PTR_ERR(skb);
--
-+		if (xdp_res) {
- 			if (xdp_res & (I40E_XDP_TX | I40E_XDP_REDIR)) {
- 				xdp_xmit |= xdp_res;
- 				i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
+ 	}
 
 base-commit: ca4303103f33952646218db4e0869e6f6aa1c840
 -- 
