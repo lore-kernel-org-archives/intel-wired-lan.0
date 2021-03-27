@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 27 Mar 2021 18:46:28 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- d634b8d8814557f5257ce83edb3f55936fe1661d
-Message-ID: <605f0d04.YtJdMcP0gnKyO9GA%lkp@intel.com>
+Date: Sat, 27 Mar 2021 20:02:41 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 4f9d9c2bca325bef150594d8fc94f398f68ce2f2
+Message-ID: <605f1ee1.zDksIIYdUcKWkUKo%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: d634b8d8814557f5257ce83edb3f55936fe1661d  ice: Cleanup fltr list in case of allocation issues
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 4f9d9c2bca325bef150594d8fc94f398f68ce2f2  ixgbe: fix unbalanced device enable/disable in suspend/resume
 
-elapsed time: 721m
+elapsed time: 729m
 
-configs tested: 163
+configs tested: 173
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,18 +26,10 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-riscv                            allmodconfig
 x86_64                           allyesconfig
+riscv                            allmodconfig
 i386                             allyesconfig
 riscv                            allyesconfig
-sh                ecovec24-romimage_defconfig
-arc                    vdk_hs38_smp_defconfig
-m68k                         amcore_defconfig
-m68k                           sun3_defconfig
-powerpc                      pmac32_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                          gemini_defconfig
-powerpc                        icon_defconfig
 powerpc                    sam440ep_defconfig
 sh                           se7750_defconfig
 arm                        clps711x_defconfig
@@ -54,10 +46,10 @@ powerpc                       holly_defconfig
 arm                          exynos_defconfig
 arm                        multi_v5_defconfig
 arm                         orion5x_defconfig
+powerpc                       ebony_defconfig
 arm                            pleb_defconfig
 m68k                        mvme147_defconfig
 microblaze                          defconfig
-powerpc                       ebony_defconfig
 powerpc                      cm5200_defconfig
 parisc                generic-64bit_defconfig
 mips                             allmodconfig
@@ -65,16 +57,18 @@ riscv                             allnoconfig
 mips                            ar7_defconfig
 powerpc                          g5_defconfig
 ia64                            zx1_defconfig
+arc                          axs101_defconfig
+arm                       imx_v4_v5_defconfig
+m68k                       m5249evb_defconfig
+arm                        mini2440_defconfig
+ia64                             allyesconfig
+powerpc                      pmac32_defconfig
 arm                          pxa3xx_defconfig
 arm                         hackkit_defconfig
 arm                       aspeed_g5_defconfig
 mips                     loongson1c_defconfig
 sparc                            alldefconfig
 mips                           rs90_defconfig
-powerpc                          allyesconfig
-sh                             sh03_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                        multi_v7_defconfig
 powerpc                   bluestone_defconfig
 xtensa                generic_kc705_defconfig
 powerpc                      acadia_defconfig
@@ -87,6 +81,7 @@ powerpc                      arches_defconfig
 arc                           tb10x_defconfig
 mips                           ip32_defconfig
 arc                          axs103_defconfig
+arc                    vdk_hs38_smp_defconfig
 powerpc                       eiger_defconfig
 sparc                       sparc64_defconfig
 arm                         s3c2410_defconfig
@@ -98,7 +93,6 @@ arm                     eseries_pxa_defconfig
 sh                            titan_defconfig
 arm                       cns3420vb_defconfig
 arm                          imote2_defconfig
-mips                          rb532_defconfig
 arm                         palmz72_defconfig
 arm                         mv78xx0_defconfig
 alpha                            allyesconfig
@@ -110,6 +104,10 @@ m68k                                defconfig
 sh                           se7206_defconfig
 sh                           sh2007_defconfig
 powerpc                 mpc834x_mds_defconfig
+sh                 kfr2r09-romimage_defconfig
+m68k                          amiga_defconfig
+arm                           stm32_defconfig
+arm                           sunxi_defconfig
 nds32                             allnoconfig
 sparc64                             defconfig
 arm                           omap1_defconfig
@@ -123,7 +121,6 @@ powerpc                      katmai_defconfig
 powerpc                 mpc8315_rdb_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
-ia64                             allyesconfig
 m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
@@ -145,6 +142,7 @@ sparc                               defconfig
 i386                               tinyconfig
 i386                                defconfig
 mips                             allyesconfig
+powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
 i386                 randconfig-a004-20210326
@@ -165,6 +163,12 @@ i386                 randconfig-a015-20210326
 i386                 randconfig-a016-20210326
 i386                 randconfig-a012-20210326
 i386                 randconfig-a013-20210326
+x86_64               randconfig-a002-20210327
+x86_64               randconfig-a003-20210327
+x86_64               randconfig-a006-20210327
+x86_64               randconfig-a001-20210327
+x86_64               randconfig-a004-20210327
+x86_64               randconfig-a005-20210327
 riscv                    nommu_k210_defconfig
 riscv                    nommu_virt_defconfig
 riscv                               defconfig
@@ -186,6 +190,12 @@ x86_64               randconfig-a001-20210326
 x86_64               randconfig-a006-20210326
 x86_64               randconfig-a004-20210326
 x86_64               randconfig-a005-20210326
+x86_64               randconfig-a012-20210327
+x86_64               randconfig-a015-20210327
+x86_64               randconfig-a014-20210327
+x86_64               randconfig-a013-20210327
+x86_64               randconfig-a011-20210327
+x86_64               randconfig-a016-20210327
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
