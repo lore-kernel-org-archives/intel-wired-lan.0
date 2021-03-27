@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 27 Mar 2021 18:46:23 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- d9a6793b3468848b6bae93e55173fcb84adfae58
-Message-ID: <605f0cff.hqQ1B8eqDL05F30U%lkp@intel.com>
+Date: Sat, 27 Mar 2021 18:46:28 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ d634b8d8814557f5257ce83edb3f55936fe1661d
+Message-ID: <605f0d04.YtJdMcP0gnKyO9GA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: d9a6793b3468848b6bae93e55173fcb84adfae58  igc: Add support for XDP_REDIRECT action
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: d634b8d8814557f5257ce83edb3f55936fe1661d  ice: Cleanup fltr list in case of allocation issues
 
-elapsed time: 722m
+elapsed time: 721m
 
-configs tested: 135
+configs tested: 163
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -27,6 +27,7 @@ arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 riscv                            allmodconfig
+x86_64                           allyesconfig
 i386                             allyesconfig
 riscv                            allyesconfig
 sh                ecovec24-romimage_defconfig
@@ -56,6 +57,11 @@ arm                         orion5x_defconfig
 arm                            pleb_defconfig
 m68k                        mvme147_defconfig
 microblaze                          defconfig
+powerpc                       ebony_defconfig
+powerpc                      cm5200_defconfig
+parisc                generic-64bit_defconfig
+mips                             allmodconfig
+riscv                             allnoconfig
 mips                            ar7_defconfig
 powerpc                          g5_defconfig
 ia64                            zx1_defconfig
@@ -66,18 +72,28 @@ mips                     loongson1c_defconfig
 sparc                            alldefconfig
 mips                           rs90_defconfig
 powerpc                          allyesconfig
-powerpc                       ebony_defconfig
 sh                             sh03_defconfig
 arm                   milbeaut_m10v_defconfig
 arm                        multi_v7_defconfig
+powerpc                   bluestone_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                      acadia_defconfig
+arm                       multi_v4t_defconfig
+arm                            mps2_defconfig
+arm                          pxa910_defconfig
 arm                            qcom_defconfig
 sh                          r7785rp_defconfig
 powerpc                      arches_defconfig
 arc                           tb10x_defconfig
 mips                           ip32_defconfig
 arc                          axs103_defconfig
-xtensa                generic_kc705_defconfig
 powerpc                       eiger_defconfig
+sparc                       sparc64_defconfig
+arm                         s3c2410_defconfig
+sh                          polaris_defconfig
+powerpc                      walnut_defconfig
+arm                         s3c6400_defconfig
+m68k                             allmodconfig
 arm                     eseries_pxa_defconfig
 sh                            titan_defconfig
 arm                       cns3420vb_defconfig
@@ -87,15 +103,30 @@ arm                         palmz72_defconfig
 arm                         mv78xx0_defconfig
 alpha                            allyesconfig
 mips                            gpr_defconfig
+powerpc                       maple_defconfig
+powerpc                    socrates_defconfig
+powerpc                      bamboo_defconfig
+m68k                                defconfig
+sh                           se7206_defconfig
+sh                           sh2007_defconfig
+powerpc                 mpc834x_mds_defconfig
+nds32                             allnoconfig
+sparc64                             defconfig
+arm                           omap1_defconfig
+sparc64                          alldefconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                          simpad_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                      pcm030_defconfig
+mips                        omega2p_defconfig
+powerpc                      katmai_defconfig
+powerpc                 mpc8315_rdb_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
 m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -114,7 +145,6 @@ sparc                               defconfig
 i386                               tinyconfig
 i386                                defconfig
 mips                             allyesconfig
-mips                             allmodconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
 i386                 randconfig-a004-20210326
@@ -137,14 +167,12 @@ i386                 randconfig-a012-20210326
 i386                 randconfig-a013-20210326
 riscv                    nommu_k210_defconfig
 riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 um                               allmodconfig
 um                                allnoconfig
 um                               allyesconfig
 um                                  defconfig
-x86_64                           allyesconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
