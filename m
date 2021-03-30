@@ -1,120 +1,161 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 29 Mar 2021 18:22:12 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.10 24/33] platform/x86:
- intel_pmc_core: Ignore GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210329222222.2382987-1-sashal@kernel.org>
-References: <20210329222222.2382987-1-sashal@kernel.org>
-Message-ID: <20210329222222.2382987-24-sashal@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 30 Mar 2021 13:56:58 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
+ 4ff3203610928cac82d5627ce803559e78d61b91
+Message-ID: <6062bdaa.CBN0DrPLDh95N1W7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "David E. Box" <david.e.box@linux.intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
+branch HEAD: 4ff3203610928cac82d5627ce803559e78d61b91  igc: Add support for XDP_REDIRECT action
 
-[ Upstream commit d1635448f1105e549b4041aab930dbc6945fc635 ]
+elapsed time: 805m
 
-Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
-programmed in the Tiger Lake GBE controller is not large enough to allow
-the platform to enter Package C10, which in turn prevents the platform from
-achieving its low power target during suspend-to-idle.  Ignore the GBE LTR
-value on Tiger Lake. LTR ignore functionality is currently performed solely
-by a debugfs write call. Split out the LTR code into its own function that
-can be called by both the debugfs writer and by this work around.
+configs tested: 132
+configs skipped: 2
 
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
-Link: https://lore.kernel.org/r/20210319201844.3305399-2-david.e.box at linux.intel.com
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+arm64                            alldefconfig
+xtensa                              defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                      pcm030_defconfig
+powerpc                    socrates_defconfig
+mips                       lemote2f_defconfig
+powerpc                      ppc44x_defconfig
+powerpc               mpc834x_itxgp_defconfig
+arc                            hsdk_defconfig
+sh                            hp6xx_defconfig
+powerpc                      makalu_defconfig
+powerpc                    sam440ep_defconfig
+powerpc                  storcenter_defconfig
+parisc                           allyesconfig
+arm                          simpad_defconfig
+m68k                        stmark2_defconfig
+powerpc                  mpc866_ads_defconfig
+powerpc                       ebony_defconfig
+sh                            titan_defconfig
+sparc64                             defconfig
+powerpc                 mpc834x_itx_defconfig
+mips                         tb0219_defconfig
+mips                            ar7_defconfig
+arm                     am200epdkit_defconfig
+arm                          pxa910_defconfig
+arm                          collie_defconfig
+xtensa                generic_kc705_defconfig
+arm                         lpc18xx_defconfig
+powerpc                     rainier_defconfig
+um                                  defconfig
+powerpc                   motionpro_defconfig
+mips                           gcw0_defconfig
+arm                          gemini_defconfig
+powerpc                     ppa8548_defconfig
+mips                         cobalt_defconfig
+sh                           se7724_defconfig
+m68k                        m5407c3_defconfig
+arm                          pcm027_defconfig
+mips                           rs90_defconfig
+powerpc                      ppc40x_defconfig
+sh                        dreamcast_defconfig
+powerpc                     mpc5200_defconfig
+powerpc                  mpc885_ads_defconfig
+mips                     loongson1b_defconfig
+mips                     decstation_defconfig
+sh                         apsh4a3a_defconfig
+arm                         assabet_defconfig
+mips                      pic32mzda_defconfig
+mips                        jmr3927_defconfig
+m68k                       m5275evb_defconfig
+mips                        nlm_xlp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+xtensa                           allyesconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a002-20210329
+x86_64               randconfig-a003-20210329
+x86_64               randconfig-a006-20210329
+x86_64               randconfig-a001-20210329
+x86_64               randconfig-a005-20210329
+x86_64               randconfig-a004-20210329
+i386                 randconfig-a003-20210329
+i386                 randconfig-a004-20210329
+i386                 randconfig-a001-20210329
+i386                 randconfig-a002-20210329
+i386                 randconfig-a006-20210329
+i386                 randconfig-a005-20210329
+i386                 randconfig-a006-20210330
+i386                 randconfig-a003-20210330
+i386                 randconfig-a002-20210330
+i386                 randconfig-a001-20210330
+i386                 randconfig-a005-20210330
+i386                 randconfig-a011-20210329
+i386                 randconfig-a016-20210329
+i386                 randconfig-a013-20210329
+i386                 randconfig-a012-20210329
+i386                 randconfig-a014-20210329
+i386                 randconfig-a015-20210329
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a015-20210329
+x86_64               randconfig-a012-20210329
+x86_64               randconfig-a013-20210329
+x86_64               randconfig-a014-20210329
+x86_64               randconfig-a011-20210329
+x86_64               randconfig-a016-20210329
+
 ---
- drivers/platform/x86/intel_pmc_core.c | 50 +++++++++++++++++++--------
- 1 file changed, 35 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
-index 3e5fe66333f1..e06b36e87a33 100644
---- a/drivers/platform/x86/intel_pmc_core.c
-+++ b/drivers/platform/x86/intel_pmc_core.c
-@@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
- }
- DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
- 
--static ssize_t pmc_core_ltr_ignore_write(struct file *file,
--					 const char __user *userbuf,
--					 size_t count, loff_t *ppos)
-+static int pmc_core_send_ltr_ignore(u32 value)
- {
- 	struct pmc_dev *pmcdev = &pmc;
- 	const struct pmc_reg_map *map = pmcdev->map;
--	u32 val, buf_size, fd;
--	int err;
--
--	buf_size = count < 64 ? count : 64;
--
--	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
--	if (err)
--		return err;
-+	u32 reg;
-+	int err = 0;
- 
- 	mutex_lock(&pmcdev->lock);
- 
--	if (val > map->ltr_ignore_max) {
-+	if (value > map->ltr_ignore_max) {
- 		err = -EINVAL;
- 		goto out_unlock;
- 	}
- 
--	fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
--	fd |= (1U << val);
--	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
-+	reg = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-+	reg |= BIT(value);
-+	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, reg);
- 
- out_unlock:
- 	mutex_unlock(&pmcdev->lock);
-+
-+	return err;
-+}
-+
-+static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-+					 const char __user *userbuf,
-+					 size_t count, loff_t *ppos)
-+{
-+	u32 buf_size, value;
-+	int err;
-+
-+	buf_size = min_t(u32, count, 64);
-+
-+	err = kstrtou32_from_user(userbuf, buf_size, 10, &value);
-+	if (err)
-+		return err;
-+
-+	err = pmc_core_send_ltr_ignore(value);
-+
- 	return err == 0 ? count : err;
- }
- 
-@@ -1244,6 +1255,15 @@ static int pmc_core_probe(struct platform_device *pdev)
- 	pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
- 	dmi_check_system(pmc_core_dmi_table);
- 
-+	/*
-+	 * On TGL, due to a hardware limitation, the GBE LTR blocks PC10 when
-+	 * a cable is attached. Tell the PMC to ignore it.
-+	 */
-+	if (pmcdev->map == &tgl_reg_map) {
-+		dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
-+		pmc_core_send_ltr_ignore(3);
-+	}
-+
- 	pmc_core_dbgfs_register(pmcdev);
- 
- 	device_initialized = true;
--- 
-2.30.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
