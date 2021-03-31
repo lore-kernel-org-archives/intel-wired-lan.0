@@ -1,60 +1,53 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 31 Mar 2021 10:57:01 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix PHY type identifiers for
- 2.5G and 5G adapters
-Message-ID: <20210331105701.2112-1-mateusz.palczewski@intel.com>
+From: Bhandare, KiranX <kiranx.bhandare@intel.com>
+Date: Wed, 31 Mar 2021 12:57:35 +0000
+Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix receiving of
+ single packets in xsk zero-copy mode
+In-Reply-To: <20210319094410.3633-1-magnus.karlsson@gmail.com>
+References: <20210319094410.3633-1-magnus.karlsson@gmail.com>
+Message-ID: <DM6PR11MB3292D119D24C4E9291856E02F17C9@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Unlike other supported adapters, 2.5G and 5G use different
-PHY type identifiers for reading/writing PHY settings
-and for reading link status. Introduce separate PHY
-identifiers for these two operation types.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Magnus Karlsson
+> Sent: Friday, March 19, 2021 3:14 PM
+> To: Karlsson, Magnus <magnus.karlsson@intel.com>; intel-wired-
+> lan at lists.osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
+> Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
+> Cc: netdev at vger.kernel.org; Joshi, Sreedevi <sreedevi.joshi@intel.com>
+> Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix receiving of single packets
+> in xsk zero-copy mode
+> 
+> From: Magnus Karlsson <magnus.karlsson@intel.com>
+> 
+> Fix so that single packets are received immediately instead of in batches of 8.
+> If you sent 1 pss to a system, you received 8 packets every 8 seconds instead
+> of 1 packet every second. The problem behind this was that the work_done
+> reporting from the Tx part of the driver was broken. The work_done
+> reporting in i40e controls not only the reporting back to the napi logic but
+> also the setting of the interrupt throttling logic. When Tx or Rx reports that it
+> has more to do, interrupts are throttled or coalesced and when they both
+> report that they are done, interrupts are armed right away. If the wrong
+> work_done value is returned, the logic will start to throttle interrupts in a
+> situation where it should have just enabled them. This leads to the undesired
+> batching behavior seen in user-space.
+> 
+> Fix this by returning the correct boolean value from the Tx xsk zero-copy
+> path. Return true if there is nothing to do or if we got fewer packets to
+> process than we asked for. Return false if we got as many packets as the
+> budget since there might be more packets we can process.
+> 
+> Fixes: 3106c580fb7c ("i40e: Use batched xsk Tx interfaces to increase
+> performance")
+> Reported-by: Sreedevi Joshi <sreedevi.joshi@intel.com>
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
 
-Fixes: 2e45d3f4677a("i40e: Add support for X710 B/P & SFP+ cards")
-Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Michal Maloszewski <michal.maloszewski@intel.com>
-Reviewed-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
----
- v2: Added missing changes in i40e_ethtool.c file
----
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 ++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c    | 4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index ce626ea..78ba6b0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -1568,6 +1568,8 @@ enum i40e_aq_phy_type {
- 	I40E_PHY_TYPE_25GBASE_ACC		= 0x24,
- 	I40E_PHY_TYPE_2_5GBASE_T		= 0x30,
- 	I40E_PHY_TYPE_5GBASE_T			= 0x31,
-+	I40E_PHY_TYPE_2_5GBASE_T_LINK_STATUS	= 0x30,
-+	I40E_PHY_TYPE_5GBASE_T_LINK_STATUS	= 0x31,
- 	I40E_PHY_TYPE_MAX,
- 	I40E_PHY_TYPE_NOT_SUPPORTED_HIGH_TEMP	= 0xFD,
- 	I40E_PHY_TYPE_EMPTY			= 0xFE,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 96d5202..fe5befa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -841,8 +841,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 							     10000baseT_Full);
- 		break;
- 	case I40E_PHY_TYPE_10GBASE_T:
--	case I40E_PHY_TYPE_5GBASE_T:
--	case I40E_PHY_TYPE_2_5GBASE_T:
-+	case I40E_PHY_TYPE_5GBASE_T_LINK_STATUS:
-+	case I40E_PHY_TYPE_2_5GBASE_T_LINK_STATUS:
- 	case I40E_PHY_TYPE_1000BASE_T:
- 	case I40E_PHY_TYPE_100BASE_TX:
- 		ethtool_link_ksettings_add_link_mode(ks, supported, Autoneg);
--- 
-2.17.1
-
+Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
