@@ -1,79 +1,382 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 31 Mar 2021 14:17:05 -0700
-Subject: [Intel-wired-lan] [PATCH S58 10/13] ice: suppress false cppcheck
- issues
-In-Reply-To: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
-References: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210331211708.55205-10-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Mar 2021 14:16:56 -0700
+Subject: [Intel-wired-lan] [PATCH S58 01/13] ice: refactor interrupt
+ moderation writes
+Message-ID: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Silence false errors, warnings and style issues reported by cppcheck.
+Introduce several new helpers for writing ITR and GLINT_RATE
+registers, and refactor the code calling them.  This resulted
+in removal of several duplicate functions and rolled a bunch
+of simple code back into the calling routines.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+In particular this removes some code that was doing both
+a store and a set in a helper function, which seems better
+done as separate tasks in the caller (and generally takes
+less lines of code even with a tiny bit of repetition).
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 3 +++
- drivers/net/ethernet/intel/ice/ice_nvm.c       | 1 +
- drivers/net/ethernet/intel/ice/ice_sched.c     | 1 +
- 3 files changed, 5 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_base.c    |  22 +--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |  17 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 171 ++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_lib.h     |   3 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c     |   3 -
+ 5 files changed, 112 insertions(+), 104 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 4b83960876f4..06ac9badee77 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -334,6 +334,7 @@ ice_boost_tcam_handler(u32 sect_type, void *section, u32 index, u32 *offset)
- 	if (sect_type != ICE_SID_RXPARSER_BOOST_TCAM)
- 		return NULL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index 16cd67050967..5e6d9604e22c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -766,25 +766,13 @@ void ice_cfg_itr(struct ice_hw *hw, struct ice_q_vector *q_vector)
+ {
+ 	ice_cfg_itr_gran(hw);
  
-+	/* cppcheck-suppress nullPointer */
- 	if (index > ICE_MAX_BST_TCAMS_IN_BUF)
- 		return NULL;
+-	if (q_vector->num_ring_rx) {
+-		struct ice_ring_container *rc = &q_vector->rx;
+-
+-		rc->target_itr = ITR_TO_REG(rc->itr_setting);
+-		rc->next_update = jiffies + 1;
+-		rc->current_itr = rc->target_itr;
+-		wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
+-		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
+-	}
++	if (q_vector->num_ring_rx)
++		ice_write_itr(&q_vector->rx, q_vector->rx.itr_setting);
  
-@@ -404,6 +405,7 @@ ice_label_enum_handler(u32 __always_unused sect_type, void *section, u32 index,
- 	if (!section)
- 		return NULL;
+-	if (q_vector->num_ring_tx) {
+-		struct ice_ring_container *rc = &q_vector->tx;
++	if (q_vector->num_ring_tx)
++		ice_write_itr(&q_vector->tx, q_vector->tx.itr_setting);
  
-+	/* cppcheck-suppress nullPointer */
- 	if (index > ICE_MAX_LABELS_IN_BUF)
- 		return NULL;
+-		rc->target_itr = ITR_TO_REG(rc->itr_setting);
+-		rc->next_update = jiffies + 1;
+-		rc->current_itr = rc->target_itr;
+-		wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
+-		     ITR_REG_ALIGN(rc->current_itr) >> ICE_ITR_GRAN_S);
+-	}
++	ice_write_intrl(q_vector, q_vector->intrl);
+ }
  
-@@ -2067,6 +2069,7 @@ ice_match_prop_lst(struct list_head *list1, struct list_head *list2)
- 		count++;
- 	list_for_each_entry(tmp2, list2, list)
- 		chk_count++;
-+	/* cppcheck-suppress knownConditionTrueFalse */
- 	if (!count || count != chk_count)
- 		return false;
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index f2bc8f1e86cc..e273560d9e6e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3636,9 +3636,8 @@ ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
+ 		}
+ 		if (ec->rx_coalesce_usecs_high != rc->ring->q_vector->intrl) {
+ 			rc->ring->q_vector->intrl = ec->rx_coalesce_usecs_high;
+-			wr32(&pf->hw, GLINT_RATE(rc->ring->q_vector->reg_idx),
+-			     ice_intrl_usec_to_reg(ec->rx_coalesce_usecs_high,
+-						   pf->hw.intrl_gran));
++			ice_write_intrl(rc->ring->q_vector,
++					ec->rx_coalesce_usecs_high);
+ 		}
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-index 2f7de2d03510..4058d8f4e782 100644
---- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-+++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-@@ -740,6 +740,7 @@ ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
+ 		use_adaptive_coalesce = ec->use_adaptive_rx_coalesce;
+@@ -3672,10 +3671,15 @@ ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
+ 	if (use_adaptive_coalesce) {
+ 		rc->itr_setting |= ICE_ITR_DYNAMIC;
+ 	} else {
+-		/* save the user set usecs */
++		/* store user facing value how it was set */
+ 		rc->itr_setting = coalesce_usecs;
+-		/* device ITR granularity is in 2 usec increments */
+-		rc->target_itr = ITR_REG_ALIGN(rc->itr_setting);
++		/* write the change to the register */
++		ice_write_itr(rc, coalesce_usecs);
++		/* force writes to take effect immediately, the flush shouldn't
++		 * be done in the functions above because the intent is for
++		 * them to do lazy writes.
++		 */
++		ice_flush(&pf->hw);
+ 	}
  
- 		/* Verify that the simple checksum is zero */
- 		for (i = 0; i < sizeof(tmp); i++)
-+			/* cppcheck-suppress objectIndex */
- 			sum += ((u8 *)&tmp)[i];
+ 	return 0;
+@@ -3793,7 +3797,6 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
+ 		return -EINVAL;
  
- 		if (sum) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 97562051fe14..2f097637e405 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -988,6 +988,7 @@ ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
- 	*num_nodes_added = 0;
- 	while (*num_nodes_added < num_nodes) {
- 		u16 max_child_nodes, num_added = 0;
-+		/* cppcheck-suppress unusedVariable */
- 		u32 temp;
+ set_complete:
+-
+ 	return 0;
+ }
  
- 		status = ice_sched_add_nodes_to_hw_layer(pi, tc_node, parent,
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 5cbb4b0f682b..06c1e5f7eb5e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1796,7 +1796,7 @@ int ice_vsi_cfg_xdp_txqs(struct ice_vsi *vsi)
+  * This function converts a decimal interrupt rate limit in usecs to the format
+  * expected by firmware.
+  */
+-u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
++static u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
+ {
+ 	u32 val = intrl / gran;
+ 
+@@ -1805,6 +1805,58 @@ u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran)
+ 	return 0;
+ }
+ 
++/**
++ * ice_write_intrl - write throttle rate limit to interrupt specific register
++ * @q_vector: pointer to interrupt specific structure
++ * @intrl: throttle rate limit in microseconds to write
++ */
++void ice_write_intrl(struct ice_q_vector *q_vector, u8 intrl)
++{
++	struct ice_hw *hw = &q_vector->vsi->back->hw;
++
++	wr32(hw, GLINT_RATE(q_vector->reg_idx),
++	     ice_intrl_usec_to_reg(intrl, ICE_INTRL_GRAN_ABOVE_25));
++}
++
++/**
++ * __ice_write_itr - write throttle rate to register
++ * @q_vector: pointer to interrupt data structure
++ * @rc: pointer to ring container
++ * @itr: throttle rate in microseconds to write
++ */
++static void __ice_write_itr(struct ice_q_vector *q_vector,
++			    struct ice_ring_container *rc, u16 itr)
++{
++	struct ice_hw *hw = &q_vector->vsi->back->hw;
++
++	wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
++	     ITR_REG_ALIGN(itr) >> ICE_ITR_GRAN_S);
++}
++
++/**
++ * ice_write_itr - write throttle rate to queue specific register
++ * @rc: pointer to ring container
++ * @itr: throttle rate in microseconds to write
++ *
++ * This function is resilient to having the 0x8000 bit set which
++ * is indicating that an ITR value is "DYNAMIC", and will write
++ * the correct value to the register.
++ */
++void ice_write_itr(struct ice_ring_container *rc, u16 itr)
++{
++	struct ice_q_vector *q_vector;
++
++	if (!rc->ring)
++		return;
++
++	q_vector = rc->ring->q_vector;
++
++	/* clear the "DYNAMIC" bit */
++	itr = ITR_TO_REG(itr);
++
++	__ice_write_itr(q_vector, rc, itr);
++}
++
+ /**
+  * ice_vsi_cfg_msix - MSIX mode Interrupt Config in the HW
+  * @vsi: the VSI being configured
+@@ -1825,9 +1877,6 @@ void ice_vsi_cfg_msix(struct ice_vsi *vsi)
+ 
+ 		ice_cfg_itr(hw, q_vector);
+ 
+-		wr32(hw, GLINT_RATE(reg_idx),
+-		     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
+-
+ 		/* Both Transmit Queue Interrupt Cause Control register
+ 		 * and Receive Queue Interrupt Cause control register
+ 		 * expects MSIX_INDX field to be the vector index
+@@ -2515,11 +2564,10 @@ static void ice_vsi_release_msix(struct ice_vsi *vsi)
+ 
+ 	for (i = 0; i < vsi->num_q_vectors; i++) {
+ 		struct ice_q_vector *q_vector = vsi->q_vectors[i];
+-		u16 reg_idx = q_vector->reg_idx;
+ 
+-		wr32(hw, GLINT_ITR(ICE_IDX_ITR0, reg_idx), 0);
+-		wr32(hw, GLINT_ITR(ICE_IDX_ITR1, reg_idx), 0);
++		ice_write_intrl(q_vector, 0);
+ 		for (q = 0; q < q_vector->num_ring_tx; q++) {
++			ice_write_itr(&q_vector->tx, 0);
+ 			wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), 0);
+ 			if (ice_is_xdp_ena_vsi(vsi)) {
+ 				u32 xdp_txq = txq + vsi->num_xdp_txq;
+@@ -2530,6 +2578,7 @@ static void ice_vsi_release_msix(struct ice_vsi *vsi)
+ 		}
+ 
+ 		for (q = 0; q < q_vector->num_ring_rx; q++) {
++			ice_write_itr(&q_vector->rx, 0);
+ 			wr32(hw, QINT_RQCTL(vsi->rxq_map[rxq]), 0);
+ 			rxq++;
+ 		}
+@@ -2866,47 +2915,6 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ 	return 0;
+ }
+ 
+-/**
+- * ice_vsi_rebuild_update_coalesce_intrl - set interrupt rate limit for a q_vector
+- * @q_vector: pointer to q_vector which is being updated
+- * @stored_intrl_setting: original INTRL setting
+- *
+- * Set coalesce param in q_vector and update these parameters in HW.
+- */
+-static void
+-ice_vsi_rebuild_update_coalesce_intrl(struct ice_q_vector *q_vector,
+-				      u16 stored_intrl_setting)
+-{
+-	struct ice_hw *hw = &q_vector->vsi->back->hw;
+-
+-	q_vector->intrl = stored_intrl_setting;
+-	wr32(hw, GLINT_RATE(q_vector->reg_idx),
+-	     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
+-}
+-
+-/**
+- * ice_vsi_rebuild_update_coalesce_itr - set coalesce for a q_vector
+- * @q_vector: pointer to q_vector which is being updated
+- * @rc: pointer to ring container
+- * @stored_itr_setting: original ITR setting
+- *
+- * Set coalesce param in q_vector and update these parameters in HW.
+- */
+-static void
+-ice_vsi_rebuild_update_coalesce_itr(struct ice_q_vector *q_vector,
+-				    struct ice_ring_container *rc,
+-				    u16 stored_itr_setting)
+-{
+-	struct ice_hw *hw = &q_vector->vsi->back->hw;
+-
+-	rc->itr_setting = stored_itr_setting;
+-
+-	/* dynamic ITR values will be updated during Tx/Rx */
+-	if (!ITR_IS_DYNAMIC(rc->itr_setting))
+-		wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
+-		     ITR_REG_ALIGN(rc->itr_setting) >> ICE_ITR_GRAN_S);
+-}
+-
+ /**
+  * ice_vsi_rebuild_get_coalesce - get coalesce from all q_vectors
+  * @vsi: VSI connected with q_vectors
+@@ -2950,6 +2958,7 @@ static void
+ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
+ 			     struct ice_coalesce_stored *coalesce, int size)
+ {
++	struct ice_ring_container *rc;
+ 	int i;
+ 
+ 	if ((size && !coalesce) || !vsi)
+@@ -2972,41 +2981,51 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
+ 		 *   rings is less than are allocated (this means the number of
+ 		 *   rings increased from previously), then write out the
+ 		 *   values in the first element
++		 *
++		 *   Also, always write the ITR, even if in ITR_IS_DYNAMIC
++		 *   as there is no harm because the dynamic algorithm
++		 *   will just overwrite.
+ 		 */
+-		if (i < vsi->alloc_rxq && coalesce[i].rx_valid)
+-			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-							    &vsi->q_vectors[i]->rx,
+-							    coalesce[i].itr_rx);
+-		else if (i < vsi->alloc_rxq)
+-			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-							    &vsi->q_vectors[i]->rx,
+-							    coalesce[0].itr_rx);
+-
+-		if (i < vsi->alloc_txq && coalesce[i].tx_valid)
+-			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-							    &vsi->q_vectors[i]->tx,
+-							    coalesce[i].itr_tx);
+-		else if (i < vsi->alloc_txq)
+-			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-							    &vsi->q_vectors[i]->tx,
+-							    coalesce[0].itr_tx);
+-
+-		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
+-						      coalesce[i].intrl);
++		if (i < vsi->alloc_rxq && coalesce[i].rx_valid) {
++			rc = &vsi->q_vectors[i]->rx;
++			rc->itr_setting = coalesce[i].itr_rx;
++			ice_write_itr(rc, rc->itr_setting);
++		} else if (i < vsi->alloc_rxq) {
++			rc = &vsi->q_vectors[i]->rx;
++			rc->itr_setting = coalesce[0].itr_rx;
++			ice_write_itr(rc, rc->itr_setting);
++		}
++
++		if (i < vsi->alloc_txq && coalesce[i].tx_valid) {
++			rc = &vsi->q_vectors[i]->tx;
++			rc->itr_setting = coalesce[i].itr_tx;
++			ice_write_itr(rc, rc->itr_setting);
++		} else if (i < vsi->alloc_txq) {
++			rc = &vsi->q_vectors[i]->tx;
++			rc->itr_setting = coalesce[0].itr_tx;
++			ice_write_itr(rc, rc->itr_setting);
++		}
++
++		vsi->q_vectors[i]->intrl = coalesce[i].intrl;
++		ice_write_intrl(vsi->q_vectors[i], coalesce[i].intrl);
+ 	}
+ 
+ 	/* the number of queue vectors increased so write whatever is in
+ 	 * the first element
+ 	 */
+ 	for (; i < vsi->num_q_vectors; i++) {
+-		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-						    &vsi->q_vectors[i]->tx,
+-						    coalesce[0].itr_tx);
+-		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
+-						    &vsi->q_vectors[i]->rx,
+-						    coalesce[0].itr_rx);
+-		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
+-						      coalesce[0].intrl);
++		/* transmit */
++		rc = &vsi->q_vectors[i]->tx;
++		rc->itr_setting = coalesce[0].itr_tx;
++		ice_write_itr(rc, rc->itr_setting);
++
++		/* receive */
++		rc = &vsi->q_vectors[i]->rx;
++		rc->itr_setting = coalesce[0].itr_rx;
++		ice_write_itr(rc, rc->itr_setting);
++
++		vsi->q_vectors[i]->intrl = coalesce[0].intrl;
++		ice_write_intrl(vsi->q_vectors[i], coalesce[0].intrl);
+ 	}
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 92d2d23ce920..7775f1e36474 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -99,7 +99,8 @@ void ice_vsi_cfg_frame_size(struct ice_vsi *vsi);
+ 
+ int ice_status_to_errno(enum ice_status err);
+ 
+-u32 ice_intrl_usec_to_reg(u8 intrl, u8 gran);
++void ice_write_intrl(struct ice_q_vector *q_vector, u8 intrl);
++void ice_write_itr(struct ice_ring_container *rc, u16 itr);
+ 
+ enum ice_status
+ ice_vsi_cfg_mac_fltr(struct ice_vsi *vsi, const u8 *macaddr, bool set);
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index fdc44b3f8e26..2f4a8a1f1677 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -108,9 +108,6 @@ ice_qvec_cfg_msix(struct ice_vsi *vsi, struct ice_q_vector *q_vector)
+ 
+ 	ice_cfg_itr(hw, q_vector);
+ 
+-	wr32(hw, GLINT_RATE(reg_idx),
+-	     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
+-
+ 	ice_for_each_ring(ring, q_vector->tx)
+ 		ice_cfg_txq_interrupt(vsi, ring->reg_idx, reg_idx,
+ 				      q_vector->tx.itr_idx);
 -- 
 2.20.1
 
