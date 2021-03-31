@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 31 Mar 2021 21:52:18 +0000
-Subject: [Intel-wired-lan] [PATCH S57 13/14] ice: Remove rx_gro_dropped
- stat
-In-Reply-To: <20210325223517.17722-13-anthony.l.nguyen@intel.com>
+Date: Wed, 31 Mar 2021 21:58:45 +0000
+Subject: [Intel-wired-lan] [PATCH S57 14/14] ice: Remove unnecessary
+ checks in add/kill_vid ndo ops
+In-Reply-To: <20210325223517.17722-14-anthony.l.nguyen@intel.com>
 References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
- <20210325223517.17722-13-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB51053963B95C6FED4FC72BE1FA7C9@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210325223517.17722-14-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105169B0A49056943BE3A99FA7C9@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, March 25, 2021 3:35 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S57 13/14] ice: Remove rx_gro_dropped
-> stat
+> Subject: [Intel-wired-lan] [PATCH S57 14/14] ice: Remove unnecessary
+> checks in add/kill_vid ndo ops
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Tracking of the rx_gro_dropped statistic was removed in commit
-> f73fc40327c0 ("ice: drop dead code in ice_receive_skb()").
-> Remove the associated variables and its reporting to ethtool stats.
+> Currently the driver is doing two unnecessary checks. First both ops are
+> checking if the VLAN ID passed in is less than VLAN_N_VID and second both
+> ops are checking to see if a port VLAN is configured on the VSI.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> The first check is already handled by the 8021q driver so this is an
+> unnecessary check. The second check is unnecessary because the PF VSI is
+> never put into a port VLAN.
+> 
+> Remove these checks.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h         | 1 -
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 -
->  drivers/net/ethernet/intel/ice/ice_main.c    | 4 +---
->  drivers/net/ethernet/intel/ice/ice_txrx.h    | 1 -
->  4 files changed, 1 insertion(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 12 ------------
+>  1 file changed, 12 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
