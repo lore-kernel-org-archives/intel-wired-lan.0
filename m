@@ -1,73 +1,42 @@
-From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Wed, 31 Mar 2021 10:08:35 +0800
-Subject: [Intel-wired-lan] [Patch v1 1/3] iavf: change the flex-byte support
- number to macro definition
-Message-ID: <20210331020837.3640-1-haiyue.wang@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Wed, 31 Mar 2021 10:13:55 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix PHY type identifiers for
+ 2.5G and 5G adapters
+Message-ID: <20210331101355.18769-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The maximum number (2) of flex-byte support is derived from ethtool
-use-def data size (8 byte).
+Unlike other supported adapters, 2.5G and 5G use different
+PHY type identifiers for reading/writing PHY settings
+and for reading link status. Introduce separate PHY
+identifiers for these two operation types.
 
-Change the magic number 2 to macro definition, and add the comment to
-track the design thinking, so the code is clear and easily maintained.
-
-Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+Fixes: 2e45d3f4677a ("i40e: Add support for X710 B/P & SFP+ cards")
+Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Michal Maloszewski <michal.maloszewski@intel.com>
+Reviewed-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 2 +-
- drivers/net/ethernet/intel/iavf/iavf_fdir.h    | 9 +++++++--
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index d9ed4d4e3d78..935145ab2b77 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -939,7 +939,7 @@ iavf_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
- 	if (!(fsp->flow_type & FLOW_EXT))
- 		return 0;
- 
--	for (i = 0; i < 2; i++) {
-+	for (i = 0; i < IAVF_FLEX_WORD_NUM; i++) {
- #define IAVF_USERDEF_FLEX_WORD_M	GENMASK(15, 0)
- #define IAVF_USERDEF_FLEX_OFFS_S	16
- #define IAVF_USERDEF_FLEX_OFFS_M	GENMASK(31, IAVF_USERDEF_FLEX_OFFS_S)
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.h b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
-index 2439c970b657..33c55c366315 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_fdir.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
-@@ -35,6 +35,11 @@ enum iavf_fdir_flow_type {
- 	IAVF_FDIR_FLOW_PTYPE_MAX,
- };
- 
-+/* Must not exceed the array element number of '__be32 data[2]' in the ethtool
-+ * 'struct ethtool_rx_flow_spec.m_ext.data[2]' to express the flex-byte (word).
-+ */
-+#define IAVF_FLEX_WORD_NUM	2
-+
- struct iavf_flex_word {
- 	u16 offset;
- 	u16 word;
-@@ -71,7 +76,7 @@ struct iavf_fdir_ip {
- };
- 
- struct iavf_fdir_extra {
--	u32 usr_def[2];
-+	u32 usr_def[IAVF_FLEX_WORD_NUM];
- };
- 
- /* bookkeeping of Flow Director filters */
-@@ -95,7 +100,7 @@ struct iavf_fdir_fltr {
- 	/* flex byte filter data */
- 	u8 ip_ver; /* used to adjust the flex offset, 4 : IPv4, 6 : IPv6 */
- 	u8 flex_cnt;
--	struct iavf_flex_word flex_words[2];
-+	struct iavf_flex_word flex_words[IAVF_FLEX_WORD_NUM];
- 
- 	u32 flow_id;
- 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index ce626ea..78ba6b0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1568,6 +1568,8 @@ enum i40e_aq_phy_type {
+ 	I40E_PHY_TYPE_25GBASE_ACC		= 0x24,
+ 	I40E_PHY_TYPE_2_5GBASE_T		= 0x30,
+ 	I40E_PHY_TYPE_5GBASE_T			= 0x31,
++	I40E_PHY_TYPE_2_5GBASE_T_LINK_STATUS	= 0x30,
++	I40E_PHY_TYPE_5GBASE_T_LINK_STATUS	= 0x31,
+ 	I40E_PHY_TYPE_MAX,
+ 	I40E_PHY_TYPE_NOT_SUPPORTED_HIGH_TEMP	= 0xFD,
+ 	I40E_PHY_TYPE_EMPTY			= 0xFE,
 -- 
-2.31.1
+2.17.1
 
