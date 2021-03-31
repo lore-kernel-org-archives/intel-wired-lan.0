@@ -1,44 +1,45 @@
-From: Colin King <colin.king@canonical.com>
-Date: Wed, 31 Mar 2021 15:46:28 +0100
-Subject: [Intel-wired-lan] [PATCH][next] ice: Fix potential infinite loop
- when using u8 loop counter
-Message-ID: <20210331144628.1423252-1-colin.king@canonical.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Wed, 31 Mar 2021 20:41:30 +0000
+Subject: [Intel-wired-lan] [PATCH S57 01/14] ice: Re-send some AQ
+ commands, as result of EBUSY AQ error
+In-Reply-To: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
+References: <20210325223517.17722-1-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51051A142A5FA5CA3610B31AFA7C9@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Thursday, March 25, 2021 3:35 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S57 01/14] ice: Re-send some AQ
+> commands, as result of EBUSY AQ error
+> 
+> From: Chinh T Cao <chinh.t.cao@intel.com>
+> 
+> Retry sending some AQ commands, as result of EBUSY AQ error.
+> ice_aqc_opc_get_link_topo
+> ice_aqc_opc_lldp_stop
+> ice_aqc_opc_lldp_start
+> ice_aqc_opc_lldp_filter_ctrl
+> 
+> This change follows the latest guidelines from HW team. It is better to retry
+> the same AQ command several times, as the result of EBUSY, instead of
+> returning error to the caller right away.
+> 
+> Signed-off-by: Chinh T Cao <chinh.t.cao@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 81 ++++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  3 +
+>  drivers/net/ethernet/intel/ice/ice_controlq.c |  2 +-
+>  3 files changed, 84 insertions(+), 2 deletions(-)
 
-A for-loop is using a u8 loop counter that is being compared to
-a u32 cmp_dcbcfg->numapp to check for the end of the loop. If
-cmp_dcbcfg->numapp is larger than 255 then the counter j will wrap
-around to zero and hence an infinite loop occurs. Fix this by making
-counter j the same type as cmp_dcbcfg->numapp.
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
-Addresses-Coverity: ("Infinite loop")
-Fixes: aeac8ce864d9 ("ice: Recognize 860 as iSCSI port in CEE mode")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/net/ethernet/intel/ice/ice_dcb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index 43c6af42de8a..ee4f320d4823 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -747,8 +747,8 @@ ice_cee_to_dcb_cfg(struct ice_aqc_get_cee_dcb_cfg_resp *cee_cfg,
- 		   struct ice_port_info *pi)
- {
- 	u32 status, tlv_status = le32_to_cpu(cee_cfg->tlv_status);
--	u32 ice_aqc_cee_status_mask, ice_aqc_cee_status_shift;
--	u8 i, j, err, sync, oper, app_index, ice_app_sel_type;
-+	u32 ice_aqc_cee_status_mask, ice_aqc_cee_status_shift, j;
-+	u8 i, err, sync, oper, app_index, ice_app_sel_type;
- 	u16 app_prio = le16_to_cpu(cee_cfg->oper_app_prio);
- 	u16 ice_aqc_cee_app_mask, ice_aqc_cee_app_shift;
- 	struct ice_dcbx_cfg *cmp_dcbcfg, *dcbcfg;
--- 
-2.30.2
+ 
 
