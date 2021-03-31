@@ -1,83 +1,90 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 31 Mar 2021 14:17:02 -0700
-Subject: [Intel-wired-lan] [PATCH S58 07/13] ice: use local for consistency
+Date: Wed, 31 Mar 2021 14:17:07 -0700
+Subject: [Intel-wired-lan] [PATCH S58 12/13] ice: remove return variable
 In-Reply-To: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
 References: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210331211708.55205-7-anthony.l.nguyen@intel.com>
+Message-ID: <20210331211708.55205-12-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 
-Do a minor refactor on ice_vsi_rebuild to use a local
-variable to store vsi->type.
+We were saving the return value from ice_vsi_manage_rss_lut(), but
+the errors from that function are not critical so change it to
+return void and remove the code that saved the value.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 8 +++-----
+ drivers/net/ethernet/intel/ice/ice_lib.h  | 2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 3 files changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 4c3a8bdfd71b..4e93005686a4 100644
+index c379b4ddffbd..29284c7d49b9 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3037,6 +3037,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	struct ice_coalesce_stored *coalesce;
- 	int prev_num_q_vectors = 0;
- 	struct ice_vf *vf = NULL;
-+	enum ice_vsi_type vtype;
- 	enum ice_status status;
- 	struct ice_pf *pf;
- 	int ret, i;
-@@ -3045,7 +3046,8 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 		return -EINVAL;
+@@ -1312,14 +1312,13 @@ static int ice_vsi_alloc_rings(struct ice_vsi *vsi)
+  * LUT, while in the event of enable request for RSS, it will reconfigure RSS
+  * LUT.
+  */
+-int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena)
++void ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena)
+ {
+-	int err = 0;
+ 	u8 *lut;
  
- 	pf = vsi->back;
--	if (vsi->type == ICE_VSI_VF)
-+	vtype = vsi->type;
-+	if (vtype == ICE_VSI_VF)
- 		vf = &pf->vf[vsi->vf_id];
+ 	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
+ 	if (!lut)
+-		return -ENOMEM;
++		return;
  
- 	coalesce = kcalloc(vsi->num_q_vectors,
-@@ -3063,7 +3065,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	 * many interrupts each VF needs. SR-IOV MSIX resources are also
- 	 * cleared in the same manner.
+ 	if (ena) {
+ 		if (vsi->rss_lut_user)
+@@ -1329,9 +1328,8 @@ int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena)
+ 					 vsi->rss_size);
+ 	}
+ 
+-	err = ice_set_rss_lut(vsi, lut, vsi->rss_table_size);
++	ice_set_rss_lut(vsi, lut, vsi->rss_table_size);
+ 	kfree(lut);
+-	return err;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 7775f1e36474..e5c46213b0b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -89,7 +89,7 @@ void ice_vsi_free_rx_rings(struct ice_vsi *vsi);
+ 
+ void ice_vsi_free_tx_rings(struct ice_vsi *vsi);
+ 
+-int ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena);
++void ice_vsi_manage_rss_lut(struct ice_vsi *vsi, bool ena);
+ 
+ void ice_update_tx_ring_stats(struct ice_ring *ring, u64 pkts, u64 bytes);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1f88faab3ada..d470eb74086f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5132,10 +5132,10 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	 * separate if/else statements to guarantee each feature is checked
  	 */
--	if (vsi->type != ICE_VSI_VF) {
-+	if (vtype != ICE_VSI_VF) {
- 		/* reclaim SW interrupts back to the common pool */
- 		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
- 		pf->num_avail_sw_msix += vsi->num_q_vectors;
-@@ -3078,7 +3080,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	ice_vsi_put_qs(vsi);
- 	ice_vsi_clear_rings(vsi);
- 	ice_vsi_free_arrays(vsi);
--	if (vsi->type == ICE_VSI_VF)
-+	if (vtype == ICE_VSI_VF)
- 		ice_vsi_set_num_qs(vsi, vf->vf_id);
- 	else
- 		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
-@@ -3097,7 +3099,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	if (ret < 0)
- 		goto err_vsi;
+ 	if (features & NETIF_F_RXHASH && !(netdev->features & NETIF_F_RXHASH))
+-		ret = ice_vsi_manage_rss_lut(vsi, true);
++		ice_vsi_manage_rss_lut(vsi, true);
+ 	else if (!(features & NETIF_F_RXHASH) &&
+ 		 netdev->features & NETIF_F_RXHASH)
+-		ret = ice_vsi_manage_rss_lut(vsi, false);
++		ice_vsi_manage_rss_lut(vsi, false);
  
--	switch (vsi->type) {
-+	switch (vtype) {
- 	case ICE_VSI_CTRL:
- 	case ICE_VSI_PF:
- 		ret = ice_vsi_alloc_q_vectors(vsi);
-@@ -3124,7 +3126,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 				goto err_vectors;
- 		}
- 		/* ICE_VSI_CTRL does not need RSS so skip RSS processing */
--		if (vsi->type != ICE_VSI_CTRL)
-+		if (vtype != ICE_VSI_CTRL)
- 			/* Do not exit if configuring RSS had an issue, at
- 			 * least receive traffic on first queue. Hence no
- 			 * need to capture return value
+ 	if ((features & NETIF_F_HW_VLAN_CTAG_RX) &&
+ 	    !(netdev->features & NETIF_F_HW_VLAN_CTAG_RX))
 -- 
 2.20.1
 
