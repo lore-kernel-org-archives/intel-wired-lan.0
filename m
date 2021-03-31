@@ -1,82 +1,73 @@
 From: Haiyue Wang <haiyue.wang@intel.com>
-Date: Wed, 31 Mar 2021 10:08:37 +0800
-Subject: [Intel-wired-lan] [Patch v1 3/3] iavf: redefine the magic number
- for FDIR GTP-U header fields
-In-Reply-To: <20210331020837.3640-1-haiyue.wang@intel.com>
-References: <20210331020837.3640-1-haiyue.wang@intel.com>
-Message-ID: <20210331020837.3640-3-haiyue.wang@intel.com>
+Date: Wed, 31 Mar 2021 10:08:35 +0800
+Subject: [Intel-wired-lan] [Patch v1 1/3] iavf: change the flex-byte support
+ number to macro definition
+Message-ID: <20210331020837.3640-1-haiyue.wang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The flex-byte for GTP-U protocol header fields uses the magic number,
-which is hard to maintain and understand, define the interested filelds
-with meaningful macro name, based on the GTP-U protocol stack:
+The maximum number (2) of flex-byte support is derived from ethtool
+use-def data size (8 byte).
 
-GTP-U header
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     | 0x1 |1|0|1|0|0|     0xff      |           Length              |
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                           TEID = 1654                         |
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |    Sequence Number = 0        |N-PDU Number=0 |NextExtHdr=0x85|
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-GTP-U Extension Header (PDU Session Container)
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |  ExtHdrLen=2  |Type=0 | Spare |0|0|   QFI     | PPI |  Spare  |
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     |                    Padding                    |NextExtHdr=0x0 |
-     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Change the magic number 2 to macro definition, and add the comment to
+track the design thinking, so the code is clear and easily maintained.
 
 Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_fdir.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 2 +-
+ drivers/net/ethernet/intel/iavf/iavf_fdir.h    | 9 +++++++--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.c b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
-index af872ea3163f..6146203efd84 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_fdir.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
-@@ -54,8 +54,13 @@ iavf_fill_fdir_gtpu_hdr(struct iavf_fdir_fltr *fltr,
- #define IAVF_GTPU_HDR_TEID_OFFS0	4
- #define IAVF_GTPU_HDR_TEID_OFFS1	6
- #define IAVF_GTPU_HDR_N_PDU_AND_NEXT_EXTHDR_OFFS	10
-+#define IAVF_GTPU_HDR_NEXT_EXTHDR_TYPE_MASK		0x00FF /* skip N_PDU */
-+/* PDU Session Container Extension Header (PSC) */
-+#define IAVF_GTPU_PSC_EXTHDR_TYPE			0x85
- #define IAVF_GTPU_HDR_PSC_PDU_TYPE_AND_QFI_OFFS		13
--#define IAVF_GTPU_PSC_EXTHDR_TYPE	0x85 /* PDU Session Container Extension Header */
-+#define IAVF_GTPU_HDR_PSC_PDU_QFI_MASK			0x3F /* skip Type */
-+#define IAVF_GTPU_EH_QFI_IDX				1
-+
- 		if (fltr->flex_words[i].offset < adj_offs)
- 			return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index d9ed4d4e3d78..935145ab2b77 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -939,7 +939,7 @@ iavf_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
+ 	if (!(fsp->flow_type & FLOW_EXT))
+ 		return 0;
  
-@@ -71,7 +76,9 @@ iavf_fill_fdir_gtpu_hdr(struct iavf_fdir_fltr *fltr,
- 			}
- 			break;
- 		case IAVF_GTPU_HDR_N_PDU_AND_NEXT_EXTHDR_OFFS:
--			if ((fltr->flex_words[i].word & 0xff) != IAVF_GTPU_PSC_EXTHDR_TYPE)
-+			if ((fltr->flex_words[i].word &
-+			     IAVF_GTPU_HDR_NEXT_EXTHDR_TYPE_MASK) !=
-+						IAVF_GTPU_PSC_EXTHDR_TYPE)
- 				return -EOPNOTSUPP;
- 			if (!ehdr)
- 				ehdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-@@ -80,7 +87,9 @@ iavf_fill_fdir_gtpu_hdr(struct iavf_fdir_fltr *fltr,
- 		case IAVF_GTPU_HDR_PSC_PDU_TYPE_AND_QFI_OFFS:
- 			if (!ehdr)
- 				return -EINVAL;
--			ehdr->buffer[1] = fltr->flex_words[i].word & 0x3F;
-+			ehdr->buffer[IAVF_GTPU_EH_QFI_IDX] =
-+					fltr->flex_words[i].word &
-+						IAVF_GTPU_HDR_PSC_PDU_QFI_MASK;
- 			VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(ehdr, GTPU_EH, QFI);
- 			break;
- 		default:
+-	for (i = 0; i < 2; i++) {
++	for (i = 0; i < IAVF_FLEX_WORD_NUM; i++) {
+ #define IAVF_USERDEF_FLEX_WORD_M	GENMASK(15, 0)
+ #define IAVF_USERDEF_FLEX_OFFS_S	16
+ #define IAVF_USERDEF_FLEX_OFFS_M	GENMASK(31, IAVF_USERDEF_FLEX_OFFS_S)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.h b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+index 2439c970b657..33c55c366315 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_fdir.h
++++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.h
+@@ -35,6 +35,11 @@ enum iavf_fdir_flow_type {
+ 	IAVF_FDIR_FLOW_PTYPE_MAX,
+ };
+ 
++/* Must not exceed the array element number of '__be32 data[2]' in the ethtool
++ * 'struct ethtool_rx_flow_spec.m_ext.data[2]' to express the flex-byte (word).
++ */
++#define IAVF_FLEX_WORD_NUM	2
++
+ struct iavf_flex_word {
+ 	u16 offset;
+ 	u16 word;
+@@ -71,7 +76,7 @@ struct iavf_fdir_ip {
+ };
+ 
+ struct iavf_fdir_extra {
+-	u32 usr_def[2];
++	u32 usr_def[IAVF_FLEX_WORD_NUM];
+ };
+ 
+ /* bookkeeping of Flow Director filters */
+@@ -95,7 +100,7 @@ struct iavf_fdir_fltr {
+ 	/* flex byte filter data */
+ 	u8 ip_ver; /* used to adjust the flex offset, 4 : IPv4, 6 : IPv6 */
+ 	u8 flex_cnt;
+-	struct iavf_flex_word flex_words[2];
++	struct iavf_flex_word flex_words[IAVF_FLEX_WORD_NUM];
+ 
+ 	u32 flow_id;
+ 
 -- 
 2.31.1
 
