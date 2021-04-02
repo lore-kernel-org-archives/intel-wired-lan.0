@@ -1,44 +1,138 @@
-From: Switzer, David <david.switzer@intel.com>
-Date: Thu, 1 Apr 2021 22:07:23 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix parameters in
- aq_get_phy_register()
-In-Reply-To: <1616576307-54213-1-git-send-email-grzegorz.siwik@intel.com>
-References: <1616576307-54213-1-git-send-email-grzegorz.siwik@intel.com>
-Message-ID: <MW3PR11MB47487B607A77DBA3E6D0997DEB7B9@MW3PR11MB4748.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 02 Apr 2021 14:52:18 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 79982fc15481a5c51f07c6ecd12210ab69acf26a
+Message-ID: <6066bf22.2N3b1128dXuVbj3P%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 79982fc15481a5c51f07c6ecd12210ab69acf26a  i40e: Fix sparse warning: missing error code 'err'
 
+elapsed time: 727m
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Grzegorz Siwik
->Sent: Wednesday, March 24, 2021 1:58 AM
-To: intel-wired-lan@lists.osuosl.org
->Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
->Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix parameters in
->aq_get_phy_register()
->
->Change parameters order in aq_get_phy_register() due to wrong statistics in
->PHY reported by ethtool. Previously all PHY statistics were exactly the same
->for all interfaces Now statistics are reported correctly - different for different
->interfaces
->
->Fixes: 0514db37dd78 ("i40e: Extend PHY access with page change flag")
->Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
->---
->v2:
->-Changed target tree to net
->---
->v3:
->-Fixed typo in commit message
->---
-> drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
-Tested-by: Dave Switzer <david.switzer@intel.com>
- 
+configs tested: 109
+configs skipped: 2
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+alpha                            alldefconfig
+arm                           sama5_defconfig
+sh                         apsh4a3a_defconfig
+arm                           omap1_defconfig
+arm                           h5000_defconfig
+arm                             pxa_defconfig
+mips                        workpad_defconfig
+nios2                         10m50_defconfig
+arm                          iop32x_defconfig
+ia64                             alldefconfig
+m68k                          hp300_defconfig
+powerpc                 mpc8540_ads_defconfig
+m68k                        mvme16x_defconfig
+arc                        nsim_700_defconfig
+arm                         lpc32xx_defconfig
+powerpc                     tqm8560_defconfig
+powerpc                  mpc885_ads_defconfig
+arc                      axs103_smp_defconfig
+powerpc                 mpc832x_mds_defconfig
+sh                            titan_defconfig
+mips                           ip32_defconfig
+arm                           corgi_defconfig
+m68k                       m5208evb_defconfig
+mips                       capcella_defconfig
+arm                          exynos_defconfig
+powerpc                 mpc837x_rdb_defconfig
+um                               allmodconfig
+arm                         palmz72_defconfig
+arm                           tegra_defconfig
+sh                           sh2007_defconfig
+powerpc                  iss476-smp_defconfig
+arm                      jornada720_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20210401
+i386                 randconfig-a003-20210401
+i386                 randconfig-a001-20210401
+i386                 randconfig-a004-20210401
+i386                 randconfig-a002-20210401
+i386                 randconfig-a005-20210401
+x86_64               randconfig-a014-20210401
+x86_64               randconfig-a015-20210401
+x86_64               randconfig-a011-20210401
+x86_64               randconfig-a013-20210401
+x86_64               randconfig-a012-20210401
+x86_64               randconfig-a016-20210401
+i386                 randconfig-a014-20210401
+i386                 randconfig-a011-20210401
+i386                 randconfig-a016-20210401
+i386                 randconfig-a012-20210401
+i386                 randconfig-a013-20210401
+i386                 randconfig-a015-20210401
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20210401
+x86_64               randconfig-a005-20210401
+x86_64               randconfig-a003-20210401
+x86_64               randconfig-a001-20210401
+x86_64               randconfig-a002-20210401
+x86_64               randconfig-a006-20210401
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
