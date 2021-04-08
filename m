@@ -1,33 +1,43 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 8 Apr 2021 18:27:18 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: fix the restart
- auto-negotiation after FEC modified
-In-Reply-To: <20210408122310.32752-1-mateusz.palczewski@intel.com>
-References: <20210408122310.32752-1-mateusz.palczewski@intel.com>
-Message-ID: <90008f14d0761219b77c3d18f7543c713d313759.camel@intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Thu, 8 Apr 2021 19:44:08 +0000
+Subject: [Intel-wired-lan] [PATCH][next] ice: Fix potential infinite
+ loop when using u8 loop counter
+In-Reply-To: <20210331144628.1423252-1-colin.king@canonical.com>
+References: <20210331144628.1423252-1-colin.king@canonical.com>
+Message-ID: <CO1PR11MB51053F26FD4F24B78969B0F3FA749@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2021-04-08 at 12:23 +0000, Mateusz Palczewski wrote:
-> From: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Colin King
+> Sent: Wednesday, March 31, 2021 7:46 AM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S . Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>; Cao, Chinh T <chinh.t.cao@intel.com>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: kernel-janitors at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH][next] ice: Fix potential infinite loop when
+> using u8 loop counter
 > 
-> When FEC mode was changed the link didn't know it because
-> the link was not reset and new parameters were not negotiated.
-> Set a flag 'I40E_AQ_PHY_ENABLE_ATOMIC_LINK' in 'abilities'
-> to restart the link and make it run with the new settings.
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Fixes: 1d96340196f1 ("Add support FEC configuration for Fortville
-> 25G")
+> A for-loop is using a u8 loop counter that is being compared to a u32
+> cmp_dcbcfg->numapp to check for the end of the loop. If cmp_dcbcfg-
+> >numapp is larger than 255 then the counter j will wrap around to zero and
+> hence an infinite loop occurs. Fix this by making counter j the same type as
+> cmp_dcbcfg->numapp.
+> 
+> Addresses-Coverity: ("Infinite loop")
+> Fixes: aeac8ce864d9 ("ice: Recognize 860 as iSCSI port in CEE mode")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_dcb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-The fixes is incorrect, it should match exactly don't drop anything.
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
-Fixes: 1d96340196f1 ("i40e: Add support FEC configuration for Fortville
-25G")
 
-Please fix this up and resend.
-
-> Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
