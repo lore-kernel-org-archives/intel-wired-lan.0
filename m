@@ -1,10 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Thu, 8 Apr 2021 19:54:22 +0000
-Subject: [Intel-wired-lan] [PATCH S58 01/13] ice: refactor interrupt
- moderation writes
-In-Reply-To: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
+Date: Thu, 8 Apr 2021 21:31:55 +0000
+Subject: [Intel-wired-lan] [PATCH S58 05/13] ice: Reimplement module
+ reads used by ethtool
+In-Reply-To: <20210331211708.55205-5-anthony.l.nguyen@intel.com>
 References: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105A4A7F6C5B0C0BB7091B7FA749@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210331211708.55205-5-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51052E4BAFE337C1D233845EFA749@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,28 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, March 31, 2021 2:17 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S58 01/13] ice: refactor interrupt
-> moderation writes
+> Subject: [Intel-wired-lan] [PATCH S58 05/13] ice: Reimplement module reads
+> used by ethtool
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Scott W Taylor <scott.w.taylor@intel.com>
 > 
-> Introduce several new helpers for writing ITR and GLINT_RATE registers, and
-> refactor the code calling them.  This resulted in removal of several duplicate
-> functions and rolled a bunch of simple code back into the calling routines.
+> There was an excessive increment of the QSFP page, which is now fixed.
+> Additionally, this new update now reads 8 bytes at a time and will retry each
+> request if the module/bus is busy.
 > 
-> In particular this removes some code that was doing both a store and a set in
-> a helper function, which seems better done as separate tasks in the caller
-> (and generally takes less lines of code even with a tiny bit of repetition).
+> Also, prevent reading from upper pages if module does not support those
+> pages.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Scott W Taylor <scott.w.taylor@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c    |  22 +--
->  drivers/net/ethernet/intel/ice/ice_ethtool.c |  17 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c     | 171 ++++++++++---------
->  drivers/net/ethernet/intel/ice/ice_lib.h     |   3 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c     |   3 -
->  5 files changed, 112 insertions(+), 104 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 49 ++++++++++++++++----
+>  1 file changed, 39 insertions(+), 10 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> A Contingent Worker at Intel
 
