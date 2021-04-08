@@ -1,47 +1,131 @@
-From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Thu, 8 Apr 2021 13:13:36 +0300
-Subject: [Intel-wired-lan] [PATCH v5 9/9] igc: Enable TX via AF_XDP
- zero-copy
-In-Reply-To: <20210226002308.2348-10-jithu.joseph@intel.com>
-References: <20210226002308.2348-1-jithu.joseph@intel.com>
- <20210226002308.2348-10-jithu.joseph@intel.com>
-Message-ID: <d8f54700-d8a9-b1c8-fa37-0a4dba55f5f8@linux.intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 08 Apr 2021 19:08:43 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING c925dd43dd89b01ff151b5f90beb102b11c40fc3
+Message-ID: <606ee43b.U3R0emE94THCl4Rl%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 26/02/2021 02:23, Jithu Joseph wrote:
-> From: Andre Guedes <andre.guedes@intel.com>
-> 
-> Add support for transmitting packets via AF_XDP zero-copy mechanism.
-> 
-> The packet transmission itself is implemented by igc_xdp_xmit_zc() which
-> is called from igc_clean_tx_irq() when the ring has AF_XDP zero-copy
-> enabled. Likewise i40e and ice drivers, the transmission budget used is
-> the number of descriptors available on the ring.
-> 
-> A new tx buffer type is introduced to 'enum igc_tx_buffer_type' to
-> indicate the tx buffer uses memory from xsk pool so it can be properly
-> cleaned after transmission or when the ring is cleaned.
-> 
-> The I225 controller has only 4 Tx hardware queues so the main difference
-> between igc and other Intel drivers that support AF_XDP zero-copy is
-> that there is no tx ring dedicated exclusively to XDP. Instead, tx
-> rings are shared between the network stack and XDP, and netdev queue
-> lock is used to ensure mutual exclusion. This is the same approach
-> implemented to support XDP_TX and XDP_REDIRECT actions.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
-> Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc.h      |   3 +
->   drivers/net/ethernet/intel/igc/igc_base.h |   1 +
->   drivers/net/ethernet/intel/igc/igc_main.c | 113 +++++++++++++++++++++-
->   drivers/net/ethernet/intel/igc/igc_xdp.c  |  20 +++-
->   4 files changed, 129 insertions(+), 8 deletions(-)
-> 
-Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: c925dd43dd89b01ff151b5f90beb102b11c40fc3  iavf: Support for modifying SCTP RSS flow hashing
+
+Warning in current branch:
+
+drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:653:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- arm64-defconfig
+    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
+
+elapsed time: 730m
+
+configs tested: 97
+configs skipped: 2
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+arm                         hackkit_defconfig
+arm                           u8500_defconfig
+mips                       bmips_be_defconfig
+arm                           h5000_defconfig
+mips                      loongson3_defconfig
+ia64                             allyesconfig
+arm                  colibri_pxa300_defconfig
+arm                        oxnas_v6_defconfig
+powerpc                      ppc44x_defconfig
+m68k                         amcore_defconfig
+alpha                            allyesconfig
+powerpc                   currituck_defconfig
+sh                            hp6xx_defconfig
+arc                     nsimosci_hs_defconfig
+arm                     eseries_pxa_defconfig
+powerpc                    amigaone_defconfig
+m68k                        m5407c3_defconfig
+arm                           sama5_defconfig
+xtensa                           alldefconfig
+arm                            zeus_defconfig
+openrisc                  or1klitex_defconfig
+arm                         at91_dt_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                         ps3_defconfig
+x86_64                           alldefconfig
+arm                            xcep_defconfig
+alpha                               defconfig
+sh                          rsk7201_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20210407
+i386                 randconfig-a003-20210407
+i386                 randconfig-a001-20210407
+i386                 randconfig-a004-20210407
+i386                 randconfig-a002-20210407
+i386                 randconfig-a005-20210407
+x86_64               randconfig-a014-20210407
+x86_64               randconfig-a015-20210407
+x86_64               randconfig-a013-20210407
+x86_64               randconfig-a011-20210407
+x86_64               randconfig-a012-20210407
+x86_64               randconfig-a016-20210407
+i386                 randconfig-a014-20210407
+i386                 randconfig-a011-20210407
+i386                 randconfig-a016-20210407
+i386                 randconfig-a012-20210407
+i386                 randconfig-a015-20210407
+i386                 randconfig-a013-20210407
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
