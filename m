@@ -1,122 +1,101 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri,  9 Apr 2021 11:53:52 +0200
-Subject: [Intel-wired-lan] [PATCH 5.11 26/45] platform/x86: intel_pmc_core:
- Ignore GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210409095305.397149021@linuxfoundation.org>
-References: <20210409095305.397149021@linuxfoundation.org>
-Message-ID: <20210409095306.262914731@linuxfoundation.org>
+From: xiao33522@qq.com <xiao33522@qq.com>
+Date: Fri,  9 Apr 2021 17:17:47 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be correct
+ during power-on
+Message-ID: <tencent_A3F0B1FAA65495EB2220B5B72EB6E5AF1B07@qq.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: David E. Box <david.e.box@linux.intel.com>
+From: xiaolinkui <xiaolinkui@kylinos.cn>
 
-[ Upstream commit d1635448f1105e549b4041aab930dbc6945fc635 ]
+Sometimes the power on state of the x710 network card indicator is not right,
+and the indicator shows orange. At this time, the network card speed is Gigabit.
 
-Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
-programmed in the Tiger Lake GBE controller is not large enough to allow
-the platform to enter Package C10, which in turn prevents the platform from
-achieving its low power target during suspend-to-idle.  Ignore the GBE LTR
-value on Tiger Lake. LTR ignore functionality is currently performed solely
-by a debugfs write call. Split out the LTR code into its own function that
-can be called by both the debugfs writer and by this work around.
+After entering the system, check the network card status through the ethtool
+command as follows:
 
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
-Link: https://lore.kernel.org/r/20210319201844.3305399-2-david.e.box at linux.intel.com
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+[root at localhost ~]# ethtool enp132s0f0
+Settings for enp132s0f0:
+	Supported ports: [ FIBRE ]
+	Supported link modes:   1000baseX/Full
+	                        10000baseSR/Full
+	Supported pause frame use: Symmetric
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  1000baseX/Full
+	                        10000baseSR/Full
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: 1000Mb/s
+	Duplex: Full
+	Port: FIBRE
+	PHYAD: 0
+	Transceiver: internal
+	Auto-negotiation: off
+	Supports Wake-on: d
+	Wake-on: d
+	Current message level: 0x00000007 (7)
+			       drv probe link
+	Link detected: yes
+
+We can see that the speed is 1000Mb/s.
+
+If you unplug and plug in the optical cable, it can be restored to 10g.
+After this operation, the rate is as follows:
+
+[root at localhost ~]# ethtool enp132s0f0
+Settings for enp132s0f0:
+        Supported ports: [ FIBRE ]
+        Supported link modes:   1000baseX/Full
+                                10000baseSR/Full
+        Supported pause frame use: Symmetric
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  1000baseX/Full
+                                10000baseSR/Full
+        Advertised pause frame use: No
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Speed: 10000Mb/s
+        Duplex: Full
+        Port: FIBRE
+        PHYAD: 0
+        Transceiver: internal
+        Auto-negotiation: off
+        Supports Wake-on: d
+        Wake-on: d
+        Current message level: 0x00000007 (7)
+                               drv probe link
+        Link detected: yes
+
+Calling i40e_aq_set_link_restart_an can also achieve this function.
+So we need to do a reset operation for the network card when the network card
+status is abnormal.
+
+Signed-off-by: xiaolinkui <xiaolinkui@kylinos.cn>
 ---
- drivers/platform/x86/intel_pmc_core.c | 50 +++++++++++++++++++--------
- 1 file changed, 35 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
-index ee2f757515b0..b5888aeb4bcf 100644
---- a/drivers/platform/x86/intel_pmc_core.c
-+++ b/drivers/platform/x86/intel_pmc_core.c
-@@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
- }
- DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index ec19e18305ec..dde0224776ac 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1866,6 +1866,10 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+ 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
+ 	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
  
--static ssize_t pmc_core_ltr_ignore_write(struct file *file,
--					 const char __user *userbuf,
--					 size_t count, loff_t *ppos)
-+static int pmc_core_send_ltr_ignore(u32 value)
- {
- 	struct pmc_dev *pmcdev = &pmc;
- 	const struct pmc_reg_map *map = pmcdev->map;
--	u32 val, buf_size, fd;
--	int err;
--
--	buf_size = count < 64 ? count : 64;
--
--	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
--	if (err)
--		return err;
-+	u32 reg;
-+	int err = 0;
- 
- 	mutex_lock(&pmcdev->lock);
- 
--	if (val > map->ltr_ignore_max) {
-+	if (value > map->ltr_ignore_max) {
- 		err = -EINVAL;
- 		goto out_unlock;
- 	}
- 
--	fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
--	fd |= (1U << val);
--	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
-+	reg = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
-+	reg |= BIT(value);
-+	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, reg);
- 
- out_unlock:
- 	mutex_unlock(&pmcdev->lock);
++	if (hw_link_info->phy_type == I40E_PHY_TYPE_1000BASE_SX &&
++	    hw->mac.type == I40E_MAC_XL710)
++		i40e_aq_set_link_restart_an(hw, true, NULL);
 +
-+	return err;
-+}
-+
-+static ssize_t pmc_core_ltr_ignore_write(struct file *file,
-+					 const char __user *userbuf,
-+					 size_t count, loff_t *ppos)
-+{
-+	u32 buf_size, value;
-+	int err;
-+
-+	buf_size = min_t(u32, count, 64);
-+
-+	err = kstrtou32_from_user(userbuf, buf_size, 10, &value);
-+	if (err)
-+		return err;
-+
-+	err = pmc_core_send_ltr_ignore(value);
-+
- 	return err == 0 ? count : err;
- }
- 
-@@ -1244,6 +1255,15 @@ static int pmc_core_probe(struct platform_device *pdev)
- 	pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
- 	dmi_check_system(pmc_core_dmi_table);
- 
-+	/*
-+	 * On TGL, due to a hardware limitation, the GBE LTR blocks PC10 when
-+	 * a cable is attached. Tell the PMC to ignore it.
-+	 */
-+	if (pmcdev->map == &tgl_reg_map) {
-+		dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
-+		pmc_core_send_ltr_ignore(3);
-+	}
-+
- 	pmc_core_dbgfs_register(pmcdev);
- 
- 	device_initialized = true;
+ 	/* update fc info */
+ 	tx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_TX);
+ 	rx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_RX);
 -- 
-2.30.2
-
-
+2.17.1
 
