@@ -1,10 +1,10 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri,  9 Apr 2021 11:53:44 +0200
-Subject: [Intel-wired-lan] [PATCH 5.10 22/41] platform/x86: intel_pmc_core:
+Date: Fri,  9 Apr 2021 11:53:52 +0200
+Subject: [Intel-wired-lan] [PATCH 5.11 26/45] platform/x86: intel_pmc_core:
  Ignore GBE LTR on Tiger Lake platforms
-In-Reply-To: <20210409095304.818847860@linuxfoundation.org>
-References: <20210409095304.818847860@linuxfoundation.org>
-Message-ID: <20210409095305.542546686@linuxfoundation.org>
+In-Reply-To: <20210409095305.397149021@linuxfoundation.org>
+References: <20210409095305.397149021@linuxfoundation.org>
+Message-ID: <20210409095306.262914731@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,7 +35,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 35 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
-index 3e5fe66333f1..e06b36e87a33 100644
+index ee2f757515b0..b5888aeb4bcf 100644
 --- a/drivers/platform/x86/intel_pmc_core.c
 +++ b/drivers/platform/x86/intel_pmc_core.c
 @@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
