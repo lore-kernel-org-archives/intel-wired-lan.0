@@ -1,124 +1,122 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 09 Apr 2021 14:04:48 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d28345b73719e670f23795148e133424df6e7021
-Message-ID: <606fee80.C0OflyMfn4LTqF4C%lkp@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri,  9 Apr 2021 11:53:44 +0200
+Subject: [Intel-wired-lan] [PATCH 5.10 22/41] platform/x86: intel_pmc_core:
+ Ignore GBE LTR on Tiger Lake platforms
+In-Reply-To: <20210409095304.818847860@linuxfoundation.org>
+References: <20210409095304.818847860@linuxfoundation.org>
+Message-ID: <20210409095305.542546686@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d28345b73719e670f23795148e133424df6e7021  ice: fix memory leak of aRFS after resuming from suspend
+From: David E. Box <david.e.box@linux.intel.com>
 
-elapsed time: 725m
+[ Upstream commit d1635448f1105e549b4041aab930dbc6945fc635 ]
 
-configs tested: 95
-configs skipped: 2
+Due to a HW limitation, the Latency Tolerance Reporting (LTR) value
+programmed in the Tiger Lake GBE controller is not large enough to allow
+the platform to enter Package C10, which in turn prevents the platform from
+achieving its low power target during suspend-to-idle.  Ignore the GBE LTR
+value on Tiger Lake. LTR ignore functionality is currently performed solely
+by a debugfs write call. Split out the LTR code into its own function that
+can be called by both the debugfs writer and by this work around.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-sh                          landisk_defconfig
-powerpc                      arches_defconfig
-mips                          rb532_defconfig
-arm                            zeus_defconfig
-arm                      footbridge_defconfig
-powerpc                        warp_defconfig
-mips                           ip22_defconfig
-m68k                          multi_defconfig
-sh                          lboxre2_defconfig
-s390                          debug_defconfig
-arc                        vdk_hs38_defconfig
-sh                           se7751_defconfig
-mips                      pic32mzda_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                           h5000_defconfig
-mips                         rt305x_defconfig
-arm                            xcep_defconfig
-ia64                            zx1_defconfig
-sh                  sh7785lcr_32bit_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20210408
-x86_64               randconfig-a005-20210408
-x86_64               randconfig-a003-20210408
-x86_64               randconfig-a001-20210408
-x86_64               randconfig-a002-20210408
-x86_64               randconfig-a006-20210408
-i386                 randconfig-a006-20210408
-i386                 randconfig-a003-20210408
-i386                 randconfig-a001-20210408
-i386                 randconfig-a004-20210408
-i386                 randconfig-a005-20210408
-i386                 randconfig-a002-20210408
-i386                 randconfig-a014-20210408
-i386                 randconfig-a016-20210408
-i386                 randconfig-a011-20210408
-i386                 randconfig-a012-20210408
-i386                 randconfig-a013-20210408
-i386                 randconfig-a015-20210408
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a014-20210408
-x86_64               randconfig-a015-20210408
-x86_64               randconfig-a012-20210408
-x86_64               randconfig-a013-20210408
-
+Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+Reviewed-by: Sasha Neftin <sasha.neftin@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Reviewed-by: Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
+Link: https://lore.kernel.org/r/20210319201844.3305399-2-david.e.box at linux.intel.com
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/platform/x86/intel_pmc_core.c | 50 +++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/platform/x86/intel_pmc_core.c b/drivers/platform/x86/intel_pmc_core.c
+index 3e5fe66333f1..e06b36e87a33 100644
+--- a/drivers/platform/x86/intel_pmc_core.c
++++ b/drivers/platform/x86/intel_pmc_core.c
+@@ -863,34 +863,45 @@ static int pmc_core_pll_show(struct seq_file *s, void *unused)
+ }
+ DEFINE_SHOW_ATTRIBUTE(pmc_core_pll);
+ 
+-static ssize_t pmc_core_ltr_ignore_write(struct file *file,
+-					 const char __user *userbuf,
+-					 size_t count, loff_t *ppos)
++static int pmc_core_send_ltr_ignore(u32 value)
+ {
+ 	struct pmc_dev *pmcdev = &pmc;
+ 	const struct pmc_reg_map *map = pmcdev->map;
+-	u32 val, buf_size, fd;
+-	int err;
+-
+-	buf_size = count < 64 ? count : 64;
+-
+-	err = kstrtou32_from_user(userbuf, buf_size, 10, &val);
+-	if (err)
+-		return err;
++	u32 reg;
++	int err = 0;
+ 
+ 	mutex_lock(&pmcdev->lock);
+ 
+-	if (val > map->ltr_ignore_max) {
++	if (value > map->ltr_ignore_max) {
+ 		err = -EINVAL;
+ 		goto out_unlock;
+ 	}
+ 
+-	fd = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
+-	fd |= (1U << val);
+-	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, fd);
++	reg = pmc_core_reg_read(pmcdev, map->ltr_ignore_offset);
++	reg |= BIT(value);
++	pmc_core_reg_write(pmcdev, map->ltr_ignore_offset, reg);
+ 
+ out_unlock:
+ 	mutex_unlock(&pmcdev->lock);
++
++	return err;
++}
++
++static ssize_t pmc_core_ltr_ignore_write(struct file *file,
++					 const char __user *userbuf,
++					 size_t count, loff_t *ppos)
++{
++	u32 buf_size, value;
++	int err;
++
++	buf_size = min_t(u32, count, 64);
++
++	err = kstrtou32_from_user(userbuf, buf_size, 10, &value);
++	if (err)
++		return err;
++
++	err = pmc_core_send_ltr_ignore(value);
++
+ 	return err == 0 ? count : err;
+ }
+ 
+@@ -1244,6 +1255,15 @@ static int pmc_core_probe(struct platform_device *pdev)
+ 	pmcdev->pmc_xram_read_bit = pmc_core_check_read_lock_bit();
+ 	dmi_check_system(pmc_core_dmi_table);
+ 
++	/*
++	 * On TGL, due to a hardware limitation, the GBE LTR blocks PC10 when
++	 * a cable is attached. Tell the PMC to ignore it.
++	 */
++	if (pmcdev->map == &tgl_reg_map) {
++		dev_dbg(&pdev->dev, "ignoring GBE LTR\n");
++		pmc_core_send_ltr_ignore(3);
++	}
++
+ 	pmc_core_dbgfs_register(pmcdev);
+ 
+ 	device_initialized = true;
+-- 
+2.30.2
+
+
+
