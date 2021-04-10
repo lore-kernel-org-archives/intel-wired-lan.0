@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 10 Apr 2021 13:36:49 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- 74e0e739eaa83e3a2f273331bef94364a2893b25
-Message-ID: <60713971.tOfuALmHX28j1mNk%lkp@intel.com>
+Date: Sat, 10 Apr 2021 15:11:07 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:10GbE] BUILD SUCCESS
+ 08bf6d089fe365443d2da671706ef54948d76d20
+Message-ID: <60714f8b.oet2IT8zS1ff06wn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: 74e0e739eaa83e3a2f273331bef94364a2893b25  igc: Enable TX via AF_XDP zero-copy
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 10GbE
+branch HEAD: 08bf6d089fe365443d2da671706ef54948d76d20  net: ethernet: intel: Fix a typo in the file ixgbe_dcb_nl.c
 
-elapsed time: 724m
+elapsed time: 723m
 
-configs tested: 134
+configs tested: 117
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -27,7 +27,6 @@ arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 x86_64                           allyesconfig
-riscv                            allmodconfig
 riscv                            allyesconfig
 i386                             allyesconfig
 sh                           se7750_defconfig
@@ -56,10 +55,6 @@ mips                        workpad_defconfig
 mips                       bmips_be_defconfig
 sh                            shmin_defconfig
 arm                        multi_v7_defconfig
-arc                            hsdk_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                        multi_v5_defconfig
-h8300                               defconfig
 mips                         tb0287_defconfig
 mips                         tb0219_defconfig
 sh                          urquell_defconfig
@@ -70,19 +65,6 @@ powerpc                 mpc836x_rdk_defconfig
 m68k                       m5249evb_defconfig
 ia64                            zx1_defconfig
 arm                          ixp4xx_defconfig
-arm                        shmobile_defconfig
-arm                         s3c6400_defconfig
-arm                         s3c2410_defconfig
-m68k                        stmark2_defconfig
-arm                         shannon_defconfig
-mips                malta_kvm_guest_defconfig
-sh                           se7751_defconfig
-sh                           se7619_defconfig
-sh                          r7785rp_defconfig
-powerpc                     asp8347_defconfig
-powerpc                     sbc8548_defconfig
-powerpc                     tqm8540_defconfig
-powerpc                 mpc837x_rdb_defconfig
 powerpc                      mgcoge_defconfig
 m68k                        m5407c3_defconfig
 arm                        vexpress_defconfig
@@ -140,6 +122,7 @@ riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
+riscv                            allmodconfig
 um                               allmodconfig
 um                                allnoconfig
 um                               allyesconfig
