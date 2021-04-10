@@ -1,31 +1,24 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 10 Apr 2021 11:50:54 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
- WARNING f58c298cf2a65f91c118be6523e7c5f0e1c5d89e
-Message-ID: <6071209e.IVEupM9bWDaWk2RX%lkp@intel.com>
+Date: Sat, 10 Apr 2021 13:36:49 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
+ 74e0e739eaa83e3a2f273331bef94364a2893b25
+Message-ID: <60713971.tOfuALmHX28j1mNk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: f58c298cf2a65f91c118be6523e7c5f0e1c5d89e  iavf: Support for modifying SCTP RSS flow hashing
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
+branch HEAD: 74e0e739eaa83e3a2f273331bef94364a2893b25  igc: Enable TX via AF_XDP zero-copy
 
-Warning in current branch:
+elapsed time: 724m
 
-drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- arm64-defconfig
-    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
-
-elapsed time: 727m
-
-configs tested: 103
+configs tested: 134
 configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -33,18 +26,22 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
 i386                             allyesconfig
-arm64                            alldefconfig
-powerpc                      bamboo_defconfig
-m68k                       bvme6000_defconfig
-mips                      pistachio_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                  mpc885_ads_defconfig
-powerpc                    socrates_defconfig
-sh                           se7751_defconfig
-arm                         s3c6400_defconfig
-sh                         apsh4a3a_defconfig
-mips                        bcm63xx_defconfig
+sh                           se7750_defconfig
+powerpc                       ebony_defconfig
+mips                           xway_defconfig
+powerpc                     mpc83xx_defconfig
+ia64                      gensparse_defconfig
+arm                          simpad_defconfig
+s390                       zfcpdump_defconfig
+powerpc                      pasemi_defconfig
+powerpc                 linkstation_defconfig
+um                             i386_defconfig
+arm                          gemini_defconfig
+powerpc                     ep8248e_defconfig
 powerpc64                           defconfig
 sh                             espt_defconfig
 arm                         vf610m4_defconfig
@@ -59,12 +56,45 @@ mips                        workpad_defconfig
 mips                       bmips_be_defconfig
 sh                            shmin_defconfig
 arm                        multi_v7_defconfig
+arc                            hsdk_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                        multi_v5_defconfig
+h8300                               defconfig
+mips                         tb0287_defconfig
+mips                         tb0219_defconfig
+sh                          urquell_defconfig
+arm                        spear6xx_defconfig
+sh                            titan_defconfig
+powerpc                 mpc8315_rdb_defconfig
+powerpc                 mpc836x_rdk_defconfig
+m68k                       m5249evb_defconfig
+ia64                            zx1_defconfig
+arm                          ixp4xx_defconfig
+arm                        shmobile_defconfig
+arm                         s3c6400_defconfig
+arm                         s3c2410_defconfig
+m68k                        stmark2_defconfig
+arm                         shannon_defconfig
+mips                malta_kvm_guest_defconfig
+sh                           se7751_defconfig
+sh                           se7619_defconfig
+sh                          r7785rp_defconfig
+powerpc                     asp8347_defconfig
+powerpc                     sbc8548_defconfig
+powerpc                     tqm8540_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                      mgcoge_defconfig
+m68k                        m5407c3_defconfig
+arm                        vexpress_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -75,13 +105,10 @@ h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
-s390                             allmodconfig
-s390                                defconfig
 s390                             allyesconfig
+s390                             allmodconfig
 parisc                           allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
+s390                                defconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
@@ -109,17 +136,14 @@ i386                 randconfig-a012-20210409
 i386                 randconfig-a013-20210409
 i386                 randconfig-a015-20210409
 riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
-riscv                            allmodconfig
 um                               allmodconfig
 um                                allnoconfig
 um                               allyesconfig
 um                                  defconfig
-x86_64                           allyesconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
