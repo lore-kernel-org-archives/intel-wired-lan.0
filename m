@@ -1,47 +1,34 @@
 From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Sun, 11 Apr 2021 10:09:37 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v2 04/11] igb/igc: use
- strongly typed pointer
-In-Reply-To: <20210326003834.3886241-5-jesse.brandeburg@intel.com>
-References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
- <20210326003834.3886241-5-jesse.brandeburg@intel.com>
-Message-ID: <e290e053-5118-1357-f4e5-6744be7fcc8e@linux.intel.com>
+Date: Sun, 11 Apr 2021 10:15:44 +0300
+Subject: [Intel-wired-lan] [PATCH next-queue v2 1/2] igc: Enable
+ internal i225 PPS
+In-Reply-To: <20210219013104.54436-2-ederson.desouza@intel.com>
+References: <20210219013104.54436-1-ederson.desouza@intel.com>
+ <20210219013104.54436-2-ederson.desouza@intel.com>
+Message-ID: <771f5092-3762-4312-0760-c9e709c96ee7@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 26/03/2021 03:38, Jesse Brandeburg wrote:
-> The igb and igc driver both use a trick of creating a local type
-> pointer on the stack to ease dealing with a receive descriptor in
-> 64 bit chunks for printing.  Sparse however was not taken into
-> account and receive descriptors are always in little endian
-> order, so just make the unions use __le64 instead of u64.
+On 19/02/2021 03:31, Ederson de Souza wrote:
+> The i225 device can produce one interrupt on the full second, much
+> like i210 - from where this patch is inspired.
 > 
-> No functional change.
+> This patch sets up the full second interruption on the i225 and when
+> receiving it, it sends a PPS event to PTP (Precision Time Protocol)
+> kernel subsystem.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> The PTP subsystem exposes the PPS events via ioctl and sysfs, and one
+> can use the `testptp` tool (tools/testing/selftests/ptp) to check that
+> the events are being generated.
+> 
+> Signed-off-by: Ederson de Souza <ederson.desouza@intel.com>
 > ---
-> Warning Detail:
->    CHECK   .../igb/igb_main.c
-> .../igb/igb_main.c:442:25: warning: cast to restricted __le64
-> .../igb/igb_main.c:442:25: warning: cast to restricted __le64
-> .../igb/igb_main.c:522:33: warning: cast to restricted __le64
-> .../igb/igb_main.c:522:33: warning: cast to restricted __le64
-> .../igb/igb_main.c:528:33: warning: cast to restricted __le64
-> .../igb/igb_main.c:528:33: warning: cast to restricted __le64
->    CHECK   .../igc/igc_dump.c
-> .../igc/igc_dump.c:192:40: warning: cast to restricted __le64
-> .../igc/igc_dump.c:193:37: warning: cast to restricted __le64
-> .../igc/igc_dump.c:275:45: warning: cast to restricted __le64
-> .../igc/igc_dump.c:276:45: warning: cast to restricted __le64
-> .../igc/igc_dump.c:281:45: warning: cast to restricted __le64
-> .../igc/igc_dump.c:282:45: warning: cast to restricted __le64
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->   drivers/net/ethernet/intel/igc/igc_dump.c | 2 +-
->   2 files changed, 2 insertions(+), 2 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc.h      |  2 ++
+>   drivers/net/ethernet/intel/igc/igc_main.c |  8 +++++++
+>   drivers/net/ethernet/intel/igc/igc_ptp.c  | 28 ++++++++++++++++++++++-
+>   3 files changed, 37 insertions(+), 1 deletion(-)
 > 
-Tested for igc
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
