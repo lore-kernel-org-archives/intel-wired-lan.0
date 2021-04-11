@@ -1,65 +1,24 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 10 Apr 2021 22:53:35 -0700
-Subject: [Intel-wired-lan] [PATCH RESEND] csky: change a Kconfig symbol name
- to fix e1000 build error
-Message-ID: <20210411055335.7111-1-rdunlap@infradead.org>
+From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+Date: Sun, 11 Apr 2021 10:03:04 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Fix overwrites return
+ value
+In-Reply-To: <20210324080531.2051963-1-sasha.neftin@intel.com>
+References: <20210324080531.2051963-1-sasha.neftin@intel.com>
+Message-ID: <439041d0-ec08-0dbe-70dd-c5770c76b1b9@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-e1000's #define of CONFIG_RAM_BASE conflicts with a Kconfig symbol in
-arch/csky/Kconfig.
-The symbol in e1000 has been around longer, so change arch/csky/
-to use DRAM_BASE instead of RAM_BASE to remove the conflict.
-(although e1000 is also a 2-line change)
-
-Now build-tested.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Cc: Guo Ren <guoren@linux.alibaba.com>
-Cc: Guo Ren <guoren@kernel.org>
-Cc: linux-csky at vger.kernel.org
-Acked-by: Guo Ren <guoren@kernel.org>
----
-Andrew, please merge.
-
-v2: Add Acked-by: Guo Ren
-    Has now been build-tested.
-
-IMO "CONFIG_" namespace should belong to Kconfig files, not
-individual drivers, but e1000 isn't the only driver that uses
-CONFIG_ symbols.
-
- arch/csky/Kconfig            |    2 +-
- arch/csky/include/asm/page.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
---- linux-next-20210409.orig/arch/csky/include/asm/page.h
-+++ linux-next-20210409/arch/csky/include/asm/page.h
-@@ -28,7 +28,7 @@
- #define SSEG_SIZE	0x20000000
- #define LOWMEM_LIMIT	(SSEG_SIZE * 2)
- 
--#define PHYS_OFFSET_OFFSET (CONFIG_RAM_BASE & (SSEG_SIZE - 1))
-+#define PHYS_OFFSET_OFFSET (CONFIG_DRAM_BASE & (SSEG_SIZE - 1))
- 
- #ifndef __ASSEMBLY__
- 
---- linux-next-20210409.orig/arch/csky/Kconfig
-+++ linux-next-20210409/arch/csky/Kconfig
-@@ -314,7 +314,7 @@ config FORCE_MAX_ZONEORDER
- 	int "Maximum zone order"
- 	default "11"
- 
--config RAM_BASE
-+config DRAM_BASE
- 	hex "DRAM start addr (the same with memory-section in dts)"
- 	default 0x0
- 
+On 24/03/2021 10:05, Sasha Neftin wrote:
+> drivers/net/ethernet/intel/igc/igc_i225.c:235 igc_write_nvm_srwr()
+> warn: loop overwrites return value 'ret_val'
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_i225.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
