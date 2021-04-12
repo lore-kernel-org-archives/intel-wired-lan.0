@@ -1,183 +1,71 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 13 Apr 2021 21:25:55 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
- WARNING 4947076b75387e9e94efd80d0ba4fb26341cd2fd
-Message-ID: <60759be3.C+GAkh7bzdqLGbo1%lkp@intel.com>
+From: kerneljasonxing@gmail.com <kerneljasonxing@gmail.com>
+Date: Mon, 12 Apr 2021 14:57:59 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: fix the panic when running bpf in
+ xdpdrv mode
+Message-ID: <20210412065759.2907-1-kerneljasonxing@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 4947076b75387e9e94efd80d0ba4fb26341cd2fd  i40e: Fix use-after-free in i40e_client_subtask()
+From: Jason Xing <xingwanli@kuaishou.com>
 
-Warning in current branch:
+Fix this by add more rules to calculate the value of @rss_size_max which
+could be used in allocating the queues when bpf is loaded, which, however,
+could cause the failure and then triger the NULL pointer of vsi->rx_rings.
+Prio to this fix, the machine doesn't care about how many cpus are online
+and then allocates 256 queues on the machine with 32 cpus online
+actually.
 
-drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
+Once the load of bpf begins, the log will go like this "failed to get
+tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
+failed".
 
-Warning ids grouped by kconfigs:
+Thus, I attach the key information of the crash-log here.
 
-gcc_recent_errors
-`-- arm64-defconfig
-    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
+BUG: unable to handle kernel NULL pointer dereference at
+0000000000000000
+RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
+Call Trace:
+[2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
+[2160294.717666]  dev_xdp_install+0x4f/0x70
+[2160294.718036]  dev_change_xdp_fd+0x11f/0x230
+[2160294.718380]  ? dev_disable_lro+0xe0/0xe0
+[2160294.718705]  do_setlink+0xac7/0xe70
+[2160294.719035]  ? __nla_parse+0xed/0x120
+[2160294.719365]  rtnl_newlink+0x73b/0x860
 
-elapsed time: 721m
-
-configs tested: 147
-configs skipped: 3
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-h8300                       h8s-sim_defconfig
-mips                       bmips_be_defconfig
-powerpc                 canyonlands_defconfig
-mips                  decstation_64_defconfig
-arm                              alldefconfig
-arm                       aspeed_g4_defconfig
-powerpc                      cm5200_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                        mvebu_v7_defconfig
-mips                          ath79_defconfig
-microblaze                          defconfig
-sh                          rsk7269_defconfig
-arm                       cns3420vb_defconfig
-ia64                          tiger_defconfig
-arc                        nsim_700_defconfig
-openrisc                 simple_smp_defconfig
-sh                           se7750_defconfig
-mips                           rs90_defconfig
-powerpc                    gamecube_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                     redwood_defconfig
-powerpc                    klondike_defconfig
-m68k                           sun3_defconfig
-sh                         ecovec24_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                     sbc8548_defconfig
-arm                         assabet_defconfig
-h8300                    h8300h-sim_defconfig
-xtensa                              defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm                           h3600_defconfig
-powerpc                   lite5200b_defconfig
-arm                       netwinder_defconfig
-arm                           corgi_defconfig
-arm                        magician_defconfig
-um                                  defconfig
-arm                            zeus_defconfig
-openrisc                         alldefconfig
-m68k                          atari_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                        fsp2_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                     pq2fads_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                         hackkit_defconfig
-m68k                       m5208evb_defconfig
-arm                            xcep_defconfig
-arm                             ezx_defconfig
-um                               allmodconfig
-arm                            qcom_defconfig
-mips                        omega2p_defconfig
-mips                         mpc30x_defconfig
-arm                            mmp2_defconfig
-arm                          ep93xx_defconfig
-m68k                            mac_defconfig
-arm                  colibri_pxa270_defconfig
-mips                           ci20_defconfig
-arm                        clps711x_defconfig
-sh                          landisk_defconfig
-x86_64                           alldefconfig
-sh                           sh2007_defconfig
-openrisc                    or1ksim_defconfig
-m68k                          multi_defconfig
-mips                        workpad_defconfig
-m68k                          amiga_defconfig
-powerpc                     pseries_defconfig
-mips                          ath25_defconfig
-mips                 decstation_r4k_defconfig
-mips                         tb0219_defconfig
-powerpc                       ebony_defconfig
-parisc                generic-32bit_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20210413
-x86_64               randconfig-a002-20210413
-x86_64               randconfig-a001-20210413
-x86_64               randconfig-a005-20210413
-x86_64               randconfig-a006-20210413
-x86_64               randconfig-a004-20210413
-i386                 randconfig-a003-20210413
-i386                 randconfig-a001-20210413
-i386                 randconfig-a006-20210413
-i386                 randconfig-a005-20210413
-i386                 randconfig-a004-20210413
-i386                 randconfig-a002-20210413
-i386                 randconfig-a015-20210413
-i386                 randconfig-a014-20210413
-i386                 randconfig-a013-20210413
-i386                 randconfig-a012-20210413
-i386                 randconfig-a016-20210413
-i386                 randconfig-a011-20210413
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                                allnoconfig
-um                               allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a014-20210413
-x86_64               randconfig-a015-20210413
-x86_64               randconfig-a011-20210413
-x86_64               randconfig-a013-20210413
-x86_64               randconfig-a012-20210413
-x86_64               randconfig-a016-20210413
-
+Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+Signed-off-by: Shujin Li <lishujin@kuaishou.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 521ea9d..4e9a247 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -11867,6 +11867,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ {
+ 	int err = 0;
+ 	int size;
++	u16 pow;
+ 
+ 	/* Set default capability flags */
+ 	pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
+@@ -11885,6 +11886,11 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	pf->rss_table_size = pf->hw.func_caps.rss_table_size;
+ 	pf->rss_size_max = min_t(int, pf->rss_size_max,
+ 				 pf->hw.func_caps.num_tx_qp);
++
++	/* find the next higher power-of-2 of num cpus */
++	pow = roundup_pow_of_two(num_online_cpus());
++	pf->rss_size_max = min_t(int, pf->rss_size_max, pow);
++
+ 	if (pf->hw.func_caps.rss) {
+ 		pf->flags |= I40E_FLAG_RSS_ENABLED;
+ 		pf->alloc_rss_size = min_t(int, pf->rss_size_max,
+-- 
+1.8.3.1
+
