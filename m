@@ -1,24 +1,31 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 13 Apr 2021 21:25:57 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 9dbdeb060426ab4d7bd02fa31271c523fa804c1d
-Message-ID: <60759be5.NGgOj1g/wmkODTva%lkp@intel.com>
+Date: Tue, 13 Apr 2021 21:25:55 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING 4947076b75387e9e94efd80d0ba4fb26341cd2fd
+Message-ID: <60759be3.C+GAkh7bzdqLGbo1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 9dbdeb060426ab4d7bd02fa31271c523fa804c1d  i40e: Fix use-after-free in i40e_client_subtask()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 4947076b75387e9e94efd80d0ba4fb26341cd2fd  i40e: Fix use-after-free in i40e_client_subtask()
 
-elapsed time: 723m
+Warning in current branch:
 
-configs tested: 104
+drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- arm64-defconfig
+    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
+
+elapsed time: 721m
+
+configs tested: 147
 configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -28,33 +35,79 @@ arm                              allyesconfig
 arm                              allmodconfig
 x86_64                           allyesconfig
 riscv                            allmodconfig
+i386                             allyesconfig
 riscv                            allyesconfig
-powerpc                       ebony_defconfig
-powerpc                     ep8248e_defconfig
-mips                        omega2p_defconfig
-mips                     loongson1c_defconfig
-arm                           stm32_defconfig
-arm                        neponset_defconfig
-powerpc                     mpc5200_defconfig
-h8300                     edosk2674_defconfig
-powerpc                      bamboo_defconfig
-xtensa                  nommu_kc705_defconfig
-sh                           se7780_defconfig
-sh                        edosk7760_defconfig
-powerpc                    klondike_defconfig
-powerpc                 mpc8560_ads_defconfig
-sh                   sh7770_generic_defconfig
-arc                          axs103_defconfig
-arm                            qcom_defconfig
-arm                            xcep_defconfig
-mips                         mpc30x_defconfig
+h8300                       h8s-sim_defconfig
+mips                       bmips_be_defconfig
+powerpc                 canyonlands_defconfig
+mips                  decstation_64_defconfig
+arm                              alldefconfig
+arm                       aspeed_g4_defconfig
+powerpc                      cm5200_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                        mvebu_v7_defconfig
 mips                          ath79_defconfig
+microblaze                          defconfig
+sh                          rsk7269_defconfig
+arm                       cns3420vb_defconfig
+ia64                          tiger_defconfig
+arc                        nsim_700_defconfig
+openrisc                 simple_smp_defconfig
+sh                           se7750_defconfig
+mips                           rs90_defconfig
+powerpc                    gamecube_defconfig
+arc                     nsimosci_hs_defconfig
+powerpc                     redwood_defconfig
+powerpc                    klondike_defconfig
+m68k                           sun3_defconfig
+sh                         ecovec24_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                     sbc8548_defconfig
+arm                         assabet_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                              defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                           h3600_defconfig
+powerpc                   lite5200b_defconfig
+arm                       netwinder_defconfig
+arm                           corgi_defconfig
+arm                        magician_defconfig
+um                                  defconfig
+arm                            zeus_defconfig
+openrisc                         alldefconfig
+m68k                          atari_defconfig
+powerpc                 mpc8540_ads_defconfig
+powerpc                        fsp2_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                     pq2fads_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                         hackkit_defconfig
+m68k                       m5208evb_defconfig
+arm                            xcep_defconfig
+arm                             ezx_defconfig
+um                               allmodconfig
+arm                            qcom_defconfig
+mips                        omega2p_defconfig
+mips                         mpc30x_defconfig
+arm                            mmp2_defconfig
+arm                          ep93xx_defconfig
+m68k                            mac_defconfig
+arm                  colibri_pxa270_defconfig
+mips                           ci20_defconfig
+arm                        clps711x_defconfig
+sh                          landisk_defconfig
+x86_64                           alldefconfig
+sh                           sh2007_defconfig
+openrisc                    or1ksim_defconfig
+m68k                          multi_defconfig
 mips                        workpad_defconfig
 m68k                          amiga_defconfig
 powerpc                     pseries_defconfig
 mips                          ath25_defconfig
-sh                           sh2007_defconfig
 mips                 decstation_r4k_defconfig
+mips                         tb0219_defconfig
+powerpc                       ebony_defconfig
+parisc                generic-32bit_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -81,7 +134,6 @@ s390                                defconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
-i386                             allyesconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
@@ -110,10 +162,8 @@ riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
-um                               allmodconfig
 um                                allnoconfig
 um                               allyesconfig
-um                                  defconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
