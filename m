@@ -1,153 +1,77 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Tue, 13 Apr 2021 21:33:00 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be
- correct during power-on
-In-Reply-To: <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
-References: <tencent_A3F0B1FAA65495EB2220B5B72EB6E5AF1B07@qq.com>
- <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
- <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
-Message-ID: <MN2PR11MB466465F88C02C85A4A45202F9B4F9@MN2PR11MB4664.namprd11.prod.outlook.com>
+From: Salil Mehta <salil.mehta@huawei.com>
+Date: Tue, 13 Apr 2021 23:44:46 +0100
+Subject: [Intel-wired-lan] [PATCH V2 net] ice: Re-organizes reqstd/avail {R,
+ T}XQ check/code for efficiency+readability
+Message-ID: <20210413224446.16612-1-salil.mehta@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->On 4/10/21 2:12 AM, Kubalewski, Arkadiusz wrote:
->>> -----Original Message-----
->>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of xiao33522 at qq.com
->>> Sent: pi?tek, 9 kwietnia 2021 11:18
->>> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
->>> Cc: netdev at vger.kernel.org; xiaolinkui <xiaolinkui@kylinos.cn>; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net
->>> Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be correct during power-on
->>>
->>> From: xiaolinkui <xiaolinkui@kylinos.cn>
->>>
->>> Sometimes the power on state of the x710 network card indicator is not right, and the indicator shows orange. At this time, the network card speed is Gigabit.
->> By "power on state" you mean that it happens after power-up of the server?
->Yes, it means that sometimes the boot state of the server is still in 
->the BIOS boot stage, and the network card indicator is wrong(orange 
->indicator).
->
+If user has explicitly requested the number of {R,T}XQs, then it is
+unnecessary to get the count of already available {R,T}XQs from the
+PF avail_{r,t}xqs bitmap. This value will get overridden by user specified
+value in any case.
 
-I am still confused a little bit, at that point (before proper link is established)
-the NIC is supposed to be in so called pxe-mode. Which allows for some basic
-functionality. I wonder are you sure it happens "sometimes"? I would say this
-behavior is expected after each Power-Off-Reset of the host.
+This patch does minor re-organization of the code for improving the flow
+and readabiltiy. This scope of improvement was found during the review of
+the ICE driver code.
 
->>
->>> After entering the system, check the network card status through the ethtool command as follows:
->>>
->>> [root at localhost ~]# ethtool enp132s0f0
->>> Settings for enp132s0f0:
->>> 	Supported ports: [ FIBRE ]
->>> 	Supported link modes:   1000baseX/Full
->>> 	                        10000baseSR/Full
->>> 	Supported pause frame use: Symmetric
->>> 	Supports auto-negotiation: Yes
->>> 	Supported FEC modes: Not reported
->>> 	Advertised link modes:  1000baseX/Full
->>> 	                        10000baseSR/Full
->>> 	Advertised pause frame use: No
->>> 	Advertised auto-negotiation: Yes
->>> 	Advertised FEC modes: Not reported
->>> 	Speed: 1000Mb/s
->>> 	Duplex: Full
->>> 	Port: FIBRE
->>> 	PHYAD: 0
->>> 	Transceiver: internal
->>> 	Auto-negotiation: off
->>> 	Supports Wake-on: d
->>> 	Wake-on: d
->>> 	Current message level: 0x00000007 (7)
->>> 			       drv probe link
->>> 	Link detected: yes
->>>
->>> We can see that the speed is 1000Mb/s.
->>>
->>> If you unplug and plug in the optical cable, it can be restored to 10g.
->>> After this operation, the rate is as follows:
->>>
->>> [root at localhost ~]# ethtool enp132s0f0
->>> Settings for enp132s0f0:
->>>         Supported ports: [ FIBRE ]
->>>         Supported link modes:   1000baseX/Full
->>>                                 10000baseSR/Full
->>>         Supported pause frame use: Symmetric
->>>         Supports auto-negotiation: Yes
->>>         Supported FEC modes: Not reported
->>>         Advertised link modes:  1000baseX/Full
->>>                                 10000baseSR/Full
->>>         Advertised pause frame use: No
->>>         Advertised auto-negotiation: Yes
->>>         Advertised FEC modes: Not reported
->>>         Speed: 10000Mb/s
->>>         Duplex: Full
->>>         Port: FIBRE
->>>         PHYAD: 0
->>>         Transceiver: internal
->>>         Auto-negotiation: off
->>>         Supports Wake-on: d
->>>         Wake-on: d
->>>         Current message level: 0x00000007 (7)
->>>                                drv probe link
->>>         Link detected: yes
->>>
->>> Calling i40e_aq_set_link_restart_an can also achieve this function.
->>> So we need to do a reset operation for the network card when the network card status is abnormal.
->> Can't say much about the root cause of the issue right now,
->> but I don't think it is good idea for the fix.
->> This leads to braking existing link each time
->> i40e_aq_get_link_info is called on 1 Gigabit PHY.
->> For example 'ethtool -m <dev>' does that.
->>
->> Have you tried reloading the driver?
->> Thanks!
-> I tried to unload the driver again and then load the driver, but it didn't work.If I pull the fiber optic cable off and plug it in, it can be recovered from 1000Mb/s to 10000Mb/s.
->
+FYI, I could not test this change due to unavailability of the hardware.
+It would be helpful if somebody can test this patch and provide Tested-by
+Tag. Many thanks!
 
-Well, it is at least strange for me.
+Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+Cc: intel-wired-lan at lists.osuosl.org
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+--
+Change V1->V2
+ (*) Fixed the comments from Anthony Nguyen(Intel)
+     Link: https://lkml.org/lkml/2021/4/12/1997
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-Since on driver load there is already a call to:
-	i40e_aq_set_link_restart_an(hw, true, NULL);
-Although, in order to be called you need to have up to date Firmware of 
-your NIC. Maybe this is the case? Have you tried to update NVM of the NIC?
-
-Another way would be to use link-down-on-close feature.
-First enable link-down-on-close private flag, and then
-perform link-down and link-up on the port.
-
-Anyway I don't think this patch is fixing anything, it looks like a workaround
-that hides actual problem.
-
-Thanks
-
->>> Signed-off-by: xiaolinkui <xiaolinkui@kylinos.cn>
->>> ---
->>> drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
->>> 1 file changed, 4 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
->>> index ec19e18305ec..dde0224776ac 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
->>> @@ -1866,6 +1866,10 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
->>> 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
->>> 	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
->>>
->>> +	if (hw_link_info->phy_type == I40E_PHY_TYPE_1000BASE_SX &&
->>> +	    hw->mac.type == I40E_MAC_XL710)
->>> +		i40e_aq_set_link_restart_an(hw, true, NULL);
->>> +
->>> 	/* update fc info */
->>> 	tx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_TX);
->>> 	rx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_RX);
->>> --
->>> 2.17.1
->>>
->>> _______________________________________________
->>> Intel-wired-lan mailing list
->>> Intel-wired-lan at osuosl.org
->>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>>
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index d13c7fc8fb0a..d77133d6baa7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -161,12 +161,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
+ 
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+-		vsi->alloc_txq = min3(pf->num_lan_msix,
+-				      ice_get_avail_txq_count(pf),
+-				      (u16)num_online_cpus());
+ 		if (vsi->req_txq) {
+ 			vsi->alloc_txq = vsi->req_txq;
+ 			vsi->num_txq = vsi->req_txq;
++		} else {
++			vsi->alloc_txq = min3(pf->num_lan_msix,
++					      ice_get_avail_txq_count(pf),
++					      (u16)num_online_cpus());
+ 		}
+ 
+ 		pf->num_lan_tx = vsi->alloc_txq;
+@@ -175,12 +176,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
+ 		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+ 			vsi->alloc_rxq = 1;
+ 		} else {
+-			vsi->alloc_rxq = min3(pf->num_lan_msix,
+-					      ice_get_avail_rxq_count(pf),
+-					      (u16)num_online_cpus());
+ 			if (vsi->req_rxq) {
+ 				vsi->alloc_rxq = vsi->req_rxq;
+ 				vsi->num_rxq = vsi->req_rxq;
++			} else {
++				vsi->alloc_rxq = min3(pf->num_lan_msix,
++						      ice_get_avail_rxq_count(pf),
++						      (u16)num_online_cpus());
+ 			}
+ 		}
+ 
+-- 
+2.17.1
 
