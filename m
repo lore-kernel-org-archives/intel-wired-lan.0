@@ -1,206 +1,129 @@
-From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Mon, 12 Apr 2021 12:17:13 +0200
-Subject: [Intel-wired-lan] [PATCH RFC net] igb: Fix XDP with PTP enabled
-Message-ID: <20210412101713.15161-1-kurt@linutronix.de>
+From: xiao <534535881@qq.com>
+Date: Tue, 13 Apr 2021 10:02:06 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be
+ correct during power-on
+In-Reply-To: <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <tencent_A3F0B1FAA65495EB2220B5B72EB6E5AF1B07@qq.com>
+ <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When using native XDP with the igb driver, the XDP frame data doesn't point to
-the beginning of the packet. It's off by 16 bytes. Everything works as expected
-with XDP skb mode.
+On 4/10/21 2:12 AM, Kubalewski, Arkadiusz wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of xiao33522 at qq.com
+>> Sent: pi?tek, 9 kwietnia 2021 11:18
+>> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+>> Cc: netdev at vger.kernel.org; xiaolinkui <xiaolinkui@kylinos.cn>; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net
+>> Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be correct during power-on
+>>
+>> From: xiaolinkui <xiaolinkui@kylinos.cn>
+>>
+>> Sometimes the power on state of the x710 network card indicator is not right, and the indicator shows orange. At this time, the network card speed is Gigabit.
+> By "power on state" you mean that it happens after power-up of the server?
+Yes, it means that sometimes the boot state of the server is still in 
+the BIOS boot stage, and the network card indicator is wrong(orange 
+indicator).
 
-Actually these 16 bytes are used to store the packet timestamps. Therefore, pull
-the timestamp before executing any XDP operations and adjust all other code
-accordingly. The igc driver does it like that as well.
+>
+>> After entering the system, check the network card status through the ethtool command as follows:
+>>
+>> [root at localhost ~]# ethtool enp132s0f0
+>> Settings for enp132s0f0:
+>> 	Supported ports: [ FIBRE ]
+>> 	Supported link modes:   1000baseX/Full
+>> 	                        10000baseSR/Full
+>> 	Supported pause frame use: Symmetric
+>> 	Supports auto-negotiation: Yes
+>> 	Supported FEC modes: Not reported
+>> 	Advertised link modes:  1000baseX/Full
+>> 	                        10000baseSR/Full
+>> 	Advertised pause frame use: No
+>> 	Advertised auto-negotiation: Yes
+>> 	Advertised FEC modes: Not reported
+>> 	Speed: 1000Mb/s
+>> 	Duplex: Full
+>> 	Port: FIBRE
+>> 	PHYAD: 0
+>> 	Transceiver: internal
+>> 	Auto-negotiation: off
+>> 	Supports Wake-on: d
+>> 	Wake-on: d
+>> 	Current message level: 0x00000007 (7)
+>> 			       drv probe link
+>> 	Link detected: yes
+>>
+>> We can see that the speed is 1000Mb/s.
+>>
+>> If you unplug and plug in the optical cable, it can be restored to 10g.
+>> After this operation, the rate is as follows:
+>>
+>> [root at localhost ~]# ethtool enp132s0f0
+>> Settings for enp132s0f0:
+>>         Supported ports: [ FIBRE ]
+>>         Supported link modes:   1000baseX/Full
+>>                                 10000baseSR/Full
+>>         Supported pause frame use: Symmetric
+>>         Supports auto-negotiation: Yes
+>>         Supported FEC modes: Not reported
+>>         Advertised link modes:  1000baseX/Full
+>>                                 10000baseSR/Full
+>>         Advertised pause frame use: No
+>>         Advertised auto-negotiation: Yes
+>>         Advertised FEC modes: Not reported
+>>         Speed: 10000Mb/s
+>>         Duplex: Full
+>>         Port: FIBRE
+>>         PHYAD: 0
+>>         Transceiver: internal
+>>         Auto-negotiation: off
+>>         Supports Wake-on: d
+>>         Wake-on: d
+>>         Current message level: 0x00000007 (7)
+>>                                drv probe link
+>>         Link detected: yes
+>>
+>> Calling i40e_aq_set_link_restart_an can also achieve this function.
+>> So we need to do a reset operation for the network card when the network card status is abnormal.
+> Can't say much about the root cause of the issue right now,
+> but I don't think it is good idea for the fix.
+> This leads to braking existing link each time
+> i40e_aq_get_link_info is called on 1 Gigabit PHY.
+> For example 'ethtool -m <dev>' does that.
+>
+> Have you tried reloading the driver?
+> Thanks!
+> I tried to unload the driver again and then load the driver, but it didn't work.If I pull the fiber optic cable off and plug it in, it can be recovered from 1000Mb/s to 10000Mb/s.
 
-Tested with Intel i210 card and AF_XDP sockets.
-
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
----
- drivers/net/ethernet/intel/igb/igb.h      |  3 +-
- drivers/net/ethernet/intel/igb/igb_main.c | 45 ++++++++++++-----------
- drivers/net/ethernet/intel/igb/igb_ptp.c  | 18 ++++-----
- 3 files changed, 32 insertions(+), 34 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 7bda8c5edea5..72cf967c1a00 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -748,8 +748,7 @@ void igb_ptp_suspend(struct igb_adapter *adapter);
- void igb_ptp_rx_hang(struct igb_adapter *adapter);
- void igb_ptp_tx_hang(struct igb_adapter *adapter);
- void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
--int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
--			struct sk_buff *skb);
-+ktime_t igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va);
- int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a45cd2b416c8..8fab55fd18fc 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8281,7 +8281,7 @@ static void igb_add_rx_frag(struct igb_ring *rx_ring,
- static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 					 struct igb_rx_buffer *rx_buffer,
- 					 struct xdp_buff *xdp,
--					 union e1000_adv_rx_desc *rx_desc)
-+					 ktime_t timestamp)
- {
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-@@ -8301,12 +8301,8 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	if (unlikely(!skb))
- 		return NULL;
- 
--	if (unlikely(igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))) {
--		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, xdp->data, skb)) {
--			xdp->data += IGB_TS_HDR_LEN;
--			size -= IGB_TS_HDR_LEN;
--		}
--	}
-+	if (timestamp)
-+		skb_hwtstamps(skb)->hwtstamp = timestamp;
- 
- 	/* Determine available headroom for copy */
- 	headlen = size;
-@@ -8337,7 +8333,7 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 				     struct igb_rx_buffer *rx_buffer,
- 				     struct xdp_buff *xdp,
--				     union e1000_adv_rx_desc *rx_desc)
-+				     ktime_t timestamp)
- {
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-@@ -8364,11 +8360,8 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 	if (metasize)
- 		skb_metadata_set(skb, metasize);
- 
--	/* pull timestamp out of packet data */
--	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
--		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb))
--			__skb_pull(skb, IGB_TS_HDR_LEN);
--	}
-+	if (timestamp)
-+		skb_hwtstamps(skb)->hwtstamp = timestamp;
- 
- 	/* update buffer offset */
- #if (PAGE_SIZE < 8192)
-@@ -8683,7 +8676,10 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	while (likely(total_packets < budget)) {
- 		union e1000_adv_rx_desc *rx_desc;
- 		struct igb_rx_buffer *rx_buffer;
-+		ktime_t timestamp = 0;
-+		int pkt_offset = 0;
- 		unsigned int size;
-+		void *pktbuf;
- 
- 		/* return some buffers to hardware, one@a time is too slow */
- 		if (cleaned_count >= IGB_RX_BUFFER_WRITE) {
-@@ -8703,15 +8699,21 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		dma_rmb();
- 
- 		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
-+		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+
-+		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+			timestamp = igb_ptp_rx_pktstamp(rx_ring->q_vector,
-+							pktbuf);
-+			pkt_offset += IGB_TS_HDR_LEN;
-+			size -= IGB_TS_HDR_LEN;
-+		}
- 
- 		/* retrieve a buffer from the ring */
- 		if (!skb) {
--			unsigned int offset = igb_rx_offset(rx_ring);
--			unsigned char *hard_start;
--
--			hard_start = page_address(rx_buffer->page) +
--				     rx_buffer->page_offset - offset;
--			xdp_prepare_buff(&xdp, hard_start, offset, size, true);
-+			xdp.data = pktbuf + pkt_offset;
-+			xdp.data_end = xdp.data + size;
-+			xdp.data_meta = xdp.data;
-+			xdp.data_hard_start = pktbuf - igb_rx_offset(rx_ring);
- #if (PAGE_SIZE > 4096)
- 			/* At larger PAGE_SIZE, frame_sz depend on len size */
- 			xdp.frame_sz = igb_rx_frame_truesize(rx_ring, size);
-@@ -8733,10 +8735,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		} else if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
- 		else if (ring_uses_build_skb(rx_ring))
--			skb = igb_build_skb(rx_ring, rx_buffer, &xdp, rx_desc);
-+			skb = igb_build_skb(rx_ring, rx_buffer, &xdp,
-+					    timestamp);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
--						&xdp, rx_desc);
-+						&xdp, timestamp);
- 
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 86a576201f5f..0cbdf48285d3 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -863,23 +863,22 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
-  * igb_ptp_rx_pktstamp - retrieve Rx per packet timestamp
-  * @q_vector: Pointer to interrupt specific structure
-  * @va: Pointer to address containing Rx buffer
-- * @skb: Buffer containing timestamp and packet
-  *
-  * This function is meant to retrieve a timestamp from the first buffer of an
-  * incoming frame.  The value is stored in little endian format starting on
-  * byte 8
-  *
-- * Returns: 0 if success, nonzero if failure
-+ * Returns: 0 on failure, timestamp on success
-  **/
--int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
--			struct sk_buff *skb)
-+ktime_t igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va)
- {
- 	struct igb_adapter *adapter = q_vector->adapter;
-+	struct skb_shared_hwtstamps ts;
- 	__le64 *regval = (__le64 *)va;
- 	int adjust = 0;
- 
- 	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
--		return IGB_RET_PTP_DISABLED;
-+		return 0;
- 
- 	/* The timestamp is recorded in little endian format.
- 	 * DWORD: 0        1        2        3
-@@ -888,10 +887,9 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 
- 	/* check reserved dwords are zero, be/le doesn't matter for zero */
- 	if (regval[0])
--		return IGB_RET_PTP_INVALID;
-+		return 0;
- 
--	igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
--				   le64_to_cpu(regval[1]));
-+	igb_ptp_systim_to_hwtstamp(adapter, &ts, le64_to_cpu(regval[1]));
- 
- 	/* adjust timestamp for the RX latency based on link speed */
- 	if (adapter->hw.mac.type == e1000_i210) {
-@@ -907,10 +905,8 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 			break;
- 		}
- 	}
--	skb_hwtstamps(skb)->hwtstamp =
--		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
- 
--	return 0;
-+	return ktime_sub_ns(ts.hwtstamp, adjust);
- }
- 
- /**
--- 
-2.20.1
+>> Signed-off-by: xiaolinkui <xiaolinkui@kylinos.cn>
+>> ---
+>> drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
+>> 1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> index ec19e18305ec..dde0224776ac 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>> @@ -1866,6 +1866,10 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+>> 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
+>> 	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
+>>
+>> +	if (hw_link_info->phy_type == I40E_PHY_TYPE_1000BASE_SX &&
+>> +	    hw->mac.type == I40E_MAC_XL710)
+>> +		i40e_aq_set_link_restart_an(hw, true, NULL);
+>> +
+>> 	/* update fc info */
+>> 	tx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_TX);
+>> 	rx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_RX);
+>> --
+>> 2.17.1
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>>
 
