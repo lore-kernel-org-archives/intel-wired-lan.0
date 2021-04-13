@@ -1,80 +1,48 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Tue, 13 Apr 2021 14:03:45 -0500
-Subject: [Intel-wired-lan] [PATCH][next] ixgbe: Fix out-bounds warning in
- ixgbe_host_interface_command()
-Message-ID: <20210413190345.GA304933@embeddedor>
+From: Damilola Bello <rogbabello@gmail.com>
+Date: Tue, 13 Apr 2021 15:19:55 -0400
+Subject: [Intel-wired-lan] i40e and igb ethtool counters
+Message-ID: <CAFspsv4==uah2gw8SM1aERmBCteJH2TKYQJGoog4kkOSXSwizQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Replace union with a couple of pointers in order to fix the following
-out-of-bounds warning:
+I'd like to get a rough estimate of the follwoing: Total packets, Dropped
+packets, Error packets and Successful packets (transmitted/received) all
+from the ethtool.
 
-  CC [M]  drivers/net/ethernet/intel/ixgbe/ixgbe_common.o
-drivers/net/ethernet/intel/ixgbe/ixgbe_common.c: In function ?ixgbe_host_interface_command?:
-drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3729:13: warning: array subscript 1 is above array bounds of ?u32[1]? {aka ?unsigned int[1]?} [-Warray-bounds]
- 3729 |   bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-      |   ~~~~~~~~~~^~~~
-drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3682:7: note: while referencing ?u32arr?
- 3682 |   u32 u32arr[1];
-      |       ^~~~~~
+My assumptions:
 
-This helps with the ongoing efforts to globally enable -Warray-bounds.
+igb:
+Total RX packets received from the network: "rx_packets" + "rx_errors" +
+"rx_missed_errors" + ("rx_fifo_errors" - "rx_missed_errors")
+Total TX packets sent by the host: "tx_packets" + "tx_errors"
+Dropped RX packets: "rx_missed_errors" +  ("rx_fifo_errors" -
+"rx_missed_errors")
+Dropped TX packets: "tx_dropped"
+RX error packets: "rx_errors"
+TX error packets; "tx_errors"
+Successful RX packets: "rx_packets" - ("rx_fifo_errors" -
+"rx_missed_errors")
+Successful TX packets: "tx_packets"
 
-Link: https://github.com/KSPP/linux/issues/109
-Co-developed-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+Note: igb adds the MPC ("rx_missed_errors") to "rx_fifo_errors".
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 03ccbe6b66d2..e90b5047e695 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3678,10 +3678,8 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 				 bool return_data)
- {
- 	u32 hdr_size = sizeof(struct ixgbe_hic_hdr);
--	union {
--		struct ixgbe_hic_hdr hdr;
--		u32 u32arr[1];
--	} *bp = buffer;
-+	struct ixgbe_hic_hdr *hdr = buffer;
-+	u32 *u32arr = buffer;
- 	u16 buf_len, dword_len;
- 	s32 status;
- 	u32 bi;
-@@ -3707,12 +3705,12 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 
- 	/* first pull in the header so we know the buffer length */
- 	for (bi = 0; bi < dword_len; bi++) {
--		bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
--		le32_to_cpus(&bp->u32arr[bi]);
-+		u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-+		le32_to_cpus(&u32arr[bi]);
- 	}
- 
- 	/* If there is any thing in data position pull it in */
--	buf_len = bp->hdr.buf_len;
-+	buf_len = hdr->buf_len;
- 	if (!buf_len)
- 		goto rel_out;
- 
-@@ -3727,8 +3725,8 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 
- 	/* Pull in the rest of the buffer (bi is where we left off) */
- 	for (; bi <= dword_len; bi++) {
--		bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
--		le32_to_cpus(&bp->u32arr[bi]);
-+		u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
-+		le32_to_cpus(&u32arr[bi]);
- 	}
- 
- rel_out:
--- 
-2.27.0
+i40e:
+Total RX packets received from the network:
+"port.rx_dropped" +"rx_packets" + "rx_dropped"  + "rx_errors"
+Total TX packets sent by the host: "port.tx_dropped" + "tx_packets" +
+"tx_dropped"  + "tx_errors"
+Dropped RX packets: "rx_dropped"
+Dropped TX packets: "tx_dropped"
+RX error packets: "rx_errors"
+TX error packets; "tx_errors"
+Successful RX packets: "rx_packets"
+Successful TX packets: "tx_packets"
 
+I would like to know if the assumptions above are correct.
+Thanks.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210413/29133f5c/attachment.html>
