@@ -1,48 +1,153 @@
-From: Damilola Bello <rogbabello@gmail.com>
-Date: Tue, 13 Apr 2021 15:19:55 -0400
-Subject: [Intel-wired-lan] i40e and igb ethtool counters
-Message-ID: <CAFspsv4==uah2gw8SM1aERmBCteJH2TKYQJGoog4kkOSXSwizQ@mail.gmail.com>
+From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
+Date: Tue, 13 Apr 2021 21:33:00 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be
+ correct during power-on
+In-Reply-To: <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
+References: <tencent_A3F0B1FAA65495EB2220B5B72EB6E5AF1B07@qq.com>
+ <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
+Message-ID: <MN2PR11MB466465F88C02C85A4A45202F9B4F9@MN2PR11MB4664.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I'd like to get a rough estimate of the follwoing: Total packets, Dropped
-packets, Error packets and Successful packets (transmitted/received) all
-from the ethtool.
+>On 4/10/21 2:12 AM, Kubalewski, Arkadiusz wrote:
+>>> -----Original Message-----
+>>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of xiao33522 at qq.com
+>>> Sent: pi?tek, 9 kwietnia 2021 11:18
+>>> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+>>> Cc: netdev at vger.kernel.org; xiaolinkui <xiaolinkui@kylinos.cn>; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net
+>>> Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be correct during power-on
+>>>
+>>> From: xiaolinkui <xiaolinkui@kylinos.cn>
+>>>
+>>> Sometimes the power on state of the x710 network card indicator is not right, and the indicator shows orange. At this time, the network card speed is Gigabit.
+>> By "power on state" you mean that it happens after power-up of the server?
+>Yes, it means that sometimes the boot state of the server is still in 
+>the BIOS boot stage, and the network card indicator is wrong(orange 
+>indicator).
+>
 
-My assumptions:
+I am still confused a little bit, at that point (before proper link is established)
+the NIC is supposed to be in so called pxe-mode. Which allows for some basic
+functionality. I wonder are you sure it happens "sometimes"? I would say this
+behavior is expected after each Power-Off-Reset of the host.
 
-igb:
-Total RX packets received from the network: "rx_packets" + "rx_errors" +
-"rx_missed_errors" + ("rx_fifo_errors" - "rx_missed_errors")
-Total TX packets sent by the host: "tx_packets" + "tx_errors"
-Dropped RX packets: "rx_missed_errors" +  ("rx_fifo_errors" -
-"rx_missed_errors")
-Dropped TX packets: "tx_dropped"
-RX error packets: "rx_errors"
-TX error packets; "tx_errors"
-Successful RX packets: "rx_packets" - ("rx_fifo_errors" -
-"rx_missed_errors")
-Successful TX packets: "tx_packets"
+>>
+>>> After entering the system, check the network card status through the ethtool command as follows:
+>>>
+>>> [root at localhost ~]# ethtool enp132s0f0
+>>> Settings for enp132s0f0:
+>>> 	Supported ports: [ FIBRE ]
+>>> 	Supported link modes:   1000baseX/Full
+>>> 	                        10000baseSR/Full
+>>> 	Supported pause frame use: Symmetric
+>>> 	Supports auto-negotiation: Yes
+>>> 	Supported FEC modes: Not reported
+>>> 	Advertised link modes:  1000baseX/Full
+>>> 	                        10000baseSR/Full
+>>> 	Advertised pause frame use: No
+>>> 	Advertised auto-negotiation: Yes
+>>> 	Advertised FEC modes: Not reported
+>>> 	Speed: 1000Mb/s
+>>> 	Duplex: Full
+>>> 	Port: FIBRE
+>>> 	PHYAD: 0
+>>> 	Transceiver: internal
+>>> 	Auto-negotiation: off
+>>> 	Supports Wake-on: d
+>>> 	Wake-on: d
+>>> 	Current message level: 0x00000007 (7)
+>>> 			       drv probe link
+>>> 	Link detected: yes
+>>>
+>>> We can see that the speed is 1000Mb/s.
+>>>
+>>> If you unplug and plug in the optical cable, it can be restored to 10g.
+>>> After this operation, the rate is as follows:
+>>>
+>>> [root at localhost ~]# ethtool enp132s0f0
+>>> Settings for enp132s0f0:
+>>>         Supported ports: [ FIBRE ]
+>>>         Supported link modes:   1000baseX/Full
+>>>                                 10000baseSR/Full
+>>>         Supported pause frame use: Symmetric
+>>>         Supports auto-negotiation: Yes
+>>>         Supported FEC modes: Not reported
+>>>         Advertised link modes:  1000baseX/Full
+>>>                                 10000baseSR/Full
+>>>         Advertised pause frame use: No
+>>>         Advertised auto-negotiation: Yes
+>>>         Advertised FEC modes: Not reported
+>>>         Speed: 10000Mb/s
+>>>         Duplex: Full
+>>>         Port: FIBRE
+>>>         PHYAD: 0
+>>>         Transceiver: internal
+>>>         Auto-negotiation: off
+>>>         Supports Wake-on: d
+>>>         Wake-on: d
+>>>         Current message level: 0x00000007 (7)
+>>>                                drv probe link
+>>>         Link detected: yes
+>>>
+>>> Calling i40e_aq_set_link_restart_an can also achieve this function.
+>>> So we need to do a reset operation for the network card when the network card status is abnormal.
+>> Can't say much about the root cause of the issue right now,
+>> but I don't think it is good idea for the fix.
+>> This leads to braking existing link each time
+>> i40e_aq_get_link_info is called on 1 Gigabit PHY.
+>> For example 'ethtool -m <dev>' does that.
+>>
+>> Have you tried reloading the driver?
+>> Thanks!
+> I tried to unload the driver again and then load the driver, but it didn't work.If I pull the fiber optic cable off and plug it in, it can be recovered from 1000Mb/s to 10000Mb/s.
+>
 
-Note: igb adds the MPC ("rx_missed_errors") to "rx_fifo_errors".
+Well, it is at least strange for me.
 
-i40e:
-Total RX packets received from the network:
-"port.rx_dropped" +"rx_packets" + "rx_dropped"  + "rx_errors"
-Total TX packets sent by the host: "port.tx_dropped" + "tx_packets" +
-"tx_dropped"  + "tx_errors"
-Dropped RX packets: "rx_dropped"
-Dropped TX packets: "tx_dropped"
-RX error packets: "rx_errors"
-TX error packets; "tx_errors"
-Successful RX packets: "rx_packets"
-Successful TX packets: "tx_packets"
+Since on driver load there is already a call to:
+	i40e_aq_set_link_restart_an(hw, true, NULL);
+Although, in order to be called you need to have up to date Firmware of 
+your NIC. Maybe this is the case? Have you tried to update NVM of the NIC?
 
-I would like to know if the assumptions above are correct.
-Thanks.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210413/29133f5c/attachment.html>
+Another way would be to use link-down-on-close feature.
+First enable link-down-on-close private flag, and then
+perform link-down and link-up on the port.
+
+Anyway I don't think this patch is fixing anything, it looks like a workaround
+that hides actual problem.
+
+Thanks
+
+>>> Signed-off-by: xiaolinkui <xiaolinkui@kylinos.cn>
+>>> ---
+>>> drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
+>>> 1 file changed, 4 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>>> index ec19e18305ec..dde0224776ac 100644
+>>> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
+>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+>>> @@ -1866,6 +1866,10 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
+>>> 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
+>>> 	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
+>>>
+>>> +	if (hw_link_info->phy_type == I40E_PHY_TYPE_1000BASE_SX &&
+>>> +	    hw->mac.type == I40E_MAC_XL710)
+>>> +		i40e_aq_set_link_restart_an(hw, true, NULL);
+>>> +
+>>> 	/* update fc info */
+>>> 	tx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_TX);
+>>> 	rx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_RX);
+>>> --
+>>> 2.17.1
+>>>
+>>> _______________________________________________
+>>> Intel-wired-lan mailing list
+>>> Intel-wired-lan at osuosl.org
+>>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>>>
+
