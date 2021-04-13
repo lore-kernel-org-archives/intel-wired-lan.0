@@ -1,51 +1,122 @@
-From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Tue, 13 Apr 2021 09:34:49 +0200
-Subject: [Intel-wired-lan] [PATCH RFC net] igb: Fix XDP with PTP enabled
-In-Reply-To: <20210412162846.42706d99@carbon>
-References: <20210412101713.15161-1-kurt@linutronix.de>
- <20210412162846.42706d99@carbon>
-Message-ID: <874kga1vty.fsf@kurt>
+From: Salil Mehta <salil.mehta@huawei.com>
+Date: Tue, 13 Apr 2021 08:25:58 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: Re-organizes reqstd/avail {R,
+ T}XQ check/code for efficiency+readability
+In-Reply-To: <03655fb6faa595a20a1143fb3b01561042cd317f.camel@intel.com>
+References: <20210411014530.25060-1-salil.mehta@huawei.com>
+ <03655fb6faa595a20a1143fb3b01561042cd317f.camel@intel.com>
+Message-ID: <8fd160b556fc4d45bff2d607918aad33@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon Apr 12 2021, Jesper Dangaard Brouer wrote:
-> On Mon, 12 Apr 2021 12:17:13 +0200
-> Kurt Kanzenbach <kurt@linutronix.de> wrote:
->
->> When using native XDP with the igb driver, the XDP frame data doesn't point to
->> the beginning of the packet. It's off by 16 bytes. Everything works as expected
->> with XDP skb mode.
->> 
->> Actually these 16 bytes are used to store the packet timestamps. Therefore, pull
->> the timestamp before executing any XDP operations and adjust all other code
->> accordingly. The igc driver does it like that as well.
->
-> (Cc. Alexander Duyck)
+Hi Anthony,
+Thanks for reviewing!
 
-Thanks.
+> From: Nguyen, Anthony L [mailto:anthony.l.nguyen at intel.com]
+> Sent: Monday, April 12, 2021 11:41 PM
+> To: davem at davemloft.net; kuba at kernel.org; Salil Mehta <salil.mehta@huawei.com>
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; linuxarm at openeuler.org; Tieman, Henry W
+> <henry.w.tieman@intel.com>; Linuxarm <linuxarm@huawei.com>
+> Subject: Re: [PATCH net] ice: Re-organizes reqstd/avail {R,T}XQ check/code for
+> efficiency+readability
+> 
+> On Sun, 2021-04-11 at 02:45 +0100, Salil Mehta wrote:
+> > If user has explicitly requested the number of {R,T}XQs, then it is
+> > unnecessary
+> > to get the count of already available {R,T}XQs from the PF
+> > avail_{r,t}xqs
+> > bitmap. This value will get overriden by user specified value in any
+> 
+> s/overriden/overridden
 
->
-> Do we have enough room for the packet page-split tricks when these 16
-> bytes are added?
+Ok.
 
-I think so. AFAICT the timestamp header is accounted. There is
-IGB_2K_TOO_SMALL_WITH_PADDING. If 2k isn't sufficient, then 3k buffers
-are used.
+> 
+> > case.
+> >
+> > This patch does minor re-organization of the code for improving the
+> > flow and
+> > readabiltiy. This scope of improvement was found during the review of
+> > the ICE
+> > driver code.
+> 
+> The changes themselves look ok, but there are some checkpatch issues.
+> Also, could you include intel-wired-lan at lists.osuosl.org
 
-The only thing this patch does, is adjusting the xdp->data pointer
-before executing igb_run_xdp() instead of doing it afterwards. So, that
-in the eBPF program `data' points to the packet data, and not to the
-timestamp.
+Sure. will fix them.
 
-Thanks,
-Kurt
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 832 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210413/d36749d6/attachment.asc>
+> 
+> > FYI, I could not test this change due to unavailability of the
+> > hardware. It
+> > would helpful if somebody can test this and provide Tested-by Tag.
+> > Many thanks!
+> >
+> > Fixes: 11b7551e096d ("ice: Implement ethtool ops for channels")
+> 
+> This commit id doesn't exist.
+
+Will fix. Sorry about this.
+
+> 
+> > Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+> > ---
+> >  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
+> >  1 file changed, 8 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c
+> > b/drivers/net/ethernet/intel/ice/ice_lib.c
+> > index d13c7fc8fb0a..161e8dfe548c 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> > @@ -161,12 +161,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi
+> > *vsi, u16 vf_id)
+> >
+> >  	switch (vsi->type) {
+> >  	case ICE_VSI_PF:
+> > -		vsi->alloc_txq = min3(pf->num_lan_msix,
+> > -				      ice_get_avail_txq_count(pf),
+> > -				      (u16)num_online_cpus());
+> >  		if (vsi->req_txq) {
+> >  			vsi->alloc_txq = vsi->req_txq;
+> >  			vsi->num_txq = vsi->req_txq;
+> > +		} else {
+> > +			vsi->alloc_txq = min3(pf->num_lan_msix,
+> > +					 ice_get_avail_txq_count(pf),
+> > +					 (u16)num_online_cpus());
+> 
+> Alignment is incorrect.
+
+Ok. Will check, perhaps the cause of the checkpatch.pl errors.
+
+> 
+> >  		}
+> >
+> >  		pf->num_lan_tx = vsi->alloc_txq;
+> > @@ -175,12 +176,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi
+> > *vsi, u16 vf_id)
+> >  		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+> >  			vsi->alloc_rxq = 1;
+> >  		} else {
+> > -			vsi->alloc_rxq = min3(pf->num_lan_msix,
+> > -					      ice_get_avail_rxq_count(p
+> > f),
+> > -					      (u16)num_online_cpus());
+> >  			if (vsi->req_rxq) {
+> >  				vsi->alloc_rxq = vsi->req_rxq;
+> >  				vsi->num_rxq = vsi->req_rxq;
+> > +			} else {
+> > +				vsi->alloc_rxq = min3(pf->num_lan_msix,
+> > +						 ice_get_avail_rxq_coun
+> > t(pf),
+> > +						 (u16)num_online_cpus()
+> 
+> Same, alignment is incorrect.
+
+Ok. Will fix.
+
+Thanks
+Salil.
