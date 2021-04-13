@@ -1,129 +1,107 @@
-From: xiao <534535881@qq.com>
-Date: Tue, 13 Apr 2021 10:02:06 +0800
-Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be
- correct during power-on
-In-Reply-To: <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
-References: <tencent_A3F0B1FAA65495EB2220B5B72EB6E5AF1B07@qq.com>
- <DM6PR11MB4657EB5A8040E7D5A9CB155E9B739@DM6PR11MB4657.namprd11.prod.outlook.com>
-Message-ID: <tencent_AAC300E9BCF5B21D7C99816BD69FA56E5D0A@qq.com>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Tue, 13 Apr 2021 10:17:00 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: fix the panic when running bpf
+ in xdpdrv mode
+In-Reply-To: <20210412145229.00003e5d@intel.com>
+References: <20210412065759.2907-1-kerneljasonxing@gmail.com>
+ <20210412145229.00003e5d@intel.com>
+Message-ID: <CAL+tcoCJZBbkszE68xLRSrtfByZ3Epg7u40e2YftccUDi4034Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/10/21 2:12 AM, Kubalewski, Arkadiusz wrote:
->> -----Original Message-----
->> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of xiao33522 at qq.com
->> Sent: pi?tek, 9 kwietnia 2021 11:18
->> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
->> Cc: netdev at vger.kernel.org; xiaolinkui <xiaolinkui@kylinos.cn>; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net
->> Subject: [Intel-wired-lan] [PATCH] i40e: The state of phy may not be correct during power-on
->>
->> From: xiaolinkui <xiaolinkui@kylinos.cn>
->>
->> Sometimes the power on state of the x710 network card indicator is not right, and the indicator shows orange. At this time, the network card speed is Gigabit.
-> By "power on state" you mean that it happens after power-up of the server?
-Yes, it means that sometimes the boot state of the server is still in 
-the BIOS boot stage, and the network card indicator is wrong(orange 
-indicator).
-
+On Tue, Apr 13, 2021 at 5:52 AM Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
 >
->> After entering the system, check the network card status through the ethtool command as follows:
->>
->> [root at localhost ~]# ethtool enp132s0f0
->> Settings for enp132s0f0:
->> 	Supported ports: [ FIBRE ]
->> 	Supported link modes:   1000baseX/Full
->> 	                        10000baseSR/Full
->> 	Supported pause frame use: Symmetric
->> 	Supports auto-negotiation: Yes
->> 	Supported FEC modes: Not reported
->> 	Advertised link modes:  1000baseX/Full
->> 	                        10000baseSR/Full
->> 	Advertised pause frame use: No
->> 	Advertised auto-negotiation: Yes
->> 	Advertised FEC modes: Not reported
->> 	Speed: 1000Mb/s
->> 	Duplex: Full
->> 	Port: FIBRE
->> 	PHYAD: 0
->> 	Transceiver: internal
->> 	Auto-negotiation: off
->> 	Supports Wake-on: d
->> 	Wake-on: d
->> 	Current message level: 0x00000007 (7)
->> 			       drv probe link
->> 	Link detected: yes
->>
->> We can see that the speed is 1000Mb/s.
->>
->> If you unplug and plug in the optical cable, it can be restored to 10g.
->> After this operation, the rate is as follows:
->>
->> [root at localhost ~]# ethtool enp132s0f0
->> Settings for enp132s0f0:
->>         Supported ports: [ FIBRE ]
->>         Supported link modes:   1000baseX/Full
->>                                 10000baseSR/Full
->>         Supported pause frame use: Symmetric
->>         Supports auto-negotiation: Yes
->>         Supported FEC modes: Not reported
->>         Advertised link modes:  1000baseX/Full
->>                                 10000baseSR/Full
->>         Advertised pause frame use: No
->>         Advertised auto-negotiation: Yes
->>         Advertised FEC modes: Not reported
->>         Speed: 10000Mb/s
->>         Duplex: Full
->>         Port: FIBRE
->>         PHYAD: 0
->>         Transceiver: internal
->>         Auto-negotiation: off
->>         Supports Wake-on: d
->>         Wake-on: d
->>         Current message level: 0x00000007 (7)
->>                                drv probe link
->>         Link detected: yes
->>
->> Calling i40e_aq_set_link_restart_an can also achieve this function.
->> So we need to do a reset operation for the network card when the network card status is abnormal.
-> Can't say much about the root cause of the issue right now,
-> but I don't think it is good idea for the fix.
-> This leads to braking existing link each time
-> i40e_aq_get_link_info is called on 1 Gigabit PHY.
-> For example 'ethtool -m <dev>' does that.
+> kerneljasonxing at gmail.com wrote:
 >
-> Have you tried reloading the driver?
-> Thanks!
-> I tried to unload the driver again and then load the driver, but it didn't work.If I pull the fiber optic cable off and plug it in, it can be recovered from 1000Mb/s to 10000Mb/s.
+> > From: Jason Xing <xingwanli@kuaishou.com>
+> >
+> > Re: [PATCH] i40e: fix the panic when running bpf in xdpdrv mode
+>
+> Please use netdev style subject lines when patching net kernel to
+> indicate which kernel tree this is targeted at, "net" or "net-next"
+> [PATCH net v2] i40e: ...
+>
+> > Fix this by add more rules to calculate the value of @rss_size_max which
+>
+> Fix this panic by adding ...
+>
+> > could be used in allocating the queues when bpf is loaded, which, however,
+> > could cause the failure and then triger the NULL pointer of vsi->rx_rings.
+>
+> trigger
+>
+> > Prio to this fix, the machine doesn't care about how many cpus are online
+> > and then allocates 256 queues on the machine with 32 cpus online
+> > actually.
+> >
+> > Once the load of bpf begins, the log will go like this "failed to get
+> > tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
+> > failed".
+> >
+> > Thus, I attach the key information of the crash-log here.
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at
+> > 0000000000000000
+> > RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
+> > Call Trace:
+> > [2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
+> > [2160294.717666]  dev_xdp_install+0x4f/0x70
+> > [2160294.718036]  dev_change_xdp_fd+0x11f/0x230
+> > [2160294.718380]  ? dev_disable_lro+0xe0/0xe0
+> > [2160294.718705]  do_setlink+0xac7/0xe70
+> > [2160294.719035]  ? __nla_parse+0xed/0x120
+> > [2160294.719365]  rtnl_newlink+0x73b/0x860
+> >
+> > Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+> > Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+>
+> if you send to "net" - I suspect you should supply a Fixes: line, above
+> the sign-offs.
+> In this case however, this bug has been here since the beginning of the
+> driver, but the patch will easily apply, so please supply
+>
+> Fixes: 41c445ff0f48 ("i40e: main driver core")
+>
+> > ---
+> >  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > index 521ea9d..4e9a247 100644
+> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > @@ -11867,6 +11867,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+> >  {
+> >       int err = 0;
+> >       int size;
+> > +     u16 pow;
+> >
+> >       /* Set default capability flags */
+> >       pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
+> > @@ -11885,6 +11886,11 @@ static int i40e_sw_init(struct i40e_pf *pf)
+> >       pf->rss_table_size = pf->hw.func_caps.rss_table_size;
+> >       pf->rss_size_max = min_t(int, pf->rss_size_max,
+> >                                pf->hw.func_caps.num_tx_qp);
+> > +
+> > +     /* find the next higher power-of-2 of num cpus */
+> > +     pow = roundup_pow_of_two(num_online_cpus());
+> > +     pf->rss_size_max = min_t(int, pf->rss_size_max, pow);
+> > +
+>
+> The fix itself is fine, and is correct as far as I can tell, thank you
+> for sending the patch!
+>
 
->> Signed-off-by: xiaolinkui <xiaolinkui@kylinos.cn>
->> ---
->> drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++++
->> 1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
->> index ec19e18305ec..dde0224776ac 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
->> @@ -1866,6 +1866,10 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
->> 	hw_link_info->max_frame_size = le16_to_cpu(resp->max_frame_size);
->> 	hw_link_info->pacing = resp->config & I40E_AQ_CONFIG_PACING_MASK;
->>
->> +	if (hw_link_info->phy_type == I40E_PHY_TYPE_1000BASE_SX &&
->> +	    hw->mac.type == I40E_MAC_XL710)
->> +		i40e_aq_set_link_restart_an(hw, true, NULL);
->> +
->> 	/* update fc info */
->> 	tx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_TX);
->> 	rx_pause = !!(resp->an_info & I40E_AQ_LINK_PAUSE_RX);
->> --
->> 2.17.1
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->>
+Thanks for your advice. I'm going to send the patch v2 :)
 
+Jason
+
+> >       if (pf->hw.func_caps.rss) {
+> >               pf->flags |= I40E_FLAG_RSS_ENABLED;
+> >               pf->alloc_rss_size = min_t(int, pf->rss_size_max,
+>
+>
