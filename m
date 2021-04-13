@@ -1,71 +1,53 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 13 Apr 2021 09:18:12 -0700
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: fix the panic when
- running bpf in xdpdrv mode
-In-Reply-To: <20210413025011.1251-1-kerneljasonxing@gmail.com>
-References: <20210412065759.2907-1-kerneljasonxing@gmail.com>
- <20210413025011.1251-1-kerneljasonxing@gmail.com>
-Message-ID: <20210413091812.0000383d@intel.com>
+From: Kurt Kanzenbach <kurt@linutronix.de>
+Date: Tue, 13 Apr 2021 19:21:00 +0200
+Subject: [Intel-wired-lan] [PATCH RFC net] igb: Fix XDP with PTP enabled
+In-Reply-To: <CAKgT0UekqPNQxV6PzpEeis69z3e3YNcaFyot=nD7w26hLxPX2Q@mail.gmail.com>
+References: <20210412101713.15161-1-kurt@linutronix.de>
+ <20210412162846.42706d99@carbon>
+ <CAKgT0UekqPNQxV6PzpEeis69z3e3YNcaFyot=nD7w26hLxPX2Q@mail.gmail.com>
+Message-ID: <87fszuyubn.fsf@kurt>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-kerneljasonxing at gmail.com wrote:
+On Tue Apr 13 2021, Alexander Duyck wrote:
+> On Mon, Apr 12, 2021 at 7:29 AM Jesper Dangaard Brouer
+> <brouer@redhat.com> wrote:
+>> > +ktime_t igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va)
+>> >  {
+>> >       struct igb_adapter *adapter = q_vector->adapter;
+>> > +     struct skb_shared_hwtstamps ts;
+>> >       __le64 *regval = (__le64 *)va;
+>> >       int adjust = 0;
+>> >
+>> >       if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
+>> > -             return IGB_RET_PTP_DISABLED;
+>> > +             return 0;
+>> >
+>> >       /* The timestamp is recorded in little endian format.
+>> >        * DWORD: 0        1        2        3
+>> > @@ -888,10 +887,9 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
+>> >
+>> >       /* check reserved dwords are zero, be/le doesn't matter for zero */
+>> >       if (regval[0])
+>> > -             return IGB_RET_PTP_INVALID;
+>> > +             return 0;
+>> >
+>
+> One thing that needs to be cleaned up in the patch is that if it is
+> going to drop these return values it should probably drop the defines
+> for them since I don't think they are used anywhere else.
 
-> From: Jason Xing <xingwanli@kuaishou.com>
-
-Hi Jason,
-
-Sorry, I missed this on the first time: Added intel-wired-lan,
-please include on any future submissions for Intel drivers.
-get-maintainers script might help here?
-
-> 
-> Fix this panic by adding more rules to calculate the value of @rss_size_max
-> which could be used in allocating the queues when bpf is loaded, which,
-> however, could cause the failure and then trigger the NULL pointer of
-> vsi->rx_rings. Prio to this fix, the machine doesn't care about how many
-> cpus are online and then allocates 256 queues on the machine with 32 cpus
-> online actually.
-> 
-> Once the load of bpf begins, the log will go like this "failed to get
-> tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
-> failed".
-> 
-> Thus, I attach the key information of the crash-log here.
-> 
-> BUG: unable to handle kernel NULL pointer dereference at
-> 0000000000000000
-> RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
-> Call Trace:
-> [2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
-> [2160294.717666]  dev_xdp_install+0x4f/0x70
-> [2160294.718036]  dev_change_xdp_fd+0x11f/0x230
-> [2160294.718380]  ? dev_disable_lro+0xe0/0xe0
-> [2160294.718705]  do_setlink+0xac7/0xe70
-> [2160294.719035]  ? __nla_parse+0xed/0x120
-> [2160294.719365]  rtnl_newlink+0x73b/0x860
-> 
-> Fixes: 41c445ff0f48 ("i40e: main driver core")
-> 
-
-This Fixes line should be connected to the Sign offs with
-no linefeeds between.
-
-> Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
-> Signed-off-by: Shujin Li <lishujin@kuaishou.com>
-
-Did Shujin contribute to this patch? Why are they signing off? If
-they developed this patch with you, it should say:
-Co-developed-by: Shujin ....
-Signed-off-by: Shujin ...
-Signed-off-by: Jason ...
-
-Your signature should be last if you sent the patch. The sign-offs are
-like a chain of custody, please review 
-https://www.kernel.org/doc/html/latest/process/submitting-patches.html#when-to-use-acked-by-cc-and-co-developed-by
+Yes, of course. I'll clean it up before sending a non RFC version.
 
 Thanks,
- Jesse
+Kurt
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 832 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210413/d3b3f8ec/attachment.asc>
