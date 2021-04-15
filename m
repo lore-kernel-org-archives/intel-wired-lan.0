@@ -1,179 +1,88 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 15 Apr 2021 20:28:04 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 4c26f69d0cf966044ef0c31a87c2da68fc6d066a
-Message-ID: <60783154.cz6KxSASImdMspVh%lkp@intel.com>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Thu, 15 Apr 2021 09:12:24 +0800
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: fix the panic when
+ running bpf in xdpdrv mode
+In-Reply-To: <20210413091812.0000383d@intel.com>
+References: <20210412065759.2907-1-kerneljasonxing@gmail.com>
+ <20210413025011.1251-1-kerneljasonxing@gmail.com>
+ <20210413091812.0000383d@intel.com>
+Message-ID: <CAL+tcoBVhD1SfMYAFVn0HxZ3ig88pxtiLoha9d6Z+62yq8bWBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 4c26f69d0cf966044ef0c31a87c2da68fc6d066a  ice: reduce scope of variable
+On Wed, Apr 14, 2021 at 12:27 AM Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+>
+> kerneljasonxing at gmail.com wrote:
+>
+> > From: Jason Xing <xingwanli@kuaishou.com>
+>
+> Hi Jason,
+>
+> Sorry, I missed this on the first time: Added intel-wired-lan,
+> please include on any future submissions for Intel drivers.
+> get-maintainers script might help here?
+>
 
-elapsed time: 724m
+Probably I got this wrong in the last email. Did you mean that I should add
+intel-wired-lan in the title not the cc list? It seems I should put
+this together on
+the next submission like this:
 
-configs tested: 150
-configs skipped: 2
+[Intel-wired-lan] [PATCH net v4]
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Am I missing something?
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-riscv                            allmodconfig
-x86_64                           allyesconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-xtensa                    xip_kc705_defconfig
-sparc64                          alldefconfig
-ia64                      gensparse_defconfig
-arc                          axs103_defconfig
-openrisc                         alldefconfig
-arm                     eseries_pxa_defconfig
-powerpc                     pq2fads_defconfig
-sh                          rsk7269_defconfig
-m68k                             alldefconfig
-arc                         haps_hs_defconfig
-powerpc                      ppc64e_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                      makalu_defconfig
-mips                         tb0287_defconfig
-sh                        edosk7760_defconfig
-powerpc                    mvme5100_defconfig
-sparc64                             defconfig
-m68k                            mac_defconfig
-powerpc                   lite5200b_defconfig
-arm                         vf610m4_defconfig
-sh                            shmin_defconfig
-powerpc                     tqm8548_defconfig
-powerpc                     redwood_defconfig
-powerpc                        fsp2_defconfig
-arm                       versatile_defconfig
-mips                           ci20_defconfig
-sh                          lboxre2_defconfig
-powerpc                         ps3_defconfig
-sh                           se7751_defconfig
-arm                        vexpress_defconfig
-powerpc                    gamecube_defconfig
-um                                  defconfig
-powerpc                  mpc885_ads_defconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                      arches_defconfig
-arm                      integrator_defconfig
-powerpc                        icon_defconfig
-powerpc                    sam440ep_defconfig
-mips                           ip28_defconfig
-arm                          pcm027_defconfig
-m68k                       bvme6000_defconfig
-powerpc                       eiger_defconfig
-riscv                             allnoconfig
-powerpc                   bluestone_defconfig
-arm                          lpd270_defconfig
-mips                        nlm_xlp_defconfig
-powerpc                   motionpro_defconfig
-powerpc                 mpc834x_itx_defconfig
-mips                         db1xxx_defconfig
-sh                   rts7751r2dplus_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20210415
-x86_64               randconfig-a002-20210415
-x86_64               randconfig-a005-20210415
-x86_64               randconfig-a001-20210415
-x86_64               randconfig-a006-20210415
-x86_64               randconfig-a004-20210415
-i386                 randconfig-a003-20210415
-i386                 randconfig-a006-20210415
-i386                 randconfig-a001-20210415
-i386                 randconfig-a005-20210415
-i386                 randconfig-a004-20210415
-i386                 randconfig-a002-20210415
-i386                 randconfig-a003-20210414
-i386                 randconfig-a006-20210414
-i386                 randconfig-a001-20210414
-i386                 randconfig-a005-20210414
-i386                 randconfig-a004-20210414
-i386                 randconfig-a002-20210414
-x86_64               randconfig-a014-20210414
-x86_64               randconfig-a015-20210414
-x86_64               randconfig-a011-20210414
-x86_64               randconfig-a013-20210414
-x86_64               randconfig-a012-20210414
-x86_64               randconfig-a016-20210414
-i386                 randconfig-a015-20210414
-i386                 randconfig-a014-20210414
-i386                 randconfig-a013-20210414
-i386                 randconfig-a012-20210414
-i386                 randconfig-a016-20210414
-i386                 randconfig-a011-20210414
-i386                 randconfig-a015-20210415
-i386                 randconfig-a014-20210415
-i386                 randconfig-a013-20210415
-i386                 randconfig-a012-20210415
-i386                 randconfig-a016-20210415
-i386                 randconfig-a011-20210415
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Thanks,
+Jason
 
-clang tested configs:
-x86_64               randconfig-a003-20210414
-x86_64               randconfig-a002-20210414
-x86_64               randconfig-a005-20210414
-x86_64               randconfig-a001-20210414
-x86_64               randconfig-a006-20210414
-x86_64               randconfig-a004-20210414
-x86_64               randconfig-a014-20210415
-x86_64               randconfig-a015-20210415
-x86_64               randconfig-a011-20210415
-x86_64               randconfig-a013-20210415
-x86_64               randconfig-a012-20210415
-x86_64               randconfig-a016-20210415
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> >
+> > Fix this panic by adding more rules to calculate the value of @rss_size_max
+> > which could be used in allocating the queues when bpf is loaded, which,
+> > however, could cause the failure and then trigger the NULL pointer of
+> > vsi->rx_rings. Prio to this fix, the machine doesn't care about how many
+> > cpus are online and then allocates 256 queues on the machine with 32 cpus
+> > online actually.
+> >
+> > Once the load of bpf begins, the log will go like this "failed to get
+> > tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
+> > failed".
+> >
+> > Thus, I attach the key information of the crash-log here.
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at
+> > 0000000000000000
+> > RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
+> > Call Trace:
+> > [2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
+> > [2160294.717666]  dev_xdp_install+0x4f/0x70
+> > [2160294.718036]  dev_change_xdp_fd+0x11f/0x230
+> > [2160294.718380]  ? dev_disable_lro+0xe0/0xe0
+> > [2160294.718705]  do_setlink+0xac7/0xe70
+> > [2160294.719035]  ? __nla_parse+0xed/0x120
+> > [2160294.719365]  rtnl_newlink+0x73b/0x860
+> >
+> > Fixes: 41c445ff0f48 ("i40e: main driver core")
+> >
+>
+> This Fixes line should be connected to the Sign offs with
+> no linefeeds between.
+>
+> > Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+> > Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+>
+> Did Shujin contribute to this patch? Why are they signing off? If
+> they developed this patch with you, it should say:
+> Co-developed-by: Shujin ....
+> Signed-off-by: Shujin ...
+> Signed-off-by: Jason ...
+>
+> Your signature should be last if you sent the patch. The sign-offs are
+> like a chain of custody, please review
+> https://www.kernel.org/doc/html/latest/process/submitting-patches.html#when-to-use-acked-by-cc-and-co-developed-by
+>
+> Thanks,
+>  Jesse
