@@ -1,70 +1,51 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 14 Apr 2021 23:19:21 +0000
-Subject: [Intel-wired-lan] [PATCH S58 02/13] ice: replace custom AIM
- algorithm with kernel's DIM library
-In-Reply-To: <20210331211708.55205-2-anthony.l.nguyen@intel.com>
-References: <20210331211708.55205-1-anthony.l.nguyen@intel.com>
- <20210331211708.55205-2-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105560AE1E2179BD0765CE4FA4E9@CO1PR11MB5105.namprd11.prod.outlook.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 14 Apr 2021 19:06:52 -0700
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: fix the panic when
+ running bpf in xdpdrv mode
+In-Reply-To: <20210414023428.10121-1-kerneljasonxing@gmail.com>
+References: <20210413025011.1251-1-kerneljasonxing@gmail.com>
+ <20210414023428.10121-1-kerneljasonxing@gmail.com>
+Message-ID: <20210414190652.00006680@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Wednesday, March 31, 2021 2:17 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S58 02/13] ice: replace custom AIM
-> algorithm with kernel's DIM library
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> The ice driver has support for adaptive interrupt moderation, an algorithm
-> for tuning the interrupt rate dynamically. This algorithm is based on various
-> assumptions about ring size, socket buffer size, link speed, SKB overhead,
-> ethernet frame overhead and more.
-> 
-> The Linux kernel has support for a dynamic interrupt moderation algorithm
-> known as "dimlib". Replace the custom driver-specific implementation of
-> dynamic interrupt moderation with the kernel's algorithm.
-> 
-> The Intel hardware has a different hardware implementation than the
-> originators of the dimlib code had to work with, which requires the driver to
-> use a slightly different set of inputs for the actual moderation values, while
-> getting all the advice from dimlib of better/worse, shift left or right.
-> 
-> The change made for this implementation is to use a pair of values for each
-> of the 5 "slots" that the dimlib moderation expects, and the driver will
-> program those pairs when dimlib recommends a slot to use. The currently
-> implementation uses two tables, one for receive and one for transmit, and
-> the pairs of values in each slot set the maximum delay of an interrupt and a
-> maximum number of interrupts per second (both expressed in
-> microseconds).
-> 
-> There are two separate kinds of bugs fixed by using DIMLIB, one is UDP
-> single stream send was too slow, and the other is that 8K ping-pong was
-> going to the most aggressive moderation and has much too high latency.
-> 
-> The overall result of using DIMLIB is that we meet or exceed our
-> performance expectations set based on the old algorithm.
-> 
-> Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/Kconfig           |   1 +
->  drivers/net/ethernet/intel/ice/ice.h         |   5 +-
->  drivers/net/ethernet/intel/ice/ice_ethtool.c |   6 +
->  drivers/net/ethernet/intel/ice/ice_lib.c     |  13 +-
->  drivers/net/ethernet/intel/ice/ice_main.c    | 108 +++++++
->  drivers/net/ethernet/intel/ice/ice_txrx.c    | 303 +++----------------
->  drivers/net/ethernet/intel/ice/ice_txrx.h    |   6 +-
->  7 files changed, 175 insertions(+), 267 deletions(-)
+kerneljasonxing at gmail.com wrote:
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
+> From: Jason Xing <xingwanli@kuaishou.com>
+> 
+> Fix this panic by adding more rules to calculate the value of @rss_size_max
+> which could be used in allocating the queues when bpf is loaded, which,
+> however, could cause the failure and then trigger the NULL pointer of
+> vsi->rx_rings. Prio to this fix, the machine doesn't care about how many
+> cpus are online and then allocates 256 queues on the machine with 32 cpus
+> online actually.
+> 
+> Once the load of bpf begins, the log will go like this "failed to get
+> tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
+> failed".
+> 
+> Thus, I attach the key information of the crash-log here.
+> 
+> BUG: unable to handle kernel NULL pointer dereference at
+> 0000000000000000
+> RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
+> Call Trace:
+> [2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
+> [2160294.717666]  dev_xdp_install+0x4f/0x70
+> [2160294.718036]  dev_change_xdp_fd+0x11f/0x230
+> [2160294.718380]  ? dev_disable_lro+0xe0/0xe0
+> [2160294.718705]  do_setlink+0xac7/0xe70
+> [2160294.719035]  ? __nla_parse+0xed/0x120
+> [2160294.719365]  rtnl_newlink+0x73b/0x860
+> 
+> Fixes: 41c445ff0f48 ("i40e: main driver core")
+> Co-developed-by: Shujin Li <lishujin@kuaishou.com>
+> Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+> Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
 
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
+@Jakub/@DaveM - feel free to apply this directly.
