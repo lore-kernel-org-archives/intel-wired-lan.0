@@ -1,78 +1,173 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Thu, 15 Apr 2021 12:31:45 +0200
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: fix the panic when
- running bpf in xdpdrv mode
-In-Reply-To: <20210414190652.00006680@intel.com>
-References: <20210413025011.1251-1-kerneljasonxing@gmail.com>
- <20210414023428.10121-1-kerneljasonxing@gmail.com>
- <20210414190652.00006680@intel.com>
-Message-ID: <20210415123145.56af01ca@carbon>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 15 Apr 2021 18:55:49 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 82affc9aef4882d1ddaaa20ba16401c3d32647a1
+Message-ID: <60781bb5.UKGYTImiqnicY76A%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 14 Apr 2021 19:06:52 -0700
-Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 82affc9aef4882d1ddaaa20ba16401c3d32647a1  ice: Re-organizes reqstd/avail {R,T}XQ check/code for efficiency+readability
 
-> kerneljasonxing at gmail.com wrote:
-> 
-> > From: Jason Xing <xingwanli@kuaishou.com>
-> > 
-> > Fix this panic by adding more rules to calculate the value of @rss_size_max
-> > which could be used in allocating the queues when bpf is loaded, which,
-> > however, could cause the failure and then trigger the NULL pointer of
-> > vsi->rx_rings. Prio to this fix, the machine doesn't care about how many
-> > cpus are online and then allocates 256 queues on the machine with 32 cpus
-> > online actually.
-> > 
-> > Once the load of bpf begins, the log will go like this "failed to get
-> > tracking for 256 queues for VSI 0 err -12" and this "setup of MAIN VSI
-> > failed".
-> > 
-> > Thus, I attach the key information of the crash-log here.
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at
-> > 0000000000000000
-> > RIP: 0010:i40e_xdp+0xdd/0x1b0 [i40e]
-> > Call Trace:
-> > [2160294.717292]  ? i40e_reconfig_rss_queues+0x170/0x170 [i40e]
-> > [2160294.717666]  dev_xdp_install+0x4f/0x70
-> > [2160294.718036]  dev_change_xdp_fd+0x11f/0x230
-> > [2160294.718380]  ? dev_disable_lro+0xe0/0xe0
-> > [2160294.718705]  do_setlink+0xac7/0xe70
-> > [2160294.719035]  ? __nla_parse+0xed/0x120
-> > [2160294.719365]  rtnl_newlink+0x73b/0x860
-> > 
-> > Fixes: 41c445ff0f48 ("i40e: main driver core")
-> > Co-developed-by: Shujin Li <lishujin@kuaishou.com>
-> > Signed-off-by: Shujin Li <lishujin@kuaishou.com>
-> > Signed-off-by: Jason Xing <xingwanli@kuaishou.com>  
-> 
-> Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> @Jakub/@DaveM - feel free to apply this directly.
+elapsed time: 728m
 
-Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
+configs tested: 144
+configs skipped: 3
 
-The crash/bug happens in this code:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
- static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
-			  struct netlink_ext_ack *extack)
- {
- [...]
-	for (i = 0; i < vsi->num_queue_pairs; i++)
-		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+i386                             allyesconfig
+powerpc                    amigaone_defconfig
+mips                        qi_lb60_defconfig
+powerpc                 canyonlands_defconfig
+m68k                             alldefconfig
+arc                         haps_hs_defconfig
+powerpc                      ppc64e_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                      makalu_defconfig
+nds32                             allnoconfig
+powerpc                   lite5200b_defconfig
+arm                         vf610m4_defconfig
+sh                            shmin_defconfig
+powerpc                     tqm8548_defconfig
+powerpc                 mpc8272_ads_defconfig
+riscv                            alldefconfig
+arm                          exynos_defconfig
+xtensa                          iss_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                     ppa8548_defconfig
+m68k                        m5407c3_defconfig
+powerpc                    klondike_defconfig
+sh                        apsh4ad0a_defconfig
+powerpc                 mpc836x_mds_defconfig
+arm                              alldefconfig
+mips                   sb1250_swarm_defconfig
+powerpc                    sam440ep_defconfig
+mips                           ip28_defconfig
+m68k                       bvme6000_defconfig
+powerpc                       eiger_defconfig
+riscv                             allnoconfig
+powerpc                   bluestone_defconfig
+i386                                defconfig
+arm                          lpd270_defconfig
+mips                        nlm_xlp_defconfig
+sh                         ap325rxa_defconfig
+sparc                               defconfig
+powerpc                       ppc64_defconfig
+powerpc                     tqm8555_defconfig
+arm                             pxa_defconfig
+arm                         hackkit_defconfig
+mips                     loongson1c_defconfig
+arc                        nsimosci_defconfig
+sh                           se7751_defconfig
+arm                          pcm027_defconfig
+mips                           ci20_defconfig
+powerpc                     kilauea_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a003-20210415
+x86_64               randconfig-a002-20210415
+x86_64               randconfig-a005-20210415
+x86_64               randconfig-a001-20210415
+x86_64               randconfig-a006-20210415
+x86_64               randconfig-a004-20210415
+i386                 randconfig-a003-20210414
+i386                 randconfig-a006-20210414
+i386                 randconfig-a001-20210414
+i386                 randconfig-a005-20210414
+i386                 randconfig-a004-20210414
+i386                 randconfig-a002-20210414
+i386                 randconfig-a003-20210415
+i386                 randconfig-a006-20210415
+i386                 randconfig-a001-20210415
+i386                 randconfig-a005-20210415
+i386                 randconfig-a004-20210415
+i386                 randconfig-a002-20210415
+x86_64               randconfig-a014-20210414
+x86_64               randconfig-a015-20210414
+x86_64               randconfig-a011-20210414
+x86_64               randconfig-a013-20210414
+x86_64               randconfig-a012-20210414
+x86_64               randconfig-a016-20210414
+i386                 randconfig-a015-20210414
+i386                 randconfig-a014-20210414
+i386                 randconfig-a013-20210414
+i386                 randconfig-a012-20210414
+i386                 randconfig-a016-20210414
+i386                 randconfig-a011-20210414
+i386                 randconfig-a015-20210415
+i386                 randconfig-a014-20210415
+i386                 randconfig-a013-20210415
+i386                 randconfig-a012-20210415
+i386                 randconfig-a016-20210415
+i386                 randconfig-a011-20210415
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
+clang tested configs:
+x86_64               randconfig-a003-20210414
+x86_64               randconfig-a002-20210414
+x86_64               randconfig-a005-20210414
+x86_64               randconfig-a001-20210414
+x86_64               randconfig-a006-20210414
+x86_64               randconfig-a004-20210414
+x86_64               randconfig-a014-20210415
+x86_64               randconfig-a015-20210415
+x86_64               randconfig-a011-20210415
+x86_64               randconfig-a013-20210415
+x86_64               randconfig-a012-20210415
+x86_64               randconfig-a016-20210415
 
-And this is a side effect of i40e_setup_pf_switch() failing with "setup
-of MAIN VSI failed".
-
-LGTM
--- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  LinkedIn: http://www.linkedin.com/in/brouer
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
