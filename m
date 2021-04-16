@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 16 Apr 2021 12:27:17 +0000
-Subject: [Intel-wired-lan] [PATCH S55 13/14] ice: Advertise virtchnl UDP
- segmentation offload capability
-In-Reply-To: <20210302181213.51718-13-anthony.l.nguyen@intel.com>
+Date: Fri, 16 Apr 2021 12:28:50 +0000
+Subject: [Intel-wired-lan] [PATCH S55 14/14] iavf: add support for UDP
+ Segmentation Offload
+In-Reply-To: <20210302181213.51718-14-anthony.l.nguyen@intel.com>
 References: <20210302181213.51718-1-anthony.l.nguyen@intel.com>
- <20210302181213.51718-13-anthony.l.nguyen@intel.com>
-Message-ID: <CY4PR11MB15769D5E52551F641BA8669EAB4C9@CY4PR11MB1576.namprd11.prod.outlook.com>
+ <20210302181213.51718-14-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB1576B4FA199EE53118416AB4AB4C9@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,57 +13,89 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Tony Nguyen
 > Sent: wtorek, 2 marca 2021 19:12
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S55 13/14] ice: Advertise virtchnl UDP
-> segmentation offload capability
+> Subject: [Intel-wired-lan] [PATCH S55 14/14] iavf: add support for UDP
+> Segmentation Offload
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> As the hardware is capable of supporting UDP segmentation offload, add a
-> capability bit to virtchnl.h to communicate this and have the driver advertise
-> its support.
+> Add code to support UDP segmentation offload (USO) for hardware that
+> supports it.
 > 
 > Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 3 +++
->  include/linux/avf/virtchnl.h                     | 1 +
->  2 files changed, 4 insertions(+)
+>  drivers/net/ethernet/intel/iavf/iavf_main.c     |  2 ++
+>  drivers/net/ethernet/intel/iavf/iavf_txrx.c     | 15 +++++++++++----
+>  drivers/net/ethernet/intel/iavf/iavf_virtchnl.c |  1 +
+>  3 files changed, 14 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index f09367eb242a..43d309aa9efe 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -2126,6 +2126,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf,
-> u8 *msg)
->  	if (vf->driver_caps & VIRTCHNL_VF_CAP_ADV_LINK_SPEED)
->  		vfres->vf_cap_flags |=
-> VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 84430a304f3e..5a7ebbf0fb42 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -3560,6 +3560,8 @@ int iavf_process_config(struct iavf_adapter
+> *adapter)
+>  	/* Enable cloud filter if ADQ is supported */
+>  	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ)
+>  		hw_features |= NETIF_F_HW_TC;
+> +	if (vfres->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_USO)
+> +		hw_features |= NETIF_F_GSO_UDP_L4;
 > 
-> +	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_USO)
-> +		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_USO;
-> +
->  	vfres->num_vsis = 1;
->  	/* Tx and Rx queue are equal for VF */
->  	vfres->num_queue_pairs = vsi->num_txq; diff --git
-> a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h index
-> 228b90ef3361..ddcff6219b61 100644
-> --- a/include/linux/avf/virtchnl.h
-> +++ b/include/linux/avf/virtchnl.h
-> @@ -252,6 +252,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(16,
-> virtchnl_vsi_resource);
->  #define VIRTCHNL_VF_OFFLOAD_RX_ENCAP_CSUM	0X00400000
->  #define VIRTCHNL_VF_OFFLOAD_ADQ			0X00800000
->  #define VIRTCHNL_VF_OFFLOAD_FDIR_PF		0X10000000
-> +#define VIRTCHNL_VF_OFFLOAD_USO			0X02000000
+>  	netdev->hw_features |= hw_features;
 > 
->  /* Define below the capability flags that are not offloads */
->  #define VIRTCHNL_VF_CAP_ADV_LINK_SPEED		0x00000080
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> index ffaf2742a2e0..23a51ebe13c5 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> @@ -1905,13 +1905,20 @@ static int iavf_tso(struct iavf_tx_buffer *first, u8
+> *hdr_len,
+> 
+>  	/* determine offset of inner transport header */
+>  	l4_offset = l4.hdr - skb->data;
+> -
+>  	/* remove payload length from inner checksum */
+>  	paylen = skb->len - l4_offset;
+> -	csum_replace_by_diff(&l4.tcp->check, (__force
+> __wsum)htonl(paylen));
+> 
+> -	/* compute length of segmentation header */
+> -	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
+> +	if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_L4) {
+> +		csum_replace_by_diff(&l4.udp->check,
+> +				     (__force __wsum)htonl(paylen));
+> +		/* compute length of UDP segmentation header */
+> +		*hdr_len = (u8)sizeof(l4.udp) + l4_offset;
+> +	} else {
+> +		csum_replace_by_diff(&l4.tcp->check,
+> +				     (__force __wsum)htonl(paylen));
+> +		/* compute length of TCP segmentation header */
+> +		*hdr_len = (u8)((l4.tcp->doff * 4) + l4_offset);
+> +	}
+> 
+>  	/* pull values out of skb_shinfo */
+>  	gso_size = skb_shinfo(skb)->gso_size;
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> index b41dff44f65b..3d7643ea8d46 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> @@ -140,6 +140,7 @@ int iavf_send_vf_config_msg(struct iavf_adapter
+> *adapter)
+>  	       VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM |
+>  	       VIRTCHNL_VF_OFFLOAD_REQ_QUEUES |
+>  	       VIRTCHNL_VF_OFFLOAD_ADQ |
+> +	       VIRTCHNL_VF_OFFLOAD_USO |
+>  	       VIRTCHNL_VF_OFFLOAD_FDIR_PF |
+>  	       VIRTCHNL_VF_CAP_ADV_LINK_SPEED;
+> 
 > --
 > 2.20.1
 > 
