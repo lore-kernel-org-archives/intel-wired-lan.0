@@ -1,58 +1,121 @@
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Fri, 16 Apr 2021 16:59:52 +0000
-Subject: [Intel-wired-lan] [net] igb: Check if num of q_vectors is smaller
- than max before array access.
-Message-ID: <20210416165952.24401-1-aleksandr.loktionov@intel.com>
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Fri, 16 Apr 2021 23:43:57 +0200
+Subject: [Intel-wired-lan] [PATCH net] i40e: Remove lldp frame filters
+Message-ID: <20210416214357.341975-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Ensure that the adapter->q_vector[MAX_Q_VECTORS] array isn't accessed
-beyond its size. It was fixed by using a local variable num_q_vectors
-as a limit for loop index, and ensure that num_q_vectors is not bigger
-than MAX_Q_VECTORS.
+Remove filters from being setup in case of software DCB and allow the
+lldp frames to be properly transmitted to the wire.
 
-Fixes: 047e0030f1e6 ("igb: add new data structure for handling
-interrupts and NAPI")
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Reviewed-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
-Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Reviewed-by: Slawomir Laba <slawomirx.laba@intel.com>
-Reviewed-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Verified-by: Mateusz Palczewski <mateusz.placzewski@intel.com>
+It is not possible to transmit the LLDP frame out of the port, if they
+are filtered by control VSI. This prohibits software lldp agent
+properly communicate it's DCB capabilities to the neighbors.
+
+Fixes: 4b208eaa8078 ("i40e: Add init and default config of software based DCB")
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e.h        |  1 -
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 42 -------------------
+ 3 files changed, 44 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 55051a492..2c601261f 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -929,6 +929,7 @@ static void igb_configure_msix(struct igb_adapter *adapter)
-  **/
- static int igb_request_msix(struct igb_adapter *adapter)
- {
-+	unsigned int num_q_vectors = adapter->num_q_vectors;
- 	struct net_device *netdev = adapter->netdev;
- 	int i, err = 0, vector = 0, free_vector = 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 1116543..e3a4c7b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1222,7 +1222,6 @@ static inline bool i40e_is_sw_dcb(struct i40e_pf *pf)
+ 	return !!(pf->flags & I40E_FLAG_DISABLE_FW_LLDP);
+ }
  
-@@ -937,7 +938,13 @@ static int igb_request_msix(struct igb_adapter *adapter)
- 	if (err)
- 		goto err_out;
+-void i40e_set_lldp_forwarding(struct i40e_pf *pf, bool enable);
+ #ifdef CONFIG_I40E_DCB
+ void i40e_dcbnl_flush_apps(struct i40e_pf *pf,
+ 			   struct i40e_dcbx_config *old_cfg,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index fbe4fe9..936908c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -5280,7 +5280,6 @@ flags_complete:
+ 			i40e_aq_cfg_lldp_mib_change_event(&pf->hw, false, NULL);
+ 			i40e_aq_stop_lldp(&pf->hw, true, false, NULL);
+ 		} else {
+-			i40e_set_lldp_forwarding(pf, false);
+ 			status = i40e_aq_start_lldp(&pf->hw, false, NULL);
+ 			if (status) {
+ 				adq_err = pf->hw.aq.asq_last_status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3180b41..1a39e51 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6890,40 +6890,6 @@ out:
+ }
+ #endif /* CONFIG_I40E_DCB */
  
--	for (i = 0; i < adapter->num_q_vectors; i++) {
-+	if (num_q_vectors > MAX_Q_VECTORS) {
-+		num_q_vectors = MAX_Q_VECTORS;
-+		dev_warn(&adapter->pdev->dev,
-+			 "The number of queue vectors (%d) is higher than max allowed (%d)\n",
-+			 adapter->num_q_vectors, MAX_Q_VECTORS);
-+	}
-+	for (i = 0; i < num_q_vectors; i++) {
- 		struct igb_q_vector *q_vector = adapter->q_vector[i];
+-/**
+- * i40e_set_lldp_forwarding - set forwarding of lldp frames
+- * @pf: PF being configured
+- * @enable: if forwarding to OS shall be enabled
+- *
+- * Toggle forwarding of lldp frames behavior,
+- * When passing DCB control from firmware to software
+- * lldp frames must be forwarded to the software based
+- * lldp agent.
+- */
+-void i40e_set_lldp_forwarding(struct i40e_pf *pf, bool enable)
+-{
+-	if (pf->lan_vsi == I40E_NO_VSI)
+-		return;
+-
+-	if (!pf->vsi[pf->lan_vsi])
+-		return;
+-
+-	/* No need to check the outcome, commands may fail
+-	 * if desired value is already set
+-	 */
+-	i40e_aq_add_rem_control_packet_filter(&pf->hw, NULL, ETH_P_LLDP,
+-					      I40E_AQC_ADD_CONTROL_PACKET_FLAGS_TX |
+-					      I40E_AQC_ADD_CONTROL_PACKET_FLAGS_IGNORE_MAC,
+-					      pf->vsi[pf->lan_vsi]->seid, 0,
+-					      enable, NULL, NULL);
+-
+-	i40e_aq_add_rem_control_packet_filter(&pf->hw, NULL, ETH_P_LLDP,
+-					      I40E_AQC_ADD_CONTROL_PACKET_FLAGS_RX |
+-					      I40E_AQC_ADD_CONTROL_PACKET_FLAGS_IGNORE_MAC,
+-					      pf->vsi[pf->lan_vsi]->seid, 0,
+-					      enable, NULL, NULL);
+-}
+-
+ /**
+  * i40e_print_link_message - print link up or down
+  * @vsi: the VSI for which link needs a message
+@@ -10749,10 +10715,6 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	 */
+ 	i40e_add_filter_to_drop_tx_flow_control_frames(&pf->hw,
+ 						       pf->main_vsi_seid);
+-#ifdef CONFIG_I40E_DCB
+-	if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP)
+-		i40e_set_lldp_forwarding(pf, true);
+-#endif /* CONFIG_I40E_DCB */
  
- 		vector++;
+ 	/* restart the VSIs that were rebuilt and running before the reset */
+ 	i40e_pf_unquiesce_all_vsi(pf);
+@@ -15796,10 +15758,6 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	i40e_add_filter_to_drop_tx_flow_control_frames(&pf->hw,
+ 						       pf->main_vsi_seid);
+-#ifdef CONFIG_I40E_DCB
+-	if (pf->flags & I40E_FLAG_DISABLE_FW_LLDP)
+-		i40e_set_lldp_forwarding(pf, true);
+-#endif /* CONFIG_I40E_DCB */
+ 
+ 	if ((pf->hw.device_id == I40E_DEV_ID_10G_BASE_T) ||
+ 		(pf->hw.device_id == I40E_DEV_ID_10G_BASE_T4))
+
+base-commit: ca4303103f33952646218db4e0869e6f6aa1c840
 -- 
-2.17.1
+2.26.0
 
