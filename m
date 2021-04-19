@@ -1,225 +1,438 @@
-From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Mon, 19 Apr 2021 09:23:32 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] igb: Fix XDP with PTP enabled
-Message-ID: <20210419072332.7246-1-kurt@linutronix.de>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Mon, 19 Apr 2021 18:51:06 +0000
+Subject: [Intel-wired-lan] [PATCH S56 02/13] ice: Refactor promiscuous
+ functions
+In-Reply-To: <20210302181545.51822-2-anthony.l.nguyen@intel.com>
+References: <20210302181545.51822-1-anthony.l.nguyen@intel.com>
+ <20210302181545.51822-2-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB15763B5CAEF23078CCA36482AB499@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When using native XDP with the igb driver, the XDP frame data doesn't point to
-the beginning of the packet. It's off by 16 bytes. Everything works as expected
-with XDP skb mode.
 
-Actually these 16 bytes are used to store the packet timestamps. Therefore, pull
-the timestamp before executing any XDP operations and adjust all other code
-accordingly. The igc driver does it like that as well.
 
-Tested with Intel i210 card and AF_XDP sockets.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: wtorek, 2 marca 2021 19:16
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S56 02/13] ice: Refactor promiscuous
+> functions
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Some of the promiscuous mode functions take a boolean to indicate
+> set/clear, which affects readability. Refactor and provide an interface for the
+> promiscuous mode code with explicit set and clear promiscuous mode
+> operations.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_fltr.c     |  56 +++++++
+>  drivers/net/ethernet/intel/ice/ice_fltr.h     |  10 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  51 ++++---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 137 +++++++-----------
+>  4 files changed, 152 insertions(+), 102 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c
+> b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> index 2418d4fff037..2b3a86167991 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_fltr.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> @@ -46,6 +46,62 @@ ice_fltr_add_entry_to_list(struct device *dev, struct
+> ice_fltr_info *info,
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_fltr_set_vlan_vsi_promisc
+> + * @hw: pointer to the hardware structure
+> + * @vsi: the VSI being configured
+> + * @promisc_mask: mask of promiscuous config bits
+> + *
+> + * Set VSI with all associated VLANs to given promiscuous mode(s)  */
+> +enum ice_status ice_fltr_set_vlan_vsi_promisc(struct ice_hw *hw, struct
+> +ice_vsi *vsi, u8 promisc_mask) {
+> +	return ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, false);
+> }
+> +
+> +/**
+> + * ice_fltr_clear_vlan_vsi_promisc
+> + * @hw: pointer to the hardware structure
+> + * @vsi: the VSI being configured
+> + * @promisc_mask: mask of promiscuous config bits
+> + *
+> + * Clear VSI with all associated VLANs to given promiscuous mode(s)  */
+> +enum ice_status ice_fltr_clear_vlan_vsi_promisc(struct ice_hw *hw,
+> +struct ice_vsi *vsi, u8 promisc_mask) {
+> +	return ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, true); }
+> +
+> +/**
+> + * ice_fltr_clear_vsi_promisc - clear specified promiscuous mode(s)
+> + * @hw: pointer to the hardware structure
+> + * @vsi_handle: VSI handle to clear mode
+> + * @promisc_mask: mask of promiscuous config bits to clear
+> + * @vid: VLAN ID to clear VLAN promiscuous  */ enum ice_status
+> +ice_fltr_clear_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8
+> promisc_mask,
+> +			   u16 vid)
+> +{
+> +	return ice_clear_vsi_promisc(hw, vsi_handle, promisc_mask, vid); }
+> +
+> +/**
+> + * ice_fltr_set_vsi_promisc - set given VSI to given promiscuous
+> +mode(s)
+> + * @hw: pointer to the hardware structure
+> + * @vsi_handle: VSI handle to configure
+> + * @promisc_mask: mask of promiscuous config bits
+> + * @vid: VLAN ID to set VLAN promiscuous  */ enum ice_status
+> +ice_fltr_set_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8
+> promisc_mask,
+> +			 u16 vid)
+> +{
+> +	return ice_set_vsi_promisc(hw, vsi_handle, promisc_mask, vid); }
+> +
+>  /**
+>   * ice_fltr_add_mac_list - add list of MAC filters
+>   * @vsi: pointer to VSI struct
+> diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.h
+> b/drivers/net/ethernet/intel/ice/ice_fltr.h
+> index 361cb4da9b43..c79e5179a04d 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_fltr.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_fltr.h
+> @@ -6,6 +6,16 @@
+> 
+>  void ice_fltr_free_list(struct device *dev, struct list_head *h);  enum
+> ice_status
+> +ice_fltr_set_vlan_vsi_promisc(struct ice_hw *hw, struct ice_vsi *vsi,
+> +u8 promisc_mask); enum ice_status
+> +ice_fltr_clear_vlan_vsi_promisc(struct ice_hw *hw, struct ice_vsi *vsi,
+> +u8 promisc_mask); enum ice_status ice_fltr_clear_vsi_promisc(struct
+> +ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
+> +			   u16 vid);
+> +enum ice_status
+> +ice_fltr_set_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8
+> promisc_mask,
+> +			 u16 vid);
+> +enum ice_status
+>  ice_fltr_add_mac_to_list(struct ice_vsi *vsi, struct list_head *list,
+>  			 const u8 *mac, enum ice_sw_fwd_act_type action);
+> enum ice_status diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 73e328b0680b..3e5f71bf333b 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -204,31 +204,46 @@ static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
+> }
+> 
+>  /**
+> - * ice_cfg_promisc - Enable or disable promiscuous mode for a given PF
+> + * ice_set_promisc - Enable promiscuous mode for a given PF
+>   * @vsi: the VSI being configured
+>   * @promisc_m: mask of promiscuous config bits
+> - * @set_promisc: enable or disable promisc flag request
+>   *
+>   */
+> -static int ice_cfg_promisc(struct ice_vsi *vsi, u8 promisc_m, bool
+> set_promisc)
+> +static int ice_set_promisc(struct ice_vsi *vsi, u8 promisc_m)
+>  {
+> -	struct ice_hw *hw = &vsi->back->hw;
+> -	enum ice_status status = 0;
+> +	enum ice_status status;
+> 
+>  	if (vsi->type != ICE_VSI_PF)
+>  		return 0;
+> 
+> -	if (vsi->num_vlan > 1) {
+> -		status = ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_m,
+> -						  set_promisc);
+> -	} else {
+> -		if (set_promisc)
+> -			status = ice_set_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						     0);
+> -		else
+> -			status = ice_clear_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						       0);
+> -	}
+> +	if (vsi->num_vlan > 1)
+> +		status = ice_fltr_set_vlan_vsi_promisc(&vsi->back->hw, vsi,
+> promisc_m);
+> +	else
+> +		status = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +promisc_m, 0);
+> +
+> +	if (status)
+> +		return -EIO;
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * ice_clear_promisc - Disable promiscuous mode for a given PF
+> + * @vsi: the VSI being configured
+> + * @promisc_m: mask of promiscuous config bits
+> + *
+> + */
+> +static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m) {
+> +	enum ice_status status;
+> +
+> +	if (vsi->type != ICE_VSI_PF)
+> +		return 0;
+> +
+> +	if (vsi->num_vlan > 1)
+> +		status = ice_fltr_clear_vlan_vsi_promisc(&vsi->back->hw,
+> vsi, promisc_m);
+> +	else
+> +		status = ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +promisc_m, 0);
+> 
+>  	if (status)
+>  		return -EIO;
+> @@ -325,7 +340,7 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+>  			else
+>  				promisc_m = ICE_MCAST_PROMISC_BITS;
+> 
+> -			err = ice_cfg_promisc(vsi, promisc_m, true);
+> +			err = ice_set_promisc(vsi, promisc_m);
+>  			if (err) {
+>  				netdev_err(netdev, "Error setting Multicast
+> promiscuous mode on VSI %i\n",
+>  					   vsi->vsi_num);
+> @@ -339,7 +354,7 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+>  			else
+>  				promisc_m = ICE_MCAST_PROMISC_BITS;
+> 
+> -			err = ice_cfg_promisc(vsi, promisc_m, false);
+> +			err = ice_clear_promisc(vsi, promisc_m);
+>  			if (err) {
+>  				netdev_err(netdev, "Error clearing Multicast
+> promiscuous mode on VSI %i\n",
+>  					   vsi->vsi_num);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index 43d309aa9efe..c30b1dd9ac29 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -37,37 +37,6 @@ static int ice_check_vf_init(struct ice_pf *pf, struct
+> ice_vf *vf)
+>  	return 0;
+>  }
+> 
+> -/**
+> - * ice_err_to_virt_err - translate errors for VF return code
+> - * @ice_err: error return code
+> - */
+> -static enum virtchnl_status_code ice_err_to_virt_err(enum ice_status
+> ice_err) -{
+> -	switch (ice_err) {
+> -	case ICE_SUCCESS:
+> -		return VIRTCHNL_STATUS_SUCCESS;
+> -	case ICE_ERR_BAD_PTR:
+> -	case ICE_ERR_INVAL_SIZE:
+> -	case ICE_ERR_DEVICE_NOT_SUPPORTED:
+> -	case ICE_ERR_PARAM:
+> -	case ICE_ERR_CFG:
+> -		return VIRTCHNL_STATUS_ERR_PARAM;
+> -	case ICE_ERR_NO_MEMORY:
+> -		return VIRTCHNL_STATUS_ERR_NO_MEMORY;
+> -	case ICE_ERR_NOT_READY:
+> -	case ICE_ERR_RESET_FAILED:
+> -	case ICE_ERR_FW_API_VER:
+> -	case ICE_ERR_AQ_ERROR:
+> -	case ICE_ERR_AQ_TIMEOUT:
+> -	case ICE_ERR_AQ_FULL:
+> -	case ICE_ERR_AQ_NO_WORK:
+> -	case ICE_ERR_AQ_EMPTY:
+> -		return VIRTCHNL_STATUS_ERR_ADMIN_QUEUE_ERROR;
+> -	default:
+> -		return VIRTCHNL_STATUS_ERR_NOT_SUPPORTED;
+> -	}
+> -}
+> -
+>  /**
+>   * ice_vc_vf_broadcast - Broadcast a message to all VFs on PF
+>   * @pf: pointer to the PF structure
+> @@ -1049,45 +1018,48 @@ static void ice_clear_vf_reset_trigger(struct
+> ice_vf *vf)
+>  	ice_flush(hw);
+>  }
+> 
+> -/**
+> - * ice_vf_set_vsi_promisc - set given VF VSI to given promiscuous mode(s)
+> - * @vf: pointer to the VF info
+> - * @vsi: the VSI being configured
+> - * @promisc_m: mask of promiscuous config bits
+> - * @rm_promisc: promisc flag request from the VF to remove or add filter
+> - *
+> - * This function configures VF VSI promiscuous mode, based on the VF
+> requests,
+> - * for Unicast, Multicast and VLAN
+> - */
+> -static enum ice_status
+> -ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m,
+> -		       bool rm_promisc)
+> +static int ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi
+> +*vsi, u8 promisc_m)
+>  {
+> -	struct ice_pf *pf = vf->pf;
+> -	enum ice_status status = 0;
+> -	struct ice_hw *hw;
+> +	struct ice_hw *hw = &vsi->back->hw;
+> +	enum ice_status status;
+> 
+> -	hw = &pf->hw;
+> -	if (vsi->num_vlan) {
+> -		status = ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_m,
+> -						  rm_promisc);
+> -	} else if (vf->port_vlan_info) {
+> -		if (rm_promisc)
+> -			status = ice_clear_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						       vf->port_vlan_info);
+> -		else
+> -			status = ice_set_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						     vf->port_vlan_info);
+> -	} else {
+> -		if (rm_promisc)
+> -			status = ice_clear_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						       0);
+> -		else
+> -			status = ice_set_vsi_promisc(hw, vsi->idx,
+> promisc_m,
+> -						     0);
+> +	if (vf->port_vlan_info)
+> +		status = ice_fltr_set_vsi_promisc(hw, vsi->idx, promisc_m,
+> +						  vf->port_vlan_info &
+> VLAN_VID_MASK);
+> +	else if (vsi->num_vlan > 1)
+> +		status = ice_fltr_set_vlan_vsi_promisc(hw, vsi, promisc_m);
+> +	else
+> +		status = ice_fltr_set_vsi_promisc(hw, vsi->idx, promisc_m,
+> 0);
+> +
+> +	if (status && status != ICE_ERR_ALREADY_EXISTS) {
+> +		dev_err(ice_pf_to_dev(vsi->back), "enable Tx/Rx filter
+> promiscuous mode on VF-%u failed, error: %s\n",
+> +			vf->vf_id, ice_stat_str(status));
+> +		return ice_status_to_errno(status);
+>  	}
+> 
+> -	return status;
+> +	return 0;
+> +}
+> +
+> +static int ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi
+> +*vsi, u8 promisc_m) {
+> +	struct ice_hw *hw = &vsi->back->hw;
+> +	enum ice_status status;
+> +
+> +	if (vf->port_vlan_info)
+> +		status = ice_fltr_clear_vsi_promisc(hw, vsi->idx, promisc_m,
+> +						    vf->port_vlan_info &
+> VLAN_VID_MASK);
+> +	else if (vsi->num_vlan > 1)
+> +		status = ice_fltr_clear_vlan_vsi_promisc(hw, vsi,
+> promisc_m);
+> +	else
+> +		status = ice_fltr_clear_vsi_promisc(hw, vsi->idx, promisc_m,
+> 0);
+> +
+> +	if (status && status != ICE_ERR_DOES_NOT_EXIST) {
+> +		dev_err(ice_pf_to_dev(vsi->back), "disable Tx/Rx filter
+> promiscuous mode on VF-%u failed, error: %s\n",
+> +			vf->vf_id, ice_stat_str(status));
+> +		return ice_status_to_errno(status);
+> +	}
+> +
+> +	return 0;
+>  }
+> 
+>  static void ice_vf_clear_counters(struct ice_vf *vf) @@ -1445,7 +1417,7 @@
+> bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+>  			promisc_m = ICE_UCAST_PROMISC_BITS;
+> 
+>  		vsi = pf->vsi[vf->lan_vsi_idx];
+> -		if (ice_vf_set_vsi_promisc(vf, vsi, promisc_m, true))
+> +		if (ice_vf_clear_vsi_promisc(vf, vsi, promisc_m))
+>  			dev_err(dev, "disabling promiscuous mode
+> failed\n");
+>  	}
+> 
+> @@ -2491,10 +2463,10 @@ bool ice_is_any_vf_in_promisc(struct ice_pf *pf)
+> static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)  {
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+> -	enum ice_status mcast_status = 0, ucast_status = 0;
+>  	bool rm_promisc, alluni = false, allmulti = false;
+>  	struct virtchnl_promisc_info *info =
+>  	    (struct virtchnl_promisc_info *)msg;
+> +	int mcast_err = 0, ucast_err = 0;
+>  	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+>  	struct device *dev;
+> @@ -2591,24 +2563,21 @@ static int
+> ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+>  			ucast_m = ICE_UCAST_PROMISC_BITS;
+>  		}
+> 
+> -		ucast_status = ice_vf_set_vsi_promisc(vf, vsi, ucast_m,
+> -						      !alluni);
+> -		if (ucast_status) {
+> -			dev_err(dev, "%sable Tx/Rx filter promiscuous mode
+> on VF-%d failed\n",
+> -				alluni ? "en" : "dis", vf->vf_id);
+> -			v_ret = ice_err_to_virt_err(ucast_status);
+> -		}
+> +		if (alluni)
+> +			ucast_err = ice_vf_set_vsi_promisc(vf, vsi, ucast_m);
+> +		else
+> +			ucast_err = ice_vf_clear_vsi_promisc(vf, vsi,
+> ucast_m);
+> 
+> -		mcast_status = ice_vf_set_vsi_promisc(vf, vsi, mcast_m,
+> -						      !allmulti);
+> -		if (mcast_status) {
+> -			dev_err(dev, "%sable Tx/Rx filter promiscuous mode
+> on VF-%d failed\n",
+> -				allmulti ? "en" : "dis", vf->vf_id);
+> -			v_ret = ice_err_to_virt_err(mcast_status);
+> -		}
+> +		if (allmulti)
+> +			mcast_err = ice_vf_set_vsi_promisc(vf, vsi,
+> mcast_m);
+> +		else
+> +			mcast_err = ice_vf_clear_vsi_promisc(vf, vsi,
+> mcast_m);
+> +
+> +		if (ucast_err || mcast_err)
+> +			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  	}
+> 
+> -	if (!mcast_status) {
+> +	if (!mcast_err) {
+>  		if (allmulti &&
+>  		    !test_and_set_bit(ICE_VF_STATE_MC_PROMISC, vf-
+> >vf_states))
+>  			dev_info(dev, "VF %u successfully set multicast
+> promiscuous mode\n", @@ -2618,7 +2587,7 @@ static int
+> ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+>  				 vf->vf_id);
+>  	}
+> 
+> -	if (!ucast_status) {
+> +	if (!ucast_err) {
+>  		if (alluni && !test_and_set_bit(ICE_VF_STATE_UC_PROMISC,
+> vf->vf_states))
+>  			dev_info(dev, "VF %u successfully set unicast
+> promiscuous mode\n",
+>  				 vf->vf_id);
 
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
----
-
-Changes since v1:
-
- * Use xdp_prepare_buff() (Lorenzo Bianconi)
-
-Changes since RFC:
-
- * Removed unused return value definitions (Alexander Duyck)
-
-Previous versions:
-
- * https://lkml.kernel.org/netdev/20210415092145.27322-1-kurt at linutronix.de/
- * https://lkml.kernel.org/netdev/20210412101713.15161-1-kurt at linutronix.de/
-
- drivers/net/ethernet/intel/igb/igb.h      |  3 +-
- drivers/net/ethernet/intel/igb/igb_main.c | 42 +++++++++++++----------
- drivers/net/ethernet/intel/igb/igb_ptp.c  | 21 ++++--------
- 3 files changed, 31 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 7bda8c5edea5..72cf967c1a00 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -748,8 +748,7 @@ void igb_ptp_suspend(struct igb_adapter *adapter);
- void igb_ptp_rx_hang(struct igb_adapter *adapter);
- void igb_ptp_tx_hang(struct igb_adapter *adapter);
- void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
--int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
--			struct sk_buff *skb);
-+ktime_t igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va);
- int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a45cd2b416c8..49873a5eaeaa 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8281,7 +8281,7 @@ static void igb_add_rx_frag(struct igb_ring *rx_ring,
- static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 					 struct igb_rx_buffer *rx_buffer,
- 					 struct xdp_buff *xdp,
--					 union e1000_adv_rx_desc *rx_desc)
-+					 ktime_t timestamp)
- {
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-@@ -8301,12 +8301,8 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- 	if (unlikely(!skb))
- 		return NULL;
- 
--	if (unlikely(igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))) {
--		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, xdp->data, skb)) {
--			xdp->data += IGB_TS_HDR_LEN;
--			size -= IGB_TS_HDR_LEN;
--		}
--	}
-+	if (timestamp)
-+		skb_hwtstamps(skb)->hwtstamp = timestamp;
- 
- 	/* Determine available headroom for copy */
- 	headlen = size;
-@@ -8337,7 +8333,7 @@ static struct sk_buff *igb_construct_skb(struct igb_ring *rx_ring,
- static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 				     struct igb_rx_buffer *rx_buffer,
- 				     struct xdp_buff *xdp,
--				     union e1000_adv_rx_desc *rx_desc)
-+				     ktime_t timestamp)
- {
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = igb_rx_pg_size(rx_ring) / 2;
-@@ -8364,11 +8360,8 @@ static struct sk_buff *igb_build_skb(struct igb_ring *rx_ring,
- 	if (metasize)
- 		skb_metadata_set(skb, metasize);
- 
--	/* pull timestamp out of packet data */
--	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
--		if (!igb_ptp_rx_pktstamp(rx_ring->q_vector, skb->data, skb))
--			__skb_pull(skb, IGB_TS_HDR_LEN);
--	}
-+	if (timestamp)
-+		skb_hwtstamps(skb)->hwtstamp = timestamp;
- 
- 	/* update buffer offset */
- #if (PAGE_SIZE < 8192)
-@@ -8683,7 +8676,10 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 	while (likely(total_packets < budget)) {
- 		union e1000_adv_rx_desc *rx_desc;
- 		struct igb_rx_buffer *rx_buffer;
-+		ktime_t timestamp = 0;
-+		int pkt_offset = 0;
- 		unsigned int size;
-+		void *pktbuf;
- 
- 		/* return some buffers to hardware, one@a time is too slow */
- 		if (cleaned_count >= IGB_RX_BUFFER_WRITE) {
-@@ -8703,14 +8699,21 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		dma_rmb();
- 
- 		rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
-+		pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+
-+		/* pull rx packet timestamp if available */
-+		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+			timestamp = igb_ptp_rx_pktstamp(rx_ring->q_vector,
-+							pktbuf);
-+			pkt_offset += IGB_TS_HDR_LEN;
-+			size -= IGB_TS_HDR_LEN;
-+		}
- 
- 		/* retrieve a buffer from the ring */
- 		if (!skb) {
--			unsigned int offset = igb_rx_offset(rx_ring);
--			unsigned char *hard_start;
-+			unsigned char *hard_start = pktbuf - igb_rx_offset(rx_ring);
-+			unsigned int offset = pkt_offset + igb_rx_offset(rx_ring);
- 
--			hard_start = page_address(rx_buffer->page) +
--				     rx_buffer->page_offset - offset;
- 			xdp_prepare_buff(&xdp, hard_start, offset, size, true);
- #if (PAGE_SIZE > 4096)
- 			/* At larger PAGE_SIZE, frame_sz depend on len size */
-@@ -8733,10 +8736,11 @@ static int igb_clean_rx_irq(struct igb_q_vector *q_vector, const int budget)
- 		} else if (skb)
- 			igb_add_rx_frag(rx_ring, rx_buffer, skb, size);
- 		else if (ring_uses_build_skb(rx_ring))
--			skb = igb_build_skb(rx_ring, rx_buffer, &xdp, rx_desc);
-+			skb = igb_build_skb(rx_ring, rx_buffer, &xdp,
-+					    timestamp);
- 		else
- 			skb = igb_construct_skb(rx_ring, rx_buffer,
--						&xdp, rx_desc);
-+						&xdp, timestamp);
- 
- 		/* exit if we failed to retrieve a buffer */
- 		if (!skb) {
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 86a576201f5f..8e23df7da641 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -856,30 +856,26 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
- 	dev_kfree_skb_any(skb);
- }
- 
--#define IGB_RET_PTP_DISABLED 1
--#define IGB_RET_PTP_INVALID 2
--
- /**
-  * igb_ptp_rx_pktstamp - retrieve Rx per packet timestamp
-  * @q_vector: Pointer to interrupt specific structure
-  * @va: Pointer to address containing Rx buffer
-- * @skb: Buffer containing timestamp and packet
-  *
-  * This function is meant to retrieve a timestamp from the first buffer of an
-  * incoming frame.  The value is stored in little endian format starting on
-  * byte 8
-  *
-- * Returns: 0 if success, nonzero if failure
-+ * Returns: 0 on failure, timestamp on success
-  **/
--int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
--			struct sk_buff *skb)
-+ktime_t igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va)
- {
- 	struct igb_adapter *adapter = q_vector->adapter;
-+	struct skb_shared_hwtstamps ts;
- 	__le64 *regval = (__le64 *)va;
- 	int adjust = 0;
- 
- 	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
--		return IGB_RET_PTP_DISABLED;
-+		return 0;
- 
- 	/* The timestamp is recorded in little endian format.
- 	 * DWORD: 0        1        2        3
-@@ -888,10 +884,9 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 
- 	/* check reserved dwords are zero, be/le doesn't matter for zero */
- 	if (regval[0])
--		return IGB_RET_PTP_INVALID;
-+		return 0;
- 
--	igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
--				   le64_to_cpu(regval[1]));
-+	igb_ptp_systim_to_hwtstamp(adapter, &ts, le64_to_cpu(regval[1]));
- 
- 	/* adjust timestamp for the RX latency based on link speed */
- 	if (adapter->hw.mac.type == e1000_i210) {
-@@ -907,10 +902,8 @@ int igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, void *va,
- 			break;
- 		}
- 	}
--	skb_hwtstamps(skb)->hwtstamp =
--		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
- 
--	return 0;
-+	return ktime_sub_ns(ts.hwtstamp, adjust);
- }
- 
- /**
--- 
-2.20.1
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
