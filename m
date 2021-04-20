@@ -1,36 +1,53 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 20 Apr 2021 20:15:57 +0000
-Subject: [Intel-wired-lan] [net] igb: Check if num of q_vectors is
- smaller than max before array access.
-In-Reply-To: <20210416165952.24401-1-aleksandr.loktionov@intel.com>
-References: <20210416165952.24401-1-aleksandr.loktionov@intel.com>
-Message-ID: <d5321d7573217a51ee8bc2402db48a068cebb252.camel@intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Tue, 20 Apr 2021 20:25:53 +0000
+Subject: [Intel-wired-lan] [PATCH V2 net] ice: Re-organizes reqstd/avail
+ {R, T}XQ check/code for efficiency+readability
+In-Reply-To: <20210413224446.16612-1-salil.mehta@huawei.com>
+References: <20210413224446.16612-1-salil.mehta@huawei.com>
+Message-ID: <CO1PR11MB51058003106492F6552DB98FFA489@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-04-16 at 16:59 +0000, Aleksandr Loktionov wrote:
-> Ensure that the adapter->q_vector[MAX_Q_VECTORS] array isn't accessed
-> beyond its size. It was fixed by using a local variable num_q_vectors
-> as a limit for loop index, and ensure that num_q_vectors is not
-> bigger
-> than MAX_Q_VECTORS.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Salil Mehta
+> Sent: Tuesday, April 13, 2021 3:45 PM
+> To: davem at davemloft.net; kuba at kernel.org
+> Cc: salil.mehta at huawei.com; linuxarm at openeuler.org;
+> netdev at vger.kernel.org; linuxarm at huawei.com; linux-
+> kernel at vger.kernel.org; Jeff Kirsher <jeffrey.t.kirsher@intel.com>; intel-
+> wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH V2 net] ice: Re-organizes reqstd/avail {R,
+> T}XQ check/code for efficiency+readability
 > 
-> Fixes: 047e0030f1e6 ("igb: add new data structure for handling
-> interrupts and NAPI")
+> If user has explicitly requested the number of {R,T}XQs, then it is
+> unnecessary to get the count of already available {R,T}XQs from the PF
+> avail_{r,t}xqs bitmap. This value will get overridden by user specified value in
+> any case.
+> 
+> This patch does minor re-organization of the code for improving the flow and
+> readabiltiy. This scope of improvement was found during the review of the
+> ICE driver code.
+> 
+> FYI, I could not test this change due to unavailability of the hardware.
+> It would be helpful if somebody can test this patch and provide Tested-by
+> Tag. Many thanks!
+> 
+> Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+> Cc: intel-wired-lan at lists.osuosl.org
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+> --
+> Change V1->V2
+>  (*) Fixed the comments from Anthony Nguyen(Intel)
+>      Link: https://lkml.org/lkml/2021/4/12/1997
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 
-The Fixes tag should not be wrapped. It's exempt from the 75 char
-limit.
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> Reviewed-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
-> Reviewed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Reviewed-by: Slawomir Laba <slawomirx.laba@intel.com>
-> Reviewed-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Verified-by: Mateusz Palczewski <mateusz.placzewski@intel.com>
 
-WARNING: Non-standard signature: Verified-by:
-
-Please fix and resend.
