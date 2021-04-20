@@ -1,70 +1,59 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 20 Apr 2021 16:52:23 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix of warning message
- during remove iavf driver and fix of call stack during rmmod i40e driver
-In-Reply-To: <20210416092251.272749-1-karen.sornek@intel.com>
-References: <20210416092251.272749-1-karen.sornek@intel.com>
-Message-ID: <e31442d4be7f4ec3da59e69d3e1d1a3fa3f7b96d.camel@intel.com>
+Date: Tue, 20 Apr 2021 17:09:01 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2 net v2] i40e: Fix ping is lost
+ after configuring ADq on VF
+In-Reply-To: <20210416134054.58330-2-eryk.roch.rybak@intel.com>
+References: <20210416134054.58330-1-eryk.roch.rybak@intel.com>
+ <20210416134054.58330-2-eryk.roch.rybak@intel.com>
+Message-ID: <44579dfd8c0d0147020b0437a45440134d5259b3.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-04-16 at 11:22 +0200, Karen Sornek wrote:
+On Fri, 2021-04-16 at 15:40 +0200, Eryk Rybak wrote:
+> Properly reconfigure VF VSIs after VF request ADq.
+> Created new function to update queue mapping and queue pairs per TC
+> with AQ update VSI. This sets proper RSS size on NIC.
+> VFs num_queue_pairs should not be changed during setup of queue maps.
+> Previously, VF main VSI in ADq had configured too many queues and had
+> wrong RSS size, which lead to packets not being consumed and drops in
+> connectivity.
 
-The title is a bit long, can reduce it a bit?
+This patch doesn't apply. Since this is for net, please be sure you are
+using net-queue/dev-queue.
 
-> Restored part of reset functionality used when reset is called
-> from the VF to reset itself. Without this fix warning message
-> is displayed when vf is removing via sysfs.
-> 
-> Removes the reason of the vf crashing during reset by ensuring
-> that the reset message request to pf is performed.
-> Refactoring code to use one function instead of two.
-> Without this patch, during stress tests, there was a possibility of
-> non-execution of reset request correctly which is the cause of vf
-> reinitialization errors and consequently in rmmod driver suspended
-> the system.
-> 
-> Fixes: eeeddbb80640("i40e: drop i40e_pf *pf from
-> i40e_vc_disable_vf()")
+> Fixes: bc6d33c8d93f ("i40e: Fix the number of queues available to be
+> mapped for use")
+> Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
 
-You're missing a space.
-Fixes tag: Fixes: eeeddbb80640("i40e: drop i40e_pf *pf from
-i40e_vc_disable_vf()")
-	Has these problem(s):
-		- missing space between the SHA1 and the subject
+As submitter, you're Signed-off-by should be last. Same comment for
+patch 1.
 
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> Co-developed-by: Przemyslaw Patynowski <
+> przemyslawx.patynowski at intel.com>
+> Signed-off-by: Przemyslaw Patynowski <
+> przemyslawx.patynowski at intel.com>
 > ---
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 53 ++++++++---------
-> --
->  1 file changed, 22 insertions(+), 31 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index f6121a0c4..ee2c5aba4 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -183,17 +183,20 @@ void i40e_vc_notify_vf_reset(struct i40e_vf
-> *vf)
->  /***********************misc routines*****************************/
->  
->  /**
-> - * i40e_vc_disable_vf
-> + * i40e_vc_reset_vf
->   * @vf: pointer to the VF info
->   *
-> - * Disable the VF through a SW reset.
-> + * @notify_vf: notify vf about reset or not
-> + *
-> + * Reset VF handler.
->   **/
-> -static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
-> +static inline void i40e_vc_reset_vf(struct i40e_vf *vf, bool
-> notify_vf)
 
-Please remove the inline. In c files, let the compiler decide what to
-do. 
+<snip>
+
+> @@ -5434,6 +5440,56 @@ static void i40e_vsi_update_queue_map(struct
+> i40e_vsi *vsi,
+>  	       sizeof(vsi->info.tc_mapping));
+>  }
+>  
+> +/**
+> + * i40e_update_adq_vsi_queues - update queue mapping for ADq VSI
+> + * @vsi: the VSI being reconfigured
+> + * @vsi_offset: offset from main VF VSI
+> + */
+> +int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset)
+> +{
+> +	struct i40e_pf *pf = vsi->back;
+> +	struct i40e_hw *hw = &pf->hw;
+> +	struct i40e_vsi_context ctxt = {};
+> +	int ret = 0;
+
+Reverse Christmas tree.
