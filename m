@@ -1,57 +1,69 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 19 Apr 2021 19:21:10 +0000
-Subject: [Intel-wired-lan] [PATCH net 01/13] ice: Fix allowing VF to
- request more/less queues via virtchnl
-In-Reply-To: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
-Message-ID: <CY4PR11MB1576663F3684D25AD110121DAB499@CY4PR11MB1576.namprd11.prod.outlook.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 20 Apr 2021 16:33:33 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] igb: Fix XDP with PTP enabled
+In-Reply-To: <20210419072332.7246-1-kurt@linutronix.de>
+References: <20210419072332.7246-1-kurt@linutronix.de>
+Message-ID: <c1eed5fe05a59f86ff868580e3ae89e251f498ec.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: pi?tek, 26 lutego 2021 22:19
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 01/13] ice: Fix allowing VF to request
-> more/less queues via virtchnl
+On Mon, 2021-04-19 at 09:23 +0200, Kurt Kanzenbach wrote:
+> When using native XDP with the igb driver, the XDP frame data doesn't
+> point to
+> the beginning of the packet. It's off by 16 bytes. Everything works
+> as expected
+> with XDP skb mode.
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> Actually these 16 bytes are used to store the packet timestamps.
+> Therefore, pull
+> the timestamp before executing any XDP operations and adjust all
+> other code
+> accordingly. The igc driver does it like that as well.
 > 
-> Commit 12bb018c538c ("ice: Refactor VF reset") caused a regression that
-> removes the ability for a VF to request a different amount of queues via
-> VIRTCHNL_OP_REQUEST_QUEUES. This prevents VF drivers to either
-> increase or decrease the number of queue pairs they are allocated. Fix this
-> by using the variable vf->num_req_qs when determining the vf->num_vf_qs
-> during VF VSI creation.
+> Tested with Intel i210 card and AF_XDP sockets.
 > 
-> Fixes: 12bb018c538c ("ice: Refactor VF reset")
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Fixes: 9cbc948b5a20 ("igb: add XDP support")
+> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c
-> b/drivers/net/ethernet/intel/ice/ice_lib.c
-> index 8d4e2ad4328d..116f8556f4a8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-> @@ -192,6 +192,8 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi,
-> u16 vf_id)
->  		break;
->  	case ICE_VSI_VF:
->  		vf = &pf->vf[vsi->vf_id];
-> +		if (vf->num_req_qs)
-> +			vf->num_vf_qs = vf->num_req_qs;
->  		vsi->alloc_txq = vf->num_vf_qs;
->  		vsi->alloc_rxq = vf->num_vf_qs;
->  		/* pf->num_msix_per_vf includes (VF miscellaneous vector
-> +
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+<snip>
+
+> @@ -8683,7 +8676,10 @@ static int igb_clean_rx_irq(struct
+> igb_q_vector *q_vector, const int budget)
+>  	while (likely(total_packets < budget)) {
+>  		union e1000_adv_rx_desc *rx_desc;
+>  		struct igb_rx_buffer *rx_buffer;
+> +		ktime_t timestamp = 0;
+> +		int pkt_offset = 0;
+>  		unsigned int size;
+> +		void *pktbuf;
+>  
+>  		/* return some buffers to hardware, one at a time is
+> too slow */
+>  		if (cleaned_count >= IGB_RX_BUFFER_WRITE) {
+> @@ -8703,14 +8699,21 @@ static int igb_clean_rx_irq(struct
+> igb_q_vector *q_vector, const int budget)
+>  		dma_rmb();
+>  
+>  		rx_buffer = igb_get_rx_buffer(rx_ring, size,
+> &rx_buf_pgcnt);
+> +		pktbuf = page_address(rx_buffer->page) + rx_buffer-
+> >page_offset;
+> +
+> +		/* pull rx packet timestamp if available */
+> +		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))
+> {
+> +			timestamp = igb_ptp_rx_pktstamp(rx_ring-
+> >q_vector,
+> +							pktbuf);
+
+The timestamp should be checked for failure and not adjust these values
+if the timestamp was invalid.
+ 
+> +			pkt_offset += IGB_TS_HDR_LEN;
+> +			size -= IGB_TS_HDR_LEN;
+> +		}
+
