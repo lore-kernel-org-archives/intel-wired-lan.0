@@ -1,69 +1,70 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 20 Apr 2021 16:33:33 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] igb: Fix XDP with PTP enabled
-In-Reply-To: <20210419072332.7246-1-kurt@linutronix.de>
-References: <20210419072332.7246-1-kurt@linutronix.de>
-Message-ID: <c1eed5fe05a59f86ff868580e3ae89e251f498ec.camel@intel.com>
+Date: Tue, 20 Apr 2021 16:52:23 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix of warning message
+ during remove iavf driver and fix of call stack during rmmod i40e driver
+In-Reply-To: <20210416092251.272749-1-karen.sornek@intel.com>
+References: <20210416092251.272749-1-karen.sornek@intel.com>
+Message-ID: <e31442d4be7f4ec3da59e69d3e1d1a3fa3f7b96d.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-04-19 at 09:23 +0200, Kurt Kanzenbach wrote:
-> When using native XDP with the igb driver, the XDP frame data doesn't
-> point to
-> the beginning of the packet. It's off by 16 bytes. Everything works
-> as expected
-> with XDP skb mode.
+On Fri, 2021-04-16 at 11:22 +0200, Karen Sornek wrote:
+
+The title is a bit long, can reduce it a bit?
+
+> Restored part of reset functionality used when reset is called
+> from the VF to reset itself. Without this fix warning message
+> is displayed when vf is removing via sysfs.
 > 
-> Actually these 16 bytes are used to store the packet timestamps.
-> Therefore, pull
-> the timestamp before executing any XDP operations and adjust all
-> other code
-> accordingly. The igc driver does it like that as well.
+> Removes the reason of the vf crashing during reset by ensuring
+> that the reset message request to pf is performed.
+> Refactoring code to use one function instead of two.
+> Without this patch, during stress tests, there was a possibility of
+> non-execution of reset request correctly which is the cause of vf
+> reinitialization errors and consequently in rmmod driver suspended
+> the system.
 > 
-> Tested with Intel i210 card and AF_XDP sockets.
-> 
-> Fixes: 9cbc948b5a20 ("igb: add XDP support")
-> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+> Fixes: eeeddbb80640("i40e: drop i40e_pf *pf from
+> i40e_vc_disable_vf()")
+
+You're missing a space.
+Fixes tag: Fixes: eeeddbb80640("i40e: drop i40e_pf *pf from
+i40e_vc_disable_vf()")
+	Has these problem(s):
+		- missing space between the SHA1 and the subject
+
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 > ---
-
-<snip>
-
-> @@ -8683,7 +8676,10 @@ static int igb_clean_rx_irq(struct
-> igb_q_vector *q_vector, const int budget)
->  	while (likely(total_packets < budget)) {
->  		union e1000_adv_rx_desc *rx_desc;
->  		struct igb_rx_buffer *rx_buffer;
-> +		ktime_t timestamp = 0;
-> +		int pkt_offset = 0;
->  		unsigned int size;
-> +		void *pktbuf;
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 53 ++++++++---------
+> --
+>  1 file changed, 22 insertions(+), 31 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index f6121a0c4..ee2c5aba4 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -183,17 +183,20 @@ void i40e_vc_notify_vf_reset(struct i40e_vf
+> *vf)
+>  /***********************misc routines*****************************/
 >  
->  		/* return some buffers to hardware, one at a time is
-> too slow */
->  		if (cleaned_count >= IGB_RX_BUFFER_WRITE) {
-> @@ -8703,14 +8699,21 @@ static int igb_clean_rx_irq(struct
-> igb_q_vector *q_vector, const int budget)
->  		dma_rmb();
->  
->  		rx_buffer = igb_get_rx_buffer(rx_ring, size,
-> &rx_buf_pgcnt);
-> +		pktbuf = page_address(rx_buffer->page) + rx_buffer-
-> >page_offset;
-> +
-> +		/* pull rx packet timestamp if available */
-> +		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))
-> {
-> +			timestamp = igb_ptp_rx_pktstamp(rx_ring-
-> >q_vector,
-> +							pktbuf);
+>  /**
+> - * i40e_vc_disable_vf
+> + * i40e_vc_reset_vf
+>   * @vf: pointer to the VF info
+>   *
+> - * Disable the VF through a SW reset.
+> + * @notify_vf: notify vf about reset or not
+> + *
+> + * Reset VF handler.
+>   **/
+> -static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
+> +static inline void i40e_vc_reset_vf(struct i40e_vf *vf, bool
+> notify_vf)
 
-The timestamp should be checked for failure and not adjust these values
-if the timestamp was invalid.
- 
-> +			pkt_offset += IGB_TS_HDR_LEN;
-> +			size -= IGB_TS_HDR_LEN;
-> +		}
-
+Please remove the inline. In c files, let the compiler decide what to
+do. 
