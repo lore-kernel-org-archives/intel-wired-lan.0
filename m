@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 21 Apr 2021 18:08:58 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 4e29c00e475752a2a7534561542340dc3905f0b7
-Message-ID: <607ff9ba.P9g5iWXeNdJZND75%lkp@intel.com>
+Date: Wed, 21 Apr 2021 18:08:57 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ f6f45daf1523ad6131bed37d9d875e0c01c4ec86
+Message-ID: <607ff9b9.3MMaSJgdzojKyafG%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 4e29c00e475752a2a7534561542340dc3905f0b7  i40e: Remove LLDP frame filters
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: f6f45daf1523ad6131bed37d9d875e0c01c4ec86  igc: Remove unused asymmetric pause bit from igc defines
 
-elapsed time: 723m
+elapsed time: 722m
 
-configs tested: 142
+configs tested: 98
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -32,63 +32,31 @@ i386                             allyesconfig
 riscv                            allyesconfig
 mips                           jazz_defconfig
 sh                        sh7763rdp_defconfig
+m68k                             allmodconfig
 powerpc                 mpc837x_mds_defconfig
 sh                     sh7710voipgw_defconfig
-arm                         cm_x300_defconfig
-m68k                          hp300_defconfig
-sh                           se7722_defconfig
-m68k                             alldefconfig
-arm                         lubbock_defconfig
-sh                   rts7751r2dplus_defconfig
-mips                           ip27_defconfig
-powerpc                     redwood_defconfig
-powerpc                 mpc8313_rdb_defconfig
-mips                             allyesconfig
-mips                           rs90_defconfig
-sh                            shmin_defconfig
+arm                    vt8500_v6_v7_defconfig
+powerpc                       maple_defconfig
+powerpc                          allyesconfig
+ia64                            zx1_defconfig
+mips                      maltaaprp_defconfig
 sh                          polaris_defconfig
 xtensa                       common_defconfig
 mips                  decstation_64_defconfig
 sh                           se7619_defconfig
 powerpc                 mpc85xx_cds_defconfig
-arm                    vt8500_v6_v7_defconfig
-arc                                 defconfig
-powerpc                  storcenter_defconfig
-arm                           viper_defconfig
-ia64                             alldefconfig
-powerpc                       ebony_defconfig
-mips                      pic32mzda_defconfig
-m68k                        mvme16x_defconfig
-arm                       aspeed_g5_defconfig
-sparc                            alldefconfig
-powerpc                          allyesconfig
-mips                      fuloong2e_defconfig
-powerpc                 linkstation_defconfig
-arm                         nhk8815_defconfig
-mips                         rt305x_defconfig
-powerpc                      obs600_defconfig
-arm                        spear6xx_defconfig
-arm                        keystone_defconfig
-sh                              ul2_defconfig
-i386                             alldefconfig
-um                             i386_defconfig
-arm                        magician_defconfig
-m68k                          multi_defconfig
-mips                      maltaaprp_defconfig
-m68k                        m5407c3_defconfig
-um                               allyesconfig
-arm                       multi_v4t_defconfig
-sh                             shx3_defconfig
-mips                        bcm63xx_defconfig
+mips                           ip27_defconfig
+powerpc                     tqm5200_defconfig
+arm                        mini2440_defconfig
+mips                          rb532_defconfig
+powerpc                      tqm8xx_defconfig
+sh                         microdev_defconfig
+arm                           spitz_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -96,6 +64,7 @@ alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
+arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
@@ -105,6 +74,10 @@ s390                                defconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
@@ -114,12 +87,6 @@ i386                 randconfig-a001-20210420
 i386                 randconfig-a006-20210420
 i386                 randconfig-a004-20210420
 i386                 randconfig-a003-20210420
-i386                 randconfig-a005-20210421
-i386                 randconfig-a002-20210421
-i386                 randconfig-a001-20210421
-i386                 randconfig-a006-20210421
-i386                 randconfig-a004-20210421
-i386                 randconfig-a003-20210421
 x86_64               randconfig-a015-20210420
 x86_64               randconfig-a016-20210420
 x86_64               randconfig-a011-20210420
@@ -132,18 +99,6 @@ i386                 randconfig-a011-20210420
 i386                 randconfig-a013-20210420
 i386                 randconfig-a015-20210420
 i386                 randconfig-a016-20210420
-i386                 randconfig-a012-20210421
-i386                 randconfig-a014-20210421
-i386                 randconfig-a011-20210421
-i386                 randconfig-a013-20210421
-i386                 randconfig-a015-20210421
-i386                 randconfig-a016-20210421
-x86_64               randconfig-a004-20210421
-x86_64               randconfig-a002-20210421
-x86_64               randconfig-a001-20210421
-x86_64               randconfig-a005-20210421
-x86_64               randconfig-a006-20210421
-x86_64               randconfig-a003-20210421
 riscv                    nommu_k210_defconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
@@ -151,6 +106,7 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 um                               allmodconfig
 um                                allnoconfig
+um                               allyesconfig
 um                                  defconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
