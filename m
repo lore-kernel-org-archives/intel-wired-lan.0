@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 21 Apr 2021 19:17:28 +0000
-Subject: [Intel-wired-lan] [PATCH net 12/13] ice: handle the VF VSI
- rebuild failure
-In-Reply-To: <20210226211932.46683-12-anthony.l.nguyen@intel.com>
+Date: Wed, 21 Apr 2021 19:18:12 +0000
+Subject: [Intel-wired-lan] [PATCH net 02/13] ice: Fix VFR issues for AVF
+ drivers that expect ATQLEN cleared
+In-Reply-To: <20210226211932.46683-2-anthony.l.nguyen@intel.com>
 References: <20210226211932.46683-1-anthony.l.nguyen@intel.com>
- <20210226211932.46683-12-anthony.l.nguyen@intel.com>
-Message-ID: <CY4PR11MB1576873FD3818864321C0323AB479@CY4PR11MB1576.namprd11.prod.outlook.com>
+ <20210226211932.46683-2-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB1576C3639340B840902B7DFCAB479@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,41 +17,67 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Tony Nguyen
-> Sent: pi?tek, 26 lutego 2021 22:20
+> Sent: pi?tek, 26 lutego 2021 22:19
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 12/13] ice: handle the VF VSI rebuild
-> failure
+> Subject: [Intel-wired-lan] [PATCH net 02/13] ice: Fix VFR issues for AVF
+> drivers that expect ATQLEN cleared
 > 
-> From: Haiyue Wang <haiyue.wang@intel.com>
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> VSI rebuild can be failed for LAN queue config, then the VF's VSI will be NULL,
-> the VF reset should be stopped with the VF entering into the disable state.
+> Some AVF drivers expect the VF_MBX_ATQLEN register to be cleared for any
+> type of VFR/VFLR. Fix this by clearing the VF_MBX_ATQLEN register at the
+> same time as VF_MBX_ARQLEN.
 > 
-> Fixes: 12bb018c538c ("ice: Refactor VF reset")
-> Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+> Fixes: 82ba01282cf8 ("ice: clear VF ARQLEN register on reset")
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_hw_autogen.h  |  1 +
+> drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 12 +++++++-----
+>  2 files changed, 8 insertions(+), 5 deletions(-)
 > 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> index 093a1818a392..1998821896c0 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> @@ -31,6 +31,7 @@
+>  #define PF_FW_ATQLEN_ATQOVFL_M			BIT(29)
+>  #define PF_FW_ATQLEN_ATQCRIT_M			BIT(30)
+>  #define VF_MBX_ARQLEN(_VF)			(0x0022BC00 + ((_VF)
+> * 4))
+> +#define VF_MBX_ATQLEN(_VF)			(0x0022A800 + ((_VF)
+> * 4))
+>  #define PF_FW_ATQLEN_ATQENABLE_M		BIT(31)
+>  #define PF_FW_ATQT				0x00080400
+>  #define PF_MBX_ARQBAH				0x0022E400
 > diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 > b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 5a581e759111..de438aba29cd 100644
+> index 1f38a8d0c525..0f2a4d48574e 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -1377,7 +1377,12 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
->  	}
+> @@ -435,13 +435,15 @@ static void ice_trigger_vf_reset(struct ice_vf *vf,
+> bool is_vflr, bool is_pfr)
+>  	 */
+>  	clear_bit(ICE_VF_STATE_INIT, vf->vf_states);
 > 
->  	ice_vf_pre_vsi_rebuild(vf);
-> -	ice_vf_rebuild_vsi_with_release(vf);
-> +
-> +	if (ice_vf_rebuild_vsi_with_release(vf)) {
-> +		dev_err(dev, "Failed to release and setup the VF%u's VSI\n",
-> vf->vf_id);
-> +		return false;
+> -	/* VF_MBX_ARQLEN is cleared by PFR, so the driver needs to clear it
+> -	 * in the case of VFR. If this is done for PFR, it can mess up VF
+> -	 * resets because the VF driver may already have started cleanup
+> -	 * by the time we get here.
+> +	/* VF_MBX_ARQLEN and VF_MBX_ATQLEN are cleared by PFR, so
+> the driver
+> +	 * needs to clear them in the case of VFR/VFLR. If this is done for
+> +	 * PFR, it can mess up VF resets because the VF driver may already
+> +	 * have started cleanup by the time we get here.
+>  	 */
+> -	if (!is_pfr)
+> +	if (!is_pfr) {
+>  		wr32(hw, VF_MBX_ARQLEN(vf->vf_id), 0);
+> +		wr32(hw, VF_MBX_ATQLEN(vf->vf_id), 0);
 > +	}
-> +
->  	ice_vf_post_vsi_rebuild(vf);
 > 
->  	return true;
+>  	/* In the case of a VFLR, the HW has already reset the VF and we
+>  	 * just need to clean up, so don't hit the VFRTRIG register.
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
