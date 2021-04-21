@@ -1,145 +1,171 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 21 Apr 2021 09:54:07 +0200
-Subject: [Intel-wired-lan] [PATCH V2 net] ice: Re-organizes reqstd/avail
- {R, T}XQ check/code for efficiency+readability
-In-Reply-To: <418702bdb5244eb4811a2a1a536c55c0@huawei.com>
-References: <20210413224446.16612-1-salil.mehta@huawei.com>
- <7974e665-73bd-401c-f023-9da568e1dffc@molgen.mpg.de>
- <418702bdb5244eb4811a2a1a536c55c0@huawei.com>
-Message-ID: <9335975a-ef19-863c-005a-d460eac83e03@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 21 Apr 2021 18:08:58 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 4e29c00e475752a2a7534561542340dc3905f0b7
+Message-ID: <607ff9ba.P9g5iWXeNdJZND75%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[CC: Remove Jeff, as email is rejected]
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 4e29c00e475752a2a7534561542340dc3905f0b7  i40e: Remove LLDP frame filters
 
-Dear Salil,
+elapsed time: 723m
 
+configs tested: 142
+configs skipped: 2
 
-Am 21.04.21 um 09:41 schrieb Salil Mehta:
->> From: Paul Menzel [mailto:pmenzel at molgen.mpg.de]
->> Sent: Wednesday, April 21, 2021 6:36 AM
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-[?]
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+mips                           jazz_defconfig
+sh                        sh7763rdp_defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                     sh7710voipgw_defconfig
+arm                         cm_x300_defconfig
+m68k                          hp300_defconfig
+sh                           se7722_defconfig
+m68k                             alldefconfig
+arm                         lubbock_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                           ip27_defconfig
+powerpc                     redwood_defconfig
+powerpc                 mpc8313_rdb_defconfig
+mips                             allyesconfig
+mips                           rs90_defconfig
+sh                            shmin_defconfig
+sh                          polaris_defconfig
+xtensa                       common_defconfig
+mips                  decstation_64_defconfig
+sh                           se7619_defconfig
+powerpc                 mpc85xx_cds_defconfig
+arm                    vt8500_v6_v7_defconfig
+arc                                 defconfig
+powerpc                  storcenter_defconfig
+arm                           viper_defconfig
+ia64                             alldefconfig
+powerpc                       ebony_defconfig
+mips                      pic32mzda_defconfig
+m68k                        mvme16x_defconfig
+arm                       aspeed_g5_defconfig
+sparc                            alldefconfig
+powerpc                          allyesconfig
+mips                      fuloong2e_defconfig
+powerpc                 linkstation_defconfig
+arm                         nhk8815_defconfig
+mips                         rt305x_defconfig
+powerpc                      obs600_defconfig
+arm                        spear6xx_defconfig
+arm                        keystone_defconfig
+sh                              ul2_defconfig
+i386                             alldefconfig
+um                             i386_defconfig
+arm                        magician_defconfig
+m68k                          multi_defconfig
+mips                      maltaaprp_defconfig
+m68k                        m5407c3_defconfig
+um                               allyesconfig
+arm                       multi_v4t_defconfig
+sh                             shx3_defconfig
+mips                        bcm63xx_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210420
+i386                 randconfig-a002-20210420
+i386                 randconfig-a001-20210420
+i386                 randconfig-a006-20210420
+i386                 randconfig-a004-20210420
+i386                 randconfig-a003-20210420
+i386                 randconfig-a005-20210421
+i386                 randconfig-a002-20210421
+i386                 randconfig-a001-20210421
+i386                 randconfig-a006-20210421
+i386                 randconfig-a004-20210421
+i386                 randconfig-a003-20210421
+x86_64               randconfig-a015-20210420
+x86_64               randconfig-a016-20210420
+x86_64               randconfig-a011-20210420
+x86_64               randconfig-a014-20210420
+x86_64               randconfig-a013-20210420
+x86_64               randconfig-a012-20210420
+i386                 randconfig-a012-20210420
+i386                 randconfig-a014-20210420
+i386                 randconfig-a011-20210420
+i386                 randconfig-a013-20210420
+i386                 randconfig-a015-20210420
+i386                 randconfig-a016-20210420
+i386                 randconfig-a012-20210421
+i386                 randconfig-a014-20210421
+i386                 randconfig-a011-20210421
+i386                 randconfig-a013-20210421
+i386                 randconfig-a015-20210421
+i386                 randconfig-a016-20210421
+x86_64               randconfig-a004-20210421
+x86_64               randconfig-a002-20210421
+x86_64               randconfig-a001-20210421
+x86_64               randconfig-a005-20210421
+x86_64               randconfig-a006-20210421
+x86_64               randconfig-a003-20210421
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
->> In the git commit message summary, could you please use imperative mood [1]?
-> 
-> No issues. There is always a scope of improvement.
-> 
->>> Re-organize reqstd/avail {R, T}XQ check/code for efficiency+readability
->>
->> It?s a bit long though. Maybe:
->>
->> Avoid unnecessary assignment with user specified {R,T}XQs
-> 
-> Umm..above conveys the wrong meaning as this is not what patch is doing.
-> 
-> If you see the code, in the presence of the user specified {R,T}XQs it
-> avoids fetching available {R,T}XQ count.
-> 
-> What about below?
-> 
-> "Avoid unnecessary avail_{r,t}xq assignments if user has specified Qs"
+clang tested configs:
+x86_64               randconfig-a004-20210420
+x86_64               randconfig-a002-20210420
+x86_64               randconfig-a001-20210420
+x86_64               randconfig-a005-20210420
+x86_64               randconfig-a006-20210420
+x86_64               randconfig-a003-20210420
 
-Sounds good, still a little long. Maybe:
-
-> Avoid unnecessary avail_{r,t}xq assignments with user specified Qs
-
->> Am 14.04.21 um 00:44 schrieb Salil Mehta:
->>> If user has explicitly requested the number of {R,T}XQs, then it is
->>> unnecessary to get the count of already available {R,T}XQs from the
->>> PF avail_{r,t}xqs bitmap. This value will get overridden by user specified
->>> value in any case.
->>>
->>> This patch does minor re-organization of the code for improving the flow
->>> and readabiltiy. This scope of improvement was found during the review of
->>
->> readabil*it*y
-> 
-> Thanks. Missed that earlier. My shaky fingers :(
-> 
->>> the ICE driver code.
->>>
->>> FYI, I could not test this change due to unavailability of the hardware.
->>> It would be helpful if somebody can test this patch and provide Tested-by
->>> Tag. Many thanks!
->>
->> This should go outside the commit message (below the --- for example).
-> 
-> Agreed.
-> 
->>> Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
->>
->> Did you check the behavior before is actually a bug? Or is it just for
->> the detection heuristic for commits to be applied to the stable series?
-> 
-> Right, later was the idea.
->   
->>> Cc: intel-wired-lan at lists.osuosl.org
->>> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->>> Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
->>> --
->>> Change V1->V2
->>>    (*) Fixed the comments from Anthony Nguyen(Intel)
->>>        Link: https://lkml.org/lkml/2021/4/12/1997
->>> ---
->>>    drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
->>>    1 file changed, 8 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
->>> index d13c7fc8fb0a..d77133d6baa7 100644
->>> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
->>> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
->>> @@ -161,12 +161,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
->>>
->>>    	switch (vsi->type) {
->>>    	case ICE_VSI_PF:
->>> -		vsi->alloc_txq = min3(pf->num_lan_msix,
->>> -				      ice_get_avail_txq_count(pf),
->>> -				      (u16)num_online_cpus());
->>>    		if (vsi->req_txq) {
->>>    			vsi->alloc_txq = vsi->req_txq;
->>>    			vsi->num_txq = vsi->req_txq;
->>> +		} else {
->>> +			vsi->alloc_txq = min3(pf->num_lan_msix,
->>> +					      ice_get_avail_txq_count(pf),
->>> +					      (u16)num_online_cpus());
->>>    		}
->>
->> I am curious, did you check the compiler actually creates different
->> code, or did it notice the inefficiency by itself and optimized it already?
-> 
-> I have not looked into that detail but irrespective of what compiler generates
-> I would like to keep the code in a shape which is more efficient and more readable.
-> 
-> I do understand in certain cases we have to do tradeoff between efficiency
-> and readability but I do not see that here.
-
-I agree, as *efficiency* is mentioned several times, I assume it was 
-tested. Thank you for the clarification.
-
->>>    		pf->num_lan_tx = vsi->alloc_txq;
->>> @@ -175,12 +176,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
->>>    		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
->>>    			vsi->alloc_rxq = 1;
->>>    		} else {
->>> -			vsi->alloc_rxq = min3(pf->num_lan_msix,
->>> -					      ice_get_avail_rxq_count(pf),
->>> -					      (u16)num_online_cpus());
->>>    			if (vsi->req_rxq) {
->>>    				vsi->alloc_rxq = vsi->req_rxq;
->>>    				vsi->num_rxq = vsi->req_rxq;
->>> +			} else {
->>> +				vsi->alloc_rxq = min3(pf->num_lan_msix,
->>> +						      ice_get_avail_rxq_count(pf),
->>> +						      (u16)num_online_cpus());
->>>    			}
->>>    		}
->>>
-
-
-Kind regards,
-
-Paul
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
