@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 21 Apr 2021 18:47:10 +0000
-Subject: [Intel-wired-lan] [PATCH S56 08/13] ice: Refactor
- VIRTCHNL_OP_CONFIG_VSI_QUEUES handling
-In-Reply-To: <20210302181545.51822-8-anthony.l.nguyen@intel.com>
+Date: Wed, 21 Apr 2021 18:48:01 +0000
+Subject: [Intel-wired-lan] [PATCH S56 07/13] ice: Add helper function to
+ get the VF's VSI
+In-Reply-To: <20210302181545.51822-7-anthony.l.nguyen@intel.com>
 References: <20210302181545.51822-1-anthony.l.nguyen@intel.com>
- <20210302181545.51822-8-anthony.l.nguyen@intel.com>
-Message-ID: <CY4PR11MB15769EF82C7B193E6779A172AB479@CY4PR11MB1576.namprd11.prod.outlook.com>
+ <20210302181545.51822-7-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB1576D0985A0DF0B7D945DE40AB479@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,179 +19,389 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: wtorek, 2 marca 2021 19:16
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S56 08/13] ice: Refactor
-> VIRTCHNL_OP_CONFIG_VSI_QUEUES handling
+> Subject: [Intel-wired-lan] [PATCH S56 07/13] ice: Add helper function to get
+> the VF's VSI
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently, when a VF requests queue configuration via
-> VIRTCHNL_OP_CONFIG_VSI_QUEUES the PF driver expects that this
-> message will only be called once and we always assume the queues being
-> configured start from 0. This is incorrect and is causing issues when a VF tries
-> to send this message for multiple queue blocks. Fix this by using the
-> queue_id specified in the virtchnl message and allowing for individual Rx
-> and/or Tx queues to be configured.
-> 
-> Also, reduce the duplicated for loops for configuring the queues by moving
-> all the logic into a single for loop.
+> Currently, the driver gets the VF's VSI by using a long string of dereferences
+> (i.e. vf->pf->vsi[vf->lan_vsi_idx]). If the method to get the VF's VSI were to
+> change the driver would have to change it in every location. Fix this by adding
+> the helper ice_get_vf_vsi().
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 27 ++++++++++
->  drivers/net/ethernet/intel/ice/ice_lib.h      |  4 ++
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 51 ++++++++++---------
->  3 files changed, 59 insertions(+), 23 deletions(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 82 +++++++++----------
+>  1 file changed, 39 insertions(+), 43 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c
-> b/drivers/net/ethernet/intel/ice/ice_lib.c
-> index 01371b377fbc..ddcbd5bfd058 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-> @@ -1668,6 +1668,33 @@ ice_write_qrxflxp_cntxt(struct ice_hw *hw, u16
-> pf_q, u32 rxdid, u32 prio)
->  	wr32(hw, QRXFLXP_CNTXT(pf_q), regval);  }
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index 2d4b39a9f788..7ffad4c8a64e 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -7,6 +7,15 @@
+>  #include "ice_fltr.h"
+>  #include "ice_virtchnl_allowlist.h"
 > 
-> +int ice_vsi_cfg_single_rxq(struct ice_vsi *vsi, u16 q_idx) {
-> +	if (q_idx >= vsi->num_rxq)
-> +		return -EINVAL;
-> +
-> +	return ice_vsi_cfg_rxq(vsi->rx_rings[q_idx]);
-> +}
-> +
-> +int ice_vsi_cfg_single_txq(struct ice_vsi *vsi, struct ice_ring
-> +**tx_rings, u16 q_idx) {
-> +	struct ice_aqc_add_tx_qgrp *qg_buf;
-> +	int err;
-> +
-> +	if (q_idx >= vsi->alloc_txq || !tx_rings || !tx_rings[q_idx])
-> +		return -EINVAL;
-> +
-> +	qg_buf = kzalloc(struct_size(qg_buf, txqs, 1), GFP_KERNEL);
-> +	if (!qg_buf)
-> +		return -ENOMEM;
-> +
-> +	qg_buf->num_txqs = 1;
-> +
-> +	err = ice_vsi_cfg_txq(vsi, tx_rings[q_idx], qg_buf);
-> +	kfree(qg_buf);
-> +	return err;
+> +/**
+> + * ice_get_vf_vsi - get VF's VSI based on the stored index
+> + * @vf: VF used to get VSI
+> + */
+> +static struct ice_vsi *ice_get_vf_vsi(struct ice_vf *vf) {
+> +	return vf->pf->vsi[vf->lan_vsi_idx];
 > +}
 > +
 >  /**
->   * ice_vsi_cfg_rxqs - Configure the VSI for Rx
->   * @vsi: the VSI being configured
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h
-> b/drivers/net/ethernet/intel/ice/ice_lib.h
-> index 3da17895a2b1..4b16394da354 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lib.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-> @@ -12,6 +12,10 @@ bool ice_pf_state_is_nominal(struct ice_pf *pf);
+>   * ice_validate_vf_id - helper to check if VF ID is valid
+>   * @pf: pointer to the PF structure
+> @@ -167,7 +176,7 @@ static void ice_vf_invalidate_vsi(struct ice_vf *vf)
+>   */
+>  static void ice_vf_vsi_release(struct ice_vf *vf)  {
+> -	ice_vsi_release(vf->pf->vsi[vf->lan_vsi_idx]);
+> +	ice_vsi_release(ice_get_vf_vsi(vf));
+>  	ice_vf_invalidate_vsi(vf);
+>  }
 > 
->  void ice_update_eth_stats(struct ice_vsi *vsi);
+> @@ -243,7 +252,7 @@ static void ice_dis_vf_mappings(struct ice_vf *vf)
+>  	struct ice_hw *hw;
 > 
-> +int ice_vsi_cfg_single_rxq(struct ice_vsi *vsi, u16 q_idx);
-> +
-> +int ice_vsi_cfg_single_txq(struct ice_vsi *vsi, struct ice_ring
-> +**tx_rings, u16 q_idx);
-> +
->  int ice_vsi_cfg_rxqs(struct ice_vsi *vsi);
+>  	hw = &pf->hw;
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
 > 
->  int ice_vsi_cfg_lan_txqs(struct ice_vsi *vsi); diff --git
-> a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 7ffad4c8a64e..420fcb58e0d3 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -3053,10 +3053,9 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8
-> *msg)
->  	struct virtchnl_vsi_queue_config_info *qci =
->  	    (struct virtchnl_vsi_queue_config_info *)msg;
->  	struct virtchnl_queue_pair_info *qpi;
-> -	u16 num_rxq = 0, num_txq = 0;
->  	struct ice_pf *pf = vf->pf;
->  	struct ice_vsi *vsi;
-> -	int i;
-> +	int i, q_idx;
-> 
->  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
->  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> @@ -3094,18 +3093,31 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8
-> *msg)
->  			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->  			goto error_param;
->  		}
-> +
-> +		q_idx = qpi->rxq.queue_id;
-> +
-> +		/* make sure selected "q_idx" is in valid range of queues
-> +		 * for selected "vsi"
-> +		 */
-> +		if (q_idx >= vsi->alloc_txq || q_idx >= vsi->alloc_rxq) {
-> +			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +			goto error_param;
-> +		}
-> +
->  		/* copy Tx queue info from VF into VSI */
->  		if (qpi->txq.ring_len > 0) {
-> -			num_txq++;
->  			vsi->tx_rings[i]->dma = qpi->txq.dma_ring_addr;
->  			vsi->tx_rings[i]->count = qpi->txq.ring_len;
-> +			if (ice_vsi_cfg_single_txq(vsi, vsi->tx_rings, q_idx)) {
-> +				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +				goto error_param;
-> +			}
->  		}
-> 
->  		/* copy Rx queue info from VF into VSI */
->  		if (qpi->rxq.ring_len > 0) {
->  			u16 max_frame_size =
-> ice_vc_get_max_frame_size(vf);
-> 
-> -			num_rxq++;
->  			vsi->rx_rings[i]->dma = qpi->rxq.dma_ring_addr;
->  			vsi->rx_rings[i]->count = qpi->rxq.ring_len;
-> 
-> @@ -3122,27 +3134,20 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8
-> *msg)
->  				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->  				goto error_param;
->  			}
-> -		}
-> 
-> -		vsi->max_frame = qpi->rxq.max_pkt_size;
-> -		/* add space for the port VLAN since the VF driver is not
-> -		 * expected to account for it in the MTU calculation
-> -		 */
-> -		if (vf->port_vlan_info)
-> -			vsi->max_frame += VLAN_HLEN;
-> -	}
+>  	dev = ice_pf_to_dev(pf);
+>  	wr32(hw, VPINT_ALLOC(vf->vf_id), 0);
+> @@ -318,10 +327,7 @@ void ice_set_vf_state_qs_dis(struct ice_vf *vf)
+>   */
+>  static void ice_dis_vf_qs(struct ice_vf *vf)  {
+> -	struct ice_pf *pf = vf->pf;
+> -	struct ice_vsi *vsi;
 > -
-> -	/* VF can request to configure less than allocated queues or default
-> -	 * allocated queues. So update the VSI with new number
-> -	 */
-> -	vsi->num_txq = num_txq;
-> -	vsi->num_rxq = num_rxq;
-> -	/* All queues of VF VSI are in TC 0 */
-> -	vsi->tc_cfg.tc_info[0].qcount_tx = num_txq;
-> -	vsi->tc_cfg.tc_info[0].qcount_rx = num_rxq;
-> +			vsi->max_frame = qpi->rxq.max_pkt_size;
-> +			/* add space for the port VLAN since the VF driver is
-> not
-> +			 * expected to account for it in the MTU calculation
-> +			 */
-> +			if (vf->port_vlan_info)
-> +				vsi->max_frame += VLAN_HLEN;
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
 > 
-> -	if (ice_vsi_cfg_lan_txqs(vsi) || ice_vsi_cfg_rxqs(vsi))
-> -		v_ret = VIRTCHNL_STATUS_ERR_ADMIN_QUEUE_ERROR;
-> +			if (ice_vsi_cfg_single_rxq(vsi, q_idx)) {
-> +				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +				goto error_param;
-> +			}
-> +		}
-> +	}
+>  	ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, vf->vf_id);
+>  	ice_vsi_stop_all_rx_rings(vsi);
+> @@ -609,8 +615,8 @@ static int ice_calc_vf_first_vector_idx(struct ice_pf
+> *pf, struct ice_vf *vf)
+>   */
+>  static int ice_vf_rebuild_host_vlan_cfg(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+>  	u16 vlan_id = 0;
+>  	int err;
 > 
->  error_param:
->  	/* send the response to the VF */
+> @@ -646,8 +652,8 @@ static int ice_vf_rebuild_host_vlan_cfg(struct ice_vf
+> *vf)
+>   */
+>  static int ice_vf_rebuild_host_mac_cfg(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+>  	enum ice_status status;
+>  	u8 broadcast[ETH_ALEN];
+> 
+> @@ -750,8 +756,8 @@ static void ice_ena_vf_msix_mappings(struct ice_vf
+> *vf)
+>   */
+>  static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16
+> max_rxq)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+>  	struct ice_hw *hw = &vf->pf->hw;
+>  	u32 reg;
+> 
+> @@ -798,7 +804,7 @@ static void ice_ena_vf_q_mappings(struct ice_vf *vf,
+> u16 max_txq, u16 max_rxq)
+>   */
+>  static void ice_ena_vf_mappings(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+> 
+>  	ice_ena_vf_msix_mappings(vf);
+>  	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq); @@ -
+> 1064,7 +1070,7 @@ static int ice_vf_clear_vsi_promisc(struct ice_vf *vf,
+> struct ice_vsi *vsi, u8 p
+> 
+>  static void ice_vf_clear_counters(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+> 
+>  	vf->num_mac = 0;
+>  	vsi->num_vlan = 0;
+> @@ -1124,8 +1130,8 @@ static void
+> ice_vf_rebuild_aggregator_node_cfg(struct ice_vsi *vsi)
+>   */
+>  static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+> 
+>  	ice_vf_set_host_trust_cfg(vf);
+> 
+> @@ -1165,10 +1171,8 @@ static int ice_vf_rebuild_vsi_with_release(struct
+> ice_vf *vf)
+>   */
+>  static int ice_vf_rebuild_vsi(struct ice_vf *vf)  {
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+>  	struct ice_pf *pf = vf->pf;
+> -	struct ice_vsi *vsi;
+> -
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> 
+>  	if (ice_vsi_rebuild(vsi, true)) {
+>  		dev_err(ice_pf_to_dev(pf), "failed to rebuild VF %d VSI\n",
+> @@ -1367,7 +1371,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+>  	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
+>  	ice_trigger_vf_reset(vf, is_vflr, false);
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+> 
+>  	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
+>  		ice_dis_vf_qs(vf);
+> @@ -1416,7 +1420,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+>  		else
+>  			promisc_m = ICE_UCAST_PROMISC_BITS;
+> 
+> -		vsi = pf->vsi[vf->lan_vsi_idx];
+> +		vsi = ice_get_vf_vsi(vf);
+>  		if (ice_vf_clear_vsi_promisc(vf, vsi, promisc_m))
+>  			dev_err(dev, "disabling promiscuous mode
+> failed\n");
+>  	}
+> @@ -1867,7 +1871,7 @@ static struct ice_vf *ice_get_vf_from_pfq(struct
+> ice_pf *pf, u16 pfq)
+>  		struct ice_vsi *vsi;
+>  		u16 rxq_idx;
+> 
+> -		vsi = pf->vsi[vf->lan_vsi_idx];
+> +		vsi = ice_get_vf_vsi(vf);
+> 
+>  		ice_for_each_rxq(vsi, rxq_idx)
+>  			if (vsi->rxq_map[rxq_idx] == pfq)
+> @@ -2007,8 +2011,7 @@ static int ice_vc_get_ver_msg(struct ice_vf *vf, u8
+> *msg)
+>   */
+>  static u16 ice_vc_get_max_frame_size(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+> -	struct ice_port_info *pi = vsi->port_info;
+> +	struct ice_port_info *pi = ice_vf_get_port_info(vf);
+>  	u16 max_frame_size;
+> 
+>  	max_frame_size = pi->phy.link_info.max_frame_size; @@ -2056,7
+> +2059,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+>  				  VIRTCHNL_VF_OFFLOAD_VLAN;
+> 
+>  	vfres->vf_cap_flags = VIRTCHNL_VF_OFFLOAD_L2;
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto err;
+> @@ -2223,7 +2226,6 @@ static int ice_vc_config_rss_key(struct ice_vf *vf,
+> u8 *msg)
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+>  	struct virtchnl_rss_key *vrk =
+>  		(struct virtchnl_rss_key *)msg;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+> 
+>  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) { @@ -2246,7
+> +2248,7 @@ static int ice_vc_config_rss_key(struct ice_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2270,7 +2272,6 @@ static int ice_vc_config_rss_lut(struct ice_vf *vf, u8
+> *msg)  {
+>  	struct virtchnl_rss_lut *vrl = (struct virtchnl_rss_lut *)msg;
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+> 
+>  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) { @@ -2293,7
+> +2294,7 @@ static int ice_vc_config_rss_lut(struct ice_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2376,7 +2377,7 @@ int ice_set_vf_spoofchk(struct net_device
+> *netdev, int vf_id, bool ena)
+>  	if (ret)
+>  		return ret;
+> 
+> -	vf_vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vf_vsi = ice_get_vf_vsi(vf);
+>  	if (!vf_vsi) {
+>  		netdev_err(netdev, "VSI %d for VF %d is null\n",
+>  			   vf->lan_vsi_idx, vf->vf_id);
+> @@ -2482,7 +2483,7 @@ static int
+> ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2614,7 +2615,6 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8
+> *msg)
+>  	struct virtchnl_queue_select *vqs =
+>  		(struct virtchnl_queue_select *)msg;
+>  	struct ice_eth_stats stats = { 0 };
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+> 
+>  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) { @@ -2627,7
+> +2627,7 @@ static int ice_vc_get_stats_msg(struct ice_vf *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2717,7 +2717,6 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8
+> *msg)
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+>  	struct virtchnl_queue_select *vqs =
+>  	    (struct virtchnl_queue_select *)msg;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+>  	unsigned long q_map;
+>  	u16 vf_q_id;
+> @@ -2737,7 +2736,7 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8
+> *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2807,7 +2806,6 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8
+> *msg)
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+>  	struct virtchnl_queue_select *vqs =
+>  	    (struct virtchnl_queue_select *)msg;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+>  	unsigned long q_map;
+>  	u16 vf_q_id;
+> @@ -2828,7 +2826,7 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8
+> *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -2993,7 +2991,7 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf
+> *vf, u8 *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -3070,7 +3068,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8
+> *msg)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -3422,7 +3420,7 @@ ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8
+> *msg, bool set)
+>  		goto handle_mac_exit;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto handle_mac_exit;
+> @@ -3654,7 +3652,7 @@ static int ice_vc_process_vlan_msg(struct ice_vf
+> *vf, u8 *msg, bool add_v)
+>  	}
+> 
+>  	hw = &pf->hw;
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -3821,7 +3819,6 @@ static int ice_vc_remove_vlan_msg(struct ice_vf
+> *vf, u8 *msg)  static int ice_vc_ena_vlan_stripping(struct ice_vf *vf)  {
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+> 
+>  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) { @@ -3834,7
+> +3831,7 @@ static int ice_vc_ena_vlan_stripping(struct ice_vf *vf)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (ice_vsi_manage_vlan_stripping(vsi, true))
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+> 
+> @@ -3852,7 +3849,6 @@ static int ice_vc_ena_vlan_stripping(struct ice_vf
+> *vf)  static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)  {
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+> -	struct ice_pf *pf = vf->pf;
+>  	struct ice_vsi *vsi;
+> 
+>  	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) { @@ -3865,7
+> +3861,7 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf *vf)
+>  		goto error_param;
+>  	}
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi) {
+>  		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+>  		goto error_param;
+> @@ -3891,7 +3887,7 @@ static int ice_vc_dis_vlan_stripping(struct ice_vf
+> *vf)
+>   */
+>  static int ice_vf_init_vlan_stripping(struct ice_vf *vf)  {
+> -	struct ice_vsi *vsi = vf->pf->vsi[vf->lan_vsi_idx];
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+> 
+>  	if (!vsi)
+>  		return -EINVAL;
+> @@ -4281,7 +4277,7 @@ int ice_get_vf_stats(struct net_device *netdev, int
+> vf_id,
+>  	if (ret)
+>  		return ret;
+> 
+> -	vsi = pf->vsi[vf->lan_vsi_idx];
+> +	vsi = ice_get_vf_vsi(vf);
+>  	if (!vsi)
+>  		return -EINVAL;
+> 
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
