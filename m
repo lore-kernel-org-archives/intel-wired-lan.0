@@ -1,11 +1,11 @@
 From: Switzer, David <david.switzer@intel.com>
-Date: Thu, 22 Apr 2021 21:00:53 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/3] i40e: use minimal tx and rx
- pairs for kdump
-In-Reply-To: <20210304025543.334912-2-coxu@redhat.com>
-References: <20210304025543.334912-1-coxu@redhat.com>
- <20210304025543.334912-2-coxu@redhat.com>
-Message-ID: <MW3PR11MB4748DAD8745E21A92A7CD38FEB469@MW3PR11MB4748.namprd11.prod.outlook.com>
+Date: Thu, 22 Apr 2021 22:06:00 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 04/11] igb/igc: use
+ strongly typed pointer
+In-Reply-To: <20210326003834.3886241-5-jesse.brandeburg@intel.com>
+References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
+ <20210326003834.3886241-5-jesse.brandeburg@intel.com>
+Message-ID: <MW3PR11MB4748FADF450118F512C8019AEB469@MW3PR11MB4748.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +14,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 >-----Original Message-----
->From: Coiby Xu <coxu@redhat.com>
->Sent: Wednesday, March 3, 2021 6:56 PM
-To: netdev@vger.kernel.org
->Cc: kexec at lists.infradead.org; intel-wired-lan at lists.osuosl.org; Jakub Kicinski
-><kuba@kernel.org>; Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen,
->Anthony L <anthony.l.nguyen@intel.com>; David S. Miller
-><davem@davemloft.net>; open list <linux-kernel@vger.kernel.org>
->Subject: [PATCH v1 1/3] i40e: use minimal tx and rx pairs for kdump
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jesse
+>Brandeburg
+>Sent: Thursday, March 25, 2021 5:38 PM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net-next v2 04/11] igb/igc: use strongly typed
+>pointer
 >
->Set the number of the MSI-X vectors to 1. When MSI-X is enabled, it's not allowed
->to use more TC queue pairs than MSI-X vectors
->(pf->num_lan_msix) exist. Thus the number of tx and rx pairs
->(vsi->num_queue_pairs) will be equal to the number of MSI-X vectors, i.e., 1.
+>The igb and igc driver both use a trick of creating a local type pointer on the stack
+>to ease dealing with a receive descriptor in
+>64 bit chunks for printing.  Sparse however was not taken into account and
+>receive descriptors are always in little endian order, so just make the unions use
+>__le64 instead of u64.
 >
->Signed-off-by: Coiby Xu <coxu@redhat.com>
+>No functional change.
+>
+>Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 >---
-> drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++++
-> 1 file changed, 9 insertions(+)
->
-Tested-by: Dave Switzer <david.switzer@intel.com
+>Warning Detail:
+>  CHECK   .../igb/igb_main.c
+>.../igb/igb_main.c:442:25: warning: cast to restricted __le64
+>.../igb/igb_main.c:442:25: warning: cast to restricted __le64
+>.../igb/igb_main.c:522:33: warning: cast to restricted __le64
+>.../igb/igb_main.c:522:33: warning: cast to restricted __le64
+>.../igb/igb_main.c:528:33: warning: cast to restricted __le64
+>.../igb/igb_main.c:528:33: warning: cast to restricted __le64
+>  CHECK   .../igc/igc_dump.c
+>.../igc/igc_dump.c:192:40: warning: cast to restricted __le64
+>.../igc/igc_dump.c:193:37: warning: cast to restricted __le64
+>.../igc/igc_dump.c:275:45: warning: cast to restricted __le64
+>.../igc/igc_dump.c:276:45: warning: cast to restricted __le64
+>.../igc/igc_dump.c:281:45: warning: cast to restricted __le64
+>.../igc/igc_dump.c:282:45: warning: cast to restricted __le64
+>---
+> drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>drivers/net/ethernet/intel/igc/igc_dump.c | 2 +-
+> 2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+Tested-by: Dave Switer <david.swtizer@intel.com>
