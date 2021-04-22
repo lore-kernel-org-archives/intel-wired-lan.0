@@ -1,8 +1,8 @@
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Date: Thu, 22 Apr 2021 10:17:36 +0000
-Subject: [Intel-wired-lan] [net v3] igb: Check if num of q_vectors is
+Date: Thu, 22 Apr 2021 10:19:23 +0000
+Subject: [Intel-wired-lan] [net v4] igb: Check if num of q_vectors is
  smaller than max before array access.
-Message-ID: <20210422101736.20476-1-aleksandr.loktionov@intel.com>
+Message-ID: <20210422101923.21147-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,7 +15,8 @@ as a limit for loop index, and ensure that num_q_vectors is not bigger
 than MAX_Q_VECTORS.
 
 v2:fix commit message Reviewed-by tag
-v2:fix commit message Fixes tag
+v3:fix commit message Fixes tag
+v4:fix commit versions history
 
 Fixes: 047e0030f1e6 ("igb: add new data structure for handling interrupts and NAPI")
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
