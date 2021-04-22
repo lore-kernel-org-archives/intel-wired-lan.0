@@ -1,11 +1,11 @@
 From: Switzer, David <david.switzer@intel.com>
-Date: Thu, 22 Apr 2021 22:10:16 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 06/11] igb: fix assignment
- on big endian machines
-In-Reply-To: <20210326003834.3886241-7-jesse.brandeburg@intel.com>
+Date: Thu, 22 Apr 2021 22:53:34 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 02/11] intel: remove
+ checker warning
+In-Reply-To: <20210326003834.3886241-3-jesse.brandeburg@intel.com>
 References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
- <20210326003834.3886241-7-jesse.brandeburg@intel.com>
-Message-ID: <MW3PR11MB4748D6FE8BF6FB550555D1DFEB469@MW3PR11MB4748.namprd11.prod.outlook.com>
+ <20210326003834.3886241-3-jesse.brandeburg@intel.com>
+Message-ID: <MW3PR11MB47487933E2ED16887625EB67EB469@MW3PR11MB4748.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,32 +18,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 >Brandeburg
 >Sent: Thursday, March 25, 2021 5:38 PM
 To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v2 06/11] igb: fix assignment on big
->endian machines
+>Subject: [Intel-wired-lan] [PATCH net-next v2 02/11] intel: remove checker
+>warning
 >
->The igb driver was trying hard to be sparse correct, but somehow ended up
->converting a variable into little endian order and then tries to OR something with
->it.
+>The sparse checker (C=2) found an assignment where we were mixing types when
+>trying to convert from data read directly from the device NVM, to an array in CPU
+>order in-memory, which unfortunately the driver tries to do in-place.
 >
->A much plainer way of doing things is to leave all variables and OR operations in
->CPU (non-endian) mode, and then convert to little endian only once, which is
->what this change does.
+>This is easily solved by using the swap operation instead of an assignment, and is
+>already proven in other Intel drivers to be functionally correct and the same code,
+>just without a sparse warning.
 >
->This probably fixes a bug that might have been seen only on big endian systems.
+>The change is the same in all three drivers.
 >
 >Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 >---
 >Warning Detail:
->.../igb/igb_main.c:6286:23: warning: incorrect type in assignment (different base
+>  CHECK   .../e1000/e1000_ethtool.c
+>.../e1000/e1000_ethtool.c:516:32: warning: incorrect type in assignment
+>(different base types)
+>.../e1000/e1000_ethtool.c:516:32:    expected unsigned short [usertype]
+>.../e1000/e1000_ethtool.c:516:32:    got restricted __le16 [usertype]
+>  CHECK   .../igb/igb_ethtool.c
+>.../igb/igb_ethtool.c:834:32: warning: incorrect type in assignment (different
+>base types)
+>.../igb/igb_ethtool.c:834:32:    expected unsigned short [usertype]
+>.../igb/igb_ethtool.c:834:32:    got restricted __le16 [usertype]
+>  CHECK   .../igc/igc_ethtool.c
+>.../igc/igc_ethtool.c:555:32: warning: incorrect type in assignment (different base
 >types)
->.../igb/igb_main.c:6286:23:    expected unsigned int [usertype] olinfo_status
->.../igb/igb_main.c:6286:23:    got restricted __le32 [usertype]
->.../igb/igb_main.c:6291:37: warning: incorrect type in assignment (different base
->types)
->.../igb/igb_main.c:6291:37:    expected restricted __le32 [usertype] olinfo_status
->.../igb/igb_main.c:6291:37:    got unsigned int [assigned] [usertype] olinfo_status
+>.../igc/igc_ethtool.c:555:32:    expected unsigned short [usertype]
+>.../igc/igc_ethtool.c:555:32:    got restricted __le16 [usertype]
 >---
-> drivers/net/ethernet/intel/igb/igb_main.c | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
+> drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 2 +-
+> drivers/net/ethernet/intel/igb/igb_ethtool.c     | 2 +-
+> drivers/net/ethernet/intel/igc/igc_ethtool.c     | 2 +-
+> 3 files changed, 3 insertions(+), 3 deletions(-)
 >
 Tested-by: Dave Switzer <david.switzer@intel.com>
+ 
+
