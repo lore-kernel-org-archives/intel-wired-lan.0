@@ -1,284 +1,60 @@
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Thu, 22 Apr 2021 21:46:03 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Enable configuration of
- number of qps per VF via devlink
-Message-ID: <20210423044603.1391-1-sridhar.samudrala@intel.com>
+From: Jithu Joseph <jithu.joseph@intel.com>
+Date: Thu, 22 Apr 2021 23:25:47 -0700
+Subject: [Intel-wired-lan] [PATCH v6 1/9] igc: Move igc_xdp_is_enabled()
+In-Reply-To: <20210423062555.14972-1-jithu.joseph@intel.com>
+References: <20210423062555.14972-1-jithu.joseph@intel.com>
+Message-ID: <20210423062555.14972-2-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Introduce a devlink parameter 'num_qps_per_vf' to allow user
-to configure the maximum number of queue pairs given to SR-IOV
-VFs before they are created.
+From: Andre Guedes <andre.guedes@intel.com>
 
-This is currently determined by the driver based on the number
-of SR-IOV VFs created. In order to keep this behavior by default
-the parameter is initialized to 0. To change the default behavior,
-user can set num_qps_per_vf parameter via devlink and this will
-be used as the preferred value to determine the queues and vectors
-assigned per VF.
+Move the helper igc_xdp_is_enabled() to igc_xdp.h so it can be reused in
+igc_xdp.c by upcoming patches that will introduce AF_XDP zero-copy
+support to the driver.
 
-USAGE:
-On a 2 port NIC
- # devlink dev param show
- pci/0000:42:00.0:
-   name num_qps_per_vf type driver-specific
-     values:
-       cmode runtime value 0
- pci/0000:42:00.1:
-   name num_qps_per_vf type driver-specific
-     values:
-       cmode runtime value 0
-
- /* Set num_qps_per_vf to 4 */
- # devlink dev param set pci/0000:42:00.0 name num_qps_per_vf value 4 cmode runtime
-
- # devlink dev param show pci/0000:42:00.0 name num_qps_per_vf
- pci/0000:42:00.0:
-   name num_qps_per_vf type driver-specific
-     values:
-       cmode runtime value 4
-
- # echo 8 > /sys/class/net/enp66s0f0/device/sriov_numvfs
-
-This will create 8 VFs with 4 queue pairs and 5 vectors per VF
-compared to the default behavior of 16 queue pairs and 17 vectors
-per VF.
-
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
+Signed-off-by: Vedang Patel <vedang.patel@intel.com>
+Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- Documentation/networking/devlink/ice.rst      |  23 ++++
- drivers/net/ethernet/intel/ice/ice_devlink.c  | 110 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   5 +-
- 4 files changed, 139 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 5 -----
+ drivers/net/ethernet/intel/igc/igc_xdp.h  | 5 +++++
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
-index a432dc419fa4..38bed190fa48 100644
---- a/Documentation/networking/devlink/ice.rst
-+++ b/Documentation/networking/devlink/ice.rst
-@@ -193,3 +193,26 @@ Users can request an immediate capture of a snapshot via the
-     0000000000000210 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- 
-     $ devlink region delete pci/0000:01:00.0/device-caps snapshot 1
-+
-+Parameters
-+==========
-+
-+The ``ice`` driver implements the following driver-specific
-+parameters.
-+
-+.. list-table:: Driver-specific parameters implemented
-+   :widths: 5 5 5 85
-+
-+   * - Name
-+     - Type
-+     - Mode
-+     - Description
-+   * - ``num_qps_per_vf``
-+     - u16
-+     - runtime
-+     - Number of queue pairs assigned to SR-IOV VFs. The default
-+       value is 0 indicating that the driver will determine based
-+       on the number of SR-IOV VFs created and the available resources.
-+       It can be set to a value between 1 to 16 and is used as a
-+       preferred value in determining the queues and vectors assigned
-+       per VF.
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index cf685eeea198..8df265235565 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -479,6 +479,102 @@ struct ice_pf *ice_allocate_pf(struct device *dev)
- 	return devlink_priv(devlink);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 8383da6ba056..f455cc41a8d1 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -515,11 +515,6 @@ static int igc_setup_all_rx_resources(struct igc_adapter *adapter)
+ 	return err;
  }
  
-+enum ice_devlink_param_id {
-+	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
-+	ICE_DEVLINK_PARAM_ID_NUM_QPS_PER_VF,
-+};
-+
-+/**
-+ * ice_devlink_num_qps_per_vf_get - Get the current number of qps per vf
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to get
-+ * @ctx: context to return the parameter value
-+ *
-+ * Returns: zero on success, or an error code on failure.
-+ */
-+static int
-+ice_devlink_num_qps_per_vf_get(struct devlink *devlink, u32 id,
-+			       struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = (struct ice_pf *)devlink_priv(devlink);
-+
-+	if (id != ICE_DEVLINK_PARAM_ID_NUM_QPS_PER_VF)
-+		return -EINVAL;
-+
-+	ctx->val.vu16 = pf->num_qps_per_vf;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_num_qps_per_vf_validate - Validate the number of qps per vf
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to validate
-+ * @ctx: context to return the parameter value
-+ * @extack: netlink extended ACK structure
-+ *
-+ * Check that the value passed is less than the max qps allowed for a VF and
-+ * no VFs are created yet.
-+ * Returns: zero on success, or an error code on failure and extack with a
-+ * reason for failure.
-+ */
-+static int
-+ice_devlink_num_qps_per_vf_validate(struct devlink *devlink, u32 id,
-+				    union devlink_param_value val,
-+				    struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = (struct ice_pf *)devlink_priv(devlink);
-+
-+	if (id != ICE_DEVLINK_PARAM_ID_NUM_QPS_PER_VF)
-+		return -EINVAL;
-+
-+	if (val.vu16 > ICE_MAX_RSS_QS_PER_VF) {
-+		NL_SET_ERR_MSG_MOD(extack, "Value is greater than max allowed");
-+		return -EINVAL;
-+	}
-+
-+	if (pf->num_alloc_vfs) {
-+		NL_SET_ERR_MSG_MOD(extack, "Cannot set after VFs are created");
-+		return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_devlink_num_qps_per_vf_set - Set the number of qps per vf
-+ * @devlink: pointer to the devlink instance
-+ * @id: the parameter ID to set
-+ * @ctx: context to return the parameter value
-+ *
-+ * Returns: zero on success, or an error code on failure.
-+ */
-+static int
-+ice_devlink_num_qps_per_vf_set(struct devlink *devlink, u32 id,
-+			       struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = (struct ice_pf *)devlink_priv(devlink);
-+
-+	if (id != ICE_DEVLINK_PARAM_ID_NUM_QPS_PER_VF)
-+		return -EINVAL;
-+
-+	pf->num_qps_per_vf = ctx->val.vu16;
-+	pf->num_msix_per_vf = pf->num_qps_per_vf + 1;
-+
-+	return 0;
-+}
-+
-+/* devlink parameters for the ice driver */
-+static const struct devlink_param ice_devlink_params[] = {
-+	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_NUM_QPS_PER_VF,
-+			     "num_qps_per_vf",
-+			     DEVLINK_PARAM_TYPE_U16,
-+			     BIT(DEVLINK_PARAM_CMODE_RUNTIME),
-+			     ice_devlink_num_qps_per_vf_get,
-+			     ice_devlink_num_qps_per_vf_set,
-+			     ice_devlink_num_qps_per_vf_validate),
-+};
-+
+-static bool igc_xdp_is_enabled(struct igc_adapter *adapter)
+-{
+-	return !!adapter->xdp_prog;
+-}
+-
  /**
-  * ice_devlink_register - Register devlink interface for this PF
-  * @pf: the PF to register the devlink for.
-@@ -499,6 +595,13 @@ int ice_devlink_register(struct ice_pf *pf)
- 		return err;
- 	}
+  * igc_configure_rx_ring - Configure a receive ring after Reset
+  * @adapter: board private structure
+diff --git a/drivers/net/ethernet/intel/igc/igc_xdp.h b/drivers/net/ethernet/intel/igc/igc_xdp.h
+index cfecb515b718..412aa369e6ba 100644
+--- a/drivers/net/ethernet/intel/igc/igc_xdp.h
++++ b/drivers/net/ethernet/intel/igc/igc_xdp.h
+@@ -10,4 +10,9 @@ int igc_xdp_set_prog(struct igc_adapter *adapter, struct bpf_prog *prog,
+ int igc_xdp_register_rxq_info(struct igc_ring *ring);
+ void igc_xdp_unregister_rxq_info(struct igc_ring *ring);
  
-+	err = devlink_params_register(devlink, ice_devlink_params,
-+				      ARRAY_SIZE(ice_devlink_params));
-+	if (err) {
-+		dev_err(dev, "devlink params registration failed: %d\n", err);
-+		return err;
-+	}
++static inline bool igc_xdp_is_enabled(struct igc_adapter *adapter)
++{
++	return !!adapter->xdp_prog;
++}
 +
- 	return 0;
- }
- 
-@@ -510,7 +613,11 @@ int ice_devlink_register(struct ice_pf *pf)
-  */
- void ice_devlink_unregister(struct ice_pf *pf)
- {
--	devlink_unregister(priv_to_devlink(pf));
-+	struct devlink *devlink = priv_to_devlink(pf);
-+
-+	devlink_params_unregister(devlink, ice_devlink_params,
-+				  ARRAY_SIZE(ice_devlink_params));
-+	devlink_unregister(devlink);
- }
- 
- /**
-@@ -542,6 +649,7 @@ int ice_devlink_create_port(struct ice_vsi *vsi)
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
- 	attrs.phys.port_number = pi->lport;
- 	devlink_port_attrs_set(&vsi->devlink_port, &attrs);
-+
- 	err = devlink_port_register(devlink, &vsi->devlink_port, vsi->idx);
- 	if (err) {
- 		dev_err(dev, "devlink_port_register failed: %d\n", err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4ee85a217c6f..89f30255b711 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4092,6 +4092,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	}
- 
- 	ice_devlink_init_regions(pf);
-+	devlink_params_publish(priv_to_devlink(pf));
- 
- 	pf->hw.udp_tunnel_nic.set_port = ice_udp_tunnel_set_port;
- 	pf->hw.udp_tunnel_nic.unset_port = ice_udp_tunnel_unset_port;
-@@ -4285,6 +4286,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	devm_kfree(dev, pf->vsi);
- err_init_pf_unroll:
- 	ice_deinit_pf(pf);
-+	devlink_params_unpublish(priv_to_devlink(pf));
- 	ice_devlink_destroy_regions(pf);
- 	ice_deinit_hw(hw);
- err_exit_unroll:
-@@ -4398,6 +4400,7 @@ static void ice_remove(struct pci_dev *pdev)
- 		ice_vsi_free_q_vectors(pf->vsi[i]);
- 	}
- 	ice_deinit_pf(pf);
-+	devlink_params_unpublish(priv_to_devlink(pf));
- 	ice_devlink_destroy_regions(pf);
- 	ice_deinit_hw(&pf->hw);
- 	ice_devlink_unregister(pf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a1d22d2aa0bd..18538b1c57c1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -637,6 +637,7 @@ void ice_free_vfs(struct ice_pf *pf)
- 
- 	tmp = pf->num_alloc_vfs;
- 	pf->num_qps_per_vf = 0;
-+	pf->num_msix_per_vf = 0;
- 	pf->num_alloc_vfs = 0;
- 	for (i = 0; i < tmp; i++) {
- 		if (test_bit(ICE_VF_STATE_INIT, pf->vf[i].vf_states)) {
-@@ -1228,7 +1229,9 @@ static int ice_set_per_vf_res(struct ice_pf *pf)
- 	msix_avail_for_sriov = pf->hw.func_caps.common_cap.num_msix_vectors -
- 		pf->irq_tracker->num_entries;
- 	msix_avail_per_vf = msix_avail_for_sriov / pf->num_alloc_vfs;
--	if (msix_avail_per_vf >= ICE_NUM_VF_MSIX_MED) {
-+	if (pf->num_msix_per_vf && msix_avail_per_vf >= pf->num_msix_per_vf) {
-+		num_msix_per_vf = pf->num_msix_per_vf;
-+	} else if (msix_avail_per_vf >= ICE_NUM_VF_MSIX_MED) {
- 		num_msix_per_vf = ICE_NUM_VF_MSIX_MED;
- 	} else if (msix_avail_per_vf >= ICE_NUM_VF_MSIX_SMALL) {
- 		num_msix_per_vf = ICE_NUM_VF_MSIX_SMALL;
+ #endif /* _IGC_XDP_H_ */
 -- 
-2.30.2
+2.17.1
 
