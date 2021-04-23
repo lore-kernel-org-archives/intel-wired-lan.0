@@ -1,56 +1,77 @@
-From: Switzer, David <david.switzer@intel.com>
-Date: Thu, 22 Apr 2021 23:11:51 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 04/11] igb/igc: use
- strongly typed pointer
-In-Reply-To: <20210326003834.3886241-5-jesse.brandeburg@intel.com>
-References: <20210326003834.3886241-1-jesse.brandeburg@intel.com>
- <20210326003834.3886241-5-jesse.brandeburg@intel.com>
-Message-ID: <MW3PR11MB47489CAFB87C11854BB1F9E1EB469@MW3PR11MB4748.namprd11.prod.outlook.com>
+From: Salil Mehta <salil.mehta@huawei.com>
+Date: Fri, 23 Apr 2021 01:00:18 +0100
+Subject: [Intel-wired-lan] [PATCH V3 net] ice: Re-organizes reqstd/avail {R,
+ T}XQ check/code for efficiency
+Message-ID: <20210423000018.20244-1-salil.mehta@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+If user has explicitly requested the number of {R,T}XQs, then it is
+unnecessary to get the count of already available {R,T}XQs from the
+PF avail_{r,t}xqs bitmap. This value will get overridden by user specified
+value in any case.
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jesse
->Brandeburg
->Sent: Thursday, March 25, 2021 5:38 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v2 04/11] igb/igc: use strongly typed
->pointer
->
->The igb and igc driver both use a trick of creating a local type pointer on the stack
->to ease dealing with a receive descriptor in
->64 bit chunks for printing.  Sparse however was not taken into account and
->receive descriptors are always in little endian order, so just make the unions use
->__le64 instead of u64.
->
->No functional change.
->
->Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
->---
->Warning Detail:
->  CHECK   .../igb/igb_main.c
->.../igb/igb_main.c:442:25: warning: cast to restricted __le64
->.../igb/igb_main.c:442:25: warning: cast to restricted __le64
->.../igb/igb_main.c:522:33: warning: cast to restricted __le64
->.../igb/igb_main.c:522:33: warning: cast to restricted __le64
->.../igb/igb_main.c:528:33: warning: cast to restricted __le64
->.../igb/igb_main.c:528:33: warning: cast to restricted __le64
->  CHECK   .../igc/igc_dump.c
->.../igc/igc_dump.c:192:40: warning: cast to restricted __le64
->.../igc/igc_dump.c:193:37: warning: cast to restricted __le64
->.../igc/igc_dump.c:275:45: warning: cast to restricted __le64
->.../igc/igc_dump.c:276:45: warning: cast to restricted __le64
->.../igc/igc_dump.c:281:45: warning: cast to restricted __le64
->.../igc/igc_dump.c:282:45: warning: cast to restricted __le64
->---
-> drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->drivers/net/ethernet/intel/igc/igc_dump.c | 2 +-
-> 2 files changed, 2 insertions(+), 2 deletions(-)
->
-Tested-by: Dave Switzer <david.switzer@intel.com>
+Re-organize this code for improving the flow, readability and efficiency.
+This scope of improvement was found during the review of the ICE driver
+code.
+
+Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+Cc: intel-wired-lan at lists.osuosl.org
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+---
+Change:
+V2->V3
+ (*) Addressed some comments from Paul Menzel
+     Link: https://lkml.org/lkml/2021/4/21/136
+V1->V2
+ (*) Fixed the comments from Anthony Nguyen(Intel)
+     Link: https://lkml.org/lkml/2021/4/12/1997
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index d13c7fc8fb0a..d77133d6baa7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -161,12 +161,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
  
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
+-		vsi->alloc_txq = min3(pf->num_lan_msix,
+-				      ice_get_avail_txq_count(pf),
+-				      (u16)num_online_cpus());
+ 		if (vsi->req_txq) {
+ 			vsi->alloc_txq = vsi->req_txq;
+ 			vsi->num_txq = vsi->req_txq;
++		} else {
++			vsi->alloc_txq = min3(pf->num_lan_msix,
++					      ice_get_avail_txq_count(pf),
++					      (u16)num_online_cpus());
+ 		}
+ 
+ 		pf->num_lan_tx = vsi->alloc_txq;
+@@ -175,12 +176,13 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
+ 		if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+ 			vsi->alloc_rxq = 1;
+ 		} else {
+-			vsi->alloc_rxq = min3(pf->num_lan_msix,
+-					      ice_get_avail_rxq_count(pf),
+-					      (u16)num_online_cpus());
+ 			if (vsi->req_rxq) {
+ 				vsi->alloc_rxq = vsi->req_rxq;
+ 				vsi->num_rxq = vsi->req_rxq;
++			} else {
++				vsi->alloc_rxq = min3(pf->num_lan_msix,
++						      ice_get_avail_rxq_count(pf),
++						      (u16)num_online_cpus());
+ 			}
+ 		}
+ 
+-- 
+2.17.1
 
