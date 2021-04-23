@@ -1,10 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Fri, 23 Apr 2021 12:04:42 +0200
-Subject: [Intel-wired-lan] [PATCH intel-net 1/5] i40e: add correct exception
+Date: Fri, 23 Apr 2021 12:04:43 +0200
+Subject: [Intel-wired-lan] [PATCH intel-net 2/5] ice: add correct exception
  tracing for XDP
 In-Reply-To: <20210423100446.15412-1-magnus.karlsson@gmail.com>
 References: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-Message-ID: <20210423100446.15412-2-magnus.karlsson@gmail.com>
+Message-ID: <20210423100446.15412-3-magnus.karlsson@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,63 +13,73 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Magnus Karlsson <magnus.karlsson@intel.com>
 
-Add missing exception tracing to XDP when a number of different errors
-can occur. The support was only partial. Several errors where not
-logged which would confuse the user quite a lot not knowing where and
-why the packets disappeared.
+Add missing exception tracing to XDP when a number of different
+errors can occur. The support was only partial. Several errors
+where not logged which would confuse the user quite a lot not
+knowing where and why the packets disappeared.
 
-Fixes: 74608d17fe29 ("i40e: add support for XDP_TX action")
-Fixes: 0a714186d3c0 ("i40e: add AF_XDP zero-copy Rx support")
+Fixes: efc2214b6047 ("ice: Add support for XDP")
+Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
 Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 ++++++-
- drivers/net/ethernet/intel/i40e/i40e_xsk.c  | 7 ++++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 12 +++++++++---
+ drivers/net/ethernet/intel/ice/ice_xsk.c  |  7 ++++++-
+ 2 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 06b4271219b1..08fbb2ec7ff8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2317,15 +2317,20 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index b91dcfd12727..b0a58d463441 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -523,7 +523,7 @@ ice_run_xdp(struct ice_ring *rx_ring, struct xdp_buff *xdp,
+ 	    struct bpf_prog *xdp_prog)
+ {
+ 	struct ice_ring *xdp_ring;
+-	int err;
++	int err, result;
+ 	u32 act;
+ 
+ 	act = bpf_prog_run_xdp(xdp_prog, xdp);
+@@ -532,14 +532,20 @@ ice_run_xdp(struct ice_ring *rx_ring, struct xdp_buff *xdp,
+ 		return ICE_XDP_PASS;
  	case XDP_TX:
- 		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
- 		result = i40e_xmit_xdp_tx_ring(xdp, xdp_ring);
-+		if (result == I40E_XDP_CONSUMED)
+ 		xdp_ring = rx_ring->vsi->xdp_rings[smp_processor_id()];
+-		return ice_xmit_xdp_buff(xdp, xdp_ring);
++		result = ice_xmit_xdp_buff(xdp, xdp_ring);
++		if (result == ICE_XDP_CONSUMED)
 +			goto out_failure;
- 		break;
++		return result;
  	case XDP_REDIRECT:
  		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
--		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+-		return !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
 +		if (err)
 +			goto out_failure;
-+		result = I40E_XDP_REDIR;
- 		break;
++		return ICE_XDP_REDIR;
  	default:
  		bpf_warn_invalid_xdp_action(act);
  		fallthrough;
  	case XDP_ABORTED:
 +out_failure:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
- 		fallthrough; /* handle aborts by dropping packet */
+ 		fallthrough;
  	case XDP_DROP:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 12ca84113587..ca7dd1afe37a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -166,15 +166,20 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 9f94d9159acd..ec8d590bccdd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -479,15 +479,20 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
  	case XDP_TX:
- 		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->queue_index];
- 		result = i40e_xmit_xdp_tx_ring(xdp, xdp_ring);
-+		if (result == I40E_XDP_CONSUMED)
+ 		xdp_ring = rx_ring->vsi->xdp_rings[rx_ring->q_index];
+ 		result = ice_xmit_xdp_buff(xdp, xdp_ring);
++		if (result == ICE_XDP_CONSUMED)
 +			goto out_failure;
  		break;
  	case XDP_REDIRECT:
  		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
--		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+-		result = !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
 +		if (err)
 +			goto out_failure;
-+		result = I40E_XDP_REDIR;
++		result = ICE_XDP_REDIR;
  		break;
  	default:
  		bpf_warn_invalid_xdp_action(act);
@@ -77,7 +87,7 @@ index 12ca84113587..ca7dd1afe37a 100644
  	case XDP_ABORTED:
 +out_failure:
  		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
- 		fallthrough; /* handle aborts by dropping packet */
+ 		fallthrough;
  	case XDP_DROP:
 -- 
 2.29.0
