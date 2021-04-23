@@ -1,9 +1,10 @@
 From: Jithu Joseph <jithu.joseph@intel.com>
-Date: Thu, 22 Apr 2021 23:25:48 -0700
-Subject: [Intel-wired-lan] [PATCH v6 2/9] igc: Refactor __igc_xdp_run_prog()
+Date: Thu, 22 Apr 2021 23:25:53 -0700
+Subject: [Intel-wired-lan] [PATCH v6 7/9] igc: Replace IGC_TX_FLAGS_XDP flag
+ by an enum
 In-Reply-To: <20210423062555.14972-1-jithu.joseph@intel.com>
 References: <20210423062555.14972-1-jithu.joseph@intel.com>
-Message-ID: <20210423062555.14972-3-jithu.joseph@intel.com>
+Message-ID: <20210423062555.14972-8-jithu.joseph@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,105 +13,121 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Andre Guedes <andre.guedes@intel.com>
 
-Refactor __igc_xdp_run_prog() helper from igc_xdp_run_prog(),
-preparing the code for AF_XDP zero-copy support which is added
-by upcoming patches.
+Up to this point, tx buffers are associated with either a skb or a xdpf,
+and the IGC_TX_FLAGS_XDP flag was enough to distinguish between these
+two case. However, with upcoming patches that will add AF_XDP zero-copy
+support, a third case will be introduced so this flag-based approach
+won't fit well.
 
-The existing igc_xdp_run_prog() caters to regular XDP rx path
-which has to verify if bpf_prog is not NULL. Zero-copy
-path assumes that bpf_prog is not NULL and hence this check is
-not required. Therefore it makes sense to refactor the common
-code into a helper function, to avoid code duplication.
+In preparation to land AF_XDP zero-copy support, replace the
+IGC_TX_FLAGS_XDP flag by an enum which will be extended once zero-copy
+support is introduced to the driver.
 
 Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
 Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 56 +++++++++++------------
- 1 file changed, 28 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      |  8 +++++--
+ drivers/net/ethernet/intel/igc/igc_main.c | 27 ++++++++++++++++++-----
+ 2 files changed, 28 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 25871351730b..4815c520652b 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -390,8 +390,6 @@ enum igc_tx_flags {
+ 	/* olinfo flags */
+ 	IGC_TX_FLAGS_IPV4	= 0x10,
+ 	IGC_TX_FLAGS_CSUM	= 0x20,
+-
+-	IGC_TX_FLAGS_XDP	= 0x100,
+ };
+ 
+ enum igc_boards {
+@@ -408,12 +406,18 @@ enum igc_boards {
+ #define TXD_USE_COUNT(S)	DIV_ROUND_UP((S), IGC_MAX_DATA_PER_TXD)
+ #define DESC_NEEDED	(MAX_SKB_FRAGS + 4)
+ 
++enum igc_tx_buffer_type {
++	IGC_TX_BUFFER_TYPE_SKB,
++	IGC_TX_BUFFER_TYPE_XDP,
++};
++
+ /* wrapper around a pointer to a socket buffer,
+  * so a DMA handle can be stored along with the buffer
+  */
+ struct igc_tx_buffer {
+ 	union igc_adv_tx_desc *next_to_watch;
+ 	unsigned long time_stamp;
++	enum igc_tx_buffer_type type;
+ 	union {
+ 		struct sk_buff *skb;
+ 		struct xdp_frame *xdpf;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index f455cc41a8d1..f151ede4427f 100644
+index 1b5d0d5c6d08..e4588937bbc9 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2021,38 +2021,22 @@ static int igc_xdp_xmit_back(struct igc_adapter *adapter, struct xdp_buff *xdp)
- 	return res;
- }
+@@ -191,10 +191,18 @@ static void igc_clean_tx_ring(struct igc_ring *tx_ring)
+ 	while (i != tx_ring->next_to_use) {
+ 		union igc_adv_tx_desc *eop_desc, *tx_desc;
  
--static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
--					struct xdp_buff *xdp)
-+/* This function assumes rcu_read_lock() is held by the caller. */
-+static int __igc_xdp_run_prog(struct igc_adapter *adapter,
-+			      struct bpf_prog *prog,
-+			      struct xdp_buff *xdp)
- {
--	struct bpf_prog *prog;
--	int res;
--	u32 act;
--
--	rcu_read_lock();
--
--	prog = READ_ONCE(adapter->xdp_prog);
--	if (!prog) {
--		res = IGC_XDP_PASS;
--		goto unlock;
--	}
-+	u32 act = bpf_prog_run_xdp(prog, xdp);
+-		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
++		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
+-		else
++			break;
++		case IGC_TX_BUFFER_TYPE_SKB:
+ 			dev_kfree_skb_any(tx_buffer->skb);
++			break;
++		default:
++			netdev_warn_once(tx_ring->netdev,
++					 "Unknown tx buffer type\n");
++			break;
++		}
  
--	act = bpf_prog_run_xdp(prog, xdp);
- 	switch (act) {
- 	case XDP_PASS:
--		res = IGC_XDP_PASS;
--		break;
-+		return IGC_XDP_PASS;
- 	case XDP_TX:
--		if (igc_xdp_xmit_back(adapter, xdp) < 0)
--			res = IGC_XDP_CONSUMED;
--		else
--			res = IGC_XDP_TX;
--		break;
-+		return igc_xdp_xmit_back(adapter, xdp) < 0 ?
-+			IGC_XDP_CONSUMED : IGC_XDP_TX;
- 	case XDP_REDIRECT:
--		if (xdp_do_redirect(adapter->netdev, xdp, prog) < 0)
--			res = IGC_XDP_CONSUMED;
--		else
--			res = IGC_XDP_REDIRECT;
--		break;
-+		return xdp_do_redirect(adapter->netdev, xdp, prog) < 0 ?
-+			IGC_XDP_CONSUMED : IGC_XDP_REDIRECT;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
- 		fallthrough;
-@@ -2060,9 +2044,25 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 		trace_xdp_exception(adapter->netdev, prog, act);
- 		fallthrough;
- 	case XDP_DROP:
--		res = IGC_XDP_CONSUMED;
--		break;
-+		return IGC_XDP_CONSUMED;
+ 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
+@@ -1361,6 +1369,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 
+ 	/* record the location of the first descriptor for this packet */
+ 	first = &tx_ring->tx_buffer_info[tx_ring->next_to_use];
++	first->type = IGC_TX_BUFFER_TYPE_SKB;
+ 	first->skb = skb;
+ 	first->bytecount = skb->len;
+ 	first->gso_segs = 1;
+@@ -1944,8 +1953,8 @@ static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
+ 		return -ENOMEM;
  	}
-+}
-+
-+static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
-+					struct xdp_buff *xdp)
-+{
-+	struct bpf_prog *prog;
-+	int res;
-+
-+	rcu_read_lock();
-+
-+	prog = READ_ONCE(adapter->xdp_prog);
-+	if (!prog) {
-+		res = IGC_XDP_PASS;
-+		goto unlock;
-+	}
-+
-+	res = __igc_xdp_run_prog(adapter, prog, xdp);
  
- unlock:
- 	rcu_read_unlock();
++	buffer->type = IGC_TX_BUFFER_TYPE_XDP;
+ 	buffer->xdpf = xdpf;
+-	buffer->tx_flags = IGC_TX_FLAGS_XDP;
+ 	buffer->protocol = 0;
+ 	buffer->bytecount = xdpf->len;
+ 	buffer->gso_segs = 1;
+@@ -2309,10 +2318,18 @@ static bool igc_clean_tx_irq(struct igc_q_vector *q_vector, int napi_budget)
+ 		total_bytes += tx_buffer->bytecount;
+ 		total_packets += tx_buffer->gso_segs;
+ 
+-		if (tx_buffer->tx_flags & IGC_TX_FLAGS_XDP)
++		switch (tx_buffer->type) {
++		case IGC_TX_BUFFER_TYPE_XDP:
+ 			xdp_return_frame(tx_buffer->xdpf);
+-		else
++			break;
++		case IGC_TX_BUFFER_TYPE_SKB:
+ 			napi_consume_skb(tx_buffer->skb, napi_budget);
++			break;
++		default:
++			netdev_warn_once(tx_ring->netdev,
++					 "Unknown tx buffer type\n");
++			break;
++		}
+ 
+ 		igc_unmap_tx_buffer(tx_ring->dev, tx_buffer);
+ 
 -- 
 2.17.1
 
