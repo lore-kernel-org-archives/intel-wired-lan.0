@@ -1,59 +1,87 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Fri, 23 Apr 2021 12:04:45 +0200
-Subject: [Intel-wired-lan] [PATCH intel-net 4/5] igb add correct exception
- tracing for XDP
-In-Reply-To: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-References: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-Message-ID: <20210423100446.15412-5-magnus.karlsson@gmail.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Fri, 23 Apr 2021 13:04:27 +0200
+Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix broken XDP support
+In-Reply-To: <20210423095955.15207-1-magnus.karlsson@gmail.com>
+References: <20210423095955.15207-1-magnus.karlsson@gmail.com>
+Message-ID: <20210423130427.1bbe4df2@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
+On Fri, 23 Apr 2021 11:59:55 +0200
+Magnus Karlsson <magnus.karlsson@gmail.com> wrote:
 
-Add missing exception tracing to XDP when a number of different
-errors can occur. The support was only partial. Several errors
-where not logged which would confuse the user quite a lot not
-knowing where and why the packets disappeared.
+> From: Magnus Karlsson <magnus.karlsson@intel.com>
+> 
+> Commit 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c") broke
+> XDP support in the i40e driver. That commit was fixing a sparse error
+> in the code by introducing a new variable xdp_res instead of
+> overloading this into the skb pointer. The problem is that the code
+> later uses the skb pointer in if statements and these where not
+> extended to also test for the new xdp_res variable. Fix this by adding
+> the correct tests for xdp_res in these places.
+> 
+> Fixes: 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c")
+> Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
 
-Fixes: 9cbc948b5a20 ("igb: add XDP support")
-Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a45cd2b416c8..45fcfc536b38 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8402,18 +8402,20 @@ static struct sk_buff *igb_run_xdp(struct igb_adapter *adapter,
- 		break;
- 	case XDP_TX:
- 		result = igb_xdp_xmit_back(adapter, xdp);
-+		if (result == IGB_XDP_CONSUMED)
-+			goto out_failure;
- 		break;
- 	case XDP_REDIRECT:
- 		err = xdp_do_redirect(adapter->netdev, xdp, xdp_prog);
--		if (!err)
--			result = IGB_XDP_REDIR;
--		else
--			result = IGB_XDP_CONSUMED;
-+		if (err)
-+			goto out_failure;
-+		result = IGB_XDP_REDIR;
- 		break;
- 	default:
- 		bpf_warn_invalid_xdp_action(act);
- 		fallthrough;
- 	case XDP_ABORTED:
-+out_failure:
- 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
- 		fallthrough;
- 	case XDP_DROP:
+Tested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+
+I also tested that i40e works on my system again.
+ Intel(R) Xeon(R) CPU E5-1650 v4 @ 3.60GHz
+
+Running XDP on dev:i40e2 (ifindex:8) action:XDP_DROP options:no_touch
+XDP stats       CPU     pps         issue-pps  
+XDP-RX CPU      4       33,670,895  0          
+XDP-RX CPU      total   33,670,895 
+
+RXQ stats       RXQ:CPU pps         issue-pps  
+rx_queue_index    4:4   33,670,900  0          
+rx_queue_index    4:sum 33,670,900 
+
+
+Running XDP on dev:i40e2 (ifindex:8) action:XDP_DROP options:read
+XDP stats       CPU     pps         issue-pps  
+XDP-RX CPU      4       31,424,994  0          
+XDP-RX CPU      total   31,424,994 
+
+RXQ stats       RXQ:CPU pps         issue-pps  
+rx_queue_index    4:4   31,424,997  0          
+rx_queue_index    4:sum 31,424,997 
+
+
+Running XDP on dev:i40e2 (ifindex:8) action:XDP_TX options:swapmac
+XDP stats       CPU     pps         issue-pps  
+XDP-RX CPU      4       14,777,900  0          
+XDP-RX CPU      total   14,777,900 
+
+RXQ stats       RXQ:CPU pps         issue-pps  
+rx_queue_index    4:4   14,777,893  0          
+rx_queue_index    4:sum 14,777,893 
+
+
+$ sudo ./xdp_redirect_map i40e2 i40e2
+input: 8 output: 8
+libbpf: elf: skipping unrecognized data section(24) .eh_frame
+libbpf: elf: skipping relo section(25) .rel.eh_frame for section(24) .eh_frame
+libbpf: Kernel error message: XDP program already attached
+WARN: link set xdp fd failed on 8
+ifindex 8:    8212980 pkt/s
+ifindex 8:   11725145 pkt/s
+ifindex 8:   11727939 pkt/s
+ifindex 8:   11727640 pkt/s
+ifindex 8:   11729593 pkt/s
+
 -- 
-2.29.0
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
 
