@@ -1,10 +1,10 @@
 From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Fri, 23 Apr 2021 12:04:46 +0200
-Subject: [Intel-wired-lan] [PATCH intel-net 5/5] ixgbevf: add correct
+Date: Fri, 23 Apr 2021 12:04:44 +0200
+Subject: [Intel-wired-lan] [PATCH intel-net 3/5] ixgbe: add correct
  exception tracing for XDP
 In-Reply-To: <20210423100446.15412-1-magnus.karlsson@gmail.com>
 References: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-Message-ID: <20210423100446.15412-6-magnus.karlsson@gmail.com>
+Message-ID: <20210423100446.15412-4-magnus.karlsson@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,23 +18,75 @@ errors can occur. The support was only partial. Several errors
 where not logged which would confuse the user quite a lot not
 knowing where and why the packets disappeared.
 
-Fixes: 21092e9ce8b1 ("ixgbevf: Add support for XDP_TX action")
+Fixes: 33fdc82f0883 ("ixgbe: add support for XDP_TX action")
+Fixes: d0bcacd0a130 ("ixgbe: add AF_XDP zero-copy Rx support")
 Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
 Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 16 ++++++++--------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 13 ++++++++-----
+ 2 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 449d7d5b280d..b38860c48598 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1067,11 +1067,14 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index cffb95f8f632..c194158a421c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2213,23 +2213,23 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+ 		break;
  	case XDP_TX:
- 		xdp_ring = adapter->xdp_ring[rx_ring->queue_index];
- 		result = ixgbevf_xmit_xdp_ring(xdp_ring, xdp);
-+		if (result == IXGBEVF_XDP_CONSUMED)
+ 		xdpf = xdp_convert_buff_to_frame(xdp);
+-		if (unlikely(!xdpf)) {
+-			result = IXGBE_XDP_CONSUMED;
+-			break;
+-		}
++		if (unlikely(!xdpf))
 +			goto out_failure;
+ 		result = ixgbe_xmit_xdp_ring(adapter, xdpf);
++		if (result == IXGBE_XDP_CONSUMED)
++			goto out_failure;
+ 		break;
+ 	case XDP_REDIRECT:
+ 		err = xdp_do_redirect(adapter->netdev, xdp, xdp_prog);
+-		if (!err)
+-			result = IXGBE_XDP_REDIR;
+-		else
+-			result = IXGBE_XDP_CONSUMED;
++		if (err)
++			goto out_failure;
++		result = IXGBE_XDP_REDIR;
+ 		break;
+ 	default:
+ 		bpf_warn_invalid_xdp_action(act);
+ 		fallthrough;
+ 	case XDP_ABORTED:
++out_failure:
+ 		trace_xdp_exception(rx_ring->netdev, xdp_prog, act);
+ 		fallthrough; /* handle aborts by dropping packet */
+ 	case XDP_DROP:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 3771857cf887..5f01e724037a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -109,20 +109,23 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
+ 		break;
+ 	case XDP_TX:
+ 		xdpf = xdp_convert_buff_to_frame(xdp);
+-		if (unlikely(!xdpf)) {
+-			result = IXGBE_XDP_CONSUMED;
+-			break;
+-		}
++		if (unlikely(!xdpf))
++			goto out_failure;
+ 		result = ixgbe_xmit_xdp_ring(adapter, xdpf);
++		if (result == IXGBE_XDP_CONSUMED)
++			goto out_failure;
+ 		break;
+ 	case XDP_REDIRECT:
+ 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? IXGBE_XDP_REDIR : IXGBE_XDP_CONSUMED;
++		if (err)
++			goto out_failure;
++		result = IXGBE_XDP_REDIR;
  		break;
  	default:
  		bpf_warn_invalid_xdp_action(act);
