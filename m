@@ -1,94 +1,83 @@
-From: Magnus Karlsson <magnus.karlsson@gmail.com>
-Date: Mon, 26 Apr 2021 13:14:01 +0200
-Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix broken XDP support
-Message-ID: <20210426111401.28369-1-magnus.karlsson@gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 26 Apr 2021 08:28:40 -0700
+Subject: [Intel-wired-lan] [igb] netconsole triggers warning in
+ netpoll_poll_dev
+In-Reply-To: <20210426064736.7efynita4brzos4u@spock.localdomain>
+References: <20210406123619.rhvtr73xwwlbu2ll@spock.localdomain>
+ <20210406114734.0e00cb2f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20210407060053.wyo75mqwcva6w6ci@spock.localdomain>
+ <20210407083748.56b9c261@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <CAKgT0UfLLQycLsAZQ98ofBGYPwejA6zHbG6QsNrU92mizS7e0g@mail.gmail.com>
+ <20210407110722.1eb4ebf2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <CAKgT0UcQXVOifi_2r_Y6meg_zvHDBf1me8VwA4pvEtEMzOaw2Q@mail.gmail.com>
+ <20210423081944.kvvm4v7jcdyj74l3@spock.localdomain>
+ <20210423155836.25ef1e77@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20210426064736.7efynita4brzos4u@spock.localdomain>
+Message-ID: <CAKgT0Uemubh8yP+UXh-n-YceheFRZO+hYpxtqs+=vedv7hbv4w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Magnus Karlsson <magnus.karlsson@intel.com>
+On Sun, Apr 25, 2021 at 11:47 PM Oleksandr Natalenko
+<oleksandr@natalenko.name> wrote:
+>
+> Hello.
+>
+> On Fri, Apr 23, 2021 at 03:58:36PM -0700, Jakub Kicinski wrote:
+> > On Fri, 23 Apr 2021 10:19:44 +0200 Oleksandr Natalenko wrote:
+> > > On Wed, Apr 07, 2021 at 04:06:29PM -0700, Alexander Duyck wrote:
+> > > > On Wed, Apr 7, 2021 at 11:07 AM Jakub Kicinski <kuba@kernel.org> wrote:
+> > > > > Sure, that's simplest. I wasn't sure something is supposed to prevent
+> > > > > this condition or if it's okay to cover it up.
+> > > >
+> > > > I'm pretty sure it is okay to cover it up. In this case the "budget -
+> > > > 1" is supposed to be the upper limit on what can be reported. I think
+> > > > it was assuming an unsigned value anyway.
+> > > >
+> > > > Another alternative would be to default clean_complete to !!budget.
+> > > > Then if budget is 0 clean_complete would always return false.
+> > >
+> > > So, among all the variants, which one to try? Or there was a separate
+> > > patch sent to address this?
+> >
+> > Alex's suggestion is probably best.
+> >
+> > I'm not aware of the fix being posted. Perhaps you could take over and
+> > post the patch if Intel doesn't chime in?
+>
+> So, IIUC, Alex suggests this:
+>
+> ```
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index a45cd2b416c8..7503d5bf168a 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -7981,7 +7981,7 @@ static int igb_poll(struct napi_struct *napi, int budget)
+>                                                      struct igb_q_vector,
+>                                                      napi);
+>         bool clean_complete = true;
+> -       int work_done = 0;
+> +       unsigned int work_done = 0;
+>
+>  #ifdef CONFIG_IGB_DCA
+>         if (q_vector->adapter->flags & IGB_FLAG_DCA_ENABLED)
+> @@ -8008,7 +8008,7 @@ static int igb_poll(struct napi_struct *napi, int budget)
+>         if (likely(napi_complete_done(napi, work_done)))
+>                 igb_ring_irq_enable(q_vector);
+>
+> -       return min(work_done, budget - 1);
+> +       return min_t(unsigned int, work_done, budget - 1);
+>  }
+>
+>  /**
+> ```
+>
+> Am I right?
+>
+> Thanks.
 
-Commit 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c") broke
-XDP support in the i40e driver. That commit was fixing a sparse error
-in the code by introducing a new variable xdp_res instead of
-overloading this into the skb pointer. The problem is that the code
-later uses the skb pointer in if statements and these where not
-extended to also test for the new xdp_res variable. Fix this by adding
-the correct tests for xdp_res in these places.
-
-The skb pointer was used to store the result of the XDP program by
-overloading the results in the errror pointer
-ERR_PTR(-result). Therefore, the allocation failure test that used to
-only test for !skb now need to be extended to also consider !xdp_res.
-
-i40e_cleanup_headers() had a check that based on the skb value being
-an error pointer, i.e. a result from the XDP program != XDP_PASS, and
-if so start to process a new packet immediately, instead of populating
-skb fields and sending the skb to the stack. This check is not needed
-anymore, since we have added an explicit test for xdp_res being set
-and if so just do continue to pick the next packet from the NIC.
-
-v1 -> v2:
-
-* Improved commit message.
-
-* Restored the xdp_res = 0 initialization to its original place
-  outside the per-packet loop. The original reason to move it inside
-  the loop was that it was only initialized inside the loop code if
-  skb was not set. But as skb can only be non-null if we have packets
-  consisting of multiple frames (skb is set for all frames except the
-  last one in a packet) and when this is true XDP cannot be active, so
-  this does not matter. xdp_res == 0 is the same as I40E_XDP_PASS
-  which is the default action if XDP is not active and it is then true
-  for every single packet in this case.
-
-Fixes: 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c")
-Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Tested-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 06b4271219b1..70b515049540 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1961,10 +1961,6 @@ static bool i40e_cleanup_headers(struct i40e_ring *rx_ring, struct sk_buff *skb,
- 				 union i40e_rx_desc *rx_desc)
- 
- {
--	/* XDP packets use error pointer so abort at this point */
--	if (IS_ERR(skb))
--		return true;
--
- 	/* ERR_MASK will only have valid bits if EOP set, and
- 	 * what we are doing here is actually checking
- 	 * I40E_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
-@@ -2534,7 +2530,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		}
- 
- 		/* exit if we failed to retrieve a buffer */
--		if (!skb) {
-+		if (!xdp_res && !skb) {
- 			rx_ring->rx_stats.alloc_buff_failed++;
- 			rx_buffer->pagecnt_bias++;
- 			break;
-@@ -2547,7 +2543,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget)
- 		if (i40e_is_non_eop(rx_ring, rx_desc))
- 			continue;
- 
--		if (i40e_cleanup_headers(rx_ring, skb, rx_desc)) {
-+		if (xdp_res || i40e_cleanup_headers(rx_ring, skb, rx_desc)) {
- 			skb = NULL;
- 			continue;
- 		}
-
-base-commit: bbd6f0a948139970f4a615dff189d9a503681a39
--- 
-2.29.0
-
+Actually a better way to go would be to probably just initialize
+"clean_complete = !!budget". With that we don't have it messing with
+the interrupt enables which would probably be a better behavior.
