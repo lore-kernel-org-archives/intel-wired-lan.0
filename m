@@ -1,69 +1,136 @@
-From: Tyler S <tylerjstachecki@gmail.com>
-Date: Tue, 27 Apr 2021 19:11:32 -0400
-Subject: [Intel-wired-lan] [PATCH net v2] igb: Fix XDP with PTP enabled
-In-Reply-To: <871rax9loz.fsf@kurt>
-References: <CAMfj=-YEh1ZnLB8zye7i-5Y2S015n0qat+FQ6JW7bFKwBUHBPg@mail.gmail.com>
- <871rax9loz.fsf@kurt>
-Message-ID: <CAMfj=-ZzOLog6NQvgpThSOy_5od_dY4KHd0uojxRxaWQA9kKJg@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 28 Apr 2021 20:02:26 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 776a417daec6a28fdf89426ea98126f8a03c79a1
+Message-ID: <60894ed2.Xjjc9j7e9HKKm/By%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Apr 26, 2021 at 10:15 AM Kurt Kanzenbach <kurt@linutronix.de> wrote:
->
-> On Sun Apr 25 2021, Tyler S wrote:
-> > Thanks for this work; I was having trouble using XDP on my I354 NIC until this.
-> >
-> > Hopefully I have not err'd backporting it to 5.10 -- but I'm seeing
-> > jumbo frames dropped after applying this (though as previously
-> > mentioned, non-skb/full driver XDP programs do now work).
-> >
-> > Looking at the code, I'm not sure why that is.
->
-> I'm also not sure, yet.
->
-> Can you try with version 3 of this patch [1] and see if there are still
-> issues with jumbo frames? Can you also share the backported patch for
-> v5.10?
->
-> Thanks,
-> Kurt
->
-> [1] - https://lkml.kernel.org/netdev/20210422052617.17267-1-kurt at linutronix.de/
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 776a417daec6a28fdf89426ea98126f8a03c79a1  ixgbevf: add correct exception tracing for XDP
 
-Sorry, I didn't see v3.  I can confirm that v3 fixes the issue I was
-seeing with jumbo frames.
+elapsed time: 726m
 
-The only part of the patch that differs for 5.10 is the hunk I'll
-include inline.  Thanks again for your work!
+configs tested: 107
+configs skipped: 2
 
-Cheers,
-Tyler
-@@ -8720,11 +8716,22 @@ static int igb_clean_rx_irq(struct
-igb_q_vector *q_vector, const int budget)
-                dma_rmb();
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-                rx_buffer = igb_get_rx_buffer(rx_ring, size, &rx_buf_pgcnt);
-+               pktbuf = page_address(rx_buffer->page) + rx_buffer->page_offset;
-+
-+               /* pull rx packet timestamp if available and valid */
-+               if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
-+                       timestamp = igb_ptp_rx_pktstamp(rx_ring->q_vector,
-+                                                       pktbuf);
-+
-+                       if (timestamp) {
-+                               pkt_offset += IGB_TS_HDR_LEN;
-+                               size -= IGB_TS_HDR_LEN;
-+                       }
-+               }
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+powerpc                     akebono_defconfig
+arm                         socfpga_defconfig
+mips                    maltaup_xpa_defconfig
+arm                       spear13xx_defconfig
+ia64                             allmodconfig
+powerpc                    mvme5100_defconfig
+csky                                defconfig
+arm                         lpc32xx_defconfig
+sh                           se7343_defconfig
+riscv                          rv32_defconfig
+arm                         axm55xx_defconfig
+ia64                         bigsur_defconfig
+mips                            e55_defconfig
+arm                           viper_defconfig
+mips                      maltasmvp_defconfig
+arm                        multi_v7_defconfig
+powerpc                 mpc836x_rdk_defconfig
+m68k                       m5208evb_defconfig
+arm                           corgi_defconfig
+powerpc                    socrates_defconfig
+powerpc                      ppc6xx_defconfig
+sh                           se7619_defconfig
+i386                             alldefconfig
+mips                           ip27_defconfig
+powerpc                      mgcoge_defconfig
+mips                  maltasmvp_eva_defconfig
+mips                           mtx1_defconfig
+sh                      rts7751r2d1_defconfig
+powerpc                      pmac32_defconfig
+sh                     magicpanelr2_defconfig
+mips                     loongson1c_defconfig
+arm                         orion5x_defconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210428
+i386                 randconfig-a002-20210428
+i386                 randconfig-a001-20210428
+i386                 randconfig-a006-20210428
+i386                 randconfig-a003-20210428
+i386                 randconfig-a004-20210428
+x86_64               randconfig-a015-20210428
+x86_64               randconfig-a016-20210428
+x86_64               randconfig-a011-20210428
+x86_64               randconfig-a014-20210428
+x86_64               randconfig-a013-20210428
+x86_64               randconfig-a012-20210428
+i386                 randconfig-a012-20210428
+i386                 randconfig-a014-20210428
+i386                 randconfig-a013-20210428
+i386                 randconfig-a011-20210428
+i386                 randconfig-a015-20210428
+i386                 randconfig-a016-20210428
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
-                /* retrieve a buffer from the ring */
-                if (!skb) {
--                       xdp.data = page_address(rx_buffer->page) +
--                                  rx_buffer->page_offset;
-+                       xdp.data = pktbuf + pkt_offset;
-                        xdp.data_meta = xdp.data;
-                        xdp.data_hard_start = xdp.data -
-                                              igb_rx_offset(rx_ring);
+clang tested configs:
+x86_64               randconfig-a004-20210428
+x86_64               randconfig-a002-20210428
+x86_64               randconfig-a005-20210428
+x86_64               randconfig-a006-20210428
+x86_64               randconfig-a001-20210428
+x86_64               randconfig-a003-20210428
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
