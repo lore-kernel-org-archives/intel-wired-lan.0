@@ -1,162 +1,158 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Wed, 28 Apr 2021 10:19:41 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix warning message and call
- stack during rmmod i40e driver
-Message-ID: <20210428081941.4765-1-karen.sornek@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 29 Apr 2021 12:00:06 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 0d20bffdab2ac8d7fa2dac91ea77846c6d198919
+Message-ID: <608a2f46.D0pwbOEqE2Or1Mag%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Restore part of reset functionality used when reset is called
-from the VF to reset itself. Without this fix warning message
-is displayed when vf is being removed via sysfs.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 0d20bffdab2ac8d7fa2dac91ea77846c6d198919  ice: Enable configuration of number of qps per VF via devlink
 
-Fix the crash of the VF  during reset by ensuring
-that that PF receives the reset message successfully.
-Refactor code to use one function instead of two.
+elapsed time: 720m
 
-Fixes: eeeddbb80640 ("i40e: drop i40e_pf *pf from i40e_vc_disable_vf()")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+configs tested: 129
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+arm                         bcm2835_defconfig
+mips                            ar7_defconfig
+powerpc                  storcenter_defconfig
+arm                        keystone_defconfig
+sh                            shmin_defconfig
+mips                          ath25_defconfig
+s390                          debug_defconfig
+sh                         ap325rxa_defconfig
+mips                        qi_lb60_defconfig
+m68k                             alldefconfig
+arm                       mainstone_defconfig
+sh                          landisk_defconfig
+mips                     loongson1b_defconfig
+mips                           ci20_defconfig
+mips                         rt305x_defconfig
+xtensa                generic_kc705_defconfig
+arm                        cerfcube_defconfig
+sh                        edosk7705_defconfig
+arm                         shannon_defconfig
+arc                          axs101_defconfig
+sh                           se7750_defconfig
+arc                                 defconfig
+mips                        bcm47xx_defconfig
+powerpc                     ksi8560_defconfig
+arm                        mini2440_defconfig
+arm                          iop32x_defconfig
+mips                  decstation_64_defconfig
+arm                            qcom_defconfig
+sh                               j2_defconfig
+xtensa                          iss_defconfig
+mips                         tb0287_defconfig
+mips                     cu1830-neo_defconfig
+powerpc                   bluestone_defconfig
+arm                        clps711x_defconfig
+arm                             rpc_defconfig
+powerpc                      ppc44x_defconfig
+sh                          rsk7201_defconfig
+arm                       omap2plus_defconfig
+i386                             alldefconfig
+m68k                         apollo_defconfig
+arc                 nsimosci_hs_smp_defconfig
+powerpc                      bamboo_defconfig
+powerpc                      makalu_defconfig
+powerpc                      obs600_defconfig
+arc                         haps_hs_defconfig
+m68k                          sun3x_defconfig
+powerpc                mpc7448_hpc2_defconfig
+mips                           ip22_defconfig
+arm                    vt8500_v6_v7_defconfig
+sh                         microdev_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                         nhk8815_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210428
+i386                 randconfig-a002-20210428
+i386                 randconfig-a001-20210428
+i386                 randconfig-a006-20210428
+i386                 randconfig-a003-20210428
+i386                 randconfig-a004-20210428
+x86_64               randconfig-a015-20210428
+x86_64               randconfig-a016-20210428
+x86_64               randconfig-a011-20210428
+x86_64               randconfig-a014-20210428
+x86_64               randconfig-a013-20210428
+x86_64               randconfig-a012-20210428
+i386                 randconfig-a012-20210428
+i386                 randconfig-a014-20210428
+i386                 randconfig-a013-20210428
+i386                 randconfig-a011-20210428
+i386                 randconfig-a015-20210428
+i386                 randconfig-a016-20210428
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20210428
+x86_64               randconfig-a002-20210428
+x86_64               randconfig-a005-20210428
+x86_64               randconfig-a006-20210428
+x86_64               randconfig-a001-20210428
+x86_64               randconfig-a003-20210428
+
 ---
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 53 ++++++++-----------
- 1 file changed, 21 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 139562aaf..49720b5c3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -183,17 +183,18 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
- /***********************misc routines*****************************/
- 
- /**
-- * i40e_vc_disable_vf
-+ * i40e_vc_reset_vf
-  * @vf: pointer to the VF info
-- *
-- * Disable the VF through a SW reset.
-+ * @notify_vf: notify vf about reset or not
-+ * Reset VF handler.
-  **/
--static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
-+static void i40e_vc_reset_vf(struct i40e_vf *vf, bool notify_vf)
- {
- 	struct i40e_pf *pf = vf->pf;
- 	int i;
- 
--	i40e_vc_notify_vf_reset(vf);
-+	if (notify_vf)
-+		i40e_vc_notify_vf_reset(vf);
- 
- 	/* We want to ensure that an actual reset occurs initiated after this
- 	 * function was called. However, we do not want to wait forever, so
-@@ -211,9 +212,14 @@ static inline void i40e_vc_disable_vf(struct i40e_vf *vf)
- 		usleep_range(10000, 20000);
- 	}
- 
--	dev_warn(&vf->pf->pdev->dev,
--		 "Failed to initiate reset for VF %d after 200 milliseconds\n",
--		 vf->vf_id);
-+	if (notify_vf)
-+		dev_warn(&vf->pf->pdev->dev,
-+			 "Failed to initiate reset for VF %d after 200 milliseconds\n",
-+			 vf->vf_id);
-+	else
-+		dev_dbg(&vf->pf->pdev->dev,
-+			"Failed to initiate reset for VF %d after 200 milliseconds\n",
-+			vf->vf_id);
- }
- 
- /**
-@@ -2126,20 +2132,6 @@ err:
- 	return ret;
- }
- 
--/**
-- * i40e_vc_reset_vf_msg
-- * @vf: pointer to the VF info
-- *
-- * called from the VF to reset itself,
-- * unlike other virtchnl messages, PF driver
-- * doesn't send the response back to the VF
-- **/
--static void i40e_vc_reset_vf_msg(struct i40e_vf *vf)
--{
--	if (test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
--		i40e_reset_vf(vf, false);
--}
--
- /**
-  * i40e_vc_config_promiscuous_mode_msg
-  * @vf: pointer to the VF info
-@@ -2628,8 +2620,7 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg)
- 	} else {
- 		/* successful request */
- 		vf->num_req_queues = req_pairs;
--		i40e_vc_notify_vf_reset(vf);
--		i40e_reset_vf(vf, false);
-+		i40e_vc_reset_vf(vf, true);
- 		return 0;
- 	}
- 
-@@ -3832,8 +3823,7 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
- 	vf->num_req_queues = 0;
- 
- 	/* reset the VF in order to allocate resources */
--	i40e_vc_notify_vf_reset(vf);
--	i40e_reset_vf(vf, false);
-+	i40e_vc_reset_vf(vf, true);
- 
- 	return I40E_SUCCESS;
- 
-@@ -3873,8 +3863,7 @@ static int i40e_vc_del_qch_msg(struct i40e_vf *vf, u8 *msg)
- 	}
- 
- 	/* reset the VF in order to allocate resources */
--	i40e_vc_notify_vf_reset(vf);
--	i40e_reset_vf(vf, false);
-+	i40e_vc_reset_vf(vf, true);
- 
- 	return I40E_SUCCESS;
- 
-@@ -3936,7 +3925,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
- 		i40e_vc_notify_vf_link_state(vf);
- 		break;
- 	case VIRTCHNL_OP_RESET_VF:
--		i40e_vc_reset_vf_msg(vf);
-+		i40e_vc_reset_vf(vf, false);
- 		ret = 0;
- 		break;
- 	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
-@@ -4190,7 +4179,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	/* Force the VF interface down so it has to bring up with new MAC
- 	 * address
- 	 */
--	i40e_vc_disable_vf(vf);
-+	i40e_vc_reset_vf(vf, true);
- 	dev_info(&pf->pdev->dev, "Bring down and up the VF interface to make this change effective.\n");
- 
- error_param:
-@@ -4254,7 +4243,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 		/* duplicate request, so just return success */
- 		goto error_pvid;
- 
--	i40e_vc_disable_vf(vf);
-+	i40e_vc_reset_vf(vf, true);
- 	/* During reset the VF got a new VSI, so refresh a pointer. */
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	/* Locked once because multiple functions below iterate list */
-@@ -4632,7 +4621,7 @@ int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
- 		goto out;
- 
- 	vf->trusted = setting;
--	i40e_vc_disable_vf(vf);
-+	i40e_vc_reset_vf(vf, true);
- 	dev_info(&pf->pdev->dev, "VF %u is now %strusted\n",
- 		 vf_id, setting ? "" : "un");
- 
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
