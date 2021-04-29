@@ -1,158 +1,82 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 29 Apr 2021 12:00:06 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 0d20bffdab2ac8d7fa2dac91ea77846c6d198919
-Message-ID: <608a2f46.D0pwbOEqE2Or1Mag%lkp@intel.com>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Thu, 29 Apr 2021 11:10:56 +0200
+Subject: [Intel-wired-lan] [PATCH intel-net] i40e: fix broken XDP support
+In-Reply-To: <20210426111401.28369-1-magnus.karlsson@gmail.com>
+References: <20210426111401.28369-1-magnus.karlsson@gmail.com>
+Message-ID: <20210429111056.2174ee76@carbon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 0d20bffdab2ac8d7fa2dac91ea77846c6d198919  ice: Enable configuration of number of qps per VF via devlink
+Hi Tony, (+ Kuba and DaveM),
 
-elapsed time: 720m
+What is the status on this patch[2] that fixes a crash[1] for i40e driver?
 
-configs tested: 129
-configs skipped: 2
+I'm getting offlist and internal IRC questions to why i40e doesn't
+work, and I noticed that it seems this have not been applied.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I don't see it in net-next or net tree... would it make sense to route
+this via DaveM, or does it depend on the other fixes for i40e.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-arm                         bcm2835_defconfig
-mips                            ar7_defconfig
-powerpc                  storcenter_defconfig
-arm                        keystone_defconfig
-sh                            shmin_defconfig
-mips                          ath25_defconfig
-s390                          debug_defconfig
-sh                         ap325rxa_defconfig
-mips                        qi_lb60_defconfig
-m68k                             alldefconfig
-arm                       mainstone_defconfig
-sh                          landisk_defconfig
-mips                     loongson1b_defconfig
-mips                           ci20_defconfig
-mips                         rt305x_defconfig
-xtensa                generic_kc705_defconfig
-arm                        cerfcube_defconfig
-sh                        edosk7705_defconfig
-arm                         shannon_defconfig
-arc                          axs101_defconfig
-sh                           se7750_defconfig
-arc                                 defconfig
-mips                        bcm47xx_defconfig
-powerpc                     ksi8560_defconfig
-arm                        mini2440_defconfig
-arm                          iop32x_defconfig
-mips                  decstation_64_defconfig
-arm                            qcom_defconfig
-sh                               j2_defconfig
-xtensa                          iss_defconfig
-mips                         tb0287_defconfig
-mips                     cu1830-neo_defconfig
-powerpc                   bluestone_defconfig
-arm                        clps711x_defconfig
-arm                             rpc_defconfig
-powerpc                      ppc44x_defconfig
-sh                          rsk7201_defconfig
-arm                       omap2plus_defconfig
-i386                             alldefconfig
-m68k                         apollo_defconfig
-arc                 nsimosci_hs_smp_defconfig
-powerpc                      bamboo_defconfig
-powerpc                      makalu_defconfig
-powerpc                      obs600_defconfig
-arc                         haps_hs_defconfig
-m68k                          sun3x_defconfig
-powerpc                mpc7448_hpc2_defconfig
-mips                           ip22_defconfig
-arm                    vt8500_v6_v7_defconfig
-sh                         microdev_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                         nhk8815_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210428
-i386                 randconfig-a002-20210428
-i386                 randconfig-a001-20210428
-i386                 randconfig-a006-20210428
-i386                 randconfig-a003-20210428
-i386                 randconfig-a004-20210428
-x86_64               randconfig-a015-20210428
-x86_64               randconfig-a016-20210428
-x86_64               randconfig-a011-20210428
-x86_64               randconfig-a014-20210428
-x86_64               randconfig-a013-20210428
-x86_64               randconfig-a012-20210428
-i386                 randconfig-a012-20210428
-i386                 randconfig-a014-20210428
-i386                 randconfig-a013-20210428
-i386                 randconfig-a011-20210428
-i386                 randconfig-a015-20210428
-i386                 randconfig-a016-20210428
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+[1] https://lore.kernel.org/netdev/20210422170508.22c58226 at carbon/
+[2] https://patchwork.kernel.org/project/netdevbpf/patch/20210426111401.28369-1-magnus.karlsson at gmail.com/
 
-clang tested configs:
-x86_64               randconfig-a004-20210428
-x86_64               randconfig-a002-20210428
-x86_64               randconfig-a005-20210428
-x86_64               randconfig-a006-20210428
-x86_64               randconfig-a001-20210428
-x86_64               randconfig-a003-20210428
+(top-post)
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+On Mon, 26 Apr 2021 13:14:01 +0200
+Magnus Karlsson <magnus.karlsson@gmail.com> wrote:
+
+> From: Magnus Karlsson <magnus.karlsson@intel.com>
+> 
+> Commit 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c") broke
+> XDP support in the i40e driver. That commit was fixing a sparse error
+> in the code by introducing a new variable xdp_res instead of
+> overloading this into the skb pointer. The problem is that the code
+> later uses the skb pointer in if statements and these where not
+> extended to also test for the new xdp_res variable. Fix this by adding
+> the correct tests for xdp_res in these places.
+> 
+> The skb pointer was used to store the result of the XDP program by
+> overloading the results in the errror pointer
+> ERR_PTR(-result). Therefore, the allocation failure test that used to
+> only test for !skb now need to be extended to also consider !xdp_res.
+> 
+> i40e_cleanup_headers() had a check that based on the skb value being
+> an error pointer, i.e. a result from the XDP program != XDP_PASS, and
+> if so start to process a new packet immediately, instead of populating
+> skb fields and sending the skb to the stack. This check is not needed
+> anymore, since we have added an explicit test for xdp_res being set
+> and if so just do continue to pick the next packet from the NIC.
+> 
+> v1 -> v2:
+> 
+> * Improved commit message.
+> 
+> * Restored the xdp_res = 0 initialization to its original place
+>   outside the per-packet loop. The original reason to move it inside
+>   the loop was that it was only initialized inside the loop code if
+>   skb was not set. But as skb can only be non-null if we have packets
+>   consisting of multiple frames (skb is set for all frames except the
+>   last one in a packet) and when this is true XDP cannot be active, so
+>   this does not matter. xdp_res == 0 is the same as I40E_XDP_PASS
+>   which is the default action if XDP is not active and it is then true
+>   for every single packet in this case.
+> 
+> Fixes: 12738ac4754e ("i40e: Fix sparse errors in i40e_txrx.c")
+> Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Tested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+
+-- 
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  LinkedIn: http://www.linkedin.com/in/brouer
+
