@@ -1,159 +1,149 @@
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Thu, 29 Apr 2021 19:49:47 +0200
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix logic of disabling queues
-Message-ID: <20210429174947.10691-1-arkadiusz.kubalewski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 30 Apr 2021 20:22:08 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING 94aa53f0c7a1a823b7f579e3f9f1cb5d12dabce5
+Message-ID: <608bf670.JvUYKCiHFosrr7Zz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Correct the message flow between driver and firmware when disabling
-queues.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 94aa53f0c7a1a823b7f579e3f9f1cb5d12dabce5  ice: track AF_XDP ZC enabled queues in bitmap
 
-Previously in case of PF reset (due to required reinit after reconfig),
-the error like: "VSI seid 397 Tx ring 60 disable timeout" could show up
-occasionally. The error was not a real issue of hardware or firmware,
-it was caused by wrong sequence of messages invoked by the driver.
+Warning in current branch:
 
-Fixes: 41c445ff0f48 ("i40e: main driver core")
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- arm64-defconfig
+    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
+
+elapsed time: 724m
+
+configs tested: 113
+configs skipped: 3
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+powerpc                 mpc836x_rdk_defconfig
+xtensa                    xip_kc705_defconfig
+m68k                       m5208evb_defconfig
+powerpc                 linkstation_defconfig
+arm                       aspeed_g5_defconfig
+um                                allnoconfig
+ia64                                defconfig
+arm                             mxs_defconfig
+arm                      pxa255-idp_defconfig
+sh                        edosk7705_defconfig
+s390                          debug_defconfig
+sh                          polaris_defconfig
+sh                          sdk7786_defconfig
+m68k                         amcore_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                         rt305x_defconfig
+powerpc                   motionpro_defconfig
+arm                     eseries_pxa_defconfig
+sh                           se7619_defconfig
+arm                          collie_defconfig
+arm                       omap2plus_defconfig
+sh                   sh7724_generic_defconfig
+powerpc               mpc834x_itxgp_defconfig
+mips                        maltaup_defconfig
+mips                        qi_lb60_defconfig
+arm                           sunxi_defconfig
+powerpc                  mpc885_ads_defconfig
+openrisc                         alldefconfig
+arc                     haps_hs_smp_defconfig
+arm                         at91_dt_defconfig
+arm                        vexpress_defconfig
+m68k                            q40_defconfig
+arc                              alldefconfig
+m68k                        m5272c3_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                     ppa8548_defconfig
+arc                          axs103_defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20210429
+x86_64               randconfig-a002-20210429
+x86_64               randconfig-a005-20210429
+x86_64               randconfig-a006-20210429
+x86_64               randconfig-a001-20210429
+x86_64               randconfig-a003-20210429
+i386                 randconfig-a005-20210429
+i386                 randconfig-a002-20210429
+i386                 randconfig-a001-20210429
+i386                 randconfig-a006-20210429
+i386                 randconfig-a003-20210429
+i386                 randconfig-a004-20210429
+i386                 randconfig-a012-20210429
+i386                 randconfig-a014-20210429
+i386                 randconfig-a013-20210429
+i386                 randconfig-a011-20210429
+i386                 randconfig-a015-20210429
+i386                 randconfig-a016-20210429
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a015-20210429
+x86_64               randconfig-a016-20210429
+x86_64               randconfig-a011-20210429
+x86_64               randconfig-a014-20210429
+x86_64               randconfig-a013-20210429
+x86_64               randconfig-a012-20210429
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 58 ++++++++++++---------
- 1 file changed, 34 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c34a4b3..9a2c56b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4458,11 +4458,10 @@ int i40e_control_wait_tx_q(int seid, struct i40e_pf *pf, int pf_q,
- }
- 
- /**
-- * i40e_vsi_control_tx - Start or stop a VSI's rings
-+ * i40e_vsi_enable_tx - Start a VSI's rings
-  * @vsi: the VSI being configured
-- * @enable: start or stop the rings
-  **/
--static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
-+static int i40e_vsi_enable_tx(struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = vsi->back;
- 	int i, pf_q, ret = 0;
-@@ -4471,7 +4470,7 @@ static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
- 	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
- 		ret = i40e_control_wait_tx_q(vsi->seid, pf,
- 					     pf_q,
--					     false /*is xdp*/, enable);
-+					     false /*is xdp*/, true);
- 		if (ret)
- 			break;
- 
-@@ -4480,7 +4479,7 @@ static int i40e_vsi_control_tx(struct i40e_vsi *vsi, bool enable)
- 
- 		ret = i40e_control_wait_tx_q(vsi->seid, pf,
- 					     pf_q + vsi->alloc_queue_pairs,
--					     true /*is xdp*/, enable);
-+					     true /*is xdp*/, true);
- 		if (ret)
- 			break;
- 	}
-@@ -4578,32 +4577,25 @@ int i40e_control_wait_rx_q(struct i40e_pf *pf, int pf_q, bool enable)
- }
- 
- /**
-- * i40e_vsi_control_rx - Start or stop a VSI's rings
-+ * i40e_vsi_enable_rx - Start a VSI's rings
-  * @vsi: the VSI being configured
-- * @enable: start or stop the rings
-  **/
--static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
-+static int i40e_vsi_enable_rx(struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = vsi->back;
- 	int i, pf_q, ret = 0;
- 
- 	pf_q = vsi->base_queue;
- 	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
--		ret = i40e_control_wait_rx_q(pf, pf_q, enable);
-+		ret = i40e_control_wait_rx_q(pf, pf_q, true);
- 		if (ret) {
- 			dev_info(&pf->pdev->dev,
--				 "VSI seid %d Rx ring %d %sable timeout\n",
--				 vsi->seid, pf_q, (enable ? "en" : "dis"));
-+				 "VSI seid %d Rx ring %d enable timeout\n",
-+				 vsi->seid, pf_q);
- 			break;
- 		}
- 	}
- 
--	/* Due to HW errata, on Rx disable only, the register can indicate done
--	 * before it really is. Needs 50ms to be sure
--	 */
--	if (!enable)
--		mdelay(50);
--
- 	return ret;
- }
- 
-@@ -4616,29 +4608,47 @@ int i40e_vsi_start_rings(struct i40e_vsi *vsi)
- 	int ret = 0;
- 
- 	/* do rx first for enable and last for disable */
--	ret = i40e_vsi_control_rx(vsi, true);
-+	ret = i40e_vsi_enable_rx(vsi);
- 	if (ret)
- 		return ret;
--	ret = i40e_vsi_control_tx(vsi, true);
-+	ret = i40e_vsi_enable_tx(vsi);
- 
- 	return ret;
- }
- 
-+#define I40E_DISABLE_TX_GAP_MSEC	50
-+
- /**
-  * i40e_vsi_stop_rings - Stop a VSI's rings
-  * @vsi: the VSI being configured
-  **/
- void i40e_vsi_stop_rings(struct i40e_vsi *vsi)
- {
-+	struct i40e_pf *pf = vsi->back;
-+	int pf_q, err, q_end;
-+
- 	/* When port TX is suspended, don't wait */
- 	if (test_bit(__I40E_PORT_SUSPENDED, vsi->back->state))
- 		return i40e_vsi_stop_rings_no_wait(vsi);
- 
--	/* do rx first for enable and last for disable
--	 * Ignore return value, we need to shutdown whatever we can
--	 */
--	i40e_vsi_control_tx(vsi, false);
--	i40e_vsi_control_rx(vsi, false);
-+	q_end = vsi->base_queue + vsi->num_queue_pairs;
-+	for (pf_q = vsi->base_queue; pf_q < q_end; pf_q++)
-+		i40e_pre_tx_queue_cfg(&pf->hw, (u32)pf_q, false);
-+
-+	for (pf_q = vsi->base_queue; pf_q < q_end; pf_q++) {
-+		err = i40e_control_wait_rx_q(pf, pf_q, false);
-+		if (err)
-+			dev_info(&pf->pdev->dev,
-+				 "VSI seid %d Rx ring %d dissable timeout\n",
-+				 vsi->seid, pf_q);
-+	}
-+
-+	msleep(I40E_DISABLE_TX_GAP_MSEC);
-+	pf_q = vsi->base_queue;
-+	for (pf_q = vsi->base_queue; pf_q < q_end; pf_q++)
-+		wr32(&pf->hw, I40E_QTX_ENA(pf_q), 0);
-+
-+	i40e_vsi_wait_queues_disabled(vsi);
- }
- 
- /**
-
-base-commit: 776a417daec6a28fdf89426ea98126f8a03c79a1
--- 
-2.26.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
