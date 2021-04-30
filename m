@@ -1,31 +1,24 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 30 Apr 2021 20:22:08 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
- WARNING 94aa53f0c7a1a823b7f579e3f9f1cb5d12dabce5
-Message-ID: <608bf670.JvUYKCiHFosrr7Zz%lkp@intel.com>
+Date: Fri, 30 Apr 2021 20:22:10 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 6ed7f4675db5cc59206e9ec09801609c22c7d6e3
+Message-ID: <608bf672.cNftYlyOUpS61yD/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 94aa53f0c7a1a823b7f579e3f9f1cb5d12dabce5  ice: track AF_XDP ZC enabled queues in bitmap
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 6ed7f4675db5cc59206e9ec09801609c22c7d6e3  ice: track AF_XDP ZC enabled queues in bitmap
 
-Warning in current branch:
+elapsed time: 723m
 
-drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- arm64-defconfig
-    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
-
-elapsed time: 724m
-
-configs tested: 113
+configs tested: 95
 configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
@@ -37,56 +30,37 @@ x86_64                           allyesconfig
 riscv                            allmodconfig
 i386                             allyesconfig
 riscv                            allyesconfig
-powerpc                 mpc836x_rdk_defconfig
-xtensa                    xip_kc705_defconfig
-m68k                       m5208evb_defconfig
-powerpc                 linkstation_defconfig
-arm                       aspeed_g5_defconfig
-um                                allnoconfig
-ia64                                defconfig
-arm                             mxs_defconfig
-arm                      pxa255-idp_defconfig
-sh                        edosk7705_defconfig
-s390                          debug_defconfig
-sh                          polaris_defconfig
-sh                          sdk7786_defconfig
-m68k                         amcore_defconfig
-sh                   rts7751r2dplus_defconfig
+arm                        mvebu_v7_defconfig
+arm                         mv78xx0_defconfig
+arc                        nsimosci_defconfig
 mips                         rt305x_defconfig
 powerpc                   motionpro_defconfig
 arm                     eseries_pxa_defconfig
 sh                           se7619_defconfig
 arm                          collie_defconfig
-arm                       omap2plus_defconfig
-sh                   sh7724_generic_defconfig
-powerpc               mpc834x_itxgp_defconfig
-mips                        maltaup_defconfig
-mips                        qi_lb60_defconfig
-arm                           sunxi_defconfig
-powerpc                  mpc885_ads_defconfig
-openrisc                         alldefconfig
-arc                     haps_hs_smp_defconfig
-arm                         at91_dt_defconfig
-arm                        vexpress_defconfig
-m68k                            q40_defconfig
-arc                              alldefconfig
-m68k                        m5272c3_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                     ppa8548_defconfig
-arc                          axs103_defconfig
+sh                             sh03_defconfig
+arm                       aspeed_g5_defconfig
+powerpc                      cm5200_defconfig
+powerpc                    gamecube_defconfig
+mips                      pistachio_defconfig
+arc                     nsimosci_hs_defconfig
+powerpc                    ge_imp3a_defconfig
+sh                            titan_defconfig
+arm                        keystone_defconfig
 ia64                             allmodconfig
+ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
@@ -128,6 +102,7 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 um                               allmodconfig
+um                                allnoconfig
 um                               allyesconfig
 um                                  defconfig
 x86_64                    rhel-8.3-kselftests
