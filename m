@@ -1,106 +1,145 @@
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Date: Sat, 8 May 2021 12:26:30 +0200
-Subject: [Intel-wired-lan] [PATCH net] igb: fix netpoll exit with traffic
-In-Reply-To: <20210507023001.2621951-1-jesse.brandeburg@intel.com>
-References: <20210507023001.2621951-1-jesse.brandeburg@intel.com>
-Message-ID: <20210508102630.rytwqgkn7ariwru6@spock.localdomain>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 01 May 2021 18:28:54 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING 9db33b54fb98525e323d0d3f16b01778f17b9493
+Message-ID: <608d2d66.GJwxb4oW+Pq9xn2u%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 9db33b54fb98525e323d0d3f16b01778f17b9493  igb: Add counter to i21x doublecheck
 
-On Thu, May 06, 2021 at 07:30:01PM -0700, Jesse Brandeburg wrote:
-> Oleksandr brought a bug report where netpoll causes trace messages in
-> the log on igb.
-> 
-> [22038.710800] ------------[ cut here ]------------
-> [22038.710801] igb_poll+0x0/0x1440 [igb] exceeded budget in poll
-> [22038.710802] WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155 netpoll_poll_dev+0x18a/0x1a0
-> 
-> After some discussion and debug from the list, it was deemed that the
-> right thing to do is initialize the clean_complete variable to false
-> when the "netpoll mode" of passing a zero budget is used.
-> 
-> This logic should be sane and not risky because the only time budget
-> should be zero on entry is netpoll.  Change includes a small refactor
-> of local variable assignments to clean up the look.
-> 
-> Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and improve performance")
-> Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
-> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
-> ---
-> 
-> Compile tested ONLY, but functionally it should be exactly the same for
-> all cases except when budget is zero on entry, which will hopefully fix
-> the bug.
-> 
-> Sending this through intel-wired-lan with Alex's ACK.
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 0cd37ad81b4e..b0a9bed14071 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -7991,12 +7991,16 @@ static void igb_ring_irq_enable(struct igb_q_vector *q_vector)
->   **/
->  static int igb_poll(struct napi_struct *napi, int budget)
->  {
-> -	struct igb_q_vector *q_vector = container_of(napi,
-> -						     struct igb_q_vector,
-> -						     napi);
-> -	bool clean_complete = true;
-> +	struct igb_q_vector *q_vector;
-> +	bool clean_complete;
->  	int work_done = 0;
->  
-> +	/* if budget is zero, we have a special case for netconsole, so
-> +	 * make sure to set clean_complete to false in that case.
-> +	 */
-> +	clean_complete = !!budget;
-> +
-> +	q_vector = container_of(napi, struct igb_q_vector, napi);
->  #ifdef CONFIG_IGB_DCA
->  	if (q_vector->adapter->flags & IGB_FLAG_DCA_ENABLED)
->  		igb_update_dca(q_vector);
-> -- 
-> 2.30.2
-> 
+Warning in current branch:
 
-This didn't fix the issue neither for me, nor for another person from
-the kernel bugzilla [1].
+drivers/net/ethernet/mellanox/mlx5/core/en/rep/tc.c:654:14: warning: variable 'reg_c1' set but not used [-Wunused-but-set-variable]
 
-The same printout still happens:
+Warning ids grouped by kconfigs:
 
-```
-May 07 20:26:55 spock kernel: igb_poll+0x0/0x1440 [igb] exceeded budget in poll
-May 07 20:26:55 spock kernel: WARNING: CPU: 13 PID: 12285 at net/core/netpoll.c:154 netpoll_poll_dev+0x18a/0x1a0
-?
-May 07 20:26:55 spock kernel: Call Trace:
-May 07 20:26:55 spock kernel:  netpoll_send_skb+0x1a0/0x260
-May 07 20:26:55 spock kernel:  write_msg+0xe5/0x100 [netconsole]
-May 07 20:26:55 spock kernel:  console_unlock+0x42f/0x720
-May 07 20:26:55 spock kernel:  suspend_devices_and_enter+0x2ac/0x7f0
-May 07 20:26:55 spock kernel:  pm_suspend.cold+0x321/0x36c
-May 07 20:26:55 spock kernel:  state_store+0xa6/0x140
-May 07 20:26:55 spock kernel:  kernfs_fop_write_iter+0x124/0x1b0
-May 07 20:26:55 spock kernel:  new_sync_write+0x16a/0x200
-May 07 20:26:55 spock kernel:  vfs_write+0x223/0x2e0
-May 07 20:26:55 spock kernel:  __x64_sys_write+0x6d/0xf0
-```
+gcc_recent_errors
+|-- arm64-defconfig
+|   `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
+`-- i386-randconfig-a004-20210430
+    `-- drivers-net-ethernet-mellanox-mlx5-core-en-rep-tc.c:warning:variable-reg_c1-set-but-not-used
 
-Probably, your patch is still fine, but another idea is desperately
-needed :).
+elapsed time: 724m
 
-Thanks.
+configs tested: 107
+configs skipped: 2
 
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=212573
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+i386                             allyesconfig
+riscv                            allyesconfig
+mips                     loongson1b_defconfig
+powerpc                     rainier_defconfig
+mips                       capcella_defconfig
+arm                  colibri_pxa270_defconfig
+m68k                        m5407c3_defconfig
+sh                           se7712_defconfig
+powerpc                      ppc40x_defconfig
+sh                           se7750_defconfig
+powerpc                    ge_imp3a_defconfig
+ia64                        generic_defconfig
+powerpc                      bamboo_defconfig
+arm                        oxnas_v6_defconfig
+arm                           corgi_defconfig
+sh                   sh7770_generic_defconfig
+mips                        bcm47xx_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                         ps3_defconfig
+powerpc                     tqm8541_defconfig
+arm                         axm55xx_defconfig
+mips                     decstation_defconfig
+arm                        trizeps4_defconfig
+arm                         cm_x300_defconfig
+m68k                          hp300_defconfig
+xtensa                         virt_defconfig
+arm                           sunxi_defconfig
+ia64                                defconfig
+mips                           jazz_defconfig
+openrisc                            defconfig
+sh                             shx3_defconfig
+sh                  sh7785lcr_32bit_defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a003-20210430
+x86_64               randconfig-a004-20210430
+x86_64               randconfig-a002-20210430
+x86_64               randconfig-a006-20210430
+x86_64               randconfig-a001-20210430
+x86_64               randconfig-a005-20210430
+i386                 randconfig-a004-20210430
+i386                 randconfig-a001-20210430
+i386                 randconfig-a003-20210430
+i386                 randconfig-a002-20210430
+i386                 randconfig-a005-20210430
+i386                 randconfig-a006-20210430
+i386                 randconfig-a013-20210430
+i386                 randconfig-a011-20210430
+i386                 randconfig-a016-20210430
+i386                 randconfig-a015-20210430
+i386                 randconfig-a012-20210430
+i386                 randconfig-a014-20210430
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
--- 
-  Oleksandr Natalenko (post-factum)
+clang tested configs:
+x86_64               randconfig-a011-20210430
+x86_64               randconfig-a016-20210430
+x86_64               randconfig-a013-20210430
+x86_64               randconfig-a014-20210430
+x86_64               randconfig-a012-20210430
+x86_64               randconfig-a015-20210430
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
