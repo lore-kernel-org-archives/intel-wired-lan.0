@@ -1,35 +1,77 @@
-From: Hassan Reza Biswas, Imam <imam.hassan.reza.biswas@intel.com>
-Date: Fri, 30 Apr 2021 12:29:56 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: Remove lldp frame filters
-In-Reply-To: <20210416214357.341975-1-arkadiusz.kubalewski@intel.com>
-References: <20210416214357.341975-1-arkadiusz.kubalewski@intel.com>
-Message-ID: <MWHPR11MB1312774CA08BBABCA0C7978DFE5E9@MWHPR11MB1312.namprd11.prod.outlook.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 30 Apr 2021 19:18:32 -0700
+Subject: [Intel-wired-lan] [PATCH tip:irq/core v1] genirq: remove auto-set
+ of the mask when setting the hint
+Message-ID: <20210501021832.743094-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Kubalewski, Arkadiusz
-> Sent: Saturday, April 17, 2021 3:14 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net] i40e: Remove lldp frame filters
-> 
-> Remove filters from being setup in case of software DCB and allow the lldp
-> frames to be properly transmitted to the wire.
-> 
-> It is not possible to transmit the LLDP frame out of the port, if they are
-> filtered by control VSI. This prohibits software lldp agent properly
-> communicate it's DCB capabilities to the neighbors.
-> 
-> Fixes: 4b208eaa8078 ("i40e: Add init and default config of software based
-> DCB")
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h        |  1 -
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    |  1 -
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 42 -------------------
->  3 files changed, 44 deletions(-)
-> 
-Tested-by: Imam Hassan Reza Biswas (imam.hassan.reza.biswas at intel.com)
+It was pointed out by Nitesh that the original work I did in 2014
+to automatically set the interrupt affinity when requesting a
+mask is no longer necessary. The kernel has moved on and no
+longer has the original problem, BUT the original patch
+introduced a subtle bug when booting a system with reserved or
+excluded CPUs. Drivers calling this function with a mask value
+that included a CPU that was currently or in the future
+unavailable would generally not update the hint.
+
+I'm sure there are a million ways to solve this, but the simplest
+one is to just remove a little code that tries to force the
+affinity, as Nitesh has shown it fixes the bug and doesn't seem
+to introduce immediate side effects.
+
+While I'm here, introduce a kernel-doc for the hint function.
+
+Ref: https://lore.kernel.org/lkml/CAFki+L=_dd+JgAR12_eBPX0kZO2_6=1dGdgkwHE=u=K6chMeLQ at mail.gmail.com/
+Cc: netdev at vger.kernel.org
+Fixes: 4fe7ffb7e17c ("genirq: Fix null pointer reference in irq_set_affinity_hint()")
+Fixes: e2e64a932556 ("genirq: Set initial affinity in irq_set_affinity_hint()")
+Reported-by: Nitesh Lal <nilal@redhat.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+
+!!! NOTE: Compile tested only, would appreciate feedback
+
+---
+ kernel/irq/manage.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index e976c4927b25..a31df64662d5 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -456,6 +456,16 @@ int __irq_set_affinity(unsigned int irq, const struct cpumask *mask, bool force)
+ 	return ret;
+ }
+ 
++/**
++ * 	irq_set_affinity_hint - set the hint for an irq
++ *	@irq:	Interrupt for which to set the hint
++ *	@m:	Mask to indicate which CPUs to suggest for the interrupt, use
++ *		NULL here to indicate to clear the value.
++ *
++ *	Use this function to recommend which CPU should handle the
++ *	interrupt to any userspace that uses /proc/irq/nn/smp_affinity_hint
++ *	in order to align interrupts. Pass NULL as the mask to clear the hint.
++ */
+ int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+ {
+ 	unsigned long flags;
+@@ -465,9 +475,6 @@ int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+ 		return -EINVAL;
+ 	desc->affinity_hint = m;
+ 	irq_put_desc_unlock(desc, flags);
+-	/* set the initial affinity to prevent every interrupt being on CPU0 */
+-	if (m)
+-		__irq_set_affinity(irq, m, false);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
+
+base-commit: 765822e1569a37aab5e69736c52d4ad4a289eba6
+-- 
+2.30.2
+
