@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed,  5 May 2021 12:36:38 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.10 75/85] iavf: remove duplicate
+Date: Wed,  5 May 2021 12:38:53 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 43/46] iavf: remove duplicate
  free resources calls
-In-Reply-To: <20210505163648.3462507-1-sashal@kernel.org>
-References: <20210505163648.3462507-1-sashal@kernel.org>
-Message-ID: <20210505163648.3462507-75-sashal@kernel.org>
+In-Reply-To: <20210505163856.3463279-1-sashal@kernel.org>
+References: <20210505163856.3463279-1-sashal@kernel.org>
+Message-ID: <20210505163856.3463279-43-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,10 +27,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index dc5b3c06d1e0..ebd08543791b 100644
+index cffc8c1044f2..a97e1f9ca1ed 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3899,8 +3899,6 @@ static void iavf_remove(struct pci_dev *pdev)
+@@ -3906,8 +3906,6 @@ static void iavf_remove(struct pci_dev *pdev)
  
  	iounmap(hw->hw_addr);
  	pci_release_regions(pdev);
