@@ -1,66 +1,98 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  5 May 2021 14:17:59 -0700
-Subject: [Intel-wired-lan] [PATCH net 3/4] ice: Allow all LLDP packets from
- PF to Tx
-In-Reply-To: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
-References: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210505211800.11908-3-anthony.l.nguyen@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Wed, 5 May 2021 23:21:57 +0200
+Subject: [Intel-wired-lan] Dropped packets mapping IRQs for adjusted
+ queue counts on i40e
+In-Reply-To: <20210505130128.00006720@intel.com>
+References: <CAC1LvL1NHj6n+RNYRmja2YDhkcCwREuhjaBz_k255rU1jdO8Sw@mail.gmail.com>
+ <CADS2XXpjasmJKP__oHsrvv3EG8n-FjB6sqHwgQfh7QgeJ8GrrQ@mail.gmail.com>
+ <CAC1LvL2Q=s8pmwKAh2615fsTFEETKp96jpoLJS+75=0ztwuLFQ@mail.gmail.com>
+ <CADS2XXptoyPTBObKgp3gcRZnWzoVyZrC26tDpLWhC9YrGMSefw@mail.gmail.com>
+ <CAC1LvL2zmO1ntKeAoUMkJSarJBgxNhnTva3Di4047MTKqo8rPA@mail.gmail.com>
+ <CAC1LvL1Kd-TCuPk0BEQyGvEiLzgUqkZHOKQNOUnxXSY6NjFMmw@mail.gmail.com>
+ <20210505130128.00006720@intel.com>
+Message-ID: <20210505212157.GA63266@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dave Ertman <david.m.ertman@intel.com>
+On Wed, May 05, 2021 at 01:01:28PM -0700, Jesse Brandeburg wrote:
+> Zvi Effron wrote:
+> 
+> > On Tue, May 4, 2021 at 4:07 PM Zvi Effron <zeffron@riotgames.com> wrote:
+> > > I'm suspecting it's something with how XDP_REDIRECT is implemented in
+> > > the i40e driver, but I don't know if this is a) cross driver behavior,
+> > > b) expected behavior, or c) a bug.
+> > I think I've found the issue, and it appears to be specific to i40e
+> > (and maybe other drivers, too, but not XDP itself).
+> > 
+> > When performing the XDP xmit, i40e uses the smp_processor_id() to
+> > select the tx queue (see
+> > https://elixir.bootlin.com/linux/v5.12.1/source/drivers/net/ethernet/intel/i40e/i40e_txrx.c#L3846).
+> > I'm not 100% clear on how the CPU is selected (since we don't use
+> > cores 0 and 1), we end up on a core whose id is higher than any
+> > available queue.
+> > 
+> > I'm going to try to modify our IRQ mappings to test this.
+> > 
+> > If I'm correct, this feels like a bug to me, since it requires a user
+> > to understand low level driver details to do IRQ remapping, which is a
+> > bit higher level. But if it's intended, we'll just have to figure out
+> > how to work around this. (Unfortunately, using split tx and rx queues
+> > is not possible with i40e, so that easy solution is unavailable.)
+> > 
+> > --Zvi
 
-Currently in the ice driver, the check whether to
-allow a LLDP packet to egress the interface from the
-PF_VSI is being based on the SKB's priority field.
-It checks to see if the packets priority is equal to
-TC_PRIO_CONTROL.  Injected LLDP packets do not always
-meet this condition.
+Hey Zvi, sorry for the lack of assistance, there has been statutory free
+time in Poland and today i'm in the birthday mode, but we managed to
+discuss the issue with Magnus and we feel like we could have a solution
+for that, more below.
 
-SCAPY defaults to a sk_buff->protocol value of ETH_P_ALL
-(0x0003) and does not set the priority field.  There will
-be other injection methods (even ones used by end users)
-that will not correctly configure the socket so that
-SKB fields are correctly populated.
+> 
+> 
+> It seems like for Intel drivers, igc, ixgbe, i40e, ice all have
+> this problem.
+> 
+> Notably, igb, fixes it like I would expect.
 
-Then ethernet header has to have to correct value for
-the protocol though.
+igb is correct but I think that we would like to avoid the introduction of
+locking for higher speed NICs in XDP data path.
 
-Add a check to also allow packets whose ethhdr->h_proto
-matches ETH_P_LLDP (0x88CC).
+We talked with Magnus that for i40e and ice that have lots of HW
+resources, we could always create the xdp_rings array of num_online_cpus()
+size and use smp_processor_id() for accesses, regardless of the user's
+changes to queue count.
 
-Fixes: 0c3a6101ff2d ("ice: Allow egress control packets from PF_VSI")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+This way the smp_processor_id() provides the serialization by itself as
+we're under napi on a given cpu, so there's no need for locking
+introduction - there is a per-cpu XDP ring provided. If we would stick to
+the approach where you adjust the size of xdp_rings down to the shrinked
+Rx queue count and use a smp_processor_id() % vsi->num_queue_pairs formula
+then we could have a resource contention. Say that you did on a 16 core
+system:
+$ ethtool -L eth0 combined 2
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index e2b4b29ea207..dd06d25850aa 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -2143,6 +2143,7 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
- 	struct ice_tx_offload_params offload = { 0 };
- 	struct ice_vsi *vsi = tx_ring->vsi;
- 	struct ice_tx_buf *first;
-+	struct ethhdr *eth;
- 	unsigned int count;
- 	int tso, csum;
- 
-@@ -2189,7 +2190,9 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_ring *tx_ring)
- 		goto out_drop;
- 
- 	/* allow CONTROL frames egress from main VSI if FW LLDP disabled */
--	if (unlikely(skb->priority == TC_PRIO_CONTROL &&
-+	eth = (struct ethhdr *)skb_mac_header(skb);
-+	if (unlikely((skb->priority == TC_PRIO_CONTROL ||
-+		      eth->h_proto == htons(ETH_P_LLDP)) &&
- 		     vsi->type == ICE_VSI_PF &&
- 		     vsi->port_info->qos_cfg.is_sw_lldp))
- 		offload.cd_qw1 |= (u64)(ICE_TX_DESC_DTYPE_CTX |
--- 
-2.20.1
+and then mapped the q0 to cpu1 and q1 to cpu 11. Both queues will grab the
+xdp_rings[1], so we would have to introduce the locking.
 
+Proposed approach would just result with more Tx queues packed onto Tx
+ring container of queue vector.
+
+Thoughts? Any concerns? Should we have a 'fallback' mode if we would be
+out of queues?
+
+Currently I have a patch for ice (which is trivial) that does the thing
+described above and I'm in the middle of testing it. I feel like this is
+also addressing Jakub's input on the old patch that tried to resolve the
+issue around that manner:
+
+https://lore.kernel.org/netdev/20210123195219.55f6d4e1 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
+
+> 
+> Let's talk about it over on intel-wired-lan and cc netdev.
+
+Let's do this now.
+
+> 
+> Jesse
