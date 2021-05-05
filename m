@@ -1,44 +1,57 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed,  5 May 2021 12:38:53 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 43/46] iavf: remove duplicate
- free resources calls
-In-Reply-To: <20210505163856.3463279-1-sashal@kernel.org>
-References: <20210505163856.3463279-1-sashal@kernel.org>
-Message-ID: <20210505163856.3463279-43-sashal@kernel.org>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed,  5 May 2021 14:17:57 -0700
+Subject: [Intel-wired-lan] [PATCH net 1/4] ice: Remove toggling of antispoof
+ for VF trusted promiscuous mode
+Message-ID: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Stefan Assmann <sassmann@kpanic.de>
+From: Brett Creeley <brett.creeley@intel.com>
 
-[ Upstream commit 1a0e880b028f97478dc689e2900b312741d0d772 ]
+Currently when a trusted VF enables promiscuous mode spoofchk will be
+disabled. This is wrong and should only be modified from the
+ndo_set_vf_spoofchk callback. Fix this by removing the call to toggle
+spoofchk for trusted VFs.
 
-Both iavf_free_all_tx_resources() and iavf_free_all_rx_resources() have
-already been called in the very same function.
-Remove the duplicate calls.
-
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+Fixes: 01b5e89aab49 ("ice: Add VF promiscuous support")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 2 --
- 1 file changed, 2 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 18 ------------------
+ 1 file changed, 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index cffc8c1044f2..a97e1f9ca1ed 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3906,8 +3906,6 @@ static void iavf_remove(struct pci_dev *pdev)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index d7115a2a10d7..4001dc723e1f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2992,24 +2992,6 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 	rm_promisc = !allmulti && !alluni;
  
- 	iounmap(hw->hw_addr);
- 	pci_release_regions(pdev);
--	iavf_free_all_tx_resources(adapter);
--	iavf_free_all_rx_resources(adapter);
- 	iavf_free_queues(adapter);
- 	kfree(adapter->vf_res);
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 	if (vsi->num_vlan || vf->port_vlan_info) {
+-		struct ice_vsi *pf_vsi = ice_get_main_vsi(pf);
+-		struct net_device *pf_netdev;
+-
+-		if (!pf_vsi) {
+-			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+-			goto error_param;
+-		}
+-
+-		pf_netdev = pf_vsi->netdev;
+-
+-		ret = ice_set_vf_spoofchk(pf_netdev, vf->vf_id, rm_promisc);
+-		if (ret) {
+-			dev_err(dev, "Failed to update spoofchk to %s for VF %d VSI %d when setting promiscuous mode\n",
+-				rm_promisc ? "ON" : "OFF", vf->vf_id,
+-				vsi->vsi_num);
+-			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+-		}
+-
+ 		ret = ice_cfg_vlan_pruning(vsi, true, !rm_promisc);
+ 		if (ret) {
+ 			dev_err(dev, "Failed to configure VLAN pruning in promiscuous mode\n");
 -- 
-2.30.2
+2.20.1
 
