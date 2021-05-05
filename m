@@ -1,161 +1,223 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 05 May 2021 11:59:15 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- ac3ae13a867225197f59ada7b38914280ebbb15f
-Message-ID: <60921813.rciP4USnlOCOajAR%lkp@intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed,  5 May 2021 12:30:06 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.12 038/116] ice: handle
+ increasing Tx or Rx ring sizes
+In-Reply-To: <20210505163125.3460440-1-sashal@kernel.org>
+References: <20210505163125.3460440-1-sashal@kernel.org>
+Message-ID: <20210505163125.3460440-38-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: ac3ae13a867225197f59ada7b38914280ebbb15f  igc: Remove unused MDICNFG register
+From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 
-elapsed time: 726m
+[ Upstream commit 2ec5638559c13b923250eccf495d2a033fccb3e7 ]
 
-configs tested: 132
-configs skipped: 2
+There is an issue when the Tx or Rx ring size increases using
+'ethtool -L ...' where the new rings don't get the correct ITR
+values because when we rebuild the VSI we don't know that some
+of the rings may be new.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fix this by looking at the original number of rings and
+determining if the rings in ice_vsi_rebuild_set_coalesce()
+were not present in the original rings received in
+ice_vsi_rebuild_get_coalesce().
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-arm                       imx_v6_v7_defconfig
-arm                          pcm027_defconfig
-powerpc                     tqm8560_defconfig
-mips                             allmodconfig
-arm                            zeus_defconfig
-mips                      fuloong2e_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arc                 nsimosci_hs_smp_defconfig
-arc                        nsim_700_defconfig
-mips                           ci20_defconfig
-mips                            ar7_defconfig
-powerpc                     asp8347_defconfig
-sparc64                          alldefconfig
-mips                            e55_defconfig
-mips                        vocore2_defconfig
-powerpc                        icon_defconfig
-powerpc                    socrates_defconfig
-powerpc                     tqm5200_defconfig
-sh                          sdk7780_defconfig
-m68k                          atari_defconfig
-m68k                        mvme147_defconfig
-arm                      integrator_defconfig
-powerpc                     powernv_defconfig
-arm                           sama5_defconfig
-arm                           spitz_defconfig
-m68k                        m5272c3_defconfig
-powerpc                        cell_defconfig
-powerpc                    mvme5100_defconfig
-sh                   sh7770_generic_defconfig
-mips                       rbtx49xx_defconfig
-sh                           se7343_defconfig
-openrisc                    or1ksim_defconfig
-mips                          rm200_defconfig
-mips                           xway_defconfig
-sparc64                             defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                          pxa3xx_defconfig
-arc                         haps_hs_defconfig
-sh                           se7712_defconfig
-arm                          collie_defconfig
-s390                       zfcpdump_defconfig
-sh                             sh03_defconfig
-powerpc                 mpc832x_mds_defconfig
-arm                           stm32_defconfig
-arm                        keystone_defconfig
-sh                        dreamcast_defconfig
-arm                          gemini_defconfig
-arm                        spear6xx_defconfig
-parisc                           allyesconfig
-m68k                        stmark2_defconfig
-sh                           se7780_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20210504
-i386                 randconfig-a006-20210504
-i386                 randconfig-a001-20210504
-i386                 randconfig-a005-20210504
-i386                 randconfig-a004-20210504
-i386                 randconfig-a002-20210504
-i386                 randconfig-a003-20210503
-i386                 randconfig-a006-20210503
-i386                 randconfig-a001-20210503
-i386                 randconfig-a005-20210503
-i386                 randconfig-a004-20210503
-i386                 randconfig-a002-20210503
-x86_64               randconfig-a014-20210504
-x86_64               randconfig-a015-20210504
-x86_64               randconfig-a012-20210504
-x86_64               randconfig-a013-20210504
-i386                 randconfig-a015-20210504
-i386                 randconfig-a013-20210504
-i386                 randconfig-a016-20210504
-i386                 randconfig-a014-20210504
-i386                 randconfig-a012-20210504
-i386                 randconfig-a011-20210504
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Also change the code to return an error if we can't allocate
+memory for the coalesce data in ice_vsi_rebuild().
 
-clang tested configs:
-x86_64               randconfig-a006-20210504
-x86_64               randconfig-a014-20210503
-x86_64               randconfig-a015-20210503
-x86_64               randconfig-a012-20210503
-x86_64               randconfig-a011-20210503
-x86_64               randconfig-a013-20210503
-x86_64               randconfig-a016-20210503
-
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_lib.c  | 123 ++++++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_txrx.h |   2 +
+ 2 files changed, 92 insertions(+), 33 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index d13c7fc8fb0a..195d122c9cb2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2818,38 +2818,46 @@ int ice_vsi_release(struct ice_vsi *vsi)
+ }
+ 
+ /**
+- * ice_vsi_rebuild_update_coalesce - set coalesce for a q_vector
++ * ice_vsi_rebuild_update_coalesce_intrl - set interrupt rate limit for a q_vector
+  * @q_vector: pointer to q_vector which is being updated
+- * @coalesce: pointer to array of struct with stored coalesce
++ * @stored_intrl_setting: original INTRL setting
+  *
+  * Set coalesce param in q_vector and update these parameters in HW.
+  */
+ static void
+-ice_vsi_rebuild_update_coalesce(struct ice_q_vector *q_vector,
+-				struct ice_coalesce_stored *coalesce)
++ice_vsi_rebuild_update_coalesce_intrl(struct ice_q_vector *q_vector,
++				      u16 stored_intrl_setting)
+ {
+-	struct ice_ring_container *rx_rc = &q_vector->rx;
+-	struct ice_ring_container *tx_rc = &q_vector->tx;
+ 	struct ice_hw *hw = &q_vector->vsi->back->hw;
+ 
+-	tx_rc->itr_setting = coalesce->itr_tx;
+-	rx_rc->itr_setting = coalesce->itr_rx;
+-
+-	/* dynamic ITR values will be updated during Tx/Rx */
+-	if (!ITR_IS_DYNAMIC(tx_rc->itr_setting))
+-		wr32(hw, GLINT_ITR(tx_rc->itr_idx, q_vector->reg_idx),
+-		     ITR_REG_ALIGN(tx_rc->itr_setting) >>
+-		     ICE_ITR_GRAN_S);
+-	if (!ITR_IS_DYNAMIC(rx_rc->itr_setting))
+-		wr32(hw, GLINT_ITR(rx_rc->itr_idx, q_vector->reg_idx),
+-		     ITR_REG_ALIGN(rx_rc->itr_setting) >>
+-		     ICE_ITR_GRAN_S);
+-
+-	q_vector->intrl = coalesce->intrl;
++	q_vector->intrl = stored_intrl_setting;
+ 	wr32(hw, GLINT_RATE(q_vector->reg_idx),
+ 	     ice_intrl_usec_to_reg(q_vector->intrl, hw->intrl_gran));
+ }
+ 
++/**
++ * ice_vsi_rebuild_update_coalesce_itr - set coalesce for a q_vector
++ * @q_vector: pointer to q_vector which is being updated
++ * @rc: pointer to ring container
++ * @stored_itr_setting: original ITR setting
++ *
++ * Set coalesce param in q_vector and update these parameters in HW.
++ */
++static void
++ice_vsi_rebuild_update_coalesce_itr(struct ice_q_vector *q_vector,
++				    struct ice_ring_container *rc,
++				    u16 stored_itr_setting)
++{
++	struct ice_hw *hw = &q_vector->vsi->back->hw;
++
++	rc->itr_setting = stored_itr_setting;
++
++	/* dynamic ITR values will be updated during Tx/Rx */
++	if (!ITR_IS_DYNAMIC(rc->itr_setting))
++		wr32(hw, GLINT_ITR(rc->itr_idx, q_vector->reg_idx),
++		     ITR_REG_ALIGN(rc->itr_setting) >> ICE_ITR_GRAN_S);
++}
++
+ /**
+  * ice_vsi_rebuild_get_coalesce - get coalesce from all q_vectors
+  * @vsi: VSI connected with q_vectors
+@@ -2869,6 +2877,11 @@ ice_vsi_rebuild_get_coalesce(struct ice_vsi *vsi,
+ 		coalesce[i].itr_tx = q_vector->tx.itr_setting;
+ 		coalesce[i].itr_rx = q_vector->rx.itr_setting;
+ 		coalesce[i].intrl = q_vector->intrl;
++
++		if (i < vsi->num_txq)
++			coalesce[i].tx_valid = true;
++		if (i < vsi->num_rxq)
++			coalesce[i].rx_valid = true;
+ 	}
+ 
+ 	return vsi->num_q_vectors;
+@@ -2893,17 +2906,59 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
+ 	if ((size && !coalesce) || !vsi)
+ 		return;
+ 
+-	for (i = 0; i < size && i < vsi->num_q_vectors; i++)
+-		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
+-						&coalesce[i]);
+-
+-	/* number of q_vectors increased, so assume coalesce settings were
+-	 * changed globally (i.e. ethtool -C eth0 instead of per-queue) and use
+-	 * the previous settings from q_vector 0 for all of the new q_vectors
++	/* There are a couple of cases that have to be handled here:
++	 *   1. The case where the number of queue vectors stays the same, but
++	 *      the number of Tx or Rx rings changes (the first for loop)
++	 *   2. The case where the number of queue vectors increased (the
++	 *      second for loop)
+ 	 */
+-	for (; i < vsi->num_q_vectors; i++)
+-		ice_vsi_rebuild_update_coalesce(vsi->q_vectors[i],
+-						&coalesce[0]);
++	for (i = 0; i < size && i < vsi->num_q_vectors; i++) {
++		/* There are 2 cases to handle here and they are the same for
++		 * both Tx and Rx:
++		 *   if the entry was valid previously (coalesce[i].[tr]x_valid
++		 *   and the loop variable is less than the number of rings
++		 *   allocated, then write the previous values
++		 *
++		 *   if the entry was not valid previously, but the number of
++		 *   rings is less than are allocated (this means the number of
++		 *   rings increased from previously), then write out the
++		 *   values in the first element
++		 */
++		if (i < vsi->alloc_rxq && coalesce[i].rx_valid)
++			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++							    &vsi->q_vectors[i]->rx,
++							    coalesce[i].itr_rx);
++		else if (i < vsi->alloc_rxq)
++			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++							    &vsi->q_vectors[i]->rx,
++							    coalesce[0].itr_rx);
++
++		if (i < vsi->alloc_txq && coalesce[i].tx_valid)
++			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++							    &vsi->q_vectors[i]->tx,
++							    coalesce[i].itr_tx);
++		else if (i < vsi->alloc_txq)
++			ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++							    &vsi->q_vectors[i]->tx,
++							    coalesce[0].itr_tx);
++
++		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
++						      coalesce[i].intrl);
++	}
++
++	/* the number of queue vectors increased so write whatever is in
++	 * the first element
++	 */
++	for (; i < vsi->num_q_vectors; i++) {
++		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++						    &vsi->q_vectors[i]->tx,
++						    coalesce[0].itr_tx);
++		ice_vsi_rebuild_update_coalesce_itr(vsi->q_vectors[i],
++						    &vsi->q_vectors[i]->rx,
++						    coalesce[0].itr_rx);
++		ice_vsi_rebuild_update_coalesce_intrl(vsi->q_vectors[i],
++						      coalesce[0].intrl);
++	}
+ }
+ 
+ /**
+@@ -2932,9 +2987,11 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
+ 
+ 	coalesce = kcalloc(vsi->num_q_vectors,
+ 			   sizeof(struct ice_coalesce_stored), GFP_KERNEL);
+-	if (coalesce)
+-		prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi,
+-								  coalesce);
++	if (!coalesce)
++		return -ENOMEM;
++
++	prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi, coalesce);
++
+ 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
+ 	ice_vsi_free_q_vectors(vsi);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 5dab77504fa5..672a7ff0ee36 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -351,6 +351,8 @@ struct ice_coalesce_stored {
+ 	u16 itr_tx;
+ 	u16 itr_rx;
+ 	u8 intrl;
++	u8 tx_valid;
++	u8 rx_valid;
+ };
+ 
+ /* iterator for handling rings in ring container */
+-- 
+2.30.2
+
