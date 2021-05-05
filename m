@@ -1,57 +1,48 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  5 May 2021 14:17:57 -0700
-Subject: [Intel-wired-lan] [PATCH net 1/4] ice: Remove toggling of antispoof
- for VF trusted promiscuous mode
-Message-ID: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
+Date: Wed,  5 May 2021 14:18:00 -0700
+Subject: [Intel-wired-lan] [PATCH net 4/4] ice: fix FDIR init missing when
+ reset VF
+In-Reply-To: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
+References: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
+Message-ID: <20210505211800.11908-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Brett Creeley <brett.creeley@intel.com>
+From: Yahui Cao <yahui.cao@intel.com>
 
-Currently when a trusted VF enables promiscuous mode spoofchk will be
-disabled. This is wrong and should only be modified from the
-ndo_set_vf_spoofchk callback. Fix this by removing the call to toggle
-spoofchk for trusted VFs.
+When VF is being reset, ice_reset_vf() will be called and FDIR
+resource should be released and initialized again.
 
-Fixes: 01b5e89aab49 ("ice: Add VF promiscuous support")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Fixes: 1f7ea1cd6a37 ("ice: Enable FDIR Configure for AVF")
+Signed-off-by: Yahui Cao <yahui.cao@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 18 ------------------
- 1 file changed, 18 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index d7115a2a10d7..4001dc723e1f 100644
+index 4001dc723e1f..c827977f4539 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2992,24 +2992,6 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
- 	rm_promisc = !allmulti && !alluni;
+@@ -1565,6 +1565,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 		ice_vc_set_default_allowlist(vf);
  
- 	if (vsi->num_vlan || vf->port_vlan_info) {
--		struct ice_vsi *pf_vsi = ice_get_main_vsi(pf);
--		struct net_device *pf_netdev;
--
--		if (!pf_vsi) {
--			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
--			goto error_param;
--		}
--
--		pf_netdev = pf_vsi->netdev;
--
--		ret = ice_set_vf_spoofchk(pf_netdev, vf->vf_id, rm_promisc);
--		if (ret) {
--			dev_err(dev, "Failed to update spoofchk to %s for VF %d VSI %d when setting promiscuous mode\n",
--				rm_promisc ? "ON" : "OFF", vf->vf_id,
--				vsi->vsi_num);
--			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
--		}
--
- 		ret = ice_cfg_vlan_pruning(vsi, true, !rm_promisc);
- 		if (ret) {
- 			dev_err(dev, "Failed to configure VLAN pruning in promiscuous mode\n");
+ 		ice_vf_fdir_exit(vf);
++		ice_vf_fdir_init(vf);
+ 		/* clean VF control VSI when resetting VFs since it should be
+ 		 * setup only when VF creates its first FDIR rule.
+ 		 */
+@@ -1693,6 +1694,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 	}
+ 
+ 	ice_vf_fdir_exit(vf);
++	ice_vf_fdir_init(vf);
+ 	/* clean VF control VSI when resetting VF since it should be setup
+ 	 * only when VF creates its first FDIR rule.
+ 	 */
 -- 
 2.20.1
 
