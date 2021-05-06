@@ -1,54 +1,47 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  6 May 2021 08:40:00 -0700
-Subject: [Intel-wired-lan] [PATCH S59 05/13] ice: (re)initialize NVM fields
- when rebuilding
+Date: Thu,  6 May 2021 08:40:08 -0700
+Subject: [Intel-wired-lan] [PATCH S59 13/13] ice: remove local variable
 In-Reply-To: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210506154008.12880-5-anthony.l.nguyen@intel.com>
+Message-ID: <20210506154008.12880-13-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 
-After performing a flash update, a device EMP reset may occur. This
-reset will cause the newly downloaded firmware to be initialized. When
-this happens, the driver still reports the previous NVM version
-information.
+Remove the local variable since it's only used once. Instead, use it
+directly.
 
-This is because the NVM versions are cached within the hw structure.
-This can be confusing, as the new firmware is in fact running in this
-case.
-
-Handle this by calling ice_init_nvm when rebuilding the driver state.
-This will update the flash version information and ensures that the
-current values are displayed when reporting the NVM versions to the
-stack.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9ae9197c12a9..a7c359335cb0 100644
+index 0034bbe9c9b3..101fa9d06477 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6151,6 +6151,12 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+@@ -3026,7 +3026,6 @@ static void ice_set_netdev_features(struct net_device *netdev)
+  */
+ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ {
+-	struct ice_pf *pf = vsi->back;
+ 	struct ice_netdev_priv *np;
+ 	struct net_device *netdev;
+ 	u8 mac_addr[ETH_ALEN];
+@@ -3046,7 +3045,7 @@ static int ice_cfg_netdev(struct ice_vsi *vsi)
+ 	ice_set_ops(netdev);
  
- 	ice_clear_pxe_mode(hw);
- 
-+	ret = ice_init_nvm(hw);
-+	if (ret) {
-+		dev_err(dev, "ice_init_nvm failed %s\n", ice_stat_str(ret));
-+		goto err_init_ctrlq;
-+	}
-+
- 	ret = ice_get_caps(hw);
- 	if (ret) {
- 		dev_err(dev, "ice_get_caps failed %s\n", ice_stat_str(ret));
+ 	if (vsi->type == ICE_VSI_PF) {
+-		SET_NETDEV_DEV(netdev, ice_pf_to_dev(pf));
++		SET_NETDEV_DEV(netdev, ice_pf_to_dev(vsi->back));
+ 		ether_addr_copy(mac_addr, vsi->port_info->mac.perm_addr);
+ 		ether_addr_copy(netdev->dev_addr, mac_addr);
+ 		ether_addr_copy(netdev->perm_addr, mac_addr);
 -- 
 2.20.1
 
