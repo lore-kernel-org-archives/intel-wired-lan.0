@@ -1,98 +1,90 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Wed, 5 May 2021 23:21:57 +0200
-Subject: [Intel-wired-lan] Dropped packets mapping IRQs for adjusted
- queue counts on i40e
-In-Reply-To: <20210505130128.00006720@intel.com>
-References: <CAC1LvL1NHj6n+RNYRmja2YDhkcCwREuhjaBz_k255rU1jdO8Sw@mail.gmail.com>
- <CADS2XXpjasmJKP__oHsrvv3EG8n-FjB6sqHwgQfh7QgeJ8GrrQ@mail.gmail.com>
- <CAC1LvL2Q=s8pmwKAh2615fsTFEETKp96jpoLJS+75=0ztwuLFQ@mail.gmail.com>
- <CADS2XXptoyPTBObKgp3gcRZnWzoVyZrC26tDpLWhC9YrGMSefw@mail.gmail.com>
- <CAC1LvL2zmO1ntKeAoUMkJSarJBgxNhnTva3Di4047MTKqo8rPA@mail.gmail.com>
- <CAC1LvL1Kd-TCuPk0BEQyGvEiLzgUqkZHOKQNOUnxXSY6NjFMmw@mail.gmail.com>
- <20210505130128.00006720@intel.com>
-Message-ID: <20210505212157.GA63266@ranger.igk.intel.com>
+From: Liwei Song <liwei.song@windriver.com>
+Date: Thu, 6 May 2021 09:54:30 +0800
+Subject: [Intel-wired-lan] [PATCH] ice: set the value of global config
+ lock timeout longer
+In-Reply-To: <fa7cd362645763d382719f8ab0e72f429156444b.camel@intel.com>
+References: <20210419093106.6487-1-liwei.song@windriver.com>
+ <7d85412de58342e4469efdfdc6196925ce770993.camel@intel.com>
+ <fca32ba9-ad20-0994-de7c-b3bf8425a07b@windriver.com>
+ <8d6eb1116cac38c764fce754a9fa272ac4509bbb.camel@intel.com>
+ <fa7cd362645763d382719f8ab0e72f429156444b.camel@intel.com>
+Message-ID: <5504b7a4-643f-642c-a22d-844566fd253d@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, May 05, 2021 at 01:01:28PM -0700, Jesse Brandeburg wrote:
-> Zvi Effron wrote:
+
+
+On 5/4/21 08:44, Nguyen, Anthony L wrote:
+> On Thu, 2021-04-22 at 11:16 -0700, Tony Nguyen wrote:
+>> On Wed, 2021-04-21 at 10:29 +0800, Liwei Song wrote:
+>>>
+>>> On 4/21/21 06:48, Nguyen, Anthony L wrote:
+>>>> On Mon, 2021-04-19 at 17:31 +0800, Liwei Song wrote:
+>>>>> It may need hold Global Config Lock a longer time when download
+>>>>> DDP
+>>>>> package file, extend the timeout value to 5000ms to ensure that
+>>>>> download can be finished before other AQ command got time to
+>>>>> run,
+>>>>> this will fix the issue below when probe the device, 5000ms is
+>>>>> a
+>>>>> test
+>>>>> value that work with both Backplane and BreakoutCable NVM
+>>>>> image:
+>>>>>
+>>>>> ice 0000:f4:00.0: VSI 12 failed lan queue config, error
+>>>>> ICE_ERR_CFG
+>>>>> ice 0000:f4:00.0: Failed to delete VSI 12 in FW - error:
+>>>>> ICE_ERR_AQ_TIMEOUT
+>>>>> ice 0000:f4:00.0: probe failed due to setup PF switch: -12
+>>>>> ice: probe of 0000:f4:00.0 failed with error -12
+>>>>
+>>>> Hi Liwei,
+>>>>
+>>>> We haven't encountered this issue before. Can you provide some
+>>>> more
+>>>> info on your setup or how you're coming across this issue?
+>>>>
+>>>> Perhaps, lspci output and some more of the dmesg log? We'd like
+>>>> to
+>>>> try
+>>>> to reproduce this so we can invesitgate it further.
+>>>
+>>> Hi Tony,
+>>>
+>>> My board is Idaville ICE-D platform, it can be reproduced when
+>>> there is no QSFP Transceiver Module setup on it, it is not
+>>> happened on each "modprobe ice", about 1/8 rate to got that
+>>> error message when I loop run "modprobe -r ice && modprobe ice".
+>>> the port type is Backplane, and I haven't reproduce
+>>> it with Breakout mode. 
+>>
+>> Hi Liwei, 
+>>
+>> Thanks for the additional information. I've provided this to our
+>> validation team and asked they try to reproduce so we can look into
+>> it further.
 > 
-> > On Tue, May 4, 2021 at 4:07 PM Zvi Effron <zeffron@riotgames.com> wrote:
-> > > I'm suspecting it's something with how XDP_REDIRECT is implemented in
-> > > the i40e driver, but I don't know if this is a) cross driver behavior,
-> > > b) expected behavior, or c) a bug.
-> > I think I've found the issue, and it appears to be specific to i40e
-> > (and maybe other drivers, too, but not XDP itself).
-> > 
-> > When performing the XDP xmit, i40e uses the smp_processor_id() to
-> > select the tx queue (see
-> > https://elixir.bootlin.com/linux/v5.12.1/source/drivers/net/ethernet/intel/i40e/i40e_txrx.c#L3846).
-> > I'm not 100% clear on how the CPU is selected (since we don't use
-> > cores 0 and 1), we end up on a core whose id is higher than any
-> > available queue.
-> > 
-> > I'm going to try to modify our IRQ mappings to test this.
-> > 
-> > If I'm correct, this feels like a bug to me, since it requires a user
-> > to understand low level driver details to do IRQ remapping, which is a
-> > bit higher level. But if it's intended, we'll just have to figure out
-> > how to work around this. (Unfortunately, using split tx and rx queues
-> > is not possible with i40e, so that easy solution is unavailable.)
-> > 
-> > --Zvi
-
-Hey Zvi, sorry for the lack of assistance, there has been statutory free
-time in Poland and today i'm in the birthday mode, but we managed to
-discuss the issue with Magnus and we feel like we could have a solution
-for that, more below.
-
+> Hi Liwei,
 > 
+> We were able to reproduce the issue. We found that this doesn't occur
+> on newer NVMs, however, it will still be awhile until those newer ones
+> are available.
 > 
-> It seems like for Intel drivers, igc, ixgbe, i40e, ice all have
-> this problem.
-> 
-> Notably, igb, fixes it like I would expect.
+> In the interim, I'm going to have this patch tested to ensure it
+> doesn't cause any issues. If so, we'll use this value until the new
+> NVMs become available.
 
-igb is correct but I think that we would like to avoid the introduction of
-locking for higher speed NICs in XDP data path.
+Hi Tony,
 
-We talked with Magnus that for i40e and ice that have lots of HW
-resources, we could always create the xdp_rings array of num_online_cpus()
-size and use smp_processor_id() for accesses, regardless of the user's
-changes to queue count.
+Got it, and thanks for the update.
 
-This way the smp_processor_id() provides the serialization by itself as
-we're under napi on a given cpu, so there's no need for locking
-introduction - there is a per-cpu XDP ring provided. If we would stick to
-the approach where you adjust the size of xdp_rings down to the shrinked
-Rx queue count and use a smp_processor_id() % vsi->num_queue_pairs formula
-then we could have a resource contention. Say that you did on a 16 core
-system:
-$ ethtool -L eth0 combined 2
+Liwei.
 
-and then mapped the q0 to cpu1 and q1 to cpu 11. Both queues will grab the
-xdp_rings[1], so we would have to introduce the locking.
-
-Proposed approach would just result with more Tx queues packed onto Tx
-ring container of queue vector.
-
-Thoughts? Any concerns? Should we have a 'fallback' mode if we would be
-out of queues?
-
-Currently I have a patch for ice (which is trivial) that does the thing
-described above and I'm in the middle of testing it. I feel like this is
-also addressing Jakub's input on the old patch that tried to resolve the
-issue around that manner:
-
-https://lore.kernel.org/netdev/20210123195219.55f6d4e1 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
 
 > 
-> Let's talk about it over on intel-wired-lan and cc netdev.
-
-Let's do this now.
-
+> Thanks,
+> Tony
 > 
-> Jesse
