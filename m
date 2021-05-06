@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  6 May 2021 08:39:57 -0700
-Subject: [Intel-wired-lan] [PATCH S59 02/13] ice: add extack when unable to
- read device caps
+Date: Thu,  6 May 2021 08:39:59 -0700
+Subject: [Intel-wired-lan] [PATCH S59 04/13] ice: wait for reset before
+ reporting devlink info
 In-Reply-To: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210506154008.12880-2-anthony.l.nguyen@intel.com>
+Message-ID: <20210506154008.12880-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,30 +13,155 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-When filling out information for the DEVLINK_CMD_INFO_GET, the driver
-needs to read some device capabilities. Add an extack message to
-properly inform the caller of the failure, as we do for other failures
-in this function.
+Requesting device firmware information while the device is busy cleaning
+up after a reset can result in an unexpected failure:
+
+This occurs because the command is attempting to access the device
+AdminQ while it is down. Resolve this by having the command wait for
+a while until the reset is complete. To do this, introduce
+a reset_wait_queue and associated helper function "ice_wait_for_reset".
+
+This helper will use the wait queue to sleep until the driver is done
+rebuilding. Use of a wait queue is preferred because the potential sleep
+duration can be several seconds.
+
+To ensure that the thread wakes up properly, a new wake_up call is added
+during all code paths which clear the reset state bits associated with
+the driver rebuild flow.
+
+Using this ensures that tools can request device information without
+worrying about whether the driver is cleaning up from a reset.
+Specifically, it is expected that a flash update could result in
+a device reset, and it is better to delay the response for information
+until the reset is complete rather than exit with an immediate failure.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_devlink.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ice/ice.h         |  2 ++
+ drivers/net/ethernet/intel/ice/ice_devlink.c |  6 +++++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 28 ++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c    |  5 ++++
+ 5 files changed, 42 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 3d672f92a2bc..f78466fa7150 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -443,6 +443,8 @@ struct ice_pf {
+ 	struct hlist_head aq_wait_list;
+ 	wait_queue_head_t aq_wait_queue;
+ 
++	wait_queue_head_t reset_wait_queue;
++
+ 	u32 hw_csum_rx_error;
+ 	u16 oicr_idx;		/* Other interrupt cause MSIX vector index */
+ 	u16 num_avail_sw_msix;	/* remaining MSIX SW vectors left unclaimed */
 diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index ecefab6368f8..63a8718586b3 100644
+index 63a8718586b3..364977ca7fe3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
 +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -283,6 +283,9 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 	/* discover capabilities first */
- 	status = ice_discover_dev_caps(hw, &ctx->dev_caps);
- 	if (status) {
-+		dev_dbg(dev, "Failed to discover device capabilities, status %s aq_err %s\n",
-+			ice_stat_str(status), ice_aq_str(hw->adminq.sq_last_status));
-+		NL_SET_ERR_MSG_MOD(extack, "Unable to discover device capabilities");
- 		err = -EIO;
- 		goto out_free_ctx;
+@@ -276,6 +276,12 @@ static int ice_devlink_info_get(struct devlink *devlink,
+ 	size_t i;
+ 	int err;
+ 
++	err = ice_wait_for_reset(pf, 10 * HZ);
++	if (err) {
++		NL_SET_ERR_MSG_MOD(extack, "Device is busy resetting");
++		return err;
++	}
++
+ 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+ 	if (!ctx)
+ 		return -ENOMEM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 9b1d22f6a8eb..6ee1d1994a23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -3219,6 +3219,34 @@ bool ice_is_reset_in_progress(unsigned long *state)
+ 	       test_bit(ICE_GLOBR_REQ, state);
+ }
+ 
++/**
++ * ice_wait_for_reset - Wait for driver to finish reset and rebuild
++ * @pf: pointer to the PF structure
++ * @timeout: length of time to wait, in jiffies
++ *
++ * Wait (sleep) for a short time until the driver finishes cleaning up from
++ * a device reset. The caller must be able to sleep. Use this to delay
++ * operations that could fail while the driver is cleaning up after a device
++ * reset.
++ *
++ * Returns 0 on success, -EBUSY if the reset is not finished within the
++ * timeout, and -ERESTARTSYS if the thread was interrupted.
++ */
++int ice_wait_for_reset(struct ice_pf *pf, unsigned long timeout)
++{
++	long ret;
++
++	ret = wait_event_interruptible_timeout(pf->reset_wait_queue,
++					       !ice_is_reset_in_progress(pf->state),
++					       timeout);
++	if (ret < 0)
++		return ret;
++	else if (!ret)
++		return -EBUSY;
++	else
++		return 0;
++}
++
+ #ifdef CONFIG_DCB
+ /**
+  * ice_vsi_update_q_map - update our copy of the VSI info with new queue map
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index e5c46213b0b1..35ccf3e2f721 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -77,6 +77,7 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id);
+ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi);
+ 
+ bool ice_is_reset_in_progress(unsigned long *state);
++int ice_wait_for_reset(struct ice_pf *pf, unsigned long timeout);
+ 
+ void
+ ice_write_qrxflxp_cntxt(struct ice_hw *hw, u16 pf_q, u32 rxdid, u32 prio);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index f033a4dbdaa6..9ae9197c12a9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -514,6 +514,7 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 		clear_bit(ICE_PFR_REQ, pf->state);
+ 		clear_bit(ICE_CORER_REQ, pf->state);
+ 		clear_bit(ICE_GLOBR_REQ, pf->state);
++		wake_up(&pf->reset_wait_queue);
+ 		return;
  	}
+ 
+@@ -526,6 +527,7 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 		ice_rebuild(pf, reset_type);
+ 		clear_bit(ICE_PREPARED_FOR_RESET, pf->state);
+ 		clear_bit(ICE_PFR_REQ, pf->state);
++		wake_up(&pf->reset_wait_queue);
+ 		ice_reset_all_vfs(pf, true);
+ 	}
+ }
+@@ -576,6 +578,7 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 			clear_bit(ICE_PFR_REQ, pf->state);
+ 			clear_bit(ICE_CORER_REQ, pf->state);
+ 			clear_bit(ICE_GLOBR_REQ, pf->state);
++			wake_up(&pf->reset_wait_queue);
+ 			ice_reset_all_vfs(pf, true);
+ 		}
+ 
+@@ -3340,6 +3343,8 @@ static int ice_init_pf(struct ice_pf *pf)
+ 	spin_lock_init(&pf->aq_wait_lock);
+ 	init_waitqueue_head(&pf->aq_wait_queue);
+ 
++	init_waitqueue_head(&pf->reset_wait_queue);
++
+ 	/* setup service timer and periodic service task */
+ 	timer_setup(&pf->serv_tmr, ice_service_timer, 0);
+ 	pf->serv_tmr_period = HZ;
 -- 
 2.20.1
 
