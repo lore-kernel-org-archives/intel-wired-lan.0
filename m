@@ -1,42 +1,70 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu,  6 May 2021 08:40:04 -0700
-Subject: [Intel-wired-lan] [PATCH S59 09/13] ice: fix incorrect payload
- indicator on PTYPE
+Date: Thu,  6 May 2021 08:40:03 -0700
+Subject: [Intel-wired-lan] [PATCH S59 08/13] ice: Fix replacing VF hardware
+ MAC to existing MAC filter
 In-Reply-To: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210506154008.12880-9-anthony.l.nguyen@intel.com>
+Message-ID: <20210506154008.12880-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 
-The entry for PTYPE 90 indicates that the payload is layer 3. This does
-not match the specification in the datasheet which indicates the packet
-is a MAC, IPv6, UDP packet, with a payload in layer 4.
+VF was not able to change its hardware MAC address in case
+the new address was already present in the MAC filter list.
+Change the handling of VF add mac request to not return
+if requested MAC address is already present on the list
+and check if its hardware MAC needs to be updated in this case.
 
-Fix the lookup table to match the data sheet.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 2bf4c9605db1..72334a2de64f 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -766,7 +766,7 @@ static const struct ice_rx_ptype_decoded ice_ptype_lkup[BIT(10)] = {
- 	/* Non Tunneled IPv6 */
- 	ICE_PTT(88, IP, IPV6, FRG, NONE, NONE, NOF, NONE, PAY3),
- 	ICE_PTT(89, IP, IPV6, NOF, NONE, NONE, NOF, NONE, PAY3),
--	ICE_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY3),
-+	ICE_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY4),
- 	ICE_PTT_UNUSED_ENTRY(91),
- 	ICE_PTT(92, IP, IPV6, NOF, NONE, NONE, NOF, TCP,  PAY4),
- 	ICE_PTT(93, IP, IPV6, NOF, NONE, NONE, NOF, SCTP, PAY4),
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 3c9bff68b05e..ef00f3e6522f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -3719,6 +3719,7 @@ ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
+ 	struct device *dev = ice_pf_to_dev(vf->pf);
+ 	u8 *mac_addr = vc_ether_addr->addr;
+ 	enum ice_status status;
++	int ret = 0;
+ 
+ 	/* device MAC already added */
+ 	if (ether_addr_equal(mac_addr, vf->dev_lan_addr.addr))
+@@ -3731,20 +3732,23 @@ ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
+ 
+ 	status = ice_fltr_add_mac(vsi, mac_addr, ICE_FWD_TO_VSI);
+ 	if (status == ICE_ERR_ALREADY_EXISTS) {
+-		dev_err(dev, "MAC %pM already exists for VF %d\n", mac_addr,
++		dev_dbg(dev, "MAC %pM already exists for VF %d\n", mac_addr,
+ 			vf->vf_id);
+-		return -EEXIST;
++		/* don't return since we might need to update
++		 * the primary MAC in ice_vfhw_mac_add() below
++		 */
++		ret = -EEXIST;
+ 	} else if (status) {
+ 		dev_err(dev, "Failed to add MAC %pM for VF %d\n, error %s\n",
+ 			mac_addr, vf->vf_id, ice_stat_str(status));
+ 		return -EIO;
++	} else {
++		vf->num_mac++;
+ 	}
+ 
+ 	ice_vfhw_mac_add(vf, vc_ether_addr);
+ 
+-	vf->num_mac++;
+-
+-	return 0;
++	return ret;
+ }
+ 
+ /**
 -- 
 2.20.1
 
