@@ -1,53 +1,110 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 7 May 2021 22:58:42 +0000
-Subject: [Intel-wired-lan] [PATCH intel-net 0/5] i40e: ice: ixgbe:
- ixgbevf: igb: add correct exception tracing for XDP
-In-Reply-To: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-References: <20210423100446.15412-1-magnus.karlsson@gmail.com>
-Message-ID: <75d0a1d13a755bc128458c0d43f16d54fe08051e.camel@intel.com>
+Date: Fri, 7 May 2021 23:35:34 +0000
+Subject: [Intel-wired-lan] X710-T4L: 5Gb support for IEEE1588
+In-Reply-To: <CAAE-T7KPQ73PX0LkPPQPeb9Eaun33GbN9AWcyJ18jUXcGMUS3w@mail.gmail.com>
+References: <CAAE-T7+Q__0ONDwzm89uufc6WKrmiCsUPvW_ARhVzaRwv93JFA@mail.gmail.com>
+ <20210507103544.000047ed@intel.com>
+ <CAAE-T7KPQ73PX0LkPPQPeb9Eaun33GbN9AWcyJ18jUXcGMUS3w@mail.gmail.com>
+Message-ID: <681c1aecdf283d8b70fb2ece8a1f0b17a55f5d93.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-04-23 at 12:04 +0200, Magnus Karlsson wrote:
-> Add missing exception tracing to XDP when a number of different
-> errors
-> can occur. The support was only partial. Several errors where not
-> logged which would confuse the user quite a lot not knowing where and
-> why the packets disappeared.
+On Fri, 2021-05-07 at 13:57 -0700, Alex Sergeev wrote:
+> Thanks for quick response and the fix!
 > 
-> This patch set fixes this for all Intel drivers with XDP support.
-> 
-> Thanks: Magnus
+> Would it be backported to standalone drivers, or previous kernel
+> versions (e.g. 5.4), too?
 
-This doesn't apply anymore with the 5.13 patches. It looks like your
-"optimize for XDP_REDIRECT in xsk path" patches are conflicting with
-some of these. Did you want to rework them?
+When the patch is sent to netdev, I will add stable so that it will be
+backported to applicable stable kernels.
 
 Thanks,
 Tony
 
-> Magnus Karlsson (5):
->   i40e: add correct exception tracing for XDP
->   ice: add correct exception tracing for XDP
->   ixgbe: add correct exception tracing for XDP
->   igb add correct exception tracing for XDP
->   ixgbevf: add correct exception tracing for XDP
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c      |  7 ++++++-
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c       |  7 ++++++-
->  drivers/net/ethernet/intel/ice/ice_txrx.c        | 12 +++++++++---
->  drivers/net/ethernet/intel/ice/ice_xsk.c         |  7 ++++++-
->  drivers/net/ethernet/intel/igb/igb_main.c        | 10 ++++++----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 16 ++++++++----
-> ----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c     | 13 ++++++++-----
->  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c    |  3 +++
->  8 files changed, 52 insertions(+), 23 deletions(-)
+> Thanks,
+> Alex Sergeev
 > 
 > 
-> base-commit: bb556de79f0a9e647e8febe15786ee68483fa67b
-> --
-> 2.29.0
+> On Fri, May 7, 2021 at 10:35 AM Jesse Brandeburg <
+> jesse.brandeburg at intel.com> wrote:
+> > Alex Sergeev wrote:
+> > 
+> > > Hello,
+> > > 
+> > > I got forwarded here by folks at e1000-devel at .
+> > > 
+> > > We have tried to use PTP with X710-T4L and 5Gb link, and
+> > encountered
+> > > clockcheck problem in phc2sys:
+> > > 
+> > > Apr 30 22:57:36 budtb phc2sys[5940]: [50.569] clockcheck: clock
+> > jumped
+> > > forward or running faster than expected!
+> > > 
+> > > After further code examination, it turned out that 5Gb case is
+> > not handled
+> > > in i40e_ptp.c
+> > > 
+> > > Here's the naive version of the patch that fixed the problem for
+> > us:
+> > > 
+> > > diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> > > b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> > > index f1f6fc3744e9..5747b652ee9e 100644
+> > > --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> > > +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+> > > @@ -12,12 +12,13 @@
+> > >   *
+> > >   * Much like the 82599, the update period is dependent upon the
+> > link speed:
+> > >   * At 40Gb link or no link, the period is 1.6ns.
+> > > - * At 10Gb link, the period is multiplied by 2. (3.2ns)
+> > > + * At 5Gb or 10Gb link, the period is multiplied by 2. (3.2ns)
+> > >   * At 1Gb link, the period is multiplied by 20. (32ns)
+> > >   * 1588 functionality is not supported at 100Mbps.
+> > >   */
+> > >  #define I40E_PTP_40GB_INCVAL 0x0199999999ULL
+> > >  #define I40E_PTP_10GB_INCVAL_MULT 2
+> > > +#define I40E_PTP_5GB_INCVAL_MULT    2
+> > >  #define I40E_PTP_1GB_INCVAL_MULT 20
+> > > 
+> > >  #define I40E_PRTTSYN_CTL1_TSYNTYPE_V1
+> > >  BIT(I40E_PRTTSYN_CTL1_TSYNTYPE_SHIFT)
+> > > @@ -465,6 +466,9 @@ void i40e_ptp_set_increment(struct i40e_pf
+> > *pf)
+> > >   case I40E_LINK_SPEED_10GB:
+> > >       mult = I40E_PTP_10GB_INCVAL_MULT;
+> > >       break;
+> > > + case I40E_LINK_SPEED_5GB:
+> > > +     mult = I40E_PTP_5GB_INCVAL_MULT;
+> > > +     break;
+> > >   case I40E_LINK_SPEED_1GB:
+> > >       mult = I40E_PTP_1GB_INCVAL_MULT;
+> > >       break;
+> > > 
+> > > What's the process to get it applied upstream?
+> > 
+> > Hi Alex, that's totally a bug, I've filed an internal bug and we'll
+> > be
+> > providing a patch for this problem shortly.
+> > 
+> > We'll be sure to credit you for the work to find the bug and
+> > proposal
+> > for the fix!
+> > 
+> > If you wish to have the patch be authored by you, you're welcome to
+> > resend to this list with a correctly formatted git patch from
+> > git-format-patch and git-send-email. If you do nothing, we'll just
+> > take
+> > care of it. :-)
+> > 
+> > Thanks for the report and the fix!
+> > Jesse
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
