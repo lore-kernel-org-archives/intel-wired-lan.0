@@ -1,69 +1,167 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu,  6 May 2021 19:30:01 -0700
-Subject: [Intel-wired-lan] [PATCH net] igb: fix netpoll exit with traffic
-Message-ID: <20210507023001.2621951-1-jesse.brandeburg@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 07 May 2021 12:36:10 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ cf8e8d9814605e8cf62ebb8e79f2b72175a6551b
+Message-ID: <6094c3ba.9sXyjLHKbZmxlqDk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Oleksandr brought a bug report where netpoll causes trace messages in
-the log on igb.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: cf8e8d9814605e8cf62ebb8e79f2b72175a6551b  ice: fix FDIR init missing when reset VF
 
-[22038.710800] ------------[ cut here ]------------
-[22038.710801] igb_poll+0x0/0x1440 [igb] exceeded budget in poll
-[22038.710802] WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155 netpoll_poll_dev+0x18a/0x1a0
+elapsed time: 725m
 
-After some discussion and debug from the list, it was deemed that the
-right thing to do is initialize the clean_complete variable to false
-when the "netpoll mode" of passing a zero budget is used.
+configs tested: 138
+configs skipped: 2
 
-This logic should be sane and not risky because the only time budget
-should be zero on entry is netpoll.  Change includes a small refactor
-of local variable assignments to clean up the look.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and improve performance")
-Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
-Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+x86_64                           allyesconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+i386                             allyesconfig
+arm                       imx_v4_v5_defconfig
+parisc                           alldefconfig
+m68k                         amcore_defconfig
+microblaze                          defconfig
+mips                          rb532_defconfig
+arm                             ezx_defconfig
+riscv             nommu_k210_sdcard_defconfig
+mips                      maltasmvp_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                    amigaone_defconfig
+m68k                            q40_defconfig
+powerpc                      acadia_defconfig
+powerpc                mpc7448_hpc2_defconfig
+mips                         bigsur_defconfig
+arm                           sama5_defconfig
+m68k                       m5249evb_defconfig
+arm                      integrator_defconfig
+sh                      rts7751r2d1_defconfig
+mips                     loongson1c_defconfig
+sparc64                          alldefconfig
+sh                   sh7724_generic_defconfig
+mips                           jazz_defconfig
+powerpc                 mpc834x_mds_defconfig
+arm                        oxnas_v6_defconfig
+arm                         nhk8815_defconfig
+arm                         hackkit_defconfig
+arm                        shmobile_defconfig
+powerpc                 mpc832x_rdb_defconfig
+m68k                             allyesconfig
+sh                                  defconfig
+arc                        vdk_hs38_defconfig
+arm                          moxart_defconfig
+powerpc                      obs600_defconfig
+arm                       imx_v6_v7_defconfig
+sh                          sdk7780_defconfig
+powerpc                     rainier_defconfig
+powerpc                      katmai_defconfig
+powerpc                        warp_defconfig
+microblaze                      mmu_defconfig
+ia64                        generic_defconfig
+mips                        bcm47xx_defconfig
+arm                          exynos_defconfig
+mips                     cu1830-neo_defconfig
+arc                            hsdk_defconfig
+arm                        realview_defconfig
+m68k                       m5275evb_defconfig
+arm                       multi_v4t_defconfig
+powerpc                     akebono_defconfig
+arm                       aspeed_g5_defconfig
+arm                        keystone_defconfig
+arm                        mvebu_v7_defconfig
+arm                          simpad_defconfig
+arm                      jornada720_defconfig
+riscv                    nommu_k210_defconfig
+sh                           se7751_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                 mpc8315_rdb_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                   currituck_defconfig
+powerpc                     stx_gp3_defconfig
+um                            kunit_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a003-20210506
+i386                 randconfig-a006-20210506
+i386                 randconfig-a001-20210506
+i386                 randconfig-a005-20210506
+i386                 randconfig-a004-20210506
+i386                 randconfig-a002-20210506
+x86_64               randconfig-a014-20210506
+x86_64               randconfig-a015-20210506
+x86_64               randconfig-a012-20210506
+x86_64               randconfig-a013-20210506
+x86_64               randconfig-a011-20210506
+x86_64               randconfig-a016-20210506
+i386                 randconfig-a015-20210506
+i386                 randconfig-a013-20210506
+i386                 randconfig-a016-20210506
+i386                 randconfig-a014-20210506
+i386                 randconfig-a012-20210506
+i386                 randconfig-a011-20210506
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a001-20210506
+x86_64               randconfig-a003-20210506
+x86_64               randconfig-a005-20210506
+x86_64               randconfig-a002-20210506
+x86_64               randconfig-a006-20210506
+x86_64               randconfig-a004-20210506
+
 ---
-
-Compile tested ONLY, but functionally it should be exactly the same for
-all cases except when budget is zero on entry, which will hopefully fix
-the bug.
-
-Sending this through intel-wired-lan with Alex's ACK.
----
- drivers/net/ethernet/intel/igb/igb_main.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0cd37ad81b4e..b0a9bed14071 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7991,12 +7991,16 @@ static void igb_ring_irq_enable(struct igb_q_vector *q_vector)
-  **/
- static int igb_poll(struct napi_struct *napi, int budget)
- {
--	struct igb_q_vector *q_vector = container_of(napi,
--						     struct igb_q_vector,
--						     napi);
--	bool clean_complete = true;
-+	struct igb_q_vector *q_vector;
-+	bool clean_complete;
- 	int work_done = 0;
- 
-+	/* if budget is zero, we have a special case for netconsole, so
-+	 * make sure to set clean_complete to false in that case.
-+	 */
-+	clean_complete = !!budget;
-+
-+	q_vector = container_of(napi, struct igb_q_vector, napi);
- #ifdef CONFIG_IGB_DCA
- 	if (q_vector->adapter->flags & IGB_FLAG_DCA_ENABLED)
- 		igb_update_dca(q_vector);
--- 
-2.30.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
