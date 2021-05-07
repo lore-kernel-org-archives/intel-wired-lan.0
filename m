@@ -1,95 +1,36 @@
-From: Alex Sergeev <asergeev@carbonrobotics.com>
-Date: Fri, 7 May 2021 13:57:29 -0700
-Subject: [Intel-wired-lan] X710-T4L: 5Gb support for IEEE1588
-In-Reply-To: <20210507103544.000047ed@intel.com>
-References: <CAAE-T7+Q__0ONDwzm89uufc6WKrmiCsUPvW_ARhVzaRwv93JFA@mail.gmail.com>
- <20210507103544.000047ed@intel.com>
-Message-ID: <CAAE-T7KPQ73PX0LkPPQPeb9Eaun33GbN9AWcyJ18jUXcGMUS3w@mail.gmail.com>
+From: Brett Creeley <brett.creeley@intel.com>
+Date: Fri,  7 May 2021 15:09:10 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] virtchnl: Remove unused
+ VIRTCHNL_VF_OFFLOAD_RSVD define
+Message-ID: <20210507220911.116361-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks for quick response and the fix!
+Remove unused define that is currently marked as reserved. This will
+open up space for a new feature if/when it's introduced. Also, there is
+no reason to keep unused defines around.
 
-Would it be backported to standalone drivers, or previous kernel versions
-(e.g. 5.4), too?
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Suggested-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+ include/linux/avf/virtchnl.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-Thanks,
-Alex Sergeev
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 565deea6ffe8..591e04fa41cc 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -240,7 +240,6 @@ VIRTCHNL_CHECK_STRUCT_LEN(16, virtchnl_vsi_resource);
+  */
+ #define VIRTCHNL_VF_OFFLOAD_L2			0x00000001
+ #define VIRTCHNL_VF_OFFLOAD_IWARP		0x00000002
+-#define VIRTCHNL_VF_OFFLOAD_RSVD		0x00000004
+ #define VIRTCHNL_VF_OFFLOAD_RSS_AQ		0x00000008
+ #define VIRTCHNL_VF_OFFLOAD_RSS_REG		0x00000010
+ #define VIRTCHNL_VF_OFFLOAD_WB_ON_ITR		0x00000020
+-- 
+2.26.3
 
-
-On Fri, May 7, 2021 at 10:35 AM Jesse Brandeburg <jesse.brandeburg@intel.com>
-wrote:
-
-> Alex Sergeev wrote:
->
-> > Hello,
-> >
-> > I got forwarded here by folks at e1000-devel at .
-> >
-> > We have tried to use PTP with X710-T4L and 5Gb link, and encountered
-> > clockcheck problem in phc2sys:
-> >
-> > Apr 30 22:57:36 budtb phc2sys[5940]: [50.569] clockcheck: clock jumped
-> > forward or running faster than expected!
-> >
-> > After further code examination, it turned out that 5Gb case is not
-> handled
-> > in i40e_ptp.c
-> >
-> > Here's the naive version of the patch that fixed the problem for us:
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> > b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> > index f1f6fc3744e9..5747b652ee9e 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-> > @@ -12,12 +12,13 @@
-> >   *
-> >   * Much like the 82599, the update period is dependent upon the link
-> speed:
-> >   * At 40Gb link or no link, the period is 1.6ns.
-> > - * At 10Gb link, the period is multiplied by 2. (3.2ns)
-> > + * At 5Gb or 10Gb link, the period is multiplied by 2. (3.2ns)
-> >   * At 1Gb link, the period is multiplied by 20. (32ns)
-> >   * 1588 functionality is not supported at 100Mbps.
-> >   */
-> >  #define I40E_PTP_40GB_INCVAL 0x0199999999ULL
-> >  #define I40E_PTP_10GB_INCVAL_MULT 2
-> > +#define I40E_PTP_5GB_INCVAL_MULT    2
-> >  #define I40E_PTP_1GB_INCVAL_MULT 20
-> >
-> >  #define I40E_PRTTSYN_CTL1_TSYNTYPE_V1
-> >  BIT(I40E_PRTTSYN_CTL1_TSYNTYPE_SHIFT)
-> > @@ -465,6 +466,9 @@ void i40e_ptp_set_increment(struct i40e_pf *pf)
-> >   case I40E_LINK_SPEED_10GB:
-> >       mult = I40E_PTP_10GB_INCVAL_MULT;
-> >       break;
-> > + case I40E_LINK_SPEED_5GB:
-> > +     mult = I40E_PTP_5GB_INCVAL_MULT;
-> > +     break;
-> >   case I40E_LINK_SPEED_1GB:
-> >       mult = I40E_PTP_1GB_INCVAL_MULT;
-> >       break;
-> >
-> > What's the process to get it applied upstream?
->
-> Hi Alex, that's totally a bug, I've filed an internal bug and we'll be
-> providing a patch for this problem shortly.
->
-> We'll be sure to credit you for the work to find the bug and proposal
-> for the fix!
->
-> If you wish to have the patch be authored by you, you're welcome to
-> resend to this list with a correctly formatted git patch from
-> git-format-patch and git-send-email. If you do nothing, we'll just take
-> care of it. :-)
->
-> Thanks for the report and the fix!
-> Jesse
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210507/8b6db783/attachment.html>
