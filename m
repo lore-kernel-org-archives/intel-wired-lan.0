@@ -1,116 +1,300 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Mon, 10 May 2021 13:22:54 +0200
-Subject: [Intel-wired-lan] Dropped packets mapping IRQs for adjusted
- queue counts on i40e
-In-Reply-To: <20210509155033.GB36905@ranger.igk.intel.com>
-References: <CAC1LvL1NHj6n+RNYRmja2YDhkcCwREuhjaBz_k255rU1jdO8Sw@mail.gmail.com>
- <CADS2XXpjasmJKP__oHsrvv3EG8n-FjB6sqHwgQfh7QgeJ8GrrQ@mail.gmail.com>
- <CAC1LvL2Q=s8pmwKAh2615fsTFEETKp96jpoLJS+75=0ztwuLFQ@mail.gmail.com>
- <CADS2XXptoyPTBObKgp3gcRZnWzoVyZrC26tDpLWhC9YrGMSefw@mail.gmail.com>
- <CAC1LvL2zmO1ntKeAoUMkJSarJBgxNhnTva3Di4047MTKqo8rPA@mail.gmail.com>
- <CAC1LvL1Kd-TCuPk0BEQyGvEiLzgUqkZHOKQNOUnxXSY6NjFMmw@mail.gmail.com>
- <20210505130128.00006720@intel.com>
- <20210505212157.GA63266@ranger.igk.intel.com> <87fsz0w3xn.fsf@toke.dk>
- <20210509155033.GB36905@ranger.igk.intel.com>
-Message-ID: <87h7jaq1dd.fsf@toke.dk>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Mon, 10 May 2021 12:26:12 +0200
+Subject: [Intel-wired-lan] [PATCH 00/53] Get rid of UTF-8 chars that can be
+ mapped as ASCII
+Message-ID: <cover.1620641727.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Maciej Fijalkowski <maciej.fijalkowski@intel.com> writes:
+There are several UTF-8 characters at the Kernel's documentation.
 
-> On Thu, May 06, 2021 at 12:29:40PM +0200, Toke H?iland-J?rgensen wrote:
->> Maciej Fijalkowski <maciej.fijalkowski@intel.com> writes:
->> 
->> > On Wed, May 05, 2021 at 01:01:28PM -0700, Jesse Brandeburg wrote:
->> >> Zvi Effron wrote:
->> >> 
->> >> > On Tue, May 4, 2021 at 4:07 PM Zvi Effron <zeffron@riotgames.com> wrote:
->> >> > > I'm suspecting it's something with how XDP_REDIRECT is implemented in
->> >> > > the i40e driver, but I don't know if this is a) cross driver behavior,
->> >> > > b) expected behavior, or c) a bug.
->> >> > I think I've found the issue, and it appears to be specific to i40e
->> >> > (and maybe other drivers, too, but not XDP itself).
->> >> > 
->> >> > When performing the XDP xmit, i40e uses the smp_processor_id() to
->> >> > select the tx queue (see
->> >> > https://elixir.bootlin.com/linux/v5.12.1/source/drivers/net/ethernet/intel/i40e/i40e_txrx.c#L3846).
->> >> > I'm not 100% clear on how the CPU is selected (since we don't use
->> >> > cores 0 and 1), we end up on a core whose id is higher than any
->> >> > available queue.
->> >> > 
->> >> > I'm going to try to modify our IRQ mappings to test this.
->> >> > 
->> >> > If I'm correct, this feels like a bug to me, since it requires a user
->> >> > to understand low level driver details to do IRQ remapping, which is a
->> >> > bit higher level. But if it's intended, we'll just have to figure out
->> >> > how to work around this. (Unfortunately, using split tx and rx queues
->> >> > is not possible with i40e, so that easy solution is unavailable.)
->> >> > 
->> >> > --Zvi
->> >
->> > Hey Zvi, sorry for the lack of assistance, there has been statutory free
->> > time in Poland and today i'm in the birthday mode, but we managed to
->> > discuss the issue with Magnus and we feel like we could have a solution
->> > for that, more below.
->> >
->> >> 
->> >> 
->> >> It seems like for Intel drivers, igc, ixgbe, i40e, ice all have
->> >> this problem.
->> >> 
->> >> Notably, igb, fixes it like I would expect.
->> >
->> > igb is correct but I think that we would like to avoid the introduction of
->> > locking for higher speed NICs in XDP data path.
->> >
->> > We talked with Magnus that for i40e and ice that have lots of HW
->> > resources, we could always create the xdp_rings array of num_online_cpus()
->> > size and use smp_processor_id() for accesses, regardless of the user's
->> > changes to queue count.
->> 
->> What is "lots"? Systems with hundreds of CPUs exist (and I seem to
->> recall an issue with just such a system on Intel hardware(?)). Also,
->> what if num_online_cpus() changes?
->
-> "Lots" is 16k for ice. For i40e datasheet tells that it's only 1536 for
-> whole device, so I back off from the statement that i40e has a lot of
-> resources :)
->
-> Also, s/num_online_cpus()/num_possible_cpus().
+Several of them were due to the process of converting files from
+DocBook, LaTeX, HTML and Markdown. They were probably introduced
+by the conversion tools used on that time.
 
-OK, even 1536 is more than I expected; I figured it would be way lower,
-which is why you were suggesting to use num_online_cpus() instead; but
-yeah, num_possible_cpus() is obviously better, then :)
+Other UTF-8 characters were added along the time, but they're easily
+replaceable by ASCII chars.
 
->> > This way the smp_processor_id() provides the serialization by itself as
->> > we're under napi on a given cpu, so there's no need for locking
->> > introduction - there is a per-cpu XDP ring provided. If we would stick to
->> > the approach where you adjust the size of xdp_rings down to the shrinked
->> > Rx queue count and use a smp_processor_id() % vsi->num_queue_pairs formula
->> > then we could have a resource contention. Say that you did on a 16 core
->> > system:
->> > $ ethtool -L eth0 combined 2
->> >
->> > and then mapped the q0 to cpu1 and q1 to cpu 11. Both queues will grab the
->> > xdp_rings[1], so we would have to introduce the locking.
->> >
->> > Proposed approach would just result with more Tx queues packed onto Tx
->> > ring container of queue vector.
->> >
->> > Thoughts? Any concerns? Should we have a 'fallback' mode if we would be
->> > out of queues?
->> 
->> Yes, please :)
->
-> How to have a fallback (in drivers that need it) in a way that wouldn't
-> hurt the scenario where queue per cpu requirement is satisfied?
+As Linux developers are all around the globe, and not everybody has UTF-8
+as their default charset, better to use UTF-8 only on cases where it is really
+needed.
 
-Well, it should be possible to detect this at setup time, right? Not too
-familiar with the driver code, but would it be possible to statically
-dispatch to an entirely different code path if this happens?
+The first 3 patches on this series were manually written, in order to solve
+a few special cases.
 
--Toke
+The remaining patches on series address such cases on *.rst files and 
+inside the Documentation/ABI, using this perl map table in order to do the
+charset conversion:
+
+my %char_map = (
+	0x2010 => '-',		# HYPHEN
+	0xad   => '-',		# SOFT HYPHEN
+	0x2013 => '-',		# EN DASH
+	0x2014 => '-',		# EM DASH
+
+	0x2018 => "'",		# LEFT SINGLE QUOTATION MARK
+	0x2019 => "'",		# RIGHT SINGLE QUOTATION MARK
+	0xb4   => "'",		# ACUTE ACCENT
+
+	0x201c => '"',		# LEFT DOUBLE QUOTATION MARK
+	0x201d => '"',		# RIGHT DOUBLE QUOTATION MARK
+
+	0x2212 => '-',		# MINUS SIGN
+	0x2217 => '*',		# ASTERISK OPERATOR
+	0xd7   => 'x',		# MULTIPLICATION SIGN
+
+	0xbb   => '>',		# RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+
+	0xa0   => ' ',		# NO-BREAK SPACE
+	0xfeff => '',		# ZERO WIDTH NO-BREAK SPACE
+);
+
+After the conversion, those UTF-8 chars will be kept:
+
+	- U+00a9 ('?'): COPYRIGHT SIGN
+	- U+00ac ('?'): NOT SIGN		# only at Documentation/powerpc/transactional_memory.rst
+	- U+00ae ('?'): REGISTERED SIGN
+	- U+00b0 ('?'): DEGREE SIGN
+	- U+00b1 ('?'): PLUS-MINUS SIGN
+	- U+00b2 ('?'): SUPERSCRIPT TWO
+	- U+00b5 ('?'): MICRO SIGN
+	- U+00b7 ('?'): MIDDLE DOT		# See below
+	- U+00bd ('?'): VULGAR FRACTION ONE HALF
+	- U+00c7 ('?'): LATIN CAPITAL LETTER C WITH CEDILLA
+	- U+00df ('?'): LATIN SMALL LETTER SHARP S
+	- U+00e1 ('?'): LATIN SMALL LETTER A WITH ACUTE
+	- U+00e4 ('?'): LATIN SMALL LETTER A WITH DIAERESIS
+	- U+00e6 ('?'): LATIN SMALL LETTER AE
+	- U+00e7 ('?'): LATIN SMALL LETTER C WITH CEDILLA
+	- U+00e9 ('?'): LATIN SMALL LETTER E WITH ACUTE
+	- U+00ea ('?'): LATIN SMALL LETTER E WITH CIRCUMFLEX
+	- U+00eb ('?'): LATIN SMALL LETTER E WITH DIAERESIS
+	- U+00f3 ('?'): LATIN SMALL LETTER O WITH ACUTE
+	- U+00f4 ('?'): LATIN SMALL LETTER O WITH CIRCUMFLEX
+	- U+00f6 ('?'): LATIN SMALL LETTER O WITH DIAERESIS
+	- U+00f8 ('?'): LATIN SMALL LETTER O WITH STROKE
+	- U+00fa ('?'): LATIN SMALL LETTER U WITH ACUTE
+	- U+00fc ('?'): LATIN SMALL LETTER U WITH DIAERESIS
+	- U+00fd ('?'): LATIN SMALL LETTER Y WITH ACUTE
+	- U+011f ('?'): LATIN SMALL LETTER G WITH BREVE
+	- U+0142 ('?'): LATIN SMALL LETTER L WITH STROKE
+	- U+03bc ('?'): GREEK SMALL LETTER MU
+	- U+2026 ('?'): HORIZONTAL ELLIPSIS
+	- U+2122 ('?'): TRADE MARK SIGN
+	- U+2191 ('?'): UPWARDS ARROW
+	- U+2192 ('?'): RIGHTWARDS ARROW
+	- U+2193 ('?'): DOWNWARDS ARROW
+	- U+2264 ('?'): LESS-THAN OR EQUAL TO
+	- U+2265 ('?'): GREATER-THAN OR EQUAL TO
+	- U+2500 ('?'): BOX DRAWINGS LIGHT HORIZONTAL
+	- U+2502 ('?'): BOX DRAWINGS LIGHT VERTICAL
+	- U+2514 ('?'): BOX DRAWINGS LIGHT UP AND RIGHT
+	- U+251c ('?'): BOX DRAWINGS LIGHT VERTICAL AND RIGHT
+	- U+2b0d ('?'): UP DOWN BLACK ARROW
+
+PS.: maintainers were bcc on patch 00/53, in order to reduce the
+risk of patch 00 to be rejected by list servers.
+
+-
+
+For U+00b7 ('?'): MIDDLE DOT, I opted to keep it on a few places:
+
+- Documentation/devicetree/bindings/clock/qcom,rpmcc.txt
+
+  As this file will be some day converted to yaml, where the 
+  MIDDLE DOT will be removed, I guess it is not worth touching it.
+
+- Documentation/scheduler/sched-deadline.rst
+
+  There, it is used on a math expressions. So, better to keep.
+
+- Documentation/devicetree/bindings/media/video-interface-devices.yaml
+
+  There, it part of an ASCII artwork.
+
+- translations/zh_CN
+
+  I prefer not touching it, as it might have some special meaning in Simplified Chinese.
+
+Mauro Carvalho Chehab (53):
+  docs: cdrom-standard.rst: get rid of uneeded UTF-8 chars
+  docs: ABI: remove a meaningless UTF-8 character
+  docs: ABI: remove some spurious characters
+  docs: index.rst: avoid using UTF-8 chars
+  docs: hwmon: avoid using UTF-8 chars
+  docs: admin-guide: avoid using UTF-8 chars
+  docs: admin-guide: media: ipu3.rst: avoid using UTF-8 chars
+  docs: admin-guide: sysctl: kernel.rst: avoid using UTF-8 chars
+  docs: admin-guide: perf: imx-ddr.rst: avoid using UTF-8 chars
+  docs: admin-guide: pm: avoid using UTF-8 chars
+  docs: trace: coresight: coresight-etm4x-reference.rst: avoid using
+    UTF-8 chars
+  docs: driver-api: avoid using UTF-8 chars
+  docs: driver-api: fpga: avoid using UTF-8 chars
+  docs: driver-api: iio: avoid using UTF-8 chars
+  docs: driver-api: thermal: avoid using UTF-8 chars
+  docs: driver-api: media: drivers: avoid using UTF-8 chars
+  docs: driver-api: firmware: other_interfaces.rst: avoid using UTF-8
+    chars
+  docs: driver-api: nvdimm: btt.rst: avoid using UTF-8 chars
+  docs: fault-injection: nvme-fault-injection.rst: avoid using UTF-8
+    chars
+  docs: usb: avoid using UTF-8 chars
+  docs: process: avoid using UTF-8 chars
+  docs: block: data-integrity.rst: avoid using UTF-8 chars
+  docs: userspace-api: media: fdl-appendix.rst: avoid using UTF-8 chars
+  docs: userspace-api: media: v4l: avoid using UTF-8 chars
+  docs: userspace-api: media: dvb: avoid using UTF-8 chars
+  docs: vm: zswap.rst: avoid using UTF-8 chars
+  docs: filesystems: f2fs.rst: avoid using UTF-8 chars
+  docs: filesystems: ext4: avoid using UTF-8 chars
+  docs: kernel-hacking: avoid using UTF-8 chars
+  docs: hid: avoid using UTF-8 chars
+  docs: security: tpm: avoid using UTF-8 chars
+  docs: security: keys: trusted-encrypted.rst: avoid using UTF-8 chars
+  docs: riscv: vm-layout.rst: avoid using UTF-8 chars
+  docs: networking: scaling.rst: avoid using UTF-8 chars
+  docs: networking: devlink: devlink-dpipe.rst: avoid using UTF-8 chars
+  docs: networking: device_drivers: avoid using UTF-8 chars
+  docs: x86: avoid using UTF-8 chars
+  docs: scheduler: sched-deadline.rst: avoid using UTF-8 chars
+  docs: dev-tools: testing-overview.rst: avoid using UTF-8 chars
+  docs: power: powercap: powercap.rst: avoid using UTF-8 chars
+  docs: ABI: avoid using UTF-8 chars
+  docs: doc-guide: contributing.rst: avoid using UTF-8 chars
+  docs: PCI: acpi-info.rst: avoid using UTF-8 chars
+  docs: gpu: avoid using UTF-8 chars
+  docs: sound: kernel-api: writing-an-alsa-driver.rst: avoid using UTF-8
+    chars
+  docs: arm64: arm-acpi.rst: avoid using UTF-8 chars
+  docs: infiniband: tag_matching.rst: avoid using UTF-8 chars
+  docs: timers: no_hz.rst: avoid using UTF-8 chars
+  docs: misc-devices: ibmvmc.rst: avoid using UTF-8 chars
+  docs: firmware-guide: acpi: lpit.rst: avoid using UTF-8 chars
+  docs: firmware-guide: acpi: dsd: graph.rst: avoid using UTF-8 chars
+  docs: virt: kvm: avoid using UTF-8 chars
+  docs: RCU: avoid using UTF-8 chars
+
+ .../obsolete/sysfs-kernel-fadump_registered   |   2 +-
+ .../obsolete/sysfs-kernel-fadump_release_mem  |   2 +-
+ ...sfs-class-chromeos-driver-cros-ec-lightbar |   2 +-
+ .../ABI/testing/sysfs-class-net-cdc_ncm       |   2 +-
+ .../ABI/testing/sysfs-devices-platform-ipmi   |   2 +-
+ .../testing/sysfs-devices-platform-trackpoint |   2 +-
+ Documentation/ABI/testing/sysfs-devices-soc   |   4 +-
+ Documentation/ABI/testing/sysfs-module        |   4 +-
+ Documentation/PCI/acpi-info.rst               |  26 +-
+ .../Data-Structures/Data-Structures.rst       |  52 ++--
+ .../Expedited-Grace-Periods.rst               |  40 +--
+ .../Tree-RCU-Memory-Ordering.rst              |  10 +-
+ .../RCU/Design/Requirements/Requirements.rst  | 126 ++++-----
+ Documentation/admin-guide/index.rst           |   2 +-
+ Documentation/admin-guide/media/ipu3.rst      |   2 +-
+ Documentation/admin-guide/module-signing.rst  |   4 +-
+ Documentation/admin-guide/perf/imx-ddr.rst    |   2 +-
+ Documentation/admin-guide/pm/intel_idle.rst   |   4 +-
+ Documentation/admin-guide/pm/intel_pstate.rst |   4 +-
+ Documentation/admin-guide/ras.rst             |  94 +++----
+ .../admin-guide/reporting-issues.rst          |  12 +-
+ Documentation/admin-guide/sysctl/kernel.rst   |   2 +-
+ Documentation/arm64/arm-acpi.rst              |   8 +-
+ Documentation/block/data-integrity.rst        |   2 +-
+ Documentation/cdrom/cdrom-standard.rst        |  30 +--
+ Documentation/dev-tools/testing-overview.rst  |   4 +-
+ Documentation/doc-guide/contributing.rst      |   2 +-
+ .../driver-api/firmware/other_interfaces.rst  |   2 +-
+ Documentation/driver-api/fpga/fpga-bridge.rst |  10 +-
+ Documentation/driver-api/fpga/fpga-mgr.rst    |  12 +-
+ .../driver-api/fpga/fpga-programming.rst      |   8 +-
+ Documentation/driver-api/fpga/fpga-region.rst |  20 +-
+ Documentation/driver-api/iio/buffers.rst      |   8 +-
+ Documentation/driver-api/iio/hw-consumer.rst  |  10 +-
+ .../driver-api/iio/triggered-buffers.rst      |   6 +-
+ Documentation/driver-api/iio/triggers.rst     |  10 +-
+ Documentation/driver-api/index.rst            |   2 +-
+ Documentation/driver-api/ioctl.rst            |   8 +-
+ .../media/drivers/sh_mobile_ceu_camera.rst    |   8 +-
+ .../driver-api/media/drivers/vidtv.rst        |   4 +-
+ .../driver-api/media/drivers/zoran.rst        |   2 +-
+ Documentation/driver-api/nvdimm/btt.rst       |   2 +-
+ .../driver-api/thermal/cpu-idle-cooling.rst   |  14 +-
+ .../driver-api/thermal/intel_powerclamp.rst   |   6 +-
+ .../thermal/x86_pkg_temperature_thermal.rst   |   2 +-
+ .../fault-injection/nvme-fault-injection.rst  |   2 +-
+ Documentation/filesystems/ext4/attributes.rst |  20 +-
+ Documentation/filesystems/ext4/bigalloc.rst   |   6 +-
+ Documentation/filesystems/ext4/blockgroup.rst |   8 +-
+ Documentation/filesystems/ext4/blocks.rst     |   2 +-
+ Documentation/filesystems/ext4/directory.rst  |  16 +-
+ Documentation/filesystems/ext4/eainode.rst    |   2 +-
+ Documentation/filesystems/ext4/inlinedata.rst |   6 +-
+ Documentation/filesystems/ext4/inodes.rst     |   6 +-
+ Documentation/filesystems/ext4/journal.rst    |   8 +-
+ Documentation/filesystems/ext4/mmp.rst        |   2 +-
+ .../filesystems/ext4/special_inodes.rst       |   4 +-
+ Documentation/filesystems/ext4/super.rst      |  10 +-
+ Documentation/filesystems/f2fs.rst            |   6 +-
+ .../firmware-guide/acpi/dsd/graph.rst         |   2 +-
+ Documentation/firmware-guide/acpi/lpit.rst    |   2 +-
+ Documentation/gpu/i915.rst                    |   2 +-
+ Documentation/gpu/komeda-kms.rst              |   2 +-
+ Documentation/hid/hid-sensor.rst              |  70 ++---
+ Documentation/hid/intel-ish-hid.rst           | 246 +++++++++---------
+ Documentation/hwmon/ir36021.rst               |   2 +-
+ Documentation/hwmon/ltc2992.rst               |   2 +-
+ Documentation/hwmon/pm6764tr.rst              |   2 +-
+ Documentation/hwmon/tmp103.rst                |   4 +-
+ Documentation/index.rst                       |   4 +-
+ Documentation/infiniband/tag_matching.rst     |   8 +-
+ Documentation/kernel-hacking/hacking.rst      |   2 +-
+ Documentation/kernel-hacking/locking.rst      |   2 +-
+ Documentation/misc-devices/ibmvmc.rst         |   8 +-
+ .../device_drivers/ethernet/intel/i40e.rst    |  12 +-
+ .../device_drivers/ethernet/intel/iavf.rst    |   6 +-
+ .../device_drivers/ethernet/netronome/nfp.rst |  12 +-
+ .../networking/devlink/devlink-dpipe.rst      |   2 +-
+ Documentation/networking/scaling.rst          |  18 +-
+ Documentation/power/powercap/powercap.rst     | 210 +++++++--------
+ Documentation/process/code-of-conduct.rst     |   2 +-
+ .../process/kernel-enforcement-statement.rst  |   2 +-
+ Documentation/riscv/vm-layout.rst             |   2 +-
+ Documentation/scheduler/sched-deadline.rst    |   4 +-
+ .../security/keys/trusted-encrypted.rst       |   4 +-
+ Documentation/security/tpm/tpm_event_log.rst  |   2 +-
+ Documentation/security/tpm/xen-tpmfront.rst   |   2 +-
+ .../kernel-api/writing-an-alsa-driver.rst     |  68 ++---
+ Documentation/timers/no_hz.rst                |   2 +-
+ .../coresight/coresight-etm4x-reference.rst   |  16 +-
+ Documentation/usb/ehci.rst                    |   2 +-
+ Documentation/usb/gadget_printer.rst          |   2 +-
+ Documentation/usb/mass-storage.rst            |  36 +--
+ Documentation/usb/mtouchusb.rst               |   2 +-
+ Documentation/usb/usb-serial.rst              |   2 +-
+ .../media/dvb/audio-set-bypass-mode.rst       |   2 +-
+ .../userspace-api/media/dvb/audio.rst         |   2 +-
+ .../userspace-api/media/dvb/dmx-fopen.rst     |   2 +-
+ .../userspace-api/media/dvb/dmx-fread.rst     |   2 +-
+ .../media/dvb/dmx-set-filter.rst              |   2 +-
+ .../userspace-api/media/dvb/intro.rst         |   6 +-
+ .../userspace-api/media/dvb/video.rst         |   2 +-
+ .../userspace-api/media/fdl-appendix.rst      |  64 ++---
+ .../userspace-api/media/v4l/biblio.rst        |   8 +-
+ .../userspace-api/media/v4l/crop.rst          |  16 +-
+ .../userspace-api/media/v4l/dev-decoder.rst   |   6 +-
+ .../userspace-api/media/v4l/diff-v4l.rst      |   2 +-
+ .../userspace-api/media/v4l/open.rst          |   2 +-
+ .../media/v4l/vidioc-cropcap.rst              |   4 +-
+ Documentation/virt/kvm/api.rst                |  28 +-
+ .../virt/kvm/running-nested-guests.rst        |  12 +-
+ Documentation/vm/zswap.rst                    |   4 +-
+ Documentation/x86/resctrl.rst                 |   2 +-
+ Documentation/x86/sgx.rst                     |   4 +-
+ 114 files changed, 807 insertions(+), 807 deletions(-)
+
+-- 
+2.30.2
+
 
