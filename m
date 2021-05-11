@@ -1,69 +1,67 @@
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Tue, 11 May 2021 11:37:17 +0200
-Subject: [Intel-wired-lan] [PATCH 00/53] Get rid of UTF-8 chars that can
- be mapped as ASCII
-In-Reply-To: <YJmH2irxoRsyNudb@mit.edu>
-References: <cover.1620641727.git.mchehab+huawei@kernel.org>
- <2ae366fdff4bd5910a2270823e8da70521c859af.camel@infradead.org>
- <20210510135518.305cc03d@coco.lan>
- <de6d1fa5b7934f4afd61370d9c58502bef588466.camel@infradead.org>
- <YJmH2irxoRsyNudb@mit.edu>
-Message-ID: <20210511113717.5c8b68f7@coco.lan>
+Date: Tue, 11 May 2021 17:01:32 +0200
+Subject: [Intel-wired-lan] [PATCH 5/5] docs: networking: device_drivers: fix
+ bad usage of UTF-8 chars
+In-Reply-To: <cover.1620744606.git.mchehab+huawei@kernel.org>
+References: <cover.1620744606.git.mchehab+huawei@kernel.org>
+Message-ID: <95eb2a48d0ca3528780ce0dfce64359977fa8cb3.1620744606.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Em Mon, 10 May 2021 15:22:02 -0400
-"Theodore Ts'o" <tytso@mit.edu> escreveu:
+Probably because the original file was pre-processed by some
+tool, both i40e.rst and iavf.rst files are using this character:
 
-> On Mon, May 10, 2021 at 02:49:44PM +0100, David Woodhouse wrote:
-> > On Mon, 2021-05-10 at 13:55 +0200, Mauro Carvalho Chehab wrote:  
-> > > This patch series is doing conversion only when using ASCII makes
-> > > more sense than using UTF-8. 
-> > > 
-> > > See, a number of converted documents ended with weird characters
-> > > like ZERO WIDTH NO-BREAK SPACE (U+FEFF) character. This specific
-> > > character doesn't do any good.
-> > > 
-> > > Others use NO-BREAK SPACE (U+A0) instead of 0x20. Harmless, until
-> > > someone tries to use grep[1].  
-> > 
-> > Replacing those makes sense. But replacing emdashes ? which are a
-> > distinct character that has no direct replacement in ASCII and which
-> > people do *deliberately* use instead of hyphen-minus ? does not.  
-> 
-> I regularly use --- for em-dashes and -- for en-dashes.  Markdown will
-> automatically translate 3 ASCII hypens to em-dashes, and 2 ASCII
-> hyphens to en-dashes.  It's much, much easier for me to type 2 or 3
-> hypens into my text editor of choice than trying to enter the UTF-8
-> characters. 
+	- U+2013 ('?'): EN DASH
 
-Yeah, typing those UTF-8 chars are a lot harder than typing -- and ---
-on several text editors ;-)
+meaning an hyphen when calling a command line application, which
+is obviously wrong. So, replace them by an hyphen, ensuring
+that it will be properly displayed as literals when building
+the documentation.
 
-Here, I only type UTF-8 chars for accents (my US-layout keyboards are 
-all set to US international, so typing those are easy).
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ .../networking/device_drivers/ethernet/intel/i40e.rst         | 4 ++--
+ .../networking/device_drivers/ethernet/intel/iavf.rst         | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-> If we can make sphinx do this translation, maybe that's
-> the best way of dealing with these two characters?
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
+index 8a9b18573688..2d3f6bd969a2 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
+@@ -173,7 +173,7 @@ Director rule is added from ethtool (Sideband filter), ATR is turned off by the
+ driver. To re-enable ATR, the sideband can be disabled with the ethtool -K
+ option. For example::
+ 
+-  ethtool ?K [adapter] ntuple [off|on]
++  ethtool -K [adapter] ntuple [off|on]
+ 
+ If sideband is re-enabled after ATR is re-enabled, ATR remains enabled until a
+ TCP-IP flow is added. When all TCP-IP sideband rules are deleted, ATR is
+@@ -688,7 +688,7 @@ shaper bw_rlimit: for each tc, sets minimum and maximum bandwidth rates.
+ Totals must be equal or less than port speed.
+ 
+ For example: min_rate 1Gbit 3Gbit: Verify bandwidth limit using network
+-monitoring tools such as ifstat or sar ?n DEV [interval] [number of samples]
++monitoring tools such as `ifstat` or `sar -n DEV [interval] [number of samples]`
+ 
+ 2. Enable HW TC offload on interface::
+ 
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
+index 52e037b11c97..25330b7b5168 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
+@@ -179,7 +179,7 @@ shaper bw_rlimit: for each tc, sets minimum and maximum bandwidth rates.
+ Totals must be equal or less than port speed.
+ 
+ For example: min_rate 1Gbit 3Gbit: Verify bandwidth limit using network
+-monitoring tools such as ifstat or sar ?n DEV [interval] [number of samples]
++monitoring tools such as ``ifstat`` or ``sar -n DEV [interval] [number of samples]``
+ 
+ NOTE:
+   Setting up channels via ethtool (ethtool -L) is not supported when the
+-- 
+2.30.2
 
-Sphinx already does that by default[1], using smartquotes:
-
-	https://docutils.sourceforge.io/docs/user/smartquotes.html
-
-Those are the conversions that are done there:
-
-      - Straight quotes (" and ') turned into "curly" quote characters;
-      - dashes (-- and ---) turned into en- and em-dash entities;
-      - three consecutive dots (... or . . .) turned into an ellipsis char.
-
-So, we can simply use single/double commas, hyphens and dots for
-curly commas and ellipses.
-
-[1] There's a way to disable it at conf.py, but at the Kernel this is
-    kept on its default: to automatically do such conversions. 
-
-Thanks,
-Mauro
