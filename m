@@ -1,67 +1,61 @@
-From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Tue, 11 May 2021 10:49:55 -0500
-Subject: [Intel-wired-lan] [PATCH][next] ixgbe: Fix out-bounds warning
- in ixgbe_host_interface_command()
-In-Reply-To: <MW3PR11MB47483A28574E9F2C5517D3C5EB589@MW3PR11MB4748.namprd11.prod.outlook.com>
-References: <20210413190345.GA304933@embeddedor>
- <MW3PR11MB47483A28574E9F2C5517D3C5EB589@MW3PR11MB4748.namprd11.prod.outlook.com>
-Message-ID: <b0749fb9-ff4e-3237-e2f7-b97255545eb0@embeddedor.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Tue, 11 May 2021 11:01:26 -0600
+Subject: [Intel-wired-lan] [PATCH 0/5] Fix some UTF-8 bad usages
+In-Reply-To: <cover.1620744606.git.mchehab+huawei@kernel.org>
+References: <cover.1620744606.git.mchehab+huawei@kernel.org>
+Message-ID: <87fsytdx21.fsf@meer.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+Mauro Carvalho Chehab <mchehab+huawei@kernel.org> writes:
 
-On 5/6/21 02:25, Switzer, David wrote:
-> 
->> -----Original Message-----
->> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->> Gustavo A. R. Silva
->> Sent: Tuesday, April 13, 2021 12:04 PM
->> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
->> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
->> Kicinski <kuba@kernel.org>
->> Cc: Kees Cook <keescook@chromium.org>; netdev at vger.kernel.org; linux-
->> kernel at vger.kernel.org; Gustavo A. R. Silva <gustavoars@kernel.org>; intel-
->> wired-lan at lists.osuosl.org; linux-hardening at vger.kernel.org
->> Subject: [Intel-wired-lan] [PATCH][next] ixgbe: Fix out-bounds warning in
->> ixgbe_host_interface_command()
->>
->> Replace union with a couple of pointers in order to fix the following out-of-
->> bounds warning:
->>
->>  CC [M]  drivers/net/ethernet/intel/ixgbe/ixgbe_common.o
->> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c: In function
->> ?ixgbe_host_interface_command?:
->> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3729:13: warning: array
->> subscript 1 is above array bounds of ?u32[1]? {aka ?unsigned int[1]?} [-Warray-
->> bounds]
->> 3729 |   bp->u32arr[bi] = IXGBE_READ_REG_ARRAY(hw, IXGBE_FLEX_MNG, bi);
->>      |   ~~~~~~~~~~^~~~
->> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c:3682:7: note: while
->> referencing ?u32arr?
->> 3682 |   u32 u32arr[1];
->>      |       ^~~~~~
->>
->> This helps with the ongoing efforts to globally enable -Warray-bounds.
->>
->> Link: https://github.com/KSPP/linux/issues/109
->> Co-developed-by: Kees Cook <keescook@chromium.org>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
->> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
->> ---
->> drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 16 +++++++---------
->> 1 file changed, 7 insertions(+), 9 deletions(-)
->>
-> Tested-by: Dave Switzer <david.switzer@intel.com>
+> This series follow up this past series:
+> 	https://lore.kernel.org/lkml/cover.1620641727.git.mchehab+huawei at kernel.org/
+>
+> Containing just the manual fixes from it. I'll respin the remaining
+> patches on a separate series.
+>
+> Please note that patches 1 to 3 are identical to the ones posted
+> on the original series.
+>
+> Patch 1 is special: it fixes some left-overs from a convertion
+> from cdrom-standard.tex: there, some characters that are
+> valid in C were converted to some visually similar UTF-8 by LaTeX.
+>
+> Patch 2 remove U+00ac (''): NOT SIGN characters at the end of
+> the first line of two files. No idea why those ended being there :-p
+>
+> Patch 3 replaces:
+> 	KernelVersion:3.3
+> by:
+> 	KernelVersion:	3.3
+>
+> which is the expected format for the KernelVersion field;
+>
+> Patches 4 and 5 fix some bad usages of EM DASH/EN DASH on
+> places that it should be, instead, a normal hyphen. I suspect
+> that they ended being there due to the usage of some conversion
+> toolset.
+>
+> Mauro Carvalho Chehab (5):
+>   docs: cdrom-standard.rst: get rid of uneeded UTF-8 chars
+>   docs: ABI: remove a meaningless UTF-8 character
+>   docs: ABI: remove some spurious characters
+>   docs: hwmon: tmp103.rst: fix bad usage of UTF-8 chars
+>   docs: networking: device_drivers: fix bad usage of UTF-8 chars
+>
+>  .../obsolete/sysfs-kernel-fadump_registered   |  2 +-
+>  .../obsolete/sysfs-kernel-fadump_release_mem  |  2 +-
+>  Documentation/ABI/testing/sysfs-module        |  4 +--
+>  Documentation/cdrom/cdrom-standard.rst        | 30 +++++++++----------
+>  Documentation/hwmon/tmp103.rst                |  4 +--
+>  .../device_drivers/ethernet/intel/i40e.rst    |  4 +--
+>  .../device_drivers/ethernet/intel/iavf.rst    |  2 +-
+>  7 files changed, 24 insertions(+), 24 deletions(-)
 
-Thanks for this, Dave. :)
+These seem pretty straightforward; I've applied the set, thanks.
 
-By the way, we are about to be able to globally enable -Warray-bounds and,
-this is one of the last out-of-bounds warnings in linux-next.
-
-Thanks
---
-Gustavo
+jon
