@@ -1,187 +1,134 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 11 May 2021 21:13:42 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 638b1d43ee5443a91d3b4d839e71757971159100
-Message-ID: <609a8306.dSuRhMJPH6gQAtNl%lkp@intel.com>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Tue, 11 May 2021 11:00:02 +0200
+Subject: [Intel-wired-lan] [PATCH 00/53] Get rid of UTF-8 chars that can
+ be mapped as ASCII
+In-Reply-To: <ed65025c-1087-9672-7451-6d28e7ab8f92@gmail.com>
+References: <cover.1620641727.git.mchehab+huawei@kernel.org>
+ <2ae366fdff4bd5910a2270823e8da70521c859af.camel@infradead.org>
+ <20210510135518.305cc03d@coco.lan>
+ <df6b4567-030c-a480-c5a6-fe579830e8c0@gmail.com>
+ <YJk8LMFViV7Z3Uu7@casper.infradead.org>
+ <ed65025c-1087-9672-7451-6d28e7ab8f92@gmail.com>
+Message-ID: <20210511110002.2f187f01@coco.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 638b1d43ee5443a91d3b4d839e71757971159100  virtchnl: Use the BIT() macro for capability/offload flags
+Em Mon, 10 May 2021 15:33:47 +0100
+Edward Cree <ecree.xilinx@gmail.com> escreveu:
 
-elapsed time: 728m
+> On 10/05/2021 14:59, Matthew Wilcox wrote:
+> > Most of these
+> > UTF-8 characters come from latex conversions and really aren't
+> > necessary (and are being used incorrectly).  
+> I fully agree with fixing those.
+> The cover-letter, however, gave the impression that that was not the
+>  main purpose of this series; just, perhaps, a happy side-effect.
 
-configs tested: 158
-configs skipped: 2
+Sorry for the mess. The main reason why I wrote this series is because
+there are lots of UTF-8 left-over chars from the ReST conversion.
+See:
+  - https://lore.kernel.org/linux-doc/20210507100435.3095f924 at coco.lan/
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+A large set of the UTF-8 letf-over chars were due to my conversion work,
+so I feel personally responsible to fix those ;-)
 
-gcc tested configs:
-arm64                            allyesconfig
-arm64                               defconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-riscv                            allmodconfig
-i386                             allyesconfig
-riscv                            allyesconfig
-i386                                defconfig
-ia64                      gensparse_defconfig
-arm                        neponset_defconfig
-arm                         axm55xx_defconfig
-m68k                       m5475evb_defconfig
-sparc                       sparc64_defconfig
-powerpc                   currituck_defconfig
-m68k                        mvme147_defconfig
-sh                             shx3_defconfig
-arm                            qcom_defconfig
-sh                          urquell_defconfig
-arm                          exynos_defconfig
-sparc                       sparc32_defconfig
-riscv                             allnoconfig
-mips                     loongson1c_defconfig
-arm                        mvebu_v5_defconfig
-mips                          ath25_defconfig
-sh                            migor_defconfig
-sh                          polaris_defconfig
-sparc                            allyesconfig
-mips                       capcella_defconfig
-arm                           sunxi_defconfig
-powerpc                 mpc836x_rdk_defconfig
-powerpc                      chrp32_defconfig
-arm                         s3c6400_defconfig
-um                             i386_defconfig
-arc                        nsim_700_defconfig
-arm                             ezx_defconfig
-arm                          pxa3xx_defconfig
-powerpc                 mpc834x_itx_defconfig
-mips                     decstation_defconfig
-arm                        magician_defconfig
-powerpc                 mpc85xx_cds_defconfig
-mips                       lemote2f_defconfig
-arm                        spear3xx_defconfig
-arm                              alldefconfig
-sh                          lboxre2_defconfig
-powerpc                      tqm8xx_defconfig
-sh                          kfr2r09_defconfig
-m68k                           sun3_defconfig
-arm                          lpd270_defconfig
-nios2                               defconfig
-mips                        workpad_defconfig
-csky                             alldefconfig
-riscv             nommu_k210_sdcard_defconfig
-powerpc                     skiroot_defconfig
-arm                        clps711x_defconfig
-powerpc                     pq2fads_defconfig
-mips                            ar7_defconfig
-arc                              alldefconfig
-powerpc                     kilauea_defconfig
-powerpc               mpc834x_itxgp_defconfig
-mips                          rb532_defconfig
-mips                           ci20_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                           h3600_defconfig
-powerpc                        fsp2_defconfig
-um                               alldefconfig
-powerpc                     ksi8560_defconfig
-arm                           sama5_defconfig
-powerpc                   lite5200b_defconfig
-arc                        vdk_hs38_defconfig
-sh                           se7751_defconfig
-mips                          rm200_defconfig
-powerpc                     pseries_defconfig
-arm                          iop32x_defconfig
-riscv                    nommu_k210_defconfig
-mips                           rs90_defconfig
-powerpc                    gamecube_defconfig
-sh                     sh7710voipgw_defconfig
-mips                         tb0287_defconfig
-m68k                            q40_defconfig
-arm                            pleb_defconfig
-arm                         assabet_defconfig
-mips                           gcw0_defconfig
-sh                        edosk7760_defconfig
-mips                      pistachio_defconfig
-mips                  decstation_64_defconfig
-arm                      jornada720_defconfig
-arm                      tct_hammer_defconfig
-arm                     am200epdkit_defconfig
-powerpc                     tqm8540_defconfig
-um                            kunit_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                               defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20210511
-i386                 randconfig-a001-20210511
-i386                 randconfig-a005-20210511
-i386                 randconfig-a004-20210511
-i386                 randconfig-a002-20210511
-i386                 randconfig-a006-20210511
-x86_64               randconfig-a012-20210511
-x86_64               randconfig-a015-20210511
-x86_64               randconfig-a011-20210511
-x86_64               randconfig-a013-20210511
-x86_64               randconfig-a016-20210511
-x86_64               randconfig-a014-20210511
-i386                 randconfig-a016-20210511
-i386                 randconfig-a014-20210511
-i386                 randconfig-a011-20210511
-i386                 randconfig-a015-20210511
-i386                 randconfig-a012-20210511
-i386                 randconfig-a013-20210511
-riscv                    nommu_virt_defconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Yet, this series has two positive side effects:
 
-clang tested configs:
-x86_64               randconfig-a003-20210511
-x86_64               randconfig-a004-20210511
-x86_64               randconfig-a001-20210511
-x86_64               randconfig-a005-20210511
-x86_64               randconfig-a002-20210511
-x86_64               randconfig-a006-20210511
+ - it helps people needing to touch the documents using non-utf8 locales[1];
+ - it makes easier to grep for a text;
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+[1] There are still some widely used distros nowadays (LTS ones?) that
+    don't set UTF-8 as default. Last time I installed a Debian machine
+    I had to explicitly set UTF-8 charset after install as the default
+    were using ASCII encoding (can't remember if it was Debian 10 or an
+    older version).
+
+Unintentionally, I ended by giving emphasis to the non-utf8 instead of
+giving emphasis to the conversion left-overs.
+
+FYI, this patch series originated from a discussion at linux-doc,
+reporting that Sphinx breaks when LANG is not set to utf-8[2]. That's
+why I probably ended giving the wrong emphasis at the cover letter.
+
+[2] See https://lore.kernel.org/linux-doc/20210506103913.GE6564 at kitsune.suse.cz/
+    for the original report. I strongly suspect that the VM set by Michal 
+    to build the docs was using a distro that doesn't set UTF-8 as default.
+
+    PS.: 
+      I intend to prepare afterwards a separate fix to avoid Sphinx
+      logger to crash during Kernel doc builds when the locale charset
+      is not UTF-8, but I'm not too fluent in python. So, I need some
+      time to check if are there a way to just avoid python log crashes
+      without touching Sphinx code and without needing to trick it to 
+      think that the machine's locale is UTF-8.
+
+See: while there was just a single document originally stored at the
+Kernel tree as a LaTeX document during the time we did the conversion
+(cdrom-standard.tex), there are several other documents stored as 
+text that seemed to be generated by some tool like LaTeX, whose the
+original version were not preserved. 
+
+Also, there were other documents using different markdown dialects 
+that were converted via pandoc (and/or other similar tools). That's 
+not to mention the ones that were converted from DocBook. Such
+tools tend to use some logic to use "neat" versions of some ASCII
+characters, like what this tool does:
+
+	https://daringfireball.net/projects/smartypants/
+
+(Sphinx itself seemed to use this tool on its early versions)
+
+All tool-converted documents can carry UTF-8 on unexpected places. See,
+on this series, a large amount of patches deal with U+A0 (NO-BREAK SPACE)
+chars. I can't see why someone writing a plain text document (or a ReST
+one) would type a NO-BREAK SPACE instead of a normal white space.
+
+The same applies, up to some sort, to curly commas: usually people just 
+write ASCII "commas" on their documents, and use some tool like LaTeX
+or a text editor like libreoffice in order to convert them into
+ ?utf-8 curly commas?[3].
+
+[3] Sphinx will do such things at the produced output, doing something 
+    similar to what smartypants does, nowadays using this:
+
+	https://docutils.sourceforge.io/docs/user/smartquotes.html
+
+    E. g.:
+      - Straight quotes (" and ') turned into "curly" quote characters;
+      - dashes (-- and ---) turned into en- and em-dash entities;
+      - three consecutive dots (... or . . .) turned into an ellipsis char.
+
+> > You seem quite knowedgeable about the various differences.  Perhaps
+> > you'd be willing to write a document for Documentation/doc-guide/
+> > that provides guidance for when to use which kinds of horizontal
+> > line?
+> I have Opinions about the proper usage of punctuation, but I also know  
+>  that other people have differing opinions.  For instance, I place
+>  spaces around an em dash, which is nonstandard according to most
+>  style guides.  Really this is an individual enough thing that I'm not
+>  sure we could have a "kernel style guide" that would be more useful
+>  than general-purpose guidance like the page you linked.
+
+> Moreover, such a guide could make non-native speakers needlessly self-
+>  conscious about their writing and discourage them from contributing
+>  documentation at all.
+
+I don't think so. In a matter of fact, as a non-native speaker, I guess
+this can actually help people willing to write documents.
+
+>  I'm not advocating here for trying to push
+>  kernel developers towards an eats-shoots-and-leaves level of
+>  linguistic pedantry; rather, I merely think that existing correct
+>  usages should be left intact (and therefore, excising incorrect usage
+>  should only be attempted by someone with both the expertise and time
+>  to check each case).
+> 
+> But if you really want such a doc I wouldn't mind contributing to it.
+
+IMO, a document like that can be helpful. I can help reviewing it.
+
+Thanks,
+Mauro
