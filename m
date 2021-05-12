@@ -1,53 +1,65 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 12 May 2021 18:07:04 +0100
+Date: Wed, 12 May 2021 18:12:27 +0100
 Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
  UTF-8 alternate symbols
-In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
+In-Reply-To: <20210512171741.2870bcbc@coco.lan>
 References: <cover.1620823573.git.mchehab+huawei@kernel.org>
-Message-ID: <d2fed242fbe200706b8d23a53512f0311d900297.camel@infradead.org>
+ <YJvi1L2ss5Tfi+My@mit.edu> <20210512171741.2870bcbc@coco.lan>
+Message-ID: <cca519da5a3af70297bf1b75b9dbcb0c98ed3eaf.camel@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Your title 'Use ASCII subset' is now at least a bit *closer* to
-describing what the patches are actually doing, but it's still a bit
-misleading because you're only doing it for *some* characters.
-
-And the wording is still indicative of a fundamentally *misguided*
-motivation for doing any of this. Your commit comments should be about
-fixing a specific thing, nothing to do with "use ASCII subset", which
-is pointless in itself.
-
-On Wed, 2021-05-12 at 14:50 +0200, Mauro Carvalho Chehab wrote:
-> Such conversion tools - plus some text editor like LibreOffice  or similar  - have
-> a set of rules that turns some typed ASCII characters into UTF-8 alternatives,
-> for instance converting commas into curly commas and adding non-breakable
-> spaces. All of those are meant to produce better results when the text is
-> displayed in HTML or PDF formats.
-
-And don't we render our documentation into HTML or PDF formats? Are
-some of those non-breaking spaces not actually *useful* for their
-intended purpose?
-
-> While it is perfectly fine to use UTF-8 characters in Linux, and specially at
-> the documentation,  it is better to  stick to the ASCII subset  on such
-> particular case,  due to a couple of reasons:
+On Wed, 2021-05-12 at 17:17 +0200, Mauro Carvalho Chehab wrote:
+> Em Wed, 12 May 2021 10:14:44 -0400
+> "Theodore Ts'o" <tytso@mit.edu> escreveu:
 > 
-> 1. it makes life easier for tools like grep;
+> > On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
+> > > v2:
+> > > - removed EM/EN DASH conversion from this patchset;  
+> > 
+> > Are you still thinking about doing the
+> > 
+> > EN DASH --> "--"
+> > EM DASH --> "---"
+> > 
+> > conversion?  
+> 
+> Yes, but I intend to submit it on a separate patch series, probably after
+> having this one merged. Let's first cleanup the large part of the 
+> conversion-generated UTF-8 char noise ;-)
+> 
+> > That's not going to change what the documentation will
+> > look like in the HTML and PDF output forms, and I think it would make
+> > life easier for people are reading and editing the Documentation/*
+> > files in text form.
+> 
+> Agreed. I'm also considering to add a couple of cases of this char:
+> 
+> 	- U+2026 ('?'): HORIZONTAL ELLIPSIS
+> 
+> As Sphinx also replaces "..." into HORIZONTAL ELLIPSIS.
 
-Barely, as noted, because of things like line feeds.
+Er, what?
 
-> 2. they easier to edit with the some commonly used text/source
->    code editors.
+The *only* part of this whole enterprise that actually seemed to make
+even a tiny bit of sense ? rather than seeming like a thinly veiled
+retrospective excuse for dragging us back in time by 30 years ? was the
+bit about making it easier to grep.
 
-That is nonsense. Any but the most broken and/or anachronistic
-environments and editors will be just fine.
+But if I understand you correctly, you're talking about using something
+like C trigraphs to represent the perfectly reasonable text emdash
+character ("?") as two hyphen-minuses ("--") in the source code of the
+documentation? Isn't that going to achieve precisely the *opposite*? If
+I select some text in the HTML output of the docs and then search for
+it in the source code, that's going to *stop* it matching my search?
+
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: smime.p7s
 Type: application/x-pkcs7-signature
 Size: 5174 bytes
 Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210512/d153f14f/attachment-0001.bin>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210512/9afdb33d/attachment.bin>
