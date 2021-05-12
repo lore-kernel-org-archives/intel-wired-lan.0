@@ -1,10 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 12 May 2021 21:48:16 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: set the value of global config
- lock timeout longer
-In-Reply-To: <20210419093106.6487-1-liwei.song@windriver.com>
-References: <20210419093106.6487-1-liwei.song@windriver.com>
-Message-ID: <CO1PR11MB51059B08F5B1A7EA207FC3E9FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
+Date: Wed, 12 May 2021 21:56:50 +0000
+Subject: [Intel-wired-lan] [PATCH S59 05/13] ice: (re)initialize NVM
+ fields when rebuilding
+In-Reply-To: <20210506154008.12880-5-anthony.l.nguyen@intel.com>
+References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
+ <20210506154008.12880-5-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51054D67DF3DF58DAD7DADBEFA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,32 +14,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Liwei Song
-> Sent: Monday, April 19, 2021 2:31 AM
-> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>
-> Cc: Jakub <kuba@kernel.org>; David <davem@davemloft.net>; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ice: set the value of global config lock
-> timeout longer
+> Tony Nguyen
+> Sent: Thursday, May 6, 2021 8:40 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S59 05/13] ice: (re)initialize NVM fields
+> when rebuilding
 > 
-> It may need hold Global Config Lock a longer time when download DDP
-> package file, extend the timeout value to 5000ms to ensure that download
-> can be finished before other AQ command got time to run, this will fix the
-> issue below when probe the device, 5000ms is a test value that work with
-> both Backplane and BreakoutCable NVM image:
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> ice 0000:f4:00.0: VSI 12 failed lan queue config, error ICE_ERR_CFG ice
-> 0000:f4:00.0: Failed to delete VSI 12 in FW - error: ICE_ERR_AQ_TIMEOUT ice
-> 0000:f4:00.0: probe failed due to setup PF switch: -12
-> ice: probe of 0000:f4:00.0 failed with error -12
+> After performing a flash update, a device EMP reset may occur. This reset will
+> cause the newly downloaded firmware to be initialized. When this happens,
+> the driver still reports the previous NVM version information.
 > 
-> Signed-off-by: Liwei Song <liwei.song@windriver.com>
+> This is because the NVM versions are cached within the hw structure.
+> This can be confusing, as the new firmware is in fact running in this case.
+> 
+> Handle this by calling ice_init_nvm when rebuilding the driver state.
+> This will update the flash version information and ensures that the current
+> values are displayed when reporting the NVM versions to the stack.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_type.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
+
+ 
 
