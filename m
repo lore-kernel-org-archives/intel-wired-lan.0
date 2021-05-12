@@ -1,58 +1,55 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 12 May 2021 16:09:39 +0000
-Subject: [Intel-wired-lan] [PATCH S59 04/13] ice: wait for reset before
- reporting devlink info
-In-Reply-To: <20210506154008.12880-4-anthony.l.nguyen@intel.com>
-References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
- <20210506154008.12880-4-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB51056B3366F7514947B3A78BFA529@CO1PR11MB5105.namprd11.prod.outlook.com>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Wed, 12 May 2021 17:17:41 +0200
+Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
+ UTF-8 alternate symbols
+In-Reply-To: <YJvi1L2ss5Tfi+My@mit.edu>
+References: <cover.1620823573.git.mchehab+huawei@kernel.org>
+ <YJvi1L2ss5Tfi+My@mit.edu>
+Message-ID: <20210512171741.2870bcbc@coco.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Thursday, May 6, 2021 8:40 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S59 04/13] ice: wait for reset before
-> reporting devlink info
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Requesting device firmware information while the device is busy cleaning up
-> after a reset can result in an unexpected failure:
-> 
-> This occurs because the command is attempting to access the device AdminQ
-> while it is down. Resolve this by having the command wait for a while until
-> the reset is complete. To do this, introduce a reset_wait_queue and
-> associated helper function "ice_wait_for_reset".
-> 
-> This helper will use the wait queue to sleep until the driver is done
-> rebuilding. Use of a wait queue is preferred because the potential sleep
-> duration can be several seconds.
-> 
-> To ensure that the thread wakes up properly, a new wake_up call is added
-> during all code paths which clear the reset state bits associated with the
-> driver rebuild flow.
-> 
-> Using this ensures that tools can request device information without
-> worrying about whether the driver is cleaning up from a reset.
-> Specifically, it is expected that a flash update could result in a device reset,
-> and it is better to delay the response for information until the reset is
-> complete rather than exit with an immediate failure.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h         |  2 ++
->  drivers/net/ethernet/intel/ice/ice_devlink.c |  6 +++++
->  drivers/net/ethernet/intel/ice/ice_lib.c     | 28 ++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
->  drivers/net/ethernet/intel/ice/ice_main.c    |  5 ++++
->  5 files changed, 42 insertions(+)
+Em Wed, 12 May 2021 10:14:44 -0400
+"Theodore Ts'o" <tytso@mit.edu> escreveu:
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
+> On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
+> > v2:
+> > - removed EM/EN DASH conversion from this patchset;  
+> 
+> Are you still thinking about doing the
+> 
+> EN DASH --> "--"
+> EM DASH --> "---"
+> 
+> conversion?  
 
+Yes, but I intend to submit it on a separate patch series, probably after
+having this one merged. Let's first cleanup the large part of the 
+conversion-generated UTF-8 char noise ;-)
 
+> That's not going to change what the documentation will
+> look like in the HTML and PDF output forms, and I think it would make
+> life easier for people are reading and editing the Documentation/*
+> files in text form.
+
+Agreed. I'm also considering to add a couple of cases of this char:
+
+	- U+2026 ('?'): HORIZONTAL ELLIPSIS
+
+As Sphinx also replaces "..." into HORIZONTAL ELLIPSIS.
+
+-
+
+Anyway, I'm opting to submitting those in separate because it seems
+that at least some maintainers added EM/EN DASH intentionally.
+
+So, it may generate case-per-case discussions.
+
+Also, IMO, at least a couple of EN/EM DASH cases would be better served 
+with a single hyphen.
+
+Thanks,
+Mauro
