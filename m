@@ -1,10 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 12 May 2021 15:42:00 +0000
-Subject: [Intel-wired-lan] [PATCH V3 net] ice: Re-organizes reqstd/avail
- {R, T}XQ check/code for efficiency
-In-Reply-To: <20210423000018.20244-1-salil.mehta@huawei.com>
-References: <20210423000018.20244-1-salil.mehta@huawei.com>
-Message-ID: <CO1PR11MB510568A203307FF255D12771FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
+Date: Wed, 12 May 2021 15:44:33 +0000
+Subject: [Intel-wired-lan] [PATCH net 2/4] ice: report supported and
+ advertised autoneg using PHY capabilities
+In-Reply-To: <20210505211800.11908-2-anthony.l.nguyen@intel.com>
+References: <20210505211800.11908-1-anthony.l.nguyen@intel.com>
+ <20210505211800.11908-2-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105174D52E75FD93AD29B8BFA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,38 +14,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Salil Mehta
-> Sent: Thursday, April 22, 2021 5:00 PM
-> To: davem at davemloft.net; kuba at kernel.org
-> Cc: salil.mehta at huawei.com; netdev at vger.kernel.org;
-> linuxarm at huawei.com; linuxarm at openeuler.org; linux-
-> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH V3 net] ice: Re-organizes reqstd/avail {R,
-> T}XQ check/code for efficiency
+> Tony Nguyen
+> Sent: Wednesday, May 5, 2021 2:18 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net 2/4] ice: report supported and
+> advertised autoneg using PHY capabilities
 > 
-> If user has explicitly requested the number of {R,T}XQs, then it is
-> unnecessary to get the count of already available {R,T}XQs from the PF
-> avail_{r,t}xqs bitmap. This value will get overridden by user specified value in
-> any case.
+> From: Paul Greenwalt <paul.greenwalt@intel.com>
 > 
-> Re-organize this code for improving the flow, readability and efficiency.
-> This scope of improvement was found during the review of the ICE driver
-> code.
+> Ethtool incorrectly reported supported and advertised auto-negotiation
+> settings for a backplane PHY image which did not support auto-negotiation.
+> This can occur when using media or PHY type for reporting ethtool supported
+> and advertised auto-negotiation settings.
 > 
-> Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
-> Cc: intel-wired-lan at lists.osuosl.org
-> Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
-> Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+> Remove setting supported and advertised auto-negotiation settings based
+> on PHY type in ice_phy_type_to_ethtool(), and MAC type in
+> ice_get_link_ksettings().
+> 
+> Ethtool supported and advertised auto-negotiation settings should be based
+> on the PHY image using the AQ command get PHY capabilities with media.
+> Add setting supported and advertised auto-negotiation settings based get
+> PHY capabilities with media in ice_get_link_ksettings().
+> 
+> Fixes: 48cb27f2fd18 ("ice: Implement handlers for ethtool PHY/link
+> operations")
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 > ---
-> Change:
-> V2->V3
->  (*) Addressed some comments from Paul Menzel
->      Link: https://lkml.org/lkml/2021/4/21/136
-> V1->V2
->  (*) Fixed the comments from Anthony Nguyen(Intel)
->      Link: https://lkml.org/lkml/2021/4/12/1997
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
->  1 file changed, 8 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 51 +++-----------------
+>  1 file changed, 6 insertions(+), 45 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
+
+
