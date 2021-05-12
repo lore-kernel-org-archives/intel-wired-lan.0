@@ -1,28 +1,50 @@
-From: Theodore Ts'o <tytso@mit.edu>
-Date: Wed, 12 May 2021 10:14:44 -0400
-Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
- UTF-8 alternate symbols
-In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
-References: <cover.1620823573.git.mchehab+huawei@kernel.org>
-Message-ID: <YJvi1L2ss5Tfi+My@mit.edu>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Wed, 12 May 2021 15:42:00 +0000
+Subject: [Intel-wired-lan] [PATCH V3 net] ice: Re-organizes reqstd/avail
+ {R, T}XQ check/code for efficiency
+In-Reply-To: <20210423000018.20244-1-salil.mehta@huawei.com>
+References: <20210423000018.20244-1-salil.mehta@huawei.com>
+Message-ID: <CO1PR11MB510568A203307FF255D12771FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
-> v2:
-> - removed EM/EN DASH conversion from this patchset;
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Salil Mehta
+> Sent: Thursday, April 22, 2021 5:00 PM
+> To: davem at davemloft.net; kuba at kernel.org
+> Cc: salil.mehta at huawei.com; netdev at vger.kernel.org;
+> linuxarm at huawei.com; linuxarm at openeuler.org; linux-
+> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH V3 net] ice: Re-organizes reqstd/avail {R,
+> T}XQ check/code for efficiency
+> 
+> If user has explicitly requested the number of {R,T}XQs, then it is
+> unnecessary to get the count of already available {R,T}XQs from the PF
+> avail_{r,t}xqs bitmap. This value will get overridden by user specified value in
+> any case.
+> 
+> Re-organize this code for improving the flow, readability and efficiency.
+> This scope of improvement was found during the review of the ICE driver
+> code.
+> 
+> Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+> Cc: intel-wired-lan at lists.osuosl.org
+> Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+> Signed-off-by: Salil Mehta <salil.mehta@huawei.com>
+> ---
+> Change:
+> V2->V3
+>  (*) Addressed some comments from Paul Menzel
+>      Link: https://lkml.org/lkml/2021/4/21/136
+> V1->V2
+>  (*) Fixed the comments from Anthony Nguyen(Intel)
+>      Link: https://lkml.org/lkml/2021/4/12/1997
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 
-Are you still thinking about doing the
-
-EN DASH --> "--"
-EM DASH --> "---"
-
-conversion?  That's not going to change what the documentation will
-look like in the HTML and PDF output forms, and I think it would make
-life easier for people are reading and editing the Documentation/*
-files in text form.
-
-				- Ted
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
