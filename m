@@ -1,65 +1,44 @@
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 12 May 2021 18:12:27 +0100
-Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
- UTF-8 alternate symbols
-In-Reply-To: <20210512171741.2870bcbc@coco.lan>
-References: <cover.1620823573.git.mchehab+huawei@kernel.org>
- <YJvi1L2ss5Tfi+My@mit.edu> <20210512171741.2870bcbc@coco.lan>
-Message-ID: <cca519da5a3af70297bf1b75b9dbcb0c98ed3eaf.camel@infradead.org>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Wed, 12 May 2021 21:48:16 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: set the value of global config
+ lock timeout longer
+In-Reply-To: <20210419093106.6487-1-liwei.song@windriver.com>
+References: <20210419093106.6487-1-liwei.song@windriver.com>
+Message-ID: <CO1PR11MB51059B08F5B1A7EA207FC3E9FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-05-12 at 17:17 +0200, Mauro Carvalho Chehab wrote:
-> Em Wed, 12 May 2021 10:14:44 -0400
-> "Theodore Ts'o" <tytso@mit.edu> escreveu:
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Liwei Song
+> Sent: Monday, April 19, 2021 2:31 AM
+> To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>
+> Cc: Jakub <kuba@kernel.org>; David <davem@davemloft.net>; linux-
+> kernel at vger.kernel.org; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ice: set the value of global config lock
+> timeout longer
 > 
-> > On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
-> > > v2:
-> > > - removed EM/EN DASH conversion from this patchset;  
-> > 
-> > Are you still thinking about doing the
-> > 
-> > EN DASH --> "--"
-> > EM DASH --> "---"
-> > 
-> > conversion?  
+> It may need hold Global Config Lock a longer time when download DDP
+> package file, extend the timeout value to 5000ms to ensure that download
+> can be finished before other AQ command got time to run, this will fix the
+> issue below when probe the device, 5000ms is a test value that work with
+> both Backplane and BreakoutCable NVM image:
 > 
-> Yes, but I intend to submit it on a separate patch series, probably after
-> having this one merged. Let's first cleanup the large part of the 
-> conversion-generated UTF-8 char noise ;-)
+> ice 0000:f4:00.0: VSI 12 failed lan queue config, error ICE_ERR_CFG ice
+> 0000:f4:00.0: Failed to delete VSI 12 in FW - error: ICE_ERR_AQ_TIMEOUT ice
+> 0000:f4:00.0: probe failed due to setup PF switch: -12
+> ice: probe of 0000:f4:00.0 failed with error -12
 > 
-> > That's not going to change what the documentation will
-> > look like in the HTML and PDF output forms, and I think it would make
-> > life easier for people are reading and editing the Documentation/*
-> > files in text form.
-> 
-> Agreed. I'm also considering to add a couple of cases of this char:
-> 
-> 	- U+2026 ('?'): HORIZONTAL ELLIPSIS
-> 
-> As Sphinx also replaces "..." into HORIZONTAL ELLIPSIS.
+> Signed-off-by: Liwei Song <liwei.song@windriver.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_type.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Er, what?
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
-The *only* part of this whole enterprise that actually seemed to make
-even a tiny bit of sense ? rather than seeming like a thinly veiled
-retrospective excuse for dragging us back in time by 30 years ? was the
-bit about making it easier to grep.
 
-But if I understand you correctly, you're talking about using something
-like C trigraphs to represent the perfectly reasonable text emdash
-character ("?") as two hyphen-minuses ("--") in the source code of the
-documentation? Isn't that going to achieve precisely the *opposite*? If
-I select some text in the HTML output of the docs and then search for
-it in the source code, that's going to *stop* it matching my search?
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/x-pkcs7-signature
-Size: 5174 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210512/9afdb33d/attachment.bin>
