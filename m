@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 12 May 2021 22:01:01 +0000
-Subject: [Intel-wired-lan] [PATCH S59 09/13] ice: fix incorrect payload
- indicator on PTYPE
-In-Reply-To: <20210506154008.12880-9-anthony.l.nguyen@intel.com>
+Date: Wed, 12 May 2021 22:01:51 +0000
+Subject: [Intel-wired-lan] [PATCH S59 10/13] ice: mark PTYPE 2 as
+ reserved
+In-Reply-To: <20210506154008.12880-10-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
- <20210506154008.12880-9-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB51050732386CC658FB907ED0FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210506154008.12880-10-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB51059EC2292E3D16D6C2D49DFA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,16 +17,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 6, 2021 8:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S59 09/13] ice: fix incorrect payload
-> indicator on PTYPE
+> Subject: [Intel-wired-lan] [PATCH S59 10/13] ice: mark PTYPE 2 as reserved
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> The entry for PTYPE 90 indicates that the payload is layer 3. This does not
-> match the specification in the datasheet which indicates the packet is a MAC,
-> IPv6, UDP packet, with a payload in layer 4.
+> The entry for PTYPE 2 in the ice_ptype_lkup table incorrectly states that this
+> is an L2 packet with no payload. According to the datasheet, this PTYPE is
+> actually unused and reserved.
 > 
-> Fix the lookup table to match the data sheet.
+> Fix the lookup entry to indicate this is an unused entry that is reserved.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
