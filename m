@@ -1,55 +1,53 @@
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Wed, 12 May 2021 17:17:41 +0200
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Wed, 12 May 2021 18:07:04 +0100
 Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
  UTF-8 alternate symbols
-In-Reply-To: <YJvi1L2ss5Tfi+My@mit.edu>
+In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
 References: <cover.1620823573.git.mchehab+huawei@kernel.org>
- <YJvi1L2ss5Tfi+My@mit.edu>
-Message-ID: <20210512171741.2870bcbc@coco.lan>
+Message-ID: <d2fed242fbe200706b8d23a53512f0311d900297.camel@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Em Wed, 12 May 2021 10:14:44 -0400
-"Theodore Ts'o" <tytso@mit.edu> escreveu:
+Your title 'Use ASCII subset' is now at least a bit *closer* to
+describing what the patches are actually doing, but it's still a bit
+misleading because you're only doing it for *some* characters.
 
-> On Wed, May 12, 2021 at 02:50:04PM +0200, Mauro Carvalho Chehab wrote:
-> > v2:
-> > - removed EM/EN DASH conversion from this patchset;  
+And the wording is still indicative of a fundamentally *misguided*
+motivation for doing any of this. Your commit comments should be about
+fixing a specific thing, nothing to do with "use ASCII subset", which
+is pointless in itself.
+
+On Wed, 2021-05-12 at 14:50 +0200, Mauro Carvalho Chehab wrote:
+> Such conversion tools - plus some text editor like LibreOffice  or similar  - have
+> a set of rules that turns some typed ASCII characters into UTF-8 alternatives,
+> for instance converting commas into curly commas and adding non-breakable
+> spaces. All of those are meant to produce better results when the text is
+> displayed in HTML or PDF formats.
+
+And don't we render our documentation into HTML or PDF formats? Are
+some of those non-breaking spaces not actually *useful* for their
+intended purpose?
+
+> While it is perfectly fine to use UTF-8 characters in Linux, and specially at
+> the documentation,  it is better to  stick to the ASCII subset  on such
+> particular case,  due to a couple of reasons:
 > 
-> Are you still thinking about doing the
-> 
-> EN DASH --> "--"
-> EM DASH --> "---"
-> 
-> conversion?  
+> 1. it makes life easier for tools like grep;
 
-Yes, but I intend to submit it on a separate patch series, probably after
-having this one merged. Let's first cleanup the large part of the 
-conversion-generated UTF-8 char noise ;-)
+Barely, as noted, because of things like line feeds.
 
-> That's not going to change what the documentation will
-> look like in the HTML and PDF output forms, and I think it would make
-> life easier for people are reading and editing the Documentation/*
-> files in text form.
+> 2. they easier to edit with the some commonly used text/source
+>    code editors.
 
-Agreed. I'm also considering to add a couple of cases of this char:
-
-	- U+2026 ('?'): HORIZONTAL ELLIPSIS
-
-As Sphinx also replaces "..." into HORIZONTAL ELLIPSIS.
-
--
-
-Anyway, I'm opting to submitting those in separate because it seems
-that at least some maintainers added EM/EN DASH intentionally.
-
-So, it may generate case-per-case discussions.
-
-Also, IMO, at least a couple of EN/EM DASH cases would be better served 
-with a single hyphen.
-
-Thanks,
-Mauro
+That is nonsense. Any but the most broken and/or anachronistic
+environments and editors will be just fine.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/x-pkcs7-signature
+Size: 5174 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210512/d153f14f/attachment-0001.bin>
