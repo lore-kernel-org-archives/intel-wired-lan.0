@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 12 May 2021 22:02:46 +0000
-Subject: [Intel-wired-lan] [PATCH S59 11/13] ice: downgrade error print
- to debug print
-In-Reply-To: <20210506154008.12880-11-anthony.l.nguyen@intel.com>
+Date: Wed, 12 May 2021 22:04:05 +0000
+Subject: [Intel-wired-lan] [PATCH S59 12/13] ice: reduce scope of
+ variables
+In-Reply-To: <20210506154008.12880-12-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
- <20210506154008.12880-11-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB510508735EC98FA7680E37ADFA529@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210506154008.12880-12-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB510510D3C4C4EA355F830FC2FA529@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 6, 2021 8:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S59 11/13] ice: downgrade error print to
-> debug print
+> Subject: [Intel-wired-lan] [PATCH S59 12/13] ice: reduce scope of variables
 > 
-> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 > 
-> Failing to add or remove LLDP filter doesn't seem to be a fatal error, so
-> downgrade the dev_err message to a dev_dbg message.
+> There are some places where the scope of a variable can be reduced so do
+> that.
 > 
-> Signed-off-by: Anirudh Venkataramanan
-> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c  | 8 ++++----
+> drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+>  2 files changed, 6 insertions(+), 6 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
