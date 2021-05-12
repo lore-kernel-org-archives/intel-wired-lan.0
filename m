@@ -1,122 +1,227 @@
 From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Wed, 12 May 2021 14:50:30 +0200
-Subject: [Intel-wired-lan] [PATCH v2 26/40] docs: networking:
- device_drivers: Use ASCII subset instead of UTF-8 alternate symbols
-In-Reply-To: <cover.1620823573.git.mchehab+huawei@kernel.org>
-References: <cover.1620823573.git.mchehab+huawei@kernel.org>
-Message-ID: <aa49206f65b7302f6d579d3be726242dedebdb79.1620823573.git.mchehab+huawei@kernel.org>
+Date: Wed, 12 May 2021 14:50:04 +0200
+Subject: [Intel-wired-lan] [PATCH v2 00/40] Use ASCII subset instead of
+ UTF-8 alternate symbols
+Message-ID: <cover.1620823573.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The conversion tools used during DocBook/LaTeX/Markdown->ReST conversion
-and some automatic rules which exists on certain text editors like
-LibreOffice turned ASCII characters into some UTF-8 alternatives that
-are better displayed on html and PDF.
+This series contain basically a cleanup from all those years of converting
+files to ReST.
 
-While it is OK to use UTF-8 characters in Linux, it is better to
-use the ASCII subset instead of using an UTF-8 equivalent character
-as it makes life easier for tools like grep, and are easier to edit
-with the some commonly used text/source code editors.
+During the conversion period, several tools like LaTeX, pandoc, DocBook
+and some specially-written scripts were used in order to convert
+existing documents.
 
-Also, Sphinx already do such conversion automatically outside literal blocks:
-   https://docutils.sourceforge.io/docs/user/smartquotes.html
+Such conversion tools - plus some text editor like LibreOffice  or similar  - have
+a set of rules that turns some typed ASCII characters into UTF-8 alternatives,
+for instance converting commas into curly commas and adding non-breakable
+spaces. All of those are meant to produce better results when the text is
+displayed in HTML or PDF formats.
 
-So, replace the occurences of the following UTF-8 characters:
+While it is perfectly fine to use UTF-8 characters in Linux, and specially at
+the documentation,  it is better to  stick to the ASCII subset  on such
+particular case,  due to a couple of reasons:
 
-	- U+00a0 ('?'): NO-BREAK SPACE
-	- U+2018 ('?'): LEFT SINGLE QUOTATION MARK
-	- U+2019 ('?'): RIGHT SINGLE QUOTATION MARK
+1. it makes life easier for tools like grep;
+2. they easier to edit with the some commonly used text/source
+   code editors.
+    
+Also, Sphinx already do such conversion automatically outside 
+literal blocks, as described at:
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+       https://docutils.sourceforge.io/docs/user/smartquotes.html
+
+In this series, the following UTF-8 symbols are replaced:
+
+            - U+00a0 ('?'): NO-BREAK SPACE
+            - U+00ad ('?'): SOFT HYPHEN
+            - U+00b4 ('?'): ACUTE ACCENT
+            - U+00d7 ('?'): MULTIPLICATION SIGN
+            - U+2010 ('?'): HYPHEN
+            - U+2018 ('?'): LEFT SINGLE QUOTATION MARK
+            - U+2019 ('?'): RIGHT SINGLE QUOTATION MARK
+            - U+201c ('?'): LEFT DOUBLE QUOTATION MARK
+            - U+201d ('?'): RIGHT DOUBLE QUOTATION MARK
+            - U+2212 ('?'): MINUS SIGN
+            - U+2217 ('?'): ASTERISK OPERATOR
+            - U+feff ('?'): ZERO WIDTH NO-BREAK SPACE (BOM)
+
 ---
- .../device_drivers/ethernet/intel/i40e.rst           |  8 ++++----
- .../device_drivers/ethernet/intel/iavf.rst           |  4 ++--
- .../device_drivers/ethernet/netronome/nfp.rst        | 12 ++++++------
- 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-index 2d3f6bd969a2..d0e9b783a224 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-@@ -466,7 +466,7 @@ network. PTP support varies among Intel devices that support this driver. Use
- "ethtool -T <netdev name>" to get a definitive list of PTP capabilities
- supported by the device.
+v2:
+- removed EM/EN DASH conversion from this patchset;
+- removed a few fixes, as those were addressed on a separate series.
  
--IEEE 802.1ad (QinQ)?Support
-+IEEE 802.1ad (QinQ) Support
- ---------------------------
- The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
- IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
-@@ -523,8 +523,8 @@ of a port's bandwidth (should it be available). The sum of all the values for
- Maximum Bandwidth is not restricted, because no more than 100% of a port's
- bandwidth can ever be used.
- 
--NOTE:?X710/XXV710 devices fail to enable Max VFs (64) when Multiple Functions
--per Port (MFP)?and SR-IOV are enabled. An error from i40e is logged that says
-+NOTE: X710/XXV710 devices fail to enable Max VFs (64) when Multiple Functions
-+per Port (MFP) and SR-IOV are enabled. An error from i40e is logged that says
- "add vsi failed for VF N, aq_err 16". To workaround the issue, enable less than
- 64 virtual functions (VFs).
- 
-@@ -680,7 +680,7 @@ queues: for each tc, <num queues>@<offset> (e.g. queues 16 at 0 16 at 16 assigns
- 16 queues to tc0 at offset 0 and 16 queues to tc1 at offset 16. Max total
- number of queues for all tcs is 64 or number of cores, whichever is lower.)
- 
--hw 1 mode channel: ?channel? with ?hw? set to 1 is a new new hardware
-+hw 1 mode channel: 'channel' with 'hw' set to 1 is a new new hardware
- offload mode in mqprio that makes full use of the mqprio options, the
- TCs, the queue configurations, and the QoS parameters.
- 
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-index 25330b7b5168..b70eea67c3d9 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-@@ -113,7 +113,7 @@ which the AVF is associated. The following are base mode features:
- - AVF device ID
- - HW mailbox is used for VF to PF communications (including on Windows)
- 
--IEEE 802.1ad (QinQ)?Support
-+IEEE 802.1ad (QinQ) Support
- ---------------------------
- The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
- IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
-@@ -171,7 +171,7 @@ queues: for each tc, <num queues>@<offset> (e.g. queues 16 at 0 16 at 16 assigns
- 16 queues to tc0 at offset 0 and 16 queues to tc1 at offset 16. Max total
- number of queues for all tcs is 64 or number of cores, whichever is lower.)
- 
--hw 1 mode channel: ?channel? with ?hw? set to 1 is a new new hardware
-+hw 1 mode channel: 'channel' with 'hw' set to 1 is a new new hardware
- offload mode in mqprio that makes full use of the mqprio options, the
- TCs, the queue configurations, and the QoS parameters.
- 
-diff --git a/Documentation/networking/device_drivers/ethernet/netronome/nfp.rst b/Documentation/networking/device_drivers/ethernet/netronome/nfp.rst
-index ada611fb427c..949c036e8667 100644
---- a/Documentation/networking/device_drivers/ethernet/netronome/nfp.rst
-+++ b/Documentation/networking/device_drivers/ethernet/netronome/nfp.rst
-@@ -62,14 +62,14 @@ actual firmware files in application-named subdirectories in
-     $ tree /lib/firmware/netronome/
-     /lib/firmware/netronome/
-     ??? bpf
--    ??? ??? nic_AMDA0081-0001_1x40.nffw
--    ??? ??? nic_AMDA0081-0001_4x10.nffw
-+    ?   ??? nic_AMDA0081-0001_1x40.nffw
-+    ?   ??? nic_AMDA0081-0001_4x10.nffw
-     ??? flower
--    ??? ??? nic_AMDA0081-0001_1x40.nffw
--    ??? ??? nic_AMDA0081-0001_4x10.nffw
-+    ?   ??? nic_AMDA0081-0001_1x40.nffw
-+    ?   ??? nic_AMDA0081-0001_4x10.nffw
-     ??? nic
--    ??? ??? nic_AMDA0081-0001_1x40.nffw
--    ??? ??? nic_AMDA0081-0001_4x10.nffw
-+    ?   ??? nic_AMDA0081-0001_1x40.nffw
-+    ?   ??? nic_AMDA0081-0001_4x10.nffw
-     ??? nic_AMDA0081-0001_1x40.nffw -> bpf/nic_AMDA0081-0001_1x40.nffw
-     ??? nic_AMDA0081-0001_4x10.nffw -> bpf/nic_AMDA0081-0001_4x10.nffw
- 
+PS.:
+   The first version of this series was posted with a different name:
+
+	https://lore.kernel.org/lkml/cover.1620641727.git.mchehab+huawei at kernel.org/
+
+   I also changed the patch texts, in order to better describe the patches goals.
+
+Mauro Carvalho Chehab (40):
+  docs: hwmon: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: admin-guide: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: admin-guide: media: ipu3.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: admin-guide: perf: imx-ddr.rst: Use ASCII subset instead of
+    UTF-8 alternate symbols
+  docs: admin-guide: pm: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: trace: coresight: coresight-etm4x-reference.rst: Use ASCII
+    subset instead of UTF-8 alternate symbols
+  docs: driver-api: ioctl.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: driver-api: thermal: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: driver-api: media: drivers: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: driver-api: firmware: other_interfaces.rst: Use ASCII subset
+    instead of UTF-8 alternate symbols
+  docs: fault-injection: nvme-fault-injection.rst: Use ASCII subset
+    instead of UTF-8 alternate symbols
+  docs: usb: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: process: code-of-conduct.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: userspace-api: media: fdl-appendix.rst: Use ASCII subset instead
+    of UTF-8 alternate symbols
+  docs: userspace-api: media: v4l: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: userspace-api: media: dvb: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: vm: zswap.rst: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: filesystems: f2fs.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: filesystems: ext4: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: kernel-hacking: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: hid: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: security: tpm: tpm_event_log.rst: Use ASCII subset instead of
+    UTF-8 alternate symbols
+  docs: security: keys: trusted-encrypted.rst: Use ASCII subset instead
+    of UTF-8 alternate symbols
+  docs: networking: scaling.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: networking: devlink: devlink-dpipe.rst: Use ASCII subset instead
+    of UTF-8 alternate symbols
+  docs: networking: device_drivers: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: x86: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: scheduler: sched-deadline.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: power: powercap: powercap.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: ABI: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: PCI: acpi-info.rst: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: gpu: Use ASCII subset instead of UTF-8 alternate symbols
+  docs: sound: kernel-api: writing-an-alsa-driver.rst: Use ASCII subset
+    instead of UTF-8 alternate symbols
+  docs: arm64: arm-acpi.rst: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: infiniband: tag_matching.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: misc-devices: ibmvmc.rst: Use ASCII subset instead of UTF-8
+    alternate symbols
+  docs: firmware-guide: acpi: lpit.rst: Use ASCII subset instead of
+    UTF-8 alternate symbols
+  docs: firmware-guide: acpi: dsd: graph.rst: Use ASCII subset instead
+    of UTF-8 alternate symbols
+  docs: virt: kvm: api.rst: Use ASCII subset instead of UTF-8 alternate
+    symbols
+  docs: RCU: Use ASCII subset instead of UTF-8 alternate symbols
+
+ ...sfs-class-chromeos-driver-cros-ec-lightbar |   2 +-
+ .../ABI/testing/sysfs-devices-platform-ipmi   |   2 +-
+ .../testing/sysfs-devices-platform-trackpoint |   2 +-
+ Documentation/ABI/testing/sysfs-devices-soc   |   4 +-
+ Documentation/PCI/acpi-info.rst               |  22 +-
+ .../Data-Structures/Data-Structures.rst       |  52 ++--
+ .../Expedited-Grace-Periods.rst               |  40 +--
+ .../Tree-RCU-Memory-Ordering.rst              |  10 +-
+ .../RCU/Design/Requirements/Requirements.rst  | 122 ++++-----
+ Documentation/admin-guide/media/ipu3.rst      |   2 +-
+ Documentation/admin-guide/perf/imx-ddr.rst    |   2 +-
+ Documentation/admin-guide/pm/intel_idle.rst   |   4 +-
+ Documentation/admin-guide/pm/intel_pstate.rst |   4 +-
+ Documentation/admin-guide/ras.rst             |  86 +++---
+ .../admin-guide/reporting-issues.rst          |   2 +-
+ Documentation/arm64/arm-acpi.rst              |   8 +-
+ .../driver-api/firmware/other_interfaces.rst  |   2 +-
+ Documentation/driver-api/ioctl.rst            |   8 +-
+ .../media/drivers/sh_mobile_ceu_camera.rst    |   8 +-
+ .../driver-api/media/drivers/zoran.rst        |   2 +-
+ .../driver-api/thermal/cpu-idle-cooling.rst   |  14 +-
+ .../driver-api/thermal/intel_powerclamp.rst   |   6 +-
+ .../thermal/x86_pkg_temperature_thermal.rst   |   2 +-
+ .../fault-injection/nvme-fault-injection.rst  |   2 +-
+ Documentation/filesystems/ext4/attributes.rst |  20 +-
+ Documentation/filesystems/ext4/bigalloc.rst   |   6 +-
+ Documentation/filesystems/ext4/blockgroup.rst |   8 +-
+ Documentation/filesystems/ext4/blocks.rst     |   2 +-
+ Documentation/filesystems/ext4/directory.rst  |  16 +-
+ Documentation/filesystems/ext4/eainode.rst    |   2 +-
+ Documentation/filesystems/ext4/inlinedata.rst |   6 +-
+ Documentation/filesystems/ext4/inodes.rst     |   6 +-
+ Documentation/filesystems/ext4/journal.rst    |   8 +-
+ Documentation/filesystems/ext4/mmp.rst        |   2 +-
+ .../filesystems/ext4/special_inodes.rst       |   4 +-
+ Documentation/filesystems/ext4/super.rst      |  10 +-
+ Documentation/filesystems/f2fs.rst            |   4 +-
+ .../firmware-guide/acpi/dsd/graph.rst         |   2 +-
+ Documentation/firmware-guide/acpi/lpit.rst    |   2 +-
+ Documentation/gpu/i915.rst                    |   2 +-
+ Documentation/gpu/komeda-kms.rst              |   2 +-
+ Documentation/hid/hid-sensor.rst              |  70 ++---
+ Documentation/hid/intel-ish-hid.rst           | 246 +++++++++---------
+ Documentation/hwmon/ir36021.rst               |   2 +-
+ Documentation/hwmon/ltc2992.rst               |   2 +-
+ Documentation/hwmon/pm6764tr.rst              |   2 +-
+ Documentation/infiniband/tag_matching.rst     |   4 +-
+ Documentation/kernel-hacking/hacking.rst      |   2 +-
+ Documentation/kernel-hacking/locking.rst      |   2 +-
+ Documentation/misc-devices/ibmvmc.rst         |   8 +-
+ .../device_drivers/ethernet/intel/i40e.rst    |   8 +-
+ .../device_drivers/ethernet/intel/iavf.rst    |   4 +-
+ .../device_drivers/ethernet/netronome/nfp.rst |  12 +-
+ .../networking/devlink/devlink-dpipe.rst      |   2 +-
+ Documentation/networking/scaling.rst          |  18 +-
+ Documentation/power/powercap/powercap.rst     | 210 +++++++--------
+ Documentation/process/code-of-conduct.rst     |   2 +-
+ Documentation/scheduler/sched-deadline.rst    |   2 +-
+ .../security/keys/trusted-encrypted.rst       |   4 +-
+ Documentation/security/tpm/tpm_event_log.rst  |   2 +-
+ .../kernel-api/writing-an-alsa-driver.rst     |  68 ++---
+ .../coresight/coresight-etm4x-reference.rst   |  16 +-
+ Documentation/usb/ehci.rst                    |   2 +-
+ Documentation/usb/gadget_printer.rst          |   2 +-
+ Documentation/usb/mass-storage.rst            |  36 +--
+ .../media/dvb/audio-set-bypass-mode.rst       |   2 +-
+ .../userspace-api/media/dvb/audio.rst         |   2 +-
+ .../userspace-api/media/dvb/dmx-fopen.rst     |   2 +-
+ .../userspace-api/media/dvb/dmx-fread.rst     |   2 +-
+ .../media/dvb/dmx-set-filter.rst              |   2 +-
+ .../userspace-api/media/dvb/intro.rst         |   6 +-
+ .../userspace-api/media/dvb/video.rst         |   2 +-
+ .../userspace-api/media/fdl-appendix.rst      |  64 ++---
+ .../userspace-api/media/v4l/crop.rst          |  16 +-
+ .../userspace-api/media/v4l/dev-decoder.rst   |   6 +-
+ .../userspace-api/media/v4l/diff-v4l.rst      |   2 +-
+ .../userspace-api/media/v4l/open.rst          |   2 +-
+ .../media/v4l/vidioc-cropcap.rst              |   4 +-
+ Documentation/virt/kvm/api.rst                |  28 +-
+ Documentation/vm/zswap.rst                    |   4 +-
+ Documentation/x86/resctrl.rst                 |   2 +-
+ Documentation/x86/sgx.rst                     |   4 +-
+ 82 files changed, 693 insertions(+), 693 deletions(-)
+
 -- 
 2.30.2
+
 
