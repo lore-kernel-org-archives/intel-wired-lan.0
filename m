@@ -1,46 +1,40 @@
-From: Matteo Croce <mcroce@linux.microsoft.com>
-Date: Fri, 14 May 2021 20:39:54 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] vhost_net: use XDP helpers
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Fri, 14 May 2021 22:30:10 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] net: use XDP helpers
 In-Reply-To: <20210514183954.7129-1-mcroce@linux.microsoft.com>
 References: <20210514183954.7129-1-mcroce@linux.microsoft.com>
-Message-ID: <20210514183954.7129-4-mcroce@linux.microsoft.com>
+Message-ID: <162103141048.10202.7043185141593053010.git-patchwork-notify@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Matteo Croce <mcroce@microsoft.com>
+Hello:
 
-Make use of the xdp_{init,prepare}_buff() helpers instead of
-an open-coded version.
+This series was applied to netdev/net-next.git (refs/heads/master):
 
-Also, the field xdp->rxq was never set, so pass NULL to xdp_init_buff()
-to clear it.
+On Fri, 14 May 2021 20:39:51 +0200 you wrote:
+> From: Matteo Croce <mcroce@microsoft.com>
+> 
+> The commit 43b5169d8355 ("net, xdp: Introduce xdp_init_buff utility
+> routine") and commit be9df4aff65f ("net, xdp: Introduce xdp_prepare_buff
+> utility routine") introduces two useful helpers to populate xdp_buff.
+> Use it in drivers which still open codes that routines.
+> 
+> [...]
 
-Signed-off-by: Matteo Croce <mcroce@microsoft.com>
----
- drivers/vhost/net.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Here is the summary with links:
+  - [net-next,1/3] stmmac: use XDP helpers
+    https://git.kernel.org/netdev/net-next/c/d172268f93cf
+  - [net-next,2/3] igc: use XDP helpers
+    https://git.kernel.org/netdev/net-next/c/082294f294f6
+  - [net-next,3/3] vhost_net: use XDP helpers
+    https://git.kernel.org/netdev/net-next/c/224bf7db5518
 
-diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
-index df82b124170e..6414bd5741b8 100644
---- a/drivers/vhost/net.c
-+++ b/drivers/vhost/net.c
-@@ -744,11 +744,9 @@ static int vhost_net_build_xdp(struct vhost_net_virtqueue *nvq,
- 	if (copied != len)
- 		return -EFAULT;
- 
--	xdp->data_hard_start = buf;
--	xdp->data = buf + pad;
--	xdp->data_end = xdp->data + len;
-+	xdp_init_buff(xdp, buflen, NULL);
-+	xdp_prepare_buff(xdp, buf, pad, len, true);
- 	hdr->buflen = buflen;
--	xdp->frame_sz = buflen;
- 
- 	--net->refcnt_bias;
- 	alloc_frag->offset += buflen;
--- 
-2.31.1
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
