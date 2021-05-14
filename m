@@ -1,9 +1,9 @@
 From: Matteo Croce <mcroce@linux.microsoft.com>
-Date: Fri, 14 May 2021 20:39:52 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 1/3] stmmac: use XDP helpers
+Date: Fri, 14 May 2021 20:39:53 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 2/3] igc: use XDP helpers
 In-Reply-To: <20210514183954.7129-1-mcroce@linux.microsoft.com>
 References: <20210514183954.7129-1-mcroce@linux.microsoft.com>
-Message-ID: <20210514183954.7129-2-mcroce@linux.microsoft.com>
+Message-ID: <20210514183954.7129-3-mcroce@linux.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,29 +17,29 @@ an open-coded version.
 
 Signed-off-by: Matteo Croce <mcroce@microsoft.com>
 ---
- drivers/net/ethernet/stmicro/stmmac/stmmac_main.c | 9 +++------
+ drivers/net/ethernet/intel/igc/igc_main.c | 9 +++------
  1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 345b4c6d1fd4..bf9fe25fed69 100644
---- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -5167,12 +5167,9 @@ static int stmmac_rx(struct stmmac_priv *priv, int limit, u32 queue)
- 			dma_sync_single_for_cpu(priv->device, buf->addr,
- 						buf1_len, dma_dir);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 069471b7ffb0..92c0701e2a36 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2151,12 +2151,9 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 		}
  
--			xdp.data = page_address(buf->page) + buf->page_offset;
--			xdp.data_end = xdp.data + buf1_len;
--			xdp.data_hard_start = page_address(buf->page);
+ 		if (!skb) {
+-			xdp.data = pktbuf + pkt_offset;
+-			xdp.data_end = xdp.data + size;
+-			xdp.data_hard_start = pktbuf - igc_rx_offset(rx_ring);
 -			xdp_set_data_meta_invalid(&xdp);
--			xdp.frame_sz = buf_sz;
--			xdp.rxq = &rx_q->xdp_rxq;
-+			xdp_init_buff(&xdp, buf_sz, &rx_q->xdp_rxq);
-+			xdp_prepare_buff(&xdp, page_address(buf->page),
-+					 buf->page_offset, buf1_len, false);
+-			xdp.frame_sz = truesize;
+-			xdp.rxq = &rx_ring->xdp_rxq;
++			xdp_init_buff(&xdp, truesize, &rx_ring->xdp_rxq);
++			xdp_prepare_buff(&xdp, pktbuf - igc_rx_offset(rx_ring),
++					 igc_rx_offset(rx_ring) + pkt_offset, size, false);
  
- 			pre_len = xdp.data_end - xdp.data_hard_start -
- 				  buf->page_offset;
+ 			skb = igc_xdp_run_prog(adapter, &xdp);
+ 		}
 -- 
 2.31.1
 
