@@ -1,81 +1,70 @@
-From: Creeley, Brett <brett.creeley@intel.com>
-Date: Mon, 17 May 2021 21:49:04 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration
- of number of qps per VF via devlink
-In-Reply-To: <20210426181940.14847-1-sridhar.samudrala@intel.com>
-References: <20210426181940.14847-1-sridhar.samudrala@intel.com>
-Message-ID: <CO1PR11MB48359F4AB09484353280CBA9F52D9@CO1PR11MB4835.namprd11.prod.outlook.com>
+From: Nitesh Lal <nilal@redhat.com>
+Date: Mon, 17 May 2021 18:44:29 -0400
+Subject: [Intel-wired-lan] [PATCH tip:irq/core v1] genirq: remove
+ auto-set of the mask when setting the hint
+In-Reply-To: <87pmxpdr32.ffs@nanos.tec.linutronix.de>
+References: <20210504092340.00006c61@intel.com>
+ <87pmxpdr32.ffs@nanos.tec.linutronix.de>
+Message-ID: <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sridhar Samudrala
-> Sent: Monday, April 26, 2021 11:20 AM
-> To: intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Samudrala, Sridhar
-> <sridhar.samudrala@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration of number of qps per VF via devlink
-> 
-> Introduce a devlink parameter 'num_qps_per_vf' to allow user
-> to configure the maximum number of queue pairs given to SR-IOV
-> VFs before they are created.
-> 
-> This is currently determined by the driver based on the number
-> of SR-IOV VFs created. In order to keep this behavior by default
-> the parameter is initialized to 0. To change the default behavior,
-> user can set num_qps_per_vf parameter via devlink and this will
-> be used as the preferred value to determine the queues and vectors
-> assigned per VF.
+On Mon, May 17, 2021 at 4:48 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Tue, May 04 2021 at 09:23, Jesse Brandeburg wrote:
+> > I'd add in addition that irqbalance daemon *stopped* paying attention
+> > to hints quite a while ago, so I'm not quite sure what purpose they
+> > serve.
+>
+> The hint was added so that userspace has a better understanding where it
+> should place the interrupt. So if irqbalanced ignores it anyway, then
+> what's the point of the hint? IOW, why is it still used drivers?
+>
 
-What if the host administrator wants to give the VF a different number
-of vectors than queues? For example, if the admin knows the VF
-instance will be exercising VF RDMA and the VF needs more vectors
-for RDMA traffic.
+Took a quick look at the irqbalance repo and saw the following commit:
 
-Should we have 2 separate values, i.e. "num_qps_per_vf" and
-"num_msix_per_vf"?
+dcc411e7bf    remove affinity_hint infrastructure
 
-> 
-> USAGE:
-> On a 2 port NIC
->  # devlink dev param show
->  pci/0000:42:00.0:
->    name num_qps_per_vf type driver-specific
->      values:
->        cmode runtime value 0
->  pci/0000:42:00.1:
->    name num_qps_per_vf type driver-specific
->      values:
->        cmode runtime value 0
-> 
->  /* Set num_qps_per_vf to 4 */
->  # devlink dev param set pci/0000:42:00.0 name num_qps_per_vf value 4 cmode runtime
-> 
->  # devlink dev param show pci/0000:42:00.0 name num_qps_per_vf
->  pci/0000:42:00.0:
->    name num_qps_per_vf type driver-specific
->      values:
->        cmode runtime value 4
-> 
->  # echo 8 > /sys/class/net/enp66s0f0/device/sriov_numvfs
-> 
-> This will create 8 VFs with 4 queue pairs and 5 vectors per VF
-> compared to the default behavior of 16 queue pairs and 17 vectors
-> per VF.
-> 
-> v2:
-> Fixed kdoc for ice_devlink_num_qps_per_vf_validate()
-> 
-> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> ---
->  Documentation/networking/devlink/ice.rst      |  23 ++++
->  drivers/net/ethernet/intel/ice/ice_devlink.c  | 110 +++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   5 +-
->  4 files changed, 139 insertions(+), 2 deletions(-)
-> 
+The commit message mentions that "PJ is redesiging how affinity hinting
+works in the kernel, the future model will just tell us to ignore an IRQ,
+and the kernel will handle placement for us.  As such we can remove the
+affinity_hint recognition entirely".
 
-<snip>
+This does indicate that apparently, irqbalance moved away from the usage of
+affinity_hint. However, the next question is what was this future model?
+I don't know but I can surely look into it if that helps or maybe someone
+here already knows about it?
+
+> Now there is another aspect to that. What happens if irqbalanced does
+> not run at all and a driver relies on the side effect of the hint
+> setting the initial affinity. Bah...
+>
+
+Right, but if they only rely on this API so that the IRQs are spread across
+all the CPUs then that issue is already resolved and these other drivers
+should not regress because of changing this behavior. Isn't it?
+
+> While none of the drivers (except the perf muck) actually prevents
+> userspace from fiddling with the affinity (via IRQF_NOBALANCING) a
+> deeper inspection shows that they actually might rely on the current
+> behaviour if irqbalanced is disabled. Of course every driver has its own
+> convoluted way to do that and all of those functions are well
+> documented. What a mess.
+>
+> If the hint still serves a purpose then we can provide a variant which
+> solely applies the hint and does not fiddle with the actual affinity,
+> but if the hint is useless anyway then we have a way better option to
+> clean that up.
+>
+
++1
+
+
+
+-- 
+Thanks
+Nitesh
 
