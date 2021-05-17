@@ -1,64 +1,81 @@
-From: Nitesh Lal <nilal@redhat.com>
-Date: Mon, 17 May 2021 17:13:18 -0400
-Subject: [Intel-wired-lan] [PATCH tip:irq/core v1] genirq: remove
- auto-set of the mask when setting the hint
-In-Reply-To: <87y2cddtxb.ffs@nanos.tec.linutronix.de>
-References: <20210501021832.743094-1-jesse.brandeburg@intel.com>
- <16d8ca67-30c6-bb4b-8946-79de8629156e@arm.com>
- <20210504092340.00006c61@intel.com>
- <CAFki+LmR-o+Fng21ggy48FUX7RhjjpjO87dn3Ld+L4BK2pSRZg@mail.gmail.com>
- <bf1d4892-0639-0bbf-443e-ba284a8ed457@arm.com>
- <CAFki+L=LDizBJmFUieMDg9J=U6mn6XxTPPkAaWiyppTouTzaqw@mail.gmail.com>
- <87y2cddtxb.ffs@nanos.tec.linutronix.de>
-Message-ID: <CAFki+L=RaSZXASAaAxBf=RJqXWju+pkSj3ftMkmoqCLPfg0v=g@mail.gmail.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Mon, 17 May 2021 21:49:04 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration
+ of number of qps per VF via devlink
+In-Reply-To: <20210426181940.14847-1-sridhar.samudrala@intel.com>
+References: <20210426181940.14847-1-sridhar.samudrala@intel.com>
+Message-ID: <CO1PR11MB48359F4AB09484353280CBA9F52D9@CO1PR11MB4835.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, May 17, 2021 at 3:47 PM Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> Nitesh,
->
-> On Mon, May 17 2021 at 14:21, Nitesh Lal wrote:
-> > On Mon, May 17, 2021 at 1:26 PM Robin Murphy <robin.murphy@arm.com> wrote:
-> >
-> > We can use irq_set_affinity() to set the hint mask as well, however, maybe
-> > there is a specific reason behind separating those two in the
-> > first place (maybe not?).
->
-> Yes, because kernel side settings might overwrite the hint.
->
-> > But even in this case, we have to either modify the PMU drivers' IRQs
-> > affinity from the userspace or we will have to make changes in the existing
-> > request_irq code path.
->
-> Adjusting them from user space does not work for various reasons,
-> especially CPU hotplug.
->
-> > I am not sure about the latter because we already have the required controls
-> > to adjust the device IRQ mask (by using default_smp_affinity or by modifying
-> > them manually).
->
-> default_smp_affinity does not help at all and there is nothing a module
-> can modify manually.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Sridhar Samudrala
+> Sent: Monday, April 26, 2021 11:20 AM
+> To: intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Samudrala, Sridhar
+> <sridhar.samudrala@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration of number of qps per VF via devlink
+> 
+> Introduce a devlink parameter 'num_qps_per_vf' to allow user
+> to configure the maximum number of queue pairs given to SR-IOV
+> VFs before they are created.
+> 
+> This is currently determined by the driver based on the number
+> of SR-IOV VFs created. In order to keep this behavior by default
+> the parameter is initialized to 0. To change the default behavior,
+> user can set num_qps_per_vf parameter via devlink and this will
+> be used as the preferred value to determine the queues and vectors
+> assigned per VF.
 
-Right, it will not help a module.
+What if the host administrator wants to give the VF a different number
+of vectors than queues? For example, if the admin knows the VF
+instance will be exercising VF RDMA and the VF needs more vectors
+for RDMA traffic.
 
->
-> I'll send out a patch series which cleans that up soon.
+Should we have 2 separate values, i.e. "num_qps_per_vf" and
+"num_msix_per_vf"?
 
-Ack, thanks.
+> 
+> USAGE:
+> On a 2 port NIC
+>  # devlink dev param show
+>  pci/0000:42:00.0:
+>    name num_qps_per_vf type driver-specific
+>      values:
+>        cmode runtime value 0
+>  pci/0000:42:00.1:
+>    name num_qps_per_vf type driver-specific
+>      values:
+>        cmode runtime value 0
+> 
+>  /* Set num_qps_per_vf to 4 */
+>  # devlink dev param set pci/0000:42:00.0 name num_qps_per_vf value 4 cmode runtime
+> 
+>  # devlink dev param show pci/0000:42:00.0 name num_qps_per_vf
+>  pci/0000:42:00.0:
+>    name num_qps_per_vf type driver-specific
+>      values:
+>        cmode runtime value 4
+> 
+>  # echo 8 > /sys/class/net/enp66s0f0/device/sriov_numvfs
+> 
+> This will create 8 VFs with 4 queue pairs and 5 vectors per VF
+> compared to the default behavior of 16 queue pairs and 17 vectors
+> per VF.
+> 
+> v2:
+> Fixed kdoc for ice_devlink_num_qps_per_vf_validate()
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> ---
+>  Documentation/networking/devlink/ice.rst      |  23 ++++
+>  drivers/net/ethernet/intel/ice/ice_devlink.c  | 110 +++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   5 +-
+>  4 files changed, 139 insertions(+), 2 deletions(-)
+> 
 
->
-> Thanks,
->
->         tglx
->
->
-
-
---
-Nitesh
+<snip>
 
