@@ -1,57 +1,59 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 19 May 2021 21:43:50 +0200
-Subject: [Intel-wired-lan] [PATCH] virtchnl: Add missing padding to
- virtchnl_proto_hdrs
-Message-ID: <20210519194350.1854798-1-geert@linux-m68k.org>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Wed, 19 May 2021 21:34:20 +0000
+Subject: [Intel-wired-lan] [PATCH S59 03/13] ice: add error message when
+ pldmfw_flash_image fails
+In-Reply-To: <20210506154008.12880-3-anthony.l.nguyen@intel.com>
+References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
+ <20210506154008.12880-3-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105F57E31857EA61074E869FA2B9@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On m68k (Coldfire M547x):
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Thursday, May 6, 2021 8:40 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S59 03/13] ice: add error message when
+> pldmfw_flash_image fails
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> When flashing a new firmware image onto the device, the pldmfw library
+> parses the image contents looking for a matching record. If no record can be
+> found, the function reports an error of -ENOENT. This can produce a very
+> confusing error message and experience for the user:
+> 
+>   $devlink dev flash pci/0000:ab:00.0 file image.bin
+>   devlink answers: No such file or directory
+> 
+> This is because the ENOENT error code is interpreted as a missing file or
+> directory. The pldmfw library does not have direct access to the extack
+> pointer as it is generic and non-netdevice specific. The only way that ENOENT
+> is returned by the pldmfw library is when no record matches.
+> 
+> Catch this specific error and report a suitable extended ack message:
+> 
+>   $devlink dev flash pci/0000:ab:00.0 file image.bin
+>   Error: ice: Firmware image has no record matching this device
+>   devlink answers: No such file or directory
+> 
+> In addition, ensure that we log an error message to the console whenever
+> this function fails. Because our driver specific PLDM operation functions
+> potentially set the extended ACK message, avoid overwriting this with a
+> generic message.
+> 
+> This change should result in an improved experience when attempting to
+> flash an image that does not have a compatible record.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_fw_update.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
-      CC      drivers/net/ethernet/intel/i40e/i40e_main.o
-    In file included from drivers/net/ethernet/intel/i40e/i40e_prototype.h:9,
-		     from drivers/net/ethernet/intel/i40e/i40e.h:41,
-		     from drivers/net/ethernet/intel/i40e/i40e_main.c:12:
-    include/linux/avf/virtchnl.h:153:36: warning: division by zero [-Wdiv-by-zero]
-      153 |  { virtchnl_static_assert_##X = (n)/((sizeof(struct X) == (n)) ? 1 : 0) }
-	  |                                    ^
-    include/linux/avf/virtchnl.h:844:1: note: in expansion of macro ?VIRTCHNL_CHECK_STRUCT_LEN?
-      844 | VIRTCHNL_CHECK_STRUCT_LEN(2312, virtchnl_proto_hdrs);
-	  | ^~~~~~~~~~~~~~~~~~~~~~~~~
-    include/linux/avf/virtchnl.h:844:33: error: enumerator value for ?virtchnl_static_assert_virtchnl_proto_hdrs? is not an integer constant
-      844 | VIRTCHNL_CHECK_STRUCT_LEN(2312, virtchnl_proto_hdrs);
-	  |                                 ^~~~~~~~~~~~~~~~~~~
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
-On m68k, integers are aligned on addresses that are multiples of two,
-not four, bytes.  Hence the size of a structure containing integers may
-not be divisible by 4.
-
-Fix this by adding explicit padding.
-
-Fixes: 1f7ea1cd6a374842 ("ice: Enable FDIR Configure for AVF")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Compile-tested only.
----
- include/linux/avf/virtchnl.h | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 565deea6ffe88b99..8612f8fc86c1db21 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -830,6 +830,7 @@ VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_proto_hdr);
- 
- struct virtchnl_proto_hdrs {
- 	u8 tunnel_level;
-+	u8 pad[3];
- 	/**
- 	 * specify where protocol header start from.
- 	 * 0 - from the outer layer
--- 
-2.25.1
 
