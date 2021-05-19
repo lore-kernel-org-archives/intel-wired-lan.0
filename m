@@ -1,10 +1,10 @@
 From: Guangbin Huang <huangguangbin2@huawei.com>
-Date: Wed, 19 May 2021 14:14:41 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 1/5] net: e1000: remove repeated
- word "slot" for e1000_main.c
+Date: Wed, 19 May 2021 14:14:45 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 5/5] net: e1000e: fix misspell
+ word "retreived"
 In-Reply-To: <1621404885-20075-1-git-send-email-huangguangbin2@huawei.com>
 References: <1621404885-20075-1-git-send-email-huangguangbin2@huawei.com>
-Message-ID: <1621404885-20075-2-git-send-email-huangguangbin2@huawei.com>
+Message-ID: <1621404885-20075-6-git-send-email-huangguangbin2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Hao Chen <chenhao288@hisilicon.com>
 
-There are double "slot" in comment, so remove the redundant one.
+There is a misspell word "retreived" in comment, so fix it to "retrieved".
 
 Signed-off-by: Hao Chen <chenhao288@hisilicon.com>
 Signed-off-by: Guangbin Huang <huangguangbin2@huawei.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
+ drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 042de276e632..c2a109126c27 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -5245,7 +5245,7 @@ static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev,
- 	if (!test_and_set_bit(__E1000_DISABLED, &adapter->flags))
- 		pci_disable_device(pdev);
- 
--	/* Request a slot slot reset. */
-+	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
- }
- 
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index 1db35b2c7750..0f0efee5fc8e 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -2978,7 +2978,7 @@ static u32 e1000_get_phy_addr_for_hv_page(u32 page)
+  *  @data: pointer to the data to be read or written
+  *  @read: determines if operation is read or write
+  *
+- *  Reads the PHY register at offset and stores the retreived information
++ *  Reads the PHY register at offset and stores the retrieved information
+  *  in data.  Assumes semaphore already acquired.  Note that the procedure
+  *  to access these regs uses the address port and data port to read/write.
+  *  These accesses done with PHY address 2 and without using pages.
 -- 
 2.8.1
 
