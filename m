@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 19 May 2021 21:34:20 +0000
-Subject: [Intel-wired-lan] [PATCH S59 03/13] ice: add error message when
- pldmfw_flash_image fails
-In-Reply-To: <20210506154008.12880-3-anthony.l.nguyen@intel.com>
+Date: Wed, 19 May 2021 21:35:13 +0000
+Subject: [Intel-wired-lan] [PATCH S59 06/13] ice: Detect and report
+ unsupported module power levels
+In-Reply-To: <20210506154008.12880-6-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
- <20210506154008.12880-3-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB5105F57E31857EA61074E869FA2B9@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210506154008.12880-6-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105F6020ED0A513715A8DB6FA2B9@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,42 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Thursday, May 6, 2021 8:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S59 03/13] ice: add error message when
-> pldmfw_flash_image fails
+> Subject: [Intel-wired-lan] [PATCH S59 06/13] ice: Detect and report
+> unsupported module power levels
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 > 
-> When flashing a new firmware image onto the device, the pldmfw library
-> parses the image contents looking for a matching record. If no record can be
-> found, the function reports an error of -ENOENT. This can produce a very
-> confusing error message and experience for the user:
+> Determine whether an unsupported power configuration is preventing link
+> establishment by storing and checking the link_cfg_err_byte. Print error
+> messages when module power levels are unsupported. Also add a new flag
+> bit to prevent spamming said error messages.
 > 
->   $devlink dev flash pci/0000:ab:00.0 file image.bin
->   devlink answers: No such file or directory
-> 
-> This is because the ENOENT error code is interpreted as a missing file or
-> directory. The pldmfw library does not have direct access to the extack
-> pointer as it is generic and non-netdevice specific. The only way that ENOENT
-> is returned by the pldmfw library is when no record matches.
-> 
-> Catch this specific error and report a suitable extended ack message:
-> 
->   $devlink dev flash pci/0000:ab:00.0 file image.bin
->   Error: ice: Firmware image has no record matching this device
->   devlink answers: No such file or directory
-> 
-> In addition, ensure that we log an error message to the console whenever
-> this function fails. Because our driver specific PLDM operation functions
-> potentially set the extended ACK message, avoid overwriting this with a
-> generic message.
-> 
-> This change should result in an improved experience when attempting to
-> flash an image that does not have a compatible record.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Co-developed-by: Jeb Cramer <jeb.j.cramer@intel.com>
+> Signed-off-by: Jeb Cramer <jeb.j.cramer@intel.com>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_fw_update.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice.h          |  1 +
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  6 ++-
+>  drivers/net/ethernet/intel/ice/ice_common.c   |  2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 40 +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
+>  5 files changed, 48 insertions(+), 2 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
