@@ -1,10 +1,10 @@
 From: Guangbin Huang <huangguangbin2@huawei.com>
-Date: Wed, 19 May 2021 14:14:44 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 4/5] net: e1000e: remove repeated
- word "slot" for netdev.c
+Date: Wed, 19 May 2021 14:14:43 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 3/5] net: e1000e: remove repeated
+ word "the" for ich8lan.c
 In-Reply-To: <1621404885-20075-1-git-send-email-huangguangbin2@huawei.com>
 References: <1621404885-20075-1-git-send-email-huangguangbin2@huawei.com>
-Message-ID: <1621404885-20075-5-git-send-email-huangguangbin2@huawei.com>
+Message-ID: <1621404885-20075-4-git-send-email-huangguangbin2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Hao Chen <chenhao288@hisilicon.com>
 
-There are double "slot" in comment, so remove the redundant one.
+There are double "the" in comment, so remove the redundant one.
 
 Signed-off-by: Hao Chen <chenhao288@hisilicon.com>
 Signed-off-by: Guangbin Huang <huangguangbin2@huawei.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 88e9035b75cf..5435606149b0 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7118,7 +7118,7 @@ static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev,
- 
- 	pci_disable_device(pdev);
- 
--	/* Request a slot slot reset. */
-+	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
- }
- 
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 590ad110d383..cf7b3887da1d 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -4639,7 +4639,7 @@ static s32 e1000_id_led_init_pchlan(struct e1000_hw *hw)
+  *  @hw: pointer to the HW structure
+  *
+  *  ICH8 use the PCI Express bus, but does not contain a PCI Express Capability
+- *  register, so the the bus width is hard coded.
++ *  register, so the bus width is hard coded.
+  **/
+ static s32 e1000_get_bus_info_ich8lan(struct e1000_hw *hw)
+ {
 -- 
 2.8.1
 
