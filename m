@@ -1,47 +1,100 @@
-From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Thu, 20 May 2021 10:00:51 +0300
-Subject: [Intel-wired-lan] [PATCH v6 9/9] igc: Enable TX via AF_XDP
- zero-copy
-In-Reply-To: <20210423062555.14972-10-jithu.joseph@intel.com>
-References: <20210423062555.14972-1-jithu.joseph@intel.com>
- <20210423062555.14972-10-jithu.joseph@intel.com>
-Message-ID: <8df18e5f-9639-0ce7-82b9-e3f96645f2f6@linux.intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Thu, 20 May 2021 07:53:53 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] ixgbe: fix large MTU request
+ from VF
+In-Reply-To: <20210513084253.19964-1-mateusz.palczewski@intel.com>
+References: <20210513084253.19964-1-mateusz.palczewski@intel.com>
+Message-ID: <CY4PR11MB15763FA78C3CA0E2C68E6423AB2A9@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 23/04/2021 09:25, Jithu Joseph wrote:
-> From: Andre Guedes <andre.guedes@intel.com>
+> -----Original Message-----
+> From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+> Sent: czwartek, 13 maja 2021 10:43
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Wyborny, Carolyn <carolyn.wyborny@intel.com>; Jankowski, Konrad0
+> <konrad0.jankowski@intel.com>; Rybak, Eryk Roch
+> <eryk.roch.rybak@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Skajewski, PiotrX
+> <piotrx.skajewski@intel.com>; Palczewski, Mateusz
+> <mateusz.palczewski@intel.com>
+> Subject: [PATCH net v2] ixgbe: fix large MTU request from VF
 > 
-> Add support for transmitting packets via AF_XDP zero-copy mechanism.
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> The packet transmission itself is implemented by igc_xdp_xmit_zc() which
-> is called from igc_clean_tx_irq() when the ring has AF_XDP zero-copy
-> enabled. Likewise i40e and ice drivers, the transmission budget used is
-> the number of descriptors available on the ring.
+> Check that the MTU value requested by the VF is in the supported range of
+> MTUs before attempting to set the VF large packet enable, otherwise reject
+> the request. This also avoids unnecessary register updates in the case of the
+> 82599 controller.
 > 
-> A new tx buffer type is introduced to 'enum igc_tx_buffer_type' to
-> indicate the tx buffer uses memory from xsk pool so it can be properly
-> cleaned after transmission or when the ring is cleaned.
-> 
-> The I225 controller has only 4 Tx hardware queues so the main difference
-> between igc and other Intel drivers that support AF_XDP zero-copy is
-> that there is no tx ring dedicated exclusively to XDP. Instead, tx
-> rings are shared between the network stack and XDP, and netdev queue
-> lock is used to ensure mutual exclusion. This is the same approach
-> implemented to support XDP_TX and XDP_REDIRECT actions.
-> 
-> Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-> Signed-off-by: Vedang Patel <vedang.patel@intel.com>
-> Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Fixes: 872844ddb9e4 ("ixgbe: Enable jumbo frames support w/ SR-IOV")
+> Co-developed-by: Piotr Skajewski <piotrx.skajewski@intel.com>
+> Signed-off-by: Piotr Skajewski <piotrx.skajewski@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Co-developed-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc.h      |   3 +
->   drivers/net/ethernet/intel/igc/igc_base.h |   1 +
->   drivers/net/ethernet/intel/igc/igc_main.c | 113 +++++++++++++++++++++-
->   drivers/net/ethernet/intel/igc/igc_xdp.c  |  20 +++-
->   4 files changed, 129 insertions(+), 8 deletions(-)
+>  v2: Changed hard coded 68 value to ETH_MIN_MTU
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 16 +++++++---------
+>  1 file changed, 7 insertions(+), 9 deletions(-)
 > 
-Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> index 988db46..75921cd 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> @@ -467,12 +467,16 @@ static int ixgbe_set_vf_vlan(struct ixgbe_adapter
+> *adapter, int add, int vid,
+>  	return err;
+>  }
+> 
+> -static s32 ixgbe_set_vf_lpe(struct ixgbe_adapter *adapter, u32 *msgbuf,
+> u32 vf)
+> +static int ixgbe_set_vf_lpe(struct ixgbe_adapter *adapter, u32
+> +max_frame, u32 vf)
+>  {
+>  	struct ixgbe_hw *hw = &adapter->hw;
+> -	int max_frame = msgbuf[1];
+>  	u32 max_frs;
+> 
+> +	if (max_frame < ETH_MIN_MTU || max_frame >
+> IXGBE_MAX_JUMBO_FRAME_SIZE) {
+> +		e_err(drv, "VF max_frame %d out of range\n", max_frame);
+> +		return -EINVAL;
+> +	}
+> +
+>  	/*
+>  	 * For 82599EB we have to keep all PFs and VFs operating with
+>  	 * the same max_frame value in order to avoid sending an oversize
+> @@ -533,12 +537,6 @@ static s32 ixgbe_set_vf_lpe(struct ixgbe_adapter
+> *adapter, u32 *msgbuf, u32 vf)
+>  		}
+>  	}
+> 
+> -	/* MTU < 68 is an error and causes problems on some kernels */
+> -	if (max_frame > IXGBE_MAX_JUMBO_FRAME_SIZE) {
+> -		e_err(drv, "VF max_frame %d out of range\n", max_frame);
+> -		return -EINVAL;
+> -	}
+> -
+>  	/* pull current max frame size from hardware */
+>  	max_frs = IXGBE_READ_REG(hw, IXGBE_MAXFRS);
+>  	max_frs &= IXGBE_MHADD_MFS_MASK;
+> @@ -1249,7 +1247,7 @@ static int ixgbe_rcv_msg_from_vf(struct
+> ixgbe_adapter *adapter, u32 vf)
+>  		retval = ixgbe_set_vf_vlan_msg(adapter, msgbuf, vf);
+>  		break;
+>  	case IXGBE_VF_SET_LPE:
+> -		retval = ixgbe_set_vf_lpe(adapter, msgbuf, vf);
+> +		retval = ixgbe_set_vf_lpe(adapter, msgbuf[1], vf);
+>  		break;
+>  	case IXGBE_VF_SET_MACVLAN:
+>  		retval = ixgbe_set_vf_macvlan_msg(adapter, msgbuf, vf);
+> --
+> 2.18.1
+
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
