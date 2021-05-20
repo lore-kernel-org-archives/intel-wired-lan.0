@@ -1,11 +1,11 @@
 From: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
-Date: Thu, 20 May 2021 10:00:12 +0300
-Subject: [Intel-wired-lan] [PATCH v6 8/9] igc: Enable RX via AF_XDP
+Date: Thu, 20 May 2021 10:00:51 +0300
+Subject: [Intel-wired-lan] [PATCH v6 9/9] igc: Enable TX via AF_XDP
  zero-copy
-In-Reply-To: <20210423062555.14972-9-jithu.joseph@intel.com>
+In-Reply-To: <20210423062555.14972-10-jithu.joseph@intel.com>
 References: <20210423062555.14972-1-jithu.joseph@intel.com>
- <20210423062555.14972-9-jithu.joseph@intel.com>
-Message-ID: <76b942e7-6be1-ee72-245f-355526df4821@linux.intel.com>
+ <20210423062555.14972-10-jithu.joseph@intel.com>
+Message-ID: <8df18e5f-9639-0ce7-82b9-e3f96645f2f6@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,37 +15,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 On 23/04/2021 09:25, Jithu Joseph wrote:
 > From: Andre Guedes <andre.guedes@intel.com>
 > 
-> Add support for receiving packets via AF_XDP zero-copy mechanism.
+> Add support for transmitting packets via AF_XDP zero-copy mechanism.
 > 
-> Add a new flag to 'enum igc_ring_flags_t' to indicate the ring has
-> AF_XDP zero-copy enabled so proper ring setup is carried out during ring
-> configuration in igc_configure_rx_ring().
+> The packet transmission itself is implemented by igc_xdp_xmit_zc() which
+> is called from igc_clean_tx_irq() when the ring has AF_XDP zero-copy
+> enabled. Likewise i40e and ice drivers, the transmission budget used is
+> the number of descriptors available on the ring.
 > 
-> RX buffers can now be allocated via the shared pages mechanism (default
-> behavior of the driver) or via xsk pool (when AF_XDP zero-copy is
-> enabled) so a union is added to the 'struct igc_rx_buffer' to cover both
-> cases.
+> A new tx buffer type is introduced to 'enum igc_tx_buffer_type' to
+> indicate the tx buffer uses memory from xsk pool so it can be properly
+> cleaned after transmission or when the ring is cleaned.
 > 
-> When AF_XDP zero-copy is enabled, rx buffers are allocated from the xsk
-> pool using the new helper igc_alloc_rx_buffers_zc() which is the
-> counterpart of igc_alloc_rx_buffers().
-> 
-> Likewise other Intel drivers that support AF_XDP zero-copy, in igc we
-> have a dedicated path for cleaning up rx irqs when zero-copy is enabled.
-> This avoids adding too many checks within igc_clean_rx_irq(), resulting
-> in a more readable and efficient code since this function is called from
-> the hot-path of the driver.
+> The I225 controller has only 4 Tx hardware queues so the main difference
+> between igc and other Intel drivers that support AF_XDP zero-copy is
+> that there is no tx ring dedicated exclusively to XDP. Instead, tx
+> rings are shared between the network stack and XDP, and netdev queue
+> lock is used to ensure mutual exclusion. This is the same approach
+> implemented to support XDP_TX and XDP_REDIRECT actions.
 > 
 > Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 > Signed-off-by: Vedang Patel <vedang.patel@intel.com>
 > Signed-off-by: Jithu Joseph <jithu.joseph@intel.com>
 > Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc.h      |  22 +-
+>   drivers/net/ethernet/intel/igc/igc.h      |   3 +
 >   drivers/net/ethernet/intel/igc/igc_base.h |   1 +
->   drivers/net/ethernet/intel/igc/igc_main.c | 344 +++++++++++++++++++++-
->   drivers/net/ethernet/intel/igc/igc_xdp.c  | 100 +++++++
->   drivers/net/ethernet/intel/igc/igc_xdp.h  |   2 +
->   5 files changed, 450 insertions(+), 19 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc_main.c | 113 +++++++++++++++++++++-
+>   drivers/net/ethernet/intel/igc/igc_xdp.c  |  20 +++-
+>   4 files changed, 129 insertions(+), 8 deletions(-)
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
