@@ -1,7 +1,7 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 21 May 2021 14:03:06 +0200
-Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
- affinity hints
+From: Nitesh Lal <nilal@redhat.com>
+Date: Fri, 21 May 2021 09:46:20 -0400
+Subject: [Intel-wired-lan] [PATCH tip:irq/core v1] genirq: remove
+ auto-set of the mask when setting the hint
 In-Reply-To: <87zgwo9u79.ffs@nanos.tec.linutronix.de>
 References: <20210504092340.00006c61@intel.com>
  <87pmxpdr32.ffs@nanos.tec.linutronix.de>
@@ -11,122 +11,65 @@ References: <20210504092340.00006c61@intel.com>
  <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
  <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
  <87zgwo9u79.ffs@nanos.tec.linutronix.de>
-Message-ID: <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
+Message-ID: <CAFki+LnKycMFYTGTswX9vpMepNiCW6BL5TFMTuKZSniab5=4SA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The discussion about removing the side effect of irq_set_affinity_hint() of
-actually applying the cpumask (if not NULL) as affinity to the interrupt,
-unearthed a few unpleasantries:
+On Fri, May 21, 2021 at 7:56 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> Nitesh,
+>
+> On Thu, May 20 2021 at 20:03, Nitesh Lal wrote:
+> > On Thu, May 20, 2021 at 5:57 PM Nitesh Lal <nilal@redhat.com> wrote:
+> >> I think here to ensure that we are not breaking any of the drivers we have
+> >> to first analyze all the existing drivers and understand how they are using
+> >> this API.
+> >> AFAIK there are three possible scenarios:
+> >>
+> >> - A driver use this API to spread the IRQs
+> >>   + For this case we should be safe considering the spreading is naturally
+> >>     done from the IRQ subsystem itself.
+> >
+> > Forgot to mention another thing in the above case is to determine whether
+> > it is true for all architectures or not as Thomas mentioned.
+>
+> Yes.
+>
+> >>
+> >> - A driver use this API to actually set the hint
+> >>   + These drivers should have no functional impact because of this revert
+>
+> Correct.
+>
+>
+> >> - Driver use this API to force a certain affinity mask
+> >>   + In this case we have to replace the API with the irq_force_affinity()
+>
+> irq_set_affinity() or irq_set_affinity_and_hint()
 
-  1) The modular perf drivers rely on the current behaviour for the very
-     wrong reasons.
+Ah yes! my bad. _force_ doesn't check the mask against the online CPUs.
+Hmm, I didn't realize that you also added irq_set_affinity_and_hint()
+in your last patchset.
 
-  2) While none of the other drivers prevents user space from changing
-     the affinity, a cursorily inspection shows that there are at least
-     expectations in some drivers.
+>
+> >> I can start looking into the individual drivers, however, testing them will
+> >> be a challenge.
+>
+> The only way to do that is to have the core infrastructure added and
 
-#1 needs to be cleaned up anyway, so that's not a problem
+Right.
 
-#2 might result in subtle regressions especially when irqbalanced (which
-   nowadays ignores the affinity hint) is disabled.
+> then send patches changing it in the way you think. The relevant
+> maintainers/developers should be able to tell you when your analysis
+> went south. :)
 
-Provide new interfaces:
+Ack will start looking into this.
 
-  irq_update_affinity_hint() - Only sets the affinity hint pointer
-  irq_apply_affinity_hint()  - Set the pointer and apply the affinity to
-  			       the interrupt
 
-Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
-document it to be phased out.
+--
+Thanks
+Nitesh
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
----
-Applies on:
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/core
----
- include/linux/interrupt.h |   41 ++++++++++++++++++++++++++++++++++++++++-
- kernel/irq/manage.c       |    8 ++++----
- 2 files changed, 44 insertions(+), 5 deletions(-)
-
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned i
- extern int irq_can_set_affinity(unsigned int irq);
- extern int irq_select_affinity(unsigned int irq);
- 
--extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
-+extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-+				     bool setaffinity);
-+
-+/**
-+ * irq_update_affinity_hint - Update the affinity hint
-+ * @irq:	Interrupt to update
-+ * @cpumask:	cpumask pointer (NULL to clear the hint)
-+ *
-+ * Updates the affinity hint, but does not change the affinity of the interrupt.
-+ */
-+static inline int
-+irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
-+{
-+	return __irq_apply_affinity_hint(irq, m, true);
-+}
-+
-+/**
-+ * irq_apply_affinity_hint - Update the affinity hint and apply the provided
-+ *			     cpumask to the interrupt
-+ * @irq:	Interrupt to update
-+ * @cpumask:	cpumask pointer (NULL to clear the hint)
-+ *
-+ * Updates the affinity hint and if @cpumask is not NULL it applies it as
-+ * the affinity of that interrupt.
-+ */
-+static inline int
-+irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m)
-+{
-+	return __irq_apply_affinity_hint(irq, m, true);
-+}
-+
-+/*
-+ * Deprecated. Use irq_update_affinity_hint() or irq_apply_affinity_hint()
-+ * instead.
-+ */
-+static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-+{
-+	return irq_apply_affinity_hint(irq, cpumask);
-+}
-+
- extern int irq_update_affinity_desc(unsigned int irq,
- 				    struct irq_affinity_desc *affinity);
- 
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq,
- }
- EXPORT_SYMBOL_GPL(irq_force_affinity);
- 
--int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-+int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-+			      bool setaffinity)
- {
- 	unsigned long flags;
- 	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-@@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int i
- 		return -EINVAL;
- 	desc->affinity_hint = m;
- 	irq_put_desc_unlock(desc, flags);
--	/* set the initial affinity to prevent every interrupt being on CPU0 */
--	if (m)
-+	if (m && setaffinity)
- 		__irq_set_affinity(irq, m, false);
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
-+EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
- 
- static void irq_affinity_notify(struct work_struct *work)
- {
