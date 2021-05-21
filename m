@@ -1,46 +1,46 @@
-From: trix@redhat.com <trix@redhat.com>
-Date: Fri, 21 May 2021 12:50:19 -0700
-Subject: [Intel-wired-lan] [PATCH] igc: change default return of
- igc_read_phy_reg()
-Message-ID: <20210521195019.2078661-1-trix@redhat.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Fri, 21 May 2021 23:45:14 +0200
+Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
+ affinity hints
+In-Reply-To: <CAOhMmr6p2a=Dgz3Q=cbEoXJjbBjBdJm1Vwt60Si+JDCdbOEVaw@mail.gmail.com>
+References: <20210504092340.00006c61@intel.com>
+ <87pmxpdr32.ffs@nanos.tec.linutronix.de>
+ <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
+ <87im3gewlu.ffs@nanos.tec.linutronix.de>
+ <CAFki+L=gp10W1ygv7zdsee=BUGpx9yPAckKr7pyo=tkFJPciEg@mail.gmail.com>
+ <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
+ <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
+ <87zgwo9u79.ffs@nanos.tec.linutronix.de>
+ <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
+ <CAOhMmr6p2a=Dgz3Q=cbEoXJjbBjBdJm1Vwt60Si+JDCdbOEVaw@mail.gmail.com>
+Message-ID: <87eedzahhx.ffs@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tom Rix <trix@redhat.com>
+On Fri, May 21 2021 at 10:45, Lijun Pan wrote:
+> On Fri, May 21, 2021 at 7:48 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+>> +/**
+>> + * irq_update_affinity_hint - Update the affinity hint
+>> + * @irq:       Interrupt to update
+>> + * @cpumask:   cpumask pointer (NULL to clear the hint)
+>> + *
+>> + * Updates the affinity hint, but does not change the affinity of the interrupt.
+>> + */
+>> +static inline int
+>> +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
+>> +{
+>> +       return __irq_apply_affinity_hint(irq, m, true);
+>> +}
+>
+> Should it be:
+> return __irq_apply_affinity_hint(irq, m, false);
+> here?
 
-Static analysis reports this problem
+Of course. Copy & Pasta should be forbidden.
 
-igc_main.c:4944:20: warning: The left operand of '&'
-  is a garbage value
-    if (!(phy_data & SR_1000T_REMOTE_RX_STATUS) &&
-          ~~~~~~~~ ^
+Thanks for spotting it!
 
-pyy_data is set by the call to igc_read_phy_reg() only if
-there is a read_reg() op, else it is unset and a 0 is
-returned.  Change the return to -EOPNOTSUPP.
-
-Fixes: 208983f099d9 ("igc: Add watchdog")
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- drivers/net/ethernet/intel/igc/igc.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index b6d3277c6f520..71100ee7afbee 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -577,7 +577,7 @@ static inline s32 igc_read_phy_reg(struct igc_hw *hw, u32 offset, u16 *data)
- 	if (hw->phy.ops.read_reg)
- 		return hw->phy.ops.read_reg(hw, offset, data);
- 
--	return 0;
-+	return -EOPNOTSUPP;
- }
- 
- void igc_reinit_locked(struct igc_adapter *);
--- 
-2.26.3
-
+       tglx
