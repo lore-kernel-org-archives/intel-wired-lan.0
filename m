@@ -1,11 +1,11 @@
 From: Jambekar, Vishakha <vishakha.jambekar@intel.com>
-Date: Fri, 21 May 2021 11:42:41 +0000
-Subject: [Intel-wired-lan] [PATCH intel-net v2 5/6] ixgbevf: add correct
+Date: Fri, 21 May 2021 11:44:54 +0000
+Subject: [Intel-wired-lan] [PATCH intel-net v2 4/6] igb: add correct
  exception tracing for XDP
-In-Reply-To: <20210510093854.31652-6-magnus.karlsson@gmail.com>
+In-Reply-To: <20210510093854.31652-5-magnus.karlsson@gmail.com>
 References: <20210510093854.31652-1-magnus.karlsson@gmail.com>
- <20210510093854.31652-6-magnus.karlsson@gmail.com>
-Message-ID: <SA2PR11MB4940D666EB4187F332662717FF299@SA2PR11MB4940.namprd11.prod.outlook.com>
+ <20210510093854.31652-5-magnus.karlsson@gmail.com>
+Message-ID: <SA2PR11MB4940856C4DD29124DACB6654FF299@SA2PR11MB4940.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,8 +20,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > lan at lists.osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
 > Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
 > Cc: netdev at vger.kernel.org; brouer at redhat.com
-> Subject: [Intel-wired-lan] [PATCH intel-net v2 5/6] ixgbevf: add correct
-> exception tracing for XDP
+> Subject: [Intel-wired-lan] [PATCH intel-net v2 4/6] igb: add correct exception
+> tracing for XDP
 > 
 > From: Magnus Karlsson <magnus.karlsson@intel.com>
 > 
@@ -30,12 +30,12 @@ List-ID: <intel-wired-lan.osuosl.org>
 > would confuse the user quite a lot not knowing where and why the packets
 > disappeared.
 > 
-> Fixes: 21092e9ce8b1 ("ixgbevf: Add support for XDP_TX action")
+> Fixes: 9cbc948b5a20 ("igb: add XDP support")
 > Reported-by: Jesper Dangaard Brouer <brouer@redhat.com>
 > Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
 > 
 
 Tested-by: Vishakha Jambekar<vishakha.jambekar@intel.com>
