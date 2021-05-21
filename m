@@ -1,5 +1,5 @@
-From: Lijun Pan <lijunp213@gmail.com>
-Date: Fri, 21 May 2021 10:45:10 -0500
+From: Nitesh Lal <nilal@redhat.com>
+Date: Fri, 21 May 2021 12:13:15 -0400
 Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
  affinity hints
 In-Reply-To: <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
@@ -12,14 +12,14 @@ References: <20210504092340.00006c61@intel.com>
  <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
  <87zgwo9u79.ffs@nanos.tec.linutronix.de>
  <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
-Message-ID: <CAOhMmr6p2a=Dgz3Q=cbEoXJjbBjBdJm1Vwt60Si+JDCdbOEVaw@mail.gmail.com>
+Message-ID: <CAFki+LkqBHnVYB5VBx_8Ch0u8RfXrJsRzxyuDfHhbR-dCeN3Lg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, May 21, 2021 at 7:48 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+On Fri, May 21, 2021 at 8:03 AM Thomas Gleixner <tglx@linutronix.de> wrote:
 >
 > The discussion about removing the side effect of irq_set_affinity_hint() of
 > actually applying the cpumask (if not NULL) as affinity to the interrupt,
@@ -43,8 +43,23 @@ On Fri, May 21, 2021 at 7:48 AM Thomas Gleixner <tglx@linutronix.de> wrote:
 >   irq_apply_affinity_hint()  - Set the pointer and apply the affinity to
 >                                the interrupt
 >
+
+Any reason why you ruled out the usage of irq_set_affinity_and_hint()?
+IMHO the latter makes it very clear what the function is meant to do.
+
+
 > Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
 > document it to be phased out.
+
+Right, so eventually we will be only left with the following APIs that
+the driver will use:
+irq_set_affinity()- for drivers that only wants to set the affinity mask
+irq_apply_affinity_hint/irq_set_affinity_and_hint() - for drivers that
+wants to set same affinity and hint mask
+irq_update_affinity_hint() - for drivers that only wants to update the hint mask
+
+Thanks for clearing this.
+
 >
 > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 > Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
@@ -78,11 +93,6 @@ On Fri, May 21, 2021 at 7:48 AM Thomas Gleixner <tglx@linutronix.de> wrote:
 > +{
 > +       return __irq_apply_affinity_hint(irq, m, true);
 > +}
-
-Should it be:
-return __irq_apply_affinity_hint(irq, m, false);
-here?
-
 > +
 > +/**
 > + * irq_apply_affinity_hint - Update the affinity hint and apply the provided
@@ -138,3 +148,9 @@ here?
 >
 >  static void irq_affinity_notify(struct work_struct *work)
 >  {
+>
+
+
+--
+Nitesh
+
