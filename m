@@ -1,105 +1,192 @@
-From: Nitesh Lal <nilal@redhat.com>
-Date: Thu, 20 May 2021 20:03:38 -0400
-Subject: [Intel-wired-lan] [PATCH tip:irq/core v1] genirq: remove
- auto-set of the mask when setting the hint
-In-Reply-To: <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
-References: <20210504092340.00006c61@intel.com>
- <87pmxpdr32.ffs@nanos.tec.linutronix.de>
- <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
- <87im3gewlu.ffs@nanos.tec.linutronix.de>
- <CAFki+L=gp10W1ygv7zdsee=BUGpx9yPAckKr7pyo=tkFJPciEg@mail.gmail.com>
- <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
-Message-ID: <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 21 May 2021 14:28:44 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
+ 9acf59a752d4c686739117d3b3129e60af1ba5c1
+Message-ID: <60a7531c.QZN0q1hMMLOjLxiI%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 20, 2021 at 5:57 PM Nitesh Lal <nilal@redhat.com> wrote:
->
-> On Mon, May 17, 2021 at 8:23 PM Nitesh Lal <nilal@redhat.com> wrote:
-> >
-> > On Mon, May 17, 2021 at 8:04 PM Thomas Gleixner <tglx@linutronix.de> wrote:
-> > >
-> > > On Mon, May 17 2021 at 18:44, Nitesh Lal wrote:
-> > > > On Mon, May 17, 2021 at 4:48 PM Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > >> The hint was added so that userspace has a better understanding where it
-> > > >> should place the interrupt. So if irqbalanced ignores it anyway, then
-> > > >> what's the point of the hint? IOW, why is it still used drivers?
-> > > >>
-> > > > Took a quick look at the irqbalance repo and saw the following commit:
-> > > >
-> > > > dcc411e7bf    remove affinity_hint infrastructure
-> > > >
-> > > > The commit message mentions that "PJ is redesiging how affinity hinting
-> > > > works in the kernel, the future model will just tell us to ignore an IRQ,
-> > > > and the kernel will handle placement for us.  As such we can remove the
-> > > > affinity_hint recognition entirely".
-> > >
-> > > No idea who PJ is. I really love useful commit messages. Maybe Neil can
-> > > shed some light on that.
-> > >
-> > > > This does indicate that apparently, irqbalance moved away from the usage of
-> > > > affinity_hint. However, the next question is what was this future
-> > > > model?
-> > >
-> > > I might have missed something in the last 5 years, but that's the first
-> > > time I hear about someone trying to cleanup that thing.
-> > >
-> > > > I don't know but I can surely look into it if that helps or maybe someone
-> > > > here already knows about it?
-> > >
-> > > I CC'ed Neil :)
-> >
-> > Thanks, I have added PJ Waskiewicz as well who I think was referred in
-> > that commit message as PJ.
-> >
-> > >
-> > > >> Now there is another aspect to that. What happens if irqbalanced does
-> > > >> not run at all and a driver relies on the side effect of the hint
-> > > >> setting the initial affinity. Bah...
-> > > >>
-> > > >
-> > > > Right, but if they only rely on this API so that the IRQs are spread across
-> > > > all the CPUs then that issue is already resolved and these other drivers
-> > > > should not regress because of changing this behavior. Isn't it?
-> > >
-> > > Is that true for all architectures?
-> >
-> > Unfortunately, I don't know and that's probably why we have to be careful.
->
-> I think here to ensure that we are not breaking any of the drivers we have
-> to first analyze all the existing drivers and understand how they are using
-> this API.
-> AFAIK there are three possible scenarios:
->
-> - A driver use this API to spread the IRQs
->   + For this case we should be safe considering the spreading is naturally
->     done from the IRQ subsystem itself.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
+branch HEAD: 9acf59a752d4c686739117d3b3129e60af1ba5c1  igc: Enable TX via AF_XDP zero-copy
 
-Forgot to mention another thing in the above case is to determine whether
-it is true for all architectures or not as Thomas mentioned.
+elapsed time: 724m
 
->
-> - A driver use this API to actually set the hint
->   + These drivers should have no functional impact because of this revert
->
-> - Driver use this API to force a certain affinity mask
->   + In this case we have to replace the API with the irq_force_affinity()
->
-> I can start looking into the individual drivers, however, testing them will
-> be a challenge.
->
-> Any thoughts?
->
-> --
-> Thanks
-> Nitesh
+configs tested: 163
+configs skipped: 3
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                           gcw0_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                           ci20_defconfig
+arc                        nsimosci_defconfig
+openrisc                  or1klitex_defconfig
+arc                     haps_hs_smp_defconfig
+arm                        mvebu_v5_defconfig
+arm                     am200epdkit_defconfig
+mips                          rb532_defconfig
+sh                           se7343_defconfig
+powerpc                         ps3_defconfig
+powerpc                     tqm5200_defconfig
+m68k                       m5275evb_defconfig
+sh                          lboxre2_defconfig
+arm                            qcom_defconfig
+powerpc                    klondike_defconfig
+arm                        realview_defconfig
+mips                        qi_lb60_defconfig
+mips                           rs90_defconfig
+sh                           se7721_defconfig
+arm                          moxart_defconfig
+m68k                       m5208evb_defconfig
+sh                   secureedge5410_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                     skiroot_defconfig
+mips                           ip27_defconfig
+powerpc                      ep88xc_defconfig
+arm                        spear6xx_defconfig
+arm                       aspeed_g5_defconfig
+arm                         shannon_defconfig
+powerpc                       maple_defconfig
+mips                        jmr3927_defconfig
+mips                       capcella_defconfig
+powerpc                     tqm8560_defconfig
+powerpc                     pq2fads_defconfig
+xtensa                    xip_kc705_defconfig
+sparc                       sparc64_defconfig
+arm                         s5pv210_defconfig
+powerpc                 mpc8315_rdb_defconfig
+sh                           se7722_defconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                         apsh4a3a_defconfig
+arm                       omap2plus_defconfig
+arc                         haps_hs_defconfig
+m68k                          sun3x_defconfig
+powerpc                     tqm8555_defconfig
+arm                         cm_x300_defconfig
+mips                           ip28_defconfig
+powerpc                     asp8347_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                      makalu_defconfig
+powerpc                     rainier_defconfig
+arm                         lubbock_defconfig
+mips                         tb0287_defconfig
+arm                       aspeed_g4_defconfig
+mips                      malta_kvm_defconfig
+arm                       netwinder_defconfig
+arm                         palmz72_defconfig
+arm                        vexpress_defconfig
+powerpc                      pcm030_defconfig
+arm                         mv78xx0_defconfig
+powerpc                     mpc83xx_defconfig
+s390                       zfcpdump_defconfig
+powerpc                        warp_defconfig
+powerpc                     tqm8548_defconfig
+mips                            gpr_defconfig
+powerpc                      walnut_defconfig
+arc                    vdk_hs38_smp_defconfig
+openrisc                 simple_smp_defconfig
+mips                        vocore2_defconfig
+sh                         microdev_defconfig
+mips                     loongson1c_defconfig
+sh                            shmin_defconfig
+powerpc                 canyonlands_defconfig
+sh                           sh2007_defconfig
+h8300                            alldefconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a001-20210520
+x86_64               randconfig-a006-20210520
+x86_64               randconfig-a005-20210520
+x86_64               randconfig-a003-20210520
+x86_64               randconfig-a004-20210520
+x86_64               randconfig-a002-20210520
+i386                 randconfig-a001-20210520
+i386                 randconfig-a005-20210520
+i386                 randconfig-a002-20210520
+i386                 randconfig-a006-20210520
+i386                 randconfig-a004-20210520
+i386                 randconfig-a003-20210520
+i386                 randconfig-a001-20210521
+i386                 randconfig-a005-20210521
+i386                 randconfig-a002-20210521
+i386                 randconfig-a006-20210521
+i386                 randconfig-a003-20210521
+i386                 randconfig-a004-20210521
+i386                 randconfig-a016-20210520
+i386                 randconfig-a011-20210520
+i386                 randconfig-a015-20210520
+i386                 randconfig-a012-20210520
+i386                 randconfig-a014-20210520
+i386                 randconfig-a013-20210520
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
 
--- 
-Thanks
-Nitesh
+clang tested configs:
+x86_64               randconfig-b001-20210521
+x86_64               randconfig-b001-20210520
+x86_64               randconfig-a013-20210520
+x86_64               randconfig-a014-20210520
+x86_64               randconfig-a012-20210520
+x86_64               randconfig-a016-20210520
+x86_64               randconfig-a015-20210520
+x86_64               randconfig-a011-20210520
 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
