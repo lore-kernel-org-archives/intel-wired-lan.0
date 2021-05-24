@@ -1,33 +1,36 @@
 From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 18 Apr 2021 14:40:56 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused asymmetric
- pause bit from igc defines
-Message-ID: <20210418114056.832012-1-sasha.neftin@intel.com>
+Date: Mon, 24 May 2021 09:09:01 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Indentation fixes
+Message-ID: <20210524060901.3622163-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The CR_1000T_ASYM_PAUSE bit from igc defines is not used so remove it.
+Minor fix of indentation in igc_defines.h
 
+Fixes: 87938851b6efb ("igc: enable auxiliary PHC functions for the i225")
 Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_defines.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 9d80f2550329..7cc48321bb70 100644
+index 8f6ba2b8d9e6..26a6ca004697 100644
 --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -128,7 +128,6 @@
- #define NWAY_LPAR_ASM_DIR	0x0800 /* LP Asymmetric Pause Direction bit */
+@@ -99,8 +99,8 @@
+ #define IGC_CTRL_RFCE		0x08000000  /* Receive Flow Control enable */
+ #define IGC_CTRL_TFCE		0x10000000  /* Transmit flow control enable */
  
- /* 1000BASE-T Control Register */
--#define CR_1000T_ASYM_PAUSE	0x0080 /* Advertise asymmetric pause bit */
- #define CR_1000T_HD_CAPS	0x0100 /* Advertise 1000T HD capability */
- #define CR_1000T_FD_CAPS	0x0200 /* Advertise 1000T FD capability  */
+-#define IGC_CTRL_SDP0_DIR 0x00400000	/* SDP0 Data direction */
+-#define IGC_CTRL_SDP1_DIR 0x00800000	/* SDP1 Data direction */
++#define IGC_CTRL_SDP0_DIR	0x00400000  /* SDP0 Data direction */
++#define IGC_CTRL_SDP1_DIR	0x00800000  /* SDP1 Data direction */
  
+ /* As per the EAS the maximum supported size is 9.5KB (9728 bytes) */
+ #define MAX_JUMBO_FRAME_SIZE	0x2600
 -- 
 2.25.1
 
