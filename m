@@ -1,8 +1,8 @@
 From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Tue, 25 May 2021 18:00:38 -0500
-Subject: [Intel-wired-lan] [PATCH][next] i40e: Replace one-element array
- with flexible-array member
-Message-ID: <20210525230038.GA175516@embeddedor>
+Date: Tue, 25 May 2021 18:03:10 -0500
+Subject: [Intel-wired-lan] [PATCH][next] iavf: Replace one-element array in
+ struct virtchnl_vf_resource
+Message-ID: <20210525230310.GA175595@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,7 +15,7 @@ should always use ?flexible array members?[1] for these cases. The older
 style of one-element or zero-length arrays should no longer be used[2].
 
 Refactor the code according to the use of a flexible-array member in struct
-i40e_qvlist_info instead of one-element array, and use the struct_size()
+virtchnl_vf_resource instead of one-element array, and use the struct_size()
 helper.
 
 [1] https://en.wikipedia.org/wiki/Flexible_array_member
@@ -24,60 +24,125 @@ helper.
 Link: https://github.com/KSPP/linux/issues/79
 Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
- drivers/infiniband/hw/i40iw/i40iw_main.c      | 5 ++---
- drivers/net/ethernet/intel/i40e/i40e_client.c | 2 +-
- include/linux/net/intel/i40e_client.h         | 2 +-
- 3 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 ++---
+ drivers/net/ethernet/intel/iavf/iavf.h             | 5 ++---
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c    | 9 ++++-----
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c   | 4 ++--
+ include/linux/avf/virtchnl.h                       | 4 ++--
+ 5 files changed, 12 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/infiniband/hw/i40iw/i40iw_main.c b/drivers/infiniband/hw/i40iw/i40iw_main.c
-index b496f30ce066..364f69cd620f 100644
---- a/drivers/infiniband/hw/i40iw/i40iw_main.c
-+++ b/drivers/infiniband/hw/i40iw/i40iw_main.c
-@@ -1423,7 +1423,7 @@ static enum i40iw_status_code i40iw_save_msix_info(struct i40iw_device *iwdev,
- 	struct i40e_qv_info *iw_qvinfo;
- 	u32 ceq_idx;
- 	u32 i;
--	u32 size;
-+	size_t size;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index eff0a30790dd..c0afac8cf33b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1978,7 +1978,6 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	struct i40e_pf *pf = vf->pf;
+ 	i40e_status aq_ret = 0;
+ 	struct i40e_vsi *vsi;
+-	int num_vsis = 1;
+ 	size_t len = 0;
+ 	int ret;
  
- 	if (!ldev->msix_count) {
- 		i40iw_pr_err("No MSI-X vectors\n");
-@@ -1433,8 +1433,7 @@ static enum i40iw_status_code i40iw_save_msix_info(struct i40iw_device *iwdev,
- 	iwdev->msix_count = ldev->msix_count;
+@@ -1987,7 +1986,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 		goto err;
+ 	}
  
- 	size = sizeof(struct i40iw_msix_vector) * iwdev->msix_count;
--	size += sizeof(struct i40e_qvlist_info);
--	size +=  sizeof(struct i40e_qv_info) * iwdev->msix_count - 1;
-+	size += struct_size(iw_qvlist, qv_info, iwdev->msix_count);
- 	iwdev->iw_msixtbl = kzalloc(size, GFP_KERNEL);
+-	len = struct_size(vfres, vsi_res, num_vsis);
++	len = struct_size(vfres, vsi_res, 1);
+ 	vfres = kzalloc(len, GFP_KERNEL);
+ 	if (!vfres) {
+ 		aq_ret = I40E_ERR_NO_MEMORY;
+@@ -2061,7 +2060,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_ADQ)
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_ADQ;
  
- 	if (!iwdev->iw_msixtbl)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 32f3facbed1a..63eab14a26df 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -579,7 +579,7 @@ static int i40e_client_setup_qvlist(struct i40e_info *ldev,
- 	u32 v_idx, i, reg_idx, reg;
+-	vfres->num_vsis = num_vsis;
++	vfres->num_vsis = 1;
+ 	vfres->num_queue_pairs = vf->num_queue_pairs;
+ 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
+ 	vfres->rss_key_size = I40E_HKEY_ARRAY_SIZE;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index e8bd04100ecd..2c212727c50d 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -89,9 +89,8 @@ struct iavf_vsi {
+ #define IAVF_HLUT_ARRAY_SIZE ((IAVF_VFQF_HLUT_MAX_INDEX + 1) * 4)
+ #define IAVF_MBPS_DIVISOR	125000 /* divisor to convert to Mbps */
  
- 	ldev->qvlist_info = kzalloc(struct_size(ldev->qvlist_info, qv_info,
--				    qvlist_info->num_vectors - 1), GFP_KERNEL);
-+				    qvlist_info->num_vectors), GFP_KERNEL);
- 	if (!ldev->qvlist_info)
- 		return -ENOMEM;
- 	ldev->qvlist_info->num_vectors = qvlist_info->num_vectors;
-diff --git a/include/linux/net/intel/i40e_client.h b/include/linux/net/intel/i40e_client.h
-index f41387a8969f..fd7bc860a241 100644
---- a/include/linux/net/intel/i40e_client.h
-+++ b/include/linux/net/intel/i40e_client.h
-@@ -48,7 +48,7 @@ struct i40e_qv_info {
+-#define IAVF_VIRTCHNL_VF_RESOURCE_SIZE (sizeof(struct virtchnl_vf_resource) + \
+-					(IAVF_MAX_VF_VSI * \
+-					 sizeof(struct virtchnl_vsi_resource)))
++#define IAVF_VIRTCHNL_VF_RESOURCE_SIZE (struct_size((struct virtchnl_vf_resource *)0, \
++					vsi_res, IAVF_MAX_VF_VSI))
  
- struct i40e_qvlist_info {
- 	u32 num_vectors;
--	struct i40e_qv_info qv_info[1];
-+	struct i40e_qv_info qv_info[];
+ /* MAX_MSIX_Q_VECTORS of these are allocated,
+  * but we only use one per queue-specific vector.
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 0eab3c43bdc5..b2392af4e048 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -198,8 +198,8 @@ int iavf_get_vf_config(struct iavf_adapter *adapter)
+ 	enum iavf_status err;
+ 	u16 len;
+ 
+-	len =  sizeof(struct virtchnl_vf_resource) +
+-		IAVF_MAX_VF_VSI * sizeof(struct virtchnl_vsi_resource);
++	len = struct_size((struct virtchnl_vf_resource *)0, vsi_res,
++			  IAVF_MAX_VF_VSI);
+ 	event.buf_len = len;
+ 	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
+ 	if (!event.msg_buf) {
+@@ -1662,9 +1662,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		}
+ 		break;
+ 	case VIRTCHNL_OP_GET_VF_RESOURCES: {
+-		u16 len = sizeof(struct virtchnl_vf_resource) +
+-			  IAVF_MAX_VF_VSI *
+-			  sizeof(struct virtchnl_vsi_resource);
++		u16 len = struct_size((struct virtchnl_vf_resource *)0,
++				      vsi_res, IAVF_MAX_VF_VSI);
+ 		memcpy(adapter->vf_res, msg, min(msglen, len));
+ 		iavf_validate_num_queues(adapter);
+ 		iavf_vf_parse_hw_config(&adapter->hw, adapter->vf_res);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index a1d22d2aa0bd..5f1e0b45b8f5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2295,7 +2295,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	struct virtchnl_vf_resource *vfres = NULL;
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_vsi *vsi;
+-	int len = 0;
++	size_t len = 0;
+ 	int ret;
+ 
+ 	if (ice_check_vf_init(pf, vf)) {
+@@ -2303,7 +2303,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 		goto err;
+ 	}
+ 
+-	len = sizeof(struct virtchnl_vf_resource);
++	len = struct_size(vfres, vsi_res, 1);
+ 
+ 	vfres = kzalloc(len, GFP_KERNEL);
+ 	if (!vfres) {
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index 565deea6ffe8..85a687bc6096 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -273,10 +273,10 @@ struct virtchnl_vf_resource {
+ 	u32 rss_key_size;
+ 	u32 rss_lut_size;
+ 
+-	struct virtchnl_vsi_resource vsi_res[1];
++	struct virtchnl_vsi_resource vsi_res[];
  };
  
+-VIRTCHNL_CHECK_STRUCT_LEN(36, virtchnl_vf_resource);
++VIRTCHNL_CHECK_STRUCT_LEN(20, virtchnl_vf_resource);
  
+ /* VIRTCHNL_OP_CONFIG_TX_QUEUE
+  * VF sends this message to set up parameters for one TX queue.
 -- 
 2.27.0
 
