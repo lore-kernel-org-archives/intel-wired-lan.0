@@ -1,11 +1,11 @@
 From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Wed, 26 May 2021 16:35:14 -0500
+Date: Wed, 26 May 2021 16:34:32 -0500
 Subject: [Intel-wired-lan] [PATCH][next] i40e: Replace one-element array
  with flexible-array member
 In-Reply-To: <bf46b428deef4e9e89b0ea1704b1f0e5@intel.com>
 References: <20210525230038.GA175516@embeddedor>
  <bf46b428deef4e9e89b0ea1704b1f0e5@intel.com>
-Message-ID: <79c3c00d-c364-9db1-b8de-7ed0686ca8dc@embeddedor.com>
+Message-ID: <b6ad65c6-da10-fd5d-e7ec-add0c607af26@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -48,6 +48,7 @@ Thanks
 --
 Gustavo
 
+> 
 > Additionally we will add this patch when we resend this PR on iwl-next.
 > https://lore.kernel.org/linux-rdma/62555c6de641e10cb4169653731389a51d086345.camel at intel.com/
 > 
