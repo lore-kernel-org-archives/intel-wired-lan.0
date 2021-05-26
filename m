@@ -1,82 +1,132 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Tue, 25 May 2021 18:18:51 -0500
-Subject: [Intel-wired-lan] [PATCH][next] iavf: Replace one-element array in
- struct virtchnl_rss_key
-Message-ID: <20210525231851.GA176647@embeddedor>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 26 May 2021 19:32:52 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 928c8f51df0fd67cf165c18b82fe9b99a687ed08
+Message-ID: <60ae31e4.sIY5kAuucyvYR2cn%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There is a regular need in the kernel to provide a way to declare having a
-dynamically sized set of trailing elements in a structure. Kernel code
-should always use ?flexible array members?[1] for these cases. The older
-style of one-element or zero-length arrays should no longer be used[2].
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 928c8f51df0fd67cf165c18b82fe9b99a687ed08  igc: change default return of igc_read_phy_reg()
 
-Refactor the code according to the use of a flexible-array member in struct
-virtchnl_rss_key instead of one-element array, and use the struct_size()
-helper.
+elapsed time: 730m
 
-[1] https://en.wikipedia.org/wiki/Flexible_array_member
-[2] https://www.kernel.org/doc/html/v5.10/process/deprecated.html#zero-length-and-one-element-arrays
+configs tested: 103
+configs skipped: 2
 
-Link: https://github.com/KSPP/linux/issues/79
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                  mpc866_ads_defconfig
+mips                  maltasmvp_eva_defconfig
+powerpc                     tqm8548_defconfig
+powerpc                      ppc44x_defconfig
+sh                           se7780_defconfig
+arm                        spear3xx_defconfig
+sh                          sdk7786_defconfig
+arm                            pleb_defconfig
+sh                           se7343_defconfig
+powerpc                mpc7448_hpc2_defconfig
+arm                       spear13xx_defconfig
+arm                         lpc18xx_defconfig
+arm                            qcom_defconfig
+mips                      fuloong2e_defconfig
+powerpc                      obs600_defconfig
+sparc                       sparc64_defconfig
+m68k                        stmark2_defconfig
+m68k                          hp300_defconfig
+s390                          debug_defconfig
+arm                       aspeed_g5_defconfig
+arc                            hsdk_defconfig
+mips                          rb532_defconfig
+arm                        trizeps4_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a005-20210526
+x86_64               randconfig-a001-20210526
+x86_64               randconfig-a006-20210526
+x86_64               randconfig-a003-20210526
+x86_64               randconfig-a004-20210526
+x86_64               randconfig-a002-20210526
+i386                 randconfig-a001-20210526
+i386                 randconfig-a002-20210526
+i386                 randconfig-a005-20210526
+i386                 randconfig-a004-20210526
+i386                 randconfig-a003-20210526
+i386                 randconfig-a006-20210526
+i386                 randconfig-a011-20210526
+i386                 randconfig-a016-20210526
+i386                 randconfig-a015-20210526
+i386                 randconfig-a012-20210526
+i386                 randconfig-a014-20210526
+i386                 randconfig-a013-20210526
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210526
+x86_64               randconfig-a013-20210526
+x86_64               randconfig-a012-20210526
+x86_64               randconfig-a014-20210526
+x86_64               randconfig-a016-20210526
+x86_64               randconfig-a015-20210526
+x86_64               randconfig-a011-20210526
+
 ---
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 5 ++---
- include/linux/avf/virtchnl.h                    | 6 +++---
- 2 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 167955094170..6f2a4c8beb0b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -799,7 +799,7 @@ void iavf_set_hena(struct iavf_adapter *adapter)
- void iavf_set_rss_key(struct iavf_adapter *adapter)
- {
- 	struct virtchnl_rss_key *vrk;
--	int len;
-+	size_t len;
- 
- 	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
- 		/* bail because we already have a command pending */
-@@ -807,8 +807,7 @@ void iavf_set_rss_key(struct iavf_adapter *adapter)
- 			adapter->current_op);
- 		return;
- 	}
--	len = sizeof(struct virtchnl_rss_key) +
--	      (adapter->rss_key_size * sizeof(u8)) - 1;
-+	len = struct_size(vrk, key, adapter->rss_key_size);
- 	vrk = kzalloc(len, GFP_KERNEL);
- 	if (!vrk)
- 		return;
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index 9b9d79c270b1..d2fd847a3880 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -484,10 +484,10 @@ VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_promisc_info);
- struct virtchnl_rss_key {
- 	u16 vsi_id;
- 	u16 key_len;
--	u8 key[1];         /* RSS hash key, packed bytes */
-+	u8 key[];         /* RSS hash key, packed bytes */
- };
- 
--VIRTCHNL_CHECK_STRUCT_LEN(6, virtchnl_rss_key);
-+VIRTCHNL_CHECK_STRUCT_LEN(4, virtchnl_rss_key);
- 
- struct virtchnl_rss_lut {
- 	u16 vsi_id;
-@@ -1079,7 +1079,7 @@ virtchnl_vc_validate_vf_msg(struct virtchnl_version_info *ver, u32 v_opcode,
- 		if (msglen >= valid_len) {
- 			struct virtchnl_rss_key *vrk =
- 				(struct virtchnl_rss_key *)msg;
--			valid_len += vrk->key_len - 1;
-+			valid_len += vrk->key_len;
- 		}
- 		break;
- 	case VIRTCHNL_OP_CONFIG_RSS_LUT:
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
