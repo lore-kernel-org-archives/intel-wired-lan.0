@@ -1,175 +1,379 @@
-From: Shung-Hsi Yu <shung-hsi.yu@suse.com>
-Date: Thu, 27 May 2021 18:21:57 +0800
-Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
- affinity hints
-In-Reply-To: <YK9ucRrjq+eck/G7@syu-laptop>
-References: <20210504092340.00006c61@intel.com>
- <87pmxpdr32.ffs@nanos.tec.linutronix.de>
- <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
- <87im3gewlu.ffs@nanos.tec.linutronix.de>
- <CAFki+L=gp10W1ygv7zdsee=BUGpx9yPAckKr7pyo=tkFJPciEg@mail.gmail.com>
- <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
- <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
- <87zgwo9u79.ffs@nanos.tec.linutronix.de>
- <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
- <YK9ucRrjq+eck/G7@syu-laptop>
-Message-ID: <YK9yxQoBPeUfQG05@syu-laptop>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Thu, 27 May 2021 15:22:12 +0000
+Subject: [Intel-wired-lan] [PATCH S53 02/15] ice: Manage VF's MAC
+ address for both legacy and new cases
+In-Reply-To: <20200917201347.81570-2-anthony.l.nguyen@intel.com>
+References: <20200917201347.81570-1-anthony.l.nguyen@intel.com>
+ <20200917201347.81570-2-anthony.l.nguyen@intel.com>
+Message-ID: <CY4PR11MB1576E401183BA05F9E34F9FAAB239@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 27, 2021 at 06:03:29PM +0800, Shung-Hsi Yu wrote:
-> Hi,
-> 
-> On Fri, May 21, 2021 at 02:03:06PM +0200, Thomas Gleixner wrote:
-> > The discussion about removing the side effect of irq_set_affinity_hint() of
-> > actually applying the cpumask (if not NULL) as affinity to the interrupt,
-> > unearthed a few unpleasantries:
-> > 
-> >   1) The modular perf drivers rely on the current behaviour for the very
-> >      wrong reasons.
-> > 
-> >   2) While none of the other drivers prevents user space from changing
-> >      the affinity, a cursorily inspection shows that there are at least
-> >      expectations in some drivers.
-> > 
-> > #1 needs to be cleaned up anyway, so that's not a problem
-> > 
-> > #2 might result in subtle regressions especially when irqbalanced (which
-> >    nowadays ignores the affinity hint) is disabled.
-> > 
-> > Provide new interfaces:
-> > 
-> >   irq_update_affinity_hint() - Only sets the affinity hint pointer
-> >   irq_apply_affinity_hint()  - Set the pointer and apply the affinity to
-> >   			       the interrupt
-> > 
-> > Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
-> > document it to be phased out.
-> 
-> Is there recommended way to retrieve the CPU number that the interrupt has
-> affinity?
-> 
-> Previously a driver (I'm looking at drivers/net/ethernet/amazon/ena) that
-> uses irq_set_affinity_hint() to spread out IRQ knows the corresponding CPU
-> number since they're using their own spreading scheme. Now, phasing out
-> irq_set_affinity_hint(), and thus relying on request_irq() to spread the
-> load instead, there don't seem to be a easy way to get the CPU number.
 
-I should add that the main use-case for retrieving CPU number seems to be
-ensuring memory is allocated on the same NUMA node that serves the interrupt
-(again, looking at ena driver only, haven't check others yet).
 
-    int cpu = i % num_online_cpu();
-    cpumask_set_cpu(cpu, &affinity_hint_mask);
-    request_irq(irq, ...);
-    irq_set_affinity_hint(irq, &affinity_hint_mask);
-    int node = cpu_to_node(cpu);
-    buffer = vzalloc(node);
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: czwartek, 17 wrze?nia 2020 22:14
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH S53 02/15] ice: Manage VF's MAC address
+> for both legacy and new cases
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Currently there is no way for a VF driver to specify if it wants to change it's
+> hardware address. New bits are being added to virtchnl.h in struct
+> virtchnl_ether_addr that allow for the VF to correctly communicate this
+> information. However, legacy VF drivers that don't support the new
+> virtchnl.h bits still need to be supported. Make a best effort attempt at
+> saving the VF's primary/device address in the legacy case and depend on the
+> VIRTCHNL_ETHER_ADDR_PRIMARY type for the new case.
+> 
+> Legacy case - If a unicast MAC is being added and the hw_lan_addr.addr is
+> empty, then populate it. This assumes that the address is the VF's hardware
+> address. If a unicast MAC is being added and the hw_lan_addr.addr is not
+> empty, then cache it in the legacy_last_added_umac.addr. If a unicast MAC is
+> being deleted and it matches the hw_lan_addr.addr, then zero the
+> hw_lan_addr.addr.
+> Also, if the legacy_last_added_umac.addr has not expired, copy the
+> legacy_last_added_umac.addr into the hw_lan_addr.addr. This is done
+> because we cannot guarantee the order of VIRTCHNL_OP_ADD_ETH_ADDR
+> and VIRTCHNL_OP_DEL_ETH_ADDR.
+> 
+> New case - If a unicast MAC is being added and it's specified as
+> VIRTCHNL_ETHER_ADDR_PRIMARY, then replace the current
+> hw_lan_addr.addr. If a unicast MAC is being deleted and it's type is specified
+> as VIRTCHNL_ETHER_ADDR_PRIMARY, then zero the hw_lan_addr.addr.
+> 
+> Untrusted VFs - Only allow above legacy/new changes to their hardware
+> address if the PF has not set it administratively via iproute2.
+> 
+> Trusted VFs - Always allow above legacy/new changes to their hardware
+> address even if the PF has administratively set it via iproute2.
+> 
+> Also, change the variable dflt_lan_addr to hw_lan_addr to clearly represent
+> the purpose of this variable since it's purpose is to act as a hardware
+> programmed MAC address for the VF.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 158 +++++++++++++++---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   8 +-
+>  2 files changed, 140 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index c8b2705a8aed..627c4e36c1bd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -637,12 +637,12 @@ static int ice_vf_rebuild_host_mac_cfg(struct
+> ice_vf *vf)
+> 
+>  	vf->num_mac++;
+> 
+> -	if (is_valid_ether_addr(vf->dflt_lan_addr.addr)) {
+> -		status = ice_fltr_add_mac(vsi, vf->dflt_lan_addr.addr,
+> +	if (is_valid_ether_addr(vf->hw_lan_addr.addr)) {
+> +		status = ice_fltr_add_mac(vsi, vf->hw_lan_addr.addr,
+>  					  ICE_FWD_TO_VSI);
+>  		if (status) {
+>  			dev_err(dev, "failed to add default unicast MAC filter
+> %pM for VF %u, error %s\n",
+> -				&vf->dflt_lan_addr.addr[0], vf->vf_id,
+> +				&vf->hw_lan_addr.addr[0], vf->vf_id,
+>  				ice_stat_str(status));
+>  			return ice_status_to_errno(status);
+>  		}
+> @@ -1965,7 +1965,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf,
+> u8 *msg)
+>  	vfres->vsi_res[0].vsi_type = VIRTCHNL_VSI_SRIOV;
+>  	vfres->vsi_res[0].num_queue_pairs = vsi->num_txq;
+>  	ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
+> -			vf->dflt_lan_addr.addr);
+> +			vf->hw_lan_addr.addr);
+> 
+>  	/* match guest capabilities */
+>  	vf->driver_caps = vfres->vf_cap_flags; @@ -3018,20 +3018,94 @@
+> static bool ice_can_vf_change_mac(struct ice_vf *vf)
+>  	return true;
+>  }
+> 
+> +/**
+> + * ice_vc_ether_addr_type - get type of virtchnl_ether_addr
+> + * @vc_ether_addr: used to extract the type  */ static u8
+> +ice_vc_ether_addr_type(struct virtchnl_ether_addr *vc_ether_addr) {
+> +	return (vc_ether_addr->type &
+> VIRTCHNL_ETHER_ADDR_TYPE_MASK); }
+> +
+> +/**
+> + * ice_is_vc_addr_legacy - check if the MAC address is from an older VF
+> + * @vc_ether_addr: VIRTCHNL structure that contains MAC and type  */
+> +static bool ice_is_vc_addr_legacy(struct virtchnl_ether_addr
+> +*vc_ether_addr) {
+> +	u8 type = ice_vc_ether_addr_type(vc_ether_addr);
+> +
+> +	return (type == VIRTCHNL_ETHER_ADDR_LEGACY); }
+> +
+> +/**
+> + * ice_is_vc_addr_primary - check if the MAC address is the VF's
+> +primary MAC
+> + * @vc_ether_addr: VIRTCHNL structure that contains MAC and type
+> + *
+> + * This function should only be called when the MAC address in
+> + * virtchnl_ether_addr is a valid unicast MAC  */ static bool
+> +ice_is_vc_addr_primary(struct virtchnl_ether_addr __maybe_unused
+> +*vc_ether_addr) {
+> +	u8 type = ice_vc_ether_addr_type(vc_ether_addr);
+> +
+> +	return (type == VIRTCHNL_ETHER_ADDR_PRIMARY); }
+> +
+> +/**
+> + * ice_vfhw_mac_add - update the VF's cached hardware MAC if allowed
+> + * @vf: VF to update
+> + * @vc_ether_addr: structure from VIRTCHNL with MAC to add  */ static
+> +void ice_vfhw_mac_add(struct ice_vf *vf, struct virtchnl_ether_addr
+> +*vc_ether_addr) {
+> +	u8 *mac_addr = vc_ether_addr->addr;
+> +
+> +	if (!is_valid_ether_addr(mac_addr))
+> +		return;
+> +
+> +	/* only allow legacy VF drivers to set the hardware MAC if it is zero
+> +	 * and allow new VF drivers to set the hardware MAC if the type was
+> +	 * correctly specified over VIRTCHNL
+> +	 */
+> +	if ((ice_is_vc_addr_legacy(vc_ether_addr) &&
+> +	     is_zero_ether_addr(vf->hw_lan_addr.addr)) ||
+> +	    ice_is_vc_addr_primary(vc_ether_addr))
+> +		ether_addr_copy(vf->hw_lan_addr.addr, mac_addr);
+> +
+> +	/* hardware MAC is already set, but its possible that the VF driver
+> sent
+> +	 * the VIRTCHNL_OP_ADD_ETH_ADDR message before the
+> +	 * VIRTCHNL_OP_DEL_ETH_ADDR when trying to update its MAC, so
+> save it
+> +	 * away for the legacy VF driver case as it will be updated in the
+> +	 * delete flow for this case
+> +	 */
+> +	if (ice_is_vc_addr_legacy(vc_ether_addr)) {
+> +		ether_addr_copy(vf->legacy_last_added_umac.addr,
+> +				mac_addr);
+> +		vf->legacy_last_added_umac.time_modified = jiffies;
+> +	}
+> +}
+> +
+>  /**
+>   * ice_vc_add_mac_addr - attempt to add the MAC address passed in
+>   * @vf: pointer to the VF info
+>   * @vsi: pointer to the VF's VSI
+> - * @mac_addr: MAC address to add
+> + * @vc_ether_addr: VIRTCHNL MAC address structure used to add MAC
+>   */
+>  static int
+> -ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+> +ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
+> +		    struct virtchnl_ether_addr *vc_ether_addr)
+>  {
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	u8 *mac_addr = vc_ether_addr->addr;
+>  	enum ice_status status;
+> 
+>  	/* default unicast MAC already added */
+> -	if (ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
+> +	if (ether_addr_equal(mac_addr, vf->hw_lan_addr.addr))
+>  		return 0;
+> 
+>  	if (is_unicast_ether_addr(mac_addr) &&
+> !ice_can_vf_change_mac(vf)) { @@ -3050,32 +3124,66 @@
+> ice_vc_add_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+>  		return -EIO;
+>  	}
+> 
+> -	/* Set the default LAN address to the latest unicast MAC address
+> added
+> -	 * by the VF. The default LAN address is reported by the PF via
+> -	 * ndo_get_vf_config.
+> -	 */
+> -	if (is_unicast_ether_addr(mac_addr))
+> -		ether_addr_copy(vf->dflt_lan_addr.addr, mac_addr);
+> +	ice_vfhw_mac_add(vf, vc_ether_addr);
+> 
+>  	vf->num_mac++;
+> 
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_is_legacy_umac_expired - check if last added legacy unicast MAC
+> +expired
+> + * @last_added_umac: structure used to check expiration  */ static bool
+> +ice_is_legacy_umac_expired(struct ice_time_mac *last_added_umac) {
+> +#define ICE_LEGACY_VF_MAC_CHANGE_EXPIRE_TIME
+> 	msecs_to_jiffies(3000)
+> +	return time_is_before_jiffies(last_added_umac->time_modified +
+> +
+> ICE_LEGACY_VF_MAC_CHANGE_EXPIRE_TIME);
+> +}
+> +
+> +/**
+> + * ice_vfhw_mac_del - update the VF's cached hardware MAC if allowed
+> + * @vf: VF to update
+> + * @vc_ether_addr: structure from VIRTCHNL with MAC to delete  */
+> +static void ice_vfhw_mac_del(struct ice_vf *vf, struct
+> +virtchnl_ether_addr *vc_ether_addr) {
+> +	u8 *mac_addr = vc_ether_addr->addr;
+> +
+> +	if (!is_valid_ether_addr(mac_addr) ||
+> +	    !ether_addr_equal(vf->hw_lan_addr.addr, mac_addr))
+> +		return;
+> +
+> +	/* allow the hardware MAC to be repopulated in the add flow */
+> +	eth_zero_addr(vf->hw_lan_addr.addr);
+> +
+> +	/* only update cached hardware MAC for legacy VF drivers on delete
+> +	 * because we cannot guarantee order/type of MAC from the VF
+> driver
+> +	 */
+> +	if (ice_is_vc_addr_legacy(vc_ether_addr) &&
+> +	    !ice_is_legacy_umac_expired(&vf->legacy_last_added_umac))
+> +		ether_addr_copy(vf->hw_lan_addr.addr,
+> +				vf->legacy_last_added_umac.addr);
+> +}
+> +
+>  /**
+>   * ice_vc_del_mac_addr - attempt to delete the MAC address passed in
+>   * @vf: pointer to the VF info
+>   * @vsi: pointer to the VF's VSI
+> - * @mac_addr: MAC address to delete
+> + * @vc_ether_addr: VIRTCHNL MAC address structure used to delete MAC
+>   */
+>  static int
+> -ice_vc_del_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr)
+> +ice_vc_del_mac_addr(struct ice_vf *vf, struct ice_vsi *vsi,
+> +		    struct virtchnl_ether_addr *vc_ether_addr)
+>  {
+>  	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	u8 *mac_addr = vc_ether_addr->addr;
+>  	enum ice_status status;
+> 
+>  	if (!ice_can_vf_change_mac(vf) &&
+> -	    ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
+> +	    ether_addr_equal(mac_addr, vf->hw_lan_addr.addr))
+>  		return 0;
+> 
+>  	status = ice_fltr_remove_mac(vsi, mac_addr, ICE_FWD_TO_VSI);
+> @@ -3089,8 +3197,7 @@ ice_vc_del_mac_addr(struct ice_vf *vf, struct
+> ice_vsi *vsi, u8 *mac_addr)
+>  		return -EIO;
+>  	}
+> 
+> -	if (ether_addr_equal(mac_addr, vf->dflt_lan_addr.addr))
+> -		eth_zero_addr(vf->dflt_lan_addr.addr);
+> +	ice_vfhw_mac_del(vf, vc_ether_addr);
+> 
+>  	vf->num_mac--;
+> 
+> @@ -3109,7 +3216,8 @@ static int
+>  ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)  {
+>  	int (*ice_vc_cfg_mac)
+> -		(struct ice_vf *vf, struct ice_vsi *vsi, u8 *mac_addr);
+> +		(struct ice_vf *vf, struct ice_vsi *vsi,
+> +		 struct virtchnl_ether_addr *virtchnl_ether_addr);
+>  	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+>  	struct virtchnl_ether_addr_list *al =
+>  	    (struct virtchnl_ether_addr_list *)msg; @@ -3158,7 +3266,7 @@
+> ice_vc_handle_mac_addr_msg(struct ice_vf *vf, u8 *msg, bool set)
+>  		    is_zero_ether_addr(mac_addr))
+>  			continue;
+> 
+> -		result = ice_vc_cfg_mac(vf, vsi, mac_addr);
+> +		result = ice_vc_cfg_mac(vf, vsi, &al->list[i]);
+>  		if (result == -EEXIST || result == -ENOENT) {
+>  			continue;
+>  		} else if (result) {
+> @@ -3779,7 +3887,7 @@ ice_get_vf_cfg(struct net_device *netdev, int
+> vf_id, struct ifla_vf_info *ivi)
+>  		return -EBUSY;
+> 
+>  	ivi->vf = vf_id;
+> -	ether_addr_copy(ivi->mac, vf->dflt_lan_addr.addr);
+> +	ether_addr_copy(ivi->mac, vf->hw_lan_addr.addr);
+> 
+>  	/* VF configuration for VLAN and applicable QoS */
+>  	ivi->vlan = vf->port_vlan_info & VLAN_VID_MASK; @@ -3855,7
+> +3963,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8
+> *mac)
+> 
+>  	vf = &pf->vf[vf_id];
+>  	/* nothing left to do, unicast MAC already set */
+> -	if (ether_addr_equal(vf->dflt_lan_addr.addr, mac))
+> +	if (ether_addr_equal(vf->hw_lan_addr.addr, mac))
+>  		return 0;
+> 
+>  	ret = ice_check_vf_ready_for_cfg(vf);
+> @@ -3871,7 +3979,7 @@ int ice_set_vf_mac(struct net_device *netdev, int
+> vf_id, u8 *mac)
+>  	/* VF is notified of its new MAC via the PF's response to the
+>  	 * VIRTCHNL_OP_GET_VF_RESOURCES message after the VF has
+> been reset
+>  	 */
+> -	ether_addr_copy(vf->dflt_lan_addr.addr, mac);
+> +	ether_addr_copy(vf->hw_lan_addr.addr, mac);
+>  	if (is_zero_ether_addr(mac)) {
+>  		/* VF will send VIRTCHNL_OP_ADD_ETH_ADDR message
+> with its MAC */
+>  		vf->pf_set_mac = false;
+> @@ -4024,7 +4132,7 @@ void ice_print_vf_rx_mdd_event(struct ice_vf *vf)
+> 
+>  	dev_info(dev, "%d Rx Malicious Driver Detection events detected on
+> PF %d VF %d MAC %pM. mdd-auto-reset-vfs=%s\n",
+>  		 vf->mdd_rx_events.count, pf->hw.pf_id, vf->vf_id,
+> -		 vf->dflt_lan_addr.addr,
+> +		 vf->hw_lan_addr.addr,
+>  		 test_bit(ICE_FLAG_MDD_AUTO_RESET_VF, pf->flags)
+>  			  ? "on" : "off");
+>  }
+> @@ -4068,7 +4176,7 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+> 
+>  			dev_info(dev, "%d Tx Malicious Driver Detection
+> events detected on PF %d VF %d MAC %pM.\n",
+>  				 vf->mdd_tx_events.count, hw->pf_id, i,
+> -				 vf->dflt_lan_addr.addr);
+> +				 vf->hw_lan_addr.addr);
+>  		}
+>  	}
+>  }
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> index 0f519fba3770..f440b290e02e 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> @@ -57,6 +57,11 @@ enum ice_virtchnl_cap {
+>  	ICE_VIRTCHNL_VF_CAP_PRIVILEGE,
+>  };
+> 
+> +struct ice_time_mac {
+> +	unsigned long time_modified;
+> +	u8 addr[ETH_ALEN];
+> +};
+> +
+>  /* VF MDD events print structure */
+>  struct ice_mdd_vf_events {
+>  	u16 count;			/* total count of Rx|Tx events */
+> @@ -75,7 +80,8 @@ struct ice_vf {
+>  	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
+>  	struct virtchnl_version_info vf_ver;
+>  	u32 driver_caps;		/* reported by VF driver */
+> -	struct virtchnl_ether_addr dflt_lan_addr;
+> +	struct virtchnl_ether_addr hw_lan_addr;
+> +	struct ice_time_mac legacy_last_added_umac;
+>  	DECLARE_BITMAP(txq_ena, ICE_MAX_RSS_QS_PER_VF);
+>  	DECLARE_BITMAP(rxq_ena, ICE_MAX_RSS_QS_PER_VF);
+>  	u16 port_vlan_info;		/* Port VLAN ID and QoS */
+> --
+> 2.20.1
 
-> In theory the following could work, but including irq.h does not look like a
-> good idea given that the comment in its explicitly ask not to be included in
-> generic code.
-> 
->     #include <linux/irq.h>
->     int irq = request_irq(...);
->     struct irq_data *data = irq_get_irq_data(irq);
->     struct cpumask *mask = irq_data_get_effective_affinity_mask(data);
->     int cpu = cpumask_first(mask);
-> 
-> Any suggestions?
-> 
-> 
-> Thanks,
-> Shung-Hsi
-> 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
-> > ---
-> > Applies on:
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/core
-> > ---
-> >  include/linux/interrupt.h |   41 ++++++++++++++++++++++++++++++++++++++++-
-> >  kernel/irq/manage.c       |    8 ++++----
-> >  2 files changed, 44 insertions(+), 5 deletions(-)
-> > 
-> > --- a/include/linux/interrupt.h
-> > +++ b/include/linux/interrupt.h
-> > @@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned i
-> >  extern int irq_can_set_affinity(unsigned int irq);
-> >  extern int irq_select_affinity(unsigned int irq);
-> >  
-> > -extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
-> > +extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-> > +				     bool setaffinity);
-> > +
-> > +/**
-> > + * irq_update_affinity_hint - Update the affinity hint
-> > + * @irq:	Interrupt to update
-> > + * @cpumask:	cpumask pointer (NULL to clear the hint)
-> > + *
-> > + * Updates the affinity hint, but does not change the affinity of the interrupt.
-> > + */
-> > +static inline int
-> > +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
-> > +{
-> > +	return __irq_apply_affinity_hint(irq, m, true);
-> > +}
-> > +
-> > +/**
-> > + * irq_apply_affinity_hint - Update the affinity hint and apply the provided
-> > + *			     cpumask to the interrupt
-> > + * @irq:	Interrupt to update
-> > + * @cpumask:	cpumask pointer (NULL to clear the hint)
-> > + *
-> > + * Updates the affinity hint and if @cpumask is not NULL it applies it as
-> > + * the affinity of that interrupt.
-> > + */
-> > +static inline int
-> > +irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m)
-> > +{
-> > +	return __irq_apply_affinity_hint(irq, m, true);
-> > +}
-> > +
-> > +/*
-> > + * Deprecated. Use irq_update_affinity_hint() or irq_apply_affinity_hint()
-> > + * instead.
-> > + */
-> > +static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-> > +{
-> > +	return irq_apply_affinity_hint(irq, cpumask);
-> > +}
-> > +
-> >  extern int irq_update_affinity_desc(unsigned int irq,
-> >  				    struct irq_affinity_desc *affinity);
-> >  
-> > --- a/kernel/irq/manage.c
-> > +++ b/kernel/irq/manage.c
-> > @@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq,
-> >  }
-> >  EXPORT_SYMBOL_GPL(irq_force_affinity);
-> >  
-> > -int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-> > +int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-> > +			      bool setaffinity)
-> >  {
-> >  	unsigned long flags;
-> >  	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-> > @@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int i
-> >  		return -EINVAL;
-> >  	desc->affinity_hint = m;
-> >  	irq_put_desc_unlock(desc, flags);
-> > -	/* set the initial affinity to prevent every interrupt being on CPU0 */
-> > -	if (m)
-> > +	if (m && setaffinity)
-> >  		__irq_set_affinity(irq, m, false);
-> >  	return 0;
-> >  }
-> > -EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
-> > +EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
-> >  
-> >  static void irq_affinity_notify(struct work_struct *work)
-> >  {
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
