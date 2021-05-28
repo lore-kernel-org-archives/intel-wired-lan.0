@@ -1,11 +1,11 @@
 From: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Date: Fri, 28 May 2021 18:03:41 -0500
+Date: Fri, 28 May 2021 18:04:51 -0500
 Subject: [Intel-wired-lan] [PATCH][next] virtchnl: Replace one-element
  array in struct virtchnl_vsi_queue_config_info
 In-Reply-To: <f3674339c0390ced22b365101f2d3e3a2bf26845.camel@intel.com>
 References: <20210525231658.GA176466@embeddedor>
  <f3674339c0390ced22b365101f2d3e3a2bf26845.camel@intel.com>
-Message-ID: <f5a2ce54-4a53-9dcd-e5dc-4d7d51451df4@embeddedor.com>
+Message-ID: <85e62583-5db9-ac5c-fdf9-8e3f6a50f3fa@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
