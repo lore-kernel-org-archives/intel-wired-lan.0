@@ -1,41 +1,91 @@
-From: Jussi Maki <joamaki@gmail.com>
-Date: Fri, 28 May 2021 10:34:36 +0200
-Subject: [Intel-wired-lan] Regression 5.12.0-rc4 net: ice: significant
- throughput drop
-Message-ID: <CAHn8xckNXci+X_Eb2WMv4uVYjO2331UWB2JLtXr_58z0Av8+8A@mail.gmail.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Fri, 28 May 2021 21:56:32 +0000
+Subject: [Intel-wired-lan] [PATCH][next] virtchnl: Replace one-element
+ array in struct virtchnl_vsi_queue_config_info
+In-Reply-To: <20210525231658.GA176466@embeddedor>
+References: <20210525231658.GA176466@embeddedor>
+Message-ID: <f3674339c0390ced22b365101f2d3e3a2bf26845.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi all,
+On Tue, 2021-05-25 at 18:16 -0500, Gustavo A. R. Silva wrote:
+> There is a regular need in the kernel to provide a way to declare
+> having a
+> dynamically sized set of trailing elements in a structure. Kernel
+> code
+> should always use ?flexible array members?[1] for these cases. The
+> older
+> style of one-element or zero-length arrays should no longer be
+> used[2].
+> 
+> Refactor the code according to the use of a flexible-array member in
+> struct
+> virtchnl_vsi_queue_config_info instead of one-element array, and use
+> the
+> flex_array_size() helper.
+> 
+> [1] https://en.wikipedia.org/wiki/Flexible_array_member
+> [2] 
+> https://www.kernel.org/doc/html/v5.10/process/deprecated.html#zero-length-and-one-element-arrays
+> 
+> Link: https://github.com/KSPP/linux/issues/79
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  include/linux/avf/virtchnl.h | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/include/linux/avf/virtchnl.h
+> b/include/linux/avf/virtchnl.h
+> index b554913804bd..ed9c4998f8ac 100644
+> --- a/include/linux/avf/virtchnl.h
+> +++ b/include/linux/avf/virtchnl.h
+> @@ -338,10 +338,10 @@ struct virtchnl_vsi_queue_config_info {
+>  	u16 vsi_id;
+>  	u16 num_queue_pairs;
+>  	u32 pad;
+> -	struct virtchnl_queue_pair_info qpair[1];
+> +	struct virtchnl_queue_pair_info qpair[];
+>  };
+>  
+> -VIRTCHNL_CHECK_STRUCT_LEN(72, virtchnl_vsi_queue_config_info);
+> +VIRTCHNL_CHECK_STRUCT_LEN(8, virtchnl_vsi_queue_config_info);
+>  
+>  /* VIRTCHNL_OP_REQUEST_QUEUES
+>   * VF sends this message to request the PF to allocate additional
+> queues to
+> @@ -997,9 +997,8 @@ virtchnl_vc_validate_vf_msg(struct
+> virtchnl_version_info *ver, u32 v_opcode,
+>  		if (msglen >= valid_len) {
+>  			struct virtchnl_vsi_queue_config_info *vqc =
+>  			    (struct virtchnl_vsi_queue_config_info
+> *)msg;
+> -			valid_len += (vqc->num_queue_pairs *
+> -				      sizeof(struct
+> -					     virtchnl_queue_pair_info))
+> ;
+> +			valid_len += flex_array_size(vqc, qpair,
+> +						     vqc-
+> >num_queue_pairs);
 
-While measuring the impact of a kernel patch on our lab machines I stumbled upon
-a performance regression affecting the 100Gbit ICE nic and bisected it
-from range v5.11.1..v5.13-rc3 to the commit:
-a250c23f15c2 iommu: remove DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
+The virtchnl file acts as a binary interface between physical and
+virtual functions. There's no guaruntee that the PF and VF will both
+have the newest version. Thus changing this will break compatibility.
+Specifically, the way the size was validated for this op code
+incorrectly expects an extra queue pair structure. Some other
+structures have similar length calculation flaws. We agree that fixing
+this is important, but the fix needs to account that old drivers will
+send an off by 1 size. 
 
-Both recent bpf-next (d6a6a55518) and linux-stable (c4681547bc) are
-affected by the issue.
+To properly handle compatibility we need to introduce a feature flag to
+indicate the new behavior. If the feature flag is not set, we acccept
+messages with the old format (with the extra size). If both the PF and
+VF support the feature flag, we'll use the correct size calculations.
+We're looking to add this and would like to do all the virtchnl
+structure fixes in one series.
 
-The regression shows as a significant drop in throughput as measured
-with "super_netperf" [0],
-with measured bandwidth of ~95Gbps before and ~35Gbps after:
-
-commit 3189713a1b84 (a250c23^):
-$ ./super_netperf 32 -H 172.18.0.2 -l 10
-97379.8
-
-commit a250c23f15c2:
-$ ./super_netperf 32 -H 172.18.0.2 -l 10
-34097.5
-
-The pair of test machines have this hardware:
-CPU: AMD Ryzen 9 3950X 16-Core Processor
-MB: X570 AORUS MASTER
-0a:00.0 Ethernet controller [0200]: Intel Corporation Ethernet
-Controller E810-C for QSFP [8086:1592] (rev 02)
-Kernel config: https://gist.github.com/joamaki/9ee11294c78a8dd2776041f67e5620e7
-
-[0] https://github.com/borkmann/stuff/blob/master/super_netperf
+>  			if (vqc->num_queue_pairs == 0)
+>  				err_msg_format = true;
+>  		}
