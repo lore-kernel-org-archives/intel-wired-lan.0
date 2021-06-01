@@ -1,36 +1,48 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sat, 12 Jun 2021 22:08:33 +0200
-Subject: [Intel-wired-lan] [PATCH] igb: Fix an error handling path in
- 'igb_probe()'
-Message-ID: <0b5cab7b74ca2544d3c616da89f50635e827bc6f.1623528463.git.christophe.jaillet@wanadoo.fr>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Tue, 1 Jun 2021 08:57:37 +0200
+Subject: [Intel-wired-lan] Regression 5.12.0-rc4 net: ice: significant
+ throughput drop
+In-Reply-To: <CAHn8xckNXci+X_Eb2WMv4uVYjO2331UWB2JLtXr_58z0Av8+8A@mail.gmail.com>
+References: <CAHn8xckNXci+X_Eb2WMv4uVYjO2331UWB2JLtXr_58z0Av8+8A@mail.gmail.com>
+Message-ID: <cc58c09e-bbb5-354a-2030-bf8ebb2adc86@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it
-must be undone by a corresponding 'pci_disable_pcie_error_reporting()'
-call, as already done in the remove function.
+[ ping Robin / Joerg, +Cc Christoph ]
 
-Fixes: 40a914fa72ab ("igb: Add support for pci-e Advanced Error Reporting")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 5db303d64d14..cf1de2b9ab71 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3615,6 +3615,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_ioremap:
- 	free_netdev(netdev);
- err_alloc_etherdev:
-+	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_mem_regions(pdev);
- err_pci_reg:
- err_dma:
--- 
-2.30.2
+On 5/28/21 10:34 AM, Jussi Maki wrote:
+> Hi all,
+> 
+> While measuring the impact of a kernel patch on our lab machines I stumbled upon
+> a performance regression affecting the 100Gbit ICE nic and bisected it
+> from range v5.11.1..v5.13-rc3 to the commit:
+> a250c23f15c2 iommu: remove DOMAIN_ATTR_DMA_USE_FLUSH_QUEUE
+> 
+> Both recent bpf-next (d6a6a55518) and linux-stable (c4681547bc) are
+> affected by the issue.
+> 
+> The regression shows as a significant drop in throughput as measured
+> with "super_netperf" [0],
+> with measured bandwidth of ~95Gbps before and ~35Gbps after:
+> 
+> commit 3189713a1b84 (a250c23^):
+> $ ./super_netperf 32 -H 172.18.0.2 -l 10
+> 97379.8
+> 
+> commit a250c23f15c2:
+> $ ./super_netperf 32 -H 172.18.0.2 -l 10
+> 34097.5
+> 
+> The pair of test machines have this hardware:
+> CPU: AMD Ryzen 9 3950X 16-Core Processor
+> MB: X570 AORUS MASTER
+> 0a:00.0 Ethernet controller [0200]: Intel Corporation Ethernet
+> Controller E810-C for QSFP [8086:1592] (rev 02)
+> Kernel config: https://gist.github.com/joamaki/9ee11294c78a8dd2776041f67e5620e7
+> 
+> [0] https://github.com/borkmann/stuff/blob/master/super_netperf
+> 
 
