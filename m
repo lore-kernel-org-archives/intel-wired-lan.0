@@ -1,70 +1,49 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 3 Jun 2021 00:52:38 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next 2/2] ice: introduce XDP Tx
- fallback path
-In-Reply-To: <20210601113236.42651-3-maciej.fijalkowski@intel.com>
-References: <20210601113236.42651-1-maciej.fijalkowski@intel.com>
- <20210601113236.42651-3-maciej.fijalkowski@intel.com>
-Message-ID: <39b84a66bae09568cd1f95802395af3e2df8fdb1.camel@intel.com>
+From: Bhandare, KiranX <kiranx.bhandare@intel.com>
+Date: Thu, 3 Jun 2021 04:15:08 +0000
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 1/2] ice: add ndo_bpf
+ callback for safe mode netdev ops
+In-Reply-To: <20210520063500.62037-2-maciej.fijalkowski@intel.com>
+References: <20210520063500.62037-1-maciej.fijalkowski@intel.com>
+ <20210520063500.62037-2-maciej.fijalkowski@intel.com>
+Message-ID: <DM6PR11MB3292CA01DB8F9EF78A704DFEF13C9@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2021-06-01 at 13:32 +0200, Maciej Fijalkowski wrote:
-> Under rare circumstances there might be a situation where a
-> requirement
-> of having a XDP Tx queue per core could not be fulfilled and some of
-> the
-> Tx resources would have to be shared between cores. This yields a
-> need
-> for placing accesses to xdp_rings array onto critical section
-> protected
-> by spinlock.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Maciej Fijalkowski
+> Sent: Thursday, May 20, 2021 12:05 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; Jamal Hadi Salim <jhs@mojatatu.com>;
+> bjorn at kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
+> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
+> Subject: [Intel-wired-lan] [PATCH v2 intel-net 1/2] ice: add ndo_bpf callback
+> for safe mode netdev ops
 > 
-> Design of handling such scenario is to at first find out how many
-> queues
-> are there that XDP could use. Any number that is not less than the
-> half
-> of a count of cores of platform is allowed. XDP queue count < cpu
-> count
-> is signalled via new VSI state ICE_VSI_XDP_FALLBACK which carries the
-> information further down to Rx rings where new ICE_TX_XDP_LOCKED is
-> set
-> based on the mentioned VSI state. This ring flag indicates that
-> locking
-> variants for getting/putting xdp_ring need to be used in fast path.
+> ice driver requires a programmable pipeline firmware package in order to
+> have a support for advanced features. Otherwise, driver falls back to so
+> called 'safe mode'. For that mode, ndo_bpf callback is not exposed and when
+> user tries to load XDP program, the following happens:
 > 
-> For XDP_REDIRECT the impact on standard case (one XDP ring per CPU)
-> can
-> be reduced a bit by providing a separate ndo_xdp_xmit and swap it at
-> configuration time. However, due to the fact that net_device_ops
-> struct
-> is a const, it is not possible to replace a single ndo, so for the
-> locking variant of ndo_xdp_xmit, whole net_device_ops needs to be
-> replayed.
+> $ sudo ./xdp1 enp179s0f1
+> libbpf: Kernel error message: Underlying driver does not support XDP in
+> native mode link set xdp fd failed
 > 
-> It has an impact on performance (1-2 %) of a non-fallback path as
-> branches are introduced.
+> which is sort of confusing, as there is a native XDP support, but not in the
+> current mode. Improve the user experience by providing the specific
+> ndo_bpf callback dedicated for safe mode which will make use of extack to
+> explicitly let the user know that the DDP package is missing and that's the
+> reason that the XDP can't be loaded onto interface currently.
 > 
+> Cc: Jamal Hadi Salim <jhs@mojatatu.com>
+> Fixes: efc2214b6047 ("ice: Add support for XDP")
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h          | 37 +++++++++
->  drivers/net/ethernet/intel/ice/ice_base.c     |  5 ++
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  4 +-
->  drivers/net/ethernet/intel/ice/ice_main.c     | 76
-> ++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 62 ++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_txrx.h     |  2 +
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 13 +++-
->  7 files changed, 191 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
 
-This isn't applying to next-queue/dev-queue. I believe it's becuase the
-branch has the soon to be sent tracing patch from Magnus [1].
-
-Thanks,
-Tony
-
-[1] https://patchwork.ozlabs.org/project/intel-wired-
-lan/patch/20210510093854.31652-3-magnus.karlsson at gmail.com/
+Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
