@@ -1,45 +1,53 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  4 Jun 2021 09:48:56 -0700
-Subject: [Intel-wired-lan] [PATCH net 4/8] iavf: Fix failure to exit out
- from last all-multicast mode
+Date: Fri,  4 Jun 2021 09:48:58 -0700
+Subject: [Intel-wired-lan] [PATCH net 6/8] iavf: validate pointers
 In-Reply-To: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
 References: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210604164900.33156-4-anthony.l.nguyen@intel.com>
+Message-ID: <20210604164900.33156-6-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Marczak <piotr.marczak@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The driver could only quit allmulti when allmulti and promisc modes are
-turn on at the same time. If promisc had been off there was no way to turn
-off allmulti mode.
-The patch corrects this behavior. Switching allmulti does not depends on
-promisc state mode anymore
+In some cases, the ethtool get_rxfh handler may be called with a null
+key or indir parameter. So check these pointers, or you will have a very
+bad day.
 
-Fixes: f42a5c74da99 ("i40e: Add allmulti support for the VF")
-Signed-off-by: Piotr Marczak <piotr.marczak@intel.com>
+Fixes: 43a3d9ba34c9 ("i40evf: Allow PF driver to configure RSS")
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 58624be64010..ffffb6e0a6c1 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1613,8 +1613,7 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
- 		iavf_set_promiscuous(adapter, FLAG_VF_MULTICAST_PROMISC);
- 		return 0;
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 0d22a5275218..77a8a15c5410 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -1853,14 +1853,13 @@ static int iavf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 
+ 	if (hfunc)
+ 		*hfunc = ETH_RSS_HASH_TOP;
+-	if (!indir)
+-		return 0;
 -
--	if ((adapter->aq_required & IAVF_FLAG_AQ_RELEASE_PROMISC) &&
-+	if ((adapter->aq_required & IAVF_FLAG_AQ_RELEASE_PROMISC) ||
- 	    (adapter->aq_required & IAVF_FLAG_AQ_RELEASE_ALLMULTI)) {
- 		iavf_set_promiscuous(adapter, 0);
- 		return 0;
+-	memcpy(key, adapter->rss_key, adapter->rss_key_size);
++	if (key)
++		memcpy(key, adapter->rss_key, adapter->rss_key_size);
+ 
+-	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
+-	for (i = 0; i < adapter->rss_lut_size; i++)
+-		indir[i] = (u32)adapter->rss_lut[i];
++	if (indir)
++		/* Each 32 bits pointed by 'indir' is stored with a lut entry */
++		for (i = 0; i < adapter->rss_lut_size; i++)
++			indir[i] = (u32)adapter->rss_lut[i];
+ 
+ 	return 0;
+ }
 -- 
 2.20.1
 
