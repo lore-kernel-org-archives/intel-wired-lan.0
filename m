@@ -1,68 +1,94 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  4 Jun 2021 09:53:26 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 06/15] iavf: disable interrupts
- before disabling napi
+Date: Fri,  4 Jun 2021 09:53:31 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 11/15] iavf: Prevent changing
+ static ITR values if adaptive moderation is on
 In-Reply-To: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
 References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210604165335.33329-6-anthony.l.nguyen@intel.com>
+Message-ID: <20210604165335.33329-11-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nicholas Nunley <nicholas.d.nunley@intel.com>
+From: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
 
-Interrupts should be turned off first before disabling napi, not the other
-way around, since the interrupt handler can schedule napi.
+Resolve being able to change static values on VF when adaptive interrupt
+moderation is enabled.
 
-Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
+This problem is fixed by checking the interrupt settings is not
+a combination of change of static value while adaptive interrupt
+moderation is turned on.
+
+Without this fix, the user would be able to change static values
+on VF with adaptive moderation enabled.
+
+Signed-off-by: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 30 ++++++++++++++++---
+ 1 file changed, 26 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index eda8ebb8e7b8..1904000943dc 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -970,8 +970,8 @@ void iavf_down(struct iavf_adapter *adapter)
- 	netif_carrier_off(netdev);
- 	netif_tx_disable(netdev);
- 	adapter->link_up = false;
--	iavf_napi_disable_all(adapter);
- 	iavf_irq_disable(adapter);
-+	iavf_napi_disable_all(adapter);
- 
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 
-@@ -2040,8 +2040,8 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
- 		netif_carrier_off(adapter->netdev);
- 		netif_tx_disable(adapter->netdev);
- 		adapter->link_up = false;
--		iavf_napi_disable_all(adapter);
- 		iavf_irq_disable(adapter);
-+		iavf_napi_disable_all(adapter);
- 		iavf_free_traffic_irqs(adapter);
- 		iavf_free_all_tx_resources(adapter);
- 		iavf_free_all_rx_resources(adapter);
-@@ -2171,6 +2171,8 @@ static void iavf_reset_task(struct work_struct *work)
- 	}
- 
- continue_reset:
-+	iavf_irq_disable(adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 0d22a5275218..73901aedafdb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -719,12 +719,31 @@ static int iavf_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
+  *
+  * Change the ITR settings for a specific queue.
+  **/
+-static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
+-				   struct ethtool_coalesce *ec, int queue)
++static int iavf_set_itr_per_queue(struct iavf_adapter *adapter,
++				  struct ethtool_coalesce *ec, int queue)
+ {
+ 	struct iavf_ring *rx_ring = &adapter->rx_rings[queue];
+ 	struct iavf_ring *tx_ring = &adapter->tx_rings[queue];
+ 	struct iavf_q_vector *q_vector;
++	u16 itr_setting;
 +
- 	/* We don't use netif_running() because it may be true prior to
- 	 * ndo_open() returning, so we can't assume it means all our open
- 	 * tasks have finished, since we're not holding the rtnl_lock here.
-@@ -2182,7 +2184,6 @@ static void iavf_reset_task(struct work_struct *work)
- 		adapter->link_up = false;
- 		iavf_napi_disable_all(adapter);
- 	}
--	iavf_irq_disable(adapter);
++	itr_setting = rx_ring->itr_setting & ~IAVF_ITR_DYNAMIC;
++
++	if (ec->rx_coalesce_usecs != itr_setting &&
++	    ec->use_adaptive_rx_coalesce) {
++		netif_info(adapter, drv, adapter->netdev,
++			   "Rx interrupt throttling cannot be changed if adaptive-rx is enabled\n");
++		return -EINVAL;
++	}
++
++	itr_setting = tx_ring->itr_setting & ~IAVF_ITR_DYNAMIC;
++
++	if (ec->tx_coalesce_usecs != itr_setting &&
++	    ec->use_adaptive_tx_coalesce) {
++		netif_info(adapter, drv, adapter->netdev,
++			   "Tx interrupt throttling cannot be changed if adaptive-tx is enabled\n");
++		return -EINVAL;
++	}
  
- 	adapter->state = __IAVF_RESETTING;
- 	adapter->flags &= ~IAVF_FLAG_RESET_PENDING;
+ 	rx_ring->itr_setting = ITR_REG_ALIGN(ec->rx_coalesce_usecs);
+ 	tx_ring->itr_setting = ITR_REG_ALIGN(ec->tx_coalesce_usecs);
+@@ -747,6 +766,7 @@ static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
+ 	 * the Tx and Rx ITR values based on the values we have entered
+ 	 * into the q_vector, no need to write the values now.
+ 	 */
++	return 0;
+ }
+ 
+ /**
+@@ -788,9 +808,11 @@ static int __iavf_set_coalesce(struct net_device *netdev,
+ 	 */
+ 	if (queue < 0) {
+ 		for (i = 0; i < adapter->num_active_queues; i++)
+-			iavf_set_itr_per_queue(adapter, ec, i);
++			if (iavf_set_itr_per_queue(adapter, ec, i))
++				return -EINVAL;
+ 	} else if (queue < adapter->num_active_queues) {
+-		iavf_set_itr_per_queue(adapter, ec, queue);
++		if (iavf_set_itr_per_queue(adapter, ec, queue))
++			return -EINVAL;
+ 	} else {
+ 		netif_info(adapter, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
+ 			   adapter->num_active_queues - 1);
 -- 
 2.20.1
 
