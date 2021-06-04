@@ -1,59 +1,45 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  4 Jun 2021 09:48:57 -0700
-Subject: [Intel-wired-lan] [PATCH net 5/8] iavf: prevent accidental free of
- filter structure
+Date: Fri,  4 Jun 2021 09:48:54 -0700
+Subject: [Intel-wired-lan] [PATCH net 2/8] iavf: free q_vectors before
+ queues in iavf_disable_vf
 In-Reply-To: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
 References: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210604164900.33156-5-anthony.l.nguyen@intel.com>
+Message-ID: <20210604164900.33156-2-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
 
-In iavf_config_clsflower, the filter structure could be accidentally
-released at the end, if iavf_parse_cls_flower or iavf_handle_tclass ever
-return a non-zero but positive value.
+iavf_free_queues() clears adapter->num_active_queues, which
+iavf_free_q_vectors() relies on, so swap the order of these two function
+calls in iavf_disable_vf(). This resolves a panic encountered when the
+interface is disabled and then later brought up again after PF
+communication is restored.
 
-In this case, the function continues through to the end, and will call
-kfree() on the filter structure even though it has been added to the
-linked list.
-
-This can actually happen because iavf_parse_cls_flower will return
-a positive IAVF_ERR_CONFIG value instead of the traditional negative
-error codes.
-
-Fix this by ensuring that the kfree() check and error checks are
-similar. Use the more idiomatic "if (err)" to catch all non-zero error
-codes.
-
-Fixes: 0075fa0fadd0 ("i40evf: Add support to apply cloud filters")
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Fixes: 65c7006f234c ("i40evf: assign num_active_queues inside i40evf_alloc_queues")
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index ffffb6e0a6c1..bb533e9781ee 100644
+index ad3f804f0e14..989de52658dc 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3040,11 +3040,11 @@ static int iavf_configure_clsflower(struct iavf_adapter *adapter,
- 	/* start out with flow type and eth type IPv4 to begin with */
- 	filter->f.flow_type = VIRTCHNL_TCP_V4_FLOW;
- 	err = iavf_parse_cls_flower(adapter, cls_flower, filter);
--	if (err < 0)
-+	if (err)
- 		goto err;
+@@ -2067,8 +2067,8 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
  
- 	err = iavf_handle_tclass(adapter, tc, filter);
--	if (err < 0)
-+	if (err)
- 		goto err;
- 
- 	/* add filter to the list */
+ 	iavf_free_misc_irq(adapter);
+ 	iavf_reset_interrupt_capability(adapter);
+-	iavf_free_queues(adapter);
+ 	iavf_free_q_vectors(adapter);
++	iavf_free_queues(adapter);
+ 	memset(adapter->vf_res, 0, IAVF_VIRTCHNL_VF_RESOURCE_SIZE);
+ 	iavf_shutdown_adminq(&adapter->hw);
+ 	adapter->netdev->flags &= ~IFF_UP;
 -- 
 2.20.1
 
