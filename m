@@ -1,44 +1,43 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  4 Jun 2021 09:49:00 -0700
-Subject: [Intel-wired-lan] [PATCH net 8/8] iavf: Fix for setting queues to 0
-In-Reply-To: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
-References: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210604164900.33156-8-anthony.l.nguyen@intel.com>
+Date: Fri,  4 Jun 2021 09:48:53 -0700
+Subject: [Intel-wired-lan] [PATCH net 1/8] iavf: check for null in
+ iavf_fix_features
+Message-ID: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+From: Nicholas Nunley <nicholas.d.nunley@intel.com>
 
-Now setting combine to 0 will be rejected with the
-appropriate error code.
-This has been implemented by adding a condition that checks
-the value of combine equal to zero.
-Without this patch, when the user requested it, no error was
-returned and combine was set to the default value for VF.
+If the driver has lost contact with the PF then it enters a disabled state
+and frees adapter->vf_res. However, ndo_fix_features can still be called on
+the interface, so we need to check for this condition first. Since we have
+no information on the features at this time simply leave them unmodified
+and return.
 
-Fixes: 5520deb15326 ("iavf: Enable support for up to 16 queues")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Fixes: c4445aedfe09 ("i40evf: Fix VLAN features")
+Signed-off-by: Nicholas Nunley <nicholas.d.nunley@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 77a8a15c5410..0885fb0f0d4b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -1781,7 +1781,7 @@ static int iavf_set_channels(struct net_device *netdev,
- 	/* All of these should have already been checked by ethtool before this
- 	 * even gets to us, but just to be sure.
- 	 */
--	if (num_req > adapter->vsi_res->num_queue_pairs)
-+	if (num_req == 0 || num_req > adapter->vsi_res->num_queue_pairs)
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index fb4e3fe5cd1b..ad3f804f0e14 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3437,7 +3437,8 @@ static netdev_features_t iavf_fix_features(struct net_device *netdev,
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
  
- 	if (num_req == adapter->num_active_queues)
+-	if (!(adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN))
++	if (adapter->vf_res &&
++	    !(adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_VLAN))
+ 		features &= ~(NETIF_F_HW_VLAN_CTAG_TX |
+ 			      NETIF_F_HW_VLAN_CTAG_RX |
+ 			      NETIF_F_HW_VLAN_CTAG_FILTER);
 -- 
 2.20.1
 
