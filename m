@@ -1,62 +1,55 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri,  4 Jun 2021 15:09:31 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v4 2/4] PCI: Add
- pcie_ptm_enabled()
+Date: Fri,  4 Jun 2021 15:09:32 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v4 3/4] igc: Enable PCIe PTM
 In-Reply-To: <20210604220933.3974558-1-vinicius.gomes@intel.com>
 References: <20210604220933.3974558-1-vinicius.gomes@intel.com>
-Message-ID: <20210604220933.3974558-3-vinicius.gomes@intel.com>
+Message-ID: <20210604220933.3974558-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adds a predicate that returns if PCIe PTM (Precision Time Measurement)
-is enabled.
+Enables PCIe PTM (Precision Time Measurement) support in the igc
+driver. Notifies the PCI devices that PCIe PTM should be enabled.
 
-It will only return true if it's enabled in all the ports in the path
-from the device to the root.
+PCIe PTM is similar protocol to PTP (Precision Time Protocol) running
+in the PCIe fabric, it allows devices to report time measurements from
+their internal clocks and the correlation with the PCIe root clock.
+
+The i225 NIC exposes some registers that expose those time
+measurements, those registers will be used, in later patches, to
+implement the PTP_SYS_OFFSET_PRECISE ioctl().
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/pci/pcie/ptm.c | 9 +++++++++
- include/linux/pci.h    | 3 +++
- 2 files changed, 12 insertions(+)
+ drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/pci/pcie/ptm.c b/drivers/pci/pcie/ptm.c
-index 95d4eef2c9e8..8a4ad974c5ac 100644
---- a/drivers/pci/pcie/ptm.c
-+++ b/drivers/pci/pcie/ptm.c
-@@ -204,3 +204,12 @@ int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
- 	return 0;
- }
- EXPORT_SYMBOL(pci_enable_ptm);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index fd4dd7c5a33f..51c497133765 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -12,6 +12,8 @@
+ #include <net/pkt_sched.h>
+ #include <linux/bpf_trace.h>
+ #include <net/xdp_sock_drv.h>
++#include <linux/pci.h>
 +
-+bool pcie_ptm_enabled(struct pci_dev *dev)
-+{
-+	if (!dev)
-+		return false;
+ #include <net/ipv6.h>
+ 
+ #include "igc.h"
+@@ -5798,6 +5800,10 @@ static int igc_probe(struct pci_dev *pdev,
+ 
+ 	pci_enable_pcie_error_reporting(pdev);
+ 
++	err = pci_enable_ptm(pdev, NULL);
++	if (err < 0)
++		dev_err(&pdev->dev, "PTM not supported\n");
 +
-+	return dev->ptm_enabled;
-+}
-+EXPORT_SYMBOL(pcie_ptm_enabled);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index a687dda262dd..fe7f264b2b15 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1619,9 +1619,12 @@ bool pci_ats_disabled(void);
+ 	pci_set_master(pdev);
  
- #ifdef CONFIG_PCIE_PTM
- int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
-+bool pcie_ptm_enabled(struct pci_dev *dev);
- #else
- static inline int pci_enable_ptm(struct pci_dev *dev, u8 *granularity)
- { return -EINVAL; }
-+static inline bool pcie_ptm_enabled(struct pci_dev *dev)
-+{ return false; }
- #endif
- 
- void pci_cfg_access_lock(struct pci_dev *dev);
+ 	err = -ENOMEM;
 -- 
 2.31.1
 
