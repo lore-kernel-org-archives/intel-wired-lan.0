@@ -1,94 +1,54 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri,  4 Jun 2021 09:53:31 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 11/15] iavf: Prevent changing
- static ITR values if adaptive moderation is on
+Date: Fri,  4 Jun 2021 09:53:29 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 09/15] iavf: Fix carrier on state
 In-Reply-To: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
 References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210604165335.33329-11-anthony.l.nguyen@intel.com>
+Message-ID: <20210604165335.33329-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
+From: Paul Greenwalt <paul.greenwalt@intel.com>
 
-Resolve being able to change static values on VF when adaptive interrupt
-moderation is enabled.
+Carrier on is not set if the link up event (VIRTCHNL_EVENT_LINK_CHANGE)
+occurs before the queues are enabled (VIRTCHNL_OP_ENABLE_QUEUES) since
+setting carrier on during a link up event when queues are not enabled
+can result in a Tx hang.
 
-This problem is fixed by checking the interrupt settings is not
-a combination of change of static value while adaptive interrupt
-moderation is turned on.
+Therefore set carrier on when queues are enabled if link is up and carrier
+is off.
 
-Without this fix, the user would be able to change static values
-on VF with adaptive moderation enabled.
-
-Signed-off-by: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/iavf/iavf_ethtool.c    | 30 ++++++++++++++++---
- 1 file changed, 26 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 0d22a5275218..73901aedafdb 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -719,12 +719,31 @@ static int iavf_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
-  *
-  * Change the ITR settings for a specific queue.
-  **/
--static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
--				   struct ethtool_coalesce *ec, int queue)
-+static int iavf_set_itr_per_queue(struct iavf_adapter *adapter,
-+				  struct ethtool_coalesce *ec, int queue)
- {
- 	struct iavf_ring *rx_ring = &adapter->rx_rings[queue];
- 	struct iavf_ring *tx_ring = &adapter->tx_rings[queue];
- 	struct iavf_q_vector *q_vector;
-+	u16 itr_setting;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 69e479eb5534..3c3fd604218e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1685,8 +1685,17 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		break;
+ 	case VIRTCHNL_OP_ENABLE_QUEUES:
+ 		/* enable transmits */
+-		if (adapter->state == __IAVF_RUNNING)
++		if (adapter->state == __IAVF_RUNNING) {
+ 			iavf_irq_enable(adapter, true);
 +
-+	itr_setting = rx_ring->itr_setting & ~IAVF_ITR_DYNAMIC;
-+
-+	if (ec->rx_coalesce_usecs != itr_setting &&
-+	    ec->use_adaptive_rx_coalesce) {
-+		netif_info(adapter, drv, adapter->netdev,
-+			   "Rx interrupt throttling cannot be changed if adaptive-rx is enabled\n");
-+		return -EINVAL;
-+	}
-+
-+	itr_setting = tx_ring->itr_setting & ~IAVF_ITR_DYNAMIC;
-+
-+	if (ec->tx_coalesce_usecs != itr_setting &&
-+	    ec->use_adaptive_tx_coalesce) {
-+		netif_info(adapter, drv, adapter->netdev,
-+			   "Tx interrupt throttling cannot be changed if adaptive-tx is enabled\n");
-+		return -EINVAL;
-+	}
- 
- 	rx_ring->itr_setting = ITR_REG_ALIGN(ec->rx_coalesce_usecs);
- 	tx_ring->itr_setting = ITR_REG_ALIGN(ec->tx_coalesce_usecs);
-@@ -747,6 +766,7 @@ static void iavf_set_itr_per_queue(struct iavf_adapter *adapter,
- 	 * the Tx and Rx ITR values based on the values we have entered
- 	 * into the q_vector, no need to write the values now.
- 	 */
-+	return 0;
- }
- 
- /**
-@@ -788,9 +808,11 @@ static int __iavf_set_coalesce(struct net_device *netdev,
- 	 */
- 	if (queue < 0) {
- 		for (i = 0; i < adapter->num_active_queues; i++)
--			iavf_set_itr_per_queue(adapter, ec, i);
-+			if (iavf_set_itr_per_queue(adapter, ec, i))
-+				return -EINVAL;
- 	} else if (queue < adapter->num_active_queues) {
--		iavf_set_itr_per_queue(adapter, ec, queue);
-+		if (iavf_set_itr_per_queue(adapter, ec, queue))
-+			return -EINVAL;
- 	} else {
- 		netif_info(adapter, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
- 			   adapter->num_active_queues - 1);
++			/* If queues not enabled when handling link event,
++			 * then set carrier on now
++			 */
++			if (adapter->link_up && !netif_carrier_ok(netdev)) {
++				netif_tx_start_all_queues(netdev);
++				netif_carrier_on(netdev);
++			}
++		}
+ 		adapter->flags &= ~IAVF_FLAG_QUEUES_DISABLED;
+ 		break;
+ 	case VIRTCHNL_OP_DISABLE_QUEUES:
 -- 
 2.20.1
 
