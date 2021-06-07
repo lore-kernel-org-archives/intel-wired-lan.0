@@ -1,48 +1,145 @@
-From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Mon, 7 Jun 2021 15:32:09 +0000
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/2] ice: parametrize
- functions responsible for Tx ring management
-In-Reply-To: <20210520063500.62037-3-maciej.fijalkowski@intel.com>
-References: <20210520063500.62037-1-maciej.fijalkowski@intel.com>
- <20210520063500.62037-3-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB329297990325F28CCF5CD35DF1389@DM6PR11MB3292.namprd11.prod.outlook.com>
+From: Nitesh Lal <nilal@redhat.com>
+Date: Mon, 7 Jun 2021 13:00:05 -0400
+Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
+ affinity hints
+In-Reply-To: <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
+References: <20210504092340.00006c61@intel.com>
+ <87pmxpdr32.ffs@nanos.tec.linutronix.de>
+ <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
+ <87im3gewlu.ffs@nanos.tec.linutronix.de>
+ <CAFki+L=gp10W1ygv7zdsee=BUGpx9yPAckKr7pyo=tkFJPciEg@mail.gmail.com>
+ <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
+ <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
+ <87zgwo9u79.ffs@nanos.tec.linutronix.de>
+ <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
+Message-ID: <CAFki+L=QTOu_O=1uNobVMi2s9mbcxXgSdTLADCpeBWBoPAikgQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Thursday, May 20, 2021 12:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; bjorn at kernel.org; kuba at kernel.org;
-> bpf at vger.kernel.org; davem at davemloft.net; Karlsson, Magnus
-> <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/2] ice: parametrize functions
-> responsible for Tx ring management
-> 
-> Commit ae15e0ba1b33 ("ice: Change number of XDP Tx queues to match
-> number of Rx queues") tried to address the incorrect setting of XDP queue
-> count that was based on the Tx queue count, whereas in theory we should
-> provide the XDP queue per Rx queue. However, the routines that setup and
-> destroy the set of Tx resources are still based on the
-> vsi->num_txq.
-> 
-> Ice supports the asynchronous Tx/Rx queue count, so for a setup where
-> vsi->num_txq > vsi->num_rxq, ice_vsi_stop_tx_rings and ice_vsi_cfg_txqs
-> will be accessing the vsi->xdp_rings out of the bounds.
-> 
-> Parametrize two mentioned functions so they get the size of Tx resources
-> array as the input.
-> 
-> Fixes: ae15e0ba1b33 ("ice: Change number of XDP Tx queues to match
-> number of Rx queues")
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+On Fri, May 21, 2021 at 8:03 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> The discussion about removing the side effect of irq_set_affinity_hint() of
+> actually applying the cpumask (if not NULL) as affinity to the interrupt,
+> unearthed a few unpleasantries:
+>
+>   1) The modular perf drivers rely on the current behaviour for the very
+>      wrong reasons.
+>
+>   2) While none of the other drivers prevents user space from changing
+>      the affinity, a cursorily inspection shows that there are at least
+>      expectations in some drivers.
+>
+> #1 needs to be cleaned up anyway, so that's not a problem
+>
+> #2 might result in subtle regressions especially when irqbalanced (which
+>    nowadays ignores the affinity hint) is disabled.
+>
+> Provide new interfaces:
+>
+>   irq_update_affinity_hint() - Only sets the affinity hint pointer
+>   irq_apply_affinity_hint()  - Set the pointer and apply the affinity to
+>                                the interrupt
+>
+> Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+> document it to be phased out.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
-> 
+> Applies on:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/core
+> ---
+>  include/linux/interrupt.h |   41 ++++++++++++++++++++++++++++++++++++++++-
+>  kernel/irq/manage.c       |    8 ++++----
+>  2 files changed, 44 insertions(+), 5 deletions(-)
+>
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned i
+>  extern int irq_can_set_affinity(unsigned int irq);
+>  extern int irq_select_affinity(unsigned int irq);
+>
+> -extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
+> +extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> +                                    bool setaffinity);
+> +
+> +/**
+> + * irq_update_affinity_hint - Update the affinity hint
+> + * @irq:       Interrupt to update
+> + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> + *
+> + * Updates the affinity hint, but does not change the affinity of the interrupt.
+> + */
+> +static inline int
+> +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return __irq_apply_affinity_hint(irq, m, true);
+> +}
+> +
+> +/**
+> + * irq_apply_affinity_hint - Update the affinity hint and apply the provided
+> + *                          cpumask to the interrupt
+> + * @irq:       Interrupt to update
+> + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> + *
+> + * Updates the affinity hint and if @cpumask is not NULL it applies it as
+> + * the affinity of that interrupt.
+> + */
+> +static inline int
+> +irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return __irq_apply_affinity_hint(irq, m, true);
+> +}
+> +
+> +/*
+> + * Deprecated. Use irq_update_affinity_hint() or irq_apply_affinity_hint()
+> + * instead.
+> + */
+> +static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return irq_apply_affinity_hint(irq, cpumask);
 
-Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
+Another change required here, the above should be 'm' instead of 'cpumask'.
+
+> +}
+> +
+>  extern int irq_update_affinity_desc(unsigned int irq,
+>                                     struct irq_affinity_desc *affinity);
+>
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq,
+>  }
+>  EXPORT_SYMBOL_GPL(irq_force_affinity);
+>
+> -int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> +                             bool setaffinity)
+>  {
+>         unsigned long flags;
+>         struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
+> @@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int i
+>                 return -EINVAL;
+>         desc->affinity_hint = m;
+>         irq_put_desc_unlock(desc, flags);
+> -       /* set the initial affinity to prevent every interrupt being on CPU0 */
+> -       if (m)
+> +       if (m && setaffinity)
+>                 __irq_set_affinity(irq, m, false);
+>         return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
+> +EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
+>
+>  static void irq_affinity_notify(struct work_struct *work)
+>  {
+>
+
+
+-- 
+Thanks
+Nitesh
+
