@@ -1,45 +1,60 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun, 20 Jun 2021 15:28:06 +0200
-Subject: [Intel-wired-lan] [PATCH] ice: Fix a memory leak in an error
- handling path in 'ice_pf_dcb_cfg()'
-Message-ID: <0302ff0ced7f38b0076c08ce351477d338bbe548.1624195601.git.christophe.jaillet@wanadoo.fr>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon,  7 Jun 2021 09:19:12 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Check the PCIm state
+Message-ID: <20210607061912.2356057-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If this 'kzalloc()' fails we must free some resources as in all the other
-error handling paths of this function.
+Complete to commit def4ec6dce393e ("e1000e: PCIm function state support")
+Check the PCIm state only on CSME systems. There is no point to do this
+check on none CSME systems.
+This patch fixes a generation a false-positive warning:
+"Error in exiting dmoff"
 
-Fixes: 348048e724a0 ("ice: Implement iidc operations")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-'event' is allocated and freed just a few lines below. It looks like a
-small structure, so maybe a better fix would be to avoid the
-kzalloc/kfree and use a local variable instead.
-Another solution
----
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 24 ++++++++++++----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 857dc62da7a8..926cf748c5ec 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -316,8 +316,10 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 781b751f066f..6a20c7f82fc9 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5225,18 +5225,20 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 			pm_runtime_resume(netdev->dev.parent);
  
- 	/* Notify AUX drivers about impending change to TCs */
- 	event = kzalloc(sizeof(*event), GFP_KERNEL);
--	if (!event)
--		return -ENOMEM;
-+	if (!event) {
-+		ret = -ENOMEM;
-+		goto free_cfg;
-+	}
+ 			/* Checking if MAC is in DMoff state*/
+-			pcim_state = er32(STATUS);
+-			while (pcim_state & E1000_STATUS_PCIM_STATE) {
+-				if (tries++ == dmoff_exit_timeout) {
+-					e_dbg("Error in exiting dmoff\n");
+-					break;
+-				}
+-				usleep_range(10000, 20000);
++			if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID) {
+ 				pcim_state = er32(STATUS);
+-
+-				/* Checking if MAC exited DMoff state */
+-				if (!(pcim_state & E1000_STATUS_PCIM_STATE))
+-					e1000_phy_hw_reset(&adapter->hw);
++				while (pcim_state & E1000_STATUS_PCIM_STATE) {
++					if (tries++ == dmoff_exit_timeout) {
++						e_dbg("Error in exiting dmoff\n");
++						break;
++					}
++					usleep_range(10000, 20000);
++					pcim_state = er32(STATUS);
++
++					/* Checking if MAC exited DMoff state */
++					if (!(pcim_state & E1000_STATUS_PCIM_STATE))
++						e1000_phy_hw_reset(&adapter->hw);
++				}
+ 			}
  
- 	set_bit(IIDC_EVENT_BEFORE_TC_CHANGE, event->type);
- 	ice_send_event_to_aux(pf, event);
+ 			/* update snapshot of PHY registers on LSC */
 -- 
-2.30.2
+2.25.1
 
