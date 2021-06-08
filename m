@@ -1,86 +1,73 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 08 Jun 2021 12:02:30 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v5 3/4] igc: Enable PCIe PTM
-In-Reply-To: <70d32740-eb4b-f7bf-146e-8dc06199d6c9@molgen.mpg.de>
-References: <20210605002356.3996853-1-vinicius.gomes@intel.com>
- <20210605002356.3996853-4-vinicius.gomes@intel.com>
- <70d32740-eb4b-f7bf-146e-8dc06199d6c9@molgen.mpg.de>
-Message-ID: <87sg1sw56h.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Date: Tue, 08 Jun 2021 23:43:40 +0200
+Subject: [Intel-wired-lan] [PATCH intel-next 2/2] ice: introduce XDP Tx
+ fallback path
+In-Reply-To: <20210608121259.GA1971@ranger.igk.intel.com>
+References: <20210601113236.42651-1-maciej.fijalkowski@intel.com>
+ <20210601113236.42651-3-maciej.fijalkowski@intel.com>
+ <87czt5dal0.fsf@toke.dk> <20210608121259.GA1971@ranger.igk.intel.com>
+Message-ID: <87o8cgnib7.fsf@toke.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Paul,
+Maciej Fijalkowski <maciej.fijalkowski@intel.com> writes:
 
-Paul Menzel <pmenzel@molgen.mpg.de> writes:
-
-> Dear Vinicius,
->
->
-> Am 05.06.21 um 02:23 schrieb Vinicius Costa Gomes:
->> Enables PCIe PTM (Precision Time Measurement) support in the igc
->> driver. Notifies the PCI devices that PCIe PTM should be enabled.
+> On Tue, Jun 01, 2021 at 02:38:03PM +0200, Toke H?iland-J?rgensen wrote:
+>> Maciej Fijalkowski <maciej.fijalkowski@intel.com> writes:
 >> 
->> PCIe PTM is similar protocol to PTP (Precision Time Protocol) running
->> in the PCIe fabric, it allows devices to report time measurements from
->> their internal clocks and the correlation with the PCIe root clock.
+>> > Under rare circumstances there might be a situation where a requirement
+>> > of having a XDP Tx queue per core could not be fulfilled and some of the
+>> > Tx resources would have to be shared between cores. This yields a need
+>> > for placing accesses to xdp_rings array onto critical section protected
+>> > by spinlock.
+>> >
+>> > Design of handling such scenario is to at first find out how many queues
+>> > are there that XDP could use. Any number that is not less than the half
+>> > of a count of cores of platform is allowed. XDP queue count < cpu count
+>> > is signalled via new VSI state ICE_VSI_XDP_FALLBACK which carries the
+>> > information further down to Rx rings where new ICE_TX_XDP_LOCKED is set
+>> > based on the mentioned VSI state. This ring flag indicates that locking
+>> > variants for getting/putting xdp_ring need to be used in fast path.
+>> >
+>> > For XDP_REDIRECT the impact on standard case (one XDP ring per CPU) can
+>> > be reduced a bit by providing a separate ndo_xdp_xmit and swap it at
+>> > configuration time. However, due to the fact that net_device_ops struct
+>> > is a const, it is not possible to replace a single ndo, so for the
+>> > locking variant of ndo_xdp_xmit, whole net_device_ops needs to be
+>> > replayed.
+>> >
+>> > It has an impact on performance (1-2 %) of a non-fallback path as
+>> > branches are introduced.
 >> 
->> The i225 NIC exposes some registers that expose those time
->> measurements, those registers will be used, in later patches, to
->> implement the PTP_SYS_OFFSET_PRECISE ioctl().
->> 
->> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->> ---
->>   drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
->>   1 file changed, 6 insertions(+)
->> 
->> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
->> index a05e6d8ec660..f23d0303e53b 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->> @@ -12,6 +12,8 @@
->>   #include <net/pkt_sched.h>
->>   #include <linux/bpf_trace.h>
->>   #include <net/xdp_sock_drv.h>
->> +#include <linux/pci.h>
->> +
->>   #include <net/ipv6.h>
->>   
->>   #include "igc.h"
->> @@ -5864,6 +5866,10 @@ static int igc_probe(struct pci_dev *pdev,
->>   
->>   	pci_enable_pcie_error_reporting(pdev);
->>   
->> +	err = pci_enable_ptm(pdev, NULL);
->> +	if (err < 0)
->> +		dev_err(&pdev->dev, "PTM not supported\n");
->> +
+>> I generally feel this is the right approach, although the performance
+>> impact is a bit unfortunately, obviously. Maybe it could be avoided by
+>> the use of static_branch? I.e., keep a global refcount of how many
+>> netdevs are using the locked path and only activate the check in the
+>> fast path while that refcount is >0?
 >
-> Sorry, if I am missing something, but do all devices supported by this 
-> driver support PTM or only the i225 NIC? In that case, it wouldn?t be an 
-> error for a device not supporting PTM, would it?
+> This would be an ideal solution if we would be able to have it PF-scoped,
+> which AFAICT is not possible as static key is per module, right?
 
-That was a very good question. I had to talk with the hardware folks.
-All the devices supported by the igc driver should support PTM.
+Yeah, static_branch basically patches the kernel text when activated
+(hence the low overhead), so it's a global switch...
 
-And just to be clear, the reason that I am not returning an error here
-is that PTM could not be supported by the host system (think PCI
-controller).
-
+> I checked that before the bank holiday here in Poland and indeed I was not
+> observing perf drops. Only thing that is questionable is the fact that a
+> single PF would affect all the others that ice driver is serving.
 >
->>   	pci_set_master(pdev);
->>   
->>   	err = -ENOMEM;
->> 
+> OTOH I see that Jesper acked that work.
 >
+> Let me play with this a bit more as I'm in the middle of switching my HW
+> lab, but I wanted to break the silence over here. I didn't manage to check
+> that one fallback path will affect other PFs.
 >
-> Kind regards,
->
-> Paul
+> Thanks Toke for that great idea :) any other opinions are more than
+> welcome.
 
+You're welcome! :)
 
-Cheers,
--- 
-Vinicius
+-Toke
+
