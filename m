@@ -1,52 +1,51 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 8 Jun 2021 23:08:08 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] ice: add tracepoints
-In-Reply-To: <20210608092705.00005761@intel.com>
-References: <20210528014943.3036054-1-jesse.brandeburg@intel.com>
- <20210608092705.00005761@intel.com>
-Message-ID: <1e972693734fc6c19fc03b74cb3037b0a4f42852.camel@intel.com>
+Date: Tue, 8 Jun 2021 23:19:13 +0000
+Subject: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then
+ UP
+In-Reply-To: <CAB6A5-B6kH6hiOJHZ-8JY0H8PqXeab07vUGMdBvfCgGPR8QzBw@mail.gmail.com>
+References: <CAB6A5-B6kH6hiOJHZ-8JY0H8PqXeab07vUGMdBvfCgGPR8QzBw@mail.gmail.com>
+Message-ID: <6b36112fc1548f06a737bc7a1febaac06f799b6a.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2021-06-08 at 09:27 -0700, Jesse Brandeburg wrote:
-> Jesse Brandeburg wrote:
+On Fri, 2021-06-04 at 14:42 +0900, manty kuma wrote:
+> We see random NIC down like shown below. It lasts for a few seconds
+> and then the connection is back up.
 > 
-> > This patch is modeled after one by Scott Peterson for i40e.
+> From kernel Log:
+> ```
+> [ 3306.560431] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Down
+> [ 3309.532558] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Up
+> 1000 Mbps Full Duplex, Flow Control: RX\/TX
 > 
-> I found a little bug in the code, Tony do you want to correct it or
-> have me send a v3?
+> [ 3337.380117] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Down
+> [ 3341.672189] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Up
+> 100 Mbps Half Duplex, Flow Control: None
+> ```
+> Steps to reproduce: Unknown. Happens randomly
+> Frequency: once in a couple of weeks so far.
+> 
+> Kernel: 5.10
+> Firmware version: 3.25, 0x800005cf
+> driver: igb
+> 
+> Is it a known issue?
+> What can we do to better understand the reason for this behavior and
+> fix it?
 
-A v3 would be preferable.
+Hi Manty,
+
+I'm not aware of this as a known issue, but I've filed an internal bug
+so that it can be looked into further. Could you provide the lspci info
+for the device? Also, if you have any info that might be helpful such
+as occuring under traffic or when idle, etc.
 
 Thanks,
 Tony
 
-> > +DECLARE_EVENT_CLASS(ice_tx_dim_template,
-> > +		    TP_PROTO(struct ice_q_vector *q_vector, struct dim
-> > *dim),
-> > +		    TP_ARGS(q_vector, dim),
-> > +		    TP_STRUCT__entry(__field(struct ice_q_vector *,
-> > q_vector)
-> > +				     __field(struct dim *, dim)
-> > +				     __string(devname, q_vector-
-> > >tx.ring->netdev->name)),
-> > +
-> > +		    TP_fast_assign(__entry->q_vector = q_vector;
-> > +				   __entry->dim = dim;
-> > +				   __assign_str(devname, q_vector-
-> > >tx.ring->netdev->name);),
-> > +
-> > +		    TP_printk("netdev: %s Tx-Q: %d dim-state: %d dim-
-> > profile: %d dim-tune: %d dim-st-right: %d dim-st-left: %d dim-
-> > tired: %d",
-> > +			      __get_str(devname),
-> > +			      __entry->q_vector->rx.ring->q_index,
-> 
-> should be:                                       tx.ring
-> 
 > _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at osuosl.org
