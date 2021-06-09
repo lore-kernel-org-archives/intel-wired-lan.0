@@ -1,73 +1,200 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Wed, 9 Jun 2021 15:09:48 +0000
-Subject: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then
- UP
-In-Reply-To: <6b36112fc1548f06a737bc7a1febaac06f799b6a.camel@intel.com>
-References: <CAB6A5-B6kH6hiOJHZ-8JY0H8PqXeab07vUGMdBvfCgGPR8QzBw@mail.gmail.com>
- <6b36112fc1548f06a737bc7a1febaac06f799b6a.camel@intel.com>
-Message-ID: <BYAPR11MB3606E7E70D2E3B2E58BD06CDEF369@BYAPR11MB3606.namprd11.prod.outlook.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed,  9 Jun 2021 09:39:48 -0700
+Subject: [Intel-wired-lan] [PATCH v2 3/8] ice: add support for set/get of
+ driver-stored firmware parameters
+In-Reply-To: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
+References: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
+Message-ID: <20210609163953.52440-4-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Usually things like this are hardware-related when dealing with mature drivers.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Is there any way you can file this through your factory support because we're going to need a lot more detail. We don't usually handle issues through email unless you want to go through Intel Customer Support.
+Depending on the device configuration, the ice hardware may share the
+PTP hardware clock timer between multiple PFs. Each PF is informed by
+firmware during initialization of the PTP timer association.
 
-We'll need to know OS, driver, hardware, link partner, kind of traffic, etc.
+When bringing up PTP, only the PFs which own the timer shall allocate
+a PTP hardware clock. Other PFs associated with that timer must report
+the correct PTP clock index in order to allow userspace software the
+ability to know which ports are connected to the same clock.
 
-Thanks.
+To support this, the firmware has driver shared parameters. These
+parameters enable one PF to write the clock index into firmware, and
+have other PFs read the associated value out. This enables the driver to
+have only a single PF allocate and control the device timer registers,
+while other PFs associated with that timer can report the correct clock
+in the ETHTOOL_GET_TS_INFO report.
 
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com
+Add support for the necessary admin queue commands to enable reading and
+writing of the driver shared parameters. This will be used in a future
+change to enable sharing the PTP clock index between PF drivers.
 
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Nguyen, Anthony L
-Sent: Tuesday, June 8, 2021 4:19 PM
-To: intel-wired-lan@osuosl.org; mantykuma at gmail.com
-Subject: Re: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then UP
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 27 +++++++
+ drivers/net/ethernet/intel/ice/ice_common.c   | 75 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  6 ++
+ 3 files changed, 108 insertions(+)
 
-On Fri, 2021-06-04 at 14:42 +0900, manty kuma wrote:
-> We see random NIC down like shown below. It lasts for a few seconds 
-> and then the connection is back up.
-> 
-> From kernel Log:
-> ```
-> [ 3306.560431] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Down [ 
-> 3309.532558] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Up
-> 1000 Mbps Full Duplex, Flow Control: RX\/TX
-> 
-> [ 3337.380117] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Down [ 
-> 3341.672189] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Up
-> 100 Mbps Half Duplex, Flow Control: None ``` Steps to reproduce: 
-> Unknown. Happens randomly
-> Frequency: once in a couple of weeks so far.
-> 
-> Kernel: 5.10
-> Firmware version: 3.25, 0x800005cf
-> driver: igb
-> 
-> Is it a known issue?
-> What can we do to better understand the reason for this behavior and 
-> fix it?
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index f10c1b8555a4..21b4c7cd6f05 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1853,6 +1853,30 @@ struct ice_aqc_get_pkg_info_resp {
+ 	struct ice_aqc_get_pkg_info pkg_info[];
+ };
+ 
++/* Driver Shared Parameters (direct, 0x0C90) */
++struct ice_aqc_driver_shared_params {
++	u8 set_or_get_op;
++#define ICE_AQC_DRIVER_PARAM_OP_MASK		BIT(0)
++#define ICE_AQC_DRIVER_PARAM_SET		0
++#define ICE_AQC_DRIVER_PARAM_GET		1
++	u8 param_indx;
++#define ICE_AQC_DRIVER_PARAM_MAX_IDX		15
++	u8 rsvd[2];
++	__le32 param_val;
++	__le32 addr_high;
++	__le32 addr_low;
++};
++
++enum ice_aqc_driver_params {
++	/* OS clock index for PTP timer Domain 0 */
++	ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR0 = 0,
++	/* OS clock index for PTP timer Domain 1 */
++	ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR1,
++
++	/* Add new parameters above */
++	ICE_AQC_DRIVER_PARAM_MAX = 16,
++};
++
+ /* Lan Queue Overflow Event (direct, 0x1001) */
+ struct ice_aqc_event_lan_overflow {
+ 	__le32 prtdcb_ruptq;
+@@ -1930,6 +1954,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_fw_logging fw_logging;
+ 		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
+ 		struct ice_aqc_download_pkg download_pkg;
++		struct ice_aqc_driver_shared_params drv_shared_params;
+ 		struct ice_aqc_set_mac_lb set_mac_lb;
+ 		struct ice_aqc_alloc_free_res_cmd sw_res_ctrl;
+ 		struct ice_aqc_set_mac_cfg set_mac_cfg;
+@@ -2083,6 +2108,8 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_update_pkg				= 0x0C42,
+ 	ice_aqc_opc_get_pkg_info_list			= 0x0C43,
+ 
++	ice_aqc_opc_driver_shared_params		= 0x0C90,
++
+ 	/* Standalone Commands/Events */
+ 	ice_aqc_opc_event_lan_overflow			= 0x1001,
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 103839feb12e..c1f9d28bade8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -4681,6 +4681,81 @@ ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
+ 	return status;
+ }
+ 
++/**
++ * ice_aq_set_driver_param - Set driver parameter to share via firmware
++ * @hw: pointer to the HW struct
++ * @idx: parameter index to set
++ * @value: the value to set the parameter to
++ * @cd: pointer to command details structure or NULL
++ *
++ * Set the value of one of the software defined parameters. All PFs connected
++ * to this device can read the value using ice_aq_get_driver_param.
++ *
++ * Note that firmware provides no synchronization or locking, and will not
++ * save the parameter value during a device reset. It is expected that
++ * a single PF will write the parameter value, while all other PFs will only
++ * read it.
++ */
++int
++ice_aq_set_driver_param(struct ice_hw *hw, enum ice_aqc_driver_params idx,
++			u32 value, struct ice_sq_cd *cd)
++{
++	struct ice_aqc_driver_shared_params *cmd;
++	struct ice_aq_desc desc;
++
++	if (idx >= ICE_AQC_DRIVER_PARAM_MAX)
++		return -EIO;
++
++	cmd = &desc.params.drv_shared_params;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_driver_shared_params);
++
++	cmd->set_or_get_op = ICE_AQC_DRIVER_PARAM_SET;
++	cmd->param_indx = idx;
++	cmd->param_val = cpu_to_le32(value);
++
++	return ice_status_to_errno(ice_aq_send_cmd(hw, &desc, NULL, 0, cd));
++}
++
++/**
++ * ice_aq_get_driver_param - Get driver parameter shared via firmware
++ * @hw: pointer to the HW struct
++ * @idx: parameter index to set
++ * @value: storage to return the shared parameter
++ * @cd: pointer to command details structure or NULL
++ *
++ * Get the value of one of the software defined parameters.
++ *
++ * Note that firmware provides no synchronization or locking. It is expected
++ * that only a single PF will write a given parameter.
++ */
++int
++ice_aq_get_driver_param(struct ice_hw *hw, enum ice_aqc_driver_params idx,
++			u32 *value, struct ice_sq_cd *cd)
++{
++	struct ice_aqc_driver_shared_params *cmd;
++	struct ice_aq_desc desc;
++	enum ice_status status;
++
++	if (idx >= ICE_AQC_DRIVER_PARAM_MAX)
++		return -EIO;
++
++	cmd = &desc.params.drv_shared_params;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_driver_shared_params);
++
++	cmd->set_or_get_op = ICE_AQC_DRIVER_PARAM_GET;
++	cmd->param_indx = idx;
++
++	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++	if (status)
++		return ice_status_to_errno(status);
++
++	*value = le32_to_cpu(cmd->param_val);
++
++	return 0;
++}
++
+ /**
+  * ice_fw_supports_link_override
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 86bc261177d6..8cc0a639c208 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -185,6 +185,12 @@ ice_stat_update32(struct ice_hw *hw, u32 reg, bool prev_stat_loaded,
+ enum ice_status
+ ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
+ 		     struct ice_aqc_txsched_elem_data *buf);
++int
++ice_aq_set_driver_param(struct ice_hw *hw, enum ice_aqc_driver_params idx,
++			u32 value, struct ice_sq_cd *cd);
++int
++ice_aq_get_driver_param(struct ice_hw *hw, enum ice_aqc_driver_params idx,
++			u32 *value, struct ice_sq_cd *cd);
+ enum ice_status
+ ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
+ 		    struct ice_sq_cd *cd);
+-- 
+2.20.1
 
-Hi Manty,
-
-I'm not aware of this as a known issue, but I've filed an internal bug so that it can be looked into further. Could you provide the lspci info for the device? Also, if you have any info that might be helpful such as occuring under traffic or when idle, etc.
-
-Thanks,
-Tony
-
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
