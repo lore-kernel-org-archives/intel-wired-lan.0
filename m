@@ -1,263 +1,146 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Wed,  9 Jun 2021 12:33:18 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next 09/17] net: intel: remove
- rcu_read_lock() around XDP program invocation
-In-Reply-To: <20210609103326.278782-1-toke@redhat.com>
-References: <20210609103326.278782-1-toke@redhat.com>
-Message-ID: <20210609103326.278782-10-toke@redhat.com>
+From: Karen Sornek <karen.sornek@intel.com>
+Date: Wed,  9 Jun 2021 12:51:01 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
+ adminq while VF reset and for sync VF driver reset
+Message-ID: <20210609105101.88005-1-karen.sornek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The Intel drivers all have rcu_read_lock()/rcu_read_unlock() pairs around
-XDP program invocations. However, the actual lifetime of the objects
-referred by the XDP program invocation is longer, all the way through to
-the call to xdp_do_flush(), making the scope of the rcu_read_lock() too
-small. This turns out to be harmless because it all happens in a single
-NAPI poll cycle (and thus under local_bh_disable()), but it makes the
-rcu_read_lock() misleading.
+Fix for failed to init adminq: -53 while VF is resetting via MAC
+address changing procedure.
+Added sync module to avoid reading deadbeef value in reinit adminq
+during software reset.
+Fix for sync VF driver reset before trigger next one by PF.
+Change VF in reset state detection from check VFR state
+register to examination of enable admin queue interrupt.
+ADMINQ is enabled by VF after completely reinit admin queue.
 
-Rather than extend the scope of the rcu_read_lock(), just get rid of it
-entirely. With the addition of RCU annotations to the XDP_REDIRECT map
-types that take bh execution into account, lockdep even understands this to
-be safe, so there's really no reason to keep it around.
-
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Tested-by: Jesper Dangaard Brouer <brouer@redhat.com> # i40e
-Signed-off-by: Toke H?iland-J?rgensen <toke@redhat.com>
+Fixes: b40c82e6ae85 ("i40e: Fix inconsistent use of PF/VF vs pf/vf")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 2 --
- drivers/net/ethernet/intel/i40e/i40e_xsk.c        | 6 +-----
- drivers/net/ethernet/intel/ice/ice_txrx.c         | 6 +-----
- drivers/net/ethernet/intel/ice/ice_xsk.c          | 6 +-----
- drivers/net/ethernet/intel/igb/igb_main.c         | 2 --
- drivers/net/ethernet/intel/igc/igc_main.c         | 7 ++-----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 2 --
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c      | 6 +-----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 --
- 9 files changed, 6 insertions(+), 33 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_register.h   | 10 +++++
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 45 ++++++++++++++++++-
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
+ 3 files changed, 54 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index de70c16ef619..ae3a64b6f5f8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2298,7 +2298,6 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 	struct bpf_prog *xdp_prog;
- 	u32 act;
- 
--	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 
- 	if (!xdp_prog)
-@@ -2329,7 +2328,6 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 		break;
- 	}
- xdp_out:
--	rcu_read_unlock();
- 	return result;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
+index 8d0588a27..b5c741e76 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_register.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
+@@ -371,6 +371,16 @@
+ #define I40E_PFINT_ICR0_ENA_VFLR_MASK I40E_MASK(0x1, I40E_PFINT_ICR0_ENA_VFLR_SHIFT)
+ #define I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT 30
+ #define I40E_PFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1, I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT)
++#define I40E_VFINT_ICR0_ADMINQ_SHIFT 30
++#define I40E_VFINT_ICR0_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ADMINQ_SHIFT)
++#define I40E_VFINT_ICR0_ENA(_VF) (0x0002C000 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
++#define I40E_VFINT_ICR0_ENA_MAX_INDEX 127
++#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT 25
++#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT)
++#define I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT 30
++#define I40E_VFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT)
++#define I40E_VFINT_ICR0_ENA_RSVD_SHIFT 31
++#define I40E_VFINT_ICR0_ENA_RSVD_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_RSVD_SHIFT)
+ #define I40E_PFINT_ITR0(_i) (0x00038000 + ((_i) * 128)) /* _i=0...2 */ /* Reset: PFR */
+ #define I40E_PFINT_ITRN(_i, _INTPF) (0x00030000 + ((_i) * 2048 + (_INTPF) * 4)) /* _i=0...2, _INTPF=0...511 */ /* Reset: PFR */
+ #define I40E_PFINT_LNKLST0 0x00038500 /* Reset: PFR */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index edfdce5f6..e6d6ebd82 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1376,6 +1376,32 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
+ 	return aq_ret;
  }
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 46d884417c63..8dca53b7daff 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -153,7 +153,6 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 	struct bpf_prog *xdp_prog;
- 	u32 act;
++/**
++ * i40e_sync_vfr_reset
++ * @hw: pointer to hw struct
++ * @vf_id: VF identifier
++ *
++ * Before trigger hardware reset, we need to know if no other process has
++ * reserved the hardware for any reset operations. This check is done by
++ * examining the status of the ADMINQ bit in VF interrupt register.
++ **/
++static int i40e_sync_vfr_reset(struct i40e_hw *hw, int vf_id)
++{
++	u32 reg;
++	int i;
++
++	for (i = 0; i < I40E_VFR_WAIT_COUNT; i++) {
++		reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
++			   I40E_VFINT_ICR0_ADMINQ_MASK;
++		if (reg != VIRTCHNL_VFR_INPROGRESS)
++			return 0;
++
++		usleep_range(100, 200);
++	}
++
++	return -EAGAIN;
++}
++
+ /**
+  * i40e_trigger_vf_reset
+  * @vf: pointer to the VF structure
+@@ -1390,9 +1416,11 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	u32 reg, reg_idx, bit_idx;
++	bool vf_active;
++	u32 radq;
  
--	rcu_read_lock();
- 	/* NB! xdp_prog will always be !NULL, due to the fact that
- 	 * this path is enabled by setting an XDP program.
+ 	/* warn the VF */
+-	clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
++	vf_active = test_and_clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
+ 
+ 	/* Disable VF's configuration API during reset. The flag is re-enabled
+ 	 * in i40e_alloc_vf_res(), when it's safe again to access VF's VSI.
+@@ -1406,7 +1434,18 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
+ 	 * just need to clean up, so don't hit the VFRTRIG register.
  	 */
-@@ -162,9 +161,7 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 
- 	if (likely(act == XDP_REDIRECT)) {
- 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
--		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
--		rcu_read_unlock();
--		return result;
-+		return !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
- 	}
- 
- 	switch (act) {
-@@ -184,7 +181,6 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
- 		result = I40E_XDP_CONSUMED;
- 		break;
- 	}
--	rcu_read_unlock();
- 	return result;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index e2b4b29ea207..1a311e91fb6d 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1129,15 +1129,11 @@ int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
- 		xdp.frame_sz = ice_rx_frame_truesize(rx_ring, size);
- #endif
- 
--		rcu_read_lock();
- 		xdp_prog = READ_ONCE(rx_ring->xdp_prog);
--		if (!xdp_prog) {
--			rcu_read_unlock();
-+		if (!xdp_prog)
- 			goto construct_skb;
--		}
- 
- 		xdp_res = ice_run_xdp(rx_ring, &xdp, xdp_prog);
--		rcu_read_unlock();
- 		if (!xdp_res)
- 			goto construct_skb;
- 		if (xdp_res & (ICE_XDP_TX | ICE_XDP_REDIR)) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index faa7b8d96adb..d6da377f5ac3 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -463,7 +463,6 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
- 	struct ice_ring *xdp_ring;
- 	u32 act;
- 
--	rcu_read_lock();
- 	/* ZC patch is enabled only when XDP program is set,
- 	 * so here it can not be NULL
+ 	if (!flr) {
+-		/* reset VF using VPGEN_VFRTRIG reg */
++		/* Sync VFR reset before trigger next one */
++		radq = rd32(hw, I40E_VFINT_ICR0_ENA(vf->vf_id)) &
++			     I40E_VFINT_ICR0_ADMINQ_MASK;
++		if (vf_active && !radq)
++			/* waiting for finish reset by virtual driver */
++			if (i40e_sync_vfr_reset(hw, vf->vf_id))
++				dev_info(&pf->pdev->dev,
++					 "Reset VF %d never finished\n",
++					 vf->vf_id);
++
++		/* Reset VF using VPGEN_VFRTRIG reg. It is also setting
++		 * in progress state in rstat1 register */
+ 		reg = rd32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id));
+ 		reg |= I40E_VPGEN_VFRTRIG_VFSWR_MASK;
+ 		wr32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id), reg);
+@@ -1473,8 +1512,10 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
+ 	/* Tell the VF driver the reset is done. This needs to be done only
+ 	 * after VF has been fully initialized, because the VF driver may
+ 	 * request resources immediately after setting this flag.
++	 * Let's give it some time to finish it.
  	 */
-@@ -473,9 +472,7 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
- 
- 	if (likely(act == XDP_REDIRECT)) {
- 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
--		result = !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
--		rcu_read_unlock();
--		return result;
-+		return !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
- 	}
- 
- 	switch (act) {
-@@ -496,7 +493,6 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
- 		break;
- 	}
- 
--	rcu_read_unlock();
- 	return result;
+ 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
++	usleep_range(20000, 40000);
  }
  
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 038a9fd1af44..8a11b7e55326 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -8387,7 +8387,6 @@ static struct sk_buff *igb_run_xdp(struct igb_adapter *adapter,
- 	struct bpf_prog *xdp_prog;
- 	u32 act;
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 49575a640..03c42fd0f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -19,6 +19,7 @@
+ #define I40E_MAX_VF_PROMISC_FLAGS	3
  
--	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ #define I40E_VF_STATE_WAIT_COUNT	20
++#define I40E_VFR_WAIT_COUNT		100
  
- 	if (!xdp_prog)
-@@ -8420,7 +8419,6 @@ static struct sk_buff *igb_run_xdp(struct igb_adapter *adapter,
- 		break;
- 	}
- xdp_out:
--	rcu_read_unlock();
- 	return ERR_PTR(-result);
- }
- 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index ea998d2defa4..2b666a6ec989 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2175,18 +2175,15 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
- 	struct bpf_prog *prog;
- 	int res;
- 
--	rcu_read_lock();
--
- 	prog = READ_ONCE(adapter->xdp_prog);
- 	if (!prog) {
- 		res = IGC_XDP_PASS;
--		goto unlock;
-+		goto out;
- 	}
- 
- 	res = __igc_xdp_run_prog(adapter, prog, xdp);
- 
--unlock:
--	rcu_read_unlock();
-+out:
- 	return ERR_PTR(-res);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c5ec17d19c59..27d7467534e0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2199,7 +2199,6 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 	struct xdp_frame *xdpf;
- 	u32 act;
- 
--	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 
- 	if (!xdp_prog)
-@@ -2237,7 +2236,6 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
- 		break;
- 	}
- xdp_out:
--	rcu_read_unlock();
- 	return ERR_PTR(-result);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index 91ad5b902673..ffbf8a694362 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -100,15 +100,12 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 	struct xdp_frame *xdpf;
- 	u32 act;
- 
--	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
- 
- 	if (likely(act == XDP_REDIRECT)) {
- 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
--		result = !err ? IXGBE_XDP_REDIR : IXGBE_XDP_CONSUMED;
--		rcu_read_unlock();
--		return result;
-+		return !err ? IXGBE_XDP_REDIR : IXGBE_XDP_CONSUMED;
- 	}
- 
- 	switch (act) {
-@@ -132,7 +129,6 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
- 		result = IXGBE_XDP_CONSUMED;
- 		break;
- 	}
--	rcu_read_unlock();
- 	return result;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index ba2ed8a43d2d..fabada4ce315 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1054,7 +1054,6 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
- 	struct bpf_prog *xdp_prog;
- 	u32 act;
- 
--	rcu_read_lock();
- 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
- 
- 	if (!xdp_prog)
-@@ -1079,7 +1078,6 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
- 		break;
- 	}
- xdp_out:
--	rcu_read_unlock();
- 	return ERR_PTR(-result);
- }
- 
+ /* Various queue ctrls */
+ enum i40e_queue_ctrl {
 -- 
-2.31.1
+2.27.0
 
