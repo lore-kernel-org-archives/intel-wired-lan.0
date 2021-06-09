@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  9 Jun 2021 09:39:50 -0700
-Subject: [Intel-wired-lan] [PATCH v2 5/8] ice: register 1588 PTP clock
- device object for E810 devices
+Date: Wed,  9 Jun 2021 09:39:47 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/8] ice: process 1588 PTP capabilities
+ during initialization
 In-Reply-To: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
 References: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210609163953.52440-6-anthony.l.nguyen@intel.com>
+Message-ID: <20210609163953.52440-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,675 +13,263 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Add a new ice_ptp.c file for holding the basic PTP clock interface
-functions. If the device supports PTP, call the new ice_ptp_init and
-ice_ptp_release functions where appropriate.
+The device firmware reports PTP clock capabilities to each PF during
+initialization. This includes various information for both the overall
+device and the individual function, including
 
-If the function owns the hardware resource associated with the PTP
-hardware clock, register with the PTP_1588_CLOCK infrastructure to
-allocate a new clock object that represents the device hardware clock.
+For functions:
+* whether this function has timesync enabled
+* whether this function owns one of the 2 possible clock timers, and
+  which one
+* which timer the function is associated with
+* the clock frequency, if the device supports multiple clock frequencies
+* The GPIO pin association for the timer owned by this PF, if any
 
-Implement basic functionality for reading and setting the clock time,
-performing clock adjustments, and adjusting the clock frequency.
+For the device:
+* Which PF owns timer 0, if any
+* Which PF owns timer 1, if any
+* whether timer 0 is enabled
+* whether timer 1 is enabled
 
-Future changes will introduce functionality for handling related
-features including Tx and Rx timestamps.
+Extract the bits from the capabilities information reported by firmware
+and store them in the device and function capability structures.o
+
+This information will be used in a future change to have the function
+driver enable PTP hardware clock support.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig          |   1 +
- drivers/net/ethernet/intel/ice/Makefile     |   1 +
- drivers/net/ethernet/intel/ice/ice.h        |   4 +
- drivers/net/ethernet/intel/ice/ice_common.c |  11 +
- drivers/net/ethernet/intel/ice/ice_common.h |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c   |  21 +
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 439 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp.h    |  36 ++
- 8 files changed, 514 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp.h
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c   | 99 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h     | 51 ++++++++++
+ 3 files changed, 151 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index eae1b42e48db..82744a7501c7 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -299,6 +299,7 @@ config ICE
- 	select DIMLIB
- 	select NET_DEVLINK
- 	select PLDMFW
-+	imply PTP_1588_CLOCK
- 	help
- 	  This driver supports Intel(R) Ethernet Connection E800 Series of
- 	  devices.  For more information on how to identify your adapter, go
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index dfb64fb504a2..4f538cdf42c1 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -29,6 +29,7 @@ ice-y := ice_main.o	\
- 	 ice_ethtool.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_allowlist.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_fdir.o
-+ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
- ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 2c415e91bc5f..f4729caccbe9 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -59,6 +59,7 @@
- #include "ice_idc_int.h"
- #include "ice_virtchnl_pf.h"
- #include "ice_sriov.h"
-+#include "ice_ptp.h"
- #include "ice_fdir.h"
- #include "ice_xsk.h"
- #include "ice_arfs.h"
-@@ -386,6 +387,8 @@ enum ice_pf_flags {
- 	ICE_FLAG_DCB_CAPABLE,
- 	ICE_FLAG_DCB_ENA,
- 	ICE_FLAG_FD_ENA,
-+	ICE_FLAG_PTP_SUPPORTED,		/* PTP is supported by NVM */
-+	ICE_FLAG_PTP,			/* PTP is enabled by software */
- 	ICE_FLAG_AUX_ENA,
- 	ICE_FLAG_ADV_FEATURES,
- 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
-@@ -448,6 +451,7 @@ struct ice_pf {
- 	struct mutex sw_mutex;		/* lock for protecting VSI alloc flow */
- 	struct mutex tc_mutex;		/* lock to protect TC changes */
- 	u32 msg_enable;
-+	struct ice_ptp ptp;
- 	u16 num_rdma_msix;		/* Total MSIX vectors for RDMA driver */
- 	u16 rdma_base_vector;
- 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 272d1600268e..f10c1b8555a4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -108,6 +108,7 @@ struct ice_aqc_list_caps_elem {
+ #define ICE_AQC_CAPS_TXQS				0x0042
+ #define ICE_AQC_CAPS_MSIX				0x0043
+ #define ICE_AQC_CAPS_FD					0x0045
++#define ICE_AQC_CAPS_1588				0x0046
+ #define ICE_AQC_CAPS_MAX_MTU				0x0047
+ #define ICE_AQC_CAPS_NVM_VER				0x0048
+ #define ICE_AQC_CAPS_PENDING_NVM_VER			0x0049
 diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index c1f9d28bade8..d3edf0b725d0 100644
+index 8abb70d13832..103839feb12e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_common.c
 +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -58,6 +58,17 @@ static enum ice_status ice_set_mac_type(struct ice_hw *hw)
- 	return 0;
+@@ -2093,6 +2093,48 @@ ice_parse_vsi_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
+ 		  func_p->guar_num_vsi);
  }
  
 +/**
-+ * ice_is_e810
-+ * @hw: pointer to the hardware structure
++ * ice_parse_1588_func_caps - Parse ICE_AQC_CAPS_1588 function caps
++ * @hw: pointer to the HW struct
++ * @func_p: pointer to function capabilities structure
++ * @cap: pointer to the capability element to parse
 + *
-+ * returns true if the device is E810 based, false if not.
-+ */
-+bool ice_is_e810(struct ice_hw *hw)
-+{
-+	return hw->mac_type == ICE_MAC_E810;
-+}
-+
- /**
-  * ice_clear_pf_cfg - Clear PF configuration
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 8cc0a639c208..fb16070f02e2 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -99,6 +99,7 @@ ice_update_phy_type(u64 *phy_type_low, u64 *phy_type_high,
- enum ice_status
- ice_aq_manage_mac_write(struct ice_hw *hw, const u8 *mac_addr, u8 flags,
- 			struct ice_sq_cd *cd);
-+bool ice_is_e810(struct ice_hw *hw);
- enum ice_status ice_clear_pf_cfg(struct ice_hw *hw);
- enum ice_status
- ice_aq_set_phy_cfg(struct ice_hw *hw, struct ice_port_info *pi,
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e35be7b85ea3..a51bc4621f9d 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -486,6 +486,9 @@ ice_prepare_for_reset(struct ice_pf *pf)
- 	/* disable the VSIs and their queues that are not already DOWN */
- 	ice_pf_dis_all_vsi(pf, false);
- 
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
-+		ice_ptp_release(pf);
-+
- 	if (hw->port_info)
- 		ice_sched_clear_port(hw->port_info);
- 
-@@ -3392,6 +3395,9 @@ static void ice_deinit_pf(struct ice_pf *pf)
- 		bitmap_free(pf->avail_rxqs);
- 		pf->avail_rxqs = NULL;
- 	}
-+
-+	if (pf->ptp.clock)
-+		ptp_clock_unregister(pf->ptp.clock);
- }
- 
- /**
-@@ -3438,6 +3444,10 @@ static void ice_set_pf_caps(struct ice_pf *pf)
- 				       func_caps->fd_fltr_best_effort);
- 	}
- 
-+	clear_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags);
-+	if (func_caps->common_cap.ieee_1588)
-+		set_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags);
-+
- 	pf->max_pf_txqs = func_caps->common_cap.num_txq;
- 	pf->max_pf_rxqs = func_caps->common_cap.num_rxq;
- }
-@@ -4421,6 +4431,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	}
- 
- 	/* initialize DDP driven features */
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
-+		ice_ptp_init(pf);
- 
- 	/* Note: Flow director init failure is non-fatal to load */
- 	if (ice_init_fdir(pf))
-@@ -4589,6 +4601,8 @@ static void ice_remove(struct pci_dev *pdev)
- 
- 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
- 	ice_deinit_lag(pf);
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
-+		ice_ptp_release(pf);
- 	if (!ice_is_safe_mode(pf))
- 		ice_remove_arfs(pf);
- 	ice_setup_mc_magic_wake(pf);
-@@ -6381,6 +6395,13 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
- 		ice_dcb_rebuild(pf);
- 
-+	/* If the PF previously had enabled PTP, PTP init needs to happen before
-+	 * the VSI rebuild. If not, this causes the PTP link status events to
-+	 * fail.
-+	 */
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
-+		ice_ptp_init(pf);
-+
- 	/* rebuild PF VSI */
- 	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_PF);
- 	if (err) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-new file mode 100644
-index 000000000000..80a551942bf9
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -0,0 +1,439 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2021, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_lib.h"
-+
-+/**
-+ * ice_ptp_read_src_clk_reg - Read the source clock register
-+ * @pf: Board private structure
-+ * @sts: Optional parameter for holding a pair of system timestamps from
-+ *       the system clock. Will be ignored if NULL is given.
-+ */
-+static u64
-+ice_ptp_read_src_clk_reg(struct ice_pf *pf, struct ptp_system_timestamp *sts)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+	u32 hi, lo, lo2;
-+	u8 tmr_idx;
-+
-+	tmr_idx = ice_get_ptp_src_clock_index(hw);
-+	/* Read the system timestamp pre PHC read */
-+	if (sts)
-+		ptp_read_system_prets(sts);
-+
-+	lo = rd32(hw, GLTSYN_TIME_L(tmr_idx));
-+
-+	/* Read the system timestamp post PHC read */
-+	if (sts)
-+		ptp_read_system_postts(sts);
-+
-+	hi = rd32(hw, GLTSYN_TIME_H(tmr_idx));
-+	lo2 = rd32(hw, GLTSYN_TIME_L(tmr_idx));
-+
-+	if (lo2 < lo) {
-+		/* if TIME_L rolled over read TIME_L again and update
-+		 *system timestamps
-+		 */
-+		if (sts)
-+			ptp_read_system_prets(sts);
-+		lo = rd32(hw, GLTSYN_TIME_L(tmr_idx));
-+		if (sts)
-+			ptp_read_system_postts(sts);
-+		hi = rd32(hw, GLTSYN_TIME_H(tmr_idx));
-+	}
-+
-+	return ((u64)hi << 32) | lo;
-+}
-+
-+/**
-+ * ice_ptp_read_time - Read the time from the device
-+ * @pf: Board private structure
-+ * @ts: timespec structure to hold the current time value
-+ * @sts: Optional parameter for holding a pair of system timestamps from
-+ *       the system clock. Will be ignored if NULL is given.
-+ *
-+ * This function reads the source clock registers and stores them in a timespec.
-+ * However, since the registers are 64 bits of nanoseconds, we must convert the
-+ * result to a timespec before we can return.
++ * Extract function capabilities for ICE_AQC_CAPS_1588.
 + */
 +static void
-+ice_ptp_read_time(struct ice_pf *pf, struct timespec64 *ts,
-+		  struct ptp_system_timestamp *sts)
++ice_parse_1588_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
++			 struct ice_aqc_list_caps_elem *cap)
 +{
-+	u64 time_ns = ice_ptp_read_src_clk_reg(pf, sts);
++	struct ice_ts_func_info *info = &func_p->ts_func_info;
++	u32 number = le32_to_cpu(cap->number);
 +
-+	*ts = ns_to_timespec64(time_ns);
++	info->ena = ((number & ICE_TS_FUNC_ENA_M) != 0);
++	func_p->common_cap.ieee_1588 = info->ena;
++
++	info->src_tmr_owned = ((number & ICE_TS_SRC_TMR_OWND_M) != 0);
++	info->tmr_ena = ((number & ICE_TS_TMR_ENA_M) != 0);
++	info->tmr_index_owned = ((number & ICE_TS_TMR_IDX_OWND_M) != 0);
++	info->tmr_index_assoc = ((number & ICE_TS_TMR_IDX_ASSOC_M) != 0);
++
++	info->clk_freq = (number & ICE_TS_CLK_FREQ_M) >> ICE_TS_CLK_FREQ_S;
++	info->clk_src = ((number & ICE_TS_CLK_SRC_M) != 0);
++
++	ice_debug(hw, ICE_DBG_INIT, "func caps: ieee_1588 = %u\n",
++		  func_p->common_cap.ieee_1588);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: src_tmr_owned = %u\n",
++		  info->src_tmr_owned);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: tmr_ena = %u\n",
++		  info->tmr_ena);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: tmr_index_owned = %u\n",
++		  info->tmr_index_owned);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: tmr_index_assoc = %u\n",
++		  info->tmr_index_assoc);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: clk_freq = %u\n",
++		  info->clk_freq);
++	ice_debug(hw, ICE_DBG_INIT, "func caps: clk_src = %u\n",
++		  info->clk_src);
 +}
 +
+ /**
+  * ice_parse_fdir_func_caps - Parse ICE_AQC_CAPS_FD function caps
+  * @hw: pointer to the HW struct
+@@ -2159,6 +2201,9 @@ ice_parse_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
+ 		case ICE_AQC_CAPS_VSI:
+ 			ice_parse_vsi_func_caps(hw, func_p, &cap_resp[i]);
+ 			break;
++		case ICE_AQC_CAPS_1588:
++			ice_parse_1588_func_caps(hw, func_p, &cap_resp[i]);
++			break;
+ 		case ICE_AQC_CAPS_FD:
+ 			ice_parse_fdir_func_caps(hw, func_p);
+ 			break;
+@@ -2231,6 +2276,57 @@ ice_parse_vsi_dev_caps(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
+ 		  dev_p->num_vsi_allocd_to_host);
+ }
+ 
 +/**
-+ * ice_ptp_write_init - Set PHC time to provided value
-+ * @pf: Board private structure
-+ * @ts: timespec structure that holds the new time value
++ * ice_parse_1588_dev_caps - Parse ICE_AQC_CAPS_1588 device caps
++ * @hw: pointer to the HW struct
++ * @dev_p: pointer to device capabilities structure
++ * @cap: capability element to parse
 + *
-+ * Set the PHC time to the specified time provided in the timespec.
++ * Parse ICE_AQC_CAPS_1588 for device capabilities.
 + */
-+static int ice_ptp_write_init(struct ice_pf *pf, struct timespec64 *ts)
++static void
++ice_parse_1588_dev_caps(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
++			struct ice_aqc_list_caps_elem *cap)
 +{
-+	u64 ns = timespec64_to_ns(ts);
-+	struct ice_hw *hw = &pf->hw;
++	struct ice_ts_dev_info *info = &dev_p->ts_dev_info;
++	u32 logical_id = le32_to_cpu(cap->logical_id);
++	u32 phys_id = le32_to_cpu(cap->phys_id);
++	u32 number = le32_to_cpu(cap->number);
 +
-+	return ice_ptp_init_time(hw, ns);
++	info->ena = ((number & ICE_TS_DEV_ENA_M) != 0);
++	dev_p->common_cap.ieee_1588 = info->ena;
++
++	info->tmr0_owner = number & ICE_TS_TMR0_OWNR_M;
++	info->tmr0_owned = ((number & ICE_TS_TMR0_OWND_M) != 0);
++	info->tmr0_ena = ((number & ICE_TS_TMR0_ENA_M) != 0);
++
++	info->tmr1_owner = (number & ICE_TS_TMR1_OWNR_M) >> ICE_TS_TMR1_OWNR_S;
++	info->tmr1_owned = ((number & ICE_TS_TMR1_OWND_M) != 0);
++	info->tmr1_ena = ((number & ICE_TS_TMR1_ENA_M) != 0);
++
++	info->ena_ports = logical_id;
++	info->tmr_own_map = phys_id;
++
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: ieee_1588 = %u\n",
++		  dev_p->common_cap.ieee_1588);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr0_owner = %u\n",
++		  info->tmr0_owner);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr0_owned = %u\n",
++		  info->tmr0_owned);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr0_ena = %u\n",
++		  info->tmr0_ena);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr1_owner = %u\n",
++		  info->tmr1_owner);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr1_owned = %u\n",
++		  info->tmr1_owned);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr1_ena = %u\n",
++		  info->tmr1_ena);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: ieee_1588 ena_ports = %u\n",
++		  info->ena_ports);
++	ice_debug(hw, ICE_DBG_INIT, "dev caps: tmr_own_map = %u\n",
++		  info->tmr_own_map);
 +}
 +
-+/**
-+ * ice_ptp_write_adj - Adjust PHC clock time atomically
-+ * @pf: Board private structure
-+ * @adj: Adjustment in nanoseconds
-+ *
-+ * Perform an atomic adjustment of the PHC time by the specified number of
-+ * nanoseconds.
-+ */
-+static int
-+ice_ptp_write_adj(struct ice_pf *pf, s32 adj)
-+{
-+	struct ice_hw *hw = &pf->hw;
-+
-+	return ice_ptp_adj_clock(hw, adj);
-+}
-+
-+/**
-+ * ice_ptp_adjfine - Adjust clock increment rate
-+ * @info: the driver's PTP info structure
-+ * @scaled_ppm: Parts per million with 16-bit fractional field
-+ *
-+ * Adjust the frequency of the clock by the indicated scaled ppm from the
-+ * base frequency.
-+ */
-+static int ice_ptp_adjfine(struct ptp_clock_info *info, long scaled_ppm)
-+{
-+	struct ice_pf *pf = ptp_info_to_pf(info);
-+	u64 freq, divisor = 1000000ULL;
-+	struct ice_hw *hw = &pf->hw;
-+	s64 incval, diff;
-+	int neg_adj = 0;
-+	int err;
-+
-+	incval = ICE_PTP_NOMINAL_INCVAL_E810;
-+
-+	if (scaled_ppm < 0) {
-+		neg_adj = 1;
-+		scaled_ppm = -scaled_ppm;
-+	}
-+
-+	while ((u64)scaled_ppm > div_u64(U64_MAX, incval)) {
-+		/* handle overflow by scaling down the scaled_ppm and
-+		 * the divisor, losing some precision
-+		 */
-+		scaled_ppm >>= 2;
-+		divisor >>= 2;
-+	}
-+
-+	freq = (incval * (u64)scaled_ppm) >> 16;
-+	diff = div_u64(freq, divisor);
-+
-+	if (neg_adj)
-+		incval -= diff;
-+	else
-+		incval += diff;
-+
-+	err = ice_ptp_write_incval_locked(hw, incval);
-+	if (err) {
-+		dev_err(ice_pf_to_dev(pf), "PTP failed to set incval, err %d\n",
-+			err);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_gettimex64 - Get the time of the clock
-+ * @info: the driver's PTP info structure
-+ * @ts: timespec64 structure to hold the current time value
-+ * @sts: Optional parameter for holding a pair of system timestamps from
-+ *       the system clock. Will be ignored if NULL is given.
-+ *
-+ * Read the device clock and return the correct value on ns, after converting it
-+ * into a timespec struct.
-+ */
-+static int
-+ice_ptp_gettimex64(struct ptp_clock_info *info, struct timespec64 *ts,
-+		   struct ptp_system_timestamp *sts)
-+{
-+	struct ice_pf *pf = ptp_info_to_pf(info);
-+	struct ice_hw *hw = &pf->hw;
-+
-+	if (!ice_ptp_lock(hw)) {
-+		dev_err(ice_pf_to_dev(pf), "PTP failed to get time\n");
-+		return -EBUSY;
-+	}
-+
-+	ice_ptp_read_time(pf, ts, sts);
-+	ice_ptp_unlock(hw);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_settime64 - Set the time of the clock
-+ * @info: the driver's PTP info structure
-+ * @ts: timespec64 structure that holds the new time value
-+ *
-+ * Set the device clock to the user input value. The conversion from timespec
-+ * to ns happens in the write function.
-+ */
-+static int
-+ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
-+{
-+	struct ice_pf *pf = ptp_info_to_pf(info);
-+	struct timespec64 ts64 = *ts;
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	if (!ice_ptp_lock(hw)) {
-+		err = -EBUSY;
-+		goto exit;
-+	}
-+
-+	err = ice_ptp_write_init(pf, &ts64);
-+	ice_ptp_unlock(hw);
-+
-+exit:
-+	if (err) {
-+		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_adjtime_nonatomic - Do a non-atomic clock adjustment
-+ * @info: the driver's PTP info structure
-+ * @delta: Offset in nanoseconds to adjust the time by
-+ */
-+static int ice_ptp_adjtime_nonatomic(struct ptp_clock_info *info, s64 delta)
-+{
-+	struct timespec64 now, then;
-+
-+	then = ns_to_timespec64(delta);
-+	ice_ptp_gettimex64(info, &now, NULL);
-+	now = timespec64_add(now, then);
-+
-+	return ice_ptp_settime64(info, (const struct timespec64 *)&now);
-+}
-+
-+/**
-+ * ice_ptp_adjtime - Adjust the time of the clock by the indicated delta
-+ * @info: the driver's PTP info structure
-+ * @delta: Offset in nanoseconds to adjust the time by
-+ */
-+static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
-+{
-+	struct ice_pf *pf = ptp_info_to_pf(info);
-+	struct ice_hw *hw = &pf->hw;
-+	struct device *dev;
-+	int err;
-+
-+	dev = ice_pf_to_dev(pf);
-+
-+	/* Hardware only supports atomic adjustments using signed 32-bit
-+	 * integers. For any adjustment outside this range, perform
-+	 * a non-atomic get->adjust->set flow.
-+	 */
-+	if (delta > S32_MAX || delta < S32_MIN) {
-+		dev_dbg(dev, "delta = %lld, adjtime non-atomic\n", delta);
-+		return ice_ptp_adjtime_nonatomic(info, delta);
-+	}
-+
-+	if (!ice_ptp_lock(hw)) {
-+		dev_err(dev, "PTP failed to acquire semaphore in adjtime\n");
-+		return -EBUSY;
-+	}
-+
-+	err = ice_ptp_write_adj(pf, delta);
-+
-+	ice_ptp_unlock(hw);
-+
-+	if (err) {
-+		dev_err(dev, "PTP failed to adjust time, err %d\n", err);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_set_caps - Set PTP capabilities
-+ * @pf: Board private structure
-+ */
-+static void ice_ptp_set_caps(struct ice_pf *pf)
-+{
-+	struct ptp_clock_info *info = &pf->ptp.info;
-+	struct device *dev = ice_pf_to_dev(pf);
-+
-+	snprintf(info->name, sizeof(info->name) - 1, "%s-%s-clk",
-+		 dev_driver_string(dev), dev_name(dev));
-+	info->owner = THIS_MODULE;
-+	info->max_adj = 999999999;
-+	info->adjtime = ice_ptp_adjtime;
-+	info->adjfine = ice_ptp_adjfine;
-+	info->gettimex64 = ice_ptp_gettimex64;
-+	info->settime64 = ice_ptp_settime64;
-+}
-+
-+/**
-+ * ice_ptp_create_clock - Create PTP clock device for userspace
-+ * @pf: Board private structure
-+ *
-+ * This function creates a new PTP clock device. It only creates one if we
-+ * don't already have one. Will return error if it can't create one, but success
-+ * if we already have a device. Should be used by ice_ptp_init to create clock
-+ * initially, and prevent global resets from creating new clock devices.
-+ */
-+static long ice_ptp_create_clock(struct ice_pf *pf)
-+{
-+	struct ptp_clock_info *info;
-+	struct ptp_clock *clock;
-+	struct device *dev;
-+
-+	/* No need to create a clock device if we already have one */
-+	if (pf->ptp.clock)
-+		return 0;
-+
-+	ice_ptp_set_caps(pf);
-+
-+	info = &pf->ptp.info;
-+	dev = ice_pf_to_dev(pf);
-+
-+	/* Attempt to register the clock before enabling the hardware. */
-+	clock = ptp_clock_register(info, dev);
-+	if (IS_ERR(clock))
-+		return PTR_ERR(clock);
-+
-+	pf->ptp.clock = clock;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_init_owner - Initialize PTP_1588_CLOCK device
-+ * @pf: Board private structure
-+ *
-+ * Setup and initialize a PTP clock device that represents the device hardware
-+ * clock. Save the clock index for other functions connected to the same
-+ * hardware resource.
-+ */
-+static int ice_ptp_init_owner(struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	struct timespec64 ts;
-+	u8 src_idx;
-+	int err;
-+
-+	wr32(hw, GLTSYN_SYNC_DLAY, 0);
-+
-+	/* Clear some HW residue and enable source clock */
-+	src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
-+
-+	/* Enable source clocks */
-+	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
-+
-+	/* Enable PHY time sync */
-+	err = ice_ptp_init_phy_e810(hw);
-+	if (err)
-+		goto err_exit;
-+
-+	/* Clear event status indications for auxiliary pins */
-+	(void)rd32(hw, GLTSYN_STAT(src_idx));
-+
-+	/* Acquire the global hardware lock */
-+	if (!ice_ptp_lock(hw)) {
-+		err = -EBUSY;
-+		goto err_exit;
-+	}
-+
-+	/* Write the increment time value to PHY and LAN */
-+	err = ice_ptp_write_incval(hw, ICE_PTP_NOMINAL_INCVAL_E810);
-+	if (err) {
-+		ice_ptp_unlock(hw);
-+		goto err_exit;
-+	}
-+
-+	ts = ktime_to_timespec64(ktime_get_real());
-+	/* Write the initial Time value to PHY and LAN */
-+	err = ice_ptp_write_init(pf, &ts);
-+	if (err) {
-+		ice_ptp_unlock(hw);
-+		goto err_exit;
-+	}
-+
-+	/* Release the global hardware lock */
-+	ice_ptp_unlock(hw);
-+
-+	/* Ensure we have a clock device */
-+	err = ice_ptp_create_clock(pf);
-+	if (err)
-+		goto err_clk;
-+
-+	return 0;
-+
-+err_clk:
-+	pf->ptp.clock = NULL;
-+err_exit:
-+	dev_err(dev, "PTP failed to register clock, err %d\n", err);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_ptp_init - Initialize the PTP support after device probe or reset
-+ * @pf: Board private structure
-+ *
-+ * This function sets device up for PTP support. The first time it is run, it
-+ * will create a clock device. It does not create a clock device if one
-+ * already exists. It also reconfigures the device after a reset.
-+ */
-+void ice_ptp_init(struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	int err;
-+
-+	/* PTP is currently only supported on E810 devices */
-+	if (!ice_is_e810(hw))
-+		return;
-+
-+	/* Check if this PF owns the source timer */
-+	if (hw->func_caps.ts_func_info.src_tmr_owned) {
-+		err = ice_ptp_init_owner(pf);
-+		if (err)
-+			return;
-+	}
-+
-+	set_bit(ICE_FLAG_PTP, pf->flags);
-+
-+	dev_info(dev, "PTP init successful\n");
-+}
-+
-+/**
-+ * ice_ptp_release - Disable the driver/HW support and unregister the clock
-+ * @pf: Board private structure
-+ *
-+ * This function handles the cleanup work required from the initialization by
-+ * clearing out the important information and unregistering the clock
-+ */
-+void ice_ptp_release(struct ice_pf *pf)
-+{
-+	clear_bit(ICE_FLAG_PTP, pf->flags);
-+
-+	if (!pf->ptp.clock)
-+		return;
-+
-+	ptp_clock_unregister(pf->ptp.clock);
-+	pf->ptp.clock = NULL;
-+
-+	dev_info(ice_pf_to_dev(pf), "Removed PTP clock\n");
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-new file mode 100644
-index 000000000000..838ee92de9e2
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -0,0 +1,36 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2018-2019, Intel Corporation. */
-+
-+#ifndef _ICE_PTP_H_
-+#define _ICE_PTP_H_
-+
-+#include <linux/ptp_clock_kernel.h>
-+
-+#include "ice_ptp_hw.h"
-+
-+/**
-+ * struct ice_ptp - data used for integrating with CONFIG_PTP_1588_CLOCK
-+ * @info: structure defining PTP hardware capabilities
-+ * @clock: pointer to registered PTP clock device
-+ */
-+struct ice_ptp {
-+	struct ptp_clock_info info;
-+	struct ptp_clock *clock;
+ /**
+  * ice_parse_fdir_dev_caps - Parse ICE_AQC_CAPS_FD device caps
+  * @hw: pointer to the HW struct
+@@ -2292,6 +2388,9 @@ ice_parse_dev_caps(struct ice_hw *hw, struct ice_hw_dev_caps *dev_p,
+ 		case ICE_AQC_CAPS_VSI:
+ 			ice_parse_vsi_dev_caps(hw, dev_p, &cap_resp[i]);
+ 			break;
++		case ICE_AQC_CAPS_1588:
++			ice_parse_1588_dev_caps(hw, dev_p, &cap_resp[i]);
++			break;
+ 		case  ICE_AQC_CAPS_FD:
+ 			ice_parse_fdir_dev_caps(hw, dev_p, &cap_resp[i]);
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 4a40e2b3732a..0e5d8d52728b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -265,6 +265,7 @@ struct ice_hw_common_caps {
+ 	u8 rss_table_entry_width;	/* RSS Entry width in bits */
+ 
+ 	u8 dcb;
++	u8 ieee_1588;
+ 	u8 rdma;
+ 
+ 	bool nvm_update_pending_nvm;
+@@ -277,6 +278,54 @@ struct ice_hw_common_caps {
+ #define ICE_NVM_MGMT_UNIFIED_UPD_SUPPORT	BIT(3)
+ };
+ 
++/* IEEE 1588 TIME_SYNC specific info */
++/* Function specific definitions */
++#define ICE_TS_FUNC_ENA_M		BIT(0)
++#define ICE_TS_SRC_TMR_OWND_M		BIT(1)
++#define ICE_TS_TMR_ENA_M		BIT(2)
++#define ICE_TS_TMR_IDX_OWND_S		4
++#define ICE_TS_TMR_IDX_OWND_M		BIT(4)
++#define ICE_TS_CLK_FREQ_S		16
++#define ICE_TS_CLK_FREQ_M		ICE_M(0x7, ICE_TS_CLK_FREQ_S)
++#define ICE_TS_CLK_SRC_S		20
++#define ICE_TS_CLK_SRC_M		BIT(20)
++#define ICE_TS_TMR_IDX_ASSOC_S		24
++#define ICE_TS_TMR_IDX_ASSOC_M		BIT(24)
++
++struct ice_ts_func_info {
++	/* Function specific info */
++	u32 clk_freq;
++	u8 clk_src;
++	u8 tmr_index_assoc;
++	u8 ena;
++	u8 tmr_index_owned;
++	u8 src_tmr_owned;
++	u8 tmr_ena;
 +};
 +
-+#define __ptp_info_to_ptp(i) \
-+	container_of((i), struct ice_ptp, info)
-+#define ptp_info_to_pf(i) \
-+	container_of(__ptp_info_to_ptp((i)), struct ice_pf, ptp)
++/* Device specific definitions */
++#define ICE_TS_TMR0_OWNR_M		0x7
++#define ICE_TS_TMR0_OWND_M		BIT(3)
++#define ICE_TS_TMR1_OWNR_S		4
++#define ICE_TS_TMR1_OWNR_M		ICE_M(0x7, ICE_TS_TMR1_OWNR_S)
++#define ICE_TS_TMR1_OWND_M		BIT(7)
++#define ICE_TS_DEV_ENA_M		BIT(24)
++#define ICE_TS_TMR0_ENA_M		BIT(25)
++#define ICE_TS_TMR1_ENA_M		BIT(26)
 +
-+#define PTP_SHARED_CLK_IDX_VALID	BIT(31)
++struct ice_ts_dev_info {
++	/* Device specific info */
++	u32 ena_ports;
++	u32 tmr_own_map;
++	u32 tmr0_owner;
++	u32 tmr1_owner;
++	u8 tmr0_owned;
++	u8 tmr1_owned;
++	u8 ena;
++	u8 tmr0_ena;
++	u8 tmr1_ena;
++};
 +
-+#if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
-+struct ice_pf;
-+void ice_ptp_init(struct ice_pf *pf);
-+void ice_ptp_release(struct ice_pf *pf);
-+#else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
-+static inline void ice_ptp_init(struct ice_pf *pf) { }
-+static inline void ice_ptp_release(struct ice_pf *pf) { }
-+#endif /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
-+#endif /* _ICE_PTP_H_ */
+ /* Function specific capabilities */
+ struct ice_hw_func_caps {
+ 	struct ice_hw_common_caps common_cap;
+@@ -285,6 +334,7 @@ struct ice_hw_func_caps {
+ 	u32 guar_num_vsi;
+ 	u32 fd_fltr_guar;		/* Number of filters guaranteed */
+ 	u32 fd_fltr_best_effort;	/* Number of best effort filters */
++	struct ice_ts_func_info ts_func_info;
+ };
+ 
+ /* Device wide capabilities */
+@@ -293,6 +343,7 @@ struct ice_hw_dev_caps {
+ 	u32 num_vfs_exposed;		/* Total number of VFs exposed */
+ 	u32 num_vsi_allocd_to_host;	/* Excluding EMP VSI */
+ 	u32 num_flow_director_fltr;	/* Number of FD filters available */
++	struct ice_ts_dev_info ts_dev_info;
+ 	u32 num_funcs;
+ };
+ 
 -- 
 2.20.1
 
