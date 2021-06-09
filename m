@@ -1,99 +1,263 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 9 Jun 2021 08:24:18 +0200
-Subject: [Intel-wired-lan] [PATCH next-queue v5 3/4] igc: Enable PCIe PTM
-In-Reply-To: <87sg1sw56h.fsf@vcostago-mobl2.amr.corp.intel.com>
-References: <20210605002356.3996853-1-vinicius.gomes@intel.com>
- <20210605002356.3996853-4-vinicius.gomes@intel.com>
- <70d32740-eb4b-f7bf-146e-8dc06199d6c9@molgen.mpg.de>
- <87sg1sw56h.fsf@vcostago-mobl2.amr.corp.intel.com>
-Message-ID: <939b8042-a313-47db-43d9-ea37e95b724b@molgen.mpg.de>
+From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Date: Wed,  9 Jun 2021 12:33:18 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next 09/17] net: intel: remove
+ rcu_read_lock() around XDP program invocation
+In-Reply-To: <20210609103326.278782-1-toke@redhat.com>
+References: <20210609103326.278782-1-toke@redhat.com>
+Message-ID: <20210609103326.278782-10-toke@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vinicius,
+The Intel drivers all have rcu_read_lock()/rcu_read_unlock() pairs around
+XDP program invocations. However, the actual lifetime of the objects
+referred by the XDP program invocation is longer, all the way through to
+the call to xdp_do_flush(), making the scope of the rcu_read_lock() too
+small. This turns out to be harmless because it all happens in a single
+NAPI poll cycle (and thus under local_bh_disable()), but it makes the
+rcu_read_lock() misleading.
 
+Rather than extend the scope of the rcu_read_lock(), just get rid of it
+entirely. With the addition of RCU annotations to the XDP_REDIRECT map
+types that take bh execution into account, lockdep even understands this to
+be safe, so there's really no reason to keep it around.
 
-Am 08.06.21 um 21:02 schrieb Vinicius Costa Gomes:
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Tested-by: Jesper Dangaard Brouer <brouer@redhat.com> # i40e
+Signed-off-by: Toke H?iland-J?rgensen <toke@redhat.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 2 --
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c        | 6 +-----
+ drivers/net/ethernet/intel/ice/ice_txrx.c         | 6 +-----
+ drivers/net/ethernet/intel/ice/ice_xsk.c          | 6 +-----
+ drivers/net/ethernet/intel/igb/igb_main.c         | 2 --
+ drivers/net/ethernet/intel/igc/igc_main.c         | 7 ++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 2 --
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c      | 6 +-----
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 --
+ 9 files changed, 6 insertions(+), 33 deletions(-)
 
-> Paul Menzel writes:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index de70c16ef619..ae3a64b6f5f8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2298,7 +2298,6 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 
+ 	if (!xdp_prog)
+@@ -2329,7 +2328,6 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 		break;
+ 	}
+ xdp_out:
+-	rcu_read_unlock();
+ 	return result;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 46d884417c63..8dca53b7daff 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -153,7 +153,6 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	/* NB! xdp_prog will always be !NULL, due to the fact that
+ 	 * this path is enabled by setting an XDP program.
+ 	 */
+@@ -162,9 +161,7 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 
+ 	if (likely(act == XDP_REDIRECT)) {
+ 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+-		rcu_read_unlock();
+-		return result;
++		return !err ? I40E_XDP_REDIR : I40E_XDP_CONSUMED;
+ 	}
+ 
+ 	switch (act) {
+@@ -184,7 +181,6 @@ static int i40e_run_xdp_zc(struct i40e_ring *rx_ring, struct xdp_buff *xdp)
+ 		result = I40E_XDP_CONSUMED;
+ 		break;
+ 	}
+-	rcu_read_unlock();
+ 	return result;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index e2b4b29ea207..1a311e91fb6d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1129,15 +1129,11 @@ int ice_clean_rx_irq(struct ice_ring *rx_ring, int budget)
+ 		xdp.frame_sz = ice_rx_frame_truesize(rx_ring, size);
+ #endif
+ 
+-		rcu_read_lock();
+ 		xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+-		if (!xdp_prog) {
+-			rcu_read_unlock();
++		if (!xdp_prog)
+ 			goto construct_skb;
+-		}
+ 
+ 		xdp_res = ice_run_xdp(rx_ring, &xdp, xdp_prog);
+-		rcu_read_unlock();
+ 		if (!xdp_res)
+ 			goto construct_skb;
+ 		if (xdp_res & (ICE_XDP_TX | ICE_XDP_REDIR)) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index faa7b8d96adb..d6da377f5ac3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -463,7 +463,6 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
+ 	struct ice_ring *xdp_ring;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	/* ZC patch is enabled only when XDP program is set,
+ 	 * so here it can not be NULL
+ 	 */
+@@ -473,9 +472,7 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
+ 
+ 	if (likely(act == XDP_REDIRECT)) {
+ 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
+-		rcu_read_unlock();
+-		return result;
++		return !err ? ICE_XDP_REDIR : ICE_XDP_CONSUMED;
+ 	}
+ 
+ 	switch (act) {
+@@ -496,7 +493,6 @@ ice_run_xdp_zc(struct ice_ring *rx_ring, struct xdp_buff *xdp)
+ 		break;
+ 	}
+ 
+-	rcu_read_unlock();
+ 	return result;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 038a9fd1af44..8a11b7e55326 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8387,7 +8387,6 @@ static struct sk_buff *igb_run_xdp(struct igb_adapter *adapter,
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 
+ 	if (!xdp_prog)
+@@ -8420,7 +8419,6 @@ static struct sk_buff *igb_run_xdp(struct igb_adapter *adapter,
+ 		break;
+ 	}
+ xdp_out:
+-	rcu_read_unlock();
+ 	return ERR_PTR(-result);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index ea998d2defa4..2b666a6ec989 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2175,18 +2175,15 @@ static struct sk_buff *igc_xdp_run_prog(struct igc_adapter *adapter,
+ 	struct bpf_prog *prog;
+ 	int res;
+ 
+-	rcu_read_lock();
+-
+ 	prog = READ_ONCE(adapter->xdp_prog);
+ 	if (!prog) {
+ 		res = IGC_XDP_PASS;
+-		goto unlock;
++		goto out;
+ 	}
+ 
+ 	res = __igc_xdp_run_prog(adapter, prog, xdp);
+ 
+-unlock:
+-	rcu_read_unlock();
++out:
+ 	return ERR_PTR(-res);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c5ec17d19c59..27d7467534e0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2199,7 +2199,6 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+ 	struct xdp_frame *xdpf;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 
+ 	if (!xdp_prog)
+@@ -2237,7 +2236,6 @@ static struct sk_buff *ixgbe_run_xdp(struct ixgbe_adapter *adapter,
+ 		break;
+ 	}
+ xdp_out:
+-	rcu_read_unlock();
+ 	return ERR_PTR(-result);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index 91ad5b902673..ffbf8a694362 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -100,15 +100,12 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
+ 	struct xdp_frame *xdpf;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 	act = bpf_prog_run_xdp(xdp_prog, xdp);
+ 
+ 	if (likely(act == XDP_REDIRECT)) {
+ 		err = xdp_do_redirect(rx_ring->netdev, xdp, xdp_prog);
+-		result = !err ? IXGBE_XDP_REDIR : IXGBE_XDP_CONSUMED;
+-		rcu_read_unlock();
+-		return result;
++		return !err ? IXGBE_XDP_REDIR : IXGBE_XDP_CONSUMED;
+ 	}
+ 
+ 	switch (act) {
+@@ -132,7 +129,6 @@ static int ixgbe_run_xdp_zc(struct ixgbe_adapter *adapter,
+ 		result = IXGBE_XDP_CONSUMED;
+ 		break;
+ 	}
+-	rcu_read_unlock();
+ 	return result;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index ba2ed8a43d2d..fabada4ce315 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1054,7 +1054,6 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
+ 	struct bpf_prog *xdp_prog;
+ 	u32 act;
+ 
+-	rcu_read_lock();
+ 	xdp_prog = READ_ONCE(rx_ring->xdp_prog);
+ 
+ 	if (!xdp_prog)
+@@ -1079,7 +1078,6 @@ static struct sk_buff *ixgbevf_run_xdp(struct ixgbevf_adapter *adapter,
+ 		break;
+ 	}
+ xdp_out:
+-	rcu_read_unlock();
+ 	return ERR_PTR(-result);
+ }
+ 
+-- 
+2.31.1
 
->> Am 05.06.21 um 02:23 schrieb Vinicius Costa Gomes:
->>> Enables PCIe PTM (Precision Time Measurement) support in the igc
->>> driver. Notifies the PCI devices that PCIe PTM should be enabled.
->>>
->>> PCIe PTM is similar protocol to PTP (Precision Time Protocol) running
->>> in the PCIe fabric, it allows devices to report time measurements from
->>> their internal clocks and the correlation with the PCIe root clock.
->>>
->>> The i225 NIC exposes some registers that expose those time
->>> measurements, those registers will be used, in later patches, to
->>> implement the PTP_SYS_OFFSET_PRECISE ioctl().
->>>
->>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->>> ---
->>>    drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
->>>    1 file changed, 6 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
->>> index a05e6d8ec660..f23d0303e53b 100644
->>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
->>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
->>> @@ -12,6 +12,8 @@
->>>    #include <net/pkt_sched.h>
->>>    #include <linux/bpf_trace.h>
->>>    #include <net/xdp_sock_drv.h>
->>> +#include <linux/pci.h>
->>> +
->>>    #include <net/ipv6.h>
->>>    
->>>    #include "igc.h"
->>> @@ -5864,6 +5866,10 @@ static int igc_probe(struct pci_dev *pdev,
->>>    
->>>    	pci_enable_pcie_error_reporting(pdev);
->>>    
->>> +	err = pci_enable_ptm(pdev, NULL);
->>> +	if (err < 0)
->>> +		dev_err(&pdev->dev, "PTM not supported\n");
->>> +
->>
->> Sorry, if I am missing something, but do all devices supported by this
->> driver support PTM or only the i225 NIC? In that case, it wouldn?t be an
->> error for a device not supporting PTM, would it?
-> 
-> That was a very good question. I had to talk with the hardware folks.
-> All the devices supported by the igc driver should support PTM.
-
-Thank you for checking that, that is valuable information.
-
-> And just to be clear, the reason that I am not returning an error here
-> is that PTM could not be supported by the host system (think PCI
-> controller).
-
-I just checked `pci_enable_ptm()` and on success it calls 
-`pci_ptm_info()` logging a message:
-
-	pci_info(dev, "PTM enabled%s, %s granularity\n",
-		 dev->ptm_root ? " (root)" : "", clock_desc);
-
-Was that present on your system with your patch? Please add that to the 
-commit message.
-
-Regarding my comment, I did not mean returning an error but the log 
-*level* of the message. So, `dmesg --level err` would show that message. 
-But if there are PCI controllers not supporting that, it?s not an error, 
-but a warning at most. So, I?d use:
-
-	dev_warn(&pdev->dev, "PTM not supported by PCI bus/controller 
-(pci_enable_ptm() failed)\n");
-
->>>    	pci_set_master(pdev);
->>>    
->>>    	err = -ENOMEM;
-
-
-Kind regards,
-
-Paul
