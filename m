@@ -1,258 +1,296 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed,  9 Jun 2021 09:39:51 -0700
-Subject: [Intel-wired-lan] [PATCH v2 6/8] ice: report the PTP clock index in
- ethtool .get_ts_info
-In-Reply-To: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
-References: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210609163953.52440-7-anthony.l.nguyen@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 9 Jun 2021 18:09:04 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add placeholder for
+ ndo set VLANs
+In-Reply-To: <20210607064338.252336-1-karen.sornek@intel.com>
+References: <20210607064338.252336-1-karen.sornek@intel.com>
+Message-ID: <1f14c5099d28d4f606d1ebfd3a9af4955bb5daa6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On Mon, 2021-06-07 at 08:43 +0200, Karen Sornek wrote:
+> VLANs set by ndo, were not accounted.
+> Implement placeholder, by which driver can account VLANs set by
+> ndo. Ensure that once PF changes trunk, every guest filter
+> is removed from the list 'vm_vlan_list'.
+> Implement logic for deletion/addition of guest(from VM) filters.
+> 
+> Signed-off-by: Przemyslaw Patynowski <
+> przemyslawx.patynowski at intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 131
+> ++++++++++++++++--
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |   9 ++
+>  2 files changed, 130 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index edfdce5f6..0fba4f1b4 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -986,6 +986,81 @@ static void i40e_disable_vf_mappings(struct
+> i40e_vf *vf)
+>  	i40e_flush(hw);
+>  }
+>  
+> +/**
+> + * i40e_add_vmvlan_to_list
+> + * @vf: pointer to the VF info
+> + * @vfl:  pointer to the VF VLAN tag filters list
+> + * @vlan_idx: vlan_id index in VLAN tag filters list
+> + *
+> + * add VLAN tag into the VLAN list for VM
+> + **/
+> +static i40e_status
+> +i40e_add_vmvlan_to_list(struct i40e_vf *vf,
+> +			struct virtchnl_vlan_filter_list *vfl,
+> +			int vlan_idx)
+> +{
+> +	struct i40e_vm_vlan *vlan_elem;
+> +
+> +	vlan_elem = kzalloc(sizeof(*vlan_elem), GFP_KERNEL);
+> +	if (!vlan_elem)
+> +		return I40E_ERR_NO_MEMORY;
+> +	vlan_elem->vlan = vfl->vlan_id[vlan_idx];
+> +	vlan_elem->vsi_id = vfl->vsi_id;
+> +	INIT_LIST_HEAD(&vlan_elem->list);
+> +	vf->num_vlan++;
+> +	list_add(&vlan_elem->list, &vf->vm_vlan_list);
+> +	return I40E_SUCCESS;
 
-Now that the driver registers a PTP clock device that represents the
-clock hardware, it is important that the clock index is reported via the
-ethtool .get_ts_info callback.
+Why are you returning i40e_status values here? I'm not see anything
+preventing the use of the kernel error codes.
 
-The underlying hardware resource is shared between multiple PF
-functions. Only one function owns the hardware resources associated with
-a timer, but multiple functions may be associated with it for the
-purposes of timestamping.
+> +}
+> +
+> +/**
+> + * i40e_del_vmvlan_from_list
+> + * @vsi: pointer to the VSI structure
+> + * @vf: pointer to the VF info
+> + * @vlan: VLAN tag to be removed from the list
+> + *
+> + * delete VLAN tag from the VLAN list for VM
+> + **/
+> +static void i40e_del_vmvlan_from_list(struct i40e_vsi *vsi,
+> +				      struct i40e_vf *vf, u16 vlan)
+> +{
+> +	struct i40e_vm_vlan *entry, *tmp;
+> +
+> +	list_for_each_entry_safe(entry, tmp,
+> +				 &vf->vm_vlan_list, list) {
+> +		if (vlan == entry->vlan) {
+> +			i40e_vsi_kill_vlan(vsi, vlan);
+> +			vf->num_vlan--;
+> +			list_del(&entry->list);
+> +			kfree(entry);
+> +			break;
+> +		}
+> +	}
+> +}
+> +
+> +/**
+> + * i40e_free_vmvlan_list
+> + * @vsi: pointer to the VSI structure
+> + * @vf: pointer to the VF info
+> + *
+> + * remove whole list of VLAN tags for VM
+> + **/
+> +static void i40e_free_vmvlan_list(struct i40e_vsi *vsi, struct
+> i40e_vf *vf)
+> +{
+> +	struct i40e_vm_vlan *entry, *tmp;
+> +
+> +	if (list_empty(&vf->vm_vlan_list))
+> +		return;
+> +
+> +	list_for_each_entry_safe(entry, tmp,
+> +				 &vf->vm_vlan_list, list) {
+> +		if (vsi)
+> +			i40e_vsi_kill_vlan(vsi, entry->vlan);
+> +		list_del(&entry->list);
+> +		kfree(entry);
+> +	}
+> +	vf->num_vlan = 0;
+> +}
+> +
+>  /**
+>   * i40e_free_vf_res
+>   * @vf: pointer to the VF info
+> @@ -1061,6 +1136,10 @@ static void i40e_free_vf_res(struct i40e_vf
+> *vf)
+>  		wr32(hw, reg_idx, reg);
+>  		i40e_flush(hw);
+>  	}
+> +
+> +	i40e_free_vmvlan_list(NULL, vf);
+> +
+> +
 
-To support this, the owning PF will store the clock index into the
-driver shared parameters buffer in firmware. Other PFs will look up the
-clock index by reading the driver shared parameter on demand when
-requested via the .get_ts_info ethtool function.
+extra newline
 
-In this way, all functions which are tied to the same timer are able to
-report the clock index. Userspace software such as ptp4l performs
-a look up on the netdev to determine the associated clock, and all
-commands to control or configure the clock will be handled through the
-controlling PF.
+>  	/* reset some of the state variables keeping track of the
+> resources */
+>  	vf->num_queue_pairs = 0;
+>  	clear_bit(I40E_VF_STATE_MC_PROMISC, &vf->vf_states);
+> @@ -1766,6 +1845,7 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16
+> num_alloc_vfs)
+>  
+>  		set_bit(I40E_VF_STATE_PRE_ENABLE, &vfs[i].vf_states);
+>  
+> +		INIT_LIST_HEAD(&vfs[i].vm_vlan_list);
+>  	}
+>  	pf->num_alloc_vfs = num_alloc_vfs;
+>  
+> @@ -2787,6 +2867,28 @@ static inline int
+> i40e_check_vf_permission(struct i40e_vf *vf,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * i40e_check_vf_vlan_cap
+> + * @vf: pointer to the VF info
+> + *
+> + * Check if VF can add another VLAN filter.
+> + */
+> +static i40e_status
+> +i40e_check_vf_vlan_cap(struct i40e_vf *vf)
+> +{
+> +        struct i40e_pf *pf = vf->pf;
+> +
+> +        if ((vf->num_vlan + 1 > I40E_VC_MAX_VLAN_PER_VF) &&
+> +            !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) 
+> {
+> +                dev_err(&pf->pdev->dev,
+> +                        "VF is not trusted, switch the VF to trusted
+> to add more VLAN addresses\n");
+> +
+> +                return I40E_ERR_CONFIG;
+> +        }
+> +
+> +        return I40E_SUCCESS;
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  22 +++-
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 129 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp.h     |   5 +
- 3 files changed, 155 insertions(+), 1 deletion(-)
+Same question as above. Why i40e_status?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 1f30f24648d8..01466b9f29b7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3195,6 +3195,26 @@ ice_set_rxfh(struct net_device *netdev, const u32 *indir, const u8 *key,
- 	return 0;
- }
- 
-+static int
-+ice_get_ts_info(struct net_device *dev, struct ethtool_ts_info *info)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(dev);
-+
-+	/* only report timestamping if PTP is enabled */
-+	if (!test_bit(ICE_FLAG_PTP, pf->flags))
-+		return ethtool_op_get_ts_info(dev, info);
-+
-+	info->so_timestamping = SOF_TIMESTAMPING_SOFTWARE;
-+
-+	info->phc_index = ice_get_ptp_clock_index(pf);
-+
-+	info->tx_types = BIT(HWTSTAMP_TX_OFF);
-+
-+	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE);
-+
-+	return 0;
-+}
-+
- /**
-  * ice_get_max_txq - return the maximum number of Tx queues for in a PF
-  * @pf: PF structure
-@@ -3986,7 +4006,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_rxfh		= ice_set_rxfh,
- 	.get_channels		= ice_get_channels,
- 	.set_channels		= ice_set_channels,
--	.get_ts_info		= ethtool_op_get_ts_info,
-+	.get_ts_info		= ice_get_ts_info,
- 	.get_per_queue_coalesce	= ice_get_per_q_coalesce,
- 	.set_per_queue_coalesce	= ice_set_per_q_coalesce,
- 	.get_fecparam		= ice_get_fecparam,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 80a551942bf9..fd6e2ab03b9f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -4,6 +4,131 @@
- #include "ice.h"
- #include "ice_lib.h"
- 
-+/**
-+ * ice_get_ptp_clock_index - Get the PTP clock index
-+ * @pf: the PF pointer
-+ *
-+ * Determine the clock index of the PTP clock associated with this device. If
-+ * this is the PF controlling the clock, just use the local access to the
-+ * clock device pointer.
-+ *
-+ * Otherwise, read from the driver shared parameters to determine the clock
-+ * index value.
-+ *
-+ * Returns: the index of the PTP clock associated with this device, or -1 if
-+ * there is no associated clock.
-+ */
-+int ice_get_ptp_clock_index(struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	enum ice_aqc_driver_params param_idx;
-+	struct ice_hw *hw = &pf->hw;
-+	u8 tmr_idx;
-+	u32 value;
-+	int err;
-+
-+	/* Use the ptp_clock structure if we're the main PF */
-+	if (pf->ptp.clock)
-+		return ptp_clock_index(pf->ptp.clock);
-+
-+	tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
-+	if (!tmr_idx)
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR0;
-+	else
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR1;
-+
-+	err = ice_aq_get_driver_param(hw, param_idx, &value, NULL);
-+	if (err) {
-+		dev_err(dev, "Failed to read PTP clock index parameter, err %d aq_err %s\n",
-+			err, ice_aq_str(hw->adminq.sq_last_status));
-+		return -1;
-+	}
-+
-+	/* The PTP clock index is an integer, and will be between 0 and
-+	 * INT_MAX. The highest bit of the driver shared parameter is used to
-+	 * indicate whether or not the currently stored clock index is valid.
-+	 */
-+	if (!(value & PTP_SHARED_CLK_IDX_VALID))
-+		return -1;
-+
-+	return value & ~PTP_SHARED_CLK_IDX_VALID;
-+}
-+
-+/**
-+ * ice_set_ptp_clock_index - Set the PTP clock index
-+ * @pf: the PF pointer
-+ *
-+ * Set the PTP clock index for this device into the shared driver parameters,
-+ * so that other PFs associated with this device can read it.
-+ *
-+ * If the PF is unable to store the clock index, it will log an error, but
-+ * will continue operating PTP.
-+ */
-+static void ice_set_ptp_clock_index(struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	enum ice_aqc_driver_params param_idx;
-+	struct ice_hw *hw = &pf->hw;
-+	u8 tmr_idx;
-+	u32 value;
-+	int err;
-+
-+	if (!pf->ptp.clock)
-+		return;
-+
-+	tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
-+	if (!tmr_idx)
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR0;
-+	else
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR1;
-+
-+	value = (u32)ptp_clock_index(pf->ptp.clock);
-+	if (value > INT_MAX) {
-+		dev_err(dev, "PTP Clock index is too large to store\n");
-+		return;
-+	}
-+	value |= PTP_SHARED_CLK_IDX_VALID;
-+
-+	err = ice_aq_set_driver_param(hw, param_idx, value, NULL);
-+	if (err) {
-+		dev_err(dev, "Failed to set PTP clock index parameter, err %d aq_err %s\n",
-+			err, ice_aq_str(hw->adminq.sq_last_status));
-+	}
-+}
-+
-+/**
-+ * ice_clear_ptp_clock_index - Clear the PTP clock index
-+ * @pf: the PF pointer
-+ *
-+ * Clear the PTP clock index for this device. Must be called when
-+ * unregistering the PTP clock, in order to ensure other PFs stop reporting
-+ * a clock object that no longer exists.
-+ */
-+static void ice_clear_ptp_clock_index(struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	enum ice_aqc_driver_params param_idx;
-+	struct ice_hw *hw = &pf->hw;
-+	u8 tmr_idx;
-+	int err;
-+
-+	/* Do not clear the index if we don't own the timer */
-+	if (!hw->func_caps.ts_func_info.src_tmr_owned)
-+		return;
-+
-+	tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
-+	if (!tmr_idx)
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR0;
-+	else
-+		param_idx = ICE_AQC_DRIVER_PARAM_CLK_IDX_TMR1;
-+
-+	err = ice_aq_set_driver_param(hw, param_idx, 0, NULL);
-+	if (err) {
-+		dev_dbg(dev, "Failed to clear PTP clock index parameter, err %d aq_err %s\n",
-+			err, ice_aq_str(hw->adminq.sq_last_status));
-+	}
-+}
-+
- /**
-  * ice_ptp_read_src_clk_reg - Read the source clock register
-  * @pf: Board private structure
-@@ -378,6 +503,9 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
- 	if (err)
- 		goto err_clk;
- 
-+	/* Store the PTP clock index for other PFs */
-+	ice_set_ptp_clock_index(pf);
-+
- 	return 0;
- 
- err_clk:
-@@ -432,6 +560,7 @@ void ice_ptp_release(struct ice_pf *pf)
- 	if (!pf->ptp.clock)
- 		return;
- 
-+	ice_clear_ptp_clock_index(pf);
- 	ptp_clock_unregister(pf->ptp.clock);
- 	pf->ptp.clock = NULL;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index 838ee92de9e2..d8b2563fea28 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -27,9 +27,14 @@ struct ice_ptp {
- 
- #if IS_ENABLED(CONFIG_PTP_1588_CLOCK)
- struct ice_pf;
-+int ice_get_ptp_clock_index(struct ice_pf *pf);
- void ice_ptp_init(struct ice_pf *pf);
- void ice_ptp_release(struct ice_pf *pf);
- #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
-+static inline int ice_get_ptp_clock_index(struct ice_pf *pf)
-+{
-+	return -1;
-+}
- static inline void ice_ptp_init(struct ice_pf *pf) { }
- static inline void ice_ptp_release(struct ice_pf *pf) { }
- #endif /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
--- 
-2.20.1
+> +}
+> +
+>  /**
+>   * i40e_vc_add_mac_addr_msg
+>   * @vf: pointer to the VF info
+> @@ -2944,10 +3046,11 @@ static int i40e_vc_add_vlan_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  {
+>  	struct virtchnl_vlan_filter_list *vfl =
+>  	    (struct virtchnl_vlan_filter_list *)msg;
+> +	i40e_status aq_ret = I40E_SUCCESS;
+>  	struct i40e_pf *pf = vf->pf;
+>  	struct i40e_vsi *vsi = NULL;
+> -	i40e_status aq_ret = 0;
 
+The convention has been to use 0 instead of I40E_SUCCESS. Is there a
+reason for going away from this?
+
+> -	int i;
+> +	int ret;
+> +	u16 i;
+>  
+>  	if ((vf->num_vlan >= I40E_VC_MAX_VLAN_PER_VF) &&
+>  	    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
+> @@ -2976,12 +3079,19 @@ static int i40e_vc_add_vlan_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  	}
+>  
+>  	i40e_vlan_stripping_enable(vsi);
+> +
+>  	for (i = 0; i < vfl->num_elements; i++) {
+> -		/* add new VLAN filter */
+> -		int ret = i40e_vsi_add_vlan(vsi, vfl->vlan_id[i]);
+> -		if (!ret)
+> -			vf->num_vlan++;
+> +		aq_ret = i40e_check_vf_vlan_cap(vf);
+> +		if (aq_ret)
+> +			goto error_param;
+> +
+> +		ret = i40e_vsi_add_vlan(vsi, vfl->vlan_id[i]);
+>  
+> +		if (!ret && vfl->vlan_id[i]) {
+> +			aq_ret = i40e_add_vmvlan_to_list(vf, vfl, i);
+> +			if (aq_ret)
+> +				goto error_param;
+> +		}
+>  		if (test_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states))
+>  			i40e_aq_set_vsi_uc_promisc_on_vlan(&pf->hw,
+> vsi->seid,
+>  							   true,
+> @@ -3015,10 +3125,10 @@ static int i40e_vc_remove_vlan_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  {
+>  	struct virtchnl_vlan_filter_list *vfl =
+>  	    (struct virtchnl_vlan_filter_list *)msg;
+> +	i40e_status aq_ret = I40E_SUCCESS;
+>  	struct i40e_pf *pf = vf->pf;
+>  	struct i40e_vsi *vsi = NULL;
+> -	i40e_status aq_ret = 0;
+> -	int i;
+> +	u16 i;
+>  
+>  	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
+>  	    !i40e_vc_isvalid_vsi_id(vf, vfl->vsi_id)) {
+> @@ -3041,8 +3151,7 @@ static int i40e_vc_remove_vlan_msg(struct
+> i40e_vf *vf, u8 *msg)
+>  	}
+>  
+>  	for (i = 0; i < vfl->num_elements; i++) {
+> -		i40e_vsi_kill_vlan(vsi, vfl->vlan_id[i]);
+> -		vf->num_vlan--;
+> +		i40e_del_vmvlan_from_list(vsi, vf, vfl->vlan_id[i]);
+>  
+>  		if (test_bit(I40E_VF_STATE_UC_PROMISC, &vf->vf_states))
+>  			i40e_aq_set_vsi_uc_promisc_on_vlan(&pf->hw,
+> vsi->seid,
+> @@ -4200,6 +4309,8 @@ int i40e_ndo_set_vf_mac(struct net_device
+> *netdev, int vf_id, u8 *mac)
+>  	}
+>  	ether_addr_copy(vf->default_lan_addr.addr, mac);
+>  
+> +	i40e_free_vmvlan_list(NULL, vf);
+> +
+>  	if (is_zero_ether_addr(mac)) {
+>  		vf->pf_set_mac = false;
+>  		dev_info(&pf->pdev->dev, "Removing MAC on VF %d\n",
+> vf_id);
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> index 49575a640..6ba48b398 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+> @@ -62,6 +62,13 @@ struct i40evf_channel {
+>  	u64 max_tx_rate; /* bandwidth rate allocation for VSIs */
+>  };
+>  
+> +/* used for VLAN list 'vm_vlan_list' by VM for trusted and untrusted
+> VF */
+> +struct i40e_vm_vlan {
+> +	struct list_head list;
+> +	s16 vlan;
+
+Why signed? Can this have a negative value?
+
+> +	u16 vsi_id;
+> +};
+> +
+>  /* VF information structure */
+>  struct i40e_vf {
+>  	struct i40e_pf *pf;
+> @@ -103,6 +110,8 @@ struct i40e_vf {
+>  	bool spoofchk;
+>  	u16 num_vlan;
+>  
+> +	/* VLAN list created by VM for trusted and untrusted VF */
+> +	struct list_head vm_vlan_list;
+>  	/* ADq related variables */
+>  	bool adq_enabled; /* flag to enable adq */
+>  	u8 num_tc;
