@@ -1,62 +1,106 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 9 Jun 2021 18:23:29 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
- adminq while VF reset and for sync VF driver reset
-In-Reply-To: <20210609105101.88005-1-karen.sornek@intel.com>
-References: <20210609105101.88005-1-karen.sornek@intel.com>
-Message-ID: <9afe652dbf360187d1a6c498cbe3291aeeabe0ab.camel@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 09 Jun 2021 13:08:22 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v5 3/4] igc: Enable PCIe PTM
+In-Reply-To: <939b8042-a313-47db-43d9-ea37e95b724b@molgen.mpg.de>
+References: <20210605002356.3996853-1-vinicius.gomes@intel.com>
+ <20210605002356.3996853-4-vinicius.gomes@intel.com>
+ <70d32740-eb4b-f7bf-146e-8dc06199d6c9@molgen.mpg.de>
+ <87sg1sw56h.fsf@vcostago-mobl2.amr.corp.intel.com>
+ <939b8042-a313-47db-43d9-ea37e95b724b@molgen.mpg.de>
+Message-ID: <87r1havm15.fsf@vcostago-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-06-09 at 12:51 +0200, Karen Sornek wrote:
-> Fix for failed to init adminq: -53 while VF is resetting via MAC
-> address changing procedure.
-> Added sync module to avoid reading deadbeef value in reinit adminq
-> during software reset.
-> Fix for sync VF driver reset before trigger next one by PF.
-> Change VF in reset state detection from check VFR state
-> register to examination of enable admin queue interrupt.
-> ADMINQ is enabled by VF after completely reinit admin queue.
-> 
-> Fixes: b40c82e6ae85 ("i40e: Fix inconsistent use of PF/VF vs pf/vf")
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> ---
->  .../net/ethernet/intel/i40e/i40e_register.h   | 10 +++++
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 45
-> ++++++++++++++++++-
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
->  3 files changed, 54 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h
-> b/drivers/net/ethernet/intel/i40e/i40e_register.h
-> index 8d0588a27..b5c741e76 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_register.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
-> @@ -371,6 +371,16 @@
->  #define I40E_PFINT_ICR0_ENA_VFLR_MASK I40E_MASK(0x1,
-> I40E_PFINT_ICR0_ENA_VFLR_SHIFT)
->  #define I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT 30
->  #define I40E_PFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1,
-> I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT)
-> +#define I40E_VFINT_ICR0_ADMINQ_SHIFT 30
-> +#define I40E_VFINT_ICR0_ADMINQ_MASK I40E_MASK(0x1,
-> I40E_VFINT_ICR0_ADMINQ_SHIFT)
-> +#define I40E_VFINT_ICR0_ENA(_VF) (0x0002C000 + ((_VF) * 4)) /*
-> _i=0...127 */ /* Reset: CORER */
-> +#define I40E_VFINT_ICR0_ENA_MAX_INDEX 127
-> +#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT 25
-> +#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_MASK I40E_MASK(0x1,
-> I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT)
-> +#define I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT 30
-> +#define I40E_VFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1,
-> I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT)
-> +#define I40E_VFINT_ICR0_ENA_RSVD_SHIFT 31
-> +#define I40E_VFINT_ICR0_ENA_RSVD_MASK I40E_MASK(0x1,
-> I40E_VFINT_ICR0_ENA_RSVD_SHIFT)
+Paul Menzel <pmenzel@molgen.mpg.de> writes:
 
-I don't see that all the new defines are being used. Can you remove the
-unused ones?
+> Dear Vinicius,
+>
+>
+> Am 08.06.21 um 21:02 schrieb Vinicius Costa Gomes:
+>
+>> Paul Menzel writes:
+>
+>>> Am 05.06.21 um 02:23 schrieb Vinicius Costa Gomes:
+>>>> Enables PCIe PTM (Precision Time Measurement) support in the igc
+>>>> driver. Notifies the PCI devices that PCIe PTM should be enabled.
+>>>>
+>>>> PCIe PTM is similar protocol to PTP (Precision Time Protocol) running
+>>>> in the PCIe fabric, it allows devices to report time measurements from
+>>>> their internal clocks and the correlation with the PCIe root clock.
+>>>>
+>>>> The i225 NIC exposes some registers that expose those time
+>>>> measurements, those registers will be used, in later patches, to
+>>>> implement the PTP_SYS_OFFSET_PRECISE ioctl().
+>>>>
+>>>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>>>> ---
+>>>>    drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
+>>>>    1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+>>>> index a05e6d8ec660..f23d0303e53b 100644
+>>>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+>>>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>>>> @@ -12,6 +12,8 @@
+>>>>    #include <net/pkt_sched.h>
+>>>>    #include <linux/bpf_trace.h>
+>>>>    #include <net/xdp_sock_drv.h>
+>>>> +#include <linux/pci.h>
+>>>> +
+>>>>    #include <net/ipv6.h>
+>>>>    
+>>>>    #include "igc.h"
+>>>> @@ -5864,6 +5866,10 @@ static int igc_probe(struct pci_dev *pdev,
+>>>>    
+>>>>    	pci_enable_pcie_error_reporting(pdev);
+>>>>    
+>>>> +	err = pci_enable_ptm(pdev, NULL);
+>>>> +	if (err < 0)
+>>>> +		dev_err(&pdev->dev, "PTM not supported\n");
+>>>> +
+>>>
+>>> Sorry, if I am missing something, but do all devices supported by this
+>>> driver support PTM or only the i225 NIC? In that case, it wouldn?t be an
+>>> error for a device not supporting PTM, would it?
+>> 
+>> That was a very good question. I had to talk with the hardware folks.
+>> All the devices supported by the igc driver should support PTM.
+>
+> Thank you for checking that, that is valuable information.
+>
+>> And just to be clear, the reason that I am not returning an error here
+>> is that PTM could not be supported by the host system (think PCI
+>> controller).
+>
+> I just checked `pci_enable_ptm()` and on success it calls 
+> `pci_ptm_info()` logging a message:
+>
+> 	pci_info(dev, "PTM enabled%s, %s granularity\n",
+> 		 dev->ptm_root ? " (root)" : "", clock_desc);
+>
+> Was that present on your system with your patch? Please add that to the 
+> commit message.
+
+Yes, with my patches applied I can see this message on my systems.
+
+Sure, will add this to the commit message.
+
+>
+> Regarding my comment, I did not mean returning an error but the log 
+> *level* of the message. So, `dmesg --level err` would show that message. 
+> But if there are PCI controllers not supporting that, it?s not an error, 
+> but a warning at most. So, I?d use:
+>
+> 	dev_warn(&pdev->dev, "PTM not supported by PCI bus/controller 
+> (pci_enable_ptm() failed)\n");
+
+I will use you suggestion for the message, but I think that warn is a
+bit too much, info or notice seem to be better.
+
+
+Cheers,
+-- 
+Vinicius
