@@ -1,195 +1,73 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 09 Jun 2021 22:36:55 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 65479e4db164d8ab1b48687b10e6d7d4f9d89d16
-Message-ID: <60c0d207.Fu4P3Co5eFhnun38%lkp@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Wed, 9 Jun 2021 15:09:48 +0000
+Subject: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then
+ UP
+In-Reply-To: <6b36112fc1548f06a737bc7a1febaac06f799b6a.camel@intel.com>
+References: <CAB6A5-B6kH6hiOJHZ-8JY0H8PqXeab07vUGMdBvfCgGPR8QzBw@mail.gmail.com>
+ <6b36112fc1548f06a737bc7a1febaac06f799b6a.camel@intel.com>
+Message-ID: <BYAPR11MB3606E7E70D2E3B2E58BD06CDEF369@BYAPR11MB3606.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 65479e4db164d8ab1b48687b10e6d7d4f9d89d16  ixgbe, xsk: clean up the resources in ixgbe_xsk_pool_enable error path
+Usually things like this are hardware-related when dealing with mature drivers.
 
-elapsed time: 722m
+Is there any way you can file this through your factory support because we're going to need a lot more detail. We don't usually handle issues through email unless you want to go through Intel Customer Support.
 
-configs tested: 166
-configs skipped: 2
+We'll need to know OS, driver, hardware, link partner, kind of traffic, etc.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          rsk7203_defconfig
-mips                    maltaup_xpa_defconfig
-openrisc                 simple_smp_defconfig
-mips                      maltasmvp_defconfig
-arm                         orion5x_defconfig
-h8300                       h8s-sim_defconfig
-mips                           ip27_defconfig
-arm                   milbeaut_m10v_defconfig
-xtensa                           alldefconfig
-mips                          ath79_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                    vt8500_v6_v7_defconfig
-mips                     loongson2k_defconfig
-powerpc                     taishan_defconfig
-xtensa                          iss_defconfig
-m68k                            q40_defconfig
-openrisc                            defconfig
-mips                     cu1000-neo_defconfig
-arc                        nsim_700_defconfig
-arm                       versatile_defconfig
-h8300                            allyesconfig
-mips                         rt305x_defconfig
-sh                         microdev_defconfig
-sh                             espt_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                      ep88xc_defconfig
-m68k                          atari_defconfig
-powerpc                      cm5200_defconfig
-arc                    vdk_hs38_smp_defconfig
-powerpc                       eiger_defconfig
-powerpc                     tqm8560_defconfig
-mips                      fuloong2e_defconfig
-xtensa                  audio_kc705_defconfig
-arm                         lpc32xx_defconfig
-sh                           se7343_defconfig
-mips                         tb0226_defconfig
-arm                      integrator_defconfig
-arm                         cm_x300_defconfig
-arm                         bcm2835_defconfig
-mips                            ar7_defconfig
-arm64                            alldefconfig
-arm                           tegra_defconfig
-sh                           se7206_defconfig
-sh                 kfr2r09-romimage_defconfig
-powerpc                 linkstation_defconfig
-sh                          sdk7786_defconfig
-xtensa                  nommu_kc705_defconfig
-mips                  cavium_octeon_defconfig
-sh                          sdk7780_defconfig
-arm                             mxs_defconfig
-mips                       rbtx49xx_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                      ppc6xx_defconfig
-arm                         s5pv210_defconfig
-arm                         shannon_defconfig
-m68k                          amiga_defconfig
-powerpc                     tqm8555_defconfig
-nios2                         3c120_defconfig
-powerpc                    mvme5100_defconfig
-arm                        cerfcube_defconfig
-mips                      maltaaprp_defconfig
-um                           x86_64_defconfig
-powerpc                     pseries_defconfig
-powerpc                    gamecube_defconfig
-arc                 nsimosci_hs_smp_defconfig
-arm                         mv78xx0_defconfig
-sh                           se7619_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                     mpc83xx_defconfig
-arm                      jornada720_defconfig
-mips                        workpad_defconfig
-sh                        edosk7760_defconfig
-s390                             allyesconfig
-sh                   sh7770_generic_defconfig
-arm                     am200epdkit_defconfig
-powerpc                      pmac32_defconfig
-sh                           se7722_defconfig
-mips                      bmips_stb_defconfig
-um                               alldefconfig
-arm                          pxa168_defconfig
-arm                        spear6xx_defconfig
-x86_64                           alldefconfig
-m68k                         amcore_defconfig
-powerpc                      ppc64e_defconfig
-arc                     nsimosci_hs_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20210608
-x86_64               randconfig-a002-20210608
-x86_64               randconfig-a003-20210608
-x86_64               randconfig-a006-20210608
-x86_64               randconfig-a005-20210608
-x86_64               randconfig-a001-20210608
-i386                 randconfig-a003-20210608
-i386                 randconfig-a006-20210608
-i386                 randconfig-a004-20210608
-i386                 randconfig-a001-20210608
-i386                 randconfig-a005-20210608
-i386                 randconfig-a002-20210608
-i386                 randconfig-a015-20210608
-i386                 randconfig-a013-20210608
-i386                 randconfig-a016-20210608
-i386                 randconfig-a011-20210608
-i386                 randconfig-a012-20210608
-i386                 randconfig-a014-20210608
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Todd Fujinaka
+Software Application Engineer
+Data Center Group
+Intel Corporation
+todd.fujinaka at intel.com
 
-clang tested configs:
-x86_64               randconfig-a002-20210607
-x86_64               randconfig-a004-20210607
-x86_64               randconfig-a003-20210607
-x86_64               randconfig-a006-20210607
-x86_64               randconfig-a005-20210607
-x86_64               randconfig-a001-20210607
-x86_64               randconfig-a015-20210608
-x86_64               randconfig-a012-20210608
-x86_64               randconfig-a014-20210608
-x86_64               randconfig-a011-20210608
-x86_64               randconfig-a016-20210608
-x86_64               randconfig-a013-20210608
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Nguyen, Anthony L
+Sent: Tuesday, June 8, 2021 4:19 PM
+To: intel-wired-lan@osuosl.org; mantykuma at gmail.com
+Subject: Re: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then UP
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+On Fri, 2021-06-04 at 14:42 +0900, manty kuma wrote:
+> We see random NIC down like shown below. It lasts for a few seconds 
+> and then the connection is back up.
+> 
+> From kernel Log:
+> ```
+> [ 3306.560431] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Down [ 
+> 3309.532558] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Up
+> 1000 Mbps Full Duplex, Flow Control: RX\/TX
+> 
+> [ 3337.380117] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Down [ 
+> 3341.672189] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Up
+> 100 Mbps Half Duplex, Flow Control: None ``` Steps to reproduce: 
+> Unknown. Happens randomly
+> Frequency: once in a couple of weeks so far.
+> 
+> Kernel: 5.10
+> Firmware version: 3.25, 0x800005cf
+> driver: igb
+> 
+> Is it a known issue?
+> What can we do to better understand the reason for this behavior and 
+> fix it?
+
+Hi Manty,
+
+I'm not aware of this as a known issue, but I've filed an internal bug so that it can be looked into further. Could you provide the lspci info for the device? Also, if you have any info that might be helpful such as occuring under traffic or when idle, etc.
+
+Thanks,
+Tony
+
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
