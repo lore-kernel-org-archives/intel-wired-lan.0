@@ -1,146 +1,184 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Wed,  9 Jun 2021 12:51:01 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
- adminq while VF reset and for sync VF driver reset
-Message-ID: <20210609105101.88005-1-karen.sornek@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 09 Jun 2021 19:24:32 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ db645d3d4d6d6744826909da5e6c4cb857a075f6
+Message-ID: <60c0a4f0.KcI1RfiWBt5kzwLT%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix for failed to init adminq: -53 while VF is resetting via MAC
-address changing procedure.
-Added sync module to avoid reading deadbeef value in reinit adminq
-during software reset.
-Fix for sync VF driver reset before trigger next one by PF.
-Change VF in reset state detection from check VFR state
-register to examination of enable admin queue interrupt.
-ADMINQ is enabled by VF after completely reinit admin queue.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: db645d3d4d6d6744826909da5e6c4cb857a075f6  ixgbe, xsk: clean up the resources in ixgbe_xsk_pool_enable error path
 
-Fixes: b40c82e6ae85 ("i40e: Fix inconsistent use of PF/VF vs pf/vf")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+elapsed time: 723m
+
+configs tested: 155
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                          rsk7203_defconfig
+mips                    maltaup_xpa_defconfig
+openrisc                 simple_smp_defconfig
+mips                      maltasmvp_defconfig
+arm                         orion5x_defconfig
+h8300                       h8s-sim_defconfig
+arm                   milbeaut_m10v_defconfig
+xtensa                           alldefconfig
+mips                          ath79_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                     pseries_defconfig
+parisc                generic-32bit_defconfig
+xtensa                          iss_defconfig
+h8300                    h8300h-sim_defconfig
+mips                      loongson3_defconfig
+ia64                      gensparse_defconfig
+m68k                            q40_defconfig
+openrisc                            defconfig
+mips                     cu1000-neo_defconfig
+arc                        nsim_700_defconfig
+arm                       versatile_defconfig
+h8300                            allyesconfig
+mips                         rt305x_defconfig
+sh                         microdev_defconfig
+powerpc                 mpc837x_rdb_defconfig
+sh                           se7206_defconfig
+sh                 kfr2r09-romimage_defconfig
+powerpc                 linkstation_defconfig
+sh                          sdk7786_defconfig
+xtensa                  nommu_kc705_defconfig
+i386                             allyesconfig
+ia64                        generic_defconfig
+powerpc                        warp_defconfig
+powerpc                   currituck_defconfig
+mips                  cavium_octeon_defconfig
+sh                          sdk7780_defconfig
+arm                             mxs_defconfig
+mips                       rbtx49xx_defconfig
+arm                       aspeed_g4_defconfig
+mips                           ip27_defconfig
+powerpc                      ppc6xx_defconfig
+arm                         s5pv210_defconfig
+nios2                         3c120_defconfig
+powerpc                    mvme5100_defconfig
+arm                        cerfcube_defconfig
+sh                           se7343_defconfig
+mips                      maltaaprp_defconfig
+csky                                defconfig
+um                           x86_64_defconfig
+sh                             espt_defconfig
+powerpc                    gamecube_defconfig
+xtensa                         virt_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                       imx_v6_v7_defconfig
+um                             i386_defconfig
+arm                       netwinder_defconfig
+powerpc                  mpc866_ads_defconfig
+mips                        workpad_defconfig
+powerpc                     mpc83xx_defconfig
+arm                      jornada720_defconfig
+nds32                             allnoconfig
+sh                        edosk7760_defconfig
+sh                   sh7770_generic_defconfig
+arm                     am200epdkit_defconfig
+powerpc                      pmac32_defconfig
+arm                        spear6xx_defconfig
+x86_64                           alldefconfig
+m68k                         amcore_defconfig
+powerpc                      ppc64e_defconfig
+arc                     nsimosci_hs_defconfig
+h8300                               defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20210608
+x86_64               randconfig-a002-20210608
+x86_64               randconfig-a003-20210608
+x86_64               randconfig-a006-20210608
+x86_64               randconfig-a005-20210608
+x86_64               randconfig-a001-20210608
+i386                 randconfig-a003-20210608
+i386                 randconfig-a006-20210608
+i386                 randconfig-a004-20210608
+i386                 randconfig-a001-20210608
+i386                 randconfig-a005-20210608
+i386                 randconfig-a002-20210608
+i386                 randconfig-a003-20210609
+i386                 randconfig-a006-20210609
+i386                 randconfig-a004-20210609
+i386                 randconfig-a001-20210609
+i386                 randconfig-a002-20210609
+i386                 randconfig-a005-20210609
+i386                 randconfig-a015-20210608
+i386                 randconfig-a013-20210608
+i386                 randconfig-a016-20210608
+i386                 randconfig-a011-20210608
+i386                 randconfig-a012-20210608
+i386                 randconfig-a014-20210608
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a015-20210608
+x86_64               randconfig-a012-20210608
+x86_64               randconfig-a014-20210608
+x86_64               randconfig-a011-20210608
+x86_64               randconfig-a016-20210608
+x86_64               randconfig-a013-20210608
+x86_64               randconfig-a002-20210607
+x86_64               randconfig-a004-20210607
+x86_64               randconfig-a003-20210607
+x86_64               randconfig-a006-20210607
+x86_64               randconfig-a005-20210607
+x86_64               randconfig-a001-20210607
+
 ---
- .../net/ethernet/intel/i40e/i40e_register.h   | 10 +++++
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 45 ++++++++++++++++++-
- .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
- 3 files changed, 54 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
-index 8d0588a27..b5c741e76 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_register.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
-@@ -371,6 +371,16 @@
- #define I40E_PFINT_ICR0_ENA_VFLR_MASK I40E_MASK(0x1, I40E_PFINT_ICR0_ENA_VFLR_SHIFT)
- #define I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT 30
- #define I40E_PFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1, I40E_PFINT_ICR0_ENA_ADMINQ_SHIFT)
-+#define I40E_VFINT_ICR0_ADMINQ_SHIFT 30
-+#define I40E_VFINT_ICR0_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ADMINQ_SHIFT)
-+#define I40E_VFINT_ICR0_ENA(_VF) (0x0002C000 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
-+#define I40E_VFINT_ICR0_ENA_MAX_INDEX 127
-+#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT 25
-+#define I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_LINK_STAT_CHANGE_SHIFT)
-+#define I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT 30
-+#define I40E_VFINT_ICR0_ENA_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_ADMINQ_SHIFT)
-+#define I40E_VFINT_ICR0_ENA_RSVD_SHIFT 31
-+#define I40E_VFINT_ICR0_ENA_RSVD_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ENA_RSVD_SHIFT)
- #define I40E_PFINT_ITR0(_i) (0x00038000 + ((_i) * 128)) /* _i=0...2 */ /* Reset: PFR */
- #define I40E_PFINT_ITRN(_i, _INTPF) (0x00030000 + ((_i) * 2048 + (_INTPF) * 4)) /* _i=0...2, _INTPF=0...511 */ /* Reset: PFR */
- #define I40E_PFINT_LNKLST0 0x00038500 /* Reset: PFR */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index edfdce5f6..e6d6ebd82 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1376,6 +1376,32 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
- 	return aq_ret;
- }
- 
-+/**
-+ * i40e_sync_vfr_reset
-+ * @hw: pointer to hw struct
-+ * @vf_id: VF identifier
-+ *
-+ * Before trigger hardware reset, we need to know if no other process has
-+ * reserved the hardware for any reset operations. This check is done by
-+ * examining the status of the ADMINQ bit in VF interrupt register.
-+ **/
-+static int i40e_sync_vfr_reset(struct i40e_hw *hw, int vf_id)
-+{
-+	u32 reg;
-+	int i;
-+
-+	for (i = 0; i < I40E_VFR_WAIT_COUNT; i++) {
-+		reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
-+			   I40E_VFINT_ICR0_ADMINQ_MASK;
-+		if (reg != VIRTCHNL_VFR_INPROGRESS)
-+			return 0;
-+
-+		usleep_range(100, 200);
-+	}
-+
-+	return -EAGAIN;
-+}
-+
- /**
-  * i40e_trigger_vf_reset
-  * @vf: pointer to the VF structure
-@@ -1390,9 +1416,11 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 reg, reg_idx, bit_idx;
-+	bool vf_active;
-+	u32 radq;
- 
- 	/* warn the VF */
--	clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
-+	vf_active = test_and_clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
- 
- 	/* Disable VF's configuration API during reset. The flag is re-enabled
- 	 * in i40e_alloc_vf_res(), when it's safe again to access VF's VSI.
-@@ -1406,7 +1434,18 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
- 	 * just need to clean up, so don't hit the VFRTRIG register.
- 	 */
- 	if (!flr) {
--		/* reset VF using VPGEN_VFRTRIG reg */
-+		/* Sync VFR reset before trigger next one */
-+		radq = rd32(hw, I40E_VFINT_ICR0_ENA(vf->vf_id)) &
-+			     I40E_VFINT_ICR0_ADMINQ_MASK;
-+		if (vf_active && !radq)
-+			/* waiting for finish reset by virtual driver */
-+			if (i40e_sync_vfr_reset(hw, vf->vf_id))
-+				dev_info(&pf->pdev->dev,
-+					 "Reset VF %d never finished\n",
-+					 vf->vf_id);
-+
-+		/* Reset VF using VPGEN_VFRTRIG reg. It is also setting
-+		 * in progress state in rstat1 register */
- 		reg = rd32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id));
- 		reg |= I40E_VPGEN_VFRTRIG_VFSWR_MASK;
- 		wr32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id), reg);
-@@ -1473,8 +1512,10 @@ static void i40e_cleanup_reset_vf(struct i40e_vf *vf)
- 	/* Tell the VF driver the reset is done. This needs to be done only
- 	 * after VF has been fully initialized, because the VF driver may
- 	 * request resources immediately after setting this flag.
-+	 * Let's give it some time to finish it.
- 	 */
- 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
-+	usleep_range(20000, 40000);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 49575a640..03c42fd0f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -19,6 +19,7 @@
- #define I40E_MAX_VF_PROMISC_FLAGS	3
- 
- #define I40E_VF_STATE_WAIT_COUNT	20
-+#define I40E_VFR_WAIT_COUNT		100
- 
- /* Various queue ctrls */
- enum i40e_queue_ctrl {
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
