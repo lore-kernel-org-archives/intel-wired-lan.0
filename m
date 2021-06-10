@@ -1,65 +1,33 @@
-From: =?unknown-8bit?q?J=C4=99drzej?= Jagielski <jedrzej.jagielski@intel.com>
-Date: Fri, 11 Jun 2021 22:54:35 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Refactor arrow operator
- usage in i40e_update_adq_vsi_queues()
-Message-ID: <20210611225435.95070-1-jedrzej.jagielski@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 10 Jun 2021 09:16:23 +0200
+Subject: [Intel-wired-lan] Date/Time issues with patches sent from Intel
+ folks
+Message-ID: <83875924-20ef-a7f1-9a31-011411a31f51@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use local pf & hw variables instead of multiple arrow operators.
-Move pf & hw variables initialization after checking if vsi is not NULL.
+Dear Linux folk,
 
-Co-developed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index fce05ad24..6a11002c8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5450,16 +5450,18 @@ static void i40e_vsi_update_queue_map(struct i40e_vsi *vsi,
-  */
- int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset)
- {
--	struct i40e_pf *pf = vsi->back;
--	struct i40e_hw *hw = &pf->hw;
- 	struct i40e_vsi_context ctxt = {};
--	int ret = 0;
-+	struct i40e_pf *pf;
-+	struct i40e_hw *hw;
-+	int ret;
- 
- 	if (!vsi)
- 		return I40E_ERR_PARAM;
-+	pf = vsi->back;
-+	hw = &pf->hw;
- 
- 	ctxt.seid = vsi->seid;
--	ctxt.pf_num = vsi->back->hw.pf_id;
-+	ctxt.pf_num = hw->pf_id;
- 	ctxt.vf_num = vsi->vf_id + hw->func_caps.vf_base_id + vsi_offset;
- 	ctxt.uplink_seid = vsi->uplink_seid;
- 	ctxt.connection_type = I40E_AQ_VSI_CONN_TYPE_NORMAL;
-@@ -5469,11 +5471,11 @@ int i40e_update_adq_vsi_queues(struct i40e_vsi *vsi, int vsi_offset)
- 	i40e_vsi_setup_queue_map(vsi, &ctxt, vsi->tc_config.enabled_tc,
- 				 false);
- 	if (vsi->reconfig_rss) {
--		vsi->rss_size = min_t(int, vsi->back->alloc_rss_size,
-+		vsi->rss_size = min_t(int, pf->alloc_rss_size,
- 				      vsi->num_queue_pairs);
- 		ret = i40e_vsi_config_rss(vsi);
- 		if (ret) {
--			dev_info(&vsi->back->pdev->dev, "Failed to reconfig rss for num_queues\n");
-+			dev_info(&pf->pdev->dev, "Failed to reconfig rss for num_queues\n");
- 			return ret;
- 		}
- 		vsi->reconfig_rss = false;
--- 
-2.27.0
+Since over a year, patches sent from Intel developers to the mailing 
+list often have a date from the future, messing up people?s inboxes, 
+where sorting after date is used.
 
+I raised it several times, but it keeps happening. It looks like it?s 
+from developers in offices in Poland. It?d be awesome if you fixed your 
+infrastructure, so that all systems use the correct time.
+
+     Received: from amlin-018-218.igk.intel.com ([10.102.18.218])
+      by orsmga001.jf.intel.com with ESMTP; 09 Jun 2021 23:45:19 -0700
+     [?]
+     Date: Fri, 11 Jun 2021 22:42:17 +0000
+     [?]
+     X-Mailer: git-send-email 2.27.0
+
+
+Kind regards,
+
+Paul
