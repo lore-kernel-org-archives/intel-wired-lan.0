@@ -1,11 +1,11 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Thu, 10 Jun 2021 20:03:36 +0000
-Subject: [Intel-wired-lan] [PATCH v2 1/8] ice: add support for sideband
- messages
-In-Reply-To: <20210609163953.52440-2-anthony.l.nguyen@intel.com>
+Date: Thu, 10 Jun 2021 20:04:47 +0000
+Subject: [Intel-wired-lan] [PATCH v2 2/8] ice: process 1588 PTP
+ capabilities during initialization
+In-Reply-To: <20210609163953.52440-3-anthony.l.nguyen@intel.com>
 References: <20210609163953.52440-1-anthony.l.nguyen@intel.com>
- <20210609163953.52440-2-anthony.l.nguyen@intel.com>
-Message-ID: <CO1PR11MB510521FC9FA182A8FBF75BA7FA359@CO1PR11MB5105.namprd11.prod.outlook.com>
+ <20210609163953.52440-3-anthony.l.nguyen@intel.com>
+Message-ID: <CO1PR11MB5105145E9D92EDCB522C9261FA359@CO1PR11MB5105.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,50 +17,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: Wednesday, June 9, 2021 9:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 1/8] ice: add support for sideband
-> messages
+> Subject: [Intel-wired-lan] [PATCH v2 2/8] ice: process 1588 PTP capabilities
+> during initialization
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> In order to support certain device features, including enabling the PTP
-> hardware clock, the ice driver needs to control some registers on the device
-> PHY.
+> The device firmware reports PTP clock capabilities to each PF during
+> initialization. This includes various information for both the overall device and
+> the individual function, including
 > 
-> These registers are accessed by sending sideband messages. For some
-> hardware, these messages must be sent over the device admin queue, while
-> other hardware has a dedicated control queue for the sideband messages.
+> For functions:
+> * whether this function has timesync enabled
+> * whether this function owns one of the 2 possible clock timers, and
+>   which one
+> * which timer the function is associated with
+> * the clock frequency, if the device supports multiple clock frequencies
+> * The GPIO pin association for the timer owned by this PF, if any
 > 
-> Add the neighbor device message structure for sending a message to the
-> neighboring device. Where supported, initialize the sideband control queue
-> and handle cleanup.
+> For the device:
+> * Which PF owns timer 0, if any
+> * Which PF owns timer 1, if any
+> * whether timer 0 is enabled
+> * whether timer 1 is enabled
 > 
-> Add a wrapper function for sending sideband control queue messages that
-> read or write a neighboring device register.
+> Extract the bits from the capabilities information reported by firmware and
+> store them in the device and function capability structures.o
 > 
-> Because some devices send sideband messages over the AdminQ, also
-> increase the length of the admin queue to allow more messages to be
-> queued up. This is important because the sideband messages add additional
-> pressure on the AQ usage.
-> 
-> This support will be used in following patches to enable support for
-> CONFIG_1588_PTP_CLOCK.
+> This information will be used in a future change to have the function driver
+> enable PTP hardware clock support.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h          |  4 +-
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 13 +++
->  drivers/net/ethernet/intel/ice/ice_common.c   | 59 ++++++++++++
->  drivers/net/ethernet/intel/ice/ice_common.h   |  3 +
->  drivers/net/ethernet/intel/ice/ice_controlq.c | 62 +++++++++++++
-> drivers/net/ethernet/intel/ice/ice_controlq.h |  2 +
->  .../net/ethernet/intel/ice/ice_hw_autogen.h   | 51 ++++++++++
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 11 ++-
->  drivers/net/ethernet/intel/ice/ice_main.c     | 47 ++++++++++
->  drivers/net/ethernet/intel/ice/ice_sbq_cmd.h  | 92
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 99
 > +++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_type.h     |  2 +
->  11 files changed, 344 insertions(+), 2 deletions(-)  create mode 100644
-> drivers/net/ethernet/intel/ice/ice_sbq_cmd.h
+>  drivers/net/ethernet/intel/ice/ice_type.h     | 51 ++++++++++
+>  3 files changed, 151 insertions(+)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
