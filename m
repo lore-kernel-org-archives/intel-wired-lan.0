@@ -1,48 +1,70 @@
-From: Kurt Kanzenbach <kurt@linutronix.de>
-Date: Fri, 11 Jun 2021 13:01:29 +0200
-Subject: [Intel-wired-lan] [PATCH next-queue v1 5/5] igc: Export LEDs
-In-Reply-To: <37283593-408d-cdfd-ed5c-f2c215af87d8@molgen.mpg.de>
-References: <20210611003924.492853-1-vinicius.gomes@intel.com>
- <20210611003924.492853-6-vinicius.gomes@intel.com>
- <37283593-408d-cdfd-ed5c-f2c215af87d8@molgen.mpg.de>
-Message-ID: <87lf7gmzqu.fsf@kurt>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Fri, 11 Jun 2021 17:12:45 +0200
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: xsk: fix for metasize when
+ construct skb by xdp_buff
+In-Reply-To: <20210609122244.52647-1-xuanzhuo@linux.alibaba.com>
+References: <20210609122244.52647-1-xuanzhuo@linux.alibaba.com>
+Message-ID: <20210611151245.GA31289@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri Jun 11 2021, Paul Menzel wrote:
-> Dear Vinicius, dear Kurt,
->
->
-> Am 11.06.21 um 02:39 schrieb Vinicius Costa Gomes:
->> From: Kurt Kanzenbach <kurt@linutronix.de>
->> 
->> Each i225 has three LEDs. Export them via the LED class framework.
->
-> Very nice. For those not familiar with the LED class framework, could 
-> you add one example how to control one of the LEDs?
->
-> Also it?d be nice to document, how this was tested.
+On Wed, Jun 09, 2021 at 08:22:44PM +0800, Xuan Zhuo wrote:
+> We should copy data_meta to the skb space.  Then use __skb_pull to
+> correct skb->data
 
-Each LED is controllable via sysfs. Example:
+This looks like a bug that has been sitting over here for sometime. Have
+you encountered this during your virtio-net's AF_XDP ZC work? I'm all ears
+how you spotted this.
 
- $ cd /sys/class/leds/igc_led0
- $ cat brightness      # Current Mode
- $ cat max_brightness  # 15
- $ echo 0 > brightness # Mode 0
- $ echo 1 > brightness # Mode 1
+Anyway, other drivers needs such fixing too. Are you willing to do that or
+should we take it on our side?
 
-The brightness field here reflects the different LED modes ranging from
-0 to 15.
+Magnus is OOO today, I'd like to get his final ack on that.
 
-Thanks,
-Kurt
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 861 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210611/62502b6e/attachment.asc>
+From me:
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+
+Thanks!
+
+> 
+> Fixes: d0bcacd0a1309 ("ixgbe: add AF_XDP zero-copy Rx support")
+> Signed-off-by: Xuan Zhuo <xuanzhuo@linux.alibaba.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> index f72d2978263b..ee88107fa57a 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> @@ -204,7 +204,7 @@ static struct sk_buff *ixgbe_construct_skb_zc(struct ixgbe_ring *rx_ring,
+>  					      struct ixgbe_rx_buffer *bi)
+>  {
+>  	unsigned int metasize = bi->xdp->data - bi->xdp->data_meta;
+> -	unsigned int datasize = bi->xdp->data_end - bi->xdp->data;
+> +	unsigned int datasize = bi->xdp->data_end - bi->xdp->data_meta;
+>  	struct sk_buff *skb;
+>  
+>  	/* allocate a skb to store the frags */
+> @@ -214,10 +214,12 @@ static struct sk_buff *ixgbe_construct_skb_zc(struct ixgbe_ring *rx_ring,
+>  	if (unlikely(!skb))
+>  		return NULL;
+>  
+> -	skb_reserve(skb, bi->xdp->data - bi->xdp->data_hard_start);
+> -	memcpy(__skb_put(skb, datasize), bi->xdp->data, datasize);
+> -	if (metasize)
+> +	skb_reserve(skb, bi->xdp->data_meta - bi->xdp->data_hard_start);
+> +	memcpy(__skb_put(skb, datasize), bi->xdp->data_meta, datasize);
+> +	if (metasize) {
+> +		__skb_pull(skb, metasize);
+>  		skb_metadata_set(skb, metasize);
+> +	}
+>  
+>  	xsk_buff_free(bi->xdp);
+>  	bi->xdp = NULL;
+> -- 
+> 2.31.0
+> 
