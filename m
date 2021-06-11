@@ -1,276 +1,83 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 11 Jun 2021 07:55:30 +0200
-Subject: [Intel-wired-lan] [PATCH next-queue v1 5/5] igc: Export LEDs
-In-Reply-To: <20210611003924.492853-6-vinicius.gomes@intel.com>
-References: <20210611003924.492853-1-vinicius.gomes@intel.com>
- <20210611003924.492853-6-vinicius.gomes@intel.com>
-Message-ID: <37283593-408d-cdfd-ed5c-f2c215af87d8@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 11 Jun 2021 15:18:27 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 56/87]
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:180:35: error: 'struct
+ pci_dev' has no member named 'physfn'; did you mean 'is_physfn'?
+Message-ID: <202106111522.djrcv4b9-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Vinicius, dear Kurt,
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+head:   8dc0a23f11b8c1f96d92576e74e11cc0056b4784
+commit: 66544c2946fd655590b501fc10bf16c61abcc524 [56/87] i40e: Add restoration of VF MSI-X state during PCI reset
+config: i386-randconfig-a016-20210611 (attached as .config)
+compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
+reproduce (this is a W=1 build):
+        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=66544c2946fd655590b501fc10bf16c61abcc524
+        git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
+        git fetch --no-tags tnguy-next-queue dev-queue
+        git checkout 66544c2946fd655590b501fc10bf16c61abcc524
+        # save the attached .config to linux build tree
+        make W=1 ARCH=i386 
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function 'i40e_restore_all_vfs_msi_state':
+>> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:180:35: error: 'struct pci_dev' has no member named 'physfn'; did you mean 'is_physfn'?
+     180 |    if (vfdev->is_virtfn && vfdev->physfn == pdev)
+         |                                   ^~~~~~
+         |                                   is_physfn
 
 
-Am 11.06.21 um 02:39 schrieb Vinicius Costa Gomes:
-> From: Kurt Kanzenbach <kurt@linutronix.de>
-> 
-> Each i225 has three LEDs. Export them via the LED class framework.
+vim +180 drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 
-Very nice. For those not familiar with the LED class framework, could 
-you add one example how to control one of the LEDs?
+   154	
+   155	/**
+   156	 * i40e_restore_all_vfs_msi_state - restore VF MSI state after PF FLR
+   157	 * @pdev: pointer to a pci_dev structure
+   158	 *
+   159	 * Called when recovering from a PF FLR to restore interrupt capability to
+   160	 * the VFs.
+   161	 */
+   162	void i40e_restore_all_vfs_msi_state(struct pci_dev *pdev)
+   163	{
+   164		struct pci_dev *vfdev;
+   165		u16 vf_id;
+   166		int pos;
+   167	
+   168		/* Continue only if this is a PF */
+   169		if (!pdev->is_physfn)
+   170			return;
+   171	
+   172		if (!pci_num_vf(pdev))
+   173			return;
+   174	
+   175		pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
+   176		if (pos) {
+   177			pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
+   178			vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
+   179			while (vfdev) {
+ > 180				if (vfdev->is_virtfn && vfdev->physfn == pdev)
+   181					pci_restore_msi_state(vfdev);
+   182				vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
+   183			}
+   184		}
+   185	}
+   186	
 
-Also it?d be nice to document, how this was tested.
-
-
-Kind regards,
-
-Paul
-
-
-> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
-> Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
->   drivers/net/ethernet/intel/Kconfig           |   1 +
->   drivers/net/ethernet/intel/igc/igc.h         |  10 ++
->   drivers/net/ethernet/intel/igc/igc_defines.h |  10 ++
->   drivers/net/ethernet/intel/igc/igc_main.c    | 132 +++++++++++++++++++
->   drivers/net/ethernet/intel/igc/igc_regs.h    |   2 +
->   5 files changed, 155 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index 82744a7501c7..3639cf79cfae 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -335,6 +335,7 @@ config IGC
->   	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
->   	default n
->   	depends on PCI
-> +	depends on LEDS_CLASS
->   	help
->   	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
->   	  family of adapters.
-> diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-> index 5710e5420b40..17b31072b291 100644
-> --- a/drivers/net/ethernet/intel/igc/igc.h
-> +++ b/drivers/net/ethernet/intel/igc/igc.h
-> @@ -13,6 +13,7 @@
->   #include <linux/ptp_clock_kernel.h>
->   #include <linux/timecounter.h>
->   #include <linux/net_tstamp.h>
-> +#include <linux/leds.h>
->   
->   #include "igc_hw.h"
->   
-> @@ -239,8 +240,17 @@ struct igc_adapter {
->   		struct timespec64 start;
->   		struct timespec64 period;
->   	} perout[IGC_N_PEROUT];
-> +
-> +	/* LEDs */
-> +	struct mutex led_mutex;
-> +	struct led_classdev led0;
-> +	struct led_classdev led1;
-> +	struct led_classdev led2;
->   };
->   
-> +#define led_to_igc(ldev, led)                          \
-> +	container_of(ldev, struct igc_adapter, led)
-> +
->   void igc_up(struct igc_adapter *adapter);
->   void igc_down(struct igc_adapter *adapter);
->   int igc_open(struct net_device *netdev);
-> diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-> index 7bdd0b1abf20..deb4819f1e27 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_defines.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-> @@ -144,6 +144,16 @@
->   #define IGC_CTRL_SDP0_DIR	0x00400000  /* SDP0 Data direction */
->   #define IGC_CTRL_SDP1_DIR	0x00800000  /* SDP1 Data direction */
->   
-> +/* LED Control */
-> +#define IGC_LEDCTL_LED0_MODE_SHIFT	0
-> +#define IGC_LEDCTL_LED0_MODE_MASK	GENMASK(3, 0)
-> +#define IGC_LEDCTL_LED1_MODE_SHIFT	8
-> +#define IGC_LEDCTL_LED1_MODE_MASK	GENMASK(11, 8)
-> +#define IGC_LEDCTL_LED2_MODE_SHIFT	16
-> +#define IGC_LEDCTL_LED2_MODE_MASK	GENMASK(19, 16)
-> +
-> +#define IGC_CONNSW_AUTOSENSE_EN		0x1
-> +
->   /* As per the EAS the maximum supported size is 9.5KB (9728 bytes) */
->   #define MAX_JUMBO_FRAME_SIZE	0x2600
->   
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index ac558a6defe7..e58f07bbf127 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -6138,6 +6138,134 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
->   	return -EINVAL;
->   }
->   
-> +static void igc_select_led(struct igc_adapter *adapter, int led,
-> +			   u32 *mask, u32 *shift)
-> +{
-> +	switch (led) {
-> +	case 0:
-> +		*mask  = IGC_LEDCTL_LED0_MODE_MASK;
-> +		*shift = IGC_LEDCTL_LED0_MODE_SHIFT;
-> +		break;
-> +	case 1:
-> +		*mask  = IGC_LEDCTL_LED1_MODE_MASK;
-> +		*shift = IGC_LEDCTL_LED1_MODE_SHIFT;
-> +		break;
-> +	case 2:
-> +		*mask  = IGC_LEDCTL_LED2_MODE_MASK;
-> +		*shift = IGC_LEDCTL_LED2_MODE_SHIFT;
-> +		break;
-> +	default:
-> +		*mask = *shift = 0;
-> +		dev_err(&adapter->pdev->dev, "Unknown led %d selected!", led);
-> +	}
-> +}
-> +
-> +static void igc_led_set(struct igc_adapter *adapter, int led, u16 brightness)
-> +{
-> +	struct igc_hw *hw = &adapter->hw;
-> +	u32 shift, mask, ledctl;
-> +
-> +	igc_select_led(adapter, led, &mask, &shift);
-> +
-> +	mutex_lock(&adapter->led_mutex);
-> +	ledctl = rd32(IGC_LEDCTL);
-> +	ledctl &= ~mask;
-> +	ledctl |= brightness << shift;
-> +	wr32(IGC_LEDCTL, ledctl);
-> +	mutex_unlock(&adapter->led_mutex);
-> +}
-> +
-> +static enum led_brightness igc_led_get(struct igc_adapter *adapter, int led)
-> +{
-> +	struct igc_hw *hw = &adapter->hw;
-> +	u32 shift, mask, ledctl;
-> +
-> +	igc_select_led(adapter, led, &mask, &shift);
-> +
-> +	mutex_lock(&adapter->led_mutex);
-> +	ledctl = rd32(IGC_LEDCTL);
-> +	mutex_unlock(&adapter->led_mutex);
-> +
-> +	return (ledctl & mask) >> shift;
-> +}
-> +
-> +static void igc_led0_set(struct led_classdev *ldev, enum led_brightness b)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led0);
-> +
-> +	igc_led_set(adapter, 0, b);
-> +}
-> +
-> +static enum led_brightness igc_led0_get(struct led_classdev *ldev)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led0);
-> +
-> +	return igc_led_get(adapter, 0);
-> +}
-> +
-> +static void igc_led1_set(struct led_classdev *ldev, enum led_brightness b)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led1);
-> +
-> +	igc_led_set(adapter, 1, b);
-> +}
-> +
-> +static enum led_brightness igc_led1_get(struct led_classdev *ldev)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led1);
-> +
-> +	return igc_led_get(adapter, 1);
-> +}
-> +
-> +static void igc_led2_set(struct led_classdev *ldev, enum led_brightness b)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led2);
-> +
-> +	igc_led_set(adapter, 2, b);
-> +}
-> +
-> +static enum led_brightness igc_led2_get(struct led_classdev *ldev)
-> +{
-> +	struct igc_adapter *adapter = led_to_igc(ldev, led2);
-> +
-> +	return igc_led_get(adapter, 2);
-> +}
-> +
-> +static int igc_led_setup(struct igc_adapter *adapter)
-> +{
-> +	/* Setup */
-> +	mutex_init(&adapter->led_mutex);
-> +
-> +	adapter->led0.name	     = "igc_led0";
-> +	adapter->led0.max_brightness = 15;
-> +	adapter->led0.brightness_set = igc_led0_set;
-> +	adapter->led0.brightness_get = igc_led0_get;
-> +
-> +	adapter->led1.name	     = "igc_led1";
-> +	adapter->led1.max_brightness = 15;
-> +	adapter->led1.brightness_set = igc_led1_set;
-> +	adapter->led1.brightness_get = igc_led1_get;
-> +
-> +	adapter->led2.name	     = "igc_led2";
-> +	adapter->led2.max_brightness = 15;
-> +	adapter->led2.brightness_set = igc_led2_set;
-> +	adapter->led2.brightness_get = igc_led2_get;
-> +
-> +	/* Register leds */
-> +	led_classdev_register(&adapter->pdev->dev, &adapter->led0);
-> +	led_classdev_register(&adapter->pdev->dev, &adapter->led1);
-> +	led_classdev_register(&adapter->pdev->dev, &adapter->led2);
-> +
-> +	return 0;
-> +}
-> +
-> +static void igc_led_destroy(struct igc_adapter *adapter)
-> +{
-> +	led_classdev_unregister(&adapter->led0);
-> +	led_classdev_unregister(&adapter->led1);
-> +	led_classdev_unregister(&adapter->led2);
-> +}
-> +
->   /**
->    * igc_probe - Device Initialization Routine
->    * @pdev: PCI device information struct
-> @@ -6366,6 +6494,8 @@ static int igc_probe(struct pci_dev *pdev,
->   
->   	pm_runtime_put_noidle(&pdev->dev);
->   
-> +	igc_led_setup(adapter);
-> +
->   	return 0;
->   
->   err_register:
-> @@ -6406,6 +6536,8 @@ static void igc_remove(struct pci_dev *pdev)
->   
->   	igc_ptp_stop(adapter);
->   
-> +	igc_led_destroy(adapter);
-> +
->   	set_bit(__IGC_DOWN, &adapter->state);
->   
->   	del_timer_sync(&adapter->watchdog_timer);
-> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-> index 828c3501c448..f6247b00c4e3 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-> @@ -10,6 +10,8 @@
->   #define IGC_EECD		0x00010  /* EEPROM/Flash Control - RW */
->   #define IGC_CTRL_EXT		0x00018  /* Extended Device Control - RW */
->   #define IGC_MDIC		0x00020  /* MDI Control - RW */
-> +#define IGC_LEDCTL		0x00E00	 /* LED Control - RW */
-> +#define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
->   #define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
->   #define IGC_VET			0x00038  /* VLAN Ether Type - RW */
->   #define IGC_I225_PHPM		0x00E14  /* I225 PHY Power Management */
-> 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 45165 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210611/44cb94d5/attachment-0001.bin>
