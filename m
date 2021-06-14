@@ -1,52 +1,159 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 14 Jun 2021 15:19:39 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Check if num of q_vectors is
- smaller than max before array access
-Message-ID: <20210614121939.1246251-1-sasha.neftin@intel.com>
+From: Nitesh Lal <nilal@redhat.com>
+Date: Mon, 14 Jun 2021 12:12:38 -0400
+Subject: [Intel-wired-lan] [PATCH] genirq: Provide new interfaces for
+ affinity hints
+In-Reply-To: <CAFki+L=QTOu_O=1uNobVMi2s9mbcxXgSdTLADCpeBWBoPAikgQ@mail.gmail.com>
+References: <20210504092340.00006c61@intel.com>
+ <87pmxpdr32.ffs@nanos.tec.linutronix.de>
+ <CAFki+Lkjn2VCBcLSAfQZ2PEkx-TR0Ts_jPnK9b-5ne3PUX37TQ@mail.gmail.com>
+ <87im3gewlu.ffs@nanos.tec.linutronix.de>
+ <CAFki+L=gp10W1ygv7zdsee=BUGpx9yPAckKr7pyo=tkFJPciEg@mail.gmail.com>
+ <CAFki+L=eQoMq+mWhw_jVT-biyuDXpxbXY5nO+F6HvCtpbG9V2w@mail.gmail.com>
+ <CAFki+LkB1sk3mOv4dd1D-SoPWHOs28ZwN-PqL_6xBk=Qkm40Lw@mail.gmail.com>
+ <87zgwo9u79.ffs@nanos.tec.linutronix.de>
+ <87wnrs9tvp.ffs@nanos.tec.linutronix.de>
+ <CAFki+L=QTOu_O=1uNobVMi2s9mbcxXgSdTLADCpeBWBoPAikgQ@mail.gmail.com>
+Message-ID: <CAFki+LkJ9kj0TMz8dhGXLXdfwgYLibkMCRvKBwVVX5+F-DP37w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Ensure that the adapter->q_vector[MAX_Q_VECTORS] array isn't accessed
-beyond its size. It was fixed by using a local variable num_q_vectors
-as a limit for loop index, and ensure that num_q_vectors is not bigger
-than MAX_Q_VECTORS.
+On Mon, Jun 7, 2021 at 1:00 PM Nitesh Lal <nilal@redhat.com> wrote:
+>
+> On Fri, May 21, 2021 at 8:03 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+> >
+> > The discussion about removing the side effect of irq_set_affinity_hint() of
+> > actually applying the cpumask (if not NULL) as affinity to the interrupt,
+> > unearthed a few unpleasantries:
+> >
+> >   1) The modular perf drivers rely on the current behaviour for the very
+> >      wrong reasons.
+> >
+> >   2) While none of the other drivers prevents user space from changing
+> >      the affinity, a cursorily inspection shows that there are at least
+> >      expectations in some drivers.
+> >
+> > #1 needs to be cleaned up anyway, so that's not a problem
+> >
+> > #2 might result in subtle regressions especially when irqbalanced (which
+> >    nowadays ignores the affinity hint) is disabled.
+> >
+> > Provide new interfaces:
+> >
+> >   irq_update_affinity_hint() - Only sets the affinity hint pointer
+> >   irq_apply_affinity_hint()  - Set the pointer and apply the affinity to
+> >                                the interrupt
+> >
+> > Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+> > document it to be phased out.
+> >
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
+> > ---
+> > Applies on:
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/core
+> > ---
+> >  include/linux/interrupt.h |   41 ++++++++++++++++++++++++++++++++++++++++-
+> >  kernel/irq/manage.c       |    8 ++++----
+> >  2 files changed, 44 insertions(+), 5 deletions(-)
+> >
+> > --- a/include/linux/interrupt.h
+> > +++ b/include/linux/interrupt.h
+> > @@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned i
+> >  extern int irq_can_set_affinity(unsigned int irq);
+> >  extern int irq_select_affinity(unsigned int irq);
+> >
+> > -extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
+> > +extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> > +                                    bool setaffinity);
+> > +
+> > +/**
+> > + * irq_update_affinity_hint - Update the affinity hint
+> > + * @irq:       Interrupt to update
+> > + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> > + *
+> > + * Updates the affinity hint, but does not change the affinity of the interrupt.
+> > + */
+> > +static inline int
+> > +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
+> > +{
+> > +       return __irq_apply_affinity_hint(irq, m, true);
+> > +}
+> > +
+> > +/**
+> > + * irq_apply_affinity_hint - Update the affinity hint and apply the provided
+> > + *                          cpumask to the interrupt
+> > + * @irq:       Interrupt to update
+> > + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> > + *
+> > + * Updates the affinity hint and if @cpumask is not NULL it applies it as
+> > + * the affinity of that interrupt.
+> > + */
+> > +static inline int
+> > +irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m)
+> > +{
+> > +       return __irq_apply_affinity_hint(irq, m, true);
+> > +}
+> > +
+> > +/*
+> > + * Deprecated. Use irq_update_affinity_hint() or irq_apply_affinity_hint()
+> > + * instead.
+> > + */
+> > +static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> > +{
+> > +       return irq_apply_affinity_hint(irq, cpumask);
+>
+> Another change required here, the above should be 'm' instead of 'cpumask'.
 
-Suggested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+I am going to and make the suggested changes to this patch and will post it
+with driver patches.
+Please let me know if there are any objections to that.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index ff3c7bc1f0ef..be0d5baf77b7 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -4817,6 +4817,7 @@ static irqreturn_t igc_msix_ring(int irq, void *data)
-  */
- static int igc_request_msix(struct igc_adapter *adapter)
- {
-+	unsigned int num_q_vectors = adapter->num_q_vectors;
- 	int i = 0, err = 0, vector = 0, free_vector = 0;
- 	struct net_device *netdev = adapter->netdev;
- 
-@@ -4825,7 +4826,13 @@ static int igc_request_msix(struct igc_adapter *adapter)
- 	if (err)
- 		goto err_out;
- 
--	for (i = 0; i < adapter->num_q_vectors; i++) {
-+	if (num_q_vectors > MAX_Q_VECTORS) {
-+		num_q_vectors = MAX_Q_VECTORS;
-+		dev_warn(&adapter->pdev->dev,
-+			 "The number of queue vectors (%d) is higher than max allowed (%d)\n",
-+			 adapter->num_q_vectors, MAX_Q_VECTORS);
-+	}
-+	for (i = 0; i < num_q_vectors; i++) {
- 		struct igc_q_vector *q_vector = adapter->q_vector[i];
- 
- 		vector++;
+>
+> > +}
+> > +
+> >  extern int irq_update_affinity_desc(unsigned int irq,
+> >                                     struct irq_affinity_desc *affinity);
+> >
+> > --- a/kernel/irq/manage.c
+> > +++ b/kernel/irq/manage.c
+> > @@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq,
+> >  }
+> >  EXPORT_SYMBOL_GPL(irq_force_affinity);
+> >
+> > -int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> > +int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> > +                             bool setaffinity)
+> >  {
+> >         unsigned long flags;
+> >         struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
+> > @@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int i
+> >                 return -EINVAL;
+> >         desc->affinity_hint = m;
+> >         irq_put_desc_unlock(desc, flags);
+> > -       /* set the initial affinity to prevent every interrupt being on CPU0 */
+> > -       if (m)
+> > +       if (m && setaffinity)
+> >                 __irq_set_affinity(irq, m, false);
+> >         return 0;
+> >  }
+> > -EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
+> > +EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
+> >
+> >  static void irq_affinity_notify(struct work_struct *work)
+> >  {
+> >
+>
+>
+> --
+> Thanks
+> Nitesh
+
+
+
 -- 
-2.25.1
+Thanks
+Nitesh
 
