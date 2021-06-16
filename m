@@ -1,146 +1,75 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 16 Jun 2021 20:06:14 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 209f51a407348729203cd6e319e17c5c507f662e
-Message-ID: <60c9e936.tP5f6y3unfRRjHc4%lkp@intel.com>
+Date: Wed, 16 Jun 2021 23:02:59 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 21/87]
+ drivers/net/ethernet/intel/iavf/iavf_main.c:145: warning: expecting
+ prototype for iavf_timeout(). Prototype was for iavf_lock_timeout() instead
+Message-ID: <202106162344.e25gZHvx-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 209f51a407348729203cd6e319e17c5c507f662e  ice: remove unnecessary VSI assignment
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+head:   209f51a407348729203cd6e319e17c5c507f662e
+commit: 8fd81228faf637f04de07b802fa6684044c97dda [21/87] iavf: fix locking of critical sections
+config: powerpc64-randconfig-r035-20210616 (attached as .config)
+compiler: clang version 13.0.0 (https://github.com/llvm/llvm-project 64720f57bea6a6bf033feef4a5751ab9c0c3b401)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install powerpc64 cross compiling tool for clang build
+        # apt-get install binutils-powerpc64-linux-gnu
+        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=8fd81228faf637f04de07b802fa6684044c97dda
+        git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
+        git fetch --no-tags tnguy-next-queue dev-queue
+        git checkout 8fd81228faf637f04de07b802fa6684044c97dda
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=powerpc64 
 
-elapsed time: 724m
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-configs tested: 117
-configs skipped: 2
+All warnings (new ones prefixed by >>):
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>> drivers/net/ethernet/intel/iavf/iavf_main.c:145: warning: expecting prototype for iavf_timeout(). Prototype was for iavf_lock_timeout() instead
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                   bluestone_defconfig
-sh                          r7785rp_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                      chrp32_defconfig
-xtensa                generic_kc705_defconfig
-powerpc                 mpc8540_ads_defconfig
-arm                        oxnas_v6_defconfig
-s390                                defconfig
-arm                        multi_v7_defconfig
-m68k                             alldefconfig
-nios2                         10m50_defconfig
-powerpc                  storcenter_defconfig
-powerpc                        warp_defconfig
-mips                            gpr_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arm                            zeus_defconfig
-m68k                          atari_defconfig
-arm                        mvebu_v5_defconfig
-ia64                            zx1_defconfig
-powerpc                     ksi8560_defconfig
-ia64                             alldefconfig
-powerpc                      ep88xc_defconfig
-arm64                            alldefconfig
-arc                    vdk_hs38_smp_defconfig
-m68k                         amcore_defconfig
-microblaze                      mmu_defconfig
-um                           x86_64_defconfig
-powerpc                        fsp2_defconfig
-powerpc                     sbc8548_defconfig
-s390                             alldefconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                         hackkit_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                      katmai_defconfig
-arm                           viper_defconfig
-s390                          debug_defconfig
-powerpc                 mpc832x_mds_defconfig
-sparc                       sparc64_defconfig
-riscv                          rv32_defconfig
-powerpc                 mpc85xx_cds_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20210615
-i386                 randconfig-a006-20210615
-i386                 randconfig-a004-20210615
-i386                 randconfig-a001-20210615
-i386                 randconfig-a005-20210615
-i386                 randconfig-a003-20210615
-x86_64               randconfig-a001-20210615
-x86_64               randconfig-a004-20210615
-x86_64               randconfig-a002-20210615
-x86_64               randconfig-a003-20210615
-x86_64               randconfig-a006-20210615
-x86_64               randconfig-a005-20210615
-i386                 randconfig-a015-20210615
-i386                 randconfig-a013-20210615
-i386                 randconfig-a016-20210615
-i386                 randconfig-a012-20210615
-i386                 randconfig-a014-20210615
-i386                 randconfig-a011-20210615
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
 
-clang tested configs:
-x86_64               randconfig-b001-20210615
-x86_64               randconfig-a015-20210615
-x86_64               randconfig-a011-20210615
-x86_64               randconfig-a012-20210615
-x86_64               randconfig-a014-20210615
-x86_64               randconfig-a016-20210615
-x86_64               randconfig-a013-20210615
+vim +145 drivers/net/ethernet/intel/iavf/iavf_main.c
+
+   133	
+   134	/**
+   135	 * iavf_timeout - try to set bit but give up after timeout
+   136	 * @adapter: board private structure
+   137	 * @bit: bit to set
+   138	 * @msecs: timeout in msecs
+   139	 *
+   140	 * Returns 0 on success, negative on failure
+   141	 **/
+   142	static inline int iavf_lock_timeout(struct iavf_adapter *adapter,
+   143					    enum iavf_critical_section_t bit,
+   144					    unsigned int msecs)
+ > 145	{
+   146		unsigned int wait, delay = 10;
+   147	
+   148		for (wait = 0; wait < msecs; wait += delay) {
+   149			if (!test_and_set_bit(bit, &adapter->crit_section))
+   150				return 0;
+   151	
+   152			msleep(delay);
+   153		}
+   154	
+   155		return -1;
+   156	}
+   157	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 31362 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210616/cd971209/attachment-0001.bin>
