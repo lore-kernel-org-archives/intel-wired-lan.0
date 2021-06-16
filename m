@@ -1,36 +1,48 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Wed, 16 Jun 2021 07:53:02 +0200
-Subject: [Intel-wired-lan] [PATCH] iavf: Fix an error handling path in
- 'iavf_probe()'
-Message-ID: <bbfe41f97c6e9de1a3768b7e6237aebcd4a6f93c.1623822715.git.christophe.jaillet@wanadoo.fr>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Wed, 16 Jun 2021 08:55:06 +0200
+Subject: [Intel-wired-lan] [PATCH 0/8] Replace some bad characters on
+ documents
+Message-ID: <cover.1623826294.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it
-must be undone by a corresponding 'pci_disable_pcie_error_reporting()'
-call, as already done in the remove function.
+Hi Jon,
 
-Fixes: 5eae00c57f5e ("i40evf: main driver core")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
- 1 file changed, 1 insertion(+)
+This series contain the remaining 8 patches I submitted at v3 that
+weren't merged yet at -next.
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index e612c24fa384..44bafedd09f2 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3798,6 +3798,7 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_ioremap:
- 	free_netdev(netdev);
- err_alloc_etherdev:
-+	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_regions(pdev);
- err_pci_reg:
- err_dma:
+This series is rebased on the top of your docs-next branch.
+
+No changes here, except by some Reviewed/ack lines, and at the
+name of the final patch (per PCI maintainer's request).
+
+Mauro Carvalho Chehab (8):
+  docs: admin-guide: reporting-issues.rst: replace some characters
+  docs: trace: coresight: coresight-etm4x-reference.rst: replace some
+    characters
+  docs: driver-api: ioctl.rst: replace some characters
+  docs: usb: replace some characters
+  docs: vm: zswap.rst: replace some characters
+  docs: filesystems: ext4: blockgroup.rst: replace some characters
+  docs: networking: device_drivers: replace some characters
+  docs: PCI: Replace non-breaking spaces to avoid PDF issues
+
+ Documentation/PCI/acpi-info.rst                | 18 +++++++++---------
+ Documentation/admin-guide/reporting-issues.rst |  2 +-
+ Documentation/driver-api/ioctl.rst             |  8 ++++----
+ Documentation/filesystems/ext4/blockgroup.rst  |  2 +-
+ .../device_drivers/ethernet/intel/i40e.rst     |  6 +++---
+ .../device_drivers/ethernet/intel/iavf.rst     |  2 +-
+ .../coresight/coresight-etm4x-reference.rst    |  2 +-
+ Documentation/usb/ehci.rst                     |  2 +-
+ Documentation/usb/gadget_printer.rst           |  2 +-
+ Documentation/vm/zswap.rst                     |  4 ++--
+ 10 files changed, 24 insertions(+), 24 deletions(-)
+
 -- 
-2.30.2
+2.31.1
+
 
