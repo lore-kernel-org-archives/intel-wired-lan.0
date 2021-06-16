@@ -1,70 +1,146 @@
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Wed, 16 Jun 2021 08:55:13 +0200
-Subject: [Intel-wired-lan] [PATCH 7/8] docs: networking: device_drivers:
- replace some characters
-In-Reply-To: <cover.1623826294.git.mchehab+huawei@kernel.org>
-References: <cover.1623826294.git.mchehab+huawei@kernel.org>
-Message-ID: <9bd9f5c067c4b068a974730a14fe8d68e1be0c9a.1623826294.git.mchehab+huawei@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 16 Jun 2021 20:06:14 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 209f51a407348729203cd6e319e17c5c507f662e
+Message-ID: <60c9e936.tP5f6y3unfRRjHc4%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The conversion tools used during DocBook/LaTeX/html/Markdown->ReST
-conversion and some cut-and-pasted text contain some characters that
-aren't easily reachable on standard keyboards and/or could cause
-troubles when parsed by the documentation build system.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 209f51a407348729203cd6e319e17c5c507f662e  ice: remove unnecessary VSI assignment
 
-Replace the occurences of the following characters:
+elapsed time: 724m
 
-	- U+00a0 ('?'): NO-BREAK SPACE
-	  as it can cause lines being truncated on PDF output
+configs tested: 117
+configs skipped: 2
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                   bluestone_defconfig
+sh                          r7785rp_defconfig
+sh                        sh7785lcr_defconfig
+powerpc                      chrp32_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                 mpc8540_ads_defconfig
+arm                        oxnas_v6_defconfig
+s390                                defconfig
+arm                        multi_v7_defconfig
+m68k                             alldefconfig
+nios2                         10m50_defconfig
+powerpc                  storcenter_defconfig
+powerpc                        warp_defconfig
+mips                            gpr_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arm                            zeus_defconfig
+m68k                          atari_defconfig
+arm                        mvebu_v5_defconfig
+ia64                            zx1_defconfig
+powerpc                     ksi8560_defconfig
+ia64                             alldefconfig
+powerpc                      ep88xc_defconfig
+arm64                            alldefconfig
+arc                    vdk_hs38_smp_defconfig
+m68k                         amcore_defconfig
+microblaze                      mmu_defconfig
+um                           x86_64_defconfig
+powerpc                        fsp2_defconfig
+powerpc                     sbc8548_defconfig
+s390                             alldefconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                         hackkit_defconfig
+arm                       imx_v6_v7_defconfig
+powerpc                      katmai_defconfig
+arm                           viper_defconfig
+s390                          debug_defconfig
+powerpc                 mpc832x_mds_defconfig
+sparc                       sparc64_defconfig
+riscv                          rv32_defconfig
+powerpc                 mpc85xx_cds_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20210615
+i386                 randconfig-a006-20210615
+i386                 randconfig-a004-20210615
+i386                 randconfig-a001-20210615
+i386                 randconfig-a005-20210615
+i386                 randconfig-a003-20210615
+x86_64               randconfig-a001-20210615
+x86_64               randconfig-a004-20210615
+x86_64               randconfig-a002-20210615
+x86_64               randconfig-a003-20210615
+x86_64               randconfig-a006-20210615
+x86_64               randconfig-a005-20210615
+i386                 randconfig-a015-20210615
+i386                 randconfig-a013-20210615
+i386                 randconfig-a016-20210615
+i386                 randconfig-a012-20210615
+i386                 randconfig-a014-20210615
+i386                 randconfig-a011-20210615
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210615
+x86_64               randconfig-a015-20210615
+x86_64               randconfig-a011-20210615
+x86_64               randconfig-a012-20210615
+x86_64               randconfig-a014-20210615
+x86_64               randconfig-a016-20210615
+x86_64               randconfig-a013-20210615
+
 ---
- .../networking/device_drivers/ethernet/intel/i40e.rst       | 6 +++---
- .../networking/device_drivers/ethernet/intel/iavf.rst       | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-index 2d3f6bd969a2..ac35bd472bdc 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/i40e.rst
-@@ -466,7 +466,7 @@ network. PTP support varies among Intel devices that support this driver. Use
- "ethtool -T <netdev name>" to get a definitive list of PTP capabilities
- supported by the device.
- 
--IEEE 802.1ad (QinQ)?Support
-+IEEE 802.1ad (QinQ) Support
- ---------------------------
- The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
- IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
-@@ -523,8 +523,8 @@ of a port's bandwidth (should it be available). The sum of all the values for
- Maximum Bandwidth is not restricted, because no more than 100% of a port's
- bandwidth can ever be used.
- 
--NOTE:?X710/XXV710 devices fail to enable Max VFs (64) when Multiple Functions
--per Port (MFP)?and SR-IOV are enabled. An error from i40e is logged that says
-+NOTE: X710/XXV710 devices fail to enable Max VFs (64) when Multiple Functions
-+per Port (MFP) and SR-IOV are enabled. An error from i40e is logged that says
- "add vsi failed for VF N, aq_err 16". To workaround the issue, enable less than
- 64 virtual functions (VFs).
- 
-diff --git a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-index 25330b7b5168..151af0a8da9c 100644
---- a/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-+++ b/Documentation/networking/device_drivers/ethernet/intel/iavf.rst
-@@ -113,7 +113,7 @@ which the AVF is associated. The following are base mode features:
- - AVF device ID
- - HW mailbox is used for VF to PF communications (including on Windows)
- 
--IEEE 802.1ad (QinQ)?Support
-+IEEE 802.1ad (QinQ) Support
- ---------------------------
- The IEEE 802.1ad standard, informally known as QinQ, allows for multiple VLAN
- IDs within a single Ethernet frame. VLAN IDs are sometimes referred to as
--- 
-2.31.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
