@@ -1,37 +1,135 @@
-From: =?unknown-8bit?q?J=C4=99drzej?= Jagielski <jedrzej.jagielski@intel.com>
-Date: Fri, 18 Jun 2021 08:49:49 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix log TC creation failure
- when max num of queues is exceeded
-Message-ID: <20210618084949.20634-1-jedrzej.jagielski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 18 Jun 2021 16:57:33 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ bd4db3e488622ddac5a683092535f3c86a3d5558
+Message-ID: <60cc5ffd.DNOFbtkvKAtz8Rr3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix missing failed message if driver does not have enough queues to
-complete TC command. Without this fix no message is displayed in dmesg.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: bd4db3e488622ddac5a683092535f3c86a3d5558  e1000e: Add space to the debug print
 
-Fixes: a9ce82f744dc ("i40e: Enable 'channel' mode in mqprio for TC configs")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+elapsed time: 753m
+
+configs tested: 106
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+h8300                     edosk2674_defconfig
+sparc                       sparc32_defconfig
+arm                              alldefconfig
+powerpc                       maple_defconfig
+m68k                          hp300_defconfig
+x86_64                           alldefconfig
+mips                        jmr3927_defconfig
+arm                   milbeaut_m10v_defconfig
+powerpc                       eiger_defconfig
+sh                 kfr2r09-romimage_defconfig
+powerpc                      pcm030_defconfig
+sh                          r7785rp_defconfig
+xtensa                    smp_lx200_defconfig
+m68k                          sun3x_defconfig
+arm                        cerfcube_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+x86_64                            allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20210618
+i386                 randconfig-a006-20210618
+i386                 randconfig-a004-20210618
+i386                 randconfig-a001-20210618
+i386                 randconfig-a005-20210618
+i386                 randconfig-a003-20210618
+i386                 randconfig-a002-20210617
+i386                 randconfig-a006-20210617
+i386                 randconfig-a001-20210617
+i386                 randconfig-a004-20210617
+i386                 randconfig-a005-20210617
+i386                 randconfig-a003-20210617
+x86_64               randconfig-a015-20210618
+x86_64               randconfig-a011-20210618
+x86_64               randconfig-a012-20210618
+x86_64               randconfig-a014-20210618
+x86_64               randconfig-a016-20210618
+x86_64               randconfig-a013-20210618
+i386                 randconfig-a015-20210618
+i386                 randconfig-a016-20210618
+i386                 randconfig-a013-20210618
+i386                 randconfig-a014-20210618
+i386                 randconfig-a012-20210618
+i386                 randconfig-a011-20210618
+i386                 randconfig-a015-20210617
+i386                 randconfig-a013-20210617
+i386                 randconfig-a016-20210617
+i386                 randconfig-a012-20210617
+i386                 randconfig-a014-20210617
+i386                 randconfig-a011-20210617
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210618
+x86_64               randconfig-a002-20210618
+x86_64               randconfig-a001-20210618
+x86_64               randconfig-a004-20210618
+x86_64               randconfig-a003-20210618
+x86_64               randconfig-a006-20210618
+x86_64               randconfig-a005-20210618
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7a0a740c6..4828545e5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7363,6 +7363,8 @@ static int i40e_validate_mqprio_qopt(struct i40e_vsi *vsi,
- 	}
- 	if (vsi->num_queue_pairs <
- 	    (mqprio_qopt->qopt.offset[i] + mqprio_qopt->qopt.count[i])) {
-+		dev_err(&vsi->back->pdev->dev,
-+			"Failed to create traffic channel, insufficient number of queues.\n");
- 		return -EINVAL;
- 	}
- 	if (sum_max_rate > i40e_get_link_speed(vsi)) {
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
