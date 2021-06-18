@@ -1,50 +1,47 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 18 Jun 2021 21:42:04 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add trace while
- removing device
-In-Reply-To: <20210618084730.20524-1-jedrzej.jagielski@intel.com>
-References: <20210618084730.20524-1-jedrzej.jagielski@intel.com>
-Message-ID: <57f776bcb6fbce788ea1528f0d967ff35d1f5ac8.camel@intel.com>
+Date: Fri, 18 Jun 2021 21:44:30 +0000
+Subject: [Intel-wired-lan] [PATCH net v3 1/3] iavf: Refactor iavf state
+ machine tracking
+In-Reply-To: <20210618090355.12519-1-mateusz.palczewski@intel.com>
+References: <20210618090355.12519-1-mateusz.palczewski@intel.com>
+Message-ID: <9567f07de3eb43920b03fe19ff3a2da6c63acb80.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-06-18 at 08:47 +0000, J?drzej Jagielski wrote:
-> Add kernel trace that device was removed.
-> Currently there is no such information.
-> I.e. Host admin removes a PCI device from a VM,
-> than on VM shall be info about the event.
+On Fri, 2021-06-18 at 11:03 +0200, Mateusz Palczewski wrote:
+> From: Jan Sokolowski <jan.sokolowski@intel.com>
 > 
-> This patch adds info log to iavf_remove function.
+> Replace state changes of iavf state machine
+> with a method that also tracks the previous
+> state the machine was on.
 > 
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> This change is required for further work with
+> refactoring init and watchdog state machines.
+> 
+> Tracking of previous state would help us
+> recover iavf after failure has occured.
+> 
+> Fixes: bac8486116b0 ("iavf: Refactor the watchdog state machine")
+> Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 
-Are you using the correct tree? Rebasing before you send? This patch
-doesn't apply.
+<snip>
 
-Also, can you change either your From or Signed-off-by to match?
+> @@ -2095,6 +2095,7 @@ static void iavf_disable_vf(struct iavf_adapter
+> *adapter)
+>  	adapter->netdev->flags &= ~IFF_UP;
+>  	adapter->flags &= ~IAVF_FLAG_RESET_PENDING;
+>  	adapter->state = __IAVF_DOWN;
 
-WARNING: From:/Signed-off-by: email name mismatch: 'From: "J?drzej
-Jagielski" <jedrzej.jagielski@intel.com>' != 'Signed-off-by: Jedrzej
-Jagielski <jedrzej.jagielski@intel.com>'
-> 
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 4fead5903..b2a5fcb52 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -3973,6 +3973,7 @@ static void iavf_remove(struct pci_dev *pdev)
->  				 err);
->  	}
->  
-> +	dev_info(&adapter->pdev->dev, "Removing device\n");
->  	/* Shut down all the garbage mashers on the detention level */
->  	adapter->state = __IAVF_REMOVE;
->  	adapter->aq_required = 0;
+Should the above line be removed?
+
+> +	iavf_change_state(adapter, __IAVF_DOWN);
+>  	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+>  	wake_up(&adapter->down_waitqueue);
+>  	dev_info(&adapter->pdev->dev, "Reset task did not complete, VF
+> disabled\n");
+
