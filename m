@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 19 Jun 2021 13:47:16 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 37dc8fea8656f149e0fa5a03a2736b32350fe2b1
-Message-ID: <60cd84e4.uCllrke00PZqISVZ%lkp@intel.com>
+Date: Sat, 19 Jun 2021 19:25:45 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ c69215a1c8f608d4fc969d412bc0ea09d68e782a
+Message-ID: <60cdd439.UXP02lNl2pZE64HF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 37dc8fea8656f149e0fa5a03a2736b32350fe2b1  iavf: clean up packet type lookup table
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: c69215a1c8f608d4fc969d412bc0ea09d68e782a  i40e: Fix log TC creation failure when max num of queues is exceeded
 
-elapsed time: 725m
+elapsed time: 726m
 
-configs tested: 79
+configs tested: 118
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -26,13 +26,56 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
+arm                      tct_hammer_defconfig
+powerpc                       eiger_defconfig
+sh                          rsk7269_defconfig
+powerpc                     asp8347_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                     skiroot_defconfig
+nios2                         3c120_defconfig
+nds32                             allnoconfig
+powerpc64                           defconfig
+arm                      pxa255-idp_defconfig
+sh                           se7722_defconfig
+mips                  maltasmvp_eva_defconfig
+m68k                       m5249evb_defconfig
+arm                          pxa168_defconfig
+mips                         cobalt_defconfig
+m68k                        stmark2_defconfig
+um                           x86_64_defconfig
+powerpc                        fsp2_defconfig
+arm                          badge4_defconfig
+sh                           se7619_defconfig
+powerpc                      pmac32_defconfig
+mips                malta_qemu_32r6_defconfig
+sh                             espt_defconfig
+powerpc                  storcenter_defconfig
+s390                             alldefconfig
+sh                     magicpanelr2_defconfig
+s390                          debug_defconfig
+powerpc                     tqm5200_defconfig
+arm                       netwinder_defconfig
+arc                           tb10x_defconfig
+arm                             ezx_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                       maple_defconfig
+powerpc                      ep88xc_defconfig
+sparc                            alldefconfig
+sh                           sh2007_defconfig
+arm                       mainstone_defconfig
+m68k                       m5475evb_defconfig
+powerpc                         wii_defconfig
+xtensa                              defconfig
+sh                            migor_defconfig
+x86_64                            allnoconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-x86_64                            allnoconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
@@ -51,9 +94,6 @@ i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
@@ -85,7 +125,6 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
 x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
 um                             i386_defconfig
 um                            kunit_defconfig
 x86_64                           allyesconfig
