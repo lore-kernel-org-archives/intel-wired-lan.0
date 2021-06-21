@@ -1,25 +1,36 @@
 From: Fuxbrumer, Dvora <dvorax.fuxbrumer@linux.intel.com>
-Date: Mon, 21 Jun 2021 15:20:15 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Fix an error handling path in
- 'igc_probe()'
-In-Reply-To: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
-References: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <71d37297-1a79-ffea-03ae-a88c1a5a6ebf@linux.intel.com>
+Date: Mon, 21 Jun 2021 15:31:15 +0300
+Subject: [Intel-wired-lan] [PATCH next-queue v1 1/5] igc: Add
+ possibility to add flex filter
+In-Reply-To: <20210611003924.492853-2-vinicius.gomes@intel.com>
+References: <20210611003924.492853-1-vinicius.gomes@intel.com>
+ <20210611003924.492853-2-vinicius.gomes@intel.com>
+Message-ID: <2cb42259-aedc-af35-b8f3-58c4c7e1d093@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/12/2021 23:00, Christophe JAILLET wrote:
-> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it
-> must be undone by a corresponding 'pci_disable_pcie_error_reporting()'
-> call, as already done in the remove function.
+On 6/11/2021 03:39, Vinicius Costa Gomes wrote:
+> From: Kurt Kanzenbach <kurt@linutronix.de>
 > 
-> Fixes: c9a11c23ceb6 ("igc: Add netdev")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> The Intel i225 NIC has the possibility to add flex filters which can
+> match up to the first 128 byte of a packet. These filters are useful
+> for all kind of packet matching. One particular use case is Profinet,
+> as the different traffic classes are distinguished by the frame id
+> range which cannot be matched by any other means.
+> 
+> Add code to configure and enable flex filters.
+> 
+> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+> Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 1 +
->   1 file changed, 1 insertion(+)
+>   drivers/net/ethernet/intel/igc/igc.h         |  13 ++
+>   drivers/net/ethernet/intel/igc/igc_defines.h |  48 ++++++-
+>   drivers/net/ethernet/intel/igc/igc_main.c    | 134 +++++++++++++++++++
+>   drivers/net/ethernet/intel/igc/igc_regs.h    |  17 +++
+>   4 files changed, 207 insertions(+), 5 deletions(-)
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
