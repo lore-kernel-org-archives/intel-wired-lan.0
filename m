@@ -1,84 +1,73 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 21 Jun 2021 18:21:15 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 07/12] ice: setting and
- releasing switchdev environment
-In-Reply-To: <20210617234413.104069-8-michal.swiatkowski@linux.intel.com>
-References: <20210617234413.104069-1-michal.swiatkowski@linux.intel.com>
- <20210617234413.104069-8-michal.swiatkowski@linux.intel.com>
-Message-ID: <a6a0b9064847e6106cca2ae4a9669b84f4322926.camel@intel.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Mon, 21 Jun 2021 22:00:13 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3] ice: add tracepoints
+In-Reply-To: <20210608233517.3135522-1-jesse.brandeburg@intel.com>
+References: <20210608233517.3135522-1-jesse.brandeburg@intel.com>
+Message-ID: <SJ0PR11MB5662C9F88529304D670509D6FA0A9@SJ0PR11MB5662.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2021-06-18 at 01:44 +0200, Michal Swiatkowski wrote:
-> From: Grzegorz Nitka <grzegorz.nitka@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jesse Brandeburg
+> Sent: Tuesday, June 8, 2021 4:35 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Shelton, Benjamin H <benjamin.h.shelton@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v3] ice: add tracepoints
 > 
-> Switchdev environment has to be set up when user create VFs
-> and eswitch mode is switchdev. Release is done when user
-> delete all VFs.
+> This patch is modeled after one by Scott Peterson for i40e.
 > 
-> Data path in this implementation is based on control plane VSI.
-> This VSI is used to pass traffic from port representors to
-> coresponfing VFs and vice versa. Default TX rule has to be
-> added to forward packet to control plane VSI. This will redirect
-> packets from VFs which don't match other rules to control plane
-> VSI.
+> Add tracepoints to the driver, via a new file ice_trace.h and some new trace
+> calls added in interesting places in the driver. Add some tracing for DIMLIB to
+> help debug interrupt moderation problems.
 > 
-> On RX site default rule is added on uplink VSI to receive all
-> traffic that doesn't match other rules. When setting switchdev
-> environment all other rules from VFs should be removed. Packet to
-> VFs will be forwarded by control plane VSI.
+> Performance should not be affected, and this can be very useful for
+> debugging and adding new trace events to paths in the future.
 > 
-> As VF without any mac rules can't send any packet because of
-> antispoof mechanism, VSI antispoof should be turned off on each VFs.
+> Note eBPF programs can attach to these events, as well as perf can count
+> them since we're attaching to the events subsystem in the kernel.
 > 
-> To send packet from representor to correct VSI, destintion VSI
-> field in TX descriptor will have to be filled. Allow that by
-> setting destination override bit in control plane VSI security
-> config.
-> 
-> Packet from VFs will be received on control plane VSI. Driver
-> should decide to which netdev forward the packet. Decision is
-> made based on src_vsi field from descriptor. There is a target
-> netdev list in control plane VSI struct which choose netdev
-> based on src_vsi number.
-> 
-> Co-developed-by: Michal Swiatkowski <
-> michal.swiatkowski at linux.intel.com>
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com
-> >
-> Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+> Co-developed-by: Ben Shelton <benjamin.h.shelton@intel.com>
+> Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
+> NOTE: checkpatch will complain about this patch due to the macros defining
+> the new trace functionality being formatted for readability.
+> 
+> Testing Hints:
+> See that performance is unaffected while tracepoints are present but
+> disabled (default state). Enable them all and see they appear in
+> /sys/kernel/debug/tracing/trace when exercised, and after 'make install'
+> you can see the events in perf list.
+> 
+> When disabled, a tracepoint reduces to a 5-byte no-op. When enabled, that
+> code is patched to jump to the tracepoint clause, which is located
+> somewhere nearby.  See include/linux/jump_label.h for info in static keys,
+> and samples/trace-events/trace-events-samples.[ch] for info on the trace
+> events.
+> 
+> To test tracepoints:
+> insmod ice and bring up a link
+> cd /sys/kernel/debug/tracing
+> echo > trace
+> echo 1 > events/ice/enable
+> send something over ice
+> cat trace
+> echo 0 > events/ice/enable
+> 
+> ---
+> v3: fixed transposed rx/tx reference in receive code
+> v2: updated commit message and copyright on new file
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c  |   8 +
+>  drivers/net/ethernet/intel/ice/ice_trace.h | 232 +++++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_txrx.c  |   9 +
+>  3 files changed, 249 insertions(+)
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_trace.h
 
-<snip>
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
-> +/**
-> + * ice_eswitch_vsi_setup - configure switchdev control VSI
-> + * @pf: pointer to PF structure
-> + * @pi: pointer to port_info structure
-> + */
-> +static struct ice_vsi *
-> +ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
-> +{
-> +	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-> ICE_INVAL_VFID);
-
-This doesn't build; the switchdev VSI doesn't get introduced until the
-next patch. 
-
-drivers/net/ethernet/intel/ice/ice_eswitch.c: In function
-ice_eswitch_vsi_setup:
-drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: error:
-ICE_VSI_SWITCHDEV_CTRL undeclared (first use in this function)
-  263 |  return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-ICE_INVAL_VFID);
-      |                               ^~~~~~~~~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: note: each
-undeclared identifier is reported only once for each function it
-appears in
-drivers/net/ethernet/intel/ice/ice_eswitch.c:264:1: error: control
-reaches end of non-void function [-Werror=return-type]
-  264 | }
 
