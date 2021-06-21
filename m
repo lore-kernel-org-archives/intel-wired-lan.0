@@ -1,35 +1,39 @@
-From: manty kuma <mantykuma@gmail.com>
-Date: Fri, 4 Jun 2021 14:42:45 +0900
-Subject: [Intel-wired-lan] igb: Random NIC down for 3-4 seconds and then UP
-Message-ID: <CAB6A5-B6kH6hiOJHZ-8JY0H8PqXeab07vUGMdBvfCgGPR8QzBw@mail.gmail.com>
+From: =?unknown-8bit?q?J=C4=99drzej?= Jagielski <jedrzej.jagielski@intel.com>
+Date: Mon, 21 Jun 2021 08:10:00 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add trace while
+ removing device
+Message-ID: <1624263000-8709-1-git-send-email-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We see random NIC down like shown below. It lasts for a few seconds and
-then the connection is back up.
+Add kernel trace that device was removed.
+Currently there is no such information.
+I.e. Host admin removes a PCI device from a VM,
+than on VM shall be info about the event.
 
-From kernel Log:
-```
-[ 3306.560431] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Down
-[ 3309.532558] igb 0000:03:00.0 enp3s0: igb: enp3s0 NIC Link is Up 1000
-Mbps Full Duplex, Flow Control: RX\/TX
+This patch adds info log to iavf_remove function.
 
-[ 3337.380117] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Down
-[ 3341.672189] igb 0000:02:00.0 enp2s0: igb: enp2s0 NIC Link is Up 100 Mbps
-Half Duplex, Flow Control: None
-```
-Steps to reproduce: Unknown. Happens randomly
-Frequency: once in a couple of weeks so far.
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: J?drzej Jagielski <jedrzej.jagielski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Kernel: 5.10
-Firmware version: 3.25, 0x800005cf
-driver: igb
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 4fead59..b2a5fcb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3973,6 +3973,7 @@ static void iavf_remove(struct pci_dev *pdev)
+ 				 err);
+ 	}
+ 
++	dev_info(&adapter->pdev->dev, "Removing device\n");
+ 	/* Shut down all the garbage mashers on the detention level */
+ 	adapter->state = __IAVF_REMOVE;
+ 	adapter->aq_required = 0;
+-- 
+1.8.3.1
 
-Is it a known issue?
-What can we do to better understand the reason for this behavior and fix it?
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210604/c437d7d9/attachment.html>
