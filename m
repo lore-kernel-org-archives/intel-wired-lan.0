@@ -1,8 +1,8 @@
 From: =?unknown-8bit?q?J=C4=99drzej?= Jagielski <jedrzej.jagielski@intel.com>
-Date: Mon, 21 Jun 2021 08:33:34 +0000
+Date: Mon, 21 Jun 2021 08:37:31 +0000
 Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix creation of first queue
  by omitting it if is not power of two
-Message-ID: <1624264414-10328-1-git-send-email-jedrzej.jagielski@intel.com>
+Message-ID: <1624264651-10706-1-git-send-email-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,7 +17,7 @@ is not a power of two, then trying to create qdisc will be rejected.
 
 Fixes: 8f88b3034db3 ("i40e: Add infrastructure for queue channel support")
 Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: J??drzej Jagielski <jedrzej.jagielski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
  drivers/net/ethernet/intel/i40e/i40e_main.c | 59 ++++++++++-------------------
  1 file changed, 19 insertions(+), 40 deletions(-)
