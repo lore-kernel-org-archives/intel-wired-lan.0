@@ -1,115 +1,67 @@
-From: =?unknown-8bit?q?J=C4=99drzej?= Jagielski <jedrzej.jagielski@intel.com>
-Date: Mon, 21 Jun 2021 08:37:31 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix creation of first queue
- by omitting it if is not power of two
-Message-ID: <1624264651-10706-1-git-send-email-jedrzej.jagielski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Mon, 21 Jun 2021 19:28:07 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add trace while
+ removing device
+In-Reply-To: <1624263000-8709-1-git-send-email-jedrzej.jagielski@intel.com>
+References: <1624263000-8709-1-git-send-email-jedrzej.jagielski@intel.com>
+Message-ID: <202106211913.DugmZi6d-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reject TCs creation with proper message if the first queue
-assignment is not equal to the power of two.
-The first queue number was checked too late in the second queue
-iteration, if second queue was configured at all. Now if first queue value
-is not a power of two, then trying to create qdisc will be rejected.
+Hi "J?drzej,
 
-Fixes: 8f88b3034db3 ("i40e: Add infrastructure for queue channel support")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Thank you for the patch! Yet something to improve:
+
+[auto build test ERROR on net-next/master]
+
+url:    https://github.com/0day-ci/linux/commits/J-drzej-Jagielski/iavf-Add-trace-while-removing-device/20210621-161419
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git adc2e56ebe6377f5c032d96aee0feac30a640453
+config: x86_64-randconfig-a012-20210621 (attached as .config)
+compiler: clang version 13.0.0 (https://github.com/llvm/llvm-project e1adf90826a57b674eee79b071fb46c1f5683cd0)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install x86_64 cross compiling tool for clang build
+        # apt-get install binutils-x86-64-linux-gnu
+        # https://github.com/0day-ci/linux/commit/57afb781e6da71b3eb1c32b7485adf57de789a1b
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review J-drzej-Jagielski/iavf-Add-trace-while-removing-device/20210621-161419
+        git checkout 57afb781e6da71b3eb1c32b7485adf57de789a1b
+        # save the attached .config to linux build tree
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>):
+
+   arch/x86/Makefile:148: CONFIG_X86_X32 enabled but no binutils support
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/crypto/cmac.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/crypto/md5.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/crypto/sha512_generic.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/drivers/net/net_failover.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/drivers/net/virtio_net.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/fs/cifs/cifs.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/fs/nfs/nfsv4.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/lib/crypto/libarc4.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/net/core/failover.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/net/dns_resolver/dns_resolver.ko', needed by '__modinst'.
+>> make[2]: *** No rule to make target '/tmp/kernel/x86_64-randconfig-a012-20210621/clang-13/57afb781e6da71b3eb1c32b7485adf57de789a1b/lib/modules/5.13.0-rc6+/kernel/net/sunrpc/auth_gss/auth_rpcgss.ko', needed by '__modinst'.
+   make[2]: Target '__modinst' not remade because of errors.
+   make[1]: *** [Makefile:1773: modules_install] Error 2
+   make: *** [Makefile:215: __sub-make] Error 2
+   make: Target 'modules_install' not remade because of errors.
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 59 ++++++++++-------------------
- 1 file changed, 19 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7a0a740..7ddd414 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5786,24 +5786,6 @@ static void i40e_remove_queue_channels(struct i40e_vsi *vsi)
- }
- 
- /**
-- * i40e_is_any_channel - channel exist or not
-- * @vsi: ptr to VSI to which channels are associated with
-- *
-- * Returns true or false if channel(s) exist for associated VSI or not
-- **/
--static bool i40e_is_any_channel(struct i40e_vsi *vsi)
--{
--	struct i40e_channel *ch, *ch_tmp;
--
--	list_for_each_entry_safe(ch, ch_tmp, &vsi->ch_list, list) {
--		if (ch->initialized)
--			return true;
--	}
--
--	return false;
--}
--
--/**
-  * i40e_get_max_queues_for_channel
-  * @vsi: ptr to VSI to which channels are associated with
-  *
-@@ -6309,26 +6291,15 @@ int i40e_create_queue_channel(struct i40e_vsi *vsi,
- 	/* By default we are in VEPA mode, if this is the first VF/VMDq
- 	 * VSI to be added switch to VEB mode.
- 	 */
--	if ((!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) ||
--	    (!i40e_is_any_channel(vsi))) {
--		if (!is_power_of_2(vsi->tc_config.tc_info[0].qcount)) {
--			dev_dbg(&pf->pdev->dev,
--				"Failed to create channel. Override queues (%u) not power of 2\n",
--				vsi->tc_config.tc_info[0].qcount);
--			return -EINVAL;
--		}
- 
--		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
--			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-+	if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
-+		pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
- 
--			if (vsi->type == I40E_VSI_MAIN) {
--				if (pf->flags & I40E_FLAG_TC_MQPRIO)
--					i40e_do_reset(pf, I40E_PF_RESET_FLAG,
--						      true);
--				else
--					i40e_do_reset_safe(pf,
--							   I40E_PF_RESET_FLAG);
--			}
-+		if (vsi->type == I40E_VSI_MAIN) {
-+			if (pf->flags & I40E_FLAG_TC_MQPRIO)
-+				i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
-+			else
-+				i40e_do_reset_safe(pf, I40E_PF_RESET_FLAG);
- 		}
- 		/* now onwards for main VSI, number of queues will be value
- 		 * of TC0's queue count
-@@ -7979,12 +7950,20 @@ config_tc:
- 			    vsi->seid);
- 		need_reset = true;
- 		goto exit;
--	} else {
--		dev_info(&vsi->back->pdev->dev,
--			 "Setup channel (id:%u) utilizing num_queues %d\n",
--			 vsi->seid, vsi->tc_config.tc_info[0].qcount);
-+	} else if (enabled_tc &&
-+		   (!is_power_of_2(vsi->tc_config.tc_info[0].qcount))) {
-+		netdev_info(netdev,
-+			    "Failed to create channel. Override queues (%u) not power of 2\n",
-+			    vsi->tc_config.tc_info[0].qcount);
-+		ret = -EINVAL;
-+		need_reset = true;
-+		goto exit;
- 	}
- 
-+	dev_info(&vsi->back->pdev->dev,
-+		 "Setup channel (id:%u) utilizing num_queues %d\n",
-+		 vsi->seid, vsi->tc_config.tc_info[0].qcount);
-+
- 	if (pf->flags & I40E_FLAG_TC_MQPRIO) {
- 		if (vsi->mqprio_qopt.max_rate[0]) {
- 			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
--- 
-1.8.3.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 48805 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210621/1a0e4829/attachment-0001.bin>
