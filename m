@@ -1,163 +1,83 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Tue, 22 Jun 2021 16:13:38 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v1 2/5] igc: Integrate flex
- filter into ethtool ops
-In-Reply-To: <a9c671aa107bb1436b924dd91e802ff642591468.camel@intel.com>
-References: <20210611003924.492853-1-vinicius.gomes@intel.com>
- <20210611003924.492853-3-vinicius.gomes@intel.com>
- <a9c671aa107bb1436b924dd91e802ff642591468.camel@intel.com>
-Message-ID: <8735t9sdb1.fsf@vcostago-mobl2.amr.corp.intel.com>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Date: Tue, 22 Jun 2021 23:21:23 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 00/12] Add switchdev driver
+ model for ice driver
+Message-ID: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Tony,
+The following patch series introduces basic switchdev model
+support in ice driver. Implement the following blocks of
+switchdev framework:
+- VF port representors creation
+- control plane VSI definition 
+- exception path (a. k. a. "slow-path") - to allow a virtual
+switch or linux bridge to receive any packet that doesn't match
+any hw filter
+- link state management of virtual ports
+- query virtual port statistics
 
-"Nguyen, Anthony L" <anthony.l.nguyen@intel.com> writes:
+Hardware offload support in switchdev mode is out of scope of
+this patchset. Devlink interface is used to toggle between
+switchdev and legacy (the default) modes of the driver.
 
-> On Thu, 2021-06-10 at 17:39 -0700, Vinicius Costa Gomes wrote:
->> From: Kurt Kanzenbach <kurt@linutronix.de>
->>
->> Use the flex filter mechanism to extend the current ethtool filter
->> operations by intercoperating the user data. This allows to match
->> eight more bytes within a Ethernet frame in addition to macs, ether
->> types and vlan.
->>
->> The matching pattern looks like this:
->>
->>  * dest_mac [6]
->>  * src_mac [6]
->>  * tpid [2]
->>  * vlan tci [2]
->>  * ether type [2]
->>  * user data [8]
->>
->> This can be used to match Profinet traffic classes by FrameID range.
->>
->> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
->> Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->> ---
->
-> I was preparing these patches for a pull request and came across a
-> couple warnings. Could you address them before I send these on?
+Changelog:
+ v2:
+  * fix build issue in ice: setting and releasing switchdev environment
+  by moving call of ice_vsi_setup to next patch which have definition
+  for switchdev VSI
 
-Sure thing. Sorry I missed those.
+Grzegorz Nitka (5):
+  ice: setting and releasing switchdev environment
+  ice: introduce new type of VSI for switchdev
+  ice: enable/disable switchdev when managing VFs
+  ice: rebuild switchdev when resetting all VFs
+  ice: switchdev slow path
 
->
-> <snip>
->
->> @@ -1215,6 +1221,20 @@ static void igc_ethtool_init_nfc_rule(struct
->> igc_nfc_rule *rule,
->>               ether_addr_copy(rule->filter.dst_addr,
->>                               fsp->h_u.ether_spec.h_dest);
->>       }
->> +
->> +     /* Check for user defined data */
->> +     if ((fsp->flow_type & FLOW_EXT) &&
->> +         (fsp->h_ext.data[0] || fsp->h_ext.data[1])) {
->> +             rule->filter.match_flags |= IGC_FILTER_FLAG_USER_DATA;
->> +             memcpy(rule->filter.user_data, fsp->h_ext.data,
->> sizeof(fsp->h_ext.data));
->> +             memcpy(rule->filter.user_mask, fsp->m_ext.data,
->> sizeof(fsp->m_ext.data));
->> +
->> +             /* VLAN etype matching is only valid using flex filter
->> */
->> +             if ((fsp->flow_type & FLOW_EXT) && fsp-
->> >h_ext.vlan_etype) {
->> +                     rule->filter.vlan_etype = fsp-
->> >h_ext.vlan_etype;
->> +                     rule->filter.match_flags |=
->> IGC_FILTER_FLAG_VLAN_ETYPE;
->
-> drivers/net/ethernet/intel/igc/igc_ethtool.c:1234:49: warning:
-> incorrect type in assignment (different base types)
-> drivers/net/ethernet/intel/igc/igc_ethtool.c:1234:49:    expected
-> unsigned short [usertype] vlan_etype
-> drivers/net/ethernet/intel/igc/igc_ethtool.c:1234:49:    got restricted
-> __be16 const [usertype] vlan_etype
+Michal Swiatkowski (5):
+  ice: basic support for eswitch mode management
+  ice: introduce VF port representor
+  ice: allow process vf opcodes in different ways
+  ice: manage VSI antispoof and destination override
+  ice: allow changing lan_en and lb_en on dflt rules
 
-Will fix.
+Wojciech Drewek (2):
+  ice: Move devlink port to PF/VF struct
+  ice: add port representor ethtool ops and stats
 
->
-> <snip>
->
->> +static int igc_add_flex_filter(struct igc_adapter *adapter,
->> +                            struct igc_nfc_rule *rule)
->> +{
->> +     struct igc_flex_filter flex = { };
->> +     struct igc_nfc_filter *filter = &rule->filter;
->> +     unsigned int eth_offset, user_offset;
->> +     int ret, index;
->> +     bool vlan;
->> +
->> +     index = igc_find_avail_flex_filter_slot(adapter);
->> +     if (index < 0)
->> +             return -ENOSPC;
->> +
->> +     /* Construct the flex filter:
->> +      *  -> dest_mac [6]
->> +      *  -> src_mac [6]
->> +      *  -> tpid [2]
->> +      *  -> vlan tci [2]
->> +      *  -> ether type [2]
->> +      *  -> user data [8]
->> +      *  -> = 26 bytes => 32 length
->> +      */
->> +     flex.index    = index;
->> +     flex.length   = 32;
->> +     flex.rx_queue = rule->action;
->> +
->> +     vlan = rule->filter.vlan_tci || rule->filter.vlan_etype;
->> +     eth_offset = vlan ? 16 : 12;
->> +     user_offset = vlan ? 18 : 14;
->> +
->> +     /* Add destination MAC  */
->> +     if (rule->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR)
->> +             igc_flex_filter_add_field(&flex, &filter->dst_addr, 0,
->> +                                       ETH_ALEN, NULL);
->> +
->> +     /* Add source MAC */
->> +     if (rule->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR)
->> +             igc_flex_filter_add_field(&flex, &filter->src_addr, 6,
->> +                                       ETH_ALEN, NULL);
->> +
->> +     /* Add VLAN etype */
->> +     if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_ETYPE)
->> +             igc_flex_filter_add_field(&flex, &filter->vlan_etype,
->> 12,
->> +                                       sizeof(filter->vlan_etype),
->> +                                       NULL);
->> +
->> +     /* Add VLAN TCI */
->> +     if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI)
->> +             igc_flex_filter_add_field(&flex, &filter->vlan_tci, 14,
->> +                                       sizeof(filter->vlan_tci),
->> NULL);
->> +
->> +     /* Add Ether type */
->> +     if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
->> +             u16 etype = cpu_to_be16(filter->etype);
->
-> drivers/net/ethernet/intel/igc/igc_main.c:3332:29: warning: incorrect
-> type in initializer (different base types)
-> drivers/net/ethernet/intel/igc/igc_main.c:3332:29:    expected unsigned
-> short [usertype] etype
-> drivers/net/ethernet/intel/igc/igc_main.c:3332:29:    got restricted
-> __be16 [usertype]
+ drivers/net/ethernet/intel/Kconfig            |  10 +
+ drivers/net/ethernet/intel/ice/Makefile       |   4 +-
+ drivers/net/ethernet/intel/ice/ice.h          |  48 +-
+ drivers/net/ethernet/intel/ice/ice_base.c     |  37 +-
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 109 ++-
+ drivers/net/ethernet/intel/ice/ice_devlink.h  |   6 +-
+ drivers/net/ethernet/intel/ice/ice_eswitch.c  | 656 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_eswitch.h  |  82 +++
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  32 +-
+ drivers/net/ethernet/intel/ice/ice_fltr.c     |  80 +++
+ drivers/net/ethernet/intel/ice/ice_fltr.h     |   7 +
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  43 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 112 ++-
+ drivers/net/ethernet/intel/ice/ice_lib.h      |  11 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |  47 +-
+ drivers/net/ethernet/intel/ice/ice_repr.c     | 329 +++++++++
+ drivers/net/ethernet/intel/ice/ice_repr.h     |  27 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |   2 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   6 +
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |   3 +
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c |   4 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 196 +++++-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  45 ++
+ 24 files changed, 1817 insertions(+), 80 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.h
 
-Will fix.
-
->
->
->> +             igc_flex_filter_add_field(&flex, &etype, eth_offset,
->> +                                       sizeof(etype), NULL);
->> +     }
->>
-
-
-Cheers,
 -- 
-Vinicius
+2.30.2
+
