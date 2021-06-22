@@ -1,39 +1,65 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 22 Jun 2021 09:50:21 +0300
-Subject: [Intel-wired-lan] [PATCH] igc: Fix an error handling path in
- 'igc_probe()'
-In-Reply-To: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
-References: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <ae67bbc1-3bd9-c64c-b507-d2fd30da08e0@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 22 Jun 2021 10:23:14 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3] ice: add tracepoints
+In-Reply-To: <20210608233517.3135522-1-jesse.brandeburg@intel.com>
+References: <20210608233517.3135522-1-jesse.brandeburg@intel.com>
+Message-ID: <43730a28-ccc6-1898-97b5-b4833038a425@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/12/2021 23:00, Christophe JAILLET wrote:
-> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it
-> must be undone by a corresponding 'pci_disable_pcie_error_reporting()'
-> call, as already done in the remove function.
+Dear Jesse,
+
+
+Am 09.06.21 um 01:35 schrieb Jesse Brandeburg:
+> This patch is modeled after one by Scott Peterson for i40e.
 > 
-> Fixes: c9a11c23ceb6 ("igc: Add netdev")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Add tracepoints to the driver, via a new file ice_trace.h and some new
+> trace calls added in interesting places in the driver. Add some tracing
+> for DIMLIB to help debug interrupt moderation problems.
+> 
+> Performance should not be affected, and this can be very useful
+> for debugging and adding new trace events to paths in the future.
+> 
+> Note eBPF programs can attach to these events, as well as perf
+> can count them since we're attaching to the events subsystem
+> in the kernel.
+> 
+> Co-developed-by: Ben Shelton <benjamin.h.shelton@intel.com>
+> Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 1 +
->   1 file changed, 1 insertion(+)
+> NOTE: checkpatch will complain about this patch due to the macros
+> defining the new trace functionality being formatted for readability.
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 3f6b6d4543a8..6389a41cacc1 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -6057,6 +6057,7 @@ static int igc_probe(struct pci_dev *pdev,
->   err_ioremap:
->   	free_netdev(netdev);
->   err_alloc_etherdev:
-> +	pci_disable_pcie_error_reporting(pdev);
->   	pci_release_mem_regions(pdev);
->   err_pci_reg:
->   err_dma:
+> Testing Hints:
+> See that performance is unaffected while tracepoints are present but
+> disabled (default state). Enable them all and see they appear in
+> /sys/kernel/debug/tracing/trace when exercised, and after 'make install'
+> you can see the events in perf list.
 > 
-Thanks for this patch.
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
+> When disabled, a tracepoint reduces to a 5-byte no-op. When enabled,
+> that code is patched to jump to the tracepoint clause, which is located
+> somewhere nearby.  See include/linux/jump_label.h for info in static
+> keys, and samples/trace-events/trace-events-samples.[ch] for info on the
+> trace events.
+> 
+> To test tracepoints:
+> insmod ice and bring up a link
+> cd /sys/kernel/debug/tracing
+> echo > trace
+> echo 1 > events/ice/enable
+> send something over ice
+> cat trace
+> echo 0 > events/ice/enable
+
+I?d put that example into the commit message.
+
+[?]
+
+
+Kind regards,
+
+Paul
