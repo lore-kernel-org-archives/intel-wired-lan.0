@@ -1,100 +1,39 @@
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Mon, 21 Jun 2021 21:18:56 -0400
-Subject: [Intel-wired-lan] [PATCH net-next 07/12] ice: setting and
- releasing switchdev environment
-In-Reply-To: <YNEwV42hOSAhtbiX@localhost.localdomain>
-References: <20210617234413.104069-1-michal.swiatkowski@linux.intel.com>
- <20210617234413.104069-8-michal.swiatkowski@linux.intel.com>
- <a6a0b9064847e6106cca2ae4a9669b84f4322926.camel@intel.com>
- <YNEwV42hOSAhtbiX@localhost.localdomain>
-Message-ID: <YNE6gDaubIydNmGz@localhost.localdomain>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Tue, 22 Jun 2021 09:50:21 +0300
+Subject: [Intel-wired-lan] [PATCH] igc: Fix an error handling path in
+ 'igc_probe()'
+In-Reply-To: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
+References: <f24ae8234fedd1689fa0116038e10e4d3a033802.1623527947.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <ae67bbc1-3bd9-c64c-b507-d2fd30da08e0@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 21, 2021 at 08:35:35PM -0400, Michal Swiatkowski wrote:
-> On Mon, Jun 21, 2021 at 06:21:15PM +0000, Nguyen, Anthony L wrote:
-> > On Fri, 2021-06-18 at 01:44 +0200, Michal Swiatkowski wrote:
-> > > From: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> > > 
-> > > Switchdev environment has to be set up when user create VFs
-> > > and eswitch mode is switchdev. Release is done when user
-> > > delete all VFs.
-> > > 
-> > > Data path in this implementation is based on control plane VSI.
-> > > This VSI is used to pass traffic from port representors to
-> > > coresponfing VFs and vice versa. Default TX rule has to be
-> > > added to forward packet to control plane VSI. This will redirect
-> > > packets from VFs which don't match other rules to control plane
-> > > VSI.
-> > > 
-> > > On RX site default rule is added on uplink VSI to receive all
-> > > traffic that doesn't match other rules. When setting switchdev
-> > > environment all other rules from VFs should be removed. Packet to
-> > > VFs will be forwarded by control plane VSI.
-> > > 
-> > > As VF without any mac rules can't send any packet because of
-> > > antispoof mechanism, VSI antispoof should be turned off on each VFs.
-> > > 
-> > > To send packet from representor to correct VSI, destintion VSI
-> > > field in TX descriptor will have to be filled. Allow that by
-> > > setting destination override bit in control plane VSI security
-> > > config.
-> > > 
-> > > Packet from VFs will be received on control plane VSI. Driver
-> > > should decide to which netdev forward the packet. Decision is
-> > > made based on src_vsi field from descriptor. There is a target
-> > > netdev list in control plane VSI struct which choose netdev
-> > > based on src_vsi number.
-> > > 
-> > > Co-developed-by: Michal Swiatkowski <
-> > > michal.swiatkowski at linux.intel.com>
-> > > Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com
-> > > >
-> > > Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> > > ---
-> > 
-> > <snip>
-> > 
-> > > +/**
-> > > + * ice_eswitch_vsi_setup - configure switchdev control VSI
-> > > + * @pf: pointer to PF structure
-> > > + * @pi: pointer to port_info structure
-> > > + */
-> > > +static struct ice_vsi *
-> > > +ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
-> > > +{
-> > > +	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-> > > ICE_INVAL_VFID);
-> > 
-> > This doesn't build; the switchdev VSI doesn't get introduced until the
-> > next patch. 
-> > 
+On 6/12/2021 23:00, Christophe JAILLET wrote:
+> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it
+> must be undone by a corresponding 'pci_disable_pcie_error_reporting()'
+> call, as already done in the remove function.
 > 
-> Sorry, I missed that, will fix it in next version.
+> Fixes: c9a11c23ceb6 ("igc: Add netdev")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+>   1 file changed, 1 insertion(+)
 > 
-
-This patchset is already on your dev-queue branch, what should I do in
-this case? You will reveret this, or I should send fixed version without
-applying it on top of the dev-queue?
-
-> > drivers/net/ethernet/intel/ice/ice_eswitch.c: In function
-> > ice_eswitch_vsi_setup:
-> > drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: error:
-> > ICE_VSI_SWITCHDEV_CTRL undeclared (first use in this function)
-> >   263 |  return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-> > ICE_INVAL_VFID);
-> >       |                               ^~~~~~~~~~~~~~~~~~~~~~
-> > drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: note: each
-> > undeclared identifier is reported only once for each function it
-> > appears in
-> > drivers/net/ethernet/intel/ice/ice_eswitch.c:264:1: error: control
-> > reaches end of non-void function [-Werror=return-type]
-> >   264 | }
-> > 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 3f6b6d4543a8..6389a41cacc1 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -6057,6 +6057,7 @@ static int igc_probe(struct pci_dev *pdev,
+>   err_ioremap:
+>   	free_netdev(netdev);
+>   err_alloc_etherdev:
+> +	pci_disable_pcie_error_reporting(pdev);
+>   	pci_release_mem_regions(pdev);
+>   err_pci_reg:
+>   err_dma:
+> 
+Thanks for this patch.
+Acked-by: Sasha Neftin <sasha.neftin@intel.com>
