@@ -1,118 +1,101 @@
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Tue, 22 Jun 2021 21:04:51 -0400
-Subject: [Intel-wired-lan] [PATCH net-next 07/12] ice: setting and
- releasing switchdev environment
-In-Reply-To: <6b4044c85a27076d4ce8a0a4f96a04e72abcc63a.camel@intel.com>
-References: <20210617234413.104069-1-michal.swiatkowski@linux.intel.com>
- <20210617234413.104069-8-michal.swiatkowski@linux.intel.com>
- <a6a0b9064847e6106cca2ae4a9669b84f4322926.camel@intel.com>
- <YNEwV42hOSAhtbiX@localhost.localdomain>
- <YNE6gDaubIydNmGz@localhost.localdomain>
- <6b4044c85a27076d4ce8a0a4f96a04e72abcc63a.camel@intel.com>
-Message-ID: <YNKIs8QbWusOKzXp@localhost.localdomain>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 23 Jun 2021 07:48:29 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 00/12] Add switchdev
+ driver model for ice driver
+In-Reply-To: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
+References: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
+Message-ID: <c2378b90-a307-aa00-471b-247a15423527@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 22, 2021 at 03:14:58PM +0000, Nguyen, Anthony L wrote:
-> On Mon, 2021-06-21 at 21:18 -0400, Michal Swiatkowski wrote:
-> > On Mon, Jun 21, 2021 at 08:35:35PM -0400, Michal Swiatkowski wrote:
-> > > On Mon, Jun 21, 2021 at 06:21:15PM +0000, Nguyen, Anthony L wrote:
-> > > > On Fri, 2021-06-18 at 01:44 +0200, Michal Swiatkowski wrote:
-> > > > > From: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> > > > > 
-> > > > > Switchdev environment has to be set up when user create VFs
-> > > > > and eswitch mode is switchdev. Release is done when user
-> > > > > delete all VFs.
-> > > > > 
-> > > > > Data path in this implementation is based on control plane VSI.
-> > > > > This VSI is used to pass traffic from port representors to
-> > > > > coresponfing VFs and vice versa. Default TX rule has to be
-> > > > > added to forward packet to control plane VSI. This will
-> > > > > redirect
-> > > > > packets from VFs which don't match other rules to control plane
-> > > > > VSI.
-> > > > > 
-> > > > > On RX site default rule is added on uplink VSI to receive all
-> > > > > traffic that doesn't match other rules. When setting switchdev
-> > > > > environment all other rules from VFs should be removed. Packet
-> > > > > to
-> > > > > VFs will be forwarded by control plane VSI.
-> > > > > 
-> > > > > As VF without any mac rules can't send any packet because of
-> > > > > antispoof mechanism, VSI antispoof should be turned off on each
-> > > > > VFs.
-> > > > > 
-> > > > > To send packet from representor to correct VSI, destintion VSI
-> > > > > field in TX descriptor will have to be filled. Allow that by
-> > > > > setting destination override bit in control plane VSI security
-> > > > > config.
-> > > > > 
-> > > > > Packet from VFs will be received on control plane VSI. Driver
-> > > > > should decide to which netdev forward the packet. Decision is
-> > > > > made based on src_vsi field from descriptor. There is a target
-> > > > > netdev list in control plane VSI struct which choose netdev
-> > > > > based on src_vsi number.
-> > > > > 
-> > > > > Co-developed-by: Michal Swiatkowski <
-> > > > > michal.swiatkowski at linux.intel.com>
-> > > > > Signed-off-by: Michal Swiatkowski <
-> > > > > michal.swiatkowski at linux.intel.com
-> > > > > Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-> > > > > ---
-> > > > 
-> > > > <snip>
-> > > > 
-> > > > > +/**
-> > > > > + * ice_eswitch_vsi_setup - configure switchdev control VSI
-> > > > > + * @pf: pointer to PF structure
-> > > > > + * @pi: pointer to port_info structure
-> > > > > + */
-> > > > > +static struct ice_vsi *
-> > > > > +ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info
-> > > > > *pi)
-> > > > > +{
-> > > > > +	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-> > > > > ICE_INVAL_VFID);
-> > > > 
-> > > > This doesn't build; the switchdev VSI doesn't get introduced
-> > > > until the
-> > > > next patch. 
-> > > > 
-> > > 
-> > > Sorry, I missed that, will fix it in next version.
-> > > 
-> > 
-> > This patchset is already on your dev-queue branch, what should I do
-> > in
-> > this case? You will reveret this, or I should send fixed version
-> > without
-> > applying it on top of the dev-queue?
-> 
-> I forgot to drop the patches from dev-queue. Everything should be clear
-> now.
-> 
+Dear Michal,
 
-Yeah, everything is fine now, thanks
-> > 
-> > > > drivers/net/ethernet/intel/ice/ice_eswitch.c: In function
-> > > > ice_eswitch_vsi_setup:
-> > > > drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: error:
-> > > > ICE_VSI_SWITCHDEV_CTRL undeclared (first use in this function)
-> > > >   263 |  return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL,
-> > > > ICE_INVAL_VFID);
-> > > >       |                               ^~~~~~~~~~~~~~~~~~~~~~
-> > > > drivers/net/ethernet/intel/ice/ice_eswitch.c:263:31: note: each
-> > > > undeclared identifier is reported only once for each function it
-> > > > appears in
-> > > > drivers/net/ethernet/intel/ice/ice_eswitch.c:264:1: error:
-> > > > control
-> > > > reaches end of non-void function [-Werror=return-type]
-> > > >   264 | }
-> > > > 
-> > > _______________________________________________
-> > > Intel-wired-lan mailing list
-> > > Intel-wired-lan at osuosl.org
-> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+Am 22.06.21 um 23:21 schrieb Michal Swiatkowski:
+> The following patch series introduces basic switchdev model
+> support in ice driver. Implement the following blocks of
+> switchdev framework:
+> - VF port representors creation
+> - control plane VSI definition
+> - exception path (a. k. a. "slow-path") - to allow a virtual
+> switch or linux bridge to receive any packet that doesn't match
+> any hw filter
+> - link state management of virtual ports
+> - query virtual port statistics
+> 
+> Hardware offload support in switchdev mode is out of scope of
+> this patchset. Devlink interface is used to toggle between
+> switchdev and legacy (the default) modes of the driver.
+
+These are great news. Could you please elaborate in the summary how to 
+switch to the new mode of the driver? What are the benefits of switchdev 
+in this case? Less maintenance or better performance?
+
+Should the switchdev folks be involved in review?
+
+> Changelog:
+>   v2:
+>    * fix build issue in ice: setting and releasing switchdev environment
+>    by moving call of ice_vsi_setup to next patch which have definition
+>    for switchdev VSI
+> 
+> Grzegorz Nitka (5):
+>    ice: setting and releasing switchdev environment
+
+It?d be great if you could use verbs in imperative mood.
+
+
+Kind regards,
+
+Paul
+
+
+>    ice: introduce new type of VSI for switchdev
+>    ice: enable/disable switchdev when managing VFs
+>    ice: rebuild switchdev when resetting all VFs
+>    ice: switchdev slow path
+> 
+> Michal Swiatkowski (5):
+>    ice: basic support for eswitch mode management
+>    ice: introduce VF port representor
+>    ice: allow process vf opcodes in different ways
+>    ice: manage VSI antispoof and destination override
+>    ice: allow changing lan_en and lb_en on dflt rules
+> 
+> Wojciech Drewek (2):
+>    ice: Move devlink port to PF/VF struct
+>    ice: add port representor ethtool ops and stats
+> 
+>   drivers/net/ethernet/intel/Kconfig            |  10 +
+>   drivers/net/ethernet/intel/ice/Makefile       |   4 +-
+>   drivers/net/ethernet/intel/ice/ice.h          |  48 +-
+>   drivers/net/ethernet/intel/ice/ice_base.c     |  37 +-
+>   drivers/net/ethernet/intel/ice/ice_devlink.c  | 109 ++-
+>   drivers/net/ethernet/intel/ice/ice_devlink.h  |   6 +-
+>   drivers/net/ethernet/intel/ice/ice_eswitch.c  | 656 ++++++++++++++++++
+>   drivers/net/ethernet/intel/ice/ice_eswitch.h  |  82 +++
+>   drivers/net/ethernet/intel/ice/ice_ethtool.c  |  32 +-
+>   drivers/net/ethernet/intel/ice/ice_fltr.c     |  80 +++
+>   drivers/net/ethernet/intel/ice/ice_fltr.h     |   7 +
+>   .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  43 ++
+>   drivers/net/ethernet/intel/ice/ice_lib.c      | 112 ++-
+>   drivers/net/ethernet/intel/ice/ice_lib.h      |  11 +
+>   drivers/net/ethernet/intel/ice/ice_main.c     |  47 +-
+>   drivers/net/ethernet/intel/ice/ice_repr.c     | 329 +++++++++
+>   drivers/net/ethernet/intel/ice/ice_repr.h     |  27 +
+>   drivers/net/ethernet/intel/ice/ice_switch.c   |   2 +-
+>   drivers/net/ethernet/intel/ice/ice_switch.h   |   6 +
+>   drivers/net/ethernet/intel/ice/ice_txrx.c     |   3 +
+>   drivers/net/ethernet/intel/ice/ice_txrx_lib.c |   4 +-
+>   drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+>   .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 196 +++++-
+>   .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  45 ++
+>   24 files changed, 1817 insertions(+), 80 deletions(-)
+>   create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.c
+>   create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.h
+>   create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.c
+>   create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.h
+> 
