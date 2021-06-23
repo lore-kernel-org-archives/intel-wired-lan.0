@@ -1,115 +1,133 @@
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Wed, 23 Jun 2021 03:50:40 -0400
-Subject: [Intel-wired-lan] [PATCH net-next v2 00/12] Add switchdev
- driver model for ice driver
-In-Reply-To: <c2378b90-a307-aa00-471b-247a15423527@molgen.mpg.de>
-References: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
- <c2378b90-a307-aa00-471b-247a15423527@molgen.mpg.de>
-Message-ID: <YNLn0GpjuoQ2OHuN@localhost.localdomain>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Wed, 23 Jun 2021 13:08:42 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix ping is lost after
+ untrusted VF had tried to change MAC
+Message-ID: <20210623130842.9956-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 23, 2021 at 07:48:29AM +0200, Paul Menzel wrote:
-> Dear Michal,
-> 
-> 
-> Am 22.06.21 um 23:21 schrieb Michal Swiatkowski:
-> > The following patch series introduces basic switchdev model
-> > support in ice driver. Implement the following blocks of
-> > switchdev framework:
-> > - VF port representors creation
-> > - control plane VSI definition
-> > - exception path (a. k. a. "slow-path") - to allow a virtual
-> > switch or linux bridge to receive any packet that doesn't match
-> > any hw filter
-> > - link state management of virtual ports
-> > - query virtual port statistics
-> > 
-> > Hardware offload support in switchdev mode is out of scope of
-> > this patchset. Devlink interface is used to toggle between
-> > switchdev and legacy (the default) modes of the driver.
-> 
-> These are great news. Could you please elaborate in the summary how to
-> switch to the new mode of the driver? What are the benefits of switchdev in
-> this case? Less maintenance or better performance?
-> 
-> Should the switchdev folks be involved in review?
-> 
+From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 
-You can switch to new mode using devlink tool. Commands are described in
-first patch. We are still working on readme with all information about
-switchdev in ice. The main benefits is better performance. With
-switchdev You will be able to offload specific kind of rules in hardware
-using tc-tool (or OVS). This will be introduced in follow up patchset.
+Make changes to MAC address dependent on the response of PF.
+Disallow changes to hw mac address and mac filter from untrusted
+VF, thanks to that ping is not lost if VF tries to change MAC.
+Add a new field in iavf_mac_filter, to indicate whether there
+was response from PF for given filter. Based on this field pass
+or discard the filter.
+If untrusted VF tried to change it's address, it's not changed.
+Still filter was changed, because of that ping couldn't go through.
 
-I think they should. Do You know anyone that I should add to CC?
+Fixes: c5c922b3e09b ("iavf: fix MAC address setting for VFs when filter is rejected")
+Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  1 +
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 47 ++++++++++++++++++-
+ 3 files changed, 47 insertions(+), 2 deletions(-)
 
-> > Changelog:
-> >   v2:
-> >    * fix build issue in ice: setting and releasing switchdev environment
-> >    by moving call of ice_vsi_setup to next patch which have definition
-> >    for switchdev VSI
-> > 
-> > Grzegorz Nitka (5):
-> >    ice: setting and releasing switchdev environment
-> 
-> It?d be great if you could use verbs in imperative mood.
->
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 9ccb88e..b79d02f 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -137,6 +137,7 @@ struct iavf_q_vector {
+ struct iavf_mac_filter {
+ 	struct list_head list;
+ 	u8 macaddr[ETH_ALEN];
++	bool is_new_mac;	/* filter is new, wait for PF decision */
+ 	bool remove;		/* filter needs to be removed */
+ 	bool add;		/* filter needs to be added */
+ };
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index d64e256..c9d9bf9 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -797,6 +797,7 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ 
+ 		list_add_tail(&f->list, &adapter->mac_filter_list);
+ 		f->add = true;
++		f->is_new_mac = true;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
+ 	} else {
+ 		f->remove = false;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index bc403b7..1dd4681 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -540,6 +540,47 @@ void iavf_del_ether_addrs(struct iavf_adapter *adapter)
+ 	kfree(veal);
+ }
+ 
++/**
++ * iavf_is_mac_add_ok
++ * @adapter: adapter structure
++ *
++ * Submit list of filters based on PF response.
++ **/
++static void iavf_mac_add_ok(struct iavf_adapter *adapter)
++{
++	struct iavf_mac_filter *f, *ftmp;
++
++	spin_lock_bh(&adapter->mac_vlan_list_lock);
++	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
++		f->is_new_mac = false;
++	}
++	spin_unlock_bh(&adapter->mac_vlan_list_lock);
++}
++
++/**
++ * iavf_is_mac_add_reject
++ * @adapter: adapter structure
++ *
++ * Remove filters from list based on PF response.
++ **/
++static void iavf_mac_add_reject(struct iavf_adapter *adapter)
++{
++	struct net_device *netdev = adapter->netdev;
++	struct iavf_mac_filter *f, *ftmp;
++
++	spin_lock_bh(&adapter->mac_vlan_list_lock);
++	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
++		if (f->remove && ether_addr_equal(f->macaddr, netdev->dev_addr))
++			f->remove = false;
++
++		if (f->is_new_mac) {
++			list_del(&f->list);
++			kfree(f);
++		}
++	}
++	spin_unlock_bh(&adapter->mac_vlan_list_lock);
++}
++
+ /**
+  * iavf_add_vlans
+  * @adapter: adapter structure
+@@ -1500,6 +1541,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		case VIRTCHNL_OP_ADD_ETH_ADDR:
+ 			dev_err(&adapter->pdev->dev, "Failed to add MAC filter, error %s\n",
+ 				iavf_stat_str(&adapter->hw, v_retval));
++			iavf_mac_add_reject(adapter);
+ 			/* restore administratively set MAC address */
+ 			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
+ 			break;
+@@ -1647,10 +1689,11 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		}
+ 	}
+ 	switch (v_opcode) {
+-	case VIRTCHNL_OP_ADD_ETH_ADDR: {
++	case VIRTCHNL_OP_ADD_ETH_ADDR:
++		if (!v_retval)
++			iavf_mac_add_ok(adapter);
+ 		if (!ether_addr_equal(netdev->dev_addr, adapter->hw.mac.addr))
+ 			ether_addr_copy(netdev->dev_addr, adapter->hw.mac.addr);
+-		}
+ 		break;
+ 	case VIRTCHNL_OP_GET_STATS: {
+ 		struct iavf_eth_stats *stats =
+-- 
+2.17.1
 
-I will fix this and try to use imperative mood.
-
-> 
-> Kind regards,
-> 
-> Paul
-> 
-> 
-> >    ice: introduce new type of VSI for switchdev
-> >    ice: enable/disable switchdev when managing VFs
-> >    ice: rebuild switchdev when resetting all VFs
-> >    ice: switchdev slow path
-> > 
-> > Michal Swiatkowski (5):
-> >    ice: basic support for eswitch mode management
-> >    ice: introduce VF port representor
-> >    ice: allow process vf opcodes in different ways
-> >    ice: manage VSI antispoof and destination override
-> >    ice: allow changing lan_en and lb_en on dflt rules
-> > 
-> > Wojciech Drewek (2):
-> >    ice: Move devlink port to PF/VF struct
-> >    ice: add port representor ethtool ops and stats
-> > 
-> >   drivers/net/ethernet/intel/Kconfig            |  10 +
-> >   drivers/net/ethernet/intel/ice/Makefile       |   4 +-
-> >   drivers/net/ethernet/intel/ice/ice.h          |  48 +-
-> >   drivers/net/ethernet/intel/ice/ice_base.c     |  37 +-
-> >   drivers/net/ethernet/intel/ice/ice_devlink.c  | 109 ++-
-> >   drivers/net/ethernet/intel/ice/ice_devlink.h  |   6 +-
-> >   drivers/net/ethernet/intel/ice/ice_eswitch.c  | 656 ++++++++++++++++++
-> >   drivers/net/ethernet/intel/ice/ice_eswitch.h  |  82 +++
-> >   drivers/net/ethernet/intel/ice/ice_ethtool.c  |  32 +-
-> >   drivers/net/ethernet/intel/ice/ice_fltr.c     |  80 +++
-> >   drivers/net/ethernet/intel/ice/ice_fltr.h     |   7 +
-> >   .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  43 ++
-> >   drivers/net/ethernet/intel/ice/ice_lib.c      | 112 ++-
-> >   drivers/net/ethernet/intel/ice/ice_lib.h      |  11 +
-> >   drivers/net/ethernet/intel/ice/ice_main.c     |  47 +-
-> >   drivers/net/ethernet/intel/ice/ice_repr.c     | 329 +++++++++
-> >   drivers/net/ethernet/intel/ice/ice_repr.h     |  27 +
-> >   drivers/net/ethernet/intel/ice/ice_switch.c   |   2 +-
-> >   drivers/net/ethernet/intel/ice/ice_switch.h   |   6 +
-> >   drivers/net/ethernet/intel/ice/ice_txrx.c     |   3 +
-> >   drivers/net/ethernet/intel/ice/ice_txrx_lib.c |   4 +-
-> >   drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
-> >   .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 196 +++++-
-> >   .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  45 ++
-> >   24 files changed, 1817 insertions(+), 80 deletions(-)
-> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.c
-> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.h
-> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.c
-> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.h
-> > 
