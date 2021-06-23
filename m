@@ -1,10 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 23 Jun 2021 20:15:58 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix missing rtnl locking
- when setting up pf switch
-In-Reply-To: <20210611100141.6089-1-mateusz.palczewski@intel.com>
-References: <20210611100141.6089-1-mateusz.palczewski@intel.com>
-Message-ID: <SJ0PR11MB56626CCB05BC3E0852356C4AFA089@SJ0PR11MB5662.namprd11.prod.outlook.com>
+Date: Wed, 23 Jun 2021 20:17:15 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix an error handling path in
+ 'ixgbe_probe()'
+In-Reply-To: <e3cc7010f6bd15d8ca49b935847450e92122dee8.1623505485.git.christophe.jaillet@wanadoo.fr>
+References: <e3cc7010f6bd15d8ca49b935847450e92122dee8.1623505485.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <SJ0PR11MB5662DBD0FD854E20709E5D3EFA089@SJ0PR11MB5662.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,28 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: Friday, June 11, 2021 3:02 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix missing rtnl locking when
-> setting up pf switch
+> Christophe JAILLET
+> Sent: Saturday, June 12, 2021 6:46 AM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
+> jeffrey.t.kirsher at intel.com; peter.p.waskiewicz.jr at intel.com
+> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; Christophe
+> JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org;
+> linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix an error handling path in
+> 'ixgbe_probe()'
 > 
-> From: Jan Sokolowski <jan.sokolowski@intel.com>
+> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it must be
+> undone by a corresponding 'pci_disable_pcie_error_reporting()'
+> call, as already done in the remove function.
 > 
-> A recent change that made i40e use new udp_tunnel infrastructure uses a
-> method that expects to be called under rtnl lock.
-> 
-> However, not all codepaths do the lock prior to calling i40e_setup_pf_switch.
-> 
-> Fix that by adding additional rtnl locking and unlocking.
-> 
-> Fixes: 40a98cb6f01f ("i40e: convert to new udp_tunnel infrastructure")
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Fixes: 6fabd715e6d8 ("ixgbe: Implement PCIe AER support")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 1 +
+>  1 file changed, 1 insertion(+)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
