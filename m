@@ -1,39 +1,114 @@
-From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Wed, 23 Jun 2021 20:17:15 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix an error handling path in
- 'ixgbe_probe()'
-In-Reply-To: <e3cc7010f6bd15d8ca49b935847450e92122dee8.1623505485.git.christophe.jaillet@wanadoo.fr>
-References: <e3cc7010f6bd15d8ca49b935847450e92122dee8.1623505485.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <SJ0PR11MB5662DBD0FD854E20709E5D3EFA089@SJ0PR11MB5662.namprd11.prod.outlook.com>
+From: Singhai, Anjali <anjali.singhai@intel.com>
+Date: Wed, 23 Jun 2021 22:15:59 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration
+ of number of qps per VF via devlink
+In-Reply-To: <c78efee5-d864-7903-98b5-207aadae19fa@intel.com>
+References: <20210426181940.14847-1-sridhar.samudrala@intel.com>
+ <CO1PR11MB48359F4AB09484353280CBA9F52D9@CO1PR11MB4835.namprd11.prod.outlook.com>
+ <c78efee5-d864-7903-98b5-207aadae19fa@intel.com>
+Message-ID: <DM6PR11MB32913145E3D57435455C206893089@DM6PR11MB3291.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Christophe JAILLET
-> Sent: Saturday, June 12, 2021 6:46 AM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
-> jeffrey.t.kirsher at intel.com; peter.p.waskiewicz.jr at intel.com
-> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; Christophe
-> JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org;
-> linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix an error handling path in
-> 'ixgbe_probe()'
-> 
-> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it must be
-> undone by a corresponding 'pci_disable_pcie_error_reporting()'
-> call, as already done in the remove function.
-> 
-> Fixes: 6fabd715e6d8 ("ixgbe: Implement PCIe AER support")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 1 +
->  1 file changed, 1 insertion(+)
+Sridhar, how do you do asymmetric number of queues and vectors to the VF using devlink? Or this ends up as a configuration on VF representors... I hope not.
 
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
+So I am guessing you can either bulk set the number of queues for each of the VFs or you can set it per SRIOV VF ports?
 
+Thanks
+Anjali
 
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Samudrala, Sridhar
+Sent: Wednesday, June 23, 2021 9:21 AM
+To: Creeley, Brett <brett.creeley@intel.com>; intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; Saleem, Shiraz <shiraz.saleem@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ice: Enable configuration of number of qps per VF via devlink
+
+On 5/17/2021 2:49 PM, Creeley, Brett wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf 
+>> Of Sridhar Samudrala
+>> Sent: Monday, April 26, 2021 11:20 AM
+>> To: intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L 
+>> <anthony.l.nguyen@intel.com>; Samudrala, Sridhar 
+>> <sridhar.samudrala@intel.com>
+>> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Enable 
+>> configuration of number of qps per VF via devlink
+>>
+>> Introduce a devlink parameter 'num_qps_per_vf' to allow user to 
+>> configure the maximum number of queue pairs given to SR-IOV VFs 
+>> before they are created.
+>>
+>> This is currently determined by the driver based on the number of 
+>> SR-IOV VFs created. In order to keep this behavior by default the 
+>> parameter is initialized to 0. To change the default behavior, user 
+>> can set num_qps_per_vf parameter via devlink and this will be used as 
+>> the preferred value to determine the queues and vectors assigned per 
+>> VF.
+> What if the host administrator wants to give the VF a different number 
+> of vectors than queues? For example, if the admin knows the VF 
+> instance will be exercising VF RDMA and the VF needs more vectors for 
+> RDMA traffic.
+>
+> Should we have 2 separate values, i.e. "num_qps_per_vf" and 
+> "num_msix_per_vf"?
+
+I missed responding to this comment.
+Sure. We can add num_msix_pr_vf as a later patch to enable additional vectors for RDMA.
+
+Tony,
+Can this patch be included in your series when you submit to netdev?
+OR do i need to rebase it based on the latest net-next?
+
+Thanks
+Sridhar
+>
+>> USAGE:
+>> On a 2 port NIC
+>>   # devlink dev param show
+>>   pci/0000:42:00.0:
+>>     name num_qps_per_vf type driver-specific
+>>       values:
+>>         cmode runtime value 0
+>>   pci/0000:42:00.1:
+>>     name num_qps_per_vf type driver-specific
+>>       values:
+>>         cmode runtime value 0
+>>
+>>   /* Set num_qps_per_vf to 4 */
+>>   # devlink dev param set pci/0000:42:00.0 name num_qps_per_vf value 
+>> 4 cmode runtime
+>>
+>>   # devlink dev param show pci/0000:42:00.0 name num_qps_per_vf
+>>   pci/0000:42:00.0:
+>>     name num_qps_per_vf type driver-specific
+>>       values:
+>>         cmode runtime value 4
+>>
+>>   # echo 8 > /sys/class/net/enp66s0f0/device/sriov_numvfs
+>>
+>> This will create 8 VFs with 4 queue pairs and 5 vectors per VF 
+>> compared to the default behavior of 16 queue pairs and 17 vectors per 
+>> VF.
+>>
+>> v2:
+>> Fixed kdoc for ice_devlink_num_qps_per_vf_validate()
+>>
+>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+>> ---
+>>   Documentation/networking/devlink/ice.rst      |  23 ++++
+>>   drivers/net/ethernet/intel/ice/ice_devlink.c  | 110 +++++++++++++++++-
+>>   drivers/net/ethernet/intel/ice/ice_main.c     |   3 +
+>>   .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   5 +-
+>>   4 files changed, 139 insertions(+), 2 deletions(-)
+>>
+> <snip>
+>
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
