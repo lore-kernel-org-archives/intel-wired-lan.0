@@ -1,76 +1,38 @@
-From: Nitesh Lal <nilal@redhat.com>
-Date: Fri, 25 Jun 2021 17:08:03 -0400
-Subject: [Intel-wired-lan] [PATCH v1 14/14] net/mlx4: Use
- irq_update_affinity_hint
-In-Reply-To: <YNBHQvo1uDfBbr5c@unreal>
-References: <20210617182242.8637-1-nitesh@redhat.com>
- <20210617182242.8637-15-nitesh@redhat.com>
- <YNBHQvo1uDfBbr5c@unreal>
-Message-ID: <CAFki+L=2nVA3FB03BjuXbj+di28LhVUzo9P9WoJyxoQFggt0VQ@mail.gmail.com>
+From: Brelinski, TonyX <tonyx.brelinski@intel.com>
+Date: Fri, 25 Jun 2021 22:34:59 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] igb: Add counter to i21x
+ doublecheck
+In-Reply-To: <1619786490-418369-1-git-send-email-grzegorz.siwik@intel.com>
+References: <1619786490-418369-1-git-send-email-grzegorz.siwik@intel.com>
+Message-ID: <SJ0PR11MB5662C4715123F11F95DA69F4FA069@SJ0PR11MB5662.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 21, 2021 at 4:02 AM Leon Romanovsky <leon@kernel.org> wrote:
->
-> On Thu, Jun 17, 2021 at 02:22:42PM -0400, Nitesh Narayan Lal wrote:
-> > The driver uses irq_set_affinity_hint() to update the affinity_hint mask
-> > that is consumed by the userspace to distribute the interrupts. However,
-> > under the hood irq_set_affinity_hint() also applies the provided cpumask
-> > (if not NULL) as the affinity for the given interrupt which is an
-> > undocumented side effect.
-> >
-> > To remove this side effect irq_set_affinity_hint() has been marked
-> > as deprecated and new interfaces have been introduced. Hence, replace the
-> > irq_set_affinity_hint() with the new interface irq_update_affinity_hint()
-> > that only updates the affinity_hint pointer.
-> >
-> > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> > ---
-> >  drivers/net/ethernet/mellanox/mlx4/eq.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
-> > index 9e48509ed3b2..f549d697ca95 100644
-> > --- a/drivers/net/ethernet/mellanox/mlx4/eq.c
-> > +++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
-> > @@ -244,9 +244,9 @@ static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
-> >           cpumask_empty(eq->affinity_mask))
-> >               return;
-> >
-> > -     hint_err = irq_set_affinity_hint(eq->irq, eq->affinity_mask);
-> > +     hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
-> >       if (hint_err)
-> > -             mlx4_warn(dev, "irq_set_affinity_hint failed, err %d\n", hint_err);
-> > +             mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
-> >  }
-> >  #endif
-> >
-> > @@ -1124,7 +1124,7 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
-> >               if (eq_table->eq[i].have_irq) {
-> >                       free_cpumask_var(eq_table->eq[i].affinity_mask);
-> >  #if defined(CONFIG_SMP)
-> > -                     irq_set_affinity_hint(eq_table->eq[i].irq, NULL);
-> > +                     irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
-> >  #endif
->
-> This #if/endif can be deleted.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Grzegorz Siwik
+> Sent: Friday, April 30, 2021 5:42 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v2] igb: Add counter to i21x
+> doublecheck
+> 
+> Add failed_counter to i21x_doublecheck(). There is possibility that loop will
+> never end.
+> With this patch the loop will stop after maximum 3 retries to write to
+> MTA_REGISTER
+> 
+> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> ---
+> v2: Changed retries counting method
+> Moved hw_dbg info
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_mac.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 
-I think we also can get rid of the other #if/endif CONFIG_SMP
-occurrences that are present around mlx4_set_eq_affinity_hint()
-definition and call, isn't it?
-There is already a check-in interrupt.h so doing it again in the
-driver looks like an unwanted repetition IMHO.
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
->
-> Thanks,
-> Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
->
-
-
--- 
-Thanks
-Nitesh
 
