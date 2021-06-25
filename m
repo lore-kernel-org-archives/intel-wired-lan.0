@@ -1,146 +1,76 @@
 From: Nitesh Lal <nilal@redhat.com>
-Date: Fri, 25 Jun 2021 13:52:04 -0400
-Subject: [Intel-wired-lan] [PATCH v1 01/14] genirq: Provide new
- interfaces for affinity hints
-In-Reply-To: <20210617182242.8637-2-nitesh@redhat.com>
+Date: Fri, 25 Jun 2021 17:08:03 -0400
+Subject: [Intel-wired-lan] [PATCH v1 14/14] net/mlx4: Use
+ irq_update_affinity_hint
+In-Reply-To: <YNBHQvo1uDfBbr5c@unreal>
 References: <20210617182242.8637-1-nitesh@redhat.com>
- <20210617182242.8637-2-nitesh@redhat.com>
-Message-ID: <CAFki+Ln=OS1unuybbD0MKmeJwZci66j6m5OjpNvKDN74E0qw2Q@mail.gmail.com>
+ <20210617182242.8637-15-nitesh@redhat.com>
+ <YNBHQvo1uDfBbr5c@unreal>
+Message-ID: <CAFki+L=2nVA3FB03BjuXbj+di28LhVUzo9P9WoJyxoQFggt0VQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jun 17, 2021 at 2:23 PM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
+On Mon, Jun 21, 2021 at 4:02 AM Leon Romanovsky <leon@kernel.org> wrote:
 >
-> From: Thomas Gleixner <tglx@linutronix.de>
+> On Thu, Jun 17, 2021 at 02:22:42PM -0400, Nitesh Narayan Lal wrote:
+> > The driver uses irq_set_affinity_hint() to update the affinity_hint mask
+> > that is consumed by the userspace to distribute the interrupts. However,
+> > under the hood irq_set_affinity_hint() also applies the provided cpumask
+> > (if not NULL) as the affinity for the given interrupt which is an
+> > undocumented side effect.
+> >
+> > To remove this side effect irq_set_affinity_hint() has been marked
+> > as deprecated and new interfaces have been introduced. Hence, replace the
+> > irq_set_affinity_hint() with the new interface irq_update_affinity_hint()
+> > that only updates the affinity_hint pointer.
+> >
+> > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+> > ---
+> >  drivers/net/ethernet/mellanox/mlx4/eq.c | 6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
+> > index 9e48509ed3b2..f549d697ca95 100644
+> > --- a/drivers/net/ethernet/mellanox/mlx4/eq.c
+> > +++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
+> > @@ -244,9 +244,9 @@ static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
+> >           cpumask_empty(eq->affinity_mask))
+> >               return;
+> >
+> > -     hint_err = irq_set_affinity_hint(eq->irq, eq->affinity_mask);
+> > +     hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
+> >       if (hint_err)
+> > -             mlx4_warn(dev, "irq_set_affinity_hint failed, err %d\n", hint_err);
+> > +             mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
+> >  }
+> >  #endif
+> >
+> > @@ -1124,7 +1124,7 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
+> >               if (eq_table->eq[i].have_irq) {
+> >                       free_cpumask_var(eq_table->eq[i].affinity_mask);
+> >  #if defined(CONFIG_SMP)
+> > -                     irq_set_affinity_hint(eq_table->eq[i].irq, NULL);
+> > +                     irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
+> >  #endif
 >
-> The discussion about removing the side effect of irq_set_affinity_hint() of
-> actually applying the cpumask (if not NULL) as affinity to the interrupt,
-> unearthed a few unpleasantries:
+> This #if/endif can be deleted.
+
+I think we also can get rid of the other #if/endif CONFIG_SMP
+occurrences that are present around mlx4_set_eq_affinity_hint()
+definition and call, isn't it?
+There is already a check-in interrupt.h so doing it again in the
+driver looks like an unwanted repetition IMHO.
+
 >
->   1) The modular perf drivers rely on the current behaviour for the very
->      wrong reasons.
->
->   2) While none of the other drivers prevents user space from changing
->      the affinity, a cursorily inspection shows that there are at least
->      expectations in some drivers.
->
-> #1 needs to be cleaned up anyway, so that's not a problem
->
-> #2 might result in subtle regressions especially when irqbalanced (which
->    nowadays ignores the affinity hint) is disabled.
->
-> Provide new interfaces:
->
->   irq_update_affinity_hint()  - Only sets the affinity hint pointer
->   irq_set_affinity_and_hint() - Set the pointer and apply the affinity to
->                                 the interrupt
->
-> Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
-> document it to be phased out.
->
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
-> ---
->  include/linux/interrupt.h | 41 ++++++++++++++++++++++++++++++++++++++-
->  kernel/irq/manage.c       |  8 ++++----
->  2 files changed, 44 insertions(+), 5 deletions(-)
->
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 2ed65b01c961..4ca491a76033 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask);
->  extern int irq_can_set_affinity(unsigned int irq);
->  extern int irq_select_affinity(unsigned int irq);
->
-> -extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
-> +extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-> +                                    bool setaffinity);
-> +
-> +/**
-> + * irq_update_affinity_hint - Update the affinity hint
-> + * @irq:       Interrupt to update
-> + * @cpumask:   cpumask pointer (NULL to clear the hint)
-> + *
-> + * Updates the affinity hint, but does not change the affinity of the interrupt.
-> + */
-> +static inline int
-> +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
-> +{
-> +       return __irq_apply_affinity_hint(irq, m, false);
-> +}
-> +
-> +/**
-> + * irq_set_affinity_and_hint - Update the affinity hint and apply the provided
-> + *                          cpumask to the interrupt
-> + * @irq:       Interrupt to update
-> + * @cpumask:   cpumask pointer (NULL to clear the hint)
-> + *
-> + * Updates the affinity hint and if @cpumask is not NULL it applies it as
-> + * the affinity of that interrupt.
-> + */
-> +static inline int
-> +irq_set_affinity_and_hint(unsigned int irq, const struct cpumask *m)
-> +{
-> +       return __irq_apply_affinity_hint(irq, m, true);
-> +}
-> +
-> +/*
-> + * Deprecated. Use irq_update_affinity_hint() or irq_set_affinity_and_hint()
-> + * instead.
-> + */
-> +static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-> +{
-> +       return irq_set_affinity_and_hint(irq, m);
-> +}
-> +
->  extern int irq_update_affinity_desc(unsigned int irq,
->                                     struct irq_affinity_desc *affinity);
->
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index ef30b4762947..837b63e63111 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask)
->  }
->  EXPORT_SYMBOL_GPL(irq_force_affinity);
->
-> -int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
-> +int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
-> +                             bool setaffinity)
->  {
->         unsigned long flags;
->         struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-> @@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
->                 return -EINVAL;
->         desc->affinity_hint = m;
->         irq_put_desc_unlock(desc, flags);
-> -       /* set the initial affinity to prevent every interrupt being on CPU0 */
-> -       if (m)
-> +       if (m && setaffinity)
->                 __irq_set_affinity(irq, m, false);
->         return 0;
->  }
-> -EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
-> +EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
->
->  static void irq_affinity_notify(struct work_struct *work)
->  {
-> --
-> 2.27.0
+> Thanks,
+> Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
 >
 
-It turns out that this patch has an issue. The new interfaces are not
-added under the #ifdef (CONFIG_SMP)'s else section.
-I will fix it and send a v2 with other changes.
 
-
---
+-- 
 Thanks
-
 Nitesh
 
