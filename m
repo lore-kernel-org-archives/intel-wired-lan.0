@@ -1,10 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 25 Jun 2021 22:39:44 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Fix an error handling path in
- 'igb_probe()'
-In-Reply-To: <0b5cab7b74ca2544d3c616da89f50635e827bc6f.1623528463.git.christophe.jaillet@wanadoo.fr>
-References: <0b5cab7b74ca2544d3c616da89f50635e827bc6f.1623528463.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <SJ0PR11MB56620F7C26BCA6EC7D798FABFA069@SJ0PR11MB5662.namprd11.prod.outlook.com>
+Date: Fri, 25 Jun 2021 22:41:37 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Avoid memcpy() over-reading of
+ ETH_SS_STATS
+In-Reply-To: <20210616195319.1231564-1-keescook@chromium.org>
+References: <20210616195319.1231564-1-keescook@chromium.org>
+Message-ID: <SJ0PR11MB5662F0A8BAFBC724EA8347E6FA069@SJ0PR11MB5662.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,26 +13,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Christophe JAILLET
-> Sent: Saturday, June 12, 2021 1:09 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
-> jeffrey.t.kirsher at intel.com; alexander.h.duyck at intel.com
-> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; Christophe
-> JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org;
-> linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] igb: Fix an error handling path in
-> 'igb_probe()'
+> Kees Cook
+> Sent: Wednesday, June 16, 2021 12:53 PM
+> To: netdev at vger.kernel.org
+> Cc: Kees Cook <keescook@chromium.org>; linux-kernel at vger.kernel.org;
+> linux-hardening at vger.kernel.org; Jakub Kicinski <kuba@kernel.org>; intel-
+> wired-lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH] igb: Avoid memcpy() over-reading of
+> ETH_SS_STATS
 > 
-> If an error occurs after a 'pci_enable_pcie_error_reporting()' call, it must be
-> undone by a corresponding 'pci_disable_pcie_error_reporting()'
-> call, as already done in the remove function.
+> In preparation for FORTIFY_SOURCE performing compile-time and run-time
+> field bounds checking for memcpy(), memmove(), and memset(), avoid
+> intentionally reading across neighboring array fields.
 > 
-> Fixes: 40a914fa72ab ("igb: Add support for pci-e Advanced Error Reporting")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> The memcpy() is copying the entire structure, not just the first array.
+> Adjust the source argument so the compiler can do appropriate bounds
+> checking.
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
