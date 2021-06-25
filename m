@@ -1,406 +1,280 @@
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Fri, 25 Jun 2021 04:44:53 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v3 04/12] ice: allow process vf
- opcodes in different ways
+Date: Fri, 25 Jun 2021 04:44:59 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3 10/12] ice: rebuild switchdev
+ when resetting all VFs
 In-Reply-To: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
 References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
-Message-ID: <20210625024501.6126-5-michal.swiatkowski@linux.intel.com>
+Message-ID: <20210625024501.6126-11-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In switchdev driver shouldn't add MAC, VLAN and promisc
-filters on iavf demand but should return success to not
-break normal iavf flow.
+From: Grzegorz Nitka <grzegorz.nitka@intel.com>
 
-Achieve that by creating table of functions pointer with
-default functions used to parse iavf command. While parse
-iavf command, call correct function from table instead of
-calling function direct.
+As resetting all VFs behaves mostly like creating new VFs also
+eswitch infrastructure has to be recreated. The easiest way to
+do that is to rebuild eswitch after resetting VFs.
 
-When port representors are being created change functions
-in table to new one that behaves correctly for switchdev
-puprose (ignoring new filters).
+Implement helper functions to start and stop all representors
+queues. This is used to disable traffic on port representors.
 
-Change back to default ops when representors are being
-removed.
+In rebuild path:
+- NAPI has to be disabled
+- eswitch environment has to be set up
+- new port representors have to be created, because the old
+one had pointer to not exsisting VFs
+- new control plane VSI ring should be remaped
+- NAPI hast to be enabled
+- rxdid has to be set to FLEX_NIC_2, because this descriptor id
+support source_vsi, which is needed on control plane VSI queues
+- port representors queues have to be started
 
-Co-developed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_repr.c     |  23 ++-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 170 +++++++++++++++---
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  32 ++++
- 3 files changed, 198 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c  | 83 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_eswitch.h  | 10 +++
+ drivers/net/ethernet/intel/ice/ice_main.c     | 11 ++-
+ drivers/net/ethernet/intel/ice/ice_repr.c     | 20 +++++
+ drivers/net/ethernet/intel/ice/ice_repr.h     |  3 +
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  4 +
+ 6 files changed, 130 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index bae2a3167b0d..c75845427a10 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -228,15 +228,24 @@ int ice_repr_add_for_all_vfs(struct ice_pf *pf)
- 	int i;
- 
- 	ice_for_each_vf(pf, i) {
--		err = ice_repr_add(&pf->vf[i]);
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		err = ice_repr_add(vf);
- 		if (err)
- 			goto err;
-+
-+		ice_vc_change_ops_to_repr(&vf->vc_ops);
- 	}
-+
- 	return 0;
- 
- err:
--	for (i = i - 1; i >= 0; i--)
--		ice_repr_rem(&pf->vf[i]);
-+	for (i = i - 1; i >= 0; i--) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		ice_repr_rem(vf);
-+		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
-+	}
- 
- 	return err;
- }
-@@ -249,6 +258,10 @@ void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
- {
- 	int i;
- 
--	ice_for_each_vf(pf, i)
--		ice_repr_rem(&pf->vf[i]);
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		ice_repr_rem(vf);
-+		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
-+	}
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index adf51f9a40ed..f8a0a0b7a361 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -1868,6 +1868,8 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
- 		 */
- 		ice_vf_ctrl_invalidate_vsi(vf);
- 		ice_vf_fdir_init(vf);
-+
-+		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 0be6ee996860..89e96a0c3687 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -289,6 +289,18 @@ ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+ 	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL, ICE_INVAL_VFID);
  }
  
-@@ -4360,6 +4362,127 @@ static int ice_vf_init_vlan_stripping(struct ice_vf *vf)
- 		return ice_vsi_manage_vlan_stripping(vsi, false);
- }
- 
-+static struct ice_vc_vf_ops ice_vc_vf_dflt_ops = {
-+	.get_ver_msg = ice_vc_get_ver_msg,
-+	.get_vf_res_msg = ice_vc_get_vf_res_msg,
-+	.reset_vf = ice_vc_reset_vf_msg,
-+	.add_mac_addr_msg = ice_vc_add_mac_addr_msg,
-+	.del_mac_addr_msg = ice_vc_del_mac_addr_msg,
-+	.cfg_qs_msg = ice_vc_cfg_qs_msg,
-+	.ena_qs_msg = ice_vc_ena_qs_msg,
-+	.dis_qs_msg = ice_vc_dis_qs_msg,
-+	.request_qs_msg = ice_vc_request_qs_msg,
-+	.cfg_irq_map_msg = ice_vc_cfg_irq_map_msg,
-+	.config_rss_key = ice_vc_config_rss_key,
-+	.config_rss_lut = ice_vc_config_rss_lut,
-+	.get_stats_msg = ice_vc_get_stats_msg,
-+	.cfg_promiscuous_mode_msg = ice_vc_cfg_promiscuous_mode_msg,
-+	.add_vlan_msg = ice_vc_add_vlan_msg,
-+	.remove_vlan_msg = ice_vc_remove_vlan_msg,
-+	.ena_vlan_stripping = ice_vc_ena_vlan_stripping,
-+	.dis_vlan_stripping = ice_vc_dis_vlan_stripping,
-+	.handle_rss_cfg_msg = ice_vc_handle_rss_cfg,
-+	.add_fdir_fltr_msg = ice_vc_add_fdir_fltr,
-+	.del_fdir_fltr_msg = ice_vc_del_fdir_fltr,
-+};
-+
-+void ice_vc_set_dflt_vf_ops(struct ice_vc_vf_ops *ops)
-+{
-+	*ops = ice_vc_vf_dflt_ops;
-+}
-+
-+static int
-+ice_vc_repr_no_action_msg(struct ice_vf __always_unused *vf,
-+			  u8 __always_unused *msg)
-+{
-+	return 0;
-+}
-+
 +/**
-+ * ice_vc_repr_add_mac
-+ * @vf: pointer to VF
-+ * @msg: virtchannel message
-+ *
-+ * When port representors are created, we do not add MAC rule
-+ * to firmware, we store it so that PF could report same
-+ * MAC as VF.
++ * ice_eswitch_napi_del - remove NAPI handle for all port representors
++ * @pf: pointer to PF structure
 + */
-+static int ice_vc_repr_add_mac(struct ice_vf *vf, u8 *msg)
++static void ice_eswitch_napi_del(struct ice_pf *pf)
 +{
-+	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	struct virtchnl_ether_addr_list *al =
-+	    (struct virtchnl_ether_addr_list *)msg;
-+	struct ice_vsi *vsi;
-+	struct ice_pf *pf;
 +	int i;
 +
-+	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states) ||
-+	    !ice_vc_isvalid_vsi_id(vf, al->vsi_id)) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto handle_mac_exit;
-+	}
-+
-+	pf = vf->pf;
-+
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto handle_mac_exit;
-+	}
-+
-+	for (i = 0; i < al->num_elements; i++) {
-+		u8 *mac_addr = al->list[i].addr;
-+
-+		if (!is_unicast_ether_addr(mac_addr) ||
-+		    ether_addr_equal(mac_addr, vf->hw_lan_addr.addr))
-+			continue;
-+
-+		if (vf->pf_set_mac) {
-+			dev_err(ice_pf_to_dev(pf), "VF attempting to override administratively set MAC address\n");
-+			v_ret = VIRTCHNL_STATUS_ERR_NOT_SUPPORTED;
-+			goto handle_mac_exit;
-+		}
-+
-+		ice_vfhw_mac_add(vf, &al->list[i]);
-+		vf->num_mac++;
-+		break;
-+	}
-+
-+handle_mac_exit:
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ADD_ETH_ADDR,
-+				     v_ret, NULL, 0);
-+}
-+
-+/**
-+ * ice_vc_repr_del_mac - response with success for deleting MAC
-+ * @vf: pointer to VF
-+ * @msg: virtchannel message
-+ *
-+ * Respond with success to not break normal VF flow.
-+ */
-+static int
-+ice_vc_repr_del_mac(struct ice_vf __always_unused *vf, u8 __always_unused *msg)
-+{
-+	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR,
-+				     VIRTCHNL_STATUS_SUCCESS, NULL, 0);
-+}
-+
-+static int ice_vc_repr_no_action(struct ice_vf __always_unused *vf)
-+{
-+	return 0;
-+}
-+
-+void ice_vc_change_ops_to_repr(struct ice_vc_vf_ops *ops)
-+{
-+	ops->add_mac_addr_msg = ice_vc_repr_add_mac;
-+	ops->del_mac_addr_msg = ice_vc_repr_del_mac;
-+	ops->add_vlan_msg = ice_vc_repr_no_action_msg;
-+	ops->remove_vlan_msg = ice_vc_repr_no_action_msg;
-+	ops->ena_vlan_stripping = ice_vc_repr_no_action;
-+	ops->dis_vlan_stripping = ice_vc_repr_no_action;
-+	ops->cfg_promiscuous_mode_msg = ice_vc_repr_no_action_msg;
++	ice_for_each_vf(pf, i)
++		netif_napi_del(&pf->vf[i].repr->q_vector->napi);
 +}
 +
  /**
-  * ice_vc_process_vf_msg - Process request from VF
-  * @pf: pointer to the PF structure
-@@ -4373,6 +4496,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	u32 v_opcode = le32_to_cpu(event->desc.cookie_high);
- 	s16 vf_id = le16_to_cpu(event->desc.retval);
- 	u16 msglen = event->msg_len;
-+	struct ice_vc_vf_ops *ops;
- 	u8 *msg = event->msg_buf;
- 	struct ice_vf *vf = NULL;
- 	struct device *dev;
-@@ -4392,6 +4516,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		goto error_handler;
+  * ice_eswitch_napi_enable - enable NAPI for all port representors
+  * @pf: pointer to PF structure
+@@ -492,3 +504,74 @@ int ice_eswitch_configure(struct ice_pf *pf)
+ 	pf->switchdev.is_running = true;
+ 	return 0;
+ }
++
++/**
++ * ice_eswitch_start_all_tx_queues - start Tx queues of all port representors
++ * @pf: pointer to PF structure
++ */
++static void ice_eswitch_start_all_tx_queues(struct ice_pf *pf)
++{
++	struct ice_repr *repr;
++	int i;
++
++	if (test_bit(ICE_DOWN, pf->state))
++		return;
++
++	ice_for_each_vf(pf, i) {
++		repr = pf->vf[i].repr;
++		if (repr)
++			ice_repr_start_tx_queues(repr);
++	}
++}
++
++/**
++ * ice_eswitch_stop_all_tx_queues - stop Tx queues of all port representors
++ * @pf: pointer to PF structure
++ */
++void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf)
++{
++	struct ice_repr *repr;
++	int i;
++
++	if (test_bit(ICE_DOWN, pf->state))
++		return;
++
++	ice_for_each_vf(pf, i) {
++		repr = pf->vf[i].repr;
++		if (repr)
++			ice_repr_stop_tx_queues(repr);
++	}
++}
++
++/**
++ * ice_eswitch_rebuild - rebuild eswitch
++ * @pf: pointer to PF structure
++ */
++int ice_eswitch_rebuild(struct ice_pf *pf)
++{
++	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
++	int status;
++
++	ice_eswitch_napi_disable(pf);
++	ice_eswitch_napi_del(pf);
++
++	status = ice_eswitch_setup_env(pf);
++	if (status)
++		return status;
++
++	status = ice_eswitch_setup_reprs(pf);
++	if (status)
++		return status;
++
++	ice_eswitch_remap_rings_to_vectors(pf);
++
++	status = ice_vsi_open(ctrl_vsi);
++	if (status)
++		return status;
++
++	ice_eswitch_napi_enable(pf);
++	ice_eswitch_set_rxdid(ctrl_vsi, ICE_RXDID_FLEX_NIC_2);
++	ice_eswitch_start_all_tx_queues(pf);
++
++	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+index c27cd8d8c743..b4d8ec219a80 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+@@ -8,6 +8,7 @@
+ #ifdef CONFIG_ICE_SWITCHDEV
+ void ice_eswitch_release(struct ice_pf *pf);
+ int ice_eswitch_configure(struct ice_pf *pf);
++int ice_eswitch_rebuild(struct ice_pf *pf);
+ 
+ int ice_eswitch_mode_get(struct devlink *devlink, u16 *mode);
+ int
+@@ -16,9 +17,13 @@ ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
+ bool ice_is_eswitch_mode_switchdev(struct ice_pf *pf);
+ 
+ void ice_eswitch_update_repr(struct ice_vsi *vsi);
++
++void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf);
+ #else /* CONFIG_ICE_SWITCHDEV */
+ static inline void ice_eswitch_release(struct ice_pf *pf) { }
+ 
++static inline void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf) { }
++
+ static inline void ice_eswitch_update_repr(struct ice_vsi *vsi) { }
+ 
+ static inline int ice_eswitch_configure(struct ice_pf *pf)
+@@ -26,6 +31,11 @@ static inline int ice_eswitch_configure(struct ice_pf *pf)
+ 	return -EOPNOTSUPP;
+ }
+ 
++static inline int ice_eswitch_rebuild(struct ice_pf *pf)
++{
++	return -EOPNOTSUPP;
++}
++
+ static inline int ice_eswitch_mode_get(struct devlink *devlink, u16 *mode)
+ {
+ 	return DEVLINK_ESWITCH_MODE_LEGACY;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 82b5fb9d6a89..700fc4876927 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -19,6 +19,7 @@
+  */
+ #define CREATE_TRACE_POINTS
+ #include "ice_trace.h"
++#include "ice_eswitch.h"
+ 
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ static const char ice_driver_string[] = DRV_SUMMARY;
+@@ -5996,9 +5997,11 @@ int ice_down(struct ice_vsi *vsi)
+ 	/* Caller of this function is expected to set the
+ 	 * vsi->state ICE_DOWN bit
+ 	 */
+-	if (vsi->netdev) {
++	if (vsi->netdev && vsi->type == ICE_VSI_PF) {
+ 		netif_carrier_off(vsi->netdev);
+ 		netif_tx_disable(vsi->netdev);
++	} else if (vsi->type == ICE_VSI_SWITCHDEV_CTRL) {
++		ice_eswitch_stop_all_tx_queues(vsi->back);
  	}
  
-+	ops = &vf->vc_ops;
-+
- 	/* Perform basic checks on the msg */
- 	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
- 	if (err) {
-@@ -4419,75 +4545,75 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	ice_vsi_dis_irq(vsi);
+@@ -6444,6 +6447,12 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 		goto err_vsi_rebuild;
+ 	}
  
- 	switch (v_opcode) {
- 	case VIRTCHNL_OP_VERSION:
--		err = ice_vc_get_ver_msg(vf, msg);
-+		err = ops->get_ver_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_GET_VF_RESOURCES:
--		err = ice_vc_get_vf_res_msg(vf, msg);
-+		err = ops->get_vf_res_msg(vf, msg);
- 		if (ice_vf_init_vlan_stripping(vf))
- 			dev_err(dev, "Failed to initialize VLAN stripping for VF %d\n",
- 				vf->vf_id);
- 		ice_vc_notify_vf_link_state(vf);
- 		break;
- 	case VIRTCHNL_OP_RESET_VF:
--		ice_vc_reset_vf_msg(vf);
-+		ops->reset_vf(vf);
- 		break;
- 	case VIRTCHNL_OP_ADD_ETH_ADDR:
--		err = ice_vc_add_mac_addr_msg(vf, msg);
-+		err = ops->add_mac_addr_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_DEL_ETH_ADDR:
--		err = ice_vc_del_mac_addr_msg(vf, msg);
-+		err = ops->del_mac_addr_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
--		err = ice_vc_cfg_qs_msg(vf, msg);
-+		err = ops->cfg_qs_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_ENABLE_QUEUES:
--		err = ice_vc_ena_qs_msg(vf, msg);
-+		err = ops->ena_qs_msg(vf, msg);
- 		ice_vc_notify_vf_link_state(vf);
- 		break;
- 	case VIRTCHNL_OP_DISABLE_QUEUES:
--		err = ice_vc_dis_qs_msg(vf, msg);
-+		err = ops->dis_qs_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_REQUEST_QUEUES:
--		err = ice_vc_request_qs_msg(vf, msg);
-+		err = ops->request_qs_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_CONFIG_IRQ_MAP:
--		err = ice_vc_cfg_irq_map_msg(vf, msg);
-+		err = ops->cfg_irq_map_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_CONFIG_RSS_KEY:
--		err = ice_vc_config_rss_key(vf, msg);
-+		err = ops->config_rss_key(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_CONFIG_RSS_LUT:
--		err = ice_vc_config_rss_lut(vf, msg);
-+		err = ops->config_rss_lut(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_GET_STATS:
--		err = ice_vc_get_stats_msg(vf, msg);
-+		err = ops->get_stats_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
--		err = ice_vc_cfg_promiscuous_mode_msg(vf, msg);
-+		err = ops->cfg_promiscuous_mode_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_ADD_VLAN:
--		err = ice_vc_add_vlan_msg(vf, msg);
-+		err = ops->add_vlan_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_DEL_VLAN:
--		err = ice_vc_remove_vlan_msg(vf, msg);
-+		err = ops->remove_vlan_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
--		err = ice_vc_ena_vlan_stripping(vf);
-+		err = ops->ena_vlan_stripping(vf);
- 		break;
- 	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
--		err = ice_vc_dis_vlan_stripping(vf);
-+		err = ops->dis_vlan_stripping(vf);
- 		break;
- 	case VIRTCHNL_OP_ADD_FDIR_FILTER:
--		err = ice_vc_add_fdir_fltr(vf, msg);
-+		err = ops->add_fdir_fltr_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_DEL_FDIR_FILTER:
--		err = ice_vc_del_fdir_fltr(vf, msg);
-+		err = ops->del_fdir_fltr_msg(vf, msg);
- 		break;
- 	case VIRTCHNL_OP_ADD_RSS_CFG:
--		err = ice_vc_handle_rss_cfg(vf, msg, true);
-+		err = ops->handle_rss_cfg_msg(vf, msg, true);
- 		break;
- 	case VIRTCHNL_OP_DEL_RSS_CFG:
--		err = ice_vc_handle_rss_cfg(vf, msg, false);
-+		err = ops->handle_rss_cfg_msg(vf, msg, false);
- 		break;
- 	case VIRTCHNL_OP_UNKNOWN:
- 	default:
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index b3fa8dd5539b..6bad277d16fc 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -70,6 +70,32 @@ struct ice_mdd_vf_events {
- 	u16 last_printed;
- };
- 
-+struct ice_vf;
++	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_SWITCHDEV_CTRL);
++	if (err) {
++		dev_err(dev, "Switchdev CTRL VSI rebuild failed: %d\n", err);
++		goto err_vsi_rebuild;
++	}
 +
-+struct ice_vc_vf_ops {
-+	int (*get_ver_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*get_vf_res_msg)(struct ice_vf *vf, u8 *msg);
-+	void (*reset_vf)(struct ice_vf *vf);
-+	int (*add_mac_addr_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*del_mac_addr_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*cfg_qs_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*ena_qs_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*dis_qs_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*request_qs_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*cfg_irq_map_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*config_rss_key)(struct ice_vf *vf, u8 *msg);
-+	int (*config_rss_lut)(struct ice_vf *vf, u8 *msg);
-+	int (*get_stats_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*cfg_promiscuous_mode_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*add_vlan_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*remove_vlan_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*ena_vlan_stripping)(struct ice_vf *vf);
-+	int (*dis_vlan_stripping)(struct ice_vf *vf);
-+	int (*handle_rss_cfg_msg)(struct ice_vf *vf, u8 *msg, bool add);
-+	int (*add_fdir_fltr_msg)(struct ice_vf *vf, u8 *msg);
-+	int (*del_fdir_fltr_msg)(struct ice_vf *vf, u8 *msg);
-+};
-+
- /* VF information structure */
- struct ice_vf {
- 	struct ice_pf *pf;
-@@ -114,6 +140,8 @@ struct ice_vf {
+ 	/* If Flow Director is active */
+ 	if (test_bit(ICE_FLAG_FD_ENA, pf->flags)) {
+ 		err = ice_vsi_rebuild_by_type(pf, ICE_VSI_CTRL);
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index 28034a8db457..afa43d658f01 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -266,6 +266,26 @@ void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
+ 	}
+ }
  
- 	struct ice_repr *repr;
- 
-+	struct ice_vc_vf_ops vc_ops;
++/**
++ * ice_repr_start_tx_queues - start Tx queues of port representor
++ * @repr: pointer to repr structure
++ */
++void ice_repr_start_tx_queues(struct ice_repr *repr)
++{
++	netif_carrier_on(repr->netdev);
++	netif_tx_start_all_queues(repr->netdev);
++}
 +
- 	/* devlink port data */
- 	struct devlink_port devlink_port;
- };
-@@ -131,6 +159,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event);
- void ice_vc_notify_link_state(struct ice_pf *pf);
- void ice_vc_notify_reset(struct ice_pf *pf);
- void ice_vc_notify_vf_link_state(struct ice_vf *vf);
-+void ice_vc_change_ops_to_repr(struct ice_vc_vf_ops *ops);
-+void ice_vc_set_dflt_vf_ops(struct ice_vc_vf_ops *ops);
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
- bool ice_reset_vf(struct ice_vf *vf, bool is_vflr);
- void ice_restore_all_vfs_msi_state(struct pci_dev *pdev);
-@@ -172,6 +202,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event) {
- static inline void ice_vc_notify_link_state(struct ice_pf *pf) { }
- static inline void ice_vc_notify_reset(struct ice_pf *pf) { }
- static inline void ice_vc_notify_vf_link_state(struct ice_vf *vf) { }
-+static inline void ice_vc_change_ops_to_repr(struct ice_vc_vf_ops *ops) { }
-+static inline void ice_vc_set_dflt_vf_ops(struct ice_vc_vf_ops *ops) { }
- static inline void ice_set_vf_state_qs_dis(struct ice_vf *vf) { }
- static inline
- void ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event) { }
++/**
++ * ice_repr_stop_tx_queues - stop Tx queues of port representor
++ * @repr: pointer to repr structure
++ */
++void ice_repr_stop_tx_queues(struct ice_repr *repr)
++{
++	netif_carrier_off(repr->netdev);
++	netif_tx_stop_all_queues(repr->netdev);
++}
++
+ /**
+  * ice_repr_set_traffic_vsi - set traffic VSI for port representor
+  * @repr: repr on with VSI will be set
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
+index 3c3388c995bf..12db25a174f7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.h
++++ b/drivers/net/ethernet/intel/ice/ice_repr.h
+@@ -17,6 +17,9 @@ struct ice_repr {
+ int ice_repr_add_for_all_vfs(struct ice_pf *pf);
+ void ice_repr_rem_from_all_vfs(struct ice_pf *pf);
+ 
++void ice_repr_start_tx_queues(struct ice_repr *repr);
++void ice_repr_stop_tx_queues(struct ice_repr *repr);
++
+ void ice_repr_set_traffic_vsi(struct ice_repr *repr, struct ice_vsi *vsi);
+ 
+ struct ice_repr *ice_netdev_to_repr(struct net_device *netdev);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index dce068af3882..501331b6f70b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1560,6 +1560,10 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 		ice_vf_post_vsi_rebuild(vf);
+ 	}
+ 
++	if (ice_is_eswitch_mode_switchdev(pf))
++		if (ice_eswitch_rebuild(pf))
++			dev_warn(dev, "eswitch rebuild failed\n");
++
+ 	ice_flush(hw);
+ 	clear_bit(ICE_VF_DIS, pf->state);
+ 
 -- 
 2.30.2
 
