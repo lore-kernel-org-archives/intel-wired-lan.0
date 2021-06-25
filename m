@@ -1,243 +1,120 @@
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Fri, 25 Jun 2021 04:44:50 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v3 01/12] ice: support basic
- E-Switch mode control
+Date: Fri, 25 Jun 2021 04:44:54 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3 05/12] ice: manage VSI
+ antispoof and destination override
 In-Reply-To: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
 References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
-Message-ID: <20210625024501.6126-2-michal.swiatkowski@linux.intel.com>
+Message-ID: <20210625024501.6126-6-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Write set and get eswitch mode functions used by devlink
-ops. Use new pf struct member eswitch_mode to track current
-eswitch mode in driver.
+Implement functions to make setting VSI security config easier.
+Main function ice_update_security fills security section field and
+checks against error in updating VSI. Rest functions are responsible
+for correct filling config according to user esceptations.
 
-Changing eswitch mode is only allowed when there are no
-VFs created.
+This helper is needed because destination override is located in
+this section. Driver has to set this bit to allow sttering Tx packet
+on VSI based on value in Tx descriptors.
 
-Create new file for eswitch related code.
-
-Add config flag ICE_SWITCHDEV to allow user to choose if
-switchdev support should be enabled or disabled.
-
-Use case examples:
-- show current eswitch mode ('legacy' is the default one)
-[root at localhost]# devlink dev eswitch show pci/0000:03:00.1
-pci/0000:03:00.1: mode legacy
-
-- move to 'switchdev' mode
-[root at localhost]# devlink dev eswitch set pci/0000:03:00.1 mode
-switchdev
-[root at localhost]# devlink dev eswitch show pci/0000:03:00.1
-pci/0000:03:00.1: mode switchdev
-
-- create 2 VFs
-[root at localhost]# echo 2 > /sys/class/net/ens4f1/device/sriov_numvfs
-
-- unsuccessful attempt to change eswitch mode while VFs are created
-[root at localhost]# devlink dev eswitch set pci/0000:03:00.1 mode legacy
-devlink answers: Operation not supported
-
-- destroy VFs
-[root at localhost]# echo 0 > /sys/class/net/ens4f1/device/sriov_numvfs
-
-- restore 'legacy' mode
-[root at localhost]# devlink dev eswitch set pci/0000:03:00.1 mode legacy
-[root at localhost]# devlink dev eswitch show pci/0000:03:00.1
-pci/0000:03:00.1: mode legacy
-
-Co-developed-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig           | 14 +++++
- drivers/net/ethernet/intel/ice/Makefile      |  1 +
- drivers/net/ethernet/intel/ice/ice.h         |  1 +
- drivers/net/ethernet/intel/ice/ice_devlink.c |  3 +
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 62 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_eswitch.h | 34 +++++++++++
- 6 files changed, 115 insertions(+)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch.h
+ drivers/net/ethernet/intel/ice/ice_lib.c | 61 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.h | 11 +++++
+ 2 files changed, 72 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 82744a7501c7..045ce9cb7b7f 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -313,6 +313,20 @@ config ICE
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ice.
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 274cbca8b1c4..f3414a3a5e56 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -3571,3 +3571,64 @@ int ice_set_link(struct ice_vsi *vsi, bool ena)
  
-+config ICE_SWITCHDEV
-+	bool "Switchdev Support"
-+	default y
-+	depends on ICE && NET_SWITCHDEV
-+	help
-+	  Switchdev support provides internal SRIOV packet steering and switching.
-+
-+	  To enable it on running kernel use devlink tool:
-+	  #devlink dev eswitch set pci/0000:XX:XX.X mode switchdev
-+
-+	  Say Y here if you want to use Switchdev in the driver.
-+
-+	  If unsure, say N.
-+
- config FM10K
- 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
- 	default n
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 4f538cdf42c1..0545594c80ba 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -33,3 +33,4 @@ ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
- ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
-+ice-$(CONFIG_ICE_SWITCHDEV) += ice_eswitch.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f4729caccbe9..729d375fbebc 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -430,6 +430,7 @@ struct ice_pf {
- 
- 	struct ice_vsi **vsi;		/* VSIs created by the driver */
- 	struct ice_sw *first_sw;	/* first switch created by firmware */
-+	u16 eswitch_mode;		/* current mode of eswitch */
- 	/* Virtchnl/SR-IOV config info */
- 	struct ice_vf *vf;
- 	u16 num_alloc_vfs;		/* actual number of VFs allocated */
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index d69507d57de1..de6d0a8ba1a8 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -4,6 +4,7 @@
- #include "ice.h"
- #include "ice_lib.h"
- #include "ice_devlink.h"
-+#include "ice_eswitch.h"
- #include "ice_fw_update.h"
- 
- /* context for devlink info version reporting */
-@@ -423,6 +424,8 @@ ice_devlink_flash_update(struct devlink *devlink,
- 
- static const struct devlink_ops ice_devlink_ops = {
- 	.supported_flash_update_params = DEVLINK_SUPPORT_FLASH_UPDATE_OVERWRITE_MASK,
-+	.eswitch_mode_get = ice_eswitch_mode_get,
-+	.eswitch_mode_set = ice_eswitch_mode_set,
- 	.info_get = ice_devlink_info_get,
- 	.flash_update = ice_devlink_flash_update,
- };
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-new file mode 100644
-index 000000000000..1370c41b77ab
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -0,0 +1,62 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2019-2021, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_eswitch.h"
-+#include "ice_devlink.h"
+ 	return 0;
+ }
 +
 +/**
-+ * ice_eswitch_mode_set - set new eswitch mode
-+ * @devlink: pointer to devlink structure
-+ * @mode: eswitch mode to switch to
-+ * @extack: pointer to extack structure
++ * ice_vsi_update_security - update security block in VSI
++ * @vsi: pointer to VSI structure
++ * @fill: function pointer to fill ctx
 + */
-+int
-+ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
-+		     struct netlink_ext_ack *extack)
++int ice_vsi_update_security(struct ice_vsi *vsi,
++			    void (*fill)(struct ice_vsi_ctx *))
 +{
-+	struct ice_pf *pf = devlink_priv(devlink);
++	struct ice_vsi_ctx ctx = { 0 };
 +
-+	if (pf->eswitch_mode == mode)
-+		return 0;
++	ctx.info = vsi->info;
++	ctx.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
++	fill(&ctx);
 +
-+	if (pf->num_alloc_vfs) {
-+		dev_info(ice_pf_to_dev(pf), "Changing eswitch mode is allowed only if there is no VFs created");
-+		NL_SET_ERR_MSG_MOD(extack, "Changing eswitch mode is allowed only if there is no VFs created");
-+		return -EOPNOTSUPP;
-+	}
++	if (ice_update_vsi(&vsi->back->hw, vsi->idx, &ctx, NULL))
++		return -ENODEV;
 +
-+	switch (mode) {
-+	case DEVLINK_ESWITCH_MODE_LEGACY:
-+		dev_info(ice_pf_to_dev(pf), "PF %d changed eswitch mode to legacy",
-+			 pf->hw.pf_id);
-+		NL_SET_ERR_MSG_MOD(extack, "Changed eswitch mode to legacy");
-+		break;
-+	case DEVLINK_ESWITCH_MODE_SWITCHDEV:
-+	{
-+		dev_info(ice_pf_to_dev(pf), "PF %d changed eswitch mode to switchdev",
-+			 pf->hw.pf_id);
-+		NL_SET_ERR_MSG_MOD(extack, "Changed eswitch mode to switchdev");
-+		break;
-+	}
-+	default:
-+		NL_SET_ERR_MSG_MOD(extack, "Unknown eswitch mode");
-+		return -EINVAL;
-+	}
-+
-+	pf->eswitch_mode = mode;
++	vsi->info = ctx.info;
 +	return 0;
 +}
 +
 +/**
-+ * ice_eswitch_mode_get - get current eswitch mode
-+ * @devlink: pointer to devlink structure
-+ * @mode: output parameter for current eswitch mode
++ * ice_vsi_ctx_set_antispoof - set antispoof function in VSI ctx
++ * @ctx: pointer to VSI ctx structure
 + */
-+int ice_eswitch_mode_get(struct devlink *devlink, u16 *mode)
++void ice_vsi_ctx_set_antispoof(struct ice_vsi_ctx *ctx)
 +{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	*mode = pf->eswitch_mode;
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-new file mode 100644
-index 000000000000..0aa6fb7e0c4e
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-@@ -0,0 +1,34 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2019-2021, Intel Corporation. */
-+
-+#ifndef _ICE_ESWITCH_H_
-+#define _ICE_ESWITCH_H_
-+#include <net/devlink.h>
-+
-+#ifdef CONFIG_ICE_SWITCHDEV
-+int ice_eswitch_mode_get(struct devlink *devlink, u16 *mode);
-+int
-+ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
-+		     struct netlink_ext_ack *extack);
-+bool ice_is_eswitch_mode_switchdev(struct ice_pf *pf);
-+#else /* CONFIG_ICE_SWITCHDEV */
-+static inline int
-+ice_eswitch_mode_get(struct devlink *devlink, u16 *mode)
-+{
-+	return DEVLINK_ESWITCH_MODE_LEGACY;
++	ctx->info.sec_flags |= ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF |
++			       (ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++		 ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
 +}
 +
-+static inline int
-+ice_eswitch_mode_set(struct devlink *devlink, u16 mode,
-+		     struct netlink_ext_ack *extack)
++/**
++ * ice_vsi_ctx_clear_antispoof - clear antispoof function in VSI ctx
++ * @ctx: pointer to VSI ctx structure
++ */
++void ice_vsi_ctx_clear_antispoof(struct ice_vsi_ctx *ctx)
 +{
-+	return -EOPNOTSUPP;
++	ctx->info.sec_flags &= ~ICE_AQ_VSI_SEC_FLAG_ENA_MAC_ANTI_SPOOF &
++		~(ICE_AQ_VSI_SEC_TX_VLAN_PRUNE_ENA <<
++		  ICE_AQ_VSI_SEC_TX_PRUNE_ENA_S);
 +}
 +
-+static inline bool
-+ice_is_eswitch_mode_switchdev(struct ice_pf *pf)
++/**
++ * ice_vsi_ctx_set_allow_override - allow destination override on VSI
++ * @ctx: pointer to VSI ctx structure
++ */
++void ice_vsi_ctx_set_allow_override(struct ice_vsi_ctx *ctx)
 +{
-+	return false;
++	ctx->info.sec_flags |= ICE_AQ_VSI_SEC_FLAG_ALLOW_DEST_OVRD;
 +}
-+#endif /* CONFIG_ICE_SWITCHDEV */
-+#endif
++
++/**
++ * ice_vsi_ctx_clear_allow_override - turn off destination override on VSI
++ * @ctx: pointer to VSI ctx structure
++ */
++void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx)
++{
++	ctx->info.sec_flags &= ~ICE_AQ_VSI_SEC_FLAG_ALLOW_DEST_OVRD;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index cf57945ecc41..781eba6c1991 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -116,4 +116,15 @@ bool ice_is_vsi_dflt_vsi(struct ice_sw *sw, struct ice_vsi *vsi);
+ int ice_set_dflt_vsi(struct ice_sw *sw, struct ice_vsi *vsi);
+ 
+ int ice_clear_dflt_vsi(struct ice_sw *sw);
++
++int ice_vsi_update_security(struct ice_vsi *vsi,
++			    void (*fill)(struct ice_vsi_ctx *));
++
++void ice_vsi_ctx_set_antispoof(struct ice_vsi_ctx *ctx);
++
++void ice_vsi_ctx_clear_antispoof(struct ice_vsi_ctx *ctx);
++
++void ice_vsi_ctx_set_allow_override(struct ice_vsi_ctx *ctx);
++
++void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx);
+ #endif /* !_ICE_LIB_H_ */
 -- 
 2.30.2
 
