@@ -1,221 +1,146 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 25 Jun 2021 21:42:34 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- 956e759d5f8e0859e86b951a8779c60af633aafd
-Message-ID: <60d5dd4a.Qy060Or/UlmVrOYA%lkp@intel.com>
+From: Nitesh Lal <nilal@redhat.com>
+Date: Fri, 25 Jun 2021 13:52:04 -0400
+Subject: [Intel-wired-lan] [PATCH v1 01/14] genirq: Provide new
+ interfaces for affinity hints
+In-Reply-To: <20210617182242.8637-2-nitesh@redhat.com>
+References: <20210617182242.8637-1-nitesh@redhat.com>
+ <20210617182242.8637-2-nitesh@redhat.com>
+Message-ID: <CAFki+Ln=OS1unuybbD0MKmeJwZci66j6m5OjpNvKDN74E0qw2Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
-branch HEAD: 956e759d5f8e0859e86b951a8779c60af633aafd  i40e: Fix missing rtnl locking when setting up pf switch
+On Thu, Jun 17, 2021 at 2:23 PM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
+>
+> From: Thomas Gleixner <tglx@linutronix.de>
+>
+> The discussion about removing the side effect of irq_set_affinity_hint() of
+> actually applying the cpumask (if not NULL) as affinity to the interrupt,
+> unearthed a few unpleasantries:
+>
+>   1) The modular perf drivers rely on the current behaviour for the very
+>      wrong reasons.
+>
+>   2) While none of the other drivers prevents user space from changing
+>      the affinity, a cursorily inspection shows that there are at least
+>      expectations in some drivers.
+>
+> #1 needs to be cleaned up anyway, so that's not a problem
+>
+> #2 might result in subtle regressions especially when irqbalanced (which
+>    nowadays ignores the affinity hint) is disabled.
+>
+> Provide new interfaces:
+>
+>   irq_update_affinity_hint()  - Only sets the affinity hint pointer
+>   irq_set_affinity_and_hint() - Set the pointer and apply the affinity to
+>                                 the interrupt
+>
+> Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+> document it to be phased out.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+> Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
+> ---
+>  include/linux/interrupt.h | 41 ++++++++++++++++++++++++++++++++++++++-
+>  kernel/irq/manage.c       |  8 ++++----
+>  2 files changed, 44 insertions(+), 5 deletions(-)
+>
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index 2ed65b01c961..4ca491a76033 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask);
+>  extern int irq_can_set_affinity(unsigned int irq);
+>  extern int irq_select_affinity(unsigned int irq);
+>
+> -extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
+> +extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> +                                    bool setaffinity);
+> +
+> +/**
+> + * irq_update_affinity_hint - Update the affinity hint
+> + * @irq:       Interrupt to update
+> + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> + *
+> + * Updates the affinity hint, but does not change the affinity of the interrupt.
+> + */
+> +static inline int
+> +irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return __irq_apply_affinity_hint(irq, m, false);
+> +}
+> +
+> +/**
+> + * irq_set_affinity_and_hint - Update the affinity hint and apply the provided
+> + *                          cpumask to the interrupt
+> + * @irq:       Interrupt to update
+> + * @cpumask:   cpumask pointer (NULL to clear the hint)
+> + *
+> + * Updates the affinity hint and if @cpumask is not NULL it applies it as
+> + * the affinity of that interrupt.
+> + */
+> +static inline int
+> +irq_set_affinity_and_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return __irq_apply_affinity_hint(irq, m, true);
+> +}
+> +
+> +/*
+> + * Deprecated. Use irq_update_affinity_hint() or irq_set_affinity_and_hint()
+> + * instead.
+> + */
+> +static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +{
+> +       return irq_set_affinity_and_hint(irq, m);
+> +}
+> +
+>  extern int irq_update_affinity_desc(unsigned int irq,
+>                                     struct irq_affinity_desc *affinity);
+>
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index ef30b4762947..837b63e63111 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask)
+>  }
+>  EXPORT_SYMBOL_GPL(irq_force_affinity);
+>
+> -int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+> +int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
+> +                             bool setaffinity)
+>  {
+>         unsigned long flags;
+>         struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
+> @@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+>                 return -EINVAL;
+>         desc->affinity_hint = m;
+>         irq_put_desc_unlock(desc, flags);
+> -       /* set the initial affinity to prevent every interrupt being on CPU0 */
+> -       if (m)
+> +       if (m && setaffinity)
+>                 __irq_set_affinity(irq, m, false);
+>         return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
+> +EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
+>
+>  static void irq_affinity_notify(struct work_struct *work)
+>  {
+> --
+> 2.27.0
+>
 
-elapsed time: 1119m
+It turns out that this patch has an issue. The new interfaces are not
+added under the #ifdef (CONFIG_SMP)'s else section.
+I will fix it and send a v2 with other changes.
 
-configs tested: 192
-configs skipped: 3
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+--
+Thanks
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                           ip28_defconfig
-powerpc                 mpc832x_mds_defconfig
-arm                      pxa255-idp_defconfig
-sh                              ul2_defconfig
-arm                        neponset_defconfig
-sh                           se7721_defconfig
-arm                             rpc_defconfig
-arm                        magician_defconfig
-mips                      maltasmvp_defconfig
-s390                                defconfig
-powerpc                      ppc44x_defconfig
-powerpc                      tqm8xx_defconfig
-ia64                        generic_defconfig
-arm                         mv78xx0_defconfig
-powerpc                     kmeter1_defconfig
-alpha                            alldefconfig
-m68k                          amiga_defconfig
-powerpc                     ep8248e_defconfig
-mips                        omega2p_defconfig
-arm                         s5pv210_defconfig
-arm                         hackkit_defconfig
-csky                             alldefconfig
-arc                           tb10x_defconfig
-sh                          rsk7201_defconfig
-powerpc                 mpc837x_rdb_defconfig
-mips                  maltasmvp_eva_defconfig
-arm                        spear6xx_defconfig
-sh                             espt_defconfig
-mips                        qi_lb60_defconfig
-h8300                            alldefconfig
-powerpc                     akebono_defconfig
-mips                        workpad_defconfig
-xtensa                generic_kc705_defconfig
-sh                          urquell_defconfig
-sh                         ecovec24_defconfig
-powerpc                 xes_mpc85xx_defconfig
-m68k                       m5249evb_defconfig
-arm                        keystone_defconfig
-arm                       multi_v4t_defconfig
-arm                           sama5_defconfig
-arm                        vexpress_defconfig
-arm                        cerfcube_defconfig
-arm                           h5000_defconfig
-mips                      pistachio_defconfig
-arm                          lpd270_defconfig
-powerpc                      pasemi_defconfig
-sh                     sh7710voipgw_defconfig
-sh                        edosk7760_defconfig
-powerpc                      katmai_defconfig
-powerpc                 mpc834x_mds_defconfig
-arc                        nsimosci_defconfig
-xtensa                    xip_kc705_defconfig
-sh                           se7751_defconfig
-mips                       capcella_defconfig
-arm                      footbridge_defconfig
-mips                             allmodconfig
-powerpc                 mpc8315_rdb_defconfig
-sh                        sh7763rdp_defconfig
-powerpc                     tqm8555_defconfig
-xtensa                  audio_kc705_defconfig
-mips                      maltaaprp_defconfig
-riscv                            allyesconfig
-powerpc                  mpc885_ads_defconfig
-arm                  colibri_pxa300_defconfig
-sh                          rsk7264_defconfig
-arm                        shmobile_defconfig
-arm                         lpc32xx_defconfig
-sh                         ap325rxa_defconfig
-arm                  colibri_pxa270_defconfig
-sh                           sh2007_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                           tegra_defconfig
-powerpc                           allnoconfig
-sh                               alldefconfig
-mips                     loongson1c_defconfig
-h8300                               defconfig
-mips                 decstation_r4k_defconfig
-m68k                        stmark2_defconfig
-powerpc                     sbc8548_defconfig
-arm                         palmz72_defconfig
-m68k                        mvme147_defconfig
-arm                          ixp4xx_defconfig
-arm                          pxa910_defconfig
-powerpc                     ppa8548_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-i386                 randconfig-a001-20210622
-i386                 randconfig-a002-20210622
-i386                 randconfig-a003-20210622
-i386                 randconfig-a006-20210622
-i386                 randconfig-a005-20210622
-i386                 randconfig-a004-20210622
-i386                 randconfig-a002-20210625
-i386                 randconfig-a001-20210625
-i386                 randconfig-a003-20210625
-i386                 randconfig-a006-20210625
-i386                 randconfig-a005-20210625
-i386                 randconfig-a004-20210625
-i386                 randconfig-a002-20210623
-i386                 randconfig-a001-20210623
-i386                 randconfig-a003-20210623
-i386                 randconfig-a006-20210623
-i386                 randconfig-a005-20210623
-i386                 randconfig-a004-20210623
-x86_64               randconfig-a012-20210622
-x86_64               randconfig-a016-20210622
-x86_64               randconfig-a015-20210622
-x86_64               randconfig-a014-20210622
-x86_64               randconfig-a013-20210622
-x86_64               randconfig-a011-20210622
-x86_64               randconfig-a002-20210625
-x86_64               randconfig-a001-20210625
-x86_64               randconfig-a005-20210625
-x86_64               randconfig-a003-20210625
-x86_64               randconfig-a004-20210625
-x86_64               randconfig-a006-20210625
-i386                 randconfig-a011-20210623
-i386                 randconfig-a014-20210623
-i386                 randconfig-a013-20210623
-i386                 randconfig-a015-20210623
-i386                 randconfig-a012-20210623
-i386                 randconfig-a016-20210623
-i386                 randconfig-a011-20210622
-i386                 randconfig-a014-20210622
-i386                 randconfig-a013-20210622
-i386                 randconfig-a015-20210622
-i386                 randconfig-a012-20210622
-i386                 randconfig-a016-20210622
-i386                 randconfig-a011-20210625
-i386                 randconfig-a014-20210625
-i386                 randconfig-a013-20210625
-i386                 randconfig-a015-20210625
-i386                 randconfig-a012-20210625
-i386                 randconfig-a016-20210625
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+Nitesh
 
-clang tested configs:
-x86_64               randconfig-b001-20210625
-x86_64               randconfig-b001-20210622
-x86_64               randconfig-a002-20210622
-x86_64               randconfig-a001-20210622
-x86_64               randconfig-a005-20210622
-x86_64               randconfig-a003-20210622
-x86_64               randconfig-a004-20210622
-x86_64               randconfig-a006-20210622
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
