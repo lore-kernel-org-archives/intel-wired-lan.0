@@ -1,11 +1,10 @@
 From: Brelinski, TonyX <tonyx.brelinski@intel.com>
-Date: Fri, 25 Jun 2021 22:37:30 +0000
-Subject: [Intel-wired-lan] [PATCH net-queue v1 2/2] igb: Fix
- user-after-free error during reset
-In-Reply-To: <20210514003104.1360697-2-vinicius.gomes@intel.com>
-References: <20210514003104.1360697-1-vinicius.gomes@intel.com>
- <20210514003104.1360697-2-vinicius.gomes@intel.com>
-Message-ID: <SJ0PR11MB5662A51872F9209E87C30217FA069@SJ0PR11MB5662.namprd11.prod.outlook.com>
+Date: Fri, 25 Jun 2021 22:38:42 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] igb: Fix position of
+ assignment to *ring
+In-Reply-To: <20210611224217.94872-1-jedrzej.jagielski@intel.com>
+References: <20210611224217.94872-1-jedrzej.jagielski@intel.com>
+Message-ID: <SJ0PR11MB5662B37094977888FBC3202DFA069@SJ0PR11MB5662.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,30 +13,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Vinicius Costa Gomes
-> Sent: Thursday, May 13, 2021 5:31 PM
+> Jedrzej Jagielski
+> Sent: Friday, June 11, 2021 3:42 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: erez.geva.ext at siemens.com
-> Subject: [Intel-wired-lan] [PATCH net-queue v1 2/2] igb: Fix user-after-free
-> error during reset
+> Cc: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v1] igb: Fix position of assignment to
+> *ring
 > 
-> Cleans the next descriptor to watch (next_to_watch) when cleaning the TX
-> ring.
+> Assignment to *ring should be done after correctness check of the argument
+> queue.
 > 
-> Failure to do so can cause invalid memory accesses. If igc_poll() runs while
-> the controller is reset this can lead to the driver try to free a skb that was
-> already freed.
-> 
-> (The crash is harder to reproduce with the igb driver, but the same potential
-> problem exists as the code is identical to igc)
-> 
-> Fixes: 7cc6fd4c60f2 ("igb: Don't bother clearing Tx buffer_info in
-> igb_clean_tx_ring")
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> Reported-by: Erez Geva <erez.geva.ext@siemens.com>
+> Fixes: 91db364236c8 ("igb: Refactor igb_configure_cbs()")
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com> (A Contingent Worker at Intel)
 
