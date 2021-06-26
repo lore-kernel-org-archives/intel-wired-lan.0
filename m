@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 26 Jun 2021 17:55:21 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- b81c191c468bb9f9e63cb19cdf090732e3218dce
-Message-ID: <60d6f989.dtZWU1zZFXyn5/9z%lkp@intel.com>
+Date: Sat, 26 Jun 2021 18:31:41 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 33009515d1891307ad89504c57cb1e4ea6f6531d
+Message-ID: <60d7020d.5AbUztxbtbzhqCR2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: b81c191c468bb9f9e63cb19cdf090732e3218dce  ice: Fix a memory leak in an error handling path in 'ice_pf_dcb_cfg()'
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 33009515d1891307ad89504c57cb1e4ea6f6531d  e1000e: Additional PHY power saving in s0ix
 
-elapsed time: 865m
+elapsed time: 731m
 
-configs tested: 154
-configs skipped: 3
+configs tested: 114
+configs skipped: 2
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -26,67 +26,39 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arm                             pxa_defconfig
-sh                          rsk7264_defconfig
-sh                             espt_defconfig
-powerpc                      ppc64e_defconfig
-arm                          simpad_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                         db1xxx_defconfig
-sh                        apsh4ad0a_defconfig
-mips                         tb0226_defconfig
-powerpc                           allnoconfig
-mips                        bcm47xx_defconfig
-powerpc                     skiroot_defconfig
-microblaze                          defconfig
-powerpc                 mpc836x_mds_defconfig
-sh                          rsk7201_defconfig
-s390                          debug_defconfig
-powerpc                 mpc832x_mds_defconfig
-arc                            hsdk_defconfig
-arc                           tb10x_defconfig
-ia64                            zx1_defconfig
 powerpc                         ps3_defconfig
 powerpc                      mgcoge_defconfig
 sh                        sh7785lcr_defconfig
 sh                           se7721_defconfig
 sh                        edosk7705_defconfig
-arm                         bcm2835_defconfig
-sh                               j2_defconfig
-sh                          r7785rp_defconfig
-h8300                            alldefconfig
-mips                 decstation_r4k_defconfig
-powerpc                     mpc5200_defconfig
-h8300                       h8s-sim_defconfig
-sparc64                             defconfig
-arm                      footbridge_defconfig
-xtensa                           alldefconfig
+arm                         axm55xx_defconfig
+powerpc                 mpc834x_itx_defconfig
+ia64                                defconfig
+sh                             espt_defconfig
+microblaze                      mmu_defconfig
 arm                          pxa3xx_defconfig
 arm                          moxart_defconfig
 arm                           u8500_defconfig
 arm                         palmz72_defconfig
 powerpc                 mpc834x_mds_defconfig
-mips                        workpad_defconfig
-powerpc                    ge_imp3a_defconfig
-mips                         tb0219_defconfig
-powerpc                      pasemi_defconfig
-sh                             shx3_defconfig
-arm                            zeus_defconfig
-arc                          axs101_defconfig
-sh                          landisk_defconfig
-ia64                          tiger_defconfig
-sh                        dreamcast_defconfig
-arm                        mini2440_defconfig
-arm                       versatile_defconfig
-powerpc                 canyonlands_defconfig
-arc                          axs103_defconfig
+powerpc                     pq2fads_defconfig
+arm                         vf610m4_defconfig
+m68k                            mac_defconfig
+ia64                            zx1_defconfig
+arm                        trizeps4_defconfig
+powerpc                    socrates_defconfig
+powerpc                          g5_defconfig
+powerpc                        fsp2_defconfig
+sparc64                             defconfig
+sparc                       sparc32_defconfig
+sh                          rsk7201_defconfig
+arm                             pxa_defconfig
 m68k                         amcore_defconfig
 sh                           sh2007_defconfig
 arm                           viper_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
 x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
@@ -115,24 +87,25 @@ mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
+powerpc                           allnoconfig
 i386                 randconfig-a002-20210625
 i386                 randconfig-a001-20210625
 i386                 randconfig-a003-20210625
 i386                 randconfig-a006-20210625
 i386                 randconfig-a005-20210625
 i386                 randconfig-a004-20210625
-x86_64               randconfig-a012-20210622
-x86_64               randconfig-a016-20210622
-x86_64               randconfig-a015-20210622
-x86_64               randconfig-a014-20210622
-x86_64               randconfig-a013-20210622
-x86_64               randconfig-a011-20210622
 x86_64               randconfig-a002-20210625
 x86_64               randconfig-a001-20210625
 x86_64               randconfig-a005-20210625
 x86_64               randconfig-a003-20210625
 x86_64               randconfig-a004-20210625
 x86_64               randconfig-a006-20210625
+x86_64               randconfig-a012-20210622
+x86_64               randconfig-a016-20210622
+x86_64               randconfig-a015-20210622
+x86_64               randconfig-a014-20210622
+x86_64               randconfig-a013-20210622
+x86_64               randconfig-a011-20210622
 i386                 randconfig-a011-20210622
 i386                 randconfig-a014-20210622
 i386                 randconfig-a013-20210622
@@ -163,20 +136,7 @@ x86_64                      rhel-8.3-kbuiltin
 x86_64                                  kexec
 
 clang tested configs:
-x86_64               randconfig-b001-20210625
 x86_64               randconfig-b001-20210622
-x86_64               randconfig-a002-20210626
-x86_64               randconfig-a001-20210626
-x86_64               randconfig-a005-20210626
-x86_64               randconfig-a003-20210626
-x86_64               randconfig-a004-20210626
-x86_64               randconfig-a006-20210626
-x86_64               randconfig-a002-20210622
-x86_64               randconfig-a001-20210622
-x86_64               randconfig-a005-20210622
-x86_64               randconfig-a003-20210622
-x86_64               randconfig-a004-20210622
-x86_64               randconfig-a006-20210622
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
