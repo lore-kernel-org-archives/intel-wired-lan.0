@@ -1,141 +1,183 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 25 Jun 2021 17:33:07 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v4 05/12] mqprio: Add support for
- frame preemption offload
-In-Reply-To: <20210626003314.3159402-1-vinicius.gomes@intel.com>
-References: <20210626003314.3159402-1-vinicius.gomes@intel.com>
-Message-ID: <20210626003314.3159402-6-vinicius.gomes@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 26 Jun 2021 17:55:21 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ b81c191c468bb9f9e63cb19cdf090732e3218dce
+Message-ID: <60d6f989.dtZWU1zZFXyn5/9z%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adds a way to configure which traffic classes are marked as
-preemptible and which are marked as express.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: b81c191c468bb9f9e63cb19cdf090732e3218dce  ice: Fix a memory leak in an error handling path in 'ice_pf_dcb_cfg()'
 
-Even if frame preemption is not a "real" offload, because it can't be
-executed purely in software, having this information near where the
-mapping of traffic classes to queues is specified, makes it,
-hopefully, easier to use.
+elapsed time: 865m
 
-mqprio will receive the information of which traffic classes are
-marked as express/preemptible, and when offloading frame preemption to
-the driver will convert the information, so the driver receives which
-queues are marked as express/preemptible.
+configs tested: 154
+configs skipped: 3
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                             pxa_defconfig
+sh                          rsk7264_defconfig
+sh                             espt_defconfig
+powerpc                      ppc64e_defconfig
+arm                          simpad_defconfig
+mips                  maltasmvp_eva_defconfig
+mips                         db1xxx_defconfig
+sh                        apsh4ad0a_defconfig
+mips                         tb0226_defconfig
+powerpc                           allnoconfig
+mips                        bcm47xx_defconfig
+powerpc                     skiroot_defconfig
+microblaze                          defconfig
+powerpc                 mpc836x_mds_defconfig
+sh                          rsk7201_defconfig
+s390                          debug_defconfig
+powerpc                 mpc832x_mds_defconfig
+arc                            hsdk_defconfig
+arc                           tb10x_defconfig
+ia64                            zx1_defconfig
+powerpc                         ps3_defconfig
+powerpc                      mgcoge_defconfig
+sh                        sh7785lcr_defconfig
+sh                           se7721_defconfig
+sh                        edosk7705_defconfig
+arm                         bcm2835_defconfig
+sh                               j2_defconfig
+sh                          r7785rp_defconfig
+h8300                            alldefconfig
+mips                 decstation_r4k_defconfig
+powerpc                     mpc5200_defconfig
+h8300                       h8s-sim_defconfig
+sparc64                             defconfig
+arm                      footbridge_defconfig
+xtensa                           alldefconfig
+arm                          pxa3xx_defconfig
+arm                          moxart_defconfig
+arm                           u8500_defconfig
+arm                         palmz72_defconfig
+powerpc                 mpc834x_mds_defconfig
+mips                        workpad_defconfig
+powerpc                    ge_imp3a_defconfig
+mips                         tb0219_defconfig
+powerpc                      pasemi_defconfig
+sh                             shx3_defconfig
+arm                            zeus_defconfig
+arc                          axs101_defconfig
+sh                          landisk_defconfig
+ia64                          tiger_defconfig
+sh                        dreamcast_defconfig
+arm                        mini2440_defconfig
+arm                       versatile_defconfig
+powerpc                 canyonlands_defconfig
+arc                          axs103_defconfig
+m68k                         amcore_defconfig
+sh                           sh2007_defconfig
+arm                           viper_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+x86_64                            allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+i386                 randconfig-a002-20210625
+i386                 randconfig-a001-20210625
+i386                 randconfig-a003-20210625
+i386                 randconfig-a006-20210625
+i386                 randconfig-a005-20210625
+i386                 randconfig-a004-20210625
+x86_64               randconfig-a012-20210622
+x86_64               randconfig-a016-20210622
+x86_64               randconfig-a015-20210622
+x86_64               randconfig-a014-20210622
+x86_64               randconfig-a013-20210622
+x86_64               randconfig-a011-20210622
+x86_64               randconfig-a002-20210625
+x86_64               randconfig-a001-20210625
+x86_64               randconfig-a005-20210625
+x86_64               randconfig-a003-20210625
+x86_64               randconfig-a004-20210625
+x86_64               randconfig-a006-20210625
+i386                 randconfig-a011-20210622
+i386                 randconfig-a014-20210622
+i386                 randconfig-a013-20210622
+i386                 randconfig-a015-20210622
+i386                 randconfig-a012-20210622
+i386                 randconfig-a016-20210622
+i386                 randconfig-a011-20210625
+i386                 randconfig-a014-20210625
+i386                 randconfig-a013-20210625
+i386                 randconfig-a015-20210625
+i386                 randconfig-a012-20210625
+i386                 randconfig-a016-20210625
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210625
+x86_64               randconfig-b001-20210622
+x86_64               randconfig-a002-20210626
+x86_64               randconfig-a001-20210626
+x86_64               randconfig-a005-20210626
+x86_64               randconfig-a003-20210626
+x86_64               randconfig-a004-20210626
+x86_64               randconfig-a006-20210626
+x86_64               randconfig-a002-20210622
+x86_64               randconfig-a001-20210622
+x86_64               randconfig-a005-20210622
+x86_64               randconfig-a003-20210622
+x86_64               randconfig-a004-20210622
+x86_64               randconfig-a006-20210622
+
 ---
- include/uapi/linux/pkt_sched.h |  1 +
- net/sched/sch_mqprio.c         | 41 ++++++++++++++++++++++++++++++++--
- 2 files changed, 40 insertions(+), 2 deletions(-)
-
-diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
-index 830ce9c9ec6f..06aa155e46f7 100644
---- a/include/uapi/linux/pkt_sched.h
-+++ b/include/uapi/linux/pkt_sched.h
-@@ -738,6 +738,7 @@ enum {
- 	TCA_MQPRIO_SHAPER,
- 	TCA_MQPRIO_MIN_RATE64,
- 	TCA_MQPRIO_MAX_RATE64,
-+	TCA_MQPRIO_PREEMPT_TCS,
- 	__TCA_MQPRIO_MAX,
- };
- 
-diff --git a/net/sched/sch_mqprio.c b/net/sched/sch_mqprio.c
-index 8766ab5b8788..86e6012f180a 100644
---- a/net/sched/sch_mqprio.c
-+++ b/net/sched/sch_mqprio.c
-@@ -23,6 +23,7 @@ struct mqprio_sched {
- 	u16 shaper;
- 	int hw_offload;
- 	u32 flags;
-+	u32 preemptible_tcs;
- 	u64 min_rate[TC_QOPT_MAX_QUEUE];
- 	u64 max_rate[TC_QOPT_MAX_QUEUE];
- };
-@@ -33,6 +34,13 @@ static void mqprio_destroy(struct Qdisc *sch)
- 	struct mqprio_sched *priv = qdisc_priv(sch);
- 	unsigned int ntx;
- 
-+	if (priv->preemptible_tcs && dev->netdev_ops->ndo_setup_tc) {
-+		struct tc_preempt_qopt_offload preempt = { };
-+
-+		dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
-+						    &preempt);
-+	}
-+
- 	if (priv->qdiscs) {
- 		for (ntx = 0;
- 		     ntx < dev->num_tx_queues && priv->qdiscs[ntx];
-@@ -112,6 +120,7 @@ static int mqprio_parse_opt(struct net_device *dev, struct tc_mqprio_qopt *qopt)
- static const struct nla_policy mqprio_policy[TCA_MQPRIO_MAX + 1] = {
- 	[TCA_MQPRIO_MODE]	= { .len = sizeof(u16) },
- 	[TCA_MQPRIO_SHAPER]	= { .len = sizeof(u16) },
-+	[TCA_MQPRIO_PREEMPT_TCS] = { .type = NLA_U32 },
- 	[TCA_MQPRIO_MIN_RATE64]	= { .type = NLA_NESTED },
- 	[TCA_MQPRIO_MAX_RATE64]	= { .type = NLA_NESTED },
- };
-@@ -171,8 +180,17 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt,
- 		if (err < 0)
- 			return err;
- 
--		if (!qopt->hw)
--			return -EINVAL;
-+		if (tb[TCA_MQPRIO_PREEMPT_TCS]) {
-+			u32 preempt = nla_get_u32(tb[TCA_MQPRIO_PREEMPT_TCS]);
-+			u32 all_tcs_mask = GENMASK(qopt->num_tc, 0);
-+
-+			if ((preempt & all_tcs_mask) == all_tcs_mask) {
-+				NL_SET_ERR_MSG(extack, "At least one traffic class must be not be preemptible");
-+				return -EINVAL;
-+			}
-+
-+			priv->preemptible_tcs = preempt;
-+		}
- 
- 		if (tb[TCA_MQPRIO_MODE]) {
- 			priv->flags |= TC_MQPRIO_F_MODE;
-@@ -217,6 +235,9 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt,
- 		}
- 	}
- 
-+	if (!qopt->hw && priv->flags)
-+		return -EINVAL;
-+
- 	/* pre-allocate qdisc, attachment can't fail */
- 	priv->qdiscs = kcalloc(dev->num_tx_queues, sizeof(priv->qdiscs[0]),
- 			       GFP_KERNEL);
-@@ -282,6 +303,18 @@ static int mqprio_init(struct Qdisc *sch, struct nlattr *opt,
- 	for (i = 0; i < TC_BITMASK + 1; i++)
- 		netdev_set_prio_tc_map(dev, i, qopt->prio_tc_map[i]);
- 
-+	if (priv->preemptible_tcs) {
-+		struct tc_preempt_qopt_offload preempt = { };
-+
-+		preempt.preemptible_queues =
-+			netdev_tc_map_to_queue_mask(dev, priv->preemptible_tcs);
-+
-+		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
-+						    &preempt);
-+		if (err)
-+			return err;
-+	}
-+
- 	sch->flags |= TCQ_F_MQROOT;
- 	return 0;
- }
-@@ -450,6 +483,10 @@ static int mqprio_dump(struct Qdisc *sch, struct sk_buff *skb)
- 	    (dump_rates(priv, &opt, skb) != 0))
- 		goto nla_put_failure;
- 
-+	if (priv->preemptible_tcs &&
-+	    nla_put_u32(skb, TCA_MQPRIO_PREEMPT_TCS, priv->preemptible_tcs))
-+		goto nla_put_failure;
-+
- 	return nla_nest_end(skb, nla);
- nla_put_failure:
- 	nlmsg_trim(skb, nla);
--- 
-2.32.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
