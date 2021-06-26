@@ -1,130 +1,81 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri, 25 Jun 2021 17:33:12 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v4 10/12] ethtool: Add support
- for Frame Preemption verification
+Date: Fri, 25 Jun 2021 17:33:06 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v4 04/12] taprio: Replace
+ tc_map_to_queue_mask()
 In-Reply-To: <20210626003314.3159402-1-vinicius.gomes@intel.com>
 References: <20210626003314.3159402-1-vinicius.gomes@intel.com>
-Message-ID: <20210626003314.3159402-11-vinicius.gomes@intel.com>
+Message-ID: <20210626003314.3159402-5-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-WIP WIP WIP
+Replaces tc_map_to_queue_mask() by netdev_tc_map_to_queue_mask() that
+was just introduced.
 
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- Documentation/networking/ethtool-netlink.rst |  3 +++
- include/linux/ethtool.h                      |  2 ++
- include/uapi/linux/ethtool_netlink.h         |  2 ++
- net/ethtool/netlink.h                        |  2 +-
- net/ethtool/preempt.c                        | 11 +++++++++++
- 5 files changed, 19 insertions(+), 1 deletion(-)
+ net/sched/sch_taprio.c | 26 ++++----------------------
+ 1 file changed, 4 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/networking/ethtool-netlink.rst b/Documentation/networking/ethtool-netlink.rst
-index a87f1716944e..bc44724e2cd5 100644
---- a/Documentation/networking/ethtool-netlink.rst
-+++ b/Documentation/networking/ethtool-netlink.rst
-@@ -1494,6 +1494,8 @@ Request contents:
-   ``ETHTOOL_A_PREEMPT_HEADER``           nested  reply header
-   ``ETHTOOL_A_PREEMPT_ENABLED``          u8      frame preemption enabled
-   ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE``    u32     Min additional frag size
-+  ``ETHTOOL_A_PREEMPT_DISABLE_VERIFY``   u8      disable verification
-+  ``ETHTOOL_A_PREEMPT_VERIFIED``         u8      verification procedure
-   =====================================  ======  ==========================
- 
- ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE`` configures the minimum non-final
-@@ -1510,6 +1512,7 @@ Request contents:
-   ``ETHTOOL_A_CHANNELS_HEADER``          nested  reply header
-   ``ETHTOOL_A_PREEMPT_ENABLED``          u8      frame preemption enabled
-   ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE``    u32     Min additional frag size
-+  ``ETHTOOL_A_PREEMPT_DISABLE_VERIFY``   u8      disable verification
-   =====================================  ======  ==========================
- 
- ``ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE`` configures the minimum non-final
-diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-index 7e449be8f335..64c31ab75e16 100644
---- a/include/linux/ethtool.h
-+++ b/include/linux/ethtool.h
-@@ -420,6 +420,8 @@ struct ethtool_module_eeprom {
- struct ethtool_fp {
- 	u8 enabled;
- 	u32 add_frag_size;
-+	u8 disable_verify;
-+	u8 verified;
- };
- 
- /**
-diff --git a/include/uapi/linux/ethtool_netlink.h b/include/uapi/linux/ethtool_netlink.h
-index 4600aba1c693..c2b4d7c3ed14 100644
---- a/include/uapi/linux/ethtool_netlink.h
-+++ b/include/uapi/linux/ethtool_netlink.h
-@@ -675,6 +675,8 @@ enum {
- 	ETHTOOL_A_PREEMPT_HEADER,			/* nest - _A_HEADER_* */
- 	ETHTOOL_A_PREEMPT_ENABLED,			/* u8 */
- 	ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE,		/* u32 */
-+	ETHTOOL_A_PREEMPT_DISABLE_VERIFY,		/* u8 */
-+	ETHTOOL_A_PREEMPT_VERIFIED,			/* u8 */
- 
- 	/* add new constants above here */
- 	__ETHTOOL_A_PREEMPT_CNT,
-diff --git a/net/ethtool/netlink.h b/net/ethtool/netlink.h
-index cc90a463a81c..671237d31ced 100644
---- a/net/ethtool/netlink.h
-+++ b/net/ethtool/netlink.h
-@@ -383,7 +383,7 @@ extern const struct nla_policy ethnl_fec_get_policy[ETHTOOL_A_FEC_HEADER + 1];
- extern const struct nla_policy ethnl_fec_set_policy[ETHTOOL_A_FEC_AUTO + 1];
- extern const struct nla_policy ethnl_module_eeprom_get_policy[ETHTOOL_A_MODULE_EEPROM_I2C_ADDRESS + 1];
- extern const struct nla_policy ethnl_preempt_get_policy[ETHTOOL_A_PREEMPT_HEADER + 1];
--extern const struct nla_policy ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE + 1];
-+extern const struct nla_policy ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_VERIFIED + 1];
- extern const struct nla_policy ethnl_stats_get_policy[ETHTOOL_A_STATS_GROUPS + 1];
- 
- int ethnl_set_linkinfo(struct sk_buff *skb, struct genl_info *info);
-diff --git a/net/ethtool/preempt.c b/net/ethtool/preempt.c
-index 4f96d3c2b1d5..5d70374d9b01 100644
---- a/net/ethtool/preempt.c
-+++ b/net/ethtool/preempt.c
-@@ -48,6 +48,8 @@ static int preempt_reply_size(const struct ethnl_req_info *req_base,
- 
- 	len += nla_total_size(sizeof(u8)); /* _PREEMPT_ENABLED */
- 	len += nla_total_size(sizeof(u32)); /* _PREEMPT_ADD_FRAG_SIZE */
-+	len += nla_total_size(sizeof(u8)); /* _PREEMPT_DISABLE_VERIFY */
-+	len += nla_total_size(sizeof(u8)); /* _PREEMPT_VERIFIED */
- 
- 	return len;
- }
-@@ -66,6 +68,12 @@ static int preempt_fill_reply(struct sk_buff *skb,
- 			preempt->add_frag_size))
- 		return -EMSGSIZE;
- 
-+	if (nla_put_u8(skb, ETHTOOL_A_PREEMPT_DISABLE_VERIFY, preempt->disable_verify))
-+		return -EMSGSIZE;
-+
-+	if (nla_put_u8(skb, ETHTOOL_A_PREEMPT_VERIFIED, preempt->verified))
-+		return -EMSGSIZE;
-+
- 	return 0;
+diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+index 58586f98c648..4e411ca3a9eb 100644
+--- a/net/sched/sch_taprio.c
++++ b/net/sched/sch_taprio.c
+@@ -1201,25 +1201,6 @@ static void taprio_offload_config_changed(struct taprio_sched *q)
+ 	spin_unlock(&q->current_entry_lock);
  }
  
-@@ -86,6 +94,7 @@ ethnl_preempt_set_policy[ETHTOOL_A_PREEMPT_MAX + 1] = {
- 	[ETHTOOL_A_PREEMPT_HEADER]			= NLA_POLICY_NESTED(ethnl_header_policy),
- 	[ETHTOOL_A_PREEMPT_ENABLED]			= NLA_POLICY_RANGE(NLA_U8, 0, 1),
- 	[ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE]		= { .type = NLA_U32 },
-+	[ETHTOOL_A_PREEMPT_DISABLE_VERIFY]		= NLA_POLICY_RANGE(NLA_U8, 0, 1),
- };
+-static u32 tc_map_to_queue_mask(struct net_device *dev, u32 tc_mask)
+-{
+-	u32 i, queue_mask = 0;
+-
+-	for (i = 0; i < dev->num_tc; i++) {
+-		u32 offset, count;
+-
+-		if (!(tc_mask & BIT(i)))
+-			continue;
+-
+-		offset = dev->tc_to_txq[i].offset;
+-		count = dev->tc_to_txq[i].count;
+-
+-		queue_mask |= GENMASK(offset + count - 1, offset);
+-	}
+-
+-	return queue_mask;
+-}
+-
+ static void taprio_sched_to_offload(struct net_device *dev,
+ 				    struct sched_gate_list *sched,
+ 				    struct tc_taprio_qopt_offload *offload)
+@@ -1236,7 +1217,7 @@ static void taprio_sched_to_offload(struct net_device *dev,
  
- int ethnl_set_preempt(struct sk_buff *skb, struct genl_info *info)
-@@ -124,6 +133,8 @@ int ethnl_set_preempt(struct sk_buff *skb, struct genl_info *info)
- 			tb[ETHTOOL_A_PREEMPT_ENABLED], &mod);
- 	ethnl_update_u32(&preempt.add_frag_size,
- 			 tb[ETHTOOL_A_PREEMPT_ADD_FRAG_SIZE], &mod);
-+	ethnl_update_u8(&preempt.disable_verify,
-+			tb[ETHTOOL_A_PREEMPT_DISABLE_VERIFY], &mod);
- 	ret = 0;
- 	if (!mod)
- 		goto out_ops;
+ 		e->command = entry->command;
+ 		e->interval = entry->interval;
+-		e->gate_mask = tc_map_to_queue_mask(dev, entry->gate_mask);
++		e->gate_mask = netdev_tc_map_to_queue_mask(dev, entry->gate_mask);
+ 
+ 		i++;
+ 	}
+@@ -1536,14 +1517,15 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+ 	if (tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]) {
+ 		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]);
+ 		struct tc_preempt_qopt_offload qopt = { };
++		u32 all_tcs_mask = GENMASK(mqprio->num_tc, 0);
+ 
+-		if (preempt == U32_MAX) {
++		if ((preempt & all_tcs_mask) == all_tcs_mask) {
+ 			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
+ 			err = -EINVAL;
+ 			goto free_sched;
+ 		}
+ 
+-		qopt.preemptible_queues = tc_map_to_queue_mask(dev, preempt);
++		qopt.preemptible_queues = netdev_tc_map_to_queue_mask(dev, preempt);
+ 
+ 		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
+ 						    &qopt);
 -- 
 2.32.0
 
