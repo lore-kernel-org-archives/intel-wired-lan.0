@@ -1,36 +1,38 @@
-From: Daniel Borkmann <daniel@iogearbox.net>
-Date: Mon, 28 Jun 2021 16:33:10 +0200
-Subject: [Intel-wired-lan] [PATCH net v3] xdp,
- net: fix for construct skb by xdp inside xsk zc rx
-In-Reply-To: <20210628114647.75449-1-xuanzhuo@linux.alibaba.com>
-References: <20210628114647.75449-1-xuanzhuo@linux.alibaba.com>
-Message-ID: <0a1614c4-19b7-2665-8eb9-7df776fa4c13@iogearbox.net>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Mon, 28 Jun 2021 15:15:14 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 0/3] iavf: Fix init and
+ watchdog state machines
+Message-ID: <20210628151514.28547-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Xuan,
+Use single state machine for driver initialization
+and for service initialized driver. The init state
+machine implemented in init_task() is merged
+into the watchdog_task(). The init_task() function
+is removed.
 
-On 6/28/21 1:46 PM, Xuan Zhuo wrote:
-> When each driver supports xsk rx, if the received buff returns XDP_PASS
-> after run xdp prog, it must construct skb based on xdp. This patch
-> extracts this logic into a public function xdp_construct_skb().
-> 
-> There is a bug in the original logic. When constructing skb, we should
-> copy the meta information to skb and then use __skb_pull() to correct
-> the data.
-> 
-> Fixes: 0a714186d3c0f ("i40e: add AF_XDP zero-copy Rx support")
-> Fixes: 2d4238f556972 ("ice: Add support for AF_XDP")
-> Fixes: bba2556efad66 ("net: stmmac: Enable RX via AF_XDP zero-copy")
-> Fixes: d0bcacd0a1309 ("ixgbe: add AF_XDP zero-copy Rx support")
-> Signed-off-by: Xuan Zhuo <xuanzhuo@linux.alibaba.com>
+---
+v5: Fixed the patch so that it applies on net-next tree
+v4: Removed unnecessary line
+v3: Added new file to patch series
+v2: Splitted the patch into 2 to make them smaller
+---
 
-There was still an ongoing discussion on the v2 of your patch between
-Maciej and Maxim (Cc). Before you submit a v3, please let the discussion
-conclude first.
+Jan Sokolowski (3):
+  iavf: Refactor iavf state machine tracking
+  iavf: Add __IAVF_INIT_FAILED state
+  iavf: Fix init and watchdog state machines
 
-Thanks,
-Daniel
+
+ drivers/net/ethernet/intel/iavf/iavf.h        |  12 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 190 +++++++++---------
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   2 +-
+ 3 files changed, 103 insertions(+), 101 deletions(-)
+
+-- 
+2.17.1
+
