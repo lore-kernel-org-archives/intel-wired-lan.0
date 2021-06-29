@@ -1,60 +1,58 @@
-From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Tue, 29 Jun 2021 11:27:46 -0400
-Subject: [Intel-wired-lan] [PATCH v2 14/14] net/mlx4: Use
- irq_update_affinity_hint
-In-Reply-To: <20210629152746.2953364-1-nitesh@redhat.com>
-References: <20210629152746.2953364-1-nitesh@redhat.com>
-Message-ID: <20210629152746.2953364-15-nitesh@redhat.com>
+From: Jesper Dangaard Brouer <jbrouer@redhat.com>
+Date: Tue, 29 Jun 2021 18:55:59 +0200
+Subject: [Intel-wired-lan] [PATCH net v2] xdp,
+ net: fix for construct skb by xdp inside xsk zc rx
+In-Reply-To: <20210628104721.GA57589@ranger.igk.intel.com>
+References: <20210617145534.101458-1-xuanzhuo@linux.alibaba.com>
+ <20210628104721.GA57589@ranger.igk.intel.com>
+Message-ID: <f5ce5610-443c-a2d9-43ef-d203f9afb0d8@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver uses irq_set_affinity_hint() to update the affinity_hint mask
-that is consumed by the userspace to distribute the interrupts. However,
-under the hood irq_set_affinity_hint() also applies the provided cpumask
-(if not NULL) as the affinity for the given interrupt which is an
-undocumented side effect.
+On 28/06/2021 12.47, Maciej Fijalkowski wrote:
 
-To remove this side effect irq_set_affinity_hint() has been marked
-as deprecated and new interfaces have been introduced. Hence, replace the
-irq_set_affinity_hint() with the new interface irq_update_affinity_hint()
-that only updates the affinity_hint pointer.
+> +static __always_inline struct sk_buff *
+> +xdp_construct_skb(struct xdp_buff *xdp, struct napi_struct *napi)
+> +{
 
-Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
----
- drivers/net/ethernet/mellanox/mlx4/eq.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+I don't like the generic name "xdp_construct_skb".
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
-index 9e48509ed3b2..414e390e6b48 100644
---- a/drivers/net/ethernet/mellanox/mlx4/eq.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
-@@ -244,9 +244,9 @@ static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
- 	    cpumask_empty(eq->affinity_mask))
- 		return;
- 
--	hint_err = irq_set_affinity_hint(eq->irq, eq->affinity_mask);
-+	hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
- 	if (hint_err)
--		mlx4_warn(dev, "irq_set_affinity_hint failed, err %d\n", hint_err);
-+		mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
- }
- #endif
- 
-@@ -1123,9 +1123,7 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
- 	for (i = 0; i < dev->caps.num_comp_vectors + 1; ++i)
- 		if (eq_table->eq[i].have_irq) {
- 			free_cpumask_var(eq_table->eq[i].affinity_mask);
--#if defined(CONFIG_SMP)
--			irq_set_affinity_hint(eq_table->eq[i].irq, NULL);
--#endif
-+			irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
- 			free_irq(eq_table->eq[i].irq, eq_table->eq + i);
- 			eq_table->eq[i].have_irq = 0;
- 		}
--- 
-2.27.0
+What about calling it "xdp_copy_construct_skb", because below is 
+memcpy'ing the data.
+
+Functions that use this call free (or recycle) the memory backing the 
+packet, after calling this function.
+
+(I'm open to other naming suggestions)
+
+
+> +	unsigned int metasize;
+> +	unsigned int datasize;
+> +	unsigned int headroom;
+> +	struct sk_buff *skb;
+> +	unsigned int len;
+> +
+> +	/* this include metasize */
+> +	datasize = xdp->data_end  - xdp->data_meta;
+> +	metasize = xdp->data      - xdp->data_meta;
+> +	headroom = xdp->data_meta - xdp->data_hard_start;
+> +	len      = xdp->data_end  - xdp->data_hard_start;
+> +
+> +	/* allocate a skb to store the frags */
+> +	skb = __napi_alloc_skb(napi, len, GFP_ATOMIC | __GFP_NOWARN);
+> +	if (unlikely(!skb))
+> +		return NULL;
+> +
+> +	skb_reserve(skb, headroom);
+> +	memcpy(__skb_put(skb, datasize), xdp->data_meta, datasize);
+> +	if (metasize) {
+> +		__skb_pull(skb, metasize);
+> +		skb_metadata_set(skb, metasize);
+> +	}
+> +
+> +	return skb;
+> +}
 
