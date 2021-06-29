@@ -1,60 +1,43 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 28 Jun 2021 21:43:27 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v2 0/5] igc: Add support for RX
- Flex Filters
-Message-ID: <20210629044332.3491232-1-vinicius.gomes@intel.com>
+Date: Mon, 28 Jun 2021 21:43:30 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v2 3/5] igc: Allow for Flex
+ Filters to be installed
+In-Reply-To: <20210629044332.3491232-1-vinicius.gomes@intel.com>
+References: <20210629044332.3491232-1-vinicius.gomes@intel.com>
+Message-ID: <20210629044332.3491232-4-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Allows Flex Filters to be installed.
 
-Changes from v1:
- - Fixed warnings related to invalid endianness conversions (Tony Nguyen);
- - Added some examples for using the exposed LEDs (Paul Menzel);
+The previous restriction to the types of filters that can be installed
+can now be lifted.
 
-Add support for steering traffic to specific RX queues using Flex Filters.
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-As the name implies, Flex Filters are more flexible than using
-Layer-2, VLAN or MAC address filters, one of the reasons is that they
-allow "AND" operations more easily, e.g. when the user wants to steer
-some traffic based on the source MAC address and the packet ethertype.
-
-Future work include adding support for offloading tc-u32 filters to
-the hardware.
-
-The series is divided as follows:
-
-Patch 1/5, add the low level primitives for configuring Flex filters.
-
-Patch 2/5 and 3/5, allow ethtool to manage Flex filters.
-
-Patch 4/5, when specifying filters that have multiple predicates, use Flex filters.
-
-Patch 5/5, Adds support for exposing the i225 LEDs using the LED subsystem.
-
-Cheers,
-
-
-Kurt Kanzenbach (4):
-  igc: Add possibility to add flex filter
-  igc: Integrate flex filter into ethtool ops
-  igc: Make flex filter more flexible
-  igc: Export LEDs
-
-Vinicius Costa Gomes (1):
-  igc: Allow for Flex Filters to be installed
-
- drivers/net/ethernet/intel/Kconfig           |   1 +
- drivers/net/ethernet/intel/igc/igc.h         |  48 +-
- drivers/net/ethernet/intel/igc/igc_defines.h |  62 ++-
- drivers/net/ethernet/intel/igc/igc_ethtool.c |  41 +-
- drivers/net/ethernet/intel/igc/igc_main.c    | 448 ++++++++++++++++++-
- drivers/net/ethernet/intel/igc/igc_regs.h    |  19 +
- 6 files changed, 595 insertions(+), 24 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 3d46eff87638..5a7b27b2a95c 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1300,12 +1300,6 @@ static int igc_ethtool_add_nfc_rule(struct igc_adapter *adapter,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+-	if ((fsp->flow_type & FLOW_EXT) &&
+-	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
+-		netdev_dbg(netdev, "VLAN mask not supported\n");
+-		return -EOPNOTSUPP;
+-	}
+-
+ 	if (fsp->ring_cookie >= adapter->num_rx_queues) {
+ 		netdev_dbg(netdev, "Invalid action\n");
+ 		return -EINVAL;
 -- 
 2.32.0
 
