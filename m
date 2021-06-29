@@ -1,9 +1,10 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 28 Jun 2021 21:43:32 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v2 5/5] igc: Export LEDs
+Date: Mon, 28 Jun 2021 21:43:28 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v2 1/5] igc: Add possibility to
+ add flex filter
 In-Reply-To: <20210629044332.3491232-1-vinicius.gomes@intel.com>
 References: <20210629044332.3491232-1-vinicius.gomes@intel.com>
-Message-ID: <20210629044332.3491232-6-vinicius.gomes@intel.com>
+Message-ID: <20210629044332.3491232-2-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,262 +13,308 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kurt Kanzenbach <kurt@linutronix.de>
 
-Each i225 has three LEDs. Export them via the LED class framework.
+The Intel i225 NIC has the possibility to add flex filters which can
+match up to the first 128 byte of a packet. These filters are useful
+for all kind of packet matching. One particular use case is Profinet,
+as the different traffic classes are distinguished by the frame id
+range which cannot be matched by any other means.
 
-Each LED is controllable via sysfs. Example:
-
-$ cd /sys/class/leds/igc_led0
-$ cat brightness      # Current Mode
-$ cat max_brightness  # 15
-$ echo 0 > brightness # Mode 0
-$ echo 1 > brightness # Mode 1
-
-The brightness field here reflects the different LED modes ranging
-from 0 to 15.
+Add code to configure and enable flex filters.
 
 Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig           |   1 +
- drivers/net/ethernet/intel/igc/igc.h         |  10 ++
- drivers/net/ethernet/intel/igc/igc_defines.h |  10 ++
- drivers/net/ethernet/intel/igc/igc_main.c    | 132 +++++++++++++++++++
- drivers/net/ethernet/intel/igc/igc_regs.h    |   2 +
- 5 files changed, 155 insertions(+)
+ drivers/net/ethernet/intel/igc/igc.h         |  13 ++
+ drivers/net/ethernet/intel/igc/igc_defines.h |  48 ++++++-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 134 +++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    |  17 +++
+ 4 files changed, 207 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 045ce9cb7b7f..c9f9bfde13b9 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -349,6 +349,7 @@ config IGC
- 	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
- 	default n
- 	depends on PCI
-+	depends on LEDS_CLASS
- 	help
- 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
- 	  family of adapters.
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index a0ecfe5a4078..2df0fd2b9ecf 100644
+index 5901ed9fb545..6016c132d981 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -13,6 +13,7 @@
- #include <linux/ptp_clock_kernel.h>
- #include <linux/timecounter.h>
- #include <linux/net_tstamp.h>
-+#include <linux/leds.h>
+@@ -33,6 +33,8 @@ void igc_ethtool_set_ops(struct net_device *);
+ #define IGC_N_PEROUT	2
+ #define IGC_N_SDP	4
  
- #include "igc_hw.h"
- 
-@@ -239,8 +240,17 @@ struct igc_adapter {
- 		struct timespec64 start;
- 		struct timespec64 period;
- 	} perout[IGC_N_PEROUT];
++#define MAX_FLEX_FILTER			32
 +
-+	/* LEDs */
-+	struct mutex led_mutex;
-+	struct led_classdev led0;
-+	struct led_classdev led1;
-+	struct led_classdev led2;
- };
+ enum igc_mac_filter_type {
+ 	IGC_MAC_FILTER_TYPE_DST = 0,
+ 	IGC_MAC_FILTER_TYPE_SRC
+@@ -502,6 +504,17 @@ struct igc_nfc_rule {
+  */
+ #define IGC_MAX_RXNFC_RULES		32
  
-+#define led_to_igc(ldev, led)                          \
-+	container_of(ldev, struct igc_adapter, led)
++struct igc_flex_filter {
++	u8 index;
++	u8 data[128];
++	u8 mask[16];
++	u8 length;
++	u8 rx_queue;
++	u8 prio;
++	u8 immediate_irq;
++	u8 drop;
++};
 +
- void igc_up(struct igc_adapter *adapter);
- void igc_down(struct igc_adapter *adapter);
- int igc_open(struct net_device *netdev);
+ /* igc_desc_unused - calculate if we have unused descriptors */
+ static inline u16 igc_desc_unused(const struct igc_ring *ring)
+ {
 diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 7bdd0b1abf20..deb4819f1e27 100644
+index 71fe5b5ad2ed..0a29d9eca634 100644
 --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -144,6 +144,16 @@
- #define IGC_CTRL_SDP0_DIR	0x00400000  /* SDP0 Data direction */
- #define IGC_CTRL_SDP1_DIR	0x00800000  /* SDP1 Data direction */
+@@ -17,11 +17,20 @@
+ #define IGC_WUC_PME_EN	0x00000002 /* PME Enable */
  
-+/* LED Control */
-+#define IGC_LEDCTL_LED0_MODE_SHIFT	0
-+#define IGC_LEDCTL_LED0_MODE_MASK	GENMASK(3, 0)
-+#define IGC_LEDCTL_LED1_MODE_SHIFT	8
-+#define IGC_LEDCTL_LED1_MODE_MASK	GENMASK(11, 8)
-+#define IGC_LEDCTL_LED2_MODE_SHIFT	16
-+#define IGC_LEDCTL_LED2_MODE_MASK	GENMASK(19, 16)
-+
-+#define IGC_CONNSW_AUTOSENSE_EN		0x1
-+
- /* As per the EAS the maximum supported size is 9.5KB (9728 bytes) */
- #define MAX_JUMBO_FRAME_SIZE	0x2600
+ /* Wake Up Filter Control */
+-#define IGC_WUFC_LNKC	0x00000001 /* Link Status Change Wakeup Enable */
+-#define IGC_WUFC_MAG	0x00000002 /* Magic Packet Wakeup Enable */
+-#define IGC_WUFC_EX	0x00000004 /* Directed Exact Wakeup Enable */
+-#define IGC_WUFC_MC	0x00000008 /* Directed Multicast Wakeup Enable */
+-#define IGC_WUFC_BC	0x00000010 /* Broadcast Wakeup Enable */
++#define IGC_WUFC_LNKC		0x00000001 /* Link Status Change Wakeup Enable */
++#define IGC_WUFC_MAG		0x00000002 /* Magic Packet Wakeup Enable */
++#define IGC_WUFC_EX		0x00000004 /* Directed Exact Wakeup Enable */
++#define IGC_WUFC_MC		0x00000008 /* Directed Multicast Wakeup Enable */
++#define IGC_WUFC_BC		0x00000010 /* Broadcast Wakeup Enable */
++#define IGC_WUFC_FLEX_HQ	BIT(14)	   /* Flex Filters Host Queuing */
++#define IGC_WUFC_FLX0		BIT(16)	   /* Flexible Filter 0 Enable */
++#define IGC_WUFC_FLX1		BIT(17)	   /* Flexible Filter 1 Enable */
++#define IGC_WUFC_FLX2		BIT(18)	   /* Flexible Filter 2 Enable */
++#define IGC_WUFC_FLX3		BIT(19)	   /* Flexible Filter 3 Enable */
++#define IGC_WUFC_FLX4		BIT(20)	   /* Flexible Filter 4 Enable */
++#define IGC_WUFC_FLX5		BIT(21)	   /* Flexible Filter 5 Enable */
++#define IGC_WUFC_FLX6		BIT(22)	   /* Flexible Filter 6 Enable */
++#define IGC_WUFC_FLX7		BIT(23)	   /* Flexible Filter 7 Enable */
  
+ #define IGC_CTRL_ADVD3WUC	0x00100000  /* D3 WUC */
+ 
+@@ -46,6 +55,35 @@
+ /* Wake Up Packet Memory stores the first 128 bytes of the wake up packet */
+ #define IGC_WUPM_BYTES	128
+ 
++/* Wakeup Filter Control Extended */
++#define IGC_WUFC_EXT_FLX8	BIT(8)	/* Flexible Filter 8 Enable */
++#define IGC_WUFC_EXT_FLX9	BIT(9)	/* Flexible Filter 9 Enable */
++#define IGC_WUFC_EXT_FLX10	BIT(10) /* Flexible Filter 10 Enable */
++#define IGC_WUFC_EXT_FLX11	BIT(11)	/* Flexible Filter 11 Enable */
++#define IGC_WUFC_EXT_FLX12	BIT(12)	/* Flexible Filter 12 Enable */
++#define IGC_WUFC_EXT_FLX13	BIT(13)	/* Flexible Filter 13 Enable */
++#define IGC_WUFC_EXT_FLX14	BIT(14)	/* Flexible Filter 14 Enable */
++#define IGC_WUFC_EXT_FLX15	BIT(15)	/* Flexible Filter 15 Enable */
++#define IGC_WUFC_EXT_FLX16	BIT(16)	/* Flexible Filter 16 Enable */
++#define IGC_WUFC_EXT_FLX17	BIT(17)	/* Flexible Filter 17 Enable */
++#define IGC_WUFC_EXT_FLX18	BIT(18)	/* Flexible Filter 18 Enable */
++#define IGC_WUFC_EXT_FLX19	BIT(19)	/* Flexible Filter 19 Enable */
++#define IGC_WUFC_EXT_FLX20	BIT(20)	/* Flexible Filter 20 Enable */
++#define IGC_WUFC_EXT_FLX21	BIT(21)	/* Flexible Filter 21 Enable */
++#define IGC_WUFC_EXT_FLX22	BIT(22)	/* Flexible Filter 22 Enable */
++#define IGC_WUFC_EXT_FLX23	BIT(23)	/* Flexible Filter 23 Enable */
++#define IGC_WUFC_EXT_FLX24	BIT(24)	/* Flexible Filter 24 Enable */
++#define IGC_WUFC_EXT_FLX25	BIT(25)	/* Flexible Filter 25 Enable */
++#define IGC_WUFC_EXT_FLX26	BIT(26)	/* Flexible Filter 26 Enable */
++#define IGC_WUFC_EXT_FLX27	BIT(27)	/* Flexible Filter 27 Enable */
++#define IGC_WUFC_EXT_FLX28	BIT(28)	/* Flexible Filter 28 Enable */
++#define IGC_WUFC_EXT_FLX29	BIT(29)	/* Flexible Filter 29 Enable */
++#define IGC_WUFC_EXT_FLX30	BIT(30)	/* Flexible Filter 30 Enable */
++#define IGC_WUFC_EXT_FLX31	BIT(31)	/* Flexible Filter 31 Enable */
++
++/* Physical Func Reset Done Indication */
++#define IGC_CTRL_EXT_LINK_MODE_MASK	0x00C00000
++
+ /* Loop limit on how long we wait for auto-negotiation to complete */
+ #define COPPER_LINK_UP_LIMIT		10
+ #define PHY_AUTO_NEG_LIMIT		45
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 6dc502b27146..5a3eb15b82cc 100644
+index a494023ea5e7..0dfd3857810b 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6143,6 +6143,134 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
- 	return -EINVAL;
+@@ -3079,6 +3079,140 @@ static void igc_del_etype_filter(struct igc_adapter *adapter, u16 etype)
+ 		   etype);
  }
  
-+static void igc_select_led(struct igc_adapter *adapter, int led,
-+			   u32 *mask, u32 *shift)
++static int igc_flex_filter_select(struct igc_adapter *adapter,
++				  struct igc_flex_filter *input,
++				  u32 *fhft)
 +{
-+	switch (led) {
-+	case 0:
-+		*mask  = IGC_LEDCTL_LED0_MODE_MASK;
-+		*shift = IGC_LEDCTL_LED0_MODE_SHIFT;
-+		break;
-+	case 1:
-+		*mask  = IGC_LEDCTL_LED1_MODE_MASK;
-+		*shift = IGC_LEDCTL_LED1_MODE_SHIFT;
-+		break;
-+	case 2:
-+		*mask  = IGC_LEDCTL_LED2_MODE_MASK;
-+		*shift = IGC_LEDCTL_LED2_MODE_SHIFT;
-+		break;
-+	default:
-+		*mask = *shift = 0;
-+		dev_err(&adapter->pdev->dev, "Unknown led %d selected!", led);
++	struct igc_hw *hw = &adapter->hw;
++	u8 fhft_index;
++	u32 fhftsl;
++
++	if (input->index >= MAX_FLEX_FILTER) {
++		dev_err(&adapter->pdev->dev, "Wrong Flex Filter index selected!\n");
++		return -EINVAL;
 +	}
-+}
 +
-+static void igc_led_set(struct igc_adapter *adapter, int led, u16 brightness)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 shift, mask, ledctl;
++	/* Indirect table select register */
++	fhftsl = rd32(IGC_FHFTSL);
++	fhftsl &= ~IGC_FHFTSL_FTSL_MASK;
++	switch (input->index) {
++	case 0 ... 7:
++		fhftsl |= 0x00;
++		break;
++	case 8 ... 15:
++		fhftsl |= 0x01;
++		break;
++	case 16 ... 23:
++		fhftsl |= 0x02;
++		break;
++	case 24 ... 31:
++		fhftsl |= 0x03;
++		break;
++	}
++	wr32(IGC_FHFTSL, fhftsl);
 +
-+	igc_select_led(adapter, led, &mask, &shift);
++	/* Normalize index down to host table register */
++	fhft_index = input->index % 8;
 +
-+	mutex_lock(&adapter->led_mutex);
-+	ledctl = rd32(IGC_LEDCTL);
-+	ledctl &= ~mask;
-+	ledctl |= brightness << shift;
-+	wr32(IGC_LEDCTL, ledctl);
-+	mutex_unlock(&adapter->led_mutex);
-+}
-+
-+static enum led_brightness igc_led_get(struct igc_adapter *adapter, int led)
-+{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 shift, mask, ledctl;
-+
-+	igc_select_led(adapter, led, &mask, &shift);
-+
-+	mutex_lock(&adapter->led_mutex);
-+	ledctl = rd32(IGC_LEDCTL);
-+	mutex_unlock(&adapter->led_mutex);
-+
-+	return (ledctl & mask) >> shift;
-+}
-+
-+static void igc_led0_set(struct led_classdev *ldev, enum led_brightness b)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led0);
-+
-+	igc_led_set(adapter, 0, b);
-+}
-+
-+static enum led_brightness igc_led0_get(struct led_classdev *ldev)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led0);
-+
-+	return igc_led_get(adapter, 0);
-+}
-+
-+static void igc_led1_set(struct led_classdev *ldev, enum led_brightness b)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led1);
-+
-+	igc_led_set(adapter, 1, b);
-+}
-+
-+static enum led_brightness igc_led1_get(struct led_classdev *ldev)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led1);
-+
-+	return igc_led_get(adapter, 1);
-+}
-+
-+static void igc_led2_set(struct led_classdev *ldev, enum led_brightness b)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led2);
-+
-+	igc_led_set(adapter, 2, b);
-+}
-+
-+static enum led_brightness igc_led2_get(struct led_classdev *ldev)
-+{
-+	struct igc_adapter *adapter = led_to_igc(ldev, led2);
-+
-+	return igc_led_get(adapter, 2);
-+}
-+
-+static int igc_led_setup(struct igc_adapter *adapter)
-+{
-+	/* Setup */
-+	mutex_init(&adapter->led_mutex);
-+
-+	adapter->led0.name	     = "igc_led0";
-+	adapter->led0.max_brightness = 15;
-+	adapter->led0.brightness_set = igc_led0_set;
-+	adapter->led0.brightness_get = igc_led0_get;
-+
-+	adapter->led1.name	     = "igc_led1";
-+	adapter->led1.max_brightness = 15;
-+	adapter->led1.brightness_set = igc_led1_set;
-+	adapter->led1.brightness_get = igc_led1_get;
-+
-+	adapter->led2.name	     = "igc_led2";
-+	adapter->led2.max_brightness = 15;
-+	adapter->led2.brightness_set = igc_led2_set;
-+	adapter->led2.brightness_get = igc_led2_get;
-+
-+	/* Register leds */
-+	led_classdev_register(&adapter->pdev->dev, &adapter->led0);
-+	led_classdev_register(&adapter->pdev->dev, &adapter->led1);
-+	led_classdev_register(&adapter->pdev->dev, &adapter->led2);
++	*fhft = (fhft_index < 4) ? IGC_FHFT(fhft_index) :
++		IGC_FHFT_EXT(fhft_index - 4);
 +
 +	return 0;
 +}
 +
-+static void igc_led_destroy(struct igc_adapter *adapter)
++static int __maybe_unused igc_write_flex_filter_ll(struct igc_adapter *adapter,
++						   struct igc_flex_filter *input)
 +{
-+	led_classdev_unregister(&adapter->led0);
-+	led_classdev_unregister(&adapter->led1);
-+	led_classdev_unregister(&adapter->led2);
++	struct device *dev = &adapter->pdev->dev;
++	struct igc_hw *hw = &adapter->hw;
++	u8 *data = input->data;
++	u8 *mask = input->mask;
++	u32 queuing;
++	u32 fhft;
++	u32 wufc;
++	int ret;
++	int i;
++
++	/* Length has to be aligned to 8. Otherwise the filter will fail. Bail
++	 * out early to avoid surprises later.
++	 */
++	if (input->length % 8 != 0) {
++		dev_err(dev, "The length of a flex filter has to be 8 byte aligned!\n");
++		return -EINVAL;
++	}
++
++	/* Select corresponding flex filter register and get base for host table. */
++	ret = igc_flex_filter_select(adapter, input, &fhft);
++	if (ret)
++		return ret;
++
++	/* When adding a filter globally disable flex filter feature. That is
++	 * recommended within the datasheet.
++	 */
++	wufc = rd32(IGC_WUFC);
++	wufc &= ~IGC_WUFC_FLEX_HQ;
++	wr32(IGC_WUFC, wufc);
++
++	/* Configure filter */
++	queuing = input->length & IGC_FHFT_LENGTH_MASK;
++	queuing |= (input->rx_queue << IGC_FHFT_QUEUE_SHIFT) & IGC_FHFT_QUEUE_MASK;
++	queuing |= (input->prio << IGC_FHFT_PRIO_SHIFT) & IGC_FHFT_PRIO_MASK;
++
++	if (input->immediate_irq)
++		queuing |= IGC_FHFT_IMM_INT;
++
++	if (input->drop)
++		queuing |= IGC_FHFT_DROP;
++
++	wr32(fhft + 0xFC, queuing);
++
++	/* Write data (128 byte) and mask (128 bit) */
++	for (i = 0; i < 16; ++i) {
++		const size_t data_idx = i * 8;
++		const size_t row_idx = i * 16;
++		u32 dw0 =
++			(data[data_idx + 0] << 0) |
++			(data[data_idx + 1] << 8) |
++			(data[data_idx + 2] << 16) |
++			(data[data_idx + 3] << 24);
++		u32 dw1 =
++			(data[data_idx + 4] << 0) |
++			(data[data_idx + 5] << 8) |
++			(data[data_idx + 6] << 16) |
++			(data[data_idx + 7] << 24);
++		u32 tmp;
++
++		/* Write row: dw0, dw1 and mask */
++		wr32(fhft + row_idx, dw0);
++		wr32(fhft + row_idx + 4, dw1);
++
++		/* mask is only valid for MASK(7, 0) */
++		tmp = rd32(fhft + row_idx + 8);
++		tmp &= ~GENMASK(7, 0);
++		tmp |= mask[i];
++		wr32(fhft + row_idx + 8, tmp);
++	}
++
++	/* Enable filter. */
++	wufc |= IGC_WUFC_FLEX_HQ;
++	if (input->index > 8) {
++		/* Filter 0-7 are enabled via WUFC. The other 24 filters are not. */
++		u32 wufc_ext = rd32(IGC_WUFC_EXT);
++
++		wufc_ext |= (IGC_WUFC_EXT_FLX8 << (input->index - 8));
++
++		wr32(IGC_WUFC_EXT, wufc_ext);
++	} else {
++		wufc |= (IGC_WUFC_FLX0 << input->index);
++	}
++	wr32(IGC_WUFC, wufc);
++
++	dev_dbg(&adapter->pdev->dev, "Added flex filter %u to HW.\n",
++		input->index);
++
++	return 0;
 +}
 +
- /**
-  * igc_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
-@@ -6371,6 +6499,8 @@ static int igc_probe(struct pci_dev *pdev,
- 
- 	pm_runtime_put_noidle(&pdev->dev);
- 
-+	igc_led_setup(adapter);
-+
- 	return 0;
- 
- err_register:
-@@ -6412,6 +6542,8 @@ static void igc_remove(struct pci_dev *pdev)
- 
- 	igc_ptp_stop(adapter);
- 
-+	igc_led_destroy(adapter);
-+
- 	set_bit(__IGC_DOWN, &adapter->state);
- 
- 	del_timer_sync(&adapter->watchdog_timer);
+ static int igc_enable_nfc_rule(struct igc_adapter *adapter,
+ 			       const struct igc_nfc_rule *rule)
+ {
 diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
-index 828c3501c448..f6247b00c4e3 100644
+index 0f82990567d9..828c3501c448 100644
 --- a/drivers/net/ethernet/intel/igc/igc_regs.h
 +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
-@@ -10,6 +10,8 @@
- #define IGC_EECD		0x00010  /* EEPROM/Flash Control - RW */
- #define IGC_CTRL_EXT		0x00018  /* Extended Device Control - RW */
- #define IGC_MDIC		0x00020  /* MDI Control - RW */
-+#define IGC_LEDCTL		0x00E00	 /* LED Control - RW */
-+#define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
- #define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
- #define IGC_VET			0x00038  /* VLAN Ether Type - RW */
- #define IGC_I225_PHPM		0x00E14  /* I225 PHY Power Management */
+@@ -67,6 +67,9 @@
+ 
+ /* Filtering Registers */
+ #define IGC_ETQF(_n)		(0x05CB0 + (4 * (_n))) /* EType Queue Fltr */
++#define IGC_FHFT(_n)		(0x09000 + (256 * (_n))) /* Flexible Host Filter */
++#define IGC_FHFT_EXT(_n)	(0x09A00 + (256 * (_n))) /* Flexible Host Filter Extended */
++#define IGC_FHFTSL		0x05804 /* Flex Filter indirect table select */
+ 
+ /* ETQF register bit definitions */
+ #define IGC_ETQF_FILTER_ENABLE	BIT(26)
+@@ -75,6 +78,19 @@
+ #define IGC_ETQF_QUEUE_MASK	0x00070000
+ #define IGC_ETQF_ETYPE_MASK	0x0000FFFF
+ 
++/* FHFT register bit definitions */
++#define IGC_FHFT_LENGTH_MASK	GENMASK(7, 0)
++#define IGC_FHFT_QUEUE_SHIFT	8
++#define IGC_FHFT_QUEUE_MASK	GENMASK(10, 8)
++#define IGC_FHFT_PRIO_SHIFT	16
++#define IGC_FHFT_PRIO_MASK	GENMASK(18, 16)
++#define IGC_FHFT_IMM_INT	BIT(24)
++#define IGC_FHFT_DROP		BIT(25)
++
++/* FHFTSL register bit definitions */
++#define IGC_FHFTSL_FTSL_SHIFT	0
++#define IGC_FHFTSL_FTSL_MASK	GENMASK(1, 0)
++
+ /* Redirection Table - RW Array */
+ #define IGC_RETA(_i)		(0x05C00 + ((_i) * 4))
+ /* RSS Random Key - RW Array */
+@@ -240,6 +256,7 @@
+ #define IGC_WUFC	0x05808  /* Wakeup Filter Control - RW */
+ #define IGC_WUS		0x05810  /* Wakeup Status - R/W1C */
+ #define IGC_WUPL	0x05900  /* Wakeup Packet Length - RW */
++#define IGC_WUFC_EXT	0x0580C  /* Wakeup Filter Control Register Extended - RW */
+ 
+ /* Wake Up packet memory */
+ #define IGC_WUPM_REG(_i)	(0x05A00 + ((_i) * 4))
 -- 
 2.32.0
 
