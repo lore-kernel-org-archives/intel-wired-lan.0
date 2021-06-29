@@ -1,10 +1,10 @@
 From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Tue, 29 Jun 2021 11:27:40 -0400
-Subject: [Intel-wired-lan] [PATCH v2 08/14] be2net: Use
+Date: Tue, 29 Jun 2021 11:27:41 -0400
+Subject: [Intel-wired-lan] [PATCH v2 09/14] ixgbe: Use
  irq_update_affinity_hint
 In-Reply-To: <20210629152746.2953364-1-nitesh@redhat.com>
 References: <20210629152746.2953364-1-nitesh@redhat.com>
-Message-ID: <20210629152746.2953364-9-nitesh@redhat.com>
+Message-ID: <20210629152746.2953364-10-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,31 +24,44 @@ that only updates the affinity_hint pointer.
 
 Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 ---
- drivers/net/ethernet/emulex/benet/be_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
-index 7968568bbe21..72fef9d882e2 100644
---- a/drivers/net/ethernet/emulex/benet/be_main.c
-+++ b/drivers/net/ethernet/emulex/benet/be_main.c
-@@ -3491,7 +3491,7 @@ static int be_msix_register(struct be_adapter *adapter)
- 		if (status)
- 			goto err_msix;
- 
--		irq_set_affinity_hint(vec, eqo->affinity_mask);
-+		irq_update_affinity_hint(vec, eqo->affinity_mask);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2ac5b82676f3..be8e4af6c283 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3243,8 +3243,8 @@ static int ixgbe_request_msix_irqs(struct ixgbe_adapter *adapter)
+ 		/* If Flow Director is enabled, set interrupt affinity */
+ 		if (adapter->flags & IXGBE_FLAG_FDIR_HASH_CAPABLE) {
+ 			/* assign the mask for this irq */
+-			irq_set_affinity_hint(entry->vector,
+-					      &q_vector->affinity_mask);
++			irq_update_affinity_hint(entry->vector,
++						 &q_vector->affinity_mask);
+ 		}
  	}
  
- 	return 0;
-@@ -3552,7 +3552,7 @@ static void be_irq_unregister(struct be_adapter *adapter)
- 	/* MSIx */
- 	for_all_evt_queues(adapter, eqo, i) {
- 		vec = be_msix_vec_get(adapter, eqo);
--		irq_set_affinity_hint(vec, NULL);
-+		irq_update_affinity_hint(vec, NULL);
- 		free_irq(vec, eqo);
+@@ -3260,8 +3260,8 @@ static int ixgbe_request_msix_irqs(struct ixgbe_adapter *adapter)
+ free_queue_irqs:
+ 	while (vector) {
+ 		vector--;
+-		irq_set_affinity_hint(adapter->msix_entries[vector].vector,
+-				      NULL);
++		irq_update_affinity_hint(adapter->msix_entries[vector].vector,
++					 NULL);
+ 		free_irq(adapter->msix_entries[vector].vector,
+ 			 adapter->q_vector[vector]);
  	}
+@@ -3394,7 +3394,7 @@ static void ixgbe_free_irq(struct ixgbe_adapter *adapter)
+ 			continue;
  
+ 		/* clear the affinity_mask in the IRQ descriptor */
+-		irq_set_affinity_hint(entry->vector, NULL);
++		irq_update_affinity_hint(entry->vector, NULL);
+ 
+ 		free_irq(entry->vector, q_vector);
+ 	}
 -- 
 2.27.0
 
