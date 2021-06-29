@@ -1,105 +1,196 @@
 From: Radoslaw Tyl <radoslawx.tyl@intel.com>
-Date: Tue, 29 Jun 2021 12:49:39 +0200
-Subject: [Intel-wired-lan] [PATCH 3/5] ixgbevf: Add legacy suffix to old API
- mailbox functions
+Date: Tue, 29 Jun 2021 12:49:37 +0200
+Subject: [Intel-wired-lan] [PATCH 1/5] ixgbevf: Rename MSGTYPE to SUCCESS
+ and FAILURE
 In-Reply-To: <20210629104941.2460721-1-radoslawx.tyl@intel.com>
 References: <20210629104941.2460721-1-radoslawx.tyl@intel.com>
-Message-ID: <20210629104941.2460721-4-radoslawx.tyl@intel.com>
+Message-ID: <20210629104941.2460721-2-radoslawx.tyl@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add legacy suffix to mailbox functions which should be backwards compatible
-with older PF drivers. Communication during API negotiation always has to
-be done using the earlier implementation.
+There is name similarity within IXGBE_VT_MSGTYPE_ACK and
+PFMAILBOX.ACK / VFMAILBOX.ACK. MSGTYPE macros are renamed to SUCCESS and
+FAILURE because they are not specified in datasheet and now will be
+easily distinguishable.
 
 Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  2 +-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  2 +-
- drivers/net/ethernet/intel/ixgbevf/mbx.c          | 14 +++++++-------
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c |  2 +-
+ drivers/net/ethernet/intel/ixgbevf/mbx.h   | 17 +++++++-----
+ drivers/net/ethernet/intel/ixgbevf/vf.c    | 31 +++++++++++-----------
+ 3 files changed, 27 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index a0e325774819..5d9284dd04dc 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -429,7 +429,7 @@ extern const struct ixgbevf_info ixgbevf_82599_vf_info;
- extern const struct ixgbevf_info ixgbevf_X540_vf_info;
- extern const struct ixgbevf_info ixgbevf_X550_vf_info;
- extern const struct ixgbevf_info ixgbevf_X550EM_x_vf_info;
--extern const struct ixgbe_mbx_operations ixgbevf_mbx_ops;
-+extern const struct ixgbe_mbx_operations ixgbevf_mbx_ops_legacy;
- extern const struct ixgbevf_info ixgbevf_x550em_a_vf_info;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+index caaea2c920a6..d235d653d514 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+@@ -49,7 +49,7 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
+ 		goto out;
  
- extern const struct ixgbevf_info ixgbevf_82599_vf_hv_info;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index dc56931fc1dc..e9b99929588b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -4567,7 +4567,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	memcpy(&hw->mac.ops, ii->mac_ops, sizeof(hw->mac.ops));
- 	hw->mac.type  = ii->mac;
+ 	ret = (int)msgbuf[1];
+-	if (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK && ret >= 0)
++	if (msgbuf[0] & IXGBE_VT_MSGTYPE_FAILURE && ret >= 0)
+ 		ret = -1;
  
--	memcpy(&hw->mbx.ops, &ixgbevf_mbx_ops,
-+	memcpy(&hw->mbx.ops, &ixgbevf_mbx_ops_legacy,
- 	       sizeof(struct ixgbe_mbx_operations));
+ out:
+diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.h b/drivers/net/ethernet/intel/ixgbevf/mbx.h
+index 853796c8ef0e..a461b7d16206 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/mbx.h
++++ b/drivers/net/ethernet/intel/ixgbevf/mbx.h
+@@ -39,14 +39,17 @@
  
- 	/* setup the private structure */
-diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.c b/drivers/net/ethernet/intel/ixgbevf/mbx.c
-index 2c3762cb467d..0edcfcbf5296 100644
---- a/drivers/net/ethernet/intel/ixgbevf/mbx.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/mbx.c
-@@ -224,14 +224,14 @@ static s32 ixgbevf_obtain_mbx_lock_vf(struct ixgbe_hw *hw)
- }
+ /* If it's a IXGBE_VF_* msg then it originates in the VF and is sent to the
+  * PF.  The reverse is true if it is IXGBE_PF_*.
+- * Message ACK's are the value or'd with 0xF0000000
++ * Message results are the value or'd with 0xF0000000
+  */
+-/* Messages below or'd with this are the ACK */
+-#define IXGBE_VT_MSGTYPE_ACK	0x80000000
+-/* Messages below or'd with this are the NACK */
+-#define IXGBE_VT_MSGTYPE_NACK	0x40000000
+-/* Indicates that VF is still clear to send requests */
+-#define IXGBE_VT_MSGTYPE_CTS	0x20000000
++#define IXGBE_VT_MSGTYPE_SUCCESS	0x80000000 /* Messages or'd with this
++						    * have succeeded
++						    */
++#define IXGBE_VT_MSGTYPE_FAILURE	0x40000000 /* Messages or'd with this
++						    * have failed
++						    */
++#define IXGBE_VT_MSGTYPE_CTS		0x20000000 /* Indicates that VF is still
++						    * clear to send requests
++						    */
+ #define IXGBE_VT_MSGINFO_SHIFT	16
+ /* bits 23:16 are used for exra info for certain messages */
+ #define IXGBE_VT_MSGINFO_MASK	(0xFF << IXGBE_VT_MSGINFO_SHIFT)
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 5fc347abab3c..6c209aee9877 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -108,11 +108,11 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
+ 	 * to indicate that no MAC address has yet been assigned for
+ 	 * the VF.
+ 	 */
+-	if (msgbuf[0] != (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_ACK) &&
+-	    msgbuf[0] != (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_NACK))
++	if (msgbuf[0] != (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_SUCCESS) &&
++	    msgbuf[0] != (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_FAILURE))
+ 		return IXGBE_ERR_INVALID_MAC_ADDR;
  
- /**
-- *  ixgbevf_write_mbx_vf - Write a message to the mailbox
-+ *  ixgbevf_write_mbx_vf_legacy - Write a message to the mailbox
-  *  @hw: pointer to the HW structure
-  *  @msg: The message buffer
-  *  @size: Length of buffer
-  *
-  *  returns 0 if it successfully copied message into the buffer
-  **/
--static s32 ixgbevf_write_mbx_vf(struct ixgbe_hw *hw, u32 *msg, u16 size)
-+static s32 ixgbevf_write_mbx_vf_legacy(struct ixgbe_hw *hw, u32 *msg, u16 size)
- {
- 	s32 ret_val;
- 	u16 i;
-@@ -260,14 +260,14 @@ static s32 ixgbevf_write_mbx_vf(struct ixgbe_hw *hw, u32 *msg, u16 size)
- }
+-	if (msgbuf[0] == (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_ACK))
++	if (msgbuf[0] == (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_SUCCESS))
+ 		ether_addr_copy(hw->mac.perm_addr, addr);
  
- /**
-- *  ixgbevf_read_mbx_vf - Reads a message from the inbox intended for VF
-+ *  ixgbevf_read_mbx_vf_legacy - Reads a message from the inbox intended for VF
-  *  @hw: pointer to the HW structure
-  *  @msg: The message buffer
-  *  @size: Length of buffer
-  *
-  *  returns 0 if it successfully read message from buffer
-  **/
--static s32 ixgbevf_read_mbx_vf(struct ixgbe_hw *hw, u32 *msg, u16 size)
-+static s32 ixgbevf_read_mbx_vf_legacy(struct ixgbe_hw *hw, u32 *msg, u16 size)
- {
- 	s32 ret_val = 0;
- 	u16 i;
-@@ -318,10 +318,10 @@ static s32 ixgbevf_init_mbx_params_vf(struct ixgbe_hw *hw)
+ 	hw->mac.mc_filter_type = msgbuf[IXGBE_VF_MC_TYPE_WORD];
+@@ -269,7 +269,7 @@ static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
+ 	if (!ret_val) {
+ 		msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+-		if (msgbuf[0] == (msgbuf_chk | IXGBE_VT_MSGTYPE_NACK))
++		if (msgbuf[0] == (msgbuf_chk | IXGBE_VT_MSGTYPE_FAILURE))
+ 			return -ENOMEM;
+ 	}
+ 
+@@ -336,14 +336,14 @@ int ixgbevf_get_reta_locked(struct ixgbe_hw *hw, u32 *reta, int num_rx_queues)
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+ 	/* If the operation has been refused by a PF return -EPERM */
+-	if (msgbuf[0] == (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_NACK))
++	if (msgbuf[0] == (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_FAILURE))
+ 		return -EPERM;
+ 
+ 	/* If we didn't get an ACK there must have been
+ 	 * some sort of mailbox error so we should treat it
+ 	 * as such.
+ 	 */
+-	if (msgbuf[0] != (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_ACK))
++	if (msgbuf[0] != (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_SUCCESS))
+ 		return IXGBE_ERR_MBX;
+ 
+ 	/* ixgbevf doesn't support more than 2 queues at the moment */
+@@ -403,14 +403,14 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+ 	/* If the operation has been refused by a PF return -EPERM */
+-	if (msgbuf[0] == (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_NACK))
++	if (msgbuf[0] == (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_FAILURE))
+ 		return -EPERM;
+ 
+ 	/* If we didn't get an ACK there must have been
+ 	 * some sort of mailbox error so we should treat it
+ 	 * as such.
+ 	 */
+-	if (msgbuf[0] != (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_ACK))
++	if (msgbuf[0] != (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_SUCCESS))
+ 		return IXGBE_ERR_MBX;
+ 
+ 	memcpy(rss_key, msgbuf + 1, IXGBEVF_RSS_HASH_KEY_SIZE);
+@@ -442,7 +442,7 @@ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 
+ 	/* if nacked the address was rejected, use "perm_addr" */
+ 	if (!ret_val &&
+-	    (msgbuf[0] == (IXGBE_VF_SET_MAC_ADDR | IXGBE_VT_MSGTYPE_NACK))) {
++	    (msgbuf[0] == (IXGBE_VF_SET_MAC_ADDR | IXGBE_VT_MSGTYPE_FAILURE))) {
+ 		ixgbevf_get_mac_addr_vf(hw, hw->mac.addr);
+ 		return IXGBE_ERR_MBX;
+ 	}
+@@ -561,7 +561,7 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ 		return err;
+ 
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+-	if (msgbuf[0] == (IXGBE_VF_UPDATE_XCAST_MODE | IXGBE_VT_MSGTYPE_NACK))
++	if (msgbuf[0] == (IXGBE_VF_UPDATE_XCAST_MODE | IXGBE_VT_MSGTYPE_FAILURE))
+ 		return -EPERM;
+ 
  	return 0;
- }
+@@ -606,7 +606,7 @@ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 	msgbuf[0] &= ~(0xFF << IXGBE_VT_MSGINFO_SHIFT);
  
--const struct ixgbe_mbx_operations ixgbevf_mbx_ops = {
-+const struct ixgbe_mbx_operations ixgbevf_mbx_ops_legacy = {
- 	.init_params	= ixgbevf_init_mbx_params_vf,
--	.read		= ixgbevf_read_mbx_vf,
--	.write		= ixgbevf_write_mbx_vf,
-+	.read		= ixgbevf_read_mbx_vf_legacy,
-+	.write		= ixgbevf_write_mbx_vf_legacy,
- 	.read_posted	= ixgbevf_read_posted_mbx,
- 	.write_posted	= ixgbevf_write_posted_mbx,
- 	.check_for_msg	= ixgbevf_check_for_msg_vf,
+-	if (msgbuf[0] != (IXGBE_VF_SET_VLAN | IXGBE_VT_MSGTYPE_ACK))
++	if (msgbuf[0] != (IXGBE_VF_SET_VLAN | IXGBE_VT_MSGTYPE_SUCCESS))
+ 		err = IXGBE_ERR_INVALID_ARGUMENT;
+ 
+ mbx_err:
+@@ -710,7 +710,7 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
+ 
+ 	if (!(in_msg & IXGBE_VT_MSGTYPE_CTS)) {
+ 		/* msg is not CTS and is NACK we must have lost CTS status */
+-		if (in_msg & IXGBE_VT_MSGTYPE_NACK)
++		if (in_msg & IXGBE_VT_MSGTYPE_FAILURE)
+ 			ret_val = -1;
+ 		goto out;
+ 	}
+@@ -816,7 +816,7 @@ static s32 ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ 	if (ret_val)
+ 		return ret_val;
+ 	if ((msgbuf[0] & IXGBE_VF_SET_LPE) &&
+-	    (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK))
++	    (msgbuf[0] & IXGBE_VT_MSGTYPE_FAILURE))
+ 		return IXGBE_ERR_MBX;
+ 
+ 	return 0;
+@@ -863,7 +863,8 @@ static int ixgbevf_negotiate_api_version_vf(struct ixgbe_hw *hw, int api)
+ 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+ 		/* Store value and return 0 on success */
+-		if (msg[0] == (IXGBE_VF_API_NEGOTIATE | IXGBE_VT_MSGTYPE_ACK)) {
++		if (msg[0] == (IXGBE_VF_API_NEGOTIATE |
++			      IXGBE_VT_MSGTYPE_SUCCESS)) {
+ 			hw->api_version = api;
+ 			return 0;
+ 		}
+@@ -918,7 +919,7 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
+ 		 * some sort of mailbox error so we should treat it
+ 		 * as such
+ 		 */
+-		if (msg[0] != (IXGBE_VF_GET_QUEUE | IXGBE_VT_MSGTYPE_ACK))
++		if (msg[0] != (IXGBE_VF_GET_QUEUE | IXGBE_VT_MSGTYPE_SUCCESS))
+ 			return IXGBE_ERR_MBX;
+ 
+ 		/* record and validate values from message */
 -- 
 2.27.0
 
