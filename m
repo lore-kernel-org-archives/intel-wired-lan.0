@@ -1,10 +1,9 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 28 Jun 2021 21:43:29 -0700
-Subject: [Intel-wired-lan] [PATCH next-queue v2 2/5] igc: Integrate flex
- filter into ethtool ops
+Date: Mon, 28 Jun 2021 21:43:32 -0700
+Subject: [Intel-wired-lan] [PATCH next-queue v2 5/5] igc: Export LEDs
 In-Reply-To: <20210629044332.3491232-1-vinicius.gomes@intel.com>
 References: <20210629044332.3491232-1-vinicius.gomes@intel.com>
-Message-ID: <20210629044332.3491232-3-vinicius.gomes@intel.com>
+Message-ID: <20210629044332.3491232-6-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,361 +12,262 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kurt Kanzenbach <kurt@linutronix.de>
 
-Use the flex filter mechanism to extend the current ethtool filter
-operations by intercoperating the user data. This allows to match
-eight more bytes within a Ethernet frame in addition to macs, ether
-types and vlan.
+Each i225 has three LEDs. Export them via the LED class framework.
 
-The matching pattern looks like this:
+Each LED is controllable via sysfs. Example:
 
- * dest_mac [6]
- * src_mac [6]
- * tpid [2]
- * vlan tci [2]
- * ether type [2]
- * user data [8]
+$ cd /sys/class/leds/igc_led0
+$ cat brightness      # Current Mode
+$ cat max_brightness  # 15
+$ echo 0 > brightness # Mode 0
+$ echo 1 > brightness # Mode 1
 
-This can be used to match Profinet traffic classes by FrameID range.
+The brightness field here reflects the different LED modes ranging
+from 0 to 15.
 
 Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/net/ethernet/intel/igc/igc.h         |  24 ++-
- drivers/net/ethernet/intel/igc/igc_defines.h |   4 +
- drivers/net/ethernet/intel/igc/igc_ethtool.c |  20 ++
- drivers/net/ethernet/intel/igc/igc_main.c    | 190 ++++++++++++++++++-
- 4 files changed, 228 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/Kconfig           |   1 +
+ drivers/net/ethernet/intel/igc/igc.h         |  10 ++
+ drivers/net/ethernet/intel/igc/igc_defines.h |  10 ++
+ drivers/net/ethernet/intel/igc/igc_main.c    | 132 +++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_regs.h    |   2 +
+ 5 files changed, 155 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 045ce9cb7b7f..c9f9bfde13b9 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -349,6 +349,7 @@ config IGC
+ 	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
+ 	default n
+ 	depends on PCI
++	depends on LEDS_CLASS
+ 	help
+ 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
+ 	  family of adapters.
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 6016c132d981..c21441c8908e 100644
+index a0ecfe5a4078..2df0fd2b9ecf 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -478,18 +478,28 @@ struct igc_q_vector {
+@@ -13,6 +13,7 @@
+ #include <linux/ptp_clock_kernel.h>
+ #include <linux/timecounter.h>
+ #include <linux/net_tstamp.h>
++#include <linux/leds.h>
+ 
+ #include "igc_hw.h"
+ 
+@@ -239,8 +240,17 @@ struct igc_adapter {
+ 		struct timespec64 start;
+ 		struct timespec64 period;
+ 	} perout[IGC_N_PEROUT];
++
++	/* LEDs */
++	struct mutex led_mutex;
++	struct led_classdev led0;
++	struct led_classdev led1;
++	struct led_classdev led2;
  };
  
- enum igc_filter_match_flags {
--	IGC_FILTER_FLAG_ETHER_TYPE =	0x1,
--	IGC_FILTER_FLAG_VLAN_TCI   =	0x2,
--	IGC_FILTER_FLAG_SRC_MAC_ADDR =	0x4,
--	IGC_FILTER_FLAG_DST_MAC_ADDR =	0x8,
-+	IGC_FILTER_FLAG_ETHER_TYPE =	BIT(0),
-+	IGC_FILTER_FLAG_VLAN_TCI   =	BIT(1),
-+	IGC_FILTER_FLAG_SRC_MAC_ADDR =	BIT(2),
-+	IGC_FILTER_FLAG_DST_MAC_ADDR =	BIT(3),
-+	IGC_FILTER_FLAG_USER_DATA =	BIT(4),
-+	IGC_FILTER_FLAG_VLAN_ETYPE =	BIT(5),
- };
- 
- struct igc_nfc_filter {
- 	u8 match_flags;
- 	u16 etype;
-+	__be16 vlan_etype;
- 	u16 vlan_tci;
- 	u8 src_addr[ETH_ALEN];
- 	u8 dst_addr[ETH_ALEN];
-+	u8 user_data[8];
-+	u8 user_mask[8];
-+	u8 flex_index;
-+	u8 rx_queue;
-+	u8 prio;
-+	u8 immediate_irq;
-+	u8 drop;
- };
- 
- struct igc_nfc_rule {
-@@ -499,10 +509,10 @@ struct igc_nfc_rule {
- 	u16 action;
- };
- 
--/* IGC supports a total of 32 NFC rules: 16 MAC address based,, 8 VLAN priority
-- * based, and 8 ethertype based.
-+/* IGC supports a total of 32 NFC rules: 16 MAC address based, 8 VLAN priority
-+ * based, 8 ethertype based and 32 Flex filter based rules.
-  */
--#define IGC_MAX_RXNFC_RULES		32
-+#define IGC_MAX_RXNFC_RULES		64
- 
- struct igc_flex_filter {
- 	u8 index;
++#define led_to_igc(ldev, led)                          \
++	container_of(ldev, struct igc_adapter, led)
++
+ void igc_up(struct igc_adapter *adapter);
+ void igc_down(struct igc_adapter *adapter);
+ int igc_open(struct net_device *netdev);
 diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 0a29d9eca634..7bdd0b1abf20 100644
+index 7bdd0b1abf20..deb4819f1e27 100644
 --- a/drivers/net/ethernet/intel/igc/igc_defines.h
 +++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -32,6 +32,8 @@
- #define IGC_WUFC_FLX6		BIT(22)	   /* Flexible Filter 6 Enable */
- #define IGC_WUFC_FLX7		BIT(23)	   /* Flexible Filter 7 Enable */
+@@ -144,6 +144,16 @@
+ #define IGC_CTRL_SDP0_DIR	0x00400000  /* SDP0 Data direction */
+ #define IGC_CTRL_SDP1_DIR	0x00800000  /* SDP1 Data direction */
  
-+#define IGC_WUFC_FILTER_MASK GENMASK(23, 14)
++/* LED Control */
++#define IGC_LEDCTL_LED0_MODE_SHIFT	0
++#define IGC_LEDCTL_LED0_MODE_MASK	GENMASK(3, 0)
++#define IGC_LEDCTL_LED1_MODE_SHIFT	8
++#define IGC_LEDCTL_LED1_MODE_MASK	GENMASK(11, 8)
++#define IGC_LEDCTL_LED2_MODE_SHIFT	16
++#define IGC_LEDCTL_LED2_MODE_MASK	GENMASK(19, 16)
 +
- #define IGC_CTRL_ADVD3WUC	0x00100000  /* D3 WUC */
- 
- /* Wake Up Status */
-@@ -81,6 +83,8 @@
- #define IGC_WUFC_EXT_FLX30	BIT(30)	/* Flexible Filter 30 Enable */
- #define IGC_WUFC_EXT_FLX31	BIT(31)	/* Flexible Filter 31 Enable */
- 
-+#define IGC_WUFC_EXT_FILTER_MASK GENMASK(31, 8)
++#define IGC_CONNSW_AUTOSENSE_EN		0x1
 +
- /* Physical Func Reset Done Indication */
- #define IGC_CTRL_EXT_LINK_MODE_MASK	0x00C00000
+ /* As per the EAS the maximum supported size is 9.5KB (9728 bytes) */
+ #define MAX_JUMBO_FRAME_SIZE	0x2600
  
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index fa4171860623..3d46eff87638 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -979,6 +979,12 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
- 		eth_broadcast_addr(fsp->m_u.ether_spec.h_source);
- 	}
- 
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_USER_DATA) {
-+		fsp->flow_type |= FLOW_EXT;
-+		memcpy(fsp->h_ext.data, rule->filter.user_data, sizeof(fsp->h_ext.data));
-+		memcpy(fsp->m_ext.data, rule->filter.user_mask, sizeof(fsp->m_ext.data));
-+	}
-+
- 	mutex_unlock(&adapter->nfc_rule_lock);
- 	return 0;
- 
-@@ -1215,6 +1221,20 @@ static void igc_ethtool_init_nfc_rule(struct igc_nfc_rule *rule,
- 		ether_addr_copy(rule->filter.dst_addr,
- 				fsp->h_u.ether_spec.h_dest);
- 	}
-+
-+	/* Check for user defined data */
-+	if ((fsp->flow_type & FLOW_EXT) &&
-+	    (fsp->h_ext.data[0] || fsp->h_ext.data[1])) {
-+		rule->filter.match_flags |= IGC_FILTER_FLAG_USER_DATA;
-+		memcpy(rule->filter.user_data, fsp->h_ext.data, sizeof(fsp->h_ext.data));
-+		memcpy(rule->filter.user_mask, fsp->m_ext.data, sizeof(fsp->m_ext.data));
-+
-+		/* VLAN etype matching is only valid using flex filter */
-+		if ((fsp->flow_type & FLOW_EXT) && fsp->h_ext.vlan_etype) {
-+			rule->filter.vlan_etype = fsp->h_ext.vlan_etype;
-+			rule->filter.match_flags |= IGC_FILTER_FLAG_VLAN_ETYPE;
-+		}
-+	}
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 0dfd3857810b..ea449c83a952 100644
+index 6dc502b27146..5a3eb15b82cc 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3120,8 +3120,8 @@ static int igc_flex_filter_select(struct igc_adapter *adapter,
- 	return 0;
+@@ -6143,6 +6143,134 @@ int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+ 	return -EINVAL;
  }
  
--static int __maybe_unused igc_write_flex_filter_ll(struct igc_adapter *adapter,
--						   struct igc_flex_filter *input)
-+static int igc_write_flex_filter_ll(struct igc_adapter *adapter,
-+				    struct igc_flex_filter *input)
- {
- 	struct device *dev = &adapter->pdev->dev;
- 	struct igc_hw *hw = &adapter->hw;
-@@ -3213,11 +3213,192 @@ static int __maybe_unused igc_write_flex_filter_ll(struct igc_adapter *adapter,
- 	return 0;
- }
- 
-+static void igc_flex_filter_add_field(struct igc_flex_filter *flex,
-+				      const void *src, unsigned int offset,
-+				      size_t len, const void *mask)
++static void igc_select_led(struct igc_adapter *adapter, int led,
++			   u32 *mask, u32 *shift)
 +{
-+	int i;
-+
-+	/* data */
-+	memcpy(&flex->data[offset], src, len);
-+
-+	/* mask */
-+	for (i = 0; i < len; ++i) {
-+		const unsigned int idx = i + offset;
-+		const u8 *ptr = mask;
-+
-+		if (mask) {
-+			if (ptr[i] & 0xff)
-+				flex->mask[idx / 8] |= BIT(idx % 8);
-+
-+			continue;
-+		}
-+
-+		flex->mask[idx / 8] |= BIT(idx % 8);
++	switch (led) {
++	case 0:
++		*mask  = IGC_LEDCTL_LED0_MODE_MASK;
++		*shift = IGC_LEDCTL_LED0_MODE_SHIFT;
++		break;
++	case 1:
++		*mask  = IGC_LEDCTL_LED1_MODE_MASK;
++		*shift = IGC_LEDCTL_LED1_MODE_SHIFT;
++		break;
++	case 2:
++		*mask  = IGC_LEDCTL_LED2_MODE_MASK;
++		*shift = IGC_LEDCTL_LED2_MODE_SHIFT;
++		break;
++	default:
++		*mask = *shift = 0;
++		dev_err(&adapter->pdev->dev, "Unknown led %d selected!", led);
 +	}
 +}
 +
-+static int igc_find_avail_flex_filter_slot(struct igc_adapter *adapter)
++static void igc_led_set(struct igc_adapter *adapter, int led, u16 brightness)
 +{
 +	struct igc_hw *hw = &adapter->hw;
-+	u32 wufc, wufc_ext;
-+	int i;
++	u32 shift, mask, ledctl;
 +
-+	wufc = rd32(IGC_WUFC);
-+	wufc_ext = rd32(IGC_WUFC_EXT);
++	igc_select_led(adapter, led, &mask, &shift);
 +
-+	for (i = 0; i < MAX_FLEX_FILTER; i++) {
-+		if (i < 8) {
-+			if (!(wufc & (IGC_WUFC_FLX0 << i)))
-+				return i;
-+		} else {
-+			if (!(wufc_ext & (IGC_WUFC_EXT_FLX8 << (i - 8))))
-+				return i;
-+		}
-+	}
-+
-+	return -ENOSPC;
++	mutex_lock(&adapter->led_mutex);
++	ledctl = rd32(IGC_LEDCTL);
++	ledctl &= ~mask;
++	ledctl |= brightness << shift;
++	wr32(IGC_LEDCTL, ledctl);
++	mutex_unlock(&adapter->led_mutex);
 +}
 +
-+static bool igc_flex_filter_in_use(struct igc_adapter *adapter)
++static enum led_brightness igc_led_get(struct igc_adapter *adapter, int led)
 +{
 +	struct igc_hw *hw = &adapter->hw;
-+	u32 wufc, wufc_ext;
++	u32 shift, mask, ledctl;
 +
-+	wufc = rd32(IGC_WUFC);
-+	wufc_ext = rd32(IGC_WUFC_EXT);
++	igc_select_led(adapter, led, &mask, &shift);
 +
-+	if (wufc & IGC_WUFC_FILTER_MASK)
-+		return true;
++	mutex_lock(&adapter->led_mutex);
++	ledctl = rd32(IGC_LEDCTL);
++	mutex_unlock(&adapter->led_mutex);
 +
-+	if (wufc_ext & IGC_WUFC_EXT_FILTER_MASK)
-+		return true;
-+
-+	return false;
++	return (ledctl & mask) >> shift;
 +}
 +
-+static int igc_add_flex_filter(struct igc_adapter *adapter,
-+			       struct igc_nfc_rule *rule)
++static void igc_led0_set(struct led_classdev *ldev, enum led_brightness b)
 +{
-+	struct igc_flex_filter flex = { };
-+	struct igc_nfc_filter *filter = &rule->filter;
-+	unsigned int eth_offset, user_offset;
-+	int ret, index;
-+	bool vlan;
++	struct igc_adapter *adapter = led_to_igc(ldev, led0);
 +
-+	index = igc_find_avail_flex_filter_slot(adapter);
-+	if (index < 0)
-+		return -ENOSPC;
++	igc_led_set(adapter, 0, b);
++}
 +
-+	/* Construct the flex filter:
-+	 *  -> dest_mac [6]
-+	 *  -> src_mac [6]
-+	 *  -> tpid [2]
-+	 *  -> vlan tci [2]
-+	 *  -> ether type [2]
-+	 *  -> user data [8]
-+	 *  -> = 26 bytes => 32 length
-+	 */
-+	flex.index    = index;
-+	flex.length   = 32;
-+	flex.rx_queue = rule->action;
++static enum led_brightness igc_led0_get(struct led_classdev *ldev)
++{
++	struct igc_adapter *adapter = led_to_igc(ldev, led0);
 +
-+	vlan = rule->filter.vlan_tci || rule->filter.vlan_etype;
-+	eth_offset = vlan ? 16 : 12;
-+	user_offset = vlan ? 18 : 14;
++	return igc_led_get(adapter, 0);
++}
 +
-+	/* Add destination MAC  */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_DST_MAC_ADDR)
-+		igc_flex_filter_add_field(&flex, &filter->dst_addr, 0,
-+					  ETH_ALEN, NULL);
++static void igc_led1_set(struct led_classdev *ldev, enum led_brightness b)
++{
++	struct igc_adapter *adapter = led_to_igc(ldev, led1);
 +
-+	/* Add source MAC */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_SRC_MAC_ADDR)
-+		igc_flex_filter_add_field(&flex, &filter->src_addr, 6,
-+					  ETH_ALEN, NULL);
++	igc_led_set(adapter, 1, b);
++}
 +
-+	/* Add VLAN etype */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_ETYPE)
-+		igc_flex_filter_add_field(&flex, &filter->vlan_etype, 12,
-+					  sizeof(filter->vlan_etype),
-+					  NULL);
++static enum led_brightness igc_led1_get(struct led_classdev *ldev)
++{
++	struct igc_adapter *adapter = led_to_igc(ldev, led1);
 +
-+	/* Add VLAN TCI */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI)
-+		igc_flex_filter_add_field(&flex, &filter->vlan_tci, 14,
-+					  sizeof(filter->vlan_tci), NULL);
++	return igc_led_get(adapter, 1);
++}
 +
-+	/* Add Ether type */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
-+		__be16 etype = cpu_to_be16(filter->etype);
++static void igc_led2_set(struct led_classdev *ldev, enum led_brightness b)
++{
++	struct igc_adapter *adapter = led_to_igc(ldev, led2);
 +
-+		igc_flex_filter_add_field(&flex, &etype, eth_offset,
-+					  sizeof(etype), NULL);
-+	}
++	igc_led_set(adapter, 2, b);
++}
 +
-+	/* Add user data */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_USER_DATA)
-+		igc_flex_filter_add_field(&flex, &filter->user_data,
-+					  user_offset,
-+					  sizeof(filter->user_data),
-+					  filter->user_mask);
++static enum led_brightness igc_led2_get(struct led_classdev *ldev)
++{
++	struct igc_adapter *adapter = led_to_igc(ldev, led2);
 +
-+	/* Add it down to the hardware and enable it. */
-+	ret = igc_write_flex_filter_ll(adapter, &flex);
-+	if (ret)
-+		return ret;
++	return igc_led_get(adapter, 2);
++}
 +
-+	filter->flex_index = index;
++static int igc_led_setup(struct igc_adapter *adapter)
++{
++	/* Setup */
++	mutex_init(&adapter->led_mutex);
++
++	adapter->led0.name	     = "igc_led0";
++	adapter->led0.max_brightness = 15;
++	adapter->led0.brightness_set = igc_led0_set;
++	adapter->led0.brightness_get = igc_led0_get;
++
++	adapter->led1.name	     = "igc_led1";
++	adapter->led1.max_brightness = 15;
++	adapter->led1.brightness_set = igc_led1_set;
++	adapter->led1.brightness_get = igc_led1_get;
++
++	adapter->led2.name	     = "igc_led2";
++	adapter->led2.max_brightness = 15;
++	adapter->led2.brightness_set = igc_led2_set;
++	adapter->led2.brightness_get = igc_led2_get;
++
++	/* Register leds */
++	led_classdev_register(&adapter->pdev->dev, &adapter->led0);
++	led_classdev_register(&adapter->pdev->dev, &adapter->led1);
++	led_classdev_register(&adapter->pdev->dev, &adapter->led2);
 +
 +	return 0;
 +}
 +
-+static void igc_del_flex_filter(struct igc_adapter *adapter,
-+				u16 reg_index)
++static void igc_led_destroy(struct igc_adapter *adapter)
 +{
-+	struct igc_hw *hw = &adapter->hw;
-+	u32 wufc;
-+
-+	/* Just disable the filter. The filter table itself is kept
-+	 * intact. Another flex_filter_add() should override the "old" data
-+	 * then.
-+	 */
-+	if (reg_index > 8) {
-+		u32 wufc_ext = rd32(IGC_WUFC_EXT);
-+
-+		wufc_ext &= ~(IGC_WUFC_EXT_FLX8 << (reg_index - 8));
-+		wr32(IGC_WUFC_EXT, wufc_ext);
-+	} else {
-+		wufc = rd32(IGC_WUFC);
-+
-+		wufc &= ~(IGC_WUFC_FLX0 << reg_index);
-+		wr32(IGC_WUFC, wufc);
-+	}
-+
-+	if (igc_flex_filter_in_use(adapter))
-+		return;
-+
-+	/* No filters are in use, we may disable flex filters */
-+	wufc = rd32(IGC_WUFC);
-+	wufc &= ~IGC_WUFC_FLEX_HQ;
-+	wr32(IGC_WUFC, wufc);
++	led_classdev_unregister(&adapter->led0);
++	led_classdev_unregister(&adapter->led1);
++	led_classdev_unregister(&adapter->led2);
 +}
 +
- static int igc_enable_nfc_rule(struct igc_adapter *adapter,
--			       const struct igc_nfc_rule *rule)
-+			       struct igc_nfc_rule *rule)
- {
- 	int err;
+ /**
+  * igc_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -6371,6 +6499,8 @@ static int igc_probe(struct pci_dev *pdev,
  
-+	/* Check for user data first: When user data is set, the only option is
-+	 * to use a flex filter. When more options are set (ethertype, vlan tci,
-+	 * ...) construct a flex filter matching all of that.
-+	 */
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_USER_DATA) {
-+		err = igc_add_flex_filter(adapter, rule);
-+		if (err)
-+			return err;
-+	}
-+
- 	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE) {
- 		err = igc_add_etype_filter(adapter, rule->filter.etype,
- 					   rule->action);
-@@ -3254,6 +3435,9 @@ static int igc_enable_nfc_rule(struct igc_adapter *adapter,
- static void igc_disable_nfc_rule(struct igc_adapter *adapter,
- 				 const struct igc_nfc_rule *rule)
- {
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_USER_DATA)
-+		igc_del_flex_filter(adapter, rule->filter.flex_index);
-+
- 	if (rule->filter.match_flags & IGC_FILTER_FLAG_ETHER_TYPE)
- 		igc_del_etype_filter(adapter, rule->filter.etype);
+ 	pm_runtime_put_noidle(&pdev->dev);
  
++	igc_led_setup(adapter);
++
+ 	return 0;
+ 
+ err_register:
+@@ -6412,6 +6542,8 @@ static void igc_remove(struct pci_dev *pdev)
+ 
+ 	igc_ptp_stop(adapter);
+ 
++	igc_led_destroy(adapter);
++
+ 	set_bit(__IGC_DOWN, &adapter->state);
+ 
+ 	del_timer_sync(&adapter->watchdog_timer);
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index 828c3501c448..f6247b00c4e3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -10,6 +10,8 @@
+ #define IGC_EECD		0x00010  /* EEPROM/Flash Control - RW */
+ #define IGC_CTRL_EXT		0x00018  /* Extended Device Control - RW */
+ #define IGC_MDIC		0x00020  /* MDI Control - RW */
++#define IGC_LEDCTL		0x00E00	 /* LED Control - RW */
++#define IGC_MDICNFG		0x00E04  /* MDC/MDIO Configuration - RW */
+ #define IGC_CONNSW		0x00034  /* Copper/Fiber switch control - RW */
+ #define IGC_VET			0x00038  /* VLAN Ether Type - RW */
+ #define IGC_I225_PHPM		0x00E14  /* I225 PHY Power Management */
 -- 
 2.32.0
 
