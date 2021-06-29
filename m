@@ -1,104 +1,163 @@
-From: Yee Li <seven.yi.lee@gmail.com>
-Date: Wed, 30 Jun 2021 01:33:57 +0800
-Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
-In-Reply-To: <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
-References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
- <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
-Message-ID: <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Tue, 29 Jun 2021 18:20:30 +0000
+Subject: [Intel-wired-lan] Cherry-pick "i40e: Be much more verbose about
+ what we can and cannot offload"
+In-Reply-To: <937dd880-f902-aa9c-67d5-2d582a29e122@univention.de>
+References: <937dd880-f902-aa9c-67d5-2d582a29e122@univention.de>
+Message-ID: <BYAPR11MB360618A581F56D9054B2148AEF029@BYAPR11MB3606.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Yes, 18874368ns > 3145728ns.
-But, 0xe40 < 0x1003.
+I think I accidentally deleted the forward from the intel-wired-lan spam filter. Re-forwarding and adding Alex's gmail address.
 
-So, the final lat_enc is 0xe40.
-(Latency encoded is less than maximum LTR encoded by platform)
+Also, 
 
-Neftin, Sasha <sasha.neftin@intel.com> ? 2021?6?29??? 22:49???
+Todd Fujinaka
+Software Application Engineer
+Data Center Group
+Intel Corporation
+todd.fujinaka at intel.com
 
-> On 6/29/2021 11:21, YeeLi wrote:
-> Yeeli,
-> > In e1000e driver, a PCIe-like device, the max snoop/no-snoop latency
-> > is the upper limit.So, directly compare the size of lat_enc and
-> > max_ltr_enc is incorrect.
-> >
-> why?
-> >      In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns, correct.
-> >
-> >      In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns, correct.
-> >
-> >      In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728, incorrect.
-> >
-> Platform LTR encoded is 0x1003 - right. It is meant 1048576ns x 3 =
-> 3145738ns.
-> Now,
-> for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
-> for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
-> for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
-> 18907136ns > 3145738ns, (latency encoded is great than maximum LTR
-> encoded by platform) - so, there is no point to wait more than platform
-> required, and lat_enc=max_ltr_enc. It is expected and we sent right
-> value to the power management controller.
-> What is the problem you try solve?
->
-> > Decoded the lat_enc and max_ltr_enc before compare them is necessary.
-> >
-> > Signed-off-by: YeeLi <seven.yi.lee@gmail.com>
-> > ---
-> >   drivers/net/ethernet/intel/e1000e/ich8lan.c | 23 ++++++++++++++++++++-
-> >   1 file changed, 22 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> > index 590ad110d383..3bff1b570b76 100644
-> > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> > @@ -986,6 +986,27 @@ static s32 e1000_k1_workaround_lpt_lp(struct
-> e1000_hw *hw, bool link)
-> >       return ret_val;
-> >   }
-> >
-> > +static u32 convert_e1000e_ltr_scale(u32 val)
-> > +{
-> > +     if (val > 5)
-> > +             return 0;
-> > +
-> > +     return 1U << (5 * val);
-> > +}
-> > +
-> > +static u64 decoded_ltr(u32 val)
-> > +{
-> > +     u64 decoded_latency;
-> > +     u32 value;
-> > +     u32 scale;
-> > +
-> > +     value = val & 0x03FF;
-> > +     scale = (val & 0x1C00) >> 10;
-> > +     decoded_latency = value * convert_e1000e_ltr_scale(scale);
-> > +
-> > +     return decoded_latency;
-> > +}
-> > +
-> >   /**
-> >    *  e1000_platform_pm_pch_lpt - Set platform power management values
-> >    *  @hw: pointer to the HW structure
-> > @@ -1059,7 +1080,7 @@ static s32 e1000_platform_pm_pch_lpt(struct
-> e1000_hw *hw, bool link)
-> >                                    E1000_PCI_LTR_CAP_LPT + 2,
-> &max_nosnoop);
-> >               max_ltr_enc = max_t(u16, max_snoop, max_nosnoop);
-> >
-> > -             if (lat_enc > max_ltr_enc)
-> > +             if (decoded_ltr(lat_enc) > decoded_ltr(max_ltr_enc))
-> >                       lat_enc = max_ltr_enc;
-> >       }
-> >
-> >
-> sasha
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210630/bb954095/attachment-0001.html>
+-----Original Message-----
+From: Philipp Hahn <hahn@univention.de> 
+Sent: Tuesday, June 22, 2021 11:19 AM
+To: stable@vger.kernel.org; 892105 at bugs.debian.org; Ben Hutchings <benh@debian.org>
+Cc: Alexander Duyck <alexander.h.duyck@intel.com>; Andrew Bowers <andrewx.bowers@intel.com>; Bonaccorso, Salvatore <carnil@debian.org>
+Subject: Cherry-pick "i40e: Be much more verbose about what we can and cannot offload"
+
+Hello,
+
+I request the following patch from v4.10-rc1 to get cherry-picked into
+"stable/linux-4.9.y":
+
+> commit f114dca2533ca770aebebffb5ed56e5e7d1fb3fb
+> Author: Alexander Duyck <alexander.h.duyck@intel.com>
+> Date:   Tue Oct 25 16:08:46 2016 -0700
+> 
+>     i40e: Be much more verbose about what we can and cannot offload
+>     
+>     This change makes it so that we are much more robust about defining what we
+>     can and cannot offload.  Previously we were just checking for the L4 tunnel
+>     header length, however there are other fields we should be verifying as
+>     there are multiple scenarios in which we cannot perform hardware offloads.
+>     
+>     In addition the device only supports GSO as long as the MSS is 64 or
+>     greater.  We were not checking this so an MSS less than that was resulting
+>     in Tx hangs.
+>     
+>     Change-ID: I5e2fd5f3075c73601b4b36327b771c64fcb6c31b
+>     Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+>     Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
+Debian had this old Bug
+<https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=892105> reported against 4.9.82, which still exists in Debians old-stable 9 "Stretch" 
+current kernel 4.9.258, but also with latest stable 4.9.273.
+
+
+Our environment
+===============
+- KVM server
+- dual port i40e
+- classic bridge with enp96s0f0
+- VM attached to bridge via veth
+- no VLANs
+- no MacVLan
+
+> # ethtool -i enp96s0f0
+> driver: i40e
+> version: 1.6.16-k
+> firmware-version: 3.33 0x80000e48 1.1876.0
+> expansion-rom-version: 
+> bus-info: 0000:60:00.0
+> supports-statistics: yes
+> supports-test: yes
+> supports-eeprom-access: yes
+> supports-register-dump: yes
+> supports-priv-flags: ye
+
+> # lspci -s 0000:60:00.0
+> 60:00.0 Ethernet controller: Intel Corporation Ethernet Connection 
+> X722 for 10GBASE-T (rev 09)
+
+
+Analysis
+========
+As soon as we start one of our "Ubuntu" images the bridge stops receiving unicast packages for *all* VMs on that bridge.
+- we still see outgoing traffic leaving the host, e.g. ARP requests
+- "tcpdump -i enp96s0f0" shows no incoming unicast traffic, e.g. no ARP response
+- broadcast traffic passes the bridge
+- VMs on the same bridge can communicate with each other
+
+Most often I see the following error message after doing `dmesg -n 8`:
+> [  +9,376367] i40e 0000:60:00.0: cleared PE_CRITERR [  +0,000252] i40e 
+> 0000:60:00.0: TX driver issue detected, PF reset issued [  +0,859912] 
+> i40e 0000:60:00.0: Error I40E_AQ_RC_EINVAL adding RX filters on PF, 
+> promiscuous mode forced on
+
+In one case I've seen this also (don't know if it is relevant):
+> [  218.921466] i40e 0000:60:00.0 enp96s0f0: VSI_seid 390, Hung TX 
+> queue 43, tx_pending_hw: 1, NTC:0xa6, HWB: 0xa6, NTU: 0xa7, TAIL: 0xa7 
+> [  218.921470] i40e 0000:60:00.0 enp96s0f0: VSI_seid 390, Issuing 
+> force_wb for TX queue 43, Interrupt Reg: 0x0
+
+After that error the only way to reset this broken state it to reboot the host. I've been unable to tear down the bridge and/or remove the `i40e` driver, which most often crashes the Linux kernel (some other bug on `ip link set enp96s0f0 nomaster`).
+
+If you need more data I have a PCAP file, but I still don't know which packet exactly triggers the bug.
+
+
+The bugs seems to be fixed with 4.10.0 and I bisected it down to
+
+> git bisect start '--' 'drivers/net/ethernet/intel/i40e'
+> # new: [c470abd4fde40ea6a0846a2beab642a578c0b8cd] Linux 4.10
+> git bisect new c470abd4fde40ea6a0846a2beab642a578c0b8cd
+> # old: [69973b830859bc6529a7a0468ba0d80ee5117826] Linux 4.9
+> git bisect old 69973b830859bc6529a7a0468ba0d80ee5117826
+> # old: [13fd3f9cc3def8b276c7913ae4acbfa2653cb198] i40e: clear mac filter count on reset
+> git bisect old 13fd3f9cc3def8b276c7913ae4acbfa2653cb198
+> # new: [7ec9ba11b046b4b7fd768c366870ada60d409295] i40e: Driver prints log message on link speed change
+> git bisect new 7ec9ba11b046b4b7fd768c366870ada60d409295
+> # new: [0b7c8b5d5436317a5f4509e2a150c6cec017f348] i40e: fix trivial typo in naming of i40e_sync_filters_subtask
+> git bisect new 0b7c8b5d5436317a5f4509e2a150c6cec017f348
+> # new: [f114dca2533ca770aebebffb5ed56e5e7d1fb3fb] i40e: Be much more verbose about what we can and cannot offload
+> git bisect new f114dca2533ca770aebebffb5ed56e5e7d1fb3fb
+> # old: [81fa7c97bebd6e1a52c4e059eeffe18df5b3f11f] i40e: Implementation of ERROR state for NVM update state machine
+> git bisect old 81fa7c97bebd6e1a52c4e059eeffe18df5b3f11f
+> # old: [3aa7b74dbeedfb32406fec70cfd76d797209e8c9] i40e: removed unreachable code
+> git bisect old 3aa7b74dbeedfb32406fec70cfd76d797209e8c9
+> # first new commit: [f114dca2533ca770aebebffb5ed56e5e7d1fb3fb] i40e: Be much more verbose about what we can and cannot offload
+
+I used v4.10 as the basis and only bisected everything in 
+drivers/net/ethernet/intel/i40e/ as vanilla v4.9 and several other 
+versions between that and v4.10 crashed my host, so basically
+   git checkout v4.10
+   git checkout $hash -- drivers/net/ethernet/intel/i40e/
+   make all modules_install install
+   git checkout v4-10 -- drivers/net/ethernet/intel/i40e/
+   git bisect (old|new) $hash
+
+I verified that cherry-picking f114dca2533ca770aebebffb5ed56e5e7d1fb3fb 
+on top of v4.9.273 fixes the problem and reverting it again shows the 
+problem again.
+
+Philipp
+-- 
+Philipp Hahn
+Open Source Software Engineer
+
+Univention GmbH
+be open.
+Mary-Somerville-Str. 1
+D-28359 Bremen
+
+? +49-421-22232-57
+? +49-421-22232-99
+
+?? hahn at univention.de
+? https://www.univention.de/
+
+Gesch?ftsf?hrer: Peter H. Ganten
+HRB 20755 Amtsgericht Bremen
+Steuer-Nr.: 71-597-02876
