@@ -1,58 +1,104 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Tue, 29 Jun 2021 18:55:59 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] xdp,
- net: fix for construct skb by xdp inside xsk zc rx
-In-Reply-To: <20210628104721.GA57589@ranger.igk.intel.com>
-References: <20210617145534.101458-1-xuanzhuo@linux.alibaba.com>
- <20210628104721.GA57589@ranger.igk.intel.com>
-Message-ID: <f5ce5610-443c-a2d9-43ef-d203f9afb0d8@redhat.com>
+From: Yee Li <seven.yi.lee@gmail.com>
+Date: Wed, 30 Jun 2021 01:33:57 +0800
+Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
+In-Reply-To: <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
+ <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+Message-ID: <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 28/06/2021 12.47, Maciej Fijalkowski wrote:
+Yes, 18874368ns > 3145728ns.
+But, 0xe40 < 0x1003.
 
-> +static __always_inline struct sk_buff *
-> +xdp_construct_skb(struct xdp_buff *xdp, struct napi_struct *napi)
-> +{
+So, the final lat_enc is 0xe40.
+(Latency encoded is less than maximum LTR encoded by platform)
 
-I don't like the generic name "xdp_construct_skb".
+Neftin, Sasha <sasha.neftin@intel.com> ? 2021?6?29??? 22:49???
 
-What about calling it "xdp_copy_construct_skb", because below is 
-memcpy'ing the data.
-
-Functions that use this call free (or recycle) the memory backing the 
-packet, after calling this function.
-
-(I'm open to other naming suggestions)
-
-
-> +	unsigned int metasize;
-> +	unsigned int datasize;
-> +	unsigned int headroom;
-> +	struct sk_buff *skb;
-> +	unsigned int len;
-> +
-> +	/* this include metasize */
-> +	datasize = xdp->data_end  - xdp->data_meta;
-> +	metasize = xdp->data      - xdp->data_meta;
-> +	headroom = xdp->data_meta - xdp->data_hard_start;
-> +	len      = xdp->data_end  - xdp->data_hard_start;
-> +
-> +	/* allocate a skb to store the frags */
-> +	skb = __napi_alloc_skb(napi, len, GFP_ATOMIC | __GFP_NOWARN);
-> +	if (unlikely(!skb))
-> +		return NULL;
-> +
-> +	skb_reserve(skb, headroom);
-> +	memcpy(__skb_put(skb, datasize), xdp->data_meta, datasize);
-> +	if (metasize) {
-> +		__skb_pull(skb, metasize);
-> +		skb_metadata_set(skb, metasize);
-> +	}
-> +
-> +	return skb;
-> +}
-
+> On 6/29/2021 11:21, YeeLi wrote:
+> Yeeli,
+> > In e1000e driver, a PCIe-like device, the max snoop/no-snoop latency
+> > is the upper limit.So, directly compare the size of lat_enc and
+> > max_ltr_enc is incorrect.
+> >
+> why?
+> >      In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns, correct.
+> >
+> >      In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns, correct.
+> >
+> >      In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728, incorrect.
+> >
+> Platform LTR encoded is 0x1003 - right. It is meant 1048576ns x 3 =
+> 3145738ns.
+> Now,
+> for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
+> for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
+> for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
+> 18907136ns > 3145738ns, (latency encoded is great than maximum LTR
+> encoded by platform) - so, there is no point to wait more than platform
+> required, and lat_enc=max_ltr_enc. It is expected and we sent right
+> value to the power management controller.
+> What is the problem you try solve?
+>
+> > Decoded the lat_enc and max_ltr_enc before compare them is necessary.
+> >
+> > Signed-off-by: YeeLi <seven.yi.lee@gmail.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/ich8lan.c | 23 ++++++++++++++++++++-
+> >   1 file changed, 22 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > index 590ad110d383..3bff1b570b76 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > @@ -986,6 +986,27 @@ static s32 e1000_k1_workaround_lpt_lp(struct
+> e1000_hw *hw, bool link)
+> >       return ret_val;
+> >   }
+> >
+> > +static u32 convert_e1000e_ltr_scale(u32 val)
+> > +{
+> > +     if (val > 5)
+> > +             return 0;
+> > +
+> > +     return 1U << (5 * val);
+> > +}
+> > +
+> > +static u64 decoded_ltr(u32 val)
+> > +{
+> > +     u64 decoded_latency;
+> > +     u32 value;
+> > +     u32 scale;
+> > +
+> > +     value = val & 0x03FF;
+> > +     scale = (val & 0x1C00) >> 10;
+> > +     decoded_latency = value * convert_e1000e_ltr_scale(scale);
+> > +
+> > +     return decoded_latency;
+> > +}
+> > +
+> >   /**
+> >    *  e1000_platform_pm_pch_lpt - Set platform power management values
+> >    *  @hw: pointer to the HW structure
+> > @@ -1059,7 +1080,7 @@ static s32 e1000_platform_pm_pch_lpt(struct
+> e1000_hw *hw, bool link)
+> >                                    E1000_PCI_LTR_CAP_LPT + 2,
+> &max_nosnoop);
+> >               max_ltr_enc = max_t(u16, max_snoop, max_nosnoop);
+> >
+> > -             if (lat_enc > max_ltr_enc)
+> > +             if (decoded_ltr(lat_enc) > decoded_ltr(max_ltr_enc))
+> >                       lat_enc = max_ltr_enc;
+> >       }
+> >
+> >
+> sasha
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210630/bb954095/attachment-0001.html>
