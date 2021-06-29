@@ -1,62 +1,57 @@
 From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Tue, 29 Jun 2021 11:27:44 -0400
-Subject: [Intel-wired-lan] [PATCH v2 12/14] hinic: Use
- irq_set_affinity_and_hint
+Date: Tue, 29 Jun 2021 11:27:45 -0400
+Subject: [Intel-wired-lan] [PATCH v2 13/14] net/mlx5: Use
+ irq_update_affinity_hint
 In-Reply-To: <20210629152746.2953364-1-nitesh@redhat.com>
 References: <20210629152746.2953364-1-nitesh@redhat.com>
-Message-ID: <20210629152746.2953364-13-nitesh@redhat.com>
+Message-ID: <20210629152746.2953364-14-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver uses irq_set_affinity_hint() to:
+The driver uses irq_set_affinity_hint() to update the affinity_hint mask
+that is consumed by the userspace to distribute the interrupts. However,
+under the hood irq_set_affinity_hint() also applies the provided cpumask
+(if not NULL) as the affinity for the given interrupt which is an
+undocumented side effect.
 
-- Set the affinity_hint which is consumed by the userspace for
-  distributing the interrupts
-
-- Enforce affinity
-
-As per commit 352f58b0d9f2 ("net-next/hinic: Set Rxq irq to specific cpu
-for NUMA"), the hinic driver enforces its own affinity to bind IRQs to the
-local NUMA node. However, irq_set_affinity_hint() applying the provided
-cpumask as an affinity for the interrupt is an undocumented side effect.
-
-To remove this side effect irq_set_affinity_hint() has been marked as
-deprecated and new interfaces have been introduced. Hence, replace the
-irq_set_affinity_hint() with the new interface
-irq_set_affinity_and_hint() that applies the affinity and updates the
-affinity_hint pointer. Also, use irq_update_affinity() when only
-affinity_hint needs to be updated.
+To remove this side effect irq_set_affinity_hint() has been marked
+as deprecated and new interfaces have been introduced. Hence, replace the
+irq_set_affinity_hint() with the new interface irq_update_affinity_hint()
+that only updates the affinity_hint pointer.
 
 Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/ethernet/huawei/hinic/hinic_rx.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/huawei/hinic/hinic_rx.c b/drivers/net/ethernet/huawei/hinic/hinic_rx.c
-index cce08647b9b2..c6cac4bbdb49 100644
---- a/drivers/net/ethernet/huawei/hinic/hinic_rx.c
-+++ b/drivers/net/ethernet/huawei/hinic/hinic_rx.c
-@@ -547,7 +547,7 @@ static int rx_request_irq(struct hinic_rxq *rxq)
- 		goto err_req_irq;
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c b/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
+index c3373fb1cd7f..a1b9434f4e25 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
+@@ -276,8 +276,8 @@ static int set_comp_irq_affinity_hint(struct mlx5_core_dev *mdev, int i)
+ 	cpumask_set_cpu(cpumask_local_spread(i, mdev->priv.numa_node),
+ 			irq->mask);
+ 	if (IS_ENABLED(CONFIG_SMP) &&
+-	    irq_set_affinity_hint(irqn, irq->mask))
+-		mlx5_core_warn(mdev, "irq_set_affinity_hint failed, irq 0x%.4x",
++	    irq_update_affinity_hint(irqn, irq->mask))
++		mlx5_core_warn(mdev, "irq_update_affinity_hint failed, irq 0x%.4x",
+ 			       irqn);
  
- 	cpumask_set_cpu(qp->q_id % num_online_cpus(), &rq->affinity_mask);
--	err = irq_set_affinity_hint(rq->irq, &rq->affinity_mask);
-+	err = irq_set_affinity_and_hint(rq->irq, &rq->affinity_mask);
- 	if (err)
- 		goto err_irq_affinity;
+ 	return 0;
+@@ -291,7 +291,7 @@ static void clear_comp_irq_affinity_hint(struct mlx5_core_dev *mdev, int i)
  
-@@ -564,7 +564,7 @@ static void rx_free_irq(struct hinic_rxq *rxq)
- {
- 	struct hinic_rq *rq = rxq->rq;
- 
--	irq_set_affinity_hint(rq->irq, NULL);
-+	irq_update_affinity_hint(rq->irq, NULL);
- 	free_irq(rq->irq, rxq);
- 	rx_del_napi(rxq);
+ 	irq = mlx5_irq_get(mdev, vecidx);
+ 	irqn = pci_irq_vector(mdev->pdev, vecidx);
+-	irq_set_affinity_hint(irqn, NULL);
++	irq_update_affinity_hint(irqn, NULL);
+ 	free_cpumask_var(irq->mask);
  }
+ 
 -- 
 2.27.0
 
