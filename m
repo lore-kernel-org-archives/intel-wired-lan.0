@@ -1,279 +1,52 @@
-From: Maxim Mikityanskiy <maximmi@nvidia.com>
-Date: Tue, 29 Jun 2021 12:50:53 +0300
-Subject: [Intel-wired-lan] [PATCH net v2] xdp,
- net: fix for construct skb by xdp inside xsk zc rx
-In-Reply-To: <20210628104721.GA57589@ranger.igk.intel.com>
-References: <20210617145534.101458-1-xuanzhuo@linux.alibaba.com>
- <20210628104721.GA57589@ranger.igk.intel.com>
-Message-ID: <9d017748-3a4e-367f-94f4-2dcc6bb3e50e@nvidia.com>
+From: Radoslaw Tyl <radoslawx.tyl@intel.com>
+Date: Tue, 29 Jun 2021 12:49:36 +0200
+Subject: [Intel-wired-lan] [PATCH 0/5] Introducing 1.5 API for mailbox
+ communication
+Message-ID: <20210629104941.2460721-1-radoslawx.tyl@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2021-06-28 13:47, Maciej Fijalkowski wrote:
-> On Thu, Jun 17, 2021 at 10:55:34PM +0800, Xuan Zhuo wrote:
->> When each driver supports xsk rx, if the received buff returns XDP_PASS
->> after run xdp prog, it must construct skb based on xdp. This patch
->> extracts this logic into a public function xdp_construct_skb().
->>
->> There is a bug in the original logic. When constructing skb, we should
->> copy the meta information to skb and then use __skb_pull() to correct
->> the data.
-> 
-> Thanks for fixing the bug on Intel drivers, Xuan. However, together with
-> Magnus we feel that include/net/xdp.h is not a correct place for
-> introducing xdp_construct_skb. If mlx side could use it, then probably
-> include/net/xdp_sock_drv.h is a better fit for that.
-> 
-> Once again, CCing Maxim.
-> Maxim, any chances that mlx driver could be aligned in a way that we could
-> have a common function for creating skb on ZC path?
+The change is a consequence of errors reported by the ixgbevf driver
+while starting several virtual guests at the same time on ESX host.
+During this, VF was not able to communicate correctly with the PF,
+as a result reported "PF still in reset state. Is the PF interface up?"
+and then goes to locked state. The only thing left was to reload
+the VF driver on the guest OS.
 
-I'm sorry I missed the v1.
+The background of the problem is that the current PFU and VFU
+semaphore locking mechanism between sender and receiver may cause
+overriding Mailbox memory (VFMBMEM), in such scenario receiver of
+the original message will read the invalid, corrupted or one (or more)
+message may be lost.
 
-I have reviewed the differences between mlx5e_xsk_construct_skb and 
-xdp_construct_skb. I would say it is possible for mlx5 to adapt and use 
-the new API, but it may also require changes to xdp_construct_skb. 
-Please see the list of differences below.
+This change is actually as a support for communication with PF ESX
+driver and does not contains changes and support for ixgbe driver.
+For maintain backward compatibility, previous communication method
+has been preserved in the form of LEGACY functions.
 
-> 
-> Otherwise, maybe we should think about introducing the Intel-specific
-> common header in tree?
+In the future there is a plan to add a support for a 1.5 mailbox API
+communication also to ixgbe driver.
 
-Sure, you can do it to share Intel-specific stuff between Intel drivers. 
-However, in this particular case I think all XSK-enabled drivers would 
-benefit from this function, especially after previous efforts that aimed 
-to minimize the differences between drivers, the amount of code in the 
-drivers and to share as much as possible. So, in my opinion, this stuff 
-belongs to xdp_sock_drv.h. (Moreover, I see this patch also changes 
-stmmac, so it's no longer Intel-specific.)
+Radoslaw Tyl (5):
+  ixgbevf: Rename MSGTYPE to SUCCESS and FAILURE
+  ixgbevf: Improve error handling in mailbox
+  ixgbevf: Add legacy suffix to old API mailbox functions
+  ixgbevf: Mailbox improvements
+  ixgbevf: Add support for new mailbox communication between PF and VF
 
-Differences between mlx5e_xsk_construct_skb and xdp_construct_skb:
+ drivers/net/ethernet/intel/ixgbevf/defines.h  |   4 +
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c    |  11 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h  |   5 +
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |  11 +-
+ drivers/net/ethernet/intel/ixgbevf/mbx.c      | 325 ++++++++++++++----
+ drivers/net/ethernet/intel/ixgbevf/mbx.h      |  19 +-
+ drivers/net/ethernet/intel/ixgbevf/vf.c       |  62 ++--
+ drivers/net/ethernet/intel/ixgbevf/vf.h       |   5 +-
+ 8 files changed, 329 insertions(+), 113 deletions(-)
 
-1. __napi_alloc_skb is called with __GFP_NOWARN in xdp_construct_skb, 
-but without this flag in mlx5. Why do we need to use non-default flags? 
-Why can't we stick with napi_alloc_skb? I see only Intel drivers and XSK 
-in stmmac use __napi_alloc_skb instead of napi_alloc_skb, and it looks 
-to me as it was just copied from the regular (non-XSK) datapath of i40e 
-(i40e_construct_skb) to i40e's XSK, then to stmmac, then to 
-xdp_construct_skb, and I don't truly understand the reason of having 
-__GFP_NOWARN where it first appeared (i40e_construct_skb). Could someone 
-explain the reason for __GFP_NOWARN, so that we could decide whether we 
-want it in a generic XSK helper?
-
-2. skb_put in mlx5 vs __skb_put in xdp_construct_skb - shouldn't be a 
-big deal, the difference is just an extra overflow check in skb_put.
-
-3. XDP metadata. mlx5 calls xdp_set_data_meta_invalid, while other 
-XSK-enabled drivers set metadata size to 0 and allow the XDP program to 
-push some metadata. xdp_construct_skb only supports xdp_buffs with 
-metadata, it will break if xdp_data_meta_unsupported. There are a few 
-possible ways to address it:
-
-3.1. Add a check for xdp_data_meta_unsupported to xdp_construct_skb. It 
-will lift the undocumented limitation of this function and allow it to 
-handle all valid kinds of xdp_buff.
-
-3.2. Have two versions of xdp_construct_skb: one for xdp_buffs with 
-metadata, the other for ones without metadata. Sounds ugly and not 
-robust, but could spare a few CPU cycles for drivers that can't have 
-metadata.
-
-3.3. Remove xdp_set_data_meta_invalid from mlx5. I think the reason for 
-this call was some design decision, rather than a technical limitation. 
-On the other hand, even though it will allow mlx5 to work with 
-xdp_construct_skb in its current implementation, it would still be nice 
-to combine it with 3.1 to avoid having issues with future drivers (if 
-not, at least document in a clear way that the xdp_buff parameter must 
-have metadata). Tariq/Saeed, could you comment on this point?
-
-Thanks,
-Max
-
->>
->> Fixes: 0a714186d3c0f ("i40e: add AF_XDP zero-copy Rx support")
->> Fixes: 2d4238f556972 ("ice: Add support for AF_XDP")
->> Fixes: bba2556efad66 ("net: stmmac: Enable RX via AF_XDP zero-copy")
->> Fixes: d0bcacd0a1309 ("ixgbe: add AF_XDP zero-copy Rx support")
->> Signed-off-by: Xuan Zhuo <xuanzhuo@linux.alibaba.com>
->> ---
->>   drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 16 +---------
->>   drivers/net/ethernet/intel/ice/ice_xsk.c      | 12 +-------
->>   drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 12 +-------
->>   .../net/ethernet/stmicro/stmmac/stmmac_main.c | 23 +-------------
->>   include/net/xdp.h                             | 30 +++++++++++++++++++
->>   5 files changed, 34 insertions(+), 59 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->> index 68f177a86403..81b0f44eedda 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
->> @@ -246,23 +246,9 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
->>   static struct sk_buff *i40e_construct_skb_zc(struct i40e_ring *rx_ring,
->>   					     struct xdp_buff *xdp)
->>   {
->> -	unsigned int metasize = xdp->data - xdp->data_meta;
->> -	unsigned int datasize = xdp->data_end - xdp->data;
->>   	struct sk_buff *skb;
->>   
->> -	/* allocate a skb to store the frags */
->> -	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
->> -			       xdp->data_end - xdp->data_hard_start,
->> -			       GFP_ATOMIC | __GFP_NOWARN);
->> -	if (unlikely(!skb))
->> -		goto out;
->> -
->> -	skb_reserve(skb, xdp->data - xdp->data_hard_start);
->> -	memcpy(__skb_put(skb, datasize), xdp->data, datasize);
->> -	if (metasize)
->> -		skb_metadata_set(skb, metasize);
->> -
->> -out:
->> +	skb = xdp_construct_skb(xdp, &rx_ring->q_vector->napi);
->>   	xsk_buff_free(xdp);
->>   	return skb;
->>   }
->> diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
->> index a1f89ea3c2bd..f95e1adcebda 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_xsk.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
->> @@ -430,22 +430,12 @@ static void ice_bump_ntc(struct ice_ring *rx_ring)
->>   static struct sk_buff *
->>   ice_construct_skb_zc(struct ice_ring *rx_ring, struct ice_rx_buf *rx_buf)
->>   {
->> -	unsigned int metasize = rx_buf->xdp->data - rx_buf->xdp->data_meta;
->> -	unsigned int datasize = rx_buf->xdp->data_end - rx_buf->xdp->data;
->> -	unsigned int datasize_hard = rx_buf->xdp->data_end -
->> -				     rx_buf->xdp->data_hard_start;
->>   	struct sk_buff *skb;
->>   
->> -	skb = __napi_alloc_skb(&rx_ring->q_vector->napi, datasize_hard,
->> -			       GFP_ATOMIC | __GFP_NOWARN);
->> +	skb = xdp_construct_skb(rx_buf->xdp, &rx_ring->q_vector->napi);
->>   	if (unlikely(!skb))
->>   		return NULL;
->>   
->> -	skb_reserve(skb, rx_buf->xdp->data - rx_buf->xdp->data_hard_start);
->> -	memcpy(__skb_put(skb, datasize), rx_buf->xdp->data, datasize);
->> -	if (metasize)
->> -		skb_metadata_set(skb, metasize);
->> -
->>   	xsk_buff_free(rx_buf->xdp);
->>   	rx_buf->xdp = NULL;
->>   	return skb;
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> index f72d2978263b..123945832c96 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
->> @@ -203,22 +203,12 @@ bool ixgbe_alloc_rx_buffers_zc(struct ixgbe_ring *rx_ring, u16 count)
->>   static struct sk_buff *ixgbe_construct_skb_zc(struct ixgbe_ring *rx_ring,
->>   					      struct ixgbe_rx_buffer *bi)
->>   {
->> -	unsigned int metasize = bi->xdp->data - bi->xdp->data_meta;
->> -	unsigned int datasize = bi->xdp->data_end - bi->xdp->data;
->>   	struct sk_buff *skb;
->>   
->> -	/* allocate a skb to store the frags */
->> -	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
->> -			       bi->xdp->data_end - bi->xdp->data_hard_start,
->> -			       GFP_ATOMIC | __GFP_NOWARN);
->> +	skb = xdp_construct_skb(bi->xdp, &rx_ring->q_vector->napi);
->>   	if (unlikely(!skb))
->>   		return NULL;
->>   
->> -	skb_reserve(skb, bi->xdp->data - bi->xdp->data_hard_start);
->> -	memcpy(__skb_put(skb, datasize), bi->xdp->data, datasize);
->> -	if (metasize)
->> -		skb_metadata_set(skb, metasize);
->> -
->>   	xsk_buff_free(bi->xdp);
->>   	bi->xdp = NULL;
->>   	return skb;
->> diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
->> index c87202cbd3d6..143ac1edb876 100644
->> --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
->> +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
->> @@ -4729,27 +4729,6 @@ static void stmmac_finalize_xdp_rx(struct stmmac_priv *priv,
->>   		xdp_do_flush();
->>   }
->>   
->> -static struct sk_buff *stmmac_construct_skb_zc(struct stmmac_channel *ch,
->> -					       struct xdp_buff *xdp)
->> -{
->> -	unsigned int metasize = xdp->data - xdp->data_meta;
->> -	unsigned int datasize = xdp->data_end - xdp->data;
->> -	struct sk_buff *skb;
->> -
->> -	skb = __napi_alloc_skb(&ch->rxtx_napi,
->> -			       xdp->data_end - xdp->data_hard_start,
->> -			       GFP_ATOMIC | __GFP_NOWARN);
->> -	if (unlikely(!skb))
->> -		return NULL;
->> -
->> -	skb_reserve(skb, xdp->data - xdp->data_hard_start);
->> -	memcpy(__skb_put(skb, datasize), xdp->data, datasize);
->> -	if (metasize)
->> -		skb_metadata_set(skb, metasize);
->> -
->> -	return skb;
->> -}
->> -
->>   static void stmmac_dispatch_skb_zc(struct stmmac_priv *priv, u32 queue,
->>   				   struct dma_desc *p, struct dma_desc *np,
->>   				   struct xdp_buff *xdp)
->> @@ -4761,7 +4740,7 @@ static void stmmac_dispatch_skb_zc(struct stmmac_priv *priv, u32 queue,
->>   	struct sk_buff *skb;
->>   	u32 hash;
->>   
->> -	skb = stmmac_construct_skb_zc(ch, xdp);
->> +	skb = xdp_construct_skb(xdp, &ch->rxtx_napi);
->>   	if (!skb) {
->>   		priv->dev->stats.rx_dropped++;
->>   		return;
->> diff --git a/include/net/xdp.h b/include/net/xdp.h
->> index a5bc214a49d9..561e21eaf718 100644
->> --- a/include/net/xdp.h
->> +++ b/include/net/xdp.h
->> @@ -95,6 +95,36 @@ xdp_prepare_buff(struct xdp_buff *xdp, unsigned char *hard_start,
->>   	xdp->data_meta = meta_valid ? data : data + 1;
->>   }
->>   
->> +static __always_inline struct sk_buff *
->> +xdp_construct_skb(struct xdp_buff *xdp, struct napi_struct *napi)
->> +{
->> +	unsigned int metasize;
->> +	unsigned int datasize;
->> +	unsigned int headroom;
->> +	struct sk_buff *skb;
->> +	unsigned int len;
->> +
->> +	/* this include metasize */
->> +	datasize = xdp->data_end  - xdp->data_meta;
->> +	metasize = xdp->data      - xdp->data_meta;
->> +	headroom = xdp->data_meta - xdp->data_hard_start;
->> +	len      = xdp->data_end  - xdp->data_hard_start;
->> +
->> +	/* allocate a skb to store the frags */
->> +	skb = __napi_alloc_skb(napi, len, GFP_ATOMIC | __GFP_NOWARN);
->> +	if (unlikely(!skb))
->> +		return NULL;
->> +
->> +	skb_reserve(skb, headroom);
->> +	memcpy(__skb_put(skb, datasize), xdp->data_meta, datasize);
->> +	if (metasize) {
->> +		__skb_pull(skb, metasize);
->> +		skb_metadata_set(skb, metasize);
->> +	}
->> +
->> +	return skb;
->> +}
->> +
->>   /* Reserve memory area at end-of data area.
->>    *
->>    * This macro reserves tailroom in the XDP buffer by limiting the
->> -- 
->> 2.31.0
->>
+-- 
+2.27.0
 
