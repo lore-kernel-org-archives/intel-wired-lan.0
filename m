@@ -1,87 +1,146 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Tue, 29 Jun 2021 17:49:15 +0300
-Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
-In-Reply-To: <20210629082128.255988-1-seven.yi.lee@gmail.com>
-References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
-Message-ID: <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+From: Nitesh Narayan Lal <nitesh@redhat.com>
+Date: Tue, 29 Jun 2021 11:27:32 -0400
+Subject: [Intel-wired-lan] [PATCH v2 00/14] genirq: Cleanup the usage of
+ irq_set_affinity_hint
+Message-ID: <20210629152746.2953364-1-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/29/2021 11:21, YeeLi wrote:
-Yeeli,
-> In e1000e driver, a PCIe-like device, the max snoop/no-snoop latency
-> is the upper limit.So, directly compare the size of lat_enc and
-> max_ltr_enc is incorrect.
-> 
-why?
->      In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns, correct.
-> 
->      In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns, correct.
-> 
->      In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728, incorrect.
-> 
-Platform LTR encoded is 0x1003 - right. It is meant 1048576ns x 3 = 
-3145738ns.
-Now,
-for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
-for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
-for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
-18907136ns > 3145738ns, (latency encoded is great than maximum LTR 
-encoded by platform) - so, there is no point to wait more than platform 
-required, and lat_enc=max_ltr_enc. It is expected and we sent right 
-value to the power management controller.
-What is the problem you try solve?
+The drivers currently rely on irq_set_affinity_hint() to either set the
+affinity_hint that is consumed by the userspace and/or to enforce a custom
+affinity.
 
-> Decoded the lat_enc and max_ltr_enc before compare them is necessary.
-> 
-> Signed-off-by: YeeLi <seven.yi.lee@gmail.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 23 ++++++++++++++++++++-
->   1 file changed, 22 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index 590ad110d383..3bff1b570b76 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -986,6 +986,27 @@ static s32 e1000_k1_workaround_lpt_lp(struct e1000_hw *hw, bool link)
->   	return ret_val;
->   }
->   
-> +static u32 convert_e1000e_ltr_scale(u32 val)
-> +{
-> +	if (val > 5)
-> +		return 0;
-> +
-> +	return 1U << (5 * val);
-> +}
-> +
-> +static u64 decoded_ltr(u32 val)
-> +{
-> +	u64 decoded_latency;
-> +	u32 value;
-> +	u32 scale;
-> +
-> +	value = val & 0x03FF;
-> +	scale = (val & 0x1C00) >> 10;
-> +	decoded_latency = value * convert_e1000e_ltr_scale(scale);
-> +
-> +	return decoded_latency;
-> +}
-> +
->   /**
->    *  e1000_platform_pm_pch_lpt - Set platform power management values
->    *  @hw: pointer to the HW structure
-> @@ -1059,7 +1080,7 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
->   				     E1000_PCI_LTR_CAP_LPT + 2, &max_nosnoop);
->   		max_ltr_enc = max_t(u16, max_snoop, max_nosnoop);
->   
-> -		if (lat_enc > max_ltr_enc)
-> +		if (decoded_ltr(lat_enc) > decoded_ltr(max_ltr_enc))
->   			lat_enc = max_ltr_enc;
->   	}
->   
-> 
-sasha
+irq_set_affinity_hint() as the name suggests is originally introduced to
+only set the affinity_hint to help the userspace in guiding the interrupts
+and not the affinity itself. However, since the commit
+
+        e2e64a932556 "genirq: Set initial affinity in irq_set_affinity_hint()"
+
+irq_set_affinity_hint() also started applying the provided cpumask (if not
+NULL) as the affinity for the interrupts. The issue that this commit was
+trying to solve is to allow the drivers to enforce their affinity mask to
+distribute the interrupts across the CPUs such that they don't always end
+up on CPU0. This issue has been resolved within the irq subsystem since the
+commit
+
+        a0c9259dc4e1 "irq/matrix: Spread interrupts on allocation"
+
+Hence, there is no need for the drivers to overwrite the affinity to spread
+as it is dynamically performed at the time of allocation.
+
+Also, irq_set_affinity_hint() setting affinity unconditionally introduces
+issues for the drivers that only want to set their affinity_hint and not the
+affinity itself as for these driver interrupts the default_smp_affinity_mask
+is completely ignored (for detailed investigation please refer to [1]).
+
+Unfortunately reverting the commit e2e64a932556 is not an option at this
+point for two reasons [2]:
+
+- Several drivers for a valid reason (performance) rely on this API to
+  enforce their affinity mask
+
+- Until very recently this was the only exported interface that was
+  available
+
+To clear this out Thomas has come up with the following interfaces:
+
+- irq_set_affinity(): only sets affinity of an IRQ [3]
+- irq_update_affinity_hint(): Only sets the hint [4]
+- irq_set_affinity_and_hint(): Sets both affinity and the hint mask [4]
+
+The first API is already merged in the linux-next tree and the patch
+that introduces the other two interfaces are included with this patch-set.
+
+To move to the stage where we can safely get rid of the
+irq_set_affinity_hint(), which has been marked deprecated, we have to
+move all its consumers to these new interfaces. In this patch-set, I have
+done that for a few drivers and will hopefully try to move the remaining of
+them in the coming days.
+
+Testing
+-------
+In terms of testing, I have performed some basic testing on x86 to verify
+things such as the interrupts are evenly spread on all CPUs, hint mask is
+correctly set etc. for the drivers - i40e, iavf, mlx5, mlx4, ixgbe, i40iw
+and enic on top of:
+
+        git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+
+So more testing is probably required for these and the drivers that I didn't
+test and any help will be much appreciated.
+
+
+Notes
+-----
+- I was told that i40iw driver is going to be replaced by irdma, however,
+  the new driver didn't land in Linus's tree yet. Once it does I will send
+  a follow up patch for that as well.
+
+- For the mpt3sas driver I decided to go with the usage of
+  irq_set_affinity_and_hint over irq_set_affinity based on my little
+  analysis of it and the megaraid driver. However, if we are sure that it
+  is not required then I can replace it with just irq_set_affinity as one
+  of its comment suggests.
+
+
+Change from v1 [5]
+------------------
+- Fixed compilation error by adding the new interface definitions for cases
+  where CONFIG_SMP is not defined
+
+- Fixed function usage in megaraid_sas and removed unnecessary variable
+  (Robin Murphy)
+
+- Removed unwanted #if/endif from mlx4 (Leon Romanovsky)
+
+- Other indentation related fixes
+
+ 
+[1] https://lore.kernel.org/lkml/1a044a14-0884-eedb-5d30-28b4bec24b23 at redhat.com/
+[2] https://lore.kernel.org/linux-pci/d1d5e797-49ee-4968-88c6-c07119343492 at arm.com/
+[3] https://lore.kernel.org/linux-arm-kernel/20210518091725.046774792 at linutronix.de/
+[4] https://lore.kernel.org/patchwork/patch/1434326/
+[5] https://lore.kernel.org/linux-scsi/20210617182242.8637-1-nitesh at redhat.com/
+
+
+Nitesh Narayan Lal (13):
+  iavf: Use irq_update_affinity_hint
+  i40e: Use irq_update_affinity_hint
+  scsi: megaraid_sas: Use irq_set_affinity_and_hint
+  scsi: mpt3sas: Use irq_set_affinity_and_hint
+  RDMA/i40iw: Use irq_update_affinity_hint
+  enic: Use irq_update_affinity_hint
+  be2net: Use irq_update_affinity_hint
+  ixgbe: Use irq_update_affinity_hint
+  mailbox: Use irq_update_affinity_hint
+  scsi: lpfc: Use irq_set_affinity
+  hinic: Use irq_set_affinity_and_hint
+  net/mlx5: Use irq_update_affinity_hint
+  net/mlx4: Use irq_update_affinity_hint
+
+Thomas Gleixner (1):
+  genirq: Provide new interfaces for affinity hints
+
+ drivers/infiniband/hw/i40iw/i40iw_main.c      |  4 +-
+ drivers/mailbox/bcm-flexrm-mailbox.c          |  4 +-
+ drivers/net/ethernet/cisco/enic/enic_main.c   |  8 +--
+ drivers/net/ethernet/emulex/benet/be_main.c   |  4 +-
+ drivers/net/ethernet/huawei/hinic/hinic_rx.c  |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  8 +--
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  8 +--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 10 ++--
+ drivers/net/ethernet/mellanox/mlx4/eq.c       |  8 ++-
+ .../net/ethernet/mellanox/mlx5/core/pci_irq.c |  6 +--
+ drivers/scsi/lpfc/lpfc_init.c                 |  4 +-
+ drivers/scsi/megaraid/megaraid_sas_base.c     | 27 +++++-----
+ drivers/scsi/mpt3sas/mpt3sas_base.c           | 21 ++++----
+ include/linux/interrupt.h                     | 53 ++++++++++++++++++-
+ kernel/irq/manage.c                           |  8 +--
+ 15 files changed, 113 insertions(+), 64 deletions(-)
+
+--  
+
+
