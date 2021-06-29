@@ -1,10 +1,10 @@
 From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Tue, 29 Jun 2021 11:27:45 -0400
-Subject: [Intel-wired-lan] [PATCH v2 13/14] net/mlx5: Use
+Date: Tue, 29 Jun 2021 11:27:46 -0400
+Subject: [Intel-wired-lan] [PATCH v2 14/14] net/mlx4: Use
  irq_update_affinity_hint
 In-Reply-To: <20210629152746.2953364-1-nitesh@redhat.com>
 References: <20210629152746.2953364-1-nitesh@redhat.com>
-Message-ID: <20210629152746.2953364-14-nitesh@redhat.com>
+Message-ID: <20210629152746.2953364-15-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -25,33 +25,36 @@ that only updates the affinity_hint pointer.
 Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/mellanox/mlx4/eq.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c b/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
-index c3373fb1cd7f..a1b9434f4e25 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c
-@@ -276,8 +276,8 @@ static int set_comp_irq_affinity_hint(struct mlx5_core_dev *mdev, int i)
- 	cpumask_set_cpu(cpumask_local_spread(i, mdev->priv.numa_node),
- 			irq->mask);
- 	if (IS_ENABLED(CONFIG_SMP) &&
--	    irq_set_affinity_hint(irqn, irq->mask))
--		mlx5_core_warn(mdev, "irq_set_affinity_hint failed, irq 0x%.4x",
-+	    irq_update_affinity_hint(irqn, irq->mask))
-+		mlx5_core_warn(mdev, "irq_update_affinity_hint failed, irq 0x%.4x",
- 			       irqn);
+diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
+index 9e48509ed3b2..414e390e6b48 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/eq.c
++++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
+@@ -244,9 +244,9 @@ static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
+ 	    cpumask_empty(eq->affinity_mask))
+ 		return;
  
- 	return 0;
-@@ -291,7 +291,7 @@ static void clear_comp_irq_affinity_hint(struct mlx5_core_dev *mdev, int i)
- 
- 	irq = mlx5_irq_get(mdev, vecidx);
- 	irqn = pci_irq_vector(mdev->pdev, vecidx);
--	irq_set_affinity_hint(irqn, NULL);
-+	irq_update_affinity_hint(irqn, NULL);
- 	free_cpumask_var(irq->mask);
+-	hint_err = irq_set_affinity_hint(eq->irq, eq->affinity_mask);
++	hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
+ 	if (hint_err)
+-		mlx4_warn(dev, "irq_set_affinity_hint failed, err %d\n", hint_err);
++		mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
  }
+ #endif
  
+@@ -1123,9 +1123,7 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
+ 	for (i = 0; i < dev->caps.num_comp_vectors + 1; ++i)
+ 		if (eq_table->eq[i].have_irq) {
+ 			free_cpumask_var(eq_table->eq[i].affinity_mask);
+-#if defined(CONFIG_SMP)
+-			irq_set_affinity_hint(eq_table->eq[i].irq, NULL);
+-#endif
++			irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
+ 			free_irq(eq_table->eq[i].irq, eq_table->eq + i);
+ 			eq_table->eq[i].have_irq = 0;
+ 		}
 -- 
 2.27.0
 
