@@ -1,154 +1,152 @@
-From: Radoslaw Tyl <radoslawx.tyl@intel.com>
-Date: Wed, 30 Jun 2021 10:15:32 +0200
-Subject: [Intel-wired-lan] [PATCH v2 5/5] ixgbevf: Add support for new
- mailbox communication between PF and VF
-In-Reply-To: <20210630081532.3069914-1-radoslawx.tyl@intel.com>
-References: <20210630081532.3069914-1-radoslawx.tyl@intel.com>
-Message-ID: <20210630081532.3069914-6-radoslawx.tyl@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 30 Jun 2021 17:39:35 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
+ fff3ea006287fec848383b6144935cba5ded41a6
+Message-ID: <60dc3bd7.5BugYCxqqMrhHhmA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Provide improved mailbox communication, between PF and VF,
-which is defined as API version 1.5.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: fff3ea006287fec848383b6144935cba5ded41a6  igc: Export LEDs
 
-Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
+Error/Warning in current branch:
+
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:180:35: error: 'struct pci_dev' has no member named 'physfn'; did you mean 'is_physfn'?
+
+Error/Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- alpha-randconfig-r032-20210628
+    `-- drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:error:struct-pci_dev-has-no-member-named-physfn
+
+elapsed time: 723m
+
+configs tested: 116
+configs skipped: 2
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+xtensa                           allyesconfig
+arm                         at91_dt_defconfig
+arm                       imx_v6_v7_defconfig
+ia64                         bigsur_defconfig
+powerpc                     mpc512x_defconfig
+arm                  colibri_pxa300_defconfig
+powerpc64                           defconfig
+mips                            gpr_defconfig
+powerpc                      ppc44x_defconfig
+arm                         hackkit_defconfig
+m68k                        m5307c3_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                     skiroot_defconfig
+arm                      integrator_defconfig
+powerpc                      chrp32_defconfig
+arm                            mmp2_defconfig
+arm                         palmz72_defconfig
+powerpc                     stx_gp3_defconfig
+parisc                              defconfig
+powerpc                  mpc885_ads_defconfig
+arm                            zeus_defconfig
+riscv                    nommu_k210_defconfig
+arc                         haps_hs_defconfig
+arm                      pxa255-idp_defconfig
+powerpc                     tqm8540_defconfig
+mips                     cu1830-neo_defconfig
+arm                         socfpga_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                               j2_defconfig
+arm                           u8500_defconfig
+arc                          axs101_defconfig
+mips                            ar7_defconfig
+sh                          sdk7786_defconfig
+arm                       mainstone_defconfig
+openrisc                            defconfig
+arm                           tegra_defconfig
+mips                      loongson3_defconfig
+ia64                             allmodconfig
+powerpc                     asp8347_defconfig
+powerpc                       holly_defconfig
+powerpc                       eiger_defconfig
+x86_64                            allnoconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210628
+i386                 randconfig-a002-20210628
+i386                 randconfig-a003-20210628
+i386                 randconfig-a006-20210628
+i386                 randconfig-a005-20210628
+i386                 randconfig-a004-20210628
+x86_64               randconfig-a012-20210628
+x86_64               randconfig-a016-20210628
+x86_64               randconfig-a015-20210628
+x86_64               randconfig-a013-20210628
+x86_64               randconfig-a014-20210628
+x86_64               randconfig-a011-20210628
+i386                 randconfig-a011-20210628
+i386                 randconfig-a014-20210628
+i386                 randconfig-a013-20210628
+i386                 randconfig-a015-20210628
+i386                 randconfig-a016-20210628
+i386                 randconfig-a012-20210628
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210628
+x86_64               randconfig-a002-20210628
+x86_64               randconfig-a005-20210628
+x86_64               randconfig-a001-20210628
+x86_64               randconfig-a003-20210628
+x86_64               randconfig-a004-20210628
+x86_64               randconfig-a006-20210628
+
 ---
- drivers/net/ethernet/intel/ixgbevf/ipsec.c        |  1 +
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  9 +++++++++
- drivers/net/ethernet/intel/ixgbevf/mbx.h          |  1 +
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 14 ++++++++++++--
- 4 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-index 793da1fba81c..e68b55a239ec 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
-@@ -617,6 +617,7 @@ void ixgbevf_init_ipsec_offload(struct ixgbevf_adapter *adapter)
- 
- 	switch (adapter->hw.api_version) {
- 	case ixgbe_mbox_api_14:
-+	case ixgbe_mbox_api_15:
- 		break;
- 	default:
- 		return;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index e9b99929588b..403b25ecf6bd 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -2268,6 +2268,7 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	static const int api[] = {
-+		ixgbe_mbox_api_15,
- 		ixgbe_mbox_api_14,
- 		ixgbe_mbox_api_13,
- 		ixgbe_mbox_api_12,
-@@ -2286,6 +2287,12 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
- 		idx++;
- 	}
- 
-+	if (hw->api_version >= ixgbe_mbox_api_15) {
-+		hw->mbx.ops.init_params(hw);
-+		memcpy(&hw->mbx.ops, &ixgbevf_mbx_ops,
-+		       sizeof(struct ixgbe_mbx_operations));
-+	}
-+
- 	spin_unlock_bh(&adapter->mbx_lock);
- }
- 
-@@ -2629,6 +2636,7 @@ static void ixgbevf_set_num_queues(struct ixgbevf_adapter *adapter)
- 		case ixgbe_mbox_api_12:
- 		case ixgbe_mbox_api_13:
- 		case ixgbe_mbox_api_14:
-+		case ixgbe_mbox_api_15:
- 			if (adapter->xdp_prog &&
- 			    hw->mac.max_tx_queues == rss)
- 				rss = rss > 3 ? 2 : 1;
-@@ -4627,6 +4635,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	case ixgbe_mbox_api_12:
- 	case ixgbe_mbox_api_13:
- 	case ixgbe_mbox_api_14:
-+	case ixgbe_mbox_api_15:
- 		netdev->max_mtu = IXGBE_MAX_JUMBO_FRAME_SIZE -
- 				  (ETH_HLEN + ETH_FCS_LEN);
- 		break;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.h b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-index b3b83c95babf..7346ccf014a5 100644
---- a/drivers/net/ethernet/intel/ixgbevf/mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-@@ -65,6 +65,7 @@ enum ixgbe_pfvf_api_rev {
- 	ixgbe_mbox_api_12,	/* API version 1.2, linux/freebsd VF driver */
- 	ixgbe_mbox_api_13,	/* API version 1.3, linux/freebsd VF driver */
- 	ixgbe_mbox_api_14,	/* API version 1.4, linux/freebsd VF driver */
-+	ixgbe_mbox_api_15,	/* API version 1.5, linux/freebsd VF driver */
- 	/* This value should always be last */
- 	ixgbe_mbox_api_unknown,	/* indicates that API version is not known */
- };
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index ac0e94d70a09..e9e1926f7585 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -74,6 +74,9 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
- 
- 	/* reset the api version */
- 	hw->api_version = ixgbe_mbox_api_10;
-+	hw->mbx.ops.init_params(hw);
-+	memcpy(&hw->mbx.ops, &ixgbevf_mbx_ops_legacy,
-+	       sizeof(struct ixgbe_mbx_operations));
- 
- 	IXGBE_WRITE_REG(hw, IXGBE_VFCTRL, IXGBE_CTRL_RST);
- 	IXGBE_WRITE_FLUSH(hw);
-@@ -310,6 +313,7 @@ int ixgbevf_get_reta_locked(struct ixgbe_hw *hw, u32 *reta, int num_rx_queues)
- 	 * is not supported for this device type.
- 	 */
- 	switch (hw->api_version) {
-+	case ixgbe_mbox_api_15:
- 	case ixgbe_mbox_api_14:
- 	case ixgbe_mbox_api_13:
- 	case ixgbe_mbox_api_12:
-@@ -378,6 +382,7 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
- 	 * or if the operation is not supported for this device type.
- 	 */
- 	switch (hw->api_version) {
-+	case ixgbe_mbox_api_15:
- 	case ixgbe_mbox_api_14:
- 	case ixgbe_mbox_api_13:
- 	case ixgbe_mbox_api_12:
-@@ -544,8 +549,9 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- 		if (xcast_mode == IXGBEVF_XCAST_MODE_PROMISC)
- 			return -EOPNOTSUPP;
- 		fallthrough;
--	case ixgbe_mbox_api_14:
- 	case ixgbe_mbox_api_13:
-+	case ixgbe_mbox_api_14:
-+	case ixgbe_mbox_api_15:
- 		break;
- 	default:
- 		return -EOPNOTSUPP;
-@@ -704,8 +710,11 @@ static s32 ixgbevf_check_mac_link_vf(struct ixgbe_hw *hw,
- 	/* if the read failed it could just be a mailbox collision, best wait
- 	 * until we are called again and don't report an error
- 	 */
--	if (mbx->ops.read(hw, &in_msg, 1))
-+	if (mbx->ops.read(hw, &in_msg, 1)) {
-+		if (hw->api_version >= ixgbe_mbox_api_15)
-+			mac->get_link_status = false;
- 		goto out;
-+	}
- 
- 	if (!(in_msg & IXGBE_VT_MSGTYPE_CTS)) {
- 		/* msg is not CTS and is NACK we must have lost CTS status */
-@@ -901,6 +910,7 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
- 	case ixgbe_mbox_api_12:
- 	case ixgbe_mbox_api_13:
- 	case ixgbe_mbox_api_14:
-+	case ixgbe_mbox_api_15:
- 		break;
- 	default:
- 		return 0;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
