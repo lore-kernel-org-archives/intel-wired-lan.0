@@ -1,152 +1,123 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 30 Jun 2021 17:39:35 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
- fff3ea006287fec848383b6144935cba5ded41a6
-Message-ID: <60dc3bd7.5BugYCxqqMrhHhmA%lkp@intel.com>
+From: Yee Li <seven.yi.lee@gmail.com>
+Date: Wed, 30 Jun 2021 09:46:31 +0800
+Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
+In-Reply-To: <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
+References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
+ <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+ <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
+Message-ID: <CALX8JfQ15gmSJTp5CaXOTXah+KqUiSs2uCRCgNBXO9hejcmbeg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: fff3ea006287fec848383b6144935cba5ded41a6  igc: Export LEDs
+*if (lat_enc > max_ltr_enc)*
+*        lat_enc = max_ltr_enc;*
+Does this code mean *Latency* cannot greater than *maximum LTR (by
+platform)?*
+Directly compare lat_enc (Latency encoded) and max_ltr_enc (maximum LTR
+encoded by platform) is *ok?*
 
-Error/Warning in current branch:
+In 10Mbps,
+Decoded LTR (calculate): 18874368ns > 3145728ns
+Encoded LTR (driver code): 0xe40 (*lat_enc*) < 0x1003 (*max_ltr_enc*), so *end
+if* and *no lat_enc = max_ltr_enc.*
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:180:35: error: 'struct pci_dev' has no member named 'physfn'; did you mean 'is_physfn'?
 
-Error/Warning ids grouped by kconfigs:
 
-gcc_recent_errors
-`-- alpha-randconfig-r032-20210628
-    `-- drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:error:struct-pci_dev-has-no-member-named-physfn
+Yee Li <seven.yi.lee@gmail.com> ?2021?6?30??? ??1:33???
 
-elapsed time: 723m
-
-configs tested: 116
-configs skipped: 2
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-xtensa                           allyesconfig
-arm                         at91_dt_defconfig
-arm                       imx_v6_v7_defconfig
-ia64                         bigsur_defconfig
-powerpc                     mpc512x_defconfig
-arm                  colibri_pxa300_defconfig
-powerpc64                           defconfig
-mips                            gpr_defconfig
-powerpc                      ppc44x_defconfig
-arm                         hackkit_defconfig
-m68k                        m5307c3_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                     skiroot_defconfig
-arm                      integrator_defconfig
-powerpc                      chrp32_defconfig
-arm                            mmp2_defconfig
-arm                         palmz72_defconfig
-powerpc                     stx_gp3_defconfig
-parisc                              defconfig
-powerpc                  mpc885_ads_defconfig
-arm                            zeus_defconfig
-riscv                    nommu_k210_defconfig
-arc                         haps_hs_defconfig
-arm                      pxa255-idp_defconfig
-powerpc                     tqm8540_defconfig
-mips                     cu1830-neo_defconfig
-arm                         socfpga_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                               j2_defconfig
-arm                           u8500_defconfig
-arc                          axs101_defconfig
-mips                            ar7_defconfig
-sh                          sdk7786_defconfig
-arm                       mainstone_defconfig
-openrisc                            defconfig
-arm                           tegra_defconfig
-mips                      loongson3_defconfig
-ia64                             allmodconfig
-powerpc                     asp8347_defconfig
-powerpc                       holly_defconfig
-powerpc                       eiger_defconfig
-x86_64                            allnoconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a001-20210628
-i386                 randconfig-a002-20210628
-i386                 randconfig-a003-20210628
-i386                 randconfig-a006-20210628
-i386                 randconfig-a005-20210628
-i386                 randconfig-a004-20210628
-x86_64               randconfig-a012-20210628
-x86_64               randconfig-a016-20210628
-x86_64               randconfig-a015-20210628
-x86_64               randconfig-a013-20210628
-x86_64               randconfig-a014-20210628
-x86_64               randconfig-a011-20210628
-i386                 randconfig-a011-20210628
-i386                 randconfig-a014-20210628
-i386                 randconfig-a013-20210628
-i386                 randconfig-a015-20210628
-i386                 randconfig-a016-20210628
-i386                 randconfig-a012-20210628
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-b001-20210628
-x86_64               randconfig-a002-20210628
-x86_64               randconfig-a005-20210628
-x86_64               randconfig-a001-20210628
-x86_64               randconfig-a003-20210628
-x86_64               randconfig-a004-20210628
-x86_64               randconfig-a006-20210628
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+>
+> Yes, 18874368ns > 3145728ns.
+> But, 0xe40 < 0x1003.
+>
+> So, the final lat_enc is 0xe40.
+> (Latency encoded is less than maximum LTR encoded by platform)
+>
+> Neftin, Sasha <sasha.neftin@intel.com> ? 2021?6?29??? 22:49???
+>
+>> On 6/29/2021 11:21, YeeLi wrote:
+>> Yeeli,
+>> > In e1000e driver, a PCIe-like device, the max snoop/no-snoop latency
+>> > is the upper limit.So, directly compare the size of lat_enc and
+>> > max_ltr_enc is incorrect.
+>> >
+>> why?
+>> >      In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns, correct.
+>> >
+>> >      In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns, correct.
+>> >
+>> >      In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728, incorrect.
+>> >
+>> Platform LTR encoded is 0x1003 - right. It is meant 1048576ns x 3 =
+>> 3145738ns.
+>> Now,
+>> for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
+>> for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
+>> for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
+>> 18907136ns > 3145738ns, (latency encoded is great than maximum LTR
+>> encoded by platform) - so, there is no point to wait more than platform
+>> required, and lat_enc=max_ltr_enc. It is expected and we sent right
+>> value to the power management controller.
+>> What is the problem you try solve?
+>>
+>> > Decoded the lat_enc and max_ltr_enc before compare them is necessary.
+>> >
+>> > Signed-off-by: YeeLi <seven.yi.lee@gmail.com>
+>> > ---
+>> >   drivers/net/ethernet/intel/e1000e/ich8lan.c | 23 ++++++++++++++++++++-
+>> >   1 file changed, 22 insertions(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>> > index 590ad110d383..3bff1b570b76 100644
+>> > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>> > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>> > @@ -986,6 +986,27 @@ static s32 e1000_k1_workaround_lpt_lp(struct
+>> e1000_hw *hw, bool link)
+>> >       return ret_val;
+>> >   }
+>> >
+>> > +static u32 convert_e1000e_ltr_scale(u32 val)
+>> > +{
+>> > +     if (val > 5)
+>> > +             return 0;
+>> > +
+>> > +     return 1U << (5 * val);
+>> > +}
+>> > +
+>> > +static u64 decoded_ltr(u32 val)
+>> > +{
+>> > +     u64 decoded_latency;
+>> > +     u32 value;
+>> > +     u32 scale;
+>> > +
+>> > +     value = val & 0x03FF;
+>> > +     scale = (val & 0x1C00) >> 10;
+>> > +     decoded_latency = value * convert_e1000e_ltr_scale(scale);
+>> > +
+>> > +     return decoded_latency;
+>> > +}
+>> > +
+>> >   /**
+>> >    *  e1000_platform_pm_pch_lpt - Set platform power management values
+>> >    *  @hw: pointer to the HW structure
+>> > @@ -1059,7 +1080,7 @@ static s32 e1000_platform_pm_pch_lpt(struct
+>> e1000_hw *hw, bool link)
+>> >                                    E1000_PCI_LTR_CAP_LPT + 2,
+>> &max_nosnoop);
+>> >               max_ltr_enc = max_t(u16, max_snoop, max_nosnoop);
+>> >
+>> > -             if (lat_enc > max_ltr_enc)
+>> > +             if (decoded_ltr(lat_enc) > decoded_ltr(max_ltr_enc))
+>> >                       lat_enc = max_ltr_enc;
+>> >       }
+>> >
+>> >
+>> sasha
+>>
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210630/bdf6884a/attachment-0001.html>
