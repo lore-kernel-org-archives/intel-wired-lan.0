@@ -1,30 +1,50 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 30 Jun 2021 22:34:49 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 0/3] iavf: Fix init and
- watchdog state machines
-In-Reply-To: <20210628151514.28547-1-mateusz.palczewski@intel.com>
-References: <20210628151514.28547-1-mateusz.palczewski@intel.com>
-Message-ID: <0e303e027a54af97677f39c556042540af26777f.camel@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 30 Jun 2021 17:27:02 -0700
+Subject: [Intel-wired-lan] [net-next 02/13] ice: remove dead code for
+ allocating pin_config
+In-Reply-To: <20210701002713.3486336-1-jacob.e.keller@intel.com>
+References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
+Message-ID: <20210701002713.3486336-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-06-28 at 15:15 +0000, Mateusz Palczewski wrote:
-> Use single state machine for driver initialization
-> and for service initialized driver. The init state
-> machine implemented in init_task() is merged
-> into the watchdog_task(). The init_task() function
-> is removed.
-> 
-> ---
-> v5: Fixed the patch so that it applies on net-next tree
-> v4: Removed unnecessary line
-> v3: Added new file to patch series
-> v2: Splitted the patch into 2 to make them smaller
-> ---
+We have code in the ice driver which allocates the pin_config structure
+if n_pins is > 0, but we never set n_pins to be greater than zero.
+There's no reason to keep this code until we actually have pin_config
+support. Remove this. We can re-add it properly when we implement
+support for pin_config for E810-T devices.
 
-This is still not applying. Jedrzej recently had apply issues as well.
-could you get with him and see how he resolved it?
+Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index e176c7484484..6c611e8a5b41 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1064,17 +1064,6 @@ static long ice_ptp_create_clock(struct ice_pf *pf)
+ 	info = &pf->ptp.info;
+ 	dev = ice_pf_to_dev(pf);
+ 
+-	/* Allocate memory for kernel pins interface */
+-	if (info->n_pins) {
+-		info->pin_config = devm_kcalloc(dev, info->n_pins,
+-						sizeof(*info->pin_config),
+-						GFP_KERNEL);
+-		if (!info->pin_config) {
+-			info->n_pins = 0;
+-			return -ENOMEM;
+-		}
+-	}
+-
+ 	/* Attempt to register the clock before enabling the hardware. */
+ 	clock = ptp_clock_register(info, dev);
+ 	if (IS_ERR(clock))
+-- 
+2.31.1.331.gb0c09ab8796f
 
