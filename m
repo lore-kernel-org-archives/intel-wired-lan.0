@@ -1,133 +1,169 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 01 Jul 2021 18:14:17 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
- WARNING 75af1491879a0ba9c5de9492369202c60c5bc5f2
-Message-ID: <60dd9579.vKCROokq1705Ma5g%lkp@intel.com>
+From: Yee Li <seven.yi.lee@gmail.com>
+Date: Thu, 1 Jul 2021 16:52:59 +0800
+Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
+In-Reply-To: <1e15c452-f8be-85fa-e424-b7463cc703eb@intel.com>
+References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
+ <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+ <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
+ <0234b97a-f207-47b0-1545-582ee5282824@intel.com>
+ <CALX8JfTOG7bXn7gP+4n1_3CfFFk6aL-RJDY03RCOeBSpUeTEPQ@mail.gmail.com>
+ <1e15c452-f8be-85fa-e424-b7463cc703eb@intel.com>
+Message-ID: <CALX8JfRFej=qU8cLMQf2Lp_BunedYfWYy47K1qCVPzwuG=Ph-Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 75af1491879a0ba9c5de9492369202c60c5bc5f2  ixgbevf: Add support for new mailbox communication between PF and VF
+Sure, it's my pleasure.
 
-possible Warning in current branch:
+Neftin, Sasha <sasha.neftin@intel.com> ?2021?7?1??? ??4:34???
 
-drivers/net/ethernet/intel/i40e/i40e_ptp.c:30:57-58: WARNING opportunity for kobj_to_dev()
-
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- ia64-randconfig-c004-20210630
-    `-- drivers-net-ethernet-intel-i40e-i40e_ptp.c:WARNING-opportunity-for-kobj_to_dev()
-
-elapsed time: 725m
-
-configs tested: 97
-configs skipped: 3
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-m68k                        m5307c3_defconfig
-sh                          sdk7786_defconfig
-ia64                         bigsur_defconfig
-sh                        dreamcast_defconfig
-powerpc                 mpc8540_ads_defconfig
-parisc                           alldefconfig
-mips                         db1xxx_defconfig
-sh                          r7785rp_defconfig
-sh                           se7712_defconfig
-arm                         hackkit_defconfig
-powerpc                   bluestone_defconfig
-mips                       capcella_defconfig
-arm                      pxa255-idp_defconfig
-sh                        edosk7705_defconfig
-powerpc                  mpc866_ads_defconfig
-sh                          landisk_defconfig
-arm                         at91_dt_defconfig
-um                               alldefconfig
-sh                              ul2_defconfig
-sh                          sdk7780_defconfig
-mips                          rm200_defconfig
-mips                        omega2p_defconfig
-mips                  decstation_64_defconfig
-arc                        nsimosci_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-x86_64                            allnoconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20210630
-x86_64               randconfig-a001-20210630
-x86_64               randconfig-a004-20210630
-x86_64               randconfig-a005-20210630
-x86_64               randconfig-a006-20210630
-x86_64               randconfig-a003-20210630
-i386                 randconfig-a004-20210630
-i386                 randconfig-a001-20210630
-i386                 randconfig-a003-20210630
-i386                 randconfig-a002-20210630
-i386                 randconfig-a005-20210630
-i386                 randconfig-a006-20210630
-i386                 randconfig-a014-20210630
-i386                 randconfig-a011-20210630
-i386                 randconfig-a016-20210630
-i386                 randconfig-a012-20210630
-i386                 randconfig-a013-20210630
-i386                 randconfig-a015-20210630
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-b001-20210630
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> On 6/30/2021 09:26, Yee Li wrote:
+> > I agree with you.
+> > That's better code.
+> Thank Yee-Li for discovering this problem. I would suggest we (intel)
+> will process a patch to address this problem. Can I put you kindly as
+> "Suggested-by"?
+> >
+> > Neftin, Sasha <sasha.neftin at intel.com <mailto:sasha.neftin@intel.com>>
+> > ?2021?6?30??? ??2:13???
+> >
+> >     On 6/29/2021 20:33, Yee Li wrote:
+> >      >
+> >      > Yes, 18874368ns > 3145728ns.
+> >      > But, 0xe40 < 0x1003.
+> >     I got you. I would agree, direct comparison is error-prone. (10M is
+> >     impacted)
+> >     I would suggest do not use convert function. lat_en should rather
+> >     presented as lat_enc = scale x value:
+> >     Introduce two u16 variables, u16 lat_enc_d and u16 max_ltr_enc_d;
+> >
+> >     lat_enc_d = (lat_enc & 0x0x3ff) x (1U << 5*((max_ltr_enc & 0x1c00)
+> >      >> 10))
+> >
+> >     max_ltr_enc_d = (max_ltr_enc & 0x0x3ff) x (1U << 5*((max_ltr_enc &
+> >     0x1c00) >> 10))
+> >
+> >     Then:
+> >     if (lat_enc_d > max_ltr_enc_d)
+> >              lat_enc = max_ltr_enc;
+> >     what do you think?
+> >
+> >      >
+> >      > So, the final lat_enc is 0xe40.
+> >      > (Latency encoded is less than maximum LTR encoded by platform)
+> >      >
+> >      > Neftin, Sasha <sasha.neftin@intel.com
+> >     <mailto:sasha.neftin@intel.com> <mailto:sasha.neftin@intel.com
+> >     <mailto:sasha.neftin@intel.com>>>
+> >      > ? 2021?6?29??? 22:49???
+> >      >
+> >      >     On 6/29/2021 11:21, YeeLi wrote:
+> >      >     Yeeli,
+> >      >      > In e1000e driver, a PCIe-like device, the max
+> >     snoop/no-snoop latency
+> >      >      > is the upper limit.So, directly compare the size of
+> >     lat_enc and
+> >      >      > max_ltr_enc is incorrect.
+> >      >      >
+> >      >     why?
+> >      >      >      In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns,
+> >     correct.
+> >      >      >
+> >      >      >      In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns,
+> >     correct.
+> >      >      >
+> >      >      >      In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728,
+> incorrect.
+> >      >      >
+> >      >     Platform LTR encoded is 0x1003 - right. It is meant 1048576ns
+> >     x 3 =
+> >      >     3145738ns.
+> >      >     Now,
+> >      >     for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
+> >      >     for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
+> >      >     for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
+> >      >     18907136ns > 3145738ns, (latency encoded is great than
+> >     maximum LTR
+> >      >     encoded by platform) - so, there is no point to wait more
+> >     than platform
+> >      >     required, and lat_enc=max_ltr_enc. It is expected and we sent
+> >     right
+> >      >     value to the power management controller.
+> >      >     What is the problem you try solve?
+> >      >
+> >      >      > Decoded the lat_enc and max_ltr_enc before compare them is
+> >     necessary.
+> >      >      >
+> >      >      > Signed-off-by: YeeLi <seven.yi.lee@gmail.com
+> >     <mailto:seven.yi.lee@gmail.com>
+> >      >     <mailto:seven.yi.lee at gmail.com <mailto:seven.yi.lee@gmail.com
+> >>>
+> >      >      > ---
+> >      >      >   drivers/net/ethernet/intel/e1000e/ich8lan.c | 23
+> >      >     ++++++++++++++++++++-
+> >      >      >   1 file changed, 22 insertions(+), 1 deletion(-)
+> >      >      >
+> >      >      > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> >      >     b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> >      >      > index 590ad110d383..3bff1b570b76 100644
+> >      >      > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> >      >      > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> >      >      > @@ -986,6 +986,27 @@ static s32
+> >     e1000_k1_workaround_lpt_lp(struct
+> >      >     e1000_hw *hw, bool link)
+> >      >      >       return ret_val;
+> >      >      >   }
+> >      >      >
+> >      >      > +static u32 convert_e1000e_ltr_scale(u32 val)
+> >      >      > +{
+> >      >      > +     if (val > 5)
+> >      >      > +             return 0;
+> >      >      > +
+> >      >      > +     return 1U << (5 * val);
+> >      >      > +}
+> >      >      > +
+> >      >      > +static u64 decoded_ltr(u32 val)
+> >      >      > +{
+> >      >      > +     u64 decoded_latency;
+> >      >      > +     u32 value;
+> >      >      > +     u32 scale;
+> >      >      > +
+> >      >      > +     value = val & 0x03FF;
+> >      >      > +     scale = (val & 0x1C00) >> 10;
+> >      >      > +     decoded_latency = value *
+> >     convert_e1000e_ltr_scale(scale);
+> >      >      > +
+> >      >      > +     return decoded_latency;
+> >      >      > +}
+> >      >      > +
+> >      >      >   /**
+> >      >      >    *  e1000_platform_pm_pch_lpt - Set platform power
+> >     management
+> >      >     values
+> >      >      >    *  @hw: pointer to the HW structure
+> >      >      > @@ -1059,7 +1080,7 @@ static s32
+> >     e1000_platform_pm_pch_lpt(struct
+> >      >     e1000_hw *hw, bool link)
+> >      >      >                                    E1000_PCI_LTR_CAP_LPT +
+> 2,
+> >      >     &max_nosnoop);
+> >      >      >               max_ltr_enc = max_t(u16, max_snoop,
+> >     max_nosnoop);
+> >      >      >
+> >      >      > -             if (lat_enc > max_ltr_enc)
+> >      >      > +             if (decoded_ltr(lat_enc) >
+> >     decoded_ltr(max_ltr_enc))
+> >      >      >                       lat_enc = max_ltr_enc;
+> >      >      >       }
+> >      >      >
+> >      >      >
+> >      >     sasha
+> >      >
+> >
+> sasha
+>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210701/d2ac4465/attachment.html>
