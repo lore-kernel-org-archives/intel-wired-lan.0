@@ -1,51 +1,74 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jul 2021 15:04:46 -0700
-Subject: [Intel-wired-lan] [net-next v2 03/13] ice: add lock around Tx
- timestamp tracker flush
+Date: Thu,  1 Jul 2021 15:04:48 -0700
+Subject: [Intel-wired-lan] [net-next v2 05/13] ice: introduce
+ ice_base_incval function
 In-Reply-To: <20210701220456.3882767-1-jacob.e.keller@intel.com>
 References: <20210701220456.3882767-1-jacob.e.keller@intel.com>
-Message-ID: <20210701220456.3882767-4-jacob.e.keller@intel.com>
+Message-ID: <20210701220456.3882767-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver didn't take the lock while flushing the Tx tracker, which
-could cause a race where one thread is trying to read timestamps out
-while another thread is trying to read the tracker to check the
-timestamps.
+A future change will add additional possible increment values for the
+E822 device support. To handle this, we want to look up the increment
+value to use instead of hard coding it to the nominal value for E810
+devices. Introduce ice_base_incval as a function to get the best nominal
+increment value to use.
 
-Avoid this by ensuring that flushing is locked against read accesses.
+For now, it just returns the E810 value, but will be refactored in the
+future to look up the value based on the device type and configured
+clock frequency.
 
-Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 6c611e8a5b41..83ba0bf2817a 100644
+index 08acdb2494ed..4a6ab36411fa 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1267,6 +1267,8 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
- {
- 	u8 idx;
- 
-+	spin_lock(&tx->lock);
-+
- 	for (idx = 0; idx < tx->len; idx++) {
- 		u8 phy_idx = idx + tx->quad_offset;
- 
-@@ -1279,6 +1281,8 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 			tx->tstamps[idx].skb = NULL;
- 		}
- 	}
-+
-+	spin_unlock(&tx->lock);
+@@ -435,6 +435,20 @@ static int ice_ptp_write_adj(struct ice_pf *pf, s32 adj)
+ 	return ice_ptp_adj_clock(hw, adj);
  }
  
++/**
++ * ice_base_incval - Get base timer increment value
++ * @pf: Board private structure
++ *
++ * Look up the base timer increment value for this device. The base increment
++ * value is used to define the nominal clock tick rate. This increment value
++ * is programmed during device initialization. It is also used as the basis
++ * for calculating adjustments using scaled_ppm.
++ */
++static u64 ice_base_incval(struct ice_pf *pf)
++{
++	return ICE_PTP_NOMINAL_INCVAL_E810;
++}
++
  /**
+  * ice_ptp_adjfine - Adjust clock increment rate
+  * @info: the driver's PTP info structure
+@@ -452,7 +466,7 @@ static int ice_ptp_adjfine(struct ptp_clock_info *info, long scaled_ppm)
+ 	int neg_adj = 0;
+ 	int err;
+ 
+-	incval = ICE_PTP_NOMINAL_INCVAL_E810;
++	incval = ice_base_incval(pf);
+ 
+ 	if (scaled_ppm < 0) {
+ 		neg_adj = 1;
+@@ -1442,7 +1456,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ 	}
+ 
+ 	/* Write the increment time value to PHY and LAN */
+-	err = ice_ptp_write_incval(hw, ICE_PTP_NOMINAL_INCVAL_E810);
++	err = ice_ptp_write_incval(hw, ice_base_incval(pf));
+ 	if (err) {
+ 		ice_ptp_unlock(hw);
+ 		goto err_exit;
 -- 
 2.31.1.331.gb0c09ab8796f
 
