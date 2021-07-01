@@ -1,90 +1,157 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Sun, 27 Jun 2021 20:02:33 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 04/12] taprio: Replace
- tc_map_to_queue_mask()
-In-Reply-To: <20210626003314.3159402-5-vinicius.gomes@intel.com>
-References: <20210626003314.3159402-1-vinicius.gomes@intel.com>
- <20210626003314.3159402-5-vinicius.gomes@intel.com>
-Message-ID: <20210627200232.mq6bzsxwn25dmill@skbuf>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 1 Jul 2021 11:34:49 +0300
+Subject: [Intel-wired-lan] [PATCH] driver core: fix e1000e ltr bug
+In-Reply-To: <CALX8JfTOG7bXn7gP+4n1_3CfFFk6aL-RJDY03RCOeBSpUeTEPQ@mail.gmail.com>
+References: <20210629082128.255988-1-seven.yi.lee@gmail.com>
+ <02ff77ef-e802-8e13-d169-1ab2c250405a@intel.com>
+ <CALX8JfQymbSmCP0xk0C-=v64__uaH=BR0UZjr2yRyLWVwm9dLQ@mail.gmail.com>
+ <0234b97a-f207-47b0-1545-582ee5282824@intel.com>
+ <CALX8JfTOG7bXn7gP+4n1_3CfFFk6aL-RJDY03RCOeBSpUeTEPQ@mail.gmail.com>
+Message-ID: <1e15c452-f8be-85fa-e424-b7463cc703eb@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jun 25, 2021 at 05:33:06PM -0700, Vinicius Costa Gomes wrote:
-> Replaces tc_map_to_queue_mask() by netdev_tc_map_to_queue_mask() that
-> was just introduced.
+On 6/30/2021 09:26, Yee Li wrote:
+> I agree with you.
+> That's better code.
+Thank Yee-Li for discovering this problem. I would suggest we (intel) 
+will process a patch to address this problem. Can I put you kindly as 
+"Suggested-by"?
 > 
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
->  net/sched/sch_taprio.c | 26 ++++----------------------
->  1 file changed, 4 insertions(+), 22 deletions(-)
+> Neftin, Sasha <sasha.neftin at intel.com <mailto:sasha.neftin@intel.com>> 
+> ?2021?6?30??? ??2:13???
 > 
-> diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
-> index 58586f98c648..4e411ca3a9eb 100644
-> --- a/net/sched/sch_taprio.c
-> +++ b/net/sched/sch_taprio.c
-> @@ -1201,25 +1201,6 @@ static void taprio_offload_config_changed(struct taprio_sched *q)
->  	spin_unlock(&q->current_entry_lock);
->  }
->  
-> -static u32 tc_map_to_queue_mask(struct net_device *dev, u32 tc_mask)
-> -{
-> -	u32 i, queue_mask = 0;
-> -
-> -	for (i = 0; i < dev->num_tc; i++) {
-> -		u32 offset, count;
-> -
-> -		if (!(tc_mask & BIT(i)))
-> -			continue;
-> -
-> -		offset = dev->tc_to_txq[i].offset;
-> -		count = dev->tc_to_txq[i].count;
-> -
-> -		queue_mask |= GENMASK(offset + count - 1, offset);
-> -	}
-> -
-> -	return queue_mask;
-> -}
-> -
->  static void taprio_sched_to_offload(struct net_device *dev,
->  				    struct sched_gate_list *sched,
->  				    struct tc_taprio_qopt_offload *offload)
-> @@ -1236,7 +1217,7 @@ static void taprio_sched_to_offload(struct net_device *dev,
->  
->  		e->command = entry->command;
->  		e->interval = entry->interval;
-> -		e->gate_mask = tc_map_to_queue_mask(dev, entry->gate_mask);
-> +		e->gate_mask = netdev_tc_map_to_queue_mask(dev, entry->gate_mask);
->  
->  		i++;
->  	}
-> @@ -1536,14 +1517,15 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
->  	if (tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]) {
->  		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]);
->  		struct tc_preempt_qopt_offload qopt = { };
-> +		u32 all_tcs_mask = GENMASK(mqprio->num_tc, 0);
->  
-> -		if (preempt == U32_MAX) {
-> +		if ((preempt & all_tcs_mask) == all_tcs_mask) {
-
-Ouch, this patch does more than it says on the box.
-If it did only what the commit message said, it could have just as well
-been squashed with the previous one (and this extra change squashed with
-the "preemptible queues in taprio" patch. Practically it means that
-these last two patches should go before the "preemptible queues in taprio" one.
-
->  			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
->  			err = -EINVAL;
->  			goto free_sched;
->  		}
->  
-> -		qopt.preemptible_queues = tc_map_to_queue_mask(dev, preempt);
-> +		qopt.preemptible_queues = netdev_tc_map_to_queue_mask(dev, preempt);
->  
->  		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
->  						    &qopt);
-> -- 
-> 2.32.0
+>     On 6/29/2021 20:33, Yee Li wrote:
+>      >
+>      > Yes, 18874368ns > 3145728ns.
+>      > But, 0xe40 < 0x1003.
+>     I got you. I would agree, direct comparison is error-prone. (10M is
+>     impacted)
+>     I would suggest do not use convert function. lat_en should rather
+>     presented as lat_enc = scale x value:
+>     Introduce two u16 variables, u16 lat_enc_d and u16 max_ltr_enc_d;
 > 
+>     lat_enc_d = (lat_enc & 0x0x3ff) x (1U << 5*((max_ltr_enc & 0x1c00)
+>      >> 10))
+> 
+>     max_ltr_enc_d = (max_ltr_enc & 0x0x3ff) x (1U << 5*((max_ltr_enc &
+>     0x1c00) >> 10))
+> 
+>     Then:
+>     if (lat_enc_d > max_ltr_enc_d)
+>      ? ? ? ? lat_enc = max_ltr_enc;
+>     what do you think?
+> 
+>      >
+>      > So, the final lat_enc is 0xe40.
+>      > (Latency encoded is less than maximum LTR encoded by platform)
+>      >
+>      > Neftin, Sasha <sasha.neftin@intel.com
+>     <mailto:sasha.neftin@intel.com> <mailto:sasha.neftin@intel.com
+>     <mailto:sasha.neftin@intel.com>>>
+>      > ? 2021?6?29??? 22:49???
+>      >
+>      >? ? ?On 6/29/2021 11:21, YeeLi wrote:
+>      >? ? ?Yeeli,
+>      >? ? ? > In e1000e driver, a PCIe-like device, the max
+>     snoop/no-snoop latency
+>      >? ? ? > is the upper limit.So, directly compare the size of
+>     lat_enc and
+>      >? ? ? > max_ltr_enc is incorrect.
+>      >? ? ? >
+>      >? ? ?why?
+>      >? ? ? >? ? ? In 1000Mbps, 0x8b9 < 0x1003, 189440 ns < 3145728 ns,
+>     correct.
+>      >? ? ? >
+>      >? ? ? >? ? ? In 100Mbps, 0xc3a < 0x1003, 1900544 ns < 3145728 ns,
+>     correct.
+>      >? ? ? >
+>      >? ? ? >? ? ? In 10Mbps, 0xe40 < 0x1003, 18874368 > 3145728, incorrect.
+>      >? ? ? >
+>      >? ? ?Platform LTR encoded is 0x1003 - right. It is meant 1048576ns
+>     x 3 =
+>      >? ? ?3145738ns.
+>      >? ? ?Now,
+>      >? ? ?for 1000M: 0x08b9 => 185ns x 1024 = 189440ns (you are correct)
+>      >? ? ?for 100M: 0x0c3a => 58ns x 32768 = 1900544ns (correct)
+>      >? ? ?for 10M: 0x0e41 => 577ns x 32768 = 18907136ns (ok?)
+>      >? ? ?18907136ns > 3145738ns, (latency encoded is great than
+>     maximum LTR
+>      >? ? ?encoded by platform) - so, there is no point to wait more
+>     than platform
+>      >? ? ?required, and lat_enc=max_ltr_enc. It is expected and we sent
+>     right
+>      >? ? ?value to the power management controller.
+>      >? ? ?What is the problem you try solve?
+>      >
+>      >? ? ? > Decoded the lat_enc and max_ltr_enc before compare them is
+>     necessary.
+>      >? ? ? >
+>      >? ? ? > Signed-off-by: YeeLi <seven.yi.lee@gmail.com
+>     <mailto:seven.yi.lee@gmail.com>
+>      >? ? ?<mailto:seven.yi.lee at gmail.com <mailto:seven.yi.lee@gmail.com>>>
+>      >? ? ? > ---
+>      >? ? ? >? ?drivers/net/ethernet/intel/e1000e/ich8lan.c | 23
+>      >? ? ?++++++++++++++++++++-
+>      >? ? ? >? ?1 file changed, 22 insertions(+), 1 deletion(-)
+>      >? ? ? >
+>      >? ? ? > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>      >? ? ?b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>      >? ? ? > index 590ad110d383..3bff1b570b76 100644
+>      >? ? ? > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>      >? ? ? > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>      >? ? ? > @@ -986,6 +986,27 @@ static s32
+>     e1000_k1_workaround_lpt_lp(struct
+>      >? ? ?e1000_hw *hw, bool link)
+>      >? ? ? >? ? ? ?return ret_val;
+>      >? ? ? >? ?}
+>      >? ? ? >
+>      >? ? ? > +static u32 convert_e1000e_ltr_scale(u32 val)
+>      >? ? ? > +{
+>      >? ? ? > +? ? ?if (val > 5)
+>      >? ? ? > +? ? ? ? ? ? ?return 0;
+>      >? ? ? > +
+>      >? ? ? > +? ? ?return 1U << (5 * val);
+>      >? ? ? > +}
+>      >? ? ? > +
+>      >? ? ? > +static u64 decoded_ltr(u32 val)
+>      >? ? ? > +{
+>      >? ? ? > +? ? ?u64 decoded_latency;
+>      >? ? ? > +? ? ?u32 value;
+>      >? ? ? > +? ? ?u32 scale;
+>      >? ? ? > +
+>      >? ? ? > +? ? ?value = val & 0x03FF;
+>      >? ? ? > +? ? ?scale = (val & 0x1C00) >> 10;
+>      >? ? ? > +? ? ?decoded_latency = value *
+>     convert_e1000e_ltr_scale(scale);
+>      >? ? ? > +
+>      >? ? ? > +? ? ?return decoded_latency;
+>      >? ? ? > +}
+>      >? ? ? > +
+>      >? ? ? >? ?/**
+>      >? ? ? >? ? *? e1000_platform_pm_pch_lpt - Set platform power
+>     management
+>      >? ? ?values
+>      >? ? ? >? ? *? @hw: pointer to the HW structure
+>      >? ? ? > @@ -1059,7 +1080,7 @@ static s32
+>     e1000_platform_pm_pch_lpt(struct
+>      >? ? ?e1000_hw *hw, bool link)
+>      >? ? ? >? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? E1000_PCI_LTR_CAP_LPT + 2,
+>      >? ? ?&max_nosnoop);
+>      >? ? ? >? ? ? ? ? ? ? ?max_ltr_enc = max_t(u16, max_snoop,
+>     max_nosnoop);
+>      >? ? ? >
+>      >? ? ? > -? ? ? ? ? ? ?if (lat_enc > max_ltr_enc)
+>      >? ? ? > +? ? ? ? ? ? ?if (decoded_ltr(lat_enc) >
+>     decoded_ltr(max_ltr_enc))
+>      >? ? ? >? ? ? ? ? ? ? ? ? ? ? ?lat_enc = max_ltr_enc;
+>      >? ? ? >? ? ? ?}
+>      >? ? ? >
+>      >? ? ? >
+>      >? ? ?sasha
+>      >
+> 
+sasha
