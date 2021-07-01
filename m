@@ -1,48 +1,84 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jul 2021 15:04:44 -0700
-Subject: [Intel-wired-lan] [net-next v2 01/13] ice: fix Tx queue iteration
- for Tx timestamp enablement
+Date: Thu,  1 Jul 2021 15:04:49 -0700
+Subject: [Intel-wired-lan] [net-next v2 06/13] ice: PTP: move setting of
+ tstamp_config
 In-Reply-To: <20210701220456.3882767-1-jacob.e.keller@intel.com>
 References: <20210701220456.3882767-1-jacob.e.keller@intel.com>
-Message-ID: <20210701220456.3882767-2-jacob.e.keller@intel.com>
+Message-ID: <20210701220456.3882767-7-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver accidentally copied the ice_for_each_rxq iterator when
-implementing enablement of the ptp_tx bit for the Tx rings. We still
-load the Tx rings and set the ptp_tx field, but we iterate over the
-count of the num_rxq.
+The tstamp_config structure is being set inside of
+ice_ptp_cfg_timestamp, which is the function used to set Tx and
+Rx timestamping during initialization.
 
-If the number of Tx and Rx queues differ, this could either cause
-a buffer overrun when accessing the tx_rings list if num_txq is greater
-than num_rxq, or it could cause us to fail to enable Tx timestamps for
-some rings.
+This function is also used in order to set the PHY port timestamping
+status. However, it makes sense to always set the tstamp_config directly
+whenever the ice_set_tx_tstamp or ice_set_rx_tstamp functions are
+called.
 
-This was not noticed originally as we generally have the same number of
-Tx and Rx queues.
+Move assignment of tstamp_config into the related functions and out of
+ice_ptp_cfg_timestamp.
 
-Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 5d5207b56ca9..e176c7484484 100644
+index 4a6ab36411fa..049257f00809 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -22,7 +22,7 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 		return;
+@@ -35,6 +35,11 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
+ 	else
+ 		val &= ~PFINT_OICR_TSYN_TX_M;
+ 	wr32(&pf->hw, PFINT_OICR_ENA, val);
++
++	if (on)
++		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
++	else
++		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
+ }
  
- 	/* Set the timestamp enable flag for all the Tx rings */
--	ice_for_each_rxq(vsi, i) {
-+	ice_for_each_txq(vsi, i) {
- 		if (!vsi->tx_rings[i])
+ /**
+@@ -57,6 +62,11 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
  			continue;
- 		vsi->tx_rings[i]->ptp_tx = on;
+ 		vsi->rx_rings[i]->ptp_rx = on;
+ 	}
++
++	if (on)
++		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
++	else
++		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
+ }
+ 
+ /**
+@@ -71,14 +81,6 @@ static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
+ {
+ 	ice_set_tx_tstamp(pf, ena);
+ 	ice_set_rx_tstamp(pf, ena);
+-
+-	if (ena) {
+-		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
+-		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
+-	} else {
+-		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
+-		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
+-	}
+ }
+ 
+ /**
+@@ -954,7 +956,6 @@ ice_ptp_set_timestamp_mode(struct ice_pf *pf, struct hwtstamp_config *config)
+ 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
+ 	case HWTSTAMP_FILTER_NTP_ALL:
+ 	case HWTSTAMP_FILTER_ALL:
+-		config->rx_filter = HWTSTAMP_FILTER_ALL;
+ 		ice_set_rx_tstamp(pf, true);
+ 		break;
+ 	default:
 -- 
 2.31.1.331.gb0c09ab8796f
 
