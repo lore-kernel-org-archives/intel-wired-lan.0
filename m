@@ -1,84 +1,202 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 30 Jun 2021 17:27:06 -0700
-Subject: [Intel-wired-lan] [net-next 06/13] ice: PTP: move setting of
- tstamp_config
+Date: Wed, 30 Jun 2021 17:27:13 -0700
+Subject: [Intel-wired-lan] [net-next 13/13] ice: support crosstimestamping
+ on E822 devices if supported
 In-Reply-To: <20210701002713.3486336-1-jacob.e.keller@intel.com>
 References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
-Message-ID: <20210701002713.3486336-7-jacob.e.keller@intel.com>
+Message-ID: <20210701002713.3486336-14-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The tstamp_config structure is being set inside of
-ice_ptp_cfg_timestamp, which is the function used to set Tx and
-Rx timestamping during initialization.
+E822 devices on supported platforms can generate a cross timestamp
+between the platform ART and the device time. This process allows for
+very precise measurement of the difference between the PTP hardware
+clock and the platform time.
 
-This function is also used in order to set the PHY port timestamping
-status. However, it makes sense to always set the tstamp_config directly
-whenever the ice_set_tx_tstamp or ice_set_rx_tstamp functions are
-called.
-
-Move assignment of tstamp_config into the related functions and out of
-ice_ptp_cfg_timestamp.
+This is only supported if we know the TSC frequency relative to ART, so
+we do not enable this unless the boot CPU has a known TSC frequency (as
+required by convert_art_ns_to_tsc).
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 ++
+ drivers/net/ethernet/intel/ice/ice_ptp.c      | 113 ++++++++++++++++++
+ 2 files changed, 121 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 2863ba9bd6c3..ab5065b5e748 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -440,6 +440,10 @@
+ #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
+ #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
+ #define PRTRPB_RDPC				0x000AC260
++#define GLHH_ART_CTL				0x000A41D4
++#define GLHH_ART_CTL_ACTIVE_M			BIT(0)
++#define GLHH_ART_TIME_H				0x000A41D8
++#define GLHH_ART_TIME_L				0x000A41DC
+ #define GLTSYN_AUX_IN_0(_i)			(0x000889D8 + ((_i) * 4))
+ #define GLTSYN_AUX_IN_0_INT_ENA_M		BIT(4)
+ #define GLTSYN_AUX_OUT_0(_i)			(0x00088998 + ((_i) * 4))
+@@ -452,6 +456,8 @@
+ #define GLTSYN_ENA_TSYN_ENA_M			BIT(0)
+ #define GLTSYN_EVNT_H_0(_i)			(0x00088970 + ((_i) * 4))
+ #define GLTSYN_EVNT_L_0(_i)			(0x00088968 + ((_i) * 4))
++#define GLTSYN_HHTIME_H(_i)			(0x00088900 + ((_i) * 4))
++#define GLTSYN_HHTIME_L(_i)			(0x000888F8 + ((_i) * 4))
+ #define GLTSYN_INCVAL_H(_i)			(0x00088920 + ((_i) * 4))
+ #define GLTSYN_INCVAL_L(_i)			(0x00088918 + ((_i) * 4))
+ #define GLTSYN_SHADJ_H(_i)			(0x00088910 + ((_i) * 4))
+@@ -468,6 +474,8 @@
+ #define GLTSYN_TGT_L_0(_i)			(0x00088928 + ((_i) * 4))
+ #define GLTSYN_TIME_H(_i)			(0x000888D8 + ((_i) * 4))
+ #define GLTSYN_TIME_L(_i)			(0x000888D0 + ((_i) * 4))
++#define PFHH_SEM				0x000A4200 /* Reset Source: PFR */
++#define PFHH_SEM_BUSY_M				BIT(0)
+ #define PFTSYN_SEM				0x00088880
+ #define PFTSYN_SEM_BUSY_M			BIT(0)
+ #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 4a6ab36411fa..049257f00809 100644
+index f80dd04aa935..4e0cc0e52839 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -35,6 +35,11 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 	else
- 		val &= ~PFINT_OICR_TSYN_TX_M;
- 	wr32(&pf->hw, PFINT_OICR_ENA, val);
+@@ -1296,6 +1296,99 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
+ 	return 0;
+ }
+ 
++/**
++ * ice_ptp_get_syncdevicetime - Get the cross time stamp info
++ * @device: Current device time
++ * @system: System counter value read synchronously with device time
++ * @ctx: Context provided by timekeeping code
++ *
++ * Read device and system (ART) clock simultaneously and return the corrected
++ * clock values in ns.
++ */
++static int
++ice_ptp_get_syncdevicetime(ktime_t *device,
++			   struct system_counterval_t *system,
++			   void *ctx)
++{
++	struct ice_pf *pf = (struct ice_pf *)ctx;
++	struct ice_hw *hw = &pf->hw;
++	u32 hh_lock, hh_art_ctl;
++	int i;
 +
-+	if (on)
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
-+	else
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
- }
- 
- /**
-@@ -57,6 +62,11 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
- 			continue;
- 		vsi->rx_rings[i]->ptp_rx = on;
- 	}
++	/* Get the HW lock */
++	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++	if (hh_lock & PFHH_SEM_BUSY_M) {
++		dev_err(ice_pf_to_dev(pf), "PTP failed to get hh lock\n");
++		return -EFAULT;
++	}
 +
-+	if (on)
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
++	/* Start the ART and device clock sync sequence */
++	hh_art_ctl = rd32(hw, GLHH_ART_CTL);
++	hh_art_ctl = hh_art_ctl | GLHH_ART_CTL_ACTIVE_M;
++	wr32(hw, GLHH_ART_CTL, hh_art_ctl);
++
++#define MAX_HH_LOCK_TRIES 100
++
++	for (i = 0; i < MAX_HH_LOCK_TRIES; i++) {
++		/* Wait for sync to complete */
++		hh_art_ctl = rd32(hw, GLHH_ART_CTL);
++		if (hh_art_ctl & GLHH_ART_CTL_ACTIVE_M) {
++			udelay(1);
++			continue;
++		} else {
++			u32 hh_ts_lo, hh_ts_hi, tmr_idx;
++			u64 hh_ts;
++
++			tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
++			/* Read ART time */
++			hh_ts_lo = rd32(hw, GLHH_ART_TIME_L);
++			hh_ts_hi = rd32(hw, GLHH_ART_TIME_H);
++			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
++			*system = convert_art_ns_to_tsc(hh_ts);
++			/* Read Device source clock time */
++			hh_ts_lo = rd32(hw, GLTSYN_HHTIME_L(tmr_idx));
++			hh_ts_hi = rd32(hw, GLTSYN_HHTIME_H(tmr_idx));
++			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
++			*device = ns_to_ktime(hh_ts);
++			break;
++		}
++	}
++	/* Release HW lock */
++	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++	hh_lock = hh_lock & ~PFHH_SEM_BUSY_M;
++	wr32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), hh_lock);
++
++	if (i == MAX_HH_LOCK_TRIES)
++		return -ETIMEDOUT;
++
++	return 0;
++}
++
++/**
++ * ice_ptp_getcrosststamp_e822 - Capture a device cross timestamp
++ * @info: the driver's PTP info structure
++ * @cts: The memory to fill the cross timestamp info
++ *
++ * Capture a cross timestamp between the ART and the device PTP hardware
++ * clock. Fill the cross timestamp information and report it back to the
++ * caller.
++ *
++ * This is only valid for E822 devices which have support for generating the
++ * cross timestamp via PCIe PTM.
++ *
++ * In order to correctly correlate the ART timestamp back to the TSC time, the
++ * CPU must have X86_FEATURE_TSC_KNOWN_FREQ.
++ */
++static int
++ice_ptp_getcrosststamp_e822(struct ptp_clock_info *info,
++			    struct system_device_crosststamp *cts)
++{
++	struct ice_pf *pf = ptp_info_to_pf(info);
++
++	return get_device_system_crosststamp(ice_ptp_get_syncdevicetime,
++					     pf, NULL, cts);
++}
++
+ /**
+  * ice_ptp_get_ts_config - ioctl interface to read the timestamping config
+  * @pf: Board private structure
+@@ -1440,6 +1533,24 @@ static void ice_ptp_setup_pins_e810(struct ptp_clock_info *info)
+ 	info->n_ext_ts = E810_N_EXT_TS;
+ }
+ 
++/**
++ * ice_ptp_set_funcs_e822 - Set specialized functions for E822 support
++ * @pf: Board private structure
++ * @info: PTP info to fill
++ *
++ * Assign functions to the PTP capabiltiies structure for E822 devices.
++ * Functions which operate across all device families should be set directly
++ * in ice_ptp_set_caps. Only add functions here which are distinct for E822
++ * devices.
++ */
++static void
++ice_ptp_set_funcs_e822(struct ice_pf *pf, struct ptp_clock_info *info)
++{
++	if (boot_cpu_has(X86_FEATURE_ART) &&
++	    boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ))
++		info->getcrosststamp = ice_ptp_getcrosststamp_e822;
++}
++
+ /**
+  * ice_ptp_set_funcs_e810 - Set specialized functions for E810 support
+  * @pf: Board private structure
+@@ -1478,6 +1589,8 @@ static void ice_ptp_set_caps(struct ice_pf *pf)
+ 
+ 	if (ice_is_e810(&pf->hw))
+ 		ice_ptp_set_funcs_e810(pf, info);
 +	else
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
++		ice_ptp_set_funcs_e822(pf, info);
  }
  
  /**
-@@ -71,14 +81,6 @@ static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
- {
- 	ice_set_tx_tstamp(pf, ena);
- 	ice_set_rx_tstamp(pf, ena);
--
--	if (ena) {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
--	} else {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--	}
- }
- 
- /**
-@@ -954,7 +956,6 @@ ice_ptp_set_timestamp_mode(struct ice_pf *pf, struct hwtstamp_config *config)
- 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
- 	case HWTSTAMP_FILTER_NTP_ALL:
- 	case HWTSTAMP_FILTER_ALL:
--		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		ice_set_rx_tstamp(pf, true);
- 		break;
- 	default:
 -- 
 2.31.1.331.gb0c09ab8796f
 
