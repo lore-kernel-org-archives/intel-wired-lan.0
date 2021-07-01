@@ -1,84 +1,85 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jul 2021 15:04:49 -0700
-Subject: [Intel-wired-lan] [net-next v2 06/13] ice: PTP: move setting of
- tstamp_config
+Date: Thu,  1 Jul 2021 15:04:52 -0700
+Subject: [Intel-wired-lan] [net-next v2 09/13] ice: convert clk_freq
+ capability into time_ref
 In-Reply-To: <20210701220456.3882767-1-jacob.e.keller@intel.com>
 References: <20210701220456.3882767-1-jacob.e.keller@intel.com>
-Message-ID: <20210701220456.3882767-7-jacob.e.keller@intel.com>
+Message-ID: <20210701220456.3882767-10-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The tstamp_config structure is being set inside of
-ice_ptp_cfg_timestamp, which is the function used to set Tx and
-Rx timestamping during initialization.
-
-This function is also used in order to set the PHY port timestamping
-status. However, it makes sense to always set the tstamp_config directly
-whenever the ice_set_tx_tstamp or ice_set_rx_tstamp functions are
-called.
-
-Move assignment of tstamp_config into the related functions and out of
-ice_ptp_cfg_timestamp.
+Convert the clk_freq value into the associated time_ref frequency value
+for E822 devices. This simplifies determining the time reference value
+for the clock.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 12 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h   | 23 ++++++++++++++++++++-
+ 2 files changed, 34 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 4a6ab36411fa..049257f00809 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -35,6 +35,11 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 	else
- 		val &= ~PFINT_OICR_TSYN_TX_M;
- 	wr32(&pf->hw, PFINT_OICR_ENA, val);
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 2fb81e359cdf..f63912797548 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2129,6 +2129,18 @@ ice_parse_1588_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
+ 	info->clk_freq = (number & ICE_TS_CLK_FREQ_M) >> ICE_TS_CLK_FREQ_S;
+ 	info->clk_src = ((number & ICE_TS_CLK_SRC_M) != 0);
+ 
++	if (info->clk_freq < NUM_ICE_TIME_REF_FREQ) {
++		info->time_ref = (enum ice_time_ref_freq)info->clk_freq;
++	} else {
++		/* Unknown clock frequency, so assume a (probably incorrect)
++		 * default to avoid out-of-bounds look ups of frequency
++		 * related information.
++		 */
++		ice_debug(hw, ICE_DBG_INIT, "1588 func caps: unknown clock frequency %u\n",
++			  info->clk_freq);
++		info->time_ref = ICE_TIME_REF_FREQ_25_000;
++	}
 +
-+	if (on)
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
-+	else
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
- }
+ 	ice_debug(hw, ICE_DBG_INIT, "func caps: ieee_1588 = %u\n",
+ 		  func_p->common_cap.ieee_1588);
+ 	ice_debug(hw, ICE_DBG_INIT, "func caps: src_tmr_owned = %u\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index b59076f2dbde..fadc68f74d95 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -294,9 +294,30 @@ struct ice_hw_common_caps {
+ #define ICE_TS_TMR_IDX_ASSOC_S		24
+ #define ICE_TS_TMR_IDX_ASSOC_M		BIT(24)
  
- /**
-@@ -57,6 +62,11 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
- 			continue;
- 		vsi->rx_rings[i]->ptp_rx = on;
- 	}
++/* TIME_REF clock rate specification */
++enum ice_time_ref_freq {
++	ICE_TIME_REF_FREQ_25_000	= 0,
++	ICE_TIME_REF_FREQ_122_880	= 1,
++	ICE_TIME_REF_FREQ_125_000	= 2,
++	ICE_TIME_REF_FREQ_153_600	= 3,
++	ICE_TIME_REF_FREQ_156_250	= 4,
++	ICE_TIME_REF_FREQ_245_760	= 5,
 +
-+	if (on)
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
-+	else
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
- }
- 
- /**
-@@ -71,14 +81,6 @@ static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
- {
- 	ice_set_tx_tstamp(pf, ena);
- 	ice_set_rx_tstamp(pf, ena);
--
--	if (ena) {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
--	} else {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--	}
- }
- 
- /**
-@@ -954,7 +956,6 @@ ice_ptp_set_timestamp_mode(struct ice_pf *pf, struct hwtstamp_config *config)
- 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
- 	case HWTSTAMP_FILTER_NTP_ALL:
- 	case HWTSTAMP_FILTER_ALL:
--		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		ice_set_rx_tstamp(pf, true);
- 		break;
- 	default:
++	NUM_ICE_TIME_REF_FREQ
++};
++
++/* Clock source specification */
++enum ice_clk_src {
++	ICE_CLK_SRC_TCX0	= 0, /* Temperature compensated oscillator  */
++	ICE_CLK_SRC_TIME_REF	= 1, /* Use TIME_REF reference clock */
++
++	NUM_ICE_CLK_SRC
++};
++
+ struct ice_ts_func_info {
+ 	/* Function specific info */
+-	u32 clk_freq;
++	enum ice_time_ref_freq time_ref;
++	u8 clk_freq;
+ 	u8 clk_src;
+ 	u8 tmr_index_assoc;
+ 	u8 ena;
 -- 
 2.31.1.331.gb0c09ab8796f
 
