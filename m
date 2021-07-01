@@ -1,82 +1,51 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  1 Jul 2021 15:04:43 -0700
-Subject: [Intel-wired-lan] [net-next v2 00/13] ice: implement support for
- PTP on E822 hardware
-Message-ID: <20210701220456.3882767-1-jacob.e.keller@intel.com>
+Date: Thu,  1 Jul 2021 15:04:46 -0700
+Subject: [Intel-wired-lan] [net-next v2 03/13] ice: add lock around Tx
+ timestamp tracker flush
+In-Reply-To: <20210701220456.3882767-1-jacob.e.keller@intel.com>
+References: <20210701220456.3882767-1-jacob.e.keller@intel.com>
+Message-ID: <20210701220456.3882767-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Extend the ice driver implementation to support PTP for the E822 based
-devices.
+The driver didn't take the lock while flushing the Tx tracker, which
+could cause a race where one thread is trying to read timestamps out
+while another thread is trying to read the tracker to check the
+timestamps.
 
-This includes a few cleanup patches, that fix some minor issues spotted
-while preparing them. In addition, there are some slight refactors to ease
-the addition of E822 support, followed by adding the new hardware
-implementation ice_ptp_hw.c.
+Avoid this by ensuring that flushing is locked against read accesses.
 
-There are a few major differences with E822 support compared to E810
-support:
+Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-*) The E822 PHY is a bit different and requires a more complex
-initialization procedure that requires delaying the PHY start until link is
-up
-*) The E822 device has a Clock Generation Unit which must be initialized in
-order to generate proper clock frequencies on the output that drives the PTP
-hardware clock registers
-*) The E822 devices support enhanced timestamp calibration by making use of
-a process called Vernier offset measurement. This allows the hardware to
-measure phase offset related to the PHY clocks for Serdes and FEC, reducing
-the inaccuracy of the timestamp relative to the actual packet transmission.
-Making use of this requires programming the PHY to enable vernier
-calibration and then detecting when the PHY has completed calibration. This
-is done as part of a new kthread, ov_work.
-*) E822 devices support crosstimestamping via PCIe PTM, which we enable when
-available on the platform.
-
-There is a fair amount of logic required to perform PHY and CGU
-initialization, which is the vast majority of the new code, but it is fairly
-self contained within ice_ptp_hw.c, with the exception of monitoring for
-offset validity being handled by a kthread.
-
-Changes since v1:
-* Rebased on top of IWL to resolve conflict
-* Fixed build against non-X86 arch for the PCIe PTM support
-
-Jacob Keller (13):
-  ice: fix Tx queue iteration for Tx timestamp enablement
-  ice: remove dead code for allocating pin_config
-  ice: add lock around Tx timestamp tracker flush
-  ice: restart periodic outputs around time changes
-  ice: introduce ice_base_incval function
-  ice: PTP: move setting of tstamp_config
-  ice: use 'int err' instead of 'int status'
-  ice: introduce ice_ptp_init_phc function
-  ice: convert clk_freq capability into time_ref
-  ice: implement basic E822 PTP support
-  ice: ensure the hardware Clock Generation Unit is configured
-  ice: exit bypass mode once hardware finishes timestamp calibration
-  ice: support crosstimestamping on E822 devices if supported
-
- drivers/net/ethernet/intel/Kconfig            |   10 +
- drivers/net/ethernet/intel/ice/ice_cgu_regs.h |  116 +
- drivers/net/ethernet/intel/ice/ice_common.c   |   12 +
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |    9 +
- drivers/net/ethernet/intel/ice/ice_main.c     |    7 +
- drivers/net/ethernet/intel/ice/ice_ptp.c      |  698 +++-
- drivers/net/ethernet/intel/ice/ice_ptp.h      |   30 +-
- .../net/ethernet/intel/ice/ice_ptp_consts.h   |  374 +++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 2794 ++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  345 ++
- drivers/net/ethernet/intel/ice/ice_type.h     |   23 +-
- 11 files changed, 4207 insertions(+), 211 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_cgu_regs.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp_consts.h
-
-
-base-commit: 6e3c27180bcf2635f537ff63164e8df9773b56fb
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 6c611e8a5b41..83ba0bf2817a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1267,6 +1267,8 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ {
+ 	u8 idx;
+ 
++	spin_lock(&tx->lock);
++
+ 	for (idx = 0; idx < tx->len; idx++) {
+ 		u8 phy_idx = idx + tx->quad_offset;
+ 
+@@ -1279,6 +1281,8 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ 			tx->tstamps[idx].skb = NULL;
+ 		}
+ 	}
++
++	spin_unlock(&tx->lock);
+ }
+ 
+ /**
 -- 
 2.31.1.331.gb0c09ab8796f
 
