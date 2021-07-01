@@ -1,50 +1,74 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 30 Jun 2021 17:27:02 -0700
-Subject: [Intel-wired-lan] [net-next 02/13] ice: remove dead code for
- allocating pin_config
+Date: Wed, 30 Jun 2021 17:27:05 -0700
+Subject: [Intel-wired-lan] [net-next 05/13] ice: introduce ice_base_incval
+ function
 In-Reply-To: <20210701002713.3486336-1-jacob.e.keller@intel.com>
 References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
-Message-ID: <20210701002713.3486336-3-jacob.e.keller@intel.com>
+Message-ID: <20210701002713.3486336-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We have code in the ice driver which allocates the pin_config structure
-if n_pins is > 0, but we never set n_pins to be greater than zero.
-There's no reason to keep this code until we actually have pin_config
-support. Remove this. We can re-add it properly when we implement
-support for pin_config for E810-T devices.
+A future change will add additional possible increment values for the
+E822 device support. To handle this, we want to look up the increment
+value to use instead of hard coding it to the nominal value for E810
+devices. Introduce ice_base_incval as a function to get the best nominal
+increment value to use.
 
-Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
+For now, it just returns the E810 value, but will be refactored in the
+future to look up the value based on the device type and configured
+clock frequency.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 11 -----------
- 1 file changed, 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index e176c7484484..6c611e8a5b41 100644
+index 08acdb2494ed..4a6ab36411fa 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1064,17 +1064,6 @@ static long ice_ptp_create_clock(struct ice_pf *pf)
- 	info = &pf->ptp.info;
- 	dev = ice_pf_to_dev(pf);
+@@ -435,6 +435,20 @@ static int ice_ptp_write_adj(struct ice_pf *pf, s32 adj)
+ 	return ice_ptp_adj_clock(hw, adj);
+ }
  
--	/* Allocate memory for kernel pins interface */
--	if (info->n_pins) {
--		info->pin_config = devm_kcalloc(dev, info->n_pins,
--						sizeof(*info->pin_config),
--						GFP_KERNEL);
--		if (!info->pin_config) {
--			info->n_pins = 0;
--			return -ENOMEM;
--		}
--	}
--
- 	/* Attempt to register the clock before enabling the hardware. */
- 	clock = ptp_clock_register(info, dev);
- 	if (IS_ERR(clock))
++/**
++ * ice_base_incval - Get base timer increment value
++ * @pf: Board private structure
++ *
++ * Look up the base timer increment value for this device. The base increment
++ * value is used to define the nominal clock tick rate. This increment value
++ * is programmed during device initialization. It is also used as the basis
++ * for calculating adjustments using scaled_ppm.
++ */
++static u64 ice_base_incval(struct ice_pf *pf)
++{
++	return ICE_PTP_NOMINAL_INCVAL_E810;
++}
++
+ /**
+  * ice_ptp_adjfine - Adjust clock increment rate
+  * @info: the driver's PTP info structure
+@@ -452,7 +466,7 @@ static int ice_ptp_adjfine(struct ptp_clock_info *info, long scaled_ppm)
+ 	int neg_adj = 0;
+ 	int err;
+ 
+-	incval = ICE_PTP_NOMINAL_INCVAL_E810;
++	incval = ice_base_incval(pf);
+ 
+ 	if (scaled_ppm < 0) {
+ 		neg_adj = 1;
+@@ -1442,7 +1456,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ 	}
+ 
+ 	/* Write the increment time value to PHY and LAN */
+-	err = ice_ptp_write_incval(hw, ICE_PTP_NOMINAL_INCVAL_E810);
++	err = ice_ptp_write_incval(hw, ice_base_incval(pf));
+ 	if (err) {
+ 		ice_ptp_unlock(hw);
+ 		goto err_exit;
 -- 
 2.31.1.331.gb0c09ab8796f
 
