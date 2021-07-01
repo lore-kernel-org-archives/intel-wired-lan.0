@@ -1,48 +1,77 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 30 Jun 2021 17:27:01 -0700
-Subject: [Intel-wired-lan] [net-next 01/13] ice: fix Tx queue iteration for
- Tx timestamp enablement
-In-Reply-To: <20210701002713.3486336-1-jacob.e.keller@intel.com>
-References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
-Message-ID: <20210701002713.3486336-2-jacob.e.keller@intel.com>
+Date: Wed, 30 Jun 2021 17:27:00 -0700
+Subject: [Intel-wired-lan] [net-next 00/13] ice: implement support for PTP
+ on E822 hardware
+Message-ID: <20210701002713.3486336-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver accidentally copied the ice_for_each_rxq iterator when
-implementing enablement of the ptp_tx bit for the Tx rings. We still
-load the Tx rings and set the ptp_tx field, but we iterate over the
-count of the num_rxq.
+Extend the ice driver implementation to support PTP for the E822 based
+devices.
 
-If the number of Tx and Rx queues differ, this could either cause
-a buffer overrun when accessing the tx_rings list if num_txq is greater
-than num_rxq, or it could cause us to fail to enable Tx timestamps for
-some rings.
+This includes a few cleanup patches, that fix some minor issues spotted
+while preparing them. In addition, there are some slight refactors to ease
+the addition of E822 support, followed by adding the new hardware
+implementation ice_ptp_hw.c.
 
-This was not noticed originally as we generally have the same number of
-Tx and Rx queues.
+There are a few major differences with E822 support compared to E810
+support:
 
-Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+*) The E822 PHY is a bit different and requires a more complex
+initialization procedure that requires delaying the PHY start until link is
+up
+*) The E822 device has a Clock Generation Unit which must be initialized in
+order to generate proper clock frequencies on the output that drives the PTP
+hardware clock registers
+*) The E822 devices support enhanced timestamp calibration by making use of
+a process called Vernier offset measurement. This allows the hardware to
+measure phase offset related to the PHY clocks for Serdes and FEC, reducing
+the inaccuracy of the timestamp relative to the actual packet transmission.
+Making use of this requires programming the PHY to enable vernier
+calibration and then detecting when the PHY has completed calibration. This
+is done as part of a new kthread, ov_work.
+*) E822 devices support crosstimestamping via PCIe PTM, which we enable when
+available on the platform.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 5d5207b56ca9..e176c7484484 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -22,7 +22,7 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 		return;
- 
- 	/* Set the timestamp enable flag for all the Tx rings */
--	ice_for_each_rxq(vsi, i) {
-+	ice_for_each_txq(vsi, i) {
- 		if (!vsi->tx_rings[i])
- 			continue;
- 		vsi->tx_rings[i]->ptp_tx = on;
+There is a fair amount of logic required to perform PHY and CGU
+initialization, which is the vast majority of the new code, but it is fairly
+self contained within ice_ptp_hw.c, with the exception of monitoring for
+offset validity being handled by a kthread.
+
+Jacob Keller (13):
+  ice: fix Tx queue iteration for Tx timestamp enablement
+  ice: remove dead code for allocating pin_config
+  ice: add lock around Tx timestamp tracker flush
+  ice: restart periodic outputs around time changes
+  ice: introduce ice_base_incval function
+  ice: PTP: move setting of tstamp_config
+  ice: use 'int err' instead of 'int status'
+  ice: introduce ice_ptp_init_phc function
+  ice: convert clk_freq capability into time_ref
+  ice: implement basic E822 PTP support
+  ice: ensure the hardware Clock Generation Unit is configured
+  ice: exit bypass mode once hardware finishes timestamp calibration
+  ice: support crosstimestamping on E822 devices if supported
+
+ drivers/net/ethernet/intel/ice/ice_cgu_regs.h |  116 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |   12 +
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |    9 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |    7 +
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  694 +++-
+ drivers/net/ethernet/intel/ice/ice_ptp.h      |   30 +-
+ .../net/ethernet/intel/ice/ice_ptp_consts.h   |  374 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 2794 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  345 ++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   23 +-
+ 10 files changed, 4193 insertions(+), 211 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp_consts.h
+
+
+base-commit: b6df00789e2831fff7a2c65aa7164b2a4dcbe599
 -- 
 2.31.1.331.gb0c09ab8796f
 
