@@ -1,98 +1,89 @@
-From: Taehee Yoo <ap420073@gmail.com>
-Date: Fri,  2 Jul 2021 14:26:48 +0000
-Subject: [Intel-wired-lan] [PATCH net 8/8] bonding: fix suspicious RCU usage
- in bond_ipsec_offload_ok()
-In-Reply-To: <20210702142648.7677-1-ap420073@gmail.com>
+From: Jay Vosburgh <jay.vosburgh@canonical.com>
+Date: Fri, 02 Jul 2021 14:14:23 -0700
+Subject: [Intel-wired-lan] [PATCH net 6/8] bonding: disallow setting
+ nested bonding + ipsec offload
+In-Reply-To: <20210702142648.7677-7-ap420073@gmail.com>
 References: <20210702142648.7677-1-ap420073@gmail.com>
-Message-ID: <20210702142648.7677-9-ap420073@gmail.com>
+ <20210702142648.7677-7-ap420073@gmail.com>
+Message-ID: <14149.1625260463@famine>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To dereference bond->curr_active_slave, it uses rcu_dereference().
-But it and the caller doesn't acquire RCU so a warning occurs.
-So add rcu_read_lock().
+Taehee Yoo <ap420073@gmail.com> wrote:
 
-Splat looks like:
-WARNING: suspicious RCU usage
-5.13.0-rc6+ #1179 Not tainted
-drivers/net/bonding/bond_main.c:571 suspicious
-rcu_dereference_check() usage!
+>bonding interface can be nested and it supports ipsec offload.
+>So, it allows setting the nested bonding + ipsec scenario.
+>But code does not support this scenario.
+>So, it should be disallowed.
+>
+>interface graph:
+>bond2
+> |
+>bond1
+> |
+>eth0
+>
+>The nested bonding + ipsec offload may not a real usecase.
+>So, disallowing this is fine.
 
-other info that might help us debug this:
+	Is a stack like "bond1 -> VLAN.XX -> bond2 -> eth0" also a
+problem?  I don't believe the change below will detect this
+configuration.
 
-rcu_scheduler_active = 2, debug_locks = 1
-1 lock held by ping/974:
- #0: ffff888109e7db70 (sk_lock-AF_INET){+.+.}-{0:0},
-at: raw_sendmsg+0x1303/0x2cb0
+	-J
 
-stack backtrace:
-CPU: 2 PID: 974 Comm: ping Not tainted 5.13.0-rc6+ #1179
-Call Trace:
- dump_stack+0xa4/0xe5
- bond_ipsec_offload_ok+0x1f4/0x260 [bonding]
- xfrm_output+0x179/0x890
- xfrm4_output+0xfa/0x410
- ? __xfrm4_output+0x4b0/0x4b0
- ? __ip_make_skb+0xecc/0x2030
- ? xfrm4_udp_encap_rcv+0x800/0x800
- ? ip_local_out+0x21/0x3a0
- ip_send_skb+0x37/0xa0
- raw_sendmsg+0x1bfd/0x2cb0
+>Fixes: 18cb261afd7b ("bonding: support hardware encryption offload to slaves")
+>Signed-off-by: Taehee Yoo <ap420073@gmail.com>
+>---
+> drivers/net/bonding/bond_main.c | 15 +++++++++------
+> 1 file changed, 9 insertions(+), 6 deletions(-)
+>
+>diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+>index 7659e1fab19e..f268e67cb2f0 100644
+>--- a/drivers/net/bonding/bond_main.c
+>+++ b/drivers/net/bonding/bond_main.c
+>@@ -419,8 +419,9 @@ static int bond_ipsec_add_sa(struct xfrm_state *xs)
+> 	xs->xso.real_dev = slave->dev;
+> 	bond->xs = xs;
+> 
+>-	if (!(slave->dev->xfrmdev_ops
+>-	      && slave->dev->xfrmdev_ops->xdo_dev_state_add)) {
+>+	if (!slave->dev->xfrmdev_ops ||
+>+	    !slave->dev->xfrmdev_ops->xdo_dev_state_add ||
+>+	    netif_is_bond_master(slave->dev)) {
+> 		slave_warn(bond_dev, slave->dev, "Slave does not support ipsec offload\n");
+> 		rcu_read_unlock();
+> 		return -EINVAL;
+>@@ -453,8 +454,9 @@ static void bond_ipsec_del_sa(struct xfrm_state *xs)
+> 
+> 	xs->xso.real_dev = slave->dev;
+> 
+>-	if (!(slave->dev->xfrmdev_ops
+>-	      && slave->dev->xfrmdev_ops->xdo_dev_state_delete)) {
+>+	if (!slave->dev->xfrmdev_ops ||
+>+	    !slave->dev->xfrmdev_ops->xdo_dev_state_delete ||
+>+	    netif_is_bond_master(slave->dev)) {
+> 		slave_warn(bond_dev, slave->dev, "%s: no slave xdo_dev_state_delete\n", __func__);
+> 		goto out;
+> 	}
+>@@ -479,8 +481,9 @@ static bool bond_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
+> 	if (BOND_MODE(bond) != BOND_MODE_ACTIVEBACKUP)
+> 		return true;
+> 
+>-	if (!(slave_dev->xfrmdev_ops
+>-	      && slave_dev->xfrmdev_ops->xdo_dev_offload_ok)) {
+>+	if (!slave_dev->xfrmdev_ops ||
+>+	    !slave_dev->xfrmdev_ops->xdo_dev_offload_ok ||
+>+	    netif_is_bond_master(slave_dev)) {
+> 		slave_warn(bond_dev, slave_dev, "%s: no slave xdo_dev_offload_ok\n", __func__);
+> 		return false;
+> 	}
+>-- 
+>2.17.1
+>
 
-Fixes: 18cb261afd7b ("bonding: support hardware encryption offload to slaves")
-Signed-off-by: Taehee Yoo <ap420073@gmail.com>
 ---
- drivers/net/bonding/bond_main.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index d2d37efb61b6..44c4509528f8 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -568,24 +568,34 @@ static bool bond_ipsec_offload_ok(struct sk_buff *skb, struct xfrm_state *xs)
- 	struct net_device *real_dev;
- 	struct slave *curr_active;
- 	struct bonding *bond;
-+	int err;
- 
- 	bond = netdev_priv(bond_dev);
-+	rcu_read_lock();
- 	curr_active = rcu_dereference(bond->curr_active_slave);
- 	real_dev = curr_active->dev;
- 
--	if (BOND_MODE(bond) != BOND_MODE_ACTIVEBACKUP)
--		return true;
-+	if (BOND_MODE(bond) != BOND_MODE_ACTIVEBACKUP) {
-+		err = true;
-+		goto out;
-+	}
- 
--	if (!xs->xso.real_dev)
--		return false;
-+	if (!xs->xso.real_dev) {
-+		err = false;
-+		goto out;
-+	}
- 
- 	if (!real_dev->xfrmdev_ops ||
- 	    !real_dev->xfrmdev_ops->xdo_dev_offload_ok ||
- 	    netif_is_bond_master(real_dev)) {
--		return false;
-+		err = false;
-+		goto out;
- 	}
- 
--	return real_dev->xfrmdev_ops->xdo_dev_offload_ok(skb, xs);
-+	err = real_dev->xfrmdev_ops->xdo_dev_offload_ok(skb, xs);
-+out:
-+	rcu_read_unlock();
-+	return err;
- }
- 
- static const struct xfrmdev_ops bond_xfrmdev_ops = {
--- 
-2.17.1
-
+	-Jay Vosburgh, jay.vosburgh at canonical.com
