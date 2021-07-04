@@ -1,45 +1,74 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Sun, 4 Jul 2021 08:36:53 +0300
-Subject: [Intel-wired-lan] [PATCH 2/2] igc: wait for the MAC copy when
- enabled MAC passthrough
-In-Reply-To: <20210702045120.22855-2-aaron.ma@canonical.com>
-References: <20210702045120.22855-1-aaron.ma@canonical.com>
- <20210702045120.22855-2-aaron.ma@canonical.com>
-Message-ID: <613e2106-940a-49ed-6621-0bb00bc7dca5@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun,  4 Jul 2021 10:11:41 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix the max snoop/no-snoop
+ latency for 10M
+Message-ID: <20210704071141.1173032-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/2/2021 07:51, Aaron Ma wrote:
-> Such as dock hot plug event when runtime, for hardware implementation,
-> the MAC copy takes less than one second when BIOS enabled MAC passthrough.
-> After test on Lenovo TBT4 dock, 600ms is enough to update the
-> MAC address.
-> Otherwise ethernet fails to work.
-> 
-> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 606b72cb6193..c8bc5f089255 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -5468,6 +5468,9 @@ static int igc_probe(struct pci_dev *pdev,
->   	memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
->   	memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
->   
-> +	if (pci_is_thunderbolt_attached(pdev) > +		msleep(600);
-I believe it is a bit fragile. I would recommend here look for another 
-indication instead of delay. Can we poll for a 'pci_channel_io_normal' 
-state? (igc->pdev->error_state == pci_channel_io_normal)
-> +
->   	/* Initialize skew-specific constants */
->   	err = ei->get_invariants(hw);
->   	if (err)
-> 
-Thanks Aaron,
-sasha
+We should decode the latency and the max_latency before directly compare.
+The latency should be presented as lat_enc = scale x value:
+lat_enc_d = (lat_enc & 0x0x3ff) x (1U << (5*((max_ltr_enc & 0x1c00)
+>> 10)))
+
+Suggested-by: Yee Li <seven.yi.lee@gmail.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 14 +++++++++++++-
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  3 +++
+ 2 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 0f6a0b1b433a..8c5dc72c3bd6 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1009,6 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+ {
+ 	u32 reg = link << (E1000_LTRV_REQ_SHIFT + E1000_LTRV_NOSNOOP_SHIFT) |
+ 	    link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
++	u16 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
++	u16 lat_enc_d = 0;	/* latency decoded */
+ 	u16 lat_enc = 0;	/* latency encoded */
+ 
+ 	if (link) {
+@@ -1062,7 +1064,17 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+ 				     E1000_PCI_LTR_CAP_LPT + 2, &max_nosnoop);
+ 		max_ltr_enc = max_t(u16, max_snoop, max_nosnoop);
+ 
+-		if (lat_enc > max_ltr_enc)
++		lat_enc_d = (lat_enc & E1000_LTRV_VALUE_MASK) *
++			     (1U << (E1000_LTRV_SCALE_FACTOR *
++			     ((lat_enc & E1000_LTRV_SCALE_MASK)
++			     >> E1000_LTRV_SCALE_SHIFT)));
++
++		max_ltr_enc_d = (max_ltr_enc & E1000_LTRV_VALUE_MASK) *
++				 (1U << (E1000_LTRV_SCALE_FACTOR *
++				 ((max_ltr_enc & E1000_LTRV_SCALE_MASK)
++				 >> E1000_LTRV_SCALE_SHIFT)));
++
++		if (lat_enc_d > max_ltr_enc_d)
+ 			lat_enc = max_ltr_enc;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 9b145f6248a8..d6a092e5ee74 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -277,8 +277,11 @@
+ 
+ /* Latency Tolerance Reporting */
+ #define E1000_LTRV			0x000F8
++#define E1000_LTRV_VALUE_MASK		0x000003FF
+ #define E1000_LTRV_SCALE_MAX		5
+ #define E1000_LTRV_SCALE_FACTOR		5
++#define E1000_LTRV_SCALE_SHIFT		10
++#define E1000_LTRV_SCALE_MASK		0x00001C00
+ #define E1000_LTRV_REQ_SHIFT		15
+ #define E1000_LTRV_NOSNOOP_SHIFT	16
+ #define E1000_LTRV_SEND			(1 << 30)
+-- 
+2.25.1
+
