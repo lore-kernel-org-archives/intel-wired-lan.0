@@ -1,110 +1,122 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 3 Jul 2021 02:43:46 +0800
-Subject: [Intel-wired-lan] [PATCH] iavf: remove redundant null check on
- key
-In-Reply-To: <20210702112720.16006-1-colin.king@canonical.com>
-References: <20210702112720.16006-1-colin.king@canonical.com>
-Message-ID: <202107030209.xwGHO2JN-lkp@intel.com>
+From: Pali =?unknown-8bit?q?Roh=C3=A1r?= <pali@kernel.org>
+Date: Sun, 4 Jul 2021 16:28:08 +0200
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210702045120.22855-1-aaron.ma@canonical.com>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+Message-ID: <20210704142808.f43jbcufk37hundo@pali>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Colin,
++ Bjorn, Krzysztof and linux-pci
 
-Thank you for the patch! Perhaps something to improve:
+On Friday 02 July 2021 12:51:19 Aaron Ma wrote:
+> Check PCI state when rd/wr iomem.
+> Implement wr32 function as rd32 too.
+> 
+> When unplug TBT dock with i225, rd/wr PCI iomem will cause error log:
+> Trace:
+> BUG: unable to handle page fault for address: 000000000000b604
+> Oops: 0000 [#1] SMP NOPTI
+> RIP: 0010:igc_rd32+0x1c/0x90 [igc]
+> Call Trace:
+> igc_ptp_suspend+0x6c/0xa0 [igc]
+> igc_ptp_stop+0x12/0x50 [igc]
+> igc_remove+0x7f/0x1c0 [igc]
+> pci_device_remove+0x3e/0xb0
+> __device_release_driver+0x181/0x240
+> 
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 16 ++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h |  7 ++-----
+>  2 files changed, 18 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index f1adf154ec4a..606b72cb6193 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -5292,6 +5292,10 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>  	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+>  	u32 value = 0;
+>  
+> +	if (igc->pdev &&
+> +		igc->pdev->error_state == pci_channel_io_perm_failure)
 
-[auto build test WARNING on tnguy-next-queue/dev-queue]
-[also build test WARNING on v5.13 next-20210701]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Hello! This code pattern and commit message looks like that we could use
+pci_dev_is_disconnected() helper function for checking if device is
+still connected or was disconnected.
 
-url:    https://github.com/0day-ci/linux/commits/Colin-King/iavf-remove-redundant-null-check-on-key/20210702-192826
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: ia64-allmodconfig (attached as .config)
-compiler: ia64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/59ac04f9a577d107d282cd2c5ef80272a7ad40f7
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Colin-King/iavf-remove-redundant-null-check-on-key/20210702-192826
-        git checkout 59ac04f9a577d107d282cd2c5ef80272a7ad40f7
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=ia64 
+Apparently pci_dev_is_disconnected() is defined only in private header
+file drivers/pci/pci.h and not in public include/linux/pci.h.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Aaron: can you check if pci_dev_is_disconnected() is really something
+which should be used and it helps you?
 
-All warnings (new ones prefixed by >>):
+Bjorn, Krzysztof: what do you think about lifting helper function
+pci_dev_is_disconnected() to be available to all drivers and not only in
+PCI subsystem?
 
-   drivers/net/ethernet/intel/iavf/iavf_ethtool.c: In function 'iavf_set_rxfh':
->> drivers/net/ethernet/intel/iavf/iavf_ethtool.c:1912:2: warning: argument 2 null where non-null expected [-Wnonnull]
-    1912 |  memcpy(adapter->rss_key, key, adapter->rss_key_size);
-         |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   In file included from include/linux/string.h:21,
-                    from include/linux/bitmap.h:10,
-                    from include/linux/cpumask.h:12,
-                    from include/linux/smp.h:13,
-                    from include/linux/lockdep.h:14,
-                    from include/linux/spinlock.h:59,
-                    from include/linux/mmzone.h:8,
-                    from include/linux/gfp.h:6,
-                    from include/linux/umh.h:4,
-                    from include/linux/kmod.h:9,
-                    from include/linux/module.h:16,
-                    from drivers/net/ethernet/intel/iavf/iavf.h:7,
-                    from drivers/net/ethernet/intel/iavf/iavf_ethtool.c:5:
-   arch/ia64/include/asm/string.h:19:14: note: in a call to function 'memcpy' declared here
-      19 | extern void *memcpy (void *, const void *, __kernel_size_t);
-         |              ^~~~~~
+I think that such helper function makes driver code more readable and
+can be useful also for other drivers which are checking if return value
+is all F's.
 
+> +		return 0;
 
-vim +1912 drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+Aaron: should not you return all F's on error? Because few lines below
+in this function is returned value with all F's when PCIe link lost.
 
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1888  
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1889  /**
-129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1890   * iavf_set_rxfh - set the rx flow hash indirection table
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1891   * @netdev: network interface device structure
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1892   * @indir: indirection table
-2cda3f3be5c2f6 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch Williams   2014-11-11  1893   * @key: hash key
-f5254429e1756a drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Jacob Keller     2018-04-20  1894   * @hfunc: hash function to use
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1895   *
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1896   * Returns -EINVAL if the table specifies an inavlid queue id, otherwise
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1897   * returns 0 after programming the table.
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1898   **/
-129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1899  static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1900  			 const u8 *key, const u8 hfunc)
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1901  {
-129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1902  	struct iavf_adapter *adapter = netdev_priv(netdev);
-2c86ac3c70794f drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Helin Zhang      2015-10-27  1903  	u16 i;
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1904  
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1905  	/* We do not allow change in unsupported parameters */
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1906  	if (key ||
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1907  	    (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1908  		return -EOPNOTSUPP;
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1909  	if (!indir)
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1910  		return 0;
-892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1911  
-43a3d9ba34c9ca drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch Williams   2016-04-12 @1912  	memcpy(adapter->rss_key, key, adapter->rss_key_size);
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1913  
-2c86ac3c70794f drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Helin Zhang      2015-10-27  1914  	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
-43a3d9ba34c9ca drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch Williams   2016-04-12  1915  	for (i = 0; i < adapter->rss_lut_size; i++)
-43a3d9ba34c9ca drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch Williams   2016-04-12  1916  		adapter->rss_lut[i] = (u8)(indir[i]);
-2c86ac3c70794f drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Helin Zhang      2015-10-27  1917  
-129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1918  	return iavf_config_rss(adapter);
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1919  }
-4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1920  
+> +
+>  	value = readl(&hw_addr[reg]);
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 64298 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210703/12104cb0/attachment-0001.bin>
+Anyway, this code looks to be racy. When pci_channel_io_perm_failure is
+set (e.g. by hotplug interrupt) after checking for pdev->error_state and
+prior executing above readl() then mentioned fatal error still occurs.
+
+>  
+>  	/* reads should not return all F's */
+> @@ -5308,6 +5312,18 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>  	return value;
+>  }
+>  
+> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val)
+> +{
+> +	struct igc_adapter *igc = container_of(hw, struct igc_adapter, hw);
+> +	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+> +
+> +	if (igc->pdev &&
+> +		igc->pdev->error_state == pci_channel_io_perm_failure)
+> +		return;
+> +
+> +	writel((val), &hw_addr[(reg)]);
+> +}
+> +
+>  int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+>  {
+>  	struct igc_mac_info *mac = &adapter->hw.mac;
+> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+> index cc174853554b..eb4be87d0e8b 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+> @@ -260,13 +260,10 @@ struct igc_hw;
+>  u32 igc_rd32(struct igc_hw *hw, u32 reg);
+>  
+>  /* write operations, indexed using DWORDS */
+> -#define wr32(reg, val) \
+> -do { \
+> -	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+> -	writel((val), &hw_addr[(reg)]); \
+> -} while (0)
+> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val);
+>  
+>  #define rd32(reg) (igc_rd32(hw, reg))
+> +#define wr32(reg, val) (igc_wr32(hw, reg, val))
+>  
+>  #define wrfl() ((void)rd32(IGC_STATUS))
+>  
+> -- 
+> 2.30.2
+> 
