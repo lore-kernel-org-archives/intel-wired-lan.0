@@ -1,38 +1,45 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Sat, 3 Jul 2021 12:49:18 +0300
-Subject: [Intel-wired-lan] [PATCH] iavf: remove redundant null check on
- key
-In-Reply-To: <202107030209.xwGHO2JN-lkp@intel.com>
-References: <20210702112720.16006-1-colin.king@canonical.com>
- <202107030209.xwGHO2JN-lkp@intel.com>
-Message-ID: <20210703092040.GX2040@kadam>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Sun, 4 Jul 2021 08:36:53 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] igc: wait for the MAC copy when
+ enabled MAC passthrough
+In-Reply-To: <20210702045120.22855-2-aaron.ma@canonical.com>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210702045120.22855-2-aaron.ma@canonical.com>
+Message-ID: <613e2106-940a-49ed-6621-0bb00bc7dca5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Jul 03, 2021 at 02:43:46AM +0800, kernel test robot wrote:
-> 129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1899  static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1900  			 const u8 *key, const u8 hfunc)
-> 4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1901  {
-> 129cf89e585676 drivers/net/ethernet/intel/iavf/i40evf_ethtool.c   Jesse Brandeburg 2018-09-14  1902  	struct iavf_adapter *adapter = netdev_priv(netdev);
-> 2c86ac3c70794f drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Helin Zhang      2015-10-27  1903  	u16 i;
-> 4e9dc31f696ae8 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch A Williams 2014-04-01  1904  
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1905  	/* We do not allow change in unsupported parameters */
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1906  	if (key ||
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1907  	    (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1908  		return -EOPNOTSUPP;
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1909  	if (!indir)
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1910  		return 0;
-> 892311f66f2411 drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Eyal Perry       2014-12-02  1911  
-> 43a3d9ba34c9ca drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c Mitch Williams   2016-04-12 @1912  	memcpy(adapter->rss_key, key, adapter->rss_key_size);
-
-Heh...  There have been a bunch of patches modifying the behavior if
-"key" is non-NULL and no one noticed that it's actually impossible.
-
-:P
-
-regards,
-dan carpenter
-
+On 7/2/2021 07:51, Aaron Ma wrote:
+> Such as dock hot plug event when runtime, for hardware implementation,
+> the MAC copy takes less than one second when BIOS enabled MAC passthrough.
+> After test on Lenovo TBT4 dock, 600ms is enough to update the
+> MAC address.
+> Otherwise ethernet fails to work.
+> 
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
+>   1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 606b72cb6193..c8bc5f089255 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -5468,6 +5468,9 @@ static int igc_probe(struct pci_dev *pdev,
+>   	memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
+>   	memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
+>   
+> +	if (pci_is_thunderbolt_attached(pdev) > +		msleep(600);
+I believe it is a bit fragile. I would recommend here look for another 
+indication instead of delay. Can we poll for a 'pci_channel_io_normal' 
+state? (igc->pdev->error_state == pci_channel_io_normal)
+> +
+>   	/* Initialize skew-specific constants */
+>   	err = ei->get_invariants(hw);
+>   	if (err)
+> 
+Thanks Aaron,
+sasha
