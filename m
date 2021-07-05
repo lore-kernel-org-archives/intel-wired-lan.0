@@ -1,45 +1,138 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 5 Jul 2021 09:12:36 +0200
-Subject: [Intel-wired-lan] Cherry-pick "i40e: Be much more verbose about
- what we can and cannot offload"
-In-Reply-To: <BYAPR11MB360618A581F56D9054B2148AEF029@BYAPR11MB3606.namprd11.prod.outlook.com>
-References: <937dd880-f902-aa9c-67d5-2d582a29e122@univention.de>
- <BYAPR11MB360618A581F56D9054B2148AEF029@BYAPR11MB3606.namprd11.prod.outlook.com>
-Message-ID: <YOKw5MzGaUNjxx/y@kroah.com>
+From: Aaron Ma <aaron.ma@canonical.com>
+Date: Mon, 5 Jul 2021 15:23:21 +0800
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210704142808.f43jbcufk37hundo@pali>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210704142808.f43jbcufk37hundo@pali>
+Message-ID: <3bc507f7-3eb9-1bef-d47d-cad42fcb1c48@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 29, 2021 at 06:20:30PM +0000, Fujinaka, Todd wrote:
-> I think I accidentally deleted the forward from the intel-wired-lan spam filter. Re-forwarding and adding Alex's gmail address.
-> 
-> Also, 
-> 
-> Todd Fujinaka
-> Software Application Engineer
-> Data Center Group
-> Intel Corporation
-> todd.fujinaka at intel.com
-> 
-> -----Original Message-----
-> From: Philipp Hahn <hahn@univention.de> 
-> Sent: Tuesday, June 22, 2021 11:19 AM
-> To: stable at vger.kernel.org; 892105 at bugs.debian.org; Ben Hutchings <benh@debian.org>
-> Cc: Alexander Duyck <alexander.h.duyck@intel.com>; Andrew Bowers <andrewx.bowers@intel.com>; Bonaccorso, Salvatore <carnil@debian.org>
-> Subject: Cherry-pick "i40e: Be much more verbose about what we can and cannot offload"
-> 
-> Hello,
-> 
-> I request the following patch from v4.10-rc1 to get cherry-picked into
-> "stable/linux-4.9.y":
-> 
-> > commit f114dca2533ca770aebebffb5ed56e5e7d1fb3fb
 
-Please provide a working backport, that you have tested works properly,
-as it does not apply cleanly.
+On 7/4/21 10:28 PM, Pali Roh?r wrote:
+> + Bjorn, Krzysztof and linux-pci
+> 
+> On Friday 02 July 2021 12:51:19 Aaron Ma wrote:
+>> Check PCI state when rd/wr iomem.
+>> Implement wr32 function as rd32 too.
+>>
+>> When unplug TBT dock with i225, rd/wr PCI iomem will cause error log:
+>> Trace:
+>> BUG: unable to handle page fault for address: 000000000000b604
+>> Oops: 0000 [#1] SMP NOPTI
+>> RIP: 0010:igc_rd32+0x1c/0x90 [igc]
+>> Call Trace:
+>> igc_ptp_suspend+0x6c/0xa0 [igc]
+>> igc_ptp_stop+0x12/0x50 [igc]
+>> igc_remove+0x7f/0x1c0 [igc]
+>> pci_device_remove+0x3e/0xb0
+>> __device_release_driver+0x181/0x240
+>>
+>> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+>> ---
+>>   drivers/net/ethernet/intel/igc/igc_main.c | 16 ++++++++++++++++
+>>   drivers/net/ethernet/intel/igc/igc_regs.h |  7 ++-----
+>>   2 files changed, 18 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+>> index f1adf154ec4a..606b72cb6193 100644
+>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>> @@ -5292,6 +5292,10 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>>   	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+>>   	u32 value = 0;
+>>   
+>> +	if (igc->pdev &&
+>> +		igc->pdev->error_state == pci_channel_io_perm_failure)
+> 
+> Hello! This code pattern and commit message looks like that we could use
+> pci_dev_is_disconnected() helper function for checking if device is
+> still connected or was disconnected.
+> 
+> Apparently pci_dev_is_disconnected() is defined only in private header
+> file drivers/pci/pci.h and not in public include/linux/pci.h.
+> 
+> Aaron: can you check if pci_dev_is_disconnected() is really something
+> which should be used and it helps you?
+> 
 
-thanks,
+Hi Pali,
 
-greg k-h
+How about using pci_channel_offline instead?
+It's ready and also safe for frozen state, and verified on hw.
+
+> Bjorn, Krzysztof: what do you think about lifting helper function
+> pci_dev_is_disconnected() to be available to all drivers and not only in
+> PCI subsystem?
+> 
+> I think that such helper function makes driver code more readable and
+> can be useful also for other drivers which are checking if return value
+> is all F's.
+> 
+>> +		return 0;
+> 
+> Aaron: should not you return all F's on error? Because few lines below
+> in this function is returned value with all F's when PCIe link lost.
+> 
+
+If you agree with the above change, I can fix it to "return -1" in v2.
+
+Thanks for your comments,
+Aaron
+
+
+>> +
+>>   	value = readl(&hw_addr[reg]);
+> 
+> Anyway, this code looks to be racy. When pci_channel_io_perm_failure is
+> set (e.g. by hotplug interrupt) after checking for pdev->error_state and
+> prior executing above readl() then mentioned fatal error still occurs.
+> 
+>>   
+>>   	/* reads should not return all F's */
+>> @@ -5308,6 +5312,18 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>>   	return value;
+>>   }
+>>   
+>> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val)
+>> +{
+>> +	struct igc_adapter *igc = container_of(hw, struct igc_adapter, hw);
+>> +	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+>> +
+>> +	if (igc->pdev &&
+>> +		igc->pdev->error_state == pci_channel_io_perm_failure)
+>> +		return;
+>> +
+>> +	writel((val), &hw_addr[(reg)]);
+>> +}
+>> +
+>>   int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+>>   {
+>>   	struct igc_mac_info *mac = &adapter->hw.mac;
+>> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+>> index cc174853554b..eb4be87d0e8b 100644
+>> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+>> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+>> @@ -260,13 +260,10 @@ struct igc_hw;
+>>   u32 igc_rd32(struct igc_hw *hw, u32 reg);
+>>   
+>>   /* write operations, indexed using DWORDS */
+>> -#define wr32(reg, val) \
+>> -do { \
+>> -	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+>> -	writel((val), &hw_addr[(reg)]); \
+>> -} while (0)
+>> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val);
+>>   
+>>   #define rd32(reg) (igc_rd32(hw, reg))
+>> +#define wr32(reg, val) (igc_wr32(hw, reg, val))
+>>   
+>>   #define wrfl() ((void)rd32(IGC_STATUS))
+>>   
+>> -- 
+>> 2.30.2
+>>
