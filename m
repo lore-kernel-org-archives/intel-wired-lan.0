@@ -1,135 +1,50 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 5 Jul 2021 09:52:20 +0200
-Subject: [Intel-wired-lan] [net-next 04/13] ice: restart periodic
- outputs around time changes
-In-Reply-To: <20210701002713.3486336-5-jacob.e.keller@intel.com>
-References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
- <20210701002713.3486336-5-jacob.e.keller@intel.com>
-Message-ID: <29cb4977-3559-094c-cc18-d2d32819e227@molgen.mpg.de>
+Date: Mon, 5 Jul 2021 12:22:16 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 01/12] ice: basic support
+ for eswitch mode management
+In-Reply-To: <YNKtdJjFpyiZG1YJ@localhost.localdomain>
+References: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
+ <20210622212134.341728-2-michal.swiatkowski@linux.intel.com>
+ <f1083357-9eb9-3bbb-baa5-0b4392ca4d4f@molgen.mpg.de>
+ <YNKtdJjFpyiZG1YJ@localhost.localdomain>
+Message-ID: <85e1e813-bb82-d2f4-6082-87205ab494a7@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jacob,
+Dear Michal,
 
 
-Am 01.07.21 um 02:27 schrieb Jacob Keller:
-> Wen we enabled auxiliary input/output support for the E810 device, we
+Am 23.06.21 um 05:41 schrieb Michal Swiatkowski:
+> On Wed, Jun 23, 2021 at 07:58:00AM +0200, Paul Menzel wrote:
 
-When
+>> Am 22.06.21 um 23:21 schrieb Michal Swiatkowski:
 
-> forgot to add logic to restart the output when we change time. This is
-> important as the periodic output will be incorrect after a time change
-> otherwise.
+[?]
+
+>>> - restore 'legacy' mode
+>>> [root at localhost]# devlink dev eswitch set pci/0000:03:00.1 mode legacy
+>>> [root at localhost]# devlink dev eswitch show pci/0000:03:00.1
+>>>> pci/0000:03:00.1: mode legacy
+>>
+>> Thank you for adding these examples to the commit message. I?d put some of
+>> them into the Kconfig description of `ICE_SWITCHDEV`.
+
+> You mean putting this devlink command to help section of Kconfig?
+> Something like:
+> To go to E-switch mode type:
+> devlink dev eswitch set pci/0000:03:00.1 mode switchdev
 > 
-> This unfortunately includes the adjust time function, even though it
-> uses an atomic hardware interface. The atomic adjustment can still cause
-> the pin output to stall permanently, so we need to stop and restart it.
-> 
-> Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_ptp.c | 30 ++++++++++++++++++++++++
->   1 file changed, 30 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 83ba0bf2817a..08acdb2494ed 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -776,6 +776,7 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
->   	struct ice_pf *pf = ptp_info_to_pf(info);
->   	struct timespec64 ts64 = *ts;
->   	struct ice_hw *hw = &pf->hw;
-> +	u8 i;
+> Is this right place for this kind of information? I have seen that
+> Mellanox doesn't have command example in Kconfig for switchdev.
 
-For count variables, it?s better to use native types, size_t/unsigned 
-int in this case.
-
-     static int ice_ptp_cfg_clkout(struct ice_pf *pf, unsigned int chan,
-                                   struct ice_perout_channel *config, 
-bool store)
-
->   	int err;
->   
->   	if (!ice_ptp_lock(hw)) {
-> @@ -783,12 +784,22 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
->   		goto exit;
->   	}
->   
-> +	/* Disable periodic outputs */
-> +	for (i = 0; i < info->n_per_out; i++)
-> +		if (pf->ptp.perout_channels[i].ena)
-> +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> +
->   	err = ice_ptp_write_init(pf, &ts64);
->   	ice_ptp_unlock(hw);
->   
->   	if (!err)
->   		ice_ptp_update_cached_phctime(pf);
->   
-> +	/* Reenable periodic outputs */
-> +	for (i = 0; i < info->n_per_out; i++)
-> +		if (pf->ptp.perout_channels[i].ena)
-> +			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-> +					   false);
->   exit:
->   	if (err) {
->   		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-> @@ -825,6 +836,7 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
->   	struct ice_hw *hw = &pf->hw;
->   	struct device *dev;
->   	int err;
-> +	u8 i;
->   
->   	dev = ice_pf_to_dev(pf);
->   
-> @@ -842,8 +854,19 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
->   		return -EBUSY;
->   	}
->   
-> +	/* Disable periodic outputs */
-> +	for (i = 0; i < info->n_per_out; i++)
-> +		if (pf->ptp.perout_channels[i].ena)
-> +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> +
->   	err = ice_ptp_write_adj(pf, delta);
->   
-> +	/* Reenable periodic outputs */
-> +	for (i = 0; i < info->n_per_out; i++)
-> +		if (pf->ptp.perout_channels[i].ena)
-> +			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-> +					   false);
-> +
->   	ice_ptp_unlock(hw);
->   
->   	if (err) {
-> @@ -1526,6 +1549,8 @@ void ice_ptp_init(struct ice_pf *pf)
->    */
->   void ice_ptp_release(struct ice_pf *pf)
->   {
-> +	int i;
-> +
->   	/* Disable timestamping for both Tx and Rx */
->   	ice_ptp_cfg_timestamp(pf, false);
->   
-> @@ -1543,6 +1568,11 @@ void ice_ptp_release(struct ice_pf *pf)
->   	if (!pf->ptp.clock)
->   		return;
->   
-> +	/* Disable periodic outputs */
-> +	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-> +		if (pf->ptp.perout_channels[i].ena)
-> +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> +
-
-Could this be put into a dedicated enable/disable function (only pf 
-seems to be needed to be passed).
-
->   	ice_clear_ptp_clock_index(pf);
->   	ptp_clock_unregister(pf->ptp.clock);
->   	pf->ptp.clock = NULL;
+Indeed. There is 
+`Documentation/networking/device_drivers/ethernet/mellanox/mlx5.rst`. As 
+long as there is no documentation, I?d put it into the Kconfig 
+description. If you add documentation, then just refer to that from the 
+Kconfig description.
 
 
 Kind regards,
