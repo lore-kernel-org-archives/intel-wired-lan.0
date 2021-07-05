@@ -1,40 +1,42 @@
-From: Toke =?unknown-8bit?q?H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
-Date: Mon, 05 Jul 2021 19:06:26 +0200
-Subject: [Intel-wired-lan] [PATCH v2 intel-next 0/4] XDP_TX improvements
- for ice
-In-Reply-To: <20210705164338.58313-1-maciej.fijalkowski@intel.com>
-References: <20210705164338.58313-1-maciej.fijalkowski@intel.com>
-Message-ID: <87sg0sy9kd.fsf@toke.dk>
+From: Krzysztof =?unknown-8bit?q?Wilczy=C5=84ski?= <kw@linux.com>
+Date: Tue, 6 Jul 2021 01:02:12 +0200
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210704142808.f43jbcufk37hundo@pali>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210704142808.f43jbcufk37hundo@pali>
+Message-ID: <20210705230212.GC142312@rocinante>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Maciej Fijalkowski <maciej.fijalkowski@intel.com> writes:
+Hi Pali,
 
-> Hi,
->
-> this is a second revision of a series around XDP_TX improvements for ice
-> driver. When compared to v1 (which can be found under [1]), two new
-> patches are introduced that are focused on improving the performance for
-> XDP_TX as Jussi reported that the numbers were pretty low on his side.
-> Furthermore the fallback path is now based on static branch, as
-> suggested by Toke on v1. This means that there's no further need for a
-> standalone net_device_ops that were serving the locked version of
-> ndo_xdp_xmit callback.
->
-> Idea from 2nd patch is borrowed from a joint work that was done against
-> OOT driver among with Sridhar Samudrala, Jesse Brandeburg and Piotr
-> Raczynski, where we working on fixing the scaling issues for Tx AF_XDP
-> ZC path.
->
-> Last but not least, with this series I observe the improvement of
-> performance by around 30%.
+[...]
+> Aaron: can you check if pci_dev_is_disconnected() is really something
+> which should be used and it helps you?
 
-Wow, "but not least" indeed! :D
-You can't just drop that at the end like that! I want details -
-whaddyamean, "by around 30%"? In all cases? Only for TX? Gimme numbers! :)
+While having a closer look, I've noticed that quite a few of the network
+drivers handle this somewhat, as I see that a lot of them have some sort
+of I/O error handles set where a check for "pci_channel_io_perm_failure"
+seem to be having place.  This is also true for this driver looking at
+the igc_io_error_detected().
 
--Toke
+Is this not working for the igc driver?  Or is this for something
+completely different?
 
+Having said all that, I am not an expert in network drivers, so pardon
+me if I am asking about something completely different, and I apologise
+if that is the case.
+
+> Bjorn, Krzysztof: what do you think about lifting helper function
+> pci_dev_is_disconnected() to be available to all drivers and not only in
+> PCI subsystem?
+
+No objections from me, if we believe it's useful and that it might
+encourage people to use a common API.  Currently, I can see at least
+five potential users of this helper.
+
+	Krzysztof
