@@ -1,53 +1,202 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Mon,  5 Jul 2021 18:43:34 +0200
-Subject: [Intel-wired-lan] [PATCH v2 intel-next 0/4] XDP_TX improvements for
- ice
-Message-ID: <20210705164338.58313-1-maciej.fijalkowski@intel.com>
+Date: Mon,  5 Jul 2021 18:43:36 +0200
+Subject: [Intel-wired-lan] [PATCH v2 intel-next 2/4] ice: optimize XDP_TX
+ descriptor processing
+In-Reply-To: <20210705164338.58313-1-maciej.fijalkowski@intel.com>
+References: <20210705164338.58313-1-maciej.fijalkowski@intel.com>
+Message-ID: <20210705164338.58313-3-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+Improve the performance of XDP_TX by reducing the number of times we set
+the RS bit. Instead of setting it for each packet, set it at the end of
+the batch right before the tail bump. This results in reduced PCIe
+traffic as HW will issue less writebacks.
 
-this is a second revision of a series around XDP_TX improvements for ice
-driver. When compared to v1 (which can be found under [1]), two new
-patches are introduced that are focused on improving the performance for
-XDP_TX as Jussi reported that the numbers were pretty low on his side.
-Furthermore the fallback path is now based on static branch, as
-suggested by Toke on v1. This means that there's no further need for a
-standalone net_device_ops that were serving the locked version of
-ndo_xdp_xmit callback.
+For that purpose, introduce the next_rs_idx field onto ice_ring so that
+the descriptor with RS bit set can be tracked.
 
-Idea from 2nd patch is borrowed from a joint work that was done against
-OOT driver among with Sridhar Samudrala, Jesse Brandeburg and Piotr
-Raczynski, where we working on fixing the scaling issues for Tx AF_XDP
-ZC path.
+This will allow for calculating the amount of descriptors that are ready
+to be cleaned. DD bit can be checked only on the descriptor that
+next_rs_idx points to. This logic can not be combined into existing
+ice_clean_tx_irq routine so let's introduce a separate function
+dedicated for cleaning XDP rings and drop the XDP specific bits from the
+existing one.
 
-Last but not least, with this series I observe the improvement of
-performance by around 30%.
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 79 ++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  5 +-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 13 ++-
+ 3 files changed, 76 insertions(+), 21 deletions(-)
 
-Thanks!
-Maciej
-
-[1] : https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
-
-Maciej Fijalkowski (4):
-  ice: unify xdp_rings accesses
-  ice: optimize XDP_TX descriptor processing
-  ice: do not create xdp_frame on XDP_TX
-  ice: introduce XDP_TX fallback path
-
- drivers/net/ethernet/intel/ice/ice.h          |   3 +
- drivers/net/ethernet/intel/ice/ice_lib.c      |   4 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |  45 ++++++-
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 123 +++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_txrx.h     |   6 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  29 +++--
- drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  16 +++
- 7 files changed, 190 insertions(+), 36 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 6ee8e0032d52..23b97c9579fb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -194,6 +194,63 @@ void ice_free_tx_ring(struct ice_ring *tx_ring)
+ 	}
+ }
+ 
++/**
++ * ice_clean_xdp_irq - Reclaim resources after transmit completes on XDP ring
++ * @xdp_ring: XDP ring to clean
++ *
++ * Returns true if there's any budget left (e.g. the clean is finished)
++ */
++static bool ice_clean_xdp_irq(struct ice_ring *xdp_ring)
++{
++	unsigned int total_bytes = 0, total_pkts = 0;
++	u16 next_rs_idx = xdp_ring->next_rs_idx;
++	u16 ntc = xdp_ring->next_to_clean;
++	struct ice_tx_desc *next_rs_desc;
++	struct ice_tx_buf *tx_buf;
++	u16 frames_ready = 0;
++	u16 frames_to_clean;
++	int i;
++
++	next_rs_desc = ICE_TX_DESC(xdp_ring, next_rs_idx);
++	if (next_rs_desc->cmd_type_offset_bsz &
++	    cpu_to_le64(ICE_TX_DESC_DTYPE_DESC_DONE)) {
++		if (next_rs_idx >= ntc)
++			frames_ready = next_rs_idx - ntc;
++		else
++			frames_ready = next_rs_idx + xdp_ring->count - ntc;
++	}
++
++	if (!frames_ready)
++		return true;
++
++	frames_to_clean = min_t(u16, frames_ready, ICE_DFLT_IRQ_WORK);
++
++	for (i = 0; i < frames_to_clean; i++) {
++		tx_buf = &xdp_ring->tx_buf[ntc];
++
++		total_bytes += tx_buf->bytecount;
++		/* normally tx_buf->gso_segs was taken but at this point
++		 * it's always 1 for us
++		 */
++		total_pkts++;
++
++		page_frag_free(tx_buf->raw_buf);
++		dma_unmap_single(xdp_ring->dev, dma_unmap_addr(tx_buf, dma),
++				 dma_unmap_len(tx_buf, len), DMA_TO_DEVICE);
++		dma_unmap_len_set(tx_buf, len, 0);
++		tx_buf->raw_buf = NULL;
++
++		ntc++;
++		if (ntc >= xdp_ring->count)
++			ntc = 0;
++	}
++
++	xdp_ring->next_to_clean = ntc;
++	ice_update_tx_ring_stats(xdp_ring, total_pkts, total_bytes);
++
++	return frames_ready <= frames_to_clean;
++}
++
+ /**
+  * ice_clean_tx_irq - Reclaim resources after transmit completes
+  * @tx_ring: Tx ring to clean
+@@ -238,11 +295,8 @@ static bool ice_clean_tx_irq(struct ice_ring *tx_ring, int napi_budget)
+ 		total_bytes += tx_buf->bytecount;
+ 		total_pkts += tx_buf->gso_segs;
+ 
+-		if (ice_ring_is_xdp(tx_ring))
+-			page_frag_free(tx_buf->raw_buf);
+-		else
+-			/* free the skb */
+-			napi_consume_skb(tx_buf->skb, napi_budget);
++		/* free the skb */
++		napi_consume_skb(tx_buf->skb, napi_budget);
+ 
+ 		/* unmap skb header data */
+ 		dma_unmap_single(tx_ring->dev,
+@@ -297,10 +351,6 @@ static bool ice_clean_tx_irq(struct ice_ring *tx_ring, int napi_budget)
+ 	tx_ring->next_to_clean = i;
+ 
+ 	ice_update_tx_ring_stats(tx_ring, total_pkts, total_bytes);
+-
+-	if (ice_ring_is_xdp(tx_ring))
+-		return !!budget;
+-
+ 	netdev_tx_completed_queue(txring_txq(tx_ring), total_pkts,
+ 				  total_bytes);
+ 
+@@ -1396,9 +1446,14 @@ int ice_napi_poll(struct napi_struct *napi, int budget)
+ 	 * budget and be more aggressive about cleaning up the Tx descriptors.
+ 	 */
+ 	ice_for_each_ring(ring, q_vector->tx) {
+-		bool wd = ring->xsk_pool ?
+-			  ice_clean_tx_irq_zc(ring, budget) :
+-			  ice_clean_tx_irq(ring, budget);
++		bool wd;
++
++		if (ring->xsk_pool)
++			wd = ice_clean_tx_irq_zc(ring, budget);
++		else if (ice_ring_is_xdp(ring))
++			wd = ice_clean_xdp_irq(ring);
++		else
++			wd = ice_clean_tx_irq(ring, budget);
+ 
+ 		if (!wd)
+ 			clean_complete = false;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index 1e46e80f3d6f..b43d471ce05d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -283,7 +283,10 @@ struct ice_ring {
+ 	/* used in interrupt processing */
+ 	u16 next_to_use;
+ 	u16 next_to_clean;
+-	u16 next_to_alloc;
++	union {
++		u16 next_to_alloc;
++		u16 next_rs_idx;
++	};
+ 
+ 	/* stats structs */
+ 	struct ice_q_stats	stats;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index 4fd01a153d35..0b3d51c9869b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -244,19 +244,13 @@ int ice_xmit_xdp_ring(void *data, u16 size, struct ice_ring *xdp_ring)
+ 
+ 	tx_desc = ICE_TX_DESC(xdp_ring, i);
+ 	tx_desc->buf_addr = cpu_to_le64(dma);
+-	tx_desc->cmd_type_offset_bsz = ice_build_ctob(ICE_TXD_LAST_DESC_CMD, 0,
++	tx_desc->cmd_type_offset_bsz = ice_build_ctob(ICE_TX_DESC_CMD_EOP, 0,
+ 						      size, 0);
+ 
+-	/* Make certain all of the status bits have been updated
+-	 * before next_to_watch is written.
+-	 */
+-	smp_wmb();
+-
++	xdp_ring->next_rs_idx = i;
+ 	i++;
+ 	if (i == xdp_ring->count)
+ 		i = 0;
+-
+-	tx_buf->next_to_watch = tx_desc;
+ 	xdp_ring->next_to_use = i;
+ 
+ 	return ICE_XDP_TX;
+@@ -296,7 +290,10 @@ void ice_finalize_xdp_rx(struct ice_ring *rx_ring, unsigned int xdp_res)
+ 	if (xdp_res & ICE_XDP_TX) {
+ 		struct ice_ring *xdp_ring =
+ 			rx_ring->vsi->xdp_rings[smp_processor_id()];
++		struct ice_tx_desc *next_rs_desc = ICE_TX_DESC(xdp_ring, xdp_ring->next_rs_idx);
+ 
++		next_rs_desc->cmd_type_offset_bsz |=
++			cpu_to_le64(ICE_TX_DESC_CMD_RS << ICE_TXD_QW1_CMD_S);
+ 		ice_xdp_ring_update_tail(xdp_ring);
+ 	}
+ }
 -- 
 2.20.1
 
