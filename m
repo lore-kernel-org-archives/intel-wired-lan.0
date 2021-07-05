@@ -1,52 +1,87 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 5 Jul 2021 12:22:16 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2 01/12] ice: basic support
- for eswitch mode management
-In-Reply-To: <YNKtdJjFpyiZG1YJ@localhost.localdomain>
-References: <20210622212134.341728-1-michal.swiatkowski@linux.intel.com>
- <20210622212134.341728-2-michal.swiatkowski@linux.intel.com>
- <f1083357-9eb9-3bbb-baa5-0b4392ca4d4f@molgen.mpg.de>
- <YNKtdJjFpyiZG1YJ@localhost.localdomain>
-Message-ID: <85e1e813-bb82-d2f4-6082-87205ab494a7@molgen.mpg.de>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Mon, 5 Jul 2021 14:54:39 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] igc: wait for the MAC copy when
+ enabled MAC passthrough
+In-Reply-To: <ad3d2d01-1d0a-8887-b057-e6a9531a05f4@canonical.com>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210702045120.22855-2-aaron.ma@canonical.com>
+ <613e2106-940a-49ed-6621-0bb00bc7dca5@intel.com>
+ <ad3d2d01-1d0a-8887-b057-e6a9531a05f4@canonical.com>
+Message-ID: <f9f9408e-9ba3-7ed9-acc2-1c71913b04f0@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Michal,
-
-
-Am 23.06.21 um 05:41 schrieb Michal Swiatkowski:
-> On Wed, Jun 23, 2021 at 07:58:00AM +0200, Paul Menzel wrote:
-
->> Am 22.06.21 um 23:21 schrieb Michal Swiatkowski:
-
-[?]
-
->>> - restore 'legacy' mode
->>> [root at localhost]# devlink dev eswitch set pci/0000:03:00.1 mode legacy
->>> [root at localhost]# devlink dev eswitch show pci/0000:03:00.1
->>>> pci/0000:03:00.1: mode legacy
->>
->> Thank you for adding these examples to the commit message. I?d put some of
->> them into the Kconfig description of `ICE_SWITCHDEV`.
-
-> You mean putting this devlink command to help section of Kconfig?
-> Something like:
-> To go to E-switch mode type:
-> devlink dev eswitch set pci/0000:03:00.1 mode switchdev
+On 7/5/2021 10:38, Aaron Ma wrote:
 > 
-> Is this right place for this kind of information? I have seen that
-> Mellanox doesn't have command example in Kconfig for switchdev.
+> 
+> On 7/4/21 1:36 PM, Neftin, Sasha wrote:
+>> On 7/2/2021 07:51, Aaron Ma wrote:
+>>> Such as dock hot plug event when runtime, for hardware implementation,
+>>> the MAC copy takes less than one second when BIOS enabled MAC 
+>>> passthrough.
+>>> After test on Lenovo TBT4 dock, 600ms is enough to update the
+>>> MAC address.
+>>> Otherwise ethernet fails to work.
+>>>
+>>> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+>>> ---
+>>> ? drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
+>>> ? 1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c 
+>>> b/drivers/net/ethernet/intel/igc/igc_main.c
+>>> index 606b72cb6193..c8bc5f089255 100644
+>>> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+>>> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>>> @@ -5468,6 +5468,9 @@ static int igc_probe(struct pci_dev *pdev,
+>>> ????? memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
+>>> ????? memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
+>>> +??? if (pci_is_thunderbolt_attached(pdev) > +??????? msleep(600);
+>> I believe it is a bit fragile. I would recommend here look for another 
+>> indication instead of delay. Can we poll for a 'pci_channel_io_normal' 
+>> state? (igc->pdev->error_state == pci_channel_io_normal)
+> 
+> Hi sasha,
+> In this situation, the error_state is always pci_channel_io_normal.
+Ok.
+> The delay is necessary.
+> 
+> Refer to "627239-Intel? Ethernet Controller 
+> I225-MAC-Address-Passthrough-rev1.2"
+> section "3.5
+>  ?Timing Considerations":
+Hello Aaron, Thanks to point me on this document. I see... This is 
+recommendation for Windows driver. Anyway, "delay" approach is 
+error-prone. We need rather ask for MNG FW confirmation (message) that 
+MAC address is copied.
+Can we call (in case we know that MNG FW copied MAC address):
+igc_rar_set (method from igc_mac.c), update the mac.addr and then 
+perform": memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);?
 
-Indeed. There is 
-`Documentation/networking/device_drivers/ethernet/mellanox/mlx5.rst`. As 
-long as there is no documentation, I?d put it into the Kconfig 
-description. If you add documentation, then just refer to that from the 
-Kconfig description.
-
-
-Kind regards,
-
-Paul
+> "For hardware implementation,
+> 
+> when the operating system is already running, the MAC copy must happen 
+> not more than one
+> 
+> second after TBT link is established.
+> the I225 Windows driver prevents the operating
+> 
+> system from detecting the I225 for one second. This allows enough time 
+> for hardware to update the
+> 
+> MAC address."
+> 
+> Thanks sasha,
+> Aaron
+> 
+>>> +
+>>> ????? /* Initialize skew-specific constants */
+>>> ????? err = ei->get_invariants(hw);
+>>> ????? if (err)
+>>>
+>> Thanks Aaron,
+>> sasha
+Sasha
