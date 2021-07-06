@@ -1,83 +1,52 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:24:09 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 21/74] igb: handle vlan types
- with checker enabled
+Date: Tue,  6 Jul 2021 07:24:17 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.4 29/74] ice: set the value of
+ global config lock timeout longer
 In-Reply-To: <20210706112502.2064236-1-sashal@kernel.org>
 References: <20210706112502.2064236-1-sashal@kernel.org>
-Message-ID: <20210706112502.2064236-21-sashal@kernel.org>
+Message-ID: <20210706112502.2064236-29-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Liwei Song <liwei.song@windriver.com>
 
-[ Upstream commit c7cbfb028b95360403d579c47aaaeef1ff140964 ]
+[ Upstream commit fb3612840d4f587a0af9511a11d7989d1fa48206 ]
 
-The sparse build (C=2) finds some issues with how the driver
-dealt with the (very difficult) hardware that in some generations
-uses little-endian, and in others uses big endian, for the VLAN
-field. The code as written picks __le16 as a type and for some
-hardware revisions we override it to __be16 as done in this
-patch. This impacted the VF driver as well so fix it there too.
+It may need hold Global Config Lock a longer time when download DDP
+package file, extend the timeout value to 5000ms to ensure that
+download can be finished before other AQ command got time to run,
+this will fix the issue below when probe the device, 5000ms is a test
+value that work with both Backplane and BreakoutCable NVM image:
 
-Also change the vlan_tci assignment to override the sparse
-warning without changing functionality.
+ice 0000:f4:00.0: VSI 12 failed lan queue config, error ICE_ERR_CFG
+ice 0000:f4:00.0: Failed to delete VSI 12 in FW - error: ICE_ERR_AQ_TIMEOUT
+ice 0000:f4:00.0: probe failed due to setup PF switch: -12
+ice: probe of 0000:f4:00.0 failed with error -12
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Tested-by: Dave Switzer <david.switzer@intel.com>
+Signed-off-by: Liwei Song <liwei.song@windriver.com>
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 5 +++--
- drivers/net/ethernet/intel/igbvf/netdev.c | 4 ++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_type.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 7a4e2b014dd6..c37f0590b3a4 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2651,7 +2651,8 @@ static int igb_parse_cls_flower(struct igb_adapter *adapter,
- 			}
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 6667d17a4206..0b2e657b96eb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -48,7 +48,7 @@ enum ice_aq_res_ids {
+ /* FW update timeout definitions are in milliseconds */
+ #define ICE_NVM_TIMEOUT			180000
+ #define ICE_CHANGE_LOCK_TIMEOUT		1000
+-#define ICE_GLOBAL_CFG_LOCK_TIMEOUT	3000
++#define ICE_GLOBAL_CFG_LOCK_TIMEOUT	5000
  
- 			input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
--			input->filter.vlan_tci = match.key->vlan_priority;
-+			input->filter.vlan_tci =
-+				(__force __be16)match.key->vlan_priority;
- 		}
- 	}
- 
-@@ -8255,7 +8256,7 @@ static void igb_process_skb_fields(struct igb_ring *rx_ring,
- 
- 		if (igb_test_staterr(rx_desc, E1000_RXDEXT_STATERR_LB) &&
- 		    test_bit(IGB_RING_FLAG_RX_LB_VLAN_BSWAP, &rx_ring->flags))
--			vid = be16_to_cpu(rx_desc->wb.upper.vlan);
-+			vid = be16_to_cpu((__force __be16)rx_desc->wb.upper.vlan);
- 		else
- 			vid = le16_to_cpu(rx_desc->wb.upper.vlan);
- 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 0f2b68f4bb0f..77cb2ab7dab4 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -83,14 +83,14 @@ static int igbvf_desc_unused(struct igbvf_ring *ring)
- static void igbvf_receive_skb(struct igbvf_adapter *adapter,
- 			      struct net_device *netdev,
- 			      struct sk_buff *skb,
--			      u32 status, u16 vlan)
-+			      u32 status, __le16 vlan)
- {
- 	u16 vid;
- 
- 	if (status & E1000_RXD_STAT_VP) {
- 		if ((adapter->flags & IGBVF_FLAG_RX_LB_VLAN_BSWAP) &&
- 		    (status & E1000_RXDEXT_STATERR_LB))
--			vid = be16_to_cpu(vlan) & E1000_RXD_SPC_VLAN_MASK;
-+			vid = be16_to_cpu((__force __be16)vlan) & E1000_RXD_SPC_VLAN_MASK;
- 		else
- 			vid = le16_to_cpu(vlan) & E1000_RXD_SPC_VLAN_MASK;
- 		if (test_bit(vid, adapter->active_vlans))
+ enum ice_aq_res_access_type {
+ 	ICE_RES_READ = 1,
 -- 
 2.30.2
 
