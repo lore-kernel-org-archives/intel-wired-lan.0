@@ -1,48 +1,77 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:13:01 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.13 121/189] ice: mark PTYPE 2 as
- reserved
-In-Reply-To: <20210706111409.2058071-1-sashal@kernel.org>
-References: <20210706111409.2058071-1-sashal@kernel.org>
-Message-ID: <20210706111409.2058071-121-sashal@kernel.org>
+Date: Tue,  6 Jul 2021 07:16:22 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.12 036/160] e100: handle eeprom
+ as little endian
+In-Reply-To: <20210706111827.2060499-1-sashal@kernel.org>
+References: <20210706111827.2060499-1-sashal@kernel.org>
+Message-ID: <20210706111827.2060499-36-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-[ Upstream commit 0c526d440f76676733cb470b454db9d5507a3a50 ]
+[ Upstream commit d4ef55288aa2e1b76033717242728ac98ddc4721 ]
 
-The entry for PTYPE 2 in the ice_ptype_lkup table incorrectly states
-that this is an L2 packet with no payload. According to the datasheet,
-this PTYPE is actually unused and reserved.
+Sparse tool was warning on some implicit conversions from
+little endian data read from the EEPROM on the e100 cards.
 
-Fix the lookup entry to indicate this is an unused entry that is
-reserved.
+Fix these by being explicit about the conversions using
+le16_to_cpu().
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e100.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index fc3b56c13786..4238ab0433ee 100644
---- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -630,7 +630,7 @@ static const struct ice_rx_ptype_decoded ice_ptype_lkup[] = {
- 	/* L2 Packet types */
- 	ICE_PTT_UNUSED_ENTRY(0),
- 	ICE_PTT(1, L2, NONE, NOF, NONE, NONE, NOF, NONE, PAY2),
--	ICE_PTT(2, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
-+	ICE_PTT_UNUSED_ENTRY(2),
- 	ICE_PTT_UNUSED_ENTRY(3),
- 	ICE_PTT_UNUSED_ENTRY(4),
- 	ICE_PTT_UNUSED_ENTRY(5),
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index f8d78af76d7d..1b0958bd24f6 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -1395,7 +1395,7 @@ static int e100_phy_check_without_mii(struct nic *nic)
+ 	u8 phy_type;
+ 	int without_mii;
+ 
+-	phy_type = (nic->eeprom[eeprom_phy_iface] >> 8) & 0x0f;
++	phy_type = (le16_to_cpu(nic->eeprom[eeprom_phy_iface]) >> 8) & 0x0f;
+ 
+ 	switch (phy_type) {
+ 	case NoSuchPhy: /* Non-MII PHY; UNTESTED! */
+@@ -1515,7 +1515,7 @@ static int e100_phy_init(struct nic *nic)
+ 		mdio_write(netdev, nic->mii.phy_id, MII_BMCR, bmcr);
+ 	} else if ((nic->mac >= mac_82550_D102) || ((nic->flags & ich) &&
+ 	   (mdio_read(netdev, nic->mii.phy_id, MII_TPISTATUS) & 0x8000) &&
+-		(nic->eeprom[eeprom_cnfg_mdix] & eeprom_mdix_enabled))) {
++	   (le16_to_cpu(nic->eeprom[eeprom_cnfg_mdix]) & eeprom_mdix_enabled))) {
+ 		/* enable/disable MDI/MDI-X auto-switching. */
+ 		mdio_write(netdev, nic->mii.phy_id, MII_NCONFIG,
+ 				nic->mii.force_media ? 0 : NCONFIG_AUTO_SWITCH);
+@@ -2269,9 +2269,9 @@ static int e100_asf(struct nic *nic)
+ {
+ 	/* ASF can be enabled from eeprom */
+ 	return (nic->pdev->device >= 0x1050) && (nic->pdev->device <= 0x1057) &&
+-	   (nic->eeprom[eeprom_config_asf] & eeprom_asf) &&
+-	   !(nic->eeprom[eeprom_config_asf] & eeprom_gcl) &&
+-	   ((nic->eeprom[eeprom_smbus_addr] & 0xFF) != 0xFE);
++	   (le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_asf) &&
++	   !(le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_gcl) &&
++	   ((le16_to_cpu(nic->eeprom[eeprom_smbus_addr]) & 0xFF) != 0xFE);
+ }
+ 
+ static int e100_up(struct nic *nic)
+@@ -2926,7 +2926,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* Wol magic packet can be enabled from eeprom */
+ 	if ((nic->mac >= mac_82558_D101_A4) &&
+-	   (nic->eeprom[eeprom_id] & eeprom_id_wol)) {
++	   (le16_to_cpu(nic->eeprom[eeprom_id]) & eeprom_id_wol)) {
+ 		nic->flags |= wol_magic;
+ 		device_set_wakeup_enable(&pdev->dev, true);
+ 	}
 -- 
 2.30.2
 
