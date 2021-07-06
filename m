@@ -1,56 +1,57 @@
-From: Pali =?unknown-8bit?q?Roh=C3=A1r?= <pali@kernel.org>
-Date: Tue, 6 Jul 2021 16:23:15 +0200
-Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
- is removed
-In-Reply-To: <20210705230212.GC142312@rocinante>
-References: <20210702045120.22855-1-aaron.ma@canonical.com>
- <20210704142808.f43jbcufk37hundo@pali>
- <20210705230212.GC142312@rocinante>
-Message-ID: <20210706142315.ve22wypovdezqnva@pali>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 6 Jul 2021 19:53:51 +0000
+Subject: [Intel-wired-lan] [net-next 00/13] ice: implement support for
+ PTP on E822 hardware
+In-Reply-To: <2226449e-2c2c-d72b-1bd2-1a44882251fe@molgen.mpg.de>
+References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
+ <2226449e-2c2c-d72b-1bd2-1a44882251fe@molgen.mpg.de>
+Message-ID: <e1a3cb86cb7e43d29b6b5e4663029bfe@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tuesday 06 July 2021 01:02:12 Krzysztof Wilczy?ski wrote:
-> Hi Pali,
-> 
-> [...]
-> > Aaron: can you check if pci_dev_is_disconnected() is really something
-> > which should be used and it helps you?
-> 
-> While having a closer look, I've noticed that quite a few of the network
-> drivers handle this somewhat, as I see that a lot of them have some sort
-> of I/O error handles set where a check for "pci_channel_io_perm_failure"
-> seem to be having place.  This is also true for this driver looking at
-> the igc_io_error_detected().
-> 
-> Is this not working for the igc driver?  Or is this for something
-> completely different?
 
-I guess that this callback is called when Bridge receive some kind of
-fatal error. Non-AER-aware bridges probably do not have to inform system
-that error happened and kernel would not call this callback. So I guess
-it depends on to which "machine" you need this network adapter.
 
-So in my opinion this callback is there for PCI subsystem to inform
-driver that error happened and let driver to do any hw specific recovery
-if it is possible.
+> -----Original Message-----
+> From: Paul Menzel <pmenzel@molgen.mpg.de>
+> Sent: Monday, July 05, 2021 12:47 AM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [net-next 00/13] ice: implement support for PTP on
+> E822 hardware
+> 
+> Dear Jacob,
+> 
+> 
+> Thank you for sending the patches.
+> 
+> 
+> Am 01.07.21 um 02:27 schrieb Jacob Keller:
+> > Extend the ice driver implementation to support PTP for the E822 based
+> > devices.
+> >
+> > This includes a few cleanup patches, that fix some minor issues spotted
+> > while preparing them. In addition, there are some slight refactors to ease
+> > the addition of E822 support, followed by adding the new hardware
+> > implementation ice_ptp_hw.c.
+> >
+> > There are a few major differences with E822 support compared to E810
+> > support:
+> >
+> > *) The E822 PHY is a bit different and requires a more complex
+> > initialization procedure that requires delaying the PHY start until link is
+> > up
+> 
+> It?d be great, if you gave concrete numbers.
+> 
 
-But I think problem described here can be slightly different. It is
-needed to check if device is still alive or was disconnected.
+Concrete numbers on which part? I'm not sure if we have concrete numbers on everything here. For the calibration process, according to the data sheet I have, it indicates that uncalibrated timestamps (i.e. in bypass mode) have an error of up to 1 clock cycle and calibrated timestamps should have an error of less than 1/8th of a clock cycle. Here clock cycle refers to the length of one tick on the clock source, and error refers to difference between actual start of reception or transmission vs time of when the timstamp is captured. I unfortunately am not at all sure how this was measured by the hardware folks...
 
-> Having said all that, I am not an expert in network drivers, so pardon
-> me if I am asking about something completely different, and I apologise
-> if that is the case.
+> [?]
 > 
-> > Bjorn, Krzysztof: what do you think about lifting helper function
-> > pci_dev_is_disconnected() to be available to all drivers and not only in
-> > PCI subsystem?
 > 
-> No objections from me, if we believe it's useful and that it might
-> encourage people to use a common API.  Currently, I can see at least
-> five potential users of this helper.
+> Kind regards,
 > 
-> 	Krzysztof
+> Paul
