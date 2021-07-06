@@ -1,159 +1,120 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 6 Jul 2021 19:54:48 +0000
-Subject: [Intel-wired-lan] [net-next 04/13] ice: restart periodic
- outputs around time changes
-In-Reply-To: <29cb4977-3559-094c-cc18-d2d32819e227@molgen.mpg.de>
-References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
- <20210701002713.3486336-5-jacob.e.keller@intel.com>
- <29cb4977-3559-094c-cc18-d2d32819e227@molgen.mpg.de>
-Message-ID: <f1e78a778b994402b0a85ad59592a426@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 6 Jul 2021 15:12:41 -0500
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210702045120.22855-1-aaron.ma@canonical.com>
+Message-ID: <20210706201241.GA820992@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, Jul 02, 2021 at 12:51:19PM +0800, Aaron Ma wrote:
+> Check PCI state when rd/wr iomem.
+> Implement wr32 function as rd32 too.
+> 
+> When unplug TBT dock with i225, rd/wr PCI iomem will cause error log:
+> Trace:
+> BUG: unable to handle page fault for address: 000000000000b604
+> Oops: 0000 [#1] SMP NOPTI
+> RIP: 0010:igc_rd32+0x1c/0x90 [igc]
+> Call Trace:
+> igc_ptp_suspend+0x6c/0xa0 [igc]
+> igc_ptp_stop+0x12/0x50 [igc]
+> igc_remove+0x7f/0x1c0 [igc]
+> pci_device_remove+0x3e/0xb0
+> __device_release_driver+0x181/0x240
+> 
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 16 ++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h |  7 ++-----
+>  2 files changed, 18 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index f1adf154ec4a..606b72cb6193 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -5292,6 +5292,10 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>  	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+>  	u32 value = 0;
+>  
+> +	if (igc->pdev &&
+> +		igc->pdev->error_state == pci_channel_io_perm_failure)
+> +		return 0;
 
+I don't think this solves the problem.
 
-> -----Original Message-----
-> From: Paul Menzel <pmenzel@molgen.mpg.de>
-> Sent: Monday, July 05, 2021 12:52 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [net-next 04/13] ice: restart periodic outputs around
-> time changes
-> 
-> Dear Jacob,
-> 
-> 
-> Am 01.07.21 um 02:27 schrieb Jacob Keller:
-> > Wen we enabled auxiliary input/output support for the E810 device, we
-> 
-> When
-> 
-> > forgot to add logic to restart the output when we change time. This is
-> > important as the periodic output will be incorrect after a time change
-> > otherwise.
-> >
-> > This unfortunately includes the adjust time function, even though it
-> > uses an atomic hardware interface. The atomic adjustment can still cause
-> > the pin output to stall permanently, so we need to stop and restart it.
-> >
-> > Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/ice/ice_ptp.c | 30 ++++++++++++++++++++++++
-> >   1 file changed, 30 insertions(+)
-> >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> > index 83ba0bf2817a..08acdb2494ed 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> > @@ -776,6 +776,7 @@ ice_ptp_settime64(struct ptp_clock_info *info, const
-> struct timespec64 *ts)
-> >   	struct ice_pf *pf = ptp_info_to_pf(info);
-> >   	struct timespec64 ts64 = *ts;
-> >   	struct ice_hw *hw = &pf->hw;
-> > +	u8 i;
-> 
-> For count variables, it?s better to use native types, size_t/unsigned
-> int in this case.
-> 
+  - Driver calls igc_rd32().
 
-Sure.
+  - "if (pci_channel_io_perm_failure)" evaluates to false (error_state
+    does not indicate an error).
 
->      static int ice_ptp_cfg_clkout(struct ice_pf *pf, unsigned int chan,
->                                    struct ice_perout_channel *config,
-> bool store)
-> 
-> >   	int err;
-> >
-> >   	if (!ice_ptp_lock(hw)) {
-> > @@ -783,12 +784,22 @@ ice_ptp_settime64(struct ptp_clock_info *info, const
-> struct timespec64 *ts)
-> >   		goto exit;
-> >   	}
-> >
-> > +	/* Disable periodic outputs */
-> > +	for (i = 0; i < info->n_per_out; i++)
-> > +		if (pf->ptp.perout_channels[i].ena)
-> > +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> > +
-> >   	err = ice_ptp_write_init(pf, &ts64);
-> >   	ice_ptp_unlock(hw);
-> >
-> >   	if (!err)
-> >   		ice_ptp_update_cached_phctime(pf);
-> >
-> > +	/* Reenable periodic outputs */
-> > +	for (i = 0; i < info->n_per_out; i++)
-> > +		if (pf->ptp.perout_channels[i].ena)
-> > +			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-> > +					   false);
-> >   exit:
-> >   	if (err) {
-> >   		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-> > @@ -825,6 +836,7 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info,
-> s64 delta)
-> >   	struct ice_hw *hw = &pf->hw;
-> >   	struct device *dev;
-> >   	int err;
-> > +	u8 i;
-> >
-> >   	dev = ice_pf_to_dev(pf);
-> >
-> > @@ -842,8 +854,19 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info,
-> s64 delta)
-> >   		return -EBUSY;
-> >   	}
-> >
-> > +	/* Disable periodic outputs */
-> > +	for (i = 0; i < info->n_per_out; i++)
-> > +		if (pf->ptp.perout_channels[i].ena)
-> > +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> > +
-> >   	err = ice_ptp_write_adj(pf, delta);
-> >
-> > +	/* Reenable periodic outputs */
-> > +	for (i = 0; i < info->n_per_out; i++)
-> > +		if (pf->ptp.perout_channels[i].ena)
-> > +			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-> > +					   false);
-> > +
-> >   	ice_ptp_unlock(hw);
-> >
-> >   	if (err) {
-> > @@ -1526,6 +1549,8 @@ void ice_ptp_init(struct ice_pf *pf)
-> >    */
-> >   void ice_ptp_release(struct ice_pf *pf)
-> >   {
-> > +	int i;
-> > +
-> >   	/* Disable timestamping for both Tx and Rx */
-> >   	ice_ptp_cfg_timestamp(pf, false);
-> >
-> > @@ -1543,6 +1568,11 @@ void ice_ptp_release(struct ice_pf *pf)
-> >   	if (!pf->ptp.clock)
-> >   		return;
-> >
-> > +	/* Disable periodic outputs */
-> > +	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-> > +		if (pf->ptp.perout_channels[i].ena)
-> > +			ice_ptp_cfg_clkout(pf, i, NULL, false);
-> > +
-> 
-> Could this be put into a dedicated enable/disable function (only pf
-> seems to be needed to be passed).
-> 
+  - Device is unplugged.
 
-Yea that seems like a good cleanup.
+  - igc_rd32() calls readl(), which performs MMIO read, which fails
+    because the device is no longer present.  readl() returns ~0 on
+    most platforms.
 
-> >   	ice_clear_ptp_clock_index(pf);
-> >   	ptp_clock_unregister(pf->ptp.clock);
-> >   	pf->ptp.clock = NULL;
+  - Same page fault occurs.
+
+The only way is to check *after* the MMIO read to see whether an error
+occurred.  On most platforms that means checking for ~0 data.  If you
+see that, a PCI error *may* have occurred.
+
+If you know that ~0 can never be valid, e.g., if you're reading a
+register where ~0 is not a valid value, you know for sure that an
+error has occurred.
+
+If ~0 might be a valid value, e.g., if you're reading a buffer that
+contains arbitrary data, you have to look harder.   You might read a
+register than cannot contain ~0, and see if you get the data you
+expect.  Or you might read the Vendor ID or something from config
+space.
+
+>  	value = readl(&hw_addr[reg]);
+>  
+>  	/* reads should not return all F's */
+> @@ -5308,6 +5312,18 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+>  	return value;
+>  }
+>  
+> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val)
+> +{
+> +	struct igc_adapter *igc = container_of(hw, struct igc_adapter, hw);
+> +	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+> +
+> +	if (igc->pdev &&
+> +		igc->pdev->error_state == pci_channel_io_perm_failure)
+> +		return;
+> +
+> +	writel((val), &hw_addr[(reg)]);
+> +}
+> +
+>  int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+>  {
+>  	struct igc_mac_info *mac = &adapter->hw.mac;
+> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+> index cc174853554b..eb4be87d0e8b 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+> @@ -260,13 +260,10 @@ struct igc_hw;
+>  u32 igc_rd32(struct igc_hw *hw, u32 reg);
+>  
+>  /* write operations, indexed using DWORDS */
+> -#define wr32(reg, val) \
+> -do { \
+> -	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+> -	writel((val), &hw_addr[(reg)]); \
+> -} while (0)
+> +void igc_wr32(struct igc_hw *hw, u32 reg, u32 val);
+>  
+>  #define rd32(reg) (igc_rd32(hw, reg))
+> +#define wr32(reg, val) (igc_wr32(hw, reg, val))
+>  
+>  #define wrfl() ((void)rd32(IGC_STATUS))
+>  
+> -- 
+> 2.30.2
 > 
-> 
-> Kind regards,
-> 
-> Paul
