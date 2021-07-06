@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:28:23 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.9 11/35] e100: handle eeprom as
+Date: Tue,  6 Jul 2021 07:29:11 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.4 11/31] e100: handle eeprom as
  little endian
-In-Reply-To: <20210706112848.2066036-1-sashal@kernel.org>
-References: <20210706112848.2066036-1-sashal@kernel.org>
-Message-ID: <20210706112848.2066036-11-sashal@kernel.org>
+In-Reply-To: <20210706112931.2066397-1-sashal@kernel.org>
+References: <20210706112931.2066397-1-sashal@kernel.org>
+Message-ID: <20210706112931.2066397-11-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
