@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:13:00 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.13 120/189] ice: fix incorrect
- payload indicator on PTYPE
+Date: Tue,  6 Jul 2021 07:13:01 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.13 121/189] ice: mark PTYPE 2 as
+ reserved
 In-Reply-To: <20210706111409.2058071-1-sashal@kernel.org>
 References: <20210706111409.2058071-1-sashal@kernel.org>
-Message-ID: <20210706111409.2058071-120-sashal@kernel.org>
+Message-ID: <20210706111409.2058071-121-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,13 +13,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-[ Upstream commit 638a0c8c8861cb8a3b54203e632ea5dcc23d8ca5 ]
+[ Upstream commit 0c526d440f76676733cb470b454db9d5507a3a50 ]
 
-The entry for PTYPE 90 indicates that the payload is layer 3. This does
-not match the specification in the datasheet which indicates the packet
-is a MAC, IPv6, UDP packet, with a payload in layer 4.
+The entry for PTYPE 2 in the ice_ptype_lkup table incorrectly states
+that this is an L2 packet with no payload. According to the datasheet,
+this PTYPE is actually unused and reserved.
 
-Fix the lookup table to match the data sheet.
+Fix the lookup entry to indicate this is an unused entry that is
+reserved.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
@@ -30,18 +31,18 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-index 21329ed3087e..fc3b56c13786 100644
+index fc3b56c13786..4238ab0433ee 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
 +++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-@@ -744,7 +744,7 @@ static const struct ice_rx_ptype_decoded ice_ptype_lkup[] = {
- 	/* Non Tunneled IPv6 */
- 	ICE_PTT(88, IP, IPV6, FRG, NONE, NONE, NOF, NONE, PAY3),
- 	ICE_PTT(89, IP, IPV6, NOF, NONE, NONE, NOF, NONE, PAY3),
--	ICE_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY3),
-+	ICE_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY4),
- 	ICE_PTT_UNUSED_ENTRY(91),
- 	ICE_PTT(92, IP, IPV6, NOF, NONE, NONE, NOF, TCP,  PAY4),
- 	ICE_PTT(93, IP, IPV6, NOF, NONE, NONE, NOF, SCTP, PAY4),
+@@ -630,7 +630,7 @@ static const struct ice_rx_ptype_decoded ice_ptype_lkup[] = {
+ 	/* L2 Packet types */
+ 	ICE_PTT_UNUSED_ENTRY(0),
+ 	ICE_PTT(1, L2, NONE, NOF, NONE, NONE, NOF, NONE, PAY2),
+-	ICE_PTT(2, L2, NONE, NOF, NONE, NONE, NOF, NONE, NONE),
++	ICE_PTT_UNUSED_ENTRY(2),
+ 	ICE_PTT_UNUSED_ENTRY(3),
+ 	ICE_PTT_UNUSED_ENTRY(4),
+ 	ICE_PTT_UNUSED_ENTRY(5),
 -- 
 2.30.2
 
