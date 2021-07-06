@@ -1,77 +1,56 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:29:11 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.4 11/31] e100: handle eeprom as
- little endian
-In-Reply-To: <20210706112931.2066397-1-sashal@kernel.org>
-References: <20210706112931.2066397-1-sashal@kernel.org>
-Message-ID: <20210706112931.2066397-11-sashal@kernel.org>
+From: Pali =?unknown-8bit?q?Roh=C3=A1r?= <pali@kernel.org>
+Date: Tue, 6 Jul 2021 16:23:15 +0200
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210705230212.GC142312@rocinante>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210704142808.f43jbcufk37hundo@pali>
+ <20210705230212.GC142312@rocinante>
+Message-ID: <20210706142315.ve22wypovdezqnva@pali>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+On Tuesday 06 July 2021 01:02:12 Krzysztof Wilczy?ski wrote:
+> Hi Pali,
+> 
+> [...]
+> > Aaron: can you check if pci_dev_is_disconnected() is really something
+> > which should be used and it helps you?
+> 
+> While having a closer look, I've noticed that quite a few of the network
+> drivers handle this somewhat, as I see that a lot of them have some sort
+> of I/O error handles set where a check for "pci_channel_io_perm_failure"
+> seem to be having place.  This is also true for this driver looking at
+> the igc_io_error_detected().
+> 
+> Is this not working for the igc driver?  Or is this for something
+> completely different?
 
-[ Upstream commit d4ef55288aa2e1b76033717242728ac98ddc4721 ]
+I guess that this callback is called when Bridge receive some kind of
+fatal error. Non-AER-aware bridges probably do not have to inform system
+that error happened and kernel would not call this callback. So I guess
+it depends on to which "machine" you need this network adapter.
 
-Sparse tool was warning on some implicit conversions from
-little endian data read from the EEPROM on the e100 cards.
+So in my opinion this callback is there for PCI subsystem to inform
+driver that error happened and let driver to do any hw specific recovery
+if it is possible.
 
-Fix these by being explicit about the conversions using
-le16_to_cpu().
+But I think problem described here can be slightly different. It is
+needed to check if device is still alive or was disconnected.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/net/ethernet/intel/e100.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 93c29094ceff..9035cb5fc70d 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -1423,7 +1423,7 @@ static int e100_phy_check_without_mii(struct nic *nic)
- 	u8 phy_type;
- 	int without_mii;
- 
--	phy_type = (nic->eeprom[eeprom_phy_iface] >> 8) & 0x0f;
-+	phy_type = (le16_to_cpu(nic->eeprom[eeprom_phy_iface]) >> 8) & 0x0f;
- 
- 	switch (phy_type) {
- 	case NoSuchPhy: /* Non-MII PHY; UNTESTED! */
-@@ -1543,7 +1543,7 @@ static int e100_phy_init(struct nic *nic)
- 		mdio_write(netdev, nic->mii.phy_id, MII_BMCR, bmcr);
- 	} else if ((nic->mac >= mac_82550_D102) || ((nic->flags & ich) &&
- 	   (mdio_read(netdev, nic->mii.phy_id, MII_TPISTATUS) & 0x8000) &&
--		(nic->eeprom[eeprom_cnfg_mdix] & eeprom_mdix_enabled))) {
-+	   (le16_to_cpu(nic->eeprom[eeprom_cnfg_mdix]) & eeprom_mdix_enabled))) {
- 		/* enable/disable MDI/MDI-X auto-switching. */
- 		mdio_write(netdev, nic->mii.phy_id, MII_NCONFIG,
- 				nic->mii.force_media ? 0 : NCONFIG_AUTO_SWITCH);
-@@ -2298,9 +2298,9 @@ static int e100_asf(struct nic *nic)
- {
- 	/* ASF can be enabled from eeprom */
- 	return (nic->pdev->device >= 0x1050) && (nic->pdev->device <= 0x1057) &&
--	   (nic->eeprom[eeprom_config_asf] & eeprom_asf) &&
--	   !(nic->eeprom[eeprom_config_asf] & eeprom_gcl) &&
--	   ((nic->eeprom[eeprom_smbus_addr] & 0xFF) != 0xFE);
-+	   (le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_asf) &&
-+	   !(le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_gcl) &&
-+	   ((le16_to_cpu(nic->eeprom[eeprom_smbus_addr]) & 0xFF) != 0xFE);
- }
- 
- static int e100_up(struct nic *nic)
-@@ -2952,7 +2952,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	/* Wol magic packet can be enabled from eeprom */
- 	if ((nic->mac >= mac_82558_D101_A4) &&
--	   (nic->eeprom[eeprom_id] & eeprom_id_wol)) {
-+	   (le16_to_cpu(nic->eeprom[eeprom_id]) & eeprom_id_wol)) {
- 		nic->flags |= wol_magic;
- 		device_set_wakeup_enable(&pdev->dev, true);
- 	}
--- 
-2.30.2
-
+> Having said all that, I am not an expert in network drivers, so pardon
+> me if I am asking about something completely different, and I apologise
+> if that is the case.
+> 
+> > Bjorn, Krzysztof: what do you think about lifting helper function
+> > pci_dev_is_disconnected() to be available to all drivers and not only in
+> > PCI subsystem?
+> 
+> No objections from me, if we believe it's useful and that it might
+> encourage people to use a common API.  Currently, I can see at least
+> five potential users of this helper.
+> 
+> 	Krzysztof
