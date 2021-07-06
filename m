@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue,  6 Jul 2021 07:27:19 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.14 15/45] e100: handle eeprom as
+Date: Tue,  6 Jul 2021 07:28:23 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 4.9 11/35] e100: handle eeprom as
  little endian
-In-Reply-To: <20210706112749.2065541-1-sashal@kernel.org>
-References: <20210706112749.2065541-1-sashal@kernel.org>
-Message-ID: <20210706112749.2065541-15-sashal@kernel.org>
+In-Reply-To: <20210706112848.2066036-1-sashal@kernel.org>
+References: <20210706112848.2066036-1-sashal@kernel.org>
+Message-ID: <20210706112848.2066036-11-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,7 +29,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 90974462743b..a73102357bbd 100644
+index 93c29094ceff..9035cb5fc70d 100644
 --- a/drivers/net/ethernet/intel/e100.c
 +++ b/drivers/net/ethernet/intel/e100.c
 @@ -1423,7 +1423,7 @@ static int e100_phy_check_without_mii(struct nic *nic)
@@ -50,7 +50,7 @@ index 90974462743b..a73102357bbd 100644
  		/* enable/disable MDI/MDI-X auto-switching. */
  		mdio_write(netdev, nic->mii.phy_id, MII_NCONFIG,
  				nic->mii.force_media ? 0 : NCONFIG_AUTO_SWITCH);
-@@ -2290,9 +2290,9 @@ static int e100_asf(struct nic *nic)
+@@ -2298,9 +2298,9 @@ static int e100_asf(struct nic *nic)
  {
  	/* ASF can be enabled from eeprom */
  	return (nic->pdev->device >= 0x1050) && (nic->pdev->device <= 0x1057) &&
@@ -63,7 +63,7 @@ index 90974462743b..a73102357bbd 100644
  }
  
  static int e100_up(struct nic *nic)
-@@ -2948,7 +2948,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -2952,7 +2952,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
  	/* Wol magic packet can be enabled from eeprom */
  	if ((nic->mac >= mac_82558_D101_A4) &&
