@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 6 Jul 2021 08:05:24 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: improve locking of
- mac_filter_hash
-In-Reply-To: <20210304093430.42421-1-sassmann@kpanic.de>
-References: <20210304093430.42421-1-sassmann@kpanic.de>
-Message-ID: <CY4PR11MB157684F676290E6B6544F961AB1B9@CY4PR11MB1576.namprd11.prod.outlook.com>
+Date: Tue, 6 Jul 2021 08:06:17 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf: do not override the adapter
+ state in the watchdog task
+In-Reply-To: <20210305123856.14302-1-sassmann@kpanic.de>
+References: <20210305123856.14302-1-sassmann@kpanic.de>
+Message-ID: <CY4PR11MB15767B03803E7D3DAAC4A356AB1B9@CY4PR11MB1576.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,83 +16,69 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Stefan Assmann
-> Sent: czwartek, 4 marca 2021 10:35
+> Sent: pi?tek, 5 marca 2021 13:39
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: pabeni at redhat.com; netdev at vger.kernel.org; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH] i40e: improve locking of mac_filter_hash
+> Cc: netdev at vger.kernel.org; sassmann at kpanic.de
+> Subject: [Intel-wired-lan] [PATCH] iavf: do not override the adapter state in
+> the watchdog task
 > 
-> i40e_config_vf_promiscuous_mode() calls
-> i40e_getnum_vf_vsi_vlan_filters() without acquiring the
-> mac_filter_hash_lock spinlock.
+> The iavf watchdog task overrides adapter->state to __IAVF_RESETTING
+> when it detects a pending reset. Then schedules iavf_reset_task() which
+> takes care of the reset.
 > 
-> This is unsafe because mac_filter_hash may get altered in another thread
-> while i40e_getnum_vf_vsi_vlan_filters() traverses the hashes.
+> The reset task is capable of handling the reset without changing
+> adapter->state. In fact we lose the state information when the watchdog
+> task prematurely changes the adapter state. This may lead to a crash if
+> instead of the reset task the iavf_remove() function gets called before the
+> reset task.
+> In that case (if we were in state __IAVF_RUNNING previously) the
+> iavf_remove() function triggers iavf_close() which fails to close the device
+> because of the incorrect state information.
 > 
-> Simply adding the spinlock in i40e_getnum_vf_vsi_vlan_filters() is not
-> possible as it already gets called in i40e_get_vlan_list_sync() with the
-> spinlock held. Therefore adding a wrapper that acquires the spinlock and call
-> the correct function where appropriate.
+> This may result in a crash due to pending interrupts.
+> kernel BUG at drivers/pci/msi.c:357!
+> [...]
+> Call Trace:
+>  [<ffffffffbddf24dd>] pci_disable_msix+0x3d/0x50  [<ffffffffc08d2a63>]
+> iavf_reset_interrupt_capability+0x23/0x40 [iavf]  [<ffffffffc08d312a>]
+> iavf_remove+0x10a/0x350 [iavf]  [<ffffffffbddd3359>]
+> pci_device_remove+0x39/0xc0  [<ffffffffbdeb492f>]
+> __device_release_driver+0x7f/0xf0  [<ffffffffbdeb49c3>]
+> device_release_driver+0x23/0x30  [<ffffffffbddcabb4>]
+> pci_stop_bus_device+0x84/0xa0  [<ffffffffbddcacc2>]
+> pci_stop_and_remove_bus_device+0x12/0x20
+>  [<ffffffffbddf361f>] pci_iov_remove_virtfn+0xaf/0x160  [<ffffffffbddf3bcc>]
+> sriov_disable+0x3c/0xf0  [<ffffffffbddf3ca3>] pci_disable_sriov+0x23/0x30
+> [<ffffffffc0667365>] i40e_free_vfs+0x265/0x2d0 [i40e]  [<ffffffffc0667624>]
+> i40e_pci_sriov_configure+0x144/0x1f0 [i40e]  [<ffffffffbddd5307>]
+> sriov_numvfs_store+0x177/0x1d0
+> Code: 00 00 e8 3c 25 e3 ff 49 c7 86 88 08 00 00 00 00 00 00 5b 41 5c 41 5d 41 5e
+> 41 5f 5d c3 48 8b 7b 28 e8 0d 44 RIP  [<ffffffffbbbf1068>]
+> free_msi_irqs+0x188/0x190
 > 
-> Fixes: 37d318d7805f ("i40e: Remove scheduling while atomic possibility")
-> Fix-suggested-by: Paolo Abeni <pabeni@redhat.com>
+> The solution is to not touch the adapter->state in iavf_watchdog_task() and
+> let the reset task handle the state transition.
+> 
 > Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 > ---
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 23 ++++++++++++++++---
->  1 file changed, 20 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 1b6ec9be155a..61d3e9a00f65 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -1101,12 +1101,12 @@ static int i40e_quiesce_vf_pci(struct i40e_vf *vf)
-> }
-> 
->  /**
-> - * i40e_getnum_vf_vsi_vlan_filters
-> + * __i40e_getnum_vf_vsi_vlan_filters
->   * @vsi: pointer to the vsi
->   *
->   * called to get the number of VLANs offloaded on this VF
->   **/
-> -static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
-> +static int __i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
->  {
->  	struct i40e_mac_filter *f;
->  	u16 num_vlans = 0, bkt;
-> @@ -1119,6 +1119,23 @@ static int i40e_getnum_vf_vsi_vlan_filters(struct
-> i40e_vsi *vsi)
->  	return num_vlans;
->  }
-> 
-> +/**
-> + * i40e_getnum_vf_vsi_vlan_filters
-> + * @vsi: pointer to the vsi
-> + *
-> + * wrapper for __i40e_getnum_vf_vsi_vlan_filters() with spinlock held
-> +**/ static int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi) {
-> +	int num_vlans;
-> +
-> +	spin_lock_bh(&vsi->mac_filter_hash_lock);
-> +	num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
-> +	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-> +
-> +	return num_vlans;
-> +}
-> +
->  /**
->   * i40e_get_vlan_list_sync
->   * @vsi: pointer to the VSI
-> @@ -1136,7 +1153,7 @@ static void i40e_get_vlan_list_sync(struct i40e_vsi
-> *vsi, u16 *num_vlans,
->  	int bkt;
-> 
->  	spin_lock_bh(&vsi->mac_filter_hash_lock);
-> -	*num_vlans = i40e_getnum_vf_vsi_vlan_filters(vsi);
-> +	*num_vlans = __i40e_getnum_vf_vsi_vlan_filters(vsi);
->  	*vlan_list = kcalloc(*num_vlans, sizeof(**vlan_list), GFP_ATOMIC);
->  	if (!(*vlan_list))
->  		goto err;
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 0a867d64d467..d9e3a70abb47 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -1954,7 +1954,6 @@ static void iavf_watchdog_task(struct work_struct
+> *work)
+>  		/* check for hw reset */
+>  	reg_val = rd32(hw, IAVF_VF_ARQLEN1) &
+> IAVF_VF_ARQLEN1_ARQENABLE_MASK;
+>  	if (!reg_val) {
+> -		adapter->state = __IAVF_RESETTING;
+>  		adapter->flags |= IAVF_FLAG_RESET_PENDING;
+>  		adapter->aq_required = 0;
+>  		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
 > --
 > 2.29.2
 
