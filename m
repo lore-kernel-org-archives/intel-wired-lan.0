@@ -1,207 +1,77 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 6 Jul 2021 08:07:03 +0000
-Subject: [Intel-wired-lan] [PATCH] iavf: fix locking of critical sections
-In-Reply-To: <20210316100141.53551-1-sassmann@kpanic.de>
-References: <20210316100141.53551-1-sassmann@kpanic.de>
-Message-ID: <CY4PR11MB1576DF9D75817184274CAFC0AB1B9@CY4PR11MB1576.namprd11.prod.outlook.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue,  6 Jul 2021 07:11:45 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.13 045/189] e100: handle eeprom
+ as little endian
+In-Reply-To: <20210706111409.2058071-1-sashal@kernel.org>
+References: <20210706111409.2058071-1-sashal@kernel.org>
+Message-ID: <20210706111409.2058071-45-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
+[ Upstream commit d4ef55288aa2e1b76033717242728ac98ddc4721 ]
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Stefan Assmann
-> Sent: wtorek, 16 marca 2021 11:02
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Laba, SlawomirX <slawomirx.laba@intel.com>; netdev at vger.kernel.org;
-> sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH] iavf: fix locking of critical sections
-> 
-> To avoid races between iavf_init_task(), iavf_reset_task(),
-> iavf_watchdog_task(), iavf_adminq_task() as well as the shutdown and
-> remove functions more locking is required.
-> The current protection by __IAVF_IN_CRITICAL_TASK is needed in additional
-> places.
-> 
-> - The reset task performs state transitions, therefore needs locking.
-> - The adminq task acts on replies from the PF in
->   iavf_virtchnl_completion() which may alter the states.
-> - The init task is not only run during probe but also if a VF gets stuck
->   to reinitialize it.
-> - The shutdown function performs a state transition.
-> - The remove function perorms a state transition and also free's
->   resources.
-> 
-> iavf_lock_timeout() is introduced to avoid waiting infinitely and cause a
-> deadlock. Rather unlock and print a warning.
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 57 ++++++++++++++++++---
->  1 file changed, 50 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index dc5b3c06d1e0..538b7aa43fa5 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -131,6 +131,30 @@ enum iavf_status iavf_free_virt_mem_d(struct
-> iavf_hw *hw,
->  	return 0;
->  }
-> 
-> +/**
-> + * iavf_timeout - try to set bit but give up after timeout
-> + * @adapter: board private structure
-> + * @bit: bit to set
-> + * @msecs: timeout in msecs
-> + *
-> + * Returns 0 on success, negative on failure  **/ static inline int
-> +iavf_lock_timeout(struct iavf_adapter *adapter,
-> +				    enum iavf_critical_section_t bit,
-> +				    unsigned int msecs)
-> +{
-> +	unsigned int wait, delay = 10;
-> +
-> +	for (wait = 0; wait < msecs; wait += delay) {
-> +		if (!test_and_set_bit(bit, &adapter->crit_section))
-> +			return 0;
-> +
-> +		msleep(delay);
-> +	}
-> +
-> +	return -1;
-> +}
-> +
->  /**
->   * iavf_schedule_reset - Set the flags and schedule a reset event
->   * @adapter: board private structure
-> @@ -2069,6 +2093,10 @@ static void iavf_reset_task(struct work_struct
-> *work)
->  	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
->  		return;
-> 
-> +	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200)) {
-> +		schedule_work(&adapter->reset_task);
-> +		return;
-> +	}
->  	while (test_and_set_bit(__IAVF_IN_CLIENT_TASK,
->  				&adapter->crit_section))
->  		usleep_range(500, 1000);
-> @@ -2275,6 +2303,8 @@ static void iavf_adminq_task(struct work_struct
-> *work)
->  	if (!event.msg_buf)
->  		goto out;
-> 
-> +	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200))
-> +		goto freedom;
->  	do {
->  		ret = iavf_clean_arq_element(hw, &event, &pending);
->  		v_op = (enum
-> virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
-> @@ -2288,6 +2318,7 @@ static void iavf_adminq_task(struct work_struct
-> *work)
->  		if (pending != 0)
->  			memset(event.msg_buf, 0,
-> IAVF_MAX_AQ_BUF_SIZE);
->  	} while (pending);
-> +	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
-> 
->  	if ((adapter->flags &
->  	     (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) ||
-> @@ -3590,6 +3621,10 @@ static void iavf_init_task(struct work_struct
-> *work)
->  						    init_task.work);
->  	struct iavf_hw *hw = &adapter->hw;
-> 
-> +	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000)) {
-> +		dev_warn(&adapter->pdev->dev, "failed to set
-> __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
-> +		return;
-> +	}
->  	switch (adapter->state) {
->  	case __IAVF_STARTUP:
->  		if (iavf_startup(adapter) < 0)
-> @@ -3602,14 +3637,14 @@ static void iavf_init_task(struct work_struct
-> *work)
->  	case __IAVF_INIT_GET_RESOURCES:
->  		if (iavf_init_get_resources(adapter) < 0)
->  			goto init_failed;
-> -		return;
-> +		goto out;
->  	default:
->  		goto init_failed;
->  	}
-> 
->  	queue_delayed_work(iavf_wq, &adapter->init_task,
->  			   msecs_to_jiffies(30));
-> -	return;
-> +	goto out;
->  init_failed:
->  	if (++adapter->aq_wait_count > IAVF_AQ_MAX_ERR) {
->  		dev_err(&adapter->pdev->dev,
-> @@ -3618,9 +3653,11 @@ static void iavf_init_task(struct work_struct
-> *work)
->  		iavf_shutdown_adminq(hw);
->  		adapter->state = __IAVF_STARTUP;
->  		queue_delayed_work(iavf_wq, &adapter->init_task, HZ * 5);
-> -		return;
-> +		goto out;
->  	}
->  	queue_delayed_work(iavf_wq, &adapter->init_task, HZ);
-> +out:
-> +	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
->  }
-> 
->  /**
-> @@ -3637,9 +3674,12 @@ static void iavf_shutdown(struct pci_dev *pdev)
->  	if (netif_running(netdev))
->  		iavf_close(netdev);
-> 
-> +	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
-> +		dev_warn(&adapter->pdev->dev, "failed to set
-> __IAVF_IN_CRITICAL_TASK
-> +in %s\n", __FUNCTION__);
->  	/* Prevent the watchdog from running. */
->  	adapter->state = __IAVF_REMOVE;
->  	adapter->aq_required = 0;
-> +	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
-> 
->  #ifdef CONFIG_PM
->  	pci_save_state(pdev);
-> @@ -3866,10 +3906,6 @@ static void iavf_remove(struct pci_dev *pdev)
->  				 err);
->  	}
-> 
-> -	/* Shut down all the garbage mashers on the detention level */
-> -	adapter->state = __IAVF_REMOVE;
-> -	adapter->aq_required = 0;
-> -	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
->  	iavf_request_reset(adapter);
->  	msleep(50);
->  	/* If the FW isn't responding, kick it once, but only once. */ @@ -
-> 3877,6 +3913,13 @@ static void iavf_remove(struct pci_dev *pdev)
->  		iavf_request_reset(adapter);
->  		msleep(50);
->  	}
-> +	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
-> +		dev_warn(&adapter->pdev->dev, "failed to set
-> __IAVF_IN_CRITICAL_TASK
-> +in %s\n", __FUNCTION__);
-> +
-> +	/* Shut down all the garbage mashers on the detention level */
-> +	adapter->state = __IAVF_REMOVE;
-> +	adapter->aq_required = 0;
-> +	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
->  	iavf_free_all_tx_resources(adapter);
->  	iavf_free_all_rx_resources(adapter);
->  	iavf_misc_irq_disable(adapter);
-> --
-> 2.29.2
+Sparse tool was warning on some implicit conversions from
+little endian data read from the EEPROM on the e100 cards.
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Fix these by being explicit about the conversions using
+le16_to_cpu().
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/e100.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index f8d78af76d7d..1b0958bd24f6 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -1395,7 +1395,7 @@ static int e100_phy_check_without_mii(struct nic *nic)
+ 	u8 phy_type;
+ 	int without_mii;
+ 
+-	phy_type = (nic->eeprom[eeprom_phy_iface] >> 8) & 0x0f;
++	phy_type = (le16_to_cpu(nic->eeprom[eeprom_phy_iface]) >> 8) & 0x0f;
+ 
+ 	switch (phy_type) {
+ 	case NoSuchPhy: /* Non-MII PHY; UNTESTED! */
+@@ -1515,7 +1515,7 @@ static int e100_phy_init(struct nic *nic)
+ 		mdio_write(netdev, nic->mii.phy_id, MII_BMCR, bmcr);
+ 	} else if ((nic->mac >= mac_82550_D102) || ((nic->flags & ich) &&
+ 	   (mdio_read(netdev, nic->mii.phy_id, MII_TPISTATUS) & 0x8000) &&
+-		(nic->eeprom[eeprom_cnfg_mdix] & eeprom_mdix_enabled))) {
++	   (le16_to_cpu(nic->eeprom[eeprom_cnfg_mdix]) & eeprom_mdix_enabled))) {
+ 		/* enable/disable MDI/MDI-X auto-switching. */
+ 		mdio_write(netdev, nic->mii.phy_id, MII_NCONFIG,
+ 				nic->mii.force_media ? 0 : NCONFIG_AUTO_SWITCH);
+@@ -2269,9 +2269,9 @@ static int e100_asf(struct nic *nic)
+ {
+ 	/* ASF can be enabled from eeprom */
+ 	return (nic->pdev->device >= 0x1050) && (nic->pdev->device <= 0x1057) &&
+-	   (nic->eeprom[eeprom_config_asf] & eeprom_asf) &&
+-	   !(nic->eeprom[eeprom_config_asf] & eeprom_gcl) &&
+-	   ((nic->eeprom[eeprom_smbus_addr] & 0xFF) != 0xFE);
++	   (le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_asf) &&
++	   !(le16_to_cpu(nic->eeprom[eeprom_config_asf]) & eeprom_gcl) &&
++	   ((le16_to_cpu(nic->eeprom[eeprom_smbus_addr]) & 0xFF) != 0xFE);
+ }
+ 
+ static int e100_up(struct nic *nic)
+@@ -2926,7 +2926,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* Wol magic packet can be enabled from eeprom */
+ 	if ((nic->mac >= mac_82558_D101_A4) &&
+-	   (nic->eeprom[eeprom_id] & eeprom_id_wol)) {
++	   (le16_to_cpu(nic->eeprom[eeprom_id]) & eeprom_id_wol)) {
+ 		nic->flags |= wol_magic;
+ 		device_set_wakeup_enable(&pdev->dev, true);
+ 	}
+-- 
+2.30.2
 
