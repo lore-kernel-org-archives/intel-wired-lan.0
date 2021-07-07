@@ -1,83 +1,150 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed,  7 Jul 2021 08:14:40 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove _I_PHY_ID checking
-Message-ID: <20210707051440.1795979-1-sasha.neftin@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 07 Jul 2021 13:51:14 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 4206b67e352b68da425f2dbb8008fe8ae2c720a9
+Message-ID: <60e540d2.YRvqftKaebd75cZA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i225 devices have only one PHY vendor. There is no point checking
-_I_PHY_ID during the link establishment and auto-negotiation process.
-This patch comes to clean up these pointless checkings.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 4206b67e352b68da425f2dbb8008fe8ae2c720a9  ice: Fix perout start time rounding
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+elapsed time: 722m
+
+configs tested: 121
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                          rsk7203_defconfig
+powerpc                 xes_mpc85xx_defconfig
+arm                           h5000_defconfig
+h8300                            alldefconfig
+sh                           se7206_defconfig
+m68k                       bvme6000_defconfig
+ia64                      gensparse_defconfig
+powerpc                     tqm8560_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                    ge_imp3a_defconfig
+xtensa                       common_defconfig
+arm                      jornada720_defconfig
+powerpc                       ebony_defconfig
+mips                      bmips_stb_defconfig
+powerpc                          g5_defconfig
+sh                             shx3_defconfig
+sh                          polaris_defconfig
+mips                      fuloong2e_defconfig
+mips                          malta_defconfig
+arm                            hisi_defconfig
+arm                      integrator_defconfig
+sh                             sh03_defconfig
+xtensa                    smp_lx200_defconfig
+i386                                defconfig
+arm                        vexpress_defconfig
+mips                            e55_defconfig
+sh                            hp6xx_defconfig
+sh                           se7722_defconfig
+m68k                        m5407c3_defconfig
+powerpc                    klondike_defconfig
+arm                      pxa255-idp_defconfig
+mips                        nlm_xlp_defconfig
+arm                          moxart_defconfig
+m68k                          amiga_defconfig
+sh                ecovec24-romimage_defconfig
+arm                           omap1_defconfig
+mips                         mpc30x_defconfig
+arm                        multi_v5_defconfig
+sh                          rsk7264_defconfig
+powerpc                 mpc832x_rdb_defconfig
+ia64                          tiger_defconfig
+arm                            dove_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20210706
+i386                 randconfig-a006-20210706
+i386                 randconfig-a001-20210706
+i386                 randconfig-a003-20210706
+i386                 randconfig-a005-20210706
+i386                 randconfig-a002-20210706
+x86_64               randconfig-a015-20210706
+x86_64               randconfig-a014-20210706
+x86_64               randconfig-a012-20210706
+x86_64               randconfig-a011-20210706
+x86_64               randconfig-a016-20210706
+x86_64               randconfig-a013-20210706
+i386                 randconfig-a015-20210706
+i386                 randconfig-a016-20210706
+i386                 randconfig-a012-20210706
+i386                 randconfig-a011-20210706
+i386                 randconfig-a014-20210706
+i386                 randconfig-a013-20210706
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210706
+x86_64               randconfig-a004-20210706
+x86_64               randconfig-a002-20210706
+x86_64               randconfig-a005-20210706
+x86_64               randconfig-a006-20210706
+x86_64               randconfig-a003-20210706
+x86_64               randconfig-a001-20210706
+
 ---
- drivers/net/ethernet/intel/igc/igc_base.c | 10 +---------
- drivers/net/ethernet/intel/igc/igc_main.c |  3 +--
- drivers/net/ethernet/intel/igc/igc_phy.c  |  6 ++----
- 3 files changed, 4 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index d0700d48ecf9..93feed4f7f1c 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -187,15 +187,7 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
- 
- 	igc_check_for_copper_link(hw);
- 
--	/* Verify phy id and set remaining function pointers */
--	switch (phy->id) {
--	case I225_I_PHY_ID:
--		phy->type	= igc_phy_i225;
--		break;
--	default:
--		ret_val = -IGC_ERR_PHY;
--		goto out;
--	}
-+	phy->type	= igc_phy_i225;
- 
- out:
- 	return ret_val;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 04493885e861..c8abd7fb70e5 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5234,8 +5234,7 @@ bool igc_has_link(struct igc_adapter *adapter)
- 		break;
- 	}
- 
--	if (hw->mac.type == igc_i225 &&
--	    hw->phy.id == I225_I_PHY_ID) {
-+	if (hw->mac.type == igc_i225) {
- 		if (!netif_carrier_ok(adapter->netdev)) {
- 			adapter->flags &= ~IGC_FLAG_NEED_LINK_UPDATE;
- 		} else if (!(adapter->flags & IGC_FLAG_NEED_LINK_UPDATE)) {
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index 83aeb5e7076f..5cad31c3c7b0 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -249,8 +249,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
- 			return ret_val;
- 	}
- 
--	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
--	    hw->phy.id == I225_I_PHY_ID) {
-+	if (phy->autoneg_mask & ADVERTISE_2500_FULL) {
- 		/* Read the MULTI GBT AN Control Register - reg 7.32 */
- 		ret_val = phy->ops.read_reg(hw, (STANDARD_AN_REG_MASK <<
- 					    MMD_DEVADDR_SHIFT) |
-@@ -390,8 +389,7 @@ static s32 igc_phy_setup_autoneg(struct igc_hw *hw)
- 		ret_val = phy->ops.write_reg(hw, PHY_1000T_CTRL,
- 					     mii_1000t_ctrl_reg);
- 
--	if ((phy->autoneg_mask & ADVERTISE_2500_FULL) &&
--	    hw->phy.id == I225_I_PHY_ID)
-+	if (phy->autoneg_mask & ADVERTISE_2500_FULL)
- 		ret_val = phy->ops.write_reg(hw,
- 					     (STANDARD_AN_REG_MASK <<
- 					     MMD_DEVADDR_SHIFT) |
--- 
-2.25.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
