@@ -1,96 +1,232 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  7 Jul 2021 16:40:55 -0700
-Subject: [Intel-wired-lan] [net-next v3 00/13] implement support for PTP on
- E822 hardware
-Message-ID: <20210707234108.4071506-1-jacob.e.keller@intel.com>
+Date: Wed,  7 Jul 2021 16:41:08 -0700
+Subject: [Intel-wired-lan] [net-next v3 13/13] ice: support
+ crosstimestamping on E822 devices if supported
+In-Reply-To: <20210707234108.4071506-1-jacob.e.keller@intel.com>
+References: <20210707234108.4071506-1-jacob.e.keller@intel.com>
+Message-ID: <20210707234108.4071506-14-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Extend the ice driver implementation to support PTP for the E822 based
-devices.
+E822 devices on supported platforms can generate a cross timestamp
+between the platform ART and the device time. This process allows for
+very precise measurement of the difference between the PTP hardware
+clock and the platform time.
 
-This includes a few cleanup patches, that fix some minor issues spotted
-while preparing them. In addition, there are some slight refactors to ease
-the addition of E822 support, followed by adding the new hardware
-implementation ice_ptp_hw.c.
+This is only supported if we know the TSC frequency relative to ART, so
+we do not enable this unless the boot CPU has a known TSC frequency (as
+required by convert_art_ns_to_tsc).
 
-There are a few major differences with E822 support compared to E810
-support:
+Because PCIe PTM support is not available on all platforms, introduce
+CONFIG_ICE_HWTS and make it depend on X86 where we know the support
+exists.
 
-*) The E822 device has a Clock Generation Unit which must be initialized in
-order to generate proper clock frequencies on the output that drives the PTP
-hardware clock registers
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/Kconfig            |  10 ++
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 ++
+ drivers/net/ethernet/intel/ice/ice_ptp.c      | 117 ++++++++++++++++++
+ 3 files changed, 135 insertions(+)
 
-*) The E822 PHY is a bit different and requires a more complex
-initialization procedure which must be rerun any time the link configuration
-changes.
-
-*) The E822 devices support enhanced timestamp calibration by making use of
-a process called Vernier offset measurement. This allows the hardware to
-measure phase offset related to the PHY clocks for Serdes and FEC, reducing
-the inaccuracy of the timestamp relative to the actual packet transmission
-and receipt. Making use of this requires data gathered from the first
-transmitted and received packets, and waiting for the PHY to complete the
-calibration measurements. This is done as part of a new kthread, ov_work.
-Note that to avoid delay in enabling timestamps, we start the PHY in
-'bypass' mode which allows timestamps to be captured without the Vernier
-calibration measurement. Once the first packets have been sent and received,
-we then complete the calibration setup and exit bypass mode and begin using
-the more precise timestamps. According to the datasheet, timestamps without
-calibration data can be incorrect relative to actual receipt or transmission
-by up to 1 clock cycle (~1.25 nanoseconds), while calibrated timestamps
-should be correct to within 1/8th of a clock cycle (~0.15 nanoseconds).
-
-*) E822 devices support crosstimestamping via PCIe PTM, which we enable when
-available on the platform.
-
-There is a fair amount of logic required to perform PHY and CGU
-initialization, which is the vast majority of the new code, but it is fairly
-self contained within ice_ptp_hw.c, with the exception of monitoring for
-offset validity being handled by a kthread.
-
-Changes since v2:
-* introduced helper functions to enable and disable clock outputs
-
-Changes since v1:
-* Rebased on top of IWL to resolve conflict
-* Fixed build against non-X86 arch for the PCIe PTM support
-
-Jacob Keller (13):
-  ice: fix Tx queue iteration for Tx timestamp enablement
-  ice: remove dead code for allocating pin_config
-  ice: add lock around Tx timestamp tracker flush
-  ice: restart periodic outputs around time changes
-  ice: introduce ice_base_incval function
-  ice: PTP: move setting of tstamp_config
-  ice: use 'int err' instead of 'int status'
-  ice: introduce ice_ptp_init_phc function
-  ice: convert clk_freq capability into time_ref
-  ice: implement basic E822 PTP support
-  ice: ensure the hardware Clock Generation Unit is configured
-  ice: exit bypass mode once hardware finishes timestamp calibration
-  ice: support crosstimestamping on E822 devices if supported
-
- drivers/net/ethernet/intel/Kconfig            |   10 +
- drivers/net/ethernet/intel/ice/ice_cgu_regs.h |  116 +
- drivers/net/ethernet/intel/ice/ice_common.c   |   12 +
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |    9 +
- drivers/net/ethernet/intel/ice/ice_main.c     |    7 +
- drivers/net/ethernet/intel/ice/ice_ptp.c      |  717 ++++-
- drivers/net/ethernet/intel/ice/ice_ptp.h      |   30 +-
- .../net/ethernet/intel/ice/ice_ptp_consts.h   |  374 +++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 2794 ++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  345 ++
- drivers/net/ethernet/intel/ice/ice_type.h     |   23 +-
- 11 files changed, 4226 insertions(+), 211 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_cgu_regs.h
- create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp_consts.h
-
-
-base-commit: 6e3c27180bcf2635f537ff63164e8df9773b56fb
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index c9f9bfde13b9..30d4daa4fc27 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -327,6 +327,16 @@ config ICE_SWITCHDEV
+ 
+ 	  If unsure, say N.
+ 
++config ICE_HWTS
++	bool "Support HW cross-timestamp on platforms with PTM support"
++	default y
++	depends on ICE && X86
++	help
++	  Say Y to enable hardware supported cross-timestamping on platforms
++	  with PCIe PTM support. The cross-timestamp is available through
++	  the PTP clock driver precise cross-timestamp ioctl
++	  (PTP_SYS_OFFSET_PRECISE).
++
+ config FM10K
+ 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
+ 	default n
+diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+index 2863ba9bd6c3..ab5065b5e748 100644
+--- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
++++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+@@ -440,6 +440,10 @@
+ #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
+ #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
+ #define PRTRPB_RDPC				0x000AC260
++#define GLHH_ART_CTL				0x000A41D4
++#define GLHH_ART_CTL_ACTIVE_M			BIT(0)
++#define GLHH_ART_TIME_H				0x000A41D8
++#define GLHH_ART_TIME_L				0x000A41DC
+ #define GLTSYN_AUX_IN_0(_i)			(0x000889D8 + ((_i) * 4))
+ #define GLTSYN_AUX_IN_0_INT_ENA_M		BIT(4)
+ #define GLTSYN_AUX_OUT_0(_i)			(0x00088998 + ((_i) * 4))
+@@ -452,6 +456,8 @@
+ #define GLTSYN_ENA_TSYN_ENA_M			BIT(0)
+ #define GLTSYN_EVNT_H_0(_i)			(0x00088970 + ((_i) * 4))
+ #define GLTSYN_EVNT_L_0(_i)			(0x00088968 + ((_i) * 4))
++#define GLTSYN_HHTIME_H(_i)			(0x00088900 + ((_i) * 4))
++#define GLTSYN_HHTIME_L(_i)			(0x000888F8 + ((_i) * 4))
+ #define GLTSYN_INCVAL_H(_i)			(0x00088920 + ((_i) * 4))
+ #define GLTSYN_INCVAL_L(_i)			(0x00088918 + ((_i) * 4))
+ #define GLTSYN_SHADJ_H(_i)			(0x00088910 + ((_i) * 4))
+@@ -468,6 +474,8 @@
+ #define GLTSYN_TGT_L_0(_i)			(0x00088928 + ((_i) * 4))
+ #define GLTSYN_TIME_H(_i)			(0x000888D8 + ((_i) * 4))
+ #define GLTSYN_TIME_L(_i)			(0x000888D0 + ((_i) * 4))
++#define PFHH_SEM				0x000A4200 /* Reset Source: PFR */
++#define PFHH_SEM_BUSY_M				BIT(0)
+ #define PFTSYN_SEM				0x00088880
+ #define PFTSYN_SEM_BUSY_M			BIT(0)
+ #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index bbf6df4e5dfe..33d05dd2db7d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1319,6 +1319,101 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_ICE_HWTS
++/**
++ * ice_ptp_get_syncdevicetime - Get the cross time stamp info
++ * @device: Current device time
++ * @system: System counter value read synchronously with device time
++ * @ctx: Context provided by timekeeping code
++ *
++ * Read device and system (ART) clock simultaneously and return the corrected
++ * clock values in ns.
++ */
++static int
++ice_ptp_get_syncdevicetime(ktime_t *device,
++			   struct system_counterval_t *system,
++			   void *ctx)
++{
++	struct ice_pf *pf = (struct ice_pf *)ctx;
++	struct ice_hw *hw = &pf->hw;
++	u32 hh_lock, hh_art_ctl;
++	int i;
++
++	/* Get the HW lock */
++	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++	if (hh_lock & PFHH_SEM_BUSY_M) {
++		dev_err(ice_pf_to_dev(pf), "PTP failed to get hh lock\n");
++		return -EFAULT;
++	}
++
++	/* Start the ART and device clock sync sequence */
++	hh_art_ctl = rd32(hw, GLHH_ART_CTL);
++	hh_art_ctl = hh_art_ctl | GLHH_ART_CTL_ACTIVE_M;
++	wr32(hw, GLHH_ART_CTL, hh_art_ctl);
++
++#define MAX_HH_LOCK_TRIES 100
++
++	for (i = 0; i < MAX_HH_LOCK_TRIES; i++) {
++		/* Wait for sync to complete */
++		hh_art_ctl = rd32(hw, GLHH_ART_CTL);
++		if (hh_art_ctl & GLHH_ART_CTL_ACTIVE_M) {
++			udelay(1);
++			continue;
++		} else {
++			u32 hh_ts_lo, hh_ts_hi, tmr_idx;
++			u64 hh_ts;
++
++			tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
++			/* Read ART time */
++			hh_ts_lo = rd32(hw, GLHH_ART_TIME_L);
++			hh_ts_hi = rd32(hw, GLHH_ART_TIME_H);
++			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
++			*system = convert_art_ns_to_tsc(hh_ts);
++			/* Read Device source clock time */
++			hh_ts_lo = rd32(hw, GLTSYN_HHTIME_L(tmr_idx));
++			hh_ts_hi = rd32(hw, GLTSYN_HHTIME_H(tmr_idx));
++			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
++			*device = ns_to_ktime(hh_ts);
++			break;
++		}
++	}
++	/* Release HW lock */
++	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++	hh_lock = hh_lock & ~PFHH_SEM_BUSY_M;
++	wr32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), hh_lock);
++
++	if (i == MAX_HH_LOCK_TRIES)
++		return -ETIMEDOUT;
++
++	return 0;
++}
++
++/**
++ * ice_ptp_getcrosststamp_e822 - Capture a device cross timestamp
++ * @info: the driver's PTP info structure
++ * @cts: The memory to fill the cross timestamp info
++ *
++ * Capture a cross timestamp between the ART and the device PTP hardware
++ * clock. Fill the cross timestamp information and report it back to the
++ * caller.
++ *
++ * This is only valid for E822 devices which have support for generating the
++ * cross timestamp via PCIe PTM.
++ *
++ * In order to correctly correlate the ART timestamp back to the TSC time, the
++ * CPU must have X86_FEATURE_TSC_KNOWN_FREQ.
++ */
++static int
++ice_ptp_getcrosststamp_e822(struct ptp_clock_info *info,
++			    struct system_device_crosststamp *cts)
++{
++	struct ice_pf *pf = ptp_info_to_pf(info);
++
++	return get_device_system_crosststamp(ice_ptp_get_syncdevicetime,
++					     pf, NULL, cts);
++}
++#endif /* CONFIG_ICE_HWTS */
++
+ /**
+  * ice_ptp_get_ts_config - ioctl interface to read the timestamping config
+  * @pf: Board private structure
+@@ -1463,6 +1558,26 @@ static void ice_ptp_setup_pins_e810(struct ptp_clock_info *info)
+ 	info->n_ext_ts = E810_N_EXT_TS;
+ }
+ 
++/**
++ * ice_ptp_set_funcs_e822 - Set specialized functions for E822 support
++ * @pf: Board private structure
++ * @info: PTP info to fill
++ *
++ * Assign functions to the PTP capabiltiies structure for E822 devices.
++ * Functions which operate across all device families should be set directly
++ * in ice_ptp_set_caps. Only add functions here which are distinct for E822
++ * devices.
++ */
++static void
++ice_ptp_set_funcs_e822(struct ice_pf *pf, struct ptp_clock_info *info)
++{
++#ifdef CONFIG_ICE_HWTS
++	if (boot_cpu_has(X86_FEATURE_ART) &&
++	    boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ))
++		info->getcrosststamp = ice_ptp_getcrosststamp_e822;
++#endif /* CONFIG_ICE_HWTS */
++}
++
+ /**
+  * ice_ptp_set_funcs_e810 - Set specialized functions for E810 support
+  * @pf: Board private structure
+@@ -1501,6 +1616,8 @@ static void ice_ptp_set_caps(struct ice_pf *pf)
+ 
+ 	if (ice_is_e810(&pf->hw))
+ 		ice_ptp_set_funcs_e810(pf, info);
++	else
++		ice_ptp_set_funcs_e822(pf, info);
+ }
+ 
+ /**
 -- 
 2.31.1.331.gb0c09ab8796f
 
