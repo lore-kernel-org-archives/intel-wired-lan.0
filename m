@@ -1,74 +1,58 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 07 Jul 2021 13:51:14 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 4206b67e352b68da425f2dbb8008fe8ae2c720a9
-Message-ID: <60e540d2.YRvqftKaebd75cZA%lkp@intel.com>
+Date: Wed, 07 Jul 2021 13:51:17 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ c751ad840388b796666128779be0e4ad4158bccd
+Message-ID: <60e540d5.hp1Qv23MLIGp/VMZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 4206b67e352b68da425f2dbb8008fe8ae2c720a9  ice: Fix perout start time rounding
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: c751ad840388b796666128779be0e4ad4158bccd  ice: Fix perout start time rounding
 
-elapsed time: 722m
+elapsed time: 721m
 
-configs tested: 121
-configs skipped: 3
+configs tested: 105
+configs skipped: 2
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 gcc tested configs:
-arm                                 defconfig
 arm64                            allyesconfig
+arm                                 defconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-sh                          rsk7203_defconfig
+s390                       zfcpdump_defconfig
 powerpc                 xes_mpc85xx_defconfig
-arm                           h5000_defconfig
-h8300                            alldefconfig
-sh                           se7206_defconfig
-m68k                       bvme6000_defconfig
-ia64                      gensparse_defconfig
-powerpc                     tqm8560_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                    ge_imp3a_defconfig
-xtensa                       common_defconfig
-arm                      jornada720_defconfig
-powerpc                       ebony_defconfig
-mips                      bmips_stb_defconfig
-powerpc                          g5_defconfig
-sh                             shx3_defconfig
+powerpc                     tqm5200_defconfig
+mips                          ath25_defconfig
+sh                           se7619_defconfig
+arm                          pxa168_defconfig
+sh                           se7750_defconfig
+arm                          moxart_defconfig
+powerpc                      walnut_defconfig
+sh                          sdk7780_defconfig
+m68k                          atari_defconfig
+xtensa                  cadence_csp_defconfig
 sh                          polaris_defconfig
 mips                      fuloong2e_defconfig
 mips                          malta_defconfig
 arm                            hisi_defconfig
+xtensa                       common_defconfig
 arm                      integrator_defconfig
-sh                             sh03_defconfig
-xtensa                    smp_lx200_defconfig
-i386                                defconfig
-arm                        vexpress_defconfig
-mips                            e55_defconfig
-sh                            hp6xx_defconfig
 sh                           se7722_defconfig
 m68k                        m5407c3_defconfig
 powerpc                    klondike_defconfig
 arm                      pxa255-idp_defconfig
 mips                        nlm_xlp_defconfig
-arm                          moxart_defconfig
-m68k                          amiga_defconfig
-sh                ecovec24-romimage_defconfig
-arm                           omap1_defconfig
-mips                         mpc30x_defconfig
-arm                        multi_v5_defconfig
-sh                          rsk7264_defconfig
-powerpc                 mpc832x_rdb_defconfig
-ia64                          tiger_defconfig
-arm                            dove_defconfig
+parisc                              defconfig
+arm                          pcm027_defconfig
+mips                          rb532_defconfig
+arm                         lpc32xx_defconfig
 x86_64                            allnoconfig
 ia64                             allmodconfig
 ia64                                defconfig
@@ -88,7 +72,6 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
-parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
 parisc                           allyesconfig
@@ -96,6 +79,7 @@ s390                                defconfig
 i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
+i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
