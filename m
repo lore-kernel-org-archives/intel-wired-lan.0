@@ -1,35 +1,66 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Wed,  7 Jul 2021 08:40:25 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v1] igbvf: Refactor trace
-Message-ID: <20210707064025.55096-1-karen.sornek@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 7 Jul 2021 09:52:22 +0200
+Subject: [Intel-wired-lan] [net-next 00/13] ice: implement support for
+ PTP on E822 hardware
+In-Reply-To: <e1a3cb86cb7e43d29b6b5e4663029bfe@intel.com>
+References: <20210701002713.3486336-1-jacob.e.keller@intel.com>
+ <2226449e-2c2c-d72b-1bd2-1a44882251fe@molgen.mpg.de>
+ <e1a3cb86cb7e43d29b6b5e4663029bfe@intel.com>
+Message-ID: <7c977d1a-3ccb-ef70-388c-59a10af2901a@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Refactoring "PF still resetting" message, because previous version looked
-like a bug - it informed about changes that worked as designed but might
-confuse users. Changes requested to make message more user-friendly.
+Dear Jacob,
 
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
----
- drivers/net/ethernet/intel/igbvf/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 1bbe9862a..5c1574855 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -1520,7 +1520,7 @@ static void igbvf_reset(struct igbvf_adapter *adapter)
- 
- 	/* Allow time for pending master requests to run */
- 	if (mac->ops.reset_hw(hw))
--		dev_warn(&adapter->pdev->dev, "PF still resetting\n");
-+		dev_info(&adapter->pdev->dev, "PF still resetting\n");
- 
- 	mac->ops.init_hw(hw);
- 
--- 
-2.27.0
+Thank you for your reply.
 
+Am 06.07.21 um 21:53 schrieb Keller, Jacob E:
+
+>> -----Original Message-----
+>> From: Paul Menzel <pmenzel@molgen.mpg.de>
+>> Sent: Monday, July 05, 2021 12:47 AM
+>> To: Keller, Jacob E <jacob.e.keller@intel.com>
+>> Cc: intel-wired-lan at lists.osuosl.org
+>> Subject: Re: [Intel-wired-lan] [net-next 00/13] ice: implement support for PTP on
+>> E822 hardware
+
+>> Am 01.07.21 um 02:27 schrieb Jacob Keller:
+>>> Extend the ice driver implementation to support PTP for the E822 based
+>>> devices.
+>>>
+>>> This includes a few cleanup patches, that fix some minor issues spotted
+>>> while preparing them. In addition, there are some slight refactors to ease
+>>> the addition of E822 support, followed by adding the new hardware
+>>> implementation ice_ptp_hw.c.
+>>>
+>>> There are a few major differences with E822 support compared to E810
+>>> support:
+>>>
+>>> *) The E822 PHY is a bit different and requires a more complex
+>>> initialization procedure that requires delaying the PHY start until link is
+>>> up
+>>
+>> It?d be great, if you gave concrete numbers.
+>> 
+> 
+> Concrete numbers on which part? I'm not sure if we have concrete
+> numbers on everything here. For the calibration process, according to
+> the data sheet I have, it indicates that uncalibrated timestamps
+> (i.e. in bypass mode) have an error of up to 1 clock cycle and
+> calibrated timestamps should have an error of less than 1/8th of a
+> clock cycle. Here clock cycle refers to the length of one tick on the
+> clock source, and error refers to difference between actual start of
+> reception or transmission vs time of when the timstamp is captured. I
+> unfortunately am not at all sure how this was measured by the
+> hardware folks...
+Thank you for the explanation. I meant, how big the delay is until the 
+link is up.
+
+
+Kind regards,
+
+Paul
