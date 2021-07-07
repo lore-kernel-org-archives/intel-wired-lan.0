@@ -1,123 +1,165 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  7 Jul 2021 16:40:59 -0700
-Subject: [Intel-wired-lan] [net-next v3 04/13] ice: restart periodic outputs
- around time changes
+Date: Wed,  7 Jul 2021 16:41:03 -0700
+Subject: [Intel-wired-lan] [net-next v3 08/13] ice: introduce
+ ice_ptp_init_phc function
 In-Reply-To: <20210707234108.4071506-1-jacob.e.keller@intel.com>
 References: <20210707234108.4071506-1-jacob.e.keller@intel.com>
-Message-ID: <20210707234108.4071506-5-jacob.e.keller@intel.com>
+Message-ID: <20210707234108.4071506-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wen we enabled auxiliary input/output support for the E810 device, we
-forgot to add logic to restart the output when we change time. This is
-important as the periodic output will be incorrect after a time change
-otherwise.
+When we enable support for E822 devices, there are some additional
+steps required to initialize the PTP hardware clock. To make this easier
+to implement as device-specific behavior, refactor the register setups
+in ice_ptp_init_owner to a new ice_ptp_init_phc function defined in
+ice_ptp_hw.c
 
-This unfortunately includes the adjust time function, even though it
-uses an atomic hardware interface. The atomic adjustment can still cause
-the pin output to stall permanently, so we need to stop and restart it.
+This function will have a common section, and an e810 specific
+sub-implementation.
 
-Introduce wrapper functions to temporarily disable and then re-enable
-the clock outputs.
+This will enable easily extending the functionality to cover the E822
+specific setup required to initialize the hardware clock generation
+unit. It also makes it clear which steps are E810 specific vs which ones
+are necessary for all ice devices.
 
-Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 49 ++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 38 +++++++++------------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 34 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
+ 3 files changed, 52 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 83ba0bf2817a..7fe17898cbdf 100644
+index 501fb707cea2..4bfd7f73002a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -688,6 +688,41 @@ static int ice_ptp_cfg_clkout(struct ice_pf *pf, unsigned int chan,
- 	return -EFAULT;
+@@ -1454,24 +1454,14 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct timespec64 ts;
+-	u8 src_idx;
+ 	int err;
+ 
+-	wr32(hw, GLTSYN_SYNC_DLAY, 0);
+-
+-	/* Clear some HW residue and enable source clock */
+-	src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+-
+-	/* Enable source clocks */
+-	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
+-
+-	/* Enable PHY time sync */
+-	err = ice_ptp_init_phy_e810(hw);
+-	if (err)
+-		goto err_exit;
+-
+-	/* Clear event status indications for auxiliary pins */
+-	(void)rd32(hw, GLTSYN_STAT(src_idx));
++	err = ice_ptp_init_phc(hw);
++	if (err) {
++		dev_err(dev, "Failed to initialize PHC, err %d\n",
++			err);
++		return err;
++	}
+ 
+ 	/* Acquire the global hardware lock */
+ 	if (!ice_ptp_lock(hw)) {
+@@ -1516,12 +1506,16 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ }
+ 
+ /**
+- * ice_ptp_init - Initialize the PTP support after device probe or reset
++ * ice_ptp_init - Initialize PTP hardware clock support
+  * @pf: Board private structure
+  *
+- * This function sets device up for PTP support. The first time it is run, it
+- * will create a clock device. It does not create a clock device if one
+- * already exists. It also reconfigures the device after a reset.
++ * Setup the device for interacting with the PTP hardware clock for all
++ * functions, both the function that owns the clock hardware, and the
++ * functions connected to the clock hardware.
++ *
++ * The clock owner will allocate and register a ptp_clock with the
++ * PTP_1588_CLOCK infrastructure. All functions allocate a kthread and work
++ * items used for asynchronous work such as Tx timestamps and periodic work.
+  */
+ void ice_ptp_init(struct ice_pf *pf)
+ {
+@@ -1534,7 +1528,9 @@ void ice_ptp_init(struct ice_pf *pf)
+ 	if (!ice_is_e810(hw))
+ 		return;
+ 
+-	/* Check if this PF owns the source timer */
++	/* If this function owns the clock hardware, it must allocate and
++	 * configure the PTP clock device to represent it.
++	 */
+ 	if (hw->func_caps.ts_func_info.src_tmr_owned) {
+ 		err = ice_ptp_init_owner(pf);
+ 		if (err)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 5dbd4d91dba1..65e866e536ec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -213,6 +213,21 @@ int ice_ptp_init_phy_e810(struct ice_hw *hw)
+ 	return err;
  }
  
 +/**
-+ * ice_ptp_disable_all_clkout - Disable all currently configured outputs
-+ * @pf: pointer to the PF structure
++ * ice_ptp_init_phc_e810 - Perform E810 specific PHC initialization
++ * @hw: pointer to HW struct
 + *
-+ * Disable all currently configured clock outputs. This is necessary before
-+ * certain changes to the PTP hardware clock. Use ice_ptp_enable_all_clkout to
-+ * re-enable the clocks again.
++ * Perform E810-specific PTP hardware clock initialization steps.
 + */
-+static void ice_ptp_disable_all_clkout(struct ice_pf *pf)
++static int ice_ptp_init_phc_e810(struct ice_hw *hw)
 +{
-+	uint i;
++	/* Ensure synchronization delay is zero */
++	wr32(hw, GLTSYN_SYNC_DLAY, 0);
 +
-+	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-+		if (pf->ptp.perout_channels[i].ena)
-+			ice_ptp_cfg_clkout(pf, i, NULL, false);
-+}
-+
-+/**
-+ * ice_ptp_enable_all_clkout - Enable all configured periodic clock outputs
-+ * @pf: pointer to the PF structure
-+ *
-+ * Enable all currently configured clock outputs. Use this after
-+ * ice_ptp_disable_all_clkout to reconfigure the output signals according to
-+ * their configuration.
-+ */
-+static void ice_ptp_enable_all_clkout(struct ice_pf *pf)
-+{
-+	uint i;
-+
-+	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-+		if (pf->ptp.perout_channels[i].ena)
-+			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-+					   false);
++	/* Initialize the PHY */
++	return ice_ptp_init_phy_e810(hw);
 +}
 +
  /**
-  * ice_ptp_gpio_enable_e810 - Enable/disable ancillary features of PHC
-  * @info: the driver's PTP info structure
-@@ -783,12 +818,17 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
- 		goto exit;
- 	}
- 
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
+  * ice_ptp_prep_phy_time_e810 - Prepare PHY port with initial time
+  * @hw: Board private structure
+@@ -649,3 +664,22 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
+ {
+ 	return ice_clear_phy_tstamp_e810(hw, block, idx);
+ }
 +
- 	err = ice_ptp_write_init(pf, &ts64);
- 	ice_ptp_unlock(hw);
- 
- 	if (!err)
- 		ice_ptp_update_cached_phctime(pf);
- 
-+	/* Reenable periodic outputs */
-+	ice_ptp_enable_all_clkout(pf);
- exit:
- 	if (err) {
- 		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-@@ -842,8 +882,14 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
- 		return -EBUSY;
- 	}
- 
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
++/**
++ * ice_ptp_init_phc - Initialize PTP hardware clock
++ * @hw: pointer to the HW struct
++ *
++ * Perform the steps required to initialize the PTP hardware clock.
++ */
++int ice_ptp_init_phc(struct ice_hw *hw)
++{
++	u8 src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
 +
- 	err = ice_ptp_write_adj(pf, delta);
- 
-+	/* Reenable periodic outputs */
-+	ice_ptp_enable_all_clkout(pf);
++	/* Enable source clocks */
++	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
 +
- 	ice_ptp_unlock(hw);
- 
- 	if (err) {
-@@ -1543,6 +1589,9 @@ void ice_ptp_release(struct ice_pf *pf)
- 	if (!pf->ptp.clock)
- 		return;
- 
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
++	/* Clear event err indications for auxiliary pins */
++	(void)rd32(hw, GLTSYN_STAT(src_idx));
 +
- 	ice_clear_ptp_clock_index(pf);
- 	ptp_clock_unregister(pf->ptp.clock);
- 	pf->ptp.clock = NULL;
++	return ice_ptp_init_phc_e810(hw);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 55a414e87018..821abec0f8dc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -27,6 +27,7 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
+ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
+ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
+ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
++int ice_ptp_init_phc(struct ice_hw *hw);
+ 
+ /* E810 family functions */
+ int ice_ptp_init_phy_e810(struct ice_hw *hw);
 -- 
 2.31.1.331.gb0c09ab8796f
 
