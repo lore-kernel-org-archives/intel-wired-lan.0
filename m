@@ -1,11 +1,11 @@
 From: Fuxbrumer, Dvora <dvorax.fuxbrumer@linux.intel.com>
-Date: Thu, 8 Jul 2021 14:34:45 +0300
-Subject: [Intel-wired-lan] [PATCH next-queue v2 1/5] igc: Add
- possibility to add flex filter
-In-Reply-To: <20210629044332.3491232-2-vinicius.gomes@intel.com>
+Date: Thu, 8 Jul 2021 14:35:50 +0300
+Subject: [Intel-wired-lan] [PATCH next-queue v2 2/5] igc: Integrate flex
+ filter into ethtool ops
+In-Reply-To: <20210629044332.3491232-3-vinicius.gomes@intel.com>
 References: <20210629044332.3491232-1-vinicius.gomes@intel.com>
- <20210629044332.3491232-2-vinicius.gomes@intel.com>
-Message-ID: <3164a39f-0435-ebe2-e7a7-60c0e8103170@linux.intel.com>
+ <20210629044332.3491232-3-vinicius.gomes@intel.com>
+Message-ID: <6b3974a3-f9c4-222e-4b46-53a9c40d456d@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,22 +15,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 On 6/29/2021 07:43, Vinicius Costa Gomes wrote:
 > From: Kurt Kanzenbach <kurt@linutronix.de>
 > 
-> The Intel i225 NIC has the possibility to add flex filters which can
-> match up to the first 128 byte of a packet. These filters are useful
-> for all kind of packet matching. One particular use case is Profinet,
-> as the different traffic classes are distinguished by the frame id
-> range which cannot be matched by any other means.
+> Use the flex filter mechanism to extend the current ethtool filter
+> operations by intercoperating the user data. This allows to match
+> eight more bytes within a Ethernet frame in addition to macs, ether
+> types and vlan.
 > 
-> Add code to configure and enable flex filters.
+> The matching pattern looks like this:
+> 
+>   * dest_mac [6]
+>   * src_mac [6]
+>   * tpid [2]
+>   * vlan tci [2]
+>   * ether type [2]
+>   * user data [8]
+> 
+> This can be used to match Profinet traffic classes by FrameID range.
 > 
 > Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 > Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc.h         |  13 ++
->   drivers/net/ethernet/intel/igc/igc_defines.h |  48 ++++++-
->   drivers/net/ethernet/intel/igc/igc_main.c    | 134 +++++++++++++++++++
->   drivers/net/ethernet/intel/igc/igc_regs.h    |  17 +++
->   4 files changed, 207 insertions(+), 5 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc.h         |  24 ++-
+>   drivers/net/ethernet/intel/igc/igc_defines.h |   4 +
+>   drivers/net/ethernet/intel/igc/igc_ethtool.c |  20 ++
+>   drivers/net/ethernet/intel/igc/igc_main.c    | 190 ++++++++++++++++++-
+>   4 files changed, 228 insertions(+), 10 deletions(-)
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
