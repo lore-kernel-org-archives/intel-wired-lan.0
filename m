@@ -1,71 +1,56 @@
-From: Oliver O'Halloran <oohall@gmail.com>
-Date: Thu, 8 Jul 2021 12:04:02 +1000
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Thu, 8 Jul 2021 10:45:50 -0500
 Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
  is removed
-In-Reply-To: <20210707221042.GA939059@bjorn-Precision-5520>
-References: <20210707215337.lwbgvb6lxs3gmsbb@pali>
- <20210707221042.GA939059@bjorn-Precision-5520>
-Message-ID: <CAOSf1CGVpogQGAatuY_N0db6OL2BFegGtj6VTLA9KFz0TqYBQg@mail.gmail.com>
+In-Reply-To: <CAOSf1CGVpogQGAatuY_N0db6OL2BFegGtj6VTLA9KFz0TqYBQg@mail.gmail.com>
+Message-ID: <20210708154550.GA1019947@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jul 8, 2021 at 8:40 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> If we add the check as proposed in this patch, I think people will
-> read it and think this is the correct way to avoid MMIO errors.  It
-> does happen to avoid some MMIO errors, but it cannot avoid them all,
-> so it's not a complete solution and it gives a false sense of
-> security.
+On Thu, Jul 08, 2021 at 12:04:02PM +1000, Oliver O'Halloran wrote:
+> On Thu, Jul 8, 2021 at 8:40 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> >
+> > If we add the check as proposed in this patch, I think people will
+> > read it and think this is the correct way to avoid MMIO errors.  It
+> > does happen to avoid some MMIO errors, but it cannot avoid them all,
+> > so it's not a complete solution and it gives a false sense of
+> > security.
+> 
+> I think it's helpful to classify MMIO errors as either benign or
+> poisonous with the poison MMIOs causing some kind of crash. Most of
+> the discussions about pci_dev_is_disconnected(), including this one,
+> seem to stem from people trying to use it to avoid the poison case. I
+> agree that using pci_dev_is_disconnected() that way is hacky and
+> doesn't really fix the problem, but considering poison MMIOs usually
+> stem from broken hardware or firmware maybe we should allow it
+> anyway. We can't do anything better and it's an improvement compared
+> to crashing.
 
-I think it's helpful to classify MMIO errors as either benign or
-poisonous with the poison MMIOs causing some kind of crash. Most of
-the discussions about pci_dev_is_disconnected(), including this one,
-seem to stem from people trying to use it to avoid the poison case. I
-agree that using pci_dev_is_disconnected() that way is hacky and
-doesn't really fix the problem, but considering poison MMIOs usually
-stem from broken hardware or firmware  maybe we should allow it
-anyway. We can't do anything better and it's an improvement compared
-to crashing.
+Apologies for rehashing what's probably obvious to everybody but me.
+I'm trying to get a better handle on benign vs poisonous errors.
 
-> A complete solution requires a test *after* the MMIO read.  If you
-> have the test after the read, you don't really need one before.  Sure,
-> testing before means you can avoid one MMIO read failure in some
-> cases.  But avoiding that failure costs quite a lot in code clutter.
+MMIO means CPU reads or writes to the device.  In PCI, writes are
+posted and don't receive a response, so a driver will never see
+writel() return an error (although an error may be reported
+asynchronously via AER or similar).
 
-It's not that much clutter if the checks are buried in the MMIO
-helpers which most drivers define. Speaking of which:
+So I think we're mostly talking about CPU reads here.  We expect a PCI
+response containing the data.  Sometimes there's no response or an
+error response.  The behavior of the host bridge in these error cases
+is not defined by PCI, so what the CPU sees is not consistent across
+platforms.  In some cases, the bridge handles this as a catastrophic
+error that forces a system restart.
 
-> u32 igc_rd32(struct igc_hw *hw, u32 reg)
-> {
->   struct igc_adapter *igc = container_of(hw, struct igc_adapter, hw);
->   u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
->   u32 value = 0;
->
->   value = readl(&hw_addr[reg]);
->
->   /* reads should not return all F's */
->   if (!(~value) && (!reg || !(~readl(hw_addr)))) {
->     struct net_device *netdev = igc->netdev;
->
->     hw->hw_addr = NULL;
->     netif_device_detach(netdev);
->     netdev_err(netdev, "PCIe link lost, device now detached\n");
->     WARN(pci_device_is_present(igc->pdev),
->          "igc: Failed to read reg 0x%x!\n", reg);
->   }
->
->   return value;
-> }
+But in most cases, at least on x86, the bridge logs an error and
+fabricates ~0 data so the CPU read can complete.  Then it's up to
+software to recognize that an error occurred and decide what to do
+about it.  Is this a benign or a poisonous error?
 
-I think I found where that page fault is coming from.
+I'd say this is a benign error.  It certainly can't be ignored, but as
+long as the driver recognizes the error, it should be able to deal
+with it without crashing the whole system and forcing a restart.
 
-I wonder if we should provide drivers some way of invoking the error
-recovery mechanisms manually or even just flagging itself as broken.
-Right now even if the driver bothers with synchronous error detection
-the driver can't really do anything other than parking itself and
-hoping AER/EEH recovery kicks in.
-
-Oliver
+Bjorn
