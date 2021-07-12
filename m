@@ -1,48 +1,88 @@
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Mon, 12 Jul 2021 01:07:51 -0400
-Subject: [Intel-wired-lan] [PATCH net-next] ice: change devlink port number
- for pf
-Message-ID: <20210712050751.20035-1-michal.swiatkowski@linux.intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Mon, 12 Jul 2021 21:34:58 +0800
+Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Make mei_me active when
+ e1000e is in use
+In-Reply-To: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
+References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
+Message-ID: <20210712133500.1126371-2-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Using lport from VSI structure as physical port number for
-PF devlink port introduces inconsistency with netdevice naming scheme
-and PF attribute in VF devlink port.
+Many users report rather sluggish RX speed on TGP I219. Since
+"intel_idle.max_cstate=1" doesn't help, so it's not caused by deeper
+package C-state.
 
-Change this value to be the same for VF and PF devlink port.
+A workaround that always works is to make sure mei_me is runtime active
+when e1000e is in use.
 
-Before this change:
-- devlink phys_port_name for first netdevice (ending name "f0"): p1
-- devlink phys_port_name for VF created on first netdevice: pf0vf0
+The root cause is still unknown, but since many users are affected by
+the issue, implment the quirk in the driver as a temporary workaround.
 
-After this change:
-- devlink phys_port_name for first netdevice (ending name "f0"): p0
-- devlink phys_port_name for VF created on first netdevice: pf0vf0
+Also adds mei_me as soft dependency to ensure the device link can be
+created if e1000e is in initramfs.
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+BugLink: https://bugs.launchpad.net/bugs/1927925
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213377
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213651
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
-This commit should be squashed with "ice: Move devlink port to PF/VF struct"
+ drivers/net/ethernet/intel/e1000e/netdev.c | 26 ++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
- drivers/net/ethernet/intel/ice/ice_devlink.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 59ae94266fcf..792a3972dec3 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -624,7 +624,7 @@ int ice_devlink_create_pf_port(struct ice_pf *pf)
- 	vsi = ice_get_main_vsi(pf);
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 5835d6cf2f51..e63445a8ce12 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7317,6 +7317,27 @@ static const struct net_device_ops e1000e_netdev_ops = {
+ 	.ndo_features_check	= passthru_features_check,
+ };
  
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
--	attrs.phys.port_number = vsi->port_info->lport;
-+	attrs.phys.port_number = pf->hw.bus.func;
++static void e1000e_create_device_links(struct pci_dev *pdev)
++{
++	struct pci_dev *tgp_mei_me;
++
++	/* Find TGP mei_me devices and make e1000e power depend on mei_me */
++	tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0xa0e0, NULL);
++	if (!tgp_mei_me) {
++		tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0x43e0, NULL);
++		if (!tgp_mei_me)
++			return;
++	}
++
++	if (device_link_add(&pdev->dev, &tgp_mei_me->dev,
++			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE |
++			    DL_FLAG_AUTOREMOVE_CONSUMER))
++		pci_info(pdev, "System and runtime PM depends on %s\n",
++			 pci_name(tgp_mei_me));
++
++	pci_dev_put(tgp_mei_me);
++}
++
+ /**
+  * e1000_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -7645,6 +7666,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (pci_dev_run_wake(pdev) && hw->mac.type != e1000_pch_cnp)
+ 		pm_runtime_put_noidle(&pdev->dev);
  
- 	devlink_port_attrs_set(devlink_port, &attrs);
- 	devlink = priv_to_devlink(pf);
++	if (hw->mac.type == e1000_pch_tgp)
++		e1000e_create_device_links(pdev);
++
+ 	return 0;
+ 
+ err_register:
+@@ -7917,6 +7941,8 @@ static void __exit e1000_exit_module(void)
+ }
+ module_exit(e1000_exit_module);
+ 
++/* Ensure device link can be created if e1000e is in the initramfs. */
++MODULE_SOFTDEP("pre: mei_me");
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.31.1
 
