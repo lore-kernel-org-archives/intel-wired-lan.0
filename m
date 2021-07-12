@@ -1,70 +1,103 @@
 From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Mon, 12 Jul 2021 21:34:59 +0800
-Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: Serialize TGP e1000e PM ops
-In-Reply-To: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
-References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
-Message-ID: <20210712133500.1126371-3-kai.heng.feng@canonical.com>
+Date: Mon, 12 Jul 2021 21:34:57 +0800
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: Separate TGP from SPT
+Message-ID: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On TGL systems, PCI_COMMAND may randomly flip to 0 on system resume.
-This is devastating to drivers that use pci_set_master(), like NVMe and
-xHCI, to enable DMA in their resume routine, as pci_set_master() can
-inadvertently disable PCI_COMMAND_IO and PCI_COMMAND_MEMORY, making
-resources inaccessible.
+Separate TGP from SPT so we can apply specific quirks to TGP.
 
-The issue is reproducible on all kernel releases, but the situation is
-exacerbated by commit 6cecf02e77ab ("Revert "e1000e: disable s0ix entry
-and exit flows for ME systems"").
-
-Seems like ME can do many things to other PCI devices until it's finally out of
-ULP polling. So ensure e1000e PM ops are serialized by enforcing suspend/resume
-order to workaround the issue.
-
-Of course this will make system suspend and resume a bit slower, but we
-probably need to settle on this workaround until ME is fully supported.
-
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=212039
 Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  4 +++-
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 ++++++++++++++++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 13 +++++++------
+ 3 files changed, 30 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 5b2143f4b1f8..3178efd98006 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -113,7 +113,8 @@ enum e1000_boards {
+ 	board_pch2lan,
+ 	board_pch_lpt,
+ 	board_pch_spt,
+-	board_pch_cnp
++	board_pch_cnp,
++	board_pch_tgp
+ };
+ 
+ struct e1000_ps_page {
+@@ -499,6 +500,7 @@ extern const struct e1000_info e1000_pch2_info;
+ extern const struct e1000_info e1000_pch_lpt_info;
+ extern const struct e1000_info e1000_pch_spt_info;
+ extern const struct e1000_info e1000_pch_cnp_info;
++extern const struct e1000_info e1000_pch_tgp_info;
+ extern const struct e1000_info e1000_es2_info;
+ 
+ void e1000e_ptp_init(struct e1000_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index cf7b3887da1d..654dbe798e55 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -5967,3 +5967,23 @@ const struct e1000_info e1000_pch_cnp_info = {
+ 	.phy_ops		= &ich8_phy_ops,
+ 	.nvm_ops		= &spt_nvm_ops,
+ };
++
++const struct e1000_info e1000_pch_tgp_info = {
++	.mac			= e1000_pch_tgp,
++	.flags			= FLAG_IS_ICH
++				  | FLAG_HAS_WOL
++				  | FLAG_HAS_HW_TIMESTAMP
++				  | FLAG_HAS_CTRLEXT_ON_LOAD
++				  | FLAG_HAS_AMT
++				  | FLAG_HAS_FLASH
++				  | FLAG_HAS_JUMBO_FRAMES
++				  | FLAG_APME_IN_WUC,
++	.flags2			= FLAG2_HAS_PHY_STATS
++				  | FLAG2_HAS_EEE,
++	.pba			= 26,
++	.max_hw_frame_size	= 9022,
++	.get_variants		= e1000_get_variants_ich8lan,
++	.mac_ops		= &ich8_mac_ops,
++	.phy_ops		= &ich8_phy_ops,
++	.nvm_ops		= &spt_nvm_ops,
++};
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index e63445a8ce12..0244d3dd90a3 100644
+index d150dade06cf..5835d6cf2f51 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7319,7 +7319,8 @@ static const struct net_device_ops e1000e_netdev_ops = {
+@@ -51,6 +51,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+ 	[board_pch_lpt]		= &e1000_pch_lpt_info,
+ 	[board_pch_spt]		= &e1000_pch_spt_info,
+ 	[board_pch_cnp]		= &e1000_pch_cnp_info,
++	[board_pch_tgp]		= &e1000_pch_tgp_info,
+ };
  
- static void e1000e_create_device_links(struct pci_dev *pdev)
- {
--	struct pci_dev *tgp_mei_me;
-+	struct pci_bus *bus = pdev->bus;
-+	struct pci_dev *tgp_mei_me, *p;
- 
- 	/* Find TGP mei_me devices and make e1000e power depend on mei_me */
- 	tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0xa0e0, NULL);
-@@ -7335,6 +7336,17 @@ static void e1000e_create_device_links(struct pci_dev *pdev)
- 		pci_info(pdev, "System and runtime PM depends on %s\n",
- 			 pci_name(tgp_mei_me));
- 
-+	/* Find other devices in the SoC and make them depend on e1000e */
-+	list_for_each_entry(p, &bus->devices, bus_list) {
-+		if (&p->dev == &pdev->dev || &p->dev == &tgp_mei_me->dev)
-+			continue;
-+
-+		if (device_link_add(&p->dev, &pdev->dev,
-+				    DL_FLAG_AUTOREMOVE_SUPPLIER))
-+			pci_info(p, "System PM depends on %s\n",
-+				 pci_name(pdev));
-+	}
-+
- 	pci_dev_put(tgp_mei_me);
- }
- 
+ struct e1000_reg_info {
+@@ -7843,12 +7844,12 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_cnp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_cnp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_cnp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
 -- 
 2.31.1
 
