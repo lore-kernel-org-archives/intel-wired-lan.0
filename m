@@ -1,184 +1,134 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 14 Jul 2021 15:25:41 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- f52d0592d48cff3ca4d26012a72ffb4dd68295f1
-Message-ID: <60ee9175.0kIk6sKc7p4NqbyW%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Wed, 14 Jul 2021 11:43:13 +0300
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: Separate TGP from SPT
+In-Reply-To: <CAAd53p5rKLNv9w4Z8YBSW=ztLAV68mc+BxUSyfOi11TLSuh6bg@mail.gmail.com>
+References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
+ <d0bc9dbd-9b7a-5807-2ade-e710964a05a1@intel.com>
+ <CAAd53p5rKLNv9w4Z8YBSW=ztLAV68mc+BxUSyfOi11TLSuh6bg@mail.gmail.com>
+Message-ID: <f7c867e5-ee94-cd40-fe88-f8b5b383f8f5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: f52d0592d48cff3ca4d26012a72ffb4dd68295f1  ice: rearm other interrupt cause register after enabling VFs
+On 7/14/2021 07:19, Kai-Heng Feng wrote:
+> Hi Sasha,
+> 
+> On Wed, Jul 14, 2021 at 1:58 AM Sasha Neftin <sasha.neftin@intel.com> wrote:
+>>
+>> On 7/12/2021 16:34, Kai-Heng Feng wrote:
+>>> Separate TGP from SPT so we can apply specific quirks to TGP.
+>>>
+>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>>> ---
+>>>    drivers/net/ethernet/intel/e1000e/e1000.h   |  4 +++-
+>>>    drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 ++++++++++++++++++++
+>>>    drivers/net/ethernet/intel/e1000e/netdev.c  | 13 +++++++------
+>>>    3 files changed, 30 insertions(+), 7 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+>>> index 5b2143f4b1f8..3178efd98006 100644
+>>> --- a/drivers/net/ethernet/intel/e1000e/e1000.h
+>>> +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+>>> @@ -113,7 +113,8 @@ enum e1000_boards {
+>>>        board_pch2lan,
+>>>        board_pch_lpt,
+>>>        board_pch_spt,
+>>> -     board_pch_cnp
+>>> +     board_pch_cnp,
+>> Hello Kai-Heng,
+>> I would agree with you here. I would suggest extending it also for other
+>> PCH (at least ADP and MTP).  The same controller on a different PCH.
+>> We will be able to differentiate between boards via MAC type and submit
+>> quirks if need.
+> 
+> Sure, will do in v2.
+> 
+> The issue patch [3/3] addresses may be fixed by [1], but I'll need to
+> dig the affected system out and do some testing.
+> Meanwhile, many users are affected by the RX issue patch [2/3]
+> addresses, so it'll be great if someone can review it.
+> 
+> [1] https://patchwork.ozlabs.org/project/intel-wired-lan/list/?series=250480
+regards patches 2/3 and 3/3: looks it is not right place for temporary 
+w.a. Let's work with alexander.usyskin at intel.com to understand to root 
+cause and right place.
+> 
+> Kai-Heng
+> 
+>>> +     board_pch_tgp
+>>>    };
+>>>
+>>>    struct e1000_ps_page {
+>>> @@ -499,6 +500,7 @@ extern const struct e1000_info e1000_pch2_info;
+>>>    extern const struct e1000_info e1000_pch_lpt_info;
+>>>    extern const struct e1000_info e1000_pch_spt_info;
+>>>    extern const struct e1000_info e1000_pch_cnp_info;
+>>> +extern const struct e1000_info e1000_pch_tgp_info;
+>>>    extern const struct e1000_info e1000_es2_info;
+>>>
+>>>    void e1000e_ptp_init(struct e1000_adapter *adapter);
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>> index cf7b3887da1d..654dbe798e55 100644
+>>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>> @@ -5967,3 +5967,23 @@ const struct e1000_info e1000_pch_cnp_info = {
+>>>        .phy_ops                = &ich8_phy_ops,
+>>>        .nvm_ops                = &spt_nvm_ops,
+>>>    };
+>>> +
+>>> +const struct e1000_info e1000_pch_tgp_info = {
+>>> +     .mac                    = e1000_pch_tgp,
+>>> +     .flags                  = FLAG_IS_ICH
+>>> +                               | FLAG_HAS_WOL
+>>> +                               | FLAG_HAS_HW_TIMESTAMP
+>>> +                               | FLAG_HAS_CTRLEXT_ON_LOAD
+>>> +                               | FLAG_HAS_AMT
+>>> +                               | FLAG_HAS_FLASH
+>>> +                               | FLAG_HAS_JUMBO_FRAMES
+>>> +                               | FLAG_APME_IN_WUC,
+>>> +     .flags2                 = FLAG2_HAS_PHY_STATS
+>>> +                               | FLAG2_HAS_EEE,
+>>> +     .pba                    = 26,
+>>> +     .max_hw_frame_size      = 9022,
+>>> +     .get_variants           = e1000_get_variants_ich8lan,
+>>> +     .mac_ops                = &ich8_mac_ops,
+>>> +     .phy_ops                = &ich8_phy_ops,
+>>> +     .nvm_ops                = &spt_nvm_ops,
+>>> +};
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> index d150dade06cf..5835d6cf2f51 100644
+>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> @@ -51,6 +51,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+>>>        [board_pch_lpt]         = &e1000_pch_lpt_info,
+>>>        [board_pch_spt]         = &e1000_pch_spt_info,
+>>>        [board_pch_cnp]         = &e1000_pch_cnp_info,
+>>> +     [board_pch_tgp]         = &e1000_pch_tgp_info,
+>>>    };
+>>>
+>>>    struct e1000_reg_info {
+>>> @@ -7843,12 +7844,12 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_cnp },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_cnp },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_cnp },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
+>>> -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_tgp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_tgp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_tgp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
+>>> +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_cnp },
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
+>>>        { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
+>>>
+>> Thanks,
+>> Sasha
 
-elapsed time: 727m
-
-configs tested: 155
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm64                               defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                  colibri_pxa270_defconfig
-microblaze                          defconfig
-ia64                             alldefconfig
-powerpc                 mpc832x_mds_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                       netwinder_defconfig
-powerpc                          allmodconfig
-sh                           se7705_defconfig
-riscv                    nommu_k210_defconfig
-mips                           gcw0_defconfig
-powerpc                    amigaone_defconfig
-mips                           ip32_defconfig
-arm                              alldefconfig
-h8300                     edosk2674_defconfig
-powerpc                   bluestone_defconfig
-arm                        clps711x_defconfig
-mips                     loongson2k_defconfig
-powerpc                       ppc64_defconfig
-arc                           tb10x_defconfig
-powerpc                      tqm8xx_defconfig
-openrisc                         alldefconfig
-powerpc                      mgcoge_defconfig
-arm                         lubbock_defconfig
-arm                           spitz_defconfig
-s390                                defconfig
-mips                           ip28_defconfig
-sh                           se7751_defconfig
-arm                         palmz72_defconfig
-powerpc                     skiroot_defconfig
-arm                         nhk8815_defconfig
-powerpc                    adder875_defconfig
-m68k                        m5272c3_defconfig
-h8300                            alldefconfig
-mips                          ath79_defconfig
-powerpc                 mpc834x_mds_defconfig
-mips                     loongson1b_defconfig
-ia64                                defconfig
-arm                             mxs_defconfig
-mips                     cu1000-neo_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                 mpc8315_rdb_defconfig
-sh                           se7722_defconfig
-arc                                 defconfig
-mips                  maltasmvp_eva_defconfig
-mips                           rs90_defconfig
-mips                       lemote2f_defconfig
-s390                       zfcpdump_defconfig
-powerpc                     tqm5200_defconfig
-arm                         vf610m4_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                         bcm2835_defconfig
-sh                ecovec24-romimage_defconfig
-sparc                            alldefconfig
-powerpc                      bamboo_defconfig
-arm                        oxnas_v6_defconfig
-arm                         orion5x_defconfig
-powerpc                    socrates_defconfig
-mips                      fuloong2e_defconfig
-mips                         db1xxx_defconfig
-sh                        dreamcast_defconfig
-arm                            mps2_defconfig
-arm                         socfpga_defconfig
-powerpc                     pq2fads_defconfig
-m68k                        m5307c3_defconfig
-sh                            hp6xx_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                            lart_defconfig
-mips                       capcella_defconfig
-arc                              alldefconfig
-sh                        edosk7705_defconfig
-mips                      maltaaprp_defconfig
-powerpc                       maple_defconfig
-powerpc                      cm5200_defconfig
-arm                        neponset_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20210714
-x86_64               randconfig-a004-20210714
-x86_64               randconfig-a002-20210714
-x86_64               randconfig-a003-20210714
-x86_64               randconfig-a006-20210714
-x86_64               randconfig-a001-20210714
-i386                 randconfig-a005-20210713
-i386                 randconfig-a004-20210713
-i386                 randconfig-a006-20210713
-i386                 randconfig-a001-20210713
-i386                 randconfig-a002-20210713
-i386                 randconfig-a003-20210713
-x86_64               randconfig-a013-20210713
-x86_64               randconfig-a014-20210713
-x86_64               randconfig-a012-20210713
-x86_64               randconfig-a015-20210713
-x86_64               randconfig-a016-20210713
-x86_64               randconfig-a011-20210713
-i386                 randconfig-a015-20210713
-i386                 randconfig-a014-20210713
-i386                 randconfig-a011-20210713
-i386                 randconfig-a013-20210713
-i386                 randconfig-a012-20210713
-i386                 randconfig-a016-20210713
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                            kunit_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-b001-20210713
-x86_64               randconfig-a005-20210713
-x86_64               randconfig-a004-20210713
-x86_64               randconfig-a003-20210713
-x86_64               randconfig-a002-20210713
-x86_64               randconfig-a006-20210713
-x86_64               randconfig-a001-20210713
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
