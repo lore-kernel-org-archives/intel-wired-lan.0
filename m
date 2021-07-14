@@ -1,73 +1,128 @@
-From: Zulkifli, Muhammad Husaini <muhammad.husaini.zulkifli@intel.com>
-Date: Wed, 14 Jul 2021 01:41:54 +0000
-Subject: [Intel-wired-lan] [PATCH v1] igc: Increase timeout value for
- Speed 100/1000/2500
-In-Reply-To: <76e834f4-195d-3623-0468-3a84daf19ba7@intel.com>
-References: <20210709234516.24753-1-muhammad.husaini.zulkifli@intel.com>
- <76e834f4-195d-3623-0468-3a84daf19ba7@intel.com>
-Message-ID: <BYAPR11MB2871D56F52DE97BF7DC427BBB8139@BYAPR11MB2871.namprd11.prod.outlook.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Wed, 14 Jul 2021 12:19:00 +0800
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: Separate TGP from SPT
+In-Reply-To: <d0bc9dbd-9b7a-5807-2ade-e710964a05a1@intel.com>
+References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
+ <d0bc9dbd-9b7a-5807-2ade-e710964a05a1@intel.com>
+Message-ID: <CAAd53p5rKLNv9w4Z8YBSW=ztLAV68mc+BxUSyfOi11TLSuh6bg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks sasha and Vinicius!!
+Hi Sasha,
 
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Sent: Wednesday, July 14, 2021 12:44 AM
-To: Zulkifli, Muhammad Husaini <muhammad.husaini.zulkifli@intel.com>; intel-wired-lan at osuosl.org; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Gomes, Vinicius <vinicius.gomes@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH v1] igc: Increase timeout value for Speed 100/1000/2500
+On Wed, Jul 14, 2021 at 1:58 AM Sasha Neftin <sasha.neftin@intel.com> wrote:
+>
+> On 7/12/2021 16:34, Kai-Heng Feng wrote:
+> > Separate TGP from SPT so we can apply specific quirks to TGP.
+> >
+> > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/e1000.h   |  4 +++-
+> >   drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 ++++++++++++++++++++
+> >   drivers/net/ethernet/intel/e1000e/netdev.c  | 13 +++++++------
+> >   3 files changed, 30 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+> > index 5b2143f4b1f8..3178efd98006 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/e1000.h
+> > +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+> > @@ -113,7 +113,8 @@ enum e1000_boards {
+> >       board_pch2lan,
+> >       board_pch_lpt,
+> >       board_pch_spt,
+> > -     board_pch_cnp
+> > +     board_pch_cnp,
+> Hello Kai-Heng,
+> I would agree with you here. I would suggest extending it also for other
+> PCH (at least ADP and MTP).  The same controller on a different PCH.
+> We will be able to differentiate between boards via MAC type and submit
+> quirks if need.
 
-On 7/10/2021 02:45, Muhammad Husaini Zulkifli wrote:
+Sure, will do in v2.
 
-As the cycle time is set to maximum of 1s, the TX Hang timeout need to
+The issue patch [3/3] addresses may be fixed by [1], but I'll need to
+dig the affected system out and do some testing.
+Meanwhile, many users are affected by the RX issue patch [2/3]
+addresses, so it'll be great if someone can review it.
 
-be increase to avoid possible TX Hangs caused by using long Qbv cycles.
+[1] https://patchwork.ozlabs.org/project/intel-wired-lan/list/?series=250480
 
+Kai-Heng
 
-
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com><mailto:muhammad.husaini.zulkifli@intel.com>
-
----
-
- drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-
-index c8abd7fb70e5..99fb5641297d 100644
-
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-
-@@ -5322,7 +5322,9 @@ static void igc_watchdog_task(struct work_struct *work)
-
-                               adapter->tx_timeout_factor = 14;
-
-                               break;
-
-                        case SPEED_100:
-
--                              /* maybe add some timeout factor ? */
-
-+                       case SPEED_1000:
-
-+                       case SPEED_2500:
-
-+                              adapter->tx_timeout_factor = 7;
-
-                               break;
-
-                        }
-
-
-
-Acked-by: Sasha Neftin <sasha.neftin@intel.com><mailto:sasha.neftin@intel.com>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210714/c309837c/attachment-0001.html>
+> > +     board_pch_tgp
+> >   };
+> >
+> >   struct e1000_ps_page {
+> > @@ -499,6 +500,7 @@ extern const struct e1000_info e1000_pch2_info;
+> >   extern const struct e1000_info e1000_pch_lpt_info;
+> >   extern const struct e1000_info e1000_pch_spt_info;
+> >   extern const struct e1000_info e1000_pch_cnp_info;
+> > +extern const struct e1000_info e1000_pch_tgp_info;
+> >   extern const struct e1000_info e1000_es2_info;
+> >
+> >   void e1000e_ptp_init(struct e1000_adapter *adapter);
+> > diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > index cf7b3887da1d..654dbe798e55 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> > @@ -5967,3 +5967,23 @@ const struct e1000_info e1000_pch_cnp_info = {
+> >       .phy_ops                = &ich8_phy_ops,
+> >       .nvm_ops                = &spt_nvm_ops,
+> >   };
+> > +
+> > +const struct e1000_info e1000_pch_tgp_info = {
+> > +     .mac                    = e1000_pch_tgp,
+> > +     .flags                  = FLAG_IS_ICH
+> > +                               | FLAG_HAS_WOL
+> > +                               | FLAG_HAS_HW_TIMESTAMP
+> > +                               | FLAG_HAS_CTRLEXT_ON_LOAD
+> > +                               | FLAG_HAS_AMT
+> > +                               | FLAG_HAS_FLASH
+> > +                               | FLAG_HAS_JUMBO_FRAMES
+> > +                               | FLAG_APME_IN_WUC,
+> > +     .flags2                 = FLAG2_HAS_PHY_STATS
+> > +                               | FLAG2_HAS_EEE,
+> > +     .pba                    = 26,
+> > +     .max_hw_frame_size      = 9022,
+> > +     .get_variants           = e1000_get_variants_ich8lan,
+> > +     .mac_ops                = &ich8_mac_ops,
+> > +     .phy_ops                = &ich8_phy_ops,
+> > +     .nvm_ops                = &spt_nvm_ops,
+> > +};
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > index d150dade06cf..5835d6cf2f51 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -51,6 +51,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+> >       [board_pch_lpt]         = &e1000_pch_lpt_info,
+> >       [board_pch_spt]         = &e1000_pch_spt_info,
+> >       [board_pch_cnp]         = &e1000_pch_cnp_info,
+> > +     [board_pch_tgp]         = &e1000_pch_tgp_info,
+> >   };
+> >
+> >   struct e1000_reg_info {
+> > @@ -7843,12 +7844,12 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), board_pch_spt },
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_cnp },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_cnp },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_cnp },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
+> > -     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_tgp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_tgp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_tgp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
+> > +     { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_cnp },
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
+> >       { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
+> >
+> Thanks,
+> Sasha
