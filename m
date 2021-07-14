@@ -1,42 +1,61 @@
 From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
-Date: Wed, 14 Jul 2021 12:05:51 +0300
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Make mei_me active when
- e1000e is in use
-In-Reply-To: <CAAd53p79BwxPGRECYGrpCQbSJz8NY2WrG+AJCuaj89XNqCy59Q@mail.gmail.com>
-References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
- <20210712133500.1126371-2-kai.heng.feng@canonical.com>
- <3947d70a-58d0-df93-24f1-1899fd567534@intel.com>
- <CAAd53p79BwxPGRECYGrpCQbSJz8NY2WrG+AJCuaj89XNqCy59Q@mail.gmail.com>
-Message-ID: <16e188d5-f06e-23dc-2f71-c935240dd3b4@intel.com>
+Date: Wed, 14 Jul 2021 12:13:25 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2] igc: wait for the MAC copy when
+ enabled MAC passthrough
+In-Reply-To: <1a539d4d-10b4-5b9b-31e7-6aec57120356@canonical.com>
+References: <20210702045120.22855-1-aaron.ma@canonical.com>
+ <20210702045120.22855-2-aaron.ma@canonical.com>
+ <613e2106-940a-49ed-6621-0bb00bc7dca5@intel.com>
+ <ad3d2d01-1d0a-8887-b057-e6a9531a05f4@canonical.com>
+ <f9f9408e-9ba3-7ed9-acc2-1c71913b04f0@intel.com>
+ <96106dfe-9844-1d9d-d865-619d78a0d150@canonical.com>
+ <47117935-10d6-98e0-5894-ba104912ce25@intel.com>
+ <1a539d4d-10b4-5b9b-31e7-6aec57120356@canonical.com>
+Message-ID: <20daa122-aaec-0c6b-23f5-d2be2fcab1e9@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 14/07/2021 9:28, Kai-Heng Feng wrote:
->> I do not know how MEI driver affect 1Gbe driver - so, I would suggest to
->> involve our CSME engineer (alexander.usyskin at intel.com) and try to
->> investigate this problem.
->> Does this problem observed on Dell systems? As I heard no reproduction
->> on Intel's RVP platform.
->> Another question: does disable mei_me runpm solve your problem?
+Hello, Aaron, Sasha,
+
+On 13/07/2021 16:45, Aaron Ma wrote:
 > 
-> Yes, disabling runpm on mei_me can workaround the issue, and that's
-> essentially what this patch does by adding DL_FLAG_PM_RUNTIME |
-> DL_FLAG_RPM_ACTIVE flag.
+> On 7/8/21 12:24 PM, Neftin, Sasha wrote:
+>> I?would?to?like?suggest?checking?the?following?direction:
+>> 1. principal question: can we update the netdev device address after 
+>> it is?already?set?during?probe??I?meant?perform?another:
+>> memcpy(netdev->dev_addr,?hw->mac.addr,?netdev->addr_len)?up?to?demand
 > 
-> Kai-Heng
-Hi, Kai-Heng,
+> Updating MAC addr may work.
+> Even at the end of probe, it still got the wrong MAC address, delay is 
+> still needed.
+> 
+> Aaron
+> 
+>> 2. We need to work with Intel's firmware engineer/group and define the 
+>> message/event:?MAC?addressis?changed?and?should?be?updated.
+>> As I know MNG FW updates shadow registers. Since shadow registers are 
+>> different from RAL/RAH registers - it could be a notification that the 
+>> MAC?address?changed.?Let's?check?it.
 
-If the goal of the patch is to essentially disable runpm on mei_me, then 
-why is the patch touching code in the e1000e driver?
+There is an interrupt which the FW can issue to the driver to indicate 
+that MAC address has been changed. At that point the driver can update 
+the MAC in its internal structures.
 
-I agree with Sasha Neftin; it seems like the wrong location, and the 
-wrong way to do it, even if it currently works. We need to understand 
-what causes runpm of mei_me to adversely affect LAN Rx, and for this we 
-need the involvement of mei_me owners.
+The important question is - is there away to update the OS structures at 
+that point so that the MAC address change propagates through all the 
+network stack. Some network stacks do not support such an update, except 
+during device initialization (probe), so in such environments a delay is 
+the only workaround, and it is a problematic one as we know.
 
+If we find a mechanism by which the device driver can tell the Linux 
+network stack - "My MAC address has changed; please update it", we can 
+implement it differently, and not need this delay. Who can help us with 
+this inquiry?
+
+Thanks,
 --Dima
 ---------------------------------------------------------------------
 Intel Israel (74) Limited
