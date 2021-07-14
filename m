@@ -1,77 +1,53 @@
-From: Leon Romanovsky <leonro@nvidia.com>
-Date: Wed, 14 Jul 2021 16:02:56 +0300
-Subject: [Intel-wired-lan] [PATCH v3 06/14] RDMA/irdma: Use
- irq_set_affinity_and_hint
-In-Reply-To: <CAFki+Lm-CpKZai1fV5aMJzEb-x+003m8wLQShSrYpyNh3XC50Q@mail.gmail.com>
-References: <20210713211502.464259-1-nitesh@redhat.com>
- <20210713211502.464259-7-nitesh@redhat.com>
- <YO7SiFE1dE0dFhkE@unreal>
- <CAFki+Lm-CpKZai1fV5aMJzEb-x+003m8wLQShSrYpyNh3XC50Q@mail.gmail.com>
-Message-ID: <YO7ggLW78FWE4z+1@unreal>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 14 Jul 2021 20:52:32 +0000
+Subject: [Intel-wired-lan] [PATCH net] i40e: introduce pseudo number of
+ cpus for compatibility
+In-Reply-To: <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
+References: <20210707094133.24597-1-kerneljasonxing@gmail.com>
+ <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
+Message-ID: <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jul 14, 2021 at 08:56:41AM -0400, Nitesh Lal wrote:
-> On Wed, Jul 14, 2021 at 8:03 AM Leon Romanovsky <leonro@nvidia.com> wrote:
-> >
-> > On Tue, Jul 13, 2021 at 05:14:54PM -0400, Nitesh Narayan Lal wrote:
-> > > The driver uses irq_set_affinity_hint() to update the affinity_hint mask
-> > > that is consumed by the userspace to distribute the interrupts and to apply
-> > > the provided mask as the affinity for its interrupts. However,
-> > > irq_set_affinity_hint() applying the provided cpumask as an affinity for
-> > > the interrupt is an undocumented side effect.
-> > >
-> > > To remove this side effect irq_set_affinity_hint() has been marked
-> > > as deprecated and new interfaces have been introduced. Hence, replace the
-> > > irq_set_affinity_hint() with the new interface irq_set_affinity_and_hint()
-> > > where the provided mask needs to be applied as the affinity and
-> > > affinity_hint pointer needs to be set and replace with
-> > > irq_update_affinity_hint() where only affinity_hint needs to be updated.
-> > >
-> > > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> > > ---
-> > >  drivers/infiniband/hw/irdma/hw.c | 4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/infiniband/hw/irdma/hw.c b/drivers/infiniband/hw/irdma/hw.c
-> > > index 7afb8a6a0526..7f13a051d4de 100644
-> > > --- a/drivers/infiniband/hw/irdma/hw.c
-> > > +++ b/drivers/infiniband/hw/irdma/hw.c
-> > > @@ -537,7 +537,7 @@ static void irdma_destroy_irq(struct irdma_pci_f *rf,
-> > >       struct irdma_sc_dev *dev = &rf->sc_dev;
-> > >
-> > >       dev->irq_ops->irdma_dis_irq(dev, msix_vec->idx);
-> > > -     irq_set_affinity_hint(msix_vec->irq, NULL);
-> > > +     irq_update_affinity_hint(msix_vec->irq, NULL);
-> > >       free_irq(msix_vec->irq, dev_id);
-> > >  }
-> > >
-> > > @@ -1087,7 +1087,7 @@ irdma_cfg_ceq_vector(struct irdma_pci_f *rf, struct irdma_ceq *iwceq,
-> > >       }
-> > >       cpumask_clear(&msix_vec->mask);
-> > >       cpumask_set_cpu(msix_vec->cpu_affinity, &msix_vec->mask);
-> > > -     irq_set_affinity_hint(msix_vec->irq, &msix_vec->mask);
-> > > +     irq_set_affinity_and_hint(msix_vec->irq, &msix_vec->mask);
-> >
-> > I think that it needs to be irq_update_affinity_hint().
-> >
+On Fri, 2021-07-09 at 15:13 +0800, Jason Xing wrote:
+> Oh, one more thing I missed in the last email is that all the
+> failures
+> are happening on the combination of X722 10GbE and 1GbE. So the value
+> of @num_tx_qp  the driver fetches is 384 while the value is 768
+> without x722 1GbE.
 > 
-> Ah! I got a little confused from our last conversation about mlx5.
+> I get that information back here:
+> $ lspci | grep -i ether
+> 5a:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+> X722 for 10GbE SFP+ (rev 09)
+> 5a:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+> X722 for 10GbE SFP+ (rev 09)
+> 5a:00.2 Ethernet controller: Intel Corporation Ethernet Connection
+> X722 for 1GbE (rev 09)
+> 5a:00.3 Ethernet controller: Intel Corporation Ethernet Connection
+> X722 for 1GbE (rev 09)
 > 
-> IIUC mlx5 sub-function use case uses irdma (?) and that's why I thought
-> that perhaps we would also want to define the affinity here from the beginning.
+> I know it's really stupid to control the number of online cpus, but
+> finding a good way only to limit the @alloc_queue_pairs is not easy
+> to
+> go. So could someone point out a better way to fix this issue and
+> take
+> care of some relatively old nics with the number of cpus increasing?
 
-mlx5 is connected to mlx5_ib/mlx5_vdpa e.t.c.
+Hi Jason,
 
-Not sure about that, but I think that only mlx5 implements SIOV model.
+Sorry for the slow response; I was trying to talk to the i40e team
+about this.
 
-> 
-> In any case, I will make the change and re-post.
-> 
-> --
-> Thanks
-> Nitesh
-> 
+I agree, the limiting of number of online CPUs doesn't seem like a
+solution we want to pursue. The team is working on a patch that deals
+with the same, or similiar, issue; it is reworking the allocations of
+the queue pile. I'll make sure that they add you on the patch when it
+is sent so that you can try this and see if it resolves your issue.
+
+Thanks,
+Tony
+
