@@ -1,21 +1,21 @@
 From: Leon Romanovsky <leonro@nvidia.com>
-Date: Wed, 14 Jul 2021 15:01:11 +0300
-Subject: [Intel-wired-lan] [PATCH v3 13/14] net/mlx5: Use
+Date: Wed, 14 Jul 2021 15:03:20 +0300
+Subject: [Intel-wired-lan] [PATCH v3 06/14] RDMA/irdma: Use
  irq_set_affinity_and_hint
-In-Reply-To: <20210713211502.464259-14-nitesh@redhat.com>
+In-Reply-To: <20210713211502.464259-7-nitesh@redhat.com>
 References: <20210713211502.464259-1-nitesh@redhat.com>
- <20210713211502.464259-14-nitesh@redhat.com>
-Message-ID: <YO7SB4q9Q7S0lIbR@unreal>
+ <20210713211502.464259-7-nitesh@redhat.com>
+Message-ID: <YO7SiFE1dE0dFhkE@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jul 13, 2021 at 05:15:01PM -0400, Nitesh Narayan Lal wrote:
+On Tue, Jul 13, 2021 at 05:14:54PM -0400, Nitesh Narayan Lal wrote:
 > The driver uses irq_set_affinity_hint() to update the affinity_hint mask
 > that is consumed by the userspace to distribute the interrupts and to apply
-> the provided mask as the affinity for the mlx5 interrupts. However,
+> the provided mask as the affinity for its interrupts. However,
 > irq_set_affinity_hint() applying the provided cpumask as an affinity for
 > the interrupt is an undocumented side effect.
 > 
@@ -28,9 +28,34 @@ On Tue, Jul 13, 2021 at 05:15:01PM -0400, Nitesh Narayan Lal wrote:
 > 
 > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 > ---
->  drivers/net/ethernet/mellanox/mlx5/core/pci_irq.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/infiniband/hw/irdma/hw.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
+> diff --git a/drivers/infiniband/hw/irdma/hw.c b/drivers/infiniband/hw/irdma/hw.c
+> index 7afb8a6a0526..7f13a051d4de 100644
+> --- a/drivers/infiniband/hw/irdma/hw.c
+> +++ b/drivers/infiniband/hw/irdma/hw.c
+> @@ -537,7 +537,7 @@ static void irdma_destroy_irq(struct irdma_pci_f *rf,
+>  	struct irdma_sc_dev *dev = &rf->sc_dev;
+>  
+>  	dev->irq_ops->irdma_dis_irq(dev, msix_vec->idx);
+> -	irq_set_affinity_hint(msix_vec->irq, NULL);
+> +	irq_update_affinity_hint(msix_vec->irq, NULL);
+>  	free_irq(msix_vec->irq, dev_id);
+>  }
+>  
+> @@ -1087,7 +1087,7 @@ irdma_cfg_ceq_vector(struct irdma_pci_f *rf, struct irdma_ceq *iwceq,
+>  	}
+>  	cpumask_clear(&msix_vec->mask);
+>  	cpumask_set_cpu(msix_vec->cpu_affinity, &msix_vec->mask);
+> -	irq_set_affinity_hint(msix_vec->irq, &msix_vec->mask);
+> +	irq_set_affinity_and_hint(msix_vec->irq, &msix_vec->mask);
 
-Thanks,
-Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
+I think that it needs to be irq_update_affinity_hint().
+
+>  	if (status) {
+>  		ibdev_dbg(&rf->iwdev->ibdev, "ERR: ceq irq config fail\n");
+>  		return IRDMA_ERR_CFG;
+> -- 
+> 2.27.0
+> 
