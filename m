@@ -1,83 +1,184 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 14 Jul 2021 10:04:26 +0300
-Subject: [Intel-wired-lan] [PATCH v1 3/3] e1000e: Additional PHY power
- saving in s0ix
-In-Reply-To: <fab23c51-cfcd-2a20-0558-346ade1199b5@molgen.mpg.de>
-References: <20210624081908.568757-1-sasha.neftin@intel.com>
- <b144efbc-9dbd-dd7c-b8df-a504a757bded@molgen.mpg.de>
- <3de72f51-8f3d-29c9-dc74-b016c13c5b08@intel.com>
- <fab23c51-cfcd-2a20-0558-346ade1199b5@molgen.mpg.de>
-Message-ID: <183fbfd4-5523-593c-0eb6-814eb6a1e03e@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 14 Jul 2021 15:25:41 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ f52d0592d48cff3ca4d26012a72ffb4dd68295f1
+Message-ID: <60ee9175.0kIk6sKc7p4NqbyW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/14/2021 09:09, Paul Menzel wrote:
-> Dear Sasha,
-> 
-> 
-> Am 13.07.21 um 18:40 schrieb Sasha Neftin:
->> On 7/13/2021 10:12, Paul Menzel wrote:
-> 
->>> Am 24.06.21 um 10:19 schrieb Sasha Neftin:
->>>
->>> Could you please use a statement in the commit message summary? Maybe:
->>>
->>>> Disable additional PHY features(?) in S0ix
->>>
->>>> After transferring the MAC-PHY interface to the SMBus the PHY
->>>> will save power in S0ix low power idle mode.
->>>
->>> I do not understand this. Please rewrite, and mention the three PHY 
->>> features(?) you change.
->>>
->>> Please document how you tested this, and exactly how much power is 
->>> saved.
-> 
->> The PHY will save 47-85mW in s0ix. It is tested (by our electrical 
->> validation team) on a sense resistor on a specific external board over 
->> the TGL platform.
->>
->> This measurement could variate from platform to platform and depends 
->> on the specific platform design.
-> 
-> Thank you for sharing the data. Please add it to the commit message in v2.
-Paul, I will work on this with our HW architect. We will process 
-specification updates. I will let you know and share since it will ready.
-> 
->>>> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
->>>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->>>> ---
->>>> ? drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
->>>> ? 1 file changed, 6 insertions(+)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
->>>> b/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> index 6e6e2e685e9d..c4f3e5ca7294 100644
->>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->>>> @@ -6380,10 +6380,16 @@ static void e1000e_s0ix_entry_flow(struct 
->>>> e1000_adapter *adapter)
->>>> ????????? ew32(CTRL_EXT, mac_data);
->>>> ? ????????? /* DFT control: PHY bit: page769_20[0] = 1
->>>> +???????? * page769_20[7] - PHY PLL stop
->>>> +???????? * page769_20[8] - PHY go to the electrical idle
->>>> +???????? * page769_20[9] - PHY serdes disable
->>>> ?????????? * Gate PPW via EXTCNF_CTRL - set 0x0F00[7] = 1
->>>> ?????????? */
->>>> ????????? e1e_rphy(hw, I82579_DFT_CTRL, &phy_data);
->>>> ????????? phy_data |= BIT(0);
->>>> +??????? phy_data |= BIT(7);
->>>> +??????? phy_data |= BIT(8);
->>>> +??????? phy_data |= BIT(9);
->>>> ????????? e1e_wphy(hw, I82579_DFT_CTRL, phy_data);
->>>> ? ????????? mac_data = er32(EXTCNF_CTRL);
->>>>
-> 
-> 
-> Kind regards,
-> 
-> Paul
-Sasha
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: f52d0592d48cff3ca4d26012a72ffb4dd68295f1  ice: rearm other interrupt cause register after enabling VFs
+
+elapsed time: 727m
+
+configs tested: 155
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                  colibri_pxa270_defconfig
+microblaze                          defconfig
+ia64                             alldefconfig
+powerpc                 mpc832x_mds_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                       netwinder_defconfig
+powerpc                          allmodconfig
+sh                           se7705_defconfig
+riscv                    nommu_k210_defconfig
+mips                           gcw0_defconfig
+powerpc                    amigaone_defconfig
+mips                           ip32_defconfig
+arm                              alldefconfig
+h8300                     edosk2674_defconfig
+powerpc                   bluestone_defconfig
+arm                        clps711x_defconfig
+mips                     loongson2k_defconfig
+powerpc                       ppc64_defconfig
+arc                           tb10x_defconfig
+powerpc                      tqm8xx_defconfig
+openrisc                         alldefconfig
+powerpc                      mgcoge_defconfig
+arm                         lubbock_defconfig
+arm                           spitz_defconfig
+s390                                defconfig
+mips                           ip28_defconfig
+sh                           se7751_defconfig
+arm                         palmz72_defconfig
+powerpc                     skiroot_defconfig
+arm                         nhk8815_defconfig
+powerpc                    adder875_defconfig
+m68k                        m5272c3_defconfig
+h8300                            alldefconfig
+mips                          ath79_defconfig
+powerpc                 mpc834x_mds_defconfig
+mips                     loongson1b_defconfig
+ia64                                defconfig
+arm                             mxs_defconfig
+mips                     cu1000-neo_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                 mpc8315_rdb_defconfig
+sh                           se7722_defconfig
+arc                                 defconfig
+mips                  maltasmvp_eva_defconfig
+mips                           rs90_defconfig
+mips                       lemote2f_defconfig
+s390                       zfcpdump_defconfig
+powerpc                     tqm5200_defconfig
+arm                         vf610m4_defconfig
+sh                  sh7785lcr_32bit_defconfig
+arm                         bcm2835_defconfig
+sh                ecovec24-romimage_defconfig
+sparc                            alldefconfig
+powerpc                      bamboo_defconfig
+arm                        oxnas_v6_defconfig
+arm                         orion5x_defconfig
+powerpc                    socrates_defconfig
+mips                      fuloong2e_defconfig
+mips                         db1xxx_defconfig
+sh                        dreamcast_defconfig
+arm                            mps2_defconfig
+arm                         socfpga_defconfig
+powerpc                     pq2fads_defconfig
+m68k                        m5307c3_defconfig
+sh                            hp6xx_defconfig
+powerpc                  mpc866_ads_defconfig
+arm                            lart_defconfig
+mips                       capcella_defconfig
+arc                              alldefconfig
+sh                        edosk7705_defconfig
+mips                      maltaaprp_defconfig
+powerpc                       maple_defconfig
+powerpc                      cm5200_defconfig
+arm                        neponset_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a005-20210714
+x86_64               randconfig-a004-20210714
+x86_64               randconfig-a002-20210714
+x86_64               randconfig-a003-20210714
+x86_64               randconfig-a006-20210714
+x86_64               randconfig-a001-20210714
+i386                 randconfig-a005-20210713
+i386                 randconfig-a004-20210713
+i386                 randconfig-a006-20210713
+i386                 randconfig-a001-20210713
+i386                 randconfig-a002-20210713
+i386                 randconfig-a003-20210713
+x86_64               randconfig-a013-20210713
+x86_64               randconfig-a014-20210713
+x86_64               randconfig-a012-20210713
+x86_64               randconfig-a015-20210713
+x86_64               randconfig-a016-20210713
+x86_64               randconfig-a011-20210713
+i386                 randconfig-a015-20210713
+i386                 randconfig-a014-20210713
+i386                 randconfig-a011-20210713
+i386                 randconfig-a013-20210713
+i386                 randconfig-a012-20210713
+i386                 randconfig-a016-20210713
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                      rhel-8.3-kbuiltin
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-b001-20210713
+x86_64               randconfig-a005-20210713
+x86_64               randconfig-a004-20210713
+x86_64               randconfig-a003-20210713
+x86_64               randconfig-a002-20210713
+x86_64               randconfig-a006-20210713
+x86_64               randconfig-a001-20210713
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
