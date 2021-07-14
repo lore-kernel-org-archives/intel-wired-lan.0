@@ -1,101 +1,77 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 14 Jul 2021 08:39:11 +0300
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Make mei_me active when
- e1000e is in use
-In-Reply-To: <20210712133500.1126371-2-kai.heng.feng@canonical.com>
-References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
- <20210712133500.1126371-2-kai.heng.feng@canonical.com>
-Message-ID: <3947d70a-58d0-df93-24f1-1899fd567534@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 14 Jul 2021 08:09:48 +0200
+Subject: [Intel-wired-lan] [PATCH v1 3/3] e1000e: Additional PHY power
+ saving in s0ix
+In-Reply-To: <3de72f51-8f3d-29c9-dc74-b016c13c5b08@intel.com>
+References: <20210624081908.568757-1-sasha.neftin@intel.com>
+ <b144efbc-9dbd-dd7c-b8df-a504a757bded@molgen.mpg.de>
+ <3de72f51-8f3d-29c9-dc74-b016c13c5b08@intel.com>
+Message-ID: <fab23c51-cfcd-2a20-0558-346ade1199b5@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/12/2021 16:34, Kai-Heng Feng wrote:
-> Many users report rather sluggish RX speed on TGP I219. Since
-> "intel_idle.max_cstate=1" doesn't help, so it's not caused by deeper
-> package C-state.
+Dear Sasha,
+
+
+Am 13.07.21 um 18:40 schrieb Sasha Neftin:
+> On 7/13/2021 10:12, Paul Menzel wrote:
+
+>> Am 24.06.21 um 10:19 schrieb Sasha Neftin:
+>>
+>> Could you please use a statement in the commit message summary? Maybe:
+>>
+>>> Disable additional PHY features(?) in S0ix
+>>
+>>> After transferring the MAC-PHY interface to the SMBus the PHY
+>>> will save power in S0ix low power idle mode.
+>>
+>> I do not understand this. Please rewrite, and mention the three PHY 
+>> features(?) you change.
+>>
+>> Please document how you tested this, and exactly how much power is saved.
+
+> The PHY will save 47-85mW in s0ix. It is tested (by our electrical 
+> validation team) on a sense resistor on a specific external board over 
+> the TGL platform.
 > 
-> A workaround that always works is to make sure mei_me is runtime active
-> when e1000e is in use.
-> 
-> The root cause is still unknown, but since many users are affected by
-> the issue, implment the quirk in the driver as a temporary workaround.
-Hello Kai-Heng,
-First - thanks for the investigation of this problem. As I know CSME/AMT 
-not POR on Linux and not supported. Recently we started add support for 
-CSME/AMT none provisioned version (handshake with CSME in s0ix flow - 
-only CSME with s0ix will support). It is not related to rx bandwidth 
-problem.
-I do not know how MEI driver affect 1Gbe driver - so, I would suggest to 
-involve our CSME engineer (alexander.usyskin at intel.com) and try to 
-investigate this problem.
-Does this problem observed on Dell systems? As I heard no reproduction 
-on Intel's RVP platform.
-Another question: does disable mei_me runpm solve your problem?
-> 
-> Also adds mei_me as soft dependency to ensure the device link can be
-> created if e1000e is in initramfs.
-> 
-> BugLink: https://bugs.launchpad.net/bugs/1927925
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213377
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213651
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 26 ++++++++++++++++++++++
->   1 file changed, 26 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 5835d6cf2f51..e63445a8ce12 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -7317,6 +7317,27 @@ static const struct net_device_ops e1000e_netdev_ops = {
->   	.ndo_features_check	= passthru_features_check,
->   };
->   
-> +static void e1000e_create_device_links(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *tgp_mei_me;
-> +
-> +	/* Find TGP mei_me devices and make e1000e power depend on mei_me */
-> +	tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0xa0e0, NULL);
-> +	if (!tgp_mei_me) {
-> +		tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0x43e0, NULL);
-> +		if (!tgp_mei_me)
-> +			return;
-> +	}
-> +
-> +	if (device_link_add(&pdev->dev, &tgp_mei_me->dev,
-> +			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE |
-> +			    DL_FLAG_AUTOREMOVE_CONSUMER))
-> +		pci_info(pdev, "System and runtime PM depends on %s\n",
-> +			 pci_name(tgp_mei_me));
-> +
-> +	pci_dev_put(tgp_mei_me);
-> +}
-> +
->   /**
->    * e1000_probe - Device Initialization Routine
->    * @pdev: PCI device information struct
-> @@ -7645,6 +7666,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   	if (pci_dev_run_wake(pdev) && hw->mac.type != e1000_pch_cnp)
->   		pm_runtime_put_noidle(&pdev->dev);
->   
-> +	if (hw->mac.type == e1000_pch_tgp)
-> +		e1000e_create_device_links(pdev);
-> +
->   	return 0;
->   
->   err_register:
-> @@ -7917,6 +7941,8 @@ static void __exit e1000_exit_module(void)
->   }
->   module_exit(e1000_exit_module);
->   
-> +/* Ensure device link can be created if e1000e is in the initramfs. */
-> +MODULE_SOFTDEP("pre: mei_me");
->   MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
->   MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
->   MODULE_LICENSE("GPL v2");
-> 
-Thanks,Sasha
+> This measurement could variate from platform to platform and depends on 
+> the specific platform design.
+
+Thank you for sharing the data. Please add it to the commit message in v2.
+
+>>> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+>>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+>>> ---
+>>> ? drivers/net/ethernet/intel/e1000e/netdev.c | 6 ++++++
+>>> ? 1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
+>>> b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> index 6e6e2e685e9d..c4f3e5ca7294 100644
+>>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>>> @@ -6380,10 +6380,16 @@ static void e1000e_s0ix_entry_flow(struct 
+>>> e1000_adapter *adapter)
+>>> ????????? ew32(CTRL_EXT, mac_data);
+>>> ? ????????? /* DFT control: PHY bit: page769_20[0] = 1
+>>> +???????? * page769_20[7] - PHY PLL stop
+>>> +???????? * page769_20[8] - PHY go to the electrical idle
+>>> +???????? * page769_20[9] - PHY serdes disable
+>>> ?????????? * Gate PPW via EXTCNF_CTRL - set 0x0F00[7] = 1
+>>> ?????????? */
+>>> ????????? e1e_rphy(hw, I82579_DFT_CTRL, &phy_data);
+>>> ????????? phy_data |= BIT(0);
+>>> +??????? phy_data |= BIT(7);
+>>> +??????? phy_data |= BIT(8);
+>>> +??????? phy_data |= BIT(9);
+>>> ????????? e1e_wphy(hw, I82579_DFT_CTRL, phy_data);
+>>> ? ????????? mac_data = er32(EXTCNF_CTRL);
+>>>
+
+
+Kind regards,
+
+Paul
