@@ -1,55 +1,47 @@
-From: Dongliang Mu <mudongliangabcd@gmail.com>
-Date: Wed, 14 Jul 2021 10:24:04 +0800
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix error handling code of
- label err_set_queues
-In-Reply-To: <58d854d9-a371-7689-d396-de1c26b34bfa@pensando.io>
-References: <20210713122028.463450-1-mudongliangabcd@gmail.com>
- <58d854d9-a371-7689-d396-de1c26b34bfa@pensando.io>
-Message-ID: <CAD-N9QXthA5JpsXkchx2rrgqWL6Z82FrVt4zF=ygRW9sYXFamA@mail.gmail.com>
+From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
+Date: Wed, 14 Jul 2021 12:05:51 +0300
+Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: Make mei_me active when
+ e1000e is in use
+In-Reply-To: <CAAd53p79BwxPGRECYGrpCQbSJz8NY2WrG+AJCuaj89XNqCy59Q@mail.gmail.com>
+References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
+ <20210712133500.1126371-2-kai.heng.feng@canonical.com>
+ <3947d70a-58d0-df93-24f1-1899fd567534@intel.com>
+ <CAAd53p79BwxPGRECYGrpCQbSJz8NY2WrG+AJCuaj89XNqCy59Q@mail.gmail.com>
+Message-ID: <16e188d5-f06e-23dc-2f71-c935240dd3b4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jul 13, 2021 at 11:16 PM Shannon Nelson <snelson@pensando.io> wrote:
->
-> On 7/13/21 5:20 AM, Dongliang Mu wrote:
-> > If i40e_up_complete fails in i40e_vsi_open, it goes to err_up_complete.
-> > The label err_set_queues has an issue: if the else branch is executed,
-> > there is no need to execute i40e_vsi_request_irq.
->
-> This is unnecessary: if the else branch is executed then control will
-> goto err_setup_rx, skipping over i40e_up_complete().
+On 14/07/2021 9:28, Kai-Heng Feng wrote:
+>> I do not know how MEI driver affect 1Gbe driver - so, I would suggest to
+>> involve our CSME engineer (alexander.usyskin at intel.com) and try to
+>> investigate this problem.
+>> Does this problem observed on Dell systems? As I heard no reproduction
+>> on Intel's RVP platform.
+>> Another question: does disable mei_me runpm solve your problem?
+> 
+> Yes, disabling runpm on mei_me can workaround the issue, and that's
+> essentially what this patch does by adding DL_FLAG_PM_RUNTIME |
+> DL_FLAG_RPM_ACTIVE flag.
+> 
+> Kai-Heng
+Hi, Kai-Heng,
 
-Oh, yes. Thank you. Please ignore this patch.
+If the goal of the patch is to essentially disable runpm on mei_me, then 
+why is the patch touching code in the e1000e driver?
 
->
-> sln
->
-> >
-> > Fix this by adding a condition of i40e_vsi_free_irq.
-> >
-> > Reported-by: Dongliang Mu (mudongliangabcd at gmail.com)
-> > Fixes: 9c04cfcd4aad ("i40e: Fix error handling in i40e_vsi_open")
-> > Fixes: c22e3c6c7912 ("i40e: prep vsi_open logic for non-netdev cases")
-> > Signed-off-by: Dongliang Mu <mudongliangabcd@gmail.com>
-> > ---
-> >   drivers/net/ethernet/intel/i40e/i40e_main.c | 3 ++-
-> >   1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > index 861e59a350bd..ae54468c7001 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > @@ -8720,7 +8720,8 @@ int i40e_vsi_open(struct i40e_vsi *vsi)
-> >   err_up_complete:
-> >       i40e_down(vsi);
-> >   err_set_queues:
-> > -     i40e_vsi_free_irq(vsi);
-> > +     if ((vsi->netdev) || (vsi->type == I40E_VSI_FDIR))
-> > +             i40e_vsi_free_irq(vsi);
-> >   err_setup_rx:
-> >       i40e_vsi_free_rx_resources(vsi);
-> >   err_setup_tx:
->
+I agree with Sasha Neftin; it seems like the wrong location, and the 
+wrong way to do it, even if it currently works. We need to understand 
+what causes runpm of mei_me to adversely affect LAN Rx, and for this we 
+need the involvement of mei_me owners.
+
+--Dima
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
