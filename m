@@ -1,65 +1,76 @@
-From: Jay Vosburgh <jay.vosburgh@canonical.com>
-Date: Wed, 14 Jul 2021 15:00:34 -0700
-Subject: [Intel-wired-lan] [PATCH net v2 0/9] net: fix bonding ipsec
- offload problems
-In-Reply-To: <20210705153814.11453-1-ap420073@gmail.com>
-References: <20210705153814.11453-1-ap420073@gmail.com>
-Message-ID: <25261.1626300034@famine>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Thu, 15 Jul 2021 10:33:42 +0800
+Subject: [Intel-wired-lan] [PATCH net] i40e: introduce pseudo number of
+ cpus for compatibility
+In-Reply-To: <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
+References: <20210707094133.24597-1-kerneljasonxing@gmail.com>
+ <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
+ <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
+Message-ID: <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Taehee Yoo <ap420073@gmail.com> wrote:
-
->This series fixes some problems related to bonding ipsec offload.
+On Thu, Jul 15, 2021 at 4:52 AM Nguyen, Anthony L
+<anthony.l.nguyen@intel.com> wrote:
 >
->The 1, 5, and 8th patches are to add a missing rcu_read_lock().
->The 2nd patch is to add null check code to bond_ipsec_add_sa.
->When bonding interface doesn't have an active real interface, the
->bond->curr_active_slave pointer is null.
->But bond_ipsec_add_sa() uses that pointer without null check.
->So that it results in null-ptr-deref.
->The 3 and 4th patches are to replace xs->xso.dev with xs->xso.real_dev.
->The 6th patch is to disallow to set ipsec offload if a real interface
->type is bonding.
->The 7th patch is to add struct bond_ipsec to manage SA.
->If bond mode is changed, or active real interface is changed, SA should
->be removed from old current active real interface then it should be added
->to new active real interface.
->But it can't, because it doesn't manage SA.
->The 9th patch is to fix incorrect return value of bond_ipsec_offload_ok().
+> On Fri, 2021-07-09 at 15:13 +0800, Jason Xing wrote:
+> > Oh, one more thing I missed in the last email is that all the
+> > failures
+> > are happening on the combination of X722 10GbE and 1GbE. So the value
+> > of @num_tx_qp  the driver fetches is 384 while the value is 768
+> > without x722 1GbE.
+> >
+> > I get that information back here:
+> > $ lspci | grep -i ether
+> > 5a:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+> > X722 for 10GbE SFP+ (rev 09)
+> > 5a:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+> > X722 for 10GbE SFP+ (rev 09)
+> > 5a:00.2 Ethernet controller: Intel Corporation Ethernet Connection
+> > X722 for 1GbE (rev 09)
+> > 5a:00.3 Ethernet controller: Intel Corporation Ethernet Connection
+> > X722 for 1GbE (rev 09)
+> >
+> > I know it's really stupid to control the number of online cpus, but
+> > finding a good way only to limit the @alloc_queue_pairs is not easy
+> > to
+> > go. So could someone point out a better way to fix this issue and
+> > take
+> > care of some relatively old nics with the number of cpus increasing?
 >
->v1 -> v2:
-> - Add 9th patch.
-> - Do not print warning when there is no SA in bond_ipsec_add_sa_all().
-> - Add comment for ipsec_lock.
+> Hi Jason,
 >
->Taehee Yoo (9):
->  bonding: fix suspicious RCU usage in bond_ipsec_add_sa()
->  bonding: fix null dereference in bond_ipsec_add_sa()
->  net: netdevsim: use xso.real_dev instead of xso.dev in callback
->    functions of struct xfrmdev_ops
->  ixgbevf: use xso.real_dev instead of xso.dev in callback functions of
->    struct xfrmdev_ops
->  bonding: fix suspicious RCU usage in bond_ipsec_del_sa()
->  bonding: disallow setting nested bonding + ipsec offload
->  bonding: Add struct bond_ipesc to manage SA
->  bonding: fix suspicious RCU usage in bond_ipsec_offload_ok()
->  bonding: fix incorrect return value of bond_ipsec_offload_ok()
+> Sorry for the slow response; I was trying to talk to the i40e team
+> about this.
+
+Thanks for your kind help really. It indeed has a big impact on thousands
+of machines.
+
 >
-> drivers/net/bonding/bond_main.c            | 181 +++++++++++++++++----
-> drivers/net/ethernet/intel/ixgbevf/ipsec.c |  20 ++-
-> drivers/net/netdevsim/ipsec.c              |   8 +-
-> include/net/bonding.h                      |   9 +-
-> 4 files changed, 178 insertions(+), 40 deletions(-)
+> I agree, the limiting of number of online CPUs doesn't seem like a
+> solution we want to pursue. The team is working on a patch that deals
 
-	The bonding portion looks good to me.
+As I said above, if the machine is equipped with only 10GbE nic, the maximum
+online cpus would be 256 and so on. For now, it depends on the num of cpus.
 
-Acked-by: Jay Vosburgh <jay.vosburgh@canonical.com>
+> with the same, or similiar, issue; it is reworking the allocations of
+> the queue pile. I'll make sure that they add you on the patch when it
 
-	-J
+It's not easy to cover all kinds of cases. But I still believe it's
+the only proper
+way to fix the issue. Looking forward to your patch :)
 
----
-	-Jay Vosburgh, jay.vosburgh at canonical.com
+> is sent so that you can try this and see if it resolves your issue.
+>
+
+Yeah, sure, I will double-check and then see if it's really fixed.
+
+Thanks,
+Jason
+
+> Thanks,
+> Tony
+>
