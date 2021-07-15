@@ -1,76 +1,58 @@
-From: Jason Xing <kerneljasonxing@gmail.com>
-Date: Thu, 15 Jul 2021 10:33:42 +0800
-Subject: [Intel-wired-lan] [PATCH net] i40e: introduce pseudo number of
- cpus for compatibility
-In-Reply-To: <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
-References: <20210707094133.24597-1-kerneljasonxing@gmail.com>
- <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
- <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
-Message-ID: <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu, 15 Jul 2021 10:03:42 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Do not take care about
+ recovery NVM checksum
+Message-ID: <20210715070342.2948195-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jul 15, 2021 at 4:52 AM Nguyen, Anthony L
-<anthony.l.nguyen@intel.com> wrote:
->
-> On Fri, 2021-07-09 at 15:13 +0800, Jason Xing wrote:
-> > Oh, one more thing I missed in the last email is that all the
-> > failures
-> > are happening on the combination of X722 10GbE and 1GbE. So the value
-> > of @num_tx_qp  the driver fetches is 384 while the value is 768
-> > without x722 1GbE.
-> >
-> > I get that information back here:
-> > $ lspci | grep -i ether
-> > 5a:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> > X722 for 10GbE SFP+ (rev 09)
-> > 5a:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> > X722 for 10GbE SFP+ (rev 09)
-> > 5a:00.2 Ethernet controller: Intel Corporation Ethernet Connection
-> > X722 for 1GbE (rev 09)
-> > 5a:00.3 Ethernet controller: Intel Corporation Ethernet Connection
-> > X722 for 1GbE (rev 09)
-> >
-> > I know it's really stupid to control the number of online cpus, but
-> > finding a good way only to limit the @alloc_queue_pairs is not easy
-> > to
-> > go. So could someone point out a better way to fix this issue and
-> > take
-> > care of some relatively old nics with the number of cpus increasing?
->
-> Hi Jason,
->
-> Sorry for the slow response; I was trying to talk to the i40e team
-> about this.
+According to the HW De, integrated GbE sets to read-only after
+programming a unique MAC address. The driver should not take care of
+NVM checksum updating starting from Tiger Lake.
 
-Thanks for your kind help really. It indeed has a big impact on thousands
-of machines.
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213667
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Suggested-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
->
-> I agree, the limiting of number of online CPUs doesn't seem like a
-> solution we want to pursue. The team is working on a patch that deals
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 9bae4932a11d..e273e14a3419 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -4140,14 +4140,19 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
+ 	if (ret_val)
+ 		return ret_val;
+ 
+-	if (!(data & valid_csum_mask)) {
+-		data |= valid_csum_mask;
+-		ret_val = e1000_write_nvm(hw, word, 1, &data);
+-		if (ret_val)
+-			return ret_val;
+-		ret_val = e1000e_update_nvm_checksum(hw);
+-		if (ret_val)
+-			return ret_val;
++	if (!(data & valid_csum_mask))
++		e_dbg("NVM Checksum Invalid\n");
++
++	if (hw->mac.type < e1000_pch_cnp) {
++		if (!(data & valid_csum_mask)) {
++			data |= valid_csum_mask;
++			ret_val = e1000_write_nvm(hw, word, 1, &data);
++			if (ret_val)
++				return ret_val;
++			ret_val = e1000e_update_nvm_checksum(hw);
++			if (ret_val)
++				return ret_val;
++		}
+ 	}
+ 
+ 	return e1000e_validate_nvm_checksum_generic(hw);
+-- 
+2.25.1
 
-As I said above, if the machine is equipped with only 10GbE nic, the maximum
-online cpus would be 256 and so on. For now, it depends on the num of cpus.
-
-> with the same, or similiar, issue; it is reworking the allocations of
-> the queue pile. I'll make sure that they add you on the patch when it
-
-It's not easy to cover all kinds of cases. But I still believe it's
-the only proper
-way to fix the issue. Looking forward to your patch :)
-
-> is sent so that you can try this and see if it resolves your issue.
->
-
-Yeah, sure, I will double-check and then see if it's really fixed.
-
-Thanks,
-Jason
-
-> Thanks,
-> Tony
->
