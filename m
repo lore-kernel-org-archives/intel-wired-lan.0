@@ -1,65 +1,55 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 16 Jul 2021 15:16:37 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 1/1] iavf: Enable setting RSS
- hash key
-Message-ID: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
+Date: Fri, 16 Jul 2021 15:16:39 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 2/7] ice: Fix link mode handling
+In-Reply-To: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
+References: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
+Message-ID: <20210716221644.45946-3-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Driver support for changing the RSS hash key exists, however, checks
-have caused it to be reported as unsupported. Remove the check and
-allow the hash key to be specified.
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+The messaging for unsupported module detection is different for
+lenient mode and strict mode. Update the code to print the right
+messaging for a given link mode.
+
+Media topology conflict is not an error in lenient mode, so return
+an error code only if not in lenient mode.
+
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 01047786eabc..1aed5ade8682 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -1893,7 +1893,7 @@ static int iavf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
-  * @key: hash key
-  * @hfunc: hash function to use
-  *
-- * Returns -EINVAL if the table specifies an inavlid queue id, otherwise
-+ * Returns -EINVAL if the table specifies an invalid queue id, otherwise
-  * returns 0 after programming the table.
-  **/
- static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
-@@ -1902,19 +1902,21 @@ static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	u16 i;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 1a77534e4a9c..6e3f9fb86c04 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -633,7 +633,10 @@ static void ice_print_topo_conflict(struct ice_vsi *vsi)
+ 		netdev_info(vsi->netdev, "Potential misconfiguration of the Ethernet port detected. If it was not intended, please use the Intel (R) Ethernet Port Configuration Tool to address the issue.\n");
+ 		break;
+ 	case ICE_AQ_LINK_TOPO_UNSUPP_MEDIA:
+-		netdev_info(vsi->netdev, "Rx/Tx is disabled on this device because an unsupported module type was detected. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for a list of supported modules.\n");
++		if (test_bit(ICE_FLAG_LINK_LENIENT_MODE_ENA, vsi->back->flags))
++			netdev_warn(vsi->netdev, "An unsupported module type was detected. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for a list of supported modules\n");
++		else
++			netdev_err(vsi->netdev, "Rx/Tx is disabled on this device because an unsupported module type was detected. Refer to the Intel(R) Ethernet Adapters and Devices User Guide for a list of supported modules.\n");
+ 		break;
+ 	default:
+ 		break;
+@@ -1977,7 +1980,8 @@ static int ice_configure_phy(struct ice_vsi *vsi)
  
--	/* We do not allow change in unsupported parameters */
--	if (key ||
--	    (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
-+	/* Only support toeplitz hash function */
-+	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
- 		return -EOPNOTSUPP;
--	if (!indir)
-+
-+	if (!key && !indir)
- 		return 0;
+ 	ice_print_topo_conflict(vsi);
  
- 	if (key)
- 		memcpy(adapter->rss_key, key, adapter->rss_key_size);
+-	if (phy->link_info.topo_media_conflict == ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
++	if (!test_bit(ICE_FLAG_LINK_LENIENT_MODE_ENA, pf->flags) &&
++	    phy->link_info.topo_media_conflict == ICE_AQ_LINK_TOPO_UNSUPP_MEDIA)
+ 		return -EPERM;
  
--	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
--	for (i = 0; i < adapter->rss_lut_size; i++)
--		adapter->rss_lut[i] = (u8)(indir[i]);
-+	if (indir) {
-+		/* Each 32 bits pointed by 'indir' is stored with a lut entry */
-+		for (i = 0; i < adapter->rss_lut_size; i++)
-+			adapter->rss_lut[i] = (u8)(indir[i]);
-+	}
- 
- 	return iavf_config_rss(adapter);
- }
+ 	if (test_bit(ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA, pf->flags))
 -- 
 2.20.1
 
