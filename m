@@ -1,46 +1,65 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Fri, 16 Jul 2021 11:33:56 +0200
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix pre-set max number of
- queues for VF
-Message-ID: <20210716093356.7800-1-mateusz.palczewski@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 16 Jul 2021 15:16:37 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 1/1] iavf: Enable setting RSS
+ hash key
+Message-ID: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After setting pre-set combined to 16 queues and reserving 16 queues by
-tc qdisc, pre-set maximum combined queues returned to default value
-after VF reset being 4 and this generated errors during removing tc.
-Fixed by removing clear num_req_queues before reset VF.
+Driver support for changing the RSS hash key exists, however, checks
+have caused it to be reported as unsupported. Remove the check and
+allow the hash key to be specified.
 
-Fixes: e284fc280473 (i40e: Add and delete cloud filter)
-Change-Id: Ib2db315e4b04eeb15e12301edf833014a929e914
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- v2: Refactored commit message
- v3: Fixed wrong e-mail address in commit message
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 4da982b..c007fba 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -3873,11 +3873,6 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 01047786eabc..1aed5ade8682 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -1893,7 +1893,7 @@ static int iavf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+  * @key: hash key
+  * @hfunc: hash function to use
+  *
+- * Returns -EINVAL if the table specifies an inavlid queue id, otherwise
++ * Returns -EINVAL if the table specifies an invalid queue id, otherwise
+  * returns 0 after programming the table.
+  **/
+ static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
+@@ -1902,19 +1902,21 @@ static int iavf_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	u16 i;
  
- 	/* set this flag only after making sure all inputs are sane */
- 	vf->adq_enabled = true;
--	/* num_req_queues is set when user changes number of queues via ethtool
--	 * and this causes issue for default VSI(which depends on this variable)
--	 * when ADq is enabled, hence reset it.
--	 */
--	vf->num_req_queues = 0;
+-	/* We do not allow change in unsupported parameters */
+-	if (key ||
+-	    (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
++	/* Only support toeplitz hash function */
++	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
+ 		return -EOPNOTSUPP;
+-	if (!indir)
++
++	if (!key && !indir)
+ 		return 0;
  
- 	/* reset the VF in order to allocate resources */
- 	i40e_vc_reset_vf(vf, true);
+ 	if (key)
+ 		memcpy(adapter->rss_key, key, adapter->rss_key_size);
+ 
+-	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
+-	for (i = 0; i < adapter->rss_lut_size; i++)
+-		adapter->rss_lut[i] = (u8)(indir[i]);
++	if (indir) {
++		/* Each 32 bits pointed by 'indir' is stored with a lut entry */
++		for (i = 0; i < adapter->rss_lut_size; i++)
++			adapter->rss_lut[i] = (u8)(indir[i]);
++	}
+ 
+ 	return iavf_config_rss(adapter);
+ }
 -- 
-2.27.0
+2.20.1
 
