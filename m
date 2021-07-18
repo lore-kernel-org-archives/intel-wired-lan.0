@@ -1,49 +1,56 @@
-From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-Date: Sun, 18 Jul 2021 00:12:22 +0800
-Subject: [Intel-wired-lan] [PATCH v2] igc: Increase timeout value for Speed
- 100/1000/2500
-Message-ID: <20210717161222.24288-1-muhammad.husaini.zulkifli@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 18 Jul 2021 07:10:31 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Do not take care about
+ recovery NVM checksum
+Message-ID: <20210718041031.3619696-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-As the cycle time is set to maximum of 1s, the TX Hang timeout need to
-be increase to avoid possible TX Hang.
+On new platforms, the NVM is read-only. Attempting to update the NVM
+is causing a lockup to occur. Do not attempt to write to the NVM
+on platforms where it's not supported.
+Emit an error message when the NVM checksum is invalid.
 
-There is no dedicated number specific in data sheet for the timeout factor.
-Timeout factor was determined during the debugging to solve the "Tx Hang"
-issues that happen in some cases mainly during ETF(Earliest TxTime First).
-
-This can be test by using TSN Schedule Tx Tools udp_tai sample application.
-
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-Acked-by: Sasha Neftin <sasha.neftin@intel.com>
-
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213667
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Suggested-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-V1 -> V2: Add reason for the timeout factor
-
----
- drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 4959078e111e..380e21e56398 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5321,7 +5321,9 @@ static void igc_watchdog_task(struct work_struct *work)
- 				adapter->tx_timeout_factor = 14;
- 				break;
- 			case SPEED_100:
--				/* maybe add some timeout factor ? */
-+			case SPEED_1000:
-+			case SPEED_2500:
-+				adapter->tx_timeout_factor = 7;
- 				break;
- 			}
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 9bae4932a11d..a34010580bfc 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -4141,13 +4141,17 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
+ 		return ret_val;
  
+ 	if (!(data & valid_csum_mask)) {
+-		data |= valid_csum_mask;
+-		ret_val = e1000_write_nvm(hw, word, 1, &data);
+-		if (ret_val)
+-			return ret_val;
+-		ret_val = e1000e_update_nvm_checksum(hw);
+-		if (ret_val)
+-			return ret_val;
++		e_dbg("NVM Checksum Invalid\n");
++
++		if (hw->mac.type < e1000_pch_cnp) {
++			data |= valid_csum_mask;
++			ret_val = e1000_write_nvm(hw, word, 1, &data);
++			if (ret_val)
++				return ret_val;
++			ret_val = e1000e_update_nvm_checksum(hw);
++			if (ret_val)
++				return ret_val;
++		}
+ 	}
+ 
+ 	return e1000e_validate_nvm_checksum_generic(hw);
 -- 
-2.17.1
+2.25.1
 
