@@ -1,130 +1,63 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 18 Jul 2021 22:25:23 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- cf8331825a8d10e46fa574fdf015a65cb5a6db86
-Message-ID: <60f439d3.HHSvaqsidSwkS/sA%lkp@intel.com>
+From: Oliver O'Halloran <oohall@gmail.com>
+Date: Mon, 19 Jul 2021 02:31:10 +1000
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210708154550.GA1019947@bjorn-Precision-5520>
+References: <CAOSf1CGVpogQGAatuY_N0db6OL2BFegGtj6VTLA9KFz0TqYBQg@mail.gmail.com>
+ <20210708154550.GA1019947@bjorn-Precision-5520>
+Message-ID: <CAOSf1CHtHLyEHC58jwemZS6j=jAU2OrrYitkUYmdisJtuFu4dw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: cf8331825a8d10e46fa574fdf015a65cb5a6db86  igc: Export LEDs
+On Fri, Jul 9, 2021 at 1:45 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> *snip*
+>
+> Apologies for rehashing what's probably obvious to everybody but me.
+> I'm trying to get a better handle on benign vs poisonous errors.
+>
+> MMIO means CPU reads or writes to the device.  In PCI, writes are
+> posted and don't receive a response, so a driver will never see
+> writel() return an error (although an error may be reported
+> asynchronously via AER or similar).
+>
+> So I think we're mostly talking about CPU reads here.  We expect a PCI
+> response containing the data.  Sometimes there's no response or an
+> error response.  The behavior of the host bridge in these error cases
+> is not defined by PCI, so what the CPU sees is not consistent across
+> platforms.  In some cases, the bridge handles this as a catastrophic
+> error that forces a system restart.
+>
+> But in most cases, at least on x86, the bridge logs an error and
+> fabricates ~0 data so the CPU read can complete.  Then it's up to
+> software to recognize that an error occurred and decide what to do
+> about it.  Is this a benign or a poisonous error?
+>
+> I'd say this is a benign error. It certainly can't be ignored, but as
+> long as the driver recognizes the error, it should be able to deal
+> with it without crashing the whole system and forcing a restart.
 
-elapsed time: 737m
+I was thinking more in terms of what the driver author sees rather
+than what's happening on the CPU side. The crash seen in the OP
+appears to be because the code is "doing an MMIO." However, the
+reasons for the crash have nothing to do with the actual mechanics of
+the operation (which should be benign). The point I was making is that
+the pattern of:
 
-configs tested: 101
-configs skipped: 3
+if (is_disconnected())
+    return failure;
+return do_mmio_read(addr);
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+does have some utility as a last-ditch attempt to prevent crashes in
+the face of obnoxious bridges or bad hardware. Granted, that should be
+a platform concern rather than something that should ever appear in
+driver code, but considering drivers open-code readl()/writel() calls
+there's not really any place to put that sort of workaround.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                  colibri_pxa300_defconfig
-powerpc                       ebony_defconfig
-arm                         s3c6400_defconfig
-arm                      footbridge_defconfig
-arm                            hisi_defconfig
-arm                       versatile_defconfig
-nios2                         3c120_defconfig
-arc                        vdk_hs38_defconfig
-sh                            shmin_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                        cell_defconfig
-microblaze                      mmu_defconfig
-mips                           jazz_defconfig
-m68k                            mac_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                      chrp32_defconfig
-sh                           se7206_defconfig
-arm                        mini2440_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                          polaris_defconfig
-powerpc                      ep88xc_defconfig
-mips                          rb532_defconfig
-powerpc                     tqm8560_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20210718
-x86_64               randconfig-a004-20210718
-x86_64               randconfig-a002-20210718
-x86_64               randconfig-a003-20210718
-x86_64               randconfig-a006-20210718
-x86_64               randconfig-a001-20210718
-i386                 randconfig-a005-20210718
-i386                 randconfig-a004-20210718
-i386                 randconfig-a006-20210718
-i386                 randconfig-a001-20210718
-i386                 randconfig-a003-20210718
-i386                 randconfig-a002-20210718
-i386                 randconfig-a014-20210718
-i386                 randconfig-a015-20210718
-i386                 randconfig-a011-20210718
-i386                 randconfig-a013-20210718
-i386                 randconfig-a016-20210718
-i386                 randconfig-a012-20210718
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
+That all said, the case in the OP is due to an entirely avoidable
+driver bug and that sort of hack is absolutely the wrong thing to do.
 
-clang tested configs:
-x86_64               randconfig-b001-20210718
-x86_64               randconfig-a013-20210718
-x86_64               randconfig-a015-20210718
-x86_64               randconfig-a012-20210718
-x86_64               randconfig-a014-20210718
-x86_64               randconfig-a011-20210718
-x86_64               randconfig-a016-20210718
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Oliver
