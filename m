@@ -1,61 +1,44 @@
-From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Mon, 19 Jul 2021 14:07:46 -0400
-Subject: [Intel-wired-lan] [PATCH v4 14/14] net/mlx4: Use
- irq_update_affinity_hint
-In-Reply-To: <20210719180746.1008665-1-nitesh@redhat.com>
-References: <20210719180746.1008665-1-nitesh@redhat.com>
-Message-ID: <20210719180746.1008665-15-nitesh@redhat.com>
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Mon, 19 Jul 2021 21:49:31 +0200
+Subject: [Intel-wired-lan] [PATCH net] i40e: Fix ATR queue selection
+Message-ID: <20210719194931.11173-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver uses irq_set_affinity_hint() to update the affinity_hint mask
-that is consumed by the userspace to distribute the interrupts. However,
-under the hood irq_set_affinity_hint() also applies the provided cpumask
-(if not NULL) as the affinity for the given interrupt which is an
-undocumented side effect.
+If traffic classes are not configured for PF, then use
+netdev_pick_tx function for selecting queue for packet transmission.
+Instead of calling i40e_swdcb_skb_tx_hash, call netdev_pick_tx,
+which ensures that packet is transmitted/received from CPU that is
+running the application.
+Without this patch, ATR does not work. Receive/transmit uses queue
+selection based on SW DCB hashing method.
 
-To remove this side effect irq_set_affinity_hint() has been marked
-as deprecated and new interfaces have been introduced. Hence, replace the
-irq_set_affinity_hint() with the new interface irq_update_affinity_hint()
-that only updates the affinity_hint pointer.
-
-Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
-Reviewed-by: Tariq Toukan <tariqt@nvidia.com>
+Fixes: 821bd0c990ba ("i40e: Fix queue-to-TC mapping on Tx")
+Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 ---
- drivers/net/ethernet/mellanox/mlx4/eq.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/eq.c b/drivers/net/ethernet/mellanox/mlx4/eq.c
-index 9e48509ed3b2..414e390e6b48 100644
---- a/drivers/net/ethernet/mellanox/mlx4/eq.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/eq.c
-@@ -244,9 +244,9 @@ static void mlx4_set_eq_affinity_hint(struct mlx4_priv *priv, int vec)
- 	    cpumask_empty(eq->affinity_mask))
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 3f25bd8..10a83e5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -3663,8 +3663,7 @@ u16 i40e_lan_select_queue(struct net_device *netdev,
  
--	hint_err = irq_set_affinity_hint(eq->irq, eq->affinity_mask);
-+	hint_err = irq_update_affinity_hint(eq->irq, eq->affinity_mask);
- 	if (hint_err)
--		mlx4_warn(dev, "irq_set_affinity_hint failed, err %d\n", hint_err);
-+		mlx4_warn(dev, "irq_update_affinity_hint failed, err %d\n", hint_err);
- }
- #endif
+ 	/* is DCB enabled at all? */
+ 	if (vsi->tc_config.numtc == 1)
+-		return i40e_swdcb_skb_tx_hash(netdev, skb,
+-					      netdev->real_num_tx_queues);
++		return netdev_pick_tx(netdev, skb, sb_dev);
  
-@@ -1123,9 +1123,7 @@ static void mlx4_free_irqs(struct mlx4_dev *dev)
- 	for (i = 0; i < dev->caps.num_comp_vectors + 1; ++i)
- 		if (eq_table->eq[i].have_irq) {
- 			free_cpumask_var(eq_table->eq[i].affinity_mask);
--#if defined(CONFIG_SMP)
--			irq_set_affinity_hint(eq_table->eq[i].irq, NULL);
--#endif
-+			irq_update_affinity_hint(eq_table->eq[i].irq, NULL);
- 			free_irq(eq_table->eq[i].irq, eq_table->eq + i);
- 			eq_table->eq[i].have_irq = 0;
- 		}
+ 	prio = skb->priority;
+ 	hw = &vsi->back->hw;
+
+base-commit: e84671cd9648eb1f2b346378c100b4ebfbd1b01c
 -- 
-2.27.0
+2.18.4
 
