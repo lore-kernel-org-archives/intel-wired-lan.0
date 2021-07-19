@@ -1,49 +1,57 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sat, 10 Jul 2021 20:57:50 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove phy->type checking
-Message-ID: <20210710175750.2088213-1-sasha.neftin@intel.com>
+From: Oliver O'Halloran <oohall@gmail.com>
+Date: Mon, 19 Jul 2021 12:49:18 +1000
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <20210718225059.hd3od4k4on3aopcu@pali>
+References: <CAOSf1CGVpogQGAatuY_N0db6OL2BFegGtj6VTLA9KFz0TqYBQg@mail.gmail.com>
+ <20210708154550.GA1019947@bjorn-Precision-5520>
+ <CAOSf1CHtHLyEHC58jwemZS6j=jAU2OrrYitkUYmdisJtuFu4dw@mail.gmail.com>
+ <20210718225059.hd3od4k4on3aopcu@pali>
+Message-ID: <CAOSf1CHOrUBfibO0t6Zr2=SZ7GjLTiAzfoKBeZL8RXdcC+Ou3A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i225 devices have only one phy->type: copper. There is no point checking
-phy->type during the igc_has_link method from the watchdog that
-invoked every 2 seconds.
-This patch comes to clean up these pointless checkings.
+On Mon, Jul 19, 2021 at 8:51 AM Pali Roh?r <pali@kernel.org> wrote:
+>
+> And do we have some solution for this kind of issue? There are more PCIe
+> controllers / platforms which do not like MMIO read/write operation when
+> card / link is not connected.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+Do you have some actual examples? The few times I've seen those
+crashes were due to broken firmware-first error handling. The AER
+notifications would be escalated into some kind of ACPI error which
+the kernel didn't have a good way of dealing with so it panicked
+instead.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index c8abd7fb70e5..722b79ba2abd 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5222,17 +5222,10 @@ bool igc_has_link(struct igc_adapter *adapter)
- 	 * false until the igc_check_for_link establishes link
- 	 * for copper adapters ONLY
- 	 */
--	switch (hw->phy.media_type) {
--	case igc_media_type_copper:
--		if (!hw->mac.get_link_status)
--			return true;
--		hw->mac.ops.check_for_link(hw);
--		link_active = !hw->mac.get_link_status;
--		break;
--	default:
--	case igc_media_type_unknown:
--		break;
--	}
-+	if (!hw->mac.get_link_status)
-+		return true;
-+	hw->mac.ops.check_for_link(hw);
-+	link_active = !hw->mac.get_link_status;
- 
- 	if (hw->mac.type == igc_i225) {
- 		if (!netif_carrier_ok(adapter->netdev)) {
--- 
-2.25.1
+Assuming it is a real problem then as Bjorn pointed out this sort of
+hack doesn't really fix the issue because hotplug and AER
+notifications are fundamentally asynchronous. If the driver is
+actively using the device when the error / removal happens then the
+pci_dev_is_disconnected() check will pass and the MMIO will go
+through. If the MMIO is poisonous because of dumb hardware then this
+sort of hack will only paper over the issue.
 
+> If we do not provide a way how to solve these problems then we can
+> expect that people would just hack ethernet / wifi / ... device drivers
+> which are currently crashing by patches like in this thread.
+>
+> Maybe PCI subsystem could provide wrapper function which implements
+> above pattern and which can be used by device drivers?
+
+We could do that and I think there was a proposal to add some
+pci_readl(pdev, <addr>) style wrappers at one point. On powerpc
+there's hooks in the arch provided MMIO functions to detect error
+responses and kick off the error handling machinery when a problem is
+detected. Those hooks are mainly there to help the platform detect
+errors though and they don't make life much easier for drivers. Due to
+locking concerns the driver's .error_detected() callback cannot be
+called in the MMIO hook so even when the platform detects errors
+synchronously the driver notifications must happen asynchronously. In
+the meanwhile the driver still needs to handle the 0xFFs response
+safely and there's not much we can do from the platform side to help
+there.
+
+Oliver
