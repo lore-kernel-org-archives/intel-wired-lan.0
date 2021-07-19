@@ -1,135 +1,151 @@
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Mon, 19 Jul 2021 13:27:59 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix crash in switchdev mode
- during VFR
-Message-ID: <1626694079-4328-1-git-send-email-wojciech.drewek@intel.com>
+From: Nitesh Narayan Lal <nitesh@redhat.com>
+Date: Mon, 19 Jul 2021 14:07:33 -0400
+Subject: [Intel-wired-lan] [PATCH v4 01/14] genirq: Provide new interfaces
+ for affinity hints
+In-Reply-To: <20210719180746.1008665-1-nitesh@redhat.com>
+References: <20210719180746.1008665-1-nitesh@redhat.com>
+Message-ID: <20210719180746.1008665-2-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-During VF reset VF VSI is released, because of that there was
-a risk of calling ice_repr_get_stats64 or ice_get_drvinfo when
-VF VSI was NULL. The solution is to use ice_check_vf_ready_for_cfg
-function.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+The discussion about removing the side effect of irq_set_affinity_hint() of
+actually applying the cpumask (if not NULL) as affinity to the interrupt,
+unearthed a few unpleasantries:
+
+  1) The modular perf drivers rely on the current behaviour for the very
+     wrong reasons.
+
+  2) While none of the other drivers prevents user space from changing
+     the affinity, a cursorily inspection shows that there are at least
+     expectations in some drivers.
+
+#1 needs to be cleaned up anyway, so that's not a problem
+
+#2 might result in subtle regressions especially when irqbalanced (which
+   nowadays ignores the affinity hint) is disabled.
+
+Provide new interfaces:
+
+  irq_update_affinity_hint()  - Only sets the affinity hint pointer
+  irq_set_affinity_and_hint() - Set the pointer and apply the affinity to
+                                the interrupt
+
+Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+document it to be phased out.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c     | 27 ++++++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_repr.c        |  6 +++++-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h |  6 ++++++
- 4 files changed, 35 insertions(+), 6 deletions(-)
+ include/linux/interrupt.h | 53 ++++++++++++++++++++++++++++++++++++++-
+ kernel/irq/manage.c       |  8 +++---
+ 2 files changed, 56 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 2858805cdeea..1abe756f9f46 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -170,10 +170,9 @@ struct ice_priv_flag {
- #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 2ed65b01c961..bd25ba029c68 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -328,7 +328,46 @@ extern int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask);
+ extern int irq_can_set_affinity(unsigned int irq);
+ extern int irq_select_affinity(unsigned int irq);
  
- static void
--ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
-+__ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
-+		  struct ice_vsi *vsi)
+-extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
++extern int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
++				     bool setaffinity);
++
++/**
++ * irq_update_affinity_hint - Update the affinity hint
++ * @irq:	Interrupt to update
++ * @cpumask:	cpumask pointer (NULL to clear the hint)
++ *
++ * Updates the affinity hint, but does not change the affinity of the interrupt.
++ */
++static inline int
++irq_update_affinity_hint(unsigned int irq, const struct cpumask *m)
++{
++	return __irq_apply_affinity_hint(irq, m, false);
++}
++
++/**
++ * irq_set_affinity_and_hint - Update the affinity hint and apply the provided
++ *			     cpumask to the interrupt
++ * @irq:	Interrupt to update
++ * @cpumask:	cpumask pointer (NULL to clear the hint)
++ *
++ * Updates the affinity hint and if @cpumask is not NULL it applies it as
++ * the affinity of that interrupt.
++ */
++static inline int
++irq_set_affinity_and_hint(unsigned int irq, const struct cpumask *m)
++{
++	return __irq_apply_affinity_hint(irq, m, true);
++}
++
++/*
++ * Deprecated. Use irq_update_affinity_hint() or irq_set_affinity_and_hint()
++ * instead.
++ */
++static inline int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
++{
++	return irq_set_affinity_and_hint(irq, m);
++}
++
+ extern int irq_update_affinity_desc(unsigned int irq,
+ 				    struct irq_affinity_desc *affinity);
+ 
+@@ -360,6 +399,18 @@ static inline int irq_can_set_affinity(unsigned int irq)
+ 
+ static inline int irq_select_affinity(unsigned int irq)  { return 0; }
+ 
++static inline int irq_update_affinity_hint(unsigned int irq,
++					   const struct cpumask *m)
++{
++	return -EINVAL;
++}
++
++static inline int irq_set_affinity_and_hint(unsigned int irq,
++					    const struct cpumask *m)
++{
++	return -EINVAL;
++}
++
+ static inline int irq_set_affinity_hint(unsigned int irq,
+ 					const struct cpumask *m)
  {
--	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi *vsi = ice_get_netdev_priv_vsi(np);
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
- 	struct ice_orom_info *orom;
-@@ -196,6 +195,26 @@ struct ice_priv_flag {
- 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index ef30b4762947..837b63e63111 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -487,7 +487,8 @@ int irq_force_affinity(unsigned int irq, const struct cpumask *cpumask)
  }
+ EXPORT_SYMBOL_GPL(irq_force_affinity);
  
-+static void
-+ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+
-+	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
-+}
-+
-+static void
-+ice_repr_get_drvinfo(struct net_device *netdev,
-+		     struct ethtool_drvinfo *drvinfo)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+
-+	if (ice_check_vf_ready_for_cfg(repr->vf))
-+		return;
-+
-+	__ice_get_drvinfo(netdev, drvinfo, repr->src_vsi);
-+}
-+
- static int ice_get_regs_len(struct net_device __always_unused *netdev)
+-int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
++int __irq_apply_affinity_hint(unsigned int irq, const struct cpumask *m,
++			      bool setaffinity)
  {
- 	return sizeof(ice_regs_dump_list);
-@@ -4061,7 +4080,7 @@ void ice_set_ethtool_safe_mode_ops(struct net_device *netdev)
+ 	unsigned long flags;
+ 	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
+@@ -496,12 +497,11 @@ int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m)
+ 		return -EINVAL;
+ 	desc->affinity_hint = m;
+ 	irq_put_desc_unlock(desc, flags);
+-	/* set the initial affinity to prevent every interrupt being on CPU0 */
+-	if (m)
++	if (m && setaffinity)
+ 		__irq_set_affinity(irq, m, false);
+ 	return 0;
  }
+-EXPORT_SYMBOL_GPL(irq_set_affinity_hint);
++EXPORT_SYMBOL_GPL(__irq_apply_affinity_hint);
  
- static const struct ethtool_ops ice_ethtool_repr_ops = {
--	.get_drvinfo		= ice_get_drvinfo,
-+	.get_drvinfo		= ice_repr_get_drvinfo,
- 	.get_link		= ethtool_op_get_link,
- 	.get_strings		= ice_get_strings,
- 	.get_ethtool_stats      = ice_get_ethtool_stats,
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index ababed89f25a..b02e5462b851 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -48,8 +48,12 @@ static int ice_repr_get_sw_port_id(struct ice_repr *repr)
- ice_repr_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
+ static void irq_affinity_notify(struct work_struct *work)
  {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi *vsi = np->repr->src_vsi;
- 	struct ice_eth_stats *eth_stats;
-+	struct ice_vsi *vsi;
-+
-+	if (ice_check_vf_ready_for_cfg(np->repr->vf))
-+		return;
-+	vsi = np->repr->src_vsi;
- 
- 	ice_update_vsi_stats(vsi);
- 	eth_stats = &vsi->eth_stats;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 501331b6f70b..0600ccf096f0 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -2815,7 +2815,7 @@ static void ice_wait_on_vf_reset(struct ice_vf *vf)
-  * disabled, and initialized so it can be configured and/or queried by a host
-  * administrator.
-  */
--static int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
-+int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
- {
- 	struct ice_pf *pf;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 6bad277d16fc..8aed26a86dd1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -176,6 +176,8 @@ struct ice_vf {
- 
- int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state);
- 
-+int ice_check_vf_ready_for_cfg(struct ice_vf *vf);
-+
- int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena);
- 
- int ice_calc_vf_reg_idx(struct ice_vf *vf, struct ice_q_vector *q_vector);
-@@ -203,6 +205,10 @@ static inline void ice_vc_notify_link_state(struct ice_pf *pf) { }
- static inline void ice_vc_notify_reset(struct ice_pf *pf) { }
- static inline void ice_vc_notify_vf_link_state(struct ice_vf *vf) { }
- static inline void ice_vc_change_ops_to_repr(struct ice_vc_vf_ops *ops) { }
-+static inline int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
-+{
-+	return -EOPNOTSUPP;
-+}
- static inline void ice_vc_set_dflt_vf_ops(struct ice_vc_vf_ops *ops) { }
- static inline void ice_set_vf_state_qs_dis(struct ice_vf *vf) { }
- static inline
 -- 
-1.8.3.1
+2.27.0
 
