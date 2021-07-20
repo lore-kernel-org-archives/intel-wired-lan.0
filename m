@@ -1,44 +1,69 @@
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Mon, 19 Jul 2021 21:49:31 +0200
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix ATR queue selection
-Message-ID: <20210719194931.11173-1-arkadiusz.kubalewski@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 19 Jul 2021 19:17:13 -0500
+Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
+ is removed
+In-Reply-To: <CAOSf1CHOrUBfibO0t6Zr2=SZ7GjLTiAzfoKBeZL8RXdcC+Ou3A@mail.gmail.com>
+Message-ID: <20210720001713.GA38755@bjorn-Precision-5520>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If traffic classes are not configured for PF, then use
-netdev_pick_tx function for selecting queue for packet transmission.
-Instead of calling i40e_swdcb_skb_tx_hash, call netdev_pick_tx,
-which ensures that packet is transmitted/received from CPU that is
-running the application.
-Without this patch, ATR does not work. Receive/transmit uses queue
-selection based on SW DCB hashing method.
+On Mon, Jul 19, 2021 at 12:49:18PM +1000, Oliver O'Halloran wrote:
+> On Mon, Jul 19, 2021 at 8:51 AM Pali Roh?r <pali@kernel.org> wrote:
+> >
+> > And do we have some solution for this kind of issue? There are more PCIe
+> > controllers / platforms which do not like MMIO read/write operation when
+> > card / link is not connected.
+> 
+> Do you have some actual examples? The few times I've seen those
+> crashes were due to broken firmware-first error handling. The AER
+> notifications would be escalated into some kind of ACPI error which
+> the kernel didn't have a good way of dealing with so it panicked
+> instead.
+> 
+> Assuming it is a real problem then as Bjorn pointed out this sort of
+> hack doesn't really fix the issue because hotplug and AER
+> notifications are fundamentally asynchronous. If the driver is
+> actively using the device when the error / removal happens then the
+> pci_dev_is_disconnected() check will pass and the MMIO will go
+> through. If the MMIO is poisonous because of dumb hardware then this
+> sort of hack will only paper over the issue.
+> 
+> > If we do not provide a way how to solve these problems then we can
+> > expect that people would just hack ethernet / wifi / ... device drivers
+> > which are currently crashing by patches like in this thread.
+> >
+> > Maybe PCI subsystem could provide wrapper function which implements
+> > above pattern and which can be used by device drivers?
+> 
+> We could do that and I think there was a proposal to add some
+> pci_readl(pdev, <addr>) style wrappers at one point.
 
-Fixes: 821bd0c990ba ("i40e: Fix queue-to-TC mapping on Tx")
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Obviously this wouldn't help user-space mmaps, but in the kernel,
+Documentation/driver-api/device-io.rst [1] does say that drivers are
+supposed to use readl() et al even though on most arches it "works"
+to just dereference the result of ioremap(), so maybe we could make
+a useful wrapper.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 3f25bd8..10a83e5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -3663,8 +3663,7 @@ u16 i40e_lan_select_queue(struct net_device *netdev,
- 
- 	/* is DCB enabled at all? */
- 	if (vsi->tc_config.numtc == 1)
--		return i40e_swdcb_skb_tx_hash(netdev, skb,
--					      netdev->real_num_tx_queues);
-+		return netdev_pick_tx(netdev, skb, sb_dev);
- 
- 	prio = skb->priority;
- 	hw = &vsi->back->hw;
+Seems like we should do *something*, even if it's just a generic
+#define and some examples.  I took a stab at this [2] a couple years
+ago, but it was only for the PCI core, and it didn't go anywhere.
 
-base-commit: e84671cd9648eb1f2b346378c100b4ebfbd1b01c
--- 
-2.18.4
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/driver-api/device-io.rst?id=v5.13#n160
+[2] https://lore.kernel.org/linux-pci/20190822200551.129039-1-helgaas at kernel.org/
 
+> On powerpc
+> there's hooks in the arch provided MMIO functions to detect error
+> responses and kick off the error handling machinery when a problem is
+> detected. Those hooks are mainly there to help the platform detect
+> errors though and they don't make life much easier for drivers. Due to
+> locking concerns the driver's .error_detected() callback cannot be
+> called in the MMIO hook so even when the platform detects errors
+> synchronously the driver notifications must happen asynchronously. In
+> the meanwhile the driver still needs to handle the 0xFFs response
+> safely and there's not much we can do from the platform side to help
+> there.
+> 
+> Oliver
