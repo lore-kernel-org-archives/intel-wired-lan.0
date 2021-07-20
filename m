@@ -1,10 +1,10 @@
 From: Nitesh Narayan Lal <nitesh@redhat.com>
-Date: Tue, 20 Jul 2021 19:26:17 -0400
-Subject: [Intel-wired-lan] [PATCH v5 07/14] enic: Use
+Date: Tue, 20 Jul 2021 19:26:18 -0400
+Subject: [Intel-wired-lan] [PATCH v5 08/14] be2net: Use
  irq_update_affinity_hint
 In-Reply-To: <20210720232624.1493424-1-nitesh@redhat.com>
 References: <20210720232624.1493424-1-nitesh@redhat.com>
-Message-ID: <20210720232624.1493424-8-nitesh@redhat.com>
+Message-ID: <20210720232624.1493424-9-nitesh@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,36 +24,31 @@ that only updates the affinity_hint pointer.
 
 Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 ---
- drivers/net/ethernet/cisco/enic/enic_main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/emulex/benet/be_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/cisco/enic/enic_main.c b/drivers/net/ethernet/cisco/enic/enic_main.c
-index d0a8f7106958..97eb5bd62855 100644
---- a/drivers/net/ethernet/cisco/enic/enic_main.c
-+++ b/drivers/net/ethernet/cisco/enic/enic_main.c
-@@ -150,10 +150,10 @@ static void enic_set_affinity_hint(struct enic *enic)
- 		    !cpumask_available(enic->msix[i].affinity_mask) ||
- 		    cpumask_empty(enic->msix[i].affinity_mask))
- 			continue;
--		err = irq_set_affinity_hint(enic->msix_entry[i].vector,
--					    enic->msix[i].affinity_mask);
-+		err = irq_update_affinity_hint(enic->msix_entry[i].vector,
-+					       enic->msix[i].affinity_mask);
- 		if (err)
--			netdev_warn(enic->netdev, "irq_set_affinity_hint failed, err %d\n",
-+			netdev_warn(enic->netdev, "irq_update_affinity_hint failed, err %d\n",
- 				    err);
+diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
+index 361c1c87c183..ece6c0692826 100644
+--- a/drivers/net/ethernet/emulex/benet/be_main.c
++++ b/drivers/net/ethernet/emulex/benet/be_main.c
+@@ -3491,7 +3491,7 @@ static int be_msix_register(struct be_adapter *adapter)
+ 		if (status)
+ 			goto err_msix;
+ 
+-		irq_set_affinity_hint(vec, eqo->affinity_mask);
++		irq_update_affinity_hint(vec, eqo->affinity_mask);
  	}
  
-@@ -173,7 +173,7 @@ static void enic_unset_affinity_hint(struct enic *enic)
- 	int i;
+ 	return 0;
+@@ -3552,7 +3552,7 @@ static void be_irq_unregister(struct be_adapter *adapter)
+ 	/* MSIx */
+ 	for_all_evt_queues(adapter, eqo, i) {
+ 		vec = be_msix_vec_get(adapter, eqo);
+-		irq_set_affinity_hint(vec, NULL);
++		irq_update_affinity_hint(vec, NULL);
+ 		free_irq(vec, eqo);
+ 	}
  
- 	for (i = 0; i < enic->intr_count; i++)
--		irq_set_affinity_hint(enic->msix_entry[i].vector, NULL);
-+		irq_update_affinity_hint(enic->msix_entry[i].vector, NULL);
- }
- 
- static int enic_udp_tunnel_set_port(struct net_device *netdev,
 -- 
 2.27.0
 
