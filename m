@@ -1,72 +1,50 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Tue, 20 Jul 2021 10:43:36 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: Fix ATR queue selection
-In-Reply-To: <8bc5e9a3-36a1-e90e-7e29-dba1a700bd56@molgen.mpg.de>
-References: <20210719194931.11173-1-arkadiusz.kubalewski@intel.com>
- <8bc5e9a3-36a1-e90e-7e29-dba1a700bd56@molgen.mpg.de>
-Message-ID: <DM6PR11MB4657461F4C22352391F3918B9BE29@DM6PR11MB4657.namprd11.prod.outlook.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 20 Jul 2021 12:57:02 +0200
+Subject: [Intel-wired-lan] [PATCH v4 01/14] genirq: Provide new
+ interfaces for affinity hints
+In-Reply-To: <20210719180746.1008665-2-nitesh@redhat.com>
+References: <20210719180746.1008665-1-nitesh@redhat.com>
+ <20210719180746.1008665-2-nitesh@redhat.com>
+Message-ID: <20210720125702.28053dd6@cakuba>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->Dear Arkadiusz,
->
->
->Am 19.07.21 um 21:49 schrieb Arkadiusz Kubalewski:
->> If traffic classes are not configured for PF, then use netdev_pick_tx 
->> function for selecting queue for packet transmission.
->> Instead of calling i40e_swdcb_skb_tx_hash, call netdev_pick_tx, which 
->> ensures that packet is transmitted/received from CPU that is running 
->> the application.
->> Without this patch, ATR does not work. Receive/transmit uses queue 
->> selection based on SW DCB hashing method.
->
->For the future, the problem statement should go first in my opinion.
->
->Do you have a recipe, how to reproduce the problem?
->
->
->Kind regards,
->
->Paul
+On Mon, 19 Jul 2021 14:07:33 -0400, Nitesh Narayan Lal wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
+> 
+> The discussion about removing the side effect of irq_set_affinity_hint() of
+> actually applying the cpumask (if not NULL) as affinity to the interrupt,
+> unearthed a few unpleasantries:
+> 
+>   1) The modular perf drivers rely on the current behaviour for the very
+>      wrong reasons.
+> 
+>   2) While none of the other drivers prevents user space from changing
+>      the affinity, a cursorily inspection shows that there are at least
+>      expectations in some drivers.
+> 
+> #1 needs to be cleaned up anyway, so that's not a problem
+> 
+> #2 might result in subtle regressions especially when irqbalanced (which
+>    nowadays ignores the affinity hint) is disabled.
+> 
+> Provide new interfaces:
+> 
+>   irq_update_affinity_hint()  - Only sets the affinity hint pointer
+>   irq_set_affinity_and_hint() - Set the pointer and apply the affinity to
+>                                 the interrupt
+> 
+> Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+> document it to be phased out.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+> Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
 
-Hi Paul,
-
-Yes, of course I have reproduction steps.
-I will fix your findings in next patch.
-
-Thank you!
-BR, 
-Arkadiusz
-
->
->> Fixes: 821bd0c990ba ("i40e: Fix queue-to-TC mapping on Tx")
->> Signed-off-by: Przemyslaw Patynowski 
->> <przemyslawx.patynowski@intel.com>
->> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
->> ---
->>   drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 +--
->>   1 file changed, 1 insertion(+), 2 deletions(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c 
->> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> index 3f25bd8..10a83e5 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->> @@ -3663,8 +3663,7 @@ u16 i40e_lan_select_queue(struct net_device 
->> *netdev,
->>   
->>   	/* is DCB enabled at all? */
->>   	if (vsi->tc_config.numtc == 1)
->> -		return i40e_swdcb_skb_tx_hash(netdev, skb,
->> -					      netdev->real_num_tx_queues);
->> +		return netdev_pick_tx(netdev, skb, sb_dev);
->>   
->>   	prio = skb->priority;
->>   	hw = &vsi->back->hw;
->> 
->> base-commit: e84671cd9648eb1f2b346378c100b4ebfbd1b01c
->> 
->
+include/linux/interrupt.h:343: warning: Function parameter or member 'm' not described in 'irq_update_affinity_hint'
+include/linux/interrupt.h:343: warning: Excess function parameter 'cpumask' description in 'irq_update_affinity_hint'
+include/linux/interrupt.h:358: warning: Function parameter or member 'm' not described in 'irq_set_affinity_and_hint'
+include/linux/interrupt.h:358: warning: Excess function parameter 'cpumask' description in 'irq_set_affinity_and_hint'
