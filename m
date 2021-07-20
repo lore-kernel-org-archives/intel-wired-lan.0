@@ -1,25 +1,23 @@
 From: Fuxbrumer, Dvora <dvorax.fuxbrumer@linux.intel.com>
-Date: Tue, 20 Jul 2021 15:21:09 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove _I_PHY_ID checking
-In-Reply-To: <20210707051440.1795979-1-sasha.neftin@intel.com>
-References: <20210707051440.1795979-1-sasha.neftin@intel.com>
-Message-ID: <13035df1-7331-f8dd-cf2d-0bdbe34265d2@linux.intel.com>
+Date: Tue, 20 Jul 2021 15:31:52 +0300
+Subject: [Intel-wired-lan] [PATCH v1] igc: Set QBVCYCLET_S to 0 for TSN
+ Basic Scheduling
+In-Reply-To: <20210709234017.22817-1-muhammad.husaini.zulkifli@intel.com>
+References: <20210709234017.22817-1-muhammad.husaini.zulkifli@intel.com>
+Message-ID: <26b36944-57b1-8123-85e4-47fc0691615e@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 7/7/2021 08:14, Sasha Neftin wrote:
-> i225 devices have only one PHY vendor. There is no point checking
-> _I_PHY_ID during the link establishment and auto-negotiation process.
-> This patch comes to clean up these pointless checkings.
+On 7/10/2021 02:40, Muhammad Husaini Zulkifli wrote:
+> According to datasheet section 8.12.19, when there's no TSN offloading
+> Shadow_QbvCycle bit[29:0] must be set to zero for basic scheduling.
 > 
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_base.c | 10 +---------
->   drivers/net/ethernet/intel/igc/igc_main.c |  3 +--
->   drivers/net/ethernet/intel/igc/igc_phy.c  |  6 ++----
->   3 files changed, 4 insertions(+), 15 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc_tsn.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
