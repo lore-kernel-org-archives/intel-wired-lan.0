@@ -1,152 +1,60 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 22 Jul 2021 16:45:03 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- af47ded916a3e5438b84bc19bb84b8b4d98cd8ba
-Message-ID: <60f9300f.cYL6xL45tjSdOPHs%lkp@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 22 Jul 2021 09:55:09 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix ping is lost after
+ untrusted VF had tried to change MAC
+In-Reply-To: <BYAPR11MB3367EF5CEE54FC6415541454FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+References: <20210628121105.20640-1-mateusz.palczewski@intel.com>
+ <BN6PR11MB392398056E8C2C4942BEC4038C189@BN6PR11MB3923.namprd11.prod.outlook.com>
+ <BYAPR11MB33678799BFFC6AEEEE9EDDCCFC139@BYAPR11MB3367.namprd11.prod.outlook.com>
+ <BYAPR11MB336713E82D26AEEA08B4A2FAFC139@BYAPR11MB3367.namprd11.prod.outlook.com>
+ <BYAPR11MB3367955F8C5E5474683E46F7FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+ <BYAPR11MB3367A5CD95A08A740B0D3843FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+ <BYAPR11MB3367EF5CEE54FC6415541454FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+Message-ID: <BYAPR11MB3367A0CAB84E005DB86F4AA3FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: af47ded916a3e5438b84bc19bb84b8b4d98cd8ba  i40e: Fix pre-set max number of queues for VF
-
-elapsed time: 961m
-
-configs tested: 123
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-nios2                               defconfig
-csky                             alldefconfig
-arm                             ezx_defconfig
-sh                             shx3_defconfig
-sh                          rsk7201_defconfig
-arm                     davinci_all_defconfig
-mips                           gcw0_defconfig
-powerpc                 linkstation_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                       ebony_defconfig
-powerpc                      bamboo_defconfig
-arm                      integrator_defconfig
-arm                        multi_v7_defconfig
-powerpc                      pasemi_defconfig
-m68k                        mvme16x_defconfig
-sh                          r7785rp_defconfig
-sparc64                             defconfig
-arc                     nsimosci_hs_defconfig
-arm                           sama5_defconfig
-arm                             mxs_defconfig
-arm                       aspeed_g5_defconfig
-powerpc                      ppc64e_defconfig
-arm                            xcep_defconfig
-powerpc                 mpc834x_mds_defconfig
-mips                           ip28_defconfig
-arm64                            alldefconfig
-mips                     cu1000-neo_defconfig
-riscv                    nommu_virt_defconfig
-mips                 decstation_r4k_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                            pleb_defconfig
-arm                           omap1_defconfig
-xtensa                       common_defconfig
-h8300                               defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20210720
-x86_64               randconfig-a006-20210720
-x86_64               randconfig-a001-20210720
-x86_64               randconfig-a005-20210720
-x86_64               randconfig-a004-20210720
-x86_64               randconfig-a002-20210720
-i386                 randconfig-a005-20210720
-i386                 randconfig-a003-20210720
-i386                 randconfig-a004-20210720
-i386                 randconfig-a002-20210720
-i386                 randconfig-a001-20210720
-i386                 randconfig-a006-20210720
-x86_64               randconfig-a003-20210722
-x86_64               randconfig-a006-20210722
-x86_64               randconfig-a001-20210722
-x86_64               randconfig-a005-20210722
-x86_64               randconfig-a004-20210722
-x86_64               randconfig-a002-20210722
-i386                 randconfig-a016-20210720
-i386                 randconfig-a013-20210720
-i386                 randconfig-a012-20210720
-i386                 randconfig-a014-20210720
-i386                 randconfig-a011-20210720
-i386                 randconfig-a015-20210720
-i386                 randconfig-a016-20210722
-i386                 randconfig-a013-20210722
-i386                 randconfig-a012-20210722
-i386                 randconfig-a011-20210722
-i386                 randconfig-a014-20210722
-i386                 randconfig-a015-20210722
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                      rhel-8.3-kbuiltin
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-b001-20210720
-x86_64               randconfig-a011-20210720
-x86_64               randconfig-a016-20210720
-x86_64               randconfig-a013-20210720
-x86_64               randconfig-a014-20210720
-x86_64               randconfig-a012-20210720
-x86_64               randconfig-a015-20210720
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> Of Mateusz Palczewski
+> Sent: Monday, June 28, 2021 5:41 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>;
+> Patynowski, PrzemyslawX <przemyslawx.patynowski@intel.com>;
+> Palczewski, Mateusz <mateusz.palczewski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix ping is lost after
+> untrusted VF had tried to change MAC
+>
+> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+>
+> Make changes to MAC address dependent on the response of PF.
+> Disallow changes to hw mac address and mac filter from untrusted VF,
+> thanks to that ping is not lost if VF tries to change MAC.
+> Add a new field in iavf_mac_filter, to indicate whether there was
+> response from PF for given filter. Based on this field pass or discard
+> the
+filter.
+> If untrusted VF tried to change it's address, it's not changed.
+> Still filter was changed, because of that ping couldn't go through.
+>
+> Fixes: c5c922b3e09b ("iavf: fix MAC address setting for VFs when
+> filter is
+> rejected")
+> Signed-off-by: Przemyslaw Patynowski
+> <przemyslawx.patynowski@intel.com>
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>  v2: Fixed function names in comments
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   |  1 +
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 47 ++++++++++++++++++-
+>  3 files changed, 47 insertions(+), 2 deletions(-)
+>
+ 
+Tested-by: Gurucharan  G <Gurucharanx.g@intel.com> A Contingent Worker
+> at Intel
