@@ -1,91 +1,114 @@
-From: Jason Xing <kerneljasonxing@gmail.com>
-Date: Mon, 26 Jul 2021 10:41:50 +0800
-Subject: [Intel-wired-lan] [PATCH net] i40e: introduce pseudo number of
- cpus for compatibility
-In-Reply-To: <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
-References: <20210707094133.24597-1-kerneljasonxing@gmail.com>
- <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
- <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
- <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
-Message-ID: <CAL+tcoBk=s_QZv08wetLG8jeUCX-ECddOWeOgeLnPB_X41juvw@mail.gmail.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Mon, 26 Jul 2021 10:45:27 +0200
+Subject: [Intel-wired-lan] [PATCH] ethernet/intel: fix PTP_1588_CLOCK
+ dependencies
+Message-ID: <20210726084540.3282344-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Anthony L,
+From: Arnd Bergmann <arnd@arndb.de>
 
-Do you have any progress or any idea on the final patch? Or you could
-point out some more detailed method to rework the calculation of the
-queue pile.
+The 'imply' keyword does not do what most people think it does, it only
+politely asks Kconfig to turn on another symbol, but does not prevent
+it from being disabled manually or built as a loadable module when the
+user is built-in. In the ICE driver, the latter now causes a link failure:
 
-I think it's critical and has an impact on all the old nics, which
-means thousands of machines would crash if xdp-drv program is loaded.
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_eth_ioctl':
+ice_main.c:(.text+0x13b0): undefined reference to `ice_ptp_get_ts_config'
+ice_main.c:(.text+0x13b0): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_get_ts_config'
+aarch64-linux-ld: ice_main.c:(.text+0x13bc): undefined reference to `ice_ptp_set_ts_config'
+ice_main.c:(.text+0x13bc): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_set_ts_config'
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_prepare_for_reset':
+ice_main.c:(.text+0x31fc): undefined reference to `ice_ptp_release'
+ice_main.c:(.text+0x31fc): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_release'
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_rebuild':
 
-Thanks,
-Jason
+For the other Intel network drivers, there is no link error when the
+drivers are built-in and PTP is a loadable module, because
+linux/ptp_clock_kernel.h contains an IS_REACHABLE() check, but this
+just changes the compile-time failure to a runtime failure, which is
+arguably worse.
 
-On Thu, Jul 15, 2021 at 10:33 AM Jason Xing <kerneljasonxing@gmail.com> wrote:
->
-> On Thu, Jul 15, 2021 at 4:52 AM Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com> wrote:
-> >
-> > On Fri, 2021-07-09 at 15:13 +0800, Jason Xing wrote:
-> > > Oh, one more thing I missed in the last email is that all the
-> > > failures
-> > > are happening on the combination of X722 10GbE and 1GbE. So the value
-> > > of @num_tx_qp  the driver fetches is 384 while the value is 768
-> > > without x722 1GbE.
-> > >
-> > > I get that information back here:
-> > > $ lspci | grep -i ether
-> > > 5a:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> > > X722 for 10GbE SFP+ (rev 09)
-> > > 5a:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> > > X722 for 10GbE SFP+ (rev 09)
-> > > 5a:00.2 Ethernet controller: Intel Corporation Ethernet Connection
-> > > X722 for 1GbE (rev 09)
-> > > 5a:00.3 Ethernet controller: Intel Corporation Ethernet Connection
-> > > X722 for 1GbE (rev 09)
-> > >
-> > > I know it's really stupid to control the number of online cpus, but
-> > > finding a good way only to limit the @alloc_queue_pairs is not easy
-> > > to
-> > > go. So could someone point out a better way to fix this issue and
-> > > take
-> > > care of some relatively old nics with the number of cpus increasing?
-> >
-> > Hi Jason,
-> >
-> > Sorry for the slow response; I was trying to talk to the i40e team
-> > about this.
->
-> Thanks for your kind help really. It indeed has a big impact on thousands
-> of machines.
->
-> >
-> > I agree, the limiting of number of online CPUs doesn't seem like a
-> > solution we want to pursue. The team is working on a patch that deals
->
-> As I said above, if the machine is equipped with only 10GbE nic, the maximum
-> online cpus would be 256 and so on. For now, it depends on the num of cpus.
->
-> > with the same, or similiar, issue; it is reworking the allocations of
-> > the queue pile. I'll make sure that they add you on the patch when it
->
-> It's not easy to cover all kinds of cases. But I still believe it's
-> the only proper
-> way to fix the issue. Looking forward to your patch :)
->
-> > is sent so that you can try this and see if it resolves your issue.
-> >
->
-> Yeah, sure, I will double-check and then see if it's really fixed.
->
-> Thanks,
-> Jason
->
-> > Thanks,
-> > Tony
-> >
+Change all the Intel drivers to use the 'depends on PTP_1588_CLOCK ||
+!PTP_1588_CLOCK' trick to prevent the broken configuration, as we
+already do for several other drivers. To avoid circular dependencies,
+this also requires changing the IGB driver back to using the normal
+'depends on I2C' instead of 'select I2C'.
+
+Fixes: 06c16d89d2cb ("ice: register 1588 PTP clock device object for E810 devices")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/Kconfig | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 2aa84bd97287..ab75cde0c4ec 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -58,8 +58,8 @@ config E1000
+ config E1000E
+ 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+ 	depends on PCI && (!SPARC32 || BROKEN)
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select CRC32
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+ 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+@@ -87,7 +87,7 @@ config E1000E_HWTS
+ config IGB
+ 	tristate "Intel(R) 82575/82576 PCI-Express Gigabit Ethernet support"
+ 	depends on PCI
+-	imply PTP_1588_CLOCK
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select I2C
+ 	select I2C_ALGOBIT
+ 	help
+@@ -159,9 +159,9 @@ config IXGB
+ config IXGBE
+ 	tristate "Intel(R) 10GbE PCI Express adapters support"
+ 	depends on PCI
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select MDIO
+ 	select PHYLIB
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) 10GbE PCI Express family of
+ 	  adapters.  For more information on how to identify your adapter, go
+@@ -239,7 +239,7 @@ config IXGBEVF_IPSEC
+ 
+ config I40E
+ 	tristate "Intel(R) Ethernet Controller XL710 Family support"
+-	imply PTP_1588_CLOCK
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	depends on PCI
+ 	select AUXILIARY_BUS
+ 	help
+@@ -295,11 +295,11 @@ config ICE
+ 	tristate "Intel(R) Ethernet Connection E800 Series Support"
+ 	default n
+ 	depends on PCI_MSI
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select AUXILIARY_BUS
+ 	select DIMLIB
+ 	select NET_DEVLINK
+ 	select PLDMFW
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) Ethernet Connection E800 Series of
+ 	  devices.  For more information on how to identify your adapter, go
+@@ -317,7 +317,7 @@ config FM10K
+ 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
+ 	default n
+ 	depends on PCI_MSI
+-	imply PTP_1588_CLOCK
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) FM10000 Ethernet Switch Host
+ 	  Interface.  For more information on how to identify your adapter,
+-- 
+2.29.2
+
