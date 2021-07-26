@@ -1,76 +1,91 @@
-From: Pali =?unknown-8bit?q?Roh=C3=A1r?= <pali@kernel.org>
-Date: Mon, 19 Jul 2021 00:50:59 +0200
-Subject: [Intel-wired-lan] [PATCH 1/2] igc: don't rd/wr iomem when PCI
- is removed
-In-Reply-To: <CAOSf1CHtHLyEHC58jwemZS6j=jAU2OrrYitkUYmdisJtuFu4dw@mail.gmail.com>
-References: <CAOSf1CGVpogQGAatuY_N0db6OL2BFegGtj6VTLA9KFz0TqYBQg@mail.gmail.com>
- <20210708154550.GA1019947@bjorn-Precision-5520>
- <CAOSf1CHtHLyEHC58jwemZS6j=jAU2OrrYitkUYmdisJtuFu4dw@mail.gmail.com>
-Message-ID: <20210718225059.hd3od4k4on3aopcu@pali>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Mon, 26 Jul 2021 10:41:50 +0800
+Subject: [Intel-wired-lan] [PATCH net] i40e: introduce pseudo number of
+ cpus for compatibility
+In-Reply-To: <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
+References: <20210707094133.24597-1-kerneljasonxing@gmail.com>
+ <CAL+tcoCc+r96Bv8aDXTwY5h_OYTz8sHxdpPW7OuNfdDz+ssYYg@mail.gmail.com>
+ <03b846e9906d27ef7a6e84196a0840fdd54ca13d.camel@intel.com>
+ <CAL+tcoAtFTmFtKR2QLY_UdQWkc9Avyw3ZtaA_cD_4cXAGXRBDQ@mail.gmail.com>
+Message-ID: <CAL+tcoBk=s_QZv08wetLG8jeUCX-ECddOWeOgeLnPB_X41juvw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Monday 19 July 2021 02:31:10 Oliver O'Halloran wrote:
-> On Fri, Jul 9, 2021 at 1:45 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> >
-> > *snip*
-> >
-> > Apologies for rehashing what's probably obvious to everybody but me.
-> > I'm trying to get a better handle on benign vs poisonous errors.
-> >
-> > MMIO means CPU reads or writes to the device.  In PCI, writes are
-> > posted and don't receive a response, so a driver will never see
-> > writel() return an error (although an error may be reported
-> > asynchronously via AER or similar).
-> >
-> > So I think we're mostly talking about CPU reads here.  We expect a PCI
-> > response containing the data.  Sometimes there's no response or an
-> > error response.  The behavior of the host bridge in these error cases
-> > is not defined by PCI, so what the CPU sees is not consistent across
-> > platforms.  In some cases, the bridge handles this as a catastrophic
-> > error that forces a system restart.
-> >
-> > But in most cases, at least on x86, the bridge logs an error and
-> > fabricates ~0 data so the CPU read can complete.  Then it's up to
-> > software to recognize that an error occurred and decide what to do
-> > about it.  Is this a benign or a poisonous error?
-> >
-> > I'd say this is a benign error. It certainly can't be ignored, but as
-> > long as the driver recognizes the error, it should be able to deal
-> > with it without crashing the whole system and forcing a restart.
-> 
-> I was thinking more in terms of what the driver author sees rather
-> than what's happening on the CPU side. The crash seen in the OP
-> appears to be because the code is "doing an MMIO." However, the
-> reasons for the crash have nothing to do with the actual mechanics of
-> the operation (which should be benign). The point I was making is that
-> the pattern of:
-> 
-> if (is_disconnected())
->     return failure;
-> return do_mmio_read(addr);
-> 
-> does have some utility as a last-ditch attempt to prevent crashes in
-> the face of obnoxious bridges or bad hardware. Granted, that should be
-> a platform concern rather than something that should ever appear in
-> driver code, but considering drivers open-code readl()/writel() calls
-> there's not really any place to put that sort of workaround.
-> 
-> That all said, the case in the OP is due to an entirely avoidable
-> driver bug and that sort of hack is absolutely the wrong thing to do.
-> 
-> Oliver
+Hi Anthony L,
 
-And do we have some solution for this kind of issue? There are more PCIe
-controllers / platforms which do not like MMIO read/write operation when
-card / link is not connected.
+Do you have any progress or any idea on the final patch? Or you could
+point out some more detailed method to rework the calculation of the
+queue pile.
 
-If we do not provide a way how to solve these problems then we can
-expect that people would just hack ethernet / wifi / ... device drivers
-which are currently crashing by patches like in this thread.
+I think it's critical and has an impact on all the old nics, which
+means thousands of machines would crash if xdp-drv program is loaded.
 
-Maybe PCI subsystem could provide wrapper function which implements
-above pattern and which can be used by device drivers?
+Thanks,
+Jason
+
+On Thu, Jul 15, 2021 at 10:33 AM Jason Xing <kerneljasonxing@gmail.com> wrote:
+>
+> On Thu, Jul 15, 2021 at 4:52 AM Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com> wrote:
+> >
+> > On Fri, 2021-07-09 at 15:13 +0800, Jason Xing wrote:
+> > > Oh, one more thing I missed in the last email is that all the
+> > > failures
+> > > are happening on the combination of X722 10GbE and 1GbE. So the value
+> > > of @num_tx_qp  the driver fetches is 384 while the value is 768
+> > > without x722 1GbE.
+> > >
+> > > I get that information back here:
+> > > $ lspci | grep -i ether
+> > > 5a:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+> > > X722 for 10GbE SFP+ (rev 09)
+> > > 5a:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+> > > X722 for 10GbE SFP+ (rev 09)
+> > > 5a:00.2 Ethernet controller: Intel Corporation Ethernet Connection
+> > > X722 for 1GbE (rev 09)
+> > > 5a:00.3 Ethernet controller: Intel Corporation Ethernet Connection
+> > > X722 for 1GbE (rev 09)
+> > >
+> > > I know it's really stupid to control the number of online cpus, but
+> > > finding a good way only to limit the @alloc_queue_pairs is not easy
+> > > to
+> > > go. So could someone point out a better way to fix this issue and
+> > > take
+> > > care of some relatively old nics with the number of cpus increasing?
+> >
+> > Hi Jason,
+> >
+> > Sorry for the slow response; I was trying to talk to the i40e team
+> > about this.
+>
+> Thanks for your kind help really. It indeed has a big impact on thousands
+> of machines.
+>
+> >
+> > I agree, the limiting of number of online CPUs doesn't seem like a
+> > solution we want to pursue. The team is working on a patch that deals
+>
+> As I said above, if the machine is equipped with only 10GbE nic, the maximum
+> online cpus would be 256 and so on. For now, it depends on the num of cpus.
+>
+> > with the same, or similiar, issue; it is reworking the allocations of
+> > the queue pile. I'll make sure that they add you on the patch when it
+>
+> It's not easy to cover all kinds of cases. But I still believe it's
+> the only proper
+> way to fix the issue. Looking forward to your patch :)
+>
+> > is sent so that you can try this and see if it resolves your issue.
+> >
+>
+> Yeah, sure, I will double-check and then see if it's really fixed.
+>
+> Thanks,
+> Jason
+>
+> > Thanks,
+> > Tony
+> >
