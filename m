@@ -1,83 +1,27 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Tue, 27 Jul 2021 14:53:23 +0800
-Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: Serialize TGP e1000e PM
- ops
-In-Reply-To: <20210712133500.1126371-3-kai.heng.feng@canonical.com>
-References: <20210712133500.1126371-1-kai.heng.feng@canonical.com>
- <20210712133500.1126371-3-kai.heng.feng@canonical.com>
-Message-ID: <CAAd53p5B5f5U_J1L+SpjZ46AFEr1kMqwgqnF2dYKvDwY2x3GzA@mail.gmail.com>
+From: Yuvaraj Ranganathan <yranganathan@juniper.net>
+Date: Tue, 27 Jul 2021 06:23:00 +0000
+Subject: [Intel-wired-lan] Traffic not passing for VLAN ID >= 32 on the I350
+ SR-IOV enabled NIC
+Message-ID: <BY3PR05MB835694E97F5EA0D60B0DD2B3CAE99@BY3PR05MB8356.namprd05.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Sasha,
+Hi Team,
 
-On Mon, Jul 12, 2021 at 9:35 PM Kai-Heng Feng
-<kai.heng.feng@canonical.com> wrote:
->
-> On TGL systems, PCI_COMMAND may randomly flip to 0 on system resume.
-> This is devastating to drivers that use pci_set_master(), like NVMe and
-> xHCI, to enable DMA in their resume routine, as pci_set_master() can
-> inadvertently disable PCI_COMMAND_IO and PCI_COMMAND_MEMORY, making
-> resources inaccessible.
->
-> The issue is reproducible on all kernel releases, but the situation is
-> exacerbated by commit 6cecf02e77ab ("Revert "e1000e: disable s0ix entry
-> and exit flows for ME systems"").
->
-> Seems like ME can do many things to other PCI devices until it's finally out of
-> ULP polling. So ensure e1000e PM ops are serialized by enforcing suspend/resume
-> order to workaround the issue.
->
-> Of course this will make system suspend and resume a bit slower, but we
-> probably need to settle on this workaround until ME is fully supported.
->
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=212039
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+With the SR-IOV enabled on I350 NIC which has 4 VF?s, on configuring VLAN ID from range 1 to 31 on the VM interface, network traffic is fine and no issues. When trying to create an interface with VLAN ID >= 32 on the VM, traffic is not passing to that interface and as per HW specs, VLAN ID?s from 1 to 4096 are supported.
 
-Series "e1000e: Add handshake with the CSME to support s0ix" doesn't
-fix the issue, so this patch is still needed.
+VM?s interface is directly mapped to one of the VF on I350 NIC. I am using IGB PF driver version 5.7.2(latest).
 
-Kai-Heng
+Could somebody please help!
 
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index e63445a8ce12..0244d3dd90a3 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -7319,7 +7319,8 @@ static const struct net_device_ops e1000e_netdev_ops = {
->
->  static void e1000e_create_device_links(struct pci_dev *pdev)
->  {
-> -       struct pci_dev *tgp_mei_me;
-> +       struct pci_bus *bus = pdev->bus;
-> +       struct pci_dev *tgp_mei_me, *p;
->
->         /* Find TGP mei_me devices and make e1000e power depend on mei_me */
->         tgp_mei_me = pci_get_device(PCI_VENDOR_ID_INTEL, 0xa0e0, NULL);
-> @@ -7335,6 +7336,17 @@ static void e1000e_create_device_links(struct pci_dev *pdev)
->                 pci_info(pdev, "System and runtime PM depends on %s\n",
->                          pci_name(tgp_mei_me));
->
-> +       /* Find other devices in the SoC and make them depend on e1000e */
-> +       list_for_each_entry(p, &bus->devices, bus_list) {
-> +               if (&p->dev == &pdev->dev || &p->dev == &tgp_mei_me->dev)
-> +                       continue;
-> +
-> +               if (device_link_add(&p->dev, &pdev->dev,
-> +                                   DL_FLAG_AUTOREMOVE_SUPPLIER))
-> +                       pci_info(p, "System PM depends on %s\n",
-> +                                pci_name(pdev));
-> +       }
-> +
->         pci_dev_put(tgp_mei_me);
->  }
->
-> --
-> 2.31.1
->
+Thanks in advance,
+Yuvaraj.
+
+
+Juniper Business Use Only
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210727/19cc49b5/attachment.html>
