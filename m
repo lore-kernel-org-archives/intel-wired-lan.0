@@ -1,67 +1,36 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Tue, 27 Jul 2021 16:04:19 +0000
-Subject: [Intel-wired-lan] [E1000-devel] Traffic not passing for VLAN ID
- >= 32 on the I350 SR-IOV enabled NIC
-In-Reply-To: <CO6PR11MB5652E3BC545B93D49C86B3D6EFE99@CO6PR11MB5652.namprd11.prod.outlook.com>
-References: <BY3PR05MB835694E97F5EA0D60B0DD2B3CAE99@BY3PR05MB8356.namprd05.prod.outlook.com>
- <CO6PR11MB5652E3BC545B93D49C86B3D6EFE99@CO6PR11MB5652.namprd11.prod.outlook.com>
-Message-ID: <CO6PR11MB56524631CBAEE3AA229AD0A5EFE99@CO6PR11MB5652.namprd11.prod.outlook.com>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 27 Jul 2021 18:33:18 +0100
+Subject: [Intel-wired-lan] [PATCH][next] i40e: Fix spelling mistake
+ "dissable" -> "disable"
+Message-ID: <20210727173318.78154-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-You've already reported this internally, and you've mailed this to two different mailing lists. This just delays the issue so please go through the internal route.
+From: Colin Ian King <colin.king@canonical.com>
 
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com
+There is a spelling mistake in a dev_info message. Fix it.
 
------Original Message-----
-From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Fujinaka, Todd
-Sent: Tuesday, July 27, 2021 8:04 AM
-To: Yuvaraj Ranganathan <yranganathan@juniper.net>; intel-wired-lan at lists.osuosl.org
-Cc: Pushp Saurav <psaurav@juniper.net>
-Subject: Re: [Intel-wired-lan] [E1000-devel] Traffic not passing for VLAN ID >= 32 on the I350 SR-IOV enabled NIC
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Can you please file this through your company contact? I think you have very specific requirements that we can't discuss on a public mailing list.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b4a57251256a..4eb9005e85da 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -4638,7 +4638,7 @@ void i40e_vsi_stop_rings(struct i40e_vsi *vsi)
+ 		err = i40e_control_wait_rx_q(pf, pf_q, false);
+ 		if (err)
+ 			dev_info(&pf->pdev->dev,
+-				 "VSI seid %d Rx ring %d dissable timeout\n",
++				 "VSI seid %d Rx ring %d disable timeout\n",
+ 				 vsi->seid, pf_q);
+ 	}
+ 
+-- 
+2.31.1
 
-Todd Fujinaka
-Software Application Engineer
-Data Center Group
-Intel Corporation
-todd.fujinaka at intel.com
-
------Original Message-----
-From: Yuvaraj Ranganathan via E1000-devel <e1000-devel@lists.sourceforge.net> 
-Sent: Monday, July 26, 2021 11:23 PM
-To: e1000-devel@lists.sourceforge.net; intel-wired-lan at lists.osuosl.org
-Cc: Pushp Saurav <psaurav@juniper.net>
-Subject: [E1000-devel] Traffic not passing for VLAN ID >= 32 on the I350 SR-IOV enabled NIC
-
-Hi Team,
-
-With the SR-IOV enabled on I350 NIC which has 4 VF's, on configuring VLAN ID from range 1 to 31 on the VM interface, network traffic is fine and no issues. When trying to create an interface with VLAN ID >= 32 on the VM, traffic is not passing to that interface and as per HW specs, VLAN ID's from 1 to 4096 are supported.
-
-VM's interface is directly mapped to one of the VF on I350 NIC. I am using IGB PF driver version 5.7.2(latest).
-
-Could somebody please help!
-
-Thanks in advance,
-Yuvaraj.
-
-
-Juniper Business Use Only
-
-_______________________________________________
-E1000-devel mailing list
-E1000-devel at lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/e1000-devel
-To learn more about Intel Ethernet, visit https://forums.intel.com/s/topic/0TO0P00000018NbWAI/intel-ethernet
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
