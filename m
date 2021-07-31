@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 31 Jul 2021 13:53:18 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 107050153f8f824f4fac1a0de522d07a47a0aed5
-Message-ID: <6104e54e.bQGWHL61rODOY+p7%lkp@intel.com>
+Date: Sat, 31 Jul 2021 22:10:52 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 177b5f7aa457f18ece925c722ae654e5d84efa82
+Message-ID: <610559ec.24W4N7IviXGk10TT%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 107050153f8f824f4fac1a0de522d07a47a0aed5  ethernet/intel: fix PTP_1588_CLOCK dependencies
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 177b5f7aa457f18ece925c722ae654e5d84efa82  igc: Add support for PTP getcrosststamp()
 
-elapsed time: 723m
+elapsed time: 1221m
 
-configs tested: 112
+configs tested: 80
 configs skipped: 4
 
 The following configs have been built successfully.
@@ -27,40 +27,8 @@ arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 i386                 randconfig-c001-20210730
-mips                      pic32mzda_defconfig
-mips                          malta_defconfig
-h8300                            alldefconfig
-arm                          collie_defconfig
-powerpc                     ppa8548_defconfig
-arm                           sunxi_defconfig
-mips                           ip28_defconfig
-m68k                            q40_defconfig
-nios2                         10m50_defconfig
-arm                          pcm027_defconfig
-powerpc                         wii_defconfig
-arc                              alldefconfig
-m68k                        m5307c3_defconfig
-arm                         s3c6400_defconfig
-arm                        keystone_defconfig
-powerpc                      mgcoge_defconfig
-arm                           h3600_defconfig
-powerpc                       eiger_defconfig
-sh                           se7705_defconfig
-mips                           mtx1_defconfig
-x86_64                           alldefconfig
-powerpc                    gamecube_defconfig
-powerpc                   currituck_defconfig
-sh                           se7724_defconfig
-arm                        mini2440_defconfig
-arm                           viper_defconfig
-powerpc                     ksi8560_defconfig
-arc                        nsimosci_defconfig
-mips                   sb1250_swarm_defconfig
-powerpc                      chrp32_defconfig
-mips                      fuloong2e_defconfig
-sh                ecovec24-romimage_defconfig
-mips                           rs90_defconfig
-arm                      footbridge_defconfig
+arm                       aspeed_g5_defconfig
+powerpc                        warp_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -119,10 +87,10 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                                  kexec
