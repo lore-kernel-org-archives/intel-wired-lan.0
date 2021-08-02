@@ -1,35 +1,43 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Mon, 2 Aug 2021 17:03:04 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <CO1PR11MB508917A17F68DD927CD26A82D6EF9@CO1PR11MB5089.namprd11.prod.outlook.com>
-References: <20210802145937.1155571-1-arnd@kernel.org>
- <20210802164907.GA9832@hoboy.vegasvil.org>
- <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
- <20210802230921.GA13623@hoboy.vegasvil.org>
- <CO1PR11MB508917A17F68DD927CD26A82D6EF9@CO1PR11MB5089.namprd11.prod.outlook.com>
-Message-ID: <20210803000304.GA19119@hoboy.vegasvil.org>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Date: Mon,  2 Aug 2021 18:12:45 -0400
+Subject: [Intel-wired-lan] [PATCH net-next] ice: disable VLAN stripping on
+ control VSI
+Message-ID: <20210802221245.6056-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 02, 2021 at 11:45:09PM +0000, Keller, Jacob E wrote:
-> Ok, so basically: if any driver that needs PTP core is on, PTP core is on, with no way to disable it.
+Port representators don't support stripping VLAN tag. Control VSI should
+reflect this setting. As default all VSIs have stripping enabled.
+Disable it for control VSI to allow passing VLAN traffic in switchdev
+mode.
 
-Right.  Some MAC drivers keep the PTP stuff under a second Kconfig option.
+Control VSI exists only in switchdev mode, so this change doesn't impact
+legacy mode driver.
 
-IIRC, we (davem and netdev) decided not to do that going forwards.  If
-a MAC has PTP features, then users will sure want it enabled.
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+This commit should be squashed with "ice: setting and releasing switchdev
+environment"
 
-So, let the MACs use "depends" or "select" PTP core.  I guess that
-"select" is more user friendly.
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-And Posix timers: never disable this.  After all, who wants an
-embedded system without timer_create()?  Seriously?
-
-Thanks,
-Richard
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index ec2aa789e214..21f3e72a9a35 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -22,6 +22,8 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 	struct ice_port_info *pi = pf->hw.port_info;
+ 	bool rule_added = false;
+ 
++	ice_vsi_manage_vlan_stripping(ctrl_vsi, false);
++
+ 	ice_remove_vsi_fltr(&pf->hw, uplink_vsi->idx);
+ 
+ 	if (ice_vsi_add_vlan(uplink_vsi, 0, ICE_FWD_TO_VSI))
+-- 
+2.31.1
 
