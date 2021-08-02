@@ -1,36 +1,129 @@
 From: Arnd Bergmann <arnd@kernel.org>
-Date: Mon, 2 Aug 2021 16:37:32 +0200
-Subject: [Intel-wired-lan] [PATCH] ethernet/intel: fix PTP_1588_CLOCK
- dependencies
-In-Reply-To: <BYAPR11MB336781A3C6B41DFFFD838157FCEF9@BYAPR11MB3367.namprd11.prod.outlook.com>
-References: <20210726084540.3282344-1-arnd@kernel.org>
- <BYAPR11MB336781A3C6B41DFFFD838157FCEF9@BYAPR11MB3367.namprd11.prod.outlook.com>
-Message-ID: <CAK8P3a3g60Rg5XxEk+DUUy6pSkSw4TDK7R52Sy6zEVba3O6WsA@mail.gmail.com>
+Date: Mon,  2 Aug 2021 16:59:33 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
+ PTP_1588_CLOCK dependencies
+Message-ID: <20210802145937.1155571-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 2, 2021 at 3:10 PM G, GurucharanX <gurucharanx.g@intel.com> wrote:
-> >
-> > From: Arnd Bergmann <arnd@arndb.de>
-> >
-> > The 'imply' keyword does not do what most people think it does, it only
-> > politely asks Kconfig to turn on another symbol, but does not prevent it from
-> > being disabled manually or built as a loadable module when the user is built-
-> > in. In the ICE driver, the latter now causes a link failure:
-...
-> Tested-by: Gurucharan  G <Gurucharanx.g@intel.com> (A Contingent Worker at Intel)
+From: Arnd Bergmann <arnd@arndb.de>
 
-Sorry for the delay. I had remembered that there was a previous discussion
-about that option but couldn't find the thread at first.
+The 'imply' keyword does not do what most people think it does, it only
+politely asks Kconfig to turn on another symbol, but does not prevent
+it from being disabled manually or built as a loadable module when the
+user is built-in. In the ICE driver, the latter now causes a link failure:
 
-I now found
-https://lore.kernel.org/netdev/CAK8P3a3=eOxE-K25754+fB_-i_0BZzf9a9RfPTX3ppSwu9WZXw at mail.gmail.com/
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_eth_ioctl':
+ice_main.c:(.text+0x13b0): undefined reference to `ice_ptp_get_ts_config'
+ice_main.c:(.text+0x13b0): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_get_ts_config'
+aarch64-linux-ld: ice_main.c:(.text+0x13bc): undefined reference to `ice_ptp_set_ts_config'
+ice_main.c:(.text+0x13bc): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_set_ts_config'
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_prepare_for_reset':
+ice_main.c:(.text+0x31fc): undefined reference to `ice_ptp_release'
+ice_main.c:(.text+0x31fc): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `ice_ptp_release'
+aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_rebuild':
 
-and will add Richard to Cc for my new version as well, just in case he
-has objections
-to this version and wants to fix it differently.
+For the other Intel network drivers, there is no link error when the
+drivers are built-in and PTP is a loadable module, because
+linux/ptp_clock_kernel.h contains an IS_REACHABLE() check, but this
+just changes the compile-time failure to a runtime failure, which is
+arguably worse.
 
-       Arnd
+Change all the Intel drivers to use the 'depends on PTP_1588_CLOCK ||
+!PTP_1588_CLOCK' trick to prevent the broken configuration, as we
+already do for several other drivers. To avoid circular dependencies,
+this also requires changing the IGB driver back to using the normal
+'depends on I2C' instead of 'select I2C'.
+
+This is a recurring problem in many drivers, and we have discussed
+it several times befores, without reaching a consensus. I'm providing
+a link to the previous email thread for reference, which discusses
+some related problems, though I can't find what reasons there were
+against the approach with the extra Kconfig dependency.
+
+Fixes: 06c16d89d2cb ("ice: register 1588 PTP clock device object for E810 devices")
+Link: https://lore.kernel.org/netdev/CAK8P3a3=eOxE-K25754+fB_-i_0BZzf9a9RfPTX3ppSwu9WZXw at mail.gmail.com/
+Link: https://lore.kernel.org/netdev/20210726084540.3282344-1-arnd at kernel.org/
+Cc: Richard Cochran <richardcochran@gmail.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+Changes in v2:
+- include a missing patch hunk
+- link to a previous discussion with Richard Cochran
+---
+ drivers/net/ethernet/intel/Kconfig | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 2aa84bd97287..3ddadc147d45 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -58,8 +58,8 @@ config E1000
+ config E1000E
+ 	tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
+ 	depends on PCI && (!SPARC32 || BROKEN)
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select CRC32
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+ 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+@@ -87,8 +87,8 @@ config E1000E_HWTS
+ config IGB
+ 	tristate "Intel(R) 82575/82576 PCI-Express Gigabit Ethernet support"
+ 	depends on PCI
+-	imply PTP_1588_CLOCK
+-	select I2C
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
++	depends on I2C
+ 	select I2C_ALGOBIT
+ 	help
+ 	  This driver supports Intel(R) 82575/82576 gigabit ethernet family of
+@@ -159,9 +159,9 @@ config IXGB
+ config IXGBE
+ 	tristate "Intel(R) 10GbE PCI Express adapters support"
+ 	depends on PCI
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select MDIO
+ 	select PHYLIB
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) 10GbE PCI Express family of
+ 	  adapters.  For more information on how to identify your adapter, go
+@@ -239,7 +239,7 @@ config IXGBEVF_IPSEC
+ 
+ config I40E
+ 	tristate "Intel(R) Ethernet Controller XL710 Family support"
+-	imply PTP_1588_CLOCK
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	depends on PCI
+ 	select AUXILIARY_BUS
+ 	help
+@@ -295,11 +295,11 @@ config ICE
+ 	tristate "Intel(R) Ethernet Connection E800 Series Support"
+ 	default n
+ 	depends on PCI_MSI
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	select AUXILIARY_BUS
+ 	select DIMLIB
+ 	select NET_DEVLINK
+ 	select PLDMFW
+-	imply PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) Ethernet Connection E800 Series of
+ 	  devices.  For more information on how to identify your adapter, go
+@@ -317,7 +317,7 @@ config FM10K
+ 	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
+ 	default n
+ 	depends on PCI_MSI
+-	imply PTP_1588_CLOCK
++	depends on PTP_1588_CLOCK || !PTP_1588_CLOCK
+ 	help
+ 	  This driver supports Intel(R) FM10000 Ethernet Switch Host
+ 	  Interface.  For more information on how to identify your adapter,
+-- 
+2.29.2
+
