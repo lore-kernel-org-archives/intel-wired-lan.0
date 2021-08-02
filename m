@@ -1,78 +1,72 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 15 Aug 2021 00:18:02 +0800
-Subject: [Intel-wired-lan] [PATCH v5 intel-next 3/9] ice: split ice_ring
- onto Tx/Rx separate structs
-In-Reply-To: <20210814140812.46632-4-maciej.fijalkowski@intel.com>
-References: <20210814140812.46632-4-maciej.fijalkowski@intel.com>
-Message-ID: <202108150013.21EvMzfS-lkp@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Mon, 2 Aug 2021 13:07:10 +0000
+Subject: [Intel-wired-lan] [PATCH] ethernet/intel: fix PTP_1588_CLOCK
+ dependencies
+In-Reply-To: <20210726084540.3282344-1-arnd@kernel.org>
+References: <20210726084540.3282344-1-arnd@kernel.org>
+Message-ID: <BYAPR11MB336781A3C6B41DFFFD838157FCEF9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Maciej,
 
-Thank you for the patch! Perhaps something to improve:
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Arnd Bergmann
+> Sent: Monday, July 26, 2021 2:15 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>; Keller, Jacob E
+> <jacob.e.keller@intel.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>; netdev at vger.kernel.org; Kurt
+> Kanzenbach <kurt@linutronix.de>; linux-kernel at vger.kernel.org; intel-
+> wired-lan at lists.osuosl.org; Saleem, Shiraz <shiraz.saleem@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] ethernet/intel: fix PTP_1588_CLOCK
+> dependencies
+> 
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The 'imply' keyword does not do what most people think it does, it only
+> politely asks Kconfig to turn on another symbol, but does not prevent it from
+> being disabled manually or built as a loadable module when the user is built-
+> in. In the ICE driver, the latter now causes a link failure:
+> 
+> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
+> `ice_eth_ioctl':
+> ice_main.c:(.text+0x13b0): undefined reference to `ice_ptp_get_ts_config'
+> ice_main.c:(.text+0x13b0): relocation truncated to fit: R_AARCH64_CALL26
+> against undefined symbol `ice_ptp_get_ts_config'
+> aarch64-linux-ld: ice_main.c:(.text+0x13bc): undefined reference to
+> `ice_ptp_set_ts_config'
+> ice_main.c:(.text+0x13bc): relocation truncated to fit: R_AARCH64_CALL26
+> against undefined symbol `ice_ptp_set_ts_config'
+> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
+> `ice_prepare_for_reset':
+> ice_main.c:(.text+0x31fc): undefined reference to `ice_ptp_release'
+> ice_main.c:(.text+0x31fc): relocation truncated to fit: R_AARCH64_CALL26
+> against undefined symbol `ice_ptp_release'
+> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
+> `ice_rebuild':
+> 
+> For the other Intel network drivers, there is no link error when the drivers
+> are built-in and PTP is a loadable module, because linux/ptp_clock_kernel.h
+> contains an IS_REACHABLE() check, but this just changes the compile-time
+> failure to a runtime failure, which is arguably worse.
+> 
+> Change all the Intel drivers to use the 'depends on PTP_1588_CLOCK ||
+> !PTP_1588_CLOCK' trick to prevent the broken configuration, as we already
+> do for several other drivers. To avoid circular dependencies, this also requires
+> changing the IGB driver back to using the normal 'depends on I2C' instead of
+> 'select I2C'.
+> 
+> Fixes: 06c16d89d2cb ("ice: register 1588 PTP clock device object for E810
+> devices")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/net/ethernet/intel/Kconfig | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
 
-[auto build test WARNING on ipvs/master]
-[also build test WARNING on v5.14-rc5 next-20210813]
-[cannot apply to tnguy-next-queue/dev-queue sparc-next/master]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/0day-ci/linux/commits/Maciej-Fijalkowski/XDP_TX-improvements-for-ice/20210814-222504
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/horms/ipvs.git master
-config: powerpc-allyesconfig (attached as .config)
-compiler: powerpc-linux-gcc (GCC) 11.2.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/945abe6bbe5afc453bca1dcb66593b2d9e47f7c8
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Maciej-Fijalkowski/XDP_TX-improvements-for-ice/20210814-222504
-        git checkout 945abe6bbe5afc453bca1dcb66593b2d9e47f7c8
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=powerpc SHELL=/bin/bash drivers/net/ethernet/intel/ice/
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>):
-
->> drivers/net/ethernet/intel/ice/ice_base.c:213: warning: expecting prototype for ice_calc_q_handle(). Prototype was for ice_calc_txq_handle() instead
-
-
-vim +213 drivers/net/ethernet/intel/ice/ice_base.c
-
-eff380aaffedb2 Anirudh Venkataramanan 2019-10-24  205  
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  206  /**
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  207   * ice_calc_q_handle - calculate the queue handle
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  208   * @vsi: VSI that ring belongs to
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  209   * @ring: ring to get the absolute queue index
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  210   * @tc: traffic class number
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  211   */
-945abe6bbe5afc Maciej Fijalkowski     2021-08-14  212  static u16 ice_calc_txq_handle(struct ice_vsi *vsi, struct ice_tx_ring *ring, u8 tc)
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24 @213  {
-af23635a5335aa Jesse Brandeburg       2020-02-13  214  	WARN_ONCE(ice_ring_is_xdp(ring) && tc, "XDP ring can't belong to TC other than 0\n");
-efc2214b6047b6 Maciej Fijalkowski     2019-11-04  215  
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  216  	/* Idea here for calculation is that we subtract the number of queue
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  217  	 * count from TC that ring belongs to from it's absolute queue index
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  218  	 * and as a result we get the queue's index within TC.
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  219  	 */
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  220  	return ring->q_index - vsi->tc_cfg.tc_info[tc].qoffset;
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  221  }
-e75d1b2c373199 Maciej Fijalkowski     2019-10-24  222  
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 73330 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210815/0a1f7d54/attachment-0001.bin>
+Tested-by: Gurucharan  G <Gurucharanx.g@intel.com> (A Contingent Worker at Intel)
