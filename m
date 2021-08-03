@@ -1,34 +1,38 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 3 Aug 2021 22:29:52 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 3 Aug 2021 13:54:55 -0700
 Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
  PTP_1588_CLOCK dependencies
-In-Reply-To: <CAK8P3a3P6=ZROxT8daW83mRp7z5rYAQydetWFXQoYF7Y5_KLHA@mail.gmail.com>
+In-Reply-To: <CAK8P3a2Wt9gnO4Ts_4Jw1+qpBj8HQc50jU2szjmR8MmZL9wrgQ@mail.gmail.com>
 References: <20210802145937.1155571-1-arnd@kernel.org>
  <20210802164907.GA9832@hoboy.vegasvil.org>
  <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
- <CAK8P3a3P6=ZROxT8daW83mRp7z5rYAQydetWFXQoYF7Y5_KLHA@mail.gmail.com>
-Message-ID: <CAK8P3a1tKjWo6RQq9nxDAuEWyEF=p8HDBzYG+=r3HVG9k0oUEQ@mail.gmail.com>
+ <20210802230921.GA13623@hoboy.vegasvil.org>
+ <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
+ <20210803155556.GD32663@hoboy.vegasvil.org>
+ <20210803161434.GE32663@hoboy.vegasvil.org>
+ <CAK8P3a2Wt9gnO4Ts_4Jw1+qpBj8HQc50jU2szjmR8MmZL9wrgQ@mail.gmail.com>
+Message-ID: <20210803205455.GA3517@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 2, 2021 at 10:32 PM Arnd Bergmann <arnd@kernel.org> wrote:
 
-> config MAY_USE_PTP_1588_CLOCK
->        def_tristate PTP_1588_CLOCK || !PTP_1588_CLOCK
->
->  config E1000E
->         tristate "Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support"
->         depends on PCI && (!SPARC32 || BROKEN)
-> +       depends on MAY_USE_PTP_1588_CLOCK
->         select CRC32
-> -       imply PTP_1588_CLOCK
+On Tue, Aug 03, 2021 at 07:00:49PM +0200, Arnd Bergmann wrote:
 
-I've written up the patch to do this all over the kernel now, and started an
-overnight randconfig build session with this applied:
+> If you turn all those 'select' lines into 'depends on', this will work, but it's
+> not actually much different from what I'm suggesting.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/commit/?h=ptp-1588-optional&id=3f69b7366cfd4b2c048c76be5299b38066933ee1
+"depends" instead of "select" works for me.  I just want it simple and clear.
 
-       Arnd
+> Maybe we can do it
+> in two steps: first fix the build failure by replacing all the 'imply'
+> statements
+> with the correct dependencies, and then you send a patch on top that
+> turns PPS and PTP_1588_CLOCK into bool options.
+
+Sounds good.
+
+Thanks,
+Richard
