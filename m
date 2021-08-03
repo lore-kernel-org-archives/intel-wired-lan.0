@@ -1,165 +1,44 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 03 Aug 2021 22:47:47 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 1c69d7cf4a8b6b6cfd920a1e809f1cd33ae4369c
-Message-ID: <61095713.dqVF8B7ty+BbGLXa%lkp@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 3 Aug 2021 08:55:56 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
+ PTP_1588_CLOCK dependencies
+In-Reply-To: <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
+References: <20210802145937.1155571-1-arnd@kernel.org>
+ <20210802164907.GA9832@hoboy.vegasvil.org>
+ <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
+ <20210802230921.GA13623@hoboy.vegasvil.org>
+ <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
+Message-ID: <20210803155556.GD32663@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 1c69d7cf4a8b6b6cfd920a1e809f1cd33ae4369c  Revert "mhi: Fix networking tree build."
+On Tue, Aug 03, 2021 at 08:59:02AM +0200, Arnd Bergmann wrote:
+> It may well be a lost cause, but a build fix is not the time to nail down
+> that decision. The fix I proposed (with the added MAY_USE_PTP_1588_CLOCK
+> symbol) is only two extra lines and leaves everything else working for the
+> moment.
 
-elapsed time: 729m
+Well, then we'll have TWO ugly and incomprehensible Kconfig hacks,
+imply and MAY_USE.
 
-configs tested: 136
-configs skipped: 3
+Can't we fix this once and for all?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Seriously, "imply" has been nothing but a major PITA since day one,
+and all to save 22 kb.  I can't think of another subsystem which
+tolerates so much pain for so little gain.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210803
-sh                           se7751_defconfig
-arc                    vdk_hs38_smp_defconfig
-m68k                       bvme6000_defconfig
-arm                         mv78xx0_defconfig
-powerpc                     kmeter1_defconfig
-sh                     sh7710voipgw_defconfig
-ia64                                defconfig
-x86_64                            allnoconfig
-riscv                               defconfig
-arm                         nhk8815_defconfig
-arm                  colibri_pxa300_defconfig
-arm                     davinci_all_defconfig
-sh                           se7750_defconfig
-sh                         apsh4a3a_defconfig
-riscv                            allyesconfig
-powerpc                     powernv_defconfig
-mips                         bigsur_defconfig
-openrisc                 simple_smp_defconfig
-arm                        spear3xx_defconfig
-arc                          axs103_defconfig
-sh                           se7724_defconfig
-m68k                         apollo_defconfig
-arm                       cns3420vb_defconfig
-arm                          iop32x_defconfig
-mips                 decstation_r4k_defconfig
-arm                        trizeps4_defconfig
-sh                           se7722_defconfig
-arm                     eseries_pxa_defconfig
-sh                          r7780mp_defconfig
-sh                            titan_defconfig
-powerpc                    socrates_defconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-sh                        sh7763rdp_defconfig
-sh                          sdk7786_defconfig
-riscv                    nommu_k210_defconfig
-arm                          badge4_defconfig
-arm                              alldefconfig
-powerpc                 xes_mpc85xx_defconfig
-m68k                        mvme16x_defconfig
-mips                       rbtx49xx_defconfig
-powerpc                     ksi8560_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                      bamboo_defconfig
-arm                          ixp4xx_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                  iss476-smp_defconfig
-powerpc                     akebono_defconfig
-nds32                             allnoconfig
-powerpc                    klondike_defconfig
-mips                       bmips_be_defconfig
-riscv                             allnoconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20210803
-x86_64               randconfig-a004-20210803
-x86_64               randconfig-a006-20210803
-x86_64               randconfig-a003-20210803
-x86_64               randconfig-a001-20210803
-x86_64               randconfig-a005-20210803
-i386                 randconfig-a004-20210803
-i386                 randconfig-a005-20210803
-i386                 randconfig-a002-20210803
-i386                 randconfig-a006-20210803
-i386                 randconfig-a001-20210803
-i386                 randconfig-a003-20210803
-i386                 randconfig-a012-20210803
-i386                 randconfig-a011-20210803
-i386                 randconfig-a015-20210803
-i386                 randconfig-a013-20210803
-i386                 randconfig-a014-20210803
-i386                 randconfig-a016-20210803
-i386                 randconfig-a012-20210802
-i386                 randconfig-a011-20210802
-i386                 randconfig-a015-20210802
-i386                 randconfig-a013-20210802
-i386                 randconfig-a014-20210802
-i386                 randconfig-a016-20210802
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Thanks,
+Richard
 
-clang tested configs:
-x86_64               randconfig-c001-20210803
-x86_64               randconfig-c001-20210802
-x86_64               randconfig-a002-20210802
-x86_64               randconfig-a004-20210802
-x86_64               randconfig-a006-20210802
-x86_64               randconfig-a003-20210802
-x86_64               randconfig-a001-20210802
-x86_64               randconfig-a005-20210802
-x86_64               randconfig-a012-20210803
-x86_64               randconfig-a016-20210803
-x86_64               randconfig-a013-20210803
-x86_64               randconfig-a011-20210803
-x86_64               randconfig-a014-20210803
-x86_64               randconfig-a015-20210803
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> I would suggest we merge that first and then raise the question
+> about whether to give up on tinyfication on the summit list, there are a few
+> other things that have come up that would also benefit from trying less hard,
+> but if we overdo this, we can get to the point of hurting even systems that are
+> otherwise still well supported (64MB MIPS/ARMv5 SoCs, small boot partitions,
+> etc.).
+> 
+>         Arnd
