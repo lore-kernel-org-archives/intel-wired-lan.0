@@ -1,60 +1,112 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 3 Aug 2021 09:14:34 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <20210803155556.GD32663@hoboy.vegasvil.org>
-References: <20210802145937.1155571-1-arnd@kernel.org>
- <20210802164907.GA9832@hoboy.vegasvil.org>
- <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
- <20210802230921.GA13623@hoboy.vegasvil.org>
- <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
- <20210803155556.GD32663@hoboy.vegasvil.org>
-Message-ID: <20210803161434.GE32663@hoboy.vegasvil.org>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 04 Aug 2021 00:36:53 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ db41c826ca93574d2eb117059b3592fb80361c66
+Message-ID: <610970a5.k+DaoMzqt3SceePr%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 03, 2021 at 08:55:56AM -0700, Richard Cochran wrote:
-> On Tue, Aug 03, 2021 at 08:59:02AM +0200, Arnd Bergmann wrote:
-> > It may well be a lost cause, but a build fix is not the time to nail down
-> > that decision. The fix I proposed (with the added MAY_USE_PTP_1588_CLOCK
-> > symbol) is only two extra lines and leaves everything else working for the
-> > moment.
-> 
-> Well, then we'll have TWO ugly and incomprehensible Kconfig hacks,
-> imply and MAY_USE.
-> 
-> Can't we fix this once and for all?
-> 
-> Seriously, "imply" has been nothing but a major PITA since day one,
-> and all to save 22 kb.  I can't think of another subsystem which
-> tolerates so much pain for so little gain.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: db41c826ca93574d2eb117059b3592fb80361c66  igc: Add support for PTP getcrosststamp()
 
-Here is what I want to have, in accordance with the KISS principle:
+elapsed time: 837m
 
-config PTP_1588_CLOCK
-	bool "PTP clock support"
-	select NET
-	select POSIX_TIMERS
-	select PPS
-	select NET_PTP_CLASSIFY
+configs tested: 83
+configs skipped: 3
 
-# driver variant 1:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-config ACME_MAC
-	select PTP_1588_CLOCK
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                          pxa3xx_defconfig
+sh                           se7751_defconfig
+arm                         assabet_defconfig
+arm                          pxa910_defconfig
+powerpc                 mpc8315_rdb_defconfig
+arm                            dove_defconfig
+h8300                            alldefconfig
+sh                           se7619_defconfig
+powerpc                    socrates_defconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+sh                        sh7763rdp_defconfig
+sh                          sdk7786_defconfig
+powerpc                 mpc832x_mds_defconfig
+sh                   sh7770_generic_defconfig
+ia64                            zx1_defconfig
+arm                        neponset_defconfig
+sh                           se7721_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+x86_64                            allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a012-20210802
+i386                 randconfig-a011-20210802
+i386                 randconfig-a015-20210802
+i386                 randconfig-a013-20210802
+i386                 randconfig-a014-20210802
+i386                 randconfig-a016-20210802
+x86_64               randconfig-a002-20210803
+x86_64               randconfig-a004-20210803
+x86_64               randconfig-a006-20210803
+x86_64               randconfig-a003-20210803
+x86_64               randconfig-a001-20210803
+x86_64               randconfig-a005-20210803
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-# driver variant 2:
+clang tested configs:
+x86_64               randconfig-c001-20210803
 
-config ACME_MAC
-
-config ACME_MAC_PTP
-	depends on ACME_MAC
-	select PTP_1588_CLOCK
-
-Hm?	
-
-Thanks,
-Richard
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
