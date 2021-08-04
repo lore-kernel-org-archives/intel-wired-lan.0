@@ -1,42 +1,72 @@
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Wed, 4 Aug 2021 17:21:05 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v3] ethernet: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <20210804142814.GB1645@hoboy.vegasvil.org>
-References: <20210804121318.337276-1-arnd@kernel.org>
- <20210804142814.GB1645@hoboy.vegasvil.org>
-Message-ID: <CAK8P3a1EBwd+DvqnQSHL03zqaoRz_bhxj6TGw2ivpWLDT7jorw@mail.gmail.com>
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Date: Wed,  4 Aug 2021 12:12:42 -0700
+Subject: [Intel-wired-lan] [PATCH net] ice: Stop processing VF messages
+ during teardown
+Message-ID: <20210804191242.871950-1-anirudh.venkataramanan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 4, 2021 at 4:28 PM Richard Cochran <richardcochran@gmail.com> wrote:
-> > @@ -87,8 +87,8 @@ config E1000E_HWTS
-> >  config IGB
-> >       tristate "Intel(R) 82575/82576 PCI-Express Gigabit Ethernet support"
-> >       depends on PCI
-> > -     imply PTP_1588_CLOCK
-> > -     select I2C
-> > +     depends on PTP_1588_CLOCK_OPTIONAL
-> > +     depends on I2C
->
-> This little i2c bit sneaks in, but I guess you considered any possible
-> trouble with it?
+When VFs are setup and torn down in quick succession, it is possible
+that a VF is torn down by the PF while the VF's virtchnl requests are
+still in the PF's mailbox ring. Processing the VF's virtchnl request
+when the VF itself doesn't exist results in undefined behavior. Fix
+this by adding a check to stop processing virtchnl requests when VF
+teardown is in progress.
 
-Good catch!
+Fixes: ddf30f7ff840 ("ice: Add handler to configure SR-IOV")
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h             | 1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 7 +++++++
+ 2 files changed, 8 insertions(+)
 
-I did need this with v2, as it was causing a circular dependency against
-(IIRC) CONFIG_MLXSW_I2C, but I'm fairly sure it's not needed any
-more after everything else uses 'depends on' now.
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 5517e13..e452397 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -240,6 +240,7 @@ enum ice_pf_state {
+ 	ICE_VFLR_EVENT_PENDING,
+ 	ICE_FLTR_OVERFLOW_PROMISC,
+ 	ICE_VF_DIS,
++	ICE_VF_DEINIT_IN_PROGRESS,
+ 	ICE_CFG_BUSY,
+ 	ICE_SERVICE_SCHED,
+ 	ICE_SERVICE_DIS,
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 85d98a8..9779519 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -499,6 +499,8 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	struct ice_hw *hw = &pf->hw;
+ 	unsigned int tmp, i;
+ 
++	set_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
++
+ 	if (!pf->vf)
+ 		return;
+ 
+@@ -567,6 +569,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ 				i);
+ 
+ 	clear_bit(ICE_VF_DIS, pf->state);
++	clear_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
+ 	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
+ }
+ 
+@@ -4527,6 +4530,10 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	struct device *dev;
+ 	int err = 0;
+ 
++	/* if de-init is underway, don't process messages from VF */
++	if (test_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state))
++		return;
++
+ 	dev = ice_pf_to_dev(pf);
+ 	if (ice_validate_vf_id(pf, vf_id)) {
+ 		err = -EINVAL;
+-- 
+2.31.1
 
-I'm happy to resend a v4 without that change, as it doesn't belong in here,
-or we just leave it because it is correct after all, depending on what the Intel
-ethernet people prefer.
-
-> Acked-by: Richard Cochran <richardcochran@gmail.com>
-
-Thanks,
-
-      Arnd
