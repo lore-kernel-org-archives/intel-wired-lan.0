@@ -1,57 +1,137 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 4 Aug 2021 13:18:48 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <CAK8P3a06enZOf=XyZ+zcAwBczv41UuCTz+=0FMf2gBz1_cOnZQ@mail.gmail.com>
-References: <20210802145937.1155571-1-arnd@kernel.org>
- <20210802164907.GA9832@hoboy.vegasvil.org>
- <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
- <20210802230921.GA13623@hoboy.vegasvil.org>
- <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
- <20210803155556.GD32663@hoboy.vegasvil.org>
- <20210803161434.GE32663@hoboy.vegasvil.org>
- <CAK8P3a2Wt9gnO4Ts_4Jw1+qpBj8HQc50jU2szjmR8MmZL9wrgQ@mail.gmail.com>
- <CO1PR11MB50892EAF3C871F6934B85852D6F09@CO1PR11MB5089.namprd11.prod.outlook.com>
- <CAK8P3a06enZOf=XyZ+zcAwBczv41UuCTz+=0FMf2gBz1_cOnZQ@mail.gmail.com>
-Message-ID: <CAK8P3a2=pLt9iwE1xw5yhk=DA_i5HLsf5q94GQ2BCG48rS45jQ@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 04 Aug 2021 19:21:27 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS WITH
+ WARNING 6452b881d66ef372a44fedea9d6190d0a48003ee
+Message-ID: <610a7837.BUq+B7V3HvB5YyeG%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 3, 2021 at 8:27 PM Arnd Bergmann <arnd@kernel.org> wrote:
->
-> On Tue, Aug 3, 2021 at 7:19 PM Keller, Jacob E <jacob.e.keller@intel.com> wrote:
-> > > On Tue, Aug 3, 2021 at 6:14 PM Richard Cochran <richardcochran@gmail.com> wrote:
->
-> > There is an alternative solution to fixing the imply keyword:
-> >
-> > Make the drivers use it properly by *actually* conditionally enabling the feature only when IS_REACHABLE, i.e. fix ice so that it uses IS_REACHABLE instead of IS_ENABLED, and so that its stub implementation in ice_ptp.h actually just silently does nothing but returns 0 to tell the rest of the driver things are fine.
->
-> I would consider IS_REACHABLE() part of the problem, not the solution, it makes
-> things magically build, but then surprises users at runtime when they do not get
-> the intended behavior.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 6452b881d66ef372a44fedea9d6190d0a48003ee  igc: Add support for PTP getcrosststamp()
 
-Case in point: two patches from Yangbo Lu that call into the ptp core
-from built-in
-network code look like they could never have worked with CONFIG_PTP_1588_CLOCK,
-but did not cause a link failure because of the IS_REACHABLE() check, see
-commit d7c088265588 ("net: socket: support hardware timestamp conversion to
-PHC bound") and c156174a6707 ("ethtool: add a new command for getting PHC
-virtual clocks").
+possible Warning in current branch:
 
-I found that by testing my patch that turns the IS_REACHABLE() back into
-IS_ENABLED() and got
+net/ethtool/netlink.c:67 ethnl_ops_complete() error: we previously assumed 'dev' could be null (see line 64)
 
-aarch64-linux-ld: net/socket.o: in function `__sock_recv_timestamp':
-socket.c:(.text+0x1f20): undefined reference to `ptp_convert_timestamp'
-aarch64-linux-ld: net/ethtool/common.o: in function `ethtool_get_phc_vclocks':
-common.c:(.text+0x35c): undefined reference to `ptp_get_vclocks_index'
+Warning ids grouped by kconfigs:
 
-I added a workaround to my patch now to keep it working as before, but this
-needs to be fixed properly. The easiest way would be to no longer support
-modular PTP at all as Richard would like to do anyway, but I have not
-attempted other fixes.
+gcc_recent_errors
+`-- openrisc-randconfig-m031-20210803
+    `-- net-ethtool-netlink.c-ethnl_ops_complete()-error:we-previously-assumed-dev-could-be-null-(see-line-)
 
-       Arnd
+elapsed time: 837m
+
+configs tested: 101
+configs skipped: 3
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                           se7724_defconfig
+sh                         microdev_defconfig
+m68k                           sun3_defconfig
+mips                          ath79_defconfig
+openrisc                 simple_smp_defconfig
+arm                        spear3xx_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                      bamboo_defconfig
+powerpc                      acadia_defconfig
+arm                       versatile_defconfig
+ia64                         bigsur_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+x86_64                            allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210804
+i386                 randconfig-a004-20210804
+i386                 randconfig-a002-20210804
+i386                 randconfig-a006-20210804
+i386                 randconfig-a003-20210804
+i386                 randconfig-a001-20210804
+x86_64               randconfig-a012-20210804
+x86_64               randconfig-a016-20210804
+x86_64               randconfig-a011-20210804
+x86_64               randconfig-a013-20210804
+x86_64               randconfig-a014-20210804
+x86_64               randconfig-a015-20210804
+i386                 randconfig-a012-20210804
+i386                 randconfig-a011-20210804
+i386                 randconfig-a015-20210804
+i386                 randconfig-a013-20210804
+i386                 randconfig-a014-20210804
+i386                 randconfig-a016-20210804
+i386                 randconfig-a012-20210803
+i386                 randconfig-a011-20210803
+i386                 randconfig-a015-20210803
+i386                 randconfig-a013-20210803
+i386                 randconfig-a014-20210803
+i386                 randconfig-a016-20210803
+x86_64               randconfig-a002-20210803
+x86_64               randconfig-a004-20210803
+x86_64               randconfig-a006-20210803
+x86_64               randconfig-a003-20210803
+x86_64               randconfig-a001-20210803
+x86_64               randconfig-a005-20210803
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+x86_64               randconfig-c001-20210804
+x86_64               randconfig-a012-20210803
+x86_64               randconfig-a016-20210803
+x86_64               randconfig-a013-20210803
+x86_64               randconfig-a011-20210803
+x86_64               randconfig-a014-20210803
+x86_64               randconfig-a015-20210803
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
