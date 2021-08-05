@@ -1,103 +1,84 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 5 Aug 2021 17:43:22 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5] ethernet: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <20210805133615.1637246-1-arnd@kernel.org>
-References: <20210805133615.1637246-1-arnd@kernel.org>
-Message-ID: <CO1PR11MB50892BAC1A4F74EBFF6D9C21D6F29@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Thu, 5 Aug 2021 18:30:53 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: don't remove
+ netdev->dev_addr from uc sync list
+In-Reply-To: <5a641af5-e3fc-3b7c-6ddd-ef25e3f4a1ad@molgen.mpg.de>
+References: <20210728203457.325482-1-brett.creeley@intel.com>
+ <5a641af5-e3fc-3b7c-6ddd-ef25e3f4a1ad@molgen.mpg.de>
+Message-ID: <9e0bce1b48e0c5f6d16757054ca12a8424c75991.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, 2021-08-05 at 08:51 +0200, Paul Menzel wrote:
+> Dear Brett,
+> 
+> 
+> Am 28.07.21 um 22:34 schrieb Brett Creeley:
+> > In some circumstances, such as with bridging, it's possible that
+> > the
+> > stack will add the device's own MAC address to its unicast address
+> > list.
+> > 
+> > If, later, the stack deletes this address, the driver will receive
+> > a
+> > request to remove this address.
+> > 
+> > The driver stores its current MAC address as part of the VSI MAC
+> > filter
+> > list instead of separately. So, this causes a problem when the
+> > device's
+> > MAC address is deleted unexpectedly, which results in traffic
+> > failure
+> > in some cases.
+> > 
+> > Fix this by making sure to not delete the netdev->dev_addr during
+> > MAC address sync.
+> 
+> Is it easy to reproduce?
 
+Yes, I will add more details when I re-spin the patch.
 
-> -----Original Message-----
-> From: Arnd Bergmann <arnd@kernel.org>
-> Sent: Thursday, August 05, 2021 6:32 AM
-> To: David S. Miller <davem@davemloft.net>; Jakub Kicinski <kuba@kernel.org>;
-> Richard Cochran <richardcochran@gmail.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>; Shannon Nelson
-> <snelson@pensando.io>; Keller, Jacob E <jacob.e.keller@intel.com>; Andrew
-> Lunn <andrew@lunn.ch>; Vladimir Oltean <olteanv@gmail.com>; Claudiu Manoil
-> <claudiu.manoil@nxp.com>; Alexandre Belloni
-> <alexandre.belloni@bootlin.com>; Yisen Zhuang <yisen.zhuang@huawei.com>;
-> Brandeburg, Jesse <jesse.brandeburg@intel.com>; netdev at vger.kernel.org;
-> linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: [PATCH net-next v5] ethernet: fix PTP_1588_CLOCK dependencies
 > 
-> From: Arnd Bergmann <arnd@arndb.de>
+> > There is a possibility of a race condition between .set_mac and
+> > .set_rx_mode. Fix this by calling netif_addr_lock_bh() and
+> > netif_addr_unlock_bh() on the device's netdev when the netdev-
+> > >dev_addr
+> > is going to be updated in .set_mac.
+> > 
+> > Also, change the netdev_warn() to netdev_dbg() when the device is
+> > already using the requested mac in .set_mac. The dev_warn() was
+> > causing
+> > a lot of unnecessary noise when configuring/unconfiguring bridging
+> > and
+> > provides no benefit.
+> > 
+> > Lastly, instead of using memcpy() to save the netdev->dev_addr, use
+> > ether_addr_copy() in .set_mac.
 > 
-> The 'imply' keyword does not do what most people think it does, it only
-> politely asks Kconfig to turn on another symbol, but does not prevent
-> it from being disabled manually or built as a loadable module when the
-> user is built-in. In the ICE driver, the latter now causes a link failure:
-> 
-> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
-> `ice_eth_ioctl':
-> ice_main.c:(.text+0x13b0): undefined reference to `ice_ptp_get_ts_config'
-> ice_main.c:(.text+0x13b0): relocation truncated to fit: R_AARCH64_CALL26
-> against undefined symbol `ice_ptp_get_ts_config'
-> aarch64-linux-ld: ice_main.c:(.text+0x13bc): undefined reference to
-> `ice_ptp_set_ts_config'
-> ice_main.c:(.text+0x13bc): relocation truncated to fit: R_AARCH64_CALL26
-> against undefined symbol `ice_ptp_set_ts_config'
-> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
-> `ice_prepare_for_reset':
-> ice_main.c:(.text+0x31fc): undefined reference to `ice_ptp_release'
-> ice_main.c:(.text+0x31fc): relocation truncated to fit: R_AARCH64_CALL26 against
-> undefined symbol `ice_ptp_release'
-> aarch64-linux-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function
-> `ice_rebuild':
-> 
-> This is a recurring problem in many drivers, and we have discussed
-> it several times befores, without reaching a consensus. I'm providing
-> a link to the previous email thread for reference, which discusses
-> some related problems.
-> 
-> To solve the dependency issue better than the 'imply' keyword, introduce a
-> separate Kconfig symbol "CONFIG_PTP_1588_CLOCK_OPTIONAL" that any driver
-> can depend on if it is able to use PTP support when available, but works
-> fine without it. Whenever CONFIG_PTP_1588_CLOCK=m, those drivers are
-> then prevented from being built-in, the same way as with a 'depends on
-> PTP_1588_CLOCK || !PTP_1588_CLOCK' dependency that does the same trick,
-> but that can be rather confusing when you first see it.
-> 
-> Since this should cover the dependencies correctly, the IS_REACHABLE()
-> hack in the header is no longer needed now, and can be turned back
-> into a normal IS_ENABLED() check. Any driver that gets the dependency
-> wrong will now cause a link time failure rather than being unable to use
-> PTP support when that is in a loadable module.
-> 
-> However, the two recently added ptp_get_vclocks_index() and
-> ptp_convert_timestamp() interfaces are only called from builtin code with
-> ethtool and socket timestamps, so keep the current behavior by stubbing
-> those out completely when PTP is in a loadable module. This should be
-> addressed properly in a follow-up.
-> 
-> As Richard suggested, we may want to actually turn PTP support into a
-> 'bool' option later on, preventing it from being a loadable module
-> altogether, which would be one way to solve the problem with the ethtool
-> interface.
-> 
-> Fixes: 06c16d89d2cb ("ice: register 1588 PTP clock device object for E810 devices")
-> Link: https://lore.kernel.org/netdev/20210804121318.337276-1-
-> arnd at kernel.org/
-> Link:
-> https://lore.kernel.org/netdev/CAK8P3a06enZOf=XyZ+zcAwBczv41UuCTz+=0FMf
-> 2gBz1_cOnZQ at mail.gmail.com/
-> Link: https://lore.kernel.org/netdev/CAK8P3a3=eOxE-K25754+fB_-
-> i_0BZzf9a9RfPTX3ppSwu9WZXw at mail.gmail.com/
-> Link: https://lore.kernel.org/netdev/20210726084540.3282344-1-
-> arnd at kernel.org/
-> Acked-by: Shannon Nelson <snelson@pensando.io>
-> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-> Acked-by: Richard Cochran <richardcochran@gmail.com>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> It?d be great, if you split the three items out into separate
+> patches, 
+> and submit it in a patch series.
 
+I'm thinking that this is actually a 2 patch series. With the fix
+to not delete the device's address, the netdev_warn() was causing
+a lot of noise. Based on this I believe that the netdev_warn() to
+netdev_dbg() should be part of the same patch that fixes the
+previously mentioned problem.
 
-v5 looks great to me.
+However, I will send the ether_addr_copy() change to net-next/ as
+a separate patch since it is not fixing anything, just a general
+improvement.
 
-Thanks,
-Jake
+Hopefully this works for you and thanks for the feedback!
+
+Brett
+> 
+> 
+> Kind regards,
+> 
+> Paul
+> 
+<snip>
