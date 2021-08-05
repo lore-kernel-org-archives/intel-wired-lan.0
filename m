@@ -1,18 +1,10 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 4 Aug 2021 20:53:05 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] ethernet/intel: fix
- PTP_1588_CLOCK dependencies
-In-Reply-To: <20210803205455.GA3517@hoboy.vegasvil.org>
-References: <20210802145937.1155571-1-arnd@kernel.org>
- <20210802164907.GA9832@hoboy.vegasvil.org>
- <bd631e36-1701-b120-a9b0-8825d14cc694@intel.com>
- <20210802230921.GA13623@hoboy.vegasvil.org>
- <CAK8P3a2XjgbEkYs6R7Q3RCZMV7v90gu_v82RVfFVs-VtUzw+_w@mail.gmail.com>
- <20210803155556.GD32663@hoboy.vegasvil.org>
- <20210803161434.GE32663@hoboy.vegasvil.org>
- <CAK8P3a2Wt9gnO4Ts_4Jw1+qpBj8HQc50jU2szjmR8MmZL9wrgQ@mail.gmail.com>
- <20210803205455.GA3517@hoboy.vegasvil.org>
-Message-ID: <CO1PR11MB5089005017FE714B8A37F9B0D6F19@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 5 Aug 2021 06:45:32 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: don't remove
+ netdev->dev_addr from uc sync list
+In-Reply-To: <20210728203457.325482-1-brett.creeley@intel.com>
+References: <20210728203457.325482-1-brett.creeley@intel.com>
+Message-ID: <BYAPR11MB3367123D052CB0235EDB8B4FFCF29@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,41 +12,47 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-
 > -----Original Message-----
-> From: Richard Cochran <richardcochran@gmail.com>
-> Sent: Tuesday, August 03, 2021 1:55 PM
-> To: Arnd Bergmann <arnd@kernel.org>
-> Cc: Nicolas Pitre <nico@fluxnic.net>; Keller, Jacob E <jacob.e.keller@intel.com>;
-> Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
-> Kicinski <kuba@kernel.org>; Arnd Bergmann <arnd@arndb.de>; Kurt
-> Kanzenbach <kurt@linutronix.de>; Saleem, Shiraz <shiraz.saleem@intel.com>;
-> Ertman, David M <david.m.ertman@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH net-next v2] ethernet/intel: fix PTP_1588_CLOCK
-> dependencies
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Brett Creeley
+> Sent: Thursday, July 29, 2021 2:05 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net] ice: don't remove netdev->dev_addr
+> from uc sync list
 > 
+> In some circumstances, such as with bridging, it's possible that the stack will
+> add the device's own MAC address to its unicast address list.
 > 
-> On Tue, Aug 03, 2021 at 07:00:49PM +0200, Arnd Bergmann wrote:
+> If, later, the stack deletes this address, the driver will receive a request to
+> remove this address.
 > 
-> > If you turn all those 'select' lines into 'depends on', this will work, but it's
-> > not actually much different from what I'm suggesting.
+> The driver stores its current MAC address as part of the VSI MAC filter list
+> instead of separately. So, this causes a problem when the device's MAC
+> address is deleted unexpectedly, which results in traffic failure in some
+> cases.
 > 
-> "depends" instead of "select" works for me.  I just want it simple and clear.
+> Fix this by making sure to not delete the netdev->dev_addr during MAC
+> address sync.
 > 
-> > Maybe we can do it
-> > in two steps: first fix the build failure by replacing all the 'imply'
-> > statements
-> > with the correct dependencies, and then you send a patch on top that
-> > turns PPS and PTP_1588_CLOCK into bool options.
+> There is a possibility of a race condition between .set_mac and
+> .set_rx_mode. Fix this by calling netif_addr_lock_bh() and
+> netif_addr_unlock_bh() on the device's netdev when the netdev->dev_addr
+> is going to be updated in .set_mac.
 > 
-> Sounds good.
+> Also, change the netdev_warn() to netdev_dbg() when the device is already
+> using the requested mac in .set_mac. The dev_warn() was causing a lot of
+> unnecessary noise when configuring/unconfiguring bridging and provides no
+> benefit.
 > 
-> Thanks,
-> Richard
+> Lastly, instead of using memcpy() to save the netdev->dev_addr, use
+> ether_addr_copy() in .set_mac.
+> 
+> Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump
+> version")
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 25 +++++++++++++++--------
+>  1 file changed, 16 insertions(+), 9 deletions(-)
+> 
 
-Works for me too.
-
-Thanks,
-Jake
+Tested-by: Gurucharan  G <Gurucharanx.g@intel.com> (A Contingent Worker at Intel)
