@@ -1,49 +1,48 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Fri, 6 Aug 2021 10:55:24 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 11/12] ice: switchdev slow
- path
-In-Reply-To: <20210625024501.6126-12-michal.swiatkowski@linux.intel.com>
-References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
- <20210625024501.6126-12-michal.swiatkowski@linux.intel.com>
-Message-ID: <MW3PR11MB455438B88C21F2340A3A7EDB9CF39@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Fri, 6 Aug 2021 11:19:37 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: Prevent probing virtual
+ functions
+In-Reply-To: <BYAPR11MB3367B5404EC9C3C9708E7E93FCF39@BYAPR11MB3367.namprd11.prod.outlook.com>
+References: <20210728193910.644656-1-anirudh.venkataramanan@intel.com>
+ <BYAPR11MB3367B5404EC9C3C9708E7E93FCF39@BYAPR11MB3367.namprd11.prod.outlook.com>
+Message-ID: <SJ0PR11MB5629B347F3514438C1D6C7F7ABF39@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Michal Swiatkowski
->Sent: Friday, June 25, 2021 8:15 AM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v3 11/12] ice: switchdev slow path
->
->From: Grzegorz Nitka <grzegorz.nitka@intel.com>
->
->Slow path means allowing packet to go from uplink to representor and from
->representor to correct VF on Rx site and from VF to representor and to uplink
->on Tx site.
->
->To acomplish this driver, has to set correct Tx descriptor. When packet is sent
->from representor to VF, destination should be set to VF VSI. When packet is
->sent from uplink port destination should be uplink to bypass switch
->infrastructure and send packet outside.
->
->On Rx site driver should check source VSI field from Rx descriptor and based
->on that forward packed to correct netdev. To allow this there is a target
->netdevs table in control plane VSI struct.
->
->Co-developed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
->---
-> drivers/net/ethernet/intel/ice/ice_eswitch.c  | 79 +++++++++++++++++++
->drivers/net/ethernet/intel/ice/ice_eswitch.h  | 26 ++++++
-> .../net/ethernet/intel/ice/ice_lan_tx_rx.h    | 43 ++++++++++
-> drivers/net/ethernet/intel/ice/ice_repr.c     |  1 +
-> drivers/net/ethernet/intel/ice/ice_txrx.c     |  3 +
-> drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  4 +-
-> 6 files changed, 155 insertions(+), 1 deletion(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+> > -----Original Message-----
+> > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> > Of Anirudh Venkataramanan
+> > Sent: Thursday, July 29, 2021 1:09 AM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [PATCH net] ice: Prevent probing virtual
+> > functions
+> >
+> > The userspace utility "driverctl" can be used to change/override the
+> > system's default driver choices. This is useful in some situations
+> > (buggy driver, old driver missing a device ID, trying a workaround,
+> > etc.) where the user needs to load a different driver.
+> >
+> > However, this is also prone to user error, where a driver is mapped to
+> > a device it's not designed to drive. For example, if the ice driver is
+> > mapped to driver iavf devices, the ice driver crashes.
+> >
+> > Add a check to return an error if the ice driver is being used to
+> > probe a virtual function.
+> >
+> > Fixes: 837f08fdecbe ("ice: Add basic driver framework for Intel(R)
+> > E800
+> > Series")
+> > Signed-off-by: Anirudh Venkataramanan
+> > <anirudh.venkataramanan@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/ice/ice_main.c | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> >
+> 
+> Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker
+> at Intel) _______________________________________________
+
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
