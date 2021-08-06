@@ -1,123 +1,130 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 7 Aug 2021 00:34:59 +0800
-Subject: [Intel-wired-lan] [PATCH v4 intel-next 1/6] ice: split ice_ring
- onto Tx/Rx separate structs
-In-Reply-To: <20210806095539.34423-2-maciej.fijalkowski@intel.com>
-References: <20210806095539.34423-2-maciej.fijalkowski@intel.com>
-Message-ID: <202108070003.U9G2g9hw-lkp@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
+Date: Fri,  6 Aug 2021 09:51:27 -0700
+Subject: [Intel-wired-lan] [PATCH net v2] ice: don't remove netdev->dev_addr
+ from uc sync list
+Message-ID: <20210806165127.687736-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Maciej,
+In some circumstances, such as with bridging, it's possible that the
+stack will add the device's own MAC address to its unicast address list.
 
-Thank you for the patch! Perhaps something to improve:
+If, later, the stack deletes this address, the driver will receive a
+request to remove this address.
 
-[auto build test WARNING on ipvs/master]
-[also build test WARNING on v5.14-rc4 next-20210805]
-[cannot apply to tnguy-next-queue/dev-queue sparc-next/master]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+The driver stores its current MAC address as part of the VSI MAC filter
+list instead of separately. So, this causes a problem when the device's
+MAC address is deleted unexpectedly, which results in traffic failure in
+some cases.
 
-url:    https://github.com/0day-ci/linux/commits/Maciej-Fijalkowski/XDP_TX-improvements-for-ice/20210806-181155
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/horms/ipvs.git master
-config: x86_64-randconfig-a006-20210804 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 42b9c2a17a0b63cccf3ac197a82f91b28e53e643)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/8d6527ccf7e797a316a0ff3d8713d756ebc56e88
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Maciej-Fijalkowski/XDP_TX-improvements-for-ice/20210806-181155
-        git checkout 8d6527ccf7e797a316a0ff3d8713d756ebc56e88
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=x86_64 
+The following configuration steps will reproduce the previously
+mentioned problem:
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+> ip link set eth0 up
+> ip link add dev br0 type bridge
+> ip link set br0 up
+> ip addr flush dev eth0
+> ip link set eth0 master br0
+> echo 1 > /sys/class/net/br0/bridge/vlan_filtering
+> modprobe -r veth
+> modprobe -r bridge
+> ip addr add 192.168.1.100/24 dev eth0
 
-All warnings (new ones prefixed by >>):
+The following ping command fails due to the netdev->dev_addr being
+deleted when removing the bridge module.
+> ping <link partner>
 
->> drivers/net/ethernet/intel/ice/ice_main.c:5649:7: warning: variable 'pkts' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-                   if (ring)
-                       ^~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5651:28: note: uninitialized use occurs here
-                   vsi_stats->tx_packets += pkts;
-                                            ^~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5649:3: note: remove the 'if' if its condition is always true
-                   if (ring)
-                   ^~~~~~~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5646:11: note: initialize the variable 'pkts' to silence this warning
-                   u64 pkts, bytes;
-                           ^
-                            = 0
->> drivers/net/ethernet/intel/ice/ice_main.c:5649:7: warning: variable 'bytes' is used uninitialized whenever 'if' condition is false [-Wsometimes-uninitialized]
-                   if (ring)
-                       ^~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5652:26: note: uninitialized use occurs here
-                   vsi_stats->tx_bytes += bytes;
-                                          ^~~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5649:3: note: remove the 'if' if its condition is always true
-                   if (ring)
-                   ^~~~~~~~~
-   drivers/net/ethernet/intel/ice/ice_main.c:5646:18: note: initialize the variable 'bytes' to silence this warning
-                   u64 pkts, bytes;
-                                  ^
-                                   = 0
-   2 warnings generated.
---
->> drivers/net/ethernet/intel/ice/ice_ethtool.c:1342:7: warning: variable 'ring' is uninitialized when used here [-Wuninitialized]
-                   if (ring) {
-                       ^~~~
-   drivers/net/ethernet/intel/ice/ice_ethtool.c:1323:23: note: initialize the variable 'ring' to silence this warning
-           struct ice_ring *ring;
-                                ^
-                                 = NULL
-   1 warning generated.
+Fix this by making sure to not delete the netdev->dev_addr during MAC
+address sync. After fixing this issue it was noticed that the
+netdev_warn() in .set_mac was overly verbose, so make it at
+netdev_dbg().
 
+Also, there is a possibility of a race condition between .set_mac and
+.set_rx_mode. Fix this by calling netif_addr_lock_bh() and
+netif_addr_unlock_bh() on the device's netdev when the netdev->dev_addr
+is going to be updated in .set_mac.
 
-vim +5649 drivers/net/ethernet/intel/ice/ice_main.c
-
-  5630	
-  5631	/**
-  5632	 * ice_update_vsi_tx_ring_stats - Update VSI Tx ring stats counters
-  5633	 * @vsi: the VSI to be updated
-  5634	 * @rings: rings to work on
-  5635	 * @count: number of rings
-  5636	 */
-  5637	static void
-  5638	ice_update_vsi_tx_ring_stats(struct ice_vsi *vsi, struct ice_tx_ring **rings,
-  5639				     u16 count)
-  5640	{
-  5641		struct rtnl_link_stats64 *vsi_stats = &vsi->net_stats;
-  5642		u16 i;
-  5643	
-  5644		for (i = 0; i < count; i++) {
-  5645			struct ice_tx_ring *ring;
-  5646			u64 pkts, bytes;
-  5647	
-  5648			ring = READ_ONCE(rings[i]);
-> 5649			if (ring)
-  5650				ice_fetch_u64_stats_per_ring(&ring->syncp, ring->stats, &pkts, &bytes);
-  5651			vsi_stats->tx_packets += pkts;
-  5652			vsi_stats->tx_bytes += bytes;
-  5653			vsi->tx_restart += ring->tx_stats.restart_q;
-  5654			vsi->tx_busy += ring->tx_stats.tx_busy;
-  5655			vsi->tx_linearize += ring->tx_stats.tx_linearize;
-  5656		}
-  5657	}
-  5658	
-
+Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump version")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 36478 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210807/9fc798ca/attachment-0001.bin>
+ drivers/net/ethernet/intel/ice/ice_main.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a9506041eb42..fe2ded775f25 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -191,6 +191,14 @@ static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *vsi = np->vsi;
+ 
++	/* Under some circumstances, we might receive a request to delete our
++	 * own device address from our uc list. Because we store the device
++	 * address in the VSI's MAC filter list, we need to ignore such
++	 * requests and not delete our device address from this list.
++	 */
++	if (ether_addr_equal(addr, netdev->dev_addr))
++		return 0;
++
+ 	if (ice_fltr_add_mac_to_list(vsi, &vsi->tmp_unsync_list, addr,
+ 				     ICE_FWD_TO_VSI))
+ 		return -EINVAL;
+@@ -5124,7 +5132,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 		return -EADDRNOTAVAIL;
+ 
+ 	if (ether_addr_equal(netdev->dev_addr, mac)) {
+-		netdev_warn(netdev, "already using mac %pM\n", mac);
++		netdev_dbg(netdev, "already using mac %pM\n", mac);
+ 		return 0;
+ 	}
+ 
+@@ -5135,6 +5143,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 		return -EBUSY;
+ 	}
+ 
++	netif_addr_lock_bh(netdev);
+ 	/* Clean up old MAC filter. Not an error if old filter doesn't exist */
+ 	status = ice_fltr_remove_mac(vsi, netdev->dev_addr, ICE_FWD_TO_VSI);
+ 	if (status && status != ICE_ERR_DOES_NOT_EXIST) {
+@@ -5144,30 +5153,28 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+ 
+ 	/* Add filter for new MAC. If filter exists, return success */
+ 	status = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
+-	if (status == ICE_ERR_ALREADY_EXISTS) {
++	if (status == ICE_ERR_ALREADY_EXISTS)
+ 		/* Although this MAC filter is already present in hardware it's
+ 		 * possible in some cases (e.g. bonding) that dev_addr was
+ 		 * modified outside of the driver and needs to be restored back
+ 		 * to this value.
+ 		 */
+-		memcpy(netdev->dev_addr, mac, netdev->addr_len);
+ 		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
+-		return 0;
+-	}
+-
+-	/* error if the new filter addition failed */
+-	if (status)
++	else if (status)
++		/* error if the new filter addition failed */
+ 		err = -EADDRNOTAVAIL;
+ 
+ err_update_filters:
+ 	if (err) {
+ 		netdev_err(netdev, "can't set MAC %pM. filter update failed\n",
+ 			   mac);
++		netif_addr_unlock_bh(netdev);
+ 		return err;
+ 	}
+ 
+ 	/* change the netdev's MAC address */
+ 	memcpy(netdev->dev_addr, mac, netdev->addr_len);
++	netif_addr_unlock_bh(netdev);
+ 	netdev_dbg(vsi->netdev, "updated MAC address to %pM\n",
+ 		   netdev->dev_addr);
+ 
+-- 
+2.26.3
+
