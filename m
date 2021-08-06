@@ -1,174 +1,61 @@
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Fri,  6 Aug 2021 10:49:04 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v6 7/9] ice: Allow changing
- lan_en and lb_en on all kinds of filters
-In-Reply-To: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
-References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <1628239746-17380-8-git-send-email-wojciech.drewek@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Fri, 6 Aug 2021 09:50:10 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 03/12] ice: introduce VF
+ port representor
+In-Reply-To: <20210625024501.6126-4-michal.swiatkowski@linux.intel.com>
+References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
+ <20210625024501.6126-4-michal.swiatkowski@linux.intel.com>
+Message-ID: <MW3PR11MB4554064E5EC789BC943080A59CF39@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@intel.com>
-
-There is no way to change default lan_en and lb_en flags while
-adding new rule. Add function that allows changing these flags
-on rule determined by rule id and recipe id.
-
-Function checks if the rule is presented on regular rules list or
-advance rules list and call the appropriate function to update
-rule entry.
-
-As rules with ICE_SW_LKUP_DFLT recipe aren't tracked in a list,
-implement function which updates flags without searching for rules
-based only on rule id.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_fltr.c | 127 ++++++++++++++++++++++++++++++
- 1 file changed, 127 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c b/drivers/net/ethernet/intel/ice/ice_fltr.c
-index e49378893390..f22ca4354f84 100644
---- a/drivers/net/ethernet/intel/ice/ice_fltr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
-@@ -510,6 +510,133 @@ static u32 ice_fltr_build_action(u16 vsi_id)
- }
- 
- /**
-+ * ice_fltr_find_adv_entry - find advanced rule
-+ * @rules: list of rules
-+ * @rule_id: id of wanted rule
-+ */
-+static struct ice_adv_fltr_mgmt_list_entry *
-+ice_fltr_find_adv_entry(struct list_head *rules, u16 rule_id)
-+{
-+	struct ice_adv_fltr_mgmt_list_entry *entry;
-+
-+	list_for_each_entry(entry, rules, list_entry) {
-+		if (entry->rule_info.fltr_rule_id == rule_id)
-+			return entry;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * ice_fltr_update_adv_rule_flags - update flags on advanced rule
-+ * @vsi: pointer to VSI
-+ * @recipe_id: id of recipe
-+ * @entry: advanced rule entry
-+ * @new_flags: flags to update
-+ */
-+static enum ice_status
-+ice_fltr_update_adv_rule_flags(struct ice_vsi *vsi, u16 recipe_id,
-+			       struct ice_adv_fltr_mgmt_list_entry *entry,
-+			       u32 new_flags)
-+{
-+	struct ice_adv_rule_info *info = &entry->rule_info;
-+	struct ice_sw_act_ctrl *act = &info->sw_act;
-+	u32 action;
-+
-+	if (act->fltr_act != ICE_FWD_TO_VSI)
-+		return ICE_ERR_NOT_SUPPORTED;
-+
-+	action = ice_fltr_build_action(act->fwd_id.hw_vsi_id);
-+
-+	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
-+					  recipe_id, action, info->sw_act.flag,
-+					  act->src, new_flags);
-+}
-+
-+/**
-+ * ice_fltr_find_regular_entry - find regular rule
-+ * @rules: list of rules
-+ * @rule_id: id of wanted rule
-+ */
-+static struct ice_fltr_mgmt_list_entry *
-+ice_fltr_find_regular_entry(struct list_head *rules, u16 rule_id)
-+{
-+	struct ice_fltr_mgmt_list_entry *entry;
-+
-+	list_for_each_entry(entry, rules, list_entry) {
-+		if (entry->fltr_info.fltr_rule_id == rule_id)
-+			return entry;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * ice_fltr_update_regular_rule - update flags on regular rule
-+ * @vsi: pointer to VSI
-+ * @recipe_id: id of recipe
-+ * @entry: regular rule entry
-+ * @new_flags: flags to update
-+ */
-+static enum ice_status
-+ice_fltr_update_regular_rule(struct ice_vsi *vsi, u16 recipe_id,
-+			     struct ice_fltr_mgmt_list_entry *entry,
-+			     u32 new_flags)
-+{
-+	struct ice_fltr_info *info = &entry->fltr_info;
-+	u32 action;
-+
-+	if (info->fltr_act != ICE_FWD_TO_VSI)
-+		return ICE_ERR_NOT_SUPPORTED;
-+
-+	action = ice_fltr_build_action(info->fwd_id.hw_vsi_id);
-+
-+	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
-+					  recipe_id, action, info->flag,
-+					  info->src, new_flags);
-+}
-+
-+/**
-+ * ice_fltr_update_flags - update flags on rule
-+ * @vsi: pointer to VSI
-+ * @rule_id: id of rule
-+ * @recipe_id: id of recipe
-+ * @new_flags: flags to update
-+ *
-+ * Function updates flags on regular and advance rule.
-+ *
-+ * Flags should be a combination of ICE_SINGLE_ACT_LB_ENABLE and
-+ * ICE_SINGLE_ACT_LAN_ENABLE.
-+ */
-+enum ice_status
-+ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
-+		      u32 new_flags)
-+{
-+	struct ice_adv_fltr_mgmt_list_entry *adv_entry;
-+	struct ice_fltr_mgmt_list_entry *regular_entry;
-+	struct ice_hw *hw = &vsi->back->hw;
-+	struct ice_sw_recipe *recp_list;
-+	struct list_head *fltr_rules;
-+
-+	recp_list = &hw->switch_info->recp_list[recipe_id];
-+	if (!recp_list)
-+		return ICE_ERR_DOES_NOT_EXIST;
-+
-+	fltr_rules = &recp_list->filt_rules;
-+	regular_entry = ice_fltr_find_regular_entry(fltr_rules, rule_id);
-+	if (regular_entry)
-+		return ice_fltr_update_regular_rule(vsi, recipe_id,
-+						    regular_entry, new_flags);
-+
-+	adv_entry = ice_fltr_find_adv_entry(fltr_rules, rule_id);
-+	if (adv_entry)
-+		return ice_fltr_update_adv_rule_flags(vsi, recipe_id,
-+						      adv_entry, new_flags);
-+
-+	return ICE_ERR_DOES_NOT_EXIST;
-+}
-+
-+/**
-  * ice_fltr_update_flags_dflt_rule - update flags on default rule
-  * @vsi: pointer to VSI
-  * @rule_id: id of rule
--- 
-1.8.3.1
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Michal Swiatkowski
+>Sent: Friday, June 25, 2021 8:15 AM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net-next v3 03/12] ice: introduce VF port
+>representor
+>
+>Port representor is used to manage VF from host side. To allow it each created
+>representor registers netdevice with random hw address. Also devlink port is
+>created for all representors.
+>
+>Port representor name is created based on switch id or managed by devlink
+>core if devlink port was registered with success.
+>
+>Open and stop ndo ops are implemented to allow managing the VF link state.
+>Link state is tracked in VF struct.
+>
+>Struct ice_netdev_priv is extended by pointer to representor field. This is
+>needed to get correct representor from netdev struct mostly used in ndo calls.
+>
+>Implement helper functions to check if given netdev is netdev of port
+>representor (ice_is_port_repr_netdev) and to get representor from netdev
+>(ice_netdev_to_repr).
+>
+>As driver mostly will create or destroy port representors on all VFs instead of
+>on single one, write functions to add and remove representor for each VF.
+>
+>Representor struct contains pointer to source VSI, which is VSI configured on
+>VF, backpointer to VF, backpointer to netdev, q_vector pointer and
+>metadata_dst which will be used in data path.
+>
+>Co-developed-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+>Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>---
+> drivers/net/ethernet/intel/ice/Makefile       |   3 +-
+> drivers/net/ethernet/intel/ice/ice.h          |   2 +
+> drivers/net/ethernet/intel/ice/ice_repr.c     | 254 ++++++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_repr.h     |  22 ++
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   4 +
+> 6 files changed, 285 insertions(+), 2 deletions(-)  create mode 100644
+>drivers/net/ethernet/intel/ice/ice_repr.c
+> create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.h
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
