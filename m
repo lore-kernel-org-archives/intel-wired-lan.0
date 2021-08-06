@@ -1,64 +1,72 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 6 Aug 2021 07:26:53 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 13/15] iavf: Set RSS LUT and
- key in reset handle path
-In-Reply-To: <20210604165335.33329-13-anthony.l.nguyen@intel.com>
-References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
- <20210604165335.33329-13-anthony.l.nguyen@intel.com>
-Message-ID: <DM8PR11MB5621A235D39CEFA250B87D47ABF39@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Fri,  6 Aug 2021 10:48:57 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/9] advanced switch rule
+ management
+Message-ID: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This series adds support for adding/removing advanced switch filters
+in ice driver. Advanced filters are building blocks for HW acceleration
+of TC orchestration. Add ndo_setup_tc callback implementation for PF and
+VF port representors (when device is configured in switchdev mode).
 
-> From: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
-> 
-> iavf driver should set RSS LUT and key unconditionally in reset path.
-> Currently, the driver does not do that. This patch fixes this issue.
-> 
-> Signed-off-by: Md Fahad Iqbal Polash <md.fahad.iqbal.polash@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index e7b9c64db3b5..892aa22b39da 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -1534,11 +1534,6 @@ static int iavf_reinit_interrupt_scheme(struct
-> iavf_adapter *adapter)
->  	set_bit(__IAVF_VSI_DOWN, adapter->vsi.state);
-> 
->  	iavf_map_rings_to_vectors(adapter);
-> -
-> -	if (RSS_AQ(adapter))
-> -		adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_RSS;
-> -	else
-> -		err = iavf_init_rss(adapter);
->  err:
->  	return err;
->  }
-> @@ -2233,6 +2228,14 @@ static void iavf_reset_task(struct work_struct
-> *work)
->  			goto reset_err;
->  	}
-> 
-> +	if (RSS_AQ(adapter)) {
-> +		adapter->aq_required |= IAVF_FLAG_AQ_CONFIGURE_RSS;
-> +	} else {
-> +		err = iavf_init_rss(adapter);
-> +		if (err)
-> +			goto reset_err;
-> +	}
-> +
->  	adapter->aq_required |= IAVF_FLAG_AQ_GET_CONFIG;
->  	adapter->aq_required |= IAVF_FLAG_AQ_MAP_VECTORS;
-> 
-> --
-> 2.20.1
+Define dummy packet headers to allow adding advanced rules in HW.
+Supported headers, and thus filters, are:
+- MAC + IPv4 + UDP
+- MAC + VLAN + IPv4 + UDP
+- MAC + IPv4 + TCP
+- MAC + VLAN + IPv4 + TCP
+- MAC + IPv6 + UDP
+- MAC + VLAN + IPv6 + UDP
+- MAC + IPv6 + TCP
+- MAC + VLAN + IPv6 + TCP
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Dan Nowlin (2):
+  ice: manage profiles and field vectors
+  ice: create advanced switch recipe
+
+Grishma Kotecha (2):
+  ice: implement low level recipes functions
+  ice: allow adding advanced rules
+
+Kiran Patil (1):
+  ice: ndo_setup_tc implementation for PF
+
+Michal Swiatkowski (2):
+  ice: Allow changing lan_en and lb_en on all kinds of filters
+  ice: ndo_setup_tc implementation for PR
+
+Shivanshu Shukla (1):
+  ice: allow deleting advanced rules
+
+Victor Raj (1):
+  ice: cleanup rules info
+
+ drivers/net/ethernet/intel/ice/Makefile            |    3 +-
+ drivers/net/ethernet/intel/ice/ice.h               |    4 +
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h    |   57 +
+ drivers/net/ethernet/intel/ice/ice_common.c        |   42 +-
+ drivers/net/ethernet/intel/ice/ice_eswitch.c       |    3 +
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.c     |  278 ++-
+ drivers/net/ethernet/intel/ice/ice_flex_pipe.h     |   14 +
+ drivers/net/ethernet/intel/ice/ice_flex_type.h     |   13 +
+ drivers/net/ethernet/intel/ice/ice_fltr.c          |  127 +
+ drivers/net/ethernet/intel/ice/ice_main.c          |   68 +
+ drivers/net/ethernet/intel/ice/ice_protocol_type.h |  169 ++
+ drivers/net/ethernet/intel/ice/ice_repr.c          |   53 +
+ drivers/net/ethernet/intel/ice/ice_switch.c        | 2541 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.h        |  139 +-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c        |  855 +++++++
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h        |  130 +
+ drivers/net/ethernet/intel/ice/ice_type.h          |    4 +
+ 17 files changed, 4402 insertions(+), 98 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_tc_lib.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_tc_lib.h
+
+-- 
+1.8.3.1
+
