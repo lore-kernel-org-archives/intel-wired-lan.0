@@ -1,50 +1,49 @@
-From: Sumit Saxena <sumit.saxena@broadcom.com>
-Date: Fri, 6 Aug 2021 17:01:17 +0530
-Subject: [Intel-wired-lan] [PATCH v5 04/14] scsi: megaraid_sas: Use
- irq_set_affinity_and_hint
-In-Reply-To: <20210720232624.1493424-5-nitesh@redhat.com>
+From: Ming Lei <ming.lei@redhat.com>
+Date: Fri, 6 Aug 2021 23:51:58 +0800
+Subject: [Intel-wired-lan] [PATCH v5 01/14] genirq: Provide new
+ interfaces for affinity hints
+In-Reply-To: <20210720232624.1493424-2-nitesh@redhat.com>
 References: <20210720232624.1493424-1-nitesh@redhat.com>
- <20210720232624.1493424-5-nitesh@redhat.com>
-Message-ID: <CAL2rwxqz4dcjdbqtPMaCTud+3jPhuFvJeuVgt774Rpm-+_KJxQ@mail.gmail.com>
+ <20210720232624.1493424-2-nitesh@redhat.com>
+Message-ID: <CAFj5m9+9asdQOCRHb0tZ=XSD-sOj+RLEDVEAObN81Z9y1JcgQg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jul 21, 2021 at 4:57 AM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
+On Wed, Jul 21, 2021 at 7:26 AM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
 >
-> The driver uses irq_set_affinity_hint() specifically for the high IOPS
-> queue interrupts for two purposes:
+> From: Thomas Gleixner <tglx@linutronix.de>
 >
-> - To set the affinity_hint which is consumed by the userspace for
->   distributing the interrupts
+> The discussion about removing the side effect of irq_set_affinity_hint() of
+> actually applying the cpumask (if not NULL) as affinity to the interrupt,
+> unearthed a few unpleasantries:
 >
-> - To apply an affinity that it provides
+>   1) The modular perf drivers rely on the current behaviour for the very
+>      wrong reasons.
 >
-> The driver enforces its own affinity to bind the high IOPS queue interrupts
-> to the local NUMA node. However, irq_set_affinity_hint() applying the
-> provided cpumask as an affinity for the interrupt is an undocumented side
-> effect.
+>   2) While none of the other drivers prevents user space from changing
+>      the affinity, a cursorily inspection shows that there are at least
+>      expectations in some drivers.
 >
-> To remove this side effect irq_set_affinity_hint() has been marked
-> as deprecated and new interfaces have been introduced. Hence, replace the
-> irq_set_affinity_hint() with the new interface irq_set_affinity_and_hint()
-> where the provided mask needs to be applied as the affinity and
-> affinity_hint pointer needs to be set and replace with
-> irq_update_affinity_hint() where only affinity_hint needs to be updated.
+> #1 needs to be cleaned up anyway, so that's not a problem
 >
-> Change the megasas_set_high_iops_queue_affinity_hint function name to
-> megasas_set_high_iops_queue_affinity_and_hint to clearly indicate that the
-> function is setting both affinity and affinity_hint.
+> #2 might result in subtle regressions especially when irqbalanced (which
+>    nowadays ignores the affinity hint) is disabled.
 >
+> Provide new interfaces:
+>
+>   irq_update_affinity_hint()  - Only sets the affinity hint pointer
+>   irq_set_affinity_and_hint() - Set the pointer and apply the affinity to
+>                                 the interrupt
+>
+> Make irq_set_affinity_hint() a wrapper around irq_apply_affinity_hint() and
+> document it to be phased out.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-Looks good.
-Acked-by: Sumit Saxena <sumit.saxena@broadcom.com>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 4209 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210806/513d1083/attachment.p7s>
+> Link: https://lore.kernel.org/r/20210501021832.743094-1-jesse.brandeburg at intel.com
+
+Reviewed-by: Ming Lei <ming.lei@redhat.com>
+
