@@ -1,127 +1,42 @@
 From: Brett Creeley <brett.creeley@intel.com>
-Date: Fri,  6 Aug 2021 09:51:27 -0700
-Subject: [Intel-wired-lan] [PATCH net v2] ice: don't remove netdev->dev_addr
- from uc sync list
-Message-ID: <20210806165127.687736-1-brett.creeley@intel.com>
+Date: Fri,  6 Aug 2021 09:58:49 -0700
+Subject: [Intel-wired-lan] [PATCH] ice: Use ether_addr_copy() instead of
+ memcpy
+Message-ID: <20210806165849.687933-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In some circumstances, such as with bridging, it's possible that the
-stack will add the device's own MAC address to its unicast address list.
+To save the netdev->dev_addr the driver is using memcpy with the length
+of a MAC address. ether_addr_copy() is meant specifically for this, so
+use it.
 
-If, later, the stack deletes this address, the driver will receive a
-request to remove this address.
-
-The driver stores its current MAC address as part of the VSI MAC filter
-list instead of separately. So, this causes a problem when the device's
-MAC address is deleted unexpectedly, which results in traffic failure in
-some cases.
-
-The following configuration steps will reproduce the previously
-mentioned problem:
-
-> ip link set eth0 up
-> ip link add dev br0 type bridge
-> ip link set br0 up
-> ip addr flush dev eth0
-> ip link set eth0 master br0
-> echo 1 > /sys/class/net/br0/bridge/vlan_filtering
-> modprobe -r veth
-> modprobe -r bridge
-> ip addr add 192.168.1.100/24 dev eth0
-
-The following ping command fails due to the netdev->dev_addr being
-deleted when removing the bridge module.
-> ping <link partner>
-
-Fix this by making sure to not delete the netdev->dev_addr during MAC
-address sync. After fixing this issue it was noticed that the
-netdev_warn() in .set_mac was overly verbose, so make it at
-netdev_dbg().
-
-Also, there is a possibility of a race condition between .set_mac and
-.set_rx_mode. Fix this by calling netif_addr_lock_bh() and
-netif_addr_unlock_bh() on the device's netdev when the netdev->dev_addr
-is going to be updated in .set_mac.
-
-Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump version")
 Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a9506041eb42..fe2ded775f25 100644
+index b85e34caa619..ddabbd186e47 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -191,6 +191,14 @@ static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
- 
-+	/* Under some circumstances, we might receive a request to delete our
-+	 * own device address from our uc list. Because we store the device
-+	 * address in the VSI's MAC filter list, we need to ignore such
-+	 * requests and not delete our device address from this list.
-+	 */
-+	if (ether_addr_equal(addr, netdev->dev_addr))
-+		return 0;
-+
- 	if (ice_fltr_add_mac_to_list(vsi, &vsi->tmp_unsync_list, addr,
- 				     ICE_FWD_TO_VSI))
- 		return -EINVAL;
-@@ -5124,7 +5132,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
- 		return -EADDRNOTAVAIL;
- 
- 	if (ether_addr_equal(netdev->dev_addr, mac)) {
--		netdev_warn(netdev, "already using mac %pM\n", mac);
-+		netdev_dbg(netdev, "already using mac %pM\n", mac);
- 		return 0;
- 	}
- 
-@@ -5135,6 +5143,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
- 		return -EBUSY;
- 	}
- 
-+	netif_addr_lock_bh(netdev);
- 	/* Clean up old MAC filter. Not an error if old filter doesn't exist */
- 	status = ice_fltr_remove_mac(vsi, netdev->dev_addr, ICE_FWD_TO_VSI);
- 	if (status && status != ICE_ERR_DOES_NOT_EXIST) {
-@@ -5144,30 +5153,28 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
- 
- 	/* Add filter for new MAC. If filter exists, return success */
- 	status = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
--	if (status == ICE_ERR_ALREADY_EXISTS) {
-+	if (status == ICE_ERR_ALREADY_EXISTS)
- 		/* Although this MAC filter is already present in hardware it's
- 		 * possible in some cases (e.g. bonding) that dev_addr was
+@@ -5221,7 +5221,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
  		 * modified outside of the driver and needs to be restored back
  		 * to this value.
  		 */
 -		memcpy(netdev->dev_addr, mac, netdev->addr_len);
++		ether_addr_copy(netdev->dev_addr, mac);
  		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
--		return 0;
--	}
--
--	/* error if the new filter addition failed */
--	if (status)
-+	else if (status)
-+		/* error if the new filter addition failed */
- 		err = -EADDRNOTAVAIL;
- 
- err_update_filters:
- 	if (err) {
- 		netdev_err(netdev, "can't set MAC %pM. filter update failed\n",
- 			   mac);
-+		netif_addr_unlock_bh(netdev);
- 		return err;
+ 		return 0;
+ 	}
+@@ -5238,7 +5238,7 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
  	}
  
  	/* change the netdev's MAC address */
- 	memcpy(netdev->dev_addr, mac, netdev->addr_len);
-+	netif_addr_unlock_bh(netdev);
+-	memcpy(netdev->dev_addr, mac, netdev->addr_len);
++	ether_addr_copy(netdev->dev_addr, mac);
  	netdev_dbg(vsi->netdev, "updated MAC address to %pM\n",
  		   netdev->dev_addr);
  
