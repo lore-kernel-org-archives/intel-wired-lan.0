@@ -1,409 +1,135 @@
 From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Fri,  6 Aug 2021 10:48:59 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v6 2/9] ice: manage profiles and
- field vectors
+Date: Fri,  6 Aug 2021 10:49:03 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v6 6/9] ice: cleanup rules info
 In-Reply-To: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
 References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <1628239746-17380-3-git-send-email-wojciech.drewek@intel.com>
+Message-ID: <1628239746-17380-7-git-send-email-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dan Nowlin <dan.nowlin@intel.com>
+From: Victor Raj <victor.raj@intel.com>
 
-Implement functions to manage profiles and field vectors in hardware.
+Change ICE_SW_LKUP_LAST to ICE_MAX_NUM_RECIPES as for now there also can
+be recipes other than the default.
 
-In hardware, there are up to 256 profiles and each of these profiles can
-have 48 field vector words. Each field vector word is described by
-protocol id and offset in the packet. To add a new recipe all used
-profiles need to be searched. If the profile contains all required
-protocol ids and offsets from the recipe it can be used. The driver has
-to add this profile to recipe association to tell hardware that newly
-added recipe is going to be associated with this profile.
+Free all structures created for advanced recipes in cleanup function.
+Write a function to clean allocated structures on advanced rule info.
 
-The amount of used profiles depend on the package. To avoid searching
-across not used profile, max profile id value is calculated at init flow.
-The profile is considered as unused when all field vector words in the
-profile are invalid (protocol id 0xff and offset 0x1ff).
-
-Profiles are read from the package section ICE_SID_FLD_VEC_SW. Empty
-field vector words can be used for recipe results. Store all unused field
-vector words in prof_res_bm. It is a 256 elements array (max number of
-profiles) each element is a 48 bit bitmap (max number of field vector
-words).
-
-For now, support only non-tunnel profiles type.
-
-Co-developed-by: Grishma Kotecha <grishma.kotecha@intel.com>
-Signed-off-by: Grishma Kotecha <grishma.kotecha@intel.com>
-Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Victor Raj <victor.raj@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 245 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_flex_pipe.h |   8 +
- drivers/net/ethernet/intel/ice/ice_flex_type.h |  13 ++
- drivers/net/ethernet/intel/ice/ice_switch.c    |   3 +-
- drivers/net/ethernet/intel/ice/ice_type.h      |   3 +
- 5 files changed, 271 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 41 +++++++++++++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_switch.c | 28 ++++++++++++++++++--
+ 2 files changed, 59 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 915a00f73d34..19cbab69ca4c 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1405,6 +1405,86 @@ static enum ice_status ice_chk_pkg_version(struct ice_pkg_ver *pkg_ver)
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 9d32eb970028..1a3c6b60fdca 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -595,17 +595,42 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
+ 		list_del(&v_pos_map->list_entry);
+ 		devm_kfree(ice_hw_to_dev(hw), v_pos_map);
+ 	}
+-	recps = hw->switch_info->recp_list;
+-	for (i = 0; i < ICE_SW_LKUP_LAST; i++) {
+-		struct ice_fltr_mgmt_list_entry *lst_itr, *tmp_entry;
++	recps = sw->recp_list;
++	for (i = 0; i < ICE_MAX_NUM_RECIPES; i++) {
++		struct ice_recp_grp_entry *rg_entry, *tmprg_entry;
  
- /**
-+ * ice_sw_fv_handler
-+ * @sect_type: section type
-+ * @section: pointer to section
-+ * @index: index of the field vector entry to be returned
-+ * @offset: ptr to variable that receives the offset in the field vector table
-+ *
-+ * This is a callback function that can be passed to ice_pkg_enum_entry.
-+ * This function treats the given section as of type ice_sw_fv_section and
-+ * enumerates offset field. "offset" is an index into the field vector table.
-+ */
-+static void *
-+ice_sw_fv_handler(u32 sect_type, void *section, u32 index, u32 *offset)
-+{
-+	struct ice_sw_fv_section *fv_section = section;
+ 		recps[i].root_rid = i;
+-		mutex_destroy(&recps[i].filt_rule_lock);
+-		list_for_each_entry_safe(lst_itr, tmp_entry,
+-					 &recps[i].filt_rules, list_entry) {
+-			list_del(&lst_itr->list_entry);
+-			devm_kfree(ice_hw_to_dev(hw), lst_itr);
++		list_for_each_entry_safe(rg_entry, tmprg_entry,
++					 &recps[i].rg_list, l_entry) {
++			list_del(&rg_entry->l_entry);
++			devm_kfree(ice_hw_to_dev(hw), rg_entry);
+ 		}
 +
-+	if (!section || sect_type != ICE_SID_FLD_VEC_SW)
-+		return NULL;
-+	if (index >= le16_to_cpu(fv_section->count))
-+		return NULL;
-+	if (offset)
-+		/* "index" passed in to this function is relative to a given
-+		 * 4k block. To get to the true index into the field vector
-+		 * table need to add the relative index to the base_offset
-+		 * field of this section
-+		 */
-+		*offset = le16_to_cpu(fv_section->base_offset) + index;
-+	return fv_section->fv + index;
-+}
++		if (recps[i].adv_rule) {
++			struct ice_adv_fltr_mgmt_list_entry *tmp_entry;
++			struct ice_adv_fltr_mgmt_list_entry *lst_itr;
 +
-+/**
-+ * ice_get_prof_index_max - get the max profile index for used profile
-+ * @hw: pointer to the HW struct
-+ *
-+ * Calling this function will get the max profile index for used profile
-+ * and store the index number in struct ice_switch_info *switch_info
-+ * in HW for following use.
-+ */
-+static enum ice_status ice_get_prof_index_max(struct ice_hw *hw)
-+{
-+	u16 prof_index = 0, j, max_prof_index = 0;
-+	struct ice_pkg_enum state;
-+	struct ice_seg *ice_seg;
-+	bool flag = false;
-+	struct ice_fv *fv;
-+	u32 offset;
++			mutex_destroy(&recps[i].filt_rule_lock);
++			list_for_each_entry_safe(lst_itr, tmp_entry,
++						 &recps[i].filt_rules,
++						 list_entry) {
++				list_del(&lst_itr->list_entry);
++				devm_kfree(ice_hw_to_dev(hw), lst_itr->lkups);
++				devm_kfree(ice_hw_to_dev(hw), lst_itr);
++			}
++		} else {
++			struct ice_fltr_mgmt_list_entry *lst_itr, *tmp_entry;
 +
-+	memset(&state, 0, sizeof(state));
-+
-+	if (!hw->seg)
-+		return ICE_ERR_PARAM;
-+
-+	ice_seg = hw->seg;
-+
-+	do {
-+		fv = ice_pkg_enum_entry(ice_seg, &state, ICE_SID_FLD_VEC_SW,
-+					&offset, ice_sw_fv_handler);
-+		if (!fv)
-+			break;
-+		ice_seg = NULL;
-+
-+		/* in the profile that not be used, the prot_id is set to 0xff
-+		 * and the off is set to 0x1ff for all the field vectors.
-+		 */
-+		for (j = 0; j < hw->blk[ICE_BLK_SW].es.fvw; j++)
-+			if (fv->ew[j].prot_id != ICE_PROT_INVALID ||
-+			    fv->ew[j].off != ICE_FV_OFFSET_INVAL)
-+				flag = true;
-+		if (flag && prof_index > max_prof_index)
-+			max_prof_index = prof_index;
-+
-+		prof_index++;
-+		flag = false;
-+	} while (fv);
-+
-+	hw->switch_info->max_used_prof_index = max_prof_index;
-+
-+	return 0;
-+}
-+
-+/**
-  * ice_init_pkg - initialize/download package
-  * @hw: pointer to the hardware structure
-  * @buf: pointer to the package buffer
-@@ -1484,6 +1564,7 @@ enum ice_status ice_init_pkg(struct ice_hw *hw, u8 *buf, u32 len)
- 		ice_init_pkg_regs(hw);
- 		ice_fill_blk_tbls(hw);
- 		ice_fill_hw_ptype(hw);
-+		ice_get_prof_index_max(hw);
- 	} else {
- 		ice_debug(hw, ICE_DBG_INIT, "package load failed, %d\n",
- 			  status);
-@@ -1561,6 +1642,170 @@ static struct ice_buf_build *ice_pkg_buf_alloc(struct ice_hw *hw)
- }
- 
- /**
-+ * ice_get_sw_fv_bitmap - Get switch field vector bitmap based on profile type
-+ * @hw: pointer to hardware structure
-+ * @req_profs: type of profiles requested
-+ * @bm: pointer to memory for returning the bitmap of field vectors
-+ */
-+void
-+ice_get_sw_fv_bitmap(struct ice_hw *hw, enum ice_prof_type req_profs,
-+		     unsigned long *bm)
-+{
-+	struct ice_pkg_enum state;
-+	struct ice_seg *ice_seg;
-+	struct ice_fv *fv;
-+
-+	if (req_profs == ICE_PROF_ALL) {
-+		bitmap_set(bm, 0, ICE_MAX_NUM_PROFILES);
-+		return;
-+	}
-+
-+	memset(&state, 0, sizeof(state));
-+	bitmap_zero(bm, ICE_MAX_NUM_PROFILES);
-+	ice_seg = hw->seg;
-+	do {
-+		enum ice_prof_type prof_type;
-+		u32 offset;
-+
-+		fv = ice_pkg_enum_entry(ice_seg, &state, ICE_SID_FLD_VEC_SW,
-+					&offset, ice_sw_fv_handler);
-+		ice_seg = NULL;
-+
-+		if (fv) {
-+			prof_type = ICE_PROF_NON_TUN;
-+
-+			if (req_profs & prof_type)
-+				set_bit((u16)offset, bm);
-+		}
-+	} while (fv);
-+}
-+
-+/**
-+ * ice_get_sw_fv_list
-+ * @hw: pointer to the HW structure
-+ * @prot_ids: field vector to search for with a given protocol ID
-+ * @ids_cnt: lookup/protocol count
-+ * @bm: bitmap of field vectors to consider
-+ * @fv_list: Head of a list
-+ *
-+ * Finds all the field vector entries from switch block that contain
-+ * a given protocol ID and returns a list of structures of type
-+ * "ice_sw_fv_list_entry". Every structure in the list has a field vector
-+ * definition and profile ID information
-+ * NOTE: The caller of the function is responsible for freeing the memory
-+ * allocated for every list entry.
-+ */
-+enum ice_status
-+ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
-+		   unsigned long *bm, struct list_head *fv_list)
-+{
-+	struct ice_sw_fv_list_entry *fvl;
-+	struct ice_sw_fv_list_entry *tmp;
-+	struct ice_pkg_enum state;
-+	struct ice_seg *ice_seg;
-+	struct ice_fv *fv;
-+	u32 offset;
-+
-+	memset(&state, 0, sizeof(state));
-+
-+	if (!ids_cnt || !hw->seg)
-+		return ICE_ERR_PARAM;
-+
-+	ice_seg = hw->seg;
-+	do {
-+		u16 i;
-+
-+		fv = ice_pkg_enum_entry(ice_seg, &state, ICE_SID_FLD_VEC_SW,
-+					&offset, ice_sw_fv_handler);
-+		if (!fv)
-+			break;
-+		ice_seg = NULL;
-+
-+		/* If field vector is not in the bitmap list, then skip this
-+		 * profile.
-+		 */
-+		if (!test_bit((u16)offset, bm))
-+			continue;
-+
-+		for (i = 0; i < ids_cnt; i++) {
-+			int j;
-+
-+			/* This code assumes that if a switch field vector line
-+			 * has a matching protocol, then this line will contain
-+			 * the entries necessary to represent every field in
-+			 * that protocol header.
-+			 */
-+			for (j = 0; j < hw->blk[ICE_BLK_SW].es.fvw; j++)
-+				if (fv->ew[j].prot_id == prot_ids[i])
-+					break;
-+			if (j >= hw->blk[ICE_BLK_SW].es.fvw)
-+				break;
-+			if (i + 1 == ids_cnt) {
-+				fvl = devm_kzalloc(ice_hw_to_dev(hw),
-+						   sizeof(*fvl), GFP_KERNEL);
-+				if (!fvl)
-+					goto err;
-+				fvl->fv_ptr = fv;
-+				fvl->profile_id = offset;
-+				list_add(&fvl->list_entry, fv_list);
-+				break;
++			mutex_destroy(&recps[i].filt_rule_lock);
++			list_for_each_entry_safe(lst_itr, tmp_entry,
++						 &recps[i].filt_rules,
++						 list_entry) {
++				list_del(&lst_itr->list_entry);
++				devm_kfree(ice_hw_to_dev(hw), lst_itr);
 +			}
 +		}
-+	} while (fv);
-+	if (list_empty(fv_list))
-+		return ICE_ERR_CFG;
-+	return 0;
-+
-+err:
-+	list_for_each_entry_safe(fvl, tmp, fv_list, list_entry) {
-+		list_del(&fvl->list_entry);
-+		devm_kfree(ice_hw_to_dev(hw), fvl);
-+	}
-+
-+	return ICE_ERR_NO_MEMORY;
-+}
-+
-+/**
-+ * ice_init_prof_result_bm - Initialize the profile result index bitmap
-+ * @hw: pointer to hardware structure
-+ */
-+void ice_init_prof_result_bm(struct ice_hw *hw)
-+{
-+	struct ice_pkg_enum state;
-+	struct ice_seg *ice_seg;
-+	struct ice_fv *fv;
-+
-+	memset(&state, 0, sizeof(state));
-+
-+	if (!hw->seg)
-+		return;
-+
-+	ice_seg = hw->seg;
-+	do {
-+		u32 off;
-+		u16 i;
-+
-+		fv = ice_pkg_enum_entry(ice_seg, &state, ICE_SID_FLD_VEC_SW,
-+					&off, ice_sw_fv_handler);
-+		ice_seg = NULL;
-+		if (!fv)
-+			break;
-+
-+		bitmap_zero(hw->switch_info->prof_res_bm[off],
-+			    ICE_MAX_FV_WORDS);
-+
-+		/* Determine empty field vector indices, these can be
-+		 * used for recipe results. Skip index 0, since it is
-+		 * always used for Switch ID.
-+		 */
-+		for (i = 1; i < ICE_MAX_FV_WORDS; i++)
-+			if (fv->ew[i].prot_id == ICE_PROT_INVALID &&
-+			    fv->ew[i].off == ICE_FV_OFFSET_INVAL)
-+				set_bit(i, hw->switch_info->prof_res_bm[off]);
-+	} while (fv);
-+}
-+
-+/**
-  * ice_pkg_buf_free
-  * @hw: pointer to the HW structure
-  * @bld: pointer to pkg build (allocated by ice_pkg_buf_alloc())
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 995b33d37b67..2dcb11937205 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -18,6 +18,14 @@
- 
- #define ICE_PKG_CNT 4
- 
-+void
-+ice_get_sw_fv_bitmap(struct ice_hw *hw, enum ice_prof_type type,
-+		     unsigned long *bm);
-+void
-+ice_init_prof_result_bm(struct ice_hw *hw);
-+enum ice_status
-+ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
-+		   unsigned long *bm, struct list_head *fv_list);
- bool
- ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port);
- int ice_udp_tunnel_set_port(struct net_device *netdev, unsigned int table,
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-index 6358e5776e02..c73fde45b266 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -13,6 +13,8 @@ struct ice_fv_word {
- 	u8 resvrd;
- } __packed;
- 
-+#define ICE_MAX_NUM_PROFILES 256
-+
- #define ICE_MAX_FV_WORDS 48
- struct ice_fv {
- 	struct ice_fv_word ew[ICE_MAX_FV_WORDS];
-@@ -302,6 +304,12 @@ struct ice_sw_fv_section {
- 	struct ice_fv fv[];
- };
- 
-+struct ice_sw_fv_list_entry {
-+	struct list_head list_entry;
-+	u32 profile_id;
-+	struct ice_fv *fv_ptr;
-+};
-+
- /* The BOOST TCAM stores the match packet header in reverse order, meaning
-  * the fields are reversed; in addition, this means that the normally big endian
-  * fields of the packet are now little endian.
-@@ -645,4 +653,9 @@ struct ice_chs_chg {
- };
- 
- #define ICE_FLOW_PTYPE_MAX		ICE_XLT1_CNT
-+
-+enum ice_prof_type {
-+	ICE_PROF_NON_TUN = 0x1,
-+	ICE_PROF_ALL = 0xFF,
-+};
- #endif /* _ICE_FLEX_TYPE_H_ */
++		if (recps[i].root_buf)
++			devm_kfree(ice_hw_to_dev(hw), recps[i].root_buf);
+ 	}
+ 	ice_rm_all_sw_replay_rule_info(hw);
+ 	devm_kfree(ice_hw_to_dev(hw), sw->recp_list);
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 88ee213cf816..04023d71c8f7 100644
+index 316c41cd87e8..ca039a4c3a79 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -59,10 +59,11 @@ enum ice_status ice_init_def_sw_recp(struct ice_hw *hw)
- 	if (!recps)
- 		return ICE_ERR_NO_MEMORY;
+@@ -2741,6 +2741,27 @@ enum ice_status
+ }
+ 
+ /**
++ * ice_rem_adv_rule_info
++ * @hw: pointer to the hardware structure
++ * @rule_head: pointer to the switch list structure that we want to delete
++ */
++static void
++ice_rem_adv_rule_info(struct ice_hw *hw, struct list_head *rule_head)
++{
++	struct ice_adv_fltr_mgmt_list_entry *tmp_entry;
++	struct ice_adv_fltr_mgmt_list_entry *lst_itr;
++
++	if (list_empty(rule_head))
++		return;
++
++	list_for_each_entry_safe(lst_itr, tmp_entry, rule_head, list_entry) {
++		list_del(&lst_itr->list_entry);
++		devm_kfree(ice_hw_to_dev(hw), lst_itr->lkups);
++		devm_kfree(ice_hw_to_dev(hw), lst_itr);
++	}
++}
++
++/**
+  * ice_cfg_dflt_vsi - change state of VSI to set/clear default
+  * @hw: pointer to the hardware structure
+  * @vsi_handle: VSI handle to set as default
+@@ -5241,12 +5262,15 @@ void ice_rm_all_sw_replay_rule_info(struct ice_hw *hw)
+ 	if (!sw)
+ 		return;
  
 -	for (i = 0; i < ICE_SW_LKUP_LAST; i++) {
 +	for (i = 0; i < ICE_MAX_NUM_RECIPES; i++) {
- 		recps[i].root_rid = i;
- 		INIT_LIST_HEAD(&recps[i].filt_rules);
- 		INIT_LIST_HEAD(&recps[i].filt_replay_rules);
-+		INIT_LIST_HEAD(&recps[i].rg_list);
- 		mutex_init(&recps[i].filt_rule_lock);
+ 		if (!list_empty(&sw->recp_list[i].filt_replay_rules)) {
+ 			struct list_head *l_head;
+ 
+ 			l_head = &sw->recp_list[i].filt_replay_rules;
+-			ice_rem_sw_rule_info(hw, l_head);
++			if (!sw->recp_list[i].adv_rule)
++				ice_rem_sw_rule_info(hw, l_head);
++			else
++				ice_rem_adv_rule_info(hw, l_head);
+ 		}
  	}
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index dcaa6bfab484..6b4f064f6c0d 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -698,6 +698,9 @@ struct ice_port_info {
- struct ice_switch_info {
- 	struct list_head vsi_list_map_head;
- 	struct ice_sw_recipe *recp_list;
-+	u16 max_used_prof_index;
-+
-+	DECLARE_BITMAP(prof_res_bm[ICE_MAX_NUM_PROFILES], ICE_MAX_FV_WORDS);
- };
- 
- /* FW logging configuration */
+ }
 -- 
 1.8.3.1
 
