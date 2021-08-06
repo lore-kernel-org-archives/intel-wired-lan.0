@@ -1,981 +1,1159 @@
 From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Fri,  6 Aug 2021 10:49:01 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v6 4/9] ice: allow adding
- advanced rules
+Date: Fri,  6 Aug 2021 10:49:05 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v6 8/9] ice: ndo_setup_tc
+ implementation for PF
 In-Reply-To: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
 References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <1628239746-17380-5-git-send-email-wojciech.drewek@intel.com>
+Message-ID: <1628239746-17380-9-git-send-email-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Grishma Kotecha <grishma.kotecha@intel.com>
+From: Kiran Patil <kiran.patil@intel.com>
 
-Define dummy packet headers to allow adding advanced rules in HW. This
-header is used as admin queue command parameter for adding a rule.
-The firmware will extract correct fields and will use them in look ups.
+Implement ndo_setup_tc net device callback for TC HW offload on PF device.
 
-Define each supported packets header and offsets to words used in recipe.
-Supported headers:
-- MAC + IPv4 + UDP
-- MAC + VLAN + IPv4 + UDP
-- MAC + IPv4 + TCP
-- MAC + VLAN + IPv4 + TCP
-- MAC + IPv6 + UDP
-- MAC + VLAN + IPv6 + UDP
-- MAC + IPv6 + TCP
-- MAC + VLAN + IPv6 + TCP
+ndo_setup_tc provides support for HW offloading various TC filters.
+Add support for configuring the following filter with tc-flower:
+- default L2 filters (src/dst mac addresses, ethertype, VLAN)
+- variations of L3, L3+L4, L2+L3+L4 filters using advanced filters
+(including ipv4 and ipv6 addresses).
 
-Add code for creating an advanced rule. Rule needs to match defined
-dummy packet, if not return error, which means that this type of rule
-isn't currently supported.
+Allow for adding/removing TC flows when PF device is configured in
+eswitch switchdev mode. Two types of actions are supported at the
+moment: FLOW_ACTION_DROP and FLOW_ACTION_REDIRECT.
 
-The first step in adding advanced rule is searching for an advanced
-recipe matching this kind of rule. If it doesn't exist new recipe is
-created. Dummy packet has to be filled with the correct header field
-value from the rule definition. It will be used to do look up in HW.
-
-Support searching for existing advance rule entry. It is used in case
-of adding the same rule on different VSI. In this case, instead of
-creating new rule, the existing one should be updated with refreshed VSI
-list.
-
-Add initialization for prof_res_bm_init flag to zero so that
-the possible resource for fv in the files can be initialized.
-
-Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
-Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
-Signed-off-by: Grishma Kotecha <grishma.kotecha@intel.com>
+Co-developed-by: Priyalee Kushwaha <priyalee.kushwaha@intel.com>
+Signed-off-by: Priyalee Kushwaha <priyalee.kushwaha@intel.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |   1 +
- drivers/net/ethernet/intel/ice/ice_switch.c | 832 +++++++++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_switch.h |  14 +
- drivers/net/ethernet/intel/ice/ice_type.h   |   1 +
- 4 files changed, 847 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/Makefile     |   3 +-
+ drivers/net/ethernet/intel/ice/ice.h        |   4 +
+ drivers/net/ethernet/intel/ice/ice_main.c   |  68 +++
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 838 ++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h | 129 +++++
+ 5 files changed, 1041 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_tc_lib.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_tc_lib.h
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index f63912797548..9d32eb970028 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -568,6 +568,7 @@ static enum ice_status ice_init_fltr_mgmt_struct(struct ice_hw *hw)
- 		return ICE_ERR_NO_MEMORY;
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 1866be50095d..c36faa7d1471 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -27,7 +27,8 @@ ice-y := ice_main.o	\
+ 	 ice_fw_update.o \
+ 	 ice_lag.o	\
+ 	 ice_ethtool.o  \
+-	 ice_repr.o
++	 ice_repr.o	\
++	 ice_tc_lib.o
+ ice-$(CONFIG_PCI_IOV) += ice_virtchnl_allowlist.o
+ ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_fdir.o
+ ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 5517e13bcba1..9bf70e6cd0de 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -64,6 +64,7 @@
+ #include "ice_xsk.h"
+ #include "ice_arfs.h"
+ #include "ice_repr.h"
++#include "ice_eswitch.h"
+ #include "ice_lag.h"
  
- 	INIT_LIST_HEAD(&sw->vsi_list_map_head);
-+	sw->prof_res_bm_init = 0;
+ #define ICE_BAR0		0
+@@ -398,6 +399,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_PTP,			/* PTP is enabled by software */
+ 	ICE_FLAG_AUX_ENA,
+ 	ICE_FLAG_ADV_FEATURES,
++	ICE_FLAG_CLS_FLOWER,
+ 	ICE_FLAG_LINK_DOWN_ON_CLOSE_ENA,
+ 	ICE_FLAG_TOTAL_PORT_SHUTDOWN_ENA,
+ 	ICE_FLAG_NO_MEDIA,
+@@ -511,6 +513,8 @@ struct ice_pf {
+ 	int aux_idx;
+ 	u32 sw_int_count;
  
- 	status = ice_init_def_sw_recp(hw);
- 	if (status) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 8274f2e8df38..04cbd9d417fb 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -8,6 +8,7 @@
- #define ICE_ETH_ETHTYPE_OFFSET		12
- #define ICE_ETH_VLAN_TCI_OFFSET		14
- #define ICE_MAX_VLAN_ID			0xFFF
-+#define ICE_IPV6_ETHER_ID		0x86DD
++	struct hlist_head tc_flower_fltr_list;
++
+ 	__le64 nvm_phy_type_lo; /* NVM PHY type low */
+ 	__le64 nvm_phy_type_hi; /* NVM PHY type high */
+ 	struct ice_link_default_override_tlv link_dflt_override;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 856249c49098..3cf8f24c77fc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -20,6 +20,7 @@
+ #define CREATE_TRACE_POINTS
+ #include "ice_trace.h"
+ #include "ice_eswitch.h"
++#include "ice_tc_lib.h"
  
- /* Dummy ethernet header needed in the ice_aqc_sw_rules_elem
-  * struct to configure any switch filter rules.
-@@ -29,6 +30,290 @@
- 							0x2, 0, 0, 0, 0, 0,
- 							0x81, 0, 0, 0};
- 
-+struct ice_dummy_pkt_offsets {
-+	enum ice_protocol_type type;
-+	u16 offset; /* ICE_PROTOCOL_LAST indicates end of list */
-+};
-+
-+/* offset info for MAC + IPv4 + UDP dummy packet */
-+static const struct ice_dummy_pkt_offsets dummy_udp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_UDP_ILOS,		34 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* Dummy packet for MAC + IPv4 + UDP */
-+static const u8 dummy_udp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x1c, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 34 */
-+	0x00, 0x08, 0x00, 0x00,
-+
-+	0x00, 0x00,	/* 2 bytes for 4 byte alignment */
-+};
-+
-+/* offset info for MAC + VLAN + IPv4 + UDP dummy packet */
-+static const struct ice_dummy_pkt_offsets dummy_vlan_udp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_VLAN_OFOS,	12 },
-+	{ ICE_ETYPE_OL,		16 },
-+	{ ICE_IPV4_OFOS,	18 },
-+	{ ICE_UDP_ILOS,		38 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* C-tag (801.1Q), IPv4:UDP dummy packet */
-+static const u8 dummy_vlan_udp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x81, 0x00, 0x00, 0x00, /* ICE_VLAN_OFOS 12 */
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 16 */
-+
-+	0x45, 0x00, 0x00, 0x1c, /* ICE_IPV4_OFOS 18 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 38 */
-+	0x00, 0x08, 0x00, 0x00,
-+
-+	0x00, 0x00,	/* 2 bytes for 4 byte alignment */
-+};
-+
-+/* offset info for MAC + IPv4 + TCP dummy packet */
-+static const struct ice_dummy_pkt_offsets dummy_tcp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_TCP_IL,		34 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* Dummy packet for MAC + IPv4 + TCP */
-+static const u8 dummy_tcp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x28, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x06, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 34 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,	/* 2 bytes for 4 byte alignment */
-+};
-+
-+/* offset info for MAC + VLAN (C-tag, 802.1Q) + IPv4 + TCP dummy packet */
-+static const struct ice_dummy_pkt_offsets dummy_vlan_tcp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_VLAN_OFOS,	12 },
-+	{ ICE_ETYPE_OL,		16 },
-+	{ ICE_IPV4_OFOS,	18 },
-+	{ ICE_TCP_IL,		38 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* C-tag (801.1Q), IPv4:TCP dummy packet */
-+static const u8 dummy_vlan_tcp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x81, 0x00, 0x00, 0x00,	/* ICE_VLAN_OFOS 12 */
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 16 */
-+
-+	0x45, 0x00, 0x00, 0x28, /* ICE_IPV4_OFOS 18 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x06, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 38 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,	/* 2 bytes for 4 byte alignment */
-+};
-+
-+static const struct ice_dummy_pkt_offsets dummy_tcp_ipv6_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV6_OFOS,	14 },
-+	{ ICE_TCP_IL,		54 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+static const u8 dummy_tcp_ipv6_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xDD,		/* ICE_ETYPE_OL 12 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 40 */
-+	0x00, 0x14, 0x06, 0x00, /* Next header is TCP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 54 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, /* 2 bytes for 4 byte alignment */
-+};
-+
-+/* C-tag (802.1Q): IPv6 + TCP */
-+static const struct ice_dummy_pkt_offsets
-+dummy_vlan_tcp_ipv6_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_VLAN_OFOS,	12 },
-+	{ ICE_ETYPE_OL,		16 },
-+	{ ICE_IPV6_OFOS,	18 },
-+	{ ICE_TCP_IL,		58 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* C-tag (802.1Q), IPv6 + TCP dummy packet */
-+static const u8 dummy_vlan_tcp_ipv6_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x81, 0x00, 0x00, 0x00,	/* ICE_VLAN_OFOS 12 */
-+
-+	0x86, 0xDD,		/* ICE_ETYPE_OL 16 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 18 */
-+	0x00, 0x14, 0x06, 0x00, /* Next header is TCP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 58 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, /* 2 bytes for 4 byte alignment */
-+};
-+
-+/* IPv6 + UDP */
-+static const struct ice_dummy_pkt_offsets dummy_udp_ipv6_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV6_OFOS,	14 },
-+	{ ICE_UDP_ILOS,		54 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* IPv6 + UDP dummy packet */
-+static const u8 dummy_udp_ipv6_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xDD,		/* ICE_ETYPE_OL 12 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 40 */
-+	0x00, 0x10, 0x11, 0x00, /* Next header UDP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 54 */
-+	0x00, 0x10, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* needed for ESP packets */
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, /* 2 bytes for 4 byte alignment */
-+};
-+
-+/* C-tag (802.1Q): IPv6 + UDP */
-+static const struct ice_dummy_pkt_offsets
-+dummy_vlan_udp_ipv6_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_VLAN_OFOS,	12 },
-+	{ ICE_ETYPE_OL,		16 },
-+	{ ICE_IPV6_OFOS,	18 },
-+	{ ICE_UDP_ILOS,		58 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+/* C-tag (802.1Q), IPv6 + UDP dummy packet */
-+static const u8 dummy_vlan_udp_ipv6_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x81, 0x00, 0x00, 0x00,/* ICE_VLAN_OFOS 12 */
-+
-+	0x86, 0xDD,		/* ICE_ETYPE_OL 16 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 18 */
-+	0x00, 0x08, 0x11, 0x00, /* Next header UDP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 58 */
-+	0x00, 0x08, 0x00, 0x00,
-+
-+	0x00, 0x00, /* 2 bytes for 4 byte alignment */
-+};
-+
- #define ICE_SW_RULE_RX_TX_ETH_HDR_SIZE \
- 	(offsetof(struct ice_aqc_sw_rules_elem, pdata.lkup_tx_rx.hdr) + \
- 	 (DUMMY_ETH_HDR_LEN * \
-@@ -3935,7 +4220,7 @@ static bool ice_prot_type_to_id(enum ice_protocol_type type, u8 *id)
-  * @rinfo: other information regarding the rule e.g. priority and action info
-  * @rid: return the recipe ID of the recipe created
-  */
--static enum ice_status __maybe_unused
-+static enum ice_status
- ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 		   u16 lkups_cnt, struct ice_adv_rule_info *rinfo, u16 *rid)
- {
-@@ -4094,6 +4379,551 @@ static bool ice_prot_type_to_id(enum ice_protocol_type type, u8 *id)
+ #define DRV_SUMMARY	"Intel(R) Ethernet Connection E800 Series Linux Driver"
+ static const char ice_driver_string[] = DRV_SUMMARY;
+@@ -7175,6 +7176,72 @@ static void ice_tx_timeout(struct net_device *netdev, unsigned int txqueue)
  }
  
  /**
-+ * ice_find_dummy_packet - find dummy packet
-+ *
-+ * @lkups: lookup elements or match criteria for the advanced recipe, one
-+ *	   structure per protocol header
-+ * @lkups_cnt: number of protocols
-+ * @pkt: dummy packet to fill according to filter match criteria
-+ * @pkt_len: packet length of dummy packet
-+ * @offsets: pointer to receive the pointer to the offsets for the packet
++ * ice_setup_tc_cls_flower - flower classifier offloads
++ * @np: net device to configure
++ * @filter_dev: device on which filter is added
++ * @cls_flower: offload data
 + */
-+static void
-+ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
-+		      const u8 **pkt, u16 *pkt_len,
-+		      const struct ice_dummy_pkt_offsets **offsets)
++static int
++ice_setup_tc_cls_flower(struct ice_netdev_priv *np,
++			struct net_device *filter_dev,
++			struct flow_cls_offload *cls_flower)
 +{
-+	bool tcp = false, udp = false, ipv6 = false, vlan = false;
-+	u16 i;
++	struct ice_vsi *vsi = np->vsi;
 +
-+	for (i = 0; i < lkups_cnt; i++) {
-+		if (lkups[i].type == ICE_UDP_ILOS)
-+			udp = true;
-+		else if (lkups[i].type == ICE_TCP_IL)
-+			tcp = true;
-+		else if (lkups[i].type == ICE_IPV6_OFOS)
-+			ipv6 = true;
-+		else if (lkups[i].type == ICE_VLAN_OFOS)
-+			vlan = true;
-+		else if (lkups[i].type == ICE_ETYPE_OL &&
-+			 lkups[i].h_u.ethertype.ethtype_id ==
-+				cpu_to_be16(ICE_IPV6_ETHER_ID) &&
-+			 lkups[i].m_u.ethertype.ethtype_id ==
-+					cpu_to_be16(0xFFFF))
-+			ipv6 = true;
-+	}
++	if (cls_flower->common.chain_index)
++		return -EOPNOTSUPP;
 +
-+	if (udp && !ipv6) {
-+		if (vlan) {
-+			*pkt = dummy_vlan_udp_packet;
-+			*pkt_len = sizeof(dummy_vlan_udp_packet);
-+			*offsets = dummy_vlan_udp_packet_offsets;
-+			return;
-+		}
-+		*pkt = dummy_udp_packet;
-+		*pkt_len = sizeof(dummy_udp_packet);
-+		*offsets = dummy_udp_packet_offsets;
-+		return;
-+	} else if (udp && ipv6) {
-+		if (vlan) {
-+			*pkt = dummy_vlan_udp_ipv6_packet;
-+			*pkt_len = sizeof(dummy_vlan_udp_ipv6_packet);
-+			*offsets = dummy_vlan_udp_ipv6_packet_offsets;
-+			return;
-+		}
-+		*pkt = dummy_udp_ipv6_packet;
-+		*pkt_len = sizeof(dummy_udp_ipv6_packet);
-+		*offsets = dummy_udp_ipv6_packet_offsets;
-+		return;
-+	} else if ((tcp && ipv6) || ipv6) {
-+		if (vlan) {
-+			*pkt = dummy_vlan_tcp_ipv6_packet;
-+			*pkt_len = sizeof(dummy_vlan_tcp_ipv6_packet);
-+			*offsets = dummy_vlan_tcp_ipv6_packet_offsets;
-+			return;
-+		}
-+		*pkt = dummy_tcp_ipv6_packet;
-+		*pkt_len = sizeof(dummy_tcp_ipv6_packet);
-+		*offsets = dummy_tcp_ipv6_packet_offsets;
-+		return;
-+	}
-+
-+	if (vlan) {
-+		*pkt = dummy_vlan_tcp_packet;
-+		*pkt_len = sizeof(dummy_vlan_tcp_packet);
-+		*offsets = dummy_vlan_tcp_packet_offsets;
-+	} else {
-+		*pkt = dummy_tcp_packet;
-+		*pkt_len = sizeof(dummy_tcp_packet);
-+		*offsets = dummy_tcp_packet_offsets;
++	switch (cls_flower->command) {
++	case FLOW_CLS_REPLACE:
++		return ice_add_cls_flower(filter_dev, vsi, cls_flower);
++	case FLOW_CLS_DESTROY:
++		return ice_del_cls_flower(vsi, cls_flower);
++	default:
++		return -EINVAL;
 +	}
 +}
 +
 +/**
-+ * ice_fill_adv_dummy_packet - fill a dummy packet with given match criteria
-+ *
-+ * @lkups: lookup elements or match criteria for the advanced recipe, one
-+ *	   structure per protocol header
-+ * @lkups_cnt: number of protocols
-+ * @s_rule: stores rule information from the match criteria
-+ * @dummy_pkt: dummy packet to fill according to filter match criteria
-+ * @pkt_len: packet length of dummy packet
-+ * @offsets: offset info for the dummy packet
++ * ice_setup_tc_block_cb - callback handler registered for TC block
++ * @type: TC SETUP type
++ * @type_data: TC flower offload data that contains user input
++ * @cb_priv: netdev private data
 + */
-+static enum ice_status
-+ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
-+			  struct ice_aqc_sw_rules_elem *s_rule,
-+			  const u8 *dummy_pkt, u16 pkt_len,
-+			  const struct ice_dummy_pkt_offsets *offsets)
++static int
++ice_setup_tc_block_cb(enum tc_setup_type type, void *type_data, void *cb_priv)
 +{
-+	u8 *pkt;
-+	u16 i;
++	struct ice_netdev_priv *np = cb_priv;
 +
-+	/* Start with a packet with a pre-defined/dummy content. Then, fill
-+	 * in the header values to be looked up or matched.
-+	 */
-+	pkt = s_rule->pdata.lkup_tx_rx.hdr;
++	switch (type) {
++	case TC_SETUP_CLSFLOWER:
++		return ice_setup_tc_cls_flower(np, np->vsi->netdev,
++					       type_data);
++	default:
++		return -EOPNOTSUPP;
++	}
++}
 +
-+	memcpy(pkt, dummy_pkt, pkt_len);
++static LIST_HEAD(ice_block_cb_list);
 +
-+	for (i = 0; i < lkups_cnt; i++) {
-+		enum ice_protocol_type type;
-+		u16 offset = 0, len = 0, j;
-+		bool found = false;
++static int
++ice_setup_tc(struct net_device *netdev, enum tc_setup_type type,
++	     void *type_data)
++{
++	struct ice_netdev_priv *np = netdev_priv(netdev);
 +
-+		/* find the start of this layer; it should be found since this
-+		 * was already checked when search for the dummy packet
-+		 */
-+		type = lkups[i].type;
-+		for (j = 0; offsets[j].type != ICE_PROTOCOL_LAST; j++) {
-+			if (type == offsets[j].type) {
-+				offset = offsets[j].offset;
-+				found = true;
-+				break;
-+			}
-+		}
-+		/* this should never happen in a correct calling sequence */
-+		if (!found)
-+			return ICE_ERR_PARAM;
++	switch (type) {
++	case TC_SETUP_BLOCK:
++		return flow_block_cb_setup_simple(type_data,
++						  &ice_block_cb_list,
++						  ice_setup_tc_block_cb,
++						  np, np, true);
++	default:
++		return -EOPNOTSUPP;
++	}
++	return -EOPNOTSUPP;
++}
 +
-+		switch (lkups[i].type) {
-+		case ICE_MAC_OFOS:
-+		case ICE_MAC_IL:
-+			len = sizeof(struct ice_ether_hdr);
-+			break;
-+		case ICE_ETYPE_OL:
-+			len = sizeof(struct ice_ethtype_hdr);
-+			break;
-+		case ICE_VLAN_OFOS:
-+			len = sizeof(struct ice_vlan_hdr);
-+			break;
-+		case ICE_IPV4_OFOS:
-+		case ICE_IPV4_IL:
-+			len = sizeof(struct ice_ipv4_hdr);
-+			break;
-+		case ICE_IPV6_OFOS:
-+		case ICE_IPV6_IL:
-+			len = sizeof(struct ice_ipv6_hdr);
-+			break;
-+		case ICE_TCP_IL:
-+		case ICE_UDP_OF:
-+		case ICE_UDP_ILOS:
-+			len = sizeof(struct ice_l4_hdr);
-+			break;
-+		case ICE_SCTP_IL:
-+			len = sizeof(struct ice_sctp_hdr);
-+			break;
-+		default:
-+			return ICE_ERR_PARAM;
-+		}
++/**
+  * ice_open - Called when a network interface becomes active
+  * @netdev: network interface device structure
+  *
+@@ -7377,6 +7444,7 @@ int ice_stop(struct net_device *netdev)
+ 	.ndo_get_vf_stats = ice_get_vf_stats,
+ 	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
++	.ndo_setup_tc = ice_setup_tc,
+ 	.ndo_set_features = ice_set_features,
+ 	.ndo_bridge_getlink = ice_bridge_getlink,
+ 	.ndo_bridge_setlink = ice_bridge_setlink,
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+new file mode 100644
+index 000000000000..6a61888f80aa
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -0,0 +1,838 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2019-2021, Intel Corporation. */
 +
-+		/* the length should be a word multiple */
-+		if (len % ICE_BYTES_PER_WORD)
-+			return ICE_ERR_CFG;
++#include "ice.h"
++#include "ice_tc_lib.h"
++#include "ice_lib.h"
++#include "ice_fltr.h"
 +
-+		/* We have the offset to the header start, the length, the
-+		 * caller's header values and mask. Use this information to
-+		 * copy the data into the dummy packet appropriately based on
-+		 * the mask. Note that we need to only write the bits as
-+		 * indicated by the mask to make sure we don't improperly write
-+		 * over any significant packet data.
-+		 */
-+		for (j = 0; j < len / sizeof(u16); j++)
-+			if (((u16 *)&lkups[i].m_u)[j])
-+				((u16 *)(pkt + offset))[j] =
-+					(((u16 *)(pkt + offset))[j] &
-+					 ~((u16 *)&lkups[i].m_u)[j]) |
-+					(((u16 *)&lkups[i].h_u)[j] &
-+					 ((u16 *)&lkups[i].m_u)[j]);
++/**
++ * ice_tc_count_lkups - determine lookup count for switch filter
++ * @flags: TC-flower flags
++ * @headers: Pointer to TC flower filter header structure
++ * @fltr: Pointer to outer TC filter structure
++ *
++ * Determine lookup count based on TC flower input for switch filter.
++ */
++static int
++ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
++		   struct ice_tc_flower_fltr *fltr)
++{
++	int lkups_cnt = 0;
++
++	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID)
++		lkups_cnt++;
++
++	/* is MAC fields specified? */
++	if (flags & (ICE_TC_FLWR_FIELD_DST_MAC | ICE_TC_FLWR_FIELD_SRC_MAC))
++		lkups_cnt++;
++
++	/* is VLAN specified? */
++	if (flags & ICE_TC_FLWR_FIELD_VLAN)
++		lkups_cnt++;
++
++	/* are IPv[4|6] fields specified? */
++	if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV4 | ICE_TC_FLWR_FIELD_SRC_IPV4))
++		lkups_cnt++;
++	else if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV6 |
++			  ICE_TC_FLWR_FIELD_SRC_IPV6))
++		lkups_cnt++;
++
++	/* is L4 (TCP/UDP/any other L4 protocol fields) specified? */
++	if (flags & (ICE_TC_FLWR_FIELD_DEST_L4_PORT |
++		     ICE_TC_FLWR_FIELD_SRC_L4_PORT))
++		lkups_cnt++;
++
++	return lkups_cnt;
++}
++
++/**
++ * ice_tc_fill_rules - fill filter rules based on TC fltr
++ * @hw: pointer to HW structure
++ * @flags: tc flower field flags
++ * @tc_fltr: pointer to TC flower filter
++ * @list: list of advance rule elements
++ * @rule_info: pointer to information about rule
++ * @l4_proto: pointer to information such as L4 proto type
++ *
++ * Fill ice_adv_lkup_elem list based on TC flower flags and
++ * TC flower headers. This list should be used to add
++ * advance filter in hardware.
++ */
++static int
++ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
++		  struct ice_tc_flower_fltr *tc_fltr,
++		  struct ice_adv_lkup_elem *list,
++		  struct ice_adv_rule_info *rule_info,
++		  u16 *l4_proto)
++{
++	struct ice_tc_flower_lyr_2_4_hdrs *headers = &tc_fltr->outer_headers;
++	int i = 0;
++
++	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) {
++		list[i].type = ICE_ETYPE_OL;
++		list[i].h_u.ethertype.ethtype_id = headers->l2_key.n_proto;
++		list[i].m_u.ethertype.ethtype_id = headers->l2_mask.n_proto;
++		i++;
 +	}
 +
-+	s_rule->pdata.lkup_tx_rx.hdr_len = cpu_to_le16(pkt_len);
++	if (flags & (ICE_TC_FLWR_FIELD_DST_MAC |
++		     ICE_TC_FLWR_FIELD_SRC_MAC)) {
++		struct ice_tc_l2_hdr *l2_key, *l2_mask;
++
++		l2_key = &headers->l2_key;
++		l2_mask = &headers->l2_mask;
++
++		list[i].type = ICE_MAC_OFOS;
++		if (flags & ICE_TC_FLWR_FIELD_DST_MAC) {
++			ether_addr_copy(list[i].h_u.eth_hdr.dst_addr,
++					l2_key->dst_mac);
++			ether_addr_copy(list[i].m_u.eth_hdr.dst_addr,
++					l2_mask->dst_mac);
++		}
++		if (flags & ICE_TC_FLWR_FIELD_SRC_MAC) {
++			ether_addr_copy(list[i].h_u.eth_hdr.src_addr,
++					l2_key->src_mac);
++			ether_addr_copy(list[i].m_u.eth_hdr.src_addr,
++					l2_mask->src_mac);
++		}
++		i++;
++	}
++
++	/* copy VLAN info */
++	if (flags & ICE_TC_FLWR_FIELD_VLAN) {
++		list[i].type = ICE_VLAN_OFOS;
++		list[i].h_u.vlan_hdr.vlan = headers->vlan_hdr.vlan_id;
++		list[i].m_u.vlan_hdr.vlan = cpu_to_be16(0xFFFF);
++		i++;
++	}
++
++	/* copy L3 (IPv[4|6]: src, dest) address */
++	if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV4 |
++		     ICE_TC_FLWR_FIELD_SRC_IPV4)) {
++		struct ice_tc_l3_hdr *l3_key, *l3_mask;
++
++		list[i].type = ICE_IPV4_OFOS;
++		l3_key = &headers->l3_key;
++		l3_mask = &headers->l3_mask;
++		if (flags & ICE_TC_FLWR_FIELD_DEST_IPV4) {
++			list[i].h_u.ipv4_hdr.dst_addr = l3_key->dst_ipv4;
++			list[i].m_u.ipv4_hdr.dst_addr = l3_mask->dst_ipv4;
++		}
++		if (flags & ICE_TC_FLWR_FIELD_SRC_IPV4) {
++			list[i].h_u.ipv4_hdr.src_addr = l3_key->src_ipv4;
++			list[i].m_u.ipv4_hdr.src_addr = l3_mask->src_ipv4;
++		}
++		i++;
++	} else if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV6 |
++			    ICE_TC_FLWR_FIELD_SRC_IPV6)) {
++		struct ice_ipv6_hdr *ipv6_hdr, *ipv6_mask;
++		struct ice_tc_l3_hdr *l3_key, *l3_mask;
++
++		list[i].type = ICE_IPV6_OFOS;
++		ipv6_hdr = &list[i].h_u.ipv6_hdr;
++		ipv6_mask = &list[i].m_u.ipv6_hdr;
++		l3_key = &headers->l3_key;
++		l3_mask = &headers->l3_mask;
++
++		if (flags & ICE_TC_FLWR_FIELD_DEST_IPV6) {
++			memcpy(&ipv6_hdr->dst_addr, &l3_key->dst_ipv6_addr,
++			       sizeof(l3_key->dst_ipv6_addr));
++			memcpy(&ipv6_mask->dst_addr, &l3_mask->dst_ipv6_addr,
++			       sizeof(l3_mask->dst_ipv6_addr));
++		}
++		if (flags & ICE_TC_FLWR_FIELD_SRC_IPV6) {
++			memcpy(&ipv6_hdr->src_addr, &l3_key->src_ipv6_addr,
++			       sizeof(l3_key->src_ipv6_addr));
++			memcpy(&ipv6_mask->src_addr, &l3_mask->src_ipv6_addr,
++			       sizeof(l3_mask->src_ipv6_addr));
++		}
++		i++;
++	}
++
++	/* copy L4 (src, dest) port */
++	if (flags & (ICE_TC_FLWR_FIELD_DEST_L4_PORT |
++		     ICE_TC_FLWR_FIELD_SRC_L4_PORT)) {
++		struct ice_tc_l4_hdr *l4_key, *l4_mask;
++
++		l4_key = &headers->l4_key;
++		l4_mask = &headers->l4_mask;
++		if (headers->l3_key.ip_proto == IPPROTO_TCP) {
++			list[i].type = ICE_TCP_IL;
++			/* detected L4 proto is TCP */
++			if (l4_proto)
++				*l4_proto = IPPROTO_TCP;
++		} else if (headers->l3_key.ip_proto == IPPROTO_UDP) {
++			list[i].type = ICE_UDP_ILOS;
++			/* detected L4 proto is UDP */
++			if (l4_proto)
++				*l4_proto = IPPROTO_UDP;
++		}
++		if (flags & ICE_TC_FLWR_FIELD_DEST_L4_PORT) {
++			list[i].h_u.l4_hdr.dst_port = l4_key->dst_port;
++			list[i].m_u.l4_hdr.dst_port = l4_mask->dst_port;
++		}
++		if (flags & ICE_TC_FLWR_FIELD_SRC_L4_PORT) {
++			list[i].h_u.l4_hdr.src_port = l4_key->src_port;
++			list[i].m_u.l4_hdr.src_port = l4_mask->src_port;
++		}
++		i++;
++	}
++
++	return i;
++}
++
++static int
++ice_eswitch_tc_parse_action(struct ice_tc_flower_fltr *fltr,
++			    struct flow_action_entry *act)
++{
++	struct ice_repr *repr;
++
++	switch (act->id) {
++	case FLOW_ACTION_DROP:
++		fltr->action.fltr_act = ICE_DROP_PACKET;
++		break;
++
++	case FLOW_ACTION_REDIRECT:
++		fltr->action.fltr_act = ICE_FWD_TO_VSI;
++
++		if (ice_is_port_repr_netdev(act->dev)) {
++			repr = ice_netdev_to_repr(act->dev);
++
++			fltr->dest_vsi = repr->src_vsi;
++			fltr->direction = ICE_ESWITCH_FLTR_INGRESS;
++		} else if (netif_is_ice(act->dev)) {
++			struct ice_netdev_priv *np = netdev_priv(act->dev);
++
++			fltr->dest_vsi = np->vsi;
++			fltr->direction = ICE_ESWITCH_FLTR_EGRESS;
++		} else {
++			NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported netdevice in switchdev mode");
++			return -EINVAL;
++		}
++
++		break;
++
++	default:
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported action in switchdev mode");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int
++ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
++{
++	struct ice_tc_flower_lyr_2_4_hdrs *headers = &fltr->outer_headers;
++	struct ice_adv_rule_info rule_info = { 0 };
++	struct ice_rule_query_data rule_added;
++	struct ice_hw *hw = &vsi->back->hw;
++	struct ice_adv_lkup_elem *list;
++	u32 flags = fltr->flags;
++	enum ice_status status;
++	int lkups_cnt;
++	int ret = 0;
++	int i;
++
++	if (!flags || (flags & (ICE_TC_FLWR_FIELD_ENC_DEST_IPV4 |
++				ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
++				ICE_TC_FLWR_FIELD_ENC_DEST_IPV6 |
++				ICE_TC_FLWR_FIELD_ENC_SRC_IPV6 |
++				ICE_TC_FLWR_FIELD_ENC_SRC_L4_PORT))) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported encap field(s)");
++		return -EOPNOTSUPP;
++	}
++
++	lkups_cnt = ice_tc_count_lkups(flags, headers, fltr);
++	list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
++	if (!list)
++		return -ENOMEM;
++
++	i = ice_tc_fill_rules(hw, flags, fltr, list, &rule_info, NULL);
++	if (i != lkups_cnt) {
++		ret = -EINVAL;
++		goto exit;
++	}
++
++	rule_info.sw_act.fltr_act = fltr->action.fltr_act;
++	if (fltr->action.fltr_act != ICE_DROP_PACKET)
++		rule_info.sw_act.vsi_handle = fltr->dest_vsi->idx;
++	/* For now, making priority to be highest, and it also becomes
++	 * the priority for recipe which will get created as a result of
++	 * new extraction sequence based on input set.
++	 * Priority '7' is max val for switch recipe, higher the number
++	 * results into order of switch rule evaluation.
++	 */
++	rule_info.priority = 7;
++
++	if (fltr->direction == ICE_ESWITCH_FLTR_INGRESS) {
++		rule_info.sw_act.flag |= ICE_FLTR_RX;
++		rule_info.sw_act.src = hw->pf_id;
++		rule_info.rx = true;
++	} else {
++		rule_info.sw_act.flag |= ICE_FLTR_TX;
++		rule_info.sw_act.src = vsi->idx;
++		rule_info.rx = false;
++	}
++
++	/* specify the cookie as filter_rule_id */
++	rule_info.fltr_rule_id = fltr->cookie;
++
++	status = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, &rule_added);
++	if (status == ICE_ERR_ALREADY_EXISTS) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because it already exist");
++		ret = -EINVAL;
++		goto exit;
++	} else if (status) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter due to error");
++		ret = -EIO;
++		goto exit;
++	}
++
++	/* store the output params, which are needed later for removing
++	 * advanced switch filter
++	 */
++	fltr->rid = rule_added.rid;
++	fltr->rule_id = rule_added.rule_id;
++
++	if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS) {
++		if (ice_fltr_update_flags(vsi, fltr->rule_id, fltr->rid,
++					  ICE_SINGLE_ACT_LAN_ENABLE))
++			ice_rem_adv_rule_by_id(hw, &rule_added);
++	}
++
++exit:
++	kfree(list);
++	return ret;
++}
++
++/**
++ * ice_tc_set_ipv4 - Parse IPv4 addresses from TC flower filter
++ * @match: Pointer to flow match structure
++ * @fltr: Pointer to filter structure
++ * @headers: inner or outer header fields
++ */
++static int
++ice_tc_set_ipv4(struct flow_match_ipv4_addrs *match,
++		struct ice_tc_flower_fltr *fltr,
++		struct ice_tc_flower_lyr_2_4_hdrs *headers)
++{
++	if (match->key->dst) {
++		fltr->flags |= ICE_TC_FLWR_FIELD_DEST_IPV4;
++		headers->l3_key.dst_ipv4 = match->key->dst;
++		headers->l3_mask.dst_ipv4 = match->mask->dst;
++	}
++	if (match->key->src) {
++		fltr->flags |= ICE_TC_FLWR_FIELD_SRC_IPV4;
++		headers->l3_key.src_ipv4 = match->key->src;
++		headers->l3_mask.src_ipv4 = match->mask->src;
++	}
++	return 0;
++}
++
++/**
++ * ice_tc_set_ipv6 - Parse IPv6 addresses from TC flower filter
++ * @match: Pointer to flow match structure
++ * @fltr: Pointer to filter structure
++ * @headers: inner or outer header fields
++ */
++static int
++ice_tc_set_ipv6(struct flow_match_ipv6_addrs *match,
++		struct ice_tc_flower_fltr *fltr,
++		struct ice_tc_flower_lyr_2_4_hdrs *headers)
++{
++	struct ice_tc_l3_hdr *l3_key, *l3_mask;
++
++	/* src and dest IPV6 address should not be LOOPBACK
++	 * (0:0:0:0:0:0:0:1), which can be represented as ::1
++	 */
++	if (ipv6_addr_loopback(&match->key->dst) ||
++	    ipv6_addr_loopback(&match->key->src)) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Bad IPv6, addr is LOOPBACK");
++		return -EINVAL;
++	}
++	/* if src/dest IPv6 address is *,* error */
++	if (ipv6_addr_any(&match->mask->dst) &&
++	    ipv6_addr_any(&match->mask->src)) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Bad src/dest IPv6, addr is any");
++		return -EINVAL;
++	}
++	if (!ipv6_addr_any(&match->mask->dst))
++		fltr->flags |= ICE_TC_FLWR_FIELD_DEST_IPV6;
++	if (!ipv6_addr_any(&match->mask->src))
++		fltr->flags |= ICE_TC_FLWR_FIELD_SRC_IPV6;
++
++	l3_key = &headers->l3_key;
++	l3_mask = &headers->l3_mask;
++
++	if (fltr->flags & ICE_TC_FLWR_FIELD_SRC_IPV6) {
++		memcpy(&l3_key->src_ipv6_addr, &match->key->src.s6_addr,
++		       sizeof(match->key->src.s6_addr));
++		memcpy(&l3_mask->src_ipv6_addr, &match->mask->src.s6_addr,
++		       sizeof(match->mask->src.s6_addr));
++	}
++	if (fltr->flags & ICE_TC_FLWR_FIELD_DEST_IPV6) {
++		memcpy(&l3_key->dst_ipv6_addr, &match->key->dst.s6_addr,
++		       sizeof(match->key->dst.s6_addr));
++		memcpy(&l3_mask->dst_ipv6_addr, &match->mask->dst.s6_addr,
++		       sizeof(match->mask->dst.s6_addr));
++	}
 +
 +	return 0;
 +}
 +
 +/**
-+ * ice_find_adv_rule_entry - Search a rule entry
-+ * @hw: pointer to the hardware structure
-+ * @lkups: lookup elements or match criteria for the advanced recipe, one
-+ *	   structure per protocol header
-+ * @lkups_cnt: number of protocols
-+ * @recp_id: recipe ID for which we are finding the rule
-+ * @rinfo: other information regarding the rule e.g. priority and action info
-+ *
-+ * Helper function to search for a given advance rule entry
-+ * Returns pointer to entry storing the rule if found
++ * ice_tc_set_port - Parse ports from TC flower filter
++ * @match: Flow match structure
++ * @fltr: Pointer to filter structure
++ * @headers: inner or outer header fields
 + */
-+static struct ice_adv_fltr_mgmt_list_entry *
-+ice_find_adv_rule_entry(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
-+			u16 lkups_cnt, u16 recp_id,
-+			struct ice_adv_rule_info *rinfo)
++static int
++ice_tc_set_port(struct flow_match_ports match,
++		struct ice_tc_flower_fltr *fltr,
++		struct ice_tc_flower_lyr_2_4_hdrs *headers)
 +{
-+	struct ice_adv_fltr_mgmt_list_entry *list_itr;
-+	struct ice_switch_info *sw = hw->switch_info;
++	if (match.key->dst) {
++		fltr->flags |= ICE_TC_FLWR_FIELD_DEST_L4_PORT;
++		headers->l4_key.dst_port = match.key->dst;
++		headers->l4_mask.dst_port = match.mask->dst;
++	}
++	if (match.key->src) {
++		fltr->flags |= ICE_TC_FLWR_FIELD_SRC_L4_PORT;
++		headers->l4_key.src_port = match.key->src;
++		headers->l4_mask.src_port = match.mask->src;
++	}
++	return 0;
++}
++
++/**
++ * ice_parse_cls_flower - Parse TC flower filters provided by kernel
++ * @vsi: Pointer to the VSI
++ * @filter_dev: Pointer to device on which filter is being added
++ * @f: Pointer to struct flow_cls_offload
++ * @fltr: Pointer to filter structure
++ */
++static int
++ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
++		     struct flow_cls_offload *f,
++		     struct ice_tc_flower_fltr *fltr)
++{
++	struct ice_tc_flower_lyr_2_4_hdrs *headers = &fltr->outer_headers;
++	struct flow_rule *rule = flow_cls_offload_flow_rule(f);
++	u16 n_proto_mask = 0, n_proto_key = 0, addr_type = 0;
++	struct flow_dissector *dissector;
++
++	dissector = rule->match.dissector;
++
++	if (dissector->used_keys &
++	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
++	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
++	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
++	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
++	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
++	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
++	      BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
++	      BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
++	      BIT(FLOW_DISSECTOR_KEY_PORTS))) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported key used");
++		return -EOPNOTSUPP;
++	}
++
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_BASIC)) {
++		struct flow_match_basic match;
++
++		flow_rule_match_basic(rule, &match);
++
++		n_proto_key = ntohs(match.key->n_proto);
++		n_proto_mask = ntohs(match.mask->n_proto);
++
++		if (n_proto_key == ETH_P_ALL || n_proto_key == 0) {
++			n_proto_key = 0;
++			n_proto_mask = 0;
++		} else {
++			fltr->flags |= ICE_TC_FLWR_FIELD_ETH_TYPE_ID;
++		}
++
++		headers->l2_key.n_proto = cpu_to_be16(n_proto_key);
++		headers->l2_mask.n_proto = cpu_to_be16(n_proto_mask);
++		headers->l3_key.ip_proto = match.key->ip_proto;
++	}
++
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
++		struct flow_match_eth_addrs match;
++
++		flow_rule_match_eth_addrs(rule, &match);
++
++		if (!is_zero_ether_addr(match.key->dst)) {
++			ether_addr_copy(headers->l2_key.dst_mac,
++					match.key->dst);
++			ether_addr_copy(headers->l2_mask.dst_mac,
++					match.mask->dst);
++			fltr->flags |= ICE_TC_FLWR_FIELD_DST_MAC;
++		}
++
++		if (!is_zero_ether_addr(match.key->src)) {
++			ether_addr_copy(headers->l2_key.src_mac,
++					match.key->src);
++			ether_addr_copy(headers->l2_mask.src_mac,
++					match.mask->src);
++			fltr->flags |= ICE_TC_FLWR_FIELD_SRC_MAC;
++		}
++	}
++
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_VLAN) ||
++	    is_vlan_dev(filter_dev)) {
++		struct flow_dissector_key_vlan mask;
++		struct flow_dissector_key_vlan key;
++		struct flow_match_vlan match;
++
++		if (is_vlan_dev(filter_dev)) {
++			match.key = &key;
++			match.key->vlan_id = vlan_dev_vlan_id(filter_dev);
++			match.key->vlan_priority = 0;
++			match.mask = &mask;
++			memset(match.mask, 0xff, sizeof(*match.mask));
++			match.mask->vlan_priority = 0;
++		} else {
++			flow_rule_match_vlan(rule, &match);
++		}
++
++		if (match.mask->vlan_id) {
++			if (match.mask->vlan_id == VLAN_VID_MASK) {
++				fltr->flags |= ICE_TC_FLWR_FIELD_VLAN;
++			} else {
++				NL_SET_ERR_MSG_MOD(fltr->extack, "Bad VLAN mask");
++				return -EINVAL;
++			}
++		}
++
++		headers->vlan_hdr.vlan_id =
++				cpu_to_be16(match.key->vlan_id & VLAN_VID_MASK);
++		if (match.mask->vlan_priority)
++			headers->vlan_hdr.vlan_prio = match.key->vlan_priority;
++	}
++
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_CONTROL)) {
++		struct flow_match_control match;
++
++		flow_rule_match_control(rule, &match);
++
++		addr_type = match.key->addr_type;
++	}
++
++	if (addr_type == FLOW_DISSECTOR_KEY_IPV4_ADDRS) {
++		struct flow_match_ipv4_addrs match;
++
++		flow_rule_match_ipv4_addrs(rule, &match);
++		if (ice_tc_set_ipv4(&match, fltr, headers))
++			return -EINVAL;
++	}
++
++	if (addr_type == FLOW_DISSECTOR_KEY_IPV6_ADDRS) {
++		struct flow_match_ipv6_addrs match;
++
++		flow_rule_match_ipv6_addrs(rule, &match);
++		if (ice_tc_set_ipv6(&match, fltr, headers))
++			return -EINVAL;
++	}
++
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_PORTS)) {
++		struct flow_match_ports match;
++
++		flow_rule_match_ports(rule, &match);
++		if (ice_tc_set_port(match, fltr, headers))
++			return -EINVAL;
++		switch (headers->l3_key.ip_proto) {
++		case IPPROTO_TCP:
++		case IPPROTO_UDP:
++			break;
++		default:
++			NL_SET_ERR_MSG_MOD(fltr->extack, "Only UDP and TCP transport are supported");
++			return -EINVAL;
++		}
++	}
++	return 0;
++}
++
++/**
++ * ice_add_switch_fltr - Add TC flower filters
++ * @vsi: Pointer to VSI
++ * @fltr: Pointer to struct ice_tc_flower_fltr
++ *
++ * Add filter in HW switch block
++ */
++static int
++ice_add_switch_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
++{
++	if (ice_is_eswitch_mode_switchdev(vsi->back))
++		return ice_eswitch_add_tc_fltr(vsi, fltr);
++
++	return -EOPNOTSUPP;
++}
++
++/**
++ * ice_handle_tclass_action - Support directing to a traffic class
++ * @vsi: Pointer to VSI
++ * @cls_flower: Pointer to TC flower offload structure
++ * @fltr: Pointer to TC flower filter structure
++ *
++ * Support directing traffic to a traffic class
++ */
++static int
++ice_handle_tclass_action(struct ice_vsi *vsi,
++			 struct flow_cls_offload *cls_flower,
++			 struct ice_tc_flower_fltr *fltr)
++{
++	int tc = tc_classid_to_hwtc(vsi->netdev, cls_flower->classid);
++
++	if (tc < 0) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because specified destination is invalid");
++		return -EINVAL;
++	}
++	if (!tc) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because of invalid destination");
++		return -EINVAL;
++	}
++
++	if (!(vsi->tc_cfg.ena_tc & BIT(tc))) {
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because of non-existence destination");
++		return -EINVAL;
++	}
++
++	/* Redirect to a TC class or Queue Group */
++	fltr->action.fltr_act = ICE_FWD_TO_QGRP;
++	fltr->action.tc_class = tc;
++
++	return 0;
++}
++
++/**
++ * ice_parse_tc_flower_actions - Parse the actions for a TC filter
++ * @vsi: Pointer to VSI
++ * @cls_flower: Pointer to TC flower offload structure
++ * @fltr: Pointer to TC flower filter structure
++ *
++ * Parse the actions for a TC filter
++ */
++static int
++ice_parse_tc_flower_actions(struct ice_vsi *vsi,
++			    struct flow_cls_offload *cls_flower,
++			    struct ice_tc_flower_fltr *fltr)
++{
++	struct flow_rule *rule = flow_cls_offload_flow_rule(cls_flower);
++	struct flow_action *flow_action = &rule->action;
++	struct flow_action_entry *act;
 +	int i;
 +
-+	list_for_each_entry(list_itr, &sw->recp_list[recp_id].filt_rules,
-+			    list_entry) {
-+		bool lkups_matched = true;
++	if (cls_flower->classid)
++		return ice_handle_tclass_action(vsi, cls_flower, fltr);
 +
-+		if (lkups_cnt != list_itr->lkups_cnt)
++	if (!flow_action_has_entries(flow_action))
++		return -EINVAL;
++
++	flow_action_for_each(i, act, flow_action) {
++		if (ice_is_eswitch_mode_switchdev(vsi->back)) {
++			int err = ice_eswitch_tc_parse_action(fltr, act);
++
++			if (err)
++				return err;
 +			continue;
-+		for (i = 0; i < list_itr->lkups_cnt; i++)
-+			if (memcmp(&list_itr->lkups[i], &lkups[i],
-+				   sizeof(*lkups))) {
-+				lkups_matched = false;
-+				break;
-+			}
-+		if (rinfo->sw_act.flag == list_itr->rule_info.sw_act.flag &&
-+		    lkups_matched)
-+			return list_itr;
++		}
++		/* Allow only one rule per filter */
++
++		/* Drop action */
++		if (act->id == FLOW_ACTION_DROP) {
++			fltr->action.fltr_act = ICE_DROP_PACKET;
++			return 0;
++		}
++		fltr->action.fltr_act = ICE_FWD_TO_VSI;
 +	}
++	return 0;
++}
++
++/**
++ * ice_del_tc_fltr - deletes a filter from HW table
++ * @vsi: Pointer to VSI
++ * @fltr: Pointer to struct ice_tc_flower_fltr
++ *
++ * This function deletes a filter from HW table and manages book-keeping
++ */
++static int ice_del_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
++{
++	struct ice_rule_query_data rule_rem;
++	struct ice_pf *pf = vsi->back;
++	int err;
++
++	rule_rem.rid = fltr->rid;
++	rule_rem.rule_id = fltr->rule_id;
++	rule_rem.vsi_handle = fltr->dest_id;
++	err = ice_rem_adv_rule_by_id(&pf->hw, &rule_rem);
++	if (err) {
++		if (err == ICE_ERR_DOES_NOT_EXIST) {
++			NL_SET_ERR_MSG_MOD(fltr->extack, "filter does not exist\n");
++			return -ENOENT;
++		}
++		NL_SET_ERR_MSG_MOD(fltr->extack, "Failed to delete TC flower filter");
++		return -EIO;
++	}
++
++	return 0;
++}
++
++/**
++ * ice_add_tc_fltr - adds a TC flower filter
++ * @netdev: Pointer to netdev
++ * @vsi: Pointer to VSI
++ * @f: Pointer to flower offload structure
++ * @__fltr: Pointer to struct ice_tc_flower_fltr
++ *
++ * This function parses TC-flower input fields, parses action,
++ * and adds a filter.
++ */
++static int
++ice_add_tc_fltr(struct net_device *netdev, struct ice_vsi *vsi,
++		struct flow_cls_offload *f,
++		struct ice_tc_flower_fltr **__fltr)
++{
++	struct ice_tc_flower_fltr *fltr;
++	int err;
++
++	/* by default, set output to be INVALID */
++	*__fltr = NULL;
++
++	fltr = kzalloc(sizeof(*fltr), GFP_KERNEL);
++	if (!fltr)
++		return -ENOMEM;
++
++	fltr->cookie = f->cookie;
++	fltr->extack = f->common.extack;
++	fltr->src_vsi = vsi;
++	INIT_HLIST_NODE(&fltr->tc_flower_node);
++
++	err = ice_parse_cls_flower(netdev, vsi, f, fltr);
++	if (err < 0)
++		goto err;
++
++	err = ice_parse_tc_flower_actions(vsi, f, fltr);
++	if (err < 0)
++		goto err;
++
++	err = ice_add_switch_fltr(vsi, fltr);
++	if (err < 0)
++		goto err;
++
++	/* return the newly created filter */
++	*__fltr = fltr;
++
++	return 0;
++err:
++	kfree(fltr);
++	return err;
++}
++
++/**
++ * ice_find_tc_flower_fltr - Find the TC flower filter in the list
++ * @pf: Pointer to PF
++ * @cookie: filter specific cookie
++ */
++static struct ice_tc_flower_fltr *
++ice_find_tc_flower_fltr(struct ice_pf *pf, unsigned long cookie)
++{
++	struct ice_tc_flower_fltr *fltr;
++
++	hlist_for_each_entry(fltr, &pf->tc_flower_fltr_list, tc_flower_node)
++		if (cookie == fltr->cookie)
++			return fltr;
++
 +	return NULL;
 +}
 +
 +/**
-+ * ice_adv_add_update_vsi_list
-+ * @hw: pointer to the hardware structure
-+ * @m_entry: pointer to current adv filter management list entry
-+ * @cur_fltr: filter information from the book keeping entry
-+ * @new_fltr: filter information with the new VSI to be added
-+ *
-+ * Call AQ command to add or update previously created VSI list with new VSI.
-+ *
-+ * Helper function to do book keeping associated with adding filter information
-+ * The algorithm to do the booking keeping is described below :
-+ * When a VSI needs to subscribe to a given advanced filter
-+ *	if only one VSI has been added till now
-+ *		Allocate a new VSI list and add two VSIs
-+ *		to this list using switch rule command
-+ *		Update the previously created switch rule with the
-+ *		newly created VSI list ID
-+ *	if a VSI list was previously created
-+ *		Add the new VSI to the previously created VSI list set
-+ *		using the update switch rule command
++ * ice_add_cls_flower - add TC flower filters
++ * @netdev: Pointer to filter device
++ * @vsi: Pointer to VSI
++ * @cls_flower: Pointer to flower offload structure
 + */
-+static enum ice_status
-+ice_adv_add_update_vsi_list(struct ice_hw *hw,
-+			    struct ice_adv_fltr_mgmt_list_entry *m_entry,
-+			    struct ice_adv_rule_info *cur_fltr,
-+			    struct ice_adv_rule_info *new_fltr)
++int
++ice_add_cls_flower(struct net_device *netdev, struct ice_vsi *vsi,
++		   struct flow_cls_offload *cls_flower)
 +{
-+	enum ice_status status;
-+	u16 vsi_list_id = 0;
++	struct netlink_ext_ack *extack = cls_flower->common.extack;
++	struct net_device *vsi_netdev = vsi->netdev;
++	struct ice_tc_flower_fltr *fltr;
++	struct ice_pf *pf = vsi->back;
++	int err;
 +
-+	if (cur_fltr->sw_act.fltr_act == ICE_FWD_TO_Q ||
-+	    cur_fltr->sw_act.fltr_act == ICE_FWD_TO_QGRP ||
-+	    cur_fltr->sw_act.fltr_act == ICE_DROP_PACKET)
-+		return ICE_ERR_NOT_IMPL;
++	if (ice_is_reset_in_progress(pf->state))
++		return -EBUSY;
++	if (test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
++		return -EINVAL;
 +
-+	if ((new_fltr->sw_act.fltr_act == ICE_FWD_TO_Q ||
-+	     new_fltr->sw_act.fltr_act == ICE_FWD_TO_QGRP) &&
-+	    (cur_fltr->sw_act.fltr_act == ICE_FWD_TO_VSI ||
-+	     cur_fltr->sw_act.fltr_act == ICE_FWD_TO_VSI_LIST))
-+		return ICE_ERR_NOT_IMPL;
++	if (ice_is_port_repr_netdev(netdev))
++		vsi_netdev = netdev;
 +
-+	if (m_entry->vsi_count < 2 && !m_entry->vsi_list_info) {
-+		 /* Only one entry existed in the mapping and it was not already
-+		  * a part of a VSI list. So, create a VSI list with the old and
-+		  * new VSIs.
-+		  */
-+		struct ice_fltr_info tmp_fltr;
-+		u16 vsi_handle_arr[2];
-+
-+		/* A rule already exists with the new VSI being added */
-+		if (cur_fltr->sw_act.fwd_id.hw_vsi_id ==
-+		    new_fltr->sw_act.fwd_id.hw_vsi_id)
-+			return ICE_ERR_ALREADY_EXISTS;
-+
-+		vsi_handle_arr[0] = cur_fltr->sw_act.vsi_handle;
-+		vsi_handle_arr[1] = new_fltr->sw_act.vsi_handle;
-+		status = ice_create_vsi_list_rule(hw, &vsi_handle_arr[0], 2,
-+						  &vsi_list_id,
-+						  ICE_SW_LKUP_LAST);
-+		if (status)
-+			return status;
-+
-+		memset(&tmp_fltr, 0, sizeof(tmp_fltr));
-+		tmp_fltr.flag = m_entry->rule_info.sw_act.flag;
-+		tmp_fltr.fltr_rule_id = cur_fltr->fltr_rule_id;
-+		tmp_fltr.fltr_act = ICE_FWD_TO_VSI_LIST;
-+		tmp_fltr.fwd_id.vsi_list_id = vsi_list_id;
-+		tmp_fltr.lkup_type = ICE_SW_LKUP_LAST;
-+
-+		/* Update the previous switch rule of "forward to VSI" to
-+		 * "fwd to VSI list"
++	if (!(vsi_netdev->features & NETIF_F_HW_TC) &&
++	    !test_bit(ICE_FLAG_CLS_FLOWER, pf->flags)) {
++		/* Based on TC indirect notifications from kernel, all ice
++		 * devices get an instance of rule from higher level device.
++		 * Avoid triggering explicit error in this case.
 +		 */
-+		status = ice_update_pkt_fwd_rule(hw, &tmp_fltr);
-+		if (status)
-+			return status;
++		if (netdev == vsi_netdev)
++			NL_SET_ERR_MSG_MOD(extack, "can't apply TC flower filters, turn ON hw-tc-offload and try again");
++		return -EINVAL;
++	}
 +
-+		cur_fltr->sw_act.fwd_id.vsi_list_id = vsi_list_id;
-+		cur_fltr->sw_act.fltr_act = ICE_FWD_TO_VSI_LIST;
-+		m_entry->vsi_list_info =
-+			ice_create_vsi_list_map(hw, &vsi_handle_arr[0], 2,
-+						vsi_list_id);
-+	} else {
-+		u16 vsi_handle = new_fltr->sw_act.vsi_handle;
++	/* avoid duplicate entries, if exists - return error */
++	fltr = ice_find_tc_flower_fltr(pf, cls_flower->cookie);
++	if (fltr) {
++		NL_SET_ERR_MSG_MOD(extack, "filter cookie already exists, ignoring");
++		return -EEXIST;
++	}
 +
-+		if (!m_entry->vsi_list_info)
-+			return ICE_ERR_CFG;
++	/* prep and add TC-flower filter in HW */
++	err = ice_add_tc_fltr(netdev, vsi, cls_flower, &fltr);
++	if (err)
++		return err;
 +
-+		/* A rule already exists with the new VSI being added */
-+		if (test_bit(vsi_handle, m_entry->vsi_list_info->vsi_map))
++	/* add filter into an ordered list */
++	hlist_add_head(&fltr->tc_flower_node, &pf->tc_flower_fltr_list);
++	return 0;
++}
++
++/**
++ * ice_del_cls_flower - delete TC flower filters
++ * @vsi: Pointer to VSI
++ * @cls_flower: Pointer to struct flow_cls_offload
++ */
++int
++ice_del_cls_flower(struct ice_vsi *vsi, struct flow_cls_offload *cls_flower)
++{
++	struct ice_tc_flower_fltr *fltr;
++	struct ice_pf *pf = vsi->back;
++	int err;
++
++	/* find filter */
++	fltr = ice_find_tc_flower_fltr(pf, cls_flower->cookie);
++	if (!fltr) {
++		if (hlist_empty(&pf->tc_flower_fltr_list))
 +			return 0;
 +
-+		/* Update the previously created VSI list set with
-+		 * the new VSI ID passed in
-+		 */
-+		vsi_list_id = cur_fltr->sw_act.fwd_id.vsi_list_id;
-+
-+		status = ice_update_vsi_list_rule(hw, &vsi_handle, 1,
-+						  vsi_list_id, false,
-+						  ice_aqc_opc_update_sw_rules,
-+						  ICE_SW_LKUP_LAST);
-+		/* update VSI list mapping info with new VSI ID */
-+		if (!status)
-+			set_bit(vsi_handle, m_entry->vsi_list_info->vsi_map);
++		NL_SET_ERR_MSG_MOD(cls_flower->common.extack, "failed to delete TC flower filter because unable to find it");
++		return -EINVAL;
 +	}
-+	if (!status)
-+		m_entry->vsi_count++;
-+	return status;
++
++	fltr->extack = cls_flower->common.extack;
++	/* delete filter from HW */
++	err = ice_del_tc_fltr(vsi, fltr);
++	if (err)
++		return err;
++
++	/* delete filter from an ordered list */
++	hlist_del(&fltr->tc_flower_node);
++
++	/* free the filter node */
++	kfree(fltr);
++
++	return 0;
 +}
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+new file mode 100644
+index 000000000000..883d2891f92c
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+@@ -0,0 +1,129 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2019-2021, Intel Corporation. */
 +
-+/**
-+ * ice_add_adv_rule - helper function to create an advanced switch rule
-+ * @hw: pointer to the hardware structure
-+ * @lkups: information on the words that needs to be looked up. All words
-+ * together makes one recipe
-+ * @lkups_cnt: num of entries in the lkups array
-+ * @rinfo: other information related to the rule that needs to be programmed
-+ * @added_entry: this will return recipe_id, rule_id and vsi_handle. should be
-+ *               ignored is case of error.
-+ *
-+ * This function can program only 1 rule at a time. The lkups is used to
-+ * describe the all the words that forms the "lookup" portion of the recipe.
-+ * These words can span multiple protocols. Callers to this function need to
-+ * pass in a list of protocol headers with lookup information along and mask
-+ * that determines which words are valid from the given protocol header.
-+ * rinfo describes other information related to this rule such as forwarding
-+ * IDs, priority of this rule, etc.
-+ */
-+enum ice_status
-+ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
-+		 u16 lkups_cnt, struct ice_adv_rule_info *rinfo,
-+		 struct ice_rule_query_data *added_entry)
-+{
-+	struct ice_adv_fltr_mgmt_list_entry *m_entry, *adv_fltr = NULL;
-+	u16 rid = 0, i, pkt_len, rule_buf_sz, vsi_handle;
-+	const struct ice_dummy_pkt_offsets *pkt_offsets;
-+	struct ice_aqc_sw_rules_elem *s_rule = NULL;
-+	struct list_head *rule_head;
-+	struct ice_switch_info *sw;
-+	enum ice_status status;
-+	const u8 *pkt = NULL;
-+	u16 word_cnt;
-+	u32 act = 0;
-+	u8 q_rgn;
++#ifndef _ICE_TC_LIB_H_
++#define _ICE_TC_LIB_H_
 +
-+	/* Initialize profile to result index bitmap */
-+	if (!hw->switch_info->prof_res_bm_init) {
-+		hw->switch_info->prof_res_bm_init = 1;
-+		ice_init_prof_result_bm(hw);
-+	}
++#define ICE_TC_FLWR_FIELD_DST_MAC		BIT(0)
++#define ICE_TC_FLWR_FIELD_SRC_MAC		BIT(1)
++#define ICE_TC_FLWR_FIELD_VLAN			BIT(2)
++#define ICE_TC_FLWR_FIELD_DEST_IPV4		BIT(3)
++#define ICE_TC_FLWR_FIELD_SRC_IPV4		BIT(4)
++#define ICE_TC_FLWR_FIELD_DEST_IPV6		BIT(5)
++#define ICE_TC_FLWR_FIELD_SRC_IPV6		BIT(6)
++#define ICE_TC_FLWR_FIELD_DEST_L4_PORT		BIT(7)
++#define ICE_TC_FLWR_FIELD_SRC_L4_PORT		BIT(8)
++#define ICE_TC_FLWR_FIELD_TENANT_ID		BIT(9)
++#define ICE_TC_FLWR_FIELD_ENC_DEST_IPV4		BIT(10)
++#define ICE_TC_FLWR_FIELD_ENC_SRC_IPV4		BIT(11)
++#define ICE_TC_FLWR_FIELD_ENC_DEST_IPV6		BIT(12)
++#define ICE_TC_FLWR_FIELD_ENC_SRC_IPV6		BIT(13)
++#define ICE_TC_FLWR_FIELD_ENC_DEST_L4_PORT	BIT(14)
++#define ICE_TC_FLWR_FIELD_ENC_SRC_L4_PORT	BIT(15)
++#define ICE_TC_FLWR_FIELD_ENC_DST_MAC		BIT(16)
++#define ICE_TC_FLWR_FIELD_ETH_TYPE_ID		BIT(17)
 +
-+	if (!lkups_cnt)
-+		return ICE_ERR_PARAM;
-+
-+	/* get # of words we need to match */
-+	word_cnt = 0;
-+	for (i = 0; i < lkups_cnt; i++) {
-+		u16 j, *ptr;
-+
-+		ptr = (u16 *)&lkups[i].m_u;
-+		for (j = 0; j < sizeof(lkups->m_u) / sizeof(u16); j++)
-+			if (ptr[j] != 0)
-+				word_cnt++;
-+	}
-+
-+	if (!word_cnt || word_cnt > ICE_MAX_CHAIN_WORDS)
-+		return ICE_ERR_PARAM;
-+
-+	/* make sure that we can locate a dummy packet */
-+	ice_find_dummy_packet(lkups, lkups_cnt, &pkt, &pkt_len,
-+			      &pkt_offsets);
-+	if (!pkt) {
-+		status = ICE_ERR_PARAM;
-+		goto err_ice_add_adv_rule;
-+	}
-+
-+	if (!(rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI ||
-+	      rinfo->sw_act.fltr_act == ICE_FWD_TO_Q ||
-+	      rinfo->sw_act.fltr_act == ICE_FWD_TO_QGRP ||
-+	      rinfo->sw_act.fltr_act == ICE_DROP_PACKET))
-+		return ICE_ERR_CFG;
-+
-+	vsi_handle = rinfo->sw_act.vsi_handle;
-+	if (!ice_is_vsi_valid(hw, vsi_handle))
-+		return ICE_ERR_PARAM;
-+
-+	if (rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI)
-+		rinfo->sw_act.fwd_id.hw_vsi_id =
-+			ice_get_hw_vsi_num(hw, vsi_handle);
-+	if (rinfo->sw_act.flag & ICE_FLTR_TX)
-+		rinfo->sw_act.src = ice_get_hw_vsi_num(hw, vsi_handle);
-+
-+	status = ice_add_adv_recipe(hw, lkups, lkups_cnt, rinfo, &rid);
-+	if (status)
-+		return status;
-+	m_entry = ice_find_adv_rule_entry(hw, lkups, lkups_cnt, rid, rinfo);
-+	if (m_entry) {
-+		/* we have to add VSI to VSI_LIST and increment vsi_count.
-+		 * Also Update VSI list so that we can change forwarding rule
-+		 * if the rule already exists, we will check if it exists with
-+		 * same vsi_id, if not then add it to the VSI list if it already
-+		 * exists if not then create a VSI list and add the existing VSI
-+		 * ID and the new VSI ID to the list
-+		 * We will add that VSI to the list
-+		 */
-+		status = ice_adv_add_update_vsi_list(hw, m_entry,
-+						     &m_entry->rule_info,
-+						     rinfo);
-+		if (added_entry) {
-+			added_entry->rid = rid;
-+			added_entry->rule_id = m_entry->rule_info.fltr_rule_id;
-+			added_entry->vsi_handle = rinfo->sw_act.vsi_handle;
-+		}
-+		return status;
-+	}
-+	rule_buf_sz = ICE_SW_RULE_RX_TX_NO_HDR_SIZE + pkt_len;
-+	s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
-+	if (!s_rule)
-+		return ICE_ERR_NO_MEMORY;
-+	act |= ICE_SINGLE_ACT_LB_ENABLE | ICE_SINGLE_ACT_LAN_ENABLE;
-+	switch (rinfo->sw_act.fltr_act) {
-+	case ICE_FWD_TO_VSI:
-+		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
-+			ICE_SINGLE_ACT_VSI_ID_S) & ICE_SINGLE_ACT_VSI_ID_M;
-+		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT;
-+		break;
-+	case ICE_FWD_TO_Q:
-+		act |= ICE_SINGLE_ACT_TO_Q;
-+		act |= (rinfo->sw_act.fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
-+		       ICE_SINGLE_ACT_Q_INDEX_M;
-+		break;
-+	case ICE_FWD_TO_QGRP:
-+		q_rgn = rinfo->sw_act.qgrp_size > 0 ?
-+			(u8)ilog2(rinfo->sw_act.qgrp_size) : 0;
-+		act |= ICE_SINGLE_ACT_TO_Q;
-+		act |= (rinfo->sw_act.fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
-+		       ICE_SINGLE_ACT_Q_INDEX_M;
-+		act |= (q_rgn << ICE_SINGLE_ACT_Q_REGION_S) &
-+		       ICE_SINGLE_ACT_Q_REGION_M;
-+		break;
-+	case ICE_DROP_PACKET:
-+		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
-+		       ICE_SINGLE_ACT_VALID_BIT;
-+		break;
-+	default:
-+		status = ICE_ERR_CFG;
-+		goto err_ice_add_adv_rule;
-+	}
-+
-+	/* set the rule LOOKUP type based on caller specified 'Rx'
-+	 * instead of hardcoding it to be either LOOKUP_TX/RX
-+	 *
-+	 * for 'Rx' set the source to be the port number
-+	 * for 'Tx' set the source to be the source HW VSI number (determined
-+	 * by caller)
-+	 */
-+	if (rinfo->rx) {
-+		s_rule->type = cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_RX);
-+		s_rule->pdata.lkup_tx_rx.src =
-+			cpu_to_le16(hw->port_info->lport);
-+	} else {
-+		s_rule->type = cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_TX);
-+		s_rule->pdata.lkup_tx_rx.src = cpu_to_le16(rinfo->sw_act.src);
-+	}
-+
-+	s_rule->pdata.lkup_tx_rx.recipe_id = cpu_to_le16(rid);
-+	s_rule->pdata.lkup_tx_rx.act = cpu_to_le32(act);
-+
-+	status = ice_fill_adv_dummy_packet(lkups, lkups_cnt, s_rule, pkt,
-+					   pkt_len, pkt_offsets);
-+	if (status)
-+		goto err_ice_add_adv_rule;
-+
-+	status = ice_aq_sw_rules(hw, (struct ice_aqc_sw_rules *)s_rule,
-+				 rule_buf_sz, 1, ice_aqc_opc_add_sw_rules,
-+				 NULL);
-+	if (status)
-+		goto err_ice_add_adv_rule;
-+	adv_fltr = devm_kzalloc(ice_hw_to_dev(hw),
-+				sizeof(struct ice_adv_fltr_mgmt_list_entry),
-+				GFP_KERNEL);
-+	if (!adv_fltr) {
-+		status = ICE_ERR_NO_MEMORY;
-+		goto err_ice_add_adv_rule;
-+	}
-+
-+	adv_fltr->lkups = devm_kmemdup(ice_hw_to_dev(hw), lkups,
-+				       lkups_cnt * sizeof(*lkups), GFP_KERNEL);
-+	if (!adv_fltr->lkups) {
-+		status = ICE_ERR_NO_MEMORY;
-+		goto err_ice_add_adv_rule;
-+	}
-+
-+	adv_fltr->lkups_cnt = lkups_cnt;
-+	adv_fltr->rule_info = *rinfo;
-+	adv_fltr->rule_info.fltr_rule_id =
-+		le16_to_cpu(s_rule->pdata.lkup_tx_rx.index);
-+	sw = hw->switch_info;
-+	sw->recp_list[rid].adv_rule = true;
-+	rule_head = &sw->recp_list[rid].filt_rules;
-+
-+	if (rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI)
-+		adv_fltr->vsi_count = 1;
-+
-+	/* Add rule entry to book keeping list */
-+	list_add(&adv_fltr->list_entry, rule_head);
-+	if (added_entry) {
-+		added_entry->rid = rid;
-+		added_entry->rule_id = adv_fltr->rule_info.fltr_rule_id;
-+		added_entry->vsi_handle = rinfo->sw_act.vsi_handle;
-+	}
-+err_ice_add_adv_rule:
-+	if (status && adv_fltr) {
-+		devm_kfree(ice_hw_to_dev(hw), adv_fltr->lkups);
-+		devm_kfree(ice_hw_to_dev(hw), adv_fltr);
-+	}
-+
-+	kfree(s_rule);
-+
-+	return status;
-+}
-+
-+/**
-  * ice_replay_vsi_fltr - Replay filters for requested VSI
-  * @hw: pointer to the hardware structure
-  * @vsi_handle: driver VSI handle
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 56bf54fe462f..082b710077c2 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -275,6 +275,16 @@ struct ice_fltr_mgmt_list_entry {
- 	u8 counter_index;
- };
- 
-+struct ice_adv_fltr_mgmt_list_entry {
-+	struct list_head list_entry;
-+
-+	struct ice_adv_lkup_elem *lkups;
-+	struct ice_adv_rule_info rule_info;
-+	u16 lkups_cnt;
-+	struct ice_vsi_list_map_info *vsi_list_info;
-+	u16 vsi_count;
++struct ice_tc_flower_action {
++	u32 tc_class;
++	enum ice_sw_fwd_act_type fltr_act;
 +};
 +
- enum ice_promisc_flags {
- 	ICE_PROMISC_UCAST_RX = 0x1,
- 	ICE_PROMISC_UCAST_TX = 0x2,
-@@ -310,6 +320,10 @@ enum ice_status
- 		  u16 counter_id);
- 
- /* Switch/bridge related commands */
-+enum ice_status
-+ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
-+		 u16 lkups_cnt, struct ice_adv_rule_info *rinfo,
-+		 struct ice_rule_query_data *added_entry);
- enum ice_status ice_update_sw_rule_bridge_mode(struct ice_hw *hw);
- enum ice_status ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
- enum ice_status ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 6b4f064f6c0d..582225df46f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -698,6 +698,7 @@ struct ice_port_info {
- struct ice_switch_info {
- 	struct list_head vsi_list_map_head;
- 	struct ice_sw_recipe *recp_list;
-+	u16 prof_res_bm_init;
- 	u16 max_used_prof_index;
- 
- 	DECLARE_BITMAP(prof_res_bm[ICE_MAX_NUM_PROFILES], ICE_MAX_FV_WORDS);
++struct ice_tc_vlan_hdr {
++	__be16 vlan_id; /* Only last 12 bits valid */
++	u16 vlan_prio; /* Only last 3 bits valid (valid values: 0..7) */
++};
++
++struct ice_tc_l2_hdr {
++	u8 dst_mac[ETH_ALEN];
++	u8 src_mac[ETH_ALEN];
++	__be16 n_proto;    /* Ethernet Protocol */
++};
++
++struct ice_tc_l3_hdr {
++	u8 ip_proto;    /* IPPROTO value */
++	union {
++		struct {
++			struct in_addr dst_ip;
++			struct in_addr src_ip;
++		} v4;
++		struct {
++			struct in6_addr dst_ip6;
++			struct in6_addr src_ip6;
++		} v6;
++	} ip;
++#define dst_ipv6	ip.v6.dst_ip6.s6_addr32
++#define dst_ipv6_addr	ip.v6.dst_ip6.s6_addr
++#define src_ipv6	ip.v6.src_ip6.s6_addr32
++#define src_ipv6_addr	ip.v6.src_ip6.s6_addr
++#define dst_ipv4	ip.v4.dst_ip.s_addr
++#define src_ipv4	ip.v4.src_ip.s_addr
++
++	u8 tos;
++	u8 ttl;
++};
++
++struct ice_tc_l4_hdr {
++	__be16 dst_port;
++	__be16 src_port;
++};
++
++struct ice_tc_flower_lyr_2_4_hdrs {
++	/* L2 layer fields with their mask */
++	struct ice_tc_l2_hdr l2_key;
++	struct ice_tc_l2_hdr l2_mask;
++	struct ice_tc_vlan_hdr vlan_hdr;
++	/* L3 (IPv4[6]) layer fields with their mask */
++	struct ice_tc_l3_hdr l3_key;
++	struct ice_tc_l3_hdr l3_mask;
++
++	/* L4 layer fields with their mask */
++	struct ice_tc_l4_hdr l4_key;
++	struct ice_tc_l4_hdr l4_mask;
++};
++
++enum ice_eswitch_fltr_direction {
++	ICE_ESWITCH_FLTR_INGRESS,
++	ICE_ESWITCH_FLTR_EGRESS,
++};
++
++struct ice_tc_flower_fltr {
++	struct hlist_node tc_flower_node;
++
++	/* cookie becomes filter_rule_id if rule is added successfully */
++	unsigned long cookie;
++
++	/* add_adv_rule returns information like recipe ID, rule_id. Store
++	 * those values since they are needed to remove advanced rule
++	 */
++	u16 rid;
++	u16 rule_id;
++	/* this could be queue/vsi_idx (sw handle)/queue_group, depending upon
++	 * destination type
++	 */
++	u16 dest_id;
++	/* if dest_id is vsi_idx, then need to store destination VSI ptr */
++	struct ice_vsi *dest_vsi;
++	/* direction of fltr for eswitch use case */
++	enum ice_eswitch_fltr_direction direction;
++
++	/* Parsed TC flower configuration params */
++	struct ice_tc_flower_lyr_2_4_hdrs outer_headers;
++	struct ice_tc_flower_lyr_2_4_hdrs inner_headers;
++	struct ice_vsi *src_vsi;
++	__be32 tenant_id;
++	u32 flags;
++	struct ice_tc_flower_action	action;
++
++	/* cache ptr which is used wherever needed to communicate netlink
++	 * messages
++	 */
++	struct netlink_ext_ack *extack;
++};
++
++int
++ice_add_cls_flower(struct net_device *netdev, struct ice_vsi *vsi,
++		   struct flow_cls_offload *cls_flower);
++int
++ice_del_cls_flower(struct ice_vsi *vsi, struct flow_cls_offload *cls_flower);
++
++#endif /* _ICE_TC_LIB_H_ */
 -- 
 1.8.3.1
 
