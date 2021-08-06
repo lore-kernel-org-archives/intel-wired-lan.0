@@ -1,41 +1,65 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Fri, 6 Aug 2021 10:08:27 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 06/12] ice: allow changing
- lan_en and lb_en on dflt rules
-In-Reply-To: <20210625024501.6126-7-michal.swiatkowski@linux.intel.com>
-References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
- <20210625024501.6126-7-michal.swiatkowski@linux.intel.com>
-Message-ID: <MW3PR11MB45546785FBB2DA5FA8D783209CF39@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Fri,  6 Aug 2021 11:55:33 +0200
+Subject: [Intel-wired-lan] [PATCH v4 intel-next 0/6] XDP_TX improvements for
+ ice
+Message-ID: <20210806095539.34423-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Michal Swiatkowski
->Sent: Friday, June 25, 2021 8:15 AM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v3 06/12] ice: allow changing lan_en
->and lb_en on dflt rules
->
->There is no way to change default lan_en and lb_en flags while adding new
->rule. Add function that allows changing these flags on ICE_SW_LKUP_DFLT
->recipe and any rule id.
->
->lan_en allows packet to go outside if rule is matched. Clearing this bit will
->block packet from sending it outside.
->
->lb_en allows packet to be forwarded to other VSI. Clearing this bit will block
->packet from forwarding it to other VSI.
->
->Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->---
-> drivers/net/ethernet/intel/ice/ice_fltr.c   | 80 +++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_fltr.h   |  7 ++
-> drivers/net/ethernet/intel/ice/ice_switch.c |  2 +-
->drivers/net/ethernet/intel/ice/ice_switch.h |  6 ++
-> 4 files changed, 94 insertions(+), 1 deletion(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+Hi,
+
+it's been a while. Here's another revision of XDP_TX improvements for
+ice. This time I decided to split the generic ring struct that was
+serving both Tx and Rx sides onto separate entities. It is due to the
+fact that this set introduces few Tx specific fields onto ring.
+
+Also, when compared to v2, Xdp ring is propagated onto Rx ring.
+Accessing vsi->xdp_rings array, especially in fallback path, is not
+convenient.
+
+This v4 fixes the compile issue reported by lkp.
+
+Finally patch 5 introduces yet another cleaning logic, different from
+v2. For more info please see commit messages.
+
+Thanks!
+Maciej
+
+v3 : https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
+v2 : https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
+v1 : https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
+
+
+Maciej Fijalkowski (6):
+  ice: split ice_ring onto Tx/Rx separate structs
+  ice: unify xdp_rings accesses
+  ice: do not create xdp_frame on XDP_TX
+  ice: propagate xdp_ring onto rx_ring
+  ice: optimize XDP_TX workloads
+  ice: introduce XDP_TX fallback path
+
+ drivers/net/ethernet/intel/ice/ice.h          |  30 +++-
+ drivers/net/ethernet/intel/ice/ice_base.c     |  27 ++--
+ drivers/net/ethernet/intel/ice/ice_base.h     |   6 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   5 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  17 ++-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  32 ++--
+ drivers/net/ethernet/intel/ice/ice_lib.h      |   4 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     | 101 +++++++++----
+ drivers/net/ethernet/intel/ice/ice_trace.h    |   8 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 139 +++++++++++-------
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  94 +++++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  86 +++++++++--
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h |   8 +-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      |  52 ++++---
+ drivers/net/ethernet/intel/ice/ice_xsk.h      |   8 +-
+ 17 files changed, 410 insertions(+), 219 deletions(-)
+
+-- 
+2.20.1
+
