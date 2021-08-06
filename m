@@ -1,11 +1,11 @@
 From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Fri, 6 Aug 2021 09:51:43 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 02/12] ice: Move devlink
- port to PF/VF struct
-In-Reply-To: <20210625024501.6126-3-michal.swiatkowski@linux.intel.com>
+Date: Fri, 6 Aug 2021 10:08:27 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 06/12] ice: allow changing
+ lan_en and lb_en on dflt rules
+In-Reply-To: <20210625024501.6126-7-michal.swiatkowski@linux.intel.com>
 References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
- <20210625024501.6126-3-michal.swiatkowski@linux.intel.com>
-Message-ID: <MW3PR11MB4554370241CD07260EE5BA149CF39@MW3PR11MB4554.namprd11.prod.outlook.com>
+ <20210625024501.6126-7-michal.swiatkowski@linux.intel.com>
+Message-ID: <MW3PR11MB45546785FBB2DA5FA8D783209CF39@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,35 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 >Michal Swiatkowski
 >Sent: Friday, June 25, 2021 8:15 AM
 To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v3 02/12] ice: Move devlink port to
->PF/VF struct
+>Subject: [Intel-wired-lan] [PATCH net-next v3 06/12] ice: allow changing lan_en
+>and lb_en on dflt rules
 >
->From: Wojciech Drewek <wojciech.drewek@intel.com>
+>There is no way to change default lan_en and lb_en flags while adding new
+>rule. Add function that allows changing these flags on ICE_SW_LKUP_DFLT
+>recipe and any rule id.
 >
->Keeping devlink port inside VSI data structure causes some issues.
->Since VF VSI is released during reset that means that we have to unregister
->devlink port and register it again every time reset is triggered. With the new
->changes in devlink API it might cause deadlock issues. After calling
->devlink_port_register/devlink_port_unregister devlink API is going to lock
->rtnl_mutex. It's an issue when VF reset is triggered in netlink operation
->context (like setting VF MAC address or VLAN), because rtnl_lock is already
->taken by netlink. Another call of rtnl_lock from devlink API results in dead-
->lock.
+>lan_en allows packet to go outside if rule is matched. Clearing this bit will
+>block packet from sending it outside.
 >
->By moving devlink port to PF/VF we avoid creating/destroying it during reset.
->Since this patch, devlink ports are created during ice_probe, destroyed during
->ice_remove for PF and created during ice_repr_add, destroyed during
->ice_repr_rem for VF.
+>lb_en allows packet to be forwarded to other VSI. Clearing this bit will block
+>packet from forwarding it to other VSI.
 >
->Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 >---
-> drivers/net/ethernet/intel/ice/ice.h          |   7 +-
-> drivers/net/ethernet/intel/ice/ice_devlink.c  | 106 +++++++++++++-----
-> drivers/net/ethernet/intel/ice/ice_devlink.h  |   6 +-
-> drivers/net/ethernet/intel/ice/ice_lib.c      |   3 +-
-> drivers/net/ethernet/intel/ice/ice_main.c     |   4 +-
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   9 ++
-> 7 files changed, 100 insertions(+), 37 deletions(-)
+> drivers/net/ethernet/intel/ice/ice_fltr.c   | 80 +++++++++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_fltr.h   |  7 ++
+> drivers/net/ethernet/intel/ice/ice_switch.c |  2 +-
+>drivers/net/ethernet/intel/ice/ice_switch.h |  6 ++
+> 4 files changed, 94 insertions(+), 1 deletion(-)
 >
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
