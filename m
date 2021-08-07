@@ -1,170 +1,79 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 07 Aug 2021 18:01:47 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
- 96ea8bee7ce727581d6cc6f23ed4b277dc0e3355
-Message-ID: <610e5a0b.fJEgsHgJcgYvvZ4R%lkp@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Sat, 7 Aug 2021 16:01:14 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: Stop processing VF messages
+ during teardown
+In-Reply-To: <20210804191242.871950-1-anirudh.venkataramanan@intel.com>
+References: <20210804191242.871950-1-anirudh.venkataramanan@intel.com>
+Message-ID: <DM8PR11MB5621372DC86114ED631FA27CABF49@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 96ea8bee7ce727581d6cc6f23ed4b277dc0e3355  ice: ndo_setup_tc implementation for PR
+> 
+> When VFs are setup and torn down in quick succession, it is possible that a VF
+> is torn down by the PF while the VF's virtchnl requests are still in the PF's
+> mailbox ring. Processing the VF's virtchnl request when the VF itself doesn't
+> exist results in undefined behavior. Fix this by adding a check to stop
+> processing virtchnl requests when VF teardown is in progress.
+> 
+> Fixes: ddf30f7ff840 ("ice: Add handler to configure SR-IOV")
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h             | 1 +
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 7 +++++++
+>  2 files changed, 8 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h
+> b/drivers/net/ethernet/intel/ice/ice.h
+> index 5517e13..e452397 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
+> @@ -240,6 +240,7 @@ enum ice_pf_state {
+>  	ICE_VFLR_EVENT_PENDING,
+>  	ICE_FLTR_OVERFLOW_PROMISC,
+>  	ICE_VF_DIS,
+> +	ICE_VF_DEINIT_IN_PROGRESS,
+>  	ICE_CFG_BUSY,
+>  	ICE_SERVICE_SCHED,
+>  	ICE_SERVICE_DIS,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index 85d98a8..9779519 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -499,6 +499,8 @@ void ice_free_vfs(struct ice_pf *pf)
+>  	struct ice_hw *hw = &pf->hw;
+>  	unsigned int tmp, i;
+> 
+> +	set_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
+> +
+>  	if (!pf->vf)
+>  		return;
+> 
+> @@ -567,6 +569,7 @@ void ice_free_vfs(struct ice_pf *pf)
+>  				i);
+> 
+>  	clear_bit(ICE_VF_DIS, pf->state);
+> +	clear_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
+>  	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);  }
+> 
+> @@ -4527,6 +4530,10 @@ void ice_vc_process_vf_msg(struct ice_pf *pf,
+> struct ice_rq_event_info *event)
+>  	struct device *dev;
+>  	int err = 0;
+> 
+> +	/* if de-init is underway, don't process messages from VF */
+> +	if (test_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state))
+> +		return;
+> +
+>  	dev = ice_pf_to_dev(pf);
+>  	if (ice_validate_vf_id(pf, vf_id)) {
+>  		err = -EINVAL;
+> --
+> 2.31.1
+> 
 
-Error/Warning reports:
-
-https://lore.kernel.org/lkml/202108071616.TxA4HRdX-lkp at intel.com
-
-Error/Warning in current branch:
-
-(.text+0x1038c): undefined reference to `ice_ptp_link_change'
-ice_main.c:(.text+0xb91c): undefined reference to `ice_ptp_link_change'
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- arm-randconfig-r003-20210804
-    |-- (.text):undefined-reference-to-ice_ptp_link_change
-    `-- ice_main.c:(.text):undefined-reference-to-ice_ptp_link_change
-
-elapsed time: 722m
-
-configs tested: 128
-configs skipped: 4
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210805
-i386                 randconfig-c001-20210804
-arm                         socfpga_defconfig
-arm                       aspeed_g5_defconfig
-arm                            dove_defconfig
-xtensa                           alldefconfig
-arm                          imote2_defconfig
-powerpc                     mpc5200_defconfig
-mips                           mtx1_defconfig
-sh                            titan_defconfig
-mips                          rb532_defconfig
-m68k                            mac_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                    sam440ep_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                       ebony_defconfig
-sh                   secureedge5410_defconfig
-mips                        jmr3927_defconfig
-m68k                        m5307c3_defconfig
-powerpc                        fsp2_defconfig
-arm                      footbridge_defconfig
-arm                           spitz_defconfig
-powerpc                     stx_gp3_defconfig
-powerpc               mpc834x_itxgp_defconfig
-sh                        edosk7760_defconfig
-arm                           tegra_defconfig
-microblaze                          defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-x86_64                            allnoconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20210804
-i386                 randconfig-a004-20210804
-i386                 randconfig-a002-20210804
-i386                 randconfig-a006-20210804
-i386                 randconfig-a003-20210804
-i386                 randconfig-a001-20210804
-i386                 randconfig-a005-20210805
-i386                 randconfig-a004-20210805
-i386                 randconfig-a002-20210805
-i386                 randconfig-a006-20210805
-i386                 randconfig-a003-20210805
-i386                 randconfig-a001-20210805
-x86_64               randconfig-a012-20210804
-x86_64               randconfig-a016-20210804
-x86_64               randconfig-a011-20210804
-x86_64               randconfig-a013-20210804
-x86_64               randconfig-a014-20210804
-x86_64               randconfig-a015-20210804
-i386                 randconfig-a012-20210804
-i386                 randconfig-a011-20210804
-i386                 randconfig-a015-20210804
-i386                 randconfig-a013-20210804
-i386                 randconfig-a014-20210804
-i386                 randconfig-a016-20210804
-i386                 randconfig-a012-20210806
-i386                 randconfig-a011-20210806
-i386                 randconfig-a015-20210806
-i386                 randconfig-a013-20210806
-i386                 randconfig-a014-20210806
-i386                 randconfig-a016-20210806
-i386                 randconfig-a012-20210805
-i386                 randconfig-a011-20210805
-i386                 randconfig-a015-20210805
-i386                 randconfig-a013-20210805
-i386                 randconfig-a014-20210805
-i386                 randconfig-a016-20210805
-x86_64               randconfig-a002-20210805
-x86_64               randconfig-a006-20210805
-x86_64               randconfig-a004-20210805
-x86_64               randconfig-a003-20210805
-x86_64               randconfig-a001-20210805
-x86_64               randconfig-a005-20210805
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-c001-20210804
-x86_64               randconfig-a002-20210804
-x86_64               randconfig-a006-20210804
-x86_64               randconfig-a004-20210804
-x86_64               randconfig-a003-20210804
-x86_64               randconfig-a001-20210804
-x86_64               randconfig-a005-20210804
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
