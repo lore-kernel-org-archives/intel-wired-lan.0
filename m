@@ -1,80 +1,188 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 7 Aug 2021 16:24:21 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue 80/118]
- ice_main.c:undefined reference to `ice_ptp_link_change'
-Message-ID: <202108071616.TxA4HRdX-lkp@intel.com>
+Date: Sat, 07 Aug 2021 16:26:04 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ cc4e5eecd43b780093bf431304e3aebdd8418091
+Message-ID: <610e439c.39lb3EjlygNv0ukk%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-head:   96ea8bee7ce727581d6cc6f23ed4b277dc0e3355
-commit: 5ef81503204bb4b80757b03ff40129ad038cd7c0 [80/118] ice: implement basic E822 PTP support
-config: arm-randconfig-r003-20210804 (attached as .config)
-compiler: arm-linux-gnueabi-gcc (GCC) 10.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?id=5ef81503204bb4b80757b03ff40129ad038cd7c0
-        git remote add tnguy-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git
-        git fetch --no-tags tnguy-next-queue dev-queue
-        git checkout 5ef81503204bb4b80757b03ff40129ad038cd7c0
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-10.3.0 make.cross O=build_dir ARCH=arm SHELL=/bin/bash
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: cc4e5eecd43b780093bf431304e3aebdd8418091  Merge git://git.kernel.org/pub/scm/linux/kernel/git/pablo/nf
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+elapsed time: 927m
 
-All errors (new ones prefixed by >>):
+configs tested: 159
+configs skipped: 4
 
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_eth_ioctl':
-   ice_main.c:(.text+0x1724): undefined reference to `ice_ptp_get_ts_config'
-   arm-linux-gnueabi-ld: ice_main.c:(.text+0x1734): undefined reference to `ice_ptp_set_ts_config'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_prepare_for_reset':
-   ice_main.c:(.text+0x6678): undefined reference to `ice_ptp_release'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_rebuild':
-   ice_main.c:(.text+0x8148): undefined reference to `ice_ptp_init'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_remove':
-   ice_main.c:(.text+0x912c): undefined reference to `ice_ptp_release'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_link_event':
->> ice_main.c:(.text+0xb91c): undefined reference to `ice_ptp_link_change'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_misc_intr':
-   ice_main.c:(.text+0xd62c): undefined reference to `ice_ptp_process_ts'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_up_complete':
-   ice_main.c:(.text+0xdc58): undefined reference to `ice_ptp_link_change'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_down':
->> (.text+0x1038c): undefined reference to `ice_ptp_link_change'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_main.o: in function `ice_probe':
-   ice_main.c:(.text+0x122b8): undefined reference to `ice_ptp_init'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_txrx_lib.o: in function `ice_process_skb_fields':
-   ice_txrx_lib.c:(.text+0x5b4): undefined reference to `ice_ptp_rx_hwtstamp'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_txrx.o: in function `ice_tstamp':
-   ice_txrx.c:(.text+0xab8): undefined reference to `ice_ptp_request_ts'
-   arm-linux-gnueabi-ld: drivers/net/ethernet/intel/ice/ice_ethtool.o: in function `ice_get_ts_info':
-   ice_ethtool.c:(.text+0x4074): undefined reference to `ice_get_ptp_clock_index'
-   arm-linux-gnueabi-ld: drivers/firmware/qcom_scm-smc.o: in function `__scm_smc_do_quirk':
-   qcom_scm-smc.c:(.text+0x74): undefined reference to `__arm_smccc_smc'
-   arm-linux-gnueabi-ld: drivers/firmware/qcom_scm-legacy.o: in function `scm_legacy_call':
-   qcom_scm-legacy.c:(.text+0x3a0): undefined reference to `__arm_smccc_smc'
-   arm-linux-gnueabi-ld: drivers/firmware/qcom_scm-legacy.o: in function `scm_legacy_call_atomic':
-   qcom_scm-legacy.c:(.text+0x634): undefined reference to `__arm_smccc_smc'
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Kconfig warnings: (for reference only)
-   WARNING: unmet direct dependencies detected for QCOM_SCM
-   Depends on (ARM || ARM64) && HAVE_ARM_SMCCC
-   Selected by
-   - ARM_QCOM_SPM_CPUIDLE && CPU_IDLE && (ARM || ARM64) && (ARCH_QCOM || COMPILE_TEST && !ARM64 && MMU
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210804
+i386                 randconfig-c001-20210805
+sparc                       sparc64_defconfig
+sh                            migor_defconfig
+sh                  sh7785lcr_32bit_defconfig
+arm                              alldefconfig
+ia64                             allmodconfig
+mips                     loongson1b_defconfig
+arm                           sama5_defconfig
+sh                     sh7710voipgw_defconfig
+mips                        workpad_defconfig
+powerpc                          g5_defconfig
+sh                        sh7785lcr_defconfig
+arm                            mps2_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                   motionpro_defconfig
+ia64                          tiger_defconfig
+mips                       rbtx49xx_defconfig
+mips                          ath79_defconfig
+powerpc                     mpc5200_defconfig
+mips                           mtx1_defconfig
+sh                            titan_defconfig
+mips                          rb532_defconfig
+m68k                            mac_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                    sam440ep_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                       ebony_defconfig
+sh                   secureedge5410_defconfig
+mips                        jmr3927_defconfig
+m68k                        m5307c3_defconfig
+powerpc                        fsp2_defconfig
+arm                      footbridge_defconfig
+arm                           spitz_defconfig
+powerpc                     stx_gp3_defconfig
+mips                           ip28_defconfig
+sh                           se7722_defconfig
+sh                               j2_defconfig
+mips                           xway_defconfig
+s390                                defconfig
+arm                          gemini_defconfig
+mips                       bmips_be_defconfig
+parisc                           allyesconfig
+mips                       capcella_defconfig
+sparc                       sparc32_defconfig
+sh                         ecovec24_defconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                        edosk7760_defconfig
+arm                           tegra_defconfig
+microblaze                          defconfig
+csky                                defconfig
+arm                     am200epdkit_defconfig
+powerpc                          allmodconfig
+arm                      jornada720_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                      obs600_defconfig
+powerpc                      walnut_defconfig
+arm                       spear13xx_defconfig
+arm                         nhk8815_defconfig
+m68k                            q40_defconfig
+arm                        multi_v7_defconfig
+arc                        nsimosci_defconfig
+x86_64                            allnoconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a002-20210805
+x86_64               randconfig-a006-20210805
+x86_64               randconfig-a004-20210805
+x86_64               randconfig-a003-20210805
+x86_64               randconfig-a001-20210805
+x86_64               randconfig-a005-20210805
+i386                 randconfig-a005-20210804
+i386                 randconfig-a004-20210804
+i386                 randconfig-a002-20210804
+i386                 randconfig-a006-20210804
+i386                 randconfig-a003-20210804
+i386                 randconfig-a001-20210804
+i386                 randconfig-a005-20210805
+i386                 randconfig-a004-20210805
+i386                 randconfig-a002-20210805
+i386                 randconfig-a006-20210805
+i386                 randconfig-a003-20210805
+i386                 randconfig-a001-20210805
+x86_64               randconfig-a012-20210804
+x86_64               randconfig-a016-20210804
+x86_64               randconfig-a011-20210804
+x86_64               randconfig-a013-20210804
+x86_64               randconfig-a014-20210804
+x86_64               randconfig-a015-20210804
+i386                 randconfig-a012-20210806
+i386                 randconfig-a011-20210806
+i386                 randconfig-a015-20210806
+i386                 randconfig-a013-20210806
+i386                 randconfig-a014-20210806
+i386                 randconfig-a016-20210806
+i386                 randconfig-a012-20210805
+i386                 randconfig-a011-20210805
+i386                 randconfig-a015-20210805
+i386                 randconfig-a013-20210805
+i386                 randconfig-a014-20210805
+i386                 randconfig-a016-20210805
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-c001-20210804
+x86_64               randconfig-c001-20210805
+x86_64               randconfig-a002-20210804
+x86_64               randconfig-a006-20210804
+x86_64               randconfig-a004-20210804
+x86_64               randconfig-a003-20210804
+x86_64               randconfig-a001-20210804
+x86_64               randconfig-a005-20210804
+x86_64               randconfig-a012-20210805
+x86_64               randconfig-a016-20210805
+x86_64               randconfig-a011-20210805
+x86_64               randconfig-a013-20210805
+x86_64               randconfig-a014-20210805
+x86_64               randconfig-a015-20210805
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 35643 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210807/a0f503f5/attachment-0001.bin>
