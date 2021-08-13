@@ -1,173 +1,46 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 12 Aug 2021 00:41:56 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- aba1e4adb54e020d3ca85a4df3ef0f8febe87548
-Message-ID: <6113fdd4.RQSb/bm/tGD/c1ED%lkp@intel.com>
+From: zhaoxiao <zhaoxiao@uniontech.com>
+Date: Fri, 13 Aug 2021 15:45:36 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: handle vlan types with checker
+ enabled
+Message-ID: <20210813074536.15624-1-zhaoxiao@uniontech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: aba1e4adb54e020d3ca85a4df3ef0f8febe87548  igc: Add support for CBS offloading
+The sparse build (C=2) finds some issues with how the driver
+dealt with the (very difficult) hardware that in some generations
+uses little-endian, and in others uses big endian, for the VLAN
+field. The code as written picks __le16 as a type and for some
+hardware revisions we override it to __be16 as done in this
+patch.
 
-elapsed time: 1148m
+drivers/net/ethernet/intel/igb/igb_main.c:2676:48: warning: incorrect type in assignment (different base types)
+drivers/net/ethernet/intel/igb/igb_main.c:2676:48:    expected restricted __be16 [usertype] vlan_tci
+drivers/net/ethernet/intel/igb/igb_main.c:2676:48:    got unsigned short [usertype] vlan_priority:3
 
-configs tested: 144
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210810
-s390                       zfcpdump_defconfig
-sh                                  defconfig
-xtensa                generic_kc705_defconfig
-powerpc                     tqm8555_defconfig
-sh                              ul2_defconfig
-sh                               j2_defconfig
-mips                          rb532_defconfig
-arm                       omap2plus_defconfig
-arm                         at91_dt_defconfig
-arm                           omap1_defconfig
-arm                           viper_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                      acadia_defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                      makalu_defconfig
-arm                          imote2_defconfig
-powerpc                    adder875_defconfig
-ia64                                defconfig
-powerpc                     asp8347_defconfig
-arm                            hisi_defconfig
-arm                         s3c2410_defconfig
-arm                       spear13xx_defconfig
-powerpc                     powernv_defconfig
-m68k                       m5249evb_defconfig
-powerpc                      ppc44x_defconfig
-s390                          debug_defconfig
-powerpc                 mpc834x_itx_defconfig
-nds32                               defconfig
-mips                           jazz_defconfig
-mips                           rs90_defconfig
-powerpc                           allnoconfig
-m68k                             alldefconfig
-mips                      bmips_stb_defconfig
-sh                           se7712_defconfig
-mips                        qi_lb60_defconfig
-powerpc                     pseries_defconfig
-xtensa                    xip_kc705_defconfig
-arc                      axs103_smp_defconfig
-arm                            lart_defconfig
-alpha                            allyesconfig
-mips                      maltasmvp_defconfig
-xtensa                  cadence_csp_defconfig
-arm                       aspeed_g4_defconfig
-mips                         bigsur_defconfig
-sh                          sdk7786_defconfig
-sh                        dreamcast_defconfig
-sh                            hp6xx_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                     mpc83xx_defconfig
-mips                      loongson3_defconfig
-microblaze                      mmu_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a004-20210810
-x86_64               randconfig-a006-20210810
-x86_64               randconfig-a003-20210810
-x86_64               randconfig-a005-20210810
-x86_64               randconfig-a002-20210810
-x86_64               randconfig-a001-20210810
-i386                 randconfig-a004-20210810
-i386                 randconfig-a002-20210810
-i386                 randconfig-a001-20210810
-i386                 randconfig-a003-20210810
-i386                 randconfig-a006-20210810
-i386                 randconfig-a005-20210810
-i386                 randconfig-a004-20210811
-i386                 randconfig-a001-20210811
-i386                 randconfig-a002-20210811
-i386                 randconfig-a003-20210811
-i386                 randconfig-a006-20210811
-i386                 randconfig-a005-20210811
-x86_64               randconfig-a013-20210811
-x86_64               randconfig-a011-20210811
-x86_64               randconfig-a012-20210811
-x86_64               randconfig-a016-20210811
-x86_64               randconfig-a014-20210811
-x86_64               randconfig-a015-20210811
-i386                 randconfig-a011-20210810
-i386                 randconfig-a015-20210810
-i386                 randconfig-a013-20210810
-i386                 randconfig-a014-20210810
-i386                 randconfig-a016-20210810
-i386                 randconfig-a012-20210810
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-c001-20210810
-x86_64               randconfig-c001-20210811
-x86_64               randconfig-a013-20210810
-x86_64               randconfig-a011-20210810
-x86_64               randconfig-a012-20210810
-x86_64               randconfig-a016-20210810
-x86_64               randconfig-a014-20210810
-x86_64               randconfig-a015-20210810
-x86_64               randconfig-a004-20210811
-x86_64               randconfig-a006-20210811
-x86_64               randconfig-a003-20210811
-x86_64               randconfig-a002-20210811
-x86_64               randconfig-a005-20210811
-x86_64               randconfig-a001-20210811
-
+Signed-off-by: zhaoxiao <zhaoxiao@uniontech.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 6221dafc76b9..a42eb9b1fa3e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2673,7 +2673,8 @@ static int igb_parse_cls_flower(struct igb_adapter *adapter,
+ 			}
+ 
+ 			input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
+-			input->filter.vlan_tci = key->vlan_priority;
++			input->filter.vlan_tci =
++				(__force __be16)key->vlan_priority;
+ 		}
+ 	}
+ 
+-- 
+2.20.1
+
+
+
