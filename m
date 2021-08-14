@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 14 Aug 2021 14:41:21 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 9551f7b252a908fedc623a73da5a358df648e7f8
-Message-ID: <61176591.aCHParxKYuevl1vm%lkp@intel.com>
+Date: Sat, 14 Aug 2021 14:41:17 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ f4083a752a3b7dc2076432129c8469d02c25318e
+Message-ID: <6117658d.UvywzGo3x1L+Auor%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 9551f7b252a908fedc623a73da5a358df648e7f8  igc: Add support for CBS offloading
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: f4083a752a3b7dc2076432129c8469d02c25318e  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
 
-elapsed time: 728m
+elapsed time: 833m
 
-configs tested: 150
+configs tested: 149
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -35,6 +35,12 @@ powerpc                    klondike_defconfig
 mips                     loongson1c_defconfig
 arm                          ep93xx_defconfig
 arm                          iop32x_defconfig
+mips                  cavium_octeon_defconfig
+nds32                               defconfig
+parisc                           alldefconfig
+arm                      tct_hammer_defconfig
+powerpc                      obs600_defconfig
+powerpc                      makalu_defconfig
 arm                       imx_v4_v5_defconfig
 powerpc                      ep88xc_defconfig
 powerpc                     rainier_defconfig
@@ -85,15 +91,14 @@ m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
-nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
-xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+xtensa                           allyesconfig
 parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
@@ -107,24 +112,24 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64               randconfig-a006-20210812
-x86_64               randconfig-a004-20210812
-x86_64               randconfig-a003-20210812
-x86_64               randconfig-a005-20210812
-x86_64               randconfig-a002-20210812
-x86_64               randconfig-a001-20210812
 i386                 randconfig-a004-20210814
-i386                 randconfig-a002-20210814
 i386                 randconfig-a001-20210814
-i386                 randconfig-a003-20210814
 i386                 randconfig-a006-20210814
 i386                 randconfig-a005-20210814
+i386                 randconfig-a002-20210814
+i386                 randconfig-a003-20210814
 x86_64               randconfig-a004-20210814
 x86_64               randconfig-a006-20210814
 x86_64               randconfig-a003-20210814
 x86_64               randconfig-a001-20210814
 x86_64               randconfig-a005-20210814
 x86_64               randconfig-a002-20210814
+x86_64               randconfig-a013-20210814
+x86_64               randconfig-a011-20210814
+x86_64               randconfig-a016-20210814
+x86_64               randconfig-a012-20210814
+x86_64               randconfig-a014-20210814
+x86_64               randconfig-a015-20210814
 x86_64               randconfig-a011-20210813
 x86_64               randconfig-a013-20210813
 x86_64               randconfig-a012-20210813
