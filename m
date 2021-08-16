@@ -1,66 +1,71 @@
-From: Christian Benvenuti (benve) <benve@cisco.com>
-Date: Mon, 16 Aug 2021 17:53:25 +0000
-Subject: [Intel-wired-lan] [PATCH v5 07/14] enic: Use
+From: Jassi Brar <jassisinghbrar@gmail.com>
+Date: Mon, 16 Aug 2021 13:11:47 -0500
+Subject: [Intel-wired-lan] [PATCH v5 10/14] mailbox: Use
  irq_update_affinity_hint
-In-Reply-To: <20210720232624.1493424-8-nitesh@redhat.com>
+In-Reply-To: <20210720232624.1493424-11-nitesh@redhat.com>
 References: <20210720232624.1493424-1-nitesh@redhat.com>
- <20210720232624.1493424-8-nitesh@redhat.com>
-Message-ID: <BYAPR11MB3799AA4F4FBB502D22DEB259BAFD9@BYAPR11MB3799.namprd11.prod.outlook.com>
+ <20210720232624.1493424-11-nitesh@redhat.com>
+Message-ID: <CABb+yY3Wz57dYZ8pa5zHatGRu1RFmyRK+UvN+B8txCcOUTPQzw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Nitesh Narayan Lal <nitesh@redhat.com>
-> Sent: Tuesday, July 20, 2021 4:26 PM
-> To: linux-kernel at vger.kernel.org; linux-scsi at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-api at vger.kernel.org;
-> linux-pci at vger.kernel.org; tglx at linutronix.de; jesse.brandeburg at intel.com;
-> robin.murphy at arm.com; mtosatti at redhat.com; mingo at kernel.org;
-> jbrandeb at kernel.org; frederic at kernel.org; juri.lelli at redhat.com;
-> abelits at marvell.com; bhelgaas at google.com; rostedt at goodmis.org;
-> peterz at infradead.org; davem at davemloft.net; akpm at linux-foundation.org;
-> sfr at canb.auug.org.au; stephen at networkplumber.org;
-> rppt at linux.vnet.ibm.com; chris.friesen at windriver.com; maz at kernel.org;
-> nhorman at tuxdriver.com; pjwaskiewicz at gmail.com;
-> sassmann at redhat.com; thenzl at redhat.com;
-> kashyap.desai at broadcom.com; sumit.saxena at broadcom.com;
-> shivasharan.srikanteshwara at broadcom.com;
-> sathya.prakash at broadcom.com; sreekanth.reddy at broadcom.com;
-> suganath-prabu.subramani at broadcom.com; james.smart at broadcom.com;
-> dick.kennedy at broadcom.com; jkc at redhat.com; faisal.latif at intel.com;
-> shiraz.saleem at intel.com; tariqt at nvidia.com; ahleihel at redhat.com;
-> kheib at redhat.com; borisp at nvidia.com; saeedm at nvidia.com; Christian
-> Benvenuti (benve) <benve@cisco.com>; govind at gmx.com;
-> jassisinghbrar at gmail.com; ajit.khaparde at broadcom.com;
-> sriharsha.basavapatna at broadcom.com; somnath.kotur at broadcom.com;
-> nilal at redhat.com; tatyana.e.nikolova at intel.com; mustafa.ismail at intel.com;
-> ahs3 at redhat.com; leonro at nvidia.com; chandrakanth.patil at broadcom.com;
-> bjorn.andersson at linaro.org; chunkuang.hu at kernel.org;
-> yongqiang.niu at mediatek.com; baolin.wang7 at gmail.com;
-> poros at redhat.com; minlei at redhat.com; emilne at redhat.com;
-> jejb at linux.ibm.com; martin.petersen at oracle.com; _govind at gmx.com;
-> kabel at kernel.org; viresh.kumar at linaro.org; Tushar.Khandelwal at arm.com;
-> kuba at kernel.org
-> Subject: [PATCH v5 07/14] enic: Use irq_update_affinity_hint
-> 
-> The driver uses irq_set_affinity_hint() to update the affinity_hint mask that
-> is consumed by the userspace to distribute the interrupts. However, under
-> the hood irq_set_affinity_hint() also applies the provided cpumask (if not
-> NULL) as the affinity for the given interrupt which is an undocumented side
-> effect.
-> 
-> To remove this side effect irq_set_affinity_hint() has been marked as
-> deprecated and new interfaces have been introduced. Hence, replace the
-> irq_set_affinity_hint() with the new interface irq_update_affinity_hint() that
-> only updates the affinity_hint pointer.
-> 
+On Tue, Jul 20, 2021 at 6:27 PM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
+>
+> The driver uses irq_set_affinity_hint() to:
+>
+> - Set the affinity_hint which is consumed by the userspace for
+>   distributing the interrupts
+>
+> - Enforce affinity
+>
+> As per commit 6ac17fe8c14a ("mailbox: bcm-flexrm-mailbox: Set IRQ affinity
+> hint for FlexRM ring IRQs") the latter is done to ensure that the FlexRM
+> ring interrupts are evenly spread across all available CPUs. However, since
+> commit a0c9259dc4e1 ("irq/matrix: Spread interrupts on allocation") the
+> spreading of interrupts is dynamically performed at the time of allocation.
+> Hence, there is no need for the drivers to enforce their own affinity for
+> the spreading of interrupts.
+>
+> Also, irq_set_affinity_hint() applying the provided cpumask as an affinity
+> for the interrupt is an undocumented side effect. To remove this side
+> effect irq_set_affinity_hint() has been marked as deprecated and new
+> interfaces have been introduced. Hence, replace the irq_set_affinity_hint()
+> with the new interface irq_update_affinity_hint() that only sets the
+> affinity_hint pointer.
+>
 > Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
+> ---
+>  drivers/mailbox/bcm-flexrm-mailbox.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/mailbox/bcm-flexrm-mailbox.c b/drivers/mailbox/bcm-flexrm-mailbox.c
+> index 78073ad1f2f1..16982c13d323 100644
+> --- a/drivers/mailbox/bcm-flexrm-mailbox.c
+> +++ b/drivers/mailbox/bcm-flexrm-mailbox.c
+> @@ -1298,7 +1298,7 @@ static int flexrm_startup(struct mbox_chan *chan)
+>         val = (num_online_cpus() < val) ? val / num_online_cpus() : 1;
+>         cpumask_set_cpu((ring->num / val) % num_online_cpus(),
+>                         &ring->irq_aff_hint);
+> -       ret = irq_set_affinity_hint(ring->irq, &ring->irq_aff_hint);
+> +       ret = irq_update_affinity_hint(ring->irq, &ring->irq_aff_hint);
+>         if (ret) {
+>                 dev_err(ring->mbox->dev,
+>                         "failed to set IRQ affinity hint for ring%d\n",
+> @@ -1425,7 +1425,7 @@ static void flexrm_shutdown(struct mbox_chan *chan)
+>
+>         /* Release IRQ */
+>         if (ring->irq_requested) {
+> -               irq_set_affinity_hint(ring->irq, NULL);
+> +               irq_update_affinity_hint(ring->irq, NULL);
+>                 free_irq(ring->irq, ring);
+>                 ring->irq_requested = false;
+>         }
+>
+Seems ok to me. But I don't have the h/w to test.
 
-Thanks Nitesh for the patch.
+Acked-by: Jassi Brar <jaswinder.singh@linaro.org>
 
-Reviewed-by: Christian Benvenuti <benve@cisco.com>
-
-
+cheers.
