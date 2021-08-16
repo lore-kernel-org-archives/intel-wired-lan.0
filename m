@@ -1,11 +1,11 @@
-From: Creeley, Brett <brett.creeley@intel.com>
-Date: Mon, 16 Aug 2021 16:51:06 +0000
-Subject: [Intel-wired-lan] [PATCH v5 intel-next 2/9] ice: move
- ice_container_type onto ice_ring_container
-In-Reply-To: <20210814140812.46632-3-maciej.fijalkowski@intel.com>
-References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
- <20210814140812.46632-3-maciej.fijalkowski@intel.com>
-Message-ID: <CO1PR11MB4835F0FDF2ABA2578B722095F5FD9@CO1PR11MB4835.namprd11.prod.outlook.com>
+From: Christian Benvenuti (benve) <benve@cisco.com>
+Date: Mon, 16 Aug 2021 17:53:25 +0000
+Subject: [Intel-wired-lan] [PATCH v5 07/14] enic: Use
+ irq_update_affinity_hint
+In-Reply-To: <20210720232624.1493424-8-nitesh@redhat.com>
+References: <20210720232624.1493424-1-nitesh@redhat.com>
+ <20210720232624.1493424-8-nitesh@redhat.com>
+Message-ID: <BYAPR11MB3799AA4F4FBB502D22DEB259BAFD9@BYAPR11MB3799.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,55 +13,54 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
-> Sent: Saturday, August 14, 2021 7:08 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; bpf at vger.kernel.org; davem at davemloft.net; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
-> kuba at kernel.org; bjorn at kernel.org; Karlsson, Magnus <magnus.karlsson@intel.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; Lobakin, Alexandr <alexandr.lobakin@intel.com>; joamaki at gmail.com; toke at redhat.com; Creeley,
-> Brett <brett.creeley@intel.com>; Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
-> Subject: [PATCH v5 intel-next 2/9] ice: move ice_container_type onto ice_ring_container
+> From: Nitesh Narayan Lal <nitesh@redhat.com>
+> Sent: Tuesday, July 20, 2021 4:26 PM
+> To: linux-kernel at vger.kernel.org; linux-scsi at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-api at vger.kernel.org;
+> linux-pci at vger.kernel.org; tglx at linutronix.de; jesse.brandeburg at intel.com;
+> robin.murphy at arm.com; mtosatti at redhat.com; mingo at kernel.org;
+> jbrandeb at kernel.org; frederic at kernel.org; juri.lelli at redhat.com;
+> abelits at marvell.com; bhelgaas at google.com; rostedt at goodmis.org;
+> peterz at infradead.org; davem at davemloft.net; akpm at linux-foundation.org;
+> sfr at canb.auug.org.au; stephen at networkplumber.org;
+> rppt at linux.vnet.ibm.com; chris.friesen at windriver.com; maz at kernel.org;
+> nhorman at tuxdriver.com; pjwaskiewicz at gmail.com;
+> sassmann at redhat.com; thenzl at redhat.com;
+> kashyap.desai at broadcom.com; sumit.saxena at broadcom.com;
+> shivasharan.srikanteshwara at broadcom.com;
+> sathya.prakash at broadcom.com; sreekanth.reddy at broadcom.com;
+> suganath-prabu.subramani at broadcom.com; james.smart at broadcom.com;
+> dick.kennedy at broadcom.com; jkc at redhat.com; faisal.latif at intel.com;
+> shiraz.saleem at intel.com; tariqt at nvidia.com; ahleihel at redhat.com;
+> kheib at redhat.com; borisp at nvidia.com; saeedm at nvidia.com; Christian
+> Benvenuti (benve) <benve@cisco.com>; govind at gmx.com;
+> jassisinghbrar at gmail.com; ajit.khaparde at broadcom.com;
+> sriharsha.basavapatna at broadcom.com; somnath.kotur at broadcom.com;
+> nilal at redhat.com; tatyana.e.nikolova at intel.com; mustafa.ismail at intel.com;
+> ahs3 at redhat.com; leonro at nvidia.com; chandrakanth.patil at broadcom.com;
+> bjorn.andersson at linaro.org; chunkuang.hu at kernel.org;
+> yongqiang.niu at mediatek.com; baolin.wang7 at gmail.com;
+> poros at redhat.com; minlei at redhat.com; emilne at redhat.com;
+> jejb at linux.ibm.com; martin.petersen at oracle.com; _govind at gmx.com;
+> kabel at kernel.org; viresh.kumar at linaro.org; Tushar.Khandelwal at arm.com;
+> kuba at kernel.org
+> Subject: [PATCH v5 07/14] enic: Use irq_update_affinity_hint
 > 
-> Currently ice_container_type is scoped only for ice_ethtool.c. Next
-> commit that will split the ice_ring struct onto Rx/Tx specific ring
-> structs is going to also modify the type of linked list of rings that is
-> within ice_ring_container. Therefore, the functions that are taking the
-> ice_ring_container as an input argument will need to be aware of a ring
-> type that will be looked up.
+> The driver uses irq_set_affinity_hint() to update the affinity_hint mask that
+> is consumed by the userspace to distribute the interrupts. However, under
+> the hood irq_set_affinity_hint() also applies the provided cpumask (if not
+> NULL) as the affinity for the given interrupt which is an undocumented side
+> effect.
 > 
-> Embed ice_container_type within ice_ring_container and initialize it
-> properly when allocating the q_vectors.
+> To remove this side effect irq_set_affinity_hint() has been marked as
+> deprecated and new interfaces have been introduced. Hence, replace the
+> irq_set_affinity_hint() with the new interface irq_update_affinity_hint() that
+> only updates the affinity_hint pointer.
 > 
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_base.c    |  2 ++
->  drivers/net/ethernet/intel/ice/ice_ethtool.c | 36 ++++++++------------
->  drivers/net/ethernet/intel/ice/ice_txrx.h    |  6 ++++
->  3 files changed, 23 insertions(+), 21 deletions(-)
+> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
 
-<snip>
+Thanks Nitesh for the patch.
 
-> +enum ice_container_type {
-> +	ICE_RX_CONTAINER,
-> +	ICE_TX_CONTAINER,
-> +};
-> +
->  struct ice_ring_container {
->  	/* head of linked-list of rings */
->  	struct ice_ring *ring;
-> @@ -347,6 +352,7 @@ struct ice_ring_container {
->  	u16 itr_setting:13;
->  	u16 itr_reserved:2;
->  	u16 itr_mode:1;
-> +	enum ice_container_type type;
+Reviewed-by: Christian Benvenuti <benve@cisco.com>
 
-It may not matter, but should you make sure
-the size of "type" doesn't negativelly affect this
-structure?
-
->  };
-> 
->  struct ice_coalesce_stored {
-> --
-> 2.20.1
 
