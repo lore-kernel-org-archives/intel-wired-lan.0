@@ -1,51 +1,109 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 16 Aug 2021 21:46:41 +0200
-Subject: [Intel-wired-lan] [RFC net-next 4/7] net: add ioctl interface
- for recover reference clock on netdev
-In-Reply-To: <20210816160717.31285-5-arkadiusz.kubalewski@intel.com>
-References: <20210816160717.31285-1-arkadiusz.kubalewski@intel.com>
- <20210816160717.31285-5-arkadiusz.kubalewski@intel.com>
-Message-ID: <CAK8P3a0N3N3mFvoPj_fkqOY30uudJceox=uwSW+nd0B0kf8-ng@mail.gmail.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Mon, 16 Aug 2021 23:49:04 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next 2/4] ice: Implement
+ functions for reading and setting GPIO pins
+In-Reply-To: <20210816102729.1266522-3-maciej.machnikowski@intel.com>
+References: <20210816102729.1266522-1-maciej.machnikowski@intel.com>
+ <20210816102729.1266522-3-maciej.machnikowski@intel.com>
+Message-ID: <ce429d170c827e21342fabaaba57f1816eeef564.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 16, 2021 at 6:18 PM Arkadiusz Kubalewski
-<arkadiusz.kubalewski@intel.com> wrote:
+On Mon, 2021-08-16 at 12:27 +0200, Maciej Machnikowski wrote:
+> Implement ice_aq_get_gpio and ice_aq_set_gpio for reading and
+> changing
+> the state of GPIO pins described in the topology.
+> 
+> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
+> ---
 
-> +/*
-> + * Structure used for passing data with SIOCSSYNCE and SIOCGSYNCE ioctls
+<snip>
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c
+> b/drivers/net/ethernet/intel/ice/ice_common.c
+> index 5822589aebdc..d1b81e7fbef4 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -4806,6 +4806,64 @@ ice_aq_get_driver_param(struct ice_hw *hw,
+> enum ice_aqc_driver_params idx,
+>  	return 0;
+>  }
+>  
+> +/**
+> + * ice_aq_set_gpio
+> + * @hw: pointer to the hw struct
+> + * @gpio_ctrl_handle: GPIO controller node handle
+> + * @pin_idx: IO Number of the GPIO that needs to be set
+> + * @value: SW provide IO value to set in the LSB
+> + * @cd: pointer to command details structure or NULL
+> + *
+> + * Sends 0x06EC AQ command to set the GPIO pin state that's part of
+> the topology
 > + */
-> +struct synce_ref_clk_cfg {
-> +       __u8 pin_id;
-> +       _Bool enable;
-> +};
+> +enum ice_status
+> +ice_aq_set_gpio(struct ice_hw *hw, u16 gpio_ctrl_handle, u8 pin_idx,
+> bool value,
+> +		struct ice_sq_cd *cd)
+> +{
+> +	struct ice_aqc_gpio *cmd;
+> +	struct ice_aq_desc desc;
+> +
+> +	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_gpio);
+> +	cmd = &desc.params.read_write_gpio;
+> +	cmd->gpio_ctrl_handle = gpio_ctrl_handle;
+> +	cmd->gpio_num = pin_idx;
+> +	cmd->gpio_val = value ? 1 : 0;
+> +
+> +	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
+> +}
+> +
+> +/**
+> + * ice_aq_get_gpio
+> + * @hw: pointer to the hw struct
+> + * @gpio_ctrl_handle: GPIO controller node handle
+> + * @pin_idx: IO Number of the GPIO that needs to be set
+> + * @value: IO value read
+> + * @cd: pointer to command details structure or NULL
+> + *
+> + * Sends 0x06ED AQ command to get the value of a GPIO signal which
+> is part of
+> + * the topology
+> + */
+> +enum ice_status
+> +ice_aq_get_gpio(struct ice_hw *hw, u16 gpio_ctrl_handle, u8 pin_idx,
+> +		bool *value, struct ice_sq_cd *cd)
+> +{
+> +	struct ice_aqc_gpio *cmd;
+> +	struct ice_aq_desc desc;
+> +	enum ice_status status;
+> +
+> +	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_gpio);
+> +	cmd = &desc.params.read_write_gpio;
+> +	cmd->gpio_ctrl_handle = gpio_ctrl_handle;
+> +	cmd->gpio_num = pin_idx;
+> +
+> +	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
+> +	if (status)
+> +		return status;
+> +
+> +	*value = !!cmd->gpio_val;
+> +	return 0;
+> +}
 
-I'm not sure if there are any guarantees about the size and alignment of _Bool,
-maybe better use __u8 here as well, if only for clarity.
+This introduces new warnings:
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4828:31: warning:
+incorrect type in assignment (different base types)
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4828:31:    expected
+restricted __le16 [usertype] gpio_ctrl_handle
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4828:31:    got
+unsigned short [usertype] gpio_ctrl_handle
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4856:31: warning:
+incorrect type in assignment (different base types)
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4856:31:    expected
+restricted __le16 [usertype] gpio_ctrl_handle
+> ../drivers/net/ethernet/intel/ice/ice_common.c:4856:31:    got
+unsigned short [usertype] gpio_ctrl_handle
 
-> +#endif /* _NET_SYNCE_H */
-> diff --git a/include/uapi/linux/sockios.h b/include/uapi/linux/sockios.h
-> index 7d1bccbbef78..32c7d4909c31 100644
-> --- a/include/uapi/linux/sockios.h
-> +++ b/include/uapi/linux/sockios.h
-> @@ -153,6 +153,10 @@
->  #define SIOCSHWTSTAMP  0x89b0          /* set and get config           */
->  #define SIOCGHWTSTAMP  0x89b1          /* get config                   */
->
-> +/* synchronous ethernet config per physical function */
-> +#define SIOCSSYNCE     0x89c0          /* set and get config           */
-> +#define SIOCGSYNCE     0x89c1          /* get config                   */
-
-I understand that these are traditionally using the old-style 16-bit
-numbers, but is there any reason to keep doing that rather than
-making them modern like this?
-
-#define SIOCSSYNCE     _IOWR(0x89, 0xc0, struct  synce_ref_clk_cfg)
-/* set and get config   */
-#define SIOCGSYNCE     _IOR(0x89, 0xc1, struct  synce_ref_clk_cfg)
-/* get config   */
-
-        Arnd
