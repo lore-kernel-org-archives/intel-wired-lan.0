@@ -1,71 +1,115 @@
-From: Jassi Brar <jassisinghbrar@gmail.com>
-Date: Mon, 16 Aug 2021 13:11:47 -0500
-Subject: [Intel-wired-lan] [PATCH v5 10/14] mailbox: Use
- irq_update_affinity_hint
-In-Reply-To: <20210720232624.1493424-11-nitesh@redhat.com>
-References: <20210720232624.1493424-1-nitesh@redhat.com>
- <20210720232624.1493424-11-nitesh@redhat.com>
-Message-ID: <CABb+yY3Wz57dYZ8pa5zHatGRu1RFmyRK+UvN+B8txCcOUTPQzw@mail.gmail.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Mon, 16 Aug 2021 20:39:33 +0200
+Subject: [Intel-wired-lan] [PATCH v5 intel-next 2/9] ice: move
+ ice_container_type onto ice_ring_container
+In-Reply-To: <CO1PR11MB4835F0FDF2ABA2578B722095F5FD9@CO1PR11MB4835.namprd11.prod.outlook.com>
+References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
+ <20210814140812.46632-3-maciej.fijalkowski@intel.com>
+ <CO1PR11MB4835F0FDF2ABA2578B722095F5FD9@CO1PR11MB4835.namprd11.prod.outlook.com>
+Message-ID: <20210816183933.GA1521@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jul 20, 2021 at 6:27 PM Nitesh Narayan Lal <nitesh@redhat.com> wrote:
->
-> The driver uses irq_set_affinity_hint() to:
->
-> - Set the affinity_hint which is consumed by the userspace for
->   distributing the interrupts
->
-> - Enforce affinity
->
-> As per commit 6ac17fe8c14a ("mailbox: bcm-flexrm-mailbox: Set IRQ affinity
-> hint for FlexRM ring IRQs") the latter is done to ensure that the FlexRM
-> ring interrupts are evenly spread across all available CPUs. However, since
-> commit a0c9259dc4e1 ("irq/matrix: Spread interrupts on allocation") the
-> spreading of interrupts is dynamically performed at the time of allocation.
-> Hence, there is no need for the drivers to enforce their own affinity for
-> the spreading of interrupts.
->
-> Also, irq_set_affinity_hint() applying the provided cpumask as an affinity
-> for the interrupt is an undocumented side effect. To remove this side
-> effect irq_set_affinity_hint() has been marked as deprecated and new
-> interfaces have been introduced. Hence, replace the irq_set_affinity_hint()
-> with the new interface irq_update_affinity_hint() that only sets the
-> affinity_hint pointer.
->
-> Signed-off-by: Nitesh Narayan Lal <nitesh@redhat.com>
-> ---
->  drivers/mailbox/bcm-flexrm-mailbox.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/mailbox/bcm-flexrm-mailbox.c b/drivers/mailbox/bcm-flexrm-mailbox.c
-> index 78073ad1f2f1..16982c13d323 100644
-> --- a/drivers/mailbox/bcm-flexrm-mailbox.c
-> +++ b/drivers/mailbox/bcm-flexrm-mailbox.c
-> @@ -1298,7 +1298,7 @@ static int flexrm_startup(struct mbox_chan *chan)
->         val = (num_online_cpus() < val) ? val / num_online_cpus() : 1;
->         cpumask_set_cpu((ring->num / val) % num_online_cpus(),
->                         &ring->irq_aff_hint);
-> -       ret = irq_set_affinity_hint(ring->irq, &ring->irq_aff_hint);
-> +       ret = irq_update_affinity_hint(ring->irq, &ring->irq_aff_hint);
->         if (ret) {
->                 dev_err(ring->mbox->dev,
->                         "failed to set IRQ affinity hint for ring%d\n",
-> @@ -1425,7 +1425,7 @@ static void flexrm_shutdown(struct mbox_chan *chan)
->
->         /* Release IRQ */
->         if (ring->irq_requested) {
-> -               irq_set_affinity_hint(ring->irq, NULL);
-> +               irq_update_affinity_hint(ring->irq, NULL);
->                 free_irq(ring->irq, ring);
->                 ring->irq_requested = false;
->         }
->
-Seems ok to me. But I don't have the h/w to test.
+On Mon, Aug 16, 2021 at 05:51:06PM +0100, Creeley, Brett wrote:
+> > -----Original Message-----
+> > From: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
+> > Sent: Saturday, August 14, 2021 7:08 AM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Cc: netdev at vger.kernel.org; bpf at vger.kernel.org; davem at davemloft.net; Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
+> > kuba at kernel.org; bjorn at kernel.org; Karlsson, Magnus <magnus.karlsson@intel.com>; Brandeburg, Jesse
+> > <jesse.brandeburg@intel.com>; Lobakin, Alexandr <alexandr.lobakin@intel.com>; joamaki at gmail.com; toke at redhat.com; Creeley,
+> > Brett <brett.creeley@intel.com>; Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
+> > Subject: [PATCH v5 intel-next 2/9] ice: move ice_container_type onto ice_ring_container
+> >
+> > Currently ice_container_type is scoped only for ice_ethtool.c. Next
+> > commit that will split the ice_ring struct onto Rx/Tx specific ring
+> > structs is going to also modify the type of linked list of rings that is
+> > within ice_ring_container. Therefore, the functions that are taking the
+> > ice_ring_container as an input argument will need to be aware of a ring
+> > type that will be looked up.
+> >
+> > Embed ice_container_type within ice_ring_container and initialize it
+> > properly when allocating the q_vectors.
+> >
+> > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/ice/ice_base.c    |  2 ++
+> >  drivers/net/ethernet/intel/ice/ice_ethtool.c | 36 ++++++++------------
+> >  drivers/net/ethernet/intel/ice/ice_txrx.h    |  6 ++++
+> >  3 files changed, 23 insertions(+), 21 deletions(-)
+> 
+> <snip>
+> 
+> > +enum ice_container_type {
+> > +     ICE_RX_CONTAINER,
+> > +     ICE_TX_CONTAINER,
+> > +};
+> > +
+> >  struct ice_ring_container {
+> >       /* head of linked-list of rings */
+> >       struct ice_ring *ring;
+> > @@ -347,6 +352,7 @@ struct ice_ring_container {
+> >       u16 itr_setting:13;
+> >       u16 itr_reserved:2;
+> >       u16 itr_mode:1;
+> > +     enum ice_container_type type;
+> 
+> It may not matter, but should you make sure
+> the size of "type" doesn't negativelly affect this
+> structure?
 
-Acked-by: Jassi Brar <jaswinder.singh@linaro.org>
+Seems that it doesn't matter.
 
-cheers.
+Before:
+struct ice_ring_container {
+        struct ice_ring *          ring;                 /*     0     8 */
+        struct dim                 dim;                  /*     8   120 */
+
+        /* XXX last struct has 2 bytes of padding */
+
+        /* --- cacheline 2 boundary (128 bytes) --- */
+        u16                        itr_idx;              /*   128     2 */
+        u16                        itr_setting:13;       /*   130: 0  2 */
+        u16                        itr_reserved:2;       /*   130:13  2 */
+        u16                        itr_mode:1;           /*   130:15  2 */
+
+        /* size: 136, cachelines: 3, members: 6 */
+        /* padding: 4 */
+        /* paddings: 1, sum paddings: 2 */
+        /* last cacheline: 8 bytes */
+
+
+After:
+struct ice_ring_container {
+        union {
+                struct ice_rx_ring * rx_ring;            /*     0     8 */
+                struct ice_tx_ring * tx_ring;            /*     0     8 */
+        };                                               /*     0     8 */
+        struct dim                 dim;                  /*     8   120 */
+
+        /* XXX last struct has 2 bytes of padding */
+
+        /* --- cacheline 2 boundary (128 bytes) --- */
+        u16                        itr_idx;              /*   128     2 */
+        u16                        itr_setting:13;       /*   130: 0  2 */
+        u16                        itr_reserved:2;       /*   130:13  2 */
+        u16                        itr_mode:1;           /*   130:15  2 */
+        enum ice_container_type    type;                 /*   132     4 */
+
+        /* size: 136, cachelines: 3, members: 7 */
+        /* paddings: 1, sum paddings: 2 */
+        /* last cacheline: 8 bytes */
+
+Still 3 cachelines and same sizes.
+
+
+> 
+> >  };
+> >
+> >  struct ice_coalesce_stored {
+> > --
+> > 2.20.1
+> 
