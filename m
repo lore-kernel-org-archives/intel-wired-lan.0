@@ -1,102 +1,96 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Tue, 17 Aug 2021 15:16:20 +0200
-Subject: [Intel-wired-lan] [PATCH] igc: fix tunnel offloading
-Message-ID: <20210817131620.566614-1-vinschen@redhat.com>
+From: Feng zhou <zhoufeng.zf@bytedance.com>
+Date: Tue, 17 Aug 2021 15:49:47 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix NULL pointer dereference in
+ ixgbe_xdp_setup
+Message-ID: <20210817074947.11555-1-zhoufeng.zf@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Paolo Abeni <pabeni@redhat.com>
+From: Feng Zhou <zhoufeng.zf@bytedance.com>
 
-Checking tunnel offloading, it turns out that offloading doesn't work
-as expected.  The following script allows to reproduce the issue.
-Call it as `testscript DEVICE LOCALIP REMOTEIP NETMASK'
+The ixgbe driver currently generates a NULL pointer dereference with
+some machine (online cpus < 63). This is due to the fact that the
+maximum value of num_xdp_queues is nr_cpu_ids. Code is in
+"ixgbe_set_rss_queues"".
 
-=== SNIP ===
-if [ $# -ne 4 ]
-then
-  echo "Usage $0 DEVICE LOCALIP REMOTEIP NETMASK"
-  exit 1
-fi
-DEVICE="$1"
-LOCAL_ADDRESS="$2"
-REMOTE_ADDRESS="$3"
-NWMASK="$4"
-echo "Driver: $(ethtool -i ${DEVICE} | awk '/^driver:/{print $2}') "
-ethtool -k "${DEVICE}" | grep tx-udp
-echo
-echo "Set up NIC and tunnel..."
-ip addr add "${LOCAL_ADDRESS}/${NWMASK}" dev "${DEVICE}"
-ip link set "${DEVICE}" up
-sleep 2
-ip link add vxlan1 type vxlan id 42 \
-		   remote "${REMOTE_ADDRESS}" \
-		   local "${LOCAL_ADDRESS}" \
-		   dstport 0 \
-		   dev "${DEVICE}"
-ip addr add fc00::1/64 dev vxlan1
-ip link set vxlan1 up
-sleep 2
-rm -f vxlan.pcap
-echo "Running tcpdump and iperf3..."
-( nohup tcpdump -i any -w vxlan.pcap >/dev/null 2>&1 ) &
-sleep 2
-iperf3 -c fc00::2 >/dev/null
-pkill tcpdump
-echo
-echo -n "Max. Paket Size: "
-tcpdump -r vxlan.pcap -nnle 2>/dev/null \
-| grep "${LOCAL_ADDRESS}.*> ${REMOTE_ADDRESS}.*OTV" \
-| awk '{print $8}' | awk -F ':' '{print $1}' \
-| sort -n | tail -1
-echo
-ip link del vxlan1
-ip addr del ${LOCAL_ADDRESS}/${NWMASK} dev "${DEVICE}"
-=== SNAP ===
+Here's how the problem repeats itself:
+Some machine (online cpus < 63), And user set num_queues to 63 through
+ethtool. Code is in the "ixgbe_set_channels",
+adapter->ring_feature[RING_F_FDIR].limit = count;
+It becames 63.
+When user use xdp, "ixgbe_set_rss_queues" will set queues num.
+adapter->num_rx_queues = rss_i;
+adapter->num_tx_queues = rss_i;
+adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
+And rss_i's value is from
+f = &adapter->ring_feature[RING_F_FDIR];
+rss_i = f->indices = f->limit;
+So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
+for (i = 0; i < adapter->num_rx_queues; i++)
+	if (adapter->xdp_ring[i]->xsk_umem)
+lead to panic.
+Call trace:
+[exception RIP: ixgbe_xdp+368]
+RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
+RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
+RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
+RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
+R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
+R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
+ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+ 7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
+ 8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
+ 9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
+10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
+11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
+12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
+13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
+14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
+15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
+16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
+17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
+18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
+19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
 
-The expected outcome is
-
-  Max. Paket Size: 64904
-
-This is what you see on igb, the code igc has been taken from.
-However, on igc the output is
-
-  Max. Paket Size: 1516
-
-so the GSO aggregate packets are segmented by the kernel before calling
-igc_xmit_frame.  Inside the subsequent call to igc_tso, the check for
-skb_is_gso(skb) fails and the function returns prematurely.
-
-It turns out that this occurs because the feature flags aren't set
-entirely correctly in igc_probe.  In contrast to the original code
-from igb_probe, igc_probe neglects to set the flags required to allow
-tunnel offloading.
-
-Setting the same flags as igb fixes the issue on igc.
-
-Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-Tested-by: Corinna Vinschen <vinschen@redhat.com>
+Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
+AF_XDP")
+Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index b7aab35c1132..79efb3e6a03e 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6264,7 +6264,9 @@ static int igc_probe(struct pci_dev *pdev,
- 	if (pci_using_dac)
- 		netdev->features |= NETIF_F_HIGHDMA;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 14aea40da50f..5db496cc5070 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct bpf_prog *old_prog;
+ 	bool need_reset;
++	int num_queues;
  
--	netdev->vlan_features |= netdev->features;
-+	netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
-+	netdev->mpls_features |= NETIF_F_HW_CSUM;
-+	netdev->hw_enc_features |= netdev->vlan_features;
+ 	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
+ 		return -EINVAL;
+@@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 	/* Kick start the NAPI context if there is an AF_XDP socket open
+ 	 * on that queue id. This so that receiving will start.
+ 	 */
+-	if (need_reset && prog)
+-		for (i = 0; i < adapter->num_rx_queues; i++)
++	if (need_reset && prog) {
++		num_queues = min_t(int, adapter->num_rx_queues,
++			adapter->num_xdp_queues);
++		for (i = 0; i < num_queues; i++)
+ 			if (adapter->xdp_ring[i]->xsk_pool)
+ 				(void)ixgbe_xsk_wakeup(adapter->netdev, i,
+ 						       XDP_WAKEUP_RX);
++	}
  
- 	/* MTU range: 68 - 9216 */
- 	netdev->min_mtu = ETH_MIN_MTU;
+ 	return 0;
+ }
 -- 
-2.27.0
+2.11.0
 
