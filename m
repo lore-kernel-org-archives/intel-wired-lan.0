@@ -1,42 +1,65 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Tue, 17 Aug 2021 09:41:49 +0000
-Subject: [Intel-wired-lan] [RFC net-next 1/7] ptp: Add interface for
- acquiring DPLL state
-In-Reply-To: <20210816235400.GA24680@hoboy.vegasvil.org>
+From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
+Date: Tue, 17 Aug 2021 10:35:29 +0000
+Subject: [Intel-wired-lan] [RFC net-next 4/7] net: add ioctl interface
+ for recover reference clock on netdev
+In-Reply-To: <CAK8P3a0N3N3mFvoPj_fkqOY30uudJceox=uwSW+nd0B0kf8-ng@mail.gmail.com>
 References: <20210816160717.31285-1-arkadiusz.kubalewski@intel.com>
- <20210816160717.31285-2-arkadiusz.kubalewski@intel.com>
- <20210816235400.GA24680@hoboy.vegasvil.org>
-Message-ID: <PH0PR11MB4951762ECB04D90D634E905DEAFE9@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210816160717.31285-5-arkadiusz.kubalewski@intel.com>
+ <CAK8P3a0N3N3mFvoPj_fkqOY30uudJceox=uwSW+nd0B0kf8-ng@mail.gmail.com>
+Message-ID: <DM6PR11MB4657C563333B755676B3069F9BFE9@DM6PR11MB4657.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> > Previously there was no common interface for monitoring
-> > synchronization state of Digital Phase Locked Loop.
-> >
-> > Add interface through PTP ioctl subsystem for tools, as well as sysfs
-> > human-friendly part of the interface.
-> >
-> > enum dpll_state moved to uapi definition, it is required to have
-> > common definition of DPLL states in uapi.
-> 
-> This has nothing to do with PTP, right?
-> 
-> So why isn't it a RTNL feature instead?
-> 
-> Thanks,
-> Richard
+>On Mon, Aug 16, 2021 at 6:18 PM Arkadiusz Kubalewski
+><arkadiusz.kubalewski@intel.com> wrote:
+>
+>> +/*
+>> + * Structure used for passing data with SIOCSSYNCE and SIOCGSYNCE ioctls
+>> + */
+>> +struct synce_ref_clk_cfg {
+>> +       __u8 pin_id;
+>> +       _Bool enable;
+>> +};
+>
+>I'm not sure if there are any guarantees about the size and alignment of _Bool,
+>maybe better use __u8 here as well, if only for clarity.
+>
 
+Sure, will fix that in next patch, seems reasonable
 
-The logic behind adding the DPLL state to the PTP subsystem is that SyncE DPLL on Network adapters, in most cases, drive the PTP timer.
-Having access to it in the PTP subsystem is beneficial, as Telco standards, like G.8275.1/2, require a different behavior depending on the SyncE availability and state.
-Multiport adapters use a single PLL to drive all ports. If we add the PLL interface to the PTP device - a tool that would implement support for Telco standards would have a single source of information about the presence and state of physical sync.
+>> +#endif /* _NET_SYNCE_H */
+>> diff --git a/include/uapi/linux/sockios.h b/include/uapi/linux/sockios.h
+>> index 7d1bccbbef78..32c7d4909c31 100644
+>> --- a/include/uapi/linux/sockios.h
+>> +++ b/include/uapi/linux/sockios.h
+>> @@ -153,6 +153,10 @@
+>>  #define SIOCSHWTSTAMP  0x89b0          /* set and get config           */
+>>  #define SIOCGHWTSTAMP  0x89b1          /* get config                   */
+>>
+>> +/* synchronous ethernet config per physical function */
+>> +#define SIOCSSYNCE     0x89c0          /* set and get config           */
+>> +#define SIOCGSYNCE     0x89c1          /* get config                   */
+>
+>I understand that these are traditionally using the old-style 16-bit
+>numbers, but is there any reason to keep doing that rather than
+>making them modern like this?
 
-Moreover, it'll open the path for implementing PLL state-aware ext_ts that would generate events only when the PLL device is locked to the incoming signals improving the quality of external TS events. I.e. an external PLL can be used to monitor incoming 1PPS signal and disable event generation when its frequency drifts off 1Hz by preset margins.
- 
-If we bind it to the Network port, a tool would need to find the port that owns the PLL and read the state from a different place, which sounds suboptimal. Additionally we'll lose ability to rely on external HW to monitor external TS events.
- 
-Regards
-Maciek
+Personally I would try to keep it one way, just for consistency, 
+but you might be right - making it modern way is better option.
+If no other objections to this comment I am going to change it according to
+Arnd's suggestion in next patch.
+
+>
+>#define SIOCSSYNCE     _IOWR(0x89, 0xc0, struct  synce_ref_clk_cfg)
+>/* set and get config   */
+>#define SIOCGSYNCE     _IOR(0x89, 0xc1, struct  synce_ref_clk_cfg)
+>/* get config   */
+>
+>        Arnd
+>
+
+Thank you,
+Arkadiusz
