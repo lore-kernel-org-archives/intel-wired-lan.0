@@ -1,112 +1,128 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Wed, 18 Aug 2021 09:52:56 +0200
-Subject: [Intel-wired-lan] [PATCH v5 intel-next 0/9] XDP_TX improvements
- for ice
-In-Reply-To: <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
-References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
- <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
-Message-ID: <20210818075256.GA16780@ranger.igk.intel.com>
+From: zhoufeng <zhoufeng.zf@bytedance.com>
+Date: Wed, 18 Aug 2021 16:30:15 +0800
+Subject: [Intel-wired-lan] [External] Re: [PATCH] ixgbe: Fix NULL
+ pointer dereference in ixgbe_xdp_setup
+In-Reply-To: <20210817111047.GA8143@ranger.igk.intel.com>
+References: <20210817075407.11961-1-zhoufeng.zf@bytedance.com>
+ <20210817111047.GA8143@ranger.igk.intel.com>
+Message-ID: <5bddff53-9b78-99db-1d8e-23b3d38167a1@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 17, 2021 at 09:59:01PM +0100, Nguyen, Anthony L wrote:
-> On Sat, 2021-08-14 at 16:08 +0200, Maciej Fijalkowski wrote:
-> > With the v5, I think it's time for a proper change log.
+
+
+? 2021/8/17 ??7:10, Maciej Fijalkowski ??:
+> On Tue, Aug 17, 2021 at 03:54:07PM +0800, Feng zhou wrote:
+>> From: Feng Zhou <zhoufeng.zf@bytedance.com>
+>>
+>> The ixgbe driver currently generates a NULL pointer dereference with
+>> some machine (online cpus < 63). This is due to the fact that the
+>> maximum value of num_xdp_queues is nr_cpu_ids. Code is in
+>> "ixgbe_set_rss_queues"".
 > 
-> This isn't applying to the Intel-wired-LAN tree. If you want it to go
-> through there, could you base the patches on that tree?
-
-Interestingly this is the first time that happens to me and I always based
-my XDP related driver work on bpf-next.
-
-iwl tree is some standalone tree or is it just the net-next ?
-
+> That's a good catch, but we should fix set channels callback so that it
+> will not allow a setting of queues to be higher than the
+> num_online_cpus().
 > 
-> Also, looking at NIPA, it looks like patches 2 and 3 have kdoc issues.
-
-Yeah I saw kdoc issue on patch 3 and wanted to ask you to fix this if you
-would be applying that set but given that you're asking for a re-submit
-i'll fix those by myself.
-
+> Please also include the tree in the patch subject that you're directing
+> the patch to.
 > 
-> Thanks,
-> Tony
+
+Ok, Besides it, I will add more code in "ixgbe_set_channels":
+/* verify the number of channels does not exceed num_online_cpus */
+if (count > num_online_cpus())
+	return -EINVAL;
+If user want set queues num to be higher than the num_online_cpus(),
+return error(-EINVAL).
+
+What do you think?
+
+> I'd be also thankful if you Cc me on Intel XDP related patches.
+> Thanks!
 > 
-> > v4->v5:
-> > * fix issues pointed by lkp; variables used for updating ring stats
-> >   could be un-inited
-> > * s/ice_ring/ice_rx_ring; it looks now symmetric given that we have
-> >   ice_tx_ring struct dedicated for Tx ring
-> > * go through the code and use ice_for_each_* macros; it was spotted
-> > by
-> >   Brett that there was a place around that code that this set is
-> >   touching that was not using the ice_for_each_txq. Turned out that
-> > there
-> >   were more such places
-> > * take care of coalesce related code; carry the info about type of
-> > ring
-> >   container in ice_ring_container
-> > * pull out getting rid of @ring_active onto separate patch, as
-> > suggested
-> >   by Brett
-> >
-> > v3->v4:
-> > * fix lkp issues;
-> >
-> > v2->v3:
-> > * improve XDP_TX in a proper way
-> > * split ice_ring
-> > * propagate XDP ring pointer to Rx ring
-> >
-> > v1->v2:
-> > * try to improve XDP_TX processing
-> >
-> > v4 :
-> > https://lore.kernel.org/bpf/20210806095539.34423-1-maciej.fijalkowski at intel.com/
-> > v3 :
-> > https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
-> > v2 :
-> > https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
-> > v1 :
-> > https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
-> >
-> > Thanks!
-> > Maciej
-> >
-> > Maciej Fijalkowski (9):
-> >   ice: remove ring_active from ice_ring
-> >   ice: move ice_container_type onto ice_ring_container
-> >   ice: split ice_ring onto Tx/Rx separate structs
-> >   ice: unify xdp_rings accesses
-> >   ice: do not create xdp_frame on XDP_TX
-> >   ice: propagate xdp_ring onto rx_ring
-> >   ice: optimize XDP_TX workloads
-> >   ice: introduce XDP_TX fallback path
-> >   ice: make use of ice_for_each_* macros
-> >
-> >  drivers/net/ethernet/intel/ice/ice.h          |  41 +++-
-> >  drivers/net/ethernet/intel/ice/ice_arfs.c     |   2 +-
-> >  drivers/net/ethernet/intel/ice/ice_base.c     |  51 ++---
-> >  drivers/net/ethernet/intel/ice/ice_base.h     |   8 +-
-> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   9 +-
-> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
-> >  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  93 +++++----
-> >  drivers/net/ethernet/intel/ice/ice_lib.c      |  88 +++++----
-> >  drivers/net/ethernet/intel/ice/ice_lib.h      |   6 +-
-> >  drivers/net/ethernet/intel/ice/ice_main.c     | 142 +++++++++-----
-> >  drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
-> >  drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
-> >  drivers/net/ethernet/intel/ice/ice_trace.h    |  28 +--
-> >  drivers/net/ethernet/intel/ice/ice_txrx.c     | 183 +++++++++++-----
-> > --
-> >  drivers/net/ethernet/intel/ice/ice_txrx.h     | 126 +++++++-----
-> >  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  98 ++++++++--
-> >  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +-
-> >  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
-> >  drivers/net/ethernet/intel/ice/ice_xsk.c      |  70 ++++---
-> >  drivers/net/ethernet/intel/ice/ice_xsk.h      |  20 +-
-> >  20 files changed, 607 insertions(+), 390 deletions(-)
-> >
+
+Ok, of course.
+
+
+>>
+>> Here's how the problem repeats itself:
+>> Some machine (online cpus < 63), And user set num_queues to 63 through
+>> ethtool. Code is in the "ixgbe_set_channels",
+>> adapter->ring_feature[RING_F_FDIR].limit = count;
+>> It becames 63.
+>> When user use xdp, "ixgbe_set_rss_queues" will set queues num.
+>> adapter->num_rx_queues = rss_i;
+>> adapter->num_tx_queues = rss_i;
+>> adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
+>> And rss_i's value is from
+>> f = &adapter->ring_feature[RING_F_FDIR];
+>> rss_i = f->indices = f->limit;
+>> So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
+>> for (i = 0; i < adapter->num_rx_queues; i++)
+>> 	if (adapter->xdp_ring[i]->xsk_umem)
+>> lead to panic.
+>> Call trace:
+>> [exception RIP: ixgbe_xdp+368]
+>> RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
+>> RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
+>> RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
+>> RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
+>> R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
+>> R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
+>> ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+>>   7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
+>>   8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
+>>   9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
+>> 10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
+>> 11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
+>> 12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
+>> 13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
+>> 14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
+>> 15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
+>> 16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
+>> 17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
+>> 18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
+>> 19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
+>>
+>> Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
+>> AF_XDP")
+>> Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
+>> ---
+>>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 8 ++++++--
+>>   1 file changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index 14aea40da50f..5db496cc5070 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+>>   	struct ixgbe_adapter *adapter = netdev_priv(dev);
+>>   	struct bpf_prog *old_prog;
+>>   	bool need_reset;
+>> +	int num_queues;
+>>   
+>>   	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
+>>   		return -EINVAL;
+>> @@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+>>   	/* Kick start the NAPI context if there is an AF_XDP socket open
+>>   	 * on that queue id. This so that receiving will start.
+>>   	 */
+>> -	if (need_reset && prog)
+>> -		for (i = 0; i < adapter->num_rx_queues; i++)
+>> +	if (need_reset && prog) {
+>> +		num_queues = min_t(int, adapter->num_rx_queues,
+>> +			adapter->num_xdp_queues);
+>> +		for (i = 0; i < num_queues; i++)
+>>   			if (adapter->xdp_ring[i]->xsk_pool)
+>>   				(void)ixgbe_xsk_wakeup(adapter->netdev, i,
+>>   						       XDP_WAKEUP_RX);
+>> +	}
+>>   
+>>   	return 0;
+>>   }
+>> -- 
+>> 2.11.0
+>>
