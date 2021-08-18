@@ -1,60 +1,35 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 18 Aug 2021 18:14:13 +0000
-Subject: [Intel-wired-lan] [RFC net-next 1/7] ptp: Add interface for
- acquiring DPLL state
-In-Reply-To: <20210818170259.GD9992@hoboy.vegasvil.org>
-References: <20210816160717.31285-1-arkadiusz.kubalewski@intel.com>
- <20210816160717.31285-2-arkadiusz.kubalewski@intel.com>
- <20210816235400.GA24680@hoboy.vegasvil.org>
- <PH0PR11MB4951762ECB04D90D634E905DEAFE9@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210818170259.GD9992@hoboy.vegasvil.org>
-Message-ID: <CO1PR11MB5089A30F5681B860B3F9F96CD6FF9@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Fuxbrumer, Dvora <dvorax.fuxbrumer@linux.intel.com>
+Date: Thu, 19 Aug 2021 00:09:09 +0300
+Subject: [Intel-wired-lan] [PATCH next-queue v3 1/3] igc: Use default
+ cycle 'start' and 'end' values for queues
+In-Reply-To: <1628520820-28907-2-git-send-email-aravindhan.gunasekaran@intel.com>
+References: <1628520820-28907-1-git-send-email-aravindhan.gunasekaran@intel.com>
+ <1628520820-28907-2-git-send-email-aravindhan.gunasekaran@intel.com>
+Message-ID: <02a5627b-7f03-2578-c853-aba58d327cfa@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Richard Cochran
-> Sent: Wednesday, August 18, 2021 10:03 AM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Cc: cong.wang at bytedance.com; arnd at arndb.de; gustavoars at kernel.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
-> colin.king at canonical.com; intel-wired-lan at lists.osuosl.org; nikolay at nvidia.com;
-> linux-kselftest at vger.kernel.org; kuba at kernel.org; shuah at kernel.org;
-> davem at davemloft.net
-> Subject: Re: [Intel-wired-lan] [RFC net-next 1/7] ptp: Add interface for acquiring
-> DPLL state
+On 8/9/2021 17:53, aravindhan.gunasekaran at intel.com wrote:
+> From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > 
-> On Tue, Aug 17, 2021 at 09:41:49AM +0000, Machnikowski, Maciej wrote:
+> Sets default values for each queue cycle start and cycle end.
+> This allows some simplification in the handling of these
+> configurations as most TSN features in i225 require a cycle
+> to be configured.
 > 
-> > The logic behind adding the DPLL state to the PTP subsystem is that SyncE DPLL
-> on Network adapters, in most cases, drive the PTP timer.
+> In i225, cycle start and end time is required to be programmed
+> for CBS to work properly.
 > 
-> So what?  The logic in the HW has nothing to do with the proper user
-> space interfaces.  For example, we have SO_TIMESTAMPING and PHC as
-> separate APIs, even though HW devices often implement both.
-> 
-> > Having access to it in the PTP subsystem is beneficial, as Telco
-> > standards, like G.8275.1/2, require a different behavior depending
-> > on the SyncE availability and state.
-> 
-> Right, but this does say anything about the API.
-> 
-> > Multiport adapters use a single PLL to drive all ports. If we add
-> > the PLL interface to the PTP device - a tool that would implement
-> > support for Telco standards would have a single source of
-> > information about the presence and state of physical sync.
-> 
-> Not really.  Nothing guarantees a sane mapping from MAC to PHC.  In
-> many systems, there a many of each.
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: Aravindhan Gunasekaran <aravindhan.gunasekaran@intel.com>
+> Signed-off-by: Mallikarjuna Chilakala <mallikarjuna.chilakala@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 37 ++++++++++++++++++-------------
+>   drivers/net/ethernet/intel/igc/igc_tsn.c  |  6 -----
+>   2 files changed, 21 insertions(+), 22 deletions(-)
 > 
 
-Well, I think the point of placing it in the PTP subsystem is that there is a sane mapping between PHC <-> DPLL. There's only one DPLL for the PHC.
-
-Thanks,
-Jake
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
