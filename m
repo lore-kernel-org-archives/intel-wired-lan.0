@@ -1,139 +1,66 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 18 Aug 2021 16:12:32 +0000
-Subject: [Intel-wired-lan] [PATCH v5 intel-next 0/9] XDP_TX improvements
- for ice
-In-Reply-To: <20210818140330.GA25189@ranger.igk.intel.com>
-References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
- <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
- <20210818075256.GA16780@ranger.igk.intel.com>
- <20210818140330.GA25189@ranger.igk.intel.com>
-Message-ID: <b5812918827b58dd353fd32b7042f1dfc2634e62.camel@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Wed, 18 Aug 2021 10:02:59 -0700
+Subject: [Intel-wired-lan] [RFC net-next 1/7] ptp: Add interface for
+ acquiring DPLL state
+In-Reply-To: <PH0PR11MB4951762ECB04D90D634E905DEAFE9@PH0PR11MB4951.namprd11.prod.outlook.com>
+References: <20210816160717.31285-1-arkadiusz.kubalewski@intel.com>
+ <20210816160717.31285-2-arkadiusz.kubalewski@intel.com>
+ <20210816235400.GA24680@hoboy.vegasvil.org>
+ <PH0PR11MB4951762ECB04D90D634E905DEAFE9@PH0PR11MB4951.namprd11.prod.outlook.com>
+Message-ID: <20210818170259.GD9992@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-08-18 at 16:03 +0200, Maciej Fijalkowski wrote:
-> On Wed, Aug 18, 2021 at 09:52:56AM +0200, Maciej Fijalkowski wrote:
-> > On Tue, Aug 17, 2021 at 09:59:01PM +0100, Nguyen, Anthony L wrote:
-> > > On Sat, 2021-08-14 at 16:08 +0200, Maciej Fijalkowski wrote:
-> > > > With the v5, I think it's time for a proper change log.
-> > > 
-> > > This isn't applying to the Intel-wired-LAN tree. If you want it
-> > > to go
-> > > through there, could you base the patches on that tree?
-> > 
-> > Interestingly this is the first time that happens to me and I
-> > always based
-> > my XDP related driver work on bpf-next.
-> > 
-> > iwl tree is some standalone tree or is it just the net-next ?
-> 
-> Turns out that you have the switchdev set in your branch and it's not
-> on
-> net-next yet. I have adjusted my set on top of that code and sent a
-> v6.
+On Tue, Aug 17, 2021 at 09:41:49AM +0000, Machnikowski, Maciej wrote:
 
-It's net-next but it also contains the Intel driver patches that are
-making their way to net-next. Most of the time they'll apply to either
-without issue, however, it depends on those extra patches. In this case
-sounds like the switchdev set didn't allow for a clean apply. Thanks
-for the v6.
+> The logic behind adding the DPLL state to the PTP subsystem is that SyncE DPLL on Network adapters, in most cases, drive the PTP timer.
 
-> > > Also, looking at NIPA, it looks like patches 2 and 3 have kdoc
-> > > issues.
-> > 
-> > Yeah I saw kdoc issue on patch 3 and wanted to ask you to fix this
-> > if you
-> > would be applying that set but given that you're asking for a re-
-> > submit
-> > i'll fix those by myself.
-> > 
-> > > Thanks,
-> > > Tony
-> > > 
-> > > > v4->v5:
-> > > > * fix issues pointed by lkp; variables used for updating ring
-> > > > stats
-> > > >   could be un-inited
-> > > > * s/ice_ring/ice_rx_ring; it looks now symmetric given that we
-> > > > have
-> > > >   ice_tx_ring struct dedicated for Tx ring
-> > > > * go through the code and use ice_for_each_* macros; it was
-> > > > spotted
-> > > > by
-> > > >   Brett that there was a place around that code that this set
-> > > > is
-> > > >   touching that was not using the ice_for_each_txq. Turned out
-> > > > that
-> > > > there
-> > > >   were more such places
-> > > > * take care of coalesce related code; carry the info about type
-> > > > of
-> > > > ring
-> > > >   container in ice_ring_container
-> > > > * pull out getting rid of @ring_active onto separate patch, as
-> > > > suggested
-> > > >   by Brett
-> > > > 
-> > > > v3->v4:
-> > > > * fix lkp issues;
-> > > > 
-> > > > v2->v3:
-> > > > * improve XDP_TX in a proper way
-> > > > * split ice_ring
-> > > > * propagate XDP ring pointer to Rx ring
-> > > > 
-> > > > v1->v2:
-> > > > * try to improve XDP_TX processing
-> > > > 
-> > > > v4 :
-> > > > https://lore.kernel.org/bpf/20210806095539.34423-1-maciej.fijalkowski at intel.com/
-> > > > v3 :
-> > > > https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
-> > > > v2 :
-> > > > https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
-> > > > v1 :
-> > > > https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
-> > > > 
-> > > > Thanks!
-> > > > Maciej
-> > > > 
-> > > > Maciej Fijalkowski (9):
-> > > >   ice: remove ring_active from ice_ring
-> > > >   ice: move ice_container_type onto ice_ring_container
-> > > >   ice: split ice_ring onto Tx/Rx separate structs
-> > > >   ice: unify xdp_rings accesses
-> > > >   ice: do not create xdp_frame on XDP_TX
-> > > >   ice: propagate xdp_ring onto rx_ring
-> > > >   ice: optimize XDP_TX workloads
-> > > >   ice: introduce XDP_TX fallback path
-> > > >   ice: make use of ice_for_each_* macros
-> > > > 
-> > > >  drivers/net/ethernet/intel/ice/ice.h          |  41 +++-
-> > > >  drivers/net/ethernet/intel/ice/ice_arfs.c     |   2 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_base.c     |  51 ++---
-> > > >  drivers/net/ethernet/intel/ice/ice_base.h     |   8 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   9 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  93 +++++----
-> > > >  drivers/net/ethernet/intel/ice/ice_lib.c      |  88 +++++----
-> > > >  drivers/net/ethernet/intel/ice/ice_lib.h      |   6 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_main.c     | 142 +++++++++-
-> > > > ----
-> > > >  drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_trace.h    |  28 +--
-> > > >  drivers/net/ethernet/intel/ice/ice_txrx.c     | 183
-> > > > +++++++++++-----
-> > > > --
-> > > >  drivers/net/ethernet/intel/ice/ice_txrx.h     | 126 +++++++---
-> > > > --
-> > > >  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  98 ++++++++--
-> > > >  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +-
-> > > >  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
-> > > >  drivers/net/ethernet/intel/ice/ice_xsk.c      |  70 ++++---
-> > > >  drivers/net/ethernet/intel/ice/ice_xsk.h      |  20 +-
-> > > >  20 files changed, 607 insertions(+), 390 deletions(-)
-> > > > 
+So what?  The logic in the HW has nothing to do with the proper user
+space interfaces.  For example, we have SO_TIMESTAMPING and PHC as
+separate APIs, even though HW devices often implement both.
+
+> Having access to it in the PTP subsystem is beneficial, as Telco
+> standards, like G.8275.1/2, require a different behavior depending
+> on the SyncE availability and state.
+
+Right, but this does say anything about the API.
+
+> Multiport adapters use a single PLL to drive all ports. If we add
+> the PLL interface to the PTP device - a tool that would implement
+> support for Telco standards would have a single source of
+> information about the presence and state of physical sync.
+
+Not really.  Nothing guarantees a sane mapping from MAC to PHC.  In
+many systems, there a many of each.
+
+> Moreover, it'll open the path for implementing PLL state-aware
+> ext_ts that would generate events only when the PLL device is locked
+> to the incoming signals improving the quality of external TS
+> events. I.e. an external PLL can be used to monitor incoming 1PPS
+> signal and disable event generation when its frequency drifts off
+> 1Hz by preset margins.
+
+I don't see how this prevents using RTNL (or something else) as the
+API for the SyncE configuration.
+
+> If we bind it to the Network port, a tool would need to find the
+> port that owns the PLL and read the state from a different place,
+> which sounds suboptimal.
+
+This is exactly how it works in ptpl4 today.  Some information comes
+from the PHC, some from RTNL (link state), some from ethtool
+(phc-interface mapping and time stamping abilities).
+
+> Additionally we'll lose ability to rely on external HW to monitor
+> external TS events.
+
+Sorry, I can't see that at all.
+
+Please do NOT tack this stuff onto the PHC subsystem just because you
+can.
+
+Thanks,
+Richard
