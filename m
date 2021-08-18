@@ -1,99 +1,62 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 17 Aug 2021 20:59:01 +0000
-Subject: [Intel-wired-lan] [PATCH v5 intel-next 0/9] XDP_TX improvements
- for ice
-In-Reply-To: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
-References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
-Message-ID: <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Wed, 18 Aug 2021 03:39:21 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 07/12] ice: set and
+ release switchdev environment
+In-Reply-To: <20210625024501.6126-8-michal.swiatkowski@linux.intel.com>
+References: <20210625024501.6126-1-michal.swiatkowski@linux.intel.com>
+ <20210625024501.6126-8-michal.swiatkowski@linux.intel.com>
+Message-ID: <MW3PR11MB4554E8E9088ED79AB76B13579CFF9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, 2021-08-14 at 16:08 +0200, Maciej Fijalkowski wrote:
-> With the v5, I think it's time for a proper change log.
-
-This isn't applying to the Intel-wired-LAN tree. If you want it to go
-through there, could you base the patches on that tree?
-
-Also, looking at NIPA, it looks like patches 2 and 3 have kdoc issues.
-
-Thanks,
-Tony
-
-> v4->v5:
-> * fix issues pointed by lkp; variables used for updating ring stats
->   could be un-inited
-> * s/ice_ring/ice_rx_ring; it looks now symmetric given that we have
->   ice_tx_ring struct dedicated for Tx ring
-> * go through the code and use ice_for_each_* macros; it was spotted
-> by
->   Brett that there was a place around that code that this set is
->   touching that was not using the ice_for_each_txq. Turned out that
-> there
->   were more such places
-> * take care of coalesce related code; carry the info about type of
-> ring
->   container in ice_ring_container
-> * pull out getting rid of @ring_active onto separate patch, as
-> suggested
->   by Brett
-> 
-> v3->v4:
-> * fix lkp issues;
-> 
-> v2->v3:
-> * improve XDP_TX in a proper way
-> * split ice_ring
-> * propagate XDP ring pointer to Rx ring
-> 
-> v1->v2:
-> * try to improve XDP_TX processing
-> 
-> v4 : 
-> https://lore.kernel.org/bpf/20210806095539.34423-1-maciej.fijalkowski at intel.com/
-> v3 : 
-> https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
-> v2 : 
-> https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
-> v1 : 
-> https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
-> 
-> Thanks!
-> Maciej
-> 
-> Maciej Fijalkowski (9):
->   ice: remove ring_active from ice_ring
->   ice: move ice_container_type onto ice_ring_container
->   ice: split ice_ring onto Tx/Rx separate structs
->   ice: unify xdp_rings accesses
->   ice: do not create xdp_frame on XDP_TX
->   ice: propagate xdp_ring onto rx_ring
->   ice: optimize XDP_TX workloads
->   ice: introduce XDP_TX fallback path
->   ice: make use of ice_for_each_* macros
-> 
->  drivers/net/ethernet/intel/ice/ice.h          |  41 +++-
->  drivers/net/ethernet/intel/ice/ice_arfs.c     |   2 +-
->  drivers/net/ethernet/intel/ice/ice_base.c     |  51 ++---
->  drivers/net/ethernet/intel/ice/ice_base.h     |   8 +-
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   9 +-
->  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
->  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  93 +++++----
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  88 +++++----
->  drivers/net/ethernet/intel/ice/ice_lib.h      |   6 +-
->  drivers/net/ethernet/intel/ice/ice_main.c     | 142 +++++++++-----
->  drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
->  drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
->  drivers/net/ethernet/intel/ice/ice_trace.h    |  28 +--
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 183 +++++++++++-----
-> --
->  drivers/net/ethernet/intel/ice/ice_txrx.h     | 126 +++++++-----
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  98 ++++++++--
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +-
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c      |  70 ++++---
->  drivers/net/ethernet/intel/ice/ice_xsk.h      |  20 +-
->  20 files changed, 607 insertions(+), 390 deletions(-)
-> 
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Michal Swiatkowski
+>Sent: Friday, June 25, 2021 8:15 AM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net-next v3 07/12] ice: set and release
+>switchdev environment
+>
+>From: Grzegorz Nitka <grzegorz.nitka@intel.com>
+>
+>Switchdev environment has to be set up when user create VFs and eswitch
+>mode is switchdev. Release is done when user delete all VFs.
+>
+>Data path in this implementation is based on control plane VSI.
+>This VSI is used to pass traffic from port representors to coresponfing VFs and
+>vice versa. Default TX rule has to be added to forward packet to control plane
+>VSI. This will redirect packets from VFs which don't match other rules to
+>control plane VSI.
+>
+>On RX site default rule is added on uplink VSI to receive all traffic that doesn't
+>match other rules. When setting switchdev environment all other rules from
+>VFs should be removed. Packet to VFs will be forwarded by control plane VSI.
+>
+>As VF without any mac rules can't send any packet because of antispoof
+>mechanism, VSI antispoof should be turned off on each VFs.
+>
+>To send packet from representor to correct VSI, destintion VSI field in TX
+>descriptor will have to be filled. Allow that by setting destination override bit
+>in control plane VSI security config.
+>
+>Packet from VFs will be received on control plane VSI. Driver should decide to
+>which netdev forward the packet. Decision is made based on src_vsi field from
+>descriptor. There is a target netdev list in control plane VSI struct which
+>choose netdev based on src_vsi number.
+>
+>Co-developed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
+>---
+> drivers/net/ethernet/intel/ice/ice.h         |  23 ++
+> drivers/net/ethernet/intel/ice/ice_eswitch.c | 394 +++++++++++++++++++
+>drivers/net/ethernet/intel/ice/ice_eswitch.h |  16 +-
+> drivers/net/ethernet/intel/ice/ice_main.c    |  19 +-
+> drivers/net/ethernet/intel/ice/ice_repr.c    |  12 +
+> drivers/net/ethernet/intel/ice/ice_repr.h    |   2 +
+> 6 files changed, 453 insertions(+), 13 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
