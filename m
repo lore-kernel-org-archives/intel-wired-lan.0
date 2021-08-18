@@ -1,152 +1,112 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 18 Aug 2021 13:23:38 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- c81eb2249a9350386b983130a97df993117fbff4
-Message-ID: <611c995a.aHGaX9HzUjw9EAt+%lkp@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Wed, 18 Aug 2021 09:52:56 +0200
+Subject: [Intel-wired-lan] [PATCH v5 intel-next 0/9] XDP_TX improvements
+ for ice
+In-Reply-To: <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
+References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
+ <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
+Message-ID: <20210818075256.GA16780@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: c81eb2249a9350386b983130a97df993117fbff4  i40e: Fix ATR queue selection
+On Tue, Aug 17, 2021 at 09:59:01PM +0100, Nguyen, Anthony L wrote:
+> On Sat, 2021-08-14 at 16:08 +0200, Maciej Fijalkowski wrote:
+> > With the v5, I think it's time for a proper change log.
+> 
+> This isn't applying to the Intel-wired-LAN tree. If you want it to go
+> through there, could you base the patches on that tree?
 
-elapsed time: 723m
+Interestingly this is the first time that happens to me and I always based
+my XDP related driver work on bpf-next.
 
-configs tested: 123
-configs skipped: 4
+iwl tree is some standalone tree or is it just the net-next ?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> 
+> Also, looking at NIPA, it looks like patches 2 and 3 have kdoc issues.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210816
-powerpc                     pq2fads_defconfig
-powerpc                      walnut_defconfig
-powerpc                       holly_defconfig
-arm                             ezx_defconfig
-powerpc                     mpc512x_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                         at91_dt_defconfig
-mips                     loongson1c_defconfig
-mips                          rb532_defconfig
-mips                       bmips_be_defconfig
-arm                            dove_defconfig
-sh                     magicpanelr2_defconfig
-powerpc                      mgcoge_defconfig
-arc                         haps_hs_defconfig
-arm                       aspeed_g5_defconfig
-powerpc                mpc7448_hpc2_defconfig
-ia64                             alldefconfig
-powerpc                   microwatt_defconfig
-arm                  colibri_pxa270_defconfig
-um                               alldefconfig
-sh                           se7721_defconfig
-sh                          rsk7201_defconfig
-sh                          r7780mp_defconfig
-x86_64                           alldefconfig
-mips                        jmr3927_defconfig
-powerpc                      acadia_defconfig
-mips                   sb1250_swarm_defconfig
-sh                           se7724_defconfig
-powerpc                        cell_defconfig
-openrisc                 simple_smp_defconfig
-mips                        vocore2_defconfig
-powerpc                        icon_defconfig
-powerpc                       maple_defconfig
-powerpc                     tqm8541_defconfig
-arm                           sama5_defconfig
-arm                           u8500_defconfig
-sparc                       sparc32_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210816
-x86_64               randconfig-a004-20210816
-x86_64               randconfig-a003-20210816
-x86_64               randconfig-a001-20210816
-x86_64               randconfig-a005-20210816
-x86_64               randconfig-a002-20210816
-i386                 randconfig-a004-20210816
-i386                 randconfig-a003-20210816
-i386                 randconfig-a002-20210816
-i386                 randconfig-a001-20210816
-i386                 randconfig-a006-20210816
-i386                 randconfig-a005-20210816
-i386                 randconfig-a011-20210817
-i386                 randconfig-a015-20210817
-i386                 randconfig-a014-20210817
-i386                 randconfig-a013-20210817
-i386                 randconfig-a016-20210817
-i386                 randconfig-a012-20210817
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Yeah I saw kdoc issue on patch 3 and wanted to ask you to fix this if you
+would be applying that set but given that you're asking for a re-submit
+i'll fix those by myself.
 
-clang tested configs:
-i386                 randconfig-a004-20210817
-i386                 randconfig-a006-20210817
-i386                 randconfig-a005-20210817
-x86_64               randconfig-a011-20210816
-x86_64               randconfig-a013-20210816
-x86_64               randconfig-a016-20210816
-x86_64               randconfig-a012-20210816
-x86_64               randconfig-a015-20210816
-x86_64               randconfig-a014-20210816
-i386                 randconfig-a011-20210816
-i386                 randconfig-a015-20210816
-i386                 randconfig-a013-20210816
-i386                 randconfig-a014-20210816
-i386                 randconfig-a016-20210816
-i386                 randconfig-a012-20210816
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> 
+> Thanks,
+> Tony
+> 
+> > v4->v5:
+> > * fix issues pointed by lkp; variables used for updating ring stats
+> >   could be un-inited
+> > * s/ice_ring/ice_rx_ring; it looks now symmetric given that we have
+> >   ice_tx_ring struct dedicated for Tx ring
+> > * go through the code and use ice_for_each_* macros; it was spotted
+> > by
+> >   Brett that there was a place around that code that this set is
+> >   touching that was not using the ice_for_each_txq. Turned out that
+> > there
+> >   were more such places
+> > * take care of coalesce related code; carry the info about type of
+> > ring
+> >   container in ice_ring_container
+> > * pull out getting rid of @ring_active onto separate patch, as
+> > suggested
+> >   by Brett
+> >
+> > v3->v4:
+> > * fix lkp issues;
+> >
+> > v2->v3:
+> > * improve XDP_TX in a proper way
+> > * split ice_ring
+> > * propagate XDP ring pointer to Rx ring
+> >
+> > v1->v2:
+> > * try to improve XDP_TX processing
+> >
+> > v4 :
+> > https://lore.kernel.org/bpf/20210806095539.34423-1-maciej.fijalkowski at intel.com/
+> > v3 :
+> > https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
+> > v2 :
+> > https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
+> > v1 :
+> > https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
+> >
+> > Thanks!
+> > Maciej
+> >
+> > Maciej Fijalkowski (9):
+> >   ice: remove ring_active from ice_ring
+> >   ice: move ice_container_type onto ice_ring_container
+> >   ice: split ice_ring onto Tx/Rx separate structs
+> >   ice: unify xdp_rings accesses
+> >   ice: do not create xdp_frame on XDP_TX
+> >   ice: propagate xdp_ring onto rx_ring
+> >   ice: optimize XDP_TX workloads
+> >   ice: introduce XDP_TX fallback path
+> >   ice: make use of ice_for_each_* macros
+> >
+> >  drivers/net/ethernet/intel/ice/ice.h          |  41 +++-
+> >  drivers/net/ethernet/intel/ice/ice_arfs.c     |   2 +-
+> >  drivers/net/ethernet/intel/ice/ice_base.c     |  51 ++---
+> >  drivers/net/ethernet/intel/ice/ice_base.h     |   8 +-
+> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   9 +-
+> >  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
+> >  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  93 +++++----
+> >  drivers/net/ethernet/intel/ice/ice_lib.c      |  88 +++++----
+> >  drivers/net/ethernet/intel/ice/ice_lib.h      |   6 +-
+> >  drivers/net/ethernet/intel/ice/ice_main.c     | 142 +++++++++-----
+> >  drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
+> >  drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
+> >  drivers/net/ethernet/intel/ice/ice_trace.h    |  28 +--
+> >  drivers/net/ethernet/intel/ice/ice_txrx.c     | 183 +++++++++++-----
+> > --
+> >  drivers/net/ethernet/intel/ice/ice_txrx.h     | 126 +++++++-----
+> >  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  98 ++++++++--
+> >  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +-
+> >  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
+> >  drivers/net/ethernet/intel/ice/ice_xsk.c      |  70 ++++---
+> >  drivers/net/ethernet/intel/ice/ice_xsk.h      |  20 +-
+> >  20 files changed, 607 insertions(+), 390 deletions(-)
+> >
