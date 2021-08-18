@@ -1,261 +1,118 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Wed, 18 Aug 2021 15:59:15 +0200
-Subject: [Intel-wired-lan] [PATCH v6 intel-next 8/9] ice: introduce XDP_TX
- fallback path
-In-Reply-To: <20210818135916.25007-1-maciej.fijalkowski@intel.com>
-References: <20210818135916.25007-1-maciej.fijalkowski@intel.com>
-Message-ID: <20210818135916.25007-9-maciej.fijalkowski@intel.com>
+Date: Wed, 18 Aug 2021 16:03:30 +0200
+Subject: [Intel-wired-lan] [PATCH v5 intel-next 0/9] XDP_TX improvements
+ for ice
+In-Reply-To: <20210818075256.GA16780@ranger.igk.intel.com>
+References: <20210814140812.46632-1-maciej.fijalkowski@intel.com>
+ <86e7bcc04d8211fe5796bd7ecbea9458a725ad03.camel@intel.com>
+ <20210818075256.GA16780@ranger.igk.intel.com>
+Message-ID: <20210818140330.GA25189@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Under rare circumstances there might be a situation where a requirement
-of having XDP Tx queue per CPU could not be fulfilled and some of the Tx
-resources have to be shared between CPUs. This yields a need for placing
-accesses to xdp_ring inside a critical section protected by spinlock.
-These accesses happen to be in the hot path, so let's introduce the
-static branch that will be triggered from the control plane when driver
-could not provide Tx queue dedicated for XDP on each CPU.
+On Wed, Aug 18, 2021 at 09:52:56AM +0200, Maciej Fijalkowski wrote:
+> On Tue, Aug 17, 2021 at 09:59:01PM +0100, Nguyen, Anthony L wrote:
+> > On Sat, 2021-08-14 at 16:08 +0200, Maciej Fijalkowski wrote:
+> > > With the v5, I think it's time for a proper change log.
+> > 
+> > This isn't applying to the Intel-wired-LAN tree. If you want it to go
+> > through there, could you base the patches on that tree?
+> 
+> Interestingly this is the first time that happens to me and I always based
+> my XDP related driver work on bpf-next.
+> 
+> iwl tree is some standalone tree or is it just the net-next ?
 
-Currently, the design that has been picked is to allow any number of XDP
-Tx queues that is at least half of a count of CPUs that platform has.
-For lower number driver will bail out with a response to user that there
-were not enough Tx resources that would allow configuring XDP. The
-sharing of rings is signalled via static branch enablement which in turn
-indicates that lock for xdp_ring accesses needs to be taken in hot path.
+Turns out that you have the switchdev set in your branch and it's not on
+net-next yet. I have adjusted my set on top of that code and sent a v6.
 
-Approach based on static branch has no impact on performance of a
-non-fallback path. One thing that is needed to be mentioned is a fact
-that the static branch will act as a global driver switch, meaning that
-if one PF got out of Tx resources, then other PFs that ice driver is
-servicing will suffer. However, given the fact that HW that ice driver
-is handling has 1024 Tx queues per each PF, this is currently an
-unlikely scenario.
-
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h          |  3 ++
- drivers/net/ethernet/intel/ice/ice_lib.c      |  4 +-
- drivers/net/ethernet/intel/ice/ice_main.c     | 53 ++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 16 +++++-
- drivers/net/ethernet/intel/ice/ice_txrx.h     |  1 +
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  7 ++-
- 6 files changed, 75 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 17096efba216..7a489381dbe2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -164,6 +164,8 @@ enum ice_feature {
- 	ICE_F_MAX
- };
- 
-+DECLARE_STATIC_KEY_FALSE(ice_xdp_locking_key);
-+
- struct ice_txq_meta {
- 	u32 q_teid;	/* Tx-scheduler element identifier */
- 	u16 q_id;	/* Entry in VSI's txq_map bitmap */
-@@ -714,6 +716,7 @@ int ice_up(struct ice_vsi *vsi);
- int ice_down(struct ice_vsi *vsi);
- int ice_vsi_cfg(struct ice_vsi *vsi);
- struct ice_vsi *ice_lb_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi);
-+int ice_vsi_determine_xdp_res(struct ice_vsi *vsi);
- int ice_prepare_xdp_rings(struct ice_vsi *vsi, struct bpf_prog *prog);
- int ice_destroy_xdp_rings(struct ice_vsi *vsi);
- int
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d76e34515483..61152fc78773 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3221,7 +3221,9 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 
- 		ice_vsi_map_rings_to_vectors(vsi);
- 		if (ice_is_xdp_ena_vsi(vsi)) {
--			vsi->num_xdp_txq = num_possible_cpus();
-+			ret = ice_vsi_determine_xdp_res(vsi);
-+			if (ret)
-+				goto err_vectors;
- 			ret = ice_prepare_xdp_rings(vsi, vsi->xdp_prog);
- 			if (ret)
- 				goto err_vectors;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 7267b8159b99..014762048fcb 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -44,6 +44,8 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
- #endif /* !CONFIG_DYNAMIC_DEBUG */
- 
- static DEFINE_IDA(ice_aux_ida);
-+DEFINE_STATIC_KEY_FALSE(ice_xdp_locking_key);
-+EXPORT_SYMBOL(ice_xdp_locking_key);
- 
- static struct workqueue_struct *ice_wq;
- static const struct net_device_ops ice_netdev_safe_mode_ops;
-@@ -2453,14 +2455,19 @@ static int ice_xdp_alloc_setup_rings(struct ice_vsi *vsi)
- 			goto free_xdp_rings;
- 		ice_set_ring_xdp(xdp_ring);
- 		xdp_ring->xsk_pool = ice_tx_xsk_pool(xdp_ring);
-+		spin_lock_init(&xdp_ring->tx_lock);
- 		for (j = 0; j < xdp_ring->count; j++) {
- 			tx_desc = ICE_TX_DESC(xdp_ring, j);
- 			tx_desc->cmd_type_offset_bsz = cpu_to_le64(ICE_TX_DESC_DTYPE_DESC_DONE);
- 		}
- 	}
- 
--	ice_for_each_rxq(vsi, i)
--		vsi->rx_rings[i]->xdp_ring = vsi->xdp_rings[i];
-+	ice_for_each_rxq(vsi, i) {
-+		if (static_key_enabled(&ice_xdp_locking_key))
-+			vsi->rx_rings[i]->xdp_ring = vsi->xdp_rings[i % vsi->num_xdp_txq];
-+		else
-+			vsi->rx_rings[i]->xdp_ring = vsi->xdp_rings[i];
-+	}
- 
- 	return 0;
- 
-@@ -2525,6 +2532,10 @@ int ice_prepare_xdp_rings(struct ice_vsi *vsi, struct bpf_prog *prog)
- 	if (__ice_vsi_get_qs(&xdp_qs_cfg))
- 		goto err_map_xdp;
- 
-+	if (static_key_enabled(&ice_xdp_locking_key))
-+		netdev_warn(vsi->netdev,
-+			    "Could not allocate one XDP Tx ring per CPU, XDP_TX/XDP_REDIRECT actions will be slower\n");
-+
- 	if (ice_xdp_alloc_setup_rings(vsi))
- 		goto clear_xdp_rings;
- 
-@@ -2641,6 +2652,9 @@ int ice_destroy_xdp_rings(struct ice_vsi *vsi)
- 	devm_kfree(ice_pf_to_dev(pf), vsi->xdp_rings);
- 	vsi->xdp_rings = NULL;
- 
-+	if (static_key_enabled(&ice_xdp_locking_key))
-+		static_branch_dec(&ice_xdp_locking_key);
-+
- 	if (ice_is_reset_in_progress(pf->state) || !vsi->q_vectors[0])
- 		return 0;
- 
-@@ -2675,6 +2689,29 @@ static void ice_vsi_rx_napi_schedule(struct ice_vsi *vsi)
- 	}
- }
- 
-+/**
-+ * ice_vsi_determine_xdp_res - figure out how many Tx qs can XDP have
-+ * @vsi: VSI to determine the count of XDP Tx qs
-+ *
-+ * returns 0 if Tx qs count is higher than at least half of CPU count,
-+ * -ENOMEM otherwise
-+ */
-+int ice_vsi_determine_xdp_res(struct ice_vsi *vsi)
-+{
-+	u16 avail = ice_get_avail_txq_count(vsi->back);
-+	u16 cpus = num_possible_cpus();
-+
-+	if (avail < cpus / 2)
-+		return -ENOMEM;
-+
-+	vsi->num_xdp_txq = min_t(u16, avail, cpus);
-+
-+	if (vsi->num_xdp_txq < cpus)
-+		static_branch_inc(&ice_xdp_locking_key);
-+
-+	return 0;
-+}
-+
- /**
-  * ice_xdp_setup_prog - Add or remove XDP eBPF program
-  * @vsi: VSI to setup XDP for
-@@ -2704,10 +2741,14 @@ ice_xdp_setup_prog(struct ice_vsi *vsi, struct bpf_prog *prog,
- 	}
- 
- 	if (!ice_is_xdp_ena_vsi(vsi) && prog) {
--		vsi->num_xdp_txq = num_possible_cpus();
--		xdp_ring_err = ice_prepare_xdp_rings(vsi, prog);
--		if (xdp_ring_err)
--			NL_SET_ERR_MSG_MOD(extack, "Setting up XDP Tx resources failed");
-+		xdp_ring_err = ice_vsi_determine_xdp_res(vsi);
-+		if (xdp_ring_err) {
-+			NL_SET_ERR_MSG_MOD(extack, "Not enough Tx resources for XDP");
-+		} else {
-+			xdp_ring_err = ice_prepare_xdp_rings(vsi, prog);
-+			if (xdp_ring_err)
-+				NL_SET_ERR_MSG_MOD(extack, "Setting up XDP Tx resources failed");
-+		}
- 	} else if (ice_is_xdp_ena_vsi(vsi) && !prog) {
- 		xdp_ring_err = ice_destroy_xdp_rings(vsi);
- 		if (xdp_ring_err)
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 927517e18ce3..01ae331927bd 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -547,7 +547,11 @@ ice_run_xdp(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
- 	case XDP_PASS:
- 		return ICE_XDP_PASS;
- 	case XDP_TX:
-+		if (static_branch_unlikely(&ice_xdp_locking_key))
-+			spin_lock(&xdp_ring->tx_lock);
- 		err = ice_xmit_xdp_ring(xdp->data, xdp->data_end - xdp->data, xdp_ring);
-+		if (static_branch_unlikely(&ice_xdp_locking_key))
-+			spin_unlock(&xdp_ring->tx_lock);
- 		if (err == ICE_XDP_CONSUMED)
- 			goto out_failure;
- 		return err;
-@@ -599,7 +603,14 @@ ice_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
- 	if (unlikely(flags & ~XDP_XMIT_FLAGS_MASK))
- 		return -EINVAL;
- 
--	xdp_ring = vsi->xdp_rings[queue_index];
-+	if (static_branch_unlikely(&ice_xdp_locking_key)) {
-+		queue_index %= vsi->num_xdp_txq;
-+		xdp_ring = vsi->xdp_rings[queue_index];
-+		spin_lock(&xdp_ring->tx_lock);
-+	} else {
-+		xdp_ring = vsi->xdp_rings[queue_index];
-+	}
-+
- 	for (i = 0; i < n; i++) {
- 		struct xdp_frame *xdpf = frames[i];
- 		int err;
-@@ -613,6 +624,9 @@ ice_xdp_xmit(struct net_device *dev, int n, struct xdp_frame **frames,
- 	if (unlikely(flags & XDP_XMIT_FLUSH))
- 		ice_xdp_ring_update_tail(xdp_ring);
- 
-+	if (static_branch_unlikely(&ice_xdp_locking_key))
-+		spin_unlock(&xdp_ring->tx_lock);
-+
- 	return nxmit;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index ff34ea80abe5..4bc8e24b8ba5 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -332,6 +332,7 @@ struct ice_tx_ring {
- 	struct rcu_head rcu;		/* to avoid race on free */
- 	DECLARE_BITMAP(xps_state, ICE_TX_NBITS);	/* XPS Config State */
- 	struct ice_ptp_tx *tx_tstamps;
-+	spinlock_t tx_lock;
- 	u32 txq_teid;			/* Added Tx queue TEID */
- #define ICE_TX_FLAGS_RING_XDP		BIT(0)
- 	u8 flags;
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index d55db9cedc9b..1dd7e84f41f8 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -350,6 +350,11 @@ void ice_finalize_xdp_rx(struct ice_tx_ring *xdp_ring, unsigned int xdp_res)
- 	if (xdp_res & ICE_XDP_REDIR)
- 		xdp_do_flush_map();
- 
--	if (xdp_res & ICE_XDP_TX)
-+	if (xdp_res & ICE_XDP_TX) {
-+		if (static_branch_unlikely(&ice_xdp_locking_key))
-+			spin_lock(&xdp_ring->tx_lock);
- 		ice_xdp_ring_update_tail(xdp_ring);
-+		if (static_branch_unlikely(&ice_xdp_locking_key))
-+			spin_unlock(&xdp_ring->tx_lock);
-+	}
- }
--- 
-2.20.1
-
+> 
+> > 
+> > Also, looking at NIPA, it looks like patches 2 and 3 have kdoc issues.
+> 
+> Yeah I saw kdoc issue on patch 3 and wanted to ask you to fix this if you
+> would be applying that set but given that you're asking for a re-submit
+> i'll fix those by myself.
+> 
+> > 
+> > Thanks,
+> > Tony
+> > 
+> > > v4->v5:
+> > > * fix issues pointed by lkp; variables used for updating ring stats
+> > >   could be un-inited
+> > > * s/ice_ring/ice_rx_ring; it looks now symmetric given that we have
+> > >   ice_tx_ring struct dedicated for Tx ring
+> > > * go through the code and use ice_for_each_* macros; it was spotted
+> > > by
+> > >   Brett that there was a place around that code that this set is
+> > >   touching that was not using the ice_for_each_txq. Turned out that
+> > > there
+> > >   were more such places
+> > > * take care of coalesce related code; carry the info about type of
+> > > ring
+> > >   container in ice_ring_container
+> > > * pull out getting rid of @ring_active onto separate patch, as
+> > > suggested
+> > >   by Brett
+> > >
+> > > v3->v4:
+> > > * fix lkp issues;
+> > >
+> > > v2->v3:
+> > > * improve XDP_TX in a proper way
+> > > * split ice_ring
+> > > * propagate XDP ring pointer to Rx ring
+> > >
+> > > v1->v2:
+> > > * try to improve XDP_TX processing
+> > >
+> > > v4 :
+> > > https://lore.kernel.org/bpf/20210806095539.34423-1-maciej.fijalkowski at intel.com/
+> > > v3 :
+> > > https://lore.kernel.org/bpf/20210805230046.28715-1-maciej.fijalkowski at intel.com/
+> > > v2 :
+> > > https://lore.kernel.org/bpf/20210705164338.58313-1-maciej.fijalkowski at intel.com/
+> > > v1 :
+> > > https://lore.kernel.org/bpf/20210601113236.42651-1-maciej.fijalkowski at intel.com/
+> > >
+> > > Thanks!
+> > > Maciej
+> > >
+> > > Maciej Fijalkowski (9):
+> > >   ice: remove ring_active from ice_ring
+> > >   ice: move ice_container_type onto ice_ring_container
+> > >   ice: split ice_ring onto Tx/Rx separate structs
+> > >   ice: unify xdp_rings accesses
+> > >   ice: do not create xdp_frame on XDP_TX
+> > >   ice: propagate xdp_ring onto rx_ring
+> > >   ice: optimize XDP_TX workloads
+> > >   ice: introduce XDP_TX fallback path
+> > >   ice: make use of ice_for_each_* macros
+> > >
+> > >  drivers/net/ethernet/intel/ice/ice.h          |  41 +++-
+> > >  drivers/net/ethernet/intel/ice/ice_arfs.c     |   2 +-
+> > >  drivers/net/ethernet/intel/ice/ice_base.c     |  51 ++---
+> > >  drivers/net/ethernet/intel/ice/ice_base.h     |   8 +-
+> > >  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   9 +-
+> > >  drivers/net/ethernet/intel/ice/ice_dcb_lib.h  |  10 +-
+> > >  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  93 +++++----
+> > >  drivers/net/ethernet/intel/ice/ice_lib.c      |  88 +++++----
+> > >  drivers/net/ethernet/intel/ice/ice_lib.h      |   6 +-
+> > >  drivers/net/ethernet/intel/ice/ice_main.c     | 142 +++++++++-----
+> > >  drivers/net/ethernet/intel/ice/ice_ptp.c      |   2 +-
+> > >  drivers/net/ethernet/intel/ice/ice_ptp.h      |   4 +-
+> > >  drivers/net/ethernet/intel/ice/ice_trace.h    |  28 +--
+> > >  drivers/net/ethernet/intel/ice/ice_txrx.c     | 183 +++++++++++-----
+> > > --
+> > >  drivers/net/ethernet/intel/ice/ice_txrx.h     | 126 +++++++-----
+> > >  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  98 ++++++++--
+> > >  drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  14 +-
+> > >  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
+> > >  drivers/net/ethernet/intel/ice/ice_xsk.c      |  70 ++++---
+> > >  drivers/net/ethernet/intel/ice/ice_xsk.h      |  20 +-
+> > >  20 files changed, 607 insertions(+), 390 deletions(-)
+> > >
