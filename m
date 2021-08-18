@@ -1,99 +1,85 @@
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Wed, 18 Aug 2021 18:20:28 -0400
-Subject: [Intel-wired-lan] [PATCH net-next] ice: handle MAC delete command
- on PR
-Message-ID: <20210818222028.14820-1-michal.swiatkowski@linux.intel.com>
+Date: Wed, 18 Aug 2021 18:21:24 -0400
+Subject: [Intel-wired-lan] [PATCH net-next] ice: remove msleep from reading
+ PR stats
+Message-ID: <20210818222124.15467-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Order of VIRTCHNL_OP_ADD_ETH_ADDR and VIRTCHNL_OP_DEL_ETH_ADDR cannot be
-guarantee. Because of that mac delete command on PR should be handled
-in the case of communication with legacy VF driver. If there is cached
-MAC address driver should update dev_lan and hw_lan with value from
-legacy_last_added_umac.
+Calling msleep in context of reading PR statistics in case
+of having maximum number on VFs on machine leads to strange
+call trace in rcu_note_context_switch.
 
-Not handling this case leads to situation when VF MAC is changed but VF
-MAC showing on PF not.
+msleep function is called in ice_check_vf_ready_for_cfg.
 
-This happen only in switchdev mode, because in switchdev mode VF default
-ops are changed.
+As waiting for reset isn't needed in case of getting stats,
+change this function to ice_is_vf_disabled to check if VF is
+running or not.
 
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
-This commit should be squashed with "ice: allow process vf opcodes in
-different ways"
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 37 ++++++++++++++-----
- 1 file changed, 27 insertions(+), 10 deletions(-)
+This commit should be squashed with "ice: Fix crash in switchdev mode
+during VFR"
 
+ drivers/net/ethernet/intel/ice/ice_repr.c        | 2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h | 7 +++++++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index 8fd90ac661b1..c49eeea7cb67 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -52,7 +52,7 @@ ice_repr_get_stats64(struct net_device *netdev, struct rtnl_link_stats64 *stats)
+ 	struct ice_eth_stats *eth_stats;
+ 	struct ice_vsi *vsi;
+ 
+-	if (ice_check_vf_ready_for_cfg(np->repr->vf))
++	if (ice_is_vf_disabled(np->repr->vf))
+ 		return;
+ 	vsi = np->repr->src_vsi;
+ 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 0ed7f1ec6172..ed99f3a348bd 100644
+index 0ed7f1ec6172..0bb8b64d1c1c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -3831,6 +3831,26 @@ static bool ice_is_legacy_umac_expired(struct ice_time_mac *last_added_umac)
- 				      ICE_LEGACY_VF_MAC_CHANGE_EXPIRE_TIME);
- }
- 
-+/**
-+ * ice_update_legacy_cached_mac - update cached hardware MAC for legacy VF
-+ * @vf: VF to update
-+ * @vc_ether_addr: structure from VIRTCHNL with MAC to check
-+ *
-+ * only update cached hardware MAC for legacy VF drivers on delete
-+ * because we cannot guarantee order/type of MAC from the VF driver
-+ */
-+static void
-+ice_update_legacy_cached_mac(struct ice_vf *vf,
-+			     struct virtchnl_ether_addr *vc_ether_addr)
-+{
-+	if (!ice_is_vc_addr_legacy(vc_ether_addr) ||
-+	    ice_is_legacy_umac_expired(&vf->legacy_last_added_umac))
-+		return;
-+
-+	ether_addr_copy(vf->dev_lan_addr.addr, vf->legacy_last_added_umac.addr);
-+	ether_addr_copy(vf->hw_lan_addr.addr, vf->legacy_last_added_umac.addr);
-+}
-+
- /**
-  * ice_vfhw_mac_del - update the VF's cached hardware MAC if allowed
-  * @vf: VF to update
-@@ -3852,16 +3872,7 @@ ice_vfhw_mac_del(struct ice_vf *vf, struct virtchnl_ether_addr *vc_ether_addr)
- 	 */
- 	eth_zero_addr(vf->dev_lan_addr.addr);
- 
--	/* only update cached hardware MAC for legacy VF drivers on delete
--	 * because we cannot guarantee order/type of MAC from the VF driver
--	 */
--	if (ice_is_vc_addr_legacy(vc_ether_addr) &&
--	    !ice_is_legacy_umac_expired(&vf->legacy_last_added_umac)) {
--		ether_addr_copy(vf->dev_lan_addr.addr,
--				vf->legacy_last_added_umac.addr);
--		ether_addr_copy(vf->hw_lan_addr.addr,
--				vf->legacy_last_added_umac.addr);
--	}
-+	ice_update_legacy_cached_mac(vf, vc_ether_addr);
- }
- 
- /**
-@@ -4527,10 +4538,16 @@ static int ice_vc_repr_add_mac(struct ice_vf *vf, u8 *msg)
-  * @msg: virtchannel message
+@@ -1533,7 +1533,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
   *
-  * Respond with success to not break normal VF flow.
-+ * For legacy VF driver try to update cached MAC address.
+  * Returns true if the PF or VF is disabled, false otherwise.
   */
- static int
- ice_vc_repr_del_mac(struct ice_vf __always_unused *vf, u8 __always_unused *msg)
+-static bool ice_is_vf_disabled(struct ice_vf *vf)
++bool ice_is_vf_disabled(struct ice_vf *vf)
  {
-+	struct virtchnl_ether_addr_list *al =
-+		(struct virtchnl_ether_addr_list *)msg;
+ 	struct ice_pf *pf = vf->pf;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 9c2cad78231f..9de19cc97f48 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -183,6 +183,8 @@ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state);
+ 
+ int ice_check_vf_ready_for_cfg(struct ice_vf *vf);
+ 
++bool ice_is_vf_disabled(struct ice_vf *vf);
 +
-+	ice_update_legacy_cached_mac(vf, &al->list[0]);
-+
- 	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DEL_ETH_ADDR,
- 				     VIRTCHNL_STATUS_SUCCESS, NULL, 0);
+ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena);
+ 
+ int ice_calc_vf_reg_idx(struct ice_vf *vf, struct ice_q_vector *q_vector);
+@@ -216,6 +218,11 @@ static inline int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
+ {
+ 	return -EOPNOTSUPP;
  }
++
++static inline bool ice_is_vf_disabled(struct ice_vf *vf)
++{
++	return true;
++}
+ static inline void ice_vc_set_dflt_vf_ops(struct ice_vc_vf_ops *ops) { }
+ static inline void ice_set_vf_state_qs_dis(struct ice_vf *vf) { }
+ static inline
 -- 
 2.31.1
 
