@@ -1,59 +1,53 @@
-From: Creeley, Brett <brett.creeley@intel.com>
-Date: Thu, 19 Aug 2021 20:55:10 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice-linux: update dim
- usage and moderation
-In-Reply-To: <20210819192959.590146-2-jesse.brandeburg@intel.com>
-References: <20210819192959.590146-1-jesse.brandeburg@intel.com>
- <20210819192959.590146-2-jesse.brandeburg@intel.com>
-Message-ID: <CO1PR11MB48352C797E4F83E105174C67F5C09@CO1PR11MB4835.namprd11.prod.outlook.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 19 Aug 2021 13:44:49 -0700
+Subject: [Intel-wired-lan] [PATCH net v2] ice: do not abort devlink info if
+ board identifier can't be found
+Message-ID: <20210819204449.14148-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jesse Brandeburg
-> Sent: Thursday, August 19, 2021 12:30 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice-linux: update dim usage and moderation
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-I think the subject should be "ice: ..." instead of "ice-linux: ...". Same
-goes for 2/3 and 3/3.
+The devlink dev info command reports version information about the
+device and firmware running on the board. This includes the "board.id"
+field which is supposed to represent an identifier of the board design.
+The ice driver uses the Product Board Assembly identifier for this.
 
-> 
-> The driver was having trouble with unreliable latency when doing single
-> threaded ping-pong tests. This was root caused to the DIM algorithm
-> landing on a too slow interrupt value, which caused high latency, and it
-> was especially present when queues were being switched frequently by the
-> scheduler as happens on default setups today.
-> 
-> In attempting to improve this, we allow the upper rate limit for
-> interrupts to move to rate limit of 4 microseconds as a max, which means
-> that no vector can generate more than 250,000 interrupts per second. The
-> old config was up to 100,000. The driver previously tried to program the
-> rate limit too frequently and if the receive and transmit side were both
-> active on the same vector, the INTRL would be set incorrectly, and this
-> change fixes that issue as a side effect of the redesign.
-> 
-> This driver will operate from now on with a slightly changed DIM table
-> with more emphasis towards latency sensitivity by having more table
-> entries with lower latency than with high latency (high being >= 64
-> microseconds).
-> 
-> The driver also resets the DIM algorithm state with a new stats set when
-> there is no work done and the data becomes stale (older than 1 second),
-> for the respective receive or transmit portion of the interrupt.
-> 
-> Add a new helper for setting rate limit, which will be used more
-> in a followup patch.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c  |  25 +++++
->  drivers/net/ethernet/intel/ice/ice_lib.h  |   1 +
->  drivers/net/ethernet/intel/ice/ice_main.c | 118 ++++++++++++----------
->  drivers/net/ethernet/intel/ice/ice_txrx.c |  73 ++++++-------
->  4 files changed, 130 insertions(+), 87 deletions(-)
+In some cases, the PBA is not present in the NVM. If this happens,
+devlink dev info will fail with an error. Instead, modify the
+ice_info_pba function to just exit without filling in the context
+buffer. This will cause the board.id field to be skipped. Log a dev_dbg
+message in case someone wants to confirm why board.id is not showing up
+for them.
 
-<snip>
+Fixes: e961b679fb0b ("ice: add board identifier info to devlink .info_get")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+v2:
+- Removed refactors - to be submitted later as separate patch to next-queue
+- Changed 'PBA' to 'board identifier' in title
+---
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index e9c66e99d92d..5a9aa8b26819 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -42,7 +42,9 @@ static int ice_info_pba(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 
+ 	status = ice_read_pba_string(hw, (u8 *)ctx->buf, sizeof(ctx->buf));
+ 	if (status)
+-		return -EIO;
++		/* We failed to locate the PBA, so just skip this entry */
++		dev_dbg(ice_pf_to_dev(pf), "Failed to read Product Board Assembly string, status %s\n",
++			ice_stat_str(status));
+ 
+ 	return 0;
+ }
+-- 
+2.20.1
+
