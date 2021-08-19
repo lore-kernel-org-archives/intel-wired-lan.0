@@ -1,88 +1,59 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 19 Aug 2021 12:29:58 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] ice-linux: fix rate limit
- update after coalesce change
-In-Reply-To: <20210819192959.590146-1-jesse.brandeburg@intel.com>
+From: Creeley, Brett <brett.creeley@intel.com>
+Date: Thu, 19 Aug 2021 20:55:10 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice-linux: update dim
+ usage and moderation
+In-Reply-To: <20210819192959.590146-2-jesse.brandeburg@intel.com>
 References: <20210819192959.590146-1-jesse.brandeburg@intel.com>
-Message-ID: <20210819192959.590146-3-jesse.brandeburg@intel.com>
+ <20210819192959.590146-2-jesse.brandeburg@intel.com>
+Message-ID: <CO1PR11MB48352C797E4F83E105174C67F5C09@CO1PR11MB4835.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the adaptive settings are changed with
-ethtool -C ethx adaptive-rx off adaptive-tx off
-then the interrupt rate limit should be maintained as a user set
-value, but only if BOTH adaptive settings are off. Fix a bug
-where the rate limit that was being used in adaptive mode was
-staying set in the register but was not reported correctly by
-ethtool -c ethx.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jesse Brandeburg
+> Sent: Thursday, August 19, 2021 12:30 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] ice-linux: update dim usage and moderation
 
-Fixes: b8b4772377dd ("ice: refactor interrupt moderation writes")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 9 +++++----
- drivers/net/ethernet/intel/ice/ice_lib.c     | 4 ++--
- 2 files changed, 7 insertions(+), 6 deletions(-)
+I think the subject should be "ice: ..." instead of "ice-linux: ...". Same
+goes for 2/3 and 3/3.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 54ccba8992ee..d5777a8cd779 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3657,11 +3657,8 @@ ice_set_rc_coalesce(enum ice_container_type c_type, struct ethtool_coalesce *ec,
- 				    c_type_str);
- 			return -EINVAL;
- 		}
--		if (ec->rx_coalesce_usecs_high != rc->ring->q_vector->intrl) {
-+		if (ec->rx_coalesce_usecs_high != rc->ring->q_vector->intrl)
- 			rc->ring->q_vector->intrl = ec->rx_coalesce_usecs_high;
--			ice_write_intrl(rc->ring->q_vector,
--					ec->rx_coalesce_usecs_high);
--		}
- 
- 		use_adaptive_coalesce = ec->use_adaptive_rx_coalesce;
- 		coalesce_usecs = ec->rx_coalesce_usecs;
-@@ -3811,6 +3808,8 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
- 
- 			if (ice_set_q_coalesce(vsi, ec, v_idx))
- 				return -EINVAL;
-+
-+			ice_set_q_vector_intrl(vsi->q_vectors[v_idx]);
- 		}
- 		goto set_complete;
- 	}
-@@ -3818,6 +3817,8 @@ __ice_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
- 	if (ice_set_q_coalesce(vsi, ec, q_num))
- 		return -EINVAL;
- 
-+	ice_set_q_vector_intrl(vsi->q_vectors[q_num]);
-+
- set_complete:
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index b71ca3e7ea19..69760bcf2bd3 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3109,7 +3109,7 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
- 		}
- 
- 		vsi->q_vectors[i]->intrl = coalesce[i].intrl;
--		ice_write_intrl(vsi->q_vectors[i], coalesce[i].intrl);
-+		ice_set_q_vector_intrl(vsi->q_vectors[i]);
- 	}
- 
- 	/* the number of queue vectors increased so write whatever is in
-@@ -3127,7 +3127,7 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
- 		ice_write_itr(rc, rc->itr_setting);
- 
- 		vsi->q_vectors[i]->intrl = coalesce[0].intrl;
--		ice_write_intrl(vsi->q_vectors[i], coalesce[0].intrl);
-+		ice_set_q_vector_intrl(vsi->q_vectors[i]);
- 	}
- }
- 
--- 
-2.31.1
+> 
+> The driver was having trouble with unreliable latency when doing single
+> threaded ping-pong tests. This was root caused to the DIM algorithm
+> landing on a too slow interrupt value, which caused high latency, and it
+> was especially present when queues were being switched frequently by the
+> scheduler as happens on default setups today.
+> 
+> In attempting to improve this, we allow the upper rate limit for
+> interrupts to move to rate limit of 4 microseconds as a max, which means
+> that no vector can generate more than 250,000 interrupts per second. The
+> old config was up to 100,000. The driver previously tried to program the
+> rate limit too frequently and if the receive and transmit side were both
+> active on the same vector, the INTRL would be set incorrectly, and this
+> change fixes that issue as a side effect of the redesign.
+> 
+> This driver will operate from now on with a slightly changed DIM table
+> with more emphasis towards latency sensitivity by having more table
+> entries with lower latency than with high latency (high being >= 64
+> microseconds).
+> 
+> The driver also resets the DIM algorithm state with a new stats set when
+> there is no work done and the data becomes stale (older than 1 second),
+> for the respective receive or transmit portion of the interrupt.
+> 
+> Add a new helper for setting rate limit, which will be used more
+> in a followup patch.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lib.c  |  25 +++++
+>  drivers/net/ethernet/intel/ice/ice_lib.h  |   1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c | 118 ++++++++++++----------
+>  drivers/net/ethernet/intel/ice/ice_txrx.c |  73 ++++++-------
+>  4 files changed, 130 insertions(+), 87 deletions(-)
 
+<snip>
