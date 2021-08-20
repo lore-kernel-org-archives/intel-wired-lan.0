@@ -1,79 +1,308 @@
-From: Michael Walle <michael@walle.cc>
-Date: Fri, 20 Aug 2021 17:12:01 +0200
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <d2c7ec0e416dd6bb6818892750bff6d7@walle.cc>
-References: <20210201222010.GA31234@bjorn-Precision-5520>
- <d2c7ec0e416dd6bb6818892750bff6d7@walle.cc>
-Message-ID: <5d41bad0e0607e68d9189667a45f7519@walle.cc>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 20 Aug 2021 08:09:50 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] ice: refactor devlink
+ getter/fallback functions to void
+Message-ID: <20210820150950.24529-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Am 2021-03-15 22:51, schrieb Michael Walle:
-> Am 2021-02-01 23:20, schrieb Bjorn Helgaas:
->> On Mon, Feb 01, 2021 at 08:49:16PM +0100, Michael Walle wrote:
->>> Am 2021-01-17 20:27, schrieb Michael Walle:
->>> > Am 2021-01-16 00:57, schrieb Bjorn Helgaas:
->>> > > On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
->>> > > > Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
->>> > > > > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
->>> > > > > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
->>> > >
->>> > > > > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
->>> > > > > > > that overlaps another BAR, a quirk might be the right fix. But my
->>> > > > > > > guess is the device is working correctly per spec and there's
->>> > > > > > > something wrong in how firmware/Linux is assigning things.  That would
->>> > > > > > > mean we need a more generic fix that's not a quirk and not tied to the
->>> > > > > > > Intel i210.
->>> > > > > >
->>> > > > > > Agreed, but as you already stated (and I've also found that in
->>> > > > > > the PCI spec) the Expansion ROM address decoder can be shared by
->>> > > > > > the other BARs and it shouldn't matter as long as the ExpROM BAR
->>> > > > > > is disabled, which is the case here.
->>> > > > >
->>> > > > > My point is just that if this could theoretically affect devices
->>> > > > > other than the i210, the fix should not be an i210-specific quirk.
->>> > > > > I'll assume this is a general problem and wait for a generic PCI
->>> > > > > core solution unless it's i210-specific.
->>> > > >
->>> > > > I guess the culprit here is that linux skips the programming of the
->>> > > > BAR because of some broken Matrox card. That should have been a
->>> > > > quirk instead, right? But I don't know if we want to change that, do
->>> > > > we? How many other cards depend on that?
->>> > >
->>> > > Oh, right.  There's definitely some complicated history there that
->>> > > makes me a little scared to change things.  But it's also unfortunate
->>> > > if we have to pile quirks on top of quirks.
->>> > >
->>> > > > And still, how do we find out that the i210 is behaving correctly?
->>> > > > In my opinion it is clearly not. You can change the ExpROM BAR value
->>> > > > during runtime and it will start working (while keeping it
->>> > > > disabled).  Am I missing something here?
->>> > >
->>> > > I agree; if the ROM BAR is disabled, I don't think it should matter at
->>> > > all what it contains, so this does look like an i210 defect.
->>> > >
->>> > > Would you mind trying the patch below?  It should update the ROM BAR
->>> > > value even when it is disabled.  With the current pci_enable_rom()
->>> > > code that doesn't rely on the value read from the BAR, I *think* this
->>> > > should be safe even on the Matrox and similar devices.
->>> >
->>> > Your patch will fix my issue:
->>> >
->>> > Tested-by: Michael Walle <michael@walle.cc>
->>> 
->>> any news on this?
->> 
->> Thanks for the reminder.  I was thinking this morning that I need to
->> get back to this.  I'm trying to convince myself that doing this
->> wouldn't break the problem fixed by 755528c860b0 ("Ignore disabled ROM
->> resources at setup").  So far I haven't quite succeeded.
-> 
-> ping #2 ;)
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-ping #3, soon we can celebrate our first one year anniversary :p
+After commit a8f89fa27773 ("ice: do not abort devlink info if board
+identifier can't be found"), the getter/fallback() functions no longer
+report an error. Convert the interface to a void so that it is no
+longer possible to add a version field that is fatal. This makes
+sense, because we should not fail to report other versions just
+because one of the version pieces could not be found.
 
--michael
+Finally, clean up the getter functions line wrapping so that none of
+them take more than 80 columns, as is the usual style for networking
+files.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Tested-by: Tony Brelinski <tonyx.brelinski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 133 +++++++------------
+ 1 file changed, 50 insertions(+), 83 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index 965d911073d1..ee018f249432 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -23,7 +23,7 @@ struct ice_info_ctx {
+  *
+  * If a version does not exist, for example when attempting to get the
+  * inactive version of flash when there is no pending update, the function
+- * should leave the buffer in the ctx structure empty and return 0.
++ * should leave the buffer in the ctx structure empty.
+  */
+ 
+ static void ice_info_get_dsn(struct ice_pf *pf, struct ice_info_ctx *ctx)
+@@ -36,7 +36,7 @@ static void ice_info_get_dsn(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "%8phD", dsn);
+ }
+ 
+-static int ice_info_pba(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_pba(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 	enum ice_status status;
+@@ -46,148 +46,127 @@ static int ice_info_pba(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ 		/* We failed to locate the PBA, so just skip this entry */
+ 		dev_dbg(ice_pf_to_dev(pf), "Failed to read Product Board Assembly string, status %s\n",
+ 			ice_stat_str(status));
+-
+-	return 0;
+ }
+ 
+-static int ice_info_fw_mgmt(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_fw_mgmt(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u", hw->fw_maj_ver, hw->fw_min_ver,
+-		 hw->fw_patch);
+-
+-	return 0;
++	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u",
++		 hw->fw_maj_ver, hw->fw_min_ver, hw->fw_patch);
+ }
+ 
+-static int ice_info_fw_api(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_fw_api(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u", hw->api_maj_ver, hw->api_min_ver);
+-
+-	return 0;
++	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u",
++		 hw->api_maj_ver, hw->api_min_ver);
+ }
+ 
+-static int ice_info_fw_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_fw_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", hw->fw_build);
+-
+-	return 0;
+ }
+ 
+-static int ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_orom_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_orom_info *orom = &pf->hw.flash.orom;
+ 
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u", orom->major, orom->build, orom->patch);
+-
+-	return 0;
++	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u",
++		 orom->major, orom->build, orom->patch);
+ }
+ 
+-static int
+-ice_info_pending_orom_ver(struct ice_pf __always_unused *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_pending_orom_ver(struct ice_pf __always_unused *pf,
++			  struct ice_info_ctx *ctx)
+ {
+ 	struct ice_orom_info *orom = &ctx->pending_orom;
+ 
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_orom)
+ 		snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u",
+ 			 orom->major, orom->build, orom->patch);
+-
+-	return 0;
+ }
+ 
+-static int ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_nvm_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
+ 
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
+-
+-	return 0;
+ }
+ 
+-static int
+-ice_info_pending_nvm_ver(struct ice_pf __always_unused *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_pending_nvm_ver(struct ice_pf __always_unused *pf,
++			 struct ice_info_ctx *ctx)
+ {
+ 	struct ice_nvm_info *nvm = &ctx->pending_nvm;
+ 
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
+-		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x", nvm->major, nvm->minor);
+-
+-	return 0;
++		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%02x",
++			 nvm->major, nvm->minor);
+ }
+ 
+-static int ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_nvm_info *nvm = &pf->hw.flash.nvm;
+ 
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", nvm->eetrack);
+-
+-	return 0;
+ }
+ 
+-static int
+-ice_info_pending_eetrack(struct ice_pf __always_unused *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_pending_eetrack(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_nvm_info *nvm = &ctx->pending_nvm;
+ 
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_nvm)
+ 		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", nvm->eetrack);
+-
+-	return 0;
+ }
+ 
+-static int ice_info_ddp_pkg_name(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_ddp_pkg_name(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "%s", hw->active_pkg_name);
+-
+-	return 0;
+ }
+ 
+-static int ice_info_ddp_pkg_version(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_ddp_pkg_version(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_pkg_ver *pkg = &pf->hw.active_pkg_ver;
+ 
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u.%u", pkg->major, pkg->minor, pkg->update,
+-		 pkg->draft);
+-
+-	return 0;
++	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u.%u",
++		 pkg->major, pkg->minor, pkg->update, pkg->draft);
+ }
+ 
+-static int ice_info_ddp_pkg_bundle_id(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_ddp_pkg_bundle_id(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", pf->hw.active_track_id);
+-
+-	return 0;
+ }
+ 
+-static int ice_info_netlist_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_netlist_ver(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_netlist_info *netlist = &pf->hw.flash.netlist;
+ 
+ 	/* The netlist version fields are BCD formatted */
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x", netlist->major, netlist->minor,
+-		 netlist->type >> 16, netlist->type & 0xFFFF, netlist->rev,
+-		 netlist->cust_ver);
+-
+-	return 0;
++	snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x",
++		 netlist->major, netlist->minor,
++		 netlist->type >> 16, netlist->type & 0xFFFF,
++		 netlist->rev, netlist->cust_ver);
+ }
+ 
+-static int ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
++static void ice_info_netlist_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_netlist_info *netlist = &pf->hw.flash.netlist;
+ 
+ 	snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
+-
+-	return 0;
+ }
+ 
+-static int
+-ice_info_pending_netlist_ver(struct ice_pf __always_unused *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_pending_netlist_ver(struct ice_pf __always_unused *pf,
++			     struct ice_info_ctx *ctx)
+ {
+ 	struct ice_netlist_info *netlist = &ctx->pending_netlist;
+ 
+@@ -195,21 +174,18 @@ ice_info_pending_netlist_ver(struct ice_pf __always_unused *pf, struct ice_info_
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist)
+ 		snprintf(ctx->buf, sizeof(ctx->buf), "%x.%x.%x-%x.%x.%x",
+ 			 netlist->major, netlist->minor,
+-			 netlist->type >> 16, netlist->type & 0xFFFF, netlist->rev,
+-			 netlist->cust_ver);
+-
+-	return 0;
++			 netlist->type >> 16, netlist->type & 0xFFFF,
++			 netlist->rev, netlist->cust_ver);
+ }
+ 
+-static int
+-ice_info_pending_netlist_build(struct ice_pf __always_unused *pf, struct ice_info_ctx *ctx)
++static void
++ice_info_pending_netlist_build(struct ice_pf __always_unused *pf,
++			       struct ice_info_ctx *ctx)
+ {
+ 	struct ice_netlist_info *netlist = &ctx->pending_netlist;
+ 
+ 	if (ctx->dev_caps.common_cap.nvm_update_pending_netlist)
+ 		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
+-
+-	return 0;
+ }
+ 
+ #define fixed(key, getter) { ICE_VERSION_FIXED, key, getter, NULL }
+@@ -239,8 +215,8 @@ enum ice_version_type {
+ static const struct ice_devlink_version {
+ 	enum ice_version_type type;
+ 	const char *key;
+-	int (*getter)(struct ice_pf *pf, struct ice_info_ctx *ctx);
+-	int (*fallback)(struct ice_pf *pf, struct ice_info_ctx *ctx);
++	void (*getter)(struct ice_pf *pf, struct ice_info_ctx *ctx);
++	void (*fallback)(struct ice_pf *pf, struct ice_info_ctx *ctx);
+ } ice_devlink_versions[] = {
+ 	fixed(DEVLINK_INFO_VERSION_GENERIC_BOARD_ID, ice_info_pba),
+ 	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
+@@ -352,24 +328,15 @@ static int ice_devlink_info_get(struct devlink *devlink,
+ 
+ 		memset(ctx->buf, 0, sizeof(ctx->buf));
+ 
+-		err = ice_devlink_versions[i].getter(pf, ctx);
+-		if (err) {
+-			NL_SET_ERR_MSG_MOD(extack, "Unable to obtain version info");
+-			goto out_free_ctx;
+-		}
++		ice_devlink_versions[i].getter(pf, ctx);
+ 
+ 		/* If the default getter doesn't report a version, use the
+ 		 * fallback function. This is primarily useful in the case of
+ 		 * "stored" versions that want to report the same value as the
+ 		 * running version in the normal case of no pending update.
+ 		 */
+-		if (ctx->buf[0] == '\0' && ice_devlink_versions[i].fallback) {
+-			err = ice_devlink_versions[i].fallback(pf, ctx);
+-			if (err) {
+-				NL_SET_ERR_MSG_MOD(extack, "Unable to obtain version info");
+-				goto out_free_ctx;
+-			}
+-		}
++		if (ctx->buf[0] == '\0' && ice_devlink_versions[i].fallback)
++			ice_devlink_versions[i].fallback(pf, ctx);
+ 
+ 		/* Do not report missing versions */
+ 		if (ctx->buf[0] == '\0')
+-- 
+2.20.1
+
