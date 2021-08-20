@@ -1,160 +1,79 @@
-From: zhoufeng <zhoufeng.zf@bytedance.com>
-Date: Fri, 20 Aug 2021 10:47:01 +0800
-Subject: [Intel-wired-lan] [External] Re: [PATCH] ixgbe: Fix NULL
- pointer dereference in ixgbe_xdp_setup
-In-Reply-To: <20210819101619.GE32204@ranger.igk.intel.com>
-References: <20210817075407.11961-1-zhoufeng.zf@bytedance.com>
- <20210817111047.GA8143@ranger.igk.intel.com>
- <5bddff53-9b78-99db-1d8e-23b3d38167a1@bytedance.com>
- <20210819101619.GE32204@ranger.igk.intel.com>
-Message-ID: <879c4cf5-1b63-229f-2d99-6fdfdbce05cc@bytedance.com>
+From: Michael Walle <michael@walle.cc>
+Date: Fri, 20 Aug 2021 17:12:01 +0200
+Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
+ overlapping of BARs
+In-Reply-To: <d2c7ec0e416dd6bb6818892750bff6d7@walle.cc>
+References: <20210201222010.GA31234@bjorn-Precision-5520>
+ <d2c7ec0e416dd6bb6818892750bff6d7@walle.cc>
+Message-ID: <5d41bad0e0607e68d9189667a45f7519@walle.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-? 2021/8/19 ??6:16, Maciej Fijalkowski ??:
-> On Wed, Aug 18, 2021 at 04:30:15PM +0800, zhoufeng wrote:
->>
->>
->> ? 2021/8/17 ??7:10, Maciej Fijalkowski ??:
->>> On Tue, Aug 17, 2021 at 03:54:07PM +0800, Feng zhou wrote:
->>>> From: Feng Zhou <zhoufeng.zf@bytedance.com>
->>>>
->>>> The ixgbe driver currently generates a NULL pointer dereference with
->>>> some machine (online cpus < 63). This is due to the fact that the
->>>> maximum value of num_xdp_queues is nr_cpu_ids. Code is in
->>>> "ixgbe_set_rss_queues"".
->>>
->>> That's a good catch, but we should fix set channels callback so that it
->>> will not allow a setting of queues to be higher than the
->>> num_online_cpus().
->>>
->>> Please also include the tree in the patch subject that you're directing
->>> the patch to.
->>>
->>
->> Ok, Besides it, I will add more code in "ixgbe_set_channels":
->> /* verify the number of channels does not exceed num_online_cpus */
->> if (count > num_online_cpus())
->> 	return -EINVAL;
->> If user want set queues num to be higher than the num_online_cpus(),
->> return error(-EINVAL).
->>
->> What do you think?
+Am 2021-03-15 22:51, schrieb Michael Walle:
+> Am 2021-02-01 23:20, schrieb Bjorn Helgaas:
+>> On Mon, Feb 01, 2021 at 08:49:16PM +0100, Michael Walle wrote:
+>>> Am 2021-01-17 20:27, schrieb Michael Walle:
+>>> > Am 2021-01-16 00:57, schrieb Bjorn Helgaas:
+>>> > > On Wed, Jan 13, 2021 at 12:32:32AM +0100, Michael Walle wrote:
+>>> > > > Am 2021-01-12 23:58, schrieb Bjorn Helgaas:
+>>> > > > > On Sat, Jan 09, 2021 at 07:31:46PM +0100, Michael Walle wrote:
+>>> > > > > > Am 2021-01-08 22:20, schrieb Bjorn Helgaas:
+>>> > >
+>>> > > > > > > 3) If the Intel i210 is defective in how it handles an Expansion ROM
+>>> > > > > > > that overlaps another BAR, a quirk might be the right fix. But my
+>>> > > > > > > guess is the device is working correctly per spec and there's
+>>> > > > > > > something wrong in how firmware/Linux is assigning things.  That would
+>>> > > > > > > mean we need a more generic fix that's not a quirk and not tied to the
+>>> > > > > > > Intel i210.
+>>> > > > > >
+>>> > > > > > Agreed, but as you already stated (and I've also found that in
+>>> > > > > > the PCI spec) the Expansion ROM address decoder can be shared by
+>>> > > > > > the other BARs and it shouldn't matter as long as the ExpROM BAR
+>>> > > > > > is disabled, which is the case here.
+>>> > > > >
+>>> > > > > My point is just that if this could theoretically affect devices
+>>> > > > > other than the i210, the fix should not be an i210-specific quirk.
+>>> > > > > I'll assume this is a general problem and wait for a generic PCI
+>>> > > > > core solution unless it's i210-specific.
+>>> > > >
+>>> > > > I guess the culprit here is that linux skips the programming of the
+>>> > > > BAR because of some broken Matrox card. That should have been a
+>>> > > > quirk instead, right? But I don't know if we want to change that, do
+>>> > > > we? How many other cards depend on that?
+>>> > >
+>>> > > Oh, right.  There's definitely some complicated history there that
+>>> > > makes me a little scared to change things.  But it's also unfortunate
+>>> > > if we have to pile quirks on top of quirks.
+>>> > >
+>>> > > > And still, how do we find out that the i210 is behaving correctly?
+>>> > > > In my opinion it is clearly not. You can change the ExpROM BAR value
+>>> > > > during runtime and it will start working (while keeping it
+>>> > > > disabled).  Am I missing something here?
+>>> > >
+>>> > > I agree; if the ROM BAR is disabled, I don't think it should matter at
+>>> > > all what it contains, so this does look like an i210 defect.
+>>> > >
+>>> > > Would you mind trying the patch below?  It should update the ROM BAR
+>>> > > value even when it is disabled.  With the current pci_enable_rom()
+>>> > > code that doesn't rely on the value read from the BAR, I *think* this
+>>> > > should be safe even on the Matrox and similar devices.
+>>> >
+>>> > Your patch will fix my issue:
+>>> >
+>>> > Tested-by: Michael Walle <michael@walle.cc>
+>>> 
+>>> any news on this?
+>> 
+>> Thanks for the reminder.  I was thinking this morning that I need to
+>> get back to this.  I'm trying to convince myself that doing this
+>> wouldn't break the problem fixed by 755528c860b0 ("Ignore disabled ROM
+>> resources at setup").  So far I haven't quite succeeded.
 > 
-> Yes, in general you can refer to
-> drivers/net/ethernet/intel/ice/ice_ethtool.c and in particular:
-> 
-> /**
->   * ice_get_max_rxq - return the maximum number of Rx queues for in a PF
->   * @pf: PF structure
->   */
-> static int ice_get_max_rxq(struct ice_pf *pf)
-> {
-> 	return min3(pf->num_lan_msix, (u16)num_online_cpus(),
-> 		    (u16)pf->hw.func_caps.common_cap.num_rxq);
-> }
-> 
-> 
+> ping #2 ;)
 
-Ok, refer to drivers/net/ethernet/intel/ice/ice_ethtool.c:
-"ice_get_max_rxq"
+ping #3, soon we can celebrate our first one year anniversary :p
 
-I think, "ixgbe_max_channels":
-
-return max_combined;
-
-Instead of
-
-return min_t(int, max_combined, num_online_cpus());
-
-
->>
->>> I'd be also thankful if you Cc me on Intel XDP related patches.
->>> Thanks!
->>>
->>
->> Ok, of course.
->>
->>
->>>>
->>>> Here's how the problem repeats itself:
->>>> Some machine (online cpus < 63), And user set num_queues to 63 through
->>>> ethtool. Code is in the "ixgbe_set_channels",
->>>> adapter->ring_feature[RING_F_FDIR].limit = count;
->>>> It becames 63.
->>>> When user use xdp, "ixgbe_set_rss_queues" will set queues num.
->>>> adapter->num_rx_queues = rss_i;
->>>> adapter->num_tx_queues = rss_i;
->>>> adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
->>>> And rss_i's value is from
->>>> f = &adapter->ring_feature[RING_F_FDIR];
->>>> rss_i = f->indices = f->limit;
->>>> So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
->>>> for (i = 0; i < adapter->num_rx_queues; i++)
->>>> 	if (adapter->xdp_ring[i]->xsk_umem)
->>>> lead to panic.
->>>> Call trace:
->>>> [exception RIP: ixgbe_xdp+368]
->>>> RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
->>>> RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
->>>> RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
->>>> RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
->>>> R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
->>>> R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
->>>> ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
->>>>    7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
->>>>    8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
->>>>    9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
->>>> 10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
->>>> 11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
->>>> 12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
->>>> 13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
->>>> 14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
->>>> 15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
->>>> 16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
->>>> 17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
->>>> 18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
->>>> 19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
->>>>
->>>> Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
->>>> AF_XDP")
->>>> Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
->>>> ---
->>>>    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 8 ++++++--
->>>>    1 file changed, 6 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>>> index 14aea40da50f..5db496cc5070 100644
->>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>>> @@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
->>>>    	struct ixgbe_adapter *adapter = netdev_priv(dev);
->>>>    	struct bpf_prog *old_prog;
->>>>    	bool need_reset;
->>>> +	int num_queues;
->>>>    	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
->>>>    		return -EINVAL;
->>>> @@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
->>>>    	/* Kick start the NAPI context if there is an AF_XDP socket open
->>>>    	 * on that queue id. This so that receiving will start.
->>>>    	 */
->>>> -	if (need_reset && prog)
->>>> -		for (i = 0; i < adapter->num_rx_queues; i++)
->>>> +	if (need_reset && prog) {
->>>> +		num_queues = min_t(int, adapter->num_rx_queues,
->>>> +			adapter->num_xdp_queues);
->>>> +		for (i = 0; i < num_queues; i++)
->>>>    			if (adapter->xdp_ring[i]->xsk_pool)
->>>>    				(void)ixgbe_xsk_wakeup(adapter->netdev, i,
->>>>    						       XDP_WAKEUP_RX);
->>>> +	}
->>>>    	return 0;
->>>>    }
->>>> -- 
->>>> 2.11.0
->>>>
+-michael
