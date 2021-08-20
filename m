@@ -1,423 +1,290 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 19 Aug 2021 17:08:50 -0700
-Subject: [Intel-wired-lan] [next-queue v4 03/12] ice: introduce VF port
- representor
+Date: Thu, 19 Aug 2021 17:08:55 -0700
+Subject: [Intel-wired-lan] [next-queue v4 08/12] ice: introduce new type of
+ VSI for switchdev
 In-Reply-To: <20210820000859.680522-1-anthony.l.nguyen@intel.com>
 References: <20210820000859.680522-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210820000859.680522-4-anthony.l.nguyen@intel.com>
+Message-ID: <20210820000859.680522-9-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+From: Grzegorz Nitka <grzegorz.nitka@intel.com>
 
-Port representor is used to manage VF from host side. To allow
-it each created representor registers netdevice with random hw
-address. Also devlink port is created for all representors.
+New type of VSI has to be defined for switchdev control plane
+VSI. Number of allocated Tx and Rx queue has to be equeal to
+amount of VFs, because each port representor should have one
+Tx and Rx queue.
 
-Port representor name is created based on switch id or managed
-by devlink core if devlink port was registered with success.
+Also to not increase number of used irqs too much, control plane
+VSI uses only one q_vector and handle all queues in one irq.
+To allow handling all queues in one irq , new function to clean
+msix for eswitch was introduced. This function will shedule napi
+for each representor instead of sheduling it only for one like in
+normal clean irq function.
 
-Open and stop ndo ops are implemented to allow managing the VF
-link state. Link state is tracked in VF struct.
+Only one additional msix has to be requested. Always try to request
+it in ice_ena_msix_range function.
 
-Struct ice_netdev_priv is extended by pointer to representor
-field. This is needed to get correct representor from netdev
-struct mostly used in ndo calls.
-
-Implement helper functions to check if given netdev is netdev of
-port representor (ice_is_port_repr_netdev) and to get representor
-from netdev (ice_netdev_to_repr).
-
-As driver mostly will create or destroy port representors on all
-VFs instead of on single one, write functions to add and remove
-representor for each VF.
-
-Representor struct contains pointer to source VSI, which is VSI
-configured on VF, backpointer to VF, backpointer to netdev,
-q_vector pointer and metadata_dst which will be used in data path.
-
-Co-developed-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
 Signed-off-by: Grzegorz Nitka <grzegorz.nitka@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
 ---
- drivers/net/ethernet/intel/ice/Makefile       |   3 +-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- drivers/net/ethernet/intel/ice/ice_repr.c     | 254 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_repr.h     |  22 ++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   2 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   4 +
- 6 files changed, 285 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_repr.h
+ drivers/net/ethernet/intel/ice/ice.h         |  1 +
+ drivers/net/ethernet/intel/ice/ice_base.c    | 37 ++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_eswitch.c |  2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 48 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_main.c    |  7 +++
+ drivers/net/ethernet/intel/ice/ice_type.h    |  1 +
+ 6 files changed, 93 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 0545594c80ba..1866be50095d 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -26,7 +26,8 @@ ice-y := ice_main.o	\
- 	 ice_devlink.o	\
- 	 ice_fw_update.o \
- 	 ice_lag.o	\
--	 ice_ethtool.o
-+	 ice_ethtool.o  \
-+	 ice_repr.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_allowlist.o
- ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_fdir.o
- ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
 diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 93a936766b4b..c3127076cf91 100644
+index 4acfee8728f7..2afe803b67f9 100644
 --- a/drivers/net/ethernet/intel/ice/ice.h
 +++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -63,6 +63,7 @@
- #include "ice_fdir.h"
- #include "ice_xsk.h"
- #include "ice_arfs.h"
-+#include "ice_repr.h"
- #include "ice_lag.h"
+@@ -85,6 +85,7 @@
+ #define ICE_FDIR_MSIX		2
+ #define ICE_RDMA_NUM_AEQ_MSIX	4
+ #define ICE_MIN_RDMA_MSIX	2
++#define ICE_ESWITCH_MSIX	1
+ #define ICE_NO_VSI		0xffff
+ #define ICE_VSI_MAP_CONTIG	0
+ #define ICE_VSI_MAP_SCATTER	1
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index c36057efc7ae..59a0f312dab9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -217,6 +217,31 @@ static u16 ice_calc_q_handle(struct ice_vsi *vsi, struct ice_ring *ring, u8 tc)
+ 	return ring->q_index - vsi->tc_cfg.tc_info[tc].qoffset;
+ }
  
- #define ICE_BAR0		0
-@@ -509,6 +510,7 @@ struct ice_pf {
++/**
++ * ice_eswitch_calc_q_handle
++ * @ring: pointer to ring which unique index is needed
++ *
++ * To correctly work with many netdevs
++ * ring->q_index of Tx rings on switchdev VSI can repeat. Hardware ring setup
++ * requires unique q_index. Calculate it here by finding index in vsi->tx_rings
++ * of this ring.
++ *
++ * Return ICE_INVAL_Q_INDEX when index wasn't found. Should never happen, because VSI is get
++ * from ring->vsi, so it has to be present in this VSI.
++ */
++static u16 ice_eswitch_calc_q_handle(struct ice_ring *ring)
++{
++	struct ice_vsi *vsi = ring->vsi;
++	int i;
++
++	ice_for_each_txq(vsi, i) {
++		if (vsi->tx_rings[i] == ring)
++			return i;
++	}
++
++	return ICE_INVAL_Q_INDEX;
++}
++
+ /**
+  * ice_cfg_xps_tx_ring - Configure XPS for a Tx ring
+  * @ring: The Tx ring to configure
+@@ -280,6 +305,9 @@ ice_setup_tx_ctx(struct ice_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf_q)
+ 		tlan_ctx->vmvf_num = hw->func_caps.vf_base_id + vsi->vf_id;
+ 		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VF;
+ 		break;
++	case ICE_VSI_SWITCHDEV_CTRL:
++		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VMQ;
++		break;
+ 	default:
+ 		return;
+ 	}
+@@ -746,7 +774,14 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_ring *ring,
+ 	/* Add unique software queue handle of the Tx queue per
+ 	 * TC into the VSI Tx ring
+ 	 */
+-	ring->q_handle = ice_calc_q_handle(vsi, ring, tc);
++	if (vsi->type == ICE_VSI_SWITCHDEV_CTRL) {
++		ring->q_handle = ice_eswitch_calc_q_handle(ring);
++
++		if (ring->q_handle == ICE_INVAL_Q_INDEX)
++			return -ENODEV;
++	} else {
++		ring->q_handle = ice_calc_q_handle(vsi, ring, tc);
++	}
  
- struct ice_netdev_priv {
- 	struct ice_vsi *vsi;
-+	struct ice_repr *repr;
- };
+ 	status = ice_ena_vsi_txq(vsi->port_info, vsi->idx, tc, ring->q_handle,
+ 				 1, qg_buf, buf_len, NULL);
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 094094125798..c7340ce1a9ba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -262,7 +262,7 @@ ice_eswitch_release_env(struct ice_pf *pf)
+ static struct ice_vsi *
+ ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+ {
+-	return NULL;
++	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL, ICE_INVAL_VFID);
+ }
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-new file mode 100644
-index 000000000000..479da3d020a7
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -0,0 +1,254 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2019-2021, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_eswitch.h"
-+#include "ice_devlink.h"
-+#include "ice_virtchnl_pf.h"
-+
-+/**
-+ * ice_repr_get_sw_port_id - get port ID associated with representor
-+ * @repr: pointer to port representor
-+ */
-+static int ice_repr_get_sw_port_id(struct ice_repr *repr)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f3414a3a5e56..22014e57ccda 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -24,6 +24,8 @@ const char *ice_vsi_type_str(enum ice_vsi_type vsi_type)
+ 		return "ICE_VSI_CTRL";
+ 	case ICE_VSI_LB:
+ 		return "ICE_VSI_LB";
++	case ICE_VSI_SWITCHDEV_CTRL:
++		return "ICE_VSI_SWITCHDEV_CTRL";
+ 	default:
+ 		return "unknown";
+ 	}
+@@ -132,6 +134,7 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
+ {
+ 	switch (vsi->type) {
+ 	case ICE_VSI_PF:
++	case ICE_VSI_SWITCHDEV_CTRL:
+ 	case ICE_VSI_CTRL:
+ 	case ICE_VSI_LB:
+ 		/* a user could change the values of num_[tr]x_desc using
+@@ -200,6 +203,14 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
+ 					   max_t(int, vsi->alloc_rxq,
+ 						 vsi->alloc_txq));
+ 		break;
++	case ICE_VSI_SWITCHDEV_CTRL:
++		/* The number of queues for ctrl vsi is equal to number of VFs.
++		 * Each ring is associated to the corresponding VF_PR netdev.
++		 */
++		vsi->alloc_txq = pf->num_alloc_vfs;
++		vsi->alloc_rxq = pf->num_alloc_vfs;
++		vsi->num_q_vectors = 1;
++		break;
+ 	case ICE_VSI_VF:
+ 		vf = &pf->vf[vsi->vf_id];
+ 		if (vf->num_req_qs)
+@@ -408,6 +419,21 @@ static irqreturn_t ice_msix_clean_rings(int __always_unused irq, void *data)
+ 	return IRQ_HANDLED;
+ }
+ 
++static irqreturn_t ice_eswitch_msix_clean_rings(int __always_unused irq, void *data)
 +{
-+	return repr->vf->pf->hw.port_info->lport;
-+}
-+
-+/**
-+ * ice_repr_get_phys_port_name - get phys port name
-+ * @netdev: pointer to port representor netdev
-+ * @buf: write here port name
-+ * @len: max length of buf
-+ */
-+static int
-+ice_repr_get_phys_port_name(struct net_device *netdev, char *buf, size_t len)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_repr *repr = np->repr;
-+	int res;
-+
-+	/* Devlink port is registered and devlink core is taking care of name formatting. */
-+	if (repr->vf->devlink_port.devlink)
-+		return -EOPNOTSUPP;
-+
-+	res = snprintf(buf, len, "pf%dvfr%d", ice_repr_get_sw_port_id(repr),
-+		       repr->vf->vf_id);
-+	if (res <= 0)
-+		return -EOPNOTSUPP;
-+	return 0;
-+}
-+
-+/**
-+ * ice_netdev_to_repr - Get port representor for given netdevice
-+ * @netdev: pointer to port representor netdev
-+ */
-+struct ice_repr *ice_netdev_to_repr(struct net_device *netdev)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+
-+	return np->repr;
-+}
-+
-+/**
-+ * ice_repr_open - Enable port representor's network interface
-+ * @netdev: network interface device structure
-+ *
-+ * The open entry point is called when a port representor's network
-+ * interface is made active by the system (IFF_UP). Corresponding
-+ * VF is notified about link status change.
-+ *
-+ * Returns 0 on success
-+ */
-+static int ice_repr_open(struct net_device *netdev)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+	struct ice_vf *vf;
-+
-+	vf = repr->vf;
-+	vf->link_forced = true;
-+	vf->link_up = true;
-+	ice_vc_notify_vf_link_state(vf);
-+
-+	netif_carrier_on(netdev);
-+	netif_tx_start_all_queues(netdev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_repr_stop - Disable port representor's network interface
-+ * @netdev: network interface device structure
-+ *
-+ * The stop entry point is called when a port representor's network
-+ * interface is de-activated by the system. Corresponding
-+ * VF is notified about link status change.
-+ *
-+ * Returns 0 on success
-+ */
-+static int ice_repr_stop(struct net_device *netdev)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+	struct ice_vf *vf;
-+
-+	vf = repr->vf;
-+	vf->link_forced = true;
-+	vf->link_up = false;
-+	ice_vc_notify_vf_link_state(vf);
-+
-+	netif_carrier_off(netdev);
-+	netif_tx_stop_all_queues(netdev);
-+
-+	return 0;
-+}
-+
-+static struct devlink_port *
-+ice_repr_get_devlink_port(struct net_device *netdev)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+
-+	return &repr->vf->devlink_port;
-+}
-+
-+static const struct net_device_ops ice_repr_netdev_ops = {
-+	.ndo_get_phys_port_name = ice_repr_get_phys_port_name,
-+	.ndo_open = ice_repr_open,
-+	.ndo_stop = ice_repr_stop,
-+	.ndo_get_devlink_port = ice_repr_get_devlink_port,
-+};
-+
-+/**
-+ * ice_is_port_repr_netdev - Check if a given netdevice is a port representor netdev
-+ * @netdev: pointer to netdev
-+ */
-+bool ice_is_port_repr_netdev(struct net_device *netdev)
-+{
-+	return netdev && (netdev->netdev_ops == &ice_repr_netdev_ops);
-+}
-+
-+/**
-+ * ice_repr_reg_netdev - register port representor netdev
-+ * @netdev: pointer to port representor netdev
-+ */
-+static int
-+ice_repr_reg_netdev(struct net_device *netdev)
-+{
-+	eth_hw_addr_random(netdev);
-+	netdev->netdev_ops = &ice_repr_netdev_ops;
-+
-+	netif_carrier_off(netdev);
-+	netif_tx_stop_all_queues(netdev);
-+
-+	return register_netdev(netdev);
-+}
-+
-+/**
-+ * ice_repr_add - add representor for VF
-+ * @vf: pointer to VF structure
-+ */
-+static int ice_repr_add(struct ice_vf *vf)
-+{
-+	struct ice_q_vector *q_vector;
-+	struct ice_netdev_priv *np;
-+	struct ice_repr *repr;
-+	int err;
-+
-+	repr = kzalloc(sizeof(*repr), GFP_KERNEL);
-+	if (!repr)
-+		return -ENOMEM;
-+
-+	repr->netdev = alloc_etherdev(sizeof(struct ice_netdev_priv));
-+	if (!repr->netdev) {
-+		err =  -ENOMEM;
-+		goto err_alloc;
-+	}
-+
-+	repr->src_vsi = ice_get_vf_vsi(vf);
-+	repr->vf = vf;
-+	vf->repr = repr;
-+	np = netdev_priv(repr->netdev);
-+	np->repr = repr;
-+
-+	q_vector = kzalloc(sizeof(*q_vector), GFP_KERNEL);
-+	if (!q_vector) {
-+		err = -ENOMEM;
-+		goto err_alloc_q_vector;
-+	}
-+	repr->q_vector = q_vector;
-+
-+	err = ice_devlink_create_vf_port(vf);
-+	if (err)
-+		goto err_devlink;
-+
-+	err = ice_repr_reg_netdev(repr->netdev);
-+	if (err)
-+		goto err_netdev;
-+
-+	devlink_port_type_eth_set(&vf->devlink_port, repr->netdev);
-+
-+	return 0;
-+
-+err_netdev:
-+	ice_devlink_destroy_vf_port(vf);
-+err_devlink:
-+	kfree(repr->q_vector);
-+	vf->repr->q_vector = NULL;
-+err_alloc_q_vector:
-+	free_netdev(repr->netdev);
-+	repr->netdev = NULL;
-+err_alloc:
-+	kfree(repr);
-+	vf->repr = NULL;
-+	return err;
-+}
-+
-+/**
-+ * ice_repr_rem - remove representor from VF
-+ * @vf: pointer to VF structure
-+ */
-+static void ice_repr_rem(struct ice_vf *vf)
-+{
-+	ice_devlink_destroy_vf_port(vf);
-+	kfree(vf->repr->q_vector);
-+	vf->repr->q_vector = NULL;
-+	unregister_netdev(vf->repr->netdev);
-+	free_netdev(vf->repr->netdev);
-+	vf->repr->netdev = NULL;
-+	kfree(vf->repr);
-+	vf->repr = NULL;
-+}
-+
-+/**
-+ * ice_repr_add_for_all_vfs - add port representor for all VFs
-+ * @pf: pointer to PF structure
-+ */
-+int ice_repr_add_for_all_vfs(struct ice_pf *pf)
-+{
-+	int err;
++	struct ice_q_vector *q_vector = (struct ice_q_vector *)data;
++	struct ice_pf *pf = q_vector->vsi->back;
 +	int i;
 +
-+	ice_for_each_vf(pf, i) {
-+		err = ice_repr_add(&pf->vf[i]);
-+		if (err)
-+			goto err;
-+	}
-+	return 0;
-+
-+err:
-+	for (i = i - 1; i >= 0; i--)
-+		ice_repr_rem(&pf->vf[i]);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_repr_rem_from_all_vfs - remove port representor for all VFs
-+ * @pf: pointer to PF structure
-+ */
-+void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
-+{
-+	int i;
++	if (!q_vector->tx.ring && !q_vector->rx.ring)
++		return IRQ_HANDLED;
 +
 +	ice_for_each_vf(pf, i)
-+		ice_repr_rem(&pf->vf[i]);
++		napi_schedule(&pf->vf[i].repr->q_vector->napi);
++
++	return IRQ_HANDLED;
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
-new file mode 100644
-index 000000000000..78b0419b9254
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2019-2021, Intel Corporation. */
 +
-+#ifndef _ICE_REPR_H_
-+#define _ICE_REPR_H_
-+#include <net/dst_metadata.h>
-+#include "ice.h"
-+
-+struct ice_repr {
-+	struct ice_vsi *src_vsi;
-+	struct ice_vf *vf;
-+	struct ice_q_vector *q_vector;
-+	struct net_device *netdev;
-+	struct metadata_dst *dst;
-+};
-+
-+int ice_repr_add_for_all_vfs(struct ice_pf *pf);
-+void ice_repr_rem_from_all_vfs(struct ice_pf *pf);
-+
-+struct ice_repr *ice_netdev_to_repr(struct net_device *netdev);
-+bool ice_is_port_repr_netdev(struct net_device *netdev);
-+#endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 623f3210477e..ae969e8aa311 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -381,7 +381,7 @@ static bool ice_is_vf_link_up(struct ice_vf *vf)
-  *
-  * send a link status message to a single VF
-  */
--static void ice_vc_notify_vf_link_state(struct ice_vf *vf)
-+void ice_vc_notify_vf_link_state(struct ice_vf *vf)
- {
- 	struct virtchnl_pf_event pfe = { 0 };
- 	struct ice_hw *hw = &vf->pf->hw;
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 38b4dc82c5c1..b3fa8dd5539b 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -112,6 +112,8 @@ struct ice_vf {
- 	struct ice_mdd_vf_events mdd_tx_events;
- 	DECLARE_BITMAP(opcodes_allowlist, VIRTCHNL_OP_MAX);
+ /**
+  * ice_vsi_alloc - Allocates the next available struct VSI in the PF
+  * @pf: board private structure
+@@ -448,6 +474,13 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type, u16 vf_id)
+ 		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
  
-+	struct ice_repr *repr;
+ 	switch (vsi->type) {
++	case ICE_VSI_SWITCHDEV_CTRL:
++		if (ice_vsi_alloc_arrays(vsi))
++			goto err_rings;
 +
- 	/* devlink port data */
- 	struct devlink_port devlink_port;
++		/* Setup eswitch MSIX irq handler for VSI */
++		vsi->irq_handler = ice_eswitch_msix_clean_rings;
++		break;
+ 	case ICE_VSI_PF:
+ 		if (ice_vsi_alloc_arrays(vsi))
+ 			goto err_rings;
+@@ -707,6 +740,12 @@ static void ice_vsi_set_rss_params(struct ice_vsi *vsi)
+ 				      BIT(cap->rss_table_entry_width));
+ 		vsi->rss_lut_type = ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_PF;
+ 		break;
++	case ICE_VSI_SWITCHDEV_CTRL:
++		vsi->rss_table_size = ICE_VSIQF_HLUT_ARRAY_SIZE;
++		vsi->rss_size = min_t(u16, num_online_cpus(),
++				      BIT(cap->rss_table_entry_width));
++		vsi->rss_lut_type = ICE_AQC_GSET_RSS_LUT_TABLE_TYPE_VSI;
++		break;
+ 	case ICE_VSI_VF:
+ 		/* VF VSI will get a small RSS table.
+ 		 * For VSI_LUT, LUT size should be set to 64 bytes.
+@@ -980,6 +1019,9 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
+ 	case ICE_VSI_PF:
+ 		ctxt->flags = ICE_AQ_VSI_TYPE_PF;
+ 		break;
++	case ICE_VSI_SWITCHDEV_CTRL:
++		ctxt->flags = ICE_AQ_VSI_TYPE_VMDQ2;
++		break;
+ 	case ICE_VSI_VF:
+ 		ctxt->flags = ICE_AQ_VSI_TYPE_VF;
+ 		/* VF number here is the absolute VF number (0-255) */
+@@ -2294,6 +2336,7 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
+ 	case ICE_VSI_CTRL:
+ 	case ICE_VSI_LB:
+ 	case ICE_VSI_PF:
++	case ICE_VSI_SWITCHDEV_CTRL:
+ 		max_agg_nodes = ICE_MAX_PF_AGG_NODES;
+ 		agg_node_id_start = ICE_PF_AGG_NODE_ID_START;
+ 		agg_node_iter = &pf->pf_agg_node[0];
+@@ -2445,6 +2488,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+ 
+ 	switch (vsi->type) {
+ 	case ICE_VSI_CTRL:
++	case ICE_VSI_SWITCHDEV_CTRL:
+ 	case ICE_VSI_PF:
+ 		ret = ice_vsi_alloc_q_vectors(vsi);
+ 		if (ret)
+@@ -2754,7 +2798,8 @@ void ice_dis_vsi(struct ice_vsi *vsi, bool locked)
+ 		} else {
+ 			ice_vsi_close(vsi);
+ 		}
+-	} else if (vsi->type == ICE_VSI_CTRL) {
++	} else if (vsi->type == ICE_VSI_CTRL ||
++		   vsi->type == ICE_VSI_SWITCHDEV_CTRL) {
+ 		ice_vsi_close(vsi);
+ 	}
+ }
+@@ -3133,6 +3178,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
+ 
+ 	switch (vtype) {
+ 	case ICE_VSI_CTRL:
++	case ICE_VSI_SWITCHDEV_CTRL:
+ 	case ICE_VSI_PF:
+ 		ret = ice_vsi_alloc_q_vectors(vsi);
+ 		if (ret)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 73969ab4af99..ad9971539e0f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3552,6 +3552,13 @@ static int ice_ena_msix_range(struct ice_pf *pf)
+ 		v_left -= needed;
+ 	}
+ 
++	/* reserve for switchdev */
++	needed = ICE_ESWITCH_MSIX;
++	if (v_left < needed)
++		goto no_hw_vecs_left_err;
++	v_budget += needed;
++	v_left -= needed;
++
+ 	/* total used for non-traffic vectors */
+ 	v_other = v_budget;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index d33d1906103c..b59076f2dbde 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -139,6 +139,7 @@ enum ice_vsi_type {
+ 	ICE_VSI_VF = 1,
+ 	ICE_VSI_CTRL = 3,	/* equates to ICE_VSI_PF with 1 queue pair */
+ 	ICE_VSI_LB = 6,
++	ICE_VSI_SWITCHDEV_CTRL = 7,
  };
-@@ -128,6 +130,7 @@ void ice_free_vfs(struct ice_pf *pf);
- void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event);
- void ice_vc_notify_link_state(struct ice_pf *pf);
- void ice_vc_notify_reset(struct ice_pf *pf);
-+void ice_vc_notify_vf_link_state(struct ice_vf *vf);
- bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
- bool ice_reset_vf(struct ice_vf *vf, bool is_vflr);
- void ice_restore_all_vfs_msi_state(struct pci_dev *pdev);
-@@ -168,6 +171,7 @@ static inline
- void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event) { }
- static inline void ice_vc_notify_link_state(struct ice_pf *pf) { }
- static inline void ice_vc_notify_reset(struct ice_pf *pf) { }
-+static inline void ice_vc_notify_vf_link_state(struct ice_vf *vf) { }
- static inline void ice_set_vf_state_qs_dis(struct ice_vf *vf) { }
- static inline
- void ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event) { }
+ 
+ struct ice_link_status {
 -- 
 2.26.2
 
