@@ -1,150 +1,129 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 24 Aug 2021 13:54:42 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:1GbE] BUILD SUCCESS
- 4051f68318ca9f3d3becef3b54e70ad2c146df97
-Message-ID: <612489a2.Gb5NunF2xKtrze64%lkp@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 24 Aug 2021 11:10:39 +0300
+Subject: [Intel-wired-lan] [bug report] iavf: use mutexes for locking of
+ critical sections
+Message-ID: <20210824081039.GA16756@kili>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 1GbE
-branch HEAD: 4051f68318ca9f3d3becef3b54e70ad2c146df97  e1000e: Do not take care about recovery NVM checksum
+Hello Stefan Assmann,
 
-elapsed time: 5084m
+The patch 5ac49f3c2702: "iavf: use mutexes for locking of critical
+sections" from Aug 4, 2021, leads to the following
+Smatch static checker warning:
 
-configs tested: 121
-configs skipped: 3
+	drivers/net/ethernet/intel/iavf/iavf_main.c:2019 iavf_watchdog_task()
+	error: double unlocked '&adapter->crit_lock' (orig line 1968)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+drivers/net/ethernet/intel/iavf/iavf_main.c
+    1932 static void iavf_watchdog_task(struct work_struct *work)
+    1933 {
+    1934 	struct iavf_adapter *adapter = container_of(work,
+    1935 						    struct iavf_adapter,
+    1936 						    watchdog_task.work);
+    1937 	struct iavf_hw *hw = &adapter->hw;
+    1938 	u32 reg_val;
+    1939 
+    1940 	if (!mutex_trylock(&adapter->crit_lock))
+    1941 		goto restart_watchdog;
+    1942 
+    1943 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+    1944 		adapter->state = __IAVF_COMM_FAILED;
+    1945 
+    1946 	switch (adapter->state) {
+    1947 	case __IAVF_COMM_FAILED:
+    1948 		reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
+    1949 			  IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
+    1950 		if (reg_val == VIRTCHNL_VFR_VFACTIVE ||
+    1951 		    reg_val == VIRTCHNL_VFR_COMPLETED) {
+    1952 			/* A chance for redemption! */
+    1953 			dev_err(&adapter->pdev->dev,
+    1954 				"Hardware came out of reset. Attempting reinit.\n");
+    1955 			adapter->state = __IAVF_STARTUP;
+    1956 			adapter->flags &= ~IAVF_FLAG_PF_COMMS_FAILED;
+    1957 			queue_delayed_work(iavf_wq, &adapter->init_task, 10);
+    1958 			mutex_unlock(&adapter->crit_lock);
+    1959 			/* Don't reschedule the watchdog, since we've restarted
+    1960 			 * the init task. When init_task contacts the PF and
+    1961 			 * gets everything set up again, it'll restart the
+    1962 			 * watchdog for us. Down, boy. Sit. Stay. Woof.
+    1963 			 */
+    1964 			return;
+    1965 		}
+    1966 		adapter->aq_required = 0;
+    1967 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+    1968 		mutex_unlock(&adapter->crit_lock);
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Unlocked here
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210821
-mips                           ip28_defconfig
-arm                            qcom_defconfig
-mips                            ar7_defconfig
-powerpc                     rainier_defconfig
-sh                      rts7751r2d1_defconfig
-m68k                             allmodconfig
-mips                          rb532_defconfig
-arm                         lpc32xx_defconfig
-arm                           tegra_defconfig
-arm                        multi_v7_defconfig
-arm                        clps711x_defconfig
-mips                         tb0219_defconfig
-powerpc                 mpc8540_ads_defconfig
-arm                         palmz72_defconfig
-sh                             shx3_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                         socfpga_defconfig
-powerpc64                           defconfig
-mips                         db1xxx_defconfig
-mips                    maltaup_xpa_defconfig
-sh                        dreamcast_defconfig
-m68k                          multi_defconfig
-nios2                            alldefconfig
-sh                        sh7763rdp_defconfig
-arm                           u8500_defconfig
-xtensa                              defconfig
-sh                        edosk7705_defconfig
-powerpc                     pq2fads_defconfig
-arm                            pleb_defconfig
-riscv                    nommu_virt_defconfig
-arm                          badge4_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                      ppc44x_defconfig
-sh                             sh03_defconfig
-arm                            xcep_defconfig
-sh                            migor_defconfig
-arm                         orion5x_defconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a006-20210820
-i386                 randconfig-a001-20210820
-i386                 randconfig-a002-20210820
-i386                 randconfig-a005-20210820
-i386                 randconfig-a003-20210820
-i386                 randconfig-a004-20210820
-x86_64               randconfig-a005-20210820
-x86_64               randconfig-a006-20210820
-x86_64               randconfig-a001-20210820
-x86_64               randconfig-a003-20210820
-x86_64               randconfig-a004-20210820
-x86_64               randconfig-a002-20210820
-x86_64               randconfig-a014-20210821
-x86_64               randconfig-a016-20210821
-x86_64               randconfig-a015-20210821
-x86_64               randconfig-a013-20210821
-x86_64               randconfig-a012-20210821
-x86_64               randconfig-a011-20210821
-arc                  randconfig-r043-20210821
-riscv                randconfig-r042-20210821
-s390                 randconfig-r044-20210821
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+    1969 		queue_delayed_work(iavf_wq,
+    1970 				   &adapter->watchdog_task,
+    1971 				   msecs_to_jiffies(10));
+    1972 		goto watchdog_done;
+                        ^^^^^^^^^^^^^^^^^^^
+Goto
 
-clang tested configs:
-x86_64               randconfig-a005-20210821
-x86_64               randconfig-a001-20210821
-x86_64               randconfig-a006-20210821
-x86_64               randconfig-a003-20210821
-x86_64               randconfig-a004-20210821
-x86_64               randconfig-a002-20210821
-i386                 randconfig-a006-20210821
-i386                 randconfig-a001-20210821
-i386                 randconfig-a002-20210821
-i386                 randconfig-a005-20210821
-i386                 randconfig-a004-20210821
-i386                 randconfig-a003-20210821
+    1973 	case __IAVF_RESETTING:
+    1974 		mutex_unlock(&adapter->crit_lock);
+    1975 		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ * 2);
+    1976 		return;
+    1977 	case __IAVF_DOWN:
+    1978 	case __IAVF_DOWN_PENDING:
+    1979 	case __IAVF_TESTING:
+    1980 	case __IAVF_RUNNING:
+    1981 		if (adapter->current_op) {
+    1982 			if (!iavf_asq_done(hw)) {
+    1983 				dev_dbg(&adapter->pdev->dev,
+    1984 					"Admin queue timeout\n");
+    1985 				iavf_send_api_ver(adapter);
+    1986 			}
+    1987 		} else {
+    1988 			/* An error will be returned if no commands were
+    1989 			 * processed; use this opportunity to update stats
+    1990 			 */
+    1991 			if (iavf_process_aq_command(adapter) &&
+    1992 			    adapter->state == __IAVF_RUNNING)
+    1993 				iavf_request_stats(adapter);
+    1994 		}
+    1995 		break;
+    1996 	case __IAVF_REMOVE:
+    1997 		mutex_unlock(&adapter->crit_lock);
+    1998 		return;
+    1999 	default:
+    2000 		goto restart_watchdog;
+    2001 	}
+    2002 
+    2003 		/* check for hw reset */
+    2004 	reg_val = rd32(hw, IAVF_VF_ARQLEN1) & IAVF_VF_ARQLEN1_ARQENABLE_MASK;
+    2005 	if (!reg_val) {
+    2006 		adapter->flags |= IAVF_FLAG_RESET_PENDING;
+    2007 		adapter->aq_required = 0;
+    2008 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+    2009 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
+    2010 		queue_work(iavf_wq, &adapter->reset_task);
+    2011 		goto watchdog_done;
+    2012 	}
+    2013 
+    2014 	schedule_delayed_work(&adapter->client_task, msecs_to_jiffies(5));
+    2015 watchdog_done:
+    2016 	if (adapter->state == __IAVF_RUNNING ||
+    2017 	    adapter->state == __IAVF_COMM_FAILED)
+    2018 		iavf_detect_recover_hung(&adapter->vsi);
+--> 2019 	mutex_unlock(&adapter->crit_lock);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Double unlock.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+    2020 restart_watchdog:
+    2021 	if (adapter->aq_required)
+    2022 		queue_delayed_work(iavf_wq, &adapter->watchdog_task,
+    2023 				   msecs_to_jiffies(20));
+    2024 	else
+    2025 		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ * 2);
+    2026 	queue_work(iavf_wq, &adapter->adminq_task);
+    2027 }
+
+regards,
+dan carpenter
