@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 23 Aug 2021 17:01:49 -0700
-Subject: [Intel-wired-lan] [next-queue v4 04/13] ice: restart periodic
- outputs around time changes
+Date: Mon, 23 Aug 2021 17:01:52 -0700
+Subject: [Intel-wired-lan] [next-queue v4 07/13] ice: use 'int err' instead
+ of 'int status'
 In-Reply-To: <20210824000158.1928482-1-anthony.l.nguyen@intel.com>
 References: <20210824000158.1928482-1-anthony.l.nguyen@intel.com>
-Message-ID: <20210824000158.1928482-5-anthony.l.nguyen@intel.com>
+Message-ID: <20210824000158.1928482-8-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,113 +13,428 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Wen we enabled auxiliary input/output support for the E810 device, we
-forgot to add logic to restart the output when we change time. This is
-important as the periodic output will be incorrect after a time change
-otherwise.
+The ice_ptp_hw.c file introduced a bunch of uses of "int status" instead
+of the more traditional "int err" or "int ret". These are actually
+traditional Linux error codes (as opposed to the ice_status enumeration
+values), so lets convert them all now to use "int err" for clarity. This
+is likely an artifact of refactoring this code to minimize the use of
+ice_status enumeration in preparation for removing it. We want to avoid
+adding any new usages of the status enum.
 
-This unfortunately includes the adjust time function, even though it
-uses an atomic hardware interface. The atomic adjustment can still cause
-the pin output to stall permanently, so we need to stop and restart it.
-
-Introduce wrapper functions to temporarily disable and then re-enable
-the clock outputs.
-
-Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 49 ++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 206 ++++++++++----------
+ 1 file changed, 103 insertions(+), 103 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index ae0980f14c80..05cc5870e4ef 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -688,6 +688,41 @@ static int ice_ptp_cfg_clkout(struct ice_pf *pf, unsigned int chan,
- 	return -EFAULT;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 3eca0e4eab0b..5dbd4d91dba1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -68,18 +68,18 @@ u8 ice_get_ptp_src_clock_index(struct ice_hw *hw)
+ static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
+ {
+ 	struct ice_sbq_msg_input msg = {0};
+-	int status;
++	int err;
+ 
+ 	msg.msg_addr_low = lower_16_bits(addr);
+ 	msg.msg_addr_high = upper_16_bits(addr);
+ 	msg.opcode = ice_sbq_msg_rd;
+ 	msg.dest_dev = rmn_0;
+ 
+-	status = ice_sbq_rw_reg(hw, &msg);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, status %d\n",
+-			  status);
+-		return status;
++	err = ice_sbq_rw_reg(hw, &msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	*val = msg.data;
+@@ -98,7 +98,7 @@ static int ice_read_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 *val)
+ static int ice_write_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 val)
+ {
+ 	struct ice_sbq_msg_input msg = {0};
+-	int status;
++	int err;
+ 
+ 	msg.msg_addr_low = lower_16_bits(addr);
+ 	msg.msg_addr_high = upper_16_bits(addr);
+@@ -106,11 +106,11 @@ static int ice_write_phy_reg_e810(struct ice_hw *hw, u32 addr, u32 val)
+ 	msg.dest_dev = rmn_0;
+ 	msg.data = val;
+ 
+-	status = ice_sbq_rw_reg(hw, &msg);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, status %d\n",
+-			  status);
+-		return status;
++	err = ice_sbq_rw_reg(hw, &msg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to send message to PHY, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	return 0;
+@@ -130,23 +130,23 @@ static int
+ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
+ {
+ 	u32 lo_addr, hi_addr, lo, hi;
+-	int status;
++	int err;
+ 
+ 	lo_addr = TS_EXT(LOW_TX_MEMORY_BANK_START, lport, idx);
+ 	hi_addr = TS_EXT(HIGH_TX_MEMORY_BANK_START, lport, idx);
+ 
+-	status = ice_read_phy_reg_e810(hw, lo_addr, &lo);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read low PTP timestamp register, status %d\n",
+-			  status);
+-		return status;
++	err = ice_read_phy_reg_e810(hw, lo_addr, &lo);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read low PTP timestamp register, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+-	status = ice_read_phy_reg_e810(hw, hi_addr, &hi);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read high PTP timestamp register, status %d\n",
+-			  status);
+-		return status;
++	err = ice_read_phy_reg_e810(hw, hi_addr, &hi);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read high PTP timestamp register, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	/* For E810 devices, the timestamp is reported with the lower 32 bits
+@@ -169,23 +169,23 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
+ static int ice_clear_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx)
+ {
+ 	u32 lo_addr, hi_addr;
+-	int status;
++	int err;
+ 
+ 	lo_addr = TS_EXT(LOW_TX_MEMORY_BANK_START, lport, idx);
+ 	hi_addr = TS_EXT(HIGH_TX_MEMORY_BANK_START, lport, idx);
+ 
+-	status = ice_write_phy_reg_e810(hw, lo_addr, 0);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, lo_addr, 0);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+-	status = ice_write_phy_reg_e810(hw, hi_addr, 0);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear high PTP timestamp register, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, hi_addr, 0);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to clear high PTP timestamp register, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	return 0;
+@@ -200,17 +200,17 @@ static int ice_clear_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx)
+  */
+ int ice_ptp_init_phy_e810(struct ice_hw *hw)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_ENA(tmr_idx),
+-					GLTSYN_ENA_TSYN_ENA_M);
+-	if (status)
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_ENA(tmr_idx),
++				     GLTSYN_ENA_TSYN_ENA_M);
++	if (err)
+ 		ice_debug(hw, ICE_DBG_PTP, "PTP failed in ena_phy_time_syn %d\n",
+-			  status);
++			  err);
+ 
+-	return status;
++	return err;
  }
  
-+/**
-+ * ice_ptp_disable_all_clkout - Disable all currently configured outputs
-+ * @pf: pointer to the PF structure
-+ *
-+ * Disable all currently configured clock outputs. This is necessary before
-+ * certain changes to the PTP hardware clock. Use ice_ptp_enable_all_clkout to
-+ * re-enable the clocks again.
-+ */
-+static void ice_ptp_disable_all_clkout(struct ice_pf *pf)
-+{
-+	uint i;
-+
-+	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-+		if (pf->ptp.perout_channels[i].ena)
-+			ice_ptp_cfg_clkout(pf, i, NULL, false);
-+}
-+
-+/**
-+ * ice_ptp_enable_all_clkout - Enable all configured periodic clock outputs
-+ * @pf: pointer to the PF structure
-+ *
-+ * Enable all currently configured clock outputs. Use this after
-+ * ice_ptp_disable_all_clkout to reconfigure the output signals according to
-+ * their configuration.
-+ */
-+static void ice_ptp_enable_all_clkout(struct ice_pf *pf)
-+{
-+	uint i;
-+
-+	for (i = 0; i < pf->ptp.info.n_per_out; i++)
-+		if (pf->ptp.perout_channels[i].ena)
-+			ice_ptp_cfg_clkout(pf, i, &pf->ptp.perout_channels[i],
-+					   false);
-+}
-+
  /**
-  * ice_ptp_gpio_enable_e810 - Enable/disable ancillary features of PHC
-  * @info: the driver's PTP info structure
-@@ -783,12 +818,17 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
- 		goto exit;
+@@ -227,22 +227,22 @@ int ice_ptp_init_phy_e810(struct ice_hw *hw)
+  */
+ static int ice_ptp_prep_phy_time_e810(struct ice_hw *hw, u32 time)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHTIME_0(tmr_idx), 0);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write SHTIME_0, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHTIME_0(tmr_idx), 0);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write SHTIME_0, err %d\n",
++			  err);
++		return err;
  	}
  
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
-+
- 	err = ice_ptp_write_init(pf, &ts64);
- 	ice_ptp_unlock(hw);
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHTIME_L(tmr_idx), time);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write SHTIME_L, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHTIME_L(tmr_idx), time);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write SHTIME_L, err %d\n",
++			  err);
++		return err;
+ 	}
  
- 	if (!err)
- 		ice_ptp_update_cached_phctime(pf);
+ 	return 0;
+@@ -263,26 +263,26 @@ static int ice_ptp_prep_phy_time_e810(struct ice_hw *hw, u32 time)
+  */
+ static int ice_ptp_prep_phy_adj_e810(struct ice_hw *hw, s32 adj)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
  
-+	/* Reenable periodic outputs */
-+	ice_ptp_enable_all_clkout(pf);
- exit:
- 	if (err) {
- 		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
-@@ -842,8 +882,14 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 
+ 	/* Adjustments are represented as signed 2's complement values in
+ 	 * nanoseconds. Sub-nanosecond adjustment is not supported.
+ 	 */
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_L(tmr_idx), 0);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write adj to PHY SHADJ_L, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_L(tmr_idx), 0);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write adj to PHY SHADJ_L, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_H(tmr_idx), adj);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write adj to PHY SHADJ_H, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_H(tmr_idx), adj);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write adj to PHY SHADJ_H, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	return 0;
+@@ -300,25 +300,25 @@ static int ice_ptp_prep_phy_adj_e810(struct ice_hw *hw, s32 adj)
+ static int ice_ptp_prep_phy_incval_e810(struct ice_hw *hw, u64 incval)
+ {
+ 	u32 high, low;
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 	low = lower_32_bits(incval);
+ 	high = upper_32_bits(incval);
+ 
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_L(tmr_idx), low);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write incval to PHY SHADJ_L, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_L(tmr_idx), low);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write incval to PHY SHADJ_L, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_H(tmr_idx), high);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write incval PHY SHADJ_H, status %d\n",
+-			  status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_SHADJ_H(tmr_idx), high);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write incval PHY SHADJ_H, err %d\n",
++			  err);
++		return err;
+ 	}
+ 
+ 	return 0;
+@@ -335,7 +335,7 @@ static int ice_ptp_prep_phy_incval_e810(struct ice_hw *hw, u64 incval)
+ static int ice_ptp_port_cmd_e810(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+ {
+ 	u32 cmd_val, val;
+-	int status;
++	int err;
+ 
+ 	switch (cmd) {
+ 	case INIT_TIME:
+@@ -356,20 +356,20 @@ static int ice_ptp_port_cmd_e810(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+ 	}
+ 
+ 	/* Read, modify, write */
+-	status = ice_read_phy_reg_e810(hw, ETH_GLTSYN_CMD, &val);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read GLTSYN_CMD, status %d\n", status);
+-		return status;
++	err = ice_read_phy_reg_e810(hw, ETH_GLTSYN_CMD, &val);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read GLTSYN_CMD, err %d\n", err);
++		return err;
+ 	}
+ 
+ 	/* Modify necessary bits only and perform write */
+ 	val &= ~TS_CMD_MASK_E810;
+ 	val |= cmd_val;
+ 
+-	status = ice_write_phy_reg_e810(hw, ETH_GLTSYN_CMD, val);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to write back GLTSYN_CMD, status %d\n", status);
+-		return status;
++	err = ice_write_phy_reg_e810(hw, ETH_GLTSYN_CMD, val);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to write back GLTSYN_CMD, err %d\n", err);
++		return err;
+ 	}
+ 
+ 	return 0;
+@@ -480,17 +480,17 @@ static void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+  */
+ static int ice_ptp_tmr_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+ {
+-	int status;
++	int err;
+ 
+ 	/* First, prepare the source timer */
+ 	ice_ptp_src_cmd(hw, cmd);
+ 
+ 	/* Next, prepare the ports */
+-	status = ice_ptp_port_cmd_e810(hw, cmd);
+-	if (status) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to prepare PHY ports for timer command %u, status %d\n",
+-			  cmd, status);
+-		return status;
++	err = ice_ptp_port_cmd_e810(hw, cmd);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to prepare PHY ports for timer command %u, err %d\n",
++			  cmd, err);
++		return err;
+ 	}
+ 
+ 	/* Write the sync command register to drive both source and PHY timer commands
+@@ -516,8 +516,8 @@ static int ice_ptp_tmr_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+  */
+ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 
+@@ -528,9 +528,9 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
+ 
+ 	/* PHY timers */
+ 	/* Fill Rx and Tx ports and send msg to PHY */
+-	status = ice_ptp_prep_phy_time_e810(hw, time & 0xFFFFFFFF);
+-	if (status)
+-		return status;
++	err = ice_ptp_prep_phy_time_e810(hw, time & 0xFFFFFFFF);
++	if (err)
++		return err;
+ 
+ 	return ice_ptp_tmr_cmd(hw, INIT_TIME);
+ }
+@@ -551,8 +551,8 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
+  */
+ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 
+@@ -560,9 +560,9 @@ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
+ 	wr32(hw, GLTSYN_SHADJ_L(tmr_idx), lower_32_bits(incval));
+ 	wr32(hw, GLTSYN_SHADJ_H(tmr_idx), upper_32_bits(incval));
+ 
+-	status = ice_ptp_prep_phy_incval_e810(hw, incval);
+-	if (status)
+-		return status;
++	err = ice_ptp_prep_phy_incval_e810(hw, incval);
++	if (err)
++		return err;
+ 
+ 	return ice_ptp_tmr_cmd(hw, INIT_INCVAL);
+ }
+@@ -576,16 +576,16 @@ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
+  */
+ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval)
+ {
+-	int status;
++	int err;
+ 
+ 	if (!ice_ptp_lock(hw))
  		return -EBUSY;
- 	}
  
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
-+
- 	err = ice_ptp_write_adj(pf, delta);
+-	status = ice_ptp_write_incval(hw, incval);
++	err = ice_ptp_write_incval(hw, incval);
  
-+	/* Reenable periodic outputs */
-+	ice_ptp_enable_all_clkout(pf);
-+
  	ice_ptp_unlock(hw);
  
- 	if (err) {
-@@ -1543,6 +1589,9 @@ void ice_ptp_release(struct ice_pf *pf)
- 	if (!pf->ptp.clock)
- 		return;
+-	return status;
++	return err;
+ }
  
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
-+
- 	ice_clear_ptp_clock_index(pf);
- 	ptp_clock_unregister(pf->ptp.clock);
- 	pf->ptp.clock = NULL;
+ /**
+@@ -603,8 +603,8 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval)
+  */
+ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
+ {
+-	int status;
+ 	u8 tmr_idx;
++	int err;
+ 
+ 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 
+@@ -616,9 +616,9 @@ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
+ 	wr32(hw, GLTSYN_SHADJ_L(tmr_idx), 0);
+ 	wr32(hw, GLTSYN_SHADJ_H(tmr_idx), adj);
+ 
+-	status = ice_ptp_prep_phy_adj_e810(hw, adj);
+-	if (status)
+-		return status;
++	err = ice_ptp_prep_phy_adj_e810(hw, adj);
++	if (err)
++		return err;
+ 
+ 	return ice_ptp_tmr_cmd(hw, ADJ_TIME);
+ }
 -- 
 2.26.2
 
