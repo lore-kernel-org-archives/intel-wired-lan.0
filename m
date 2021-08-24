@@ -1,40 +1,59 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue, 24 Aug 2021 12:06:39 +0200
-Subject: [Intel-wired-lan] [PATCH] iavf: fix double unlock of crit_lock
-Message-ID: <20210824100639.60076-1-sassmann@kpanic.de>
+From: kerneljasonxing@gmail.com <kerneljasonxing@gmail.com>
+Date: Tue, 24 Aug 2021 18:49:18 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: let the xdpdrv work with more than
+ 64 cpus
+Message-ID: <20210824104918.7930-1-kerneljasonxing@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The crit_lock mutex could be unlocked twice as reported here
-https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20210823/025525.html
+From: Jason Xing <xingwanli@kuaishou.com>
 
-Remove the superfluous unlock. Technically the problem was already
-present before 5ac49f3c2702 as that commit only replaced the locking
-primitive, but no functional change.
+Originally, ixgbe driver doesn't allow the mounting of xdpdrv if the
+server is equipped with more than 64 cpus online. So it turns out that
+the loading of xdpdrv causes the "NOMEM" failure.
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Fixes: 5ac49f3c2702 ("iavf: use mutexes for locking of critical sections")
-Fixes: bac8486116b0 ("iavf: Refactor the watchdog state machine")
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+Actually, we can adjust the algorithm and then make it work, which has
+no harm at all, only if we set the maxmium number of xdp queues.
+
+Fixes: 33fdc82f08 ("ixgbe: add support for XDP_TX action")
+Co-developed-by: Shujin Li <lishujin@kuaishou.com>
+Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ---
+ 2 files changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 23762a7ef740..cada4e0e40b4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1965,7 +1965,6 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		}
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
--		mutex_unlock(&adapter->crit_lock);
- 		queue_delayed_work(iavf_wq,
- 				   &adapter->watchdog_task,
- 				   msecs_to_jiffies(10));
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index 0218f6c..5953996 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -299,7 +299,7 @@ static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
+ 
+ static int ixgbe_xdp_queues(struct ixgbe_adapter *adapter)
+ {
+-	return adapter->xdp_prog ? nr_cpu_ids : 0;
++	return adapter->xdp_prog ? min_t(int, MAX_XDP_QUEUES, nr_cpu_ids) : 0;
+ }
+ 
+ #define IXGBE_RSS_64Q_MASK	0x3F
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 14aea40..b36d16b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10130,9 +10130,6 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 			return -EINVAL;
+ 	}
+ 
+-	if (nr_cpu_ids > MAX_XDP_QUEUES)
+-		return -ENOMEM;
+-
+ 	old_prog = xchg(&adapter->xdp_prog, prog);
+ 	need_reset = (!!prog != !!old_prog);
+ 
 -- 
-2.31.1
+1.8.3.1
 
