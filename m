@@ -1,40 +1,133 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 25 Aug 2021 14:38:22 +0100
-Subject: [Intel-wired-lan] [PATCH v3 3/3] PCI/MSI: remove
- msi_attrib.default_irq in msi_desc
-In-Reply-To: <20210825102636.52757-4-21cnbao@gmail.com>
-References: <20210825102636.52757-1-21cnbao@gmail.com>
- <20210825102636.52757-4-21cnbao@gmail.com>
-Message-ID: <87bl5lpru9.wl-maz@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 26 Aug 2021 03:02:33 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 6084fa7f75514f91862da8ac710eb1f0c881cca6
+Message-ID: <612693c9.6Q1ikuMLZvDSFCCP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 25 Aug 2021 11:26:36 +0100,
-Barry Song <21cnbao@gmail.com> wrote:
-> 
-> From: Marc Zyngier <maz@kernel.org>
-> 
-> default_irq is hideous as it should be per-device but not per-desc.
-> On the other hand, MSI-X case doesn't use it at all. Since sysfs
-> IRQ has moved to use the msi_entry instead of pci_dev.irq, now it
-> seems it is safe to remove msi_attrib.default_irq.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 6084fa7f75514f91862da8ac710eb1f0c881cca6  i40e: Fix issue when maximum queues is exceeded
 
-Thanks for doing the write-up. Maybe worth adding that drivers that
-use dev->irq while having enabled MSI will break (INTx will be
-disabled while MSI is enabled). That should give people a clue about
-what to fix when they bisect the problem to this patch.
+elapsed time: 1083m
 
-Also, a link to the discussion that lead to this patch would be useful
-to give some context.
+configs tested: 104
+configs skipped: 3
 
-No need to respin this for now, let's give it a shake after 5.14.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks,
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                       ebony_defconfig
+arm                           sama5_defconfig
+m68k                          amiga_defconfig
+m68k                          sun3x_defconfig
+xtensa                       common_defconfig
+h8300                               defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                      ep88xc_defconfig
+alpha                            alldefconfig
+sh                          r7780mp_defconfig
+powerpc                     tqm5200_defconfig
+arm                           tegra_defconfig
+arm                         axm55xx_defconfig
+mips                         tb0219_defconfig
+arm                          moxart_defconfig
+mips                     decstation_defconfig
+powerpc                 mpc8560_ads_defconfig
+sh                            migor_defconfig
+arm                          pcm027_defconfig
+mips                      loongson3_defconfig
+mips                        nlm_xlp_defconfig
+m68k                                defconfig
+arc                          axs103_defconfig
+xtensa                         virt_defconfig
+mips                     loongson2k_defconfig
+powerpc                    socrates_defconfig
+xtensa                    smp_lx200_defconfig
+mips                          ath25_defconfig
+arm                       imx_v4_v5_defconfig
+sh                          sdk7786_defconfig
+powerpc                        icon_defconfig
+m68k                          multi_defconfig
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a014-20210825
+x86_64               randconfig-a015-20210825
+x86_64               randconfig-a016-20210825
+x86_64               randconfig-a013-20210825
+x86_64               randconfig-a012-20210825
+x86_64               randconfig-a011-20210825
+i386                 randconfig-a011-20210825
+i386                 randconfig-a016-20210825
+i386                 randconfig-a012-20210825
+i386                 randconfig-a014-20210825
+i386                 randconfig-a013-20210825
+i386                 randconfig-a015-20210825
+arc                  randconfig-r043-20210825
+riscv                randconfig-r042-20210825
+s390                 randconfig-r044-20210825
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-	M.
+clang tested configs:
+x86_64               randconfig-a005-20210825
+x86_64               randconfig-a001-20210825
+x86_64               randconfig-a006-20210825
+x86_64               randconfig-a003-20210825
+x86_64               randconfig-a004-20210825
+x86_64               randconfig-a002-20210825
 
--- 
-Without deviation from the norm, progress is not possible.
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
