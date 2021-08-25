@@ -1,10 +1,10 @@
 From: Barry Song <21cnbao@gmail.com>
-Date: Wed, 25 Aug 2021 18:26:34 +0800
-Subject: [Intel-wired-lan] [PATCH v3 1/3] Documentation: ABI: sysfs-bus-pci:
- Add description for IRQ entry
+Date: Wed, 25 Aug 2021 18:26:35 +0800
+Subject: [Intel-wired-lan] [PATCH v3 2/3] PCI/sysfs: Don't depend on
+ pci_dev.irq for IRQ entry
 In-Reply-To: <20210825102636.52757-1-21cnbao@gmail.com>
 References: <20210825102636.52757-1-21cnbao@gmail.com>
-Message-ID: <20210825102636.52757-2-21cnbao@gmail.com>
+Message-ID: <20210825102636.52757-3-21cnbao@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,37 +13,55 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Barry Song <song.bao.hua@hisilicon.com>
 
-/sys/bus/pci/devices/.../irq has been there for many years but it
-has never been documented. This patch is trying to document it as
-what it is really implemented in the kernel code.
+Explicitly use IRQ number from MSI list for IRQ sysfs entry. Then sysfs
+will decouple with the odd implementation depending on pci_dev.irq.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Barry Song <song.bao.hua@hisilicon.com>
 ---
- Documentation/ABI/testing/sysfs-bus-pci | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/pci/pci-sysfs.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-index 793cbb7..eeacdce 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci
-+++ b/Documentation/ABI/testing/sysfs-bus-pci
-@@ -96,6 +96,16 @@ Description:
- 		This attribute indicates the mode that the irq vector named by
- 		the file is in (msi vs. msix)
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 7bbf2673..f5a06b9 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -26,6 +26,7 @@
+ #include <linux/slab.h>
+ #include <linux/vgaarb.h>
+ #include <linux/pm_runtime.h>
++#include <linux/msi.h>
+ #include <linux/of.h>
+ #include "pci.h"
  
-+What:		/sys/bus/pci/devices/.../irq
-+Date:		August 2021
-+Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
-+Description:
-+		If a driver has enabled MSI (not MSI-X), "irq" contains the IRQ
-+		of the first MSI vector. Otherwise "irq" contains the IRQ of
-+		the legacy INTx interrupt.
-+		"irq" being set to 0 indicates that the device isn't capable of
-+		generating legacy INTx interrupts.
+@@ -49,7 +50,27 @@ static DEVICE_ATTR_RO(field)
+ pci_config_attr(subsystem_device, "0x%04x\n");
+ pci_config_attr(revision, "0x%02x\n");
+ pci_config_attr(class, "0x%06x\n");
+-pci_config_attr(irq, "%u\n");
 +
- What:		/sys/bus/pci/devices/.../remove
- Date:		January 2009
- Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
++static ssize_t irq_show(struct device *dev,
++			struct device_attribute *attr,
++			char *buf)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++#ifdef CONFIG_PCI_MSI
++	/*
++	 * For MSI, return the 1st IRQ in IRQ vector; for all other cases
++	 * including MSI-X, return legacy INTx
++	 */
++	if (pdev->msi_enabled) {
++		struct msi_desc *desc = first_pci_msi_entry(pdev);
++
++		return sysfs_emit(buf, "%u\n", desc->irq);
++	}
++#endif
++
++	return sysfs_emit(buf, "%u\n", pdev->irq);
++}
++static DEVICE_ATTR_RO(irq);
+ 
+ static ssize_t broken_parity_status_show(struct device *dev,
+ 					 struct device_attribute *attr,
 -- 
 1.8.3.1
 
