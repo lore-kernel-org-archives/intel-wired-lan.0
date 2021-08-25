@@ -1,8 +1,10 @@
 From: Barry Song <21cnbao@gmail.com>
-Date: Wed, 25 Aug 2021 18:26:33 +0800
-Subject: [Intel-wired-lan] [PATCH v3 0/3] PCI/MSI: Clarify the IRQ sysfs ABI
- for PCI devices
-Message-ID: <20210825102636.52757-1-21cnbao@gmail.com>
+Date: Wed, 25 Aug 2021 18:26:34 +0800
+Subject: [Intel-wired-lan] [PATCH v3 1/3] Documentation: ABI: sysfs-bus-pci:
+ Add description for IRQ entry
+In-Reply-To: <20210825102636.52757-1-21cnbao@gmail.com>
+References: <20210825102636.52757-1-21cnbao@gmail.com>
+Message-ID: <20210825102636.52757-2-21cnbao@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,41 +13,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Barry Song <song.bao.hua@hisilicon.com>
 
+/sys/bus/pci/devices/.../irq has been there for many years but it
+has never been documented. This patch is trying to document it as
+what it is really implemented in the kernel code.
 
-/sys/bus/pci/devices/.../irq has been there for many years but it has never
-been documented. This patchset is trying to clarify it.
-
--v3:
-  - Don't attempt to modify the current behaviour of IRQ ABI for MSI-X
-  - Make MSI IRQ ABI more explicit(return 1st IRQ of the IRQ vector)
-  - Add Marc's patch of removing default_irq from the previous comment to
-    the series.
-  Note patch 3/3 indirectly changed the code of pci_restore_msi_state(),
-  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c is the only driver
-  calling this API. I would appreciate testing done from this driver's
-  maintainers.
-
--v2:
-  - split into two patches according to Bjorn's comments;
-  - Add Greg's Acked-by, thanks for reviewing!
-  https://lore.kernel.org/lkml/20210820223744.8439-1-21cnbao at gmail.com/
-
--v1:
-  https://lore.kernel.org/lkml/20210813122650.25764-1-21cnbao at gmail.com/#t
-
-Barry Song (2):
-  Documentation: ABI: sysfs-bus-pci: Add description for IRQ entry
-  PCI/sysfs: Don't depend on pci_dev.irq for IRQ entry
-
-Marc Zyngier (1):
-  PCI/MSI: remove msi_attrib.default_irq in msi_desc
-
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Barry Song <song.bao.hua@hisilicon.com>
+---
  Documentation/ABI/testing/sysfs-bus-pci | 10 ++++++++++
- drivers/pci/msi.c                       | 12 +++++-------
- drivers/pci/pci-sysfs.c                 | 23 ++++++++++++++++++++++-
- include/linux/msi.h                     |  2 --
- 4 files changed, 37 insertions(+), 10 deletions(-)
+ 1 file changed, 10 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
+index 793cbb7..eeacdce 100644
+--- a/Documentation/ABI/testing/sysfs-bus-pci
++++ b/Documentation/ABI/testing/sysfs-bus-pci
+@@ -96,6 +96,16 @@ Description:
+ 		This attribute indicates the mode that the irq vector named by
+ 		the file is in (msi vs. msix)
+ 
++What:		/sys/bus/pci/devices/.../irq
++Date:		August 2021
++Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
++Description:
++		If a driver has enabled MSI (not MSI-X), "irq" contains the IRQ
++		of the first MSI vector. Otherwise "irq" contains the IRQ of
++		the legacy INTx interrupt.
++		"irq" being set to 0 indicates that the device isn't capable of
++		generating legacy INTx interrupts.
++
+ What:		/sys/bus/pci/devices/.../remove
+ Date:		January 2009
+ Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
 -- 
 1.8.3.1
 
