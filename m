@@ -1,111 +1,277 @@
-From: Jason Xing <kerneljasonxing@gmail.com>
-Date: Wed, 25 Aug 2021 19:59:03 +0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: let the xdpdrv work with more
+From: kerneljasonxing@gmail.com <kerneljasonxing@gmail.com>
+Date: Wed, 25 Aug 2021 20:02:41 +0800
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: let the xdpdrv work with more
  than 64 cpus
-In-Reply-To: <20210824153225.GA16546@ranger.igk.intel.com>
-References: <20210824104918.7930-1-kerneljasonxing@gmail.com>
- <59dff551-2d52-5ecc-14ac-4a6ada5b1275@redhat.com>
- <CAL+tcoDERDZqtjK1BCc0vYYwYtvgRtb8H6z2FTVbGqr+N7bVmA@mail.gmail.com>
- <20210824153225.GA16546@ranger.igk.intel.com>
-Message-ID: <CAL+tcoDUhZfy3NTx4TOv3wa1f8SMkNhzNpVS5qyySaVOm6L-qQ@mail.gmail.com>
+In-Reply-To: <CAL+tcoDUhZfy3NTx4TOv3wa1f8SMkNhzNpVS5qyySaVOm6L-qQ@mail.gmail.com>
+References: <CAL+tcoDUhZfy3NTx4TOv3wa1f8SMkNhzNpVS5qyySaVOm6L-qQ@mail.gmail.com>
+Message-ID: <20210825120241.7389-1-kerneljasonxing@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 24, 2021 at 11:48 PM Maciej Fijalkowski
-<maciej.fijalkowski@intel.com> wrote:
->
-> On Tue, Aug 24, 2021 at 11:23:29PM +0800, Jason Xing wrote:
-> > On Tue, Aug 24, 2021 at 9:32 PM Jesper Dangaard Brouer
-> > <jbrouer@redhat.com> wrote:
-> > >
-> > >
-> > >
-> > > On 24/08/2021 12.49, kerneljasonxing at gmail.com wrote:
-> > > > From: Jason Xing <xingwanli@kuaishou.com>
-> > > >
-> > > > Originally, ixgbe driver doesn't allow the mounting of xdpdrv if the
-> > > > server is equipped with more than 64 cpus online. So it turns out that
-> > > > the loading of xdpdrv causes the "NOMEM" failure.
-> > > >
-> > > > Actually, we can adjust the algorithm and then make it work, which has
-> > > > no harm at all, only if we set the maxmium number of xdp queues.
-> > >
-> > > This is not true, it can cause harm, because XDP transmission queues are
-> > > used without locking. See drivers ndo_xdp_xmit function ixgbe_xdp_xmit().
-> > > As driver assumption is that each CPU have its own XDP TX-queue.
->
-> Thanks Jesper for chiming in.
->
-> > >
-> >
-> > Point taken. I indeed miss that part which would cause bad behavior if it
-> > happens.
-> >
-> > At this point, I think I should find all the allocation and use of XDP
-> > related, say,
-> > queues and rings, then adjust them all?
-> >
-> > Let's say if the server is shipped with 128 cpus, we could map 128 cpus to 64
-> > rings in the function ixgbe_xdp_xmit(). However, it sounds a little bit odd.
-> >
-> > Do you think that it makes any sense?
->
-> We need a fallback path for ixgbe. I did the following for ice:
-> https://x-lore.kernel.org/bpf/20210819120004.34392-9-maciej.fijalkowski at intel.com/T/#u
->
+From: Jason Xing <xingwanli@kuaishou.com>
 
-Thanks. I'm ready to send the v2 patch. Please help me review the next
-submission.
+Originally, ixgbe driver doesn't allow the mounting of xdpdrv if the
+server is equipped with more than 64 cpus online. So it turns out that
+the loading of xdpdrv causes the "NOMEM" failure.
 
-Jason
+Actually, we can adjust the algorithm and then make it work through
+mapping the current cpu to some xdp ring with the protect of @tx_lock.
 
-> >
-> > Thanks,
-> > Jason
-> >
-> > > This patch is not a proper fix.
-> > >
-> > > I do think we need a proper fix for this issue on ixgbe.
-> > >
-> > >
-> > > > Fixes: 33fdc82f08 ("ixgbe: add support for XDP_TX action")
-> > > > Co-developed-by: Shujin Li <lishujin@kuaishou.com>
-> > > > Signed-off-by: Shujin Li <lishujin@kuaishou.com>
-> > > > Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
-> > > > ---
-> > > >   drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 2 +-
-> > > >   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 3 ---
-> > > >   2 files changed, 1 insertion(+), 4 deletions(-)
-> > > >
-> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-> > > > index 0218f6c..5953996 100644
-> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-> > > > @@ -299,7 +299,7 @@ static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
-> > > >
-> > > >   static int ixgbe_xdp_queues(struct ixgbe_adapter *adapter)
-> > > >   {
-> > > > -     return adapter->xdp_prog ? nr_cpu_ids : 0;
-> > > > +     return adapter->xdp_prog ? min_t(int, MAX_XDP_QUEUES, nr_cpu_ids) : 0;
-> > > >   }
-> > > >
-> > > >   #define IXGBE_RSS_64Q_MASK  0x3F
-> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > > index 14aea40..b36d16b 100644
-> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > > @@ -10130,9 +10130,6 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
-> > > >                       return -EINVAL;
-> > > >       }
-> > > >
-> > > > -     if (nr_cpu_ids > MAX_XDP_QUEUES)
-> > > > -             return -ENOMEM;
-> > > > -
-> > > >       old_prog = xchg(&adapter->xdp_prog, prog);
-> > > >       need_reset = (!!prog != !!old_prog);
-> > > >
-> > > >
-> > >
+Considering the performance of xdpdrv mode, I add another limit like ice
+driver where the number of cpus should be within the twice of
+MAX_XDP_QUEUES.
+
+v2:
+- Adjust cpu id in ixgbe_xdp_xmit(). (Jesper)
+- Add a fallback path. (Maciej)
+- Adjust other parts related to xdp ring.
+
+Fixes: 33fdc82f08 ("ixgbe: add support for XDP_TX action")
+Co-developed-by: Shujin Li <lishujin@kuaishou.com>
+Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 11 +++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |  6 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 63 ++++++++++++++++++++-------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c  | 15 ++++---
+ 4 files changed, 72 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index a604552..466b2b0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -82,6 +82,8 @@
+ #define IXGBE_2K_TOO_SMALL_WITH_PADDING \
+ ((NET_SKB_PAD + IXGBE_RXBUFFER_1536) > SKB_WITH_OVERHEAD(IXGBE_RXBUFFER_2K))
+ 
++DECLARE_STATIC_KEY_FALSE(ixgbe_xdp_locking_key);
++
+ static inline int ixgbe_compute_pad(int rx_buf_len)
+ {
+ 	int page_size, pad_size;
+@@ -351,6 +353,7 @@ struct ixgbe_ring {
+ 	};
+ 	u16 rx_offset;
+ 	struct xdp_rxq_info xdp_rxq;
++	spinlock_t tx_lock;	/* used in XDP mode */
+ 	struct xsk_buff_pool *xsk_pool;
+ 	u16 ring_idx;		/* {rx,tx,xdp}_ring back reference idx */
+ 	u16 rx_buf_len;
+@@ -772,6 +775,14 @@ struct ixgbe_adapter {
+ #endif /* CONFIG_IXGBE_IPSEC */
+ };
+ 
++static inline int ixgbe_determine_xdp_cpu(int cpu)
++{
++	if (static_key_enabled(&ixgbe_xdp_locking_key))
++		return cpu % MAX_XDP_QUEUES;
++	else
++		return cpu;
++}
++
+ static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+ {
+ 	switch (adapter->hw.mac.type) {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index 0218f6c..d6b58e1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -299,7 +299,7 @@ static void ixgbe_cache_ring_register(struct ixgbe_adapter *adapter)
+ 
+ static int ixgbe_xdp_queues(struct ixgbe_adapter *adapter)
+ {
+-	return adapter->xdp_prog ? nr_cpu_ids : 0;
++	return adapter->xdp_prog ? min_t(int, MAX_XDP_QUEUES, nr_cpu_ids) : 0;
+ }
+ 
+ #define IXGBE_RSS_64Q_MASK	0x3F
+@@ -947,6 +947,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
+ 		ring->count = adapter->tx_ring_count;
+ 		ring->queue_index = xdp_idx;
+ 		set_ring_xdp(ring);
++		spin_lock_init(&ring->tx_lock);
+ 
+ 		/* assign ring to adapter */
+ 		WRITE_ONCE(adapter->xdp_ring[xdp_idx], ring);
+@@ -1032,6 +1033,9 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
+ 	adapter->q_vector[v_idx] = NULL;
+ 	__netif_napi_del(&q_vector->napi);
+ 
++	if (static_key_enabled(&ixgbe_xdp_locking_key))
++		static_branch_dec(&ixgbe_xdp_locking_key);
++
+ 	/*
+ 	 * after a call to __netif_napi_del() napi may still be used and
+ 	 * ixgbe_get_stats64() might access the rings on this vector,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 14aea40..4c94577 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -165,6 +165,9 @@ static int ixgbe_notify_dca(struct notifier_block *, unsigned long event,
+ MODULE_DESCRIPTION("Intel(R) 10 Gigabit PCI Express Network Driver");
+ MODULE_LICENSE("GPL v2");
+ 
++DEFINE_STATIC_KEY_FALSE(ixgbe_xdp_locking_key);
++EXPORT_SYMBOL(ixgbe_xdp_locking_key);
++
+ static struct workqueue_struct *ixgbe_wq;
+ 
+ static bool ixgbe_check_cfg_remove(struct ixgbe_hw *hw, struct pci_dev *pdev);
+@@ -2422,13 +2425,14 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
+ 		xdp_do_flush_map();
+ 
+ 	if (xdp_xmit & IXGBE_XDP_TX) {
+-		struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
++		int cpu = ixgbe_determine_xdp_cpu(smp_processor_id());
++		struct ixgbe_ring *ring = adapter->xdp_ring[cpu];
+ 
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch.
+-		 */
+-		wmb();
+-		writel(ring->next_to_use, ring->tail);
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_lock(&ring->tx_lock);
++		ixgbe_xdp_ring_update_tail(ring);
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_unlock(&ring->tx_lock);
+ 	}
+ 
+ 	u64_stats_update_begin(&rx_ring->syncp);
+@@ -8539,21 +8543,33 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+ int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+ 			struct xdp_frame *xdpf)
+ {
+-	struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
++	struct ixgbe_ring *ring;
+ 	struct ixgbe_tx_buffer *tx_buffer;
+ 	union ixgbe_adv_tx_desc *tx_desc;
+ 	u32 len, cmd_type;
+ 	dma_addr_t dma;
+ 	u16 i;
++	int cpu;
++	int ret;
+ 
+ 	len = xdpf->len;
+ 
+-	if (unlikely(!ixgbe_desc_unused(ring)))
+-		return IXGBE_XDP_CONSUMED;
++	cpu = ixgbe_determine_xdp_cpu(smp_processor_id());
++	ring = adapter->xdp_ring[cpu];
++
++	if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++		spin_lock(&ring->tx_lock);
++
++	if (unlikely(!ixgbe_desc_unused(ring))) {
++		ret = IXGBE_XDP_CONSUMED;
++		goto out;
++	}
+ 
+ 	dma = dma_map_single(ring->dev, xdpf->data, len, DMA_TO_DEVICE);
+-	if (dma_mapping_error(ring->dev, dma))
+-		return IXGBE_XDP_CONSUMED;
++	if (dma_mapping_error(ring->dev, dma)) {
++		ret = IXGBE_XDP_CONSUMED;
++		goto out;
++	}
+ 
+ 	/* record the location of the first descriptor for this packet */
+ 	tx_buffer = &ring->tx_buffer_info[ring->next_to_use];
+@@ -8590,7 +8606,11 @@ int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+ 	tx_buffer->next_to_watch = tx_desc;
+ 	ring->next_to_use = i;
+ 
+-	return IXGBE_XDP_TX;
++	ret = IXGBE_XDP_TX;
++out:
++	if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++		spin_unlock(&ring->tx_lock);
++	return ret;
+ }
+ 
+ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+@@ -10130,8 +10150,13 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 			return -EINVAL;
+ 	}
+ 
+-	if (nr_cpu_ids > MAX_XDP_QUEUES)
++	/* if the number of cpus is much larger than the maximum of queues,
++	 * we should stop it and then return with NOMEM like before!
++	 */
++	if (nr_cpu_ids > MAX_XDP_QUEUES * 2)
+ 		return -ENOMEM;
++	else if (nr_cpu_ids > MAX_XDP_QUEUES)
++		static_branch_inc(&ixgbe_xdp_locking_key);
+ 
+ 	old_prog = xchg(&adapter->xdp_prog, prog);
+ 	need_reset = (!!prog != !!old_prog);
+@@ -10201,6 +10226,7 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct ixgbe_ring *ring;
+ 	int nxmit = 0;
++	int cpu;
+ 	int i;
+ 
+ 	if (unlikely(test_bit(__IXGBE_DOWN, &adapter->state)))
+@@ -10209,10 +10235,12 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 	if (unlikely(flags & ~XDP_XMIT_FLAGS_MASK))
+ 		return -EINVAL;
+ 
++	cpu = ixgbe_determine_xdp_cpu(smp_processor_id());
++
+ 	/* During program transitions its possible adapter->xdp_prog is assigned
+ 	 * but ring has not been configured yet. In this case simply abort xmit.
+ 	 */
+-	ring = adapter->xdp_prog ? adapter->xdp_ring[smp_processor_id()] : NULL;
++	ring = adapter->xdp_prog ? adapter->xdp_ring[cpu] : NULL;
+ 	if (unlikely(!ring))
+ 		return -ENXIO;
+ 
+@@ -10229,8 +10257,13 @@ static int ixgbe_xdp_xmit(struct net_device *dev, int n,
+ 		nxmit++;
+ 	}
+ 
+-	if (unlikely(flags & XDP_XMIT_FLUSH))
++	if (unlikely(flags & XDP_XMIT_FLUSH)) {
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_lock(&ring->tx_lock);
+ 		ixgbe_xdp_ring_update_tail(ring);
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_unlock(&ring->tx_lock);
++	}
+ 
+ 	return nxmit;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+index b1d22e4..e9ce6c1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+@@ -334,13 +334,14 @@ int ixgbe_clean_rx_irq_zc(struct ixgbe_q_vector *q_vector,
+ 		xdp_do_flush_map();
+ 
+ 	if (xdp_xmit & IXGBE_XDP_TX) {
+-		struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+-
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch.
+-		 */
+-		wmb();
+-		writel(ring->next_to_use, ring->tail);
++		int cpu = ixgbe_determine_xdp_cpu(smp_processor_id());
++		struct ixgbe_ring *ring = adapter->xdp_ring[cpu];
++
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_lock(&ring->tx_lock);
++		ixgbe_xdp_ring_update_tail(ring);
++		if (static_branch_unlikely(&ixgbe_xdp_locking_key))
++			spin_unlock(&ring->tx_lock);
+ 	}
+ 
+ 	u64_stats_update_begin(&rx_ring->syncp);
+-- 
+1.8.3.1
+
