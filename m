@@ -1,30 +1,80 @@
-From: Mekala, SunithaX D <sunithax.d.mekala@intel.com>
-Date: Thu, 26 Aug 2021 06:23:41 +0000
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 26 Aug 2021 08:31:01 +0200
 Subject: [Intel-wired-lan] [PATCH intel-next 1/4] ice: Refactor
  ice_aqc_link_topo_addr
 In-Reply-To: <20210816102729.1266522-2-maciej.machnikowski@intel.com>
 References: <20210816102729.1266522-1-maciej.machnikowski@intel.com>
  <20210816102729.1266522-2-maciej.machnikowski@intel.com>
-Message-ID: <CO1PR11MB50285501AE9176B77D46E379A0C79@CO1PR11MB5028.namprd11.prod.outlook.com>
+Message-ID: <d32b2094-b4d0-341b-5a1a-6fff88236446@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Maciej Machnikowski
-> Sent: Monday, August 16, 2021 3:27 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-next 1/4] ice: Refactor ice_aqc_link_topo_addr
->
-> Separate link topo parameters and move to the ice_aqc_link_topo_params in the ice_aqc_link_topo_addr.
->
+Dear Maciej,
+
+
+Am 16.08.21 um 12:27 schrieb Maciej Machnikowski:
+> Separate link topo parameters and move to the ice_aqc_link_topo_params
+> in the ice_aqc_link_topo_addr.
+
+What do you mean by ?in the ice_aqc_link_topo_addr?? Maybe just add write:
+
+Separate link topo parameters in structure `ice_aqc_link_topo_addr` out 
+into new structure `ice_aqc_link_topo_params`.
+
+Please add a note, why the refactoring is needed.
+> 
 > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 6 +++++-
->  drivers/net/ethernet/intel/ice/ice_common.c     | 8 +++++---
->  2 files changed, 10 insertions(+), 4 deletions(-)
->
-Tested-by: Mekala, Sunitha D <sunithax.d.mekala@intel.com > (A Contingent worker at Intel)
+>   drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 6 +++++-
+>   drivers/net/ethernet/intel/ice/ice_common.c     | 8 +++++---
+>   2 files changed, 10 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> index 6c727745bb29..941342f4be85 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> @@ -1283,7 +1283,7 @@ struct ice_aqc_set_mac_lb {
+>   	u8 reserved[15];
+>   };
+>   
+> -struct ice_aqc_link_topo_addr {
+> +struct ice_aqc_link_topo_params {
+>   	u8 lport_num;
+>   	u8 lport_num_valid;
+>   #define ICE_AQC_LINK_TOPO_PORT_NUM_VALID	BIT(0)
+> @@ -1309,6 +1309,10 @@ struct ice_aqc_link_topo_addr {
+>   #define ICE_AQC_LINK_TOPO_NODE_CTX_PROVIDED	4
+>   #define ICE_AQC_LINK_TOPO_NODE_CTX_OVERRIDE	5
+>   	u8 index;
+> +};
+> +
+> +struct ice_aqc_link_topo_addr {
+> +	struct ice_aqc_link_topo_params topo_params;
+>   	__le16 handle;
+>   #define ICE_AQC_LINK_TOPO_HANDLE_S	0
+>   #define ICE_AQC_LINK_TOPO_HANDLE_M	(0x3FF << ICE_AQC_LINK_TOPO_HANDLE_S)
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+> index 1a3c6b60fdca..5822589aebdc 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -240,11 +240,13 @@ ice_aq_get_link_topo_handle(struct ice_port_info *pi, u8 node_type,
+>   
+>   	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_link_topo);
+>   
+> -	cmd->addr.node_type_ctx = (ICE_AQC_LINK_TOPO_NODE_CTX_PORT <<
+> -				   ICE_AQC_LINK_TOPO_NODE_CTX_S);
+> +	cmd->addr.topo_params.node_type_ctx =
+> +		(ICE_AQC_LINK_TOPO_NODE_CTX_PORT <<
+> +		 ICE_AQC_LINK_TOPO_NODE_CTX_S);
+>   
+>   	/* set node type */
+> -	cmd->addr.node_type_ctx |= (ICE_AQC_LINK_TOPO_NODE_TYPE_M & node_type);
+> +	cmd->addr.topo_params.node_type_ctx |=
+> +		(ICE_AQC_LINK_TOPO_NODE_TYPE_M & node_type);
+>   
+>   	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
+>   }
+> 
