@@ -1,80 +1,157 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 26 Aug 2021 08:31:01 +0200
-Subject: [Intel-wired-lan] [PATCH intel-next 1/4] ice: Refactor
- ice_aqc_link_topo_addr
-In-Reply-To: <20210816102729.1266522-2-maciej.machnikowski@intel.com>
-References: <20210816102729.1266522-1-maciej.machnikowski@intel.com>
- <20210816102729.1266522-2-maciej.machnikowski@intel.com>
-Message-ID: <d32b2094-b4d0-341b-5a1a-6fff88236446@molgen.mpg.de>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 26 Aug 2021 10:03:49 +0200
+Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
+ error path in probe()
+In-Reply-To: <20210825192321.32784-1-pwaskiewicz@jumptrading.com>
+References: <20210825192321.32784-1-pwaskiewicz@jumptrading.com>
+Message-ID: <20210826080349.GA32032@ranger.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Maciej,
+On Wed, Aug 25, 2021 at 02:23:21PM -0500, PJ Waskiewicz wrote:
+> This fixes an error path condition when probe() fails due to the
+> default VSI not being available or online yet in the firmware. If
+> that happens, the previous teardown path would clear the interrupt
+> scheme, which also freed the IRQs with the OS. Then the error path
+> for the switch setup (pre-VSI) would attempt to free the OS IRQs
+> as well.
 
+Nice to hear from you PJ.
+Looks like a 'net' candidate, so we need a Fixes: tag.
 
-Am 16.08.21 um 12:27 schrieb Maciej Machnikowski:
-> Separate link topo parameters and move to the ice_aqc_link_topo_params
-> in the ice_aqc_link_topo_addr.
+Also, you probably should send it to iwl with cc to netdev and Tony will
+pick and combine it into his pull request.
 
-What do you mean by ?in the ice_aqc_link_topo_addr?? Maybe just add write:
+Patch LGTM.
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-Separate link topo parameters in structure `ice_aqc_link_topo_addr` out 
-into new structure `ice_aqc_link_topo_params`.
-
-Please add a note, why the refactoring is needed.
 > 
-> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
+> [   14.597121] i40e 0000:31:00.0: setup of MAIN VSI failed
+> [   14.712167] i40e 0000:31:00.0: setup_pf_switch failed: -11
+> [   14.755318] ------------[ cut here ]------------
+> [   14.766261] Trying to free already-free IRQ 266
+> [   14.777224] WARNING: CPU: 0 PID: 5 at kernel/irq/manage.c:1731 __free_irq+0x9a/0x300
+> [   14.791341] Modules linked in: XXXXXX
+> [   14.825361] CPU: 0 PID: 5 Comm: kworker/0:0 Not tainted <kernel omitted>
+> [   14.840630] Hardware name: XXXXXX
+> [   14.854924] Workqueue: events work_for_cpu_fn
+> [   14.866482] RIP: 0010:__free_irq+0x9a/0x300
+> [   14.877638] Code: 08 75 0e e9 3c 02 00 00 4c 39 6b 08 74 59 48 89 da 48 8b 5a 18 48 85 db 75 ee 8b 74 24 04 48 c7 c7 58 a0 aa b4 e8 3f 2e f9 ff <0f> 0b 4c 89 f6 48 89 ef e8 f9 69 7b 00 49 8b 47 40 48 8b 80 80 00
+> [   14.910571] RSP: 0000:ff6a6ad7401dfb60 EFLAGS: 00010086
+> [   14.923265] RAX: 0000000000000000 RBX: ff3c97328eb56000 RCX: 0000000000000006
+> [   14.937853] RDX: 0000000000000007 RSI: 0000000000000092 RDI: ff3c97333ee16a00
+> [   14.952290] RBP: ff3c9731cff4caa4 R08: 00000000000006b8 R09: 0000000000aaaaaa
+> [   14.966781] R10: 0000000000000000 R11: ff6a6ad768aff020 R12: ff3c9731cff4cb80
+> [   14.981436] R13: ff3c97328eb56000 R14: 0000000000000246 R15: ff3c9731cff4ca00
+> [   14.996041] FS:  0000000000000000(0000) GS:ff3c97333ee00000(0000) knlGS:0000000000000000
+> [   15.011511] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [   15.024493] CR2: 00007fb6ac002000 CR3: 00000004f8c0a001 CR4: 0000000000761ef0
+> [   15.039373] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [   15.054426] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> [   15.068781] PKRU: 55555554
+> [   15.078902] Call Trace:
+> [   15.088421]  ? synchronize_irq+0x3a/0xa0
+> [   15.099556]  free_irq+0x2e/0x60
+> [   15.109863]  i40e_clear_interrupt_scheme+0x53/0x190 [i40e]
+> [   15.122718]  i40e_probe.part.108+0x134b/0x1a40 [i40e]
+> [   15.135343]  ? kmem_cache_alloc+0x158/0x1c0
+> [   15.146688]  ? acpi_ut_update_ref_count.part.1+0x8e/0x345
+> [   15.159217]  ? acpi_ut_update_object_reference+0x15e/0x1e2
+> [   15.171879]  ? strstr+0x21/0x70
+> [   15.181802]  ? irq_get_irq_data+0xa/0x20
+> [   15.193198]  ? mp_check_pin_attr+0x13/0xc0
+> [   15.203909]  ? irq_get_irq_data+0xa/0x20
+> [   15.214310]  ? mp_map_pin_to_irq+0xd3/0x2f0
+> [   15.225206]  ? acpi_register_gsi_ioapic+0x93/0x170
+> [   15.236351]  ? pci_conf1_read+0xa4/0x100
+> [   15.246586]  ? pci_bus_read_config_word+0x49/0x70
+> [   15.257608]  ? do_pci_enable_device+0xcc/0x100
+> [   15.268337]  local_pci_probe+0x41/0x90
+> [   15.279016]  work_for_cpu_fn+0x16/0x20
+> [   15.289545]  process_one_work+0x1a7/0x360
+> [   15.300214]  worker_thread+0x1cf/0x390
+> [   15.309980]  ? create_worker+0x1a0/0x1a0
+> [   15.319854]  kthread+0x112/0x130
+> [   15.328806]  ? kthread_flush_work_fn+0x10/0x10
+> [   15.338739]  ret_from_fork+0x1f/0x40
+> [   15.347622] ---[ end trace 5220551832349274 ]---
+> 
+> Break apart the clear and reset schemes so that clear no longer
+> calls i40_reset_interrupt_capability(), allowing that to be called
+> across error paths in probe().
+> 
+> Signed-off-by: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
 > ---
->   drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 6 +++++-
->   drivers/net/ethernet/intel/ice/ice_common.c     | 8 +++++---
->   2 files changed, 10 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-> index 6c727745bb29..941342f4be85 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-> @@ -1283,7 +1283,7 @@ struct ice_aqc_set_mac_lb {
->   	u8 reserved[15];
->   };
->   
-> -struct ice_aqc_link_topo_addr {
-> +struct ice_aqc_link_topo_params {
->   	u8 lport_num;
->   	u8 lport_num_valid;
->   #define ICE_AQC_LINK_TOPO_PORT_NUM_VALID	BIT(0)
-> @@ -1309,6 +1309,10 @@ struct ice_aqc_link_topo_addr {
->   #define ICE_AQC_LINK_TOPO_NODE_CTX_PROVIDED	4
->   #define ICE_AQC_LINK_TOPO_NODE_CTX_OVERRIDE	5
->   	u8 index;
-> +};
-> +
-> +struct ice_aqc_link_topo_addr {
-> +	struct ice_aqc_link_topo_params topo_params;
->   	__le16 handle;
->   #define ICE_AQC_LINK_TOPO_HANDLE_S	0
->   #define ICE_AQC_LINK_TOPO_HANDLE_M	(0x3FF << ICE_AQC_LINK_TOPO_HANDLE_S)
-> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-> index 1a3c6b60fdca..5822589aebdc 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_common.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
-> @@ -240,11 +240,13 @@ ice_aq_get_link_topo_handle(struct ice_port_info *pi, u8 node_type,
->   
->   	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_link_topo);
->   
-> -	cmd->addr.node_type_ctx = (ICE_AQC_LINK_TOPO_NODE_CTX_PORT <<
-> -				   ICE_AQC_LINK_TOPO_NODE_CTX_S);
-> +	cmd->addr.topo_params.node_type_ctx =
-> +		(ICE_AQC_LINK_TOPO_NODE_CTX_PORT <<
-> +		 ICE_AQC_LINK_TOPO_NODE_CTX_S);
->   
->   	/* set node type */
-> -	cmd->addr.node_type_ctx |= (ICE_AQC_LINK_TOPO_NODE_TYPE_M & node_type);
-> +	cmd->addr.topo_params.node_type_ctx |=
-> +		(ICE_AQC_LINK_TOPO_NODE_TYPE_M & node_type);
->   
->   	return ice_aq_send_cmd(pi->hw, &desc, NULL, 0, cd);
->   }
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 2f20980dd9a5..4d60da44f832 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -4865,7 +4865,8 @@ static void i40e_reset_interrupt_capability(struct i40e_pf *pf)
+>   * @pf: board private structure
+>   *
+>   * We go through and clear interrupt specific resources and reset the structure
+> - * to pre-load conditions
+> + * to pre-load conditions.  OS interrupt teardown must be done separately due
+> + * to VSI vs. PF instantiation, and different teardown path requirements.
+
+Small nit: no need for a dot in 'vs.' ?
+
+>   **/
+>  static void i40e_clear_interrupt_scheme(struct i40e_pf *pf)
+>  {
+> @@ -4880,7 +4881,6 @@ static void i40e_clear_interrupt_scheme(struct i40e_pf *pf)
+>         for (i = 0; i < pf->num_alloc_vsi; i++)
+>                 if (pf->vsi[i])
+>                         i40e_vsi_free_q_vectors(pf->vsi[i]);
+> -       i40e_reset_interrupt_capability(pf);
+>  }
 > 
+>  /**
+> @@ -10526,6 +10526,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+>                          */
+>                         free_irq(pf->pdev->irq, pf);
+>                         i40e_clear_interrupt_scheme(pf);
+> +                       i40e_reset_interrupt_capability(pf);
+>                         if (i40e_restore_interrupt_scheme(pf))
+>                                 goto end_unlock;
+>                 }
+> @@ -15928,6 +15929,7 @@ static void i40e_remove(struct pci_dev *pdev)
+>         /* Clear all dynamic memory lists of rings, q_vectors, and VSIs */
+>         rtnl_lock();
+>         i40e_clear_interrupt_scheme(pf);
+> +       i40e_reset_interrupt_capability(pf);
+>         for (i = 0; i < pf->num_alloc_vsi; i++) {
+>                 if (pf->vsi[i]) {
+>                         if (!test_bit(__I40E_RECOVERY_MODE, pf->state))
+> @@ -16150,6 +16152,7 @@ static void i40e_shutdown(struct pci_dev *pdev)
+>          */
+>         rtnl_lock();
+>         i40e_clear_interrupt_scheme(pf);
+> +       i40e_reset_interrupt_capability(pf);
+>         rtnl_unlock();
+> 
+>         if (system_state == SYSTEM_POWER_OFF) {
+> @@ -16202,6 +16205,7 @@ static int __maybe_unused i40e_suspend(struct device *dev)
+>          * to CPU0.
+>          */
+>         i40e_clear_interrupt_scheme(pf);
+> +       i40e_reset_interrupt_capability(pf);
+> 
+>         rtnl_unlock();
+> 
+> --
+> 2.27.0
+> 
+> 
+
+And probably talk to your IT dep to get rid of the footer :P
+
+> ________________________________
+> 
+> Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
