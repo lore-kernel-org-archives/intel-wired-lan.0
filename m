@@ -1,145 +1,98 @@
-From: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
-Date: Thu, 26 Aug 2021 14:26:41 +0000
-Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
- error path in probe()
-In-Reply-To: <20210826080349.GA32032@ranger.igk.intel.com>
-References: <20210825192321.32784-1-pwaskiewicz@jumptrading.com>
- <20210826080349.GA32032@ranger.igk.intel.com>
-Message-ID: <MW4PR14MB47964089AAC74D802220F462A1C79@MW4PR14MB4796.namprd14.prod.outlook.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 26 Aug 2021 08:23:46 -0700
+Subject: [Intel-wired-lan] [PATCH v4] ixgbe: let the xdpdrv work with
+ more than 64 cpus
+In-Reply-To: <20210826141623.8151-1-kerneljasonxing@gmail.com>
+References: <20210826141623.8151-1-kerneljasonxing@gmail.com>
+Message-ID: <d15a1f43-3fea-b798-7848-61faf3ca1e8c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Sent: Thursday, August 26, 2021 1:04 AM
-> To: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
-> Cc: David S . Miller <davem@davemloft.net>; Jesse Brandeburg
-> <jesse.brandeburg@intel.com>; netdev at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; PJ Waskiewicz <pjwaskiewicz@gmail.com>
-> Subject: Re: [PATCH 1/1] i40e: Avoid double IRQ free on error path in probe()
->
-> This message has originated from an EXTERNAL SENDER
->
-> On Wed, Aug 25, 2021 at 02:23:21PM -0500, PJ Waskiewicz wrote:
-> > This fixes an error path condition when probe() fails due to the
-> > default VSI not being available or online yet in the firmware. If that
-> > happens, the previous teardown path would clear the interrupt scheme,
-> > which also freed the IRQs with the OS. Then the error path for the
-> > switch setup (pre-VSI) would attempt to free the OS IRQs as well.
->
-> Nice to hear from you PJ.
-> Looks like a 'net' candidate, so we need a Fixes: tag.
+On 8/26/2021 7:16 AM, kerneljasonxing at gmail.com wrote:
+> From: Jason Xing <xingwanli@kuaishou.com>
+> 
+> Originally, ixgbe driver doesn't allow the mounting of xdpdrv if the
+> server is equipped with more than 64 cpus online. So it turns out that
+> the loading of xdpdrv causes the "NOMEM" failure.
+> 
+> Actually, we can adjust the algorithm and then make it work through
+> mapping the current cpu to some xdp ring with the protect of @tx_lock.
 
-Likewise, nice to be submitting patches again.
+Thank you very much for working on this!
 
-I'll respin and send to net.
+you should put your sign off block here, and then end with a triple-dash
+"---"
 
-> Also, you probably should send it to iwl with cc to netdev and Tony will pick
-> and combine it into his pull request.
+then have your vN: updates below that, so they will be dropped from
+final git apply. It's ok to have more than one triple-dash.
 
-Roger that, I'll rearrange the To: and Cc: members.
+> 
+> v4:
+> - Update the wrong commit messages. (Jason)
+> 
+> v3:
+> - Change nr_cpu_ids to num_online_cpus() (Maciej)
+> - Rename MAX_XDP_QUEUES to IXGBE_MAX_XDP_QS (Maciej)
+> - Rename ixgbe_determine_xdp_cpu() to ixgbe_determine_xdp_q_idx() (Maciej)
+> - Wrap ixgbe_xdp_ring_update_tail() with lock into one function (Maciej)
+> 
+> v2:
+> - Adjust cpu id in ixgbe_xdp_xmit(). (Jesper)
+> - Add a fallback path. (Maciej)
+> - Adjust other parts related to xdp ring.
+> 
+> Fixes: 33fdc82f08 ("ixgbe: add support for XDP_TX action")
+> Co-developed-by: Shujin Li <lishujin@kuaishou.com>
+> Signed-off-by: Shujin Li <lishujin@kuaishou.com>
+> Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h           | 15 ++++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c       |  9 ++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 64 ++++++++++++++++------
+>  .../net/ethernet/intel/ixgbe/ixgbe_txrx_common.h   |  1 +
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       |  9 +--
+>  5 files changed, 73 insertions(+), 25 deletions(-)
 
-> Patch LGTM.
-> Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+...
 
-Thanks.
+> @@ -8539,21 +8539,32 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
+>  int ixgbe_xmit_xdp_ring(struct ixgbe_adapter *adapter,
+>  			struct xdp_frame *xdpf)
+>  {
+> -	struct ixgbe_ring *ring = adapter->xdp_ring[smp_processor_id()];
+>  	struct ixgbe_tx_buffer *tx_buffer;
+>  	union ixgbe_adv_tx_desc *tx_desc;
+> +	struct ixgbe_ring *ring;
+>  	u32 len, cmd_type;
+>  	dma_addr_t dma;
+> +	int index, ret;
+>  	u16 i;
+>  
+>  	len = xdpf->len;
+>  
+> -	if (unlikely(!ixgbe_desc_unused(ring)))
+> -		return IXGBE_XDP_CONSUMED;
+> +	index = ixgbe_determine_xdp_q_idx(smp_processor_id());
+> +	ring = adapter->xdp_ring[index];
+> +
+> +	if (static_branch_unlikely(&ixgbe_xdp_locking_key))
+> +		spin_lock(&ring->tx_lock);
+> +
+> +	if (unlikely(!ixgbe_desc_unused(ring))) {
+> +		ret = IXGBE_XDP_CONSUMED;
+> +		goto out;
+> +	}
 
-[...snip...]
+This static key stuff is tricky code, but I guess if it works, then it's
+better than nothing.
 
-> > @@ -4865,7 +4865,8 @@ static void i40e_reset_interrupt_capability(struct
-> i40e_pf *pf)
-> >   * @pf: board private structure
-> >   *
-> >   * We go through and clear interrupt specific resources and reset the
-> > structure
-> > - * to pre-load conditions
-> > + * to pre-load conditions.  OS interrupt teardown must be done
-> > + separately due
-> > + * to VSI vs. PF instantiation, and different teardown path requirements.
->
-> Small nit: no need for a dot in 'vs.' ?
+As Maciej also commented, I'd like to see some before/after numbers for
+some of the xdp sample programs to make sure this doesn't cause a huge
+regression on the xdp transmit path. A small regression would be ok,
+since this *is* adding overhead.
 
-Apparently this is different between British English and American English (no dot in the former).  Who would have thought...I'll update and drop the '.'.
+Jesse
 
-> >   **/
-> >  static void i40e_clear_interrupt_scheme(struct i40e_pf *pf)  { @@
-> > -4880,7 +4881,6 @@ static void i40e_clear_interrupt_scheme(struct
-> i40e_pf *pf)
-> >         for (i = 0; i < pf->num_alloc_vsi; i++)
-> >                 if (pf->vsi[i])
-> >                         i40e_vsi_free_q_vectors(pf->vsi[i]);
-> > -       i40e_reset_interrupt_capability(pf);
-> >  }
-> >
-> >  /**
-> > @@ -10526,6 +10526,7 @@ static void i40e_rebuild(struct i40e_pf *pf, bool
-> reinit, bool lock_acquired)
-> >                          */
-> >                         free_irq(pf->pdev->irq, pf);
-> >                         i40e_clear_interrupt_scheme(pf);
-> > +                       i40e_reset_interrupt_capability(pf);
-> >                         if (i40e_restore_interrupt_scheme(pf))
-> >                                 goto end_unlock;
-> >                 }
-> > @@ -15928,6 +15929,7 @@ static void i40e_remove(struct pci_dev *pdev)
-> >         /* Clear all dynamic memory lists of rings, q_vectors, and VSIs */
-> >         rtnl_lock();
-> >         i40e_clear_interrupt_scheme(pf);
-> > +       i40e_reset_interrupt_capability(pf);
-> >         for (i = 0; i < pf->num_alloc_vsi; i++) {
-> >                 if (pf->vsi[i]) {
-> >                         if (!test_bit(__I40E_RECOVERY_MODE,
-> > pf->state)) @@ -16150,6 +16152,7 @@ static void i40e_shutdown(struct
-> pci_dev *pdev)
-> >          */
-> >         rtnl_lock();
-> >         i40e_clear_interrupt_scheme(pf);
-> > +       i40e_reset_interrupt_capability(pf);
-> >         rtnl_unlock();
-> >
-> >         if (system_state == SYSTEM_POWER_OFF) { @@ -16202,6 +16205,7
-> > @@ static int __maybe_unused i40e_suspend(struct device *dev)
-> >          * to CPU0.
-> >          */
-> >         i40e_clear_interrupt_scheme(pf);
-> > +       i40e_reset_interrupt_capability(pf);
-> >
-> >         rtnl_unlock();
-> >
-> > --
-> > 2.27.0
-> >
-> >
->
-> And probably talk to your IT dep to get rid of the footer :P
-
-I know, that is something I've been working on.  Not sure I have much control over that unfortunately.
-
--PJ
-
-> > ________________________________
-> >
-> > Note: This email is for the confidential use of the named addressee(s) only
-> and may contain proprietary, confidential, or privileged information and/or
-> personal data. If you are not the intended recipient, you are hereby notified
-> that any review, dissemination, or copying of this email is strictly prohibited,
-> and requested to notify the sender immediately and destroy this email and
-> any attachments. Email transmission cannot be guaranteed to be secure or
-> error-free. The Company, therefore, does not make any guarantees as to
-> the completeness or accuracy of this email or any attachments. This email is
-> for informational purposes only and does not constitute a recommendation,
-> offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or
-> perform any type of transaction of a financial product. Personal data, as
-> defined by applicable data protection and privacy laws, contained in this
-> email may be processed by the Company, and any of its affiliated or related
-> companies, for legal, compliance, and/or business-related purposes. You
-> may have rights regarding your personal data; for information on exercising
-> these rights or the Company?s treatment of personal data, please email
-> datarequests at jumptrading.com.
-
-________________________________
-
-Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
