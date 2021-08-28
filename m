@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 28 Aug 2021 13:06:02 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 4baf0e0b329874ec5e85480f53851b5f05a7ae58
-Message-ID: <6129c43a.qouBfmWloeC35uE/%lkp@intel.com>
+Date: Sat, 28 Aug 2021 13:06:20 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 63c21a3cd169a4542968e6f0107490202a91b85f
+Message-ID: <6129c44c.nEvetO7uFkVJzALA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 4baf0e0b329874ec5e85480f53851b5f05a7ae58  um: vector: adjust to coalesce API changes
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 63c21a3cd169a4542968e6f0107490202a91b85f  i40e: Fix issue when maximum queues is exceeded
 
 elapsed time: 728m
 
-configs tested: 103
-configs skipped: 110
+configs tested: 112
+configs skipped: 4
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -26,36 +26,35 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arc                            hsdk_defconfig
-arm                         lpc32xx_defconfig
-sh                           sh2007_defconfig
-powerpc                      tqm8xx_defconfig
-arm                         at91_dt_defconfig
-mips                     loongson1b_defconfig
-arm                         s5pv210_defconfig
-xtensa                           alldefconfig
-sh                        edosk7705_defconfig
-arm                        spear6xx_defconfig
-mips                         db1xxx_defconfig
-arm                         vf610m4_defconfig
-m68k                        m5272c3_defconfig
-xtensa                              defconfig
-um                                  defconfig
+i386                 randconfig-c001-20210827
+powerpc              randconfig-c003-20210827
+mips                           jazz_defconfig
+mips                            ar7_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                        mvebu_v7_defconfig
+arm                  colibri_pxa270_defconfig
+sh                           se7722_defconfig
+sh                           se7751_defconfig
+ia64                        generic_defconfig
+sh                          rsk7201_defconfig
+sh                           se7780_defconfig
+powerpc                        warp_defconfig
+m68k                        mvme147_defconfig
+arm                          badge4_defconfig
+xtensa                       common_defconfig
+arm                         bcm2835_defconfig
+powerpc                      makalu_defconfig
+m68k                          multi_defconfig
 sh                         apsh4a3a_defconfig
 arm                        keystone_defconfig
-powerpc                     akebono_defconfig
-nios2                         3c120_defconfig
-arc                        vdk_hs38_defconfig
-sh                         ap325rxa_defconfig
-sh                        sh7763rdp_defconfig
-sh                   rts7751r2dplus_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                         s3c6400_defconfig
-powerpc                       holly_defconfig
-arm                         bcm2835_defconfig
-powerpc                      ppc6xx_defconfig
-sh                           se7343_defconfig
-arm                         nhk8815_defconfig
+sh                           sh2007_defconfig
+sh                        edosk7705_defconfig
+arm                         lpc18xx_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                        vexpress_defconfig
+powerpc                      ppc44x_defconfig
+powerpc                          allmodconfig
+microblaze                          defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
@@ -87,7 +86,6 @@ i386                                defconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
-powerpc                          allmodconfig
 powerpc                           allnoconfig
 x86_64               randconfig-a014-20210827
 x86_64               randconfig-a015-20210827
@@ -111,15 +109,28 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                                  kexec
 
 clang tested configs:
+s390                 randconfig-c005-20210827
+i386                 randconfig-c001-20210827
+arm                  randconfig-c002-20210827
+riscv                randconfig-c006-20210827
+powerpc              randconfig-c003-20210827
+x86_64               randconfig-c007-20210827
+mips                 randconfig-c004-20210827
+x86_64               randconfig-a005-20210827
+x86_64               randconfig-a001-20210827
+x86_64               randconfig-a006-20210827
+x86_64               randconfig-a003-20210827
+x86_64               randconfig-a004-20210827
+x86_64               randconfig-a002-20210827
 i386                 randconfig-a006-20210827
 i386                 randconfig-a001-20210827
 i386                 randconfig-a002-20210827
