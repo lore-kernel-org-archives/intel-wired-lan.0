@@ -1,163 +1,278 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 28 Aug 2021 21:58:27 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- 938322faadc5ccaa5a6d8c180593f2be4bb725bc
-Message-ID: <612a4103.L3eAX7PsZUDO7wIW%lkp@intel.com>
+From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Date: Sat, 28 Aug 2021 23:12:47 +0200
+Subject: [Intel-wired-lan] [RFC net-next 1/2] rtnetlink: Add new
+ RTM_GETSYNCESTATE message to get SyncE status
+In-Reply-To: <20210828211248.3337476-1-maciej.machnikowski@intel.com>
+References: <20210828211248.3337476-1-maciej.machnikowski@intel.com>
+Message-ID: <20210828211248.3337476-2-maciej.machnikowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
-branch HEAD: 938322faadc5ccaa5a6d8c180593f2be4bb725bc  iavf: Fix ping is lost after untrusted VF had tried to change MAC
+This patch adds the new RTM_GETSYNCESTATE message to query the status
+of SyncE syntonization on the device.
 
-elapsed time: 14116m
+Initial implementation returns:
+ - SyncE DPLL state
+ - Source of signal driving SyncE DPLL (SyncE, GNSS, PTP or External)
+ - Current index of Pin driving the DPLL
 
-configs tested: 134
-configs skipped: 3
+SyncE state read needs to be implemented as ndo_get_synce_state function.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+This patch is SyncE-oriented. Future implementation can add additional
+functionality for reading different DPLL states using the same structure.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210816
-i386                 randconfig-c001-20210819
-mips                         rt305x_defconfig
-powerpc                 linkstation_defconfig
-arm                       netwinder_defconfig
-powerpc                         ps3_defconfig
-arm                         hackkit_defconfig
-sh                           se7724_defconfig
-parisc                generic-32bit_defconfig
-powerpc                      pmac32_defconfig
-powerpc                    sam440ep_defconfig
-powerpc                     pq2fads_defconfig
-m68k                        m5407c3_defconfig
-sh                               j2_defconfig
-m68k                         amcore_defconfig
-arm                           viper_defconfig
-sh                          rsk7269_defconfig
-arm64                            alldefconfig
-sh                        apsh4ad0a_defconfig
-mips                       bmips_be_defconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                           allyesconfig
-mips                          rm200_defconfig
-sh                   sh7770_generic_defconfig
-arm                          iop32x_defconfig
-powerpc                        icon_defconfig
-sh                          rsk7203_defconfig
-mips                     cu1000-neo_defconfig
-arm                            pleb_defconfig
-powerpc                          g5_defconfig
-h8300                     edosk2674_defconfig
-sh                           se7712_defconfig
-sh                        sh7785lcr_defconfig
-xtensa                  cadence_csp_defconfig
-powerpc                           allnoconfig
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a004-20210818
-x86_64               randconfig-a006-20210818
-x86_64               randconfig-a003-20210818
-x86_64               randconfig-a005-20210818
-x86_64               randconfig-a002-20210818
-x86_64               randconfig-a001-20210818
-i386                 randconfig-a004-20210818
-i386                 randconfig-a006-20210818
-i386                 randconfig-a002-20210818
-i386                 randconfig-a001-20210818
-i386                 randconfig-a003-20210818
-i386                 randconfig-a005-20210818
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-riscv                randconfig-c006-20210818
-s390                 randconfig-c005-20210818
-powerpc              randconfig-c003-20210818
-mips                 randconfig-c004-20210818
-x86_64               randconfig-c007-20210818
-i386                 randconfig-c001-20210818
-arm                  randconfig-c002-20210818
-x86_64               randconfig-a004-20210819
-x86_64               randconfig-a006-20210819
-x86_64               randconfig-a003-20210819
-x86_64               randconfig-a002-20210819
-x86_64               randconfig-a005-20210819
-x86_64               randconfig-a001-20210819
-i386                 randconfig-a004-20210819
-i386                 randconfig-a006-20210819
-i386                 randconfig-a001-20210819
-i386                 randconfig-a002-20210819
-i386                 randconfig-a003-20210819
-i386                 randconfig-a005-20210819
-x86_64               randconfig-a013-20210818
-x86_64               randconfig-a011-20210818
-x86_64               randconfig-a012-20210818
-x86_64               randconfig-a016-20210818
-x86_64               randconfig-a014-20210818
-x86_64               randconfig-a015-20210818
-i386                 randconfig-a015-20210818
-i386                 randconfig-a011-20210818
-i386                 randconfig-a013-20210818
-i386                 randconfig-a014-20210818
-i386                 randconfig-a016-20210818
-i386                 randconfig-a012-20210818
-hexagon              randconfig-r041-20210818
-riscv                randconfig-r042-20210818
-s390                 randconfig-r044-20210818
-hexagon              randconfig-r045-20210818
-hexagon              randconfig-r041-20210819
-hexagon              randconfig-r045-20210819
-
+Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ include/linux/netdevice.h      |  6 +++
+ include/uapi/linux/if_link.h   | 43 +++++++++++++++++++
+ include/uapi/linux/rtnetlink.h | 11 +++--
+ net/core/rtnetlink.c           | 77 ++++++++++++++++++++++++++++++++++
+ security/selinux/nlmsgtab.c    |  3 +-
+ 5 files changed, 135 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 6fd3a4d42668..a091a35706a7 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1344,6 +1344,8 @@ struct netdev_net_notifier {
+  *	The caller must be under RCU read context.
+  * int (*ndo_fill_forward_path)(struct net_device_path_ctx *ctx, struct net_device_path *path);
+  *     Get the forwarding path to reach the real device from the HW destination address
++ * int (*ndo_get_synce_state)(struct net_device *dev, struct if_synce_state_msg *state)
++ *	Get state of physical layer frequency syntonization (SyncE)
+  */
+ struct net_device_ops {
+ 	int			(*ndo_init)(struct net_device *dev);
+@@ -1563,6 +1565,10 @@ struct net_device_ops {
+ 	struct net_device *	(*ndo_get_peer_dev)(struct net_device *dev);
+ 	int                     (*ndo_fill_forward_path)(struct net_device_path_ctx *ctx,
+                                                          struct net_device_path *path);
++	int			(*ndo_get_synce_state)(struct net_device *dev,
++						       enum if_synce_state *state,
++						       enum if_synce_src *src,
++						       u8 *pin_idx);
+ };
+ 
+ /**
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index eebd3894fe89..1fcb9c71dc7c 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -1273,4 +1273,47 @@ enum {
+ 
+ #define IFLA_MCTP_MAX (__IFLA_MCTP_MAX - 1)
+ 
++/* SyncE section */
++
++enum if_synce_state {
++	IF_SYNCE_STATE_INVALID = 0,
++	IF_SYNCE_STATE_FREERUN,
++	IF_SYNCE_STATE_LOCKACQ,
++	IF_SYNCE_STATE_LOCKREC,
++	IF_SYNCE_STATE_LOCKED,
++	IF_SYNCE_STATE_HOLDOVER,
++	IF_SYNCE_STATE_OPEN_LOOP,
++	__IF_SYNCE_STATE_MAX,
++};
++
++#define IF_SYNCE_STATE_MAX (__IF_SYNCE_STATE_MAX - 1)
++
++enum if_synce_src {
++	IF_SYNCE_SRC_INVALID = 0,
++	IF_SYNCE_SRC_UNKNOWN,
++	IF_SYNCE_SRC_SYNCE,
++	IF_SYNCE_SRC_GNSS,
++	IF_SYNCE_SRC_PTP,
++	IF_SYNCE_SRC_EXT,
++	__IF_SYNCE_SRC_MAX,
++};
++
++#define IF_SYNCE_PIN_UNKNOWN	0xFF
++
++struct if_synce_state_msg {
++	__u32 ifindex;
++	__u8 state;
++	__u8 src;
++	__u8 pin;
++	__u8 pad;
++};
++
++enum {
++	IFLA_SYNCE_UNSPEC,
++	IFLA_SYNCE_STATE,
++	__IFLA_SYNCE_MAX,
++};
++
++#define IFLA_SYNCE_MAX (__IFLA_SYNCE_MAX - 1)
++
+ #endif /* _UAPI_LINUX_IF_LINK_H */
+diff --git a/include/uapi/linux/rtnetlink.h b/include/uapi/linux/rtnetlink.h
+index 5888492a5257..cd68045c475b 100644
+--- a/include/uapi/linux/rtnetlink.h
++++ b/include/uapi/linux/rtnetlink.h
+@@ -185,6 +185,9 @@ enum {
+ 	RTM_GETNEXTHOPBUCKET,
+ #define RTM_GETNEXTHOPBUCKET	RTM_GETNEXTHOPBUCKET
+ 
++	RTM_GETSYNCESTATE = 120,
++#define RTM_GETSYNCESTATE	RTM_GETSYNCESTATE
++
+ 	__RTM_MAX,
+ #define RTM_MAX		(((__RTM_MAX + 3) & ~3) - 1)
+ };
+@@ -193,7 +196,7 @@ enum {
+ #define RTM_NR_FAMILIES	(RTM_NR_MSGTYPES >> 2)
+ #define RTM_FAM(cmd)	(((cmd) - RTM_BASE) >> 2)
+ 
+-/* 
++/*
+    Generic structure for encapsulation of optional route information.
+    It is reminiscent of sockaddr, but with sa_family replaced
+    with attribute type.
+@@ -233,7 +236,7 @@ struct rtmsg {
+ 
+ 	unsigned char		rtm_table;	/* Routing table id */
+ 	unsigned char		rtm_protocol;	/* Routing protocol; see below	*/
+-	unsigned char		rtm_scope;	/* See below */	
++	unsigned char		rtm_scope;	/* See below */
+ 	unsigned char		rtm_type;	/* See below	*/
+ 
+ 	unsigned		rtm_flags;
+@@ -555,7 +558,7 @@ struct ifinfomsg {
+ };
+ 
+ /********************************************************************
+- *		prefix information 
++ *		prefix information
+  ****/
+ 
+ struct prefixmsg {
+@@ -569,7 +572,7 @@ struct prefixmsg {
+ 	unsigned char	prefix_pad3;
+ };
+ 
+-enum 
++enum
+ {
+ 	PREFIX_UNSPEC,
+ 	PREFIX_ADDRESS,
+diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+index 972c8cb303a5..8c9638421049 100644
+--- a/net/core/rtnetlink.c
++++ b/net/core/rtnetlink.c
+@@ -5468,6 +5468,81 @@ static int rtnl_stats_dump(struct sk_buff *skb, struct netlink_callback *cb)
+ 	return skb->len;
+ }
+ 
++static int rtnl_fill_synce_state(struct sk_buff *msg, struct net_device *dev,
++				 u32 portid, u32 seq,
++				 struct netlink_callback *cb,
++				 int flags)
++{
++	const struct net_device_ops *ops = dev->netdev_ops;
++	struct if_synce_state_msg *state;
++	struct nlmsghdr *nlh;
++
++	ASSERT_RTNL();
++
++	nlh = nlmsg_put(msg, portid, seq, RTM_GETSYNCESTATE,
++			sizeof(*state), flags);
++	if (!nlh)
++		return -EMSGSIZE;
++
++	state = nlmsg_data(nlh);
++
++	if (ops->ndo_get_synce_state) {
++		enum if_synce_state sync_state;
++		enum if_synce_src src;
++		int err;
++		u8 pin;
++
++		err = ops->ndo_get_synce_state(dev, &sync_state, &src, &pin);
++		if (err)
++			return err;
++
++		memset(state, 0, sizeof(*state));
++
++		state->ifindex = dev->ifindex;
++		state->state = (u8)sync_state;
++		state->pin = pin;
++		state->src = (u8)src;
++
++		return 0;
++	}
++
++	return -EOPNOTSUPP;
++}
++
++static int rtnl_synce_state_get(struct sk_buff *skb, struct nlmsghdr *nlh,
++				struct netlink_ext_ack *extack)
++{
++	struct net *net = sock_net(skb->sk);
++	struct if_synce_state_msg *state;
++	struct net_device *dev = NULL;
++	struct sk_buff *nskb;
++	u32 filter_mask;
++	int err;
++
++	state = nlmsg_data(nlh);
++	if (state->ifindex > 0)
++		dev = __dev_get_by_index(net, state->ifindex);
++	else
++		return -EINVAL;
++
++	nskb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!nskb)
++		return -ENOBUFS;
++
++	if (!dev)
++		return -ENODEV;
++
++	err = rtnl_fill_synce_state(nskb, dev,
++				    NETLINK_CB(skb).portid, nlh->nlmsg_seq,
++				    NULL, filter_mask);
++	if (err < 0)
++		kfree_skb(nskb);
++	else
++		err = rtnl_unicast(nskb, net, NETLINK_CB(skb).portid);
++
++	return err;
++}
++
+ /* Process one rtnetlink message. */
+ 
+ static int rtnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
+@@ -5693,4 +5768,6 @@ void __init rtnetlink_init(void)
+ 
+ 	rtnl_register(PF_UNSPEC, RTM_GETSTATS, rtnl_stats_get, rtnl_stats_dump,
+ 		      0);
++
++	rtnl_register(PF_UNSPEC, RTM_GETSYNCESTATE, rtnl_synce_state_get, NULL, 0);
+ }
+diff --git a/security/selinux/nlmsgtab.c b/security/selinux/nlmsgtab.c
+index d59276f48d4f..b4bea120f2af 100644
+--- a/security/selinux/nlmsgtab.c
++++ b/security/selinux/nlmsgtab.c
+@@ -91,6 +91,7 @@ static const struct nlmsg_perm nlmsg_route_perms[] =
+ 	{ RTM_NEWNEXTHOPBUCKET,	NETLINK_ROUTE_SOCKET__NLMSG_WRITE },
+ 	{ RTM_DELNEXTHOPBUCKET,	NETLINK_ROUTE_SOCKET__NLMSG_WRITE },
+ 	{ RTM_GETNEXTHOPBUCKET,	NETLINK_ROUTE_SOCKET__NLMSG_READ  },
++	{ RTM_GETSYNCESTATE,	NETLINK_ROUTE_SOCKET__NLMSG_READ  },
+ };
+ 
+ static const struct nlmsg_perm nlmsg_tcpdiag_perms[] =
+@@ -174,7 +175,7 @@ int selinux_nlmsg_lookup(u16 sclass, u16 nlmsg_type, u32 *perm)
+ 		 * structures@the top of this file with the new mappings
+ 		 * before updating the BUILD_BUG_ON() macro!
+ 		 */
+-		BUILD_BUG_ON(RTM_MAX != (RTM_NEWNEXTHOPBUCKET + 3));
++		BUILD_BUG_ON(RTM_MAX != (RTM_GETSYNCESTATE + 3));
+ 		err = nlmsg_perm(nlmsg_type, perm, nlmsg_route_perms,
+ 				 sizeof(nlmsg_route_perms));
+ 		break;
+-- 
+2.26.3
+
