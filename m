@@ -1,62 +1,52 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Sun, 29 Aug 2021 08:19:54 +0000
-Subject: [Intel-wired-lan] [RFC net-next 1/2] rtnetlink: Add new
- RTM_GETSYNCESTATE message to get SyncE status
-In-Reply-To: <YSqw6aJRrWbxRaas@lunn.ch>
-References: <20210828211248.3337476-1-maciej.machnikowski@intel.com>
- <20210828211248.3337476-2-maciej.machnikowski@intel.com>
- <YSqw6aJRrWbxRaas@lunn.ch>
-Message-ID: <PH0PR11MB49514899CD7CE514E792CE40EACA9@PH0PR11MB4951.namprd11.prod.outlook.com>
+From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Date: Sun, 29 Aug 2021 10:05:10 +0200
+Subject: [Intel-wired-lan] [RFC v2 net-next 0/2] Add RTNL interface for SyncE
+Message-ID: <20210829080512.3573627-1-maciej.machnikowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Andrew Lunn <andrew@lunn.ch>
-> Sent: Saturday, August 28, 2021 11:56 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
-> richardcochran at gmail.com; abyagowi at fb.com; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
-> linux-kselftest at vger.kernel.org
-> Subject: Re: [RFC net-next 1/2] rtnetlink: Add new RTM_GETSYNCESTATE
-> message to get SyncE status
-> 
-> On Sat, Aug 28, 2021 at 11:12:47PM +0200, Maciej Machnikowski wrote:
-> > This patch adds the new RTM_GETSYNCESTATE message to query the
-> status
-> > of SyncE syntonization on the device.
-> 
-> Hi Maciej
-> 
-> You use syntonization a few times. Is this a miss spelling for synchronisation,
-> or a SyncE terms?
+Synchronous Ethernet networks use a physical layer clock to syntonize
+the frequency across different network elements.
 
-Hi! Thanks for your comments!
+Multiple reference clock sources can be used. Clocks recovered from 
+PHY ports on the RX side or external sources like 1PPS GPS, etc.
 
-Syntonization is a specific term for frequency synchronization.
+This patch series introduces basic interface for reading the DPLL
+state on a SyncE capable device. This state gives us information
+about the source of the syntonization signal and whether the DPLL
+circuit is tuned to the incoming signal.
 
+Next steps:
+ - add interface to enable recovered clocks and get information
+   about them
 
-> >
-> >  struct prefixmsg {
-> > @@ -569,7 +572,7 @@ struct prefixmsg {
-> >  	unsigned char	prefix_pad3;
-> >  };
-> >
-> > -enum
-> > +enum
-> >  {
-> >  	PREFIX_UNSPEC,
-> >  	PREFIX_ADDRESS,
-> 
-> You appear to have a number of white space changes here. Please put them
-> into a separate patch, or drop them.
+v2:
+- removed whitespace changes
+- fix issues reported by test robot
 
-Will fix and resubmit along with the fix for issues found by the robot
+Maciej Machnikowski (2):
+  rtnetlink: Add new RTM_GETSYNCESTATE message to get SyncE status
+  ice: add support for reading SyncE DPLL state
 
-Thanks!
-Maciek
+ drivers/net/ethernet/intel/ice/ice.h          |  5 ++
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 34 ++++++++
+ drivers/net/ethernet/intel/ice/ice_common.c   | 62 +++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  4 +
+ drivers/net/ethernet/intel/ice/ice_devids.h   |  3 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 55 +++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp.c      | 35 +++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 44 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   | 22 ++++++
+ include/linux/netdevice.h                     |  6 ++
+ include/uapi/linux/if_link.h                  | 43 +++++++++++
+ include/uapi/linux/rtnetlink.h                | 11 ++-
+ net/core/rtnetlink.c                          | 77 +++++++++++++++++++
+ security/selinux/nlmsgtab.c                   |  3 +-
+ 14 files changed, 399 insertions(+), 5 deletions(-)
 
-> 
->      Andrew
+-- 
+2.26.3
+
