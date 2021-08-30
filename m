@@ -1,47 +1,46 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Mon, 30 Aug 2021 11:02:20 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix limit of total number of
- queues to active queues of VF
-Message-ID: <20210830090220.271120-1-karen.sornek@intel.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Mon, 30 Aug 2021 08:25:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor
+ iavf_mac_filter struct memory usage
+Message-ID: <20210830082536.274203-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In the absence of this validation, if the user requests to
-configure queues more than the enabled queues, it results in
-sending the requested number of queues to the kernel stack
-(due to the asynchronous nature of VF response), in which
-case the stack might pick a queue to transmit that is not
-enabled and result in Tx hang. Fix this bug by
-limiting the total number of queues allocated for VF to
-active queues of VF.
+iavf_mac_filter struct contained couple boolean
+flags using up more memory than is necessary.
+Change the flags to be bitfields in an anonymous struct
+so all the flags now fit in one byte.
 
-Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
-Signed-off-by: Ashwin Vijayavel <ashwin.vijayavel@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf.h | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 80437ef26..c215ca503 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2647,8 +2647,11 @@ static int iavf_validate_ch_config(struct iavf_adapter *adapter,
- 		total_max_rate += tx_rate;
- 		num_qps += mqprio_qopt->qopt.count[i];
- 	}
--	if (num_qps > IAVF_MAX_REQ_QUEUES)
-+	if (num_qps > adapter->num_active_queues) {
-+		dev_err(&adapter->pdev->dev,
-+			"Cannot support requested number of queues\n");
- 		return -EINVAL;
-+	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 21c95775509a..3feb9edb8131 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -137,9 +137,13 @@ struct iavf_q_vector {
+ struct iavf_mac_filter {
+ 	struct list_head list;
+ 	u8 macaddr[ETH_ALEN];
+-	bool is_new_mac;	/* filter is new, wait for PF decision */
+-	bool remove;		/* filter needs to be removed */
+-	bool add;		/* filter needs to be added */
++	struct {
++		u8 is_new_mac:1;    /* filter is new, wait for PF decision */
++		u8 remove:1;        /* filter needs to be removed */
++		u8 add:1;           /* filter needs to be added */
++		u8 is_primary:1;    /* filter is a default VF MAC */
++		u8 padding:4;
++	};
+ };
  
- 	ret = iavf_validate_tx_bandwidth(adapter, total_max_rate);
- 	return ret;
+ struct iavf_vlan_filter {
 -- 
 2.27.0
 
