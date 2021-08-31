@@ -1,71 +1,55 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Tue, 31 Aug 2021 16:00:57 +0000
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 31 Aug 2021 09:19:27 -0700
 Subject: [Intel-wired-lan] [RFC v2 net-next 1/2] rtnetlink: Add new
  RTM_GETSYNCESTATE message to get SyncE status
-In-Reply-To: <20210831083227.3d9df78a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+In-Reply-To: <20210830162909.110753ec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 References: <20210829080512.3573627-1-maciej.machnikowski@intel.com>
  <20210829080512.3573627-2-maciej.machnikowski@intel.com>
  <20210829151017.GA6016@hoboy.vegasvil.org>
  <PH0PR11MB495126A63998DABA5B5DE184EACA9@PH0PR11MB4951.namprd11.prod.outlook.com>
  <20210830205758.GA26230@hoboy.vegasvil.org>
  <20210830162909.110753ec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <SJ0PR11MB4958029CF18F93846B29F685EACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
- <20210831063304.4bcacbe3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <SJ0PR11MB49583C74616AC7E715C6E3A9EACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
- <20210831071801.0535c0cf@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <SJ0PR11MB4958304AA06A63DD6290D3DEEACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
- <20210831083227.3d9df78a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <SJ0PR11MB495865C165A6D6516653CB03EACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
+Message-ID: <20210831161927.GA10747@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Jakub Kicinski <kuba@kernel.org>
-> Sent: Tuesday, August 31, 2021 5:32 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: Re: [RFC v2 net-next 1/2] rtnetlink: Add new RTM_GETSYNCESTATE
-> message to get SyncE status
+On Mon, Aug 30, 2021 at 04:29:09PM -0700, Jakub Kicinski wrote:
+> Hmm, IDK if this really belongs in RTNL. The OCP time card that
+> Jonathan works on also wants to report signal lock, and it locks
+> to GNSS. It doesn't have any networking functionality whatsoever.
 > 
-> On Tue, 31 Aug 2021 15:19:36 +0000 Machnikowski, Maciej wrote:
-> > > It's a reasonable SW design strategy to start simple. Unfortunately,
-> > > it doesn't apply to stable uAPI design. You're adding a RTNL op, which
-> > > will have to be supported for ever. If we add anything "later" it will
-> > > be a strict addition, and will have to be backward compatible. Which
-> > > I'm not sure how to do when the object we'd operate on would be
-> > > completely different (clock vs netdev).
-> >
-> > I agree - the point I'm trying to make here is that the existence of
-> > the PTP-specific interface will not invalidate the need of having
-> > SyncE-specific one as well. Even if we report lock-states for the clock
-> > we will still need to report lock-states for devices that don't use PTP
-> > clocks, but support SyncE. (that's also a reason why RTNL is still required).
-> >
-> > The RTNL interface will also address devices that only need the
-> > frequency syntonization (especially in Radio Access Networks).
-> >
-> > >
-> > > As I said I can write the boilerplate code for you if you prefer, the
-> > > code implementing the command and the driver interface will be almost
-> > > identical.
-> >
-> > I think it's a great idea to start that in parallel to this patch. Then move
-> > the common structures to the generic layer and use them in both
-> > SyncE-specific RTNL implementation and PTP-specific part that will
-> > be added. This won't affect SyncE specific APIs. The "worst" that can
-> > happen is that the driver will put the same info for PTP part and
-> > SyncE part if that's the design someone follows.
+> Can we add a genetlink family for clock info/configuration? From 
+> what I understood discussing this with Jonathan it sounded like most
+> clocks today have a vendor-specific character device for configuration
+> and reading status.
 > 
-> I don't understand why we need the SyncE RTNL if we have clock API for
-> controlling the freq source. Are you saying that there are
-> implementations out there which use SyncE to recover Rx clock and use
-> it for Tx but the PTP ticker is in a different clock domain?
+> I'm happy to write the plumbing if this seems like an okay idea 
+> but too much work for anyone to commit.
 
-Exactly!
-You can also have multiple PTP timers which may use different clock ticks
-to support multiple time domains.
+This sounds nice.
 
-The PTP ticker can also be completely absent if all you need is the frequency
-reference. There are many radio devices that expect 10 MHz reference only.
+As you said later on in this thread, any API we merge now will have to
+last.  That is why I'm being so picky here.  We want new APIs to cover
+current HW _and_ be reasonable for the future.
+
+I don't see a DPLL as either a PTP Hardware Clock or a Network
+Device.  It is a PLL.
+
+The kernel can and should have a way to represent the relationship
+between these three different kind of IP block.  We already have a
+way to get from PHC to netdev interface.
+
+I understand that Maciej and team want to get support for their card
+ASAP.  However, proper kernel/user API takes time.  For example, the
+PHC stuff took one year and fourteen revisions.  But it was worth the
+wait, because the API has help up pretty well all these years since
+the v3.0 kernel.
+
+There is no need to quickly merge some poorly designed interfaces.
+
+Thanks,
+Richard
+
