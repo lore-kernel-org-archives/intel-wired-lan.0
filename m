@@ -1,71 +1,85 @@
-From: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
-Date: Tue, 31 Aug 2021 15:58:31 -0500
-Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
- error path in probe()
-In-Reply-To: <50c21a769633c8efa07f49fc8b20fdfb544cf3c5.camel@intel.com>
-References: <20210826221916.127243-1-pwaskiewicz@jumptrading.com>
- <50c21a769633c8efa07f49fc8b20fdfb544cf3c5.camel@intel.com>
-Message-ID: <20210831205831.GA115243@chidv-pwl1.w2k.jumptrading.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Tue, 31 Aug 2021 22:09:18 +0000
+Subject: [Intel-wired-lan] [RFC v2 net-next 1/2] rtnetlink: Add new
+ RTM_GETSYNCESTATE message to get SyncE status
+In-Reply-To: <20210831161927.GA10747@hoboy.vegasvil.org>
+References: <20210829080512.3573627-1-maciej.machnikowski@intel.com>
+ <20210829080512.3573627-2-maciej.machnikowski@intel.com>
+ <20210829151017.GA6016@hoboy.vegasvil.org>
+ <PH0PR11MB495126A63998DABA5B5DE184EACA9@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210830205758.GA26230@hoboy.vegasvil.org>
+ <20210830162909.110753ec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20210831161927.GA10747@hoboy.vegasvil.org>
+Message-ID: <SJ0PR11MB4958D55CB9EDD459AF076525EACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 30, 2021 at 08:52:41PM +0000, Nguyen, Anthony L wrote:
-> On Thu, 2021-08-26 at 17:19 -0500, PJ Waskiewicz wrote:
-> > This fixes an error path condition when probe() fails due to the
-> > default VSI not being available or online yet in the firmware. If
-> > that happens, the previous teardown path would clear the interrupt
-> > scheme, which also freed the IRQs with the OS. Then the error path
-> > for the switch setup (pre-VSI) would attempt to free the OS IRQs
-> > as well.
->
-> Hi PJ,
+> -----Original Message-----
+> From: Richard Cochran <richardcochran@gmail.com>
+> Sent: Tuesday, August 31, 2021 6:19 PM
+> To: Jakub Kicinski <kuba@kernel.org>
+> Subject: Re: [RFC v2 net-next 1/2] rtnetlink: Add new RTM_GETSYNCESTATE
+> message to get SyncE status
+> 
+> On Mon, Aug 30, 2021 at 04:29:09PM -0700, Jakub Kicinski wrote:
+> > Can we add a genetlink family for clock info/configuration? From
+> > what I understood discussing this with Jonathan it sounded like most
+> > clocks today have a vendor-specific character device for configuration
+> > and reading status.
+> >
+> > I'm happy to write the plumbing if this seems like an okay idea
+> > but too much work for anyone to commit.
+> 
+> This sounds nice.
+> 
+> As you said later on in this thread, any API we merge now will have to
+> last.  That is why I'm being so picky here.  We want new APIs to cover
+> current HW _and_ be reasonable for the future.
+> 
+> I don't see a DPLL as either a PTP Hardware Clock or a Network
+> Device.  It is a PLL.
+> 
+> The kernel can and should have a way to represent the relationship
+> between these three different kind of IP block.  We already have a
+> way to get from PHC to netdev interface.
 
-Hi Tony,
+OK I can strip down the RTNL EEC state interface to only report 
+the state without any extras, like pin. Next step would be to add 
+the control over recovered clock also to the netdev subsystem.
 
->
-> These comments are from the i40e team.
->
-> Yes in case we fail and go to err_vsis label in i40e_probe() we will
-> call i40e_reset_interrupt_capability twice but this is not a problem.
-> This is because pci_disable_msi/pci_disable_msix will be called only if
-> appropriate flags are set on PF and if this function is called ones it
-> will clear those flags. So even if we call
-> i40e_reset_interrupt_capability twice we will not disable msi vectors
-> twice.
->
-> The issue here is different however. It is failing in free_irq because
-> we are trying to free already free vector. This is because setup of
-> misc irq vectors in i40e_probe is done after i40e_setup_pf_switch. If
-> i40e_setup_pf_switch fails then we will jump to err_vsis and call
-> i40e_clear_interrupt_scheme which will try to free those misc irq
-> vectors which were not yet allocated. We should have the proper fix for
-> this ready soon.
+The EEC state read is needed for recovered/source clock validation
+and that's why I think it belongs to the RTNL part as it gates the QL
+for each port.
 
-Yes, I'm aware of what's happening here and why it's failing. Sadly, I am
-pretty sure I wrote this code back in like 2011 or 2012, and being an error
-path, it hasn't really been tested.
+Those two interfaces will allow a minimalistic ESMC support
+(receive the packet, extract the SSM from it, check if my clock is
+recovered and my clock is in locked state, if all are good - pass
+the message along to other related ports)
 
-I don't really care how this gets fixed to be honest. We hit this in
-production when our LOM, for whatever reason, failed to initialize the
-internal switch on host boot. We escalated to our distro vendor, they
-did escalate to Intel, and it wasn't really prioritized. So I sent
-a patch that does fix the issue.
+In parallel let's work on a proper clock generator subsystem. 
+For starter It should handle:
 
-If the team wants to respin this somehow, go ahead. But this does fix
-the immediate issue that when bailing out in probe() due to the main VSI
-not being online for whatever reason, the driver blindly attempts to clean
-up the misc MSI-X vector twice. This change fixes that behavior. I'd like
-this to not languish waiting for a different fix, since I'd like to point our
-distro vendor to this (or another) patch to cherry-pick, so we can get this
-into production. Otherwise our platform rollout hitting this problem is
-going to be quite bumpy, which is very much not ideal.
+ - reference configuration
+ - reference status
+ - reference priorities
+ - output settings
 
-Cheers,
--PJ
+Optionally:
+ - NCO mode (here we'll duplicate the functionality of PHC in some 
+    deployments)
 
-________________________________
+Once we have that in place we can simply 
+- reroute the internals of the EEC state the clock generator subsystem 
+  on more complex systems,
+- keeping the simple state-read for those who use other simpler
+  Implementations of EEC.
+- be able to support any hybrid between 1 and 2
 
-Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
+Once we get there we'll know what else should this RTNL return and
+extend it if needed.
+
+Regards
+Maciek
