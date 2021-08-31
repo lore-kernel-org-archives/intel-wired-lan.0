@@ -1,46 +1,61 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Tue, 31 Aug 2021 11:33:25 +0000
-Subject: [Intel-wired-lan] [RFC v3 net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <20210830111416.34a8362d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20210829173934.3683561-1-maciej.machnikowski@intel.com>
- <20210829173934.3683561-2-maciej.machnikowski@intel.com>
- <20210830111416.34a8362d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <SJ0PR11MB495871A89632732B0028404EEACC9@SJ0PR11MB4958.namprd11.prod.outlook.com>
+From: Karen Sornek <karen.sornek@intel.com>
+Date: Tue, 31 Aug 2021 13:39:01 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor string format
+ to avoid static analysis warnings
+Message-ID: <20210831113901.156388-1-karen.sornek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Jakub Kicinski <kuba@kernel.org>
-> Sent: Monday, August 30, 2021 8:14 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: Re: [RFC v3 net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
+Change format to match variable type that is used in string.
 
-> > +#define IF_EEC_PIN_UNKNOWN	0xFF
-> > +
-> > +struct if_eec_state_msg {
-> > +	__u32 ifindex;
-> > +	__u8 state;
-> > +	__u8 src;
-> > +	__u8 pin;
-> > +	__u8 pad;
-> > +};
-> 
-> Please break this structure up into individual attributes.
-> 
-> This way you won't have to expose the special PIN_UNKNOWN value to user
-> space (skip the invalid attrs instead).
+Use %u format for unsigned variable and %d format for signed variable
+to remove static analysis warnings.
 
-Addressed all other comments. 
-For this one - I'll add flags which will indicate validity of all values. Since 
-this structure is self-contained and addresses the generic need for state 
-report.
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c     | 6 +++---
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Will resubmit as a patch.
-
-Thanks!
-Maciek
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 80437ef26..4eea47a47 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -441,14 +441,14 @@ iavf_request_traffic_irqs(struct iavf_adapter *adapter, char *basename)
+ 
+ 		if (q_vector->tx.ring && q_vector->rx.ring) {
+ 			snprintf(q_vector->name, sizeof(q_vector->name),
+-				 "iavf-%s-TxRx-%d", basename, rx_int_idx++);
++				 "iavf-%s-TxRx-%u", basename, rx_int_idx++);
+ 			tx_int_idx++;
+ 		} else if (q_vector->rx.ring) {
+ 			snprintf(q_vector->name, sizeof(q_vector->name),
+-				 "iavf-%s-rx-%d", basename, rx_int_idx++);
++				 "iavf-%s-rx-%u", basename, rx_int_idx++);
+ 		} else if (q_vector->tx.ring) {
+ 			snprintf(q_vector->name, sizeof(q_vector->name),
+-				 "iavf-%s-tx-%d", basename, tx_int_idx++);
++				 "iavf-%s-tx-%u", basename, tx_int_idx++);
+ 		} else {
+ 			/* skip this unused q_vector */
+ 			continue;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 9c128462e..4030cd764 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1013,7 +1013,7 @@ print_link_msg:
+ 	} else if (link_speed_mbps == SPEED_UNKNOWN) {
+ 		snprintf(speed, IAVF_MAX_SPEED_STRLEN, "%s", "Unknown Mbps");
+ 	} else {
+-		snprintf(speed, IAVF_MAX_SPEED_STRLEN, "%u %s",
++		snprintf(speed, IAVF_MAX_SPEED_STRLEN, "%d %s",
+ 			 link_speed_mbps, "Mbps");
+ 	}
+ 
+-- 
+2.27.0
 
