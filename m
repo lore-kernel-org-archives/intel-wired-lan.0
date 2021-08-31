@@ -1,52 +1,140 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Mon, 30 Aug 2021 16:29:09 -0700
-Subject: [Intel-wired-lan] [RFC v2 net-next 1/2] rtnetlink: Add new
- RTM_GETSYNCESTATE message to get SyncE status
-In-Reply-To: <20210830205758.GA26230@hoboy.vegasvil.org>
-References: <20210829080512.3573627-1-maciej.machnikowski@intel.com>
- <20210829080512.3573627-2-maciej.machnikowski@intel.com>
- <20210829151017.GA6016@hoboy.vegasvil.org>
- <PH0PR11MB495126A63998DABA5B5DE184EACA9@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210830205758.GA26230@hoboy.vegasvil.org>
-Message-ID: <20210830162909.110753ec@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 31 Aug 2021 11:58:12 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ f3af7110b111b479ea612d726b5c67e70d9d87f5
+Message-ID: <612da8d4.1rwuskK8w7DwApU/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 30 Aug 2021 13:57:58 -0700 Richard Cochran wrote:
-> > Please take a look at the 10.2 Operation modes of the G.8264 and at the Figure A.1
-> > which depicts the EEC. This interface is to report the status of the EEC.  
-> 
-> Well, I read it, and it is still fairly high level with no mention at
-> all of "DPLL".  I hope that the new RTNL states will cover other
-> possible EEC implementations, too.
-> 
-> The "Reference source selection mechanism" is also quite vague.  Your
-> patch is more specific:
-> 
-> +enum if_eec_src {
-> +       IF_EEC_SRC_INVALID = 0,
-> +       IF_EEC_SRC_UNKNOWN,
-> +       IF_EEC_SRC_SYNCE,
-> +       IF_EEC_SRC_GNSS,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: f3af7110b111b479ea612d726b5c67e70d9d87f5  i40e: Fix issue when maximum queues is exceeded
 
-Hmm, IDK if this really belongs in RTNL. The OCP time card that
-Jonathan works on also wants to report signal lock, and it locks
-to GNSS. It doesn't have any networking functionality whatsoever.
+elapsed time: 723m
 
-Can we add a genetlink family for clock info/configuration? From 
-what I understood discussing this with Jonathan it sounded like most
-clocks today have a vendor-specific character device for configuration
-and reading status.
+configs tested: 111
+configs skipped: 3
 
-I'm happy to write the plumbing if this seems like an okay idea 
-but too much work for anyone to commit.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> +       IF_EEC_SRC_PTP,
-> +       IF_EEC_SRC_EXT,
-> +       __IF_EEC_SRC_MAX,
-> +};
-> 
-> But I guess your list is reasonable.  It can always be expanded, right?
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+m68k                       m5275evb_defconfig
+riscv             nommu_k210_sdcard_defconfig
+powerpc                      pmac32_defconfig
+um                                  defconfig
+arm                          collie_defconfig
+mips                            ar7_defconfig
+ia64                        generic_defconfig
+sparc64                             defconfig
+arm                          iop32x_defconfig
+arm                        neponset_defconfig
+m68k                             alldefconfig
+mips                     loongson2k_defconfig
+mips                      fuloong2e_defconfig
+powerpc                      bamboo_defconfig
+arm                         s3c2410_defconfig
+arm                           sunxi_defconfig
+h8300                       h8s-sim_defconfig
+sh                           se7724_defconfig
+m68k                        m5407c3_defconfig
+sh                         apsh4a3a_defconfig
+powerpc                 mpc834x_mds_defconfig
+mips                        vocore2_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a014-20210830
+x86_64               randconfig-a015-20210830
+x86_64               randconfig-a013-20210830
+x86_64               randconfig-a016-20210830
+x86_64               randconfig-a012-20210830
+x86_64               randconfig-a011-20210830
+i386                 randconfig-a016-20210830
+i386                 randconfig-a011-20210830
+i386                 randconfig-a015-20210830
+i386                 randconfig-a014-20210830
+i386                 randconfig-a012-20210830
+i386                 randconfig-a013-20210830
+s390                 randconfig-r044-20210830
+arc                  randconfig-r043-20210830
+riscv                randconfig-r042-20210830
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+i386                 randconfig-c001-20210830
+s390                 randconfig-c005-20210830
+riscv                randconfig-c006-20210830
+powerpc              randconfig-c003-20210830
+mips                 randconfig-c004-20210830
+arm                  randconfig-c002-20210830
+x86_64               randconfig-c007-20210830
+i386                 randconfig-a005-20210830
+i386                 randconfig-a002-20210830
+i386                 randconfig-a003-20210830
+i386                 randconfig-a006-20210830
+i386                 randconfig-a004-20210830
+i386                 randconfig-a001-20210830
+x86_64               randconfig-a005-20210830
+x86_64               randconfig-a001-20210830
+x86_64               randconfig-a003-20210830
+x86_64               randconfig-a002-20210830
+x86_64               randconfig-a004-20210830
+x86_64               randconfig-a006-20210830
+s390                 randconfig-r044-20210831
+hexagon              randconfig-r041-20210831
+hexagon              randconfig-r045-20210831
+riscv                randconfig-r042-20210831
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
