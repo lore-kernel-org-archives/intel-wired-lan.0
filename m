@@ -1,127 +1,120 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 31 Aug 2021 06:44:10 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <20210831115233.239720-2-maciej.machnikowski@intel.com>
-References: <20210831115233.239720-1-maciej.machnikowski@intel.com>
- <20210831115233.239720-2-maciej.machnikowski@intel.com>
-Message-ID: <20210831064410.635eb329@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Barry Song <21cnbao@gmail.com>
+Date: Tue, 31 Aug 2021 13:21:06 +1200
+Subject: [Intel-wired-lan] [PCI/MSI] a4fc4cf388:
+ dmesg.genirq:Flags_mismatch_irq##(mei_me)vs.#(xhci_hcd)
+In-Reply-To: <20210829145552.GA11556@xsang-OptiPlex-9020>
+References: <20210825102636.52757-4-21cnbao@gmail.com>
+ <20210829145552.GA11556@xsang-OptiPlex-9020>
+Message-ID: <CAGsJ_4yYwjuWsEeK3CvnOhc10mbBNYWXqxqp+mR5587R2FD3gQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 31 Aug 2021 13:52:32 +0200 Maciej Machnikowski wrote:
-> This patch series introduces basic interface for reading the Ethernet
-> Equipment Clock (EEC) state on a SyncE capable device. This state gives
-> information about the source of the syntonization signal and the state
-> of EEC. This interface is required to implement Synchronization Status
-> Messaging on upper layers.
-> 
-> Initial implementation returns:
->  - SyncE EEC state
->  - Source of signal driving SyncE EEC (SyncE, GNSS, PTP or External)
->  - Current index of the pin driving the EEC to track multiple recovered
->    clock paths
-> 
-> SyncE EEC state read needs to be implemented as ndo_get_eec_state
-> function.
-> 
-> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
+On Mon, Aug 30, 2021 at 2:38 AM kernel test robot <oliver.sang@intel.com> wrote:
+>
+>
+>
+> Greeting,
+>
+> FYI, we noticed the following commit (built with gcc-9):
+>
+> commit: a4fc4cf388319ea957ffbdab5073bdd267de9082 ("[PATCH v3 3/3] PCI/MSI: remove msi_attrib.default_irq in msi_desc")
+> url: https://github.com/0day-ci/linux/commits/Barry-Song/PCI-MSI-Clarify-the-IRQ-sysfs-ABI-for-PCI-devices/20210825-183018
+> base: https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git 6e764bcd1cf72a2846c0e53d3975a09b242c04c9
+>
+> in testcase: kernel-selftests
+> version: kernel-selftests-x86_64-ebaa603b-1_20210825
+> with following parameters:
+>
+>         group: pidfd
+>         ucode: 0xe2
+>
+> test-description: The kernel contains a set of "self tests" under the tools/testing/selftests/ directory. These are intended to be small unit tests to exercise individual code paths in the kernel.
+> test-url: https://www.kernel.org/doc/Documentation/kselftest.txt
+>
+>
+> on test machine: 4 threads Intel(R) Core(TM) i5-6500 CPU @ 3.20GHz with 32G memory
+>
+> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
+>
+>
+>
+> If you fix the issue, kindly add following tag
+> Reported-by: kernel test robot <oliver.sang@intel.com>
+>
+>
+>
+> [  179.602028][   T34] genirq: Flags mismatch irq 16. 00002000 (mei_me) vs. 00000000 (xhci_hcd)
+> [  179.614073][   T34] CPU: 2 PID: 34 Comm: kworker/u8:2 Not tainted 5.14.0-rc7-00014-ga4fc4cf38831 #1
+> [  179.623225][   T34] Hardware name: Dell Inc. OptiPlex 7040/0Y7WYT, BIOS 1.8.1 12/05/2017
+> [  179.631432][   T34] Workqueue: events_unbound async_run_entry_fn
+> [  179.637543][   T34] Call Trace:
+> [  179.640789][   T34]  dump_stack_lvl+0x45/0x59
+> [  179.645253][   T34]  __setup_irq.cold+0x50/0xd4
+> [  179.649893][   T34]  ? mei_me_pg_exit_sync+0x480/0x480 [mei_me]
+> [  179.655923][   T34]  request_threaded_irq+0x10c/0x180
+> [  179.661073][   T34]  ? mei_me_irq_quick_handler+0x240/0x240 [mei_me]
+> [  179.667528][   T34]  mei_me_probe+0x131/0x300 [mei_me]
+> [  179.672767][   T34]  local_pci_probe+0x42/0x80
+> [  179.677313][   T34]  pci_device_probe+0x107/0x1c0
+> [  179.682118][   T34]  really_probe+0xb6/0x380
+> [  179.687094][   T34]  __driver_probe_device+0xfe/0x180
+> [  179.692242][   T34]  driver_probe_device+0x1e/0xc0
+> [  179.697133][   T34]  __driver_attach_async_helper+0x2b/0x80
+> [  179.702802][   T34]  async_run_entry_fn+0x30/0x140
+> [  179.707693][   T34]  process_one_work+0x274/0x5c0
+> [  179.712503][   T34]  worker_thread+0x50/0x3c0
+> [  179.716959][   T34]  ? process_one_work+0x5c0/0x5c0
+> [  179.721936][   T34]  kthread+0x14f/0x180
+> [  179.725958][   T34]  ? set_kthread_struct+0x40/0x40
+> [  179.730935][   T34]  ret_from_fork+0x22/0x30
+> [  179.735699][   T34] mei_me 0000:00:16.0: request_threaded_irq failure. irq = 16
+> [  179.743125][   T34] mei_me 0000:00:16.0: initialization failed.
+> [  179.749399][   T34] mei_me: probe of 0000:00:16.0 failed with error -16
+>
+>
 
-> +#define EEC_FLAG_STATE_VAL	(1 << 0)
-> +#define EEC_FLAG_SRC_VAL	(1 << 1)
-> +#define EEC_FLAG_PIN_VAL	(1 << 2)
-> +
-> +struct if_eec_state_msg {
-> +	__u8 flags;
-> +	__u8 state;
-> +	__u8 src;
-> +	__u8 pin;
-> +	__u32 ifindex;
-> +};
+it seems there is a direct reference to pdev->irq.
+Hi Oliver, would you try if the below patch can fix the problem:
 
-Break it up into attributes, please. It's the idiomatic way of dealing
-with multiple values these days in netlink. Makes validation,
-extensiblility, feature discover etc. etc. much easier down the line.
+diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
+index c3393b383e59..a45a2d4257a6 100644
+--- a/drivers/misc/mei/pci-me.c
++++ b/drivers/misc/mei/pci-me.c
+@@ -216,7 +216,7 @@ static int mei_me_probe(struct pci_dev *pdev,
+const struct pci_device_id *ent)
 
-> +static int rtnl_fill_eec_state(struct sk_buff *msg, struct net_device *dev,
-> +			       u32 portid, u32 seq, struct netlink_callback *cb,
-> +			       int flags, struct netlink_ext_ack *extack)
-> +{
-> +	const struct net_device_ops *ops = dev->netdev_ops;
-> +	struct if_eec_state_msg *state;
-> +	struct nlmsghdr *nlh;
-> +	int err;
-> +
-> +	ASSERT_RTNL();
-> +
-> +	if (!ops->ndo_get_eec_state)
-> +		return -EOPNOTSUPP;
-> +
-> +	nlh = nlmsg_put(msg, portid, seq, RTM_GETEECSTATE,
-> +			sizeof(*state), flags);
-> +	if (!nlh)
-> +		return -EMSGSIZE;
-> +
-> +	state = nlmsg_data(nlh);
-> +
-> +	memset(state, 0, sizeof(*state));
-> +	err = ops->ndo_get_eec_state(dev, state, extack);
-> +	if (err)
-> +		return err;
+        pci_enable_msi(pdev);
 
-return ops->ndo_get_eec_state(dev, state, extack);
+-       hw->irq = pdev->irq;
++       hw->irq = pci_irq_vector(pdev, 0);
 
-Even tho it's perfectly fine as is IMO there are bots out there
-matching on this pattern so let's not feed them.
+         /* request and enable interrupt */
+        irqflags = pci_dev_msi_enabled(pdev) ? IRQF_ONESHOT : IRQF_SHARED;
 
-> +	return 0;
-> +}
-> +
-> +static int rtnl_eec_state_get(struct sk_buff *skb, struct nlmsghdr *nlh,
-> +			      struct netlink_ext_ack *extack)
-> +{
-> +	struct net *net = sock_net(skb->sk);
-> +	struct if_eec_state_msg *state;
-> +	struct net_device *dev;
-> +	struct sk_buff *nskb;
-> +	int err;
-> +
-> +	state = nlmsg_data(nlh);
-> +	if (state->ifindex > 0)
-> +		dev = __dev_get_by_index(net, state->ifindex);
-> +	else
-> +		return -EINVAL;
 
-Keep the expected path unindented:
+I don't have any hardware to test.
 
-	if (state->ifindex <= 0)
-		return -EINVAL;
+>
+> To reproduce:
+>
+>         git clone https://github.com/intel/lkp-tests.git
+>         cd lkp-tests
+>         bin/lkp install                job.yaml  # job file is attached in this email
+>         bin/lkp split-job --compatible job.yaml  # generate the yaml file for lkp run
+>         bin/lkp run                    generated-yaml-file
+>
+>
+>
+> ---
+> 0DAY/LKP+ Test Infrastructure                   Open Source Technology Center
+> https://lists.01.org/hyperkitty/list/lkp at lists.01.org       Intel Corporation
+>
+> Thanks,
+> Oliver Sang
+>
 
-	dev = __dev_get_by_index(net, state->ifindex);
-	if (!dev)
-		return -ENODEV;
-
-That said I'm not sure why rtnl_stats_get() checks the ifindex is
-positive in the first place (which is what I assumed inspired you).
-We can just call __dev_get_by_index() and have it fail AFAICS.
-
-> +	if (!dev)
-> +		return -ENODEV;
-> +
-> +	nskb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
-> +	if (!nskb)
-> +		return -ENOBUFS;
-> +
-> +	err = rtnl_fill_eec_state(nskb, dev, NETLINK_CB(skb).portid,
-> +				  nlh->nlmsg_seq, NULL, nlh->nlmsg_flags,
-> +				  extack);
-> +	if (err < 0)
-> +		kfree_skb(nskb);
-> +	else
-> +		err = rtnl_unicast(nskb, net, NETLINK_CB(skb).portid);
-> +
-> +	return err;
-> +}
+Thanks
+barry
