@@ -1,57 +1,135 @@
-From: Karen Sornek <karen.sornek@intel.com>
-Date: Wed,  1 Sep 2021 11:15:03 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix RTNL deadlock with new
- flag IAVF_FLAG_REINIT_MSIX_NEEDED
-Message-ID: <20210901091503.77708-1-karen.sornek@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 01 Sep 2021 17:54:18 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 29ce8f9701072fc221d9c38ad952de1a9578f95c
+Message-ID: <612f4dca.vePuXa7b2Id2bCCa%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The IAVF_FLAG_REINIT_ITR_NEEDED flag was being used for two different
-purposes. As originally written, it indicates to the ITR mechanism to
-update the interrupt registers to a new setting. Sometime later, it was
-overloaded to indicate that interrupts need to be completely
-reinitialized during reset. This causes problems when ethtool -C is used
-while a reset is in progress, and can lead to RTNL deadlocks.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 29ce8f9701072fc221d9c38ad952de1a9578f95c  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
 
-To fix this, add a new flag IAVF_FLAG_REINIT_MSIX_NEEDED and use that to
-trigger MSI-X reinit.
+elapsed time: 1008m
 
-Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+configs tested: 105
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210831
+parisc                           alldefconfig
+arm                           u8500_defconfig
+arm                          lpd270_defconfig
+arm                        oxnas_v6_defconfig
+arm                        spear3xx_defconfig
+sh                           se7750_defconfig
+powerpc                   lite5200b_defconfig
+arm                            mmp2_defconfig
+csky                             alldefconfig
+s390                       zfcpdump_defconfig
+ia64                             allmodconfig
+powerpc               mpc834x_itxgp_defconfig
+arm                             mxs_defconfig
+arm                             rpc_defconfig
+riscv                             allnoconfig
+xtensa                         virt_defconfig
+mips                           jazz_defconfig
+powerpc                      bamboo_defconfig
+arm                            hisi_defconfig
+powerpc                        warp_defconfig
+x86_64                            allnoconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a005-20210831
+x86_64               randconfig-a001-20210831
+x86_64               randconfig-a003-20210831
+x86_64               randconfig-a002-20210831
+x86_64               randconfig-a004-20210831
+x86_64               randconfig-a006-20210831
+i386                 randconfig-a005-20210831
+i386                 randconfig-a002-20210831
+i386                 randconfig-a003-20210831
+i386                 randconfig-a006-20210831
+i386                 randconfig-a004-20210831
+i386                 randconfig-a001-20210831
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+i386                 randconfig-c001-20210831
+s390                 randconfig-c005-20210831
+riscv                randconfig-c006-20210831
+powerpc              randconfig-c003-20210831
+mips                 randconfig-c004-20210831
+arm                  randconfig-c002-20210831
+x86_64               randconfig-c007-20210831
+x86_64               randconfig-a014-20210831
+x86_64               randconfig-a015-20210831
+x86_64               randconfig-a013-20210831
+x86_64               randconfig-a016-20210831
+x86_64               randconfig-a012-20210831
+x86_64               randconfig-a011-20210831
+i386                 randconfig-a016-20210831
+i386                 randconfig-a011-20210831
+i386                 randconfig-a015-20210831
+i386                 randconfig-a014-20210831
+i386                 randconfig-a012-20210831
+i386                 randconfig-a013-20210831
+s390                 randconfig-r044-20210831
+hexagon              randconfig-r041-20210831
+hexagon              randconfig-r045-20210831
+riscv                randconfig-r042-20210831
+
 ---
- drivers/net/ethernet/intel/iavf/iavf.h      | 1 +
- drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 21c957755..5a36af8b9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -272,6 +272,7 @@ struct iavf_adapter {
- #define IAVF_FLAG_LEGACY_RX			BIT(15)
- #define IAVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
- #define IAVF_FLAG_QUEUES_DISABLED		BIT(17)
-+#define IAVF_FLAG_REINIT_MSIX_NEEDED		BIT(20)
- /* duplicates for common code */
- #define IAVF_FLAG_DCB_ENABLED			0
- 	/* flags for admin queue service task */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 80437ef26..4b7a670de 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3556,7 +3556,7 @@ int iavf_process_config(struct iavf_adapter *adapter)
- 			"Requested %d queues, but PF only gave us %d.\n",
- 			num_req_queues,
- 			adapter->vsi_res->num_queue_pairs);
--		adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
-+		adapter->flags |= IAVF_FLAG_REINIT_MSIX_NEEDED;
- 		adapter->num_req_queues = adapter->vsi_res->num_queue_pairs;
- 		iavf_schedule_reset(adapter);
- 		return -ENODEV;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
