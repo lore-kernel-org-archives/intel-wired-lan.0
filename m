@@ -1,76 +1,90 @@
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Thu,  2 Sep 2021 08:28:46 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix queues reservation scheme
-Message-ID: <20210902082846.49744-1-jedrzej.jagielski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 02 Sep 2021 17:18:49 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 95107817215eb51fc967b9fe64b5370f6114512d
+Message-ID: <613096f9.9WZcHAP7E1X9w+de%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Depending on the CPU count and NVM configuration, PF reset and
-rebuild may fail if more queues are allocated (e.g. attach XDP program),
-causes kernel NULL pointer dereference. The issue is that during rebuild,
-FDIR VSI's queue pile is not zeroed, despite no VSIs, but PF exisiting.
-The change causes all queue pairs released from the queue pile.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 95107817215eb51fc967b9fe64b5370f6114512d  igb: Fix removal of unicast MAC filters of VFs
 
-Fixes: bc7d338fbb3f ("i40e: reinit flow for the main VSI")
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+elapsed time: 2051m
+
+configs tested: 61
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a005-20210831
+x86_64               randconfig-a001-20210831
+x86_64               randconfig-a003-20210831
+x86_64               randconfig-a002-20210831
+x86_64               randconfig-a004-20210831
+x86_64               randconfig-a006-20210831
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+s390                 randconfig-r044-20210831
+hexagon              randconfig-r041-20210831
+hexagon              randconfig-r045-20210831
+riscv                randconfig-r042-20210831
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 000991afcf27..61ec0b6c1d05 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -196,7 +196,7 @@ static int i40e_get_lump(struct i40e_pf *pf, struct i40e_lump_tracking *pile,
- 		return -EINVAL;
- 	}
- 
--	/* start the linear search with an imperfect hint */
-+	/* start from beginning because earlier areas may have been freed */
- 	i = pile->search_hint;
- 	while (i < pile->num_entries) {
- 		/* skip already allocated entries */
-@@ -227,6 +227,26 @@ static int i40e_get_lump(struct i40e_pf *pf, struct i40e_lump_tracking *pile,
- 	return ret;
- }
- 
-+/**
-+ * i40e_put_all_lump - return a lump of generic resource
-+ * @pile: the pile of resource to search
-+ *
-+ * Returns the count of items in the lump
-+ **/
-+static void i40e_put_all_lump(struct i40e_lump_tracking *pile)
-+{
-+	u16 i;
-+
-+	if (!pile)
-+		return;
-+
-+	for (i = 0;
-+	     i < pile->num_entries;
-+	     i++) {
-+		pile->list[i] = 0;
-+	}
-+}
-+
- /**
-  * i40e_put_lump - return a lump of generic resource
-  * @pile: the pile of resource to search
-@@ -13966,7 +13986,7 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 
- 	pf = vsi->back;
- 
--	i40e_put_lump(pf->qp_pile, vsi->base_queue, vsi->idx);
-+	i40e_put_all_lump(pf->qp_pile);
- 	i40e_vsi_clear_rings(vsi);
- 
- 	i40e_vsi_free_arrays(vsi, false);
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
