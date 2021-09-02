@@ -1,7 +1,7 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Thu,  2 Sep 2021 13:47:07 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2] i40e: Add VF VLAN pruning
-Message-ID: <20210902114707.19297-1-mateusz.palczewski@intel.com>
+Date: Thu,  2 Sep 2021 13:55:02 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3] i40e: Add VF VLAN pruning
+Message-ID: <20210902115502.19455-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,26 +22,27 @@ This flag will only be effective when no PVID is set on VF and VF is not trusted
 Add new function that computes the correct VLAN ID for VF VLAN filters
 based on trust, PVID, vf-vlan-prune-disable flag and current VLAN ID.
 
-Testing hits:
-scenario 1: spawn 1 VF
-bring VF up
-turn on packet capturing on a VF
-send untagged packet to VF
-VF should receive untagged packet
-send tagged packet to VF
-VF should not see the tagged packet
-scenario 2: set vf-vlan-prune-disable flag to off
-spawn 1 VF
-turn on packet capturing on a VF
-send untagged packet to VF
-VF should receive untagged packet
-send tagged packet to VF
-VF should receive tagged packet
+Testing hints:
+  scenario 1: spawn 1 VF
+              bring VF up
+              turn on packet capturing on a VF
+              send untagged packet to VF
+              VF should receive untagged packet
+              send tagged packet to VF
+              VF should not see the tagged packet
+  scenario 2: set vf-vlan-prune-disable flag to off
+              spawn 1 VF
+              turn on packet capturing on a VF
+              send untagged packet to VF
+              VF should receive untagged packet
+              send tagged packet to VF
+              VF should receive tagged packet
 
 Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
+ v3: Fixed Testing hints
  v2: Fixed commit message
 ---
  drivers/net/ethernet/intel/i40e/i40e.h        |   1 +
