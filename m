@@ -1,55 +1,50 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu, 2 Sep 2021 13:28:36 +0300
-Subject: [Intel-wired-lan] Slow e1000e Network Interface with different
- kernel
-In-Reply-To: <0c8eb89c-4a55-d977-312f-6856ea5b59ba@neusta.de>
-References: <0c8eb89c-4a55-d977-312f-6856ea5b59ba@neusta.de>
-Message-ID: <f3cc2e12-d717-4de1-160c-062b4de988e3@intel.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Thu,  2 Sep 2021 10:31:06 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix delay after global reset
+Message-ID: <20210902103106.51917-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/2/2021 13:01, Marco Witte wrote:
-> Scenario: Plugin into network, establishes link and IP is assigned.
-> scp from another machine in the same subnet gives approx. 1kb/sec.
-> Cross check with an usb 3 dock with integrated network adapter. Full speed.
-> 
-> Kai Heng-Feng build a patch for tgp https://lkml.org/lkml/2021/7/12/2927
-> His deb kernel packages with that patch based on 5.10.x kernel ran full 
-> throttle on this machine.
-> However this was the only successfull attempt to get full speed.
-> 
-> The Kernel Mainline 5.13. contains visual similar patches, but they 
-> still have the slow down on the same machine.
-> Some people suspect pcie changes at that point.
-> 
-> Some curious fact I found out while testing: I booted up a manjaro 
-> (current) usb stick and had full speed on the e1000e. Then I installed 
-> manjaro from that stick to the harddrive. Booted that and it didn't 
-> perform well.
-> 
-> As this is my first rodeo on this mailinglist, I need to reference some 
-> information:
-> 
-> Referencing: https://bugzilla.kernel.org/show_bug.cgi?id=213377
-> Here is the launchpad: 
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1927925
-> e1000e Sourceforge bugreport(s): https://sourceforge.net/p/e1000/bugs/681/
-> This is still an issue with all current mainline kernels. Last test was 
-> 5.14 RC7
-> 
-> I can provide any output you need.
-> 
-Marco,
-Run echo on > /sys/bus/pci/devices/0000\:00\:16.0/power/control command 
-on your machine.
-Please, let us know the result.
+Recently simplified i40e_rebuild causes that FW sometimes
+is not ready after NVM update, the ping does not return.
 
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-Sasha
+Modify the delay in case of EMPR reset.
+Old delay was introduced for specific cards for 710 series.
+Now it works for all the cards and delay was increased.
+
+Fixes: 1fa51a650e1d ("i40e: Add delay after EMP reset for firmware to recover")
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 000991afcf27..e0c9e0e84aef 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10535,15 +10535,9 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+ 	}
+ 	i40e_get_oem_version(&pf->hw);
+ 
+-	if (test_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state) &&
+-	    ((hw->aq.fw_maj_ver == 4 && hw->aq.fw_min_ver <= 33) ||
+-	     hw->aq.fw_maj_ver < 4) && hw->mac.type == I40E_MAC_XL710) {
+-		/* The following delay is necessary for 4.33 firmware and older
+-		 * to recover after EMP reset. 200 ms should suffice but we
+-		 * put here 300 ms to be sure that FW is ready to operate
+-		 * after reset.
+-		 */
+-		mdelay(300);
++	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state)) {
++		/* The following delay is necessary for firmware update. */
++		mdelay(1000);
+ 	}
+ 
+ 	/* re-verify the eeprom if we just had an EMP reset */
+-- 
+2.27.0
+
