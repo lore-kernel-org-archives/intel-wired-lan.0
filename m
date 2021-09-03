@@ -1,115 +1,67 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 3 Sep 2021 09:43:17 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix refreshing iavf
- adapter stats on ethtool request
-In-Reply-To: <20210903064846.71507-1-jedrzej.jagielski@intel.com>
-References: <20210903064846.71507-1-jedrzej.jagielski@intel.com>
-Message-ID: <f4a7fedd-968f-f683-f3ac-a444a927d397@molgen.mpg.de>
+From: Yongxin Liu <yongxin.liu@windriver.com>
+Date: Fri,  3 Sep 2021 09:25:00 +0800
+Subject: [Intel-wired-lan] [PATCH net] ice: check whether AUX
+ devices/drivers are supported in ice_rebuild
+Message-ID: <20210903012500.39407-1-yongxin.liu@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jedrzej,
+In ice_rebuild(), check whether AUX devices/drivers are supported or not
+before calling ice_plug_aux_dev().
 
+Fix the following call trace, if RDMA functionality is not available.
 
-Am 03.09.21 um 08:48 schrieb Jedrzej Jagielski:
+  auxiliary ice.roce.0: adding auxiliary device failed!: -17
+  sysfs: cannot create duplicate filename '/bus/auxiliary/devices/ice.roce.0'
+  Workqueue: ice ice_service_task [ice]
+  Call Trace:
+   dump_stack_lvl+0x38/0x49
+   dump_stack+0x10/0x12
+   sysfs_warn_dup+0x5b/0x70
+   sysfs_do_create_link_sd.isra.2+0xc8/0xd0
+   sysfs_create_link+0x25/0x40
+   bus_add_device+0x6d/0x110
+   device_add+0x49d/0x940
+   ? _printk+0x52/0x6e
+   ? _printk+0x52/0x6e
+   __auxiliary_device_add+0x60/0xc0
+   ice_plug_aux_dev+0xd3/0xf0 [ice]
+   ice_rebuild+0x27d/0x510 [ice]
+   ice_do_reset+0x51/0xe0 [ice]
+   ice_service_task+0x108/0xe70 [ice]
+   ? __switch_to+0x13b/0x510
+   process_one_work+0x1de/0x420
+   ? apply_wqattrs_cleanup+0xc0/0xc0
+   worker_thread+0x34/0x400
+   ? apply_wqattrs_cleanup+0xc0/0xc0
+   kthread+0x14d/0x180
+   ? set_kthread_struct+0x40/0x40
+   ret_from_fork+0x1f/0x30
 
-Should the summary have a net prefix or so? Also shorter:
+Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+Signed-off-by: Yongxin Liu <yongxin.liu@windriver.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> iavf: Refresh iavf adapter stats on ethtool request
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 0d6c143f6653..98cc708e9517 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6466,7 +6466,9 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	/* if we get here, reset flow is successful */
+ 	clear_bit(ICE_RESET_FAILED, pf->state);
+ 
+-	ice_plug_aux_dev(pf);
++	if (ice_is_aux_ena(pf))
++		ice_plug_aux_dev(pf);
++
+ 	return;
+ 
+ err_vsi_rebuild:
+-- 
+2.14.5
 
-
-> Currently iavf adapter statistics are refreshed only in a
-> watchdog task, triggered approximately every two seconds,
-> which causes some ethtool requests to return outdated values.
-> 
-> Add explicit statistics refresh when requested by ethtool -S.
-> 
-> Fixes: b476b0030e61 ("iavf: Move commands processing to the separate function")
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->   drivers/net/ethernet/intel/iavf/iavf.h         |  2 ++
->   drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  3 +++
->   drivers/net/ethernet/intel/iavf/iavf_main.c    | 18 ++++++++++++++++++
->   3 files changed, 23 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 21c95775509a..afe6b0d24a9a 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -306,6 +306,7 @@ struct iavf_adapter {
->   #define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
->   #define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT(27)
->   #define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT(28)
-> +#define IAVF_FLAG_AQ_REQUEST_STATS		BIT(29)
->   
->   	/* OS defined structs */
->   	struct net_device *netdev;
-> @@ -399,6 +400,7 @@ int iavf_up(struct iavf_adapter *adapter);
->   void iavf_down(struct iavf_adapter *adapter);
->   int iavf_process_config(struct iavf_adapter *adapter);
->   void iavf_schedule_reset(struct iavf_adapter *adapter);
-> +void iavf_schedule_request_stats(struct iavf_adapter *adapter);
->   void iavf_reset(struct iavf_adapter *adapter);
->   void iavf_set_ethtool_ops(struct net_device *netdev);
->   void iavf_update_stats(struct iavf_adapter *adapter);
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> index 7cbe59beeebb..21c4d4180f3e 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> @@ -354,6 +354,9 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
->   	struct iavf_adapter *adapter = netdev_priv(netdev);
->   	unsigned int i;
->   
-> +	/* Explicitly request stats refresh */
-> +	iavf_schedule_request_stats(adapter);
-> +
->   	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
->   
->   	rcu_read_lock();
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 80437ef26391..e7ac6356772b 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -165,6 +165,19 @@ void iavf_schedule_reset(struct iavf_adapter *adapter)
->   	}
->   }
->   
-> +/**
-> + * iavf_schedule_request_stats - Set the flags and schedule statistics request
-> + * @adapter: board private structure
-> + *
-> + * Sets IAVF_FLAG_AQ_REQUEST_STATS flag so iavf_watchdog_task() will explicitly
-> + * request and refresh ethtool stats
-> + **/
-> +void iavf_schedule_request_stats(struct iavf_adapter *adapter)
-> +{
-> +	adapter->aq_required |= IAVF_FLAG_AQ_REQUEST_STATS;
-> +	queue_work(iavf_wq, &adapter->watchdog_task.work);
-> +}
-> +
->   /**
->    * iavf_tx_timeout - Respond to a Tx Hang
->    * @netdev: network interface device structure
-> @@ -1700,6 +1713,11 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
->   		iavf_del_adv_rss_cfg(adapter);
->   		return 0;
->   	}
-> +	if (adapter->aq_required & IAVF_FLAG_AQ_REQUEST_STATS) {
-> +		iavf_request_stats(adapter);
-
-Should that be `iavf_schedule_request_stats()`?
-
-> +		return IAVF_SUCCESS;
-> +	}
-> +
->   	return -EAGAIN;
->   }
-
-
-Kind regards,
-
-Paul
