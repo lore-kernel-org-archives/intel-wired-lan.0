@@ -1,11 +1,11 @@
 From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
-Date: Fri, 3 Sep 2021 06:50:07 +0000
-Subject: [Intel-wired-lan] [PATCH v7 intel-next 7/9] ice: optimize
- XDP_TX workloads
-In-Reply-To: <20210819120004.34392-8-maciej.fijalkowski@intel.com>
+Date: Fri, 3 Sep 2021 06:50:43 +0000
+Subject: [Intel-wired-lan] [PATCH v7 intel-next 8/9] ice: introduce
+ XDP_TX fallback path
+In-Reply-To: <20210819120004.34392-9-maciej.fijalkowski@intel.com>
 References: <20210819120004.34392-1-maciej.fijalkowski@intel.com>
- <20210819120004.34392-8-maciej.fijalkowski@intel.com>
-Message-ID: <PH0PR11MB51448A83D389CE43D822D72EE2CF9@PH0PR11MB5144.namprd11.prod.outlook.com>
+ <20210819120004.34392-9-maciej.fijalkowski@intel.com>
+Message-ID: <PH0PR11MB51444F66A6FB34EA3D91B844E2CF9@PH0PR11MB5144.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,80 +20,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > netdev at vger.kernel.org; toke at redhat.com; bjorn at kernel.org; kuba at kernel.org;
 > bpf at vger.kernel.org; davem at davemloft.net; Karlsson, Magnus
 > <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v7 intel-next 7/9] ice: optimize XDP_TX workloads
+> Subject: [Intel-wired-lan] [PATCH v7 intel-next 8/9] ice: introduce XDP_TX fallback
+> path
 > 
-> Optimize Tx descriptor cleaning for XDP. Current approach doesn't really scale
-> and chokes when multiple flows are handled.
+> Under rare circumstances there might be a situation where a requirement of having
+> XDP Tx queue per CPU could not be fulfilled and some of the Tx resources have
+> to be shared between CPUs. This yields a need for placing accesses to xdp_ring
+> inside a critical section protected by spinlock.
+> These accesses happen to be in the hot path, so let's introduce the static branch
+> that will be triggered from the control plane when driver could not provide Tx queue
+> dedicated for XDP on each CPU.
 > 
-> Introduce two ring fields, @next_dd and @next_rs that will keep track of descriptor
-> that should be looked at when the need for cleaning arise and the descriptor that
-> should have the RS bit set, respectively.
+> Currently, the design that has been picked is to allow any number of XDP Tx
+> queues that is at least half of a count of CPUs that platform has.
+> For lower number driver will bail out with a response to user that there were not
+> enough Tx resources that would allow configuring XDP. The sharing of rings is
+> signalled via static branch enablement which in turn indicates that lock for xdp_ring
+> accesses needs to be taken in hot path.
 > 
-> Note that at this point the threshold is a constant (32), but it is something that we
-> could make configurable.
-> 
-> First thing is to get away from setting RS bit on each descriptor. Let's do this only
-> once NTU is higher than the currently @next_rs value. In such case, grab the
-> tx_desc[next_rs], set the RS bit in descriptor and advance the @next_rs by a 32.
-> 
-> Second thing is to clean the Tx ring only when there are less than 32 free entries.
-> For that case, look up the tx_desc[next_dd] for a DD bit.
-> This bit is written back by HW to let the driver know that xmit was successful. It will
-> happen only for those descriptors that had RS bit set. Clean only 32 descriptors
-> and advance the DD bit.
-> 
-> Actual cleaning routine is moved from ice_napi_poll() down to the
-> ice_xmit_xdp_ring(). It is safe to do so as XDP ring will not get any SKBs in there
-> that would rely on interrupts for the cleaning. Nice side effect is that for rare case
-> of Tx fallback path (that next patch is going to introduce) we don't have to trigger
-> the SW irq to clean the ring.
-> 
-> With those two concepts, ring is kept at being almost full, but it is guaranteed that
-> driver will be able to produce Tx descriptors.
-> 
-> This approach seems to work out well even though the Tx descriptors are
-> produced in one-by-one manner. Test was conducted with the ice HW bombarded
-> with packets from HW generator, configured to generate 30 flows.
-> 
-> Xdp2 sample yields the following results:
-> <snip>
-> proto 17:   79973066 pkt/s
-> proto 17:   80018911 pkt/s
-> proto 17:   80004654 pkt/s
-> proto 17:   79992395 pkt/s
-> proto 17:   79975162 pkt/s
-> proto 17:   79955054 pkt/s
-> proto 17:   79869168 pkt/s
-> proto 17:   79823947 pkt/s
-> proto 17:   79636971 pkt/s
-> </snip>
-> 
-> As that sample reports the Rx'ed frames, let's look at sar output.
-> It says that what we Rx'ed we do actually Tx, no noticeable drops.
-> Average:        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s txcmp/s
-> rxmcst/s   %ifutil
-> Average:       ens4f1 79842324.00 79842310.40 4678261.17 4678260.38 0.00
-> 0.00      0.00     38.32
-> 
-> with tx_busy staying calm.
-> 
-> When compared to a state before:
-> Average:        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s txcmp/s
-> rxmcst/s   %ifutil
-> Average:       ens4f1 90919711.60 42233822.60 5327326.85 2474638.04 0.00
-> 0.00      0.00     43.64
-> 
-> it can be observed that the amount of txpck/s is almost doubled, meaning that the
-> performance is improved by around 90%. All of this due to the drops in the driver,
-> previously the tx_busy stat was bumped at a 7mpps rate.
+> Approach based on static branch has no impact on performance of a non-fallback
+> path. One thing that is needed to be mentioned is a fact that the static branch will
+> act as a global driver switch, meaning that if one PF got out of Tx resources, then
+> other PFs that ice driver is servicing will suffer. However, given the fact that HW
+> that ice driver is handling has 1024 Tx queues per each PF, this is currently an
+> unlikely scenario.
 > 
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c     |  9 ++-
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 21 +++---
->  drivers/net/ethernet/intel/ice/ice_txrx.h     | 10 ++-
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 73 ++++++++++++++++---
->  4 files changed, 88 insertions(+), 25 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice.h          |  3 ++
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  4 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 53 ++++++++++++++++---
+>  drivers/net/ethernet/intel/ice/ice_txrx.c     | 16 +++++-
+>  drivers/net/ethernet/intel/ice/ice_txrx.h     |  1 +
+>  drivers/net/ethernet/intel/ice/ice_txrx_lib.c |  7 ++-
+>  6 files changed, 75 insertions(+), 9 deletions(-)
 > 
 
 Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>
