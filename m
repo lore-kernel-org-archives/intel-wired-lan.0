@@ -1,67 +1,117 @@
-From: Yongxin Liu <yongxin.liu@windriver.com>
-Date: Fri,  3 Sep 2021 09:25:00 +0800
-Subject: [Intel-wired-lan] [PATCH net] ice: check whether AUX
- devices/drivers are supported in ice_rebuild
-Message-ID: <20210903012500.39407-1-yongxin.liu@windriver.com>
+From: Feng zhou <zhoufeng.zf@bytedance.com>
+Date: Fri,  3 Sep 2021 14:40:13 +0800
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Fix NULL pointer dereference in
+ ixgbe_xdp_setup
+Message-ID: <20210903064013.9842-1-zhoufeng.zf@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In ice_rebuild(), check whether AUX devices/drivers are supported or not
-before calling ice_plug_aux_dev().
+From: Feng Zhou <zhoufeng.zf@bytedance.com>
 
-Fix the following call trace, if RDMA functionality is not available.
+The ixgbe driver currently generates a NULL pointer dereference with
+some machine (online cpus < 63). This is due to the fact that the
+maximum value of num_xdp_queues is nr_cpu_ids. Code is in
+"ixgbe_set_rss_queues"".
 
-  auxiliary ice.roce.0: adding auxiliary device failed!: -17
-  sysfs: cannot create duplicate filename '/bus/auxiliary/devices/ice.roce.0'
-  Workqueue: ice ice_service_task [ice]
-  Call Trace:
-   dump_stack_lvl+0x38/0x49
-   dump_stack+0x10/0x12
-   sysfs_warn_dup+0x5b/0x70
-   sysfs_do_create_link_sd.isra.2+0xc8/0xd0
-   sysfs_create_link+0x25/0x40
-   bus_add_device+0x6d/0x110
-   device_add+0x49d/0x940
-   ? _printk+0x52/0x6e
-   ? _printk+0x52/0x6e
-   __auxiliary_device_add+0x60/0xc0
-   ice_plug_aux_dev+0xd3/0xf0 [ice]
-   ice_rebuild+0x27d/0x510 [ice]
-   ice_do_reset+0x51/0xe0 [ice]
-   ice_service_task+0x108/0xe70 [ice]
-   ? __switch_to+0x13b/0x510
-   process_one_work+0x1de/0x420
-   ? apply_wqattrs_cleanup+0xc0/0xc0
-   worker_thread+0x34/0x400
-   ? apply_wqattrs_cleanup+0xc0/0xc0
-   kthread+0x14d/0x180
-   ? set_kthread_struct+0x40/0x40
-   ret_from_fork+0x1f/0x30
+Here's how the problem repeats itself:
+Some machine (online cpus < 63), And user set num_queues to 63 through
+ethtool. Code is in the "ixgbe_set_channels",
+adapter->ring_feature[RING_F_FDIR].limit = count;
+It becames 63.
+When user use xdp, "ixgbe_set_rss_queues" will set queues num.
+adapter->num_rx_queues = rss_i;
+adapter->num_tx_queues = rss_i;
+adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
+And rss_i's value is from
+f = &adapter->ring_feature[RING_F_FDIR];
+rss_i = f->indices = f->limit;
+So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
+for (i = 0; i < adapter->num_rx_queues; i++)
+	if (adapter->xdp_ring[i]->xsk_umem)
+lead to panic.
+Call trace:
+[exception RIP: ixgbe_xdp+368]
+RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
+RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
+RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
+RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
+R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
+R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
+ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+ 7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
+ 8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
+ 9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
+10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
+11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
+12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
+13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
+14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
+15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
+16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
+17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
+18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
+19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
 
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Signed-off-by: Yongxin Liu <yongxin.liu@windriver.com>
+Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
+AF_XDP")
+Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Updates since v1:
+- Fix "ixgbe_max_channels" callback so that it will not allow a setting of 
+queues to be higher than the num_online_cpus().
+more details can be seen from here:
+https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20210817075407.11961-1-zhoufeng.zf at bytedance.com/
+Thanks to Maciej Fijalkowski for your advice.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0d6c143f6653..98cc708e9517 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6466,7 +6466,9 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	/* if we get here, reset flow is successful */
- 	clear_bit(ICE_RESET_FAILED, pf->state);
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 8 ++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 4ceaca0f6ce3..21321d164708 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -3204,7 +3204,7 @@ static unsigned int ixgbe_max_channels(struct ixgbe_adapter *adapter)
+ 		max_combined = ixgbe_max_rss_indices(adapter);
+ 	}
  
--	ice_plug_aux_dev(pf);
-+	if (ice_is_aux_ena(pf))
-+		ice_plug_aux_dev(pf);
-+
- 	return;
+-	return max_combined;
++	return min_t(int, max_combined, num_online_cpus());
+ }
  
- err_vsi_rebuild:
+ static void ixgbe_get_channels(struct net_device *dev,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 14aea40da50f..5db496cc5070 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct bpf_prog *old_prog;
+ 	bool need_reset;
++	int num_queues;
+ 
+ 	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
+ 		return -EINVAL;
+@@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 	/* Kick start the NAPI context if there is an AF_XDP socket open
+ 	 * on that queue id. This so that receiving will start.
+ 	 */
+-	if (need_reset && prog)
+-		for (i = 0; i < adapter->num_rx_queues; i++)
++	if (need_reset && prog) {
++		num_queues = min_t(int, adapter->num_rx_queues,
++			adapter->num_xdp_queues);
++		for (i = 0; i < num_queues; i++)
+ 			if (adapter->xdp_ring[i]->xsk_pool)
+ 				(void)ixgbe_xsk_wakeup(adapter->netdev, i,
+ 						       XDP_WAKEUP_RX);
++	}
+ 
+ 	return 0;
+ }
 -- 
-2.14.5
+2.11.0
 
