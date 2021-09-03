@@ -1,55 +1,99 @@
-From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
-Date: Fri, 3 Sep 2021 06:45:30 +0000
-Subject: [Intel-wired-lan] [PATCH v7 intel-next 6/9] ice: propagate
- xdp_ring onto rx_ring
-In-Reply-To: <20210819120004.34392-7-maciej.fijalkowski@intel.com>
-References: <20210819120004.34392-1-maciej.fijalkowski@intel.com>
- <20210819120004.34392-7-maciej.fijalkowski@intel.com>
-Message-ID: <PH0PR11MB51440C7E16476F0583A279B7E2CF9@PH0PR11MB5144.namprd11.prod.outlook.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Fri,  3 Sep 2021 06:48:46 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix refreshing iavf adapter
+ stats on ethtool request
+Message-ID: <20210903064846.71507-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Maciej
-> Fijalkowski
-> Sent: Thursday, August 19, 2021 5:30 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: joamaki at gmail.com; Lobakin, Alexandr <alexandr.lobakin@intel.com>;
-> netdev at vger.kernel.org; toke at redhat.com; bjorn at kernel.org; kuba at kernel.org;
-> bpf at vger.kernel.org; davem at davemloft.net; Karlsson, Magnus
-> <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v7 intel-next 6/9] ice: propagate xdp_ring onto
-> rx_ring
-> 
-> With rings being split, it is now convenient to introduce a pointer to XDP ring within
-> the Rx ring. For XDP_TX workloads this means that xdp_rings array access will be
-> skipped, which was executed per each processed frame.
-> 
-> Also, read the XDP prog once per NAPI and if prog is present, set up the local
-> xdp_ring pointer. Reading prog a single time was discussed in [1] with some
-> concern raised by Toke around dispatcher handling and having the need for going
-> through the RCU grace period in the ndo_bpf driver callback, but ice currently is
-> torning down NAPI instances regardless of the prog presence on VSI.
-> 
-> Although the pointer to XDP ring introduced to Rx ring makes things a lot
-> slimmer/simpler, I still feel that single prog read per NAPI lifetime is beneficial.
-> 
-> Further patch that will introduce the fallback path will also get a profit from that as
-> xdp_ring pointer will be set during the XDP rings setup.
-> 
-> [1]: https://lore.kernel.org/bpf/87k0oseo6e.fsf at toke.dk/
-> 
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c     |  3 +++
->  drivers/net/ethernet/intel/ice/ice_txrx.c     | 23 +++++++++--------
->  drivers/net/ethernet/intel/ice/ice_txrx.h     |  1 +
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 10 +++-----
-> drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  2 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c      | 25 +++++++++++--------
->  6 files changed, 35 insertions(+), 29 deletions(-)
-> 
+Currently iavf adapter statistics are refreshed only in a
+watchdog task, triggered approximately every two seconds,
+which causes some ethtool requests to return outdated values.
 
-Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>
+Add explicit statistics refresh when requested by ethtool -S.
+
+Fixes: b476b0030e61 ("iavf: Move commands processing to the separate function")
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf.h         |  2 ++
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  3 +++
+ drivers/net/ethernet/intel/iavf/iavf_main.c    | 18 ++++++++++++++++++
+ 3 files changed, 23 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 21c95775509a..afe6b0d24a9a 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -306,6 +306,7 @@ struct iavf_adapter {
+ #define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
+ #define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT(27)
+ #define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT(28)
++#define IAVF_FLAG_AQ_REQUEST_STATS		BIT(29)
+ 
+ 	/* OS defined structs */
+ 	struct net_device *netdev;
+@@ -399,6 +400,7 @@ int iavf_up(struct iavf_adapter *adapter);
+ void iavf_down(struct iavf_adapter *adapter);
+ int iavf_process_config(struct iavf_adapter *adapter);
+ void iavf_schedule_reset(struct iavf_adapter *adapter);
++void iavf_schedule_request_stats(struct iavf_adapter *adapter);
+ void iavf_reset(struct iavf_adapter *adapter);
+ void iavf_set_ethtool_ops(struct net_device *netdev);
+ void iavf_update_stats(struct iavf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 7cbe59beeebb..21c4d4180f3e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -354,6 +354,9 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	unsigned int i;
+ 
++	/* Explicitly request stats refresh */
++	iavf_schedule_request_stats(adapter);
++
+ 	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
+ 
+ 	rcu_read_lock();
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 80437ef26391..e7ac6356772b 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -165,6 +165,19 @@ void iavf_schedule_reset(struct iavf_adapter *adapter)
+ 	}
+ }
+ 
++/**
++ * iavf_schedule_request_stats - Set the flags and schedule statistics request
++ * @adapter: board private structure
++ *
++ * Sets IAVF_FLAG_AQ_REQUEST_STATS flag so iavf_watchdog_task() will explicitly
++ * request and refresh ethtool stats
++ **/
++void iavf_schedule_request_stats(struct iavf_adapter *adapter)
++{
++	adapter->aq_required |= IAVF_FLAG_AQ_REQUEST_STATS;
++	queue_work(iavf_wq, &adapter->watchdog_task.work);
++}
++
+ /**
+  * iavf_tx_timeout - Respond to a Tx Hang
+  * @netdev: network interface device structure
+@@ -1700,6 +1713,11 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
+ 		iavf_del_adv_rss_cfg(adapter);
+ 		return 0;
+ 	}
++	if (adapter->aq_required & IAVF_FLAG_AQ_REQUEST_STATS) {
++		iavf_request_stats(adapter);
++		return IAVF_SUCCESS;
++	}
++
+ 	return -EAGAIN;
+ }
+ 
+-- 
+2.27.0
+
