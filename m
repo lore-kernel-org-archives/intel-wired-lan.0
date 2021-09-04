@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 04 Sep 2021 14:55:28 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d144da38ff6c1ca77fa04fb7d0bb4d14137ab0d7
-Message-ID: <61331860.TvB/q9bNu8RJNCu5%lkp@intel.com>
+Date: Sat, 04 Sep 2021 14:55:25 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 8945c4bc5e8e03b2358974e602dcf8137b448ed9
+Message-ID: <6133185d.vMJCoFvVZhPsyiXu%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d144da38ff6c1ca77fa04fb7d0bb4d14137ab0d7  i40e: Fix delay after global reset
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 8945c4bc5e8e03b2358974e602dcf8137b448ed9  i40e: Add VF VLAN pruning
 
-elapsed time: 725m
+elapsed time: 726m
 
-configs tested: 105
-configs skipped: 4
+configs tested: 112
+configs skipped: 3
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -27,24 +27,31 @@ arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 i386                 randconfig-c001-20210904
-sh                           se7343_defconfig
-um                               alldefconfig
-powerpc                     kilauea_defconfig
+mips                        workpad_defconfig
 sh                   sh7770_generic_defconfig
-arm                  colibri_pxa270_defconfig
-arm                          simpad_defconfig
-arm                        clps711x_defconfig
-um                                  defconfig
-m68k                             allyesconfig
-arm                    vt8500_v6_v7_defconfig
-arm                            lart_defconfig
-sh                         ecovec24_defconfig
-sh                   rts7751r2dplus_defconfig
+arm                         s5pv210_defconfig
+powerpc                mpc7448_hpc2_defconfig
+arm                         socfpga_defconfig
+arm                        spear6xx_defconfig
+powerpc                 mpc8560_ads_defconfig
+m68k                         amcore_defconfig
+sparc                       sparc64_defconfig
+h8300                     edosk2674_defconfig
+powerpc                      pasemi_defconfig
+powerpc                     mpc83xx_defconfig
 powerpc                      makalu_defconfig
-sh                          rsk7264_defconfig
-powerpc                     tqm5200_defconfig
-mips                    maltaup_xpa_defconfig
-xtensa                       common_defconfig
+s390                             allmodconfig
+mips                         rt305x_defconfig
+mips                        maltaup_defconfig
+arm                           viper_defconfig
+powerpc                  mpc866_ads_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arm                      pxa255-idp_defconfig
+ia64                         bigsur_defconfig
+powerpc               mpc834x_itxgp_defconfig
+m68k                        mvme16x_defconfig
+mips                      bmips_stb_defconfig
+mips                      maltaaprp_defconfig
 arm                  randconfig-c002-20210904
 x86_64                            allnoconfig
 ia64                             allmodconfig
@@ -52,6 +59,7 @@ ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
+m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
@@ -66,7 +74,6 @@ arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
-s390                             allmodconfig
 parisc                           allyesconfig
 s390                                defconfig
 i386                             allyesconfig
@@ -78,26 +85,26 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-i386                 randconfig-a005-20210904
-i386                 randconfig-a004-20210904
-i386                 randconfig-a006-20210904
-i386                 randconfig-a002-20210904
-i386                 randconfig-a003-20210904
-i386                 randconfig-a001-20210904
 x86_64               randconfig-a006-20210904
 x86_64               randconfig-a004-20210904
 x86_64               randconfig-a003-20210904
 x86_64               randconfig-a005-20210904
 x86_64               randconfig-a001-20210904
 x86_64               randconfig-a002-20210904
+i386                 randconfig-a005-20210904
+i386                 randconfig-a004-20210904
+i386                 randconfig-a006-20210904
+i386                 randconfig-a002-20210904
+i386                 randconfig-a003-20210904
+i386                 randconfig-a001-20210904
 arc                  randconfig-r043-20210904
-riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
-riscv                          rv32_defconfig
 riscv                            allmodconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
 x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
