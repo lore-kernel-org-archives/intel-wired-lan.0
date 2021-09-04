@@ -1,52 +1,136 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Fri, 3 Sep 2021 22:20:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <20210903091857.70bdf57a@hermes.local>
-References: <20210903151436.529478-1-maciej.machnikowski@intel.com>
- <20210903151436.529478-2-maciej.machnikowski@intel.com>
- <20210903091857.70bdf57a@hermes.local>
-Message-ID: <PH0PR11MB495197890322A371FDA59F3FEACF9@PH0PR11MB4951.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 04 Sep 2021 14:55:28 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ d144da38ff6c1ca77fa04fb7d0bb4d14137ab0d7
+Message-ID: <61331860.TvB/q9bNu8RJNCu5%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Stephen Hemminger <stephen@networkplumber.org>
-> Sent: Friday, September 3, 2021 6:19 PM
-> Subject: Re: [PATCH net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
-> message to get SyncE status
-> 
-> On Fri,  3 Sep 2021 17:14:35 +0200
-> Maciej Machnikowski <maciej.machnikowski@intel.com> wrote:
-> 
-> > This patch series introduces basic interface for reading the Ethernet
-> > Equipment Clock (EEC) state on a SyncE capable device. This state gives
-> > information about the state of EEC. This interface is required to
-> > implement Synchronization Status Messaging on upper layers.
-> >
-> > Initial implementation returns SyncE EEC state and flags attributes.
-> > The only flag currently implemented is the EEC_SRC_PORT. When it's set
-> > the EEC is synchronized to the recovered clock recovered from the
-> > current port.
-> >
-> > SyncE EEC state read needs to be implemented as a ndo_get_eec_state
-> > function.
-> >
-> > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
-> 
-> Is there a simpler way to do this? Seems like you are adding
-> a lot for a use case specific to a small class of devices.
-> For example adding a new network device operation adds small
-> amount of bloat to every other network device in the kernel.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: d144da38ff6c1ca77fa04fb7d0bb4d14137ab0d7  i40e: Fix delay after global reset
 
-Hi!
+elapsed time: 725m
 
-I couldn't find any simpler way. Do you have something specific in mind?
-A function pointer is only U64. I can hardly think of anything smaller.
+configs tested: 105
+configs skipped: 4
 
-Regards
-Maciek
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210904
+sh                           se7343_defconfig
+um                               alldefconfig
+powerpc                     kilauea_defconfig
+sh                   sh7770_generic_defconfig
+arm                  colibri_pxa270_defconfig
+arm                          simpad_defconfig
+arm                        clps711x_defconfig
+um                                  defconfig
+m68k                             allyesconfig
+arm                    vt8500_v6_v7_defconfig
+arm                            lart_defconfig
+sh                         ecovec24_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                      makalu_defconfig
+sh                          rsk7264_defconfig
+powerpc                     tqm5200_defconfig
+mips                    maltaup_xpa_defconfig
+xtensa                       common_defconfig
+arm                  randconfig-c002-20210904
+x86_64                            allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20210904
+i386                 randconfig-a004-20210904
+i386                 randconfig-a006-20210904
+i386                 randconfig-a002-20210904
+i386                 randconfig-a003-20210904
+i386                 randconfig-a001-20210904
+x86_64               randconfig-a006-20210904
+x86_64               randconfig-a004-20210904
+x86_64               randconfig-a003-20210904
+x86_64               randconfig-a005-20210904
+x86_64               randconfig-a001-20210904
+x86_64               randconfig-a002-20210904
+arc                  randconfig-r043-20210904
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+s390                 randconfig-c005-20210904
+mips                 randconfig-c004-20210904
+powerpc              randconfig-c003-20210904
+x86_64               randconfig-c007-20210904
+i386                 randconfig-c001-20210904
+arm                  randconfig-c002-20210904
+riscv                randconfig-c006-20210904
+x86_64               randconfig-a011-20210904
+x86_64               randconfig-a016-20210904
+x86_64               randconfig-a012-20210904
+x86_64               randconfig-a015-20210904
+x86_64               randconfig-a014-20210904
+x86_64               randconfig-a013-20210904
+i386                 randconfig-a012-20210904
+i386                 randconfig-a015-20210904
+i386                 randconfig-a011-20210904
+i386                 randconfig-a013-20210904
+i386                 randconfig-a014-20210904
+i386                 randconfig-a016-20210904
+riscv                randconfig-r042-20210904
+hexagon              randconfig-r045-20210904
+s390                 randconfig-r044-20210904
+hexagon              randconfig-r041-20210904
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
