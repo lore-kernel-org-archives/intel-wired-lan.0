@@ -1,143 +1,78 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 04 Sep 2021 14:55:25 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 8945c4bc5e8e03b2358974e602dcf8137b448ed9
-Message-ID: <6133185d.vMJCoFvVZhPsyiXu%lkp@intel.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Sun, 5 Sep 2021 10:23:36 +0300
+Subject: [Intel-wired-lan] [PATCH net] ice: check whether AUX
+ devices/drivers are supported in ice_rebuild
+In-Reply-To: <20210903012500.39407-1-yongxin.liu@windriver.com>
+References: <20210903012500.39407-1-yongxin.liu@windriver.com>
+Message-ID: <YTRweH4JMbzUtxLf@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 8945c4bc5e8e03b2358974e602dcf8137b448ed9  i40e: Add VF VLAN pruning
+On Fri, Sep 03, 2021 at 09:25:00AM +0800, Yongxin Liu wrote:
+> In ice_rebuild(), check whether AUX devices/drivers are supported or not
+> before calling ice_plug_aux_dev().
+> 
+> Fix the following call trace, if RDMA functionality is not available.
+> 
+>   auxiliary ice.roce.0: adding auxiliary device failed!: -17
+>   sysfs: cannot create duplicate filename '/bus/auxiliary/devices/ice.roce.0'
+>   Workqueue: ice ice_service_task [ice]
+>   Call Trace:
+>    dump_stack_lvl+0x38/0x49
+>    dump_stack+0x10/0x12
+>    sysfs_warn_dup+0x5b/0x70
+>    sysfs_do_create_link_sd.isra.2+0xc8/0xd0
+>    sysfs_create_link+0x25/0x40
+>    bus_add_device+0x6d/0x110
+>    device_add+0x49d/0x940
+>    ? _printk+0x52/0x6e
+>    ? _printk+0x52/0x6e
+>    __auxiliary_device_add+0x60/0xc0
+>    ice_plug_aux_dev+0xd3/0xf0 [ice]
+>    ice_rebuild+0x27d/0x510 [ice]
+>    ice_do_reset+0x51/0xe0 [ice]
+>    ice_service_task+0x108/0xe70 [ice]
+>    ? __switch_to+0x13b/0x510
+>    process_one_work+0x1de/0x420
+>    ? apply_wqattrs_cleanup+0xc0/0xc0
+>    worker_thread+0x34/0x400
+>    ? apply_wqattrs_cleanup+0xc0/0xc0
+>    kthread+0x14d/0x180
+>    ? set_kthread_struct+0x40/0x40
+>    ret_from_fork+0x1f/0x30
+> 
+> Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+> Signed-off-by: Yongxin Liu <yongxin.liu@windriver.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 0d6c143f6653..98cc708e9517 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -6466,7 +6466,9 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+>  	/* if we get here, reset flow is successful */
+>  	clear_bit(ICE_RESET_FAILED, pf->state);
+>  
+> -	ice_plug_aux_dev(pf);
+> +	if (ice_is_aux_ena(pf))
+> +		ice_plug_aux_dev(pf);
+> +
 
-elapsed time: 726m
+The change is ok, but it hints that auxiliary bus is used horribly wrong
+in this driver. In proper implementation, which should rely on driver/core,
+every subdriver like ice.eth, ice.roce e.t.c is supposed to be retriggered
+by the code and shouldn't  ave "if (ice_is_aux_ena(pf))" checks.
 
-configs tested: 112
-configs skipped: 3
+Thanks
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210904
-mips                        workpad_defconfig
-sh                   sh7770_generic_defconfig
-arm                         s5pv210_defconfig
-powerpc                mpc7448_hpc2_defconfig
-arm                         socfpga_defconfig
-arm                        spear6xx_defconfig
-powerpc                 mpc8560_ads_defconfig
-m68k                         amcore_defconfig
-sparc                       sparc64_defconfig
-h8300                     edosk2674_defconfig
-powerpc                      pasemi_defconfig
-powerpc                     mpc83xx_defconfig
-powerpc                      makalu_defconfig
-s390                             allmodconfig
-mips                         rt305x_defconfig
-mips                        maltaup_defconfig
-arm                           viper_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                      pxa255-idp_defconfig
-ia64                         bigsur_defconfig
-powerpc               mpc834x_itxgp_defconfig
-m68k                        mvme16x_defconfig
-mips                      bmips_stb_defconfig
-mips                      maltaaprp_defconfig
-arm                  randconfig-c002-20210904
-x86_64                            allnoconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20210904
-x86_64               randconfig-a004-20210904
-x86_64               randconfig-a003-20210904
-x86_64               randconfig-a005-20210904
-x86_64               randconfig-a001-20210904
-x86_64               randconfig-a002-20210904
-i386                 randconfig-a005-20210904
-i386                 randconfig-a004-20210904
-i386                 randconfig-a006-20210904
-i386                 randconfig-a002-20210904
-i386                 randconfig-a003-20210904
-i386                 randconfig-a001-20210904
-arc                  randconfig-r043-20210904
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-s390                 randconfig-c005-20210904
-mips                 randconfig-c004-20210904
-powerpc              randconfig-c003-20210904
-x86_64               randconfig-c007-20210904
-i386                 randconfig-c001-20210904
-arm                  randconfig-c002-20210904
-riscv                randconfig-c006-20210904
-x86_64               randconfig-a011-20210904
-x86_64               randconfig-a016-20210904
-x86_64               randconfig-a012-20210904
-x86_64               randconfig-a015-20210904
-x86_64               randconfig-a014-20210904
-x86_64               randconfig-a013-20210904
-i386                 randconfig-a012-20210904
-i386                 randconfig-a015-20210904
-i386                 randconfig-a011-20210904
-i386                 randconfig-a013-20210904
-i386                 randconfig-a014-20210904
-i386                 randconfig-a016-20210904
-riscv                randconfig-r042-20210904
-hexagon              randconfig-r045-20210904
-s390                 randconfig-r044-20210904
-hexagon              randconfig-r041-20210904
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+>  	return;
+>  
+>  err_vsi_rebuild:
+> -- 
+> 2.14.5
+> 
