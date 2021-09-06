@@ -1,7 +1,7 @@
 From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Mon,  6 Sep 2021 07:31:12 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix queues reservation scheme
-Message-ID: <20210906073112.273838-1-jedrzej.jagielski@intel.com>
+Date: Mon,  6 Sep 2021 07:32:30 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix queues reservation scheme
+Message-ID: <20210906073230.273956-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
