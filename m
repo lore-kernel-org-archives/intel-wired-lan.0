@@ -1,164 +1,80 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Mon, 6 Sep 2021 13:31:14 +0200
-Subject: [Intel-wired-lan] [External] Re: [PATCH v2] ixgbe: Fix NULL
- pointer dereference in ixgbe_xdp_setup
-In-Reply-To: <8ce8de1c-14bf-20ad-00c0-9e0d8ff34b91@bytedance.com>
-References: <20210903064013.9842-1-zhoufeng.zf@bytedance.com>
- <2ee172ab-836c-d464-be59-935030d01f4b@molgen.mpg.de>
- <8ce8de1c-14bf-20ad-00c0-9e0d8ff34b91@bytedance.com>
-Message-ID: <318e7f75-287e-148a-cdb0-648b7c36e0a9@redhat.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Mon, 6 Sep 2021 18:30:40 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
+ RTM_GETEECSTATE message to get SyncE status
+In-Reply-To: <20210903151425.0bea0ce7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210903151436.529478-1-maciej.machnikowski@intel.com>
+ <20210903151436.529478-2-maciej.machnikowski@intel.com>
+ <20210903151425.0bea0ce7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <PH0PR11MB4951623918C9BA8769C10E50EAD29@PH0PR11MB4951.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Feng and Jason,
 
-Please notice that you are both developing patches that change the ixgbe 
-driver in related areas.
 
-Jason's patch:
-  Subject: [PATCH v7] ixgbe: let the xdpdrv work with more than 64 cpus
- 
-https://lore.kernel.org/all/20210901101206.50274-1-kerneljasonxing at gmail.com/
-
-We might need both as this patch looks like a fix to a panic, and 
-Jason's patch allows XDP on ixgbe to work on machines with more than 64 
-CPUs.
-
--Jesper
-
-On 06/09/2021 09.49, Feng Zhou wrote:
+> -----Original Message-----
+> From: Jakub Kicinski <kuba@kernel.org>
+> Sent: Saturday, September 4, 2021 12:14 AM
+> Subject: Re: [PATCH net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
+> message to get SyncE status
 > 
-> ? 2021/9/6 ??2:37, Paul Menzel ??:
->> Dear Feng,
->>
->>
->> Am 03.09.21 um 08:40 schrieb Feng zhou:
->>
->> (If you care, in your email client, your last name does not start with 
->> a capital letter.)
->>
->>> From: Feng Zhou <zhoufeng.zf@bytedance.com>
->>>
->>> The ixgbe driver currently generates a NULL pointer dereference with
->>> some machine (online cpus < 63). This is due to the fact that the
->>> maximum value of num_xdp_queues is nr_cpu_ids. Code is in
->>> "ixgbe_set_rss_queues"".
->>>
->>> Here's how the problem repeats itself:
->>> Some machine (online cpus < 63), And user set num_queues to 63 through
->>> ethtool. Code is in the "ixgbe_set_channels",
->>> adapter->ring_feature[RING_F_FDIR].limit = count;
->>
->> For better legibility, you might want to indent code (blocks) by four 
->> spaces and add blank lines around it (also below).
->>
->>> It becames 63.
->>
->> becomes
->>
->>> When user use xdp, "ixgbe_set_rss_queues" will set queues num.
->>> adapter->num_rx_queues = rss_i;
->>> adapter->num_tx_queues = rss_i;
->>> adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
->>> And rss_i's value is from
->>> f = &adapter->ring_feature[RING_F_FDIR];
->>> rss_i = f->indices = f->limit;
->>> So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
->>> for (i = 0; i < adapter->num_rx_queues; i++)
->>> ????if (adapter->xdp_ring[i]->xsk_umem)
->>> lead to panic.
->>
->> lead*s*?
->>
->>> Call trace:
->>> [exception RIP: ixgbe_xdp+368]
->>> RIP: ffffffffc02a76a0? RSP: ffff9fe16202f8d0? RFLAGS: 00010297
->>> RAX: 0000000000000000? RBX: 0000000000000020? RCX: 0000000000000000
->>> RDX: 0000000000000000? RSI: 000000000000001c? RDI: ffffffffa94ead90
->>> RBP: ffff92f8f24c0c18?? R8: 0000000000000000?? R9: 0000000000000000
->>> R10: ffff9fe16202f830? R11: 0000000000000000? R12: ffff92f8f24c0000
->>> R13: ffff9fe16202fc01? R14: 000000000000000a? R15: ffffffffc02a7530
->>> ORIG_RAX: ffffffffffffffff? CS: 0010? SS: 0018
->>> ? 7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
->>> ? 8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
->>> ? 9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
->>> 10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
->>> 11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
->>> 12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
->>> 13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
->>> 14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
->>> 15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
->>> 16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
->>> 17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
->>> 18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
->>> 19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
->>
->> Please describe the fix in the commit message.
->>
->>> Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
->>> AF_XDP")
->>> Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
->>> ---
->>> Updates since v1:
->>> - Fix "ixgbe_max_channels" callback so that it will not allow a 
->>> setting of
->>> queues to be higher than the num_online_cpus().
->>> more details can be seen from here:
->>> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20210817075407.11961-1-zhoufeng.zf at bytedance.com/ 
->>>
->>> Thanks to Maciej Fijalkowski for your advice.
->>>
->>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
->>> ? drivers/net/ethernet/intel/ixgbe/ixgbe_main.c??? | 8 ++++++--
->>> ? 2 files changed, 7 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c 
->>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
->>> index 4ceaca0f6ce3..21321d164708 100644
->>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
->>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
->>> @@ -3204,7 +3204,7 @@ static unsigned int ixgbe_max_channels(struct 
->>> ixgbe_adapter *adapter)
->>> ????????? max_combined = ixgbe_max_rss_indices(adapter);
->>> ????? }
->>> ? -??? return max_combined;
->>> +??? return min_t(int, max_combined, num_online_cpus());
->>> ? }
->>> ? ? static void ixgbe_get_channels(struct net_device *dev,
->>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c 
->>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>> index 14aea40da50f..5db496cc5070 100644
->>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->>> @@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device 
->>> *dev, struct bpf_prog *prog)
->>> ????? struct ixgbe_adapter *adapter = netdev_priv(dev);
->>> ????? struct bpf_prog *old_prog;
->>> ????? bool need_reset;
->>> +??? int num_queues;
->>> ? ????? if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
->>> ????????? return -EINVAL;
->>> @@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct 
->>> net_device *dev, struct bpf_prog *prog)
->>> ????? /* Kick start the NAPI context if there is an AF_XDP socket open
->>> ?????? * on that queue id. This so that receiving will start.
->>> ?????? */
->>> -??? if (need_reset && prog)
->>> -??????? for (i = 0; i < adapter->num_rx_queues; i++)
->>> +??? if (need_reset && prog) {
->>> +??????? num_queues = min_t(int, adapter->num_rx_queues,
->>> +??????????? adapter->num_xdp_queues);
->>> +??????? for (i = 0; i < num_queues; i++)
->>> ????????????? if (adapter->xdp_ring[i]->xsk_pool)
->>> ????????????????? (void)ixgbe_xsk_wakeup(adapter->netdev, i,
->>> ???????????????????????????????? XDP_WAKEUP_RX);
->>> +??? }
->>> ? ????? return 0;
->>> ? }
->>>
-> Thanks for your advice. I will modify the commit message in v3
+> On Fri,  3 Sep 2021 17:14:35 +0200 Maciej Machnikowski wrote:
+> > This patch series introduces basic interface for reading the Ethernet
+> > Equipment Clock (EEC) state on a SyncE capable device. This state gives
+> > information about the state of EEC. This interface is required to
+> > implement Synchronization Status Messaging on upper layers.
+> >
+> > Initial implementation returns SyncE EEC state and flags attributes.
+> > The only flag currently implemented is the EEC_SRC_PORT. When it's set
+> > the EEC is synchronized to the recovered clock recovered from the
+> > current port.
+> >
+> > SyncE EEC state read needs to be implemented as a ndo_get_eec_state
+> > function.
+> >
+> > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 > 
+> Since we're talking SyncE-only now my intuition would be to put this
+> op in ethtool. Was there a reason ethtool was not chosen? If not what
+> do others think / if yes can the reason be included in the commit
+> message?
 
+Hmm. Main reason for netlink is that linuxptp already supports it,
+and it was suggested by Richard.
+Having an NDO would also make it easier to add a SyncE-related
+files to the sysfs for easier operation (following the ideas from the ptp
+pins subsystem).
+But I'm open for suggestions. 
+
+> 
+>  
+> > +#define EEC_SRC_PORT		(1 << 0) /* recovered clock from the
+> port is
+> > +					  * currently the source for the EEC
+> > +					  */
+> 
+> Why include it then? Just leave the value out and if the attr is not
+> present user space should assume the source is port.
+
+This bit has a different meaning. If it's set the port in question
+is a frequency source for the multiport device, if it's cleared - some other
+source is used as a source. This is needed to prevent setting invalid 
+configurations in the PHY (like setting the frequency source as a Master
+in AN) or sending invalid messages. If the port is a frequency source
+it must always send back QL-DNU messages to prevent synchronization
+loops.
+
+> 
+> or don't check the ifindex at all and let dev_get_by.. fail.
+> 
+> 
+> Thanks for pushing this API forward!
+
+Addressed all other comments - and thanks for giving a lot of helpful
+suggestions!
+
+Regards
+Maciek
