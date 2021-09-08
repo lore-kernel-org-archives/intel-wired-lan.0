@@ -1,174 +1,151 @@
-From: Jason Xing <kerneljasonxing@gmail.com>
-Date: Wed, 8 Sep 2021 10:36:58 +0800
-Subject: [Intel-wired-lan] [External] Re: [PATCH v2] ixgbe: Fix NULL
- pointer dereference in ixgbe_xdp_setup
-In-Reply-To: <318e7f75-287e-148a-cdb0-648b7c36e0a9@redhat.com>
-References: <20210903064013.9842-1-zhoufeng.zf@bytedance.com>
- <2ee172ab-836c-d464-be59-935030d01f4b@molgen.mpg.de>
- <8ce8de1c-14bf-20ad-00c0-9e0d8ff34b91@bytedance.com>
- <318e7f75-287e-148a-cdb0-648b7c36e0a9@redhat.com>
-Message-ID: <CAL+tcoANwm41McdufaB0UggcUN3cXsPL6Vta99BPodYKwLyBGw@mail.gmail.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Wed, 8 Sep 2021 08:03:35 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
+ RTM_GETEECSTATE message to get SyncE status
+In-Reply-To: <20210907124730.33852895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20210903151436.529478-1-maciej.machnikowski@intel.com>
+ <20210903151436.529478-2-maciej.machnikowski@intel.com>
+ <20210903151425.0bea0ce7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB4951623918C9BA8769C10E50EAD29@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210906113925.1ce63ac7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB49511F2017F48BBAAB2A065CEAD29@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210906180124.33ff49ef@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB495152B03F32A5A17EDB2F6CEAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210907075509.0b3cb353@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB49512C265E090FC8741D8510EAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210907124730.33852895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <PH0PR11MB495169997552152891A69B57EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 6, 2021 at 7:32 PM Jesper Dangaard Brouer
-<jbrouer@redhat.com> wrote:
->
-> Hi Feng and Jason,
->
-> Please notice that you are both developing patches that change the ixgbe
-> driver in related areas.
 
-Thanks for noticing. We're doing different things as they are both
-related to XDP on ixgbe actually.
 
-Jason
-
->
-> Jason's patch:
->   Subject: [PATCH v7] ixgbe: let the xdpdrv work with more than 64 cpus
->
-> https://lore.kernel.org/all/20210901101206.50274-1-kerneljasonxing at gmail.com/
->
-> We might need both as this patch looks like a fix to a panic, and
-> Jason's patch allows XDP on ixgbe to work on machines with more than 64
-> CPUs.
->
-> -Jesper
->
-> On 06/09/2021 09.49, Feng Zhou wrote:
+> -----Original Message-----
+> From: Jakub Kicinski <kuba@kernel.org>
+> Sent: Tuesday, September 7, 2021 9:48 PM
+> Subject: Re: [PATCH net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
+> message to get SyncE status
+> 
+> On Tue, 7 Sep 2021 15:47:05 +0000 Machnikowski, Maciej wrote:
+> > > > It can be either in FW or in Linux - depending on the deployment.
+> > > > We try to define the API that would enable Linux to manage that.
+> > >
+> > > We should implement the API for Linux to manage things from the get
+> go.
 > >
-> > ? 2021/9/6 ??2:37, Paul Menzel ??:
-> >> Dear Feng,
-> >>
-> >>
-> >> Am 03.09.21 um 08:40 schrieb Feng zhou:
-> >>
-> >> (If you care, in your email client, your last name does not start with
-> >> a capital letter.)
-> >>
-> >>> From: Feng Zhou <zhoufeng.zf@bytedance.com>
-> >>>
-> >>> The ixgbe driver currently generates a NULL pointer dereference with
-> >>> some machine (online cpus < 63). This is due to the fact that the
-> >>> maximum value of num_xdp_queues is nr_cpu_ids. Code is in
-> >>> "ixgbe_set_rss_queues"".
-> >>>
-> >>> Here's how the problem repeats itself:
-> >>> Some machine (online cpus < 63), And user set num_queues to 63 through
-> >>> ethtool. Code is in the "ixgbe_set_channels",
-> >>> adapter->ring_feature[RING_F_FDIR].limit = count;
-> >>
-> >> For better legibility, you might want to indent code (blocks) by four
-> >> spaces and add blank lines around it (also below).
-> >>
-> >>> It becames 63.
-> >>
-> >> becomes
-> >>
-> >>> When user use xdp, "ixgbe_set_rss_queues" will set queues num.
-> >>> adapter->num_rx_queues = rss_i;
-> >>> adapter->num_tx_queues = rss_i;
-> >>> adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
-> >>> And rss_i's value is from
-> >>> f = &adapter->ring_feature[RING_F_FDIR];
-> >>> rss_i = f->indices = f->limit;
-> >>> So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
-> >>> for (i = 0; i < adapter->num_rx_queues; i++)
-> >>>     if (adapter->xdp_ring[i]->xsk_umem)
-> >>> lead to panic.
-> >>
-> >> lead*s*?
-> >>
-> >>> Call trace:
-> >>> [exception RIP: ixgbe_xdp+368]
-> >>> RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
-> >>> RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
-> >>> RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
-> >>> RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
-> >>> R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
-> >>> R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
-> >>> ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
-> >>>   7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
-> >>>   8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
-> >>>   9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
-> >>> 10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
-> >>> 11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
-> >>> 12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
-> >>> 13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
-> >>> 14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
-> >>> 15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
-> >>> 16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
-> >>> 17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
-> >>> 18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
-> >>> 19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
-> >>
-> >> Please describe the fix in the commit message.
-> >>
-> >>> Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
-> >>> AF_XDP")
-> >>> Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
-> >>> ---
-> >>> Updates since v1:
-> >>> - Fix "ixgbe_max_channels" callback so that it will not allow a
-> >>> setting of
-> >>> queues to be higher than the num_online_cpus().
-> >>> more details can be seen from here:
-> >>> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20210817075407.11961-1-zhoufeng.zf at bytedance.com/
-> >>>
-> >>> Thanks to Maciej Fijalkowski for your advice.
-> >>>
-> >>>   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
-> >>>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 8 ++++++--
-> >>>   2 files changed, 7 insertions(+), 3 deletions(-)
-> >>>
-> >>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> >>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> >>> index 4ceaca0f6ce3..21321d164708 100644
-> >>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> >>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> >>> @@ -3204,7 +3204,7 @@ static unsigned int ixgbe_max_channels(struct
-> >>> ixgbe_adapter *adapter)
-> >>>           max_combined = ixgbe_max_rss_indices(adapter);
-> >>>       }
-> >>>   -    return max_combined;
-> >>> +    return min_t(int, max_combined, num_online_cpus());
-> >>>   }
-> >>>     static void ixgbe_get_channels(struct net_device *dev,
-> >>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >>> index 14aea40da50f..5db496cc5070 100644
-> >>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> >>> @@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device
-> >>> *dev, struct bpf_prog *prog)
-> >>>       struct ixgbe_adapter *adapter = netdev_priv(dev);
-> >>>       struct bpf_prog *old_prog;
-> >>>       bool need_reset;
-> >>> +    int num_queues;
-> >>>         if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
-> >>>           return -EINVAL;
-> >>> @@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct
-> >>> net_device *dev, struct bpf_prog *prog)
-> >>>       /* Kick start the NAPI context if there is an AF_XDP socket open
-> >>>        * on that queue id. This so that receiving will start.
-> >>>        */
-> >>> -    if (need_reset && prog)
-> >>> -        for (i = 0; i < adapter->num_rx_queues; i++)
-> >>> +    if (need_reset && prog) {
-> >>> +        num_queues = min_t(int, adapter->num_rx_queues,
-> >>> +            adapter->num_xdp_queues);
-> >>> +        for (i = 0; i < num_queues; i++)
-> >>>               if (adapter->xdp_ring[i]->xsk_pool)
-> >>>                   (void)ixgbe_xsk_wakeup(adapter->netdev, i,
-> >>>                                  XDP_WAKEUP_RX);
-> >>> +    }
-> >>>         return 0;
-> >>>   }
-> >>>
-> > Thanks for your advice. I will modify the commit message in v3
+> > Yep! Yet let's go one step at a time. I believe once we have the basics (EEC
+> > monitoring and recovered clock configuration) we'll be able to implement
+> > a basic functionality - and add bells and whistles later on, as there are more
+> > capabilities that we could support in SW.
+> 
+> The set API may shape how the get API looks. We need a minimal viable
+> API where the whole control part of it is not "firmware or proprietary
+> tools take care of that".
+> 
+> Do you have public docs on how the whole solution works?
+
+The best reference would be my netdev 0x15 tutorial:
+https://netdevconf.info/0x15/session.html?Introduction-to-time-synchronization-over-Ethernet
+The SyncE API considerations starts ~54:00, but basically we need API for:
+- Controlling the lane to pin mapping for clock recovery
+- Check the EEC/DPLL state and see what's the source of reference frequency
+(in more advanced deployments)
+- control additional input and output pins (GNSS input, external inputs, recovered
+  frequency reference)
+ 
+> > > > The DPLL will operate on pins, so it will have a pin connected from the
+> > > > MAC/PHY that will have the recovered clock, but the recovered clock
+> > > > can be enabled from any port/lane. That information is kept in the
+> > > > MAC/PHY and the DPLL side will not be aware who it belongs to.
+> > >
+> > > So the clock outputs are muxed to a single pin at the Ethernet IP
+> > > level, in your design. I wonder if this is the common implementation
+> > > and therefore if it's safe to bake that into the API. Input from other
+> > > vendors would be great...
 > >
->
+> > I believe this is the state-of-art: here's the Broadcom public one
+> > https://docs.broadcom.com/doc/1211168567832, I believe Marvel
+> > has similar solution. But would also be happy to hear others.
+> 
+> Interesting. That reveals the need for also marking the backup
+> (/secondary) clock.
+
+That's optional, but useful. And here's where we need a feedback
+on which port/lane is currently used, as the switch may be automatic
+
+> Have you seen any docs on how systems with discreet PHY ASICs mux
+> the clocks?
+
+Yes - unfortunately they are not public :(
+
+ 
+> > > Also do I understand correctly that the output of the Ethernet IP
+> > > is just the raw Rx clock once receiver is locked and the DPLL which
+> > > enum if_synce_state refers to is in the time IP, that DPLL could be
+> > > driven by GNSS etc?
+> >
+> > Ethernet IP/PHY usually outputs a divided clock signal (since it's
+> > easier to route) derived from the RX clock.
+> > The DPLL connectivity is vendor-specific, as you can use it to connect
+> > some external signals, but you can as well just care about relying
+> > the SyncE clock and only allow recovering it and passing along
+> > the QL info when your EEC is locked. That's why I backed up from
+> > a full DPLL implementation in favor of a more generic EEC clock.
+> 
+> What is an ECC clock? To me the PLL state in the Ethernet port is the
+> state of the recovered clock. enum if_eec_state has values like
+> holdover which seem to be more applicable to the "system wide" PLL.
+
+EEC is Ethernet Equipment Clock. In most cases this will be a DPLL, but that's
+not mandatory and I believe it may be different is switches where
+you only need to drive all ports TX from a single frequency source. In this
+case the DPLL can be embedded in the multiport PHY,
+ 
+> Let me ask this - if one port is training the link and the other one has
+> the lock and is the source - what state will be reported for each port?
+
+In this case the port that has the lock source will report the lock and 
+the EEC_SRC_PORT flag. The port that trains the link will show the
+lock without the flag and once it completes the training sequence it will
+use the EEC's frequency to transmit the data so that the next hop is able
+to synchronize its EEC to the incoming RX frequency
+
+> > The Time IP is again relative and vendor-specific. If SyncE is deployed
+> > alongside PTP it will most likely be tightly coupled, but if you only
+> > care about having a frequency source - it's not mandatory and it can be
+> > as well in the PHY IP.
+> 
+> I would not think having just the freq is very useful.
+
+This depends on the deployment. There are couple popular frequencies
+Most popular are 2,048 kHz, 10 MHz and 64 kHz. There are many 
+deployments that only require frequency sync without the phase
+and/or time. I.e. if you deploy frequency division duplex you only need the
+frequency reference, and the higher frequency you have - the faster you can
+lock to it.
+ 
+> > Also I think I will strip the reported states to the bare minimum defined
+> > in the ITU-T G.781 instead of reusing the states that were already defined
+> > for a specific DPLL.
+> >
+> > > > This is the right thinking. The DPLL can also have different external
+> sources,
+> > > > like the GNSS, and can also drive different output clocks. But for the
+> most
+> > > > basic SyncE implementation, which only runs on a recovered clock, we
+> won't
+> > > > need the DPLL subsystem.
+> > >
+> > > The GNSS pulse would come in over an external pin, tho, right? Your
+> > > earlier version of the patchset had GNSS as an enum value, how would
+> > > the driver / FW know that a given pin means GNSS?
+> >
+> > The GNSS 1PPS will more likely go directly to the "full" DPLL.
+> > The pin topology can be derived from FW or any vendor-specific way of
+> mapping
+> > pins to their sources. And, in "worst" case can just be hardcoded for a
+> specific
+> > device.
