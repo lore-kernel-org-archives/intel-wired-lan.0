@@ -1,46 +1,56 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Thu, 9 Sep 2021 01:14:36 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <20210908151852.7ad8a0f1@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <PH0PR11MB49511F2017F48BBAAB2A065CEAD29@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210906180124.33ff49ef@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB495152B03F32A5A17EDB2F6CEAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210907075509.0b3cb353@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB49512C265E090FC8741D8510EAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210907124730.33852895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB495169997552152891A69B57EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210908092115.191fdc28@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB4951AA3C65DD8E7612F5F396EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210908151852.7ad8a0f1@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <YTlD3Gok7w/MF+g2@lunn.ch>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed,  8 Sep 2021 16:49:20 -0700
+Subject: [Intel-wired-lan] [net-next 0/4] ice: miscellaneous firmware
+ features
+Message-ID: <20210908234924.3416592-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> As you said, pin -> ref mapping is board specific, so the API should
-> not assume knowledge of routing between Port and ECC.
+This series contains a few miscellaneous left over pieces of work related to
+flash update that I've been meaning to submit for a while.
 
-That information will probably end up in device tree. And X different
-implementations of ACPI, unless somebody puts there foot down and
-stops the snow flakes.
+This includes the following:
 
-> Imagine a system with two cascaded switch ASICs and a bunch of PHYs.
-> How do you express that by pure extensions to the proposed API?
+ * a new shadow-ram region similar to NVM region but for the device shadow
+   RAM contents. This is distinct from NVM region because shadow RAM is
+   built up during device init and may be different from the raw NVM flash
+   data. (As I found out while debugging some issues with flash update).
+ * refactoring of the ice_flash_pldm_image to become the main flash update
+   entry point. This is simpler than having both a ice_devlink_flash_update
+   and an ice_flash_pldm_image. It will make additions like dry-run easier
+   in the future
+ * support for firmware activation via devlink reload, when possible.
 
-Device tree is good at that. ACPI might eventually catch up.
+The major new work is the reload support, which allows activating firmware
+immediately without a reboot when possible.
 
-How complex a setup do we actually expect? Can there be multiple
-disjoint SyncE trees within an Ethernet switch cluster? Or would it be
-reasonable to say all you need to configure is the clock source, and
-all other ports of the switches are slaves if SyncE is enabled for the
-port? I've never see any SOHO switch hardware which allows you to have
-disjoint PTP trees, so it does not sound too unreasonable to only
-allow a single SyncE tree per switch cluster.
+As a note, I want to call out that the reload support here only supports
+firmware activation. I really did try to see what it would take to get
+proper driver reload support working. Unfortunately this task requires a
+large amount of rewrite to the entire flow that the driver uses for both
+probe/remove, as well as driver reset.
 
-Also, if you are cascading switches, you generally don't put PHYs in
-the middle, you just connect the SERDES lanes together.
+Jacob Keller (4):
+  ice: devlink: add shadow-ram region to snapshot Shadow RAM
+  ice: move and rename ice_check_for_pending_update
+  ice: refactor ice_flash_pldm_image and combine with
+    ice_devlink_flash_update
+  ice: support immediate firmware activation via devlink reload
 
-	 Andrew
+ drivers/net/ethernet/intel/ice/ice.h          |   9 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   7 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  12 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 218 ++++++++++---
+ .../net/ethernet/intel/ice/ice_fw_update.c    | 291 ++++++++++++------
+ .../net/ethernet/intel/ice/ice_fw_update.h    |   9 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   4 +
+ 7 files changed, 412 insertions(+), 138 deletions(-)
+
+
+base-commit: 8945c4bc5e8e03b2358974e602dcf8137b448ed9
+-- 
+2.31.1.331.gb0c09ab8796f
+
