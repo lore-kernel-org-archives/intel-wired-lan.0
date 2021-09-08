@@ -1,112 +1,70 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  8 Sep 2021 10:52:37 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] e100: fix buffer overrun in
- e100_get_regs
-In-Reply-To: <20210908175237.3058574-1-jacob.e.keller@intel.com>
-References: <20210908175237.3058574-1-jacob.e.keller@intel.com>
-Message-ID: <20210908175237.3058574-2-jacob.e.keller@intel.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Wed, 8 Sep 2021 21:34:37 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
+ RTM_GETEECSTATE message to get SyncE status
+In-Reply-To: <PH0PR11MB4951AA3C65DD8E7612F5F396EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
+References: <20210906113925.1ce63ac7@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB49511F2017F48BBAAB2A065CEAD29@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210906180124.33ff49ef@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB495152B03F32A5A17EDB2F6CEAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210907075509.0b3cb353@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB49512C265E090FC8741D8510EAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210907124730.33852895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB495169997552152891A69B57EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
+ <20210908092115.191fdc28@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <PH0PR11MB4951AA3C65DD8E7612F5F396EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
+Message-ID: <YTkQTQM6Is4Hqmxh@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The e100_get_regs function is used to implement a simple register dump
-for the e100 device. The data is broken into a couple of MAC control
-registers, and then a series of PHY registers, followed by a memory dump
-buffer.
+> > > The SyncE API considerations starts ~54:00, but basically we need API for:
+> > > - Controlling the lane to pin mapping for clock recovery
+> > > - Check the EEC/DPLL state and see what's the source of reference
+> > frequency
+> > > (in more advanced deployments)
+> > > - control additional input and output pins (GNSS input, external inputs,
+> > recovered
+> > >   frequency reference)
 
-The total length of the register dump is defined as (1 + E100_PHY_REGS)
-* sizeof(u32) + sizeof(nic->mem->dump_buf).
+Now that you have pointed to a datasheet...
 
-The logic for filling in the PHY registers uses a convoluted inverted
-count for loop which counts from E100_PHY_REGS (0x1C) down to 0, and
-assigns the slots 1 + E100_PHY_REGS - i. The first loop iteration will
-fill in [1] and the final loop iteration will fill in [1 + 0x1C]. This
-is actually one more than the supposed number of PHY registers.
+> - Controlling the lane to pin mapping for clock recovery
 
-The memory dump buffer is then filled into the space at
-[2 + E100_PHY_REGS] which will cause that memcpy to assign 4 bytes past
-the total size.
+So this is a PHY property. That could be Linux driving the PHY, via
+phylib, drivers/net/phy, or there could be firmware in the MAC driver
+which hides the PHY and gives you some sort of API to access it.
 
-The end result is that we overrun the total buffer size allocated by the
-kernel, which could lead to a panic or other issues due to memory
-corruption.
+> Check the EEC/DPLL state and see what's the source of reference
+> frequency
 
-It is difficult to determine the actual total number of registers
-here. The only 8255x datasheet I could find indicates there are 28 total
-MDI registers. However, we're reading 29 here, and reading them in
-reverse!
+Where is the EEC/DPLL implemented? Is it typically also in the PHY? Or
+some other hardware block?
 
-In addition, the ethtool e100 register dump interface appears to read
-the first PHY register to determine if the device is in MDI or MDIx
-mode. This doesn't appear to be documented anywhere within the 8255x
-datasheet. I can only assume it must be in register 28 (the extra
-register we're reading here).
+I just want to make sure we have an API which we can easily delegate
+to different subsystems, some of it in the PHY driver, maybe some of
+it somewhere else.
 
-Lets not change any of the intended meaning of what we copy here. Just
-extend the space by 4 bytes to account for the extra register and
-continue copying the data out in the same order.
+Also, looking at the Marvell datasheet, it appears these registers are
+in the MDIO_MMD_VEND2 range. Has any of this been specified? Can we
+expect to be able to write a generic implementation sometime in the
+future which PHY drivers can share?
 
-Change the E100_PHY_REGS value to be the correct total (29) so that the
-total register dump size is calculated properly. Fix the offset for
-where we copy the dump buffer so that it doesn't overrun the total size.
+I just looked at a 1G Marvell PHY. It uses RGMII or SGMII towards the
+host. But there is no indication you can take the clock from the SGMII
+SERDES, it is only the recovered clock from the line. And the
+recovered clock always goes out the CLK125 pin, which can either be
+125MHz or 25MHz.
 
-Re-write the for loop to use counting up instead of the convoluted
-down-counting. Correct the mdio_read offset to use the 0-based register
-offsets, but maintain the bizarre reverse ordering so that we have the
-ABI expected by applications like ethtool. This requires and additional
-subtraction of 1. It seems a bit odd but it makes the flow of assignment
-into the register buffer easier to follow.
+So in this case, you have no need to control the lane to pin mapping,
+it is fixed, but do we want to be able to control the divider?
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Rerported-by: Reported-by: Felicitas Hetzelt <felicitashetzelt@gmail.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/e100.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+Do we need a mechanism to actually enumerate what the hardware can do?
 
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 588a59546d12..7ac932e95fcb 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -2437,7 +2437,7 @@ static void e100_get_drvinfo(struct net_device *netdev,
- 		sizeof(info->bus_info));
- }
- 
--#define E100_PHY_REGS 0x1C
-+#define E100_PHY_REGS 0x1D
- static int e100_get_regs_len(struct net_device *netdev)
- {
- 	struct nic *nic = netdev_priv(netdev);
-@@ -2459,13 +2459,17 @@ static void e100_get_regs(struct net_device *netdev,
- 	buff[0] = ioread8(&nic->csr->scb.cmd_hi) << 24 |
- 		ioread8(&nic->csr->scb.cmd_lo) << 16 |
- 		ioread16(&nic->csr->scb.status);
--	for (i = E100_PHY_REGS; i >= 0; i--)
--		buff[1 + E100_PHY_REGS - i] =
--			mdio_read(netdev, nic->mii.phy_id, i);
-+	for (i = 0; i < E100_PHY_REGS; i++)
-+		/* Note that we read the registers in reverse order. This
-+		 * ordering is the ABI apparently used by ethtool and other
-+		 * applications.
-+		 */
-+		buff[1 + i] = mdio_read(netdev, nic->mii.phy_id,
-+					E100_PHY_REGS - 1 - i);
- 	memset(nic->mem->dump_buf, 0, sizeof(nic->mem->dump_buf));
- 	e100_exec_cb(nic, NULL, e100_dump);
- 	msleep(10);
--	memcpy(&buff[2 + E100_PHY_REGS], nic->mem->dump_buf,
-+	memcpy(&buff[1 + E100_PHY_REGS], nic->mem->dump_buf,
- 		sizeof(nic->mem->dump_buf));
- }
- 
--- 
+Since we are talking about clocks and dividers, and multiplexors,
+should all this be using the common clock framework, which already
+supports most of this? Do we actually need something new?
 
-I spent rather longer than I intended on this. The fix is more involved than
-I had originally intended. However, I think this is the only solution which
-both avoids buffer overrun and prevents breaking the expected ABI between
-ethtool and the driver.
-
-2.31.1.331.gb0c09ab8796f
-
+       Andrew
