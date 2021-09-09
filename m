@@ -1,41 +1,47 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Wed, 8 Sep 2021 19:09:15 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <YTlAT+1wkazy3Uge@lunn.ch>
-References: <PH0PR11MB495152B03F32A5A17EDB2F6CEAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210907075509.0b3cb353@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB49512C265E090FC8741D8510EAD39@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210907124730.33852895@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB495169997552152891A69B57EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
- <20210908092115.191fdc28@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <PH0PR11MB4951AA3C65DD8E7612F5F396EAD49@PH0PR11MB4951.namprd11.prod.outlook.com>
- <YTkQTQM6Is4Hqmxh@lunn.ch>
- <20210908152027.313d7168@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YTlAT+1wkazy3Uge@lunn.ch>
-Message-ID: <20210909020915.GA30747@hoboy.vegasvil.org>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 9 Sep 2021 03:57:12 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 4/7] ice: Add feature bitmap,
+ helpers and a check for DSCP
+In-Reply-To: <BYAPR11MB33678EAAB258C5CF310FC4E8FCD39@BYAPR11MB3367.namprd11.prod.outlook.com>
+References: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
+ <20210716221644.45946-5-anthony.l.nguyen@intel.com>
+ <BYAPR11MB33678EAAB258C5CF310FC4E8FCD39@BYAPR11MB3367.namprd11.prod.outlook.com>
+Message-ID: <BYAPR11MB33676B1EFF86E6DC70FE94E8FCD59@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 09, 2021 at 12:59:27AM +0200, Andrew Lunn wrote:
-> On Wed, Sep 08, 2021 at 03:20:27PM -0700, Jakub Kicinski wrote:
-> > On Wed, 8 Sep 2021 21:34:37 +0200 Andrew Lunn wrote:
-> > > Since we are talking about clocks and dividers, and multiplexors,
-> > > should all this be using the common clock framework, which already
-> > > supports most of this? Do we actually need something new?
-> > 
-> > Does the common clock framework expose any user space API?
-> 
-> Ah, good point. No, i don't think it does, apart from debugfs, which
-> is not really a user space API, and it contains read only descriptions
-> of the clock tree, current status, mux settings, dividers etc.
 
-Wouldn't it make sense to develop some kind of user land API to
-manipulate the common clock framework at run time?
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf
+> Of Tony Nguyen
+> Sent: Saturday, July 17, 2021 3:47 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next 4/7] ice: Add feature
+> bitmap, helpers and a check for DSCP
+>
+> From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+>
+> DSCP a.k.a L3 QoS is only supported on certain devices. To enforce
+> this, this patch introduces a bitmap of features and helper functions.
+>
+> The feature bitmap is set based on device IDs on driver init.
+> Currently, DSCP is the only feature in this bitmap, but there will be
+> more in the future. In the DCB netlink flow, check if the feature bit is set
+before exercising DSCP.
+>
+> Signed-off-by: Anirudh Venkataramanan
+> <anirudh.venkataramanan@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h        |  6 +++
+>  drivers/net/ethernet/intel/ice/ice_dcb_nl.c |  8 +++-
+>  drivers/net/ethernet/intel/ice/ice_lib.c    | 47 +++++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_lib.h    |  2 +
+>  drivers/net/ethernet/intel/ice/ice_main.c   |  2 +
+>  5 files changed, 63 insertions(+), 2 deletions(-)
+>
 
-Just dreaming...
-
-Richard
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker> at Intel)
