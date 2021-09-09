@@ -1,183 +1,115 @@
-From: Brett Creeley <brett.creeley@intel.com>
-Date: Thu,  9 Sep 2021 12:27:09 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix race conditions between
- virtchnl handling and VF ndo ops
-In-Reply-To: <20210909192709.26269-1-brett.creeley@intel.com>
-References: <20210909192709.26269-1-brett.creeley@intel.com>
-Message-ID: <20210909192709.26269-2-brett.creeley@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Thu, 9 Sep 2021 20:38:57 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix refreshing iavf
+ adapter stats on ethtool request
+In-Reply-To: <20210903064846.71507-1-jedrzej.jagielski@intel.com>
+References: <20210903064846.71507-1-jedrzej.jagielski@intel.com>
+Message-ID: <106f6b527e3f1b5098b7fee203b13c992b0e3827.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The VF can be configured via the PF's ndo ops at the same time the PF is
-receiving/handling virtchnl messages. This has many issues, with
-one of them being the ndo op could be actively resetting a VF (i.e.
-resetting it to the default state and deleting/re-adding the VF's VSI)
-while a virtchnl message is being handled. The following error was seen
-because a VF ndo op was used to change a VF's trust setting while the
-VIRTCHNL_OP_CONFIG_VSI_QUEUES was ongoing:
+On Fri, 2021-09-03 at 06:48 +0000, Jedrzej Jagielski wrote:
+> Currently iavf adapter statistics are refreshed only in a
+> watchdog task, triggered approximately every two seconds,
+> which causes some ethtool requests to return outdated values.
+> 
+> Add explicit statistics refresh when requested by ethtool -S.
+> 
+> Fixes: b476b0030e61 ("iavf: Move commands processing to the separate
+> function")
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h         |  2 ++
+>  drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  3 +++
+>  drivers/net/ethernet/intel/iavf/iavf_main.c    | 18
+> ++++++++++++++++++
+>  3 files changed, 23 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 21c95775509a..afe6b0d24a9a 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -306,6 +306,7 @@ struct iavf_adapter {
+>  #define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
+>  #define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT(27)
+>  #define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT(28)
+> +#define IAVF_FLAG_AQ_REQUEST_STATS		BIT(29)
+>  
+>  	/* OS defined structs */
+>  	struct net_device *netdev;
+> @@ -399,6 +400,7 @@ int iavf_up(struct iavf_adapter *adapter);
+>  void iavf_down(struct iavf_adapter *adapter);
+>  int iavf_process_config(struct iavf_adapter *adapter);
+>  void iavf_schedule_reset(struct iavf_adapter *adapter);
+> +void iavf_schedule_request_stats(struct iavf_adapter *adapter);
+>  void iavf_reset(struct iavf_adapter *adapter);
+>  void iavf_set_ethtool_ops(struct net_device *netdev);
+>  void iavf_update_stats(struct iavf_adapter *adapter);
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+> index 7cbe59beeebb..21c4d4180f3e 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+> @@ -354,6 +354,9 @@ static void iavf_get_ethtool_stats(struct
+> net_device *netdev,
+>  	struct iavf_adapter *adapter = netdev_priv(netdev);
+>  	unsigned int i;
+>  
+> +	/* Explicitly request stats refresh */
+> +	iavf_schedule_request_stats(adapter);
+> +
+>  	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
+>  
+>  	rcu_read_lock();
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 80437ef26391..e7ac6356772b 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -165,6 +165,19 @@ void iavf_schedule_reset(struct iavf_adapter
+> *adapter)
+>  	}
+>  }
+>  
+> +/**
+> + * iavf_schedule_request_stats - Set the flags and schedule
+> statistics request
+> + * @adapter: board private structure
+> + *
+> + * Sets IAVF_FLAG_AQ_REQUEST_STATS flag so iavf_watchdog_task() will
+> explicitly
+> + * request and refresh ethtool stats
+> + **/
+> +void iavf_schedule_request_stats(struct iavf_adapter *adapter)
+> +{
+> +	adapter->aq_required |= IAVF_FLAG_AQ_REQUEST_STATS;
 
-[35274.192484] ice 0000:88:00.0: Failed to set LAN Tx queue context, error: ICE_ERR_PARAM
-[35274.193074] ice 0000:88:00.0: VF 0 failed opcode 6, retval: -5
-[35274.193640] iavf 0000:88:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 6
+This is never being cleared.
 
-Fix this by making sure the virtchnl handling and VF ndo ops that
-trigger VF resets cannot run concurrently. This is done by adding a
-struct mutex cfg_lock to each VF structure. For VF ndo ops, the mutex
-will be locked around the critical operations and VFR. Since the ndo ops
-will trigger a VFR, the virtchnl thread will use mutex_trylock(). This
-is done because if any other thread (i.e. VF ndo op) has the mutex, then
-that means the current VF message being handled is no longer valid, so
-just ignore it.
+> +	queue_work(iavf_wq, &adapter->watchdog_task.work);
+> +}
+> +
+>  /**
+>   * iavf_tx_timeout - Respond to a Tx Hang
+>   * @netdev: network interface device structure
+> @@ -1700,6 +1713,11 @@ static int iavf_process_aq_command(struct
+> iavf_adapter *adapter)
+>  		iavf_del_adv_rss_cfg(adapter);
+>  		return 0;
+>  	}
+> +	if (adapter->aq_required & IAVF_FLAG_AQ_REQUEST_STATS) {
+> +		iavf_request_stats(adapter);
+> +		return IAVF_SUCCESS;
 
-This issue can be seen using the following commands:
+This function returns int, not iavf_status. This should be 0
 
-for i in {0..50}; do
-        rmmod ice
-        modprobe ice
-
-        sleep 1
-
-        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-
-        ip link set ens785f1 vf 0 trust on
-        ip link set ens785f0 vf 0 trust on
-
-        sleep 2
-
-        echo 0 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 0 > /sys/class/net/ens785f1/device/sriov_numvfs
-        sleep 1
-        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-
-        ip link set ens785f1 vf 0 trust on
-        ip link set ens785f0 vf 0 trust on
-done
-
-Fixes: 7c71086 ("ice: Add handlers for VF netdevice operations")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
----
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 25 +++++++++++++++++++
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  5 ++++
- 2 files changed, 30 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index e93430ab37f1..bf6bffbc2173 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -647,6 +647,8 @@ void ice_free_vfs(struct ice_pf *pf)
- 			set_bit(ICE_VF_STATE_DIS, pf->vf[i].vf_states);
- 			ice_free_vf_res(&pf->vf[i]);
- 		}
-+
-+		mutex_destroy(&pf->vf[i].cfg_lock);
- 	}
- 
- 	if (ice_sriov_free_msix_res(pf))
-@@ -1894,6 +1896,8 @@ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
- 		 */
- 		ice_vf_ctrl_invalidate_vsi(vf);
- 		ice_vf_fdir_init(vf);
-+
-+		mutex_init(&vf->cfg_lock);
- 	}
- }
- 
-@@ -4078,6 +4082,8 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		return 0;
- 	}
- 
-+	mutex_lock(&vf->cfg_lock);
-+
- 	vf->port_vlan_info = vlanprio;
- 
- 	if (vf->port_vlan_info)
-@@ -4087,6 +4093,7 @@ ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
- 		dev_info(dev, "Clearing port VLAN on VF %d\n", vf_id);
- 
- 	ice_vc_reset_vf(vf);
-+	mutex_unlock(&vf->cfg_lock);
- 
- 	return 0;
- }
-@@ -4461,6 +4468,15 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		return;
- 	}
- 
-+	/* VF is being configured in another context that triggers a VFR, so no
-+	 * need to process this message
-+	 */
-+	if (!mutex_trylock(&vf->cfg_lock)) {
-+		dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
-+			 vf->vf_id);
-+		return;
-+	}
-+
- 	switch (v_opcode) {
- 	case VIRTCHNL_OP_VERSION:
- 		err = ice_vc_get_ver_msg(vf, msg);
-@@ -4549,6 +4565,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		dev_info(dev, "PF failed to honor VF %d, opcode %d, error %d\n",
- 			 vf_id, v_opcode, err);
- 	}
-+
-+	mutex_unlock(&vf->cfg_lock);
- }
- 
- /**
-@@ -4664,6 +4682,8 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 		return -EINVAL;
- 	}
- 
-+	mutex_lock(&vf->cfg_lock);
-+
- 	/* VF is notified of its new MAC via the PF's response to the
- 	 * VIRTCHNL_OP_GET_VF_RESOURCES message after the VF has been reset
- 	 */
-@@ -4682,6 +4702,7 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	}
- 
- 	ice_vc_reset_vf(vf);
-+	mutex_unlock(&vf->cfg_lock);
- 	return 0;
- }
- 
-@@ -4711,11 +4732,15 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
- 	if (trusted == vf->trusted)
- 		return 0;
- 
-+	mutex_lock(&vf->cfg_lock);
-+
- 	vf->trusted = trusted;
- 	ice_vc_reset_vf(vf);
- 	dev_info(ice_pf_to_dev(pf), "VF %u is now %strusted\n",
- 		 vf_id, trusted ? "" : "un");
- 
-+	mutex_unlock(&vf->cfg_lock);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-index 842cb077df86..b7e24b5fd4df 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
-@@ -74,6 +74,11 @@ struct ice_mdd_vf_events {
- struct ice_vf {
- 	struct ice_pf *pf;
- 
-+	/* Used during virtchnl message handling and NDO ops against the VF
-+	 * that will trigger a VFR
-+	 */
-+	struct mutex cfg_lock;
-+
- 	u16 vf_id;			/* VF ID in the PF space */
- 	u16 lan_vsi_idx;		/* index into PF struct */
- 	u16 ctrl_vsi_idx;
--- 
-2.26.3
-
+> +	}
+> 
+>  	return -EAGAIN;
+>  }
+>  
