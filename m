@@ -1,119 +1,41 @@
-From: Brett Creeley <brett.creeley@intel.com>
-Date: Thu,  9 Sep 2021 14:38:08 -0700
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix not stopping Tx queues
- for VFs
-Message-ID: <20210909213809.27461-1-brett.creeley@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Thu, 9 Sep 2021 14:48:33 -0700
+Subject: [Intel-wired-lan] [PATCH net] ice: Correctly deal with PFs that
+ do not support RDMA
+In-Reply-To: <20210909085612.570229-1-david.m.ertman@intel.com>
+References: <20210909085612.570229-1-david.m.ertman@intel.com>
+Message-ID: <20210909144833.2ca0069d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When a VF is removed and/or reset its Tx queues need to be
-stopped from the PF. This is done by calling the ice_dis_vf_qs()
-function, which calls ice_vsi_stop_lan_tx_rings(). Currently
-ice_dis_vf_qs() is protected by the VF state bit ICE_VF_STATE_QS_ENA.
-Unfortunately, this is causing the Tx queues to not be disabled in some
-cases and when the VF tries to re-enable/reconfigure its Tx queues over
-virtchnl the op is failing. This is because a VF can be reset and/or
-removed before the ICE_VF_STATE_QS_ENA bit is set, but the Tx queues
-were already configured via ice_vsi_cfg_single_txq() in the
-VIRTCHNL_OP_CONFIG_VSI_QUEUES op. However, the ICE_VF_STATE_QS_ENA bit
-is set on a successful VIRTCHNL_OP_ENABLE_QUEUES, which will always
-happen after the VIRTCHNL_OP_CONFIG_VSI_QUEUES op.
+On Thu,  9 Sep 2021 01:56:12 -0700 Dave Ertman wrote:
+> There are two cases where the current PF does not support RDMA
+> functionality.  The first is if the NVM loaded on the device is set
+> to not support RDMA (common_caps.rdma is false).  The second is if
+> the kernel bonding driver has included the current PF in an active
+> link aggregate.
+> 
+> When the driver has determined that this PF does not support RDMA, then
+> auxiliary devices should not be created on the auxiliary bus.  Without
+> a device on the auxiliary bus, even if the irdma driver is present, there
+> will be no RDMA activity attempted on this PF.
+> 
+> Currently, in the reset flow, an attempt to create auxiliary devices is
+> performed without regard to the ability of the PF.  There needs to be a
+> check in ice_aux_plug_dev (as the central point that creates auxiliary
+> devices) to see if the PF is in a state to support the functionality.
+> 
+> When disabling and re-enabling RDMA due to the inclusion/removal of the PF
+> in a link aggregate, we also need to set/clear the bit which controls
+> auxiliary device creation so that a reset recovery in a link aggregate
+> situation doesn't try to create auxiliary devices when it shouldn't.
+> 
+> Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+> Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 
-This was causing the following error message when loading the ice
-driver, creating VFs, and modifying VF trust in an endless loop:
-
-[35274.192484] ice 0000:88:00.0: Failed to set LAN Tx queue context, error: ICE_ERR_PARAM
-[35274.193074] ice 0000:88:00.0: VF 0 failed opcode 6, retval: -5
-[35274.193640] iavf 0000:88:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 6
-
-Fix this by always calling ice_dis_vf_qs() and silencing the error
-message in ice_vsi_stop_tx_ring() since the calling code ignores the
-return anyway. Also, all other places that call ice_vsi_stop_tx_ring()
-catch the error, so this doesn't affect those flows since there was no
-change to the values the function returns.
-
-Other solutions were considered (i.e. tracking which VF queues had been
-"started/configured" in VIRTCHNL_OP_CONFIG_VSI_QUEUES, but it seemed
-more complicated than it was worth. This solution also brings in the
-chance for other unexpected conditions due to invalid state bit checks.
-So, the proposed solution seemed like the best option since there is no
-harm in failing to stop Tx queues that were never started.
-
-This issue can be seen using the following commands:
-
-for i in {0..50}; do
-        rmmod ice
-        modprobe ice
-
-        sleep 1
-
-        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-
-        ip link set ens785f1 vf 0 trust on
-        ip link set ens785f0 vf 0 trust on
-
-        sleep 2
-
-        echo 0 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 0 > /sys/class/net/ens785f1/device/sriov_numvfs
-        sleep 1
-        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
-        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-
-        ip link set ens785f1 vf 0 trust on
-        ip link set ens785f0 vf 0 trust on
-done
-
-Fixes: 77ca27c41705 ("ice: add support for virtchnl_queue_select.[tx|rx]_queues bitmap")
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
----
-v2: Update Fixes tag
-
- drivers/net/ethernet/intel/ice/ice_base.c        | 2 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 6 ++----
- 2 files changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index c36057efc7ae..f74610442bda 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -909,7 +909,7 @@ ice_vsi_stop_tx_ring(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 	} else if (status == ICE_ERR_DOES_NOT_EXIST) {
- 		dev_dbg(ice_pf_to_dev(vsi->back), "LAN Tx queues do not exist, nothing to disable\n");
- 	} else if (status) {
--		dev_err(ice_pf_to_dev(vsi->back), "Failed to disable LAN Tx queues, error: %s\n",
-+		dev_dbg(ice_pf_to_dev(vsi->back), "Failed to disable LAN Tx queues, error: %s\n",
- 			ice_stat_str(status));
- 		return -ENODEV;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 28b6013de425..e74ca81409b1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -634,8 +634,7 @@ void ice_free_vfs(struct ice_pf *pf)
- 
- 	/* Avoid wait time by stopping all VFs at the same time */
- 	ice_for_each_vf(pf, i)
--		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
--			ice_dis_vf_qs(&pf->vf[i]);
-+		ice_dis_vf_qs(&pf->vf[i]);
- 
- 	tmp = pf->num_alloc_vfs;
- 	pf->num_qps_per_vf = 0;
-@@ -1646,8 +1645,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 
- 	vsi = ice_get_vf_vsi(vf);
- 
--	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
--		ice_dis_vf_qs(vf);
-+	ice_dis_vf_qs(vf);
- 
- 	/* Call Disable LAN Tx queue AQ whether or not queues are
- 	 * enabled. This is needed for successful completion of VFR.
--- 
-2.26.3
-
+Why CC lkml but not CC RDMA or Leon?
