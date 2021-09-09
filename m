@@ -1,80 +1,36 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Thu,  9 Sep 2021 01:56:12 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: Correctly deal with PFs that do
- not support RDMA
-Message-ID: <20210909085612.570229-1-david.m.ertman@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu,  9 Sep 2021 20:49:04 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Update the device ID
+Message-ID: <20210909174904.3765604-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are two cases where the current PF does not support RDMA
-functionality.  The first is if the NVM loaded on the device is set
-to not support RDMA (common_caps.rdma is false).  The second is if
-the kernel bonding driver has included the current PF in an active
-link aggregate.
+Update device ID for the I226_K part.
 
-When the driver has determined that this PF does not support RDMA, then
-auxiliary devices should not be created on the auxiliary bus.  Without
-a device on the auxiliary bus, even if the irdma driver is present, there
-will be no RDMA activity attempted on this PF.
-
-Currently, in the reset flow, an attempt to create auxiliary devices is
-performed without regard to the ability of the PF.  There needs to be a
-check in ice_aux_plug_dev (as the central point that creates auxiliary
-devices) to see if the PF is in a state to support the functionality.
-
-When disabling and re-enabling RDMA due to the inclusion/removal of the PF
-in a link aggregate, we also need to set/clear the bit which controls
-auxiliary device creation so that a reset recovery in a link aggregate
-situation doesn't try to create auxiliary devices when it shouldn't.
-
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Fixes: bfa5e98c9de4 ("igc: Add new device ID")
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h     | 2 ++
- drivers/net/ethernet/intel/ice/ice_idc.c | 6 ++++++
- 2 files changed, 8 insertions(+)
+ drivers/net/ethernet/intel/igc/igc_hw.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index eadcb9958346..3c4f08d20414 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -695,6 +695,7 @@ static inline void ice_set_rdma_cap(struct ice_pf *pf)
- {
- 	if (pf->hw.func_caps.common_cap.rdma && pf->num_rdma_msix) {
- 		set_bit(ICE_FLAG_RDMA_ENA, pf->flags);
-+		set_bit(ICE_FLAG_AUX_ENA, pf->flags);
- 		ice_plug_aux_dev(pf);
- 	}
- }
-@@ -707,5 +708,6 @@ static inline void ice_clear_rdma_cap(struct ice_pf *pf)
- {
- 	ice_unplug_aux_dev(pf);
- 	clear_bit(ICE_FLAG_RDMA_ENA, pf->flags);
-+	clear_bit(ICE_FLAG_AUX_ENA, pf->flags);
- }
- #endif /* _ICE_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 1f2afdf6cd48..adcc9a251595 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -271,6 +271,12 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 	struct auxiliary_device *adev;
- 	int ret;
- 
-+	/* if this PF doesn't support a technology that requires auxiliary
-+	 * devices, then gracefully exit
-+	 */
-+	if (!ice_is_aux_ena(pf))
-+		return 0;
-+
- 	iadev = kzalloc(sizeof(*iadev), GFP_KERNEL);
- 	if (!iadev)
- 		return -ENOMEM;
+diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
+index 772fd06e93ac..587db7483f25 100644
+--- a/drivers/net/ethernet/intel/igc/igc_hw.h
++++ b/drivers/net/ethernet/intel/igc/igc_hw.h
+@@ -22,9 +22,9 @@
+ #define IGC_DEV_ID_I220_V			0x15F7
+ #define IGC_DEV_ID_I225_K			0x3100
+ #define IGC_DEV_ID_I225_K2			0x3101
++#define IGC_DEV_ID_I226_K			0x3102
+ #define IGC_DEV_ID_I225_LMVP			0x5502
+ #define IGC_DEV_ID_I226_LMVP			0x5503
+-#define IGC_DEV_ID_I226_K			0x5504
+ #define IGC_DEV_ID_I225_IT			0x0D9F
+ #define IGC_DEV_ID_I226_LM			0x125B
+ #define IGC_DEV_ID_I226_V			0x125C
 -- 
-2.31.1
+2.25.1
 
