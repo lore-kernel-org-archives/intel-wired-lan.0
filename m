@@ -1,188 +1,61 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu,  9 Sep 2021 07:37:20 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.14 026/252] iavf: fix locking of
- critical sections
+Date: Thu,  9 Sep 2021 07:37:32 -0400
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.14 038/252] igc: Check if num of
+ q_vectors is smaller than max before array access
 In-Reply-To: <20210909114106.141462-1-sashal@kernel.org>
 References: <20210909114106.141462-1-sashal@kernel.org>
-Message-ID: <20210909114106.141462-26-sashal@kernel.org>
+Message-ID: <20210909114106.141462-38-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Stefan Assmann <sassmann@kpanic.de>
+From: Sasha Neftin <sasha.neftin@intel.com>
 
-[ Upstream commit 226d528512cfac890a1619aea4301f3dd314fe60 ]
+[ Upstream commit 373e2829e7c2e1e606503cdb5c97749f512a4be9 ]
 
-To avoid races between iavf_init_task(), iavf_reset_task(),
-iavf_watchdog_task(), iavf_adminq_task() as well as the shutdown and
-remove functions more locking is required.
-The current protection by __IAVF_IN_CRITICAL_TASK is needed in
-additional places.
+Ensure that the adapter->q_vector[MAX_Q_VECTORS] array isn't accessed
+beyond its size. It was fixed by using a local variable num_q_vectors
+as a limit for loop index, and ensure that num_q_vectors is not bigger
+than MAX_Q_VECTORS.
 
-- The reset task performs state transitions, therefore needs locking.
-- The adminq task acts on replies from the PF in
-  iavf_virtchnl_completion() which may alter the states.
-- The init task is not only run during probe but also if a VF gets stuck
-  to reinitialize it.
-- The shutdown function performs a state transition.
-- The remove function performs a state transition and also free's
-  resources.
-
-iavf_lock_timeout() is introduced to avoid waiting infinitely
-and cause a deadlock. Rather unlock and print a warning.
-
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Suggested-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 57 ++++++++++++++++++---
- 1 file changed, 50 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 0d0f16617dde..e5e6a5b11e6d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -131,6 +131,30 @@ enum iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw,
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index ed2d66bc2d6c..f62982c4d933 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4817,6 +4817,7 @@ static irqreturn_t igc_msix_ring(int irq, void *data)
+  */
+ static int igc_request_msix(struct igc_adapter *adapter)
+ {
++	unsigned int num_q_vectors = adapter->num_q_vectors;
+ 	int i = 0, err = 0, vector = 0, free_vector = 0;
+ 	struct net_device *netdev = adapter->netdev;
  
-+/**
-+ * iavf_lock_timeout - try to set bit but give up after timeout
-+ * @adapter: board private structure
-+ * @bit: bit to set
-+ * @msecs: timeout in msecs
-+ *
-+ * Returns 0 on success, negative on failure
-+ **/
-+static int iavf_lock_timeout(struct iavf_adapter *adapter,
-+			     enum iavf_critical_section_t bit,
-+			     unsigned int msecs)
-+{
-+	unsigned int wait, delay = 10;
-+
-+	for (wait = 0; wait < msecs; wait += delay) {
-+		if (!test_and_set_bit(bit, &adapter->crit_section))
-+			return 0;
-+
-+		msleep(delay);
+@@ -4825,7 +4826,13 @@ static int igc_request_msix(struct igc_adapter *adapter)
+ 	if (err)
+ 		goto err_out;
+ 
+-	for (i = 0; i < adapter->num_q_vectors; i++) {
++	if (num_q_vectors > MAX_Q_VECTORS) {
++		num_q_vectors = MAX_Q_VECTORS;
++		dev_warn(&adapter->pdev->dev,
++			 "The number of queue vectors (%d) is higher than max allowed (%d)\n",
++			 adapter->num_q_vectors, MAX_Q_VECTORS);
 +	}
-+
-+	return -1;
-+}
-+
- /**
-  * iavf_schedule_reset - Set the flags and schedule a reset event
-  * @adapter: board private structure
-@@ -2097,6 +2121,10 @@ static void iavf_reset_task(struct work_struct *work)
- 	if (test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
- 		return;
++	for (i = 0; i < num_q_vectors; i++) {
+ 		struct igc_q_vector *q_vector = adapter->q_vector[i];
  
-+	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200)) {
-+		schedule_work(&adapter->reset_task);
-+		return;
-+	}
- 	while (test_and_set_bit(__IAVF_IN_CLIENT_TASK,
- 				&adapter->crit_section))
- 		usleep_range(500, 1000);
-@@ -2311,6 +2339,8 @@ static void iavf_adminq_task(struct work_struct *work)
- 	if (!event.msg_buf)
- 		goto out;
- 
-+	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 200))
-+		goto freedom;
- 	do {
- 		ret = iavf_clean_arq_element(hw, &event, &pending);
- 		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
-@@ -2324,6 +2354,7 @@ static void iavf_adminq_task(struct work_struct *work)
- 		if (pending != 0)
- 			memset(event.msg_buf, 0, IAVF_MAX_AQ_BUF_SIZE);
- 	} while (pending);
-+	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- 
- 	if ((adapter->flags &
- 	     (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) ||
-@@ -3628,6 +3659,10 @@ static void iavf_init_task(struct work_struct *work)
- 						    init_task.work);
- 	struct iavf_hw *hw = &adapter->hw;
- 
-+	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000)) {
-+		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
-+		return;
-+	}
- 	switch (adapter->state) {
- 	case __IAVF_STARTUP:
- 		if (iavf_startup(adapter) < 0)
-@@ -3640,14 +3675,14 @@ static void iavf_init_task(struct work_struct *work)
- 	case __IAVF_INIT_GET_RESOURCES:
- 		if (iavf_init_get_resources(adapter) < 0)
- 			goto init_failed;
--		return;
-+		goto out;
- 	default:
- 		goto init_failed;
- 	}
- 
- 	queue_delayed_work(iavf_wq, &adapter->init_task,
- 			   msecs_to_jiffies(30));
--	return;
-+	goto out;
- init_failed:
- 	if (++adapter->aq_wait_count > IAVF_AQ_MAX_ERR) {
- 		dev_err(&adapter->pdev->dev,
-@@ -3656,9 +3691,11 @@ static void iavf_init_task(struct work_struct *work)
- 		iavf_shutdown_adminq(hw);
- 		adapter->state = __IAVF_STARTUP;
- 		queue_delayed_work(iavf_wq, &adapter->init_task, HZ * 5);
--		return;
-+		goto out;
- 	}
- 	queue_delayed_work(iavf_wq, &adapter->init_task, HZ);
-+out:
-+	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- }
- 
- /**
-@@ -3675,9 +3712,12 @@ static void iavf_shutdown(struct pci_dev *pdev)
- 	if (netif_running(netdev))
- 		iavf_close(netdev);
- 
-+	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
-+		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
- 	/* Prevent the watchdog from running. */
- 	adapter->state = __IAVF_REMOVE;
- 	adapter->aq_required = 0;
-+	clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
- 
- #ifdef CONFIG_PM
- 	pci_save_state(pdev);
-@@ -3911,10 +3951,6 @@ static void iavf_remove(struct pci_dev *pdev)
- 				 err);
- 	}
- 
--	/* Shut down all the garbage mashers on the detention level */
--	adapter->state = __IAVF_REMOVE;
--	adapter->aq_required = 0;
--	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
- 	iavf_request_reset(adapter);
- 	msleep(50);
- 	/* If the FW isn't responding, kick it once, but only once. */
-@@ -3922,6 +3958,13 @@ static void iavf_remove(struct pci_dev *pdev)
- 		iavf_request_reset(adapter);
- 		msleep(50);
- 	}
-+	if (iavf_lock_timeout(adapter, __IAVF_IN_CRITICAL_TASK, 5000))
-+		dev_warn(&adapter->pdev->dev, "failed to set __IAVF_IN_CRITICAL_TASK in %s\n", __FUNCTION__);
-+
-+	/* Shut down all the garbage mashers on the detention level */
-+	adapter->state = __IAVF_REMOVE;
-+	adapter->aq_required = 0;
-+	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
- 	iavf_free_all_tx_resources(adapter);
- 	iavf_free_all_rx_resources(adapter);
- 	iavf_misc_irq_disable(adapter);
+ 		vector++;
 -- 
 2.30.2
 
