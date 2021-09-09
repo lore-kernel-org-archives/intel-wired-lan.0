@@ -1,36 +1,117 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Thu,  9 Sep 2021 20:49:04 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Update the device ID
-Message-ID: <20210909174904.3765604-1-sasha.neftin@intel.com>
+From: Brett Creeley <brett.creeley@intel.com>
+Date: Thu,  9 Sep 2021 12:27:08 -0700
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix not stopping Tx queues for
+ VFs
+Message-ID: <20210909192709.26269-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Update device ID for the I226_K part.
+When a VF is removed and/or reset its Tx queues need to be
+stopped from the PF. This is done by calling the ice_dis_vf_qs()
+function, which calls ice_vsi_stop_lan_tx_rings(). Currently
+ice_dis_vf_qs() is protected by the VF state bit ICE_VF_STATE_QS_ENA.
+Unfortunately, this is causing the Tx queues to not be disabled in some
+cases and when the VF tries to re-enable/reconfigure its Tx queues over
+virtchnl the op is failing. This is because a VF can be reset and/or
+removed before the ICE_VF_STATE_QS_ENA bit is set, but the Tx queues
+were already configured via ice_vsi_cfg_single_txq() in the
+VIRTCHNL_OP_CONFIG_VSI_QUEUES op. However, the ICE_VF_STATE_QS_ENA bit
+is set on a successful VIRTCHNL_OP_ENABLE_QUEUES, which will always
+happen after the VIRTCHNL_OP_CONFIG_VSI_QUEUES op.
 
-Fixes: bfa5e98c9de4 ("igc: Add new device ID")
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+This was causing the following error message when loading the ice
+driver, creating VFs, and modifying VF trust in an endless loop:
+
+[35274.192484] ice 0000:88:00.0: Failed to set LAN Tx queue context, error: ICE_ERR_PARAM
+[35274.193074] ice 0000:88:00.0: VF 0 failed opcode 6, retval: -5
+[35274.193640] iavf 0000:88:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 6
+
+Fix this by always calling ice_dis_vf_qs() and silencing the error
+message in ice_vsi_stop_tx_ring() since the calling code ignores the
+return anyway. Also, all other places that call ice_vsi_stop_tx_ring()
+catch the error, so this doesn't affect those flows since there was no
+change to the values the function returns.
+
+Other solutions were considered (i.e. tracking which VF queues had been
+"started/configured" in VIRTCHNL_OP_CONFIG_VSI_QUEUES, but it seemed
+more complicated than it was worth. This solution also brings in the
+chance for other unexpected conditions due to invalid state bit checks.
+So, the proposed solution seemed like the best option since there is no
+harm in failing to stop Tx queues that were never started.
+
+This issue can be seen using the following commands:
+
+for i in {0..50}; do
+        rmmod ice
+        modprobe ice
+
+        sleep 1
+
+        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
+        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
+
+        ip link set ens785f1 vf 0 trust on
+        ip link set ens785f0 vf 0 trust on
+
+        sleep 2
+
+        echo 0 > /sys/class/net/ens785f0/device/sriov_numvfs
+        echo 0 > /sys/class/net/ens785f1/device/sriov_numvfs
+        sleep 1
+        echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
+        echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
+
+        ip link set ens785f1 vf 0 trust on
+        ip link set ens785f0 vf 0 trust on
+done
+
+Fixes: 77ca27c ("ice: add support for virtchnl_queue_select.[tx|rx]_queues bitmap")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_hw.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_base.c        | 2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index 772fd06e93ac..587db7483f25 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -22,9 +22,9 @@
- #define IGC_DEV_ID_I220_V			0x15F7
- #define IGC_DEV_ID_I225_K			0x3100
- #define IGC_DEV_ID_I225_K2			0x3101
-+#define IGC_DEV_ID_I226_K			0x3102
- #define IGC_DEV_ID_I225_LMVP			0x5502
- #define IGC_DEV_ID_I226_LMVP			0x5503
--#define IGC_DEV_ID_I226_K			0x5504
- #define IGC_DEV_ID_I225_IT			0x0D9F
- #define IGC_DEV_ID_I226_LM			0x125B
- #define IGC_DEV_ID_I226_V			0x125C
+diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
+index c36057efc7ae..f74610442bda 100644
+--- a/drivers/net/ethernet/intel/ice/ice_base.c
++++ b/drivers/net/ethernet/intel/ice/ice_base.c
+@@ -909,7 +909,7 @@ ice_vsi_stop_tx_ring(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
+ 	} else if (status == ICE_ERR_DOES_NOT_EXIST) {
+ 		dev_dbg(ice_pf_to_dev(vsi->back), "LAN Tx queues do not exist, nothing to disable\n");
+ 	} else if (status) {
+-		dev_err(ice_pf_to_dev(vsi->back), "Failed to disable LAN Tx queues, error: %s\n",
++		dev_dbg(ice_pf_to_dev(vsi->back), "Failed to disable LAN Tx queues, error: %s\n",
+ 			ice_stat_str(status));
+ 		return -ENODEV;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 28b6013de425..e74ca81409b1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -634,8 +634,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ 
+ 	/* Avoid wait time by stopping all VFs at the same time */
+ 	ice_for_each_vf(pf, i)
+-		if (test_bit(ICE_VF_STATE_QS_ENA, pf->vf[i].vf_states))
+-			ice_dis_vf_qs(&pf->vf[i]);
++		ice_dis_vf_qs(&pf->vf[i]);
+ 
+ 	tmp = pf->num_alloc_vfs;
+ 	pf->num_qps_per_vf = 0;
+@@ -1646,8 +1645,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+ 
+ 	vsi = ice_get_vf_vsi(vf);
+ 
+-	if (test_bit(ICE_VF_STATE_QS_ENA, vf->vf_states))
+-		ice_dis_vf_qs(vf);
++	ice_dis_vf_qs(vf);
+ 
+ 	/* Call Disable LAN Tx queue AQ whether or not queues are
+ 	 * enabled. This is needed for successful completion of VFR.
 -- 
-2.25.1
+2.26.3
 
