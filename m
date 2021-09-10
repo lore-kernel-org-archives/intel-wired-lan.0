@@ -1,39 +1,41 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Fri, 10 Sep 2021 12:19:10 +0300
-Subject: [Intel-wired-lan] [PATCH RESEND net] ice: Correctly deal with
- PFs that do not support RDMA
-In-Reply-To: <20210909151223.572918-1-david.m.ertman@intel.com>
-References: <20210909151223.572918-1-david.m.ertman@intel.com>
-Message-ID: <YTsjDsFbBggL2X/8@unreal>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 10 Sep 2021 12:51:00 +0100
+Subject: [Intel-wired-lan] [PATCH] net: ixgbevf: Remove redundant
+ initialization of variable ret_val
+Message-ID: <20210910115100.45429-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 09, 2021 at 08:12:23AM -0700, Dave Ertman wrote:
-> There are two cases where the current PF does not support RDMA
-> functionality.  The first is if the NVM loaded on the device is set
-> to not support RDMA (common_caps.rdma is false).  The second is if
-> the kernel bonding driver has included the current PF in an active
-> link aggregate.
-> 
-> When the driver has determined that this PF does not support RDMA, then
-> auxiliary devices should not be created on the auxiliary bus. 
+From: Colin Ian King <colin.king@canonical.com>
 
-This part is wrong, auxiliary devices should always be created, in your case it
-will be one eth device only without extra irdma device.
+The variable ret_val is being initialized with a value that is never
+read, it is being updated later on. The assignment is redundant and
+can be removed.
 
-Your "bug" is that you mixed auxiliary bus devices with "regular" ones
-and created eth device not as auxiliary one. This is why you are calling
-to auxiliary_device_init() for RDMA only and fallback to non-auxiliary mode.
+Addresses-Coverity: ("Unused value")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/vf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I hope that this is simple mistake while Intel folks rushed to merge irdma
-and not deliberate decision to find a way to support out-of-tree drivers.
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 5fc347abab3c..d459f5c8e98f 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -66,9 +66,9 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_mbx_info *mbx = &hw->mbx;
+ 	u32 timeout = IXGBE_VF_INIT_TIMEOUT;
+-	s32 ret_val = IXGBE_ERR_INVALID_MAC_ADDR;
+ 	u32 msgbuf[IXGBE_VF_PERMADDR_MSG_LEN];
+ 	u8 *addr = (u8 *)(&msgbuf[1]);
++	s32 ret_val;
+ 
+ 	/* Call adapter stop to disable tx/rx and clear interrupts */
+ 	hw->mac.ops.stop_adapter(hw);
+-- 
+2.32.0
 
-As a reminder, the whole idea of auxiliary bus is to have small,
-independent vendor driver core logic that manages capabilities and
-based on that creates/removes sub-devices (eth, rdma, vdpa ...), so
-driver core can properly load/unload their respective drivers.
-
-Thanks
