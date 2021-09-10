@@ -1,58 +1,39 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 10 Sep 2021 09:28:54 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Update the device ID
-In-Reply-To: <20210909174904.3765604-1-sasha.neftin@intel.com>
-References: <20210909174904.3765604-1-sasha.neftin@intel.com>
-Message-ID: <9cb08013-19f0-1c27-339e-63b3700c26f2@molgen.mpg.de>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Fri, 10 Sep 2021 12:19:10 +0300
+Subject: [Intel-wired-lan] [PATCH RESEND net] ice: Correctly deal with
+ PFs that do not support RDMA
+In-Reply-To: <20210909151223.572918-1-david.m.ertman@intel.com>
+References: <20210909151223.572918-1-david.m.ertman@intel.com>
+Message-ID: <YTsjDsFbBggL2X/8@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
-
-
-Thank you for the patch.
-
-
-Am 09.09.21 um 19:49 schrieb Sasha Neftin:
-
-Please mention the device in the commit message summary:
-
-> igc: Update I226_k device ID
-
-
-> Update device ID for the I226_K part.
-
-Some background would be nice, where the old/wrong(?) ID came from, and 
-where the new one is specified.
-
-
-Kind regards,
-
-Paul
-
-
-> Fixes: bfa5e98c9de4 ("igc: Add new device ID")
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->   drivers/net/ethernet/intel/igc/igc_hw.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+On Thu, Sep 09, 2021 at 08:12:23AM -0700, Dave Ertman wrote:
+> There are two cases where the current PF does not support RDMA
+> functionality.  The first is if the NVM loaded on the device is set
+> to not support RDMA (common_caps.rdma is false).  The second is if
+> the kernel bonding driver has included the current PF in an active
+> link aggregate.
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-> index 772fd06e93ac..587db7483f25 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_hw.h
-> +++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-> @@ -22,9 +22,9 @@
->   #define IGC_DEV_ID_I220_V			0x15F7
->   #define IGC_DEV_ID_I225_K			0x3100
->   #define IGC_DEV_ID_I225_K2			0x3101
-> +#define IGC_DEV_ID_I226_K			0x3102
->   #define IGC_DEV_ID_I225_LMVP			0x5502
->   #define IGC_DEV_ID_I226_LMVP			0x5503
-> -#define IGC_DEV_ID_I226_K			0x5504
->   #define IGC_DEV_ID_I225_IT			0x0D9F
->   #define IGC_DEV_ID_I226_LM			0x125B
->   #define IGC_DEV_ID_I226_V			0x125C
-> 
+> When the driver has determined that this PF does not support RDMA, then
+> auxiliary devices should not be created on the auxiliary bus. 
+
+This part is wrong, auxiliary devices should always be created, in your case it
+will be one eth device only without extra irdma device.
+
+Your "bug" is that you mixed auxiliary bus devices with "regular" ones
+and created eth device not as auxiliary one. This is why you are calling
+to auxiliary_device_init() for RDMA only and fallback to non-auxiliary mode.
+
+I hope that this is simple mistake while Intel folks rushed to merge irdma
+and not deliberate decision to find a way to support out-of-tree drivers.
+
+As a reminder, the whole idea of auxiliary bus is to have small,
+independent vendor driver core logic that manages capabilities and
+based on that creates/removes sub-devices (eth, rdma, vdpa ...), so
+driver core can properly load/unload their respective drivers.
+
+Thanks
