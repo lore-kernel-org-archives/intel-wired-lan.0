@@ -1,79 +1,91 @@
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Date: Tue, 14 Sep 2021 23:51:26 +0200
-Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
-In-Reply-To: <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
-References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
- <20210913141818.GA27911@codemonkey.org.uk>
- <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
- <20210913201519.GA15726@codemonkey.org.uk>
- <b84b799d-0aaa-c4e1-b61b-8e2316b62bd1@gmail.com>
- <20210913203234.GA6762@codemonkey.org.uk>
- <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
- <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
- <367cc748-d411-8cf8-ff95-07715c55e899@gmail.com>
- <20210914142419.GA32324@codemonkey.org.uk>
- <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
-Message-ID: <80718d5e-a4d2-ff85-aa8f-cd790c951278@gmail.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 14 Sep 2021 23:37:34 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next 1/2] ice: add i2c
+ read/write read commands
+In-Reply-To: <20210913101108.17927-1-karol.kolacinski@intel.com>
+References: <20210913101108.17927-1-karol.kolacinski@intel.com>
+Message-ID: <41417ec2e162d70d207d4a5539fb53e4c48a9e43.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 14.09.2021 22:00, Hisashi T Fujinaka wrote:
-> On Tue, 14 Sep 2021, Dave Jones wrote:
+On Mon, 2021-09-13 at 12:11 +0200, Karol Kolacinski wrote:
+> Add I2C read/write AQ commands. They are now required for controlling
+> the external physical connectors via external I2C port expander on
+> E810-T adapters.
 > 
->> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
->>
->> > > Sorry to reply from my personal account. If I did it from my work
->> > > account I'd be top-posting because of Outlook and that goes over like a
->> > > lead balloon.
->> > >
->> > > Anyway, can you send us a dump of your eeprom using ethtool -e? You can
->> > > either send it via a bug on e1000.sourceforge.net or try sending it to
->> > > todd.fujinaka at intel.com
->> > >
->> > > The other thing is I'm wondering is what the subvendor device ID you
->> > > have is referring to because it's not in the pci database. Some ODMs
->> > > like getting creative with what they put in the NVM.
->> > >
->> > > Todd Fujinaka (todd.fujinaka at intel.com)
->> >
->> > Thanks for the prompt reply. Dave, could you please provide the requested
->> > information?
->>
->> sent off-list.
->>
->> ????Dave
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 29 ++++++
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 94
+> +++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_common.h   |  8 ++
+>  3 files changed, 131 insertions(+)
 > 
-> Whoops. I replied from outlook again.
-> 
-> I have confirmation that this should be a valid image. The VPD is just a
-> series of 3's. There are changes to preboot header, flash and BAR size,
-> and as far as I can tell, a nonsense subdevice ID, but this should work.
-> 
-> What was the original question?
-> 
-"lspci -vv" complains about an invalid short tag 0x06 and the PCI VPD
-code resulted in a stall. So it seems the data doesn't have valid VPD
-format as defined in PCI specification.
+> diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> index 0f64fbc9d3e8..89448e61c3dd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+> @@ -1341,6 +1341,31 @@ struct ice_aqc_get_link_topo {
+>  	u8 rsvd[9];
+>  };
+>  
+> +/* Read/Write I2C (direct, 0x06E2/0x06E3) */
+> +struct ice_aqc_i2c {
+> +	struct ice_aqc_link_topo_addr topo_addr;
+> +	__le16 i2c_addr;
+> +	u8 i2c_params;
+> +#define ICE_AQC_I2C_DATA_SIZE_S		0
+> +#define ICE_AQC_I2C_DATA_SIZE_M		(0xF <<
+> ICE_AQC_I2C_DATA_SIZE_S)
+> +#define ICE_AQC_I2C_ADDR_TYPE_M		BIT(4)
+> +#define ICE_AQC_I2C_ADDR_TYPE_7BIT	0
+> +#define ICE_AQC_I2C_ADDR_TYPE_10BIT	ICE_AQC_I2C_ADDR_TYPE_M
+> +#define ICE_AQC_I2C_DATA_OFFSET_S	5
+> +#define ICE_AQC_I2C_DATA_OFFSET_M	(0x3 <<
+> ICE_AQC_I2C_DATA_OFFSET_S)
+> +#define ICE_AQC_I2C_USE_REPEATED_START	BIT(7)
 
-01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
-        Subsystem: Device 1dcf:030a
-	...
-	        Capabilities: [e0] Vital Product Data
-                *Unknown small resource type 06, will not decode more.*
+Not all of these defines are being used.
 
-Not sure which method is used by the driver to get the EEPROM content.
-For the issue here is relevant what is exposed via PCI VPD.
+> +	u8 rsvd;
+> +	__le16 i2c_bus_addr;
+> +#define ICE_AQC_I2C_ADDR_7BIT_MASK	0x7F
+> +#define ICE_AQC_I2C_ADDR_10BIT_MASK	0x3FF
 
-The related kernel error message has been reported few times, e.g. here:
-https://access.redhat.com/solutions/3001451
-Only due to a change in kernel code this became a more prominent
-issue now.
+nor these.
 
-You say that VPD is just a series of 3's. This may explain why kernel and
-tools complain about an invalid VPD format. VPD misses the tag structure.
+> +	u8 i2c_data[4]; /* Used only by write command, reserved in
+> read. */
+> +};
 
-> Todd Fujinaka <todd.fujinaka@intel.com>
+<snip>
 
+> +/**
+> + * ice_aq_write_i2c
+> + * @hw: pointer to the hw struct
+> + * @topo_addr: topology address for a device to communicate with
+> + * @bus_addr: 7-bit I2C bus address
+> + * @addr: I2C memory address (I2C offset) with up to 16 bits
+> + * @params: I2C parameters: bit [4] - I2C address type, bits [3:0] -
+> data size to write (0-7 bytes)
+> + * @data: pointer to data (0 to 4 bytes) to be written to the I2C
+> device
+> + * @cd: pointer to command details structure or NULL
+> + *
+> + * Write I2C (0x06E3)
+> + */
+> +enum ice_status
+> +ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr
+> topo_addr,
+> +		 u16 bus_addr, __le16 addr, u8 params, u8 *data,
+> +		 struct ice_sq_cd *cd)
+
+If write functionality will be introduced in the future don't include
+the write implementations until you use them.
+
+It may make sense to squash this with patch 2 after this. Just a
+suggestion though.
