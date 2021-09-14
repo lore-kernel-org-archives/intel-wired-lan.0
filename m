@@ -1,70 +1,62 @@
-From: Hisashi T Fujinaka <htodd@twofifty.com>
-Date: Mon, 13 Sep 2021 16:32:39 -0700 (PDT)
-Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
-In-Reply-To: <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
-References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
- <20210913141818.GA27911@codemonkey.org.uk>
- <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
- <20210913201519.GA15726@codemonkey.org.uk>
- <b84b799d-0aaa-c4e1-b61b-8e2316b62bd1@gmail.com>
- <20210913203234.GA6762@codemonkey.org.uk>
- <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
-Message-ID: <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Tue, 14 Sep 2021 06:10:07 +0300
+Subject: [Intel-wired-lan] [PATCH RESEND net] ice: Correctly deal with
+ PFs that do not support RDMA
+In-Reply-To: <4bc2664ac89844a79242339f5e971335@intel.com>
+References: <20210909151223.572918-1-david.m.ertman@intel.com>
+ <YTsjDsFbBggL2X/8@unreal>
+ <4bc2664ac89844a79242339f5e971335@intel.com>
+Message-ID: <YUASj03w0RMunvCa@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 13 Sep 2021, Heiner Kallweit wrote:
+On Mon, Sep 13, 2021 at 03:49:43PM +0000, Saleem, Shiraz wrote:
+> > Subject: Re: [PATCH RESEND net] ice: Correctly deal with PFs that do not
+> > support RDMA
+> > 
+> > On Thu, Sep 09, 2021 at 08:12:23AM -0700, Dave Ertman wrote:
+> > > There are two cases where the current PF does not support RDMA
+> > > functionality.  The first is if the NVM loaded on the device is set to
+> > > not support RDMA (common_caps.rdma is false).  The second is if the
+> > > kernel bonding driver has included the current PF in an active link
+> > > aggregate.
+> > >
+> > > When the driver has determined that this PF does not support RDMA,
+> > > then auxiliary devices should not be created on the auxiliary bus.
+> > 
+> > This part is wrong, auxiliary devices should always be created, in your case it will
+> > be one eth device only without extra irdma device.
+> 
+> It is worth considering having an eth aux device/driver but is it a hard-and-fast rule?
+> In this case, the RDMA-capable PCI network device spawns an auxiliary device for RDMA
+> and the core driver is a network driver.
+> 
+> > 
+> > Your "bug" is that you mixed auxiliary bus devices with "regular" ones and created
+> > eth device not as auxiliary one. This is why you are calling to auxiliary_device_init()
+> > for RDMA only and fallback to non-auxiliary mode.
+> 
+> It's a design choice on how you carve out function(s) off your PCI core device to be
+> managed by auxiliary driver(s) and not a bug.
 
-> On 13.09.2021 22:32, Dave Jones wrote:
->
-> + Jesse and Tony as Intel NIC maintainers
->
->> On Mon, Sep 13, 2021 at 10:22:57PM +0200, Heiner Kallweit wrote:
->>
->> >> This didn't help I'm afraid :(
->> >> It changed the VPD warning, but that's about it...
->> >>
->> >> [  184.235496] pci 0000:02:00.0: calling  quirk_blacklist_vpd+0x0/0x22 @ 1
->> >> [  184.235499] pci 0000:02:00.0: [Firmware Bug]: disabling VPD access (can't determine size of non-standard VPD format)
->> >> [  184.235501] pci 0000:02:00.0: quirk_blacklist_vpd+0x0/0x22 took 0 usecs
->> >>
->> > With this patch there's no VPD access to this device any longer. So this can't be
->> > the root cause. Do you have any other PCI device that has VPD capability?
->> > -> Capabilities: [...] Vital Product Data
->>
->>
->> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
->>         Subsystem: Device 1dcf:030a
->> 	...
->> 	        Capabilities: [e0] Vital Product Data
->>                 Unknown small resource type 06, will not decode more.
->>
->
-> When searching I found the same symptom of invalid VPD data for 82599EB.
-> Do these adapters have non-VPD data in VPD address space? Or is the actual
-> VPD data at another offset than 0? I know that few Chelsio devices have
-> such a non-standard VPD structure.
->
->>
->> I'll add that to the quirk list and see if that helps.
->>
->> 	Dave
->>
-> Heiner
+I'm not the one who is setting rules, just explaining what is wrong with
+the current design and proposed solution.
 
-Sorry to reply from my personal account. If I did it from my work
-account I'd be top-posting because of Outlook and that goes over like a
-lead balloon.
+The driver/core design expects three building blocks: logic that
+enumerates (creates) devices, bus that connects those devices
+(load/unload drivers) and specific drivers for every such device.
 
-Anyway, can you send us a dump of your eeprom using ethtool -e? You can
-either send it via a bug on e1000.sourceforge.net or try sending it to
-todd.fujinaka at intel.com
+Such separation allows clean view from locking perspective (separated
+devices), proper sysfs layout and same logic for the user space tools.
 
-The other thing is I'm wondering is what the subvendor device ID you
-have is referring to because it's not in the pci database. Some ODMs
-like getting creative with what they put in the NVM.
+In your case, you connected ethernet driver to be "enumerator" and
+replaced (duplicated) general driver/core logic that decides if to load
+or not auxiliary device driver with your custom code.
 
-Todd Fujinaka (todd.fujinaka at intel.com)
+Thanks
+
+> 
+> Shiraz
