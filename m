@@ -1,89 +1,75 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Tue, 14 Sep 2021 06:16:27 +0300
-Subject: [Intel-wired-lan] [PATCH RESEND net] ice: Correctly deal with
- PFs that do not support RDMA
-In-Reply-To: <PH0PR11MB49667F5B029D37D0E257A256DDD99@PH0PR11MB4966.namprd11.prod.outlook.com>
-References: <20210909151223.572918-1-david.m.ertman@intel.com>
- <YTsjDsFbBggL2X/8@unreal>
- <4bc2664ac89844a79242339f5e971335@intel.com>
- <PH0PR11MB49667F5B029D37D0E257A256DDD99@PH0PR11MB4966.namprd11.prod.outlook.com>
-Message-ID: <YUAUC1AJP6JVMxBr@unreal>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Date: Tue, 14 Sep 2021 07:51:22 +0200
+Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
+In-Reply-To: <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
+References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
+ <20210913141818.GA27911@codemonkey.org.uk>
+ <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
+ <20210913201519.GA15726@codemonkey.org.uk>
+ <b84b799d-0aaa-c4e1-b61b-8e2316b62bd1@gmail.com>
+ <20210913203234.GA6762@codemonkey.org.uk>
+ <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
+ <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
+Message-ID: <367cc748-d411-8cf8-ff95-07715c55e899@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 13, 2021 at 04:07:28PM +0000, Ertman, David M wrote:
-> > -----Original Message-----
-> > From: Saleem, Shiraz <shiraz.saleem@intel.com>
-> > Sent: Monday, September 13, 2021 8:50 AM
-> > To: Leon Romanovsky <leon@kernel.org>; Ertman, David M
-> > <david.m.ertman@intel.com>
-> > Cc: davem at davemloft.net; kuba at kernel.org; yongxin.liu at windriver.com;
-> > Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
-> > netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Brandeburg, Jesse
-> > <jesse.brandeburg@intel.com>; intel-wired-lan at lists.osuosl.org; linux-
-> > rdma at vger.kernel.org; jgg at ziepe.ca; Williams, Dan J
-> > <dan.j.williams@intel.com>; Singhai, Anjali <anjali.singhai@intel.com>;
-> > Parikh, Neerav <neerav.parikh@intel.com>; Samudrala, Sridhar
-> > <sridhar.samudrala@intel.com>
-> > Subject: RE: [PATCH RESEND net] ice: Correctly deal with PFs that do not
-> > support RDMA
-> > 
-> > > Subject: Re: [PATCH RESEND net] ice: Correctly deal with PFs that do not
-> > > support RDMA
-> > >
-> > > On Thu, Sep 09, 2021 at 08:12:23AM -0700, Dave Ertman wrote:
-> > > > There are two cases where the current PF does not support RDMA
-> > > > functionality.  The first is if the NVM loaded on the device is set to
-> > > > not support RDMA (common_caps.rdma is false).  The second is if the
-> > > > kernel bonding driver has included the current PF in an active link
-> > > > aggregate.
-> > > >
-> > > > When the driver has determined that this PF does not support RDMA,
-> > > > then auxiliary devices should not be created on the auxiliary bus.
-> > >
-> > > This part is wrong, auxiliary devices should always be created, in your case it
-> > will
-> > > be one eth device only without extra irdma device.
-> > 
-> > It is worth considering having an eth aux device/driver but is it a hard-and-
-> > fast rule?
-> > In this case, the RDMA-capable PCI network device spawns an auxiliary
-> > device for RDMA
-> > and the core driver is a network driver.
-> > 
-> > >
-> > > Your "bug" is that you mixed auxiliary bus devices with "regular" ones and
-> > created
-> > > eth device not as auxiliary one. This is why you are calling to
-> > auxiliary_device_init()
-> > > for RDMA only and fallback to non-auxiliary mode.
-> > 
-> > It's a design choice on how you carve out function(s) off your PCI core device
-> > to be
-> > managed by auxiliary driver(s) and not a bug.
-> > 
-> > Shiraz
+On 14.09.2021 01:32, Hisashi T Fujinaka wrote:
+> On Mon, 13 Sep 2021, Heiner Kallweit wrote:
 > 
-> Also, regardless of whether netdev functionality is carved out into an auxiliary device or not, this code would still be necessary.
-
-Right
-
+>> On 13.09.2021 22:32, Dave Jones wrote:
+>>
+>> + Jesse and Tony as Intel NIC maintainers
+>>
+>>> On Mon, Sep 13, 2021 at 10:22:57PM +0200, Heiner Kallweit wrote:
+>>>
+>>> >> This didn't help I'm afraid :(
+>>> >> It changed the VPD warning, but that's about it...
+>>> >>
+>>> >> [? 184.235496] pci 0000:02:00.0: calling? quirk_blacklist_vpd+0x0/0x22 @ 1
+>>> >> [? 184.235499] pci 0000:02:00.0: [Firmware Bug]: disabling VPD access (can't determine size of non-standard VPD format)
+>>> >> [? 184.235501] pci 0000:02:00.0: quirk_blacklist_vpd+0x0/0x22 took 0 usecs
+>>> >>
+>>> > With this patch there's no VPD access to this device any longer. So this can't be
+>>> > the root cause. Do you have any other PCI device that has VPD capability?
+>>> > -> Capabilities: [...] Vital Product Data
+>>>
+>>>
+>>> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+>>> ??????? Subsystem: Device 1dcf:030a
+>>> ????...
+>>> ??????????? Capabilities: [e0] Vital Product Data
+>>> ??????????????? Unknown small resource type 06, will not decode more.
+>>>
+>>
+>> When searching I found the same symptom of invalid VPD data for 82599EB.
+>> Do these adapters have non-VPD data in VPD address space? Or is the actual
+>> VPD data at another offset than 0? I know that few Chelsio devices have
+>> such a non-standard VPD structure.
+>>
+>>>
+>>> I'll add that to the quirk list and see if that helps.
+>>>
+>>> ????Dave
+>>>
+>> Heiner
 > 
-> We don't want to carve out an auxiliary device to support a functionality that the base PCI device does not support.  Not having
-> the RDMA auxiliary device for an auxiliary driver to bind to is how we differentiate between devices that support RDMA and those
-> that don't.
-
-This is right too.
-
-My complain is that you mixed enumerator logic with eth driver and
-create auxiliary bus only if your RDMA device exists. It is wrong.
-
-Thanks
-
+> Sorry to reply from my personal account. If I did it from my work
+> account I'd be top-posting because of Outlook and that goes over like a
+> lead balloon.
 > 
-> Thanks,
-> DaveE
+> Anyway, can you send us a dump of your eeprom using ethtool -e? You can
+> either send it via a bug on e1000.sourceforge.net or try sending it to
+> todd.fujinaka at intel.com
 > 
+> The other thing is I'm wondering is what the subvendor device ID you
+> have is referring to because it's not in the pci database. Some ODMs
+> like getting creative with what they put in the NVM.
+> 
+> Todd Fujinaka (todd.fujinaka at intel.com)
+
+Thanks for the prompt reply. Dave, could you please provide the requested
+information?
