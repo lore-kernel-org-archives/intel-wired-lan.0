@@ -1,5 +1,5 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Tue, 14 Sep 2021 18:28:24 +0000
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Tue, 14 Sep 2021 13:00:54 -0700 (PDT)
 Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
 In-Reply-To: <20210914142419.GA32324@codemonkey.org.uk>
 References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
@@ -12,38 +12,44 @@ References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
  <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
  <367cc748-d411-8cf8-ff95-07715c55e899@gmail.com>
  <20210914142419.GA32324@codemonkey.org.uk>
-Message-ID: <CO6PR11MB5652A825C25D4675649BA43FEFDA9@CO6PR11MB5652.namprd11.prod.outlook.com>
+Message-ID: <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wow, I'm waiting for the hardware guy to look at this but this is an off-brand 10Gtek NIC from Amazon that just has nonsense data in the VPD as far as I can tell (3's).
+On Tue, 14 Sep 2021, Dave Jones wrote:
 
-I'll let you know if I find out that the critical settings are bad, but I would just ignore any VPD errors.
+> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
+>
+> > > Sorry to reply from my personal account. If I did it from my work
+> > > account I'd be top-posting because of Outlook and that goes over like a
+> > > lead balloon.
+> > >
+> > > Anyway, can you send us a dump of your eeprom using ethtool -e? You can
+> > > either send it via a bug on e1000.sourceforge.net or try sending it to
+> > > todd.fujinaka at intel.com
+> > >
+> > > The other thing is I'm wondering is what the subvendor device ID you
+> > > have is referring to because it's not in the pci database. Some ODMs
+> > > like getting creative with what they put in the NVM.
+> > >
+> > > Todd Fujinaka (todd.fujinaka at intel.com)
+> >
+> > Thanks for the prompt reply. Dave, could you please provide the requested
+> > information?
+>
+> sent off-list.
+>
+> 	Dave
 
-Todd Fujinaka
-Software Application Engineer
-Ethernet Products Group
-Intel Corporation
-todd.fujinaka at intel.com
+Whoops. I replied from outlook again.
 
------Original Message-----
-From: Dave Jones <davej@codemonkey.org.uk> 
-Sent: Tuesday, September 14, 2021 7:24 AM
-To: Heiner Kallweit <hkallweit1@gmail.com>
-Cc: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; linux-pci at vger.kernel.org; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; intel-wired-lan <intel-wired-lan@lists.osuosl.org>; Bjorn Helgaas <bhelgaas@google.com>; Fujinaka, Todd <todd.fujinaka@intel.com>; Hisashi T Fujinaka <htodd@twofifty.com>
-Subject: Re: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
+I have confirmation that this should be a valid image. The VPD is just a
+series of 3's. There are changes to preboot header, flash and BAR size,
+and as far as I can tell, a nonsense subdevice ID, but this should work.
 
-On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
- 
- > > Sorry to reply from my personal account. If I did it from my work  > > account I'd be top-posting because of Outlook and that goes over like a  > > lead balloon.
- > >
- > > Anyway, can you send us a dump of your eeprom using ethtool -e? You can  > > either send it via a bug on e1000.sourceforge.net or try sending it to  > > todd.fujinaka at intel.com  > >  > > The other thing is I'm wondering is what the subvendor device ID you  > > have is referring to because it's not in the pci database. Some ODMs  > > like getting creative with what they put in the NVM.
- > >
- > > Todd Fujinaka (todd.fujinaka at intel.com)  >  > Thanks for the prompt reply. Dave, could you please provide the requested  > information?
+What was the original question?
 
-sent off-list.
-
-	Dave
+Todd Fujinaka <todd.fujinaka@intel.com>
