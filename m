@@ -1,102 +1,126 @@
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Wed, 15 Sep 2021 09:01:00 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix refreshing iavf adapter
- stats on ethtool request
-Message-ID: <20210915090100.25340-1-jedrzej.jagielski@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Wed, 15 Sep 2021 11:15:59 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add support for
+ 50G/100G in AIM algorithm
+Message-ID: <20210915091559.27096-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently iavf adapter statistics are refreshed only in a
-watchdog task, triggered approximately every two seconds,
-which causes some ethtool requests to return outdated values.
+Advanced link speed support was added long back, but adding AIM support
+was missed. Adding AIM support for advanced link speed support
+allows the algorithm to take into account 50G/100G link speeds.
+Also, other previous speeds are taken into consideration when advanced
+link speeds are supported.
 
-Add explicit statistics refresh when requested by ethtool -S.
-
-Fixes: b476b0030e61 ("iavf: Move commands processing to the separate function")
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
-V2: Squash 44a4808a78f6 ("iavf: Fix ethtool stats request scheduling")
-V3: Change value returning by iavf_process_aq_command()
----
- drivers/net/ethernet/intel/iavf/iavf.h         |  2 ++
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  3 +++
- drivers/net/ethernet/intel/iavf/iavf_main.c    | 18 ++++++++++++++++++
- 3 files changed, 23 insertions(+)
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 70 +++++++++++++++------
+ 1 file changed, 51 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 21c95775509a..afe6b0d24a9a 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -306,6 +306,7 @@ struct iavf_adapter {
- #define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
- #define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT(27)
- #define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT(28)
-+#define IAVF_FLAG_AQ_REQUEST_STATS		BIT(29)
- 
- 	/* OS defined structs */
- 	struct net_device *netdev;
-@@ -399,6 +400,7 @@ int iavf_up(struct iavf_adapter *adapter);
- void iavf_down(struct iavf_adapter *adapter);
- int iavf_process_config(struct iavf_adapter *adapter);
- void iavf_schedule_reset(struct iavf_adapter *adapter);
-+void iavf_schedule_request_stats(struct iavf_adapter *adapter);
- void iavf_reset(struct iavf_adapter *adapter);
- void iavf_set_ethtool_ops(struct net_device *netdev);
- void iavf_update_stats(struct iavf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 7cbe59beeebb..21c4d4180f3e 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -354,6 +354,9 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	unsigned int i;
- 
-+	/* Explicitly request stats refresh */
-+	iavf_schedule_request_stats(adapter);
-+
- 	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
- 
- 	rcu_read_lock();
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 80437ef26391..c93025ec4667 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -165,6 +165,19 @@ void iavf_schedule_reset(struct iavf_adapter *adapter)
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 3525eab..31286cf 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -368,35 +368,66 @@ void iavf_force_wb(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector)
+ 	     val);
  }
  
-+/**
-+ * iavf_schedule_request_stats - Set the flags and schedule statistics request
-+ * @adapter: board private structure
-+ *
-+ * Sets IAVF_FLAG_AQ_REQUEST_STATS flag so iavf_watchdog_task() will explicitly
-+ * request and refresh ethtool stats
-+ **/
-+void iavf_schedule_request_stats(struct iavf_adapter *adapter)
+-static inline bool iavf_container_is_rx(struct iavf_q_vector *q_vector,
+-					struct iavf_ring_container *rc)
++static bool iavf_container_is_rx(struct iavf_q_vector *q_vector,
++				 struct iavf_ring_container *rc)
+ {
+ 	return &q_vector->rx == rc;
+ }
+ 
+-static inline unsigned int iavf_itr_divisor(struct iavf_q_vector *q_vector)
+-{
+-	unsigned int divisor;
++#define IAVF_AIM_MULTIPLIER_100G	2560
++#define IAVF_AIM_MULTIPLIER_50G 	1280
++#define IAVF_AIM_MULTIPLIER_40G 	1024
++#define IAVF_AIM_MULTIPLIER_20G 	512
++#define IAVF_AIM_MULTIPLIER_10G 	256
++#define IAVF_AIM_MULTIPLIER_1G  	32
+ 
+-	switch (q_vector->adapter->link_speed) {
++static unsigned int iavf_mbps_itr_multiplier(u32 speed_mbps)
 +{
-+	adapter->aq_required |= IAVF_FLAG_AQ_REQUEST_STATS;
-+	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 0);
-+}
-+
- /**
-  * iavf_tx_timeout - Respond to a Tx Hang
-  * @netdev: network interface device structure
-@@ -1700,6 +1713,11 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
- 		iavf_del_adv_rss_cfg(adapter);
- 		return 0;
- 	}
-+	if (adapter->aq_required & IAVF_FLAG_AQ_REQUEST_STATS) {
-+		iavf_request_stats(adapter);
-+		return 0;
++	switch (speed_mbps) {
++	case SPEED_100000:
++		return IAVF_AIM_MULTIPLIER_100G;
++	case SPEED_50000:
++		return IAVF_AIM_MULTIPLIER_50G;
++	case SPEED_40000:
++		return IAVF_AIM_MULTIPLIER_40G;
++	case SPEED_25000:
++	case SPEED_20000:
++		return IAVF_AIM_MULTIPLIER_20G;
++	case SPEED_10000:
++	default:
++		return IAVF_AIM_MULTIPLIER_10G;
++	case SPEED_1000:
++	case SPEED_100:
++		return IAVF_AIM_MULTIPLIER_1G;
 +	}
-+
- 	return -EAGAIN;
++}
++?
++static unsigned int
++iavf_virtchnl_itr_multiplier(enum virtchnl_link_speed speed_virtchnl)
++{
++	switch (speed_virtchnl) {
+ 	case VIRTCHNL_LINK_SPEED_40GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 1024;
+-		break;
++		return IAVF_AIM_MULTIPLIER_40G;
+ 	case VIRTCHNL_LINK_SPEED_25GB:
+ 	case VIRTCHNL_LINK_SPEED_20GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 512;
+-		break;
+-	default:
++		return IAVF_AIM_MULTIPLIER_20G;
+ 	case VIRTCHNL_LINK_SPEED_10GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 256;
+-		break;
++	default:
++		return IAVF_AIM_MULTIPLIER_10G;
+ 	case VIRTCHNL_LINK_SPEED_1GB:
+ 	case VIRTCHNL_LINK_SPEED_100MB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 32;
+-		break;
++		return IAVF_AIM_MULTIPLIER_1G;
+ 	}
+-
+-	return divisor;
++}
++?
++static unsigned int iavf_itr_divisor(struct iavf_adapter *adapter)
++{
++	if (ADV_LINK_SUPPORT(adapter))
++		return IAVF_ITR_ADAPTIVE_MIN_INC *
++			iavf_mbps_itr_multiplier(adapter->link_speed_mbps);
++	else
++		return IAVF_ITR_ADAPTIVE_MIN_INC *
++			iavf_virtchnl_itr_multiplier(adapter->link_speed);
  }
  
+ /**
+@@ -586,8 +617,9 @@ adjust_by_size:
+ 	 * Use addition as we have already recorded the new latency flag
+ 	 * for the ITR value.
+ 	 */
+-	itr += DIV_ROUND_UP(avg_wire_size, iavf_itr_divisor(q_vector)) *
+-	       IAVF_ITR_ADAPTIVE_MIN_INC;
++	itr += DIV_ROUND_UP(avg_wire_size,
++			    iavf_itr_divisor(q_vector->adapter)) *
++		IAVF_ITR_ADAPTIVE_MIN_INC;
+ 
+ 	if ((itr & IAVF_ITR_MASK) > IAVF_ITR_ADAPTIVE_MAX_USECS) {
+ 		itr &= IAVF_ITR_ADAPTIVE_LATENCY;
 -- 
 2.27.0
 
