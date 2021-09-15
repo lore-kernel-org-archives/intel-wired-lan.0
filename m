@@ -1,130 +1,98 @@
-From: Feng zhou <zhoufeng.zf@bytedance.com>
-Date: Wed, 15 Sep 2021 15:04:40 +0800
-Subject: [Intel-wired-lan] [PATCH v3] ixgbe: Fix NULL pointer dereference in
- ixgbe_xdp_setup
-Message-ID: <20210915070440.6540-1-zhoufeng.zf@bytedance.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Wed, 15 Sep 2021 08:21:07 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix displaying queue
+ statistics shown by ethtool
+Message-ID: <20210915082107.24204-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Feng Zhou <zhoufeng.zf@bytedance.com>
+Driver provided too many lines as an output to ethtool -S command.
+Return actual length of string set of ethtool stats. Instead of predefined
+maximal value use the actual value on netdev, iterate over active queues.
+Without this patch, ethtool -S report would produce additional
+erroneous lines.
 
-The ixgbe driver currently generates a NULL pointer dereference with
-some machine (online cpus < 63). This is due to the fact that the
-maximum value of num_xdp_queues is nr_cpu_ids. Code is in
-"ixgbe_set_rss_queues"".
+Without this change in statistics after showing them by ethtool -S
+will be displayed queues that are not configured.
 
-Here's how the problem repeats itself:
-Some machine (online cpus < 63), And user set num_queues to 63 through
-ethtool. Code is in the "ixgbe_set_channels",
-	adapter->ring_feature[RING_F_FDIR].limit = count;
-
-It becomes 63.
-
-When user use xdp, "ixgbe_set_rss_queues" will set queues num.
-	adapter->num_rx_queues = rss_i;
-	adapter->num_tx_queues = rss_i;
-	adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
-
-And rss_i's value is from
-	f = &adapter->ring_feature[RING_F_FDIR];
-	rss_i = f->indices = f->limit;
-
-So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
-	for (i = 0; i < adapter->num_rx_queues; i++)
-		if (adapter->xdp_ring[i]->xsk_umem)
-
-It leads to panic.
-
-Call trace:
-[exception RIP: ixgbe_xdp+368]
-RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
-RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
-RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
-RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
-R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
-R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
-ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
- 7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
- 8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
- 9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
-10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
-11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
-12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
-13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
-14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
-15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
-16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
-17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
-18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
-19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
-
-So I fix ixgbe_max_channels so that it will not allow a setting of queues 
-to be higher than the num_online_cpus(). And when run to ixgbe_xdp_setup, 
-take the smaller value of num_rx_queues and num_xdp_queues.
-
-Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
-AF_XDP")
-Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
+Fixes: 6dba41cd02fc ("i40evf: update ethtool stats code and use helper functions")
+Signed-off-by: Witold Fijalkowski <witoldx.fijalkowski@intel.com>
+Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-v1:
-- Fix "ixgbe_max_channels" callback so that it will not allow a setting of 
-queues to be higher than the num_online_cpus().
-v2:
-- Modify commit message
-more details can be seen from here:
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20210817075407.11961-1-zhoufeng.zf at bytedance.com/
-https://lore.kernel.org/netdev/20210903064013.9842-1-zhoufeng.zf at bytedance.com/
-Thanks to Maciej Fijalkowski and Paul Menzel for yours advice.
+V2: Fix commit message
+V3: Squash patch 5d12f51b9820 ("iavf: Fix ethtool -S output")
+---
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 31 ++++++++++++-------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 8 ++++++--
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 4ceaca0f6ce3..21321d164708 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -3204,7 +3204,7 @@ static unsigned int ixgbe_max_channels(struct ixgbe_adapter *adapter)
- 		max_combined = ixgbe_max_rss_indices(adapter);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 7cbe59beeebb..c585ad13cb37 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -331,9 +331,16 @@ static int iavf_get_link_ksettings(struct net_device *netdev,
+  **/
+ static int iavf_get_sset_count(struct net_device *netdev, int sset)
+ {
++	/* Report the maximum number queues, even if not every queue is
++	 * currently configured. Since allocation of queues is in pairs,
++	 * use netdev->real_num_tx_queues * 2. The real_num_tx_queues is set
++	 * at device creation and never changes.
++	 */
++
+ 	if (sset == ETH_SS_STATS)
+ 		return IAVF_STATS_LEN +
+-			(IAVF_QUEUE_STATS_LEN * 2 * IAVF_MAX_REQ_QUEUES);
++			(IAVF_QUEUE_STATS_LEN * 2 *
++			 netdev->real_num_tx_queues);
+ 	else if (sset == ETH_SS_PRIV_FLAGS)
+ 		return IAVF_PRIV_FLAGS_STR_LEN;
+ 	else
+@@ -357,17 +364,19 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
+ 	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
+ 
+ 	rcu_read_lock();
+-	for (i = 0; i < IAVF_MAX_REQ_QUEUES; i++) {
++	/* As num_active_queues describe both tx and rx queues, we can use
++	 * it to iterate over rings' stats.
++	 */
++	for (i = 0; i < adapter->num_active_queues; i++) {
++
+ 		struct iavf_ring *ring;
+ 
+-		/* Avoid accessing un-allocated queues */
+-		ring = (i < adapter->num_active_queues ?
+-			&adapter->tx_rings[i] : NULL);
++		/* Tx rings stats */
++		ring = &adapter->tx_rings[i];
+ 		iavf_add_queue_stats(&data, ring);
+ 
+-		/* Avoid accessing un-allocated queues */
+-		ring = (i < adapter->num_active_queues ?
+-			&adapter->rx_rings[i] : NULL);
++		/* Rx rings stats */
++		ring = &adapter->rx_rings[i];
+ 		iavf_add_queue_stats(&data, ring);
  	}
+ 	rcu_read_unlock();
+@@ -404,10 +413,10 @@ static void iavf_get_stat_strings(struct net_device *netdev, u8 *data)
  
--	return max_combined;
-+	return min_t(int, max_combined, num_online_cpus());
- }
+ 	iavf_add_stat_strings(&data, iavf_gstrings_stats);
  
- static void ixgbe_get_channels(struct net_device *dev,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 14aea40da50f..5db496cc5070 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10112,6 +10112,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
- 	struct bpf_prog *old_prog;
- 	bool need_reset;
-+	int num_queues;
- 
- 	if (adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)
- 		return -EINVAL;
-@@ -10161,11 +10162,14 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- 	/* Kick start the NAPI context if there is an AF_XDP socket open
- 	 * on that queue id. This so that receiving will start.
+-	/* Queues are always allocated in pairs, so we just use num_tx_queues
+-	 * for both Tx and Rx queues.
++	/* Queues are always allocated in pairs, so we just use
++	 * real_num_tx_queues for both Tx and Rx queues.
  	 */
--	if (need_reset && prog)
--		for (i = 0; i < adapter->num_rx_queues; i++)
-+	if (need_reset && prog) {
-+		num_queues = min_t(int, adapter->num_rx_queues,
-+			adapter->num_xdp_queues);
-+		for (i = 0; i < num_queues; i++)
- 			if (adapter->xdp_ring[i]->xsk_pool)
- 				(void)ixgbe_xsk_wakeup(adapter->netdev, i,
- 						       XDP_WAKEUP_RX);
-+	}
- 
- 	return 0;
- }
+-	for (i = 0; i < netdev->num_tx_queues; i++) {
++	for (i = 0; i < netdev->real_num_tx_queues; i++) {
+ 		iavf_add_stat_strings(&data, iavf_gstrings_queue_stats,
+ 				      "tx", i);
+ 		iavf_add_stat_strings(&data, iavf_gstrings_queue_stats,
 -- 
-2.11.0
+2.27.0
 
