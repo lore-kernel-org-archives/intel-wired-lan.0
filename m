@@ -1,50 +1,88 @@
-From: Michal Swiatkowski <michal.swiatkowski@intel..com>
-Date: Tue, 14 Sep 2021 19:25:05 -0400
-Subject: [Intel-wired-lan] [PATCH net-next] ice: fix getting UDP tunnel entry
-Message-ID: <20210914232505.8117-1-user@wasp>
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Wed, 15 Sep 2021 07:18:56 -0700 (PDT)
+Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
+In-Reply-To: <80718d5e-a4d2-ff85-aa8f-cd790c951278@gmail.com>
+References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
+ <20210913141818.GA27911@codemonkey.org.uk>
+ <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
+ <20210913201519.GA15726@codemonkey.org.uk>
+ <b84b799d-0aaa-c4e1-b61b-8e2316b62bd1@gmail.com>
+ <20210913203234.GA6762@codemonkey.org.uk>
+ <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
+ <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
+ <367cc748-d411-8cf8-ff95-07715c55e899@gmail.com>
+ <20210914142419.GA32324@codemonkey.org.uk>
+ <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
+ <80718d5e-a4d2-ff85-aa8f-cd790c951278@gmail.com>
+Message-ID: <14f6d9e9-aca8-133-67f5-92effa2ea280@twofifty.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+On Tue, 14 Sep 2021, Heiner Kallweit wrote:
 
-Correct parameters order in call to ice_tunnel_idx_to_entry function.
+> On 14.09.2021 22:00, Hisashi T Fujinaka wrote:
+>> On Tue, 14 Sep 2021, Dave Jones wrote:
+>>
+>>> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
+>>>
+>>>>> Sorry to reply from my personal account. If I did it from my work
+>>>>> account I'd be top-posting because of Outlook and that goes over like a
+>>>>> lead balloon.
+>>>>>
+>>>>> Anyway, can you send us a dump of your eeprom using ethtool -e? You can
+>>>>> either send it via a bug on e1000.sourceforge.net or try sending it to
+>>>>> todd.fujinaka at intel.com
+>>>>>
+>>>>> The other thing is I'm wondering is what the subvendor device ID you
+>>>>> have is referring to because it's not in the pci database. Some ODMs
+>>>>> like getting creative with what they put in the NVM.
+>>>>>
+>>>>> Todd Fujinaka (todd.fujinaka at intel.com)
+>>>>
+>>>> Thanks for the prompt reply. Dave, could you please provide the requested
+>>>> information?
+>>>
+>>> sent off-list.
+>>>
+>>>     Dave
+>>
+>> Whoops. I replied from outlook again.
+>>
+>> I have confirmation that this should be a valid image. The VPD is just a
+>> series of 3's. There are changes to preboot header, flash and BAR size,
+>> and as far as I can tell, a nonsense subdevice ID, but this should work.
+>>
+>> What was the original question?
+>>
+> "lspci -vv" complains about an invalid short tag 0x06 and the PCI VPD
+> code resulted in a stall. So it seems the data doesn't have valid VPD
+> format as defined in PCI specification.
+>
+> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+>        Subsystem: Device 1dcf:030a
+> 	...
+> 	        Capabilities: [e0] Vital Product Data
+>                *Unknown small resource type 06, will not decode more.*
+>
+> Not sure which method is used by the driver to get the EEPROM content.
+> For the issue here is relevant what is exposed via PCI VPD.
+>
+> The related kernel error message has been reported few times, e.g. here:
+> https://access.redhat.com/solutions/3001451
+> Only due to a change in kernel code this became a more prominent
+> issue now.
+>
+> You say that VPD is just a series of 3's. This may explain why kernel and
+> tools complain about an invalid VPD format. VPD misses the tag structure.
 
-Entry in sparse port table is correct when the idx is 0. For idx 1 one
-correct entry should be skipped, for idx 2 two of them should be skipped
-etc. Change if condition to be true when idx is 0, which means that
-previous valid entry of this tunnel type were skipped.
+I think I conflated two issues and yours may not be the one with the
+weird Amazon NIC. In any case, the VPD does not match the spec and two
+people have confirmed it's just full of 3's. With the bogus subvendor
+ID, I'm thinking this is not an Intel NIC.
 
-Fixes: b20e6c17c468 ("ice: convert to new udp_tunnel infrastructure")
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Next step is to contact whoever made the NIC and ask them for guidance.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index df8ed0b40f00..7bcb41cda0a0 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1989,7 +1989,7 @@ static u16 ice_tunnel_idx_to_entry(struct ice_hw *hw, enum ice_tunnel_type type,
- 	for (i = 0; i < hw->tnl.count && i < ICE_TUNNEL_MAX_ENTRIES; i++)
- 		if (hw->tnl.tbl[i].valid &&
- 		    hw->tnl.tbl[i].type == type &&
--		    idx--)
-+		    idx-- == 0)
- 			return i;
- 
- 	WARN_ON_ONCE(1);
-@@ -2149,7 +2149,7 @@ int ice_udp_tunnel_set_port(struct net_device *netdev, unsigned int table,
- 	u16 index;
- 
- 	tnl_type = ti->type == UDP_TUNNEL_TYPE_VXLAN ? TNL_VXLAN : TNL_GENEVE;
--	index = ice_tunnel_idx_to_entry(&pf->hw, idx, tnl_type);
-+	index = ice_tunnel_idx_to_entry(&pf->hw, tnl_type, idx);
- 
- 	status = ice_create_tunnel(&pf->hw, index, tnl_type, ntohs(ti->port));
- 	if (status) {
--- 
-2.31.1
-
+Todd Fujinaka <todd.fujinaka@intel.com>
