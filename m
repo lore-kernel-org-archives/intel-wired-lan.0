@@ -1,7 +1,7 @@
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Date: Wed, 15 Sep 2021 18:05:34 +0200
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Wed, 15 Sep 2021 09:16:47 -0700 (PDT)
 Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
-In-Reply-To: <14f6d9e9-aca8-133-67f5-92effa2ea280@twofifty.com>
+In-Reply-To: <d49182d6-15fe-15a1-c063-4808942a84c1@gmail.com>
 References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
  <20210913141818.GA27911@codemonkey.org.uk>
  <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
@@ -15,81 +15,90 @@ References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
  <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
  <80718d5e-a4d2-ff85-aa8f-cd790c951278@gmail.com>
  <14f6d9e9-aca8-133-67f5-92effa2ea280@twofifty.com>
-Message-ID: <d49182d6-15fe-15a1-c063-4808942a84c1@gmail.com>
+ <d49182d6-15fe-15a1-c063-4808942a84c1@gmail.com>
+Message-ID: <1eba46af-e9d1-36aa-4bb7-9968b92a932f@twofifty.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 15.09.2021 16:18, Hisashi T Fujinaka wrote:
-> On Tue, 14 Sep 2021, Heiner Kallweit wrote:
-> 
->> On 14.09.2021 22:00, Hisashi T Fujinaka wrote:
->>> On Tue, 14 Sep 2021, Dave Jones wrote:
->>>
->>>> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
+On Wed, 15 Sep 2021, Heiner Kallweit wrote:
+
+> On 15.09.2021 16:18, Hisashi T Fujinaka wrote:
+>> On Tue, 14 Sep 2021, Heiner Kallweit wrote:
+>>
+>>> On 14.09.2021 22:00, Hisashi T Fujinaka wrote:
+>>>> On Tue, 14 Sep 2021, Dave Jones wrote:
 >>>>
->>>>>> Sorry to reply from my personal account. If I did it from my work
->>>>>> account I'd be top-posting because of Outlook and that goes over like a
->>>>>> lead balloon.
->>>>>>
->>>>>> Anyway, can you send us a dump of your eeprom using ethtool -e? You can
->>>>>> either send it via a bug on e1000.sourceforge.net or try sending it to
->>>>>> todd.fujinaka at intel.com
->>>>>>
->>>>>> The other thing is I'm wondering is what the subvendor device ID you
->>>>>> have is referring to because it's not in the pci database. Some ODMs
->>>>>> like getting creative with what they put in the NVM.
->>>>>>
->>>>>> Todd Fujinaka (todd.fujinaka at intel.com)
+>>>>> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
 >>>>>
->>>>> Thanks for the prompt reply. Dave, could you please provide the requested
->>>>> information?
+>>>>>>> Sorry to reply from my personal account. If I did it from my work
+>>>>>>> account I'd be top-posting because of Outlook and that goes over like a
+>>>>>>> lead balloon.
+>>>>>>>
+>>>>>>> Anyway, can you send us a dump of your eeprom using ethtool -e? You can
+>>>>>>> either send it via a bug on e1000.sourceforge.net or try sending it to
+>>>>>>> todd.fujinaka at intel.com
+>>>>>>>
+>>>>>>> The other thing is I'm wondering is what the subvendor device ID you
+>>>>>>> have is referring to because it's not in the pci database. Some ODMs
+>>>>>>> like getting creative with what they put in the NVM.
+>>>>>>>
+>>>>>>> Todd Fujinaka (todd.fujinaka at intel.com)
+>>>>>>
+>>>>>> Thanks for the prompt reply. Dave, could you please provide the requested
+>>>>>> information?
+>>>>>
+>>>>> sent off-list.
+>>>>>
+>>>>>     Dave
 >>>>
->>>> sent off-list.
+>>>> Whoops. I replied from outlook again.
 >>>>
->>>> ??? Dave
+>>>> I have confirmation that this should be a valid image. The VPD is just a
+>>>> series of 3's. There are changes to preboot header, flash and BAR size,
+>>>> and as far as I can tell, a nonsense subdevice ID, but this should work.
+>>>>
+>>>> What was the original question?
+>>>>
+>>> "lspci -vv" complains about an invalid short tag 0x06 and the PCI VPD
+>>> code resulted in a stall. So it seems the data doesn't have valid VPD
+>>> format as defined in PCI specification.
 >>>
->>> Whoops. I replied from outlook again.
+>>> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
+>>>        Subsystem: Device 1dcf:030a
+>>>     ...
+>>>             Capabilities: [e0] Vital Product Data
+>>>                *Unknown small resource type 06, will not decode more.*
 >>>
->>> I have confirmation that this should be a valid image. The VPD is just a
->>> series of 3's. There are changes to preboot header, flash and BAR size,
->>> and as far as I can tell, a nonsense subdevice ID, but this should work.
+>>> Not sure which method is used by the driver to get the EEPROM content.
+>>> For the issue here is relevant what is exposed via PCI VPD.
 >>>
->>> What was the original question?
+>>> The related kernel error message has been reported few times, e.g. here:
+>>> https://access.redhat.com/solutions/3001451
+>>> Only due to a change in kernel code this became a more prominent
+>>> issue now.
 >>>
->> "lspci -vv" complains about an invalid short tag 0x06 and the PCI VPD
->> code resulted in a stall. So it seems the data doesn't have valid VPD
->> format as defined in PCI specification.
+>>> You say that VPD is just a series of 3's. This may explain why kernel and
+>>> tools complain about an invalid VPD format. VPD misses the tag structure.
 >>
->> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
->> ?????? Subsystem: Device 1dcf:030a
->> ????...
->> ??????????? Capabilities: [e0] Vital Product Data
->> ?????????????? *Unknown small resource type 06, will not decode more.*
+>> I think I conflated two issues and yours may not be the one with the
+>> weird Amazon NIC. In any case, the VPD does not match the spec and two
+>> people have confirmed it's just full of 3's. With the bogus subvendor
+>> ID, I'm thinking this is not an Intel NIC.
 >>
->> Not sure which method is used by the driver to get the EEPROM content.
->> For the issue here is relevant what is exposed via PCI VPD.
+>> Next step is to contact whoever made the NIC and ask them for guidance.
 >>
->> The related kernel error message has been reported few times, e.g. here:
->> https://access.redhat.com/solutions/3001451
->> Only due to a change in kernel code this became a more prominent
->> issue now.
->>
->> You say that VPD is just a series of 3's. This may explain why kernel and
->> tools complain about an invalid VPD format. VPD misses the tag structure.
-> 
-> I think I conflated two issues and yours may not be the one with the
-> weird Amazon NIC. In any case, the VPD does not match the spec and two
-> people have confirmed it's just full of 3's. With the bogus subvendor
-> ID, I'm thinking this is not an Intel NIC.
-> 
-> Next step is to contact whoever made the NIC and ask them for guidance.
-> 
-In an earlier mail in this thread was stated that subvendor id is unknown.
-Checking here https://pcisig.com/membership/member-companies?combine=1dcf
-it says: Beijing Sinead Technology Co., Ltd.
+> In an earlier mail in this thread was stated that subvendor id is unknown.
+> Checking here https://pcisig.com/membership/member-companies?combine=1dcf
+> it says: Beijing Sinead Technology Co., Ltd.
 
-> Todd Fujinaka <todd.fujinaka@intel.com>
+Huh. I didn't realize there was an official list beyond pciids.ucw.cz.
 
+In any case, that's who you need to talk to about the unlisted (to
+Linux) vendor ID and also the odd VPD data.
+
+-- 
+Hisashi T Fujinaka - htodd at twofifty.com
+BSEE + BSChem + BAEnglish + MSCS + $2.50 = coffee
