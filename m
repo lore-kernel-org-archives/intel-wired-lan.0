@@ -1,104 +1,45 @@
-From: Hisashi T Fujinaka <htodd@twofifty.com>
-Date: Wed, 15 Sep 2021 09:16:47 -0700 (PDT)
-Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
-In-Reply-To: <d49182d6-15fe-15a1-c063-4808942a84c1@gmail.com>
-References: <CAHk-=wgbygOb3hRV+7YOpVcMPTP2oQ=iw6tf09Ydspg7o7BsWQ@mail.gmail.com>
- <20210913141818.GA27911@codemonkey.org.uk>
- <ab571d7e-0cf5-ffb3-6bbe-478a4ed749dc@gmail.com>
- <20210913201519.GA15726@codemonkey.org.uk>
- <b84b799d-0aaa-c4e1-b61b-8e2316b62bd1@gmail.com>
- <20210913203234.GA6762@codemonkey.org.uk>
- <b24d81e2-5a1e-3616-5a01-abd58c0712f7@gmail.com>
- <b4b543d4-c0c5-3c56-46b7-e17ec579edcc@twofifty.com>
- <367cc748-d411-8cf8-ff95-07715c55e899@gmail.com>
- <20210914142419.GA32324@codemonkey.org.uk>
- <c02876d7-c3f3-1953-334d-1248af919796@twofifty.com>
- <80718d5e-a4d2-ff85-aa8f-cd790c951278@gmail.com>
- <14f6d9e9-aca8-133-67f5-92effa2ea280@twofifty.com>
- <d49182d6-15fe-15a1-c063-4808942a84c1@gmail.com>
-Message-ID: <1eba46af-e9d1-36aa-4bb7-9968b92a932f@twofifty.com>
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Date: Wed, 15 Sep 2021 12:16:40 -0700
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: fix endless loop under
+ rtnl
+In-Reply-To: <452ff4ddfef7fc8f558a8c8eb7a8050688760e11.1631609537.git.jbenc@redhat.com>
+References: <452ff4ddfef7fc8f558a8c8eb7a8050688760e11.1631609537.git.jbenc@redhat.com>
+Message-ID: <CAEuXFExDWaQwJHHQLcMjbFSP-621KUi16BNg=VH-Y5KLk6dhCA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 15 Sep 2021, Heiner Kallweit wrote:
+On Tue, Sep 14, 2021 at 1:55 AM Jiri Benc <jbenc@redhat.com> wrote:
+>
+> The loop in i40e_get_capabilities can never end. The problem is that
+> although i40e_aq_discover_capabilities returns with an error if there's
+> a firmware problem, the returned error is not checked. There is a check for
+> pf->hw.aq.asq_last_status but that value is set to I40E_AQ_RC_OK on most
+> firmware problems.
+>
+> When i40e_aq_discover_capabilities encounters a firmware problem, it will
+> enocunter the same problem on its next invocation. As the result, the loop
+> becomes endless. We hit this with I40E_ERR_ADMIN_QUEUE_TIMEOUT but looking
+> at the code, it can happen with a range of other firmware errors.
+>
+> I don't know what the correct behavior should be: whether the firmware
+> should be retried a few times, or whether pf->hw.aq.asq_last_status should
+> be always set to the encountered firmware error (but then it would be
+> pointless and can be just replaced by the i40e_aq_discover_capabilities
+> return value). However, the current behavior with an endless loop under the
+> rtnl mutex(!) is unacceptable and Intel has not submitted a fix, although we
+> explained the bug to them 7 months ago.
+>
+> This may not be the best possible fix but it's better than hanging the whole
+> system on a firmware bug.
+>
+> Fixes: 56a62fc86895 ("i40e: init code and hardware support")
+> Tested-by: Stefan Assmann <sassmann@redhat.com>
+> Signed-off-by: Jiri Benc <jbenc@redhat.com>
 
-> On 15.09.2021 16:18, Hisashi T Fujinaka wrote:
->> On Tue, 14 Sep 2021, Heiner Kallweit wrote:
->>
->>> On 14.09.2021 22:00, Hisashi T Fujinaka wrote:
->>>> On Tue, 14 Sep 2021, Dave Jones wrote:
->>>>
->>>>> On Tue, Sep 14, 2021 at 07:51:22AM +0200, Heiner Kallweit wrote:
->>>>>
->>>>>>> Sorry to reply from my personal account. If I did it from my work
->>>>>>> account I'd be top-posting because of Outlook and that goes over like a
->>>>>>> lead balloon.
->>>>>>>
->>>>>>> Anyway, can you send us a dump of your eeprom using ethtool -e? You can
->>>>>>> either send it via a bug on e1000.sourceforge.net or try sending it to
->>>>>>> todd.fujinaka at intel.com
->>>>>>>
->>>>>>> The other thing is I'm wondering is what the subvendor device ID you
->>>>>>> have is referring to because it's not in the pci database. Some ODMs
->>>>>>> like getting creative with what they put in the NVM.
->>>>>>>
->>>>>>> Todd Fujinaka (todd.fujinaka at intel.com)
->>>>>>
->>>>>> Thanks for the prompt reply. Dave, could you please provide the requested
->>>>>> information?
->>>>>
->>>>> sent off-list.
->>>>>
->>>>>     Dave
->>>>
->>>> Whoops. I replied from outlook again.
->>>>
->>>> I have confirmation that this should be a valid image. The VPD is just a
->>>> series of 3's. There are changes to preboot header, flash and BAR size,
->>>> and as far as I can tell, a nonsense subdevice ID, but this should work.
->>>>
->>>> What was the original question?
->>>>
->>> "lspci -vv" complains about an invalid short tag 0x06 and the PCI VPD
->>> code resulted in a stall. So it seems the data doesn't have valid VPD
->>> format as defined in PCI specification.
->>>
->>> 01:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)
->>>        Subsystem: Device 1dcf:030a
->>>     ...
->>>             Capabilities: [e0] Vital Product Data
->>>                *Unknown small resource type 06, will not decode more.*
->>>
->>> Not sure which method is used by the driver to get the EEPROM content.
->>> For the issue here is relevant what is exposed via PCI VPD.
->>>
->>> The related kernel error message has been reported few times, e.g. here:
->>> https://access.redhat.com/solutions/3001451
->>> Only due to a change in kernel code this became a more prominent
->>> issue now.
->>>
->>> You say that VPD is just a series of 3's. This may explain why kernel and
->>> tools complain about an invalid VPD format. VPD misses the tag structure.
->>
->> I think I conflated two issues and yours may not be the one with the
->> weird Amazon NIC. In any case, the VPD does not match the spec and two
->> people have confirmed it's just full of 3's. With the bogus subvendor
->> ID, I'm thinking this is not an Intel NIC.
->>
->> Next step is to contact whoever made the NIC and ask them for guidance.
->>
-> In an earlier mail in this thread was stated that subvendor id is unknown.
-> Checking here https://pcisig.com/membership/member-companies?combine=1dcf
-> it says: Beijing Sinead Technology Co., Ltd.
 
-Huh. I didn't realize there was an official list beyond pciids.ucw.cz.
+Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-In any case, that's who you need to talk to about the unlisted (to
-Linux) vendor ID and also the odd VPD data.
-
--- 
-Hisashi T Fujinaka - htodd at twofifty.com
-BSEE + BSChem + BAEnglish + MSCS + $2.50 = coffee
+Thanks!
