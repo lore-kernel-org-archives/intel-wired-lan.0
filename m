@@ -1,28 +1,61 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 17 Sep 2021 09:01:42 -0700
-Subject: [Intel-wired-lan] [net-next,
- v1] net: e1000e: solve insmod 'Unknown symbol mutex_lock' error
-In-Reply-To: <20210917141146.5822-1-chenhaoa@uniontech.com>
-References: <20210917141146.5822-1-chenhaoa@uniontech.com>
-Message-ID: <20c47a57-e7d7-d791-5c86-e27310672789@intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Fri, 17 Sep 2021 14:05:47 -0700
+Subject: [Intel-wired-lan] [PATCH -net] igc: fix build errors for PTP
+Message-ID: <20210917210547.12578-1-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/17/2021 7:11 AM, Hao Chen wrote:
-> After I turn on the CONFIG_LOCK_STAT=y, insmod e1000e.ko will report:
-> [    5.641579] e1000e: Unknown symbol mutex_lock (err -2)
-> [   90.775705] e1000e: Unknown symbol mutex_lock (err -2)
-> [  132.252339] e1000e: Unknown symbol mutex_lock (err -2)
-> 
-> This problem fixed after include <linux/mutex.h>.
+When IGC=y and PTP_1588_CLOCK=m, the ptp_*() interface family is
+not available to the igc driver. Make this driver depend on
+PTP_1588_CLOCK_OPTIONAL so that it will build without errors.
 
-Thanks for taking the time to send a patch.
-Why do you think including a file will fix this? That error is usually
-the user's fault for trying to use insmod which doesn't check module
-dependencies.
+Various igc commits have used ptp_*() functions without checking
+that PTP_1588_CLOCK is enabled. Fix all of these here.
 
-The advice I usually give is to try modprobe instead, does the problem
-still occur without this patch and just using modprobe?
+Fixes these build errors:
+
+ld: drivers/net/ethernet/intel/igc/igc_main.o: in function `igc_msix_other':
+igc_main.c:(.text+0x6494): undefined reference to `ptp_clock_event'
+ld: igc_main.c:(.text+0x64ef): undefined reference to `ptp_clock_event'
+ld: igc_main.c:(.text+0x6559): undefined reference to `ptp_clock_event'
+ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function `igc_ethtool_get_ts_info':
+igc_ethtool.c:(.text+0xc7a): undefined reference to `ptp_clock_index'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_feature_enable_i225':
+igc_ptp.c:(.text+0x330): undefined reference to `ptp_find_pin'
+ld: igc_ptp.c:(.text+0x36f): undefined reference to `ptp_find_pin'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_init':
+igc_ptp.c:(.text+0x11cd): undefined reference to `ptp_clock_register'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_stop':
+igc_ptp.c:(.text+0x12dd): undefined reference to `ptp_clock_unregister'
+ld: drivers/platform/x86/dell/dell-wmi-privacy.o: in function `dell_privacy_wmi_probe':
+
+Fixes: 64433e5bf40ab ("igc: Enable internal i225 PPS")
+Fixes: 60dbede0c4f3d ("igc: Add support for ethtool GET_TS_INFO command")
+Fixes: 87938851b6efb ("igc: enable auxiliary PHC functions for the i225")
+Fixes: 5f2958052c582 ("igc: Add basic skeleton for PTP")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Ederson de Souza <ederson.desouza@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+---
+ drivers/net/ethernet/intel/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20210917.orig/drivers/net/ethernet/intel/Kconfig
++++ linux-next-20210917/drivers/net/ethernet/intel/Kconfig
+@@ -335,6 +335,7 @@ config IGC
+ 	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
+ 	default n
+ 	depends on PCI
++	depends on PTP_1588_CLOCK_OPTIONAL
+ 	help
+ 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
+ 	  family of adapters.
