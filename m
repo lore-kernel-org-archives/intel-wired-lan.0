@@ -1,40 +1,28 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 17 Sep 2021 10:09:52 -0500
-Subject: [Intel-wired-lan] Linux 5.15-rc1 - 82599ES VPD access isue
-In-Reply-To: <e5518a29-efe7-1d84-1671-4dc170f6bc53@twofifty.com>
-Message-ID: <20210917150952.GA1716923@bjorn-Precision-5520>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 17 Sep 2021 09:01:42 -0700
+Subject: [Intel-wired-lan] [net-next,
+ v1] net: e1000e: solve insmod 'Unknown symbol mutex_lock' error
+In-Reply-To: <20210917141146.5822-1-chenhaoa@uniontech.com>
+References: <20210917141146.5822-1-chenhaoa@uniontech.com>
+Message-ID: <20c47a57-e7d7-d791-5c86-e27310672789@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 15, 2021 at 04:46:54PM -0700, Hisashi T Fujinaka wrote:
-> On Wed, 15 Sep 2021, Bjorn Helgaas wrote:
+On 9/17/2021 7:11 AM, Hao Chen wrote:
+> After I turn on the CONFIG_LOCK_STAT=y, insmod e1000e.ko will report:
+> [    5.641579] e1000e: Unknown symbol mutex_lock (err -2)
+> [   90.775705] e1000e: Unknown symbol mutex_lock (err -2)
+> [  132.252339] e1000e: Unknown symbol mutex_lock (err -2)
 > 
-> > On Wed, Sep 15, 2021 at 09:16:47AM -0700, Hisashi T Fujinaka wrote:
-> > > On Wed, 15 Sep 2021, Heiner Kallweit wrote:
+> This problem fixed after include <linux/mutex.h>.
 
-> > > > In an earlier mail in this thread was stated that subvendor id is unknown.
-> > > > Checking here https://pcisig.com/membership/member-companies?combine=1dcf
-> > > > it says: Beijing Sinead Technology Co., Ltd.
-> > > 
-> > > Huh. I didn't realize there was an official list beyond pciids.ucw.cz.
-> > > 
-> > > In any case, that's who you need to talk to about the unlisted (to
-> > > Linux) vendor ID and also the odd VPD data.
-> > 
-> > https://pci-ids.ucw.cz/ is definitely unofficial in the sense that it
-> > is basically crowd-sourced data, not the "official" Vendor IDs
-> > controlled by the PCI SIG.
-> > 
-> > I submitted an addition to https://pci-ids.ucw.cz/
-> > 
-> > Bjorn
-> 
-> Just for my edumacation, do they keep track of device IDs, subvendor IDs
-> (which are probably just the same as vendor IDs), and subdevice IDs in
-> the PCI SIG? Or even the branding strings?
+Thanks for taking the time to send a patch.
+Why do you think including a file will fix this? That error is usually
+the user's fault for trying to use insmod which doesn't check module
+dependencies.
 
-The PCI SIG does not manage Device IDs.  That's the responsibility of
-the vendor.
+The advice I usually give is to try modprobe instead, does the problem
+still occur without this patch and just using modprobe?
