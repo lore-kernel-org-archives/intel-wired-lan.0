@@ -1,192 +1,98 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 17 Sep 2021 06:38:48 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 7366c23ff492ad260776a3ee1aaabba9fc773a8b
-Message-ID: <6143c778.k2KAu/x2HMgvJDbx%lkp@intel.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Fri, 17 Sep 2021 08:52:52 +0000
+Subject: [Intel-wired-lan] [PATCH net v4] iavf: Fix displaying queue
+ statistics shown by ethtool
+Message-ID: <20210917085252.96965-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 7366c23ff492ad260776a3ee1aaabba9fc773a8b  ptp: dp83640: don't define PAGE0
+Driver provided too many lines as an output to ethtool -S command.
+Return actual length of string set of ethtool stats. Instead of predefined
+maximal value use the actual value on netdev, iterate over active queues.
+Without this patch, ethtool -S report would produce additional
+erroneous lines.
 
-elapsed time: 2572m
+Without this change in statistics after showing them by ethtool -S
+will be displayed queues that are not configured.
 
-configs tested: 161
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20210916
-arm                        clps711x_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arc                 nsimosci_hs_smp_defconfig
-powerpc                      cm5200_defconfig
-sh                        edosk7705_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                    mvme5100_defconfig
-arm                             rpc_defconfig
-riscv                               defconfig
-um                               alldefconfig
-sh                          polaris_defconfig
-powerpc                 mpc8560_ads_defconfig
-arm                         lubbock_defconfig
-arm                          ep93xx_defconfig
-arc                              alldefconfig
-powerpc                      ppc44x_defconfig
-sh                          landisk_defconfig
-um                           x86_64_defconfig
-powerpc                     ep8248e_defconfig
-arm                        mvebu_v7_defconfig
-arc                        nsimosci_defconfig
-s390                       zfcpdump_defconfig
-sh                           se7724_defconfig
-powerpc                     tqm5200_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                      acadia_defconfig
-sh                          lboxre2_defconfig
-powerpc                  mpc885_ads_defconfig
-arm                         cm_x300_defconfig
-sh                               alldefconfig
-m68k                         amcore_defconfig
-arm                        oxnas_v6_defconfig
-sh                           se7206_defconfig
-arm                         lpc18xx_defconfig
-powerpc                    socrates_defconfig
-arm                       netwinder_defconfig
-arm                         bcm2835_defconfig
-riscv                            alldefconfig
-sparc                       sparc32_defconfig
-m68k                           sun3_defconfig
-ia64                      gensparse_defconfig
-powerpc                      tqm8xx_defconfig
-mips                      bmips_stb_defconfig
-arm                      pxa255-idp_defconfig
-sh                            hp6xx_defconfig
-sh                          sdk7780_defconfig
-arm                           u8500_defconfig
-powerpc                       holly_defconfig
-powerpc                   microwatt_defconfig
-h8300                               defconfig
-powerpc                      chrp32_defconfig
-openrisc                         alldefconfig
-m68k                       m5475evb_defconfig
-powerpc                     pseries_defconfig
-mips                           ip27_defconfig
-arm                       imx_v6_v7_defconfig
-arm                     am200epdkit_defconfig
-m68k                            mac_defconfig
-mips                        nlm_xlr_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                generic_kc705_defconfig
-arm                        realview_defconfig
-mips                         tb0226_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                     kilauea_defconfig
-m68k                             alldefconfig
-powerpc                 mpc8272_ads_defconfig
-sh                            shmin_defconfig
-sh                        dreamcast_defconfig
-x86_64               randconfig-c001-20210916
-arm                  randconfig-c002-20210916
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                             allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a016-20210916
-x86_64               randconfig-a013-20210916
-x86_64               randconfig-a012-20210916
-x86_64               randconfig-a011-20210916
-x86_64               randconfig-a014-20210916
-x86_64               randconfig-a015-20210916
-x86_64               randconfig-a002-20210915
-x86_64               randconfig-a003-20210915
-x86_64               randconfig-a004-20210915
-x86_64               randconfig-a006-20210915
-x86_64               randconfig-a005-20210915
-x86_64               randconfig-a001-20210915
-i386                 randconfig-a016-20210916
-i386                 randconfig-a015-20210916
-i386                 randconfig-a011-20210916
-i386                 randconfig-a012-20210916
-i386                 randconfig-a013-20210916
-i386                 randconfig-a014-20210916
-riscv                randconfig-r042-20210916
-s390                 randconfig-r044-20210916
-arc                  randconfig-r043-20210916
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-riscv                            allyesconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-
-clang tested configs:
-riscv                randconfig-c006-20210916
-x86_64               randconfig-c007-20210916
-mips                 randconfig-c004-20210916
-powerpc              randconfig-c003-20210916
-arm                  randconfig-c002-20210916
-i386                 randconfig-c001-20210916
-s390                 randconfig-c005-20210916
-x86_64               randconfig-a002-20210916
-x86_64               randconfig-a003-20210916
-x86_64               randconfig-a006-20210916
-x86_64               randconfig-a004-20210916
-x86_64               randconfig-a005-20210916
-x86_64               randconfig-a001-20210916
-i386                 randconfig-a004-20210916
-i386                 randconfig-a005-20210916
-i386                 randconfig-a006-20210916
-i386                 randconfig-a002-20210916
-i386                 randconfig-a003-20210916
-i386                 randconfig-a001-20210916
-hexagon              randconfig-r045-20210916
-hexagon              randconfig-r041-20210916
-
+Fixes: 6dba41cd02fc ("i40evf: update ethtool stats code and use helper functions")
+Signed-off-by: Witold Fijalkowski <witoldx.fijalkowski@intel.com>
+Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+V2: Fix commit message
+V3: Squash patch 5d12f51b9820 ("iavf: Fix ethtool -S output")
+V4: Remove one blank line
+
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 30 ++++++++++++-------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 7cbe59beeebb..014db92d33be 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -331,9 +331,16 @@ static int iavf_get_link_ksettings(struct net_device *netdev,
+  **/
+ static int iavf_get_sset_count(struct net_device *netdev, int sset)
+ {
++	/* Report the maximum number queues, even if not every queue is
++	 * currently configured. Since allocation of queues is in pairs,
++	 * use netdev->real_num_tx_queues * 2. The real_num_tx_queues is set
++	 * at device creation and never changes.
++	 */
++
+ 	if (sset == ETH_SS_STATS)
+ 		return IAVF_STATS_LEN +
+-			(IAVF_QUEUE_STATS_LEN * 2 * IAVF_MAX_REQ_QUEUES);
++			(IAVF_QUEUE_STATS_LEN * 2 *
++			 netdev->real_num_tx_queues);
+ 	else if (sset == ETH_SS_PRIV_FLAGS)
+ 		return IAVF_PRIV_FLAGS_STR_LEN;
+ 	else
+@@ -357,17 +364,18 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
+ 	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
+ 
+ 	rcu_read_lock();
+-	for (i = 0; i < IAVF_MAX_REQ_QUEUES; i++) {
++	/* As num_active_queues describe both tx and rx queues, we can use
++	 * it to iterate over rings' stats.
++	 */
++	for (i = 0; i < adapter->num_active_queues; i++) {
+ 		struct iavf_ring *ring;
+ 
+-		/* Avoid accessing un-allocated queues */
+-		ring = (i < adapter->num_active_queues ?
+-			&adapter->tx_rings[i] : NULL);
++		/* Tx rings stats */
++		ring = &adapter->tx_rings[i];
+ 		iavf_add_queue_stats(&data, ring);
+ 
+-		/* Avoid accessing un-allocated queues */
+-		ring = (i < adapter->num_active_queues ?
+-			&adapter->rx_rings[i] : NULL);
++		/* Rx rings stats */
++		ring = &adapter->rx_rings[i];
+ 		iavf_add_queue_stats(&data, ring);
+ 	}
+ 	rcu_read_unlock();
+@@ -404,10 +412,10 @@ static void iavf_get_stat_strings(struct net_device *netdev, u8 *data)
+ 
+ 	iavf_add_stat_strings(&data, iavf_gstrings_stats);
+ 
+-	/* Queues are always allocated in pairs, so we just use num_tx_queues
+-	 * for both Tx and Rx queues.
++	/* Queues are always allocated in pairs, so we just use
++	 * real_num_tx_queues for both Tx and Rx queues.
+ 	 */
+-	for (i = 0; i < netdev->num_tx_queues; i++) {
++	for (i = 0; i < netdev->real_num_tx_queues; i++) {
+ 		iavf_add_stat_strings(&data, iavf_gstrings_queue_stats,
+ 				      "tx", i);
+ 		iavf_add_stat_strings(&data, iavf_gstrings_queue_stats,
+-- 
+2.27.0
+
