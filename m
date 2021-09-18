@@ -1,55 +1,127 @@
-From: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
-Date: Sat, 18 Sep 2021 02:01:43 +0000
-Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
- error path in probe()
-In-Reply-To: <DM6PR11MB3371B4431AD7C46672C7E439E6DB9@DM6PR11MB3371.namprd11.prod.outlook.com>
-References: <20210826221916.127243-1-pwaskiewicz@jumptrading.com>
- <50c21a769633c8efa07f49fc8b20fdfb544cf3c5.camel@intel.com>
- <20210831205831.GA115243@chidv-pwl1.w2k.jumptrading.com>
- <MW4PR14MB4796AE05A868B47FE4F6E12AA1D99@MW4PR14MB4796.namprd14.prod.outlook.com>
- <bebb58f34ed68025e95f8bc060af58a24333374b.camel@intel.com>
- <DM6PR11MB3371A3D1F314F3B8541FAF03E6DA9@DM6PR11MB3371.namprd11.prod.outlook.com>
- <MW4PR14MB47960CC778789EEE8E8A54EDA1DA9@MW4PR14MB4796.namprd14.prod.outlook.com>
- <DM6PR11MB3371B4431AD7C46672C7E439E6DB9@DM6PR11MB3371.namprd11.prod.outlook.com>
-Message-ID: <MW4PR14MB4796F279908B7E4D11622C66A1DE9@MW4PR14MB4796.namprd14.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 18 Sep 2021 12:56:21 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ cd5506cc3e612dd01dfee3ec7b6afe6f6e8f5204
+Message-ID: <61457175.Ypann4tAGvTfEkcZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Sylwester,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: cd5506cc3e612dd01dfee3ec7b6afe6f6e8f5204  iavf: Fix refreshing iavf adapter stats on ethtool request
 
->
-> You are right the problem is with misc IRQ vector but as far as I can see this
-> patch only moves i40e_reset_interrupt_capability() outside of
-> i40e_clear_interrupt_scheme(). It does not fix the problem of
-> i40e_free_misc_vector() on unallocated vector in error path. We have a
-> proper fix for this that adds additional check for
-> __I40E_MISC_IRQ_REQUESTED bit to i40e_free_misc_vector():
+elapsed time: 1692m
 
-It does fix the problem if you call the function when the MISC vector hasn't been allocated.  Yes, I moved reset_interrupt_capability() out so it could be separately called in the probe() error cleanup path.
+configs tested: 98
+configs skipped: 4
 
->         if (pf->flags & I40E_FLAG_MSIX_ENABLED && pf->msix_entries &&
->             test_bit(__I40E_MISC_IRQ_REQUESTED, pf->state)) {
->
-> This bit is set only if misc vector was properly allocated. The patch will be on
-> intel-wired soon.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-This isn't even in the OOT driver from SourceForge.  And even if you used that to guard freeing the vector or not, the first bit of that function is still writing to a register to disable that cause in the hardware:
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210918
+arc                          axs101_defconfig
+mips                        maltaup_defconfig
+powerpc                  iss476-smp_defconfig
+arm                              alldefconfig
+m68k                       bvme6000_defconfig
+powerpc64                        alldefconfig
+um                                  defconfig
+openrisc                 simple_smp_defconfig
+arm                        oxnas_v6_defconfig
+mips                           ip28_defconfig
+powerpc                    klondike_defconfig
+powerpc                      cm5200_defconfig
+arm                       versatile_defconfig
+sh                          kfr2r09_defconfig
+x86_64                              defconfig
+x86_64               randconfig-c001-20210916
+arm                  randconfig-c002-20210916
+i386                 randconfig-c001-20210916
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+m68k                                defconfig
+nios2                               defconfig
+nds32                             allnoconfig
+arc                              allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allmodconfig
+s390                                defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a016-20210916
+x86_64               randconfig-a013-20210916
+x86_64               randconfig-a012-20210916
+x86_64               randconfig-a011-20210916
+x86_64               randconfig-a014-20210916
+x86_64               randconfig-a015-20210916
+riscv                randconfig-r042-20210916
+s390                 randconfig-r044-20210916
+arc                  randconfig-r043-20210916
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-static void i40e_free_misc_vector(struct i40e_pf *pf)
-{
-        /* Disable ICR 0 */
-        wr32(&pf->hw, I40E_PFINT_ICR0_ENA, 0);
-        i40e_flush(&pf->hw);
+clang tested configs:
+x86_64               randconfig-a002-20210916
+x86_64               randconfig-a003-20210916
+x86_64               randconfig-a006-20210916
+x86_64               randconfig-a004-20210916
+x86_64               randconfig-a005-20210916
+x86_64               randconfig-a001-20210916
+i386                 randconfig-a004-20210916
+i386                 randconfig-a005-20210916
+i386                 randconfig-a006-20210916
+i386                 randconfig-a002-20210916
+i386                 randconfig-a003-20210916
+i386                 randconfig-a001-20210916
+i386                 randconfig-a016-20210917
+i386                 randconfig-a015-20210917
+i386                 randconfig-a011-20210917
+i386                 randconfig-a012-20210917
+i386                 randconfig-a013-20210917
+i386                 randconfig-a014-20210917
+hexagon              randconfig-r045-20210916
+hexagon              randconfig-r041-20210916
 
-Would you still want to do that blindly if the vector wasn't allocated in the first place?  Seems excessive, but it'd be harmless.  Seems like not calling this function altogether would be cleaner and generate less MMIO activity if the MISC vector wasn't allocated at all and we're falling out of an error path...
-
-I am really at a loss here.  This is clearly broken.  We have an Oops.  We get these occasionally on boot, and it's really annoying to deal with on production machines.  What is the definition of "soon" here for this new patch to show up?  My distro vendor would love to pull some sort of fix in so we can get it into our build images, and stop having this problem.  My patch fixes the immediate problem.  If you don't like the patch (which it appears you don't; that's fine), then stalling or saying a different fix is coming "soon" is really not a great support model.  This would be great to merge, and then if you want to make it "better" on your schedule, it's open source, and you can submit a patch.  Or I'll be happy to respin the patch, but still calling free_misc_vector() in an error path when the MISC vector was never allocated seems like a bad design decision to me.
-
--PJ
-
-________________________________
-
-Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
