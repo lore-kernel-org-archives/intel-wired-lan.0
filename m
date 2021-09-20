@@ -1,93 +1,27 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 20 Sep 2021 12:30:14 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v4 3/3] ice: fix software
- generating extra interrupts
-In-Reply-To: <20210920193014.1148084-1-jesse.brandeburg@intel.com>
-References: <20210920193014.1148084-1-jesse.brandeburg@intel.com>
-Message-ID: <20210920193014.1148084-4-jesse.brandeburg@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 20 Sep 2021 13:39:15 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] devlink: Make
+ devlink_register to be void
+In-Reply-To: <2e089a45e03db31bf451d768fc588c02a2f781e8.1632148852.git.leonro@nvidia.com>
+References: <2e089a45e03db31bf451d768fc588c02a2f781e8.1632148852.git.leonro@nvidia.com>
+Message-ID: <20210920133915.59ddfeef@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver tried to work around missing completion events that occurred
-while interrupts are disabled, by triggering a software interrupt
-whenever we exit polling (but we had to have polled at least once).
+On Mon, 20 Sep 2021 17:41:44 +0300 Leon Romanovsky wrote:
+> From: Leon Romanovsky <leonro@nvidia.com>
+> 
+> devlink_register() can't fail and always returns success, but all drivers
+> are obligated to check returned status anyway. This adds a lot of boilerplate
+> code to handle impossible flow.
+> 
+> Make devlink_register() void and simplify the drivers that use that
+> API call.
 
-This was causing a *lot* of extra interrupts for some workloads like
-NVMe over TCP, which resulted in regressions in performance. It was also
-visible when polling didn't prevent interrupts when busy_poll was
-enabled.
-
-Fix the extra interrupts by utilizing our previously unused 3rd ITR
-(interrupt throttle) index and set it to 20K interrupts per second, and
-then trigger a software interrupt within that rate limit.
-
-While here, slightly refactor the code to avoid an overwrite of a local
-variable in the case of wb_en = true.
-
-Fixes: b7306b42beaf ("ice: manage interrupts during poll exit")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
----
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 26 +++++++++++--------
- 2 files changed, 16 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index ab5065b5e748..d16738a3d3a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -183,6 +183,7 @@
- #define GLINT_DYN_CTL_INTERVAL_S		5
- #define GLINT_DYN_CTL_INTERVAL_M		ICE_M(0xFFF, 5)
- #define GLINT_DYN_CTL_SW_ITR_INDX_ENA_M		BIT(24)
-+#define GLINT_DYN_CTL_SW_ITR_INDX_S		25
- #define GLINT_DYN_CTL_SW_ITR_INDX_M		ICE_M(0x3, 25)
- #define GLINT_DYN_CTL_WB_ON_ITR_M		BIT(30)
- #define GLINT_DYN_CTL_INTENA_MSK_M		BIT(31)
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 1373b97b117a..8f908af9bdd5 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1361,21 +1361,25 @@ static void ice_enable_interrupt(struct ice_q_vector *q_vector)
- 	if (test_bit(ICE_DOWN, vsi->state))
- 		return;
- 
--	/* When exiting WB_ON_ITR, let ITR resume its normal
--	 * interrupts-enabled path.
-+	/* trigger an ITR delayed software interrupt when exiting busy poll, to
-+	 * make sure to catch any pending cleanups that might have been missed
-+	 * due to interrupt state transition. If busy poll or poll isn't
-+	 * enabled, then don't update ITR, and just enable the interrupt.
- 	 */
--	if (wb_en)
-+	if (!wb_en) {
-+		itr_val = ice_buildreg_itr(ICE_ITR_NONE, 0);
-+	} else {
- 		q_vector->wb_on_itr = false;
- 
--	itr_val = ice_buildreg_itr(ICE_ITR_NONE, 0);
--	/* trigger an immediate software interrupt when exiting
--	 * busy poll, to make sure to catch any pending cleanups
--	 * that might have been missed due to interrupt state
--	 * transition.
--	 */
--	if (wb_en) {
-+		/* do two things here with a single write. Set up the third ITR
-+		 * index to be used for software interrupt moderation, and then
-+		 * trigger a software interrupt with a rate limit of 20K on
-+		 * software interrupts, this will help avoid high interrupt
-+		 * loads due to frequently polling and exiting polling.
-+		 */
-+		itr_val = ice_buildreg_itr(ICE_IDX_ITR2, ICE_ITR_20K);
- 		itr_val |= GLINT_DYN_CTL_SWINT_TRIG_M |
--			   GLINT_DYN_CTL_SW_ITR_INDX_M |
-+			   ICE_IDX_ITR2 << GLINT_DYN_CTL_SW_ITR_INDX_S |
- 			   GLINT_DYN_CTL_SW_ITR_INDX_ENA_M;
- 	}
- 	wr32(&vsi->back->hw, GLINT_DYN_CTL(q_vector->reg_idx), itr_val);
--- 
-2.31.1
-
+Unlike unused functions bringing back error handling may be
+non-trivial. I'd rather you deferred such cleanups until you're 
+ready to post your full rework and therefore give us some confidence 
+the revert will not be needed.
