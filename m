@@ -1,103 +1,56 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 21 Sep 2021 01:31:16 +0800
-Subject: [Intel-wired-lan] [PATCH net-next v2] iavf: Add support for
- 50G/100G in AIM algorithm
-In-Reply-To: <20210920132539.24114-1-mateusz.palczewski@intel.com>
-References: <20210920132539.24114-1-mateusz.palczewski@intel.com>
-Message-ID: <202109210109.W9g9s6gc-lkp@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 20 Sep 2021 12:02:37 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/3] ice: update dim usage
+ and moderation
+In-Reply-To: <d87087e8-51d7-4fd2-d594-a79b126fa14c@molgen.mpg.de>
+References: <20210824011259.738307-1-jesse.brandeburg@intel.com>
+ <20210824011259.738307-2-jesse.brandeburg@intel.com>
+ <d87087e8-51d7-4fd2-d594-a79b126fa14c@molgen.mpg.de>
+Message-ID: <7ebc8fa6-79d0-13a3-e07a-247bfe8d8bcd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Mateusz,
+On 9/19/2021 11:46 PM, Paul Menzel wrote:
+> Dear Jesse,
 
-Thank you for the patch! Yet something to improve:
+Thanks for reviewing, I applied your text changes to v4.
 
-[auto build test ERROR on net-next/master]
+> Am 24.08.21 um 03:12 schrieb Jesse Brandeburg:
+>> Add a new helper for setting rate limit, which will be used more
+>> in a followup patch.
+> 
+> Nice work. Could you please add, how to run the ping-pong test, so
+> others can verify the behavior?
 
-url:    https://github.com/0day-ci/linux/commits/Mateusz-Palczewski/iavf-Add-support-for-50G-100G-in-AIM-algorithm/20210920-213856
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git 85c698863c15176f743fd1d1fcf39ceb9172c820
-config: mips-randconfig-r036-20210920 (attached as .config)
-compiler: mips64el-linux-gcc (GCC) 11.2.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/6f12aa40bda9bca31be044bc237866edb637992e
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Mateusz-Palczewski/iavf-Add-support-for-50G-100G-in-AIM-algorithm/20210920-213856
-        git checkout 6f12aa40bda9bca31be044bc237866edb637992e
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross ARCH=mips 
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
+The test ran 32 rounds of netperf -t TCP_RR with a single thread, with
+sizes of bytes transferred varying in powers of two from 1-64K.
+each command was something like (for example for the 8K ping pong)
+netperf -t TCP_RR -H host -l 30 -- -r 8K
 
 
+>> @@ -1328,15 +1345,14 @@ static u32 ice_buildreg_itr(u16 itr_idx, u16 itr)
+>> ? }
+>> ? ? /**
+>> - * ice_update_ena_itr - Update ITR moderation and re-enable MSI-X
+>> interrupt
+>> + * ice_enable_interrupt - re-enable MSI-X interrupt
+>> ?? * @q_vector: the vector associated with the interrupt to enable
+>> ?? *
+>> - * Update the net_dim() algorithm and re-enable the interrupt
+>> associated with
+>> - * this vector.
+>> - *
+>> - * If the VSI is down, the interrupt will not be re-enabled.
+>> + * If the VSI is down, the interrupt will not be re-enabled. Also,
+>> + * when enabling the interrupt always reset the wb_on_itr to false
+>> + * and trigger a software interrupt to clean out internal state.
+> 
+> Is the internal state cleaning required in the spec?
 
-vim +/342 +404 drivers/net/ethernet/intel/iavf/iavf_txrx.c
+It is mentioned in the interrupt management section that triggering a
+software interrupt will "flush" internal state. The spec just doesn't
+mention when you should use that trick.
 
-   383	
-   384	static unsigned int iavf_mbps_itr_multiplier(u32 speed_mbps)
-   385	{
-   386		switch (speed_mbps) {
-   387		case SPEED_100000:
-   388			return IAVF_AIM_MULTIPLIER_100G;
-   389		case SPEED_50000:
-   390			return IAVF_AIM_MULTIPLIER_50G;
-   391		case SPEED_40000:
-   392			return IAVF_AIM_MULTIPLIER_40G;
-   393		case SPEED_25000:
-   394		case SPEED_20000:
-   395			return IAVF_AIM_MULTIPLIER_20G;
-   396		case SPEED_10000:
-   397		default:
-   398			return IAVF_AIM_MULTIPLIER_10G;
-   399		case SPEED_1000:
-   400		case SPEED_100:
-   401			return IAVF_AIM_MULTIPLIER_1G;
-   402		}
-   403	}
- > 404	?
-   405	static unsigned int
-   406	iavf_virtchnl_itr_multiplier(enum virtchnl_link_speed speed_virtchnl)
-   407	{
-   408		switch (speed_virtchnl) {
-   409		case VIRTCHNL_LINK_SPEED_40GB:
-   410			return IAVF_AIM_MULTIPLIER_40G;
-   411		case VIRTCHNL_LINK_SPEED_25GB:
-   412		case VIRTCHNL_LINK_SPEED_20GB:
-   413			return IAVF_AIM_MULTIPLIER_20G;
-   414		case VIRTCHNL_LINK_SPEED_10GB:
-   415		default:
-   416			return IAVF_AIM_MULTIPLIER_10G;
-   417		case VIRTCHNL_LINK_SPEED_1GB:
-   418		case VIRTCHNL_LINK_SPEED_100MB:
-   419			return IAVF_AIM_MULTIPLIER_1G;
-   420		}
-   421	}
-   422	?
-   423	static unsigned int iavf_itr_divisor(struct iavf_adapter *adapter)
-   424	{
-   425		if (ADV_LINK_SUPPORT(adapter))
-   426			return IAVF_ITR_ADAPTIVE_MIN_INC *
-   427				iavf_mbps_itr_multiplier(adapter->link_speed_mbps);
-   428		else
-   429			return IAVF_ITR_ADAPTIVE_MIN_INC *
-   430				iavf_virtchnl_itr_multiplier(adapter->link_speed);
-   431	}
-   432	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 34623 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20210921/7b2463e2/attachment-0001.bin>
