@@ -1,104 +1,57 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 20 Sep 2021 22:21:03 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] iavf: Add support for
- 50G/100G in AIM algorithm
-In-Reply-To: <20210920132539.24114-1-mateusz.palczewski@intel.com>
-References: <20210920132539.24114-1-mateusz.palczewski@intel.com>
-Message-ID: <f6facbbaada21e6e668fd2dd4c04a52f2546b6ec.camel@intel.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Tue, 21 Sep 2021 05:19:06 +0300
+Subject: [Intel-wired-lan] [PATCH net-next] devlink: Make
+ devlink_register to be void
+In-Reply-To: <20210920140407.0732b3d0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <2e089a45e03db31bf451d768fc588c02a2f781e8.1632148852.git.leonro@nvidia.com>
+ <20210920133915.59ddfeef@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <20210920140407.0732b3d0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <YUlBGk2Mq3iYhtku@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-09-20 at 15:25 +0200, Mateusz Palczewski wrote:
-> Advanced link speed support was added long back, but adding AIM
-> support
-> was missed. Adding AIM support for advanced link speed support
-> allows the algorithm to take into account 50G/100G link speeds.
-> Also, other previous speeds are taken into consideration when
-> advanced
-> link speeds are supported.
+On Mon, Sep 20, 2021 at 02:04:07PM -0700, Jakub Kicinski wrote:
+> On Mon, 20 Sep 2021 13:39:15 -0700 Jakub Kicinski wrote:
+> > On Mon, 20 Sep 2021 17:41:44 +0300 Leon Romanovsky wrote:
+> > > From: Leon Romanovsky <leonro@nvidia.com>
+> > > 
+> > > devlink_register() can't fail and always returns success, but all drivers
+> > > are obligated to check returned status anyway. This adds a lot of boilerplate
+> > > code to handle impossible flow.
+> > > 
+> > > Make devlink_register() void and simplify the drivers that use that
+> > > API call.  
+> > 
+> > Unlike unused functions bringing back error handling may be
+> > non-trivial. I'd rather you deferred such cleanups until you're 
+> > ready to post your full rework and therefore give us some confidence 
+> > the revert will not be needed.
 > 
-> Signed-off-by: Brett Creeley brett.creeley at intel.com
-> Signed-off-by: Mateusz Palczewski mateusz.palczewski at intel.com
+> If you disagree you gotta repost, new devlink_register call got added
+> in the meantime.
 
-Please run checkpatch before sending:
+This is exactly what I afraid, new devlink API users are added faster
+than I can cleanup them.
 
-ERROR: Unrecognized email address: 'Brett Creeley 
-brett.creeley at intel.com'
-#12:
-Signed-off-by: Brett Creeley brett.creeley at intel.com
+For example, let's take a look on newly added ipc_devlink_init(), it is
+called conditionally "if (stage == IPC_MEM_EXEC_STAGE_BOOT) {". How can
+it be different stage if we are in driver .probe() routine?
 
-ERROR: Unrecognized email address: 'Mateusz Palczewski 
-mateusz.palczewski at intel.com'
-#13:
-Signed-off-by: Mateusz Palczewski mateusz.palczewski at intel.com
+They also introduced devlink_sio.devlink_read_pend and
+devlink_sio.read_sem to protect from something that right position of
+devlink_register() will fix. I also have serious doubts that their
+current protection is correct, once they called to devlink_params_publish()
+the user can crash the system, because he can access the parameters before
+they initialized their protection.
 
-WARNING: please, no space before tabs
-#39: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:378:
-+#define IAVF_AIM_MULTIPLIER_50G ^I1280$
+So yes, I disagree. We will need to make sure that devlink_register()
+can't fail and it will make life easier for everyone (no need to unwind)
+while we put that command  being last in probe sequence.
 
-WARNING: please, no space before tabs
-#40: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:379:
-+#define IAVF_AIM_MULTIPLIER_40G ^I1024$
+If I repost, will you take it? I don't want to waste anyone time if it
+is not.
 
-WARNING: please, no space before tabs
-#41: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:380:
-+#define IAVF_AIM_MULTIPLIER_20G ^I512$
-
-WARNING: please, no space before tabs
-#42: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:381:
-+#define IAVF_AIM_MULTIPLIER_10G ^I256$
-
-WARNING: please, no space before tabs
-#43: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:382:
-+#define IAVF_AIM_MULTIPLIER_1G  ^I32$
-
-CHECK: Please use a blank line after function/struct/union/enum
-declarations
-#66: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:404:
-+}
-+<200b>
-
-CHECK: Please use a blank line after function/struct/union/enum
-declarations
-#95: FILE: drivers/net/ethernet/intel/iavf/iavf_txrx.c:422:
-+}
-+<200b>
-
-
-> ---
->  v2: Removed build issues
-
-Are you building these patches? Issues still exist:
-
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:404:1: error: stray \342 in
-program
- 
- ^
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:404:2: error: stray \200 in
-program
- 
-  ^
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:404:3: error: stray \213 in
-program
- 
-   ^
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:422:1: error: stray \342 in
-program
- 
- ^
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:422:2: error: stray \200 in
-program
- 
-  ^
-drivers/net/ethernet/intel/iavf/iavf_txrx.c:422:3: error: stray \213 in
-program
-
-
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c | 70 +++++++++++++++--
-> ----
->  1 file changed, 51 insertions(+), 19 deletions(-)
-
+Thanks
