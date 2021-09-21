@@ -1,168 +1,95 @@
-From: Ido Schimmel <idosch@idosch.org>
-Date: Tue, 21 Sep 2021 17:58:05 +0300
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <PH0PR11MB4951E98FCEC0F1EA230BA1DAEAA19@PH0PR11MB4951.namprd11.prod.outlook.com>
-References: <20210903151436.529478-1-maciej.machnikowski@intel.com>
- <20210903151436.529478-2-maciej.machnikowski@intel.com>
- <YUnbCzBOPP9hWQ5c@shredder>
- <PH0PR11MB4951E98FCEC0F1EA230BA1DAEAA19@PH0PR11MB4951.namprd11.prod.outlook.com>
-Message-ID: <YUny/edqnbdTFnBS@shredder>
+From: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
+Date: Tue, 21 Sep 2021 17:06:48 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
+ error path in probe()
+In-Reply-To: <DM6PR11MB3371A285032A583A73BA62E0E6A09@DM6PR11MB3371.namprd11.prod.outlook.com>
+References: <20210826221916.127243-1-pwaskiewicz@jumptrading.com>
+ <50c21a769633c8efa07f49fc8b20fdfb544cf3c5.camel@intel.com>
+ <20210831205831.GA115243@chidv-pwl1.w2k.jumptrading.com>
+ <MW4PR14MB4796AE05A868B47FE4F6E12AA1D99@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <bebb58f34ed68025e95f8bc060af58a24333374b.camel@intel.com>
+ <DM6PR11MB3371A3D1F314F3B8541FAF03E6DA9@DM6PR11MB3371.namprd11.prod.outlook.com>
+ <MW4PR14MB47960CC778789EEE8E8A54EDA1DA9@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <DM6PR11MB3371B4431AD7C46672C7E439E6DB9@DM6PR11MB3371.namprd11.prod.outlook.com>
+ <MW4PR14MB4796F279908B7E4D11622C66A1DE9@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <DM6PR11MB3371A285032A583A73BA62E0E6A09@DM6PR11MB3371.namprd11.prod.outlook.com>
+Message-ID: <MW4PR14MB47967810D43031FF8C4C2265A1A19@MW4PR14MB4796.namprd14.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 21, 2021 at 01:37:37PM +0000, Machnikowski, Maciej wrote:
-> > -----Original Message-----
-> > From: Ido Schimmel <idosch@idosch.org>
-> > Sent: Tuesday, September 21, 2021 3:16 PM
-> > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> > Subject: Re: [PATCH net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
-> > message to get SyncE status
-> > 
-> > On Fri, Sep 03, 2021 at 05:14:35PM +0200, Maciej Machnikowski wrote:
-> > > diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-> > > index eebd3894fe89..78a8a5af8cd8 100644
-> > > --- a/include/uapi/linux/if_link.h
-> > > +++ b/include/uapi/linux/if_link.h
-> > > @@ -1273,4 +1273,35 @@ enum {
-> > >
-> > >  #define IFLA_MCTP_MAX (__IFLA_MCTP_MAX - 1)
-> > >
-> > > +/* SyncE section */
-> > > +
-> > > +enum if_eec_state {
-> > > +	IF_EEC_STATE_INVALID = 0,
-> > > +	IF_EEC_STATE_FREERUN,
-> > > +	IF_EEC_STATE_LOCKACQ,
-> > > +	IF_EEC_STATE_LOCKREC,
-> > > +	IF_EEC_STATE_LOCKED,
-> > > +	IF_EEC_STATE_HOLDOVER,
-> > > +	IF_EEC_STATE_OPEN_LOOP,
-> > > +	__IF_EEC_STATE_MAX,
-> > 
-> > Can you document these states? I'm not clear on what LOCKACQ, LOCKREC
-> > and OPEN_LOOP mean. I also don't see ice using them and it's not really
-> > a good practice to add new uAPI without any current users.
-> > 
-> 
-> I'll fix that enum to use generic states defined in G.781 which are limited to:
-> - Freerun
-> - LockedACQ (locked, acquiring holdover memory)
-> - Locked (locked with holdover acquired)
-> - Holdover
+> Hello PJ,
 
-Thanks, it is good to conform to a standard.
+Hello,
 
-Can ice distinguish between LockedACQ and Locked? From G.781 I
-understand that the former is a transient state. Is the distinction
-between the two important for user space / the selection operation? If
-not, maybe we only need Locked?
+>
+> > static void i40e_free_misc_vector(struct i40e_pf *pf) {
+> >         /* Disable ICR 0 */
+> >         wr32(&pf->hw, I40E_PFINT_ICR0_ENA, 0);
+> >         i40e_flush(&pf->hw);
+> >
+> > Would you still want to do that blindly if the vector wasn't allocated
+> > in the first place?  Seems excessive, but it'd be harmless.  Seems
+> > like not calling this function altogether would be cleaner and
+> > generate less MMIO activity if the MISC vector wasn't allocated at all and
+> we're falling out of an error path...
+> >
+> > I am really at a loss here.  This is clearly broken.  We have an Oops.
+> > We get these occasionally on boot, and it's really annoying to deal
+> > with on production machines.  What is the definition of "soon" here
+> > for this new patch to show up?  My distro vendor would love to pull
+> > some sort of fix in so we can get it into our build images, and stop
+> > having this problem.  My patch fixes the immediate problem.  If you
+> > don't like the patch (which it appears you don't; that's fine), then
+> > stalling or saying a different fix is coming "soon" is really not a
+> > great support model.  This would be great to merge, and then if you
+> > want to make it "better" on your schedule, it's open source, and you
+> > can submit a patch.  Or I'll be happy to respin the patch, but still
+> > calling free_misc_vector() in an error path when the MISC vector was
+> never allocated seems like a bad design decision to me.
+> >
+> > -PJ
+>
+> I totally agree that we shouldn?t call free_misc_vector if misc vector wasn't
+> allocated yet but to me this is not what your patch is doing.
+> free_misc_vector() is called in clear_interrupt_scheme not
+> reset_interrupt_capability(). In your patch clear_interrupt_scheme() will still
+> be called when pf switch setup fails in i40e_probe() and it will still call
+> free_misc_vector on unallocated misc IRQ. Other proper way to fix this
+> would be moving free_misc_vector() out of clear_interrupt_scheme() and
+> calling it separately when misc vector was really allocated. As for the hw
+> register being written in our patch as you said it's harmless. The patch we've
+> prepared should be on iwl today.
+>
 
-> 
-> > From v1 I understand that these states were copied from commit
-> > 797d3186544f ("ptp: ptp_clockmatrix: Add wait_for_sys_apll_dpll_lock.")
-> > from Renesas.
-> > 
-> > Figure 11 in the following PDF describes the states, but it seems
-> > specific to the particular device and probably shouldn't be exposed to
-> > user space as-is:
-> > https://www.renesas.com/us/en/document/dst/8a34041-datasheet
-> > 
-> > I have a few questions about this being a per-netdev attribute:
-> > 
-> > 1. My understanding is that in the multi-port adapter you are working
-> > with you have a single EEC that is used to set the Tx frequency of all
-> > the ports. Is that correct?
-> 
-> That's correct.
->  
-> > 2. Assuming the above is correct, is it possible that one port is in
-> > LOCKED state and another (for some reason) is in HOLDOVER state? If yes,
-> > then I agree about this being a per-netdev attribute. The interface can
-> > also be extended with another attribute specifying the HOLDOVER reason.
-> > For example, netdev being down.
-> 
-> All ports driven by a single EEC will report the same state.
+Ok, I see the patch on IWL....let's discuss....
 
-So maybe we just need to report via ethtool the association between the
-EEC and the netdev and expose the state as an attribute of the EEC
-(along with the selected source and other info)?
+Just above, I pointed out that if the MISC vector hasn't been allocated at all, then we don't want to call free_misc_vector() at all.  That would also mean the suggestion to check the atomic state bit to avoid the actual free would *still* have the code call free_misc_vector(), and only skip the actual free (after doing an unnecessary MMIO write and then read to flush).  I pointed out that wouldn't be ideal, and you, just above, agreed.  Yet, the fix you guys submitted to IWL does exactly that.  So are we just saying things to bury this thread and hope it goes away, or just willfully not doing what we agreed on?  It's pretty disheartening to consider feedback, agree to it, then completely ignore it.  That's not how open source works...
 
-This is similar to how PHC/netdev association is queried via ethtool.
-For a given netdev, TSINFO_GET will report the PTP hw clock index via
-ETHTOOL_A_TSINFO_PHC_INDEX. See Documentation/networking/ethtool-netlink.rst
+Also, regardless how you guys want the code to work, it's usually good form to include a "Reported-by:" in a patch if you're deciding not to take a proposed patch.  It's even better form to include the Oops that was reported in the first patch, since that makes things like ${SEARCH_ENGINE} work for people running into the same issue have a chance to find a solution.  Not doing either of these when someone else has done work to identify an issue, test a fix, and propose it, is not a good way to attract more people to work on this driver in the future.
 
-> 
-> > Regardless, I agree with previous comments made about this belonging in
-> > ethtool rather than rtnetlink.
-> 
-> Will take a look at it - as it will require support in linuxptp as well.
-> 
-> > > +};
-> > > +
-> > > +#define IF_EEC_STATE_MAX	(__IF_EEC_STATE_MAX - 1)
-> > > +#define EEC_SRC_PORT		(1 << 0) /* recovered clock from the
-> > port is
-> > > +					  * currently the source for the EEC
-> > > +					  */
-> > 
-> > I'm not sure about this one. If we are going to expose this as a
-> > per-netdev attribute (see more below), any reason it can't be added as
-> > another state (e.g., IF_EEC_STATE_LOCKED_SRC)?
-> 
-> OK! That's a great idea! Yet we'll need LOCKED_SRC and LOCKED_ACQ_SRC,
-> but still sounds good.
-> 
-> > IIUC, in the common case of a simple NE the source of the EEC is always
-> > one of the ports, but in the case of a PRC the source is most likely
-> > external (e.g., GPS).
-> 
-> True
-> 
-> > If so, I think we need a way to represent the EEC as a separate object
-> > with the ability to set its source and report it via the same interface.
-> > I'm unclear on how exactly an external source looks like, but for the
-> > netdev case maybe something like this:
-> > 
-> > devlink clock show [ dev clock CLOCK ]
-> > devlink clock set DEV clock CLOCK [ { src_type SRC_TYPE } ]
-> > SRC_TYPE : = { port DEV/PORT_INDEX }
-> 
-> Unfortunately, EEC lives in 2 worlds - it belongs to a netdev (in very simple
-> deployments the EEC may be a part of the PHY and only allow synchronizing
-> the TX frequency to a single lane/port), but also can go outside of netdev
-> and be a boar-wise frequency source.
-> 
-> > The only source type above is 'port' with the ability to set the
-> > relevant port, but more can be added. Obviously, 'devlink clock show'
-> > will give you the current source in addition to other information such
-> > as frequency difference with respect to the input frequency.
-> 
-> We considered devlink interface for configuring the clock/DPLL, but a
-> new concept was born at the list to add a DPLL subsystem that will
-> cover more use cases, like a TimeCard.
+If we wanted to do something where free_misc_vector() isn't called if the state flag isn't set, then why not something like this, which would keep in the spirit of what we agreed on above:
 
-The reason I suggested devlink is that it is suited for device-wide
-configuration and it is already used by both MAC drivers and the
-TimeCard driver. If we have a good reason to create a new generic
-netlink family for this stuff, then OK.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1d1f52756a93..a40193bcc7b7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -4868,7 +4868,9 @@ static void i40e_clear_interrupt_scheme(struct i40e_pf *pf)
+ {
+        int i;
 
-> 
-> > Finally, can you share more info about the relation to the PHC? My
-> > understanding is that one of the primary use cases for SyncE is to drive
-> > all the PHCs in the network using the same frequency. How do you imagine
-> > this configuration is going to look like? Can the above interface be
-> > extended for that?
-> 
-> That would be a configurable parameter/option of the PTP program.
-> Just like it can check the existence of link on a given port, it'll also be
-> able to check if we use EEC and it's locked. If it is, and is a source of
-> PHC frequency - the ptp tool can decide to not apply frequency corrections
-> to the PHC, just like the ptp4l does when nullf servo is used, but can do that
-> dynamically.
+-       i40e_free_misc_vector(pf);
++       /* Only attempt to free the misc vector if it's already allocated */
++       if (test_bit(__I40E_MISC_IRQ_REQUESTED, pf->state))
++               i40e_free_misc_vector(pf);
 
-The part I don't understand is "is a source of PHC frequency". How do we
-configure / query that?
+        i40e_put_lump(pf->irq_pile, pf->iwarp_base_vector,
+                      I40E_IWARP_IRQ_PILE_ID);
+
+-PJ
+
+________________________________
+
+Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
