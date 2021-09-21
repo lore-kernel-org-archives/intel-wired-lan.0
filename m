@@ -1,146 +1,299 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Tue, 21 Sep 2021 13:37:37 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <YUnbCzBOPP9hWQ5c@shredder>
-References: <20210903151436.529478-1-maciej.machnikowski@intel.com>
- <20210903151436.529478-2-maciej.machnikowski@intel.com>
- <YUnbCzBOPP9hWQ5c@shredder>
-Message-ID: <PH0PR11MB4951E98FCEC0F1EA230BA1DAEAA19@PH0PR11MB4951.namprd11.prod.outlook.com>
+From: Drewek, Wojciech <wojciech.drewek@intel.com>
+Date: Tue, 21 Sep 2021 14:32:28 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Manage act flags for
+ switchdev offloads
+In-Reply-To: <391b4712-6096-2040-ac5b-f34c6c46b8fd@molgen.mpg.de>
+References: <20210921120429.155263-1-wojciech.drewek@intel.com>
+ <391b4712-6096-2040-ac5b-f34c6c46b8fd@molgen.mpg.de>
+Message-ID: <MN2PR11MB47117C0543D213065F6444C9FDA19@MN2PR11MB4711.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi Paul
+
 > -----Original Message-----
-> From: Ido Schimmel <idosch@idosch.org>
-> Sent: Tuesday, September 21, 2021 3:16 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: Re: [PATCH net-next 1/2] rtnetlink: Add new RTM_GETEECSTATE
-> message to get SyncE status
+> From: Paul Menzel <pmenzel@molgen.mpg.de>
+> Sent: wtorek, 21 wrze?nia 2021 15:00
+> To: Drewek, Wojciech <wojciech.drewek@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ice: Manage act flags for switchdev offloads
 > 
-> On Fri, Sep 03, 2021 at 05:14:35PM +0200, Maciej Machnikowski wrote:
-> > diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-> > index eebd3894fe89..78a8a5af8cd8 100644
-> > --- a/include/uapi/linux/if_link.h
-> > +++ b/include/uapi/linux/if_link.h
-> > @@ -1273,4 +1273,35 @@ enum {
+> Dear Wojciech,
+> 
+> 
+> Am 21.09.21 um 14:04 schrieb Wojciech Drewek:
+> > Currently it is not possible to set/unset lb_en and lan_en flags
+> > for advanced rules during their creation. Both flags are enabled
+> > by default. In case of switchdev offloads for egress traffic we
+> > need lb_en to be disabled. Because of that, we work around it by
+> > updating the rule immediately after its creation.
 > >
-> >  #define IFLA_MCTP_MAX (__IFLA_MCTP_MAX - 1)
+> > This change allows us to set/unset those flags right away and it
+> > gets rid of old workaround as well. Using ice_adv_rule_flags_info
+> > structure we can pass info about flags we want to be set for
+> > a given advanced rule. Flags are stored in flags_info.act.
+> > Values from act would be used only if act_valid was set to true,
+> > otherwise default values would be used.
 > >
-> > +/* SyncE section */
+> > Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/ice/ice_fltr.c   | 127 --------------------
+> >   drivers/net/ethernet/intel/ice/ice_fltr.h   |   4 -
+> >   drivers/net/ethernet/intel/ice/ice_switch.c |   9 +-
+> >   drivers/net/ethernet/intel/ice/ice_switch.h |  11 ++
+> >   drivers/net/ethernet/intel/ice/ice_tc_lib.c |   8 +-
+> >   5 files changed, 21 insertions(+), 138 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> > index f22ca4354f84..e49378893390 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_fltr.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> > @@ -509,133 +509,6 @@ static u32 ice_fltr_build_action(u16 vsi_id)
+> >   		ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT;
+> >   }
+> >
+> > -/**
+> > - * ice_fltr_find_adv_entry - find advanced rule
+> > - * @rules: list of rules
+> > - * @rule_id: id of wanted rule
+> > - */
+> > -static struct ice_adv_fltr_mgmt_list_entry *
+> > -ice_fltr_find_adv_entry(struct list_head *rules, u16 rule_id)
+> > -{
+> > -	struct ice_adv_fltr_mgmt_list_entry *entry;
+> > -
+> > -	list_for_each_entry(entry, rules, list_entry) {
+> > -		if (entry->rule_info.fltr_rule_id == rule_id)
+> > -			return entry;
+> > -	}
+> > -
+> > -	return NULL;
+> > -}
+> > -
+> > -/**
+> > - * ice_fltr_update_adv_rule_flags - update flags on advanced rule
+> > - * @vsi: pointer to VSI
+> > - * @recipe_id: id of recipe
+> > - * @entry: advanced rule entry
+> > - * @new_flags: flags to update
+> > - */
+> > -static enum ice_status
+> > -ice_fltr_update_adv_rule_flags(struct ice_vsi *vsi, u16 recipe_id,
+> > -			       struct ice_adv_fltr_mgmt_list_entry *entry,
+> > -			       u32 new_flags)
+> > -{
+> > -	struct ice_adv_rule_info *info = &entry->rule_info;
+> > -	struct ice_sw_act_ctrl *act = &info->sw_act;
+> > -	u32 action;
+> > -
+> > -	if (act->fltr_act != ICE_FWD_TO_VSI)
+> > -		return ICE_ERR_NOT_SUPPORTED;
+> > -
+> > -	action = ice_fltr_build_action(act->fwd_id.hw_vsi_id);
+> > -
+> > -	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
+> > -					  recipe_id, action, info->sw_act.flag,
+> > -					  act->src, new_flags);
+> > -}
+> > -
+> > -/**
+> > - * ice_fltr_find_regular_entry - find regular rule
+> > - * @rules: list of rules
+> > - * @rule_id: id of wanted rule
+> > - */
+> > -static struct ice_fltr_mgmt_list_entry *
+> > -ice_fltr_find_regular_entry(struct list_head *rules, u16 rule_id)
+> > -{
+> > -	struct ice_fltr_mgmt_list_entry *entry;
+> > -
+> > -	list_for_each_entry(entry, rules, list_entry) {
+> > -		if (entry->fltr_info.fltr_rule_id == rule_id)
+> > -			return entry;
+> > -	}
+> > -
+> > -	return NULL;
+> > -}
+> > -
+> > -/**
+> > - * ice_fltr_update_regular_rule - update flags on regular rule
+> > - * @vsi: pointer to VSI
+> > - * @recipe_id: id of recipe
+> > - * @entry: regular rule entry
+> > - * @new_flags: flags to update
+> > - */
+> > -static enum ice_status
+> > -ice_fltr_update_regular_rule(struct ice_vsi *vsi, u16 recipe_id,
+> > -			     struct ice_fltr_mgmt_list_entry *entry,
+> > -			     u32 new_flags)
+> > -{
+> > -	struct ice_fltr_info *info = &entry->fltr_info;
+> > -	u32 action;
+> > -
+> > -	if (info->fltr_act != ICE_FWD_TO_VSI)
+> > -		return ICE_ERR_NOT_SUPPORTED;
+> > -
+> > -	action = ice_fltr_build_action(info->fwd_id.hw_vsi_id);
+> > -
+> > -	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
+> > -					  recipe_id, action, info->flag,
+> > -					  info->src, new_flags);
+> > -}
+> > -
+> > -/**
+> > - * ice_fltr_update_flags - update flags on rule
+> > - * @vsi: pointer to VSI
+> > - * @rule_id: id of rule
+> > - * @recipe_id: id of recipe
+> > - * @new_flags: flags to update
+> > - *
+> > - * Function updates flags on regular and advance rule.
+> > - *
+> > - * Flags should be a combination of ICE_SINGLE_ACT_LB_ENABLE and
+> > - * ICE_SINGLE_ACT_LAN_ENABLE.
+> > - */
+> > -enum ice_status
+> > -ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
+> > -		      u32 new_flags)
+> > -{
+> > -	struct ice_adv_fltr_mgmt_list_entry *adv_entry;
+> > -	struct ice_fltr_mgmt_list_entry *regular_entry;
+> > -	struct ice_hw *hw = &vsi->back->hw;
+> > -	struct ice_sw_recipe *recp_list;
+> > -	struct list_head *fltr_rules;
+> > -
+> > -	recp_list = &hw->switch_info->recp_list[recipe_id];
+> > -	if (!recp_list)
+> > -		return ICE_ERR_DOES_NOT_EXIST;
+> > -
+> > -	fltr_rules = &recp_list->filt_rules;
+> > -	regular_entry = ice_fltr_find_regular_entry(fltr_rules, rule_id);
+> > -	if (regular_entry)
+> > -		return ice_fltr_update_regular_rule(vsi, recipe_id,
+> > -						    regular_entry, new_flags);
+> > -
+> > -	adv_entry = ice_fltr_find_adv_entry(fltr_rules, rule_id);
+> > -	if (adv_entry)
+> > -		return ice_fltr_update_adv_rule_flags(vsi, recipe_id,
+> > -						      adv_entry, new_flags);
+> > -
+> > -	return ICE_ERR_DOES_NOT_EXIST;
+> > -}
+> > -
+> >   /**
+> >    * ice_fltr_update_flags_dflt_rule - update flags on default rule
+> >    * @vsi: pointer to VSI
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.h b/drivers/net/ethernet/intel/ice/ice_fltr.h
+> > index 339da5fef577..db59cbbeda32 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_fltr.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_fltr.h
+> > @@ -46,10 +46,6 @@ enum ice_status
+> >   ice_fltr_remove_eth(struct ice_vsi *vsi, u16 ethertype, u16 flag,
+> >   		    enum ice_sw_fwd_act_type action);
+> >   void ice_fltr_remove_all(struct ice_vsi *vsi);
+> > -
+> > -enum ice_status
+> > -ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
+> > -		      u32 new_flags);
+> >   enum ice_status
+> >   ice_fltr_update_flags_dflt_rule(struct ice_vsi *vsi, u16 rule_id, u8 direction,
+> >   				u32 new_flags);
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+> > index ca039a4c3a79..1bbb52bf2279 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_switch.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+> > @@ -4841,7 +4841,14 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+> >   	s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
+> >   	if (!s_rule)
+> >   		return ICE_ERR_NO_MEMORY;
+> > -	act |= ICE_SINGLE_ACT_LB_ENABLE | ICE_SINGLE_ACT_LAN_ENABLE;
+> > +	if (!rinfo->flags_info.act_valid) {
+> > +		act |= ICE_SINGLE_ACT_LAN_ENABLE;
+> > +		act |= ICE_SINGLE_ACT_LB_ENABLE;
+> > +	} else {
+> > +		act |= rinfo->flags_info.act & (ICE_SINGLE_ACT_LAN_ENABLE |
+> > +						ICE_SINGLE_ACT_LB_ENABLE);
+> > +	}
 > > +
-> > +enum if_eec_state {
-> > +	IF_EEC_STATE_INVALID = 0,
-> > +	IF_EEC_STATE_FREERUN,
-> > +	IF_EEC_STATE_LOCKACQ,
-> > +	IF_EEC_STATE_LOCKREC,
-> > +	IF_EEC_STATE_LOCKED,
-> > +	IF_EEC_STATE_HOLDOVER,
-> > +	IF_EEC_STATE_OPEN_LOOP,
-> > +	__IF_EEC_STATE_MAX,
 > 
-> Can you document these states? I'm not clear on what LOCKACQ, LOCKREC
-> and OPEN_LOOP mean. I also don't see ice using them and it's not really
-> a good practice to add new uAPI without any current users.
+> It?s all subjective, but a temporary variable could be used:
 > 
-
-I'll fix that enum to use generic states defined in G.781 which are limited to:
-- Freerun
-- LockedACQ (locked, acquiring holdover memory)
-- Locked (locked with holdover acquired)
-- Holdover
-
-> From v1 I understand that these states were copied from commit
-> 797d3186544f ("ptp: ptp_clockmatrix: Add wait_for_sys_apll_dpll_lock.")
-> from Renesas.
+> 	u32 flags = ICE_SINGLE_ACT_LAN_ENABLE | ICE_SINGLE_ACT_LB_ENABLE;
+> 	if (rinfo->flags_info.act_valid)
+> 		flags &= rinfo->flags_info.act;
 > 
-> Figure 11 in the following PDF describes the states, but it seems
-> specific to the particular device and probably shouldn't be exposed to
-> user space as-is:
-> https://www.renesas.com/us/en/document/dst/8a34041-datasheet
+> 	act |= flags
 > 
-> I have a few questions about this being a per-netdev attribute:
+> But not that important, I guess.
+Thx for the suggestion, will take a look on it.
 > 
-> 1. My understanding is that in the multi-port adapter you are working
-> with you have a single EEC that is used to set the Tx frequency of all
-> the ports. Is that correct?
-
-That's correct.
- 
-> 2. Assuming the above is correct, is it possible that one port is in
-> LOCKED state and another (for some reason) is in HOLDOVER state? If yes,
-> then I agree about this being a per-netdev attribute. The interface can
-> also be extended with another attribute specifying the HOLDOVER reason.
-> For example, netdev being down.
-
-All ports driven by a single EEC will report the same state.
-
-> Regardless, I agree with previous comments made about this belonging in
-> ethtool rather than rtnetlink.
-
-Will take a look at it - as it will require support in linuxptp as well.
-
+> >   	switch (rinfo->sw_act.fltr_act) {
+> >   	case ICE_FWD_TO_VSI:
+> >   		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+> > index cd5421a41002..f8e7f0b41631 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_switch.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+> > @@ -169,11 +169,22 @@ struct ice_rule_query_data {
+> >   	u16 vsi_handle;
+> >   };
+> >
+> > +/* This structure allows to pass info about lb_en and lan_en
+> > + * flags to ice_add_adv_rule. Values in act would be used
+> > + * only if act_valid was set to true, otherwise dflt
+> 
+> Maybe you missed it, in my first reply, but I?d go with ?default? comments.
+Indeed I missed that one.
+> 
+> > + * values would be used.
+> > + */
+> > +struct ice_adv_rule_flags_info {
+> > +	u32 act;
+> > +	u8 act_valid;		/* indicate if flags in act are valid */
 > > +};
 > > +
-> > +#define IF_EEC_STATE_MAX	(__IF_EEC_STATE_MAX - 1)
-> > +#define EEC_SRC_PORT		(1 << 0) /* recovered clock from the
-> port is
-> > +					  * currently the source for the EEC
-> > +					  */
+> >   struct ice_adv_rule_info {
+> >   	struct ice_sw_act_ctrl sw_act;
+> >   	u32 priority;
+> >   	u8 rx; /* true means LOOKUP_RX otherwise LOOKUP_TX */
+> >   	u16 fltr_rule_id;
+> > +	struct ice_adv_rule_flags_info flags_info;
+> >   };
+> >
+> >   /* A collection of one or more four word recipe */
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> > index e01b16419923..5e132832044d 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> > @@ -274,6 +274,8 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+> >   		rule_info.sw_act.flag |= ICE_FLTR_TX;
+> >   		rule_info.sw_act.src = vsi->idx;
+> >   		rule_info.rx = false;
+> > +		rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
+> > +		rule_info.flags_info.act_valid = true;
+> >   	}
+> >
+> >   	/* specify the cookie as filter_rule_id */
+> > @@ -296,12 +298,6 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+> >   	fltr->rid = rule_added.rid;
+> >   	fltr->rule_id = rule_added.rule_id;
+> >
+> > -	if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS) {
+> > -		if (ice_fltr_update_flags(vsi, fltr->rule_id, fltr->rid,
+> > -					  ICE_SINGLE_ACT_LAN_ENABLE))
+> > -			ice_rem_adv_rule_by_id(hw, &rule_added);
+> > -	}
+> > -
+> >   exit:
+> >   	kfree(list);
+> >   	return ret;
+> >
 > 
-> I'm not sure about this one. If we are going to expose this as a
-> per-netdev attribute (see more below), any reason it can't be added as
-> another state (e.g., IF_EEC_STATE_LOCKED_SRC)?
-
-OK! That's a great idea! Yet we'll need LOCKED_SRC and LOCKED_ACQ_SRC,
-but still sounds good.
-
-> IIUC, in the common case of a simple NE the source of the EEC is always
-> one of the ports, but in the case of a PRC the source is most likely
-> external (e.g., GPS).
-
-True
-
-> If so, I think we need a way to represent the EEC as a separate object
-> with the ability to set its source and report it via the same interface.
-> I'm unclear on how exactly an external source looks like, but for the
-> netdev case maybe something like this:
+> Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
 > 
-> devlink clock show [ dev clock CLOCK ]
-> devlink clock set DEV clock CLOCK [ { src_type SRC_TYPE } ]
-> SRC_TYPE : = { port DEV/PORT_INDEX }
-
-Unfortunately, EEC lives in 2 worlds - it belongs to a netdev (in very simple
-deployments the EEC may be a part of the PHY and only allow synchronizing
-the TX frequency to a single lane/port), but also can go outside of netdev
-and be a boar-wise frequency source.
-
-> The only source type above is 'port' with the ability to set the
-> relevant port, but more can be added. Obviously, 'devlink clock show'
-> will give you the current source in addition to other information such
-> as frequency difference with respect to the input frequency.
-
-We considered devlink interface for configuring the clock/DPLL, but a
-new concept was born at the list to add a DPLL subsystem that will
-cover more use cases, like a TimeCard.
-
-> Finally, can you share more info about the relation to the PHC? My
-> understanding is that one of the primary use cases for SyncE is to drive
-> all the PHCs in the network using the same frequency. How do you imagine
-> this configuration is going to look like? Can the above interface be
-> extended for that?
-
-That would be a configurable parameter/option of the PTP program.
-Just like it can check the existence of link on a given port, it'll also be
-able to check if we use EEC and it's locked. If it is, and is a source of
-PHC frequency - the ptp tool can decide to not apply frequency corrections
-to the PHC, just like the ptp4l does when nullf servo is used, but can do that
-dynamically.
-
-> All of the above might be complete nonsense as I'm still trying to wrap
-> my head around the subject.
-
-It's certainly not! Thanks for your input!
-
+> 
+> Kind regards,
+> 
+> Paul
