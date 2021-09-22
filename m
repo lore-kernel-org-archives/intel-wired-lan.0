@@ -1,29 +1,41 @@
-From: Simon Horman <simon.horman@corigine.com>
-Date: Wed, 22 Sep 2021 14:01:05 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v1] devlink: Make
- devlink_register to be void
-In-Reply-To: <311a6c7e74ad612474446890a12c9d310b9507ed.1632300324.git.leonro@nvidia.com>
-References: <311a6c7e74ad612474446890a12c9d310b9507ed.1632300324.git.leonro@nvidia.com>
-Message-ID: <20210922120105.GA2994@corigine.com>
+From: Cai Huoqing <caihuoqing@baidu.com>
+Date: Wed, 22 Sep 2021 20:59:46 +0800
+Subject: [Intel-wired-lan] [PATCH] ice: Make use of the helper function
+ devm_add_action_or_reset()
+Message-ID: <20210922125947.480-1-caihuoqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 22, 2021 at 11:58:03AM +0300, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
-> 
-> devlink_register() can't fail and always returns success, but all drivers
-> are obligated to check returned status anyway. This adds a lot of boilerplate
-> code to handle impossible flow.
-> 
-> Make devlink_register() void and simplify the drivers that use that
-> API call.
-> 
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+The helper function devm_add_action_or_reset() will internally
+call devm_add_action(), and if devm_add_action() fails then it will
+execute the action mentioned and return the error code. So
+use devm_add_action_or_reset() instead of devm_add_action()
+to simplify the error handling, reduce the code.
 
-NFP portion:
+Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
+---
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Acked-by: Simon Horman <simon.horman@corigine.com>
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index 14afce82ef63..f9d8410f29ea 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -482,10 +482,8 @@ struct ice_pf *ice_allocate_pf(struct device *dev)
+ 		return NULL;
+ 
+ 	/* Add an action to teardown the devlink when unwinding the driver */
+-	if (devm_add_action(dev, ice_devlink_free, devlink)) {
+-		devlink_free(devlink);
++	if (devm_add_action_or_reset(dev, ice_devlink_free, devlink))
+ 		return NULL;
+-	}
+ 
+ 	return devlink_priv(devlink);
+ }
+-- 
+2.25.1
 
