@@ -1,126 +1,42 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 22 Sep 2021 13:01:33 +0200
-Subject: [Intel-wired-lan] [PATCH v1 2/2] e1000e: Fixing packet loss
- issues on new platforms
-In-Reply-To: <f587f383-c5f3-3f47-9618-e15e2ea0939d@intel.com>
-References: <20210922065542.3780389-1-sasha.neftin@intel.com>
- <3bbabd03-317f-7bb5-064e-5e2b648ca689@molgen.mpg.de>
- <f587f383-c5f3-3f47-9618-e15e2ea0939d@intel.com>
-Message-ID: <ae562410-3235-26b2-993d-b5c934344153@molgen.mpg.de>
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+Date: Wed, 22 Sep 2021 12:05:56 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] devlink: Make
+ devlink_register to be void
+In-Reply-To: <311a6c7e74ad612474446890a12c9d310b9507ed.1632300324.git.leonro@nvidia.com>
+References: <311a6c7e74ad612474446890a12c9d310b9507ed.1632300324.git.leonro@nvidia.com>
+Message-ID: <20210922120555.lwjggkl2zsxra64x@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+On Wed, Sep 22, 2021 at 11:58:03AM +0300, Leon Romanovsky wrote:
+> diff --git a/net/dsa/dsa2.c b/net/dsa/dsa2.c
+> index eef13cd20f19..96f211f52ac3 100644
+> --- a/net/dsa/dsa2.c
+> +++ b/net/dsa/dsa2.c
+> @@ -804,10 +804,7 @@ static int dsa_switch_setup(struct dsa_switch *ds)
+>  	dl_priv = devlink_priv(ds->devlink);
+>  	dl_priv->ds = ds;
+>  
+> -	err = devlink_register(ds->devlink);
+> -	if (err)
+> -		goto free_devlink;
+> -
+> +	devlink_register(ds->devlink);
+>  	/* Setup devlink port instances now, so that the switch
+>  	 * setup() can register regions etc, against the ports
+>  	 */
+> @@ -863,10 +860,8 @@ static int dsa_switch_setup(struct dsa_switch *ds)
+>  		if (dp->ds == ds)
+>  			dsa_port_devlink_teardown(dp);
+>  	devlink_unregister(ds->devlink);
+> -free_devlink:
+>  	devlink_free(ds->devlink);
+>  	ds->devlink = NULL;
+> -
+>  	return err;
+>  }
 
-
-Am 22.09.21 um 09:30 schrieb Sasha Neftin:
-> On 9/22/2021 10:09, Paul Menzel wrote:
-
->> Am 22.09.21 um 08:55 schrieb Sasha Neftin:
->>
->> Please use imperative mood in the commit message summary: Fix ?. Maybe:
->>
->> e1000e: Fix packet loss on Tiger Lake and later
->>
->>> Update the HW MAC initialization flow. Do not gate DMA clock from
->>> the modPHY block. Keeping this clock will prevent drop packets sent
->>
->> dropped
->>
->>> in burst mode on the Kumeran interface.
->>
->> What is Kumeran?
-> interface to external Gigabit Ethernet PHY
-
-Thank you. For somebody not having all names memorized, this would be 
-good to know in my opinion.
-
->> Where is the new HW MAC initialization flow documented? The spec or 
->> some errata?
->>
->> How can the bug be reproduced?
-> Described in bugzilla - please, make sure the burst traffic:
-> run commands:
-> tc qdisc add dev eno1 (lan device name) root netem delay 5 ms on client side
-> iperf -s on server side
-> iperf -c server_IP -R on client side
-
-Thank you. In my opinion, reviewers should have this in the commit 
-message, instead of reading through several comments in the Linux 
-Bugzilla. Also, at least in #213651 the title and first comment talks 
-about Intel ME (Management Engine).
-
->>> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213651
->>> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213377
->>> Fixes: bc7f75fa9788 ("New pci-express e1000 driver");
->>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->>> ---
->>> ? drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++++-
->>> ? drivers/net/ethernet/intel/e1000e/ich8lan.h |? 3 +++
->>> ? 2 files changed, 13 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
->>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> index 66d7196310e2..5e4fc9b4e2ad 100644
->>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->>> @@ -4813,7 +4813,7 @@ static s32 e1000_reset_hw_ich8lan(struct 
->>> e1000_hw *hw)
->>> ? static s32 e1000_init_hw_ich8lan(struct e1000_hw *hw)
->>> ? {
->>> ????? struct e1000_mac_info *mac = &hw->mac;
->>> -??? u32 ctrl_ext, txdctl, snoop;
->>> +??? u32 ctrl_ext, txdctl, snoop, fflt_dbg;
->>> ????? s32 ret_val;
->>> ????? u16 i;
->>> @@ -4872,6 +4872,15 @@ static s32 e1000_init_hw_ich8lan(struct 
->>> e1000_hw *hw)
->>> ????????? snoop = (u32)~(PCIE_NO_SNOOP_ALL);
->>> ????? e1000e_set_pcie_no_snoop(hw, snoop);
->>> +??? /* Enable workaround for packet loss issue on TGP PCH
->>
->> Maybe:
->>
->>> Work around packet loss issue on TGP PCH and later
->>
->>> +???? * Do not gate DMA clock from the modPHY block
->>> +???? */
->>> +??? if (mac->type >= e1000_pch_tgp) {
->>> +??????? fflt_dbg = er32(FFLT_DBG);
->>
->> Maybe the variable `ctrl_ext` could be renamed to `tmp` or `tmp32`, 
->> and reused.
-> I prefer to stay with a meaningful name
-
-Understood. I know it?s personal preference.
-
->>> +??????? fflt_dbg |= E1000_FFLT_DBG_DONT_GATE_WAKE_DMA_CLK;
->>> +??????? ew32(FFLT_DBG, fflt_dbg);
->>> +??? }
->>> +
->>> ????? ctrl_ext = er32(CTRL_EXT);
->>> ????? ctrl_ext |= E1000_CTRL_EXT_RO_DIS;
->>> ????? ew32(CTRL_EXT, ctrl_ext);
->>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h 
->>> b/drivers/net/ethernet/intel/e1000e/ich8lan.h
->>> index d6a092e5ee74..2504b11c3169 100644
->>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
->>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
->>> @@ -289,6 +289,9 @@
->>> ? /* Proprietary Latency Tolerance Reporting PCI Capability */
->>> ? #define E1000_PCI_LTR_CAP_LPT??????? 0xA8
->>> +/* Don't gate wake DMA clock */
->>> +#define E1000_FFLT_DBG_DONT_GATE_WAKE_DMA_CLK??? 0x1000
->>> +
->>> ? void e1000e_write_protect_nvm_ich8lan(struct e1000_hw *hw);
->>> ? void e1000e_set_kmrn_lock_loss_workaround_ich8lan(struct e1000_hw *hw,
->>> ??????????????????????????? bool state);
->>>
-
-
-Kind regards,
-
-Paul
+Acked-by: Vladimir Oltean <olteanv@gmail.com> # dsa
