@@ -1,41 +1,160 @@
-From: Cai Huoqing <caihuoqing@baidu.com>
-Date: Wed, 22 Sep 2021 20:59:46 +0800
-Subject: [Intel-wired-lan] [PATCH] ice: Make use of the helper function
- devm_add_action_or_reset()
-Message-ID: <20210922125947.480-1-caihuoqing@baidu.com>
+From: Mark Pearson <markpearson@lenovo.com>
+Date: Wed, 22 Sep 2021 09:56:08 -0400
+Subject: [Intel-wired-lan] [PATCH v1 1/2] e1000e: Separate TGP board
+ type from SPT
+In-Reply-To: <c6299a3e-61fc-8d6e-7023-10bc10e8483b@intel.com>
+References: <20210922065449.3780338-1-sasha.neftin@intel.com>
+ <c6299a3e-61fc-8d6e-7023-10bc10e8483b@intel.com>
+Message-ID: <5ebbbb42-f692-e1d5-97ef-8cb076449588@lenovo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The helper function devm_add_action_or_reset() will internally
-call devm_add_action(), and if devm_add_action() fails then it will
-execute the action mentioned and return the error code. So
-use devm_add_action_or_reset() instead of devm_add_action()
-to simplify the error handling, reduce the code.
+Thanks Sasha,
 
-Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
----
- drivers/net/ethernet/intel/ice/ice_devlink.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Confirmed this fixes the problem on my X13 G2
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 14afce82ef63..f9d8410f29ea 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -482,10 +482,8 @@ struct ice_pf *ice_allocate_pf(struct device *dev)
- 		return NULL;
- 
- 	/* Add an action to teardown the devlink when unwinding the driver */
--	if (devm_add_action(dev, ice_devlink_free, devlink)) {
--		devlink_free(devlink);
-+	if (devm_add_action_or_reset(dev, ice_devlink_free, devlink))
- 		return NULL;
--	}
- 
- 	return devlink_priv(devlink);
- }
--- 
-2.25.1
+Tested-by: Mark Pearson <markpearson@lenovo.com>
 
+Mark
+
+On 2021-09-22 09:28, Sasha Neftin wrote:
+> 
+> 
+> 
+> -------- Forwarded Message --------
+> Subject: [PATCH v1 1/2] e1000e: Separate TGP board type from SPT
+> Date: Wed, 22 Sep 2021 09:54:49 +0300
+> From: Sasha Neftin <sasha.neftin@intel.com>
+> To: intel-wired-lan at lists.osuosl.org
+> CC: Sasha Neftin <sasha.neftin@intel.com>, Kai-Heng Feng 
+> <kai.heng.feng@canonical.com>
+> 
+> We have a same LAN controller on different PCH.
+> Separate TGP board type from SPT will alllow apply specific fixes
+> for TGP platforms.
+> 
+> Suggested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>  ?drivers/net/ethernet/intel/e1000e/e1000.h?? |? 4 +-
+>  ?drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 +++++++++
+>  ?drivers/net/ethernet/intel/e1000e/netdev.c? | 45 +++++++++++----------
+>  ?3 files changed, 46 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h 
+> b/drivers/net/ethernet/intel/e1000e/e1000.h
+> index f3424255bd2b..c3def0ee7788 100644
+> --- a/drivers/net/ethernet/intel/e1000e/e1000.h
+> +++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+> @@ -114,7 +114,8 @@ enum e1000_boards {
+>  ???? board_pch2lan,
+>  ???? board_pch_lpt,
+>  ???? board_pch_spt,
+> -??? board_pch_cnp
+> +??? board_pch_cnp,
+> +??? board_pch_tgp
+>  ?};
+>  ? struct e1000_ps_page {
+> @@ -500,6 +501,7 @@ extern const struct e1000_info e1000_pch2_info;
+>  ?extern const struct e1000_info e1000_pch_lpt_info;
+>  ?extern const struct e1000_info e1000_pch_spt_info;
+>  ?extern const struct e1000_info e1000_pch_cnp_info;
+> +extern const struct e1000_info e1000_pch_tgp_info;
+>  ?extern const struct e1000_info e1000_es2_info;
+>  ? void e1000e_ptp_init(struct e1000_adapter *adapter);
+> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
+> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> index 60c582a16821..66d7196310e2 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> @@ -5992,3 +5992,23 @@ const struct e1000_info e1000_pch_cnp_info = {
+>  ???? .phy_ops??????? = &ich8_phy_ops,
+>  ???? .nvm_ops??????? = &spt_nvm_ops,
+>  ?};
+> +
+> +const struct e1000_info e1000_pch_tgp_info = {
+> +??? .mac??????????? = e1000_pch_tgp,
+> +??? .flags??????????? = FLAG_IS_ICH
+> +????????????????? | FLAG_HAS_WOL
+> +????????????????? | FLAG_HAS_HW_TIMESTAMP
+> +????????????????? | FLAG_HAS_CTRLEXT_ON_LOAD
+> +????????????????? | FLAG_HAS_AMT
+> +????????????????? | FLAG_HAS_FLASH
+> +????????????????? | FLAG_HAS_JUMBO_FRAMES
+> +????????????????? | FLAG_APME_IN_WUC,
+> +??? .flags2??????????? = FLAG2_HAS_PHY_STATS
+> +????????????????? | FLAG2_HAS_EEE,
+> +??? .pba??????????? = 26,
+> +??? .max_hw_frame_size??? = 9022,
+> +??? .get_variants??????? = e1000_get_variants_ich8lan,
+> +??? .mac_ops??????? = &ich8_mac_ops,
+> +??? .phy_ops??????? = &ich8_phy_ops,
+> +??? .nvm_ops??????? = &spt_nvm_ops,
+> +};
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
+> b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 900b3ab998bd..ebcb2a30add0 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -51,6 +51,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+>  ???? [board_pch_lpt]??????? = &e1000_pch_lpt_info,
+>  ???? [board_pch_spt]??????? = &e1000_pch_spt_info,
+>  ???? [board_pch_cnp]??????? = &e1000_pch_cnp_info,
+> +??? [board_pch_tgp]??????? = &e1000_pch_tgp_info,
+>  ?};
+>  ? struct e1000_reg_info {
+> @@ -7896,28 +7897,28 @@ static const struct pci_device_id 
+> e1000_pci_tbl[] = {
+>  ???? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V11), board_pch_cnp },
+>  ???? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_LM12), 
+> board_pch_spt },
+>  ???? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_CMP_I219_V12), board_pch_spt },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_cnp },
+> -??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_cnp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM13), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V13), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM14), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_tgp },
+> +??? { PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_tgp },
+>  ????? { 0, 0, 0, 0, 0, 0, 0 }??? /* terminate list */
+>  ?};
