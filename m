@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Thu, 23 Sep 2021 21:12:49 +0300
-Subject: [Intel-wired-lan] [PATCH net-next 2/6] bnxt_en: Properly remove
- port parameter support
+Date: Thu, 23 Sep 2021 21:12:53 +0300
+Subject: [Intel-wired-lan] [PATCH net-next 6/6] qed: Don't ignore devlink
+ allocation failures
 In-Reply-To: <cover.1632420430.git.leonro@nvidia.com>
 References: <cover.1632420430.git.leonro@nvidia.com>
-Message-ID: <7b85ce0d2a5056af2c7e14dbd16c55d86aac659c.1632420431.git.leonro@nvidia.com>
+Message-ID: <c6acd223945669c3c0229afc62b1890810da8145.1632420431.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,54 +13,63 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-This driver doesn't have any port parameters and registers
-devlink port parameters with empty table. Remove the useless
-calls to devlink_port_params_register and _unregister.
+devlink is a software interface that doesn't depend on any hardware
+capabilities. The failure in SW means memory issues, wrong parameters,
+programmer error e.t.c.
 
-Fixes: da203dfa89ce ("Revert "devlink: Add a generic wake_on_lan port parameter"")
+Like any other such interface in the kernel, the returned status of
+devlink APIs should be checked and propagated further and not ignored.
+
+Fixes: 755f982bb1ff ("qed/qede: make devlink survive recovery")
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c | 13 -------------
- 1 file changed, 13 deletions(-)
+ drivers/net/ethernet/qlogic/qede/qede_main.c | 12 +++++-------
+ drivers/scsi/qedf/qedf_main.c                |  2 ++
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-index dc0851f709f5..ed95e28d60ef 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_devlink.c
-@@ -736,9 +736,6 @@ static const struct devlink_param bnxt_dl_params[] = {
- 			     NULL),
- };
+diff --git a/drivers/net/ethernet/qlogic/qede/qede_main.c b/drivers/net/ethernet/qlogic/qede/qede_main.c
+index 9837bdb89cd4..ee4c3bd28a93 100644
+--- a/drivers/net/ethernet/qlogic/qede/qede_main.c
++++ b/drivers/net/ethernet/qlogic/qede/qede_main.c
+@@ -1176,19 +1176,17 @@ static int __qede_probe(struct pci_dev *pdev, u32 dp_module, u8 dp_level,
+ 		edev->devlink = qed_ops->common->devlink_register(cdev);
+ 		if (IS_ERR(edev->devlink)) {
+ 			DP_NOTICE(edev, "Cannot register devlink\n");
++			rc = PTR_ERR(edev->devlink);
+ 			edev->devlink = NULL;
+-			/* Go on, we can live without devlink */
++			goto err3;
+ 		}
+ 	} else {
+ 		struct net_device *ndev = pci_get_drvdata(pdev);
++		struct qed_devlink *qdl;
  
--static const struct devlink_param bnxt_dl_port_params[] = {
--};
+ 		edev = netdev_priv(ndev);
 -
- static int bnxt_dl_params_register(struct bnxt *bp)
- {
- 	int rc;
-@@ -753,14 +750,6 @@ static int bnxt_dl_params_register(struct bnxt *bp)
- 			    rc);
- 		return rc;
+-		if (edev->devlink) {
+-			struct qed_devlink *qdl = devlink_priv(edev->devlink);
+-
+-			qdl->cdev = cdev;
+-		}
++		qdl = devlink_priv(edev->devlink);
++		qdl->cdev = cdev;
+ 		edev->cdev = cdev;
+ 		memset(&edev->stats, 0, sizeof(edev->stats));
+ 		memcpy(&edev->dev_info, &dev_info, sizeof(dev_info));
+diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
+index 42d0d941dba5..94ee08fab46a 100644
+--- a/drivers/scsi/qedf/qedf_main.c
++++ b/drivers/scsi/qedf/qedf_main.c
+@@ -3416,7 +3416,9 @@ static int __qedf_probe(struct pci_dev *pdev, int mode)
+ 		qedf->devlink = qed_ops->common->devlink_register(qedf->cdev);
+ 		if (IS_ERR(qedf->devlink)) {
+ 			QEDF_ERR(&qedf->dbg_ctx, "Cannot register devlink\n");
++			rc = PTR_ERR(qedf->devlink);
+ 			qedf->devlink = NULL;
++			goto err2;
+ 		}
  	}
--	rc = devlink_port_params_register(&bp->dl_port, bnxt_dl_port_params,
--					  ARRAY_SIZE(bnxt_dl_port_params));
--	if (rc) {
--		netdev_err(bp->dev, "devlink_port_params_register failed\n");
--		devlink_params_unregister(bp->dl, bnxt_dl_params,
--					  ARRAY_SIZE(bnxt_dl_params));
--		return rc;
--	}
- 	devlink_params_publish(bp->dl);
  
- 	return 0;
-@@ -773,8 +762,6 @@ static void bnxt_dl_params_unregister(struct bnxt *bp)
- 
- 	devlink_params_unregister(bp->dl, bnxt_dl_params,
- 				  ARRAY_SIZE(bnxt_dl_params));
--	devlink_port_params_unregister(&bp->dl_port, bnxt_dl_port_params,
--				       ARRAY_SIZE(bnxt_dl_port_params));
- }
- 
- int bnxt_dl_register(struct bnxt *bp)
 -- 
 2.31.1
 
