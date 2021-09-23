@@ -1,263 +1,123 @@
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Thu, 23 Sep 2021 14:43:48 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Manage act flags for
- switchdev offloads
-Message-ID: <20210923124348.2371-1-wojciech.drewek@intel.com>
+From: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
+Date: Thu, 23 Sep 2021 15:17:26 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] i40e: Avoid double IRQ free on
+ error path in probe()
+In-Reply-To: <MW4PR14MB47967810D43031FF8C4C2265A1A19@MW4PR14MB4796.namprd14.prod.outlook.com>
+References: <20210826221916.127243-1-pwaskiewicz@jumptrading.com>
+ <50c21a769633c8efa07f49fc8b20fdfb544cf3c5.camel@intel.com>
+ <20210831205831.GA115243@chidv-pwl1.w2k.jumptrading.com>
+ <MW4PR14MB4796AE05A868B47FE4F6E12AA1D99@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <bebb58f34ed68025e95f8bc060af58a24333374b.camel@intel.com>
+ <DM6PR11MB3371A3D1F314F3B8541FAF03E6DA9@DM6PR11MB3371.namprd11.prod.outlook.com>
+ <MW4PR14MB47960CC778789EEE8E8A54EDA1DA9@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <DM6PR11MB3371B4431AD7C46672C7E439E6DB9@DM6PR11MB3371.namprd11.prod.outlook.com>
+ <MW4PR14MB4796F279908B7E4D11622C66A1DE9@MW4PR14MB4796.namprd14.prod.outlook.com>
+ <DM6PR11MB3371A285032A583A73BA62E0E6A09@DM6PR11MB3371.namprd11.prod.outlook.com>
+ <MW4PR14MB47967810D43031FF8C4C2265A1A19@MW4PR14MB4796.namprd14.prod.outlook.com>
+Message-ID: <MW4PR14MB479687DDEC1EB0C4AA5F5CF1A1A39@MW4PR14MB4796.namprd14.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently it is not possible to set/unset lb_en and lan_en flags
-for advanced rules during their creation. Both flags are enabled
-by default. In case of switchdev offloads for egress traffic we
-need lb_en to be disabled. Because of that, we work around it by
-updating the rule immediately after its creation.
+> > Hello PJ,
+>
+> Hello,
 
-This change allows us to set/unset those flags right away and it
-gets rid of old workaround as well. Using ice_adv_rule_flags_info
-structure we can pass info about flags we want to be set for
-a given advanced rule. Flags are stored in flags_info.act.
-Values from act would be used only if act_valid was set to true,
-otherwise default values would be used.
+Hi Tony and Sylwester,
 
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
----
- drivers/net/ethernet/intel/ice/ice_fltr.c   | 127 --------------------
- drivers/net/ethernet/intel/ice/ice_fltr.h   |   4 -
- drivers/net/ethernet/intel/ice/ice_switch.c |   9 +-
- drivers/net/ethernet/intel/ice/ice_switch.h |  11 ++
- drivers/net/ethernet/intel/ice/ice_tc_lib.c |   8 +-
- 5 files changed, 21 insertions(+), 138 deletions(-)
+Any updates/comments on my reply from a few days ago on this?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c b/drivers/net/ethernet/intel/ice/ice_fltr.c
-index f22ca4354f84..e49378893390 100644
---- a/drivers/net/ethernet/intel/ice/ice_fltr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
-@@ -509,133 +509,6 @@ static u32 ice_fltr_build_action(u16 vsi_id)
- 		ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT;
- }
- 
--/**
-- * ice_fltr_find_adv_entry - find advanced rule
-- * @rules: list of rules
-- * @rule_id: id of wanted rule
-- */
--static struct ice_adv_fltr_mgmt_list_entry *
--ice_fltr_find_adv_entry(struct list_head *rules, u16 rule_id)
--{
--	struct ice_adv_fltr_mgmt_list_entry *entry;
--
--	list_for_each_entry(entry, rules, list_entry) {
--		if (entry->rule_info.fltr_rule_id == rule_id)
--			return entry;
--	}
--
--	return NULL;
--}
--
--/**
-- * ice_fltr_update_adv_rule_flags - update flags on advanced rule
-- * @vsi: pointer to VSI
-- * @recipe_id: id of recipe
-- * @entry: advanced rule entry
-- * @new_flags: flags to update
-- */
--static enum ice_status
--ice_fltr_update_adv_rule_flags(struct ice_vsi *vsi, u16 recipe_id,
--			       struct ice_adv_fltr_mgmt_list_entry *entry,
--			       u32 new_flags)
--{
--	struct ice_adv_rule_info *info = &entry->rule_info;
--	struct ice_sw_act_ctrl *act = &info->sw_act;
--	u32 action;
--
--	if (act->fltr_act != ICE_FWD_TO_VSI)
--		return ICE_ERR_NOT_SUPPORTED;
--
--	action = ice_fltr_build_action(act->fwd_id.hw_vsi_id);
--
--	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
--					  recipe_id, action, info->sw_act.flag,
--					  act->src, new_flags);
--}
--
--/**
-- * ice_fltr_find_regular_entry - find regular rule
-- * @rules: list of rules
-- * @rule_id: id of wanted rule
-- */
--static struct ice_fltr_mgmt_list_entry *
--ice_fltr_find_regular_entry(struct list_head *rules, u16 rule_id)
--{
--	struct ice_fltr_mgmt_list_entry *entry;
--
--	list_for_each_entry(entry, rules, list_entry) {
--		if (entry->fltr_info.fltr_rule_id == rule_id)
--			return entry;
--	}
--
--	return NULL;
--}
--
--/**
-- * ice_fltr_update_regular_rule - update flags on regular rule
-- * @vsi: pointer to VSI
-- * @recipe_id: id of recipe
-- * @entry: regular rule entry
-- * @new_flags: flags to update
-- */
--static enum ice_status
--ice_fltr_update_regular_rule(struct ice_vsi *vsi, u16 recipe_id,
--			     struct ice_fltr_mgmt_list_entry *entry,
--			     u32 new_flags)
--{
--	struct ice_fltr_info *info = &entry->fltr_info;
--	u32 action;
--
--	if (info->fltr_act != ICE_FWD_TO_VSI)
--		return ICE_ERR_NOT_SUPPORTED;
--
--	action = ice_fltr_build_action(info->fwd_id.hw_vsi_id);
--
--	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
--					  recipe_id, action, info->flag,
--					  info->src, new_flags);
--}
--
--/**
-- * ice_fltr_update_flags - update flags on rule
-- * @vsi: pointer to VSI
-- * @rule_id: id of rule
-- * @recipe_id: id of recipe
-- * @new_flags: flags to update
-- *
-- * Function updates flags on regular and advance rule.
-- *
-- * Flags should be a combination of ICE_SINGLE_ACT_LB_ENABLE and
-- * ICE_SINGLE_ACT_LAN_ENABLE.
-- */
--enum ice_status
--ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
--		      u32 new_flags)
--{
--	struct ice_adv_fltr_mgmt_list_entry *adv_entry;
--	struct ice_fltr_mgmt_list_entry *regular_entry;
--	struct ice_hw *hw = &vsi->back->hw;
--	struct ice_sw_recipe *recp_list;
--	struct list_head *fltr_rules;
--
--	recp_list = &hw->switch_info->recp_list[recipe_id];
--	if (!recp_list)
--		return ICE_ERR_DOES_NOT_EXIST;
--
--	fltr_rules = &recp_list->filt_rules;
--	regular_entry = ice_fltr_find_regular_entry(fltr_rules, rule_id);
--	if (regular_entry)
--		return ice_fltr_update_regular_rule(vsi, recipe_id,
--						    regular_entry, new_flags);
--
--	adv_entry = ice_fltr_find_adv_entry(fltr_rules, rule_id);
--	if (adv_entry)
--		return ice_fltr_update_adv_rule_flags(vsi, recipe_id,
--						      adv_entry, new_flags);
--
--	return ICE_ERR_DOES_NOT_EXIST;
--}
--
- /**
-  * ice_fltr_update_flags_dflt_rule - update flags on default rule
-  * @vsi: pointer to VSI
-diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.h b/drivers/net/ethernet/intel/ice/ice_fltr.h
-index 339da5fef577..db59cbbeda32 100644
---- a/drivers/net/ethernet/intel/ice/ice_fltr.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fltr.h
-@@ -46,10 +46,6 @@ enum ice_status
- ice_fltr_remove_eth(struct ice_vsi *vsi, u16 ethertype, u16 flag,
- 		    enum ice_sw_fwd_act_type action);
- void ice_fltr_remove_all(struct ice_vsi *vsi);
--
--enum ice_status
--ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
--		      u32 new_flags);
- enum ice_status
- ice_fltr_update_flags_dflt_rule(struct ice_vsi *vsi, u16 rule_id, u8 direction,
- 				u32 new_flags);
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index ca039a4c3a79..1bbb52bf2279 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -4841,7 +4841,14 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
- 	if (!s_rule)
- 		return ICE_ERR_NO_MEMORY;
--	act |= ICE_SINGLE_ACT_LB_ENABLE | ICE_SINGLE_ACT_LAN_ENABLE;
-+	if (!rinfo->flags_info.act_valid) {
-+		act |= ICE_SINGLE_ACT_LAN_ENABLE;
-+		act |= ICE_SINGLE_ACT_LB_ENABLE;
-+	} else {
-+		act |= rinfo->flags_info.act & (ICE_SINGLE_ACT_LAN_ENABLE |
-+						ICE_SINGLE_ACT_LB_ENABLE);
-+	}
-+
- 	switch (rinfo->sw_act.fltr_act) {
- 	case ICE_FWD_TO_VSI:
- 		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index cd5421a41002..c03a6dfcc5fb 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -169,11 +169,22 @@ struct ice_rule_query_data {
- 	u16 vsi_handle;
- };
- 
-+/* This structure allows to pass info about lb_en and lan_en
-+ * flags to ice_add_adv_rule. Values in act would be used
-+ * only if act_valid was set to true, otherwise default
-+ * values would be used.
-+ */
-+struct ice_adv_rule_flags_info {
-+	u32 act;
-+	u8 act_valid;		/* indicate if flags in act are valid */
-+};
-+
- struct ice_adv_rule_info {
- 	struct ice_sw_act_ctrl sw_act;
- 	u32 priority;
- 	u8 rx; /* true means LOOKUP_RX otherwise LOOKUP_TX */
- 	u16 fltr_rule_id;
-+	struct ice_adv_rule_flags_info flags_info;
- };
- 
- /* A collection of one or more four word recipe */
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index e01b16419923..5e132832044d 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -274,6 +274,8 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
- 		rule_info.sw_act.flag |= ICE_FLTR_TX;
- 		rule_info.sw_act.src = vsi->idx;
- 		rule_info.rx = false;
-+		rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
-+		rule_info.flags_info.act_valid = true;
- 	}
- 
- 	/* specify the cookie as filter_rule_id */
-@@ -296,12 +298,6 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
- 	fltr->rid = rule_added.rid;
- 	fltr->rule_id = rule_added.rule_id;
- 
--	if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS) {
--		if (ice_fltr_update_flags(vsi, fltr->rule_id, fltr->rid,
--					  ICE_SINGLE_ACT_LAN_ENABLE))
--			ice_rem_adv_rule_by_id(hw, &rule_added);
--	}
--
- exit:
- 	kfree(list);
- 	return ret;
--- 
-2.31.1
+-PJ
 
+> >
+> > > static void i40e_free_misc_vector(struct i40e_pf *pf) {
+> > >         /* Disable ICR 0 */
+> > >         wr32(&pf->hw, I40E_PFINT_ICR0_ENA, 0);
+> > >         i40e_flush(&pf->hw);
+> > >
+> > > Would you still want to do that blindly if the vector wasn't
+> > > allocated in the first place?  Seems excessive, but it'd be
+> > > harmless.  Seems like not calling this function altogether would be
+> > > cleaner and generate less MMIO activity if the MISC vector wasn't
+> > > allocated at all and
+> > we're falling out of an error path...
+> > >
+> > > I am really at a loss here.  This is clearly broken.  We have an Oops.
+> > > We get these occasionally on boot, and it's really annoying to deal
+> > > with on production machines.  What is the definition of "soon" here
+> > > for this new patch to show up?  My distro vendor would love to pull
+> > > some sort of fix in so we can get it into our build images, and stop
+> > > having this problem.  My patch fixes the immediate problem.  If you
+> > > don't like the patch (which it appears you don't; that's fine), then
+> > > stalling or saying a different fix is coming "soon" is really not a
+> > > great support model.  This would be great to merge, and then if you
+> > > want to make it "better" on your schedule, it's open source, and you
+> > > can submit a patch.  Or I'll be happy to respin the patch, but still
+> > > calling free_misc_vector() in an error path when the MISC vector was
+> > never allocated seems like a bad design decision to me.
+> > >
+> > > -PJ
+> >
+> > I totally agree that we shouldn?t call free_misc_vector if misc vector
+> > wasn't allocated yet but to me this is not what your patch is doing.
+> > free_misc_vector() is called in clear_interrupt_scheme not
+> > reset_interrupt_capability(). In your patch clear_interrupt_scheme()
+> > will still be called when pf switch setup fails in i40e_probe() and it
+> > will still call free_misc_vector on unallocated misc IRQ. Other proper
+> > way to fix this would be moving free_misc_vector() out of
+> > clear_interrupt_scheme() and calling it separately when misc vector
+> > was really allocated. As for the hw register being written in our
+> > patch as you said it's harmless. The patch we've prepared should be on iwl
+> today.
+> >
+>
+> Ok, I see the patch on IWL....let's discuss....
+>
+> Just above, I pointed out that if the MISC vector hasn't been allocated at all,
+> then we don't want to call free_misc_vector() at all.  That would also mean
+> the suggestion to check the atomic state bit to avoid the actual free would
+> *still* have the code call free_misc_vector(), and only skip the actual free
+> (after doing an unnecessary MMIO write and then read to flush).  I pointed
+> out that wouldn't be ideal, and you, just above, agreed.  Yet, the fix you guys
+> submitted to IWL does exactly that.  So are we just saying things to bury this
+> thread and hope it goes away, or just willfully not doing what we agreed on?
+> It's pretty disheartening to consider feedback, agree to it, then completely
+> ignore it.  That's not how open source works...
+>
+> Also, regardless how you guys want the code to work, it's usually good form
+> to include a "Reported-by:" in a patch if you're deciding not to take a
+> proposed patch.  It's even better form to include the Oops that was reported
+> in the first patch, since that makes things like ${SEARCH_ENGINE} work for
+> people running into the same issue have a chance to find a solution.  Not
+> doing either of these when someone else has done work to identify an issue,
+> test a fix, and propose it, is not a good way to attract more people to work on
+> this driver in the future.
+>
+> If we wanted to do something where free_misc_vector() isn't called if the
+> state flag isn't set, then why not something like this, which would keep in the
+> spirit of what we agreed on above:
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 1d1f52756a93..a40193bcc7b7 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -4868,7 +4868,9 @@ static void i40e_clear_interrupt_scheme(struct
+> i40e_pf *pf)  {
+>         int i;
+>
+> -       i40e_free_misc_vector(pf);
+> +       /* Only attempt to free the misc vector if it's already allocated */
+> +       if (test_bit(__I40E_MISC_IRQ_REQUESTED, pf->state))
+> +               i40e_free_misc_vector(pf);
+>
+>         i40e_put_lump(pf->irq_pile, pf->iwarp_base_vector,
+>                       I40E_IWARP_IRQ_PILE_ID);
+>
+> -PJ
+
+________________________________
+
+Note: This email is for the confidential use of the named addressee(s) only and may contain proprietary, confidential, or privileged information and/or personal data. If you are not the intended recipient, you are hereby notified that any review, dissemination, or copying of this email is strictly prohibited, and requested to notify the sender immediately and destroy this email and any attachments. Email transmission cannot be guaranteed to be secure or error-free. The Company, therefore, does not make any guarantees as to the completeness or accuracy of this email or any attachments. This email is for informational purposes only and does not constitute a recommendation, offer, request, or solicitation of any kind to buy, sell, subscribe, redeem, or perform any type of transaction of a financial product. Personal data, as defined by applicable data protection and privacy laws, contained in this email may be processed by the Company, and any of its affiliated or related companies, for legal, compliance, and/or business-related purposes. You may have rights regarding your personal data; for information on exercising these rights or the Company?s treatment of personal data, please email datarequests at jumptrading.com.
