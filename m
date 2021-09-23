@@ -1,111 +1,263 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 23 Sep 2021 09:44:40 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] iavf-linux: Fix reporting when
- setting descriptor count
-In-Reply-To: <20210923071452.21975-1-michal.maloszewski@intel.com>
-References: <20210923071452.21975-1-michal.maloszewski@intel.com>
-Message-ID: <5437f421-e935-6484-4f8b-ed6751e9bae1@molgen.mpg.de>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Thu, 23 Sep 2021 14:43:48 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Manage act flags for
+ switchdev offloads
+Message-ID: <20210923124348.2371-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Michal,
+Currently it is not possible to set/unset lb_en and lan_en flags
+for advanced rules during their creation. Both flags are enabled
+by default. In case of switchdev offloads for egress traffic we
+need lb_en to be disabled. Because of that, we work around it by
+updating the rule immediately after its creation.
 
+This change allows us to set/unset those flags right away and it
+gets rid of old workaround as well. Using ice_adv_rule_flags_info
+structure we can pass info about flags we want to be set for
+a given advanced rule. Flags are stored in flags_info.act.
+Values from act would be used only if act_valid was set to true,
+otherwise default values would be used.
 
-Am 23.09.21 um 09:14 schrieb Michal Maloszewski:
-> iavf_set_ringparams doesn't communicate to the user that
-> 
-> 1. The user requested descriptor count is out of range. Instead it
->     just quietly sets descriptors to the "clamped" value and calls it
->     done. This makes it look an invalid value was successfully set as
->     the descriptor count when this isn't actually true.
-> 
-> 2. The user provided descriptor count needs to be inflated for alignment
->     reasons.
-> 
-> This behavior is confusing. The ice driver has already addressed this
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ drivers/net/ethernet/intel/ice/ice_fltr.c   | 127 --------------------
+ drivers/net/ethernet/intel/ice/ice_fltr.h   |   4 -
+ drivers/net/ethernet/intel/ice/ice_switch.c |   9 +-
+ drivers/net/ethernet/intel/ice/ice_switch.h |  11 ++
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c |   8 +-
+ 5 files changed, 21 insertions(+), 138 deletions(-)
 
-Please reference the commit.
+diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c b/drivers/net/ethernet/intel/ice/ice_fltr.c
+index f22ca4354f84..e49378893390 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fltr.c
++++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
+@@ -509,133 +509,6 @@ static u32 ice_fltr_build_action(u16 vsi_id)
+ 		ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT;
+ }
+ 
+-/**
+- * ice_fltr_find_adv_entry - find advanced rule
+- * @rules: list of rules
+- * @rule_id: id of wanted rule
+- */
+-static struct ice_adv_fltr_mgmt_list_entry *
+-ice_fltr_find_adv_entry(struct list_head *rules, u16 rule_id)
+-{
+-	struct ice_adv_fltr_mgmt_list_entry *entry;
+-
+-	list_for_each_entry(entry, rules, list_entry) {
+-		if (entry->rule_info.fltr_rule_id == rule_id)
+-			return entry;
+-	}
+-
+-	return NULL;
+-}
+-
+-/**
+- * ice_fltr_update_adv_rule_flags - update flags on advanced rule
+- * @vsi: pointer to VSI
+- * @recipe_id: id of recipe
+- * @entry: advanced rule entry
+- * @new_flags: flags to update
+- */
+-static enum ice_status
+-ice_fltr_update_adv_rule_flags(struct ice_vsi *vsi, u16 recipe_id,
+-			       struct ice_adv_fltr_mgmt_list_entry *entry,
+-			       u32 new_flags)
+-{
+-	struct ice_adv_rule_info *info = &entry->rule_info;
+-	struct ice_sw_act_ctrl *act = &info->sw_act;
+-	u32 action;
+-
+-	if (act->fltr_act != ICE_FWD_TO_VSI)
+-		return ICE_ERR_NOT_SUPPORTED;
+-
+-	action = ice_fltr_build_action(act->fwd_id.hw_vsi_id);
+-
+-	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
+-					  recipe_id, action, info->sw_act.flag,
+-					  act->src, new_flags);
+-}
+-
+-/**
+- * ice_fltr_find_regular_entry - find regular rule
+- * @rules: list of rules
+- * @rule_id: id of wanted rule
+- */
+-static struct ice_fltr_mgmt_list_entry *
+-ice_fltr_find_regular_entry(struct list_head *rules, u16 rule_id)
+-{
+-	struct ice_fltr_mgmt_list_entry *entry;
+-
+-	list_for_each_entry(entry, rules, list_entry) {
+-		if (entry->fltr_info.fltr_rule_id == rule_id)
+-			return entry;
+-	}
+-
+-	return NULL;
+-}
+-
+-/**
+- * ice_fltr_update_regular_rule - update flags on regular rule
+- * @vsi: pointer to VSI
+- * @recipe_id: id of recipe
+- * @entry: regular rule entry
+- * @new_flags: flags to update
+- */
+-static enum ice_status
+-ice_fltr_update_regular_rule(struct ice_vsi *vsi, u16 recipe_id,
+-			     struct ice_fltr_mgmt_list_entry *entry,
+-			     u32 new_flags)
+-{
+-	struct ice_fltr_info *info = &entry->fltr_info;
+-	u32 action;
+-
+-	if (info->fltr_act != ICE_FWD_TO_VSI)
+-		return ICE_ERR_NOT_SUPPORTED;
+-
+-	action = ice_fltr_build_action(info->fwd_id.hw_vsi_id);
+-
+-	return ice_fltr_update_rule_flags(&vsi->back->hw, info->fltr_rule_id,
+-					  recipe_id, action, info->flag,
+-					  info->src, new_flags);
+-}
+-
+-/**
+- * ice_fltr_update_flags - update flags on rule
+- * @vsi: pointer to VSI
+- * @rule_id: id of rule
+- * @recipe_id: id of recipe
+- * @new_flags: flags to update
+- *
+- * Function updates flags on regular and advance rule.
+- *
+- * Flags should be a combination of ICE_SINGLE_ACT_LB_ENABLE and
+- * ICE_SINGLE_ACT_LAN_ENABLE.
+- */
+-enum ice_status
+-ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
+-		      u32 new_flags)
+-{
+-	struct ice_adv_fltr_mgmt_list_entry *adv_entry;
+-	struct ice_fltr_mgmt_list_entry *regular_entry;
+-	struct ice_hw *hw = &vsi->back->hw;
+-	struct ice_sw_recipe *recp_list;
+-	struct list_head *fltr_rules;
+-
+-	recp_list = &hw->switch_info->recp_list[recipe_id];
+-	if (!recp_list)
+-		return ICE_ERR_DOES_NOT_EXIST;
+-
+-	fltr_rules = &recp_list->filt_rules;
+-	regular_entry = ice_fltr_find_regular_entry(fltr_rules, rule_id);
+-	if (regular_entry)
+-		return ice_fltr_update_regular_rule(vsi, recipe_id,
+-						    regular_entry, new_flags);
+-
+-	adv_entry = ice_fltr_find_adv_entry(fltr_rules, rule_id);
+-	if (adv_entry)
+-		return ice_fltr_update_adv_rule_flags(vsi, recipe_id,
+-						      adv_entry, new_flags);
+-
+-	return ICE_ERR_DOES_NOT_EXIST;
+-}
+-
+ /**
+  * ice_fltr_update_flags_dflt_rule - update flags on default rule
+  * @vsi: pointer to VSI
+diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.h b/drivers/net/ethernet/intel/ice/ice_fltr.h
+index 339da5fef577..db59cbbeda32 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fltr.h
++++ b/drivers/net/ethernet/intel/ice/ice_fltr.h
+@@ -46,10 +46,6 @@ enum ice_status
+ ice_fltr_remove_eth(struct ice_vsi *vsi, u16 ethertype, u16 flag,
+ 		    enum ice_sw_fwd_act_type action);
+ void ice_fltr_remove_all(struct ice_vsi *vsi);
+-
+-enum ice_status
+-ice_fltr_update_flags(struct ice_vsi *vsi, u16 rule_id, u16 recipe_id,
+-		      u32 new_flags);
+ enum ice_status
+ ice_fltr_update_flags_dflt_rule(struct ice_vsi *vsi, u16 rule_id, u8 direction,
+ 				u32 new_flags);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index ca039a4c3a79..1bbb52bf2279 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -4841,7 +4841,14 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+ 	s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
+ 	if (!s_rule)
+ 		return ICE_ERR_NO_MEMORY;
+-	act |= ICE_SINGLE_ACT_LB_ENABLE | ICE_SINGLE_ACT_LAN_ENABLE;
++	if (!rinfo->flags_info.act_valid) {
++		act |= ICE_SINGLE_ACT_LAN_ENABLE;
++		act |= ICE_SINGLE_ACT_LB_ENABLE;
++	} else {
++		act |= rinfo->flags_info.act & (ICE_SINGLE_ACT_LAN_ENABLE |
++						ICE_SINGLE_ACT_LB_ENABLE);
++	}
++
+ 	switch (rinfo->sw_act.fltr_act) {
+ 	case ICE_FWD_TO_VSI:
+ 		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index cd5421a41002..c03a6dfcc5fb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -169,11 +169,22 @@ struct ice_rule_query_data {
+ 	u16 vsi_handle;
+ };
+ 
++/* This structure allows to pass info about lb_en and lan_en
++ * flags to ice_add_adv_rule. Values in act would be used
++ * only if act_valid was set to true, otherwise default
++ * values would be used.
++ */
++struct ice_adv_rule_flags_info {
++	u32 act;
++	u8 act_valid;		/* indicate if flags in act are valid */
++};
++
+ struct ice_adv_rule_info {
+ 	struct ice_sw_act_ctrl sw_act;
+ 	u32 priority;
+ 	u8 rx; /* true means LOOKUP_RX otherwise LOOKUP_TX */
+ 	u16 fltr_rule_id;
++	struct ice_adv_rule_flags_info flags_info;
+ };
+ 
+ /* A collection of one or more four word recipe */
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index e01b16419923..5e132832044d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -274,6 +274,8 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+ 		rule_info.sw_act.flag |= ICE_FLTR_TX;
+ 		rule_info.sw_act.src = vsi->idx;
+ 		rule_info.rx = false;
++		rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
++		rule_info.flags_info.act_valid = true;
+ 	}
+ 
+ 	/* specify the cookie as filter_rule_id */
+@@ -296,12 +298,6 @@ ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+ 	fltr->rid = rule_added.rid;
+ 	fltr->rule_id = rule_added.rule_id;
+ 
+-	if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS) {
+-		if (ice_fltr_update_flags(vsi, fltr->rule_id, fltr->rid,
+-					  ICE_SINGLE_ACT_LAN_ENABLE))
+-			ice_rem_adv_rule_by_id(hw, &rule_added);
+-	}
+-
+ exit:
+ 	kfree(list);
+ 	return ret;
+-- 
+2.31.1
 
-> by rejecting invalid values for and messaging for alignment adjustments.
-
-Values for what?
-
-> Do the same thing here.
-
-? by adding the error and info messages.
-
-> Title: iavf-linux: Fix reporting when setting descriptor count
-
-This tag is not needed, is it?
-
-> Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
-> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-> ---
->   .../net/ethernet/intel/iavf/iavf_ethtool.c    | 43 ++++++++++++++-----
->   1 file changed, 32 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> index 7cbe59bee..cbfc8d07a 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> @@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct net_device *netdev,
->   	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
->   		return -EINVAL;
->   
-> -	new_tx_count = clamp_t(u32, ring->tx_pending,
-> -			       IAVF_MIN_TXD,
-> -			       IAVF_MAX_TXD);
-> -	new_tx_count = ALIGN(new_tx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-> +	if (ring->tx_pending > IAVF_MAX_TXD ||
-> +	    ring->tx_pending < IAVF_MIN_TXD ||
-> +	    ring->rx_pending > IAVF_MAX_RXD ||
-> +	    ring->rx_pending < IAVF_MIN_RXD) {
-> +		  netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
-> +			     ring->tx_pending, ring->rx_pending, IAVF_MIN_TXD,
-> +			     IAVF_MAX_RXD, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-> +		  return -EINVAL;
-> +	}
-> +
-> +	new_tx_count = ALIGN(ring->tx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-> +	if (new_tx_count != ring->tx_pending)
-> +		netdev_info(netdev, "Requested Tx descriptor count rounded up to %d\n",
-> +			    new_tx_count);
->   
-> -	new_rx_count = clamp_t(u32, ring->rx_pending,
-> -			       IAVF_MIN_RXD,
-> -			       IAVF_MAX_RXD);
-> -	new_rx_count = ALIGN(new_rx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-> +	new_rx_count = ALIGN(ring->rx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-> +	if (new_rx_count != ring->rx_pending)
-> +		netdev_info(netdev, "Requested Rx descriptor count rounded up to %d\n",
-> +			    new_rx_count);
->   
->   	/* if nothing to do return success */
->   	if ((new_tx_count == adapter->tx_desc_count) &&
-> -	    (new_rx_count == adapter->rx_desc_count))
-> +	    (new_rx_count == adapter->rx_desc_count)) {
-> +		netdev_dbg(netdev, "Nothing to change, descriptor count is same as requested\n");
->   		return 0;
-> +	}
->   
-> -	adapter->tx_desc_count = new_tx_count;
-> -	adapter->rx_desc_count = new_rx_count;
-> +	if (new_tx_count != adapter->tx_desc_count) {
-> +		netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
-> +			    adapter->tx_desc_count, new_tx_count);
-> +		adapter->tx_desc_count = new_tx_count;
-> +	}
-> +
-> +	if (new_rx_count != adapter->rx_desc_count) {
-> +		netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
-> +			    adapter->rx_desc_count, new_rx_count);
-> +		adapter->rx_desc_count = new_rx_count;
-> +	}
->   
->   	if (netif_running(netdev)) {
->   		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-> 
