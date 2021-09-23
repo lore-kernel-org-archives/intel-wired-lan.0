@@ -1,44 +1,96 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 22 Sep 2021 21:38:46 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3] ice: Manage act flags for
- switchdev offloads
-In-Reply-To: <20210922084332.159306-1-wojciech.drewek@intel.com>
-References: <20210922084332.159306-1-wojciech.drewek@intel.com>
-Message-ID: <ca10f3feb675a8cbf59dee32bc3f1de3fe4e5a49.camel@intel.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Thu, 23 Sep 2021 07:14:52 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf-linux: Fix reporting when
+ setting descriptor count
+Message-ID: <20210923071452.21975-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-09-22 at 10:43 +0200, Wojciech Drewek wrote:
-> Currently it is not possible to set/unset lb_en and lan_en flags
-> for advanced rules during their creation. Both flags are enabled
-> by default. In case of switchdev offloads for egress traffic we
-> need lb_en to be disabled. Because of that, we work around it by
-> updating the rule immediately after its creation.
-> 
-> This change allows us to set/unset those flags right away and it
-> gets rid of old workaround as well. Using ice_adv_rule_flags_info
-> structure we can pass info about flags we want to be set for
-> a given advanced rule. Flags are stored in flags_info.act.
-> Values from act would be used only if act_valid was set to true,
-> otherwise default values would be used.
-> 
-> Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-> ---
+iavf_set_ringparams doesn't communicate to the user that
 
-Can you include changelogs so that reviewing between versions is
-easier?
+1. The user requested descriptor count is out of range. Instead it
+   just quietly sets descriptors to the "clamped" value and calls it
+   done. This makes it look an invalid value was successfully set as
+   the descriptor count when this isn't actually true.
 
-Thanks,
-Tony
+2. The user provided descriptor count needs to be inflated for alignment
+   reasons.
 
->  drivers/net/ethernet/intel/ice/ice_fltr.c   | 127 ------------------
-> --
->  drivers/net/ethernet/intel/ice/ice_fltr.h   |   4 -
->  drivers/net/ethernet/intel/ice/ice_switch.c |   9 +-
->  drivers/net/ethernet/intel/ice/ice_switch.h |  11 ++
->  drivers/net/ethernet/intel/ice/ice_tc_lib.c |   8 +-
->  5 files changed, 21 insertions(+), 138 deletions(-)
+This behavior is confusing. The ice driver has already addressed this
+by rejecting invalid values for and messaging for alignment adjustments.
+Do the same thing here.
+
+Title: iavf-linux: Fix reporting when setting descriptor count
+Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+---
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 43 ++++++++++++++-----
+ 1 file changed, 32 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 7cbe59bee..cbfc8d07a 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct net_device *netdev,
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
+ 
+-	new_tx_count = clamp_t(u32, ring->tx_pending,
+-			       IAVF_MIN_TXD,
+-			       IAVF_MAX_TXD);
+-	new_tx_count = ALIGN(new_tx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (ring->tx_pending > IAVF_MAX_TXD ||
++	    ring->tx_pending < IAVF_MIN_TXD ||
++	    ring->rx_pending > IAVF_MAX_RXD ||
++	    ring->rx_pending < IAVF_MIN_RXD) {
++		  netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
++			     ring->tx_pending, ring->rx_pending, IAVF_MIN_TXD,
++			     IAVF_MAX_RXD, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++		  return -EINVAL;
++	}
++
++	new_tx_count = ALIGN(ring->tx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (new_tx_count != ring->tx_pending)
++		netdev_info(netdev, "Requested Tx descriptor count rounded up to %d\n",
++			    new_tx_count);
+ 
+-	new_rx_count = clamp_t(u32, ring->rx_pending,
+-			       IAVF_MIN_RXD,
+-			       IAVF_MAX_RXD);
+-	new_rx_count = ALIGN(new_rx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	new_rx_count = ALIGN(ring->rx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (new_rx_count != ring->rx_pending)
++		netdev_info(netdev, "Requested Rx descriptor count rounded up to %d\n",
++			    new_rx_count);
+ 
+ 	/* if nothing to do return success */
+ 	if ((new_tx_count == adapter->tx_desc_count) &&
+-	    (new_rx_count == adapter->rx_desc_count))
++	    (new_rx_count == adapter->rx_desc_count)) {
++		netdev_dbg(netdev, "Nothing to change, descriptor count is same as requested\n");
+ 		return 0;
++	}
+ 
+-	adapter->tx_desc_count = new_tx_count;
+-	adapter->rx_desc_count = new_rx_count;
++	if (new_tx_count != adapter->tx_desc_count) {
++		netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
++			    adapter->tx_desc_count, new_tx_count);
++		adapter->tx_desc_count = new_tx_count;
++	}
++
++	if (new_rx_count != adapter->rx_desc_count) {
++		netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
++			    adapter->rx_desc_count, new_rx_count);
++		adapter->rx_desc_count = new_rx_count;
++	}
+ 
+ 	if (netif_running(netdev)) {
+ 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
+-- 
+2.18.2
 
