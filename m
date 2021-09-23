@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Thu, 23 Sep 2021 21:12:53 +0300
-Subject: [Intel-wired-lan] [PATCH net-next 6/6] qed: Don't ignore devlink
- allocation failures
+Date: Thu, 23 Sep 2021 21:12:52 +0300
+Subject: [Intel-wired-lan] [PATCH net-next 5/6] ice: Delete always true
+ check of PF pointer
 In-Reply-To: <cover.1632420430.git.leonro@nvidia.com>
 References: <cover.1632420430.git.leonro@nvidia.com>
-Message-ID: <c6acd223945669c3c0229afc62b1890810da8145.1632420431.git.leonro@nvidia.com>
+Message-ID: <1e19cd378b76b891acd4cff122b622fdb0f99ed0.1632420431.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,63 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-devlink is a software interface that doesn't depend on any hardware
-capabilities. The failure in SW means memory issues, wrong parameters,
-programmer error e.t.c.
+PF pointer is always valid when PCI core calls its .shutdown() and
+.remove() callbacks. There is no need to check it again.
 
-Like any other such interface in the kernel, the returned status of
-devlink APIs should be checked and propagated further and not ignored.
-
-Fixes: 755f982bb1ff ("qed/qede: make devlink survive recovery")
+Fixes: 837f08fdecbe ("ice: Add basic driver framework for Intel(R) E800 Series")
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/ethernet/qlogic/qede/qede_main.c | 12 +++++-------
- drivers/scsi/qedf/qedf_main.c                |  2 ++
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/qlogic/qede/qede_main.c b/drivers/net/ethernet/qlogic/qede/qede_main.c
-index 9837bdb89cd4..ee4c3bd28a93 100644
---- a/drivers/net/ethernet/qlogic/qede/qede_main.c
-+++ b/drivers/net/ethernet/qlogic/qede/qede_main.c
-@@ -1176,19 +1176,17 @@ static int __qede_probe(struct pci_dev *pdev, u32 dp_module, u8 dp_level,
- 		edev->devlink = qed_ops->common->devlink_register(cdev);
- 		if (IS_ERR(edev->devlink)) {
- 			DP_NOTICE(edev, "Cannot register devlink\n");
-+			rc = PTR_ERR(edev->devlink);
- 			edev->devlink = NULL;
--			/* Go on, we can live without devlink */
-+			goto err3;
- 		}
- 	} else {
- 		struct net_device *ndev = pci_get_drvdata(pdev);
-+		struct qed_devlink *qdl;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 34e64533026a..aacc0b345bbe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4593,9 +4593,6 @@ static void ice_remove(struct pci_dev *pdev)
+ 	struct ice_pf *pf = pci_get_drvdata(pdev);
+ 	int i;
  
- 		edev = netdev_priv(ndev);
+-	if (!pf)
+-		return;
 -
--		if (edev->devlink) {
--			struct qed_devlink *qdl = devlink_priv(edev->devlink);
--
--			qdl->cdev = cdev;
--		}
-+		qdl = devlink_priv(edev->devlink);
-+		qdl->cdev = cdev;
- 		edev->cdev = cdev;
- 		memset(&edev->stats, 0, sizeof(edev->stats));
- 		memcpy(&edev->dev_info, &dev_info, sizeof(dev_info));
-diff --git a/drivers/scsi/qedf/qedf_main.c b/drivers/scsi/qedf/qedf_main.c
-index 42d0d941dba5..94ee08fab46a 100644
---- a/drivers/scsi/qedf/qedf_main.c
-+++ b/drivers/scsi/qedf/qedf_main.c
-@@ -3416,7 +3416,9 @@ static int __qedf_probe(struct pci_dev *pdev, int mode)
- 		qedf->devlink = qed_ops->common->devlink_register(qedf->cdev);
- 		if (IS_ERR(qedf->devlink)) {
- 			QEDF_ERR(&qedf->dbg_ctx, "Cannot register devlink\n");
-+			rc = PTR_ERR(qedf->devlink);
- 			qedf->devlink = NULL;
-+			goto err2;
- 		}
- 	}
- 
+ 	for (i = 0; i < ICE_MAX_RESET_WAIT; i++) {
+ 		if (!ice_is_reset_in_progress(pf->state))
+ 			break;
 -- 
 2.31.1
 
