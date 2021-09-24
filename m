@@ -1,67 +1,61 @@
-From: Jason Gunthorpe <jgg@nvidia.com>
-Date: Fri, 24 Sep 2021 11:10:04 -0300
-Subject: [Intel-wired-lan] [PATCH RESEND net] ice: Correctly deal with
- PFs that do not support RDMA
-In-Reply-To: <20210909151223.572918-1-david.m.ertman@intel.com>
-References: <20210909151223.572918-1-david.m.ertman@intel.com>
-Message-ID: <20210924141004.GA1237721@nvidia.com>
+From: Edwin Peer <edwin.peer@broadcom.com>
+Date: Fri, 24 Sep 2021 10:20:32 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 1/6] bnxt_en: Check devlink
+ allocation and registration status
+In-Reply-To: <20210923183956.506bfde2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <cover.1632420430.git.leonro@nvidia.com>
+ <e7708737fadf4fe6f152afc76145c728c201adad.1632420430.git.leonro@nvidia.com>
+ <CAKOOJTz4A2ER8MQE1dW27Spocds09SYafjeuLcFDJ0nL6mKyOw@mail.gmail.com>
+ <YU0JlzFOa7kpKgnd@unreal>
+ <20210923183956.506bfde2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <CAKOOJTwh6TnNM4uSM2rbaij=xO92UzF2hs11pgOFUniOb3HAkA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 09, 2021 at 08:12:23AM -0700, Dave Ertman wrote:
-> There are two cases where the current PF does not support RDMA
-> functionality.  The first is if the NVM loaded on the device is set
-> to not support RDMA (common_caps.rdma is false).  The second is if
-> the kernel bonding driver has included the current PF in an active
-> link aggregate.
-> 
-> When the driver has determined that this PF does not support RDMA, then
-> auxiliary devices should not be created on the auxiliary bus.  Without
-> a device on the auxiliary bus, even if the irdma driver is present, there
-> will be no RDMA activity attempted on this PF.
-> 
-> Currently, in the reset flow, an attempt to create auxiliary devices is
-> performed without regard to the ability of the PF.  There needs to be a
-> check in ice_aux_plug_dev (as the central point that creates auxiliary
-> devices) to see if the PF is in a state to support the functionality.
-> 
-> When disabling and re-enabling RDMA due to the inclusion/removal of the PF
-> in a link aggregate, we also need to set/clear the bit which controls
-> auxiliary device creation so that a reset recovery in a link aggregate
-> situation doesn't try to create auxiliary devices when it shouldn't.
-> 
-> Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-> Reported-by: Yongxin Liu <yongxin.liu@windriver.com>
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
->  drivers/net/ethernet/intel/ice/ice.h     | 2 ++
->  drivers/net/ethernet/intel/ice/ice_idc.c | 6 ++++++
->  2 files changed, 8 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-> index eadcb9958346..3c4f08d20414 100644
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
-> @@ -695,6 +695,7 @@ static inline void ice_set_rdma_cap(struct ice_pf *pf)
->  {
->  	if (pf->hw.func_caps.common_cap.rdma && pf->num_rdma_msix) {
->  		set_bit(ICE_FLAG_RDMA_ENA, pf->flags);
-> +		set_bit(ICE_FLAG_AUX_ENA, pf->flags);
->  		ice_plug_aux_dev(pf);
+On Thu, Sep 23, 2021 at 6:39 PM Jakub Kicinski <kuba@kernel.org> wrote:
 
-I agree with Leon, there shouldn't be a flag for "aux en". aux is
-enabled when a device on the aux bus is required. It should all be
-rdma en, which already seems to have a bit.
+> On Fri, 24 Sep 2021 02:11:19 +0300 Leon Romanovsky wrote:
+> > > minor nit: There's obviously nothing incorrect about doing this (and
+> > > adding the additional error label in the cleanup code above), but bnxt
+> > > has generally adopted a style of having cleanup functions being
+> > > idempotent. It generally makes error handling simpler and less error
+> > > prone.
+> >
+> > I would argue that opposite is true. Such "impossible" checks hide unwind
+> > flow errors, missing releases e.t.c.
+>
+> +1, fwiw
 
-Th only existing place that uses aux_ena immediately calls
+I appreciate that being more explicit can improve visibility, but it
+does not make error handling inherently less error prone, nor is it
+simpler (ie. the opposite isn't true). Idempotency is orthogonal to
+unwind flow or the presence or not of a particular unwind handler (one
+can still enforce either in review). But, if release handlers are
+independent (most in bnxt are), then permitting other orderings can be
+perfectly valid and places less burden on achieving the canonical form
+for correctness (ie. usage is simpler and less error prone). That's
+not to say we should throw caution to the wind and allow arbitrary
+unwind flows, but it does mean certain mistakes don't result in actual
+bugs. There are other flexibility benefits too. A single, unwind
+everything, handler can be reused in more than one context.
 
-		err = ice_init_rdma(pf);
+That said, isn't the more important question what style and
+assumptions the surrounding code has adopted? In this particular case,
+I checked that this change wouldn't introduce the possibility of a
+double unwind, but in other contexts in this driver code base,
+changing error handling in this piecemeal way might actually introduce
+a bug in contexts where the caller has assumed the overall function is
+idempotent. Isn't local consistency of style a more important concern,
+especially given that you are not predominantly responsible for
+maintenance of this driver? Dealing with this exception to the norm in
+our driver certainly places an additional burden on us to remember to
+treat this particular case with special care. We should either rework
+all of bnxt error handling to adopt the more accepted canonical form,
+or we should adopt the surrounding conventions. What we shouldn't do
+is mix approaches in one driver.
 
-So I'd just delete the whole thing and use rdma_ena. Frankly it looks
-structured confusingly, the mlx implementation is better where this is
-one function that synchronizes the aux bus with the current state of
-the driver - adding/removing as required
-
-Jason
+Regards,
+Edwin Peer
