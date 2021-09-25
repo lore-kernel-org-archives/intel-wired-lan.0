@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Sat, 25 Sep 2021 14:22:57 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 17/21] netdevsim: Move devlink
+Date: Sat, 25 Sep 2021 14:22:55 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 15/21] qed: Move devlink
  registration to be last devlink command
 In-Reply-To: <cover.1632565508.git.leonro@nvidia.com>
 References: <cover.1632565508.git.leonro@nvidia.com>
-Message-ID: <87822c7b4f20182c37758a2c0b9bb84a0a3edaf8.1632565508.git.leonro@nvidia.com>
+Message-ID: <01bc35bd99dc5d2dcbf55bbf4a86f0bde1c50087.1632565508.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,55 +18,49 @@ fully configured.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/netdevsim/dev.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/qlogic/qed/qed_devlink.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/netdevsim/dev.c b/drivers/net/netdevsim/dev.c
-index b2214bc9efe2..cb6645012a30 100644
---- a/drivers/net/netdevsim/dev.c
-+++ b/drivers/net/netdevsim/dev.c
-@@ -1470,7 +1470,6 @@ int nsim_dev_probe(struct nsim_bus_dev *nsim_bus_dev)
- 	if (err)
- 		goto err_devlink_free;
+diff --git a/drivers/net/ethernet/qlogic/qed/qed_devlink.c b/drivers/net/ethernet/qlogic/qed/qed_devlink.c
+index c51f9590fe19..6bb4e165b592 100644
+--- a/drivers/net/ethernet/qlogic/qed/qed_devlink.c
++++ b/drivers/net/ethernet/qlogic/qed/qed_devlink.c
+@@ -215,7 +215,6 @@ struct devlink *qed_devlink_register(struct qed_dev *cdev)
+ 	qdevlink = devlink_priv(dl);
+ 	qdevlink->cdev = cdev;
  
--	devlink_register(devlink);
- 	err = devlink_params_register(devlink, nsim_devlink_params,
- 				      ARRAY_SIZE(nsim_devlink_params));
- 	if (err)
-@@ -1511,9 +1510,9 @@ int nsim_dev_probe(struct nsim_bus_dev *nsim_bus_dev)
- 	if (err)
- 		goto err_psample_exit;
+-	devlink_register(dl);
+ 	rc = devlink_params_register(dl, qed_devlink_params,
+ 				     ARRAY_SIZE(qed_devlink_params));
+ 	if (rc)
+@@ -226,15 +225,13 @@ struct devlink *qed_devlink_register(struct qed_dev *cdev)
+ 					   QED_DEVLINK_PARAM_ID_IWARP_CMT,
+ 					   value);
  
--	devlink_params_publish(devlink);
--	devlink_reload_enable(devlink);
- 	nsim_dev->esw_mode = DEVLINK_ESWITCH_MODE_LEGACY;
-+	devlink_register(devlink);
-+	devlink_reload_enable(devlink);
- 	return 0;
+-	devlink_params_publish(dl);
+ 	cdev->iwarp_cmt = false;
  
- err_psample_exit:
-@@ -1534,7 +1533,6 @@ int nsim_dev_probe(struct nsim_bus_dev *nsim_bus_dev)
- 	devlink_params_unregister(devlink, nsim_devlink_params,
- 				  ARRAY_SIZE(nsim_devlink_params));
- err_dl_unregister:
--	devlink_unregister(devlink);
- 	devlink_resources_unregister(devlink, NULL);
- err_devlink_free:
- 	devlink_free(devlink);
-@@ -1569,6 +1567,7 @@ void nsim_dev_remove(struct nsim_bus_dev *nsim_bus_dev)
- 	struct devlink *devlink = priv_to_devlink(nsim_dev);
+ 	qed_fw_reporters_create(dl);
+-
++	devlink_register(dl);
+ 	return dl;
  
- 	devlink_reload_disable(devlink);
+ err_unregister:
+-	devlink_unregister(dl);
+ 	devlink_free(dl);
+ 
+ 	return ERR_PTR(rc);
+@@ -245,11 +242,11 @@ void qed_devlink_unregister(struct devlink *devlink)
+ 	if (!devlink)
+ 		return;
+ 
 +	devlink_unregister(devlink);
+ 	qed_fw_reporters_destroy(devlink);
  
- 	nsim_dev_reload_destroy(nsim_dev);
+ 	devlink_params_unregister(devlink, qed_devlink_params,
+ 				  ARRAY_SIZE(qed_devlink_params));
  
-@@ -1576,7 +1575,6 @@ void nsim_dev_remove(struct nsim_bus_dev *nsim_bus_dev)
- 	nsim_dev_debugfs_exit(nsim_dev);
- 	devlink_params_unregister(devlink, nsim_devlink_params,
- 				  ARRAY_SIZE(nsim_devlink_params));
 -	devlink_unregister(devlink);
- 	devlink_resources_unregister(devlink, NULL);
  	devlink_free(devlink);
  }
 -- 
