@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Sat, 25 Sep 2021 14:22:54 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 14/21] ionic: Move devlink
- registration to be last devlink command
+Date: Sat, 25 Sep 2021 14:22:52 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 12/21] net: mscc: ocelot:
+ delay devlink registration to the end
 In-Reply-To: <cover.1632565508.git.leonro@nvidia.com>
 References: <cover.1632565508.git.leonro@nvidia.com>
-Message-ID: <cb187a035b75dbcc27f6dd10d72f18f1101bad44.1632565508.git.leonro@nvidia.com>
+Message-ID: <6c20043398a8543fb69795be5ab1e200613fb881.1632565508.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,54 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-This change prevents from users to access device before devlink is
-fully configured.
+Open access to the devlink interface when the driver fully initialized.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/net/ethernet/pensando/ionic/ionic_devlink.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/mscc/ocelot_vsc7514.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-index 93282394d332..2267da95640b 100644
---- a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-+++ b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-@@ -82,7 +82,6 @@ int ionic_devlink_register(struct ionic *ionic)
- 	struct devlink_port_attrs attrs = {};
- 	int err;
+diff --git a/drivers/net/ethernet/mscc/ocelot_vsc7514.c b/drivers/net/ethernet/mscc/ocelot_vsc7514.c
+index 2b8ea48d2fc4..5d01993f6be0 100644
+--- a/drivers/net/ethernet/mscc/ocelot_vsc7514.c
++++ b/drivers/net/ethernet/mscc/ocelot_vsc7514.c
+@@ -1134,7 +1134,6 @@ static int mscc_ocelot_probe(struct platform_device *pdev)
+ 	if (err)
+ 		goto out_put_ports;
  
--	devlink_register(dl);
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
- 	devlink_port_attrs_set(&ionic->dl_port, &attrs);
- 	err = devlink_port_register(dl, &ionic->dl_port, 0);
-@@ -93,6 +92,7 @@ int ionic_devlink_register(struct ionic *ionic)
- 	}
+-	devlink_register(devlink);
+ 	err = mscc_ocelot_init_ports(pdev, ports);
+ 	if (err)
+ 		goto out_ocelot_devlink_unregister;
+@@ -1157,6 +1156,7 @@ static int mscc_ocelot_probe(struct platform_device *pdev)
+ 	register_switchdev_blocking_notifier(&ocelot_switchdev_blocking_nb);
  
- 	devlink_port_type_eth_set(&ionic->dl_port, ionic->lif->netdev);
-+	devlink_register(dl);
- 	return 0;
- }
+ 	of_node_put(ports);
++	devlink_register(devlink);
  
-@@ -100,6 +100,6 @@ void ionic_devlink_unregister(struct ionic *ionic)
+ 	dev_info(&pdev->dev, "Ocelot switch probed\n");
+ 
+@@ -1166,7 +1166,6 @@ static int mscc_ocelot_probe(struct platform_device *pdev)
+ 	mscc_ocelot_release_ports(ocelot);
+ 	mscc_ocelot_teardown_devlink_ports(ocelot);
+ out_ocelot_devlink_unregister:
+-	devlink_unregister(devlink);
+ 	ocelot_deinit(ocelot);
+ out_put_ports:
+ 	of_node_put(ports);
+@@ -1179,11 +1178,11 @@ static int mscc_ocelot_remove(struct platform_device *pdev)
  {
- 	struct devlink *dl = priv_to_devlink(ionic);
+ 	struct ocelot *ocelot = platform_get_drvdata(pdev);
  
--	devlink_port_unregister(&ionic->dl_port);
- 	devlink_unregister(dl);
-+	devlink_port_unregister(&ionic->dl_port);
- }
++	devlink_unregister(ocelot->devlink);
+ 	ocelot_deinit_timestamp(ocelot);
+ 	ocelot_devlink_sb_unregister(ocelot);
+ 	mscc_ocelot_release_ports(ocelot);
+ 	mscc_ocelot_teardown_devlink_ports(ocelot);
+-	devlink_unregister(ocelot->devlink);
+ 	ocelot_deinit(ocelot);
+ 	unregister_switchdev_blocking_notifier(&ocelot_switchdev_blocking_nb);
+ 	unregister_switchdev_notifier(&ocelot_switchdev_nb);
 -- 
 2.31.1
 
