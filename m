@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Sat, 25 Sep 2021 14:22:59 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 19/21] ptp: ocp: Move devlink
- registration to be last devlink command
+Date: Sat, 25 Sep 2021 14:23:00 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 20/21] staging: qlge: Move
+ devlink registration to be last devlink command
 In-Reply-To: <cover.1632565508.git.leonro@nvidia.com>
 References: <cover.1632565508.git.leonro@nvidia.com>
-Message-ID: <1541e7cd8262ce9db7544669438d0f4360068dd2.1632565508.git.leonro@nvidia.com>
+Message-ID: <87eb1893ae465eb0ec1ed726c9ca078edc8298ac.1632565508.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,51 +18,52 @@ fully configured.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/ptp/ptp_ocp.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/staging/qlge/qlge_main.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ptp/ptp_ocp.c b/drivers/ptp/ptp_ocp.c
-index 4c25467198e3..34f943c8c9fd 100644
---- a/drivers/ptp/ptp_ocp.c
-+++ b/drivers/ptp/ptp_ocp.c
-@@ -2455,7 +2455,6 @@ ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 		return -ENOMEM;
+diff --git a/drivers/staging/qlge/qlge_main.c b/drivers/staging/qlge/qlge_main.c
+index 33539f6c254d..1dc849378a0f 100644
+--- a/drivers/staging/qlge/qlge_main.c
++++ b/drivers/staging/qlge/qlge_main.c
+@@ -4614,10 +4614,9 @@ static int qlge_probe(struct pci_dev *pdev,
+ 		goto netdev_free;
  	}
  
 -	devlink_register(devlink);
- 	err = pci_enable_device(pdev);
- 	if (err) {
- 		dev_err(&pdev->dev, "pci_enable_device\n");
-@@ -2497,7 +2496,7 @@ ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 		goto out;
+ 	err = qlge_health_create_reporters(qdev);
+ 	if (err)
+-		goto devlink_unregister;
++		goto netdev_free;
  
- 	ptp_ocp_info(bp);
--
+ 	/* Start up the timer to trigger EEH if
+ 	 * the bus goes dead
+@@ -4628,10 +4627,9 @@ static int qlge_probe(struct pci_dev *pdev,
+ 	qlge_display_dev_info(ndev);
+ 	atomic_set(&qdev->lb_count, 0);
+ 	cards_found++;
 +	devlink_register(devlink);
  	return 0;
  
- out:
-@@ -2506,7 +2505,6 @@ ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- out_disable:
- 	pci_disable_device(pdev);
- out_unregister:
+-devlink_unregister:
 -	devlink_unregister(devlink);
- 	devlink_free(devlink);
- 	return err;
- }
-@@ -2517,11 +2515,11 @@ ptp_ocp_remove(struct pci_dev *pdev)
- 	struct ptp_ocp *bp = pci_get_drvdata(pdev);
- 	struct devlink *devlink = priv_to_devlink(bp);
+ netdev_free:
+ 	free_netdev(ndev);
+ devlink_free:
+@@ -4656,13 +4654,13 @@ static void qlge_remove(struct pci_dev *pdev)
+ 	struct net_device *ndev = qdev->ndev;
+ 	struct devlink *devlink = priv_to_devlink(qdev);
  
 +	devlink_unregister(devlink);
- 	ptp_ocp_detach(bp);
- 	pci_set_drvdata(pdev, NULL);
+ 	del_timer_sync(&qdev->timer);
+ 	qlge_cancel_all_work_sync(qdev);
+ 	unregister_netdev(ndev);
+ 	qlge_release_all(pdev);
  	pci_disable_device(pdev);
- 
+ 	devlink_health_reporter_destroy(qdev->reporter);
 -	devlink_unregister(devlink);
  	devlink_free(devlink);
+ 	free_netdev(ndev);
  }
- 
 -- 
 2.31.1
 
