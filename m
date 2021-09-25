@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Sat, 25 Sep 2021 14:23:00 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 20/21] staging: qlge: Move
- devlink registration to be last devlink command
+Date: Sat, 25 Sep 2021 14:22:58 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 18/21] net: wwan: iosm: Move
+ devlink_register to be last devlink command
 In-Reply-To: <cover.1632565508.git.leonro@nvidia.com>
 References: <cover.1632565508.git.leonro@nvidia.com>
-Message-ID: <87eb1893ae465eb0ec1ed726c9ca078edc8298ac.1632565508.git.leonro@nvidia.com>
+Message-ID: <6a63d8f6484a46c9120155082a396b44ce86bd1c.1632565508.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,55 +14,67 @@ List-ID: <intel-wired-lan.osuosl.org>
 From: Leon Romanovsky <leonro@nvidia.com>
 
 This change prevents from users to access device before devlink is
-fully configured.
+fully configured. Indirectly this change fixes the commit mentioned
+below where devlink_unregister() was prematurely removed.
 
+Fixes: db4278c55fa5 ("devlink: Make devlink_register to be void")
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/staging/qlge/qlge_main.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/wwan/iosm/iosm_ipc_devlink.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/qlge/qlge_main.c b/drivers/staging/qlge/qlge_main.c
-index 33539f6c254d..1dc849378a0f 100644
---- a/drivers/staging/qlge/qlge_main.c
-+++ b/drivers/staging/qlge/qlge_main.c
-@@ -4614,10 +4614,9 @@ static int qlge_probe(struct pci_dev *pdev,
- 		goto netdev_free;
+diff --git a/drivers/net/wwan/iosm/iosm_ipc_devlink.c b/drivers/net/wwan/iosm/iosm_ipc_devlink.c
+index 42dbe7fe663c..6fe56f73011b 100644
+--- a/drivers/net/wwan/iosm/iosm_ipc_devlink.c
++++ b/drivers/net/wwan/iosm/iosm_ipc_devlink.c
+@@ -305,7 +305,6 @@ struct iosm_devlink *ipc_devlink_init(struct iosm_imem *ipc_imem)
+ 	ipc_devlink->devlink_ctx = devlink_ctx;
+ 	ipc_devlink->pcie = ipc_imem->pcie;
+ 	ipc_devlink->dev = ipc_imem->dev;
+-	devlink_register(devlink_ctx);
+ 
+ 	rc = devlink_params_register(devlink_ctx, iosm_devlink_params,
+ 				     ARRAY_SIZE(iosm_devlink_params));
+@@ -315,7 +314,6 @@ struct iosm_devlink *ipc_devlink_init(struct iosm_imem *ipc_imem)
+ 		goto param_reg_fail;
  	}
  
--	devlink_register(devlink);
- 	err = qlge_health_create_reporters(qdev);
- 	if (err)
--		goto devlink_unregister;
-+		goto netdev_free;
+-	devlink_params_publish(devlink_ctx);
+ 	ipc_devlink->cd_file_info = list;
  
- 	/* Start up the timer to trigger EEH if
- 	 * the bus goes dead
-@@ -4628,10 +4627,9 @@ static int qlge_probe(struct pci_dev *pdev,
- 	qlge_display_dev_info(ndev);
- 	atomic_set(&qdev->lb_count, 0);
- 	cards_found++;
-+	devlink_register(devlink);
- 	return 0;
+ 	rc = ipc_devlink_create_region(ipc_devlink);
+@@ -334,6 +332,7 @@ struct iosm_devlink *ipc_devlink_init(struct iosm_imem *ipc_imem)
+ 	init_completion(&ipc_devlink->devlink_sio.read_sem);
+ 	skb_queue_head_init(&ipc_devlink->devlink_sio.rx_list);
  
--devlink_unregister:
--	devlink_unregister(devlink);
- netdev_free:
- 	free_netdev(ndev);
- devlink_free:
-@@ -4656,13 +4654,13 @@ static void qlge_remove(struct pci_dev *pdev)
- 	struct net_device *ndev = qdev->ndev;
- 	struct devlink *devlink = priv_to_devlink(qdev);
++	devlink_register(devlink_ctx);
+ 	dev_dbg(ipc_devlink->dev, "iosm devlink register success");
  
-+	devlink_unregister(devlink);
- 	del_timer_sync(&qdev->timer);
- 	qlge_cancel_all_work_sync(qdev);
- 	unregister_netdev(ndev);
- 	qlge_release_all(pdev);
- 	pci_disable_device(pdev);
- 	devlink_health_reporter_destroy(qdev->reporter);
--	devlink_unregister(devlink);
- 	devlink_free(devlink);
- 	free_netdev(ndev);
+ 	return ipc_devlink;
+@@ -341,7 +340,6 @@ struct iosm_devlink *ipc_devlink_init(struct iosm_imem *ipc_imem)
+ chnl_get_fail:
+ 	ipc_devlink_destroy_region(ipc_devlink);
+ region_create_fail:
+-	devlink_params_unpublish(devlink_ctx);
+ 	devlink_params_unregister(devlink_ctx, iosm_devlink_params,
+ 				  ARRAY_SIZE(iosm_devlink_params));
+ param_reg_fail:
+@@ -358,8 +356,8 @@ void ipc_devlink_deinit(struct iosm_devlink *ipc_devlink)
+ {
+ 	struct devlink *devlink_ctx = ipc_devlink->devlink_ctx;
+ 
++	devlink_unregister(devlink_ctx);
+ 	ipc_devlink_destroy_region(ipc_devlink);
+-	devlink_params_unpublish(devlink_ctx);
+ 	devlink_params_unregister(devlink_ctx, iosm_devlink_params,
+ 				  ARRAY_SIZE(iosm_devlink_params));
+ 	if (ipc_devlink->devlink_sio.devlink_read_pend) {
+@@ -370,6 +368,5 @@ void ipc_devlink_deinit(struct iosm_devlink *ipc_devlink)
+ 		skb_queue_purge(&ipc_devlink->devlink_sio.rx_list);
+ 
+ 	ipc_imem_sys_devlink_close(ipc_devlink);
+-	devlink_unregister(devlink_ctx);
+ 	devlink_free(devlink_ctx);
  }
 -- 
 2.31.1
