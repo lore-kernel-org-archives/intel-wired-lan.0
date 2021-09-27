@@ -1,56 +1,60 @@
-From: Simon Horman <simon.horman@corigine.com>
-Date: Mon, 27 Sep 2021 14:20:42 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v1 13/21] nfp: Move
- delink_register to be last command
-In-Reply-To: <YVGwtNEcWSgYvyyV@unreal>
+From: Shannon Nelson <snelson@pensando.io>
+Date: Mon, 27 Sep 2021 09:07:03 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 14/21] ionic: Move devlink
+ registration to be last devlink command
+In-Reply-To: <cb187a035b75dbcc27f6dd10d72f18f1101bad44.1632565508.git.leonro@nvidia.com>
 References: <cover.1632565508.git.leonro@nvidia.com>
- <f393212ad3906808ee7eb5cff06ef2e053eb9d2b.1632565508.git.leonro@nvidia.com>
- <20210927083923.GC17484@corigine.com> <YVGwtNEcWSgYvyyV@unreal>
-Message-ID: <20210927122041.GA12315@corigine.com>
+ <cb187a035b75dbcc27f6dd10d72f18f1101bad44.1632565508.git.leonro@nvidia.com>
+Message-ID: <f1d3e167-a991-13cb-d263-6466110fa8c4@pensando.io>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 27, 2021 at 02:53:24PM +0300, Leon Romanovsky wrote:
-> On Mon, Sep 27, 2021 at 10:39:24AM +0200, Simon Horman wrote:
-> > On Sat, Sep 25, 2021 at 02:22:53PM +0300, Leon Romanovsky wrote:
-> > > From: Leon Romanovsky <leonro@nvidia.com>
-> > > 
-> > > Open user space access to the devlink after driver is probed.
-> > 
-> > Hi Leon,
-> > 
-> > I think a description of why is warranted here.
-> 
-> After devlink_register(), users can send GET and SET netlink commands to
-> the uninitialized driver. In some cases, nothing will happen, but not in
-> all and hard to prove that ALL drivers are safe with such early access.
-> 
-> It means that local users can (in theory for some and in practice for
-> others) crash the system (or leverage permissions) with early devlink_register()
-> by accessing internal to driver pointers that are not set yet.
-> 
-> Like I said in the commit message, I'm not fixing all drivers.
-> https://lore.kernel.org/netdev/cover.1632565508.git.leonro at nvidia.com/T/#m063eb4e67389bafcc3b3ddc07197bf43181b7209
-> 
-> Because some of the driver authors made a wonderful job to obfuscate their
-> driver and write completely unmanageable code.
-> 
-> I do move devlink_register() to be last devlink command for all drivers,
-> to allow me to clean devlink core locking and API in next series.
-> 
-> This series should raise your eyebrow and trigger a question: "is my
-> driver vulnerable too?". And the answer will depend on devlink_register()
-> position in the .probe() call.
-> 
-> Thanks
+On 9/25/21 4:22 AM, Leon Romanovsky wrote:
+> From: Leon Romanovsky <leonro@nvidia.com>
+>
+> This change prevents from users to access device before devlink is
+> fully configured.
+>
+> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 
-Thanks for the explanation.
-And thanks for taking time to update the NFP driver.
+Thanks for the work,
 
-> > > Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+Acked-by: Shannon Nelson <snelson@pensando.io>
 
-Acked-by: Simon Horman <simon.horman@corigine.com>
+
+> ---
+>   drivers/net/ethernet/pensando/ionic/ionic_devlink.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
+> index 93282394d332..2267da95640b 100644
+> --- a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
+> +++ b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
+> @@ -82,7 +82,6 @@ int ionic_devlink_register(struct ionic *ionic)
+>   	struct devlink_port_attrs attrs = {};
+>   	int err;
+>   
+> -	devlink_register(dl);
+>   	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
+>   	devlink_port_attrs_set(&ionic->dl_port, &attrs);
+>   	err = devlink_port_register(dl, &ionic->dl_port, 0);
+> @@ -93,6 +92,7 @@ int ionic_devlink_register(struct ionic *ionic)
+>   	}
+>   
+>   	devlink_port_type_eth_set(&ionic->dl_port, ionic->lif->netdev);
+> +	devlink_register(dl);
+>   	return 0;
+>   }
+>   
+> @@ -100,6 +100,6 @@ void ionic_devlink_unregister(struct ionic *ionic)
+>   {
+>   	struct devlink *dl = priv_to_devlink(ionic);
+>   
+> -	devlink_port_unregister(&ionic->dl_port);
+>   	devlink_unregister(dl);
+> +	devlink_port_unregister(&ionic->dl_port);
+>   }
 
