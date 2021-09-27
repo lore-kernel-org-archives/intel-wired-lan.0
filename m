@@ -1,11 +1,11 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Mon, 27 Sep 2021 17:39:13 +0000
-Subject: [Intel-wired-lan] [net-next 3/4] ice: refactor
- ice_flash_pldm_image and combine with ice_devlink_flash_update
-In-Reply-To: <20210908234924.3416592-4-jacob.e.keller@intel.com>
+Date: Mon, 27 Sep 2021 17:40:20 +0000
+Subject: [Intel-wired-lan] [net-next 2/4] ice: move and rename
+ ice_check_for_pending_update
+In-Reply-To: <20210908234924.3416592-3-jacob.e.keller@intel.com>
 References: <20210908234924.3416592-1-jacob.e.keller@intel.com>
- <20210908234924.3416592-4-jacob.e.keller@intel.com>
-Message-ID: <BYAPR11MB3367CDDE15181F344B459434FCA79@BYAPR11MB3367.namprd11.prod.outlook.com>
+ <20210908234924.3416592-3-jacob.e.keller@intel.com>
+Message-ID: <BYAPR11MB336729CD2E84E71D75940975FCA79@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,37 +19,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Thursday, September 9, 2021 5:19 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next 3/4] ice: refactor ice_flash_pldm_image
-> and combine with ice_devlink_flash_update
+> Subject: [Intel-wired-lan] [net-next 2/4] ice: move and rename
+> ice_check_for_pending_update
 > 
-> The ice_devlink_flash_update function performs a few upfront checks and
-> then calls ice_flash_pldm_image.
+> The ice_devlink_flash_update function performs a few checks and then calls
+> ice_flash_pldm_image. One of these checks is to call
+> ice_check_for_pending_update. This function checks if the device has a
+> pending update, and cancels it if so. This is necessary to allow a new flash
+> update to proceed.
 > 
-> Most of these checks actually make more sense within the context of
-> ice_flash_pldm_image. Refactor this function to fit the argument format of
-> the .flash_update devlink handler, and merge the checks from
-> ice_devlink_flash_update.
+> We want to refactor the ice code to eliminate ice_devlink_flash_update,
+> moving its checks into ice_flash_pldm_image.
 > 
-> Note that the check for overwrite mask was converted to a switch because it
-> made the check easier to read by avoiding the massively long line or weird
-> line breaks that were hard for my eyes to follow.
+> To do this, ice_check_for_pending_update will become static, and only called
+> by ice_flash_pldm_image. To make this change easier to review, first just
+> move the function up within the ice_fw_update.c file.
 > 
-> When moving the ice_cancel_pending_update function, notice that it also
-> takes the NVM semaphore. The main flash update process also requires the
-> NVM hardware semaphore. We can eliminate the call to get the semaphore
-> from ice_cancel_pending_update by placing the check after we acquire the
-> semaphore during ice_flash_pldm_image.
-> 
-> With this change, the ice_flash_pldm_image becomes the main entry point
-> for the devlink flash update, eliminating some unnecessary boiler plate code.
-> This also eases supporting a dry run with the PLDM library in a future change.
+> While at it, note that the function has a misleading name. Its primary action is
+> to cancel a pending update. Using the verb "check" does not imply this.
+> Rename it to ice_cancel_pending_update.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_devlink.c  | 52 +-------------
->  .../net/ethernet/intel/ice/ice_fw_update.c    | 70 +++++++++++--------
->  .../net/ethernet/intel/ice/ice_fw_update.h    |  7 +-
->  3 files changed, 45 insertions(+), 84 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_devlink.c  |   2 +-
+>  .../net/ethernet/intel/ice/ice_fw_update.c    | 152 +++++++++---------
+>  .../net/ethernet/intel/ice/ice_fw_update.h    |   4 +-
+>  3 files changed, 79 insertions(+), 79 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
