@@ -1,51 +1,127 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Mon, 27 Sep 2021 10:25:36 -0700
-Subject: [Intel-wired-lan] [PATCH] igc: fix PTP dependency
-In-Reply-To: <20210927131730.1587671-1-arnd@kernel.org>
-References: <20210927131730.1587671-1-arnd@kernel.org>
-Message-ID: <97f24334-839f-ba32-c343-73f7aba5b912@infradead.org>
+From: Brett Creeley <brett.creeley@intel.com>
+Date: Mon, 27 Sep 2021 11:21:50 -0700
+Subject: [Intel-wired-lan] [PATCH net] ice: Print the api_patch as part of
+ the fw.mgmt.api
+Message-ID: <20210927182150.234879-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/27/21 6:17 AM, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> The igc driver was accidentally left out of the Kconfig rework for PTP,
-> it needs the same dependency as the others:
-> 
-> arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_main.o: in function `igc_tsync_interrupt':
-> igc_main.c:(.text+0x1b288): undefined reference to `ptp_clock_event'
-> arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b308): undefined reference to `ptp_clock_event'
-> arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b8cc): undefined reference to `ptp_clock_event'
-> arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function `igc_ethtool_get_ts_info':
-> 
-> Fixes: e5f31552674e ("ethernet: fix PTP_1588_CLOCK dependencies")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Currently when a user uses "devlink dev info", the fw.mgmt.api will be
+the major.minor numbers as shown below:
 
-Same patch is already merged in linux-next (via net tree).
-Thanks.
+devlink dev info pci/0000:3b:00.0
+pci/0000:3b:00.0:
+  driver ice
+  serial_number 00-01-00-ff-ff-00-00-00
+  versions:
+      fixed:
+        board.id K91258-000
+      running:
+        fw.mgmt 6.1.2
+        fw.mgmt.api 1.7 <--- No patch number included
+        fw.mgmt.build 0xd75e7d06
+        fw.mgmt.srev 5
+        fw.undi 1.2992.0
+        fw.undi.srev 5
+        fw.psid.api 3.10
+        fw.bundle_id 0x800085cc
+        fw.app.name ICE OS Default Package
+        fw.app 1.3.27.0
+        fw.app.bundle_id 0xc0000001
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x2a76e110
+      stored:
+        fw.mgmt.srev 5
+        fw.undi 1.2992.0
+        fw.undi.srev 5
+        fw.psid.api 3.10
+        fw.bundle_id 0x800085cc
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x2a76e110
 
-> ---
->   drivers/net/ethernet/intel/Kconfig | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index b0b6f90deb7d..ed8ea63bb172 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -335,6 +335,7 @@ config IGC
->   	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
->   	default n
->   	depends on PCI
-> +	depends on PTP_1588_CLOCK_OPTIONAL
->   	help
->   	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
->   	  family of adapters.
-> 
+There are many features in the driver that depend on the major, minor,
+and patch version of the FW. Without the patch number in the output for
+fw.mgmt.api debugging issues related to the FW API version is difficult.
+Also, using major.minor.patch aligns with the existing firmware version
+which uses a 3 digit value.
 
+Fix this by making the fw.mgmt.api print the major.minor.patch
+versions. Shown below is the result:
 
+devlink dev info pci/0000:3b:00.0
+pci/0000:3b:00.0:
+  driver ice
+  serial_number 00-01-00-ff-ff-00-00-00
+  versions:
+      fixed:
+        board.id K91258-000
+      running:
+        fw.mgmt 6.1.2
+        fw.mgmt.api 1.7.9 <--- patch number included
+        fw.mgmt.build 0xd75e7d06
+        fw.mgmt.srev 5
+        fw.undi 1.2992.0
+        fw.undi.srev 5
+        fw.psid.api 3.10
+        fw.bundle_id 0x800085cc
+        fw.app.name ICE OS Default Package
+        fw.app 1.3.27.0
+        fw.app.bundle_id 0xc0000001
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x2a76e110
+      stored:
+        fw.mgmt.srev 5
+        fw.undi 1.2992.0
+        fw.undi.srev 5
+        fw.psid.api 3.10
+        fw.bundle_id 0x800085cc
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x2a76e110
+
+Fixes: ff2e5c700e08 ("ice: add basic handler for devlink .info_get")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ Documentation/networking/devlink/ice.rst     | 9 +++++----
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 3 ++-
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index a432dc419fa4..5d97cee9457b 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -30,10 +30,11 @@ The ``ice`` driver reports the following versions
+         PHY, link, etc.
+     * - ``fw.mgmt.api``
+       - running
+-      - 1.5
+-      - 2-digit version number of the API exported over the AdminQ by the
+-        management firmware. Used by the driver to identify what commands
+-        are supported.
++      - 1.5.1
++      - 3-digit version number (major.minor.patch) of the API exported over
++        the AdminQ by the management firmware. Used by the driver to
++        identify what commands are supported. Historical versions of the
++        kernel only displayed a 2-digit version number (major.minor).
+     * - ``fw.mgmt.build``
+       - running
+       - 0x305d955f
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index 14afce82ef63..da7288bdc9a3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -63,7 +63,8 @@ static int ice_info_fw_api(struct ice_pf *pf, struct ice_info_ctx *ctx)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 
+-	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u", hw->api_maj_ver, hw->api_min_ver);
++	snprintf(ctx->buf, sizeof(ctx->buf), "%u.%u.%u", hw->api_maj_ver,
++		 hw->api_min_ver, hw->api_patch);
+ 
+ 	return 0;
+ }
 -- 
-~Randy
+2.26.3
+
