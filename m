@@ -1,50 +1,42 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Mon, 27 Sep 2021 14:53:24 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 13/21] nfp: Move
- delink_register to be last command
-In-Reply-To: <20210927083923.GC17484@corigine.com>
-References: <cover.1632565508.git.leonro@nvidia.com>
- <f393212ad3906808ee7eb5cff06ef2e053eb9d2b.1632565508.git.leonro@nvidia.com>
- <20210927083923.GC17484@corigine.com>
-Message-ID: <YVGwtNEcWSgYvyyV@unreal>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Mon, 27 Sep 2021 15:17:19 +0200
+Subject: [Intel-wired-lan] [PATCH] igc: fix PTP dependency
+Message-ID: <20210927131730.1587671-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 27, 2021 at 10:39:24AM +0200, Simon Horman wrote:
-> On Sat, Sep 25, 2021 at 02:22:53PM +0300, Leon Romanovsky wrote:
-> > From: Leon Romanovsky <leonro@nvidia.com>
-> > 
-> > Open user space access to the devlink after driver is probed.
-> 
-> Hi Leon,
-> 
-> I think a description of why is warranted here.
+From: Arnd Bergmann <arnd@arndb.de>
 
-After devlink_register(), users can send GET and SET netlink commands to
-the uninitialized driver. In some cases, nothing will happen, but not in
-all and hard to prove that ALL drivers are safe with such early access.
+The igc driver was accidentally left out of the Kconfig rework for PTP,
+it needs the same dependency as the others:
 
-It means that local users can (in theory for some and in practice for
-others) crash the system (or leverage permissions) with early devlink_register()
-by accessing internal to driver pointers that are not set yet.
+arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_main.o: in function `igc_tsync_interrupt':
+igc_main.c:(.text+0x1b288): undefined reference to `ptp_clock_event'
+arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b308): undefined reference to `ptp_clock_event'
+arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b8cc): undefined reference to `ptp_clock_event'
+arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function `igc_ethtool_get_ts_info':
 
-Like I said in the commit message, I'm not fixing all drivers.
-https://lore.kernel.org/netdev/cover.1632565508.git.leonro at nvidia.com/T/#m063eb4e67389bafcc3b3ddc07197bf43181b7209
+Fixes: e5f31552674e ("ethernet: fix PTP_1588_CLOCK dependencies")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/net/ethernet/intel/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Because some of the driver authors made a wonderful job to obfuscate their
-driver and write completely unmanageable code.
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index b0b6f90deb7d..ed8ea63bb172 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -335,6 +335,7 @@ config IGC
+ 	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
+ 	default n
+ 	depends on PCI
++	depends on PTP_1588_CLOCK_OPTIONAL
+ 	help
+ 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
+ 	  family of adapters.
+-- 
+2.29.2
 
-I do move devlink_register() to be last devlink command for all drivers,
-to allow me to clean devlink core locking and API in next series.
-
-This series should raise your eyebrow and trigger a question: "is my
-driver vulnerable too?". And the answer will depend on devlink_register()
-position in the .probe() call.
-
-Thanks
-
-> 
-> > Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
