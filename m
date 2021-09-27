@@ -1,60 +1,77 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Mon, 27 Sep 2021 09:07:03 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 14/21] ionic: Move devlink
- registration to be last devlink command
-In-Reply-To: <cb187a035b75dbcc27f6dd10d72f18f1101bad44.1632565508.git.leonro@nvidia.com>
-References: <cover.1632565508.git.leonro@nvidia.com>
- <cb187a035b75dbcc27f6dd10d72f18f1101bad44.1632565508.git.leonro@nvidia.com>
-Message-ID: <f1d3e167-a991-13cb-d263-6466110fa8c4@pensando.io>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 27 Sep 2021 19:01:44 +0200
+Subject: [Intel-wired-lan] [PATCH 5.14 058/162] igc: fix build errors for PTP
+In-Reply-To: <20210927170233.453060397@linuxfoundation.org>
+References: <20210927170233.453060397@linuxfoundation.org>
+Message-ID: <20210927170235.491648102@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/25/21 4:22 AM, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
->
-> This change prevents from users to access device before devlink is
-> fully configured.
->
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Thanks for the work,
+[ Upstream commit 87758511075ec961486fe78d7548dd709b524433 ]
 
-Acked-by: Shannon Nelson <snelson@pensando.io>
+When IGC=y and PTP_1588_CLOCK=m, the ptp_*() interface family is
+not available to the igc driver. Make this driver depend on
+PTP_1588_CLOCK_OPTIONAL so that it will build without errors.
+
+Various igc commits have used ptp_*() functions without checking
+that PTP_1588_CLOCK is enabled. Fix all of these here.
+
+Fixes these build errors:
+
+ld: drivers/net/ethernet/intel/igc/igc_main.o: in function `igc_msix_other':
+igc_main.c:(.text+0x6494): undefined reference to `ptp_clock_event'
+ld: igc_main.c:(.text+0x64ef): undefined reference to `ptp_clock_event'
+ld: igc_main.c:(.text+0x6559): undefined reference to `ptp_clock_event'
+ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function `igc_ethtool_get_ts_info':
+igc_ethtool.c:(.text+0xc7a): undefined reference to `ptp_clock_index'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_feature_enable_i225':
+igc_ptp.c:(.text+0x330): undefined reference to `ptp_find_pin'
+ld: igc_ptp.c:(.text+0x36f): undefined reference to `ptp_find_pin'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_init':
+igc_ptp.c:(.text+0x11cd): undefined reference to `ptp_clock_register'
+ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_stop':
+igc_ptp.c:(.text+0x12dd): undefined reference to `ptp_clock_unregister'
+ld: drivers/platform/x86/dell/dell-wmi-privacy.o: in function `dell_privacy_wmi_probe':
+
+Fixes: 64433e5bf40ab ("igc: Enable internal i225 PPS")
+Fixes: 60dbede0c4f3d ("igc: Add support for ethtool GET_TS_INFO command")
+Fixes: 87938851b6efb ("igc: enable auxiliary PHC functions for the i225")
+Fixes: 5f2958052c582 ("igc: Add basic skeleton for PTP")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Ederson de Souza <ederson.desouza@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 82744a7501c7..c11d974a62d8 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -335,6 +335,7 @@ config IGC
+ 	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
+ 	default n
+ 	depends on PCI
++	depends on PTP_1588_CLOCK_OPTIONAL
+ 	help
+ 	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
+ 	  family of adapters.
+-- 
+2.33.0
 
 
-> ---
->   drivers/net/ethernet/pensando/ionic/ionic_devlink.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-> index 93282394d332..2267da95640b 100644
-> --- a/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-> +++ b/drivers/net/ethernet/pensando/ionic/ionic_devlink.c
-> @@ -82,7 +82,6 @@ int ionic_devlink_register(struct ionic *ionic)
->   	struct devlink_port_attrs attrs = {};
->   	int err;
->   
-> -	devlink_register(dl);
->   	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
->   	devlink_port_attrs_set(&ionic->dl_port, &attrs);
->   	err = devlink_port_register(dl, &ionic->dl_port, 0);
-> @@ -93,6 +92,7 @@ int ionic_devlink_register(struct ionic *ionic)
->   	}
->   
->   	devlink_port_type_eth_set(&ionic->dl_port, ionic->lif->netdev);
-> +	devlink_register(dl);
->   	return 0;
->   }
->   
-> @@ -100,6 +100,6 @@ void ionic_devlink_unregister(struct ionic *ionic)
->   {
->   	struct devlink *dl = priv_to_devlink(ionic);
->   
-> -	devlink_port_unregister(&ionic->dl_port);
->   	devlink_unregister(dl);
-> +	devlink_port_unregister(&ionic->dl_port);
->   }
 
