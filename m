@@ -1,10 +1,10 @@
 From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Tue, 28 Sep 2021 04:03:02 +0000
-Subject: [Intel-wired-lan] [PATCH v7] ixgbe: let the xdpdrv work with
- more than 64 cpus
-In-Reply-To: <20210901101206.50274-1-kerneljasonxing@gmail.com>
-References: <20210901101206.50274-1-kerneljasonxing@gmail.com>
-Message-ID: <MW3PR11MB455445ABC2EE8E063D72AEF89CA89@MW3PR11MB4554.namprd11.prod.outlook.com>
+Date: Tue, 28 Sep 2021 04:21:13 +0000
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: Fix NULL pointer
+ dereference in ixgbe_xdp_setup
+In-Reply-To: <20210915070440.6540-1-zhoufeng.zf@bytedance.com>
+References: <20210915070440.6540-1-zhoufeng.zf@bytedance.com>
+Message-ID: <MW3PR11MB45543254E1F9F87512A25A6F9CA89@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,97 +13,96 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 >-----Original Message-----
 >From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->kerneljasonxing at gmail.com
->Sent: Wednesday, September 1, 2021 3:42 PM
+>Feng zhou
+>Sent: Wednesday, September 15, 2021 12:35 PM
 >To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
 ><anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
 >ast at kernel.org; daniel at iogearbox.net; hawk at kernel.org;
->john.fastabend at gmail.com; andrii at kernel.org; kafai at fb.com;
->songliubraving at fb.com; yhs at fb.com; kpsingh at kernel.org
->Cc: Shujin Li <lishujin@kuaishou.com>; Jason Xing
-><xingwanli@kuaishou.com>; kerneljasonxing at gmail.com;
->netdev at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-
->lan at lists.osuosl.org; bpf at vger.kernel.org
->Subject: [Intel-wired-lan] [PATCH v7] ixgbe: let the xdpdrv work with more
->than 64 cpus
+>john.fastabend at gmail.com; jeffrey.t.kirsher at intel.com; Karlsson, Magnus
+><magnus.karlsson@intel.com>; Fijalkowski, Maciej
+><maciej.fijalkowski@intel.com>
+>Cc: duanxiongchun at bytedance.com; netdev at vger.kernel.org; linux-
+>kernel at vger.kernel.org; zhengqi.arch at bytedance.com;
+>chenying.kernel at bytedance.com; intel-wired-lan at lists.osuosl.org;
+>songmuchun at bytedance.com; zhoufeng.zf at bytedance.com;
+>bpf at vger.kernel.org; wangdongdong.6 at bytedance.com;
+>zhouchengming at bytedance.com
+>Subject: [Intel-wired-lan] [PATCH v3] ixgbe: Fix NULL pointer dereference in
+>ixgbe_xdp_setup
 >
->From: Jason Xing <xingwanli@kuaishou.com>
+>From: Feng Zhou <zhoufeng.zf@bytedance.com>
 >
->Originally, ixgbe driver doesn't allow the mounting of xdpdrv if the server is
->equipped with more than 64 cpus online. So it turns out that the loading of
->xdpdrv causes the "NOMEM" failure.
+>The ixgbe driver currently generates a NULL pointer dereference with some
+>machine (online cpus < 63). This is due to the fact that the maximum value of
+>num_xdp_queues is nr_cpu_ids. Code is in "ixgbe_set_rss_queues"".
 >
->Actually, we can adjust the algorithm and then make it work through mapping
->the current cpu to some xdp ring with the protect of @tx_lock.
+>Here's how the problem repeats itself:
+>Some machine (online cpus < 63), And user set num_queues to 63 through
+>ethtool. Code is in the "ixgbe_set_channels",
+>	adapter->ring_feature[RING_F_FDIR].limit = count;
 >
->Here're some numbers before/after applying this patch with xdp-example
->loaded on the eth0X:
+>It becomes 63.
 >
->As client (tx path):
->                     Before    After
->TCP_STREAM send-64   734.14    714.20
->TCP_STREAM send-128  1401.91   1395.05
->TCP_STREAM send-512  5311.67   5292.84
->TCP_STREAM send-1k   9277.40   9356.22 (not stable)
->TCP_RR     send-1    22559.75  21844.22
->TCP_RR     send-128  23169.54  22725.13
->TCP_RR     send-512  21670.91  21412.56
+>When user use xdp, "ixgbe_set_rss_queues" will set queues num.
+>	adapter->num_rx_queues = rss_i;
+>	adapter->num_tx_queues = rss_i;
+>	adapter->num_xdp_queues = ixgbe_xdp_queues(adapter);
 >
->As server (rx path):
->                     Before    After
->TCP_STREAM send-64   1416.49   1383.12
->TCP_STREAM send-128  3141.49   3055.50
->TCP_STREAM send-512  9488.73   9487.44
->TCP_STREAM send-1k   9491.17   9356.22 (not stable)
->TCP_RR     send-1    23617.74  23601.60
->...
+>And rss_i's value is from
+>	f = &adapter->ring_feature[RING_F_FDIR];
+>	rss_i = f->indices = f->limit;
 >
->Notice: the TCP_RR mode is unstable as the official document explaines.
+>So "num_rx_queues" > "num_xdp_queues", when run to "ixgbe_xdp_setup",
+>	for (i = 0; i < adapter->num_rx_queues; i++)
+>		if (adapter->xdp_ring[i]->xsk_umem)
 >
->I tested many times with different parameters combined through netperf.
->Though the result is not that accurate, I cannot see much influence on this
->patch. The static key is places on the hot path, but it actually shouldn't cause a
->huge regression theoretically.
+>It leads to panic.
 >
->Fixes: 33fdc82f08 ("ixgbe: add support for XDP_TX action")
->Reported-by: kernel test robot <lkp@intel.com>
->Co-developed-by: Shujin Li <lishujin@kuaishou.com>
->Signed-off-by: Shujin Li <lishujin@kuaishou.com>
->Signed-off-by: Jason Xing <xingwanli@kuaishou.com>
+>Call trace:
+>[exception RIP: ixgbe_xdp+368]
+>RIP: ffffffffc02a76a0  RSP: ffff9fe16202f8d0  RFLAGS: 00010297
+>RAX: 0000000000000000  RBX: 0000000000000020  RCX: 0000000000000000
+>RDX: 0000000000000000  RSI: 000000000000001c  RDI: ffffffffa94ead90
+>RBP: ffff92f8f24c0c18   R8: 0000000000000000   R9: 0000000000000000
+>R10: ffff9fe16202f830  R11: 0000000000000000  R12: ffff92f8f24c0000
+>R13: ffff9fe16202fc01  R14: 000000000000000a  R15: ffffffffc02a7530
+>ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+> 7 [ffff9fe16202f8f0] dev_xdp_install at ffffffffa89fbbcc
+> 8 [ffff9fe16202f920] dev_change_xdp_fd at ffffffffa8a08808
+> 9 [ffff9fe16202f960] do_setlink at ffffffffa8a20235
+>10 [ffff9fe16202fa88] rtnl_setlink at ffffffffa8a20384
+>11 [ffff9fe16202fc78] rtnetlink_rcv_msg at ffffffffa8a1a8dd
+>12 [ffff9fe16202fcf0] netlink_rcv_skb at ffffffffa8a717eb
+>13 [ffff9fe16202fd40] netlink_unicast at ffffffffa8a70f88
+>14 [ffff9fe16202fd80] netlink_sendmsg at ffffffffa8a71319
+>15 [ffff9fe16202fdf0] sock_sendmsg at ffffffffa89df290
+>16 [ffff9fe16202fe08] __sys_sendto at ffffffffa89e19c8
+>17 [ffff9fe16202ff30] __x64_sys_sendto at ffffffffa89e1a64
+>18 [ffff9fe16202ff38] do_syscall_64 at ffffffffa84042b9
+>19 [ffff9fe16202ff50] entry_SYSCALL_64_after_hwframe at ffffffffa8c0008c
+>
+>So I fix ixgbe_max_channels so that it will not allow a setting of queues to be
+>higher than the num_online_cpus(). And when run to ixgbe_xdp_setup, take
+>the smaller value of num_rx_queues and num_xdp_queues.
+>
+>Fixes: 4a9b32f30f80 ("ixgbe: fix potential RX buffer starvation for
+>AF_XDP")
+>Signed-off-by: Feng Zhou <zhoufeng.zf@bytedance.com>
 >---
->v7:
->- Factorized to a single spin_lock/unlock in ixgbe_xdp_xmit() (Eric)
->- Handle other parts of lock/unlock in ixgbe_run_xdp()/_zc() (Jason)
->
->v6:
->- Move the declaration of static-key to the proper position (Test Robot)
->- Add reported-by tag (Jason)
->- Add more detailed performance test results (Jason)
->
->v5:
->- Change back to nr_cpu_ids (Eric)
->
->v4:
->- Update the wrong commit messages. (Jason)
->
->v3:
->- Change nr_cpu_ids to num_online_cpus() (Maciej)
->- Rename MAX_XDP_QUEUES to IXGBE_MAX_XDP_QS (Maciej)
->- Rename ixgbe_determine_xdp_cpu() to ixgbe_determine_xdp_q_idx()
->(Maciej)
->- Wrap ixgbe_xdp_ring_update_tail() with lock into one function (Maciej)
->
+>v1:
+>- Fix "ixgbe_max_channels" callback so that it will not allow a setting of
+>queues to be higher than the num_online_cpus().
 >v2:
->- Adjust cpu id in ixgbe_xdp_xmit(). (Jesper)
->- Add a fallback path. (Maciej)
->- Adjust other parts related to xdp ring.
->---
-> drivers/net/ethernet/intel/ixgbe/ixgbe.h           | 23 +++++++++-
-> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c       |  9 +++-
-> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 50 ++++++++++++++++-----
->-
-> .../net/ethernet/intel/ixgbe/ixgbe_txrx_common.h   |  3 +-
-> drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c       | 16 ++++---
-> 5 files changed, 77 insertions(+), 24 deletions(-)
+>- Modify commit message
+>more details can be seen from here:
+>https://patchwork.ozlabs.org/project/intel-wired-
+>lan/patch/20210817075407.11961-1-zhoufeng.zf at bytedance.com/
+>https://lore.kernel.org/netdev/20210903064013.9842-1-
+>zhoufeng.zf at bytedance.com/
+>Thanks to Maciej Fijalkowski and Paul Menzel for yours advice.
+>
+> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 8 ++++++--
+> 2 files changed, 7 insertions(+), 3 deletions(-)
 >
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
