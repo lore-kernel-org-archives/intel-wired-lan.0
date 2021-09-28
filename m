@@ -1,78 +1,166 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Tue, 28 Sep 2021 05:51:10 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v6 3/9] ice: create advanced
- switch recipe
-In-Reply-To: <1628239746-17380-4-git-send-email-wojciech.drewek@intel.com>
-References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
- <1628239746-17380-4-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <MW3PR11MB45543D9E79121408D862CB899CA89@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 28 Sep 2021 14:24:18 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:1GbE] BUILD SUCCESS
+ 51032e6f17ce990d06123ad7307f258c50d25aa7
+Message-ID: <6152b512.yTSJHQTltC9ltMJZ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Wojciech Drewek
->Sent: Friday, August 6, 2021 2:19 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v6 3/9] ice: create advanced switch
->recipe
->
->From: Dan Nowlin <dan.nowlin@intel.com>
->
->These changes introduce code for creating advanced recipes for the
->switch in hardware.
->
->There are a couple of recipes already defined in the HW. They apply to
->matching on basic protocol headers, like MAC, VLAN, MACVLAN,
->ethertype or direction (promiscuous), etc.. If the user wants to match on
->other protocol headers (eg. ip address, src/dst port etc.) or different
->variation of already supported protocols, there is a need to create
->new, more complex recipe. That new recipe is referred as
->'advanced recipe', and the filtering rule created on top of that recipe
->is called 'advanced rule'.
->
->One recipe can have up to 5 words, but the first word is always reserved
->for match on switch id, so the driver can define up to 4 words for one
->recipe. To support recipes with more words up to 5 recipes can be
->chained, so 20 words can be programmed for look up.
->
->Input for adding recipe function is a list of protocols to support. Based
->on this list correct profile is being chosen. Correct profile means
->that it contains all protocol types from a list. Each profile have up to
->48 field vector words and each of this word have protocol id and offset.
->These two fields need to match with input data for adding recipe
->function. If the correct profile can't be found the function returns an
->error.
->
->The next step after finding the correct profile is grouping words into
->groups. One group can have up to 4 words. This is done to simplify
->sending recipes to HW (because recipe also can have up to 4 words).
->
->In case of chaining (so when look up consists of more than 4 words) last
->recipe will always have results from the previous recipes used as words.
->
->A recipe to profile map is used to store information about which profile
->is associate with this recipe. This map is an array of 64 elements (max
->number of recipes) and each element is a 256 bits bitmap (max number of
->profiles)
->
->Profile to recipe map is used to store information about which recipe is
->associate with this profile. This map is an array of 256 elements (max
->number of profiles) and each element is a 64 bits bitmap (max number of
->recipes)
->
->Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
->Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
->---
-> drivers/net/ethernet/intel/ice/ice_flex_pipe.c     |   33 +-
-> drivers/net/ethernet/intel/ice/ice_flex_pipe.h     |    6 +
-> drivers/net/ethernet/intel/ice/ice_protocol_type.h |  169 +++
-> drivers/net/ethernet/intel/ice/ice_switch.c        | 1112
->+++++++++++++++++++-
-> drivers/net/ethernet/intel/ice/ice_switch.h        |  110 +-
-> 5 files changed, 1410 insertions(+), 20 deletions(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 1GbE
+branch HEAD: 51032e6f17ce990d06123ad7307f258c50d25aa7  e100: fix buffer overrun in e100_get_regs
+
+elapsed time: 726m
+
+configs tested: 137
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allmodconfig
+arm                              allyesconfig
+i386                 randconfig-c001-20210927
+arm                         socfpga_defconfig
+sh                               alldefconfig
+sh                        dreamcast_defconfig
+sh                              ul2_defconfig
+powerpc                     ppa8548_defconfig
+m68k                       bvme6000_defconfig
+arm                       aspeed_g4_defconfig
+powerpc                     tqm5200_defconfig
+arm                             rpc_defconfig
+sh                           se7343_defconfig
+arm                         hackkit_defconfig
+powerpc                   bluestone_defconfig
+sh                          rsk7203_defconfig
+powerpc                    adder875_defconfig
+powerpc                     powernv_defconfig
+powerpc                    socrates_defconfig
+riscv                    nommu_k210_defconfig
+mips                     cu1830-neo_defconfig
+nios2                         3c120_defconfig
+sh                        edosk7760_defconfig
+arc                        nsim_700_defconfig
+riscv                             allnoconfig
+powerpc                   motionpro_defconfig
+powerpc                      makalu_defconfig
+arm                     davinci_all_defconfig
+powerpc                 mpc8313_rdb_defconfig
+powerpc                    klondike_defconfig
+mips                           xway_defconfig
+arm                         vf610m4_defconfig
+xtensa                          iss_defconfig
+arm                         palmz72_defconfig
+powerpc                      ppc40x_defconfig
+arm                          collie_defconfig
+powerpc                      mgcoge_defconfig
+arm                           u8500_defconfig
+mips                         tb0226_defconfig
+arm                          lpd270_defconfig
+mips                        bcm63xx_defconfig
+arm                      pxa255-idp_defconfig
+arm                          badge4_defconfig
+powerpc                     stx_gp3_defconfig
+sh                         ecovec24_defconfig
+sh                     magicpanelr2_defconfig
+sh                          rsk7264_defconfig
+m68k                            q40_defconfig
+arc                         haps_hs_defconfig
+powerpc                     pseries_defconfig
+openrisc                 simple_smp_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                ecovec24-romimage_defconfig
+mips                      maltaaprp_defconfig
+powerpc                 xes_mpc85xx_defconfig
+arc                     haps_hs_smp_defconfig
+alpha                            allyesconfig
+arm                          gemini_defconfig
+sh                           sh2007_defconfig
+mips                           ip22_defconfig
+x86_64               randconfig-c001-20210927
+arm                  randconfig-c002-20210927
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                                defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a002-20210927
+x86_64               randconfig-a006-20210927
+x86_64               randconfig-a001-20210927
+x86_64               randconfig-a005-20210927
+x86_64               randconfig-a004-20210927
+x86_64               randconfig-a003-20210927
+i386                 randconfig-a001-20210927
+i386                 randconfig-a005-20210927
+i386                 randconfig-a006-20210927
+i386                 randconfig-a002-20210927
+i386                 randconfig-a003-20210927
+i386                 randconfig-a004-20210927
+arc                  randconfig-r043-20210927
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+
+clang tested configs:
+x86_64               randconfig-a014-20210927
+x86_64               randconfig-a011-20210927
+x86_64               randconfig-a013-20210927
+x86_64               randconfig-a016-20210927
+x86_64               randconfig-a015-20210927
+x86_64               randconfig-a012-20210927
+i386                 randconfig-a014-20210927
+i386                 randconfig-a013-20210927
+i386                 randconfig-a012-20210927
+i386                 randconfig-a015-20210927
+i386                 randconfig-a011-20210927
+i386                 randconfig-a016-20210927
+hexagon              randconfig-r045-20210927
+riscv                randconfig-r042-20210927
+hexagon              randconfig-r041-20210927
+s390                 randconfig-r044-20210927
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
