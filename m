@@ -1,9 +1,11 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 27 Sep 2021 22:35:34 +0000
-Subject: [Intel-wired-lan] [PATCH] igc: fix PTP dependency
-In-Reply-To: <20210927131730.1587671-1-arnd@kernel.org>
-References: <20210927131730.1587671-1-arnd@kernel.org>
-Message-ID: <CO1PR11MB5089ACD68BA016202174D9A2D6A79@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Mon, 27 Sep 2021 19:49:18 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 01/21] devlink: Notify
+ users when objects are accessible
+In-Reply-To: <0f7f201a059b24c96eac837e1f424e2483254e1c.1632565508.git.leonro@nvidia.com>
+References: <cover.1632565508.git.leonro@nvidia.com>
+ <0f7f201a059b24c96eac837e1f424e2483254e1c.1632565508.git.leonro@nvidia.com>
+Message-ID: <97c1ba9d-52b9-5689-19ab-ad4a82e55ae2@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,60 +14,316 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-> -----Original Message-----
-> From: Arnd Bergmann <arnd@kernel.org>
-> Sent: Monday, September 27, 2021 6:17 AM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
-> Kicinski <kuba@kernel.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>; Keller, Jacob E
-> <jacob.e.keller@intel.com>; Saleem, Shiraz <shiraz.saleem@intel.com>; Kurt
-> Kanzenbach <kurt@linutronix.de>; Ertman, David M
-> <david.m.ertman@intel.com>; Shannon Nelson <snelson@pensando.io>;
-> Richard Cochran <richardcochran@gmail.com>; Vladimir Oltean
-> <vladimir.oltean@nxp.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH] igc: fix PTP dependency
+On 9/25/21 4:22 AM, Leon Romanovsky wrote:
+> From: Leon Romanovsky <leonro@nvidia.com>
 > 
-> From: Arnd Bergmann <arnd@arndb.de>
+> The devlink core code notified users about add/remove objects without
+> relation if this object can be accessible or not. In this patch we unify
+> such user visible notifications in one place.
 > 
-> The igc driver was accidentally left out of the Kconfig rework for PTP,
-> it needs the same dependency as the others:
-> 
-> arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_main.o: in function
-> `igc_tsync_interrupt':
-> igc_main.c:(.text+0x1b288): undefined reference to `ptp_clock_event'
-> arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b308): undefined reference to
-> `ptp_clock_event'
-> arm-linux-gnueabi-ld: igc_main.c:(.text+0x1b8cc): undefined reference to
-> `ptp_clock_event'
-> arm-linux-gnueabi-ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function
-> `igc_ethtool_get_ts_info':
-> 
-> Fixes: e5f31552674e ("ethernet: fix PTP_1588_CLOCK dependencies")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Thanks!
-
--Jake
-
+> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 > ---
->  drivers/net/ethernet/intel/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
+>  net/core/devlink.c | 107 +++++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 93 insertions(+), 14 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/Kconfig
-> b/drivers/net/ethernet/intel/Kconfig
-> index b0b6f90deb7d..ed8ea63bb172 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -335,6 +335,7 @@ config IGC
->  	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
->  	default n
->  	depends on PCI
-> +	depends on PTP_1588_CLOCK_OPTIONAL
->  	help
->  	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
->  	  family of adapters.
-> --
-> 2.29.2
+> diff --git a/net/core/devlink.c b/net/core/devlink.c
+> index 3ea33c689790..06edb2f1d21e 100644
+> --- a/net/core/devlink.c
+> +++ b/net/core/devlink.c
+> @@ -742,6 +742,7 @@ static void devlink_notify(struct devlink *devlink, enum devlink_command cmd)
+>  	int err;
+>  
+>  	WARN_ON(cmd != DEVLINK_CMD_NEW && cmd != DEVLINK_CMD_DEL);
+> +	WARN_ON(!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED));
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -1040,11 +1041,15 @@ static int devlink_nl_port_fill(struct sk_buff *msg,
+>  static void devlink_port_notify(struct devlink_port *devlink_port,
+>  				enum devlink_command cmd)
+>  {
+> +	struct devlink *devlink = devlink_port->devlink;
+>  	struct sk_buff *msg;
+>  	int err;
+>  
+>  	WARN_ON(cmd != DEVLINK_CMD_PORT_NEW && cmd != DEVLINK_CMD_PORT_DEL);
+>  
+> +	if (!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED))
+> +		return;
+> +
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+>  		return;
+> @@ -1055,18 +1060,19 @@ static void devlink_port_notify(struct devlink_port *devlink_port,
+>  		return;
+>  	}
+>  
+> -	genlmsg_multicast_netns(&devlink_nl_family,
+> -				devlink_net(devlink_port->devlink), msg, 0,
+> -				DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+> +	genlmsg_multicast_netns(&devlink_nl_family, devlink_net(devlink), msg,
+> +				0, DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+>  }
+>  
+>  static void devlink_rate_notify(struct devlink_rate *devlink_rate,
+>  				enum devlink_command cmd)
+>  {
+> +	struct devlink *devlink = devlink_rate->devlink;
+>  	struct sk_buff *msg;
+>  	int err;
+>  
+>  	WARN_ON(cmd != DEVLINK_CMD_RATE_NEW && cmd != DEVLINK_CMD_RATE_DEL);
+> +	WARN_ON(!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED));
 
+
+FYI, this new warning was triggered by syzbot :
+
+WARNING: CPU: 1 PID: 6540 at net/core/devlink.c:5158 devlink_nl_region_notify+0x184/0x1e0 net/core/devlink.c:5158
+Modules linked in:
+CPU: 1 PID: 6540 Comm: syz-executor.0 Not tainted 5.15.0-rc2-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+RIP: 0010:devlink_nl_region_notify+0x184/0x1e0 net/core/devlink.c:5158
+Code: 38 41 b8 c0 0c 00 00 31 d2 48 89 ee 4c 89 e7 e8 72 1a 26 00 48 83 c4 08 5b 5d 41 5c 41 5d 41 5e e9 01 bd 41 fa e8 fc bc 41 fa <0f> 0b e9 f7 fe ff ff e8 f0 bc 41 fa 0f 0b eb da 4c 89 e7 e8 c4 18
+RSP: 0018:ffffc90002d6f658 EFLAGS: 00010293
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+RDX: ffff88801f08d580 RSI: ffffffff87344e94 RDI: 0000000000000003
+RBP: ffff88801ee42100 R08: 0000000000000000 R09: 0000000000000000
+R10: ffffffff87344d8a R11: 0000000000000000 R12: ffff88801c1dc000
+R13: 0000000000000000 R14: 000000000000002c R15: ffff88801c1dc070
+FS:  0000555555e8e400(0000) GS:ffff8880b9d00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000055dd7c590310 CR3: 0000000069a09000 CR4: 00000000003506e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ devlink_region_create+0x39f/0x4c0 net/core/devlink.c:10327
+ nsim_dev_dummy_region_init drivers/net/netdevsim/dev.c:481 [inline]
+ nsim_dev_probe+0x5f6/0x1150 drivers/net/netdevsim/dev.c:1479
+ call_driver_probe drivers/base/dd.c:517 [inline]
+ really_probe+0x245/0xcc0 drivers/base/dd.c:596
+ __driver_probe_device+0x338/0x4d0 drivers/base/dd.c:751
+ driver_probe_device+0x4c/0x1a0 drivers/base/dd.c:781
+ __device_attach_driver+0x20b/0x2f0 drivers/base/dd.c:898
+ bus_for_each_drv+0x15f/0x1e0 drivers/base/bus.c:427
+ __device_attach+0x228/0x4a0 drivers/base/dd.c:969
+ bus_probe_device+0x1e4/0x290 drivers/base/bus.c:487
+ device_add+0xc35/0x21b0 drivers/base/core.c:3359
+ nsim_bus_dev_new drivers/net/netdevsim/bus.c:435 [inline]
+ new_device_store+0x48b/0x770 drivers/net/netdevsim/bus.c:302
+ bus_attr_store+0x72/0xa0 drivers/base/bus.c:122
+ sysfs_kf_write+0x110/0x160 fs/sysfs/file.c:139
+ kernfs_fop_write_iter+0x342/0x500 fs/kernfs/file.c:296
+ call_write_iter include/linux/fs.h:2163 [inline]
+ new_sync_write+0x429/0x660 fs/read_write.c:507
+ vfs_write+0x7cf/0xae0 fs/read_write.c:594
+ ksys_write+0x12d/0x250 fs/read_write.c:647
+ do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+ do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
+RIP: 0033:0x7f328409d3ef
+Code: 89 54 24 18 48 89 74 24 10 89 7c 24 08 e8 99 fd ff ff 48 8b 54 24 18 48 8b 74 24 10 41 89 c0 8b 7c 24 08 b8 01 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 31 44 89 c7 48 89 44 24 08 e8 cc fd ff ff 48
+RSP: 002b:00007ffdc6851140 EFLAGS: 00000293 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f328409d3ef
+RDX: 0000000000000003 RSI: 00007ffdc6851190 RDI: 0000000000000004
+RBP: 0000000000000004 R08: 0000000000000000 R09: 00007ffdc68510e0
+R10: 0000000000000000 R11: 0000000000000293 R12: 00007f3284144971
+R13: 00007ffdc6851190 R14: 0000000000000000 R15: 00007ffdc6851860
+
+05:42PM
+
+
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -1078,9 +1084,8 @@ static void devlink_rate_notify(struct devlink_rate *devlink_rate,
+>  		return;
+>  	}
+>  
+> -	genlmsg_multicast_netns(&devlink_nl_family,
+> -				devlink_net(devlink_rate->devlink), msg, 0,
+> -				DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+> +	genlmsg_multicast_netns(&devlink_nl_family, devlink_net(devlink), msg,
+> +				0, DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+>  }
+>  
+>  static int devlink_nl_cmd_rate_get_dumpit(struct sk_buff *msg,
+> @@ -4150,6 +4155,7 @@ static void __devlink_flash_update_notify(struct devlink *devlink,
+>  	WARN_ON(cmd != DEVLINK_CMD_FLASH_UPDATE &&
+>  		cmd != DEVLINK_CMD_FLASH_UPDATE_END &&
+>  		cmd != DEVLINK_CMD_FLASH_UPDATE_STATUS);
+> +	WARN_ON(!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED));
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -5145,17 +5151,18 @@ static void devlink_nl_region_notify(struct devlink_region *region,
+>  				     struct devlink_snapshot *snapshot,
+>  				     enum devlink_command cmd)
+>  {
+> +	struct devlink *devlink = region->devlink;
+>  	struct sk_buff *msg;
+>  
+>  	WARN_ON(cmd != DEVLINK_CMD_REGION_NEW && cmd != DEVLINK_CMD_REGION_DEL);
+> +	WARN_ON(!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED));
+>  
+>  	msg = devlink_nl_region_notify_build(region, snapshot, cmd, 0, 0);
+>  	if (IS_ERR(msg))
+>  		return;
+>  
+> -	genlmsg_multicast_netns(&devlink_nl_family,
+> -				devlink_net(region->devlink), msg, 0,
+> -				DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+> +	genlmsg_multicast_netns(&devlink_nl_family, devlink_net(devlink), msg,
+> +				0, DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+>  }
+>  
+>  /**
+> @@ -6920,10 +6927,12 @@ devlink_nl_health_reporter_fill(struct sk_buff *msg,
+>  static void devlink_recover_notify(struct devlink_health_reporter *reporter,
+>  				   enum devlink_command cmd)
+>  {
+> +	struct devlink *devlink = reporter->devlink;
+>  	struct sk_buff *msg;
+>  	int err;
+>  
+>  	WARN_ON(cmd != DEVLINK_CMD_HEALTH_REPORTER_RECOVER);
+> +	WARN_ON(!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED));
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -6935,9 +6944,8 @@ static void devlink_recover_notify(struct devlink_health_reporter *reporter,
+>  		return;
+>  	}
+>  
+> -	genlmsg_multicast_netns(&devlink_nl_family,
+> -				devlink_net(reporter->devlink),
+> -				msg, 0, DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+> +	genlmsg_multicast_netns(&devlink_nl_family, devlink_net(devlink), msg,
+> +				0, DEVLINK_MCGRP_CONFIG, GFP_KERNEL);
+>  }
+>  
+>  void
+> @@ -8955,6 +8963,68 @@ struct devlink *devlink_alloc_ns(const struct devlink_ops *ops,
+>  }
+>  EXPORT_SYMBOL_GPL(devlink_alloc_ns);
+>  
+> +static void
+> +devlink_trap_policer_notify(struct devlink *devlink,
+> +			    const struct devlink_trap_policer_item *policer_item,
+> +			    enum devlink_command cmd);
+> +static void
+> +devlink_trap_group_notify(struct devlink *devlink,
+> +			  const struct devlink_trap_group_item *group_item,
+> +			  enum devlink_command cmd);
+> +static void devlink_trap_notify(struct devlink *devlink,
+> +				const struct devlink_trap_item *trap_item,
+> +				enum devlink_command cmd);
+> +
+> +static void devlink_notify_register(struct devlink *devlink)
+> +{
+> +	struct devlink_trap_policer_item *policer_item;
+> +	struct devlink_trap_group_item *group_item;
+> +	struct devlink_trap_item *trap_item;
+> +	struct devlink_port *devlink_port;
+> +
+> +	devlink_notify(devlink, DEVLINK_CMD_NEW);
+> +	list_for_each_entry(devlink_port, &devlink->port_list, list)
+> +		devlink_port_notify(devlink_port, DEVLINK_CMD_PORT_NEW);
+> +
+> +	list_for_each_entry(policer_item, &devlink->trap_policer_list, list)
+> +		devlink_trap_policer_notify(devlink, policer_item,
+> +					    DEVLINK_CMD_TRAP_POLICER_NEW);
+> +
+> +	list_for_each_entry(group_item, &devlink->trap_group_list, list)
+> +		devlink_trap_group_notify(devlink, group_item,
+> +					  DEVLINK_CMD_TRAP_GROUP_NEW);
+> +
+> +	list_for_each_entry(trap_item, &devlink->trap_list, list)
+> +		devlink_trap_notify(devlink, trap_item, DEVLINK_CMD_TRAP_NEW);
+> +
+> +	devlink_params_publish(devlink);
+> +}
+> +
+> +static void devlink_notify_unregister(struct devlink *devlink)
+> +{
+> +	struct devlink_trap_policer_item *policer_item;
+> +	struct devlink_trap_group_item *group_item;
+> +	struct devlink_trap_item *trap_item;
+> +	struct devlink_port *devlink_port;
+> +
+> +	devlink_params_unpublish(devlink);
+> +
+> +	list_for_each_entry_reverse(trap_item, &devlink->trap_list, list)
+> +		devlink_trap_notify(devlink, trap_item, DEVLINK_CMD_TRAP_DEL);
+> +
+> +	list_for_each_entry_reverse(group_item, &devlink->trap_group_list, list)
+> +		devlink_trap_group_notify(devlink, group_item,
+> +					  DEVLINK_CMD_TRAP_GROUP_DEL);
+> +	list_for_each_entry_reverse(policer_item, &devlink->trap_policer_list,
+> +				    list)
+> +		devlink_trap_policer_notify(devlink, policer_item,
+> +					    DEVLINK_CMD_TRAP_POLICER_DEL);
+> +
+> +	list_for_each_entry_reverse(devlink_port, &devlink->port_list, list)
+> +		devlink_port_notify(devlink_port, DEVLINK_CMD_PORT_DEL);
+> +	devlink_notify(devlink, DEVLINK_CMD_DEL);
+> +}
+> +
+>  /**
+>   *	devlink_register - Register devlink instance
+>   *
+> @@ -8964,7 +9034,7 @@ void devlink_register(struct devlink *devlink)
+>  {
+>  	mutex_lock(&devlink_mutex);
+>  	xa_set_mark(&devlinks, devlink->index, DEVLINK_REGISTERED);
+> -	devlink_notify(devlink, DEVLINK_CMD_NEW);
+> +	devlink_notify_register(devlink);
+>  	mutex_unlock(&devlink_mutex);
+>  }
+>  EXPORT_SYMBOL_GPL(devlink_register);
+> @@ -8982,7 +9052,7 @@ void devlink_unregister(struct devlink *devlink)
+>  	mutex_lock(&devlink_mutex);
+>  	WARN_ON(devlink_reload_supported(devlink->ops) &&
+>  		devlink->reload_enabled);
+> -	devlink_notify(devlink, DEVLINK_CMD_DEL);
+> +	devlink_notify_unregister(devlink);
+>  	xa_clear_mark(&devlinks, devlink->index, DEVLINK_REGISTERED);
+>  	mutex_unlock(&devlink_mutex);
+>  }
+> @@ -10086,6 +10156,9 @@ void devlink_params_publish(struct devlink *devlink)
+>  {
+>  	struct devlink_param_item *param_item;
+>  
+> +	if (!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED))
+> +		return;
+> +
+>  	list_for_each_entry(param_item, &devlink->param_list, list) {
+>  		if (param_item->published)
+>  			continue;
+> @@ -10631,6 +10704,8 @@ devlink_trap_group_notify(struct devlink *devlink,
+>  
+>  	WARN_ON_ONCE(cmd != DEVLINK_CMD_TRAP_GROUP_NEW &&
+>  		     cmd != DEVLINK_CMD_TRAP_GROUP_DEL);
+> +	if (!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED))
+> +		return;
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -10672,6 +10747,8 @@ static void devlink_trap_notify(struct devlink *devlink,
+>  
+>  	WARN_ON_ONCE(cmd != DEVLINK_CMD_TRAP_NEW &&
+>  		     cmd != DEVLINK_CMD_TRAP_DEL);
+> +	if (!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED))
+> +		return;
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> @@ -11053,6 +11130,8 @@ devlink_trap_policer_notify(struct devlink *devlink,
+>  
+>  	WARN_ON_ONCE(cmd != DEVLINK_CMD_TRAP_POLICER_NEW &&
+>  		     cmd != DEVLINK_CMD_TRAP_POLICER_DEL);
+> +	if (!xa_get_mark(&devlinks, devlink->index, DEVLINK_REGISTERED))
+> +		return;
+>  
+>  	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+>  	if (!msg)
+> 
