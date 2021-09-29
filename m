@@ -1,40 +1,52 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Wed, 29 Sep 2021 13:46:38 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and
- missed notifications fix
-In-Reply-To: <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <cover.1632916329.git.leonro@nvidia.com>
- <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <20210929134637.4wlbd5ehbgc55cuo@skbuf>
+From: Yang Li <yang.lee@linux.alibaba.com>
+Date: Wed, 29 Sep 2021 14:56:26 +0800
+Subject: [Intel-wired-lan] [PATCH -next] intel: Simplify bool conversion
+Message-ID: <1632898586-96655-1-git-send-email-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 06:40:04AM -0700, Jakub Kicinski wrote:
-> On Wed, 29 Sep 2021 15:00:41 +0300 Leon Romanovsky wrote:
-> > This series starts from the fixing the bug introduced by implementing
-> > devlink delayed notifications logic, where I missed some of the
-> > notifications functions.
-> >
-> > The rest series provides a way to dynamically set devlink ops that is
-> > needed for mlx5 multiport device and starts cleanup by removing
-> > not-needed logic.
-> >
-> > In the next series, we will delete various publish API, drop general
-> > lock, annotate the code and rework logic around devlink->lock.
-> >
-> > All this is possible because driver initialization is separated from the
-> > user input now.
->
-> Swapping ops is a nasty hack in my book.
->
-> And all that to avoid having two op structures in one driver.
-> Or to avoid having counters which are always 0?
->
-> Sorry, at the very least you need better explanation for this.
+Fix the following coccicheck warning:
+./drivers/net/ethernet/intel/i40e/i40e_xsk.c:229:35-40: WARNING:
+conversion to bool not needed here
+./drivers/net/ethernet/intel/ice/ice_xsk.c:399:35-40: WARNING:
+conversion to bool not needed here
 
-Leon, while the discussion about this unfolds, can you please repost
-patch 1 separately? :)
-Thanks.
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index 6f85879..ea06e95 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -226,7 +226,7 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring *rx_ring, u16 count)
+ 	rx_desc->wb.qword1.status_error_len = 0;
+ 	i40e_release_rx_desc(rx_ring, ntu);
+ 
+-	return count == nb_buffs ? true : false;
++	return count == nb_buffs;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 7682eaa..35b6e81 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -396,7 +396,7 @@ bool ice_alloc_rx_bufs_zc(struct ice_ring *rx_ring, u16 count)
+ 	rx_desc->wb.status_error0 = 0;
+ 	ice_release_rx_desc(rx_ring, ntu);
+ 
+-	return count == nb_buffs ? true : false;
++	return count == nb_buffs;
+ }
+ 
+ /**
+-- 
+1.8.3.1
+
