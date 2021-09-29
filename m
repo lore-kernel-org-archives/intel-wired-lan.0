@@ -1,49 +1,78 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 29 Sep 2021 13:43:06 +0300
-Subject: [Intel-wired-lan] [PATCH net-next 3/5] devlink: Allow set
- specific ops callbacks dynamically
-In-Reply-To: <20210929103823.GK2048@kadam>
-References: <cover.1632909221.git.leonro@nvidia.com>
- <4e99e3996118ce0e2da5367b8fc2a427095dfffd.1632909221.git.leonro@nvidia.com>
- <20210929103823.GK2048@kadam>
-Message-ID: <YVRDOijPHji2vg82@unreal>
+Date: Wed, 29 Sep 2021 15:00:41 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and missed
+ notifications fix
+Message-ID: <cover.1632916329.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 01:38:23PM +0300, Dan Carpenter wrote:
-> On Wed, Sep 29, 2021 at 01:16:37PM +0300, Leon Romanovsky wrote:
-> > +void devlink_set_ops(struct devlink *devlink, struct devlink_ops *ops)
-> > +{
-> > +	struct devlink_ops *dev_ops = devlink->ops;
-> > +
-> > +	WARN_ON(!devlink_reload_actions_valid(ops));
-> > +
-> > +#define SET_DEVICE_OP(ptr, name)                                               \
-> > +	do {                                                                   \
-> > +		if (ops->name)                                                 \
-> 
-> Could you make "ops" a parameter of the macro instead of hard coding it?
+From: Leon Romanovsky <leonro@nvidia.com>
 
-Sure
+Changelog:
+v1:
+ * Missed removal of extra WARN_ON
+ * Added "ops parameter to macro as Dan suggested.
+v0: https://lore.kernel.org/all/cover.1632909221.git.leonro at nvidia.com
 
-> 
-> regards,
-> dan carpenter
-> 
-> > +			if (!((ptr)->name))				       \
-> > +				(ptr)->name = ops->name;                       \
-> > +	} while (0)
-> > +
-> > +	/* Keep sorted */
-> > +	SET_DEVICE_OP(dev_ops, reload_actions);
-> > +	SET_DEVICE_OP(dev_ops, reload_down);
-> > +	SET_DEVICE_OP(dev_ops, reload_limits);
-> > +	SET_DEVICE_OP(dev_ops, reload_up);
-> > +
-> > +#undef SET_DEVICE_OP
-> > +}
-> > +EXPORT_SYMBOL_GPL(devlink_set_ops);
-> 
+-------------------------------------------------------------------
+Hi,
+
+This series starts from the fixing the bug introduced by implementing
+devlink delayed notifications logic, where I missed some of the
+notifications functions.
+
+The rest series provides a way to dynamically set devlink ops that is
+needed for mlx5 multiport device and starts cleanup by removing
+not-needed logic.
+
+In the next series, we will delete various publish API, drop general
+lock, annotate the code and rework logic around devlink->lock.
+
+All this is possible because driver initialization is separated from the
+user input now.
+
+Thanks
+
+Leon Romanovsky (5):
+  devlink: Add missed notifications iterators
+  devlink: Allow modification of devlink ops
+  devlink: Allow set specific ops callbacks dynamically
+  net/mlx5: Register separate reload devlink ops for multiport device
+  devlink: Delete reload enable/disable interface
+
+ .../net/ethernet/broadcom/bnxt/bnxt_devlink.c |   6 +-
+ .../net/ethernet/cavium/liquidio/lio_main.c   |   2 +-
+ .../freescale/dpaa2/dpaa2-eth-devlink.c       |   2 +-
+ .../hisilicon/hns3/hns3pf/hclge_devlink.c     |   5 +-
+ .../hisilicon/hns3/hns3vf/hclgevf_devlink.c   |   5 +-
+ .../net/ethernet/huawei/hinic/hinic_devlink.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_devlink.c  |   2 +-
+ .../marvell/octeontx2/af/rvu_devlink.c        |   2 +-
+ .../marvell/prestera/prestera_devlink.c       |   2 +-
+ drivers/net/ethernet/mellanox/mlx4/main.c     |   4 +-
+ .../net/ethernet/mellanox/mlx5/core/devlink.c |  15 +-
+ .../net/ethernet/mellanox/mlx5/core/main.c    |   3 -
+ .../mellanox/mlx5/core/sf/dev/driver.c        |   5 +-
+ drivers/net/ethernet/mellanox/mlxsw/core.c    |  12 +-
+ drivers/net/ethernet/mscc/ocelot.h            |   2 +-
+ drivers/net/ethernet/mscc/ocelot_net.c        |   2 +-
+ .../net/ethernet/netronome/nfp/nfp_devlink.c  |   2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_main.h |   2 +-
+ .../ethernet/pensando/ionic/ionic_devlink.c   |   2 +-
+ drivers/net/ethernet/qlogic/qed/qed_devlink.c |   2 +-
+ drivers/net/ethernet/ti/am65-cpsw-nuss.c      |   2 +-
+ drivers/net/ethernet/ti/cpsw_new.c            |   2 +-
+ drivers/net/netdevsim/dev.c                   |   5 +-
+ drivers/ptp/ptp_ocp.c                         |   2 +-
+ drivers/staging/qlge/qlge_main.c              |   2 +-
+ include/net/devlink.h                         |  15 +-
+ net/core/devlink.c                            | 156 ++++++++++--------
+ net/dsa/dsa2.c                                |   2 +-
+ 28 files changed, 131 insertions(+), 134 deletions(-)
+
+-- 
+2.31.1
+
