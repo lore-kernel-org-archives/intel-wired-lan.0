@@ -1,97 +1,81 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 29 Sep 2021 16:07:49 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 21/21] net: dsa: Move
- devlink registration to be last devlink command
-In-Reply-To: <20210929130226.j53fcztm6utpt3tu@skbuf>
-References: <cover.1632565508.git.leonro@nvidia.com>
- <66dd7979b44ac307711c382054f428f9287666a8.1632565508.git.leonro@nvidia.com>
- <20210929130226.j53fcztm6utpt3tu@skbuf>
-Message-ID: <YVRlJagqFInXCgGZ@unreal>
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+Date: Wed, 29 Sep 2021 13:29:37 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/5] devlink: Add missed
+ notifications iterators
+In-Reply-To: <2ed1159291f2a589b013914f2b60d8172fc525c1.1632916329.git.leonro@nvidia.com>
+References: <cover.1632916329.git.leonro@nvidia.com>
+ <2ed1159291f2a589b013914f2b60d8172fc525c1.1632916329.git.leonro@nvidia.com>
+Message-ID: <20210929132936.hnts7lmweewqedxi@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 01:02:27PM +0000, Vladimir Oltean wrote:
-> Hi Leon,
+On Wed, Sep 29, 2021 at 03:00:42PM +0300, Leon Romanovsky wrote:
+> From: Leon Romanovsky <leonro@nvidia.com>
 > 
-> On Sat, Sep 25, 2021 at 02:23:01PM +0300, Leon Romanovsky wrote:
-> > From: Leon Romanovsky <leonro@nvidia.com>
-> >
-> > This change prevents from users to access device before devlink
-> > is fully configured.
-> >
-> > Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-> > ---
-> >  net/dsa/dsa2.c | 10 ++++------
-> >  1 file changed, 4 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/net/dsa/dsa2.c b/net/dsa/dsa2.c
-> > index a020339e1973..8ca6a1170c9d 100644
-> > --- a/net/dsa/dsa2.c
-> > +++ b/net/dsa/dsa2.c
-> > @@ -848,7 +848,6 @@ static int dsa_switch_setup(struct dsa_switch *ds)
-> >  	dl_priv = devlink_priv(ds->devlink);
-> >  	dl_priv->ds = ds;
-> >
-> > -	devlink_register(ds->devlink);
-> >  	/* Setup devlink port instances now, so that the switch
-> >  	 * setup() can register regions etc, against the ports
-> >  	 */
-> > @@ -874,8 +873,6 @@ static int dsa_switch_setup(struct dsa_switch *ds)
-> >  	if (err)
-> >  		goto teardown;
-> >
-> > -	devlink_params_publish(ds->devlink);
-> > -
-> >  	if (!ds->slave_mii_bus && ds->ops->phy_read) {
-> >  		ds->slave_mii_bus = mdiobus_alloc();
-> >  		if (!ds->slave_mii_bus) {
-> > @@ -891,7 +888,7 @@ static int dsa_switch_setup(struct dsa_switch *ds)
-> >  	}
-> >
-> >  	ds->setup = true;
-> > -
-> > +	devlink_register(ds->devlink);
-> >  	return 0;
-> >
-> >  free_slave_mii_bus:
-> > @@ -906,7 +903,6 @@ static int dsa_switch_setup(struct dsa_switch *ds)
-> >  	list_for_each_entry(dp, &ds->dst->ports, list)
-> >  		if (dp->ds == ds)
-> >  			dsa_port_devlink_teardown(dp);
-> > -	devlink_unregister(ds->devlink);
-> >  	devlink_free(ds->devlink);
-> >  	ds->devlink = NULL;
-> >  	return err;
-> > @@ -919,6 +915,9 @@ static void dsa_switch_teardown(struct dsa_switch *ds)
-> >  	if (!ds->setup)
-> >  		return;
-> >
-> > +	if (ds->devlink)
-> > +		devlink_unregister(ds->devlink);
-> > +
-> >  	if (ds->slave_mii_bus && ds->ops->phy_read) {
-> >  		mdiobus_unregister(ds->slave_mii_bus);
-> >  		mdiobus_free(ds->slave_mii_bus);
-> > @@ -934,7 +933,6 @@ static void dsa_switch_teardown(struct dsa_switch *ds)
-> >  		list_for_each_entry(dp, &ds->dst->ports, list)
-> >  			if (dp->ds == ds)
-> >  				dsa_port_devlink_teardown(dp);
-> > -		devlink_unregister(ds->devlink);
-> >  		devlink_free(ds->devlink);
-> >  		ds->devlink = NULL;
-> >  	}
-> > --
-> > 2.31.1
-> >
+> The commit mentioned in Fixes line missed a couple of notifications that
+> were registered before devlink_register() and should be delayed too.
 > 
-> Sorry, I did not have time to review/test this change earlier.
-> I now see this WARN_ON being triggered when I boot a board:
+> As such, the too early placed WARN_ON() check spotted it.
+> 
+> WARNING: CPU: 1 PID: 6540 at net/core/devlink.c:5158 devlink_nl_region_notify+0x184/0x1e0 net/core/devlink.c:5158
+> Modules linked in:
+> CPU: 1 PID: 6540 Comm: syz-executor.0 Not tainted 5.15.0-rc2-syzkaller #0
+> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+> RIP: 0010:devlink_nl_region_notify+0x184/0x1e0 net/core/devlink.c:5158
+> Code: 38 41 b8 c0 0c 00 00 31 d2 48 89 ee 4c 89 e7 e8 72 1a 26 00 48 83 c4 08 5b 5d 41 5c 41 5d 41 5e e9 01 bd 41 fa
+> e8 fc bc 41 fa <0f> 0b e9 f7 fe ff ff e8 f0 bc 41 fa 0f 0b eb da 4c 89 e7 e8 c4 18
+> RSP: 0018:ffffc90002d6f658 EFLAGS: 00010293
+> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> RDX: ffff88801f08d580 RSI: ffffffff87344e94 RDI: 0000000000000003
+> RBP: ffff88801ee42100 R08: 0000000000000000 R09: 0000000000000000
+> R10: ffffffff87344d8a R11: 0000000000000000 R12: ffff88801c1dc000
+> R13: 0000000000000000 R14: 000000000000002c R15: ffff88801c1dc070
+> FS:  0000555555e8e400(0000) GS:ffff8880b9d00000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: 000055dd7c590310 CR3: 0000000069a09000 CR4: 00000000003506e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> Call Trace:
+>  devlink_region_create+0x39f/0x4c0 net/core/devlink.c:10327
+>  nsim_dev_dummy_region_init drivers/net/netdevsim/dev.c:481 [inline]
+>  nsim_dev_probe+0x5f6/0x1150 drivers/net/netdevsim/dev.c:1479
+>  call_driver_probe drivers/base/dd.c:517 [inline]
+>  really_probe+0x245/0xcc0 drivers/base/dd.c:596
+>  __driver_probe_device+0x338/0x4d0 drivers/base/dd.c:751
+>  driver_probe_device+0x4c/0x1a0 drivers/base/dd.c:781
+>  __device_attach_driver+0x20b/0x2f0 drivers/base/dd.c:898
+>  bus_for_each_drv+0x15f/0x1e0 drivers/base/bus.c:427
+>  __device_attach+0x228/0x4a0 drivers/base/dd.c:969
+>  bus_probe_device+0x1e4/0x290 drivers/base/bus.c:487
+>  device_add+0xc35/0x21b0 drivers/base/core.c:3359
+>  nsim_bus_dev_new drivers/net/netdevsim/bus.c:435 [inline]
+>  new_device_store+0x48b/0x770 drivers/net/netdevsim/bus.c:302
+>  bus_attr_store+0x72/0xa0 drivers/base/bus.c:122
+>  sysfs_kf_write+0x110/0x160 fs/sysfs/file.c:139
+>  kernfs_fop_write_iter+0x342/0x500 fs/kernfs/file.c:296
+>  call_write_iter include/linux/fs.h:2163 [inline]
+>  new_sync_write+0x429/0x660 fs/read_write.c:507
+>  vfs_write+0x7cf/0xae0 fs/read_write.c:594
+>  ksys_write+0x12d/0x250 fs/read_write.c:647
+>  do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+>  do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+>  entry_SYSCALL_64_after_hwframe+0x44/0xae
+> RIP: 0033:0x7f328409d3ef
+> Code: 89 54 24 18 48 89 74 24 10 89 7c 24 08 e8 99 fd ff ff 48 8b 54 24 18 48 8b 74 24 10 41 89 c0 8b 7c 24 08 b8 01
+> 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 31 44 89 c7 48 89 44 24 08 e8 cc fd ff ff 48
+> RSP: 002b:00007ffdc6851140 EFLAGS: 00000293 ORIG_RAX: 0000000000000001
+> RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f328409d3ef
+> RDX: 0000000000000003 RSI: 00007ffdc6851190 RDI: 0000000000000004
+> RBP: 0000000000000004 R08: 0000000000000000 R09: 00007ffdc68510e0
+> R10: 0000000000000000 R11: 0000000000000293 R12: 00007f3284144971
+> R13: 00007ffdc6851190 R14: 0000000000000000 R15: 00007ffdc6851860
+> 
+> Fixes: 474053c980a0 ("devlink: Notify users when objects are accessible")
+> Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+> ---
 
-Sorry about that, it was missed in one of my rebases.
-The fix was posted here.
-https://lore.kernel.org/all/2ed1159291f2a589b013914f2b60d8172fc525c1.1632916329.git.leonro at nvidia.com
-
-Thanks
+Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
