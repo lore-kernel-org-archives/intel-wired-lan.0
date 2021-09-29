@@ -1,49 +1,252 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 29 Sep 2021 15:58:28 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 3/5] devlink: Allow set
- specific ops callbacks dynamically
-In-Reply-To: <YVRbHMODzcciHa2p@kroah.com>
-References: <cover.1632916329.git.leonro@nvidia.com>
- <aac64d4861d6207a90a6d45245ee5ed59114659a.1632916329.git.leonro@nvidia.com>
- <YVRbHMODzcciHa2p@kroah.com>
-Message-ID: <YVRi9B4bxR/jZrug@unreal>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 29 Sep 2021 20:59:10 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ cda75f31e5196c175c593402ba226eb9f302a13d
+Message-ID: <6154631e.4X1Yi04zqavLIH/v%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 02:25:00PM +0200, Greg Kroah-Hartman wrote:
-> On Wed, Sep 29, 2021 at 03:00:44PM +0300, Leon Romanovsky wrote:
-> > +void devlink_set_ops(struct devlink *devlink, struct devlink_ops *ops)
-> > +{
-> > +	struct devlink_ops *dev_ops = devlink->ops;
-> > +
-> > +	WARN_ON(!devlink_reload_actions_valid(ops));
-> > +
-> > +#define SET_DEVICE_OP(ptr, op, name)                                           \
-> > +	do {                                                                   \
-> > +		if ((op)->name)                                                \
-> > +			if (!((ptr)->name))                                    \
-> > +				(ptr)->name = (op)->name;                      \
-> > +	} while (0)
-> > +
-> > +	/* Keep sorted */
-> > +	SET_DEVICE_OP(dev_ops, ops, reload_actions);
-> > +	SET_DEVICE_OP(dev_ops, ops, reload_down);
-> > +	SET_DEVICE_OP(dev_ops, ops, reload_limits);
-> > +	SET_DEVICE_OP(dev_ops, ops, reload_up);
-> 
-> Keep sorted in what order?  And why?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: cda75f31e5196c175c593402ba226eb9f302a13d  ice: Print the api_patch as part of the fw.mgmt.api
 
-Sorted by name.
+elapsed time: 948m
 
-It simplifies future addition of new commands and removes useless fraction
-where place new line.
+configs tested: 220
+configs skipped: 3
 
-Thanks
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> thanks,
-> 
-> greg k-h
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20210928
+i386                 randconfig-c001-20210929
+i386                 randconfig-c001-20210927
+powerpc                    amigaone_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                 mpc8560_ads_defconfig
+m68k                            mac_defconfig
+powerpc                 mpc837x_mds_defconfig
+powerpc                 mpc85xx_cds_defconfig
+mips                         bigsur_defconfig
+arm                          collie_defconfig
+sh                         ap325rxa_defconfig
+powerpc                      mgcoge_defconfig
+mips                       lemote2f_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                     powernv_defconfig
+arm                      pxa255-idp_defconfig
+arm                          pxa168_defconfig
+sh                           se7721_defconfig
+mips                      fuloong2e_defconfig
+sh                        edosk7760_defconfig
+mips                        maltaup_defconfig
+powerpc                       holly_defconfig
+arm                      footbridge_defconfig
+um                                  defconfig
+arc                          axs101_defconfig
+xtensa                    xip_kc705_defconfig
+ia64                          tiger_defconfig
+arm                           spitz_defconfig
+mips                        bcm47xx_defconfig
+sh                          lboxre2_defconfig
+mips                     decstation_defconfig
+arm                         s5pv210_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                     skiroot_defconfig
+ia64                                defconfig
+powerpc                     tqm8555_defconfig
+powerpc                   microwatt_defconfig
+microblaze                          defconfig
+sh                           se7722_defconfig
+arm                            pleb_defconfig
+arm                          ep93xx_defconfig
+arm                     am200epdkit_defconfig
+mips                      maltasmvp_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arm                       imx_v4_v5_defconfig
+powerpc                     tqm8541_defconfig
+powerpc                 linkstation_defconfig
+sh                        sh7763rdp_defconfig
+arm                           sama7_defconfig
+powerpc                     tqm8560_defconfig
+nds32                               defconfig
+powerpc                      ep88xc_defconfig
+m68k                          atari_defconfig
+mips                           ip32_defconfig
+arc                        nsimosci_defconfig
+arm                         bcm2835_defconfig
+powerpc                     ep8248e_defconfig
+m68k                       bvme6000_defconfig
+powerpc                          g5_defconfig
+xtensa                    smp_lx200_defconfig
+sh                            hp6xx_defconfig
+arc                        nsim_700_defconfig
+arm                           tegra_defconfig
+sh                          rsk7203_defconfig
+riscv                            alldefconfig
+sparc64                             defconfig
+arm                            hisi_defconfig
+powerpc                     kilauea_defconfig
+arm                        keystone_defconfig
+arm                        mvebu_v7_defconfig
+mips                            gpr_defconfig
+mips                   sb1250_swarm_defconfig
+sh                           se7750_defconfig
+parisc                           alldefconfig
+sh                          kfr2r09_defconfig
+arm                          simpad_defconfig
+arm                        spear6xx_defconfig
+m68k                        mvme16x_defconfig
+sparc                       sparc32_defconfig
+arm                            mmp2_defconfig
+arm                         assabet_defconfig
+sh                           sh2007_defconfig
+arm                          ixp4xx_defconfig
+sh                          urquell_defconfig
+mips                           ip27_defconfig
+sh                          r7780mp_defconfig
+m68k                        m5272c3_defconfig
+powerpc                 xes_mpc85xx_defconfig
+m68k                         amcore_defconfig
+powerpc                    gamecube_defconfig
+arm                       spear13xx_defconfig
+csky                             alldefconfig
+powerpc                   currituck_defconfig
+sh                           se7619_defconfig
+s390                                defconfig
+sh                           se7780_defconfig
+sh                           se7751_defconfig
+powerpc                     tqm5200_defconfig
+sh                          sdk7780_defconfig
+arm                             ezx_defconfig
+sh                             shx3_defconfig
+x86_64               randconfig-c001-20210928
+arm                  randconfig-c002-20210928
+x86_64               randconfig-c001-20210929
+arm                  randconfig-c002-20210929
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+arc                              allyesconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+parisc                           allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20210929
+i386                 randconfig-a005-20210929
+i386                 randconfig-a002-20210929
+i386                 randconfig-a006-20210929
+i386                 randconfig-a004-20210929
+i386                 randconfig-a003-20210929
+x86_64               randconfig-a014-20210928
+x86_64               randconfig-a011-20210928
+x86_64               randconfig-a013-20210928
+x86_64               randconfig-a012-20210928
+x86_64               randconfig-a015-20210928
+x86_64               randconfig-a016-20210928
+x86_64               randconfig-a002-20210929
+x86_64               randconfig-a005-20210929
+x86_64               randconfig-a001-20210929
+x86_64               randconfig-a006-20210929
+x86_64               randconfig-a003-20210929
+x86_64               randconfig-a004-20210929
+i386                 randconfig-a014-20210928
+i386                 randconfig-a013-20210928
+i386                 randconfig-a016-20210928
+i386                 randconfig-a011-20210928
+i386                 randconfig-a015-20210928
+i386                 randconfig-a012-20210928
+arc                  randconfig-r043-20210928
+riscv                randconfig-r042-20210928
+s390                 randconfig-r044-20210928
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+
+clang tested configs:
+powerpc              randconfig-c003-20210927
+x86_64               randconfig-c007-20210927
+mips                 randconfig-c004-20210927
+arm                  randconfig-c002-20210927
+riscv                randconfig-c006-20210927
+s390                 randconfig-c005-20210927
+i386                 randconfig-c001-20210927
+powerpc              randconfig-c003-20210929
+mips                 randconfig-c004-20210929
+arm                  randconfig-c002-20210929
+x86_64               randconfig-c007-20210929
+riscv                randconfig-c006-20210929
+s390                 randconfig-c005-20210929
+i386                 randconfig-c001-20210929
+x86_64               randconfig-a002-20210928
+x86_64               randconfig-a005-20210928
+x86_64               randconfig-a001-20210928
+x86_64               randconfig-a006-20210928
+x86_64               randconfig-a003-20210928
+x86_64               randconfig-a004-20210928
+i386                 randconfig-a001-20210928
+i386                 randconfig-a005-20210928
+i386                 randconfig-a002-20210928
+i386                 randconfig-a006-20210928
+i386                 randconfig-a004-20210928
+i386                 randconfig-a003-20210928
+x86_64               randconfig-a014-20210929
+x86_64               randconfig-a011-20210929
+x86_64               randconfig-a013-20210929
+x86_64               randconfig-a015-20210929
+x86_64               randconfig-a012-20210929
+x86_64               randconfig-a016-20210929
+i386                 randconfig-a014-20210929
+i386                 randconfig-a013-20210929
+i386                 randconfig-a016-20210929
+i386                 randconfig-a011-20210929
+i386                 randconfig-a015-20210929
+i386                 randconfig-a012-20210929
+hexagon              randconfig-r045-20210929
+riscv                randconfig-r042-20210929
+hexagon              randconfig-r041-20210929
+s390                 randconfig-r044-20210929
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
