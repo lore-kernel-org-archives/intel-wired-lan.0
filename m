@@ -1,64 +1,52 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 29 Sep 2021 07:39:40 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and
- missed notifications fix
-In-Reply-To: <YVR0iKIRYDXQbD+o@unreal>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Wed, 29 Sep 2021 18:24:44 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v1 4/5] net/mlx5: Register
+ separate reload devlink ops for multiport device
+In-Reply-To: <20210929073551.16dd2267@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 References: <cover.1632916329.git.leonro@nvidia.com>
- <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YVR0iKIRYDXQbD+o@unreal>
-Message-ID: <20210929073940.5d7ed022@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <a8bf9a036fe0a590df830a77a31cc81c355f525d.1632916329.git.leonro@nvidia.com>
+ <20210929065549.43b13203@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YVR1PKQjsBfvUTPU@unreal>
+ <20210929072631.437ffad9@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YVR4qDxiQw95jaWK@unreal>
+ <20210929073551.16dd2267@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <YVSFPNq+IDUlZAeI@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 29 Sep 2021 17:13:28 +0300 Leon Romanovsky wrote:
-> On Wed, Sep 29, 2021 at 06:40:04AM -0700, Jakub Kicinski wrote:
-> > On Wed, 29 Sep 2021 15:00:41 +0300 Leon Romanovsky wrote:  
-> > > This series starts from the fixing the bug introduced by implementing
-> > > devlink delayed notifications logic, where I missed some of the
-> > > notifications functions.
+On Wed, Sep 29, 2021 at 07:35:51AM -0700, Jakub Kicinski wrote:
+> On Wed, 29 Sep 2021 17:31:04 +0300 Leon Romanovsky wrote:
+> > On Wed, Sep 29, 2021 at 07:26:31AM -0700, Jakub Kicinski wrote:
+> > > On Wed, 29 Sep 2021 17:16:28 +0300 Leon Romanovsky wrote:  
+> > > > devlink_ops pointer is not constant at this stage, so why can't I copy
+> > > > reload_* pointers to the "main" devlink ops?
+> > > > 
+> > > > I wanted to avoid to copy all pointers.  
 > > > 
-> > > The rest series provides a way to dynamically set devlink ops that is
-> > > needed for mlx5 multiport device and starts cleanup by removing
-> > > not-needed logic.
+> > > Hm. I must be missing a key piece here. IIUC you want to have different
+> > > ops based on some device property. But there is only one
 > > > 
-> > > In the next series, we will delete various publish API, drop general
-> > > lock, annotate the code and rework logic around devlink->lock.
+> > > static struct devlink_ops mlx5_devlink_ops;
 > > > 
-> > > All this is possible because driver initialization is separated from the
-> > > user input now.  
+> > > so how can two devlink instances in the system use that and have
+> > > different ops without a copy?  
 > > 
-> > Swapping ops is a nasty hack in my book.
-> > 
-> > And all that to avoid having two op structures in one driver.
-> > Or to avoid having counters which are always 0?  
+> > No, I have two:
+> > * Base ops - mlx5_devlink_ops
+> > * Extra reload commands - mlx5_devlink_reload
 > 
-> We don't need to advertise counters for feature that is not supported.
-> In multiport mlx5 devices, the reload functionality is not supported, so
-> this change at least make that device to behave like all other netdev
-> devices that don't support devlink reload.
+> Still those are global for the driver, no?
+
+Ugh, yes
+
 > 
-> The ops structure is set very early to make sure that internal devlink
-> routines will be able access driver back during initialization (btw very
-> questionable design choice)
+> What if you have multiple NICs or whatever.
 
-Indeed, is this fixable? Or now that devlink_register() was moved to 
-the end of probe netdev can call ops before instance is registered?
+I missed it and always tested with one device L(.
 
-> and at that stage the driver doesn't know
-> yet which device type it is going to drive.
-> 
-> So the answer is:
-> 1. Can't have two structures.
+I'll add copy-all-ops code.
 
-I still don't understand why. To be clear - swapping full op structures
-is probably acceptable if it's a pure upgrade (existing pointers match).
-Poking new ops into a structure (in alphabetical order if I understand
-your reply to Greg, not destructor-before-contructor) is what I deem
-questionable.
-
-> 2. Same behaviour across all netdev devices.
-
-Unclear what this is referring to.
+Thanks
