@@ -1,70 +1,47 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 29 Sep 2021 22:11:01 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and
- missed notifications fix
-In-Reply-To: <20210929105537.758d5d85@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <cover.1632916329.git.leonro@nvidia.com>
- <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YVR0iKIRYDXQbD+o@unreal>
- <20210929073940.5d7ed022@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YVSG55i75awUpAmn@unreal>
- <20210929105537.758d5d85@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <YVS6RQfcp2YVxrv3@unreal>
+From: Jurkowski, Jerzy Wiktor <jerzy.wiktor.jurkowski@intel.com>
+Date: Wed, 29 Sep 2021 21:22:28 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: Fix failure to re-add LAN/RDMA
+ Tx queues
+In-Reply-To: <20210628175345.50764-1-brett.creeley@intel.com>
+References: <20210628175345.50764-1-brett.creeley@intel.com>
+Message-ID: <DM4PR11MB5389FAFB237B50BF9FC8F2F2C2A99@DM4PR11MB5389.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 10:55:37AM -0700, Jakub Kicinski wrote:
-> On Wed, 29 Sep 2021 18:31:51 +0300 Leon Romanovsky wrote:
-> > On Wed, Sep 29, 2021 at 07:39:40AM -0700, Jakub Kicinski wrote:
-> > > On Wed, 29 Sep 2021 17:13:28 +0300 Leon Romanovsky wrote:  
-> > > > We don't need to advertise counters for feature that is not supported.
-> > > > In multiport mlx5 devices, the reload functionality is not supported, so
-> > > > this change at least make that device to behave like all other netdev
-> > > > devices that don't support devlink reload.
-> > > > 
-> > > > The ops structure is set very early to make sure that internal devlink
-> > > > routines will be able access driver back during initialization (btw very
-> > > > questionable design choice)  
-> > > 
-> > > Indeed, is this fixable? Or now that devlink_register() was moved to 
-> > > the end of probe netdev can call ops before instance is registered?
-> > >   
-> > > > and at that stage the driver doesn't know
-> > > > yet which device type it is going to drive.
-> > > > 
-> > > > So the answer is:
-> > > > 1. Can't have two structures.  
-> > > 
-> > > I still don't understand why. To be clear - swapping full op structures
-> > > is probably acceptable if it's a pure upgrade (existing pointers match).
-> > > Poking new ops into a structure (in alphabetical order if I understand
-> > > your reply to Greg, not destructor-before-contructor) is what I deem
-> > > questionable.  
-> > 
-> > It is sorted simply for readability and not for any other technical
-> > reason.
-> > 
-> > Regarding new ops, this is how we are setting callbacks in RDMA based on
-> > actual device support. It works like a charm.
-> > 
-> > > > 2. Same behaviour across all netdev devices.  
-> > > 
-> > > Unclear what this is referring to.  
-> > 
-> > If your device doesn't support devlink reload, it won't print any
-> > reload counters at all. It is not the case for the multiport mlx5
-> > device. It doesn't support, but still present these counters.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Creeley, Brett
+> Sent: Monday, June 28, 2021 7:54 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ice: Fix failure to re-add LAN/RDMA Tx
+> queues
 > 
-> There's myriad ways you can hide features.
+> Currently if the VSI is rebuilt/removed and the RDMA PF driver is active the
+> RDMA Tx queue scheduler node configuration will not be cleaned up.
+> This will cause the rebuild/re-add of the VSI to fail due to the software
+> structures not being correctly cleaned up for the VSI index.
+> Fix this by always calling ice_rm_vsi_rdma_cfg() for all VSI. If there are no
+> RDMA scheduler nodes created, then there is no harm in calling
+> ice_rm_vsi_rdma_cfg(). This change applies to all VSI types, so if RDMA
+> support is added for other VSI types they will also get this change.
 > 
-> Swapping ops is heavy handed and prone to data races, I don't like it.
-
-I'm not swapping, but setting only in supported devices.
-
-Anyway, please give me a chance to present improved version of this
-mechanism and we will continue from there.
-
-Thanks
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lib.c   |  9 +++++++++
+>  drivers/net/ethernet/intel/ice/ice_sched.c | 13 +++++++++++++
+> drivers/net/ethernet/intel/ice/ice_sched.h |  1 +
+>  3 files changed, 23 insertions(+)
+> 
+Tested-by: Jerzy Wiktor Jurkowski <jerzy.wiktor.jurkowski@intel.com>
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
