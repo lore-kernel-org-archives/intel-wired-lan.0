@@ -1,33 +1,39 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 29 Sep 2021 17:20:01 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and
- missed notifications fix
-In-Reply-To: <20210929065621.20cb08ad@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 29 Sep 2021 07:26:31 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 4/5] net/mlx5: Register
+ separate reload devlink ops for multiport device
+In-Reply-To: <YVR1PKQjsBfvUTPU@unreal>
 References: <cover.1632916329.git.leonro@nvidia.com>
- <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20210929134637.4wlbd5ehbgc55cuo@skbuf>
- <20210929065621.20cb08ad@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <YVR2EYrklpj+CSfo@unreal>
+ <a8bf9a036fe0a590df830a77a31cc81c355f525d.1632916329.git.leonro@nvidia.com>
+ <20210929065549.43b13203@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YVR1PKQjsBfvUTPU@unreal>
+Message-ID: <20210929072631.437ffad9@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Sep 29, 2021 at 06:56:21AM -0700, Jakub Kicinski wrote:
-> On Wed, 29 Sep 2021 13:46:38 +0000 Vladimir Oltean wrote:
-> > On Wed, Sep 29, 2021 at 06:40:04AM -0700, Jakub Kicinski wrote:
-> > > Swapping ops is a nasty hack in my book.
-> > >
-> > > And all that to avoid having two op structures in one driver.
-> > > Or to avoid having counters which are always 0?
-> > >
-> > > Sorry, at the very least you need better explanation for this.  
+On Wed, 29 Sep 2021 17:16:28 +0300 Leon Romanovsky wrote:
+> > > @@ -808,6 +812,9 @@ int mlx5_devlink_register(struct devlink *devlink)
+> > >  	if (err)
+> > >  		goto traps_reg_err;
+> > >  
+> > > +	if (!mlx5_core_is_mp_slave(dev))
+> > > +		devlink_set_ops(devlink, &mlx5_devlink_reload);  
 > > 
-> > Leon, while the discussion about this unfolds, can you please repost
-> > patch 1 separately? :)
+> > Does this work? Where do you make a copy of the ops? ? You can't modify
+> > the driver-global ops, to state the obvious.  
 > 
-> Yes, please and thanks! :)
+> devlink_ops pointer is not constant at this stage, so why can't I copy
+> reload_* pointers to the "main" devlink ops?
+> 
+> I wanted to avoid to copy all pointers.
 
-Done, thanks
-https://lore.kernel.org/netdev/2ed1159291f2a589b013914f2b60d8172fc525c1.1632925030.git.leonro at nvidia.com/T/#u
+Hm. I must be missing a key piece here. IIUC you want to have different
+ops based on some device property. But there is only one
+
+static struct devlink_ops mlx5_devlink_ops;
+
+so how can two devlink instances in the system use that and have
+different ops without a copy?
