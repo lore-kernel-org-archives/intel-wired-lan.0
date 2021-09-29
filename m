@@ -1,65 +1,61 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 29 Sep 2021 16:12:19 +0000
-Subject: [Intel-wired-lan] [PATCH -next] intel: Simplify bool conversion
-In-Reply-To: <1632898586-96655-1-git-send-email-yang.lee@linux.alibaba.com>
-References: <1632898586-96655-1-git-send-email-yang.lee@linux.alibaba.com>
-Message-ID: <572f388c1678cbd8354f8788fbb0243396ec76d9.camel@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 29 Sep 2021 10:55:37 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/5] Devlink reload and
+ missed notifications fix
+In-Reply-To: <YVSG55i75awUpAmn@unreal>
+References: <cover.1632916329.git.leonro@nvidia.com>
+ <20210929064004.3172946e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YVR0iKIRYDXQbD+o@unreal>
+ <20210929073940.5d7ed022@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YVSG55i75awUpAmn@unreal>
+Message-ID: <20210929105537.758d5d85@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-09-29 at 14:56 +0800, Yang Li wrote:
-> Fix the following coccicheck warning:
-> ./drivers/net/ethernet/intel/i40e/i40e_xsk.c:229:35-40: WARNING:
-> conversion to bool not needed here
-> ./drivers/net/ethernet/intel/ice/ice_xsk.c:399:35-40: WARNING:
-> conversion to bool not needed here
+On Wed, 29 Sep 2021 18:31:51 +0300 Leon Romanovsky wrote:
+> On Wed, Sep 29, 2021 at 07:39:40AM -0700, Jakub Kicinski wrote:
+> > On Wed, 29 Sep 2021 17:13:28 +0300 Leon Romanovsky wrote:  
+> > > We don't need to advertise counters for feature that is not supported.
+> > > In multiport mlx5 devices, the reload functionality is not supported, so
+> > > this change at least make that device to behave like all other netdev
+> > > devices that don't support devlink reload.
+> > > 
+> > > The ops structure is set very early to make sure that internal devlink
+> > > routines will be able access driver back during initialization (btw very
+> > > questionable design choice)  
+> > 
+> > Indeed, is this fixable? Or now that devlink_register() was moved to 
+> > the end of probe netdev can call ops before instance is registered?
+> >   
+> > > and at that stage the driver doesn't know
+> > > yet which device type it is going to drive.
+> > > 
+> > > So the answer is:
+> > > 1. Can't have two structures.  
+> > 
+> > I still don't understand why. To be clear - swapping full op structures
+> > is probably acceptable if it's a pure upgrade (existing pointers match).
+> > Poking new ops into a structure (in alphabetical order if I understand
+> > your reply to Greg, not destructor-before-contructor) is what I deem
+> > questionable.  
 > 
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 2 +-
->  drivers/net/ethernet/intel/ice/ice_xsk.c   | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> It is sorted simply for readability and not for any other technical
+> reason.
+> 
+> Regarding new ops, this is how we are setting callbacks in RDMA based on
+> actual device support. It works like a charm.
+> 
+> > > 2. Same behaviour across all netdev devices.  
+> > 
+> > Unclear what this is referring to.  
+> 
+> If your device doesn't support devlink reload, it won't print any
+> reload counters at all. It is not the case for the multiport mlx5
+> device. It doesn't support, but still present these counters.
 
-Acked-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+There's myriad ways you can hide features.
 
-This applies to patches that went through BPF[1] and aren't on the
-Intel wired LAN yet. BPF - did you want to pick this up?
-
-[1]
-https://patchwork.kernel.org/project/netdevbpf/list/?series=550775&stat
-e=*
-
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> index 6f85879..ea06e95 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-> @@ -226,7 +226,7 @@ bool i40e_alloc_rx_buffers_zc(struct i40e_ring
-> *rx_ring, u16 count)
->  	rx_desc->wb.qword1.status_error_len = 0;
->  	i40e_release_rx_desc(rx_ring, ntu);
->  
-> -	return count == nb_buffs ? true : false;
-> +	return count == nb_buffs;
->  }
->  
->  /**
-> diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c
-> b/drivers/net/ethernet/intel/ice/ice_xsk.c
-> index 7682eaa..35b6e81 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-> @@ -396,7 +396,7 @@ bool ice_alloc_rx_bufs_zc(struct ice_ring
-> *rx_ring, u16 count)
->  	rx_desc->wb.status_error0 = 0;
->  	ice_release_rx_desc(rx_ring, ntu);
->  
-> -	return count == nb_buffs ? true : false;
-> +	return count == nb_buffs;
->  }
->  
->  /**
+Swapping ops is heavy handed and prone to data races, I don't like it.
