@@ -1,11 +1,11 @@
 From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Thu, 30 Sep 2021 04:55:07 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v6 7/9] ice: Allow changing
- lan_en and lb_en on all kinds of filters
-In-Reply-To: <1628239746-17380-8-git-send-email-wojciech.drewek@intel.com>
+Date: Thu, 30 Sep 2021 04:56:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v6 4/9] ice: allow adding
+ advanced rules
+In-Reply-To: <1628239746-17380-5-git-send-email-wojciech.drewek@intel.com>
 References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
- <1628239746-17380-8-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <MW3PR11MB4554D2C9C85B4F18B4C23C129CAA9@MW3PR11MB4554.namprd11.prod.outlook.com>
+ <1628239746-17380-5-git-send-email-wojciech.drewek@intel.com>
+Message-ID: <MW3PR11MB4554C5A25AE5E05CEF3AB6D19CAA9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 >Wojciech Drewek
 >Sent: Friday, August 6, 2021 2:19 PM
 To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v6 7/9] ice: Allow changing lan_en
->and lb_en on all kinds of filters
+>Subject: [Intel-wired-lan] [PATCH net-next v6 4/9] ice: allow adding advanced
+>rules
 >
->From: Michal Swiatkowski <michal.swiatkowski@intel.com>
+>From: Grishma Kotecha <grishma.kotecha@intel.com>
 >
->There is no way to change default lan_en and lb_en flags while adding new
->rule. Add function that allows changing these flags on rule determined by rule
->id and recipe id.
+>Define dummy packet headers to allow adding advanced rules in HW. This
+>header is used as admin queue command parameter for adding a rule.
+>The firmware will extract correct fields and will use them in look ups.
 >
->Function checks if the rule is presented on regular rules list or advance rules
->list and call the appropriate function to update rule entry.
+>Define each supported packets header and offsets to words used in recipe.
+>Supported headers:
+>- MAC + IPv4 + UDP
+>- MAC + VLAN + IPv4 + UDP
+>- MAC + IPv4 + TCP
+>- MAC + VLAN + IPv4 + TCP
+>- MAC + IPv6 + UDP
+>- MAC + VLAN + IPv6 + UDP
+>- MAC + IPv6 + TCP
+>- MAC + VLAN + IPv6 + TCP
 >
->As rules with ICE_SW_LKUP_DFLT recipe aren't tracked in a list, implement
->function which updates flags without searching for rules based only on rule id.
+>Add code for creating an advanced rule. Rule needs to match defined dummy
+>packet, if not return error, which means that this type of rule isn't currently
+>supported.
 >
->Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+>The first step in adding advanced rule is searching for an advanced recipe
+>matching this kind of rule. If it doesn't exist new recipe is created. Dummy
+>packet has to be filled with the correct header field value from the rule
+>definition. It will be used to do look up in HW.
+>
+>Support searching for existing advance rule entry. It is used in case of adding
+>the same rule on different VSI. In this case, instead of creating new rule, the
+>existing one should be updated with refreshed VSI list.
+>
+>Add initialization for prof_res_bm_init flag to zero so that the possible
+>resource for fv in the files can be initialized.
+>
+>Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
+>Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+>Signed-off-by: Grishma Kotecha <grishma.kotecha@intel.com>
 >Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 >---
-> drivers/net/ethernet/intel/ice/ice_fltr.c | 127
->++++++++++++++++++++++++++++++
-> 1 file changed, 127 insertions(+)
+> drivers/net/ethernet/intel/ice/ice_common.c |   1 +
+> drivers/net/ethernet/intel/ice/ice_switch.c | 832
+>+++++++++++++++++++++++++++-  drivers/net/ethernet/intel/ice/ice_switch.h
+>|  14 +
+> drivers/net/ethernet/intel/ice/ice_type.h   |   1 +
+> 4 files changed, 847 insertions(+), 1 deletion(-)
 >
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
