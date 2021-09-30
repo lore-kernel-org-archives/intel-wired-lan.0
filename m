@@ -1,104 +1,56 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 30 Sep 2021 16:29:42 +0000
-Subject: [Intel-wired-lan] [PATCH net] ice: Print the api_patch as part
- of the fw.mgmt.api
-In-Reply-To: <20210927182150.234879-1-brett.creeley@intel.com>
-References: <20210927182150.234879-1-brett.creeley@intel.com>
-Message-ID: <BYAPR11MB336791A98D3AC8C03783141DFCAA9@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 30 Sep 2021 10:31:13 -0700
+Subject: [Intel-wired-lan] Oops in during sriov_enable with ixgbe driver
+In-Reply-To: <8e4bbd5c59de31db71f718556654c0aa077df03d.camel@linux.ibm.com>
+References: <8e4bbd5c59de31db71f718556654c0aa077df03d.camel@linux.ibm.com>
+Message-ID: <5ea40608-388e-1137-9b86-85aad1cad6f6@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 9/28/2021 4:56 AM, Niklas Schnelle wrote:
+> Hi Jesse, Hi Tony,
+> 
+> Since v5.15-rc1 I've been having problems with enabling SR-IOV VFs on
+> my private workstation with an Intel 82599 NIC with the ixgbe driver. I
+> haven't had time to bisect or look closer but since it still happens on
+> v5.15-rc3 I wanted to at least check if you're aware of the problem as
+> I couldn't find anything on the web.
+
+We haven't heard anything of this problem.
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Brett Creeley
-> Sent: Monday, September 27, 2021 11:52 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net] ice: Print the api_patch as part of the
-> fw.mgmt.api
-> 
-> Currently when a user uses "devlink dev info", the fw.mgmt.api will be the
-> major.minor numbers as shown below:
-> 
-> devlink dev info pci/0000:3b:00.0
-> pci/0000:3b:00.0:
->   driver ice
->   serial_number 00-01-00-ff-ff-00-00-00
->   versions:
->       fixed:
->         board.id K91258-000
->       running:
->         fw.mgmt 6.1.2
->         fw.mgmt.api 1.7 <--- No patch number included
->         fw.mgmt.build 0xd75e7d06
->         fw.mgmt.srev 5
->         fw.undi 1.2992.0
->         fw.undi.srev 5
->         fw.psid.api 3.10
->         fw.bundle_id 0x800085cc
->         fw.app.name ICE OS Default Package
->         fw.app 1.3.27.0
->         fw.app.bundle_id 0xc0000001
->         fw.netlist 3.10.2000-3.1e.0
->         fw.netlist.build 0x2a76e110
->       stored:
->         fw.mgmt.srev 5
->         fw.undi 1.2992.0
->         fw.undi.srev 5
->         fw.psid.api 3.10
->         fw.bundle_id 0x800085cc
->         fw.netlist 3.10.2000-3.1e.0
->         fw.netlist.build 0x2a76e110
-> 
-> There are many features in the driver that depend on the major, minor, and
-> patch version of the FW. Without the patch number in the output for
-> fw.mgmt.api debugging issues related to the FW API version is difficult.
-> Also, using major.minor.patch aligns with the existing firmware version which
-> uses a 3 digit value.
-> 
-> Fix this by making the fw.mgmt.api print the major.minor.patch versions.
-> Shown below is the result:
-> 
-> devlink dev info pci/0000:3b:00.0
-> pci/0000:3b:00.0:
->   driver ice
->   serial_number 00-01-00-ff-ff-00-00-00
->   versions:
->       fixed:
->         board.id K91258-000
->       running:
->         fw.mgmt 6.1.2
->         fw.mgmt.api 1.7.9 <--- patch number included
->         fw.mgmt.build 0xd75e7d06
->         fw.mgmt.srev 5
->         fw.undi 1.2992.0
->         fw.undi.srev 5
->         fw.psid.api 3.10
->         fw.bundle_id 0x800085cc
->         fw.app.name ICE OS Default Package
->         fw.app 1.3.27.0
->         fw.app.bundle_id 0xc0000001
->         fw.netlist 3.10.2000-3.1e.0
->         fw.netlist.build 0x2a76e110
->       stored:
->         fw.mgmt.srev 5
->         fw.undi 1.2992.0
->         fw.undi.srev 5
->         fw.psid.api 3.10
->         fw.bundle_id 0x800085cc
->         fw.netlist 3.10.2000-3.1e.0
->         fw.netlist.build 0x2a76e110
-> 
-> Fixes: ff2e5c700e08 ("ice: add basic handler for devlink .info_get")
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> ---
->  Documentation/networking/devlink/ice.rst     | 9 +++++----
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 3 ++-
->  2 files changed, 7 insertions(+), 5 deletions(-)
-> 
+> I get below Oops when trying "echo 2 > /sys/bus/pci/.../sriov_numvfs"
+> and suspect that the earlier ACPI messages could have something to do
+> with that, absolutely not an ACPI expert though. If there is a need I
+> could do a bisect.
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Hi Niklas, thanks for the report, I added the Intel Driver's list for
+more exposure.
+
+I asked the developers working on that driver to take a look and they
+tried to reproduce, and were unable to do so. This might be related to
+your platform, which strongly suggests that the ACPI stuff may be related.
+
+We have tried to reproduce but everything works fine no call trace in
+scenario with creating VF.
+
+This is good in that it doesn't seem to be a general failure, you may
+want to file a kernel bugzilla (bugzilla.kernel.org) to track the issue,
+and I hope that @Rafael might have some insight.
+
+This issue may be related to changes in acpi_pci_find_companion,
+but as I say, we are not able to reproduce this.
+
+commit 59dc33252ee777e02332774fbdf3381b1d5d5f5d
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Tue Aug 24 16:43:55 2021 +0200
+    PCI: VMD: ACPI: Make ACPI companion lookup work for VMD bus
+
+At this point maybe a bisect would be helpful, since this seems to be a
+corner case that we used to handle but no longer do.
+
+Thanks!
+Jesse
