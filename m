@@ -1,57 +1,122 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Thu, 30 Sep 2021 09:04:58 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v6 1/9] ice: implement low
- level recipes functions
-In-Reply-To: <1628239746-17380-2-git-send-email-wojciech.drewek@intel.com>
-References: <1628239746-17380-1-git-send-email-wojciech.drewek@intel.com>
- <1628239746-17380-2-git-send-email-wojciech.drewek@intel.com>
-Message-ID: <MW3PR11MB4554696BCE4E7A93674E470C9CAA9@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 30 Sep 2021 18:44:10 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ e017ad3a31946307af14ad704a0e82c9d3114052
+Message-ID: <615594fa.iSyQZ/9XrYAm+y5O%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Wojciech Drewek
->Sent: Friday, August 6, 2021 2:19 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next v6 1/9] ice: implement low level
->recipes functions
->
->From: Grishma Kotecha <grishma.kotecha@intel.com>
->
->Add code to manage recipes and profiles on admin queue layer.
->
->Allow the driver to add a new recipe and update an existing one. Get a recipe
->and get a recipe to profile association is mostly used in update existing recipes
->code.
->
->Only default recipes can be updated. An update is done by reading recipes
->from HW, changing their params and calling add recipe command.
->
->Support following admin queue commands:
->- ice_aqc_opc_add_recipe (0x0290) - create a recipe with protocol header
->information and other details that determine how this recipe filter works
->- ice_aqc_opc_recipe_to_profile (0x0291) - associate a switch recipe to a
->profile
->- ice_aqc_opc_get_recipe (0x0292) - get details of an exsisting recipe
->- ice_aqc_opc_get_recipe_to_profile (0x0293) - get a recipe associated with
->profile ID
->
->Define ICE_AQC_RES_TYPE_RECIPE resource type to hold a switch recipe. It is
->needed when a new switch recipe needs to be created.
->
->Co-developed-by: Dan Nowlin <dan.nowlin@intel.com>
->Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
->Signed-off-by: Grishma Kotecha  <grishma.kotecha@intel.com>
->Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
->---
-> drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  57 +++++++
-> drivers/net/ethernet/intel/ice/ice_switch.c     | 213
->++++++++++++++++++++++++
-> drivers/net/ethernet/intel/ice/ice_switch.h     |   9 +
-> 3 files changed, 279 insertions(+)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: e017ad3a31946307af14ad704a0e82c9d3114052  ice: Print the api_patch as part of the fw.mgmt.api
+
+elapsed time: 1146m
+
+configs tested: 93
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                              allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+i386                 randconfig-c001-20210929
+powerpc                     taishan_defconfig
+arm                         mv78xx0_defconfig
+m68k                        stmark2_defconfig
+m68k                             allyesconfig
+riscv                            allyesconfig
+powerpc                       holly_defconfig
+mips                            e55_defconfig
+mips                        bcm63xx_defconfig
+arm                    vt8500_v6_v7_defconfig
+sh                 kfr2r09-romimage_defconfig
+arm                         bcm2835_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-c001-20210929
+arm                  randconfig-c002-20210929
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+parisc                              defconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+arc                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a002-20210929
+x86_64               randconfig-a005-20210929
+x86_64               randconfig-a001-20210929
+x86_64               randconfig-a006-20210929
+x86_64               randconfig-a003-20210929
+x86_64               randconfig-a004-20210929
+i386                 randconfig-a001-20210929
+i386                 randconfig-a005-20210929
+i386                 randconfig-a002-20210929
+i386                 randconfig-a006-20210929
+i386                 randconfig-a004-20210929
+i386                 randconfig-a003-20210929
+arc                  randconfig-r043-20210929
+riscv                            allmodconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+
+clang tested configs:
+x86_64               randconfig-a014-20210929
+x86_64               randconfig-a011-20210929
+x86_64               randconfig-a013-20210929
+x86_64               randconfig-a015-20210929
+x86_64               randconfig-a012-20210929
+x86_64               randconfig-a016-20210929
+i386                 randconfig-a014-20210929
+i386                 randconfig-a013-20210929
+i386                 randconfig-a016-20210929
+i386                 randconfig-a011-20210929
+i386                 randconfig-a015-20210929
+i386                 randconfig-a012-20210929
+hexagon              randconfig-r045-20210929
+riscv                randconfig-r042-20210929
+hexagon              randconfig-r041-20210929
+s390                 randconfig-r044-20210929
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
