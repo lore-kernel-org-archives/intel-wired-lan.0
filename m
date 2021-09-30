@@ -1,122 +1,85 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 30 Sep 2021 18:44:10 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- e017ad3a31946307af14ad704a0e82c9d3114052
-Message-ID: <615594fa.iSyQZ/9XrYAm+y5O%lkp@intel.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Thu, 30 Sep 2021 16:06:51 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2] ixgbe: Consider xsk pool's
+ frame size for MTU size
+Message-ID: <20210930140651.2249972-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: e017ad3a31946307af14ad704a0e82c9d3114052  ice: Print the api_patch as part of the fw.mgmt.api
+The driver has to a ensure that a network packet is not using more than
+one page for its data if a XDP program is used.
+This results in an upper limit of 1500 bytes. This can be increased a
+little if the MTU was programmed to 1514..3072 bytes before loading the
+XDP program. By setting this increased MTU size the driver will set the
+__IXGBE_RX_3K_BUFFER flag which in turn will allow to use 3KiB as the
+upper limit.
+This looks like a hack and the upper limit is could increased further.
+If the user configured a memory pool then PAGE_SIZE is used as BSIZEPKT
+and RLPML is set to pool's memory size as is the card's maximum frame
+size.
+The result is that a MTU of 3520 bytes can be programmed and every
+packet is stored a single page.
 
-elapsed time: 1146m
+If a RX ring has a pool assigned use its size while comparing for the
+maximal MTU size.
 
-configs tested: 93
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                              allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                 randconfig-c001-20210929
-powerpc                     taishan_defconfig
-arm                         mv78xx0_defconfig
-m68k                        stmark2_defconfig
-m68k                             allyesconfig
-riscv                            allyesconfig
-powerpc                       holly_defconfig
-mips                            e55_defconfig
-mips                        bcm63xx_defconfig
-arm                    vt8500_v6_v7_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                         bcm2835_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-c001-20210929
-arm                  randconfig-c002-20210929
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-parisc                              defconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                             allyesconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64               randconfig-a002-20210929
-x86_64               randconfig-a005-20210929
-x86_64               randconfig-a001-20210929
-x86_64               randconfig-a006-20210929
-x86_64               randconfig-a003-20210929
-x86_64               randconfig-a004-20210929
-i386                 randconfig-a001-20210929
-i386                 randconfig-a005-20210929
-i386                 randconfig-a002-20210929
-i386                 randconfig-a006-20210929
-i386                 randconfig-a004-20210929
-i386                 randconfig-a003-20210929
-arc                  randconfig-r043-20210929
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-
-clang tested configs:
-x86_64               randconfig-a014-20210929
-x86_64               randconfig-a011-20210929
-x86_64               randconfig-a013-20210929
-x86_64               randconfig-a015-20210929
-x86_64               randconfig-a012-20210929
-x86_64               randconfig-a016-20210929
-i386                 randconfig-a014-20210929
-i386                 randconfig-a013-20210929
-i386                 randconfig-a016-20210929
-i386                 randconfig-a011-20210929
-i386                 randconfig-a015-20210929
-i386                 randconfig-a012-20210929
-hexagon              randconfig-r045-20210929
-riscv                randconfig-r042-20210929
-hexagon              randconfig-r041-20210929
-s390                 randconfig-r044-20210929
-
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+v1?v2: Remove RFC. Repost of
+	https://lore.kernel.org/r/20210622162616.eadk2u5hmf4ru5jd at linutronix.de
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 21 +++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 24e06ba6f5e93..ed451f32e1980 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6722,6 +6722,23 @@ static void ixgbe_free_all_rx_resources(struct ixgbe_adapter *adapter)
+ 			ixgbe_free_rx_resources(adapter->rx_ring[i]);
+ }
+ 
++static int ixgbe_validate_frame_size(unsigned int frame_size,
++				     struct ixgbe_ring *ring)
++{
++	struct xsk_buff_pool *xsk_pool;
++	unsigned int buf_len;
++
++	xsk_pool = ring->xsk_pool;
++	if (xsk_pool)
++		buf_len = xsk_pool_get_rx_frame_size(xsk_pool);
++	else
++		buf_len = ixgbe_rx_bufsz(ring);
++
++	if (frame_size > buf_len)
++		return -EINVAL;
++	return 0;
++}
++
+ /**
+  * ixgbe_change_mtu - Change the Maximum Transfer Unit
+  * @netdev: network interface device structure
+@@ -6741,7 +6758,7 @@ static int ixgbe_change_mtu(struct net_device *netdev, int new_mtu)
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+ 			struct ixgbe_ring *ring = adapter->rx_ring[i];
+ 
+-			if (new_frame_size > ixgbe_rx_bufsz(ring)) {
++			if (ixgbe_validate_frame_size(new_frame_size, ring)) {
+ 				e_warn(probe, "Requested MTU size is not supported with XDP\n");
+ 				return -EINVAL;
+ 			}
+@@ -10126,7 +10143,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 		if (ring_is_rsc_enabled(ring))
+ 			return -EINVAL;
+ 
+-		if (frame_size > ixgbe_rx_bufsz(ring))
++		if (ixgbe_validate_frame_size(frame_size, ring))
+ 			return -EINVAL;
+ 	}
+ 
+-- 
+2.33.0
+
