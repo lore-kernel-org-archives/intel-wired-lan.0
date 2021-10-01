@@ -1,39 +1,56 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Fri, 1 Oct 2021 15:28:59 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: Make use of the helper function
- devm_add_action_or_reset()
-In-Reply-To: <20210922125947.480-1-caihuoqing@baidu.com>
-References: <20210922125947.480-1-caihuoqing@baidu.com>
-Message-ID: <BYAPR11MB3367C4843DB61D410B095341FCAB9@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Caleb Sander <csander@purestorage.com>
+Date: Fri,  1 Oct 2021 09:50:06 -0600
+Subject: [Intel-wired-lan] [PATCH] i40e: avoid spin loop in
+ i40e_asq_send_command()
+Message-ID: <20211001155006.30732-1-csander@purestorage.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Previously, the kernel could spend up to 250 ms waiting for a command to
+be submitted to an admin queue. This function is also called in a loop,
+e.g., in i40e_get_module_eeprom() (through i40e_aq_get_phy_register()),
+so the time spent in the kernel may be even higher. We observed
+scheduling delays of over 2 seconds in production,
+with stacktraces pointing to this code as the culprit.
 
+Add a call to cond_resched() so the loop can yield the CPU.
+Also compute the total time using the jiffies counter
+instead of assuming udelay() waits the precise time interval requested.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Cai Huoqing
-> Sent: Wednesday, September 22, 2021 6:30 PM
-> To: caihuoqing at baidu.com
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; Jakub Kicinski <kuba@kernel.org>; David S. Miller
-> <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH] ice: Make use of the helper function
-> devm_add_action_or_reset()
-> 
-> The helper function devm_add_action_or_reset() will internally call
-> devm_add_action(), and if devm_add_action() fails then it will execute the
-> action mentioned and return the error code. So use
-> devm_add_action_or_reset() instead of devm_add_action() to simplify the
-> error handling, reduce the code.
-> 
-> Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
+Signed-off-by: Caleb Sander <csander@purestorage.com>
+Reviewed-by: Joern Engel <joern@purestorage.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 593912b17..f1fcb867a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -902,7 +902,7 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+ 	 * we need to wait for desc write back
+ 	 */
+ 	if (!details->async && !details->postpone) {
+-		u32 total_delay = 0;
++		unsigned long timeout_end = jiffies + usecs_to_jiffies(hw->aq.asq_cmd_timeout);
+ 
+ 		do {
+ 			/* AQ designers suggest use of head for better
+@@ -910,9 +910,9 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+ 			 */
+ 			if (i40e_asq_done(hw))
+ 				break;
++			cond_resched();
+ 			udelay(50);
+-			total_delay += 50;
+-		} while (total_delay < hw->aq.asq_cmd_timeout);
++		} while (time_before(jiffies, timeout_end));
+ 	}
+ 
+ 	/* if ready, copy the desc back to temp */
+-- 
+2.17.1
+
