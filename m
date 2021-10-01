@@ -1,834 +1,773 @@
-From: Barry Song <21cnbao@gmail.com>
-Date: Sat, 16 Oct 2021 23:11:07 +1300
-Subject: [Intel-wired-lan] [PATCH v3 0/3] PCI/MSI: Clarify the IRQ sysfs
- ABI for PCI devices
-In-Reply-To: <20210825102636.52757-1-21cnbao@gmail.com>
-References: <20210825102636.52757-1-21cnbao@gmail.com>
-Message-ID: <CAGsJ_4y6gXDbO9XxbWeKwYcUViTR-dGquH3u-nBa98nWTNHJ5w@mail.gmail.com>
+From: Karol Kolacinski <karol.kolacinski@intel.com>
+Date: Fri,  1 Oct 2021 11:06:38 +0200
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: add TTY device for GNSS
+ module for E810T device
+Message-ID: <20211001090638.175419-1-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Aug 25, 2021 at 10:26 PM Barry Song <21cnbao@gmail.com> wrote:
->
-> From: Barry Song <song.bao.hua@hisilicon.com>
->
->
-> /sys/bus/pci/devices/.../irq has been there for many years but it has never
-> been documented. This patchset is trying to clarify it.
->
-> -v3:
->   - Don't attempt to modify the current behaviour of IRQ ABI for MSI-X
->   - Make MSI IRQ ABI more explicit(return 1st IRQ of the IRQ vector)
->   - Add Marc's patch of removing default_irq from the previous comment to
->     the series.
->   Note patch 3/3 indirectly changed the code of pci_restore_msi_state(),
->   drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c is the only driver
->   calling this API. I would appreciate testing done from this driver's
->   maintainers.
->
-> -v2:
->   - split into two patches according to Bjorn's comments;
->   - Add Greg's Acked-by, thanks for reviewing!
->   https://lore.kernel.org/lkml/20210820223744.8439-1-21cnbao at gmail.com/
->
-> -v1:
->   https://lore.kernel.org/lkml/20210813122650.25764-1-21cnbao at gmail.com/#t
->
-> Barry Song (2):
->   Documentation: ABI: sysfs-bus-pci: Add description for IRQ entry
+Add a new ice_gnss.c file for holding the basic GNSS module functions.
+If the device supports GNSS module, call the new ice_gnss_init and
+ice_gnss_release functions where appropriate.
 
-Hi Marc, Bjorn,
-I found there are more than 700 drivers which are directly accessing
-pci_dev->irq.
-Do you want to just take the documentation patch 1/3 as anyway we need the ABI
-document, or do you want to continue changing all of the 700 drivers to use
-pci_irq_vector(pdev, 0) instead?
+Implement basic functionality for reading the data from GNSS module
+using TTY device.
 
-the list of involved drivers:
-./sound/pci/als300.c
-./sound/pci/ymfpci/ymfpci_main.c
-./sound/pci/ymfpci/ymfpci.c
-./sound/pci/aw2/aw2-alsa.c
-./sound/pci/trident/trident_main.c
-./sound/pci/trident/trident.c
-./sound/pci/fm801.c
-./sound/pci/lola/lola.c
-./sound/pci/ali5451/ali5451.c
-./sound/pci/es1938.c
-./sound/pci/lx6464es/lx6464es.c
-./sound/pci/mixart/mixart.c
-./sound/pci/au88x0/au88x0.c
-./sound/pci/ad1889.c
-./sound/pci/als4000.c
-./sound/pci/cmipci.c
-./sound/pci/sis7019.c
-./sound/pci/ca0106/ca0106_main.c
-./sound/pci/ctxfi/cthw20k2.c
-./sound/pci/ctxfi/cthw20k1.c
-./sound/pci/via82xx_modem.c
-./sound/pci/ice1712/ice1712.c
-./sound/pci/ice1712/ice1724.c
-./sound/pci/pcxhr/pcxhr.c
-./sound/pci/maestro3.c
-./sound/pci/rme32.c
-./sound/pci/sonicvibes.c
-./sound/pci/via82xx.c
-./sound/pci/intel8x0.c
-./sound/pci/riptide/riptide.c
-./sound/pci/cs46xx/cs46xx.c
-./sound/pci/cs46xx/cs46xx_lib.c
-./sound/pci/atiixp_modem.c
-./sound/pci/korg1212/korg1212.c
-./sound/pci/atiixp.c
-./sound/pci/es1968.c
-./sound/pci/hda/hda_intel.c
-./sound/pci/intel8x0m.c
-./sound/pci/rme96.c
-./sound/pci/emu10k1/emu10k1.c
-./sound/pci/emu10k1/emu10k1_main.c
-./sound/pci/emu10k1/emu10k1x.c
-./sound/pci/oxygen/oxygen_lib.c
-./sound/pci/rme9652/hdsp.c
-./sound/pci/rme9652/hdspm.c
-./sound/pci/rme9652/rme9652.c
-./sound/pci/cs5535audio/cs5535audio.c
-./sound/pci/cs4281.c
-./sound/pci/nm256/nm256.c
-./sound/pci/bt87x.c
-./sound/pci/asihpi/hpi6205.c
-./sound/pci/asihpi/hpioctl.c
-./sound/pci/ens1370.c
-./sound/pci/azt3328.c
-./sound/pci/echoaudio/echoaudio.c
-./sound/pci/vx222/vx222.c
-./sound/soc/intel/atom/sst/sst_pci.c
-./sound/soc/intel/skylake/skl.c
-./sound/soc/sof/intel/hda.c
-./sound/soc/sof/intel/pci-tng.c
-./sound/soc/sof/intel/hda-dsp.c
-./sound/soc/amd/renoir/rn-pci-acp3x.c
-./sound/soc/amd/vangogh/pci-acp5x.c
-./sound/soc/amd/raven/pci-acp3x.c
-./sound/ppc/pmac.c
-./arch/ia64/kernel/msi_ia64.c
-./arch/x86/pci/intel_mid_pci.c
-./arch/x86/pci/fixup.c
-./arch/x86/pci/xen.c
-./arch/x86/pci/irq.c
-./arch/x86/platform/intel-mid/pwr.c
-./arch/x86/hyperv/irqdomain.c
-./arch/x86/kernel/devicetree.c
-./arch/x86/kernel/apic/msi.c
-./arch/arm/mach-footbridge/cats-pci.c
-./arch/arm/mach-cns3xxx/pcie.c
-./arch/s390/pci/pci_irq.c
-./arch/microblaze/pci/pci-common.c
-./arch/um/drivers/virt-pci.c
-./arch/sparc/kernel/leon_pci_grpci1.c
-./arch/sparc/kernel/leon_pci_grpci2.c
-./arch/sparc/kernel/pci.c
-./arch/sparc/kernel/pcic.c
-./arch/alpha/kernel/core_marvel.c
-./arch/alpha/kernel/sys_jensen.c
-./arch/alpha/kernel/sys_dp264.c
-./arch/alpha/kernel/sys_sable.c
-./arch/alpha/kernel/sys_titan.c
-./arch/alpha/kernel/sys_marvel.c
-./arch/alpha/kernel/sys_takara.c
-./arch/alpha/kernel/sys_cabriolet.c
-./arch/alpha/kernel/sys_rawhide.c
-./arch/alpha/kernel/sys_rx164.c
-./arch/alpha/kernel/sys_noritake.c
-./arch/alpha/kernel/sys_wildfire.c
-./arch/alpha/kernel/sys_sio.c
-./arch/alpha/kernel/sys_alcor.c
-./arch/alpha/kernel/sys_eiger.c
-./arch/alpha/kernel/sys_mikasa.c
-./arch/alpha/kernel/sys_eb64p.c
-./arch/powerpc/platforms/embedded6xx/mvme5100.c
-./arch/powerpc/platforms/maple/pci.c
-./arch/powerpc/platforms/cell/axon_msi.c
-./arch/powerpc/platforms/4xx/msi.c
-./arch/powerpc/platforms/4xx/hsta_msi.c
-./arch/powerpc/platforms/fsl_uli1575.c
-./arch/powerpc/platforms/powermac/pci.c
-./arch/powerpc/platforms/pasemi/msi.c
-./arch/powerpc/platforms/pasemi/dma_lib.c
-./arch/powerpc/platforms/pasemi/setup.c
-./arch/powerpc/platforms/44x/ppc476.c
-./arch/powerpc/platforms/85xx/mpc85xx_cds.c
-./arch/powerpc/platforms/powernv/pci-ioda.c
-./arch/powerpc/platforms/pseries/msi.c
-./arch/powerpc/platforms/pseries/setup.c
-./arch/powerpc/platforms/chrp/pci.c
-./arch/powerpc/sysdev/mpic_u3msi.c
-./arch/powerpc/sysdev/fsl_msi.c
-./arch/powerpc/kernel/pci-common.c
-./arch/powerpc/kernel/legacy_serial.c
-./arch/powerpc/kernel/eeh_driver.c
-./arch/powerpc/kernel/pci_of_scan.c
-./arch/mips/pci/pci-bcm47xx.c
-./arch/mips/pci/pci-ar2315.c
-./arch/mips/pci/pci-sb1250.c
-./arch/mips/pci/msi-octeon.c
-./arch/mips/pci/pci-rt3883.c
-./arch/mips/pci/msi-xlp.c
-./arch/mips/pci/pci-xlr.c
-./arch/mips/pci/fixup-lemote2f.c
-./arch/mips/pci/pci-mt7620.c
-./arch/mips/loongson64/hpet.c
-./arch/mips/netlogic/xlp/usb-init.c
-./arch/mips/netlogic/xlp/ahci-init-xlp2.c
-./arch/mips/netlogic/xlp/ahci-init.c
-./arch/mips/netlogic/xlp/usb-init-xlp2.c
-./drivers/uio/uio_sercos3.c
-./drivers/uio/uio_netx.c
-./drivers/uio/uio_aec.c
-./drivers/uio/uio_mf624.c
-./drivers/uio/uio_cif.c
-./drivers/uio/uio_pci_generic.c
-./drivers/ntb/test/ntb_msi_test.c
-./drivers/ntb/hw/intel/ntb_hw_gen1.c
-./drivers/ntb/hw/amd/ntb_hw_amd.c
-./drivers/bus/mhi/pci_generic.c
-./drivers/net/fddi/defxx.c
-./drivers/net/fddi/skfp/skfddi.c
-./drivers/net/vmxnet3/vmxnet3_drv.c
-./drivers/net/wwan/iosm/iosm_ipc_irq.c
-./drivers/net/wwan/iosm/iosm_ipc_imem.c
-./drivers/net/hippi/rrunner.c
-./drivers/net/ethernet/aquantia/atlantic/aq_pci_func.c
-./drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c
-./drivers/net/ethernet/chelsio/cxgb/cxgb2.c
-./drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c
-./drivers/net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c
-./drivers/net/ethernet/8390/ne2k-pci.c
-./drivers/net/ethernet/ti/tlan.c
-./drivers/net/ethernet/silan/sc92031.c
-./drivers/net/ethernet/jme.c
-./drivers/net/ethernet/neterion/vxge/vxge-main.c
-./drivers/net/ethernet/neterion/s2io.c
-./drivers/net/ethernet/mellanox/mlx4/main.c
-./drivers/net/ethernet/sun/niu.c
-./drivers/net/ethernet/sun/sungem.c
-./drivers/net/ethernet/sun/cassini.c
-./drivers/net/ethernet/sun/sunhme.c
-./drivers/net/ethernet/toshiba/tc35815.c
-./drivers/net/ethernet/toshiba/spider_net.c
-./drivers/net/ethernet/atheros/atl1e/atl1e_main.c
-./drivers/net/ethernet/atheros/atl1c/atl1c_main.c
-./drivers/net/ethernet/atheros/alx/main.c
-./drivers/net/ethernet/atheros/atlx/atl2.c
-./drivers/net/ethernet/atheros/atlx/atl1.c
-./drivers/net/ethernet/microsoft/mana/gdma_main.c
-./drivers/net/ethernet/emulex/benet/be_main.c
-./drivers/net/ethernet/tehuti/tehuti.c
-./drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
-./drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-./drivers/net/ethernet/hisilicon/hns3/hns3vf/hclgevf_main.c
-./drivers/net/ethernet/netronome/nfp/nfp_netvf_main.c
-./drivers/net/ethernet/netronome/nfp/nfp_net_common.c
-./drivers/net/ethernet/brocade/bna/bnad.c
-./drivers/net/ethernet/microchip/lan743x_main.c
-./drivers/net/ethernet/dlink/sundance.c
-./drivers/net/ethernet/dlink/dl2k.c
-./drivers/net/ethernet/sgi/ioc3-eth.c
-./drivers/net/ethernet/broadcom/bnxt/bnxt.c
-./drivers/net/ethernet/broadcom/b44.c
-./drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
-./drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-./drivers/net/ethernet/broadcom/cnic.c
-./drivers/net/ethernet/broadcom/bnx2.c
-./drivers/net/ethernet/broadcom/tg3.c
-./drivers/net/ethernet/marvell/skge.c
-./drivers/net/ethernet/marvell/sky2.c
-./drivers/net/ethernet/marvell/octeontx2/nic/otx2_pf.c
-./drivers/net/ethernet/marvell/octeontx2/nic/otx2_vf.c
-./drivers/net/ethernet/marvell/octeontx2/af/rvu.c
-./drivers/net/ethernet/marvell/octeontx2/af/cgx.c
-./drivers/net/ethernet/intel/igbvf/netdev.c
-./drivers/net/ethernet/intel/e1000/e1000_ethtool.c
-./drivers/net/ethernet/intel/e1000/e1000_main.c
-./drivers/net/ethernet/intel/igc/igc_main.c
-./drivers/net/ethernet/intel/i40e/i40e_main.c
-./drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-./drivers/net/ethernet/intel/igb/igb_main.c
-./drivers/net/ethernet/intel/ixgb/ixgb_main.c
-./drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-./drivers/net/ethernet/intel/ice/ice_main.c
-./drivers/net/ethernet/intel/e100.c
-./drivers/net/ethernet/intel/e1000e/ethtool.c
-./drivers/net/ethernet/intel/e1000e/netdev.c
-./drivers/net/ethernet/sfc/efx_channels.c
-./drivers/net/ethernet/sfc/nic.c
-./drivers/net/ethernet/sfc/ef100_netdev.c
-./drivers/net/ethernet/sfc/farch.c
-./drivers/net/ethernet/sfc/efx.c
-./drivers/net/ethernet/sfc/ptp.c
-./drivers/net/ethernet/sfc/falcon/falcon.c
-./drivers/net/ethernet/sfc/falcon/nic.c
-./drivers/net/ethernet/sfc/falcon/farch.c
-./drivers/net/ethernet/sfc/falcon/efx.c
-./drivers/net/ethernet/sfc/ef10.c
-./drivers/net/ethernet/sfc/ef100_nic.c
-./drivers/net/ethernet/sfc/siena.c
-./drivers/net/ethernet/huawei/hinic/hinic_rx.c
-./drivers/net/ethernet/huawei/hinic/hinic_hw_eqs.c
-./drivers/net/ethernet/huawei/hinic/hinic_tx.c
-./drivers/net/ethernet/huawei/hinic/hinic_hw_qp.c
-./drivers/net/ethernet/synopsys/dwc-xlgmac-pci.c
-./drivers/net/ethernet/qlogic/netxen/netxen_nic_main.c
-./drivers/net/ethernet/qlogic/netxen/netxen_nic_init.c
-./drivers/net/ethernet/qlogic/qed/qed_main.c
-./drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c
-./drivers/net/ethernet/qlogic/qlcnic/qlcnic_init.c
-./drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-./drivers/net/ethernet/qlogic/qla3xxx.c
-./drivers/net/ethernet/qlogic/qede/qede_main.c
-./drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_main.c
-./drivers/net/ethernet/cisco/enic/enic_main.c
-./drivers/net/ethernet/dec/tulip/tulip_core.c
-./drivers/net/ethernet/dec/tulip/xircom_cb.c
-./drivers/net/ethernet/dec/tulip/dmfe.c
-./drivers/net/ethernet/dec/tulip/winbond-840.c
-./drivers/net/ethernet/dec/tulip/uli526x.c
-./drivers/net/ethernet/dec/tulip/de2104x.c
-./drivers/net/ethernet/dec/tulip/de4x5.c
-./drivers/net/ethernet/alacritech/slicoss.c
-./drivers/net/ethernet/agere/et131x.c
-./drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-./drivers/net/ethernet/cavium/liquidio/lio_ethtool.c
-./drivers/net/ethernet/cavium/liquidio/lio_main.c
-./drivers/net/ethernet/cavium/liquidio/lio_core.c
-./drivers/net/ethernet/cavium/thunder/nic_main.c
-./drivers/net/ethernet/cavium/thunder/nicvf_main.c
-./drivers/net/ethernet/micrel/ksz884x.c
-./drivers/net/ethernet/realtek/8139cp.c
-./drivers/net/ethernet/realtek/r8169_main.c
-./drivers/net/ethernet/realtek/8139too.c
-./drivers/net/ethernet/adaptec/starfire.c
-./drivers/net/ethernet/3com/typhoon.c
-./drivers/net/ethernet/3com/3c59x.c
-./drivers/net/ethernet/via/via-rhine.c
-./drivers/net/ethernet/via/via-velocity.c
-./drivers/net/ethernet/smsc/epic100.c
-./drivers/net/ethernet/smsc/smsc9420.c
-./drivers/net/ethernet/natsemi/ns83820.c
-./drivers/net/ethernet/natsemi/natsemi.c
-./drivers/net/ethernet/sis/sis900.c
-./drivers/net/ethernet/sis/sis190.c
-./drivers/net/ethernet/rdc/r6040.c
-./drivers/net/ethernet/myricom/myri10ge/myri10ge.c
-./drivers/net/ethernet/fealnx.c
-./drivers/net/ethernet/nvidia/forcedeth.c
-./drivers/net/ethernet/alteon/acenic.c
-./drivers/net/ethernet/packetengines/yellowfin.c
-./drivers/net/ethernet/packetengines/hamachi.c
-./drivers/net/ethernet/freescale/enetc/enetc_ptp.c
-./drivers/net/ethernet/amazon/ena/ena_netdev.c
-./drivers/net/ethernet/stmicro/stmmac/dwmac-intel.c
-./drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c
-./drivers/net/ethernet/amd/xgbe/xgbe-pci.c
-./drivers/net/ethernet/amd/amd8111e.c
-./drivers/net/ethernet/amd/pcnet32.c
-./drivers/net/dsa/ocelot/felix_vsc9959.c
-./drivers/net/wireless/quantenna/qtnfmac/pcie/pearl_pcie.c
-./drivers/net/wireless/quantenna/qtnfmac/pcie/topaz_pcie.c
-./drivers/net/wireless/intersil/orinoco/orinoco_pci.c
-./drivers/net/wireless/intersil/orinoco/orinoco_tmd.c
-./drivers/net/wireless/intersil/orinoco/orinoco_nortel.c
-./drivers/net/wireless/intersil/orinoco/orinoco_plx.c
-./drivers/net/wireless/intersil/hostap/hostap_pci.c
-./drivers/net/wireless/intersil/hostap/hostap_plx.c
-./drivers/net/wireless/intersil/p54/p54pci.c
-./drivers/net/wireless/broadcom/b43legacy/main.c
-./drivers/net/wireless/broadcom/brcm80211/brcmfmac/pcie.c
-./drivers/net/wireless/broadcom/b43/main.c
-./drivers/net/wireless/marvell/mwl8k.c
-./drivers/net/wireless/marvell/mwifiex/pcie.c
-./drivers/net/wireless/intel/ipw2x00/ipw2200.c
-./drivers/net/wireless/intel/ipw2x00/ipw2100.c
-./drivers/net/wireless/intel/iwlegacy/4965-mac.c
-./drivers/net/wireless/intel/iwlegacy/common.c
-./drivers/net/wireless/intel/iwlegacy/3945-mac.c
-./drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-./drivers/net/wireless/atmel/atmel_pci.c
-./drivers/net/wireless/mediatek/mt76/mt7603/pci.c
-./drivers/net/wireless/mediatek/mt76/mt7615/pci.c
-./drivers/net/wireless/mediatek/mt76/mt76x0/pci.c
-./drivers/net/wireless/mediatek/mt76/mt7921/pci.c
-./drivers/net/wireless/mediatek/mt76/mt76x2/pci.c
-./drivers/net/wireless/mediatek/mt76/mt7915/pci.c
-./drivers/net/wireless/cisco/airo.c
-./drivers/net/wireless/realtek/rtl818x/rtl8180/dev.c
-./drivers/net/wireless/realtek/rtw88/pci.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8192de/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8188ee/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8192se/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8192ce/sw.c
-./drivers/net/wireless/realtek/rtlwifi/pci.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8821ae/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8723be/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8723ae/sw.c
-./drivers/net/wireless/realtek/rtlwifi/rtl8192ee/sw.c
-./drivers/net/wireless/ath/ath5k/pci.c
-./drivers/net/wireless/ath/ath11k/pci.c
-./drivers/net/wireless/ath/wil6210/pcie_bus.c
-./drivers/net/wireless/ath/ath9k/pci.c
-./drivers/net/wireless/ath/ath10k/pci.c
-./drivers/net/wireless/ralink/rt2x00/rt2x00pci.c
-./drivers/net/wireless/ralink/rt2x00/rt2400pci.c
-./drivers/net/wireless/ralink/rt2x00/rt61pci.c
-./drivers/net/wireless/ralink/rt2x00/rt2500pci.c
-./drivers/net/wireless/admtek/adm8211.c
-./drivers/net/arcnet/com20020-pci.c
-./drivers/net/wan/wanxl.c
-./drivers/net/wan/lmc/lmc_main.c
-./drivers/net/wan/farsync.c
-./drivers/net/wan/pci200syn.c
-./drivers/net/wan/pc300too.c
-./drivers/net/can/c_can/c_can_pci.c
-./drivers/net/can/kvaser_pciefd.c
-./drivers/net/can/pch_can.c
-./drivers/net/can/m_can/m_can_pci.c
-./drivers/net/can/sja1000/f81601.c
-./drivers/net/can/sja1000/ems_pci.c
-./drivers/net/can/sja1000/peak_pci.c
-./drivers/net/can/sja1000/plx_pci.c
-./drivers/net/can/sja1000/kvaser_pci.c
-./drivers/net/can/peak_canfd/peak_pciefd_main.c
-./drivers/pnp/resource.c
-./drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci.c
-./drivers/thermal/intel/int340x_thermal/processor_thermal_device_pci_legacy.c
-./drivers/media/pci/smipcie/smipcie-main.c
-./drivers/media/pci/mantis/mantis_pci.c
-./drivers/media/pci/mantis/hopper_cards.c
-./drivers/media/pci/mantis/mantis_cards.c
-./drivers/media/pci/cx25821/cx25821-core.c
-./drivers/media/pci/cx25821/cx25821-alsa.c
-./drivers/media/pci/sta2x11/sta2x11_vip.c
-./drivers/media/pci/saa7164/saa7164-core.c
-./drivers/media/pci/cobalt/cobalt-v4l2.c
-./drivers/media/pci/cobalt/cobalt-driver.c
-./drivers/media/pci/tw5864/tw5864-core.c
-./drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-./drivers/media/pci/cx23885/cx23885-core.c
-./drivers/media/pci/saa7134/saa7134-alsa.c
-./drivers/media/pci/saa7134/saa7134-core.c
-./drivers/media/pci/tw686x/tw686x-core.c
-./drivers/media/pci/solo6x10/solo6x10-core.c
-./drivers/media/pci/ngene/ngene-core.c
-./drivers/media/pci/cx88/cx88-mpeg.c
-./drivers/media/pci/cx88/cx88-alsa.c
-./drivers/media/pci/cx88/cx88-video.c
-./drivers/media/pci/dt3155/dt3155.c
-./drivers/media/pci/ddbridge/ddbridge-core.c
-./drivers/media/pci/dm1105/dm1105.c
-./drivers/media/pci/b2c2/flexcop-pci.c
-./drivers/media/pci/netup_unidvb/netup_unidvb_core.c
-./drivers/media/pci/tw68/tw68-core.c
-./drivers/media/pci/pluto2/pluto2.c
-./drivers/media/pci/ivtv/ivtv-driver.c
-./drivers/media/pci/meye/meye.c
-./drivers/media/pci/bt8xx/dvb-bt8xx.c
-./drivers/media/pci/bt8xx/bttv-driver.c
-./drivers/media/pci/bt8xx/bt878.c
-./drivers/media/pci/cx18/cx18-driver.c
-./drivers/media/platform/marvell-ccic/cafe-driver.c
-./drivers/media/common/saa7146/saa7146_core.c
-./drivers/comedi/comedi_pci.c
-./drivers/comedi/drivers/ni_pcimio.c
-./drivers/comedi/drivers/amplc_dio200_pci.c
-./drivers/comedi/drivers/rtd520.c
-./drivers/comedi/drivers/gsc_hpdi.c
-./drivers/comedi/drivers/ni_labpc_pci.c
-./drivers/comedi/drivers/amplc_pci236.c
-./drivers/comedi/drivers/me4000.c
-./drivers/comedi/drivers/addi_apci_1500.c
-./drivers/comedi/drivers/adl_pci9111.c
-./drivers/comedi/drivers/ni_660x.c
-./drivers/comedi/drivers/cb_pcidas.c
-./drivers/comedi/drivers/adl_pci7x3x.c
-./drivers/comedi/drivers/addi_apci_3xxx.c
-./drivers/comedi/drivers/adl_pci9118.c
-./drivers/comedi/drivers/addi_apci_1564.c
-./drivers/comedi/drivers/ni_6527.c
-./drivers/comedi/drivers/cb_pcidas64.c
-./drivers/comedi/drivers/ni_65xx.c
-./drivers/comedi/drivers/addi_apci_3120.c
-./drivers/comedi/drivers/s626.c
-./drivers/comedi/drivers/ni_pcidio.c
-./drivers/comedi/drivers/adv_pci1710.c
-./drivers/comedi/drivers/dt3000.c
-./drivers/comedi/drivers/adv_pci_dio.c
-./drivers/comedi/drivers/amplc_pci230.c
-./drivers/comedi/drivers/addi_apci_1032.c
-./drivers/comedi/drivers/addi_apci_2032.c
-./drivers/comedi/drivers/amplc_pci224.c
-./drivers/pci/quirks.c
-./drivers/pci/controller/pci-hyperv.c
-./drivers/pci/controller/pcie-mediatek.c
-./drivers/pci/controller/vmd.c
-./drivers/pci/controller/pci-tegra.c
-./drivers/pci/controller/cadence/pcie-cadence-ep.c
-./drivers/pci/controller/dwc/pcie-tegra194.c
-./drivers/pci/controller/dwc/pcie-spear13xx.c
-./drivers/pci/controller/dwc/pci-keystone.c
-./drivers/pci/msi.c
-./drivers/pci/proc.c
-./drivers/pci/xen-pcifront.c
-./drivers/pci/probe.c
-./drivers/pci/hotplug/pnv_php.c
-./drivers/pci/hotplug/ibmphp_core.c
-./drivers/pci/hotplug/ibmphp_pci.c
-./drivers/pci/hotplug/cpci_hotplug_core.c
-./drivers/pci/hotplug/ibmphp_ebda.c
-./drivers/pci/hotplug/pciehp_hpc.c
-./drivers/pci/hotplug/shpchp_hpc.c
-./drivers/pci/hotplug/cpqphp_core.c
-./drivers/pci/hotplug/cpcihp_zt5550.c
-./drivers/pci/hotplug/cpqphp_ctrl.c
-./drivers/pci/pcie/aer_inject.c
-./drivers/pci/pcie/aer.c
-./drivers/pci/pcie/dpc.c
-./drivers/pci/pcie/portdrv_core.c
-./drivers/pci/pcie/pme.c
-./drivers/pci/setup-irq.c
-./drivers/infiniband/hw/mthca/mthca_main.c
-./drivers/infiniband/hw/efa/efa_main.c
-./drivers/infiniband/hw/hfi1/chip.c
-./drivers/infiniband/hw/hfi1/init.c
-./drivers/infiniband/hw/hfi1/affinity.c
-./drivers/infiniband/hw/ocrdma/ocrdma_hw.c
-./drivers/infiniband/hw/hns/hns_roce_qp.c
-./drivers/infiniband/hw/hns/hns_roce_hw_v2.c
-./drivers/iommu/apple-dart.c
-./drivers/iommu/arm/arm-smmu/arm-smmu.c
-./drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-./drivers/iommu/intel/dmar.c
-./drivers/iommu/intel/irq_remapping.c
-./drivers/iommu/amd/iommu.c
-./drivers/iommu/amd/init.c
-./drivers/dma/hsu/pci.c
-./drivers/dma/idxd/device.c
-./drivers/dma/idxd/init.c
-./drivers/dma/ioat/init.c
-./drivers/dma/ioat/dma.c
-./drivers/dma/dw/pci.c
-./drivers/dma/dw-edma/dw-edma-pcie.c
-./drivers/dma/pch_dma.c
-./drivers/mmc/host/sdhci-pci-gli.c
-./drivers/mmc/host/sdhci-pci-o2micro.c
-./drivers/mmc/host/dw_mmc-pci.c
-./drivers/mmc/host/sdhci-pci-core.c
-./drivers/mmc/host/cavium-thunderx.c
-./drivers/mmc/host/via-sdmmc.c
-./drivers/mmc/host/toshsd.c
-./drivers/mmc/host/cb710-mmc.c
-./drivers/mmc/host/sdhci-acpi.c
-./drivers/acpi/apei/ghes.c
-./drivers/acpi/pci_irq.c
-./drivers/ssb/main.c
-./drivers/ssb/driver_gige.c
-./drivers/ssb/driver_pcicore.c
-./drivers/thunderbolt/nhi.c
-./drivers/tty/serial/icom.c
-./drivers/tty/serial/8250/8250_mid.c
-./drivers/tty/serial/8250/8250_pci.c
-./drivers/tty/serial/8250/8250_lpss.c
-./drivers/tty/serial/jsm/jsm_tty.c
-./drivers/tty/serial/jsm/jsm_driver.c
-./drivers/tty/serial/pch_uart.c
-./drivers/tty/serial/serial_txx9.c
-./drivers/tty/serial/rp2.c
-./drivers/tty/mxser.c
-./drivers/tty/nozomi.c
-./drivers/tty/synclink_gt.c
-./drivers/crypto/hifn_795x.c
-./drivers/crypto/qat/qat_common/adf_transport.c
-./drivers/crypto/qat/qat_common/adf_vf_isr.c
-./drivers/crypto/ccp/sp-pci.c
-./drivers/usb/isp1760/isp1760-if.c
-./drivers/usb/cdns3/cdns3-pci-wrap.c
-./drivers/usb/cdns3/cdnsp-pci.c
-./drivers/usb/host/xhci-pci.c
-./drivers/usb/host/uhci-pci.c
-./drivers/usb/host/xhci.c
-./drivers/usb/chipidea/ci_hdrc_pci.c
-./drivers/usb/dwc2/pci.c
-./drivers/usb/gadget/udc/net2272.c
-./drivers/usb/gadget/udc/pch_udc.c
-./drivers/usb/gadget/udc/net2280.c
-./drivers/usb/gadget/udc/goku_udc.c
-./drivers/usb/gadget/udc/amd5536udc_pci.c
-./drivers/usb/dwc3/dwc3-haps.c
-./drivers/usb/dwc3/dwc3-pci.c
-./drivers/usb/core/hcd-pci.c
-./drivers/ata/pata_sil680.c
-./drivers/ata/sata_promise.c
-./drivers/ata/pata_atp867x.c
-./drivers/ata/ahci.c
-./drivers/ata/sata_svw.c
-./drivers/ata/acard-ahci.c
-./drivers/ata/sata_mv.c
-./drivers/ata/libata-sff.c
-./drivers/ata/sata_uli.c
-./drivers/ata/pata_macio.c
-./drivers/ata/pata_legacy.c
-./drivers/ata/pdc_adma.c
-./drivers/ata/pata_ninja32.c
-./drivers/ata/sata_sil24.c
-./drivers/ata/sata_sil.c
-./drivers/ata/sata_inic162x.c
-./drivers/ata/pata_hpt3x3.c
-./drivers/ata/pata_pdc2027x.c
-./drivers/ata/sata_nv.c
-./drivers/ata/sata_sx4.c
-./drivers/ata/sata_sis.c
-./drivers/ata/sata_qstor.c
-./drivers/ata/sata_via.c
-./drivers/ata/sata_vsc.c
-./drivers/scsi/megaraid/megaraid_sas_base.c
-./drivers/scsi/megaraid/megaraid_mm.c
-./drivers/scsi/megaraid/megaraid_mbox.c
-./drivers/scsi/megaraid/megaraid_sas_fusion.c
-./drivers/scsi/megaraid.c
-./drivers/scsi/dpt_i2o.c
-./drivers/scsi/initio.c
-./drivers/scsi/pm8001/pm8001_init.c
-./drivers/scsi/wd719x.c
-./drivers/scsi/ufs/ufshcd-pci.c
-./drivers/scsi/ufs/tc-dwc-g210-pci.c
-./drivers/scsi/am53c974.c
-./drivers/scsi/nsp32.c
-./drivers/scsi/mvumi.c
-./drivers/scsi/be2iscsi/be_main.c
-./drivers/scsi/fdomain_pci.c
-./drivers/scsi/cxlflash/ocxl_hw.c
-./drivers/scsi/cxlflash/main.c
-./drivers/scsi/smartpqi/smartpqi_init.c
-./drivers/scsi/lpfc/lpfc_sli.c
-./drivers/scsi/lpfc/lpfc_init.c
-./drivers/scsi/lpfc/lpfc_scsi.c
-./drivers/scsi/lpfc/lpfc_attr.c
-./drivers/scsi/a100u2w.c
-./drivers/scsi/mvsas/mv_init.c
-./drivers/scsi/3w-xxxx.c
-./drivers/scsi/stex.c
-./drivers/scsi/dmx3191d.c
-./drivers/scsi/mpt3sas/mpt3sas_base.c
-./drivers/scsi/esas2r/esas2r_main.c
-./drivers/scsi/esas2r/esas2r_ioctl.c
-./drivers/scsi/esas2r/esas2r_init.c
-./drivers/scsi/hptiop.c
-./drivers/scsi/bfa/bfad.c
-./drivers/scsi/qla2xxx/qla_os.c
-./drivers/scsi/ips.c
-./drivers/scsi/mesh.c
-./drivers/scsi/3w-sas.c
-./drivers/scsi/myrb.c
-./drivers/scsi/aacraid/linit.c
-./drivers/scsi/aic94xx/aic94xx_init.c
-./drivers/scsi/qla1280.c
-./drivers/scsi/3w-9xxx.c
-./drivers/scsi/sym53c8xx_2/sym_glue.c
-./drivers/scsi/atp870u.c
-./drivers/scsi/mpi3mr/mpi3mr_fw.c
-./drivers/scsi/dc395x.c
-./drivers/scsi/myrs.c
-./drivers/scsi/ipr.c
-./drivers/scsi/hisi_sas/hisi_sas_v3_hw.c
-./drivers/scsi/qedi/qedi_main.c
-./drivers/scsi/advansys.c
-./drivers/scsi/qla4xxx/ql4_os.c
-./drivers/scsi/BusLogic.c
-./drivers/scsi/aic7xxx/aic79xx_osm_pci.c
-./drivers/scsi/aic7xxx/aic7xxx_osm_pci.c
-./drivers/scsi/hpsa.c
-./drivers/spi/spi-pxa2xx.c
-./drivers/spi/spi-dw-pci.c
-./drivers/spi/spi-topcliff-pch.c
-./drivers/spi/spi-pxa2xx-pci.c
-./drivers/platform/chrome/chromeos_laptop.c
-./drivers/platform/x86/intel_scu_pcidrv.c
-./drivers/platform/x86/intel_ips.c
-./drivers/platform/x86/sony-laptop.c
-./drivers/block/rsxx/dma.c
-./drivers/block/rsxx/core.c
-./drivers/block/sx8.c
-./drivers/block/mtip32xx/mtip32xx.c
-./drivers/mtd/nand/raw/denali_pci.c
-./drivers/mtd/nand/raw/cafe_nand.c
-./drivers/mtd/nand/raw/r852.c
-./drivers/parisc/superio.c
-./drivers/parisc/dino.c
-./drivers/parisc/iosapic.c
-./drivers/firewire/ohci.c
-./drivers/firewire/nosy.c
-./drivers/hid/intel-ish-hid/ipc/pci-ish.c
-./drivers/macintosh/rack-meter.c
-./drivers/atm/nicstar.c
-./drivers/atm/ambassador.c
-./drivers/atm/iphase.c
-./drivers/atm/horizon.c
-./drivers/atm/firestream.c
-./drivers/atm/zatm.c
-./drivers/atm/lanai.c
-./drivers/atm/eni.c
-./drivers/atm/solos-pci.c
-./drivers/atm/he.c
-./drivers/atm/fore200e.c
-./drivers/atm/idt77252.c
-./drivers/parport/parport_pc.c
-./drivers/pcmcia/cardbus.c
-./drivers/pcmcia/i82092.c
-./drivers/pcmcia/yenta_socket.c
-./drivers/pcmcia/pd6729.c
-./drivers/watchdog/wdt_pci.c
-./drivers/vme/bridges/vme_ca91cx42.c
-./drivers/vme/bridges/vme_tsi148.c
-./drivers/input/serio/pcips2.c
-./drivers/vfio/pci/vfio_pci_core.c
-./drivers/vfio/pci/vfio_pci_intrs.c
-./drivers/gpio/gpio-sodaville.c
-./drivers/gpio/gpio-sta2x11.c
-./drivers/gpio/gpio-pci-idio-16.c
-./drivers/gpio/gpio-pch.c
-./drivers/gpio/gpio-ml-ioh.c
-./drivers/gpio/gpio-thunderx.c
-./drivers/gpio/gpio-merrifield.c
-./drivers/gpio/gpio-pcie-idio-24.c
-./drivers/gpio/gpio-sch.c
-./drivers/ipack/carriers/tpci200.c
-./drivers/rapidio/devices/tsi721.c
-./drivers/char/ipmi/ipmi_si_pci.c
-./drivers/char/sonypi.c
-./drivers/char/applicom.c
-./drivers/char/xillybus/xillybus_pcie.c
-./drivers/message/fusion/mptspi.c
-./drivers/message/fusion/mptbase.c
-./drivers/message/fusion/mptfc.c
-./drivers/message/fusion/mptsas.c
-./drivers/mfd/intel-lpss-pci.c
-./drivers/mfd/intel_quark_i2c_gpio.c
-./drivers/mfd/janz-cmodio.c
-./drivers/mfd/sm501.c
-./drivers/mfd/ioc3.c
-./drivers/gpu/drm/drm_irq.c
-./drivers/gpu/drm/vboxvideo/vbox_irq.c
-./drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-./drivers/gpu/drm/r128/r128_state.c
-./drivers/gpu/drm/radeon/radeon_irq_kms.c
-./drivers/gpu/drm/radeon/si_dpm.c
-./drivers/gpu/drm/radeon/ci_dpm.c
-./drivers/gpu/drm/radeon/si.c
-./drivers/gpu/drm/radeon/cik.c
-./drivers/gpu/drm/radeon/radeon_device.c
-./drivers/gpu/drm/radeon/radeon_kms.c
-./drivers/gpu/drm/nouveau/nvkm/subdev/pci/base.c
-./drivers/gpu/drm/i915/i915_drv.c
-./drivers/gpu/drm/i915/i915_irq.c
-./drivers/gpu/drm/i915/i915_pmu.c
-./drivers/gpu/drm/i915/display/intel_display_power.c
-./drivers/gpu/drm/drm_pci.c
-./drivers/gpu/drm/vmwgfx/vmwgfx_irq.c
-./drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-./drivers/gpu/drm/qxl/qxl_irq.c
-./drivers/gpu/drm/i810/i810_dma.c
-./drivers/gpu/drm/gma500/psb_drv.c
-./drivers/gpu/drm/gma500/oaktrail_hdmi_i2c.c
-./drivers/gpu/drm/gma500/psb_irq.c
-./drivers/gpu/drm/amd/amdgpu/gfx_v9_0.c
-./drivers/gpu/drm/mga/mga_dma.c
-./drivers/gpu/drm/mga/mga_state.c
-./drivers/isdn/hardware/mISDN/netjet.c
-./drivers/isdn/hardware/mISDN/mISDNinfineon.c
-./drivers/isdn/hardware/mISDN/speedfax.c
-./drivers/isdn/hardware/mISDN/hfcmulti.c
-./drivers/isdn/hardware/mISDN/w6692.c
-./drivers/isdn/hardware/mISDN/hfcpci.c
-./drivers/isdn/hardware/mISDN/avmfritz.c
-./drivers/video/fbdev/matrox/matroxfb_base.c
-./drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-./drivers/video/fbdev/cyber2000fb.c
-./drivers/video/fbdev/via/via-core.c
-./drivers/video/fbdev/aty/atyfb_base.c
-./drivers/video/fbdev/intelfb/intelfbdrv.c
-./drivers/video/fbdev/intelfb/intelfbhw.c
-./drivers/virt/vboxguest/vboxguest_linux.c
-./drivers/i2c/busses/i2c-pxa-pci.c
-./drivers/i2c/busses/i2c-amd-mp2-pci.c
-./drivers/i2c/busses/i2c-eg20t.c
-./drivers/i2c/busses/i2c-designware-pcidrv.c
-./drivers/i2c/busses/i2c-i801.c
-./drivers/i2c/busses/i2c-ismt.c
-./drivers/i2c/busses/i2c-nvidia-gpu.c
-./drivers/xen/platform-pci.c
-./drivers/xen/events/events_base.c
-./drivers/xen/xen-pciback/pciback_ops.c
-./drivers/xen/xen-pciback/conf_space_header.c
-./drivers/xen/xen-pciback/pci_stub.c
-./drivers/staging/rts5208/rtsx.c
-./drivers/staging/media/ipu3/ipu3.c
-./drivers/staging/media/atomisp/pci/atomisp_ioctl.c
-./drivers/staging/media/atomisp/pci/atomisp_v4l2.c
-./drivers/staging/media/atomisp/pci/atomisp_cmd.c
-./drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
-./drivers/staging/media/zoran/zoran_device.c
-./drivers/staging/media/zoran/zoran_card.c
-./drivers/staging/vt6655/device_main.c
-./drivers/staging/rtl8192e/rtl8192e/rtl_core.c
-./drivers/staging/qlge/qlge_main.c
-./drivers/misc/pci_endpoint_test.c
-./drivers/misc/phantom.c
-./drivers/misc/cardreader/rtsx_pcr.c
-./drivers/misc/cardreader/alcor_pci.c
-./drivers/misc/habanalabs/goya/goya.c
-./drivers/misc/cxl/guest.c
-./drivers/misc/cxl/api.c
-./drivers/misc/cxl/of.c
-./drivers/misc/cxl/sysfs.c
-./drivers/misc/genwqe/card_ddcb.c
-./drivers/misc/genwqe/card_debugfs.c
-./drivers/misc/tifm_7xx1.c
-./drivers/misc/mei/hw-me.c
-./drivers/misc/mei/pci-txe.c
-./drivers/misc/mei/pci-me.c
-./drivers/misc/mei/hw-txe.c
-./drivers/misc/cb710/core.c
-./drivers/misc/vmw_vmci/vmci_guest.c
-./drivers/misc/bcm-vk/bcm_vk_dev.c
-./drivers/misc/ocxl/context.c
-./drivers/misc/ocxl/core.c
-./drivers/misc/ocxl/link.c
-./drivers/misc/ibmasm/module.c
-./drivers/misc/hpilo.c
-./drivers/mcb/mcb-pci.c
-./drivers/ptp/ptp_pch.c
-./drivers/ptp/ptp_ocp.c
-./drivers/virtio/virtio_pci_common.c
-./drivers/memstick/host/r592.c
-./drivers/memstick/host/jmb38x_ms.c
-./drivers/bcma/driver_pci_host.c
-./samples/v4l/v4l2-pci-skeleton.c
+Add I2C read AQ command. It is now required for controlling the external
+physical connectors via external I2C port expander on E810-T adapters.
 
->   PCI/sysfs: Don't depend on pci_dev.irq for IRQ entry
->
-> Marc Zyngier (1):
->   PCI/MSI: remove msi_attrib.default_irq in msi_desc
->
->  Documentation/ABI/testing/sysfs-bus-pci | 10 ++++++++++
->  drivers/pci/msi.c                       | 12 +++++-------
->  drivers/pci/pci-sysfs.c                 | 23 ++++++++++++++++++++++-
->  include/linux/msi.h                     |  2 --
->  4 files changed, 37 insertions(+), 10 deletions(-)
->
-> --
-> 1.8.3.1
->
+Future changes will introduce write functionality.
 
-Thanks
-barry
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Sudhansu Sekhar Mishra <sudhansu.mishra@intel.com>
+---
+ drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   6 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  21 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  54 +++
+ drivers/net/ethernet/intel/ice/ice_common.h   |   4 +
+ drivers/net/ethernet/intel/ice/ice_gnss.c     | 368 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_gnss.h     |  42 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   5 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  11 +
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  36 ++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |   8 +
+ 11 files changed, 555 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_gnss.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_gnss.h
+
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index c36faa7d1471..c22434a3ec4d 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -31,7 +31,7 @@ ice-y := ice_main.o	\
+ 	 ice_tc_lib.o
+ ice-$(CONFIG_PCI_IOV) += ice_virtchnl_allowlist.o
+ ice-$(CONFIG_PCI_IOV) += ice_virtchnl_pf.o ice_sriov.o ice_virtchnl_fdir.o
+-ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
++ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o ice_gnss.o
+ ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
+ ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
+ ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index fdd51e5c02c8..6a8252b8de77 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -66,6 +66,7 @@
+ #include "ice_repr.h"
+ #include "ice_eswitch.h"
+ #include "ice_lag.h"
++#include "ice_gnss.h"
+ 
+ #define ICE_BAR0		0
+ #define ICE_REQ_DESC_MULTIPLE	32
+@@ -164,6 +165,7 @@
+ enum ice_feature {
+ 	ICE_F_DSCP,
+ 	ICE_F_SMA_CTRL,
++	ICE_F_GNSS,
+ 	ICE_F_MAX
+ };
+ 
+@@ -416,6 +418,7 @@ enum ice_pf_flags {
+ 	ICE_FLAG_VF_TRUE_PROMISC_ENA,
+ 	ICE_FLAG_MDD_AUTO_RESET_VF,
+ 	ICE_FLAG_LINK_LENIENT_MODE_ENA,
++	ICE_FLAG_GNSS,			/* GNSS successfully initialized */
+ 	ICE_PF_FLAGS_NBITS		/* must be last */
+ };
+ 
+@@ -486,6 +489,9 @@ struct ice_pf {
+ 	struct mutex tc_mutex;		/* lock to protect TC changes */
+ 	u32 msg_enable;
+ 	struct ice_ptp ptp;
++	struct tty_driver *ice_gnss_tty_driver;
++	struct tty_port gnss_tty_port;
++	struct gnss_serial *gnss_serial;
+ 	u16 num_rdma_msix;		/* Total MSIX vectors for RDMA driver */
+ 	u16 rdma_base_vector;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index d535a5265574..ac4600aef0c7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1338,6 +1338,24 @@ struct ice_aqc_get_link_topo {
+ 	u8 rsvd[9];
+ };
+ 
++/* Read I2C (direct, 0x06E2) */
++struct ice_aqc_i2c {
++	struct ice_aqc_link_topo_addr topo_addr;
++	__le16 i2c_addr;
++	u8 i2c_params;
++#define ICE_AQC_I2C_DATA_SIZE_S		0
++#define ICE_AQC_I2C_DATA_SIZE_M		(0xF << ICE_AQC_I2C_DATA_SIZE_S)
++#define ICE_AQC_I2C_USE_REPEATED_START	BIT(7)
++	u8 rsvd;
++	__le16 i2c_bus_addr;
++	u8 rsvd2[4];
++};
++
++/* Read I2C Response (direct, 0x06E2) */
++struct ice_aqc_read_i2c_resp {
++	u8 i2c_data[16];
++};
++
+ /* Set Port Identification LED (direct, 0x06E9) */
+ struct ice_aqc_set_port_id_led {
+ 	u8 lport_num;
+@@ -2048,6 +2066,8 @@ struct ice_aq_desc {
+ 		struct ice_aqc_get_link_status get_link_status;
+ 		struct ice_aqc_event_lan_overflow lan_overflow;
+ 		struct ice_aqc_get_link_topo get_link_topo;
++		struct ice_aqc_i2c read_i2c;
++		struct ice_aqc_read_i2c_resp read_i2c_resp;
+ 	} params;
+ };
+ 
+@@ -2159,6 +2179,7 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_set_event_mask			= 0x0613,
+ 	ice_aqc_opc_set_mac_lb				= 0x0620,
+ 	ice_aqc_opc_get_link_topo			= 0x06E0,
++	ice_aqc_opc_read_i2c				= 0x06E2,
+ 	ice_aqc_opc_set_port_id_led			= 0x06E9,
+ 	ice_aqc_opc_set_gpio				= 0x06EC,
+ 	ice_aqc_opc_get_gpio				= 0x06ED,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 952e5d6af2d6..64adb4e651c6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -4752,6 +4752,60 @@ ice_sched_query_elem(struct ice_hw *hw, u32 node_teid,
+ 	return status;
+ }
+ 
++/**
++ * ice_aq_read_i2c
++ * @hw: pointer to the hw struct
++ * @topo_addr: topology address for a device to communicate with
++ * @bus_addr: 7-bit I2C bus address
++ * @addr: I2C memory address (I2C offset) with up to 16 bits
++ * @params: I2C parameters: bit [7] - Repeated start,
++ *			    bits [6:5] data offset size,
++ *			    bit [4] - I2C address type,
++ *			    bits [3:0] - data size to read (0-16 bytes)
++ * @data: pointer to data (0 to 16 bytes) to be read from the I2C device
++ * @cd: pointer to command details structure or NULL
++ *
++ * Read I2C (0x06E2)
++ */
++enum ice_status
++ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
++		u16 bus_addr, __le16 addr, u8 params, u8 *data,
++		struct ice_sq_cd *cd)
++{
++	struct ice_aq_desc desc = { 0 };
++	struct ice_aqc_i2c *cmd;
++	enum ice_status status;
++	u8 data_size;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_read_i2c);
++	cmd = &desc.params.read_i2c;
++
++	if (!data)
++		return ICE_ERR_PARAM;
++
++	data_size = (params & ICE_AQC_I2C_DATA_SIZE_M) >>
++		    ICE_AQC_I2C_DATA_SIZE_S;
++
++	cmd->i2c_bus_addr = cpu_to_le16(bus_addr);
++	cmd->topo_addr = topo_addr;
++	cmd->i2c_params = params;
++	cmd->i2c_addr = addr;
++
++	status = ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++	if (!status) {
++		struct ice_aqc_read_i2c_resp *resp;
++		u8 i;
++
++		resp = &desc.params.read_i2c_resp;
++		for (i = 0; i < data_size; i++) {
++			*data = resp->i2c_data[i];
++			data++;
++		}
++	}
++
++	return status;
++}
++
+ /**
+  * ice_aq_set_driver_param - Set driver parameter to share via firmware
+  * @hw: pointer to the HW struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 3b3981f0a87b..146cd5f6674f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -205,5 +205,9 @@ ice_aq_set_lldp_mib(struct ice_hw *hw, u8 mib_type, void *buf, u16 buf_size,
+ bool ice_fw_supports_lldp_fltr_ctrl(struct ice_hw *hw);
+ enum ice_status
+ ice_lldp_fltr_add_remove(struct ice_hw *hw, u16 vsi_num, bool add);
++enum ice_status
++ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
++		u16 bus_addr, __le16 addr, u8 params, u8 *data,
++		struct ice_sq_cd *cd);
+ bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw);
+ #endif /* _ICE_COMMON_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
+new file mode 100644
+index 000000000000..e0bbdbaa6f8a
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
+@@ -0,0 +1,368 @@
++// SPDX-License-Identifier: GPL-2.0
++/* Copyright (C) 2018-2021, Intel Corporation. */
++
++#include "ice.h"
++#include "ice_lib.h"
++#include <linux/tty_driver.h>
++
++/**
++ * ice_gnss_read - Read data from internal GNSS module
++ * @work: GNSS read work structure
++ *
++ * Read the data from internal GNSS receiver, number of bytes read will be
++ * returned in *read_data parameter.
++ */
++static void ice_gnss_read(struct kthread_work *work)
++{
++	struct gnss_serial *gnss = container_of(work, struct gnss_serial,
++						read_work.work);
++	struct ice_aqc_link_topo_addr link_topo;
++	u8 i2c_params, bytes_read;
++	struct tty_port *port;
++	struct ice_pf *pf;
++	struct ice_hw *hw;
++	__be16 data_len_b;
++	char *buf = NULL;
++	u16 i, data_len;
++	int err = 0;
++
++	pf = gnss->back;
++	if (!pf || !&pf->hw || !gnss->tty || !gnss->tty->port) {
++		err = -EFAULT;
++		goto exit;
++	}
++
++	hw = &pf->hw;
++	port = gnss->tty->port;
++
++	buf = (char *)get_zeroed_page(GFP_KERNEL);
++	if (!buf) {
++		err = -ENOMEM;
++		goto exit;
++	}
++
++	memset(&link_topo, 0, sizeof(struct ice_aqc_link_topo_addr));
++	link_topo.topo_params.index = ICE_E810T_GNSS_I2C_BUS;
++	link_topo.topo_params.node_type_ctx |=
++		ICE_AQC_LINK_TOPO_NODE_CTX_OVERRIDE <<
++		ICE_AQC_LINK_TOPO_NODE_CTX_S;
++
++	i2c_params = ICE_GNSS_UBX_DATA_LEN_WIDTH |
++		     ICE_AQC_I2C_USE_REPEATED_START;
++
++	/* Read data length in a loop, when it's not 0 the data is ready */
++	for (i = 0; i < ICE_MAX_UBX_READ_TRIES; i++) {
++		enum ice_status status;
++
++		status = ice_aq_read_i2c(hw, link_topo,
++					 ICE_GNSS_UBX_I2C_BUS_ADDR,
++					 cpu_to_le16(ICE_GNSS_UBX_DATA_LEN_H),
++					 i2c_params, (u8 *)&data_len_b, NULL);
++		if (status) {
++			err = ice_status_to_errno(status);
++			goto exit_buf;
++		}
++
++		data_len = be16_to_cpu(data_len_b);
++		if (data_len != 0 && data_len != U16_MAX)
++			break;
++
++		mdelay(10);
++	}
++
++	data_len = min(data_len, (u16)PAGE_SIZE);
++	data_len = tty_buffer_request_room(port, data_len);
++	if (!data_len) {
++		err = -ENOMEM;
++		goto exit_buf;
++	}
++
++	/* Read received data */
++	for (i = 0; i < data_len; i += bytes_read) {
++		enum ice_status status;
++
++		u16 bytes_left = data_len - i;
++
++		bytes_read = bytes_left < ICE_MAX_I2C_DATA_SIZE ? bytes_left :
++					  ICE_MAX_I2C_DATA_SIZE;
++
++		status = ice_aq_read_i2c(hw, link_topo,
++					 ICE_GNSS_UBX_I2C_BUS_ADDR,
++					 cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
++					 bytes_read, &buf[i], NULL);
++		if (status) {
++			err = ice_status_to_errno(status);
++			goto exit_buf;
++		}
++	}
++
++	/* Send the data to the tty layer for users to read. This doesn't
++	 * actually push the data through unless tty->low_latency is set.
++	 */
++	tty_insert_flip_string(port, buf, i);
++	tty_flip_buffer_push(port);
++
++exit_buf:
++	free_page((unsigned long)buf);
++	kthread_queue_delayed_work(gnss->kworker, &gnss->read_work,
++				   ICE_GNSS_TIMER_DELAY_TIME);
++exit:
++	if (err)
++		dev_dbg(ice_pf_to_dev(pf), "GNSS failed to read err=%d\n", err);
++}
++
++/**
++ * ice_gnss_struct_init - Initialize GNSS structure for the TTY
++ * @pf: Board private structure
++ */
++static struct gnss_serial *ice_gnss_struct_init(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	struct kthread_worker *kworker;
++	struct gnss_serial *gnss;
++
++	gnss = kzalloc(sizeof(*gnss), GFP_KERNEL);
++	if (!gnss)
++		return NULL;
++
++	mutex_init(&gnss->gnss_mutex);
++	gnss->open_count = 0;
++	gnss->back = pf;
++	pf->gnss_serial = gnss;
++
++	kthread_init_delayed_work(&gnss->read_work, ice_gnss_read);
++	/* Allocate a kworker for handling work required for the GNSS TTY
++	 * writes.
++	 */
++	kworker = kthread_create_worker(0, "ice-gnss-%s", dev_name(dev));
++	if (!kworker) {
++		kfree(gnss);
++		return NULL;
++	}
++
++	gnss->kworker = kworker;
++
++	return gnss;
++}
++
++/**
++ * ice_gnss_tty_open - Initialize GNSS structures on TTY device open
++ * @tty: pointer to the tty_struct
++ * @filp: pointer to the file
++ *
++ * This routine is mandatory. If this routine is not filled in, the attempted
++ * open will fail with ENODEV.
++ */
++static int ice_gnss_tty_open(struct tty_struct *tty, struct file *filp)
++{
++	struct gnss_serial *gnss;
++	struct ice_pf *pf;
++
++	pf = (struct ice_pf *)tty->driver->driver_state;
++	if (!pf)
++		return -EFAULT;
++
++	/* Clear the pointer in case something fails */
++	tty->driver_data = NULL;
++	/* Get the serial object associated with this tty pointer */
++	gnss = pf->gnss_serial;
++
++	if (!gnss) {
++		/* Initialize GNSS struct on the first device open */
++		gnss = ice_gnss_struct_init(pf);
++		if (!gnss)
++			return -ENOMEM;
++	}
++
++	mutex_lock(&gnss->gnss_mutex);
++
++	/* Save our structure within the tty structure */
++	tty->driver_data = gnss;
++	gnss->tty = tty;
++	gnss->open_count++;
++	kthread_queue_delayed_work(gnss->kworker, &gnss->read_work, 0);
++
++	mutex_unlock(&gnss->gnss_mutex);
++
++	return 0;
++}
++
++/**
++ * ice_gnss_tty_close - Cleanup GNSS structures on tty device close
++ * @tty: pointer to the tty_struct
++ * @filp: pointer to the file
++ */
++static void ice_gnss_tty_close(struct tty_struct *tty, struct file *filp)
++{
++	struct gnss_serial *gnss = tty->driver_data;
++	struct ice_pf *pf;
++
++	if (!gnss)
++		return;
++
++	pf = (struct ice_pf *)tty->driver->driver_state;
++	if (!pf)
++		return;
++
++	mutex_lock(&gnss->gnss_mutex);
++
++	if (!gnss->open_count) {
++		/* Port was never opened */
++		dev_err(ice_pf_to_dev(pf), "GNSS port not opened\n");
++		goto exit;
++	}
++
++	gnss->open_count--;
++	if (gnss->open_count <= 0) {
++		/* Port is in shutdown state */
++		kthread_cancel_delayed_work_sync(&gnss->read_work);
++	}
++exit:
++	mutex_unlock(&gnss->gnss_mutex);
++}
++
++/**
++ * ice_gnss_tty_write - Dummy TTY write function to avoid kernel panic
++ * @tty: pointer to the tty_struct
++ * @buf: pointer to the user data
++ * @cnt: the number of characters that was able to be sent to the hardware (or
++ *       queued to be sent at a later time)
++ */
++static int
++ice_gnss_tty_write(struct tty_struct *tty, const unsigned char *buf, int cnt)
++{
++	return 0;
++}
++
++/**
++ * ice_gnss_tty_write_room - Dummy TTY write_room function to avoid kernel panic
++ * @tty: pointer to the tty_struct
++ */
++static unsigned int ice_gnss_tty_write_room(struct tty_struct *tty)
++{
++	return 0;
++}
++
++static const struct tty_operations tty_gps_ops = {
++	.open =		ice_gnss_tty_open,
++	.close =	ice_gnss_tty_close,
++	.write =	ice_gnss_tty_write,
++	.write_room =	ice_gnss_tty_write_room,
++};
++
++/**
++ * ice_gnss_create_tty_driver - Create a TTY driver for GNSS
++ * @pf: Board private structure
++ */
++static struct tty_driver *ice_gnss_create_tty_driver(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	struct tty_driver *tty_driver;
++	int err;
++
++	tty_driver = tty_alloc_driver(1, TTY_DRIVER_REAL_RAW);
++	if (!tty_driver) {
++		dev_err(ice_pf_to_dev(pf), "Failed to allocate memory for GNSS TTY\n");
++		return NULL;
++	}
++	/* Initialize the tty driver*/
++	tty_driver->owner = THIS_MODULE;
++	tty_driver->driver_name = dev_driver_string(dev);
++	tty_driver->name = "ttyGNSS";
++	tty_driver->type = TTY_DRIVER_TYPE_SERIAL;
++	tty_driver->subtype = SERIAL_TYPE_NORMAL;
++	tty_driver->init_termios = tty_std_termios;
++	tty_driver->init_termios.c_iflag &= ~INLCR;
++	tty_driver->init_termios.c_iflag |= IGNCR;
++	tty_driver->init_termios.c_oflag &= ~OPOST;
++	tty_driver->init_termios.c_lflag &= ~ICANON;
++	tty_driver->init_termios.c_cflag &= ~(CSIZE | CBAUD | CBAUDEX);
++	/* baud rate 9600 */
++	tty_termios_encode_baud_rate(&tty_driver->init_termios, 9600, 9600);
++	tty_driver->driver_state = pf;
++	tty_set_operations(tty_driver, &tty_gps_ops);
++
++	pf->gnss_serial = NULL;
++
++	tty_port_init(&pf->gnss_tty_port);
++	tty_port_link_device(&pf->gnss_tty_port, tty_driver, 0);
++
++	err = tty_register_driver(tty_driver);
++	if (err) {
++		dev_err(ice_pf_to_dev(pf),
++			"Failed to register TTY driver err=%d\n", err);
++
++		tty_port_destroy(&pf->gnss_tty_port);
++		tty_driver_kref_put(pf->ice_gnss_tty_driver);
++
++		return NULL;
++	}
++
++	return tty_driver;
++}
++
++/**
++ * ice_gnss_init - Initialize GNSS TTY support
++ * @pf: Board private structure
++ */
++void ice_gnss_init(struct ice_pf *pf)
++{
++	struct tty_driver *tty_driver;
++
++	tty_driver = ice_gnss_create_tty_driver(pf);
++	if (!tty_driver)
++		return;
++
++	pf->ice_gnss_tty_driver = tty_driver;
++
++	set_bit(ICE_FLAG_GNSS, pf->flags);
++	dev_info(ice_pf_to_dev(pf), "GNSS TTY init successful\n");
++}
++
++/**
++ * ice_gnss_exit - Disable GNSS TTY support
++ * @pf: Board private structure
++ */
++void ice_gnss_exit(struct ice_pf *pf)
++{
++	if (!test_bit(ICE_FLAG_GNSS, pf->flags) || !pf->ice_gnss_tty_driver)
++		return;
++
++	tty_port_destroy(&pf->gnss_tty_port);
++
++	if (pf->gnss_serial) {
++		struct gnss_serial *gnss = pf->gnss_serial;
++
++		kthread_cancel_delayed_work_sync(&gnss->read_work);
++		kfree(gnss);
++		pf->gnss_serial = NULL;
++	}
++
++	tty_unregister_driver(pf->ice_gnss_tty_driver);
++	tty_driver_kref_put(pf->ice_gnss_tty_driver);
++	pf->ice_gnss_tty_driver = NULL;
++}
++
++/**
++ * ice_gnss_is_gps_present - Check if GPS HW is present
++ * @hw: pointer to HW struct
++ */
++bool ice_gnss_is_gps_present(struct ice_hw *hw)
++{
++	if (!hw->func_caps.ts_func_info.src_tmr_owned)
++		return false;
++
++	if (ice_is_e810t(hw)) {
++		enum ice_status status;
++		u8 data;
++
++		status = ice_read_pca9575_reg_e810t(hw, ICE_PCA9575_P0_IN,
++						    &data);
++		if (status || !!(data & ICE_E810T_P0_GNSS_PRSNT_N))
++			return false;
++	} else {
++		return false;
++	}
++
++	return true;
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.h b/drivers/net/ethernet/intel/ice/ice_gnss.h
+new file mode 100644
+index 000000000000..1290c531daa2
+--- /dev/null
++++ b/drivers/net/ethernet/intel/ice/ice_gnss.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2018-2021, Intel Corporation. */
++
++#ifndef _ICE_GNSS_H_
++#define _ICE_GNSS_H_
++
++#include <linux/tty.h>
++#include <linux/tty_flip.h>
++
++#define ICE_E810T_GNSS_I2C_BUS		0x2
++#define ICE_GNSS_UBX_I2C_BUS_ADDR	0x42
++/* Data length register is big endian */
++#define ICE_GNSS_UBX_DATA_LEN_H		0xFD
++#define ICE_GNSS_UBX_DATA_LEN_WIDTH	2
++#define ICE_GNSS_UBX_EMPTY_DATA		0xFF
++#define ICE_GNSS_TIMER_DELAY_TIME	(HZ / 10) /* 0.1 second per message */
++#define ICE_MAX_I2C_DATA_SIZE		(ICE_AQC_I2C_DATA_SIZE_M >> \
++					ICE_AQC_I2C_DATA_SIZE_S)
++#define ICE_MAX_UBX_READ_TRIES		255
++
++/**
++ * struct gnss_serial - data used to initialize GNSS TTY port
++ * @back: back pointer to PF
++ * @tty: pointer to the tty for this device
++ * @open_count: number of times this port has been opened
++ * @gnss_mutex: gnss_mutex used to protect GNSS serial operations
++ * @kworker: kwork thread for handling periodic work
++ * @read_work: read_work function for handling GNSS reads
++ */
++struct gnss_serial {
++	struct ice_pf *back;
++	struct tty_struct *tty;
++	int open_count;
++	struct mutex gnss_mutex; /* protects GNSS serial structure */
++	struct kthread_worker *kworker;
++	struct kthread_delayed_work read_work;
++};
++
++void ice_gnss_init(struct ice_pf *pf);
++void ice_gnss_exit(struct ice_pf *pf);
++bool ice_gnss_is_gps_present(struct ice_hw *hw);
++#endif /* _ICE_GNSS_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index a23825e7f361..74bce9433c81 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -3957,8 +3957,11 @@ void ice_init_feature_support(struct ice_pf *pf)
+ 	case ICE_DEV_ID_E810C_QSFP:
+ 	case ICE_DEV_ID_E810C_SFP:
+ 		ice_set_feature_support(pf, ICE_F_DSCP);
+-		if (ice_is_e810t(&pf->hw))
++		if (ice_is_e810t(&pf->hw)) {
+ 			ice_set_feature_support(pf, ICE_F_SMA_CTRL);
++			if (ice_gnss_is_gps_present(&pf->hw))
++				ice_set_feature_support(pf, ICE_F_GNSS);
++		}
+ 		break;
+ 	default:
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 084857079e9e..482522e543a0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -506,6 +506,9 @@ ice_prepare_for_reset(struct ice_pf *pf)
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+ 		ice_ptp_release(pf);
+ 
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_exit(pf);
++
+ 	if (hw->port_info)
+ 		ice_sched_clear_port(hw->port_info);
+ 
+@@ -4570,6 +4573,9 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+ 		ice_ptp_init(pf);
+ 
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_init(pf);
++
+ 	/* Note: Flow director init failure is non-fatal to load */
+ 	if (ice_init_fdir(pf))
+ 		dev_err(dev, "could not initialize flow director\n");
+@@ -4740,6 +4746,8 @@ static void ice_remove(struct pci_dev *pdev)
+ 	ice_deinit_lag(pf);
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+ 		ice_ptp_release(pf);
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_exit(pf);
+ 	if (!ice_is_safe_mode(pf))
+ 		ice_remove_arfs(pf);
+ 	ice_setup_mc_magic_wake(pf);
+@@ -6564,6 +6572,9 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+ 		ice_ptp_init(pf);
+ 
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_init(pf);
++
+ 	/* rebuild PF VSI */
+ 	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_PF);
+ 	if (err) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index a38a69c10132..ca88017598e1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -785,6 +785,42 @@ int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data)
+ 	return status;
+ }
+ 
++/**
++ * ice_read_pca9575_reg_e810t
++ * @hw: pointer to the hw struct
++ * @offset: GPIO controller register offset
++ * @data: pointer to data to be read from the GPIO controller
++ *
++ * Read the register from the GPIO controller
++ */
++int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data)
++{
++	struct ice_aqc_link_topo_addr link_topo;
++	enum ice_status status;
++	__le16 addr;
++	u16 handle;
++	int err;
++
++	memset(&link_topo, 0, sizeof(link_topo));
++
++	err = ice_get_pca9575_handle(hw, &handle);
++	if (err)
++		return err;
++
++	link_topo.handle = cpu_to_le16(handle);
++	link_topo.topo_params.node_type_ctx =
++		(ICE_AQC_LINK_TOPO_NODE_CTX_PROVIDED <<
++		 ICE_AQC_LINK_TOPO_NODE_CTX_S);
++
++	addr = cpu_to_le16((u16)offset);
++
++	status = ice_aq_read_i2c(hw, link_topo, 0, addr, 1, data, NULL);
++	if (status)
++		return -ENODEV;
++
++	return 0;
++}
++
+ /**
+  * ice_is_pca9575_present
+  * @hw: pointer to the hw struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index b2984b5c22c1..ee8ac2849d7c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -32,6 +32,8 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
+ int ice_ptp_init_phy_e810(struct ice_hw *hw);
+ int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
+ int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data);
++enum ice_status
++ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data);
+ bool ice_is_pca9575_present(struct ice_hw *hw);
+ 
+ #define PFTSYN_SEM_BYTES	4
+@@ -98,4 +100,10 @@ bool ice_is_pca9575_present(struct ice_hw *hw);
+ #define ICE_SMA_MAX_BIT_E810T	7
+ #define ICE_PCA9575_P1_OFFSET	8
+ 
++/* E810T PCA9575 IO controller registers */
++#define ICE_PCA9575_P0_IN	0x0
++
++/* E810T PCA9575 IO controller pin control */
++#define ICE_E810T_P0_GNSS_PRSNT_N	BIT(4)
++
+ #endif /* _ICE_PTP_HW_H_ */
+-- 
+2.30.2
+
