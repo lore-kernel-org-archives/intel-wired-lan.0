@@ -1,114 +1,39 @@
-From: Rafael J. Wysocki <rafael@kernel.org>
-Date: Fri, 1 Oct 2021 15:21:00 +0200
-Subject: [Intel-wired-lan] Oops in during sriov_enable with ixgbe driver
-In-Reply-To: <924c2d6ef51a83cce5c9bcf4004bbf1506c5a768.camel@linux.ibm.com>
-References: <8e4bbd5c59de31db71f718556654c0aa077df03d.camel@linux.ibm.com>
- <5ea40608-388e-1137-9b86-85aad1cad6f6@intel.com>
- <b9e461a5-75de-6f45-1709-d9573492f7ac@intel.com>
- <CAJZ5v0gpxRDt0V3Eh1_edZAudxyL3-ik4MhT7TzijTYeOd=_Vg@mail.gmail.com>
- <CAJZ5v0hsQvHp2PqFjxvyx4tPCnNC7BCWyfPj-eADFa1w68BCMQ@mail.gmail.com>
- <924c2d6ef51a83cce5c9bcf4004bbf1506c5a768.camel@linux.ibm.com>
-Message-ID: <CAJZ5v0hoYfSE3MCuFeHYjuD5trznCJWDthWwUFp9M52m3FK-zg@mail.gmail.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Fri, 1 Oct 2021 15:02:05 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: fix getting UDP tunnel
+ entry
+In-Reply-To: <20210914232505.8117-1-user@wasp>
+References: <20210914232505.8117-1-user@wasp>
+Message-ID: <BYAPR11MB3367264BEB0D2D3900A07035FCAB9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Oct 1, 2021 at 10:23 AM Niklas Schnelle <schnelle@linux.ibm.com> wrote:
->
-> On Thu, 2021-09-30 at 20:37 +0200, Rafael J. Wysocki wrote:
-> > On Thu, Sep 30, 2021 at 8:20 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > On Thu, Sep 30, 2021 at 7:38 PM Rafael J. Wysocki
-> > > <rafael.j.wysocki@intel.com> wrote:
-> > > > On 9/30/2021 7:31 PM, Jesse Brandeburg wrote:
-> > > > > On 9/28/2021 4:56 AM, Niklas Schnelle wrote:
-> > > > > > Hi Jesse, Hi Tony,
-> > > > > >
-> > > > > > Since v5.15-rc1 I've been having problems with enabling SR-IOV VFs on
-> > > > > > my private workstation with an Intel 82599 NIC with the ixgbe driver. I
-> > > > > > haven't had time to bisect or look closer but since it still happens on
-> > > > > > v5.15-rc3 I wanted to at least check if you're aware of the problem as
-> > > > > > I couldn't find anything on the web.
-> > > > > We haven't heard anything of this problem.
-> > > > >
-> > > > >
-> > > > > > I get below Oops when trying "echo 2 > /sys/bus/pci/.../sriov_numvfs"
-> > > > > > and suspect that the earlier ACPI messages could have something to do
-> > > > > > with that, absolutely not an ACPI expert though. If there is a need I
-> > > > > > could do a bisect.
-> > > > > Hi Niklas, thanks for the report, I added the Intel Driver's list for
-> > > > > more exposure.
-> > > > >
-> > > > > I asked the developers working on that driver to take a look and they
-> > > > > tried to reproduce, and were unable to do so. This might be related to
-> > > > > your platform, which strongly suggests that the ACPI stuff may be related.
-> > > > >
-> > > > > We have tried to reproduce but everything works fine no call trace in
-> > > > > scenario with creating VF.
-> > > > >
-> > > > > This is good in that it doesn't seem to be a general failure, you may
-> > > > > want to file a kernel bugzilla (bugzilla.kernel.org) to track the issue,
-> > > > > and I hope that @Rafael might have some insight.
-> > > > >
-> > > > > This issue may be related to changes in acpi_pci_find_companion,
-> > > > > but as I say, we are not able to reproduce this.
-> > > > >
-> > > > > commit 59dc33252ee777e02332774fbdf3381b1d5d5f5d
-> > > > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > Date:   Tue Aug 24 16:43:55 2021 +0200
-> > > > >      PCI: VMD: ACPI: Make ACPI companion lookup work for VMD bus
-> > > >
-> > > > This change doesn't affect any devices beyond the ones on the VMD bus.
-> > >
-> > > The only failing case I can see is when the device is on the VMD bus
-> > > and its bus pointer is NULL, so the dereference in
-> > > vmd_acpi_find_companion() crashes.
-> > >
-> > > Can anything like that happen?
-> >
-> > Not really, because pci_iov_add_virtfn() sets virtfn->bus.
-> >
-> > However, it doesn\t set virtfn->dev.parent AFAICS, so when that gets
-> > dereferenced by ACPI_COMPANIO(dev->parent) in
-> > acpi_pci_find_companion(), the crash occurs.
-> >
-> > We need a !dev->parent check in acpi_pci_find_companion() I suppose:
-> >
-> > Does the following change help?
-> >
-> > Index: linux-pm/drivers/pci/pci-acpi.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/pci/pci-acpi.c
-> > +++ linux-pm/drivers/pci/pci-acpi.c
-> > @@ -1243,6 +1243,9 @@ static struct acpi_device *acpi_pci_find
-> >      bool check_children;
-> >      u64 addr;
-> >
-> > +    if (!dev->parent)
-> > +        return NULL;
-> > +
-> >      down_read(&pci_acpi_companion_lookup_sem);
-> >
-> >      adev = pci_acpi_find_companion_hook ?
->
->
-> Yes the above change fixes the problem for me. SR-IOV enables
-> successfully and the VFs are fully usable. Thanks!
 
-Thanks for the confirmation!
 
-> Just out of curiosity and because I use this system to test common code
-> PCI changed. Do you have an idea what makes my system special here?
->
-> The call to pci_set_acpi_fwnode() in pci_setup_device() is
-> unconditional and should do the same on any ACPI enabled system.
-> Also nothing in your explanation sounds specific to my system.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Michal Swiatkowski
+> Sent: Wednesday, September 15, 2021 4:55 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next] ice: fix getting UDP tunnel entry
+> 
+> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> 
+> Correct parameters order in call to ice_tunnel_idx_to_entry function.
+> 
+> Entry in sparse port table is correct when the idx is 0. For idx 1 one correct
+> entry should be skipped, for idx 2 two of them should be skipped etc.
+> Change if condition to be true when idx is 0, which means that previous valid
+> entry of this tunnel type were skipped.
+> 
+> Fixes: b20e6c17c468 ("ice: convert to new udp_tunnel infrastructure")
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
 
-Right, it is not special and I'm not really sure why others don't see
-this breakage.
-
-That's one of the reasons why it is key to report problems early: this
-may help to protect others from being hit by those problems.
-
-Let me post an "official" patch for this.
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
