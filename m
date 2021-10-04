@@ -1,56 +1,58 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Mon,  4 Oct 2021 05:15:25 -0700
-Subject: [Intel-wired-lan] [PATCH v2 net] ice: Avoid crash from unnecessary
- IDA free
-Message-ID: <20211004121525.6384-1-david.m.ertman@intel.com>
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Mon, 4 Oct 2021 16:39:14 -0700 (PDT)
+Subject: [Intel-wired-lan] Intel I350 regression 5.10 -> 5.14 ("The NVM
+ Checksum Is Not Valid") [8086:1521]
+In-Reply-To: <20211004074814.5900791a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <1823864.tdWV9SEqCh@kailua>
+ <20211004074814.5900791a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <7064659e-fe97-f222-5176-844569fb5281@twofifty.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In the remove path, there is an attempt to free the aux_idx IDA whether
-it was allocated or not.  This can potentially cause a crash when
-unloading the driver on systems that do not initialize support for RDMA.
-But, this free cannot be gated by the status bit for RDMA, since it is
-allocated if the driver detects support for RDMA at probe time, but the
-driver can enter into a state where RDMA is not supported after the IDA
-has been allocated at probe time and this would lead to a memory leak.
+On Mon, 4 Oct 2021, Jakub Kicinski wrote:
 
-Initialize aux_idx to an invalid value and check for a valid value when
-unloading to determine if an IDA free is necessary.
+> On Mon, 04 Oct 2021 15:06:31 +0200 Andreas K. Huettel wrote:
+>> Dear all,
+>>
+>> I hope this is the right place to ask, if not please advise me where to go.
+>
+> Adding intel-wired-lan at lists.osuosl.org and Sasha as well.
+>
+>> I have a new Dell machine with both an Intel on-board ethernet controller
+>> ([8086:15f9]) and an additional 2-port extension card ([8086:1521]).
+>>
+>> The second adaptor, a "DeLock PCIe 2xGBit", worked fine as far as I could
+>> see with Linux 5.10.59, but fails to initialize with Linux 5.14.9.
+>>
+>> dilfridge ~ # lspci -nn
+>> [...]
+>> 01:00.0 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev ff)
+>> 01:00.1 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev ff)
+>> [...]
+>>
+>> dilfridge ~ # dmesg|grep igb
+>> [    2.069286] igb: Intel(R) Gigabit Ethernet Network Driver
+>> [    2.069288] igb: Copyright (c) 2007-2014 Intel Corporation.
+>> [    2.069305] igb 0000:01:00.0: can't change power state from D3cold to D0 (config space inaccessible)
+>> [    2.069624] igb 0000:01:00.0 0000:01:00.0 (uninitialized): PCIe link lost
+>> [    2.386659] igb 0000:01:00.0: PHY reset is blocked due to SOL/IDER session.
+>> [    4.115500] igb 0000:01:00.0: The NVM Checksum Is Not Valid
+>> [    4.133807] igb: probe of 0000:01:00.0 failed with error -5
+>> [    4.133820] igb 0000:01:00.1: can't change power state from D3cold to D0 (config space inaccessible)
+>> [    4.134072] igb 0000:01:00.1 0000:01:00.1 (uninitialized): PCIe link lost
+>> [    4.451602] igb 0000:01:00.1: PHY reset is blocked due to SOL/IDER session.
+>> [    6.180123] igb 0000:01:00.1: The NVM Checksum Is Not Valid
+>> [    6.188631] igb: probe of 0000:01:00.1 failed with error -5
+>>
+>> Any advice on how to proceed? Willing to test patches and provide additional debug info.
 
-Fixes: d25a0fc41c1f9 ("ice: Initialize RDMA support")
-Reported-by: Jun Miao <jun.miao@windriver.com>
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Sorry to reply from a non-Intel account. I would suggest first
+contacting Dell, and then contacting DeLock. This sounds like an issue
+with motherboard firmware and most of what I can help with would be with
+the driver. I think the issues are probably before things get to the
+driver.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 0d6c143f6653..94037881bfd8 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4224,6 +4224,9 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	if (!pf)
- 		return -ENOMEM;
- 
-+	/* initialize Auxiliary index to invalid value */
-+	pf->aux_idx = -1;
-+
- 	/* set up for high or low DMA */
- 	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
- 	if (err)
-@@ -4615,7 +4618,8 @@ static void ice_remove(struct pci_dev *pdev)
- 
- 	ice_aq_cancel_waiting_tasks(pf);
- 	ice_unplug_aux_dev(pf);
--	ida_free(&ice_aux_ida, pf->aux_idx);
-+	if (pf->aux_idx >= 0)
-+		ida_free(&ice_aux_ida, pf->aux_idx);
- 	set_bit(ICE_DOWN, pf->state);
- 
- 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
--- 
-2.31.1
-
+Todd Fujinaka <todd.fujinaka@intel.com>
