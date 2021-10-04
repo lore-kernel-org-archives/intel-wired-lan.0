@@ -1,87 +1,47 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 4 Oct 2021 12:48:10 +0200
-Subject: [Intel-wired-lan] [PATCH 5.14 058/162] igc: fix build errors
- for PTP
-In-Reply-To: <0599f364-c9cc-31af-e500-89778f0b566c@tomt.net>
-References: <20210927170233.453060397@linuxfoundation.org>
- <20210927170235.491648102@linuxfoundation.org>
- <0599f364-c9cc-31af-e500-89778f0b566c@tomt.net>
-Message-ID: <YVrb6tqBvuF87Ghj@kroah.com>
+From: Jakub Kicinski <kubakici@wp.pl>
+Date: Mon, 4 Oct 2021 07:48:14 -0700
+Subject: [Intel-wired-lan] Intel I350 regression 5.10 -> 5.14 ("The NVM
+ Checksum Is Not Valid") [8086:1521]
+In-Reply-To: <1823864.tdWV9SEqCh@kailua>
+References: <1823864.tdWV9SEqCh@kailua>
+Message-ID: <20211004074814.5900791a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 04, 2021 at 06:15:56AM +0200, Andre Tomt wrote:
-> On 27.09.2021 19:01, Greg Kroah-Hartman wrote:
-> > From: Randy Dunlap <rdunlap@infradead.org>
-> > 
-> > [ Upstream commit 87758511075ec961486fe78d7548dd709b524433 ]
-> > 
-> > When IGC=y and PTP_1588_CLOCK=m, the ptp_*() interface family is
-> > not available to the igc driver. Make this driver depend on
-> > PTP_1588_CLOCK_OPTIONAL so that it will build without errors.
-> > 
-> > Various igc commits have used ptp_*() functions without checking
-> > that PTP_1588_CLOCK is enabled. Fix all of these here.
-> > 
-> > Fixes these build errors:
-> > 
-> > ld: drivers/net/ethernet/intel/igc/igc_main.o: in function `igc_msix_other':
-> > igc_main.c:(.text+0x6494): undefined reference to `ptp_clock_event'
-> > ld: igc_main.c:(.text+0x64ef): undefined reference to `ptp_clock_event'
-> > ld: igc_main.c:(.text+0x6559): undefined reference to `ptp_clock_event'
-> > ld: drivers/net/ethernet/intel/igc/igc_ethtool.o: in function `igc_ethtool_get_ts_info':
-> > igc_ethtool.c:(.text+0xc7a): undefined reference to `ptp_clock_index'
-> > ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_feature_enable_i225':
-> > igc_ptp.c:(.text+0x330): undefined reference to `ptp_find_pin'
-> > ld: igc_ptp.c:(.text+0x36f): undefined reference to `ptp_find_pin'
-> > ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_init':
-> > igc_ptp.c:(.text+0x11cd): undefined reference to `ptp_clock_register'
-> > ld: drivers/net/ethernet/intel/igc/igc_ptp.o: in function `igc_ptp_stop':
-> > igc_ptp.c:(.text+0x12dd): undefined reference to `ptp_clock_unregister'
-> > ld: drivers/platform/x86/dell/dell-wmi-privacy.o: in function `dell_privacy_wmi_probe':
-> > 
-> > Fixes: 64433e5bf40ab ("igc: Enable internal i225 PPS")
-> > Fixes: 60dbede0c4f3d ("igc: Add support for ethtool GET_TS_INFO command")
-> > Fixes: 87938851b6efb ("igc: enable auxiliary PHC functions for the i225")
-> > Fixes: 5f2958052c582 ("igc: Add basic skeleton for PTP")
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > Cc: Ederson de Souza <ederson.desouza@intel.com>
-> > Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-> > Cc: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> > Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> > Cc: "David S. Miller" <davem@davemloft.net>
-> > Cc: Jakub Kicinski <kuba@kernel.org>
-> > Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> > Cc: intel-wired-lan at lists.osuosl.org
-> > Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> > Signed-off-by: David S. Miller <davem@davemloft.net>
-> > Signed-off-by: Sasha Levin <sashal@kernel.org>
-> > ---
-> >   drivers/net/ethernet/intel/Kconfig | 1 +
-> >   1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> > index 82744a7501c7..c11d974a62d8 100644
-> > --- a/drivers/net/ethernet/intel/Kconfig
-> > +++ b/drivers/net/ethernet/intel/Kconfig
-> > @@ -335,6 +335,7 @@ config IGC
-> >   	tristate "Intel(R) Ethernet Controller I225-LM/I225-V support"
-> >   	default n
-> >   	depends on PCI
-> > +	depends on PTP_1588_CLOCK_OPTIONAL
-> >   	help
-> >   	  This driver supports Intel(R) Ethernet Controller I225-LM/I225-V
-> >   	  family of adapters.
-> > 
+On Mon, 04 Oct 2021 15:06:31 +0200 Andreas K. Huettel wrote:
+> Dear all, 
 > 
-> PTP_1588_CLOCK_OPTIONAL does not exist in 5.14, so this effectively disables
-> the igc driver completely when applied to stable as-is.
+> I hope this is the right place to ask, if not please advise me where to go.
 
-Now dropped from the queue, again :)
+Adding intel-wired-lan at lists.osuosl.org and Sasha as well.
 
-thanks,
-
-greg k-h
+> I have a new Dell machine with both an Intel on-board ethernet controller 
+> ([8086:15f9]) and an additional 2-port extension card ([8086:1521]). 
+> 
+> The second adaptor, a "DeLock PCIe 2xGBit", worked fine as far as I could 
+> see with Linux 5.10.59, but fails to initialize with Linux 5.14.9.
+> 
+> dilfridge ~ # lspci -nn
+> [...]
+> 01:00.0 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev ff)
+> 01:00.1 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev ff)
+> [...]
+> 
+> dilfridge ~ # dmesg|grep igb
+> [    2.069286] igb: Intel(R) Gigabit Ethernet Network Driver
+> [    2.069288] igb: Copyright (c) 2007-2014 Intel Corporation.
+> [    2.069305] igb 0000:01:00.0: can't change power state from D3cold to D0 (config space inaccessible)
+> [    2.069624] igb 0000:01:00.0 0000:01:00.0 (uninitialized): PCIe link lost
+> [    2.386659] igb 0000:01:00.0: PHY reset is blocked due to SOL/IDER session.
+> [    4.115500] igb 0000:01:00.0: The NVM Checksum Is Not Valid
+> [    4.133807] igb: probe of 0000:01:00.0 failed with error -5
+> [    4.133820] igb 0000:01:00.1: can't change power state from D3cold to D0 (config space inaccessible)
+> [    4.134072] igb 0000:01:00.1 0000:01:00.1 (uninitialized): PCIe link lost
+> [    4.451602] igb 0000:01:00.1: PHY reset is blocked due to SOL/IDER session.
+> [    6.180123] igb 0000:01:00.1: The NVM Checksum Is Not Valid
+> [    6.188631] igb: probe of 0000:01:00.1 failed with error -5
+> 
+> Any advice on how to proceed? Willing to test patches and provide additional debug info.
