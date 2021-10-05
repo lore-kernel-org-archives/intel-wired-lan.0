@@ -1,96 +1,77 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 5 Oct 2021 15:27:51 -0700
-Subject: [Intel-wired-lan] [EXT] Re: Intel I350 regression 5.10 -> 5.14
- ("The NVM Checksum Is Not Valid") [8086:1521]
-In-Reply-To: <2944777.ktpJ11cQ8Q@pinacolada>
-References: <1823864.tdWV9SEqCh@kailua>
- <20211004074814.5900791a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <35dfc9e8-431c-362d-450e-4c6ac1e55434@molgen.mpg.de>
- <2944777.ktpJ11cQ8Q@pinacolada>
-Message-ID: <c75203e9-0ef4-20bd-87a5-ad0846863886@intel.com>
+From: Switzer, David <david.switzer@intel.com>
+Date: Tue, 5 Oct 2021 22:33:02 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix freeing of
+ unitialized misc IRQ vector
+In-Reply-To: <20210924094041.15448-1-mateusz.palczewski@intel.com>
+References: <20210924094041.15448-1-mateusz.palczewski@intel.com>
+Message-ID: <MW3PR11MB474846805BB49B48810BE689EBAF9@MW3PR11MB4748.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/5/2021 6:43 AM, Andreas K. Huettel wrote:
->>
->> What messages are new compared to the working Linux 5.10.59?
->>
-> 
-> I've uploaded the full boot logs to https://dev.gentoo.org/~dilfridge/igb/
-> (both in a version with and without timestamps, for easy diff).
-> 
-> * I can't see anything that immediately points to the igb device (like a PCI id etc.) before the module is loaded. 
-> * The main difference between the logs is many unrelated (?) i915 warnings in 5.10.59 because of the nonfunctional graphics.
-> 
-> The messages easily identifiable are:
-> 
-> huettel at pinacolada ~/tmp $ cat kernel-messages-5.10.59.txt |grep igb
-> Oct  5 15:11:18 dilfridge kernel: [    2.090675] igb: Intel(R) Gigabit Ethernet Network Driver
-> Oct  5 15:11:18 dilfridge kernel: [    2.090676] igb: Copyright (c) 2007-2014 Intel Corporation.
-> Oct  5 15:11:18 dilfridge kernel: [    2.090728] igb 0000:01:00.0: enabling device (0000 -> 0002)
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Palczewski, Mateusz
+>Sent: Friday, September 24, 2021 2:41 AM
+To: intel-wired-lan@lists.osuosl.org
+>Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>; PJ
+>Waskiewicz <pwaskiewicz@jumptrading.com>; Palczewski, Mateusz
+><mateusz.palczewski@intel.com>
+>Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix freeing of unitialized misc
+>IRQ vector
+>
+>From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+>
+>When VSI set up failed in i40e_probe() as part of PF switch set up driver was
+>trying to free misc IRQ vectors in i40e_clear_interrupt_scheme and produced
+>a kernel Oops:
+>
+>   Trying to free already-free IRQ 266
+>   WARNING: CPU: 0 PID: 5 at kernel/irq/manage.c:1731
+>__free_irq+0x9a/0x300
+>   Workqueue: events work_for_cpu_fn
+>   RIP: 0010:__free_irq+0x9a/0x300
+>   Call Trace:
+>   ? synchronize_irq+0x3a/0xa0
+>   free_irq+0x2e/0x60
+>   i40e_clear_interrupt_scheme+0x53/0x190 [i40e]
+>   i40e_probe.part.108+0x134b/0x1a40 [i40e]
+>   ? kmem_cache_alloc+0x158/0x1c0
+>   ? acpi_ut_update_ref_count.part.1+0x8e/0x345
+>   ? acpi_ut_update_object_reference+0x15e/0x1e2
+>   ? strstr+0x21/0x70
+>   ? irq_get_irq_data+0xa/0x20
+>   ? mp_check_pin_attr+0x13/0xc0
+>   ? irq_get_irq_data+0xa/0x20
+>   ? mp_map_pin_to_irq+0xd3/0x2f0
+>   ? acpi_register_gsi_ioapic+0x93/0x170
+>   ? pci_conf1_read+0xa4/0x100
+>   ? pci_bus_read_config_word+0x49/0x70
+>   ? do_pci_enable_device+0xcc/0x100
+>   local_pci_probe+0x41/0x90
+>   work_for_cpu_fn+0x16/0x20
+>   process_one_work+0x1a7/0x360
+>   worker_thread+0x1cf/0x390
+>   ? create_worker+0x1a0/0x1a0
+>   kthread+0x112/0x130
+>   ? kthread_flush_work_fn+0x10/0x10
+>   ret_from_fork+0x1f/0x40
+>
+>The problem is that at that point misc IRQ vectors were not allocated yet and
+>we get a call trace that driver is trying to free already free IRQ vectors.
+>
+>Add a check in i40e_clear_interrupt_scheme for
+>__I40E_MISC_IRQ_REQUESTED PF state before calling i40e_free_misc_vector.
+>This state is set only if misc IRQ vectors were properly initialized.
+>
+>Fixes: c17401a1dd21 ("i40e: use separate state bit for miscellaneous IRQ
+>setup")
+>Reported-by: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
+>Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+>Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Tested-by: Dave Switzer <david.switzer@intel.com>
 
-This line is missing below, it indicates that the kernel couldn't or
-didn't power up the PCIe for some reason. We're looking for something
-like ACPI or PCI patches (possibly PCI-Power management) to be the
-culprit here.
+ 
 
-
-> Oct  5 15:11:18 dilfridge kernel: [    2.094438] Modules linked in: igb(+) i915(+) iosf_mbi acpi_pad efivarfs
-> Oct  5 15:11:18 dilfridge kernel: [    2.097287] Modules linked in: igb(+) i915(+) iosf_mbi acpi_pad efivarfs
-> Oct  5 15:11:18 dilfridge kernel: [    2.098492] Modules linked in: igb(+) i915(+) iosf_mbi acpi_pad efivarfs
-> Oct  5 15:11:18 dilfridge kernel: [    2.098787] Modules linked in: igb(+) i915(+) iosf_mbi acpi_pad efivarfs
-> Oct  5 15:11:18 dilfridge kernel: [    2.173386] igb 0000:01:00.0: added PHC on eth0
-> Oct  5 15:11:18 dilfridge kernel: [    2.173391] igb 0000:01:00.0: Intel(R) Gigabit Ethernet Network Connection
-> Oct  5 15:11:18 dilfridge kernel: [    2.173395] igb 0000:01:00.0: eth0: (PCIe:5.0Gb/s:Width x4) 6c:b3:11:23:d4:4c
-> Oct  5 15:11:18 dilfridge kernel: [    2.173991] igb 0000:01:00.0: eth0: PBA No: H47819-001
-> Oct  5 15:11:18 dilfridge kernel: [    2.173994] igb 0000:01:00.0: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
-> Oct  5 15:11:18 dilfridge kernel: [    2.174199] igb 0000:01:00.1: enabling device (0000 -> 0002)
-> Oct  5 15:11:18 dilfridge kernel: [    2.261029] igb 0000:01:00.1: added PHC on eth1
-> Oct  5 15:11:18 dilfridge kernel: [    2.261034] igb 0000:01:00.1: Intel(R) Gigabit Ethernet Network Connection
-> Oct  5 15:11:18 dilfridge kernel: [    2.261038] igb 0000:01:00.1: eth1: (PCIe:5.0Gb/s:Width x4) 6c:b3:11:23:d4:4d
-> Oct  5 15:11:18 dilfridge kernel: [    2.261772] igb 0000:01:00.1: eth1: PBA No: H47819-001
-> Oct  5 15:11:18 dilfridge kernel: [    2.261776] igb 0000:01:00.1: Using MSI-X interrupts. 8 rx queue(s), 8 tx queue(s)
-> Oct  5 15:11:18 dilfridge kernel: [    2.265376] igb 0000:01:00.1 enp1s0f1: renamed from eth1
-> Oct  5 15:11:18 dilfridge kernel: [    2.282514] igb 0000:01:00.0 enp1s0f0: renamed from eth0
-> Oct  5 15:11:31 dilfridge kernel: [   17.585202] igb 0000:01:00.0 enp1s0f0: igb: enp1s0f0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-> 
-> huettel at pinacolada ~/tmp $ cat kernel-messages-5.14.9.txt |grep igb
-> Oct  5 02:38:31 dilfridge kernel: [    2.108606] igb: Intel(R) Gigabit Ethernet Network Driver
-> Oct  5 02:38:31 dilfridge kernel: [    2.108608] igb: Copyright (c) 2007-2014 Intel Corporation.
-> Oct  5 02:38:31 dilfridge kernel: [    2.108622] igb 0000:01:00.0: can't change power state from D3cold to D0 (config space inaccessible)
-
-This is really the only message that matters. It indicates the config
-space is inaccessible, and from the system/kernel's perspective, the
-device is unplugged or not responding, or in a PCIe power state.
-
-
-> Oct  5 02:38:31 dilfridge kernel: [    2.108918] igb 0000:01:00.0 0000:01:00.0 (uninitialized): PCIe link lost
-> Oct  5 02:38:31 dilfridge kernel: [    2.418724] igb 0000:01:00.0: PHY reset is blocked due to SOL/IDER session.
-> Oct  5 02:38:31 dilfridge kernel: [    4.148163] igb 0000:01:00.0: The NVM Checksum Is Not Valid
-> Oct  5 02:38:31 dilfridge kernel: [    4.154891] igb: probe of 0000:01:00.0 failed with error -5
-> Oct  5 02:38:31 dilfridge kernel: [    4.154904] igb 0000:01:00.1: can't change power state from D3cold to D0 (config space inaccessible)
-> Oct  5 02:38:31 dilfridge kernel: [    4.155146] igb 0000:01:00.1 0000:01:00.1 (uninitialized): PCIe link lost
-> Oct  5 02:38:31 dilfridge kernel: [    4.466904] igb 0000:01:00.1: PHY reset is blocked due to SOL/IDER session.
-> Oct  5 02:38:31 dilfridge kernel: [    6.195528] igb 0000:01:00.1: The NVM Checksum Is Not Valid
-> Oct  5 02:38:31 dilfridge kernel: [    6.200863] igb: probe of 0000:01:00.1 failed with error -5
-> 
-> 
->>>> Any advice on how to proceed? Willing to test patches and provide additional debug info.
->>
->> Without any ideas about the issue, please bisect the issue to find the 
->> commit introducing the regression, so it can be reverted/fixed to not 
->> violate Linux? no-regression policy.
-> 
-> I'll start going through kernel versions (and later revisions) end of the week.
-
-Thank you for helping the community figure out what is up here. I don't
-believe that it is a driver bug/change that broke things, but anything
-is possible. :-) Given what I saw above I wonder if you should try to
-boot with pci_aspm=off
-
-The best option is a bisect using git, but it will help to narrow things
-down to a couple different kernel versions if that is the only option
-you have.
