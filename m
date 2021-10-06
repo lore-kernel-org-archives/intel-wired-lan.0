@@ -1,77 +1,166 @@
-From: Switzer, David <david.switzer@intel.com>
-Date: Tue, 5 Oct 2021 22:33:02 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix freeing of
- unitialized misc IRQ vector
-In-Reply-To: <20210924094041.15448-1-mateusz.palczewski@intel.com>
-References: <20210924094041.15448-1-mateusz.palczewski@intel.com>
-Message-ID: <MW3PR11MB474846805BB49B48810BE689EBAF9@MW3PR11MB4748.namprd11.prod.outlook.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 6 Oct 2021 08:05:10 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] iavf-linux: Fix reporting when
+ setting descriptor count
+In-Reply-To: <b1c06b44e13d88e0a42056d5e06b90f82facce01.camel@intel.com>
+References: <20210923071452.21975-1-michal.maloszewski@intel.com>
+ <5437f421-e935-6484-4f8b-ed6751e9bae1@molgen.mpg.de>
+ <b1c06b44e13d88e0a42056d5e06b90f82facce01.camel@intel.com>
+Message-ID: <7370c4b0-92ec-9b23-9f0e-d2fdbce981b1@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Palczewski, Mateusz
->Sent: Friday, September 24, 2021 2:41 AM
-To: intel-wired-lan@lists.osuosl.org
->Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>; PJ
->Waskiewicz <pwaskiewicz@jumptrading.com>; Palczewski, Mateusz
-><mateusz.palczewski@intel.com>
->Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix freeing of unitialized misc
->IRQ vector
->
->From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
->
->When VSI set up failed in i40e_probe() as part of PF switch set up driver was
->trying to free misc IRQ vectors in i40e_clear_interrupt_scheme and produced
->a kernel Oops:
->
->   Trying to free already-free IRQ 266
->   WARNING: CPU: 0 PID: 5 at kernel/irq/manage.c:1731
->__free_irq+0x9a/0x300
->   Workqueue: events work_for_cpu_fn
->   RIP: 0010:__free_irq+0x9a/0x300
->   Call Trace:
->   ? synchronize_irq+0x3a/0xa0
->   free_irq+0x2e/0x60
->   i40e_clear_interrupt_scheme+0x53/0x190 [i40e]
->   i40e_probe.part.108+0x134b/0x1a40 [i40e]
->   ? kmem_cache_alloc+0x158/0x1c0
->   ? acpi_ut_update_ref_count.part.1+0x8e/0x345
->   ? acpi_ut_update_object_reference+0x15e/0x1e2
->   ? strstr+0x21/0x70
->   ? irq_get_irq_data+0xa/0x20
->   ? mp_check_pin_attr+0x13/0xc0
->   ? irq_get_irq_data+0xa/0x20
->   ? mp_map_pin_to_irq+0xd3/0x2f0
->   ? acpi_register_gsi_ioapic+0x93/0x170
->   ? pci_conf1_read+0xa4/0x100
->   ? pci_bus_read_config_word+0x49/0x70
->   ? do_pci_enable_device+0xcc/0x100
->   local_pci_probe+0x41/0x90
->   work_for_cpu_fn+0x16/0x20
->   process_one_work+0x1a7/0x360
->   worker_thread+0x1cf/0x390
->   ? create_worker+0x1a0/0x1a0
->   kthread+0x112/0x130
->   ? kthread_flush_work_fn+0x10/0x10
->   ret_from_fork+0x1f/0x40
->
->The problem is that at that point misc IRQ vectors were not allocated yet and
->we get a call trace that driver is trying to free already free IRQ vectors.
->
->Add a check in i40e_clear_interrupt_scheme for
->__I40E_MISC_IRQ_REQUESTED PF state before calling i40e_free_misc_vector.
->This state is set only if misc IRQ vectors were properly initialized.
->
->Fixes: c17401a1dd21 ("i40e: use separate state bit for miscellaneous IRQ
->setup")
->Reported-by: PJ Waskiewicz <pwaskiewicz@jumptrading.com>
->Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
->Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Tested-by: Dave Switzer <david.switzer@intel.com>
+Dear Anirudh,
 
- 
 
+Am 05.10.21 um 22:14 schrieb Venkataramanan, Anirudh:
+> On Thu, 2021-09-23 at 09:44 +0200, Paul Menzel wrote:
+
+>> Am 23.09.21 um 09:14 schrieb Michal Maloszewski:
+>>> iavf_set_ringparams doesn't communicate to the user that
+>>>
+>>> 1. The user requested descriptor count is out of range. Instead it
+>>>  ??? just quietly sets descriptors to the "clamped" value and calls it
+>>>  ??? done. This makes it look an invalid value was successfully set as
+>>>  ??? the descriptor count when this isn't actually true.
+>>>
+>>> 2. The user provided descriptor count needs to be inflated for alignment
+>>>  ??? reasons.
+>>>
+>>> This behavior is confusing. The ice driver has already addressed
+>>> this
+>>
+>> Please reference the commit.
+> 
+> That'd be commit fcea6f3da546 ("ice: Add stats and ethtool support").
+> 
+>>> by rejecting invalid values for and messaging for alignment
+>>> adjustments.
+>>
+>> Values for what?
+> 
+> This should have been
+> "by rejecting invalid values for descriptor count".
+> 
+>>> Do the same thing here.
+>>
+>> ? by adding the error and info messages.
+> 
+> Not necessary IMHO, given that the commit message does explain the
+> issue being addressed.
+
+?reporting? can mean a lot and ?messaging? is not clear to me either. If 
+a v2 is sent, then ?logging? might make it clear.
+
+>>> Title: iavf-linux: Fix reporting when setting descriptor count
+>>
+>> This tag is not needed, is it?
+> 
+> Yeah, this is some extra commit metadata from our internal repo. This
+> should have been removed before the patch was hit IWL.
+
+> Please remove this line, and also change the title "iavf-linux: Fix
+> reporting when setting descriptor count" to be "iavf: Fix reporting
+> when setting descriptor count"
+
+
+Kind regards,
+
+Paul
+
+
+>>> Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
+>>> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+>>> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+>>> ---
+>>>  ? .../net/ethernet/intel/iavf/iavf_ethtool.c??? | 43 ++++++++++++++-----
+>>>  ? 1 file changed, 32 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+>>> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+>>> index 7cbe59bee..cbfc8d07a 100644
+>>> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+>>> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+>>> @@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct
+>>> net_device *netdev,
+>>>  ????????if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+>>>  ????????????????return -EINVAL;
+>>>    
+>>> -???????new_tx_count = clamp_t(u32, ring->tx_pending,
+>>> -????????????????????????????? IAVF_MIN_TXD,
+>>> -????????????????????????????? IAVF_MAX_TXD);
+>>> -???????new_tx_count = ALIGN(new_tx_count,
+>>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
+>>> +???????if (ring->tx_pending > IAVF_MAX_TXD ||
+>>> +?????????? ring->tx_pending < IAVF_MIN_TXD ||
+>>> +?????????? ring->rx_pending > IAVF_MAX_RXD ||
+>>> +?????????? ring->rx_pending < IAVF_MIN_RXD) {
+>>> +???????????????? netdev_err(netdev, "Descriptors requested (Tx: %d
+>>> / Rx: %d) out of range [%d-%d] (increment %d)\n",
+>>> +??????????????????????????? ring->tx_pending, ring->rx_pending,
+>>> IAVF_MIN_TXD,
+>>> +??????????????????????????? IAVF_MAX_RXD,
+>>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
+>>> +???????????????? return -EINVAL;
+>>> +???????}
+>>> +
+>>> +???????new_tx_count = ALIGN(ring->tx_pending,
+>>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
+>>> +???????if (new_tx_count != ring->tx_pending)
+>>> +???????????????netdev_info(netdev, "Requested Tx descriptor count
+>>> rounded up to %d\n",
+>>> +?????????????????????????? new_tx_count);
+>>>    
+>>> -???????new_rx_count = clamp_t(u32, ring->rx_pending,
+>>> -????????????????????????????? IAVF_MIN_RXD,
+>>> -????????????????????????????? IAVF_MAX_RXD);
+>>> -???????new_rx_count = ALIGN(new_rx_count,
+>>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
+>>> +???????new_rx_count = ALIGN(ring->rx_pending,
+>>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
+>>> +???????if (new_rx_count != ring->rx_pending)
+>>> +???????????????netdev_info(netdev, "Requested Rx descriptor count
+>>> rounded up to %d\n",
+>>> +?????????????????????????? new_rx_count);
+>>>    
+>>>  ????????/* if nothing to do return success */
+>>>  ????????if ((new_tx_count == adapter->tx_desc_count) &&
+>>> -?????????? (new_rx_count == adapter->rx_desc_count))
+>>> +?????????? (new_rx_count == adapter->rx_desc_count)) {
+>>> +???????????????netdev_dbg(netdev, "Nothing to change, descriptor
+>>> count is same as requested\n");
+>>>  ????????????????return 0;
+>>> +???????}
+>>>    
+>>> -???????adapter->tx_desc_count = new_tx_count;
+>>> -???????adapter->rx_desc_count = new_rx_count;
+>>> +???????if (new_tx_count != adapter->tx_desc_count) {
+>>> +???????????????netdev_info(netdev, "Changing Tx descriptor count
+>>> from %d to %d\n",
+>>> +?????????????????????????? adapter->tx_desc_count, new_tx_count);
+>>> +???????????????adapter->tx_desc_count = new_tx_count;
+>>> +???????}
+>>> +
+>>> +???????if (new_rx_count != adapter->rx_desc_count) {
+>>> +???????????????netdev_info(netdev, "Changing Rx descriptor count
+>>> from %d to %d\n",
+>>> +?????????????????????????? adapter->rx_desc_count, new_rx_count);
+>>> +???????????????adapter->rx_desc_count = new_rx_count;
+>>> +???????}
+>>>    
+>>>  ????????if (netif_running(netdev)) {
+>>>  ????????????????adapter->flags |= IAVF_FLAG_RESET_NEEDED;
+>>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at osuosl.org
+>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
