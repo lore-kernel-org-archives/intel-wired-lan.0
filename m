@@ -1,166 +1,29 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 6 Oct 2021 08:05:10 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] iavf-linux: Fix reporting when
- setting descriptor count
-In-Reply-To: <b1c06b44e13d88e0a42056d5e06b90f82facce01.camel@intel.com>
-References: <20210923071452.21975-1-michal.maloszewski@intel.com>
- <5437f421-e935-6484-4f8b-ed6751e9bae1@molgen.mpg.de>
- <b1c06b44e13d88e0a42056d5e06b90f82facce01.camel@intel.com>
-Message-ID: <7370c4b0-92ec-9b23-9f0e-d2fdbce981b1@molgen.mpg.de>
+From: Kraus, NechamaX <nechamax.kraus@linux.intel.com>
+Date: Wed, 6 Oct 2021 15:20:53 +0300
+Subject: [Intel-wired-lan] [PATCH v1 2/2] e1000e: Fixing packet loss
+ issues on new platforms
+In-Reply-To: <20210922065542.3780389-1-sasha.neftin@intel.com>
+References: <20210922065542.3780389-1-sasha.neftin@intel.com>
+Message-ID: <99d87768-acf3-b549-d3e9-ad9ae3c81a32@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Anirudh,
-
-
-Am 05.10.21 um 22:14 schrieb Venkataramanan, Anirudh:
-> On Thu, 2021-09-23 at 09:44 +0200, Paul Menzel wrote:
-
->> Am 23.09.21 um 09:14 schrieb Michal Maloszewski:
->>> iavf_set_ringparams doesn't communicate to the user that
->>>
->>> 1. The user requested descriptor count is out of range. Instead it
->>>  ??? just quietly sets descriptors to the "clamped" value and calls it
->>>  ??? done. This makes it look an invalid value was successfully set as
->>>  ??? the descriptor count when this isn't actually true.
->>>
->>> 2. The user provided descriptor count needs to be inflated for alignment
->>>  ??? reasons.
->>>
->>> This behavior is confusing. The ice driver has already addressed
->>> this
->>
->> Please reference the commit.
+On 9/22/2021 09:55, Sasha Neftin wrote:
+> Update the HW MAC initialization flow. Do not gate DMA clock from
+> the modPHY block. Keeping this clock will prevent drop packets sent
+> in burst mode on the Kumeran interface.
 > 
-> That'd be commit fcea6f3da546 ("ice: Add stats and ethtool support").
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213651
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=213377
+> Fixes: bc7f75fa9788 ("New pci-express e1000 driver");
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/ich8lan.c | 11 ++++++++++-
+>   drivers/net/ethernet/intel/e1000e/ich8lan.h |  3 +++
+>   2 files changed, 13 insertions(+), 1 deletion(-)
 > 
->>> by rejecting invalid values for and messaging for alignment
->>> adjustments.
->>
->> Values for what?
-> 
-> This should have been
-> "by rejecting invalid values for descriptor count".
-> 
->>> Do the same thing here.
->>
->> ? by adding the error and info messages.
-> 
-> Not necessary IMHO, given that the commit message does explain the
-> issue being addressed.
+Tested-by: Nechama Kraus <nechamax.kraus@linux.intel.com>
 
-?reporting? can mean a lot and ?messaging? is not clear to me either. If 
-a v2 is sent, then ?logging? might make it clear.
-
->>> Title: iavf-linux: Fix reporting when setting descriptor count
->>
->> This tag is not needed, is it?
-> 
-> Yeah, this is some extra commit metadata from our internal repo. This
-> should have been removed before the patch was hit IWL.
-
-> Please remove this line, and also change the title "iavf-linux: Fix
-> reporting when setting descriptor count" to be "iavf: Fix reporting
-> when setting descriptor count"
-
-
-Kind regards,
-
-Paul
-
-
->>> Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
->>> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
->>> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
->>> ---
->>>  ? .../net/ethernet/intel/iavf/iavf_ethtool.c??? | 43 ++++++++++++++-----
->>>  ? 1 file changed, 32 insertions(+), 11 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
->>> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
->>> index 7cbe59bee..cbfc8d07a 100644
->>> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
->>> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
->>> @@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct
->>> net_device *netdev,
->>>  ????????if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
->>>  ????????????????return -EINVAL;
->>>    
->>> -???????new_tx_count = clamp_t(u32, ring->tx_pending,
->>> -????????????????????????????? IAVF_MIN_TXD,
->>> -????????????????????????????? IAVF_MAX_TXD);
->>> -???????new_tx_count = ALIGN(new_tx_count,
->>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
->>> +???????if (ring->tx_pending > IAVF_MAX_TXD ||
->>> +?????????? ring->tx_pending < IAVF_MIN_TXD ||
->>> +?????????? ring->rx_pending > IAVF_MAX_RXD ||
->>> +?????????? ring->rx_pending < IAVF_MIN_RXD) {
->>> +???????????????? netdev_err(netdev, "Descriptors requested (Tx: %d
->>> / Rx: %d) out of range [%d-%d] (increment %d)\n",
->>> +??????????????????????????? ring->tx_pending, ring->rx_pending,
->>> IAVF_MIN_TXD,
->>> +??????????????????????????? IAVF_MAX_RXD,
->>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
->>> +???????????????? return -EINVAL;
->>> +???????}
->>> +
->>> +???????new_tx_count = ALIGN(ring->tx_pending,
->>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
->>> +???????if (new_tx_count != ring->tx_pending)
->>> +???????????????netdev_info(netdev, "Requested Tx descriptor count
->>> rounded up to %d\n",
->>> +?????????????????????????? new_tx_count);
->>>    
->>> -???????new_rx_count = clamp_t(u32, ring->rx_pending,
->>> -????????????????????????????? IAVF_MIN_RXD,
->>> -????????????????????????????? IAVF_MAX_RXD);
->>> -???????new_rx_count = ALIGN(new_rx_count,
->>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
->>> +???????new_rx_count = ALIGN(ring->rx_pending,
->>> IAVF_REQ_DESCRIPTOR_MULTIPLE);
->>> +???????if (new_rx_count != ring->rx_pending)
->>> +???????????????netdev_info(netdev, "Requested Rx descriptor count
->>> rounded up to %d\n",
->>> +?????????????????????????? new_rx_count);
->>>    
->>>  ????????/* if nothing to do return success */
->>>  ????????if ((new_tx_count == adapter->tx_desc_count) &&
->>> -?????????? (new_rx_count == adapter->rx_desc_count))
->>> +?????????? (new_rx_count == adapter->rx_desc_count)) {
->>> +???????????????netdev_dbg(netdev, "Nothing to change, descriptor
->>> count is same as requested\n");
->>>  ????????????????return 0;
->>> +???????}
->>>    
->>> -???????adapter->tx_desc_count = new_tx_count;
->>> -???????adapter->rx_desc_count = new_rx_count;
->>> +???????if (new_tx_count != adapter->tx_desc_count) {
->>> +???????????????netdev_info(netdev, "Changing Tx descriptor count
->>> from %d to %d\n",
->>> +?????????????????????????? adapter->tx_desc_count, new_tx_count);
->>> +???????????????adapter->tx_desc_count = new_tx_count;
->>> +???????}
->>> +
->>> +???????if (new_rx_count != adapter->rx_desc_count) {
->>> +???????????????netdev_info(netdev, "Changing Rx descriptor count
->>> from %d to %d\n",
->>> +?????????????????????????? adapter->rx_desc_count, new_rx_count);
->>> +???????????????adapter->rx_desc_count = new_rx_count;
->>> +???????}
->>>    
->>>  ????????if (netif_running(netdev)) {
->>>  ????????????????adapter->flags |= IAVF_FLAG_RESET_NEEDED;
->>>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> 
