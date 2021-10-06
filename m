@@ -1,28 +1,68 @@
-From: Kraus, NechamaX <nechamax.kraus@linux.intel.com>
-Date: Wed, 6 Oct 2021 15:23:48 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/2] e1000e: Separate TGP board
- type from SPT
-In-Reply-To: <20210922065449.3780338-1-sasha.neftin@intel.com>
-References: <20210922065449.3780338-1-sasha.neftin@intel.com>
-Message-ID: <1945444a-ed8a-d230-1334-3c2485ea2f94@linux.intel.com>
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Wed, 6 Oct 2021 13:09:08 -0500
+Subject: [Intel-wired-lan] [PATCH][next] ice: use devm_kcalloc() instead of
+ devm_kzalloc()
+Message-ID: <20211006180908.GA913430@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/22/2021 09:54, Sasha Neftin wrote:
-> We have a same LAN controller on different PCH.
-> Separate TGP board type from SPT will alllow apply specific fixes
-> for TGP platforms.
-> 
-> Suggested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/e1000.h   |  4 +-
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 +++++++++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 45 +++++++++++----------
->   3 files changed, 46 insertions(+), 23 deletions(-)
-> 
-Tested-by: Nechama Kraus <nechamax.kraus@linux.intel.com>
+Use 2-factor multiplication argument form devm_kcalloc() instead
+of devm_kzalloc().
+
+Link: https://github.com/KSPP/linux/issues/162
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c | 4 ++--
+ drivers/net/ethernet/intel/ice/ice_txrx.c         | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+index 16de603b280c..38960bcc384c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+@@ -706,7 +706,7 @@ ice_create_init_fdir_rule(struct ice_pf *pf, enum ice_fltr_ptype flow)
+ 	if (!seg)
+ 		return -ENOMEM;
+ 
+-	tun_seg = devm_kzalloc(dev, sizeof(*seg) * ICE_FD_HW_SEG_MAX,
++	tun_seg = devm_kcalloc(dev, sizeof(*seg), ICE_FD_HW_SEG_MAX,
+ 			       GFP_KERNEL);
+ 	if (!tun_seg) {
+ 		devm_kfree(dev, seg);
+@@ -1068,7 +1068,7 @@ ice_cfg_fdir_xtrct_seq(struct ice_pf *pf, struct ethtool_rx_flow_spec *fsp,
+ 	if (!seg)
+ 		return -ENOMEM;
+ 
+-	tun_seg = devm_kzalloc(dev, sizeof(*seg) * ICE_FD_HW_SEG_MAX,
++	tun_seg = devm_kcalloc(dev, sizeof(*seg), ICE_FD_HW_SEG_MAX,
+ 			       GFP_KERNEL);
+ 	if (!tun_seg) {
+ 		devm_kfree(dev, seg);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 13b2bdc25b0d..fd10f8548feb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -340,7 +340,7 @@ int ice_setup_tx_ring(struct ice_ring *tx_ring)
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(tx_ring->tx_buf);
+ 	tx_ring->tx_buf =
+-		devm_kzalloc(dev, sizeof(*tx_ring->tx_buf) * tx_ring->count,
++		devm_kcalloc(dev, sizeof(*tx_ring->tx_buf), tx_ring->count,
+ 			     GFP_KERNEL);
+ 	if (!tx_ring->tx_buf)
+ 		return -ENOMEM;
+@@ -464,7 +464,7 @@ int ice_setup_rx_ring(struct ice_ring *rx_ring)
+ 	/* warn if we are about to overwrite the pointer */
+ 	WARN_ON(rx_ring->rx_buf);
+ 	rx_ring->rx_buf =
+-		devm_kzalloc(dev, sizeof(*rx_ring->rx_buf) * rx_ring->count,
++		devm_kcalloc(dev, sizeof(*rx_ring->rx_buf), rx_ring->count,
+ 			     GFP_KERNEL);
+ 	if (!rx_ring->rx_buf)
+ 		return -ENOMEM;
+-- 
+2.27.0
 
