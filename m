@@ -1,165 +1,180 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Thu, 7 Oct 2021 23:38:50 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
- strip virtual channel messages
-In-Reply-To: <20211007125611.50277-1-michal.maloszewski@intel.com>
-References: <20211007125611.50277-1-michal.maloszewski@intel.com>
-Message-ID: <5806d8bccb949333e39f432bf162956d9797ff5f.camel@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 08 Oct 2021 11:41:46 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
+ 54ee39439acd9f8b161703c6ad4f4e1835585277
+Message-ID: <615fbdfa.FiC6dj2L7aNGpVk6%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2021-10-07 at 12:56 +0000, Michal Maloszewski wrote:
-> Modify netdev->features for vlan stripping based on virtual
-> channel messages received from the PF. Change is needed
-> to synchronize vlan strip status between PF sysfs and iavf ethtool.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
+branch HEAD: 54ee39439acd9f8b161703c6ad4f4e1835585277  iavf: fix double unlock of crit_lock
 
+elapsed time: 1221m
 
-This patch doesn't apply.
+configs tested: 149
+configs skipped: 3
 
-> Fixes: iavf: 129cf89e58567 ("rename functions and structs to new
-> name")
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The Fixes tag is incorrect. It should look like this:
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allmodconfig
+arm                              allyesconfig
+m68k                       m5475evb_defconfig
+powerpc                     tqm5200_defconfig
+m68k                       m5249evb_defconfig
+powerpc                     skiroot_defconfig
+powerpc                   motionpro_defconfig
+arc                 nsimosci_hs_smp_defconfig
+m68k                          atari_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                     stx_gp3_defconfig
+m68k                          multi_defconfig
+sh                          landisk_defconfig
+powerpc                      pcm030_defconfig
+mips                          malta_defconfig
+mips                        qi_lb60_defconfig
+mips                       bmips_be_defconfig
+powerpc                     tqm8560_defconfig
+sh                         microdev_defconfig
+powerpc                       ppc64_defconfig
+mips                          ath25_defconfig
+arm                         orion5x_defconfig
+arm                          collie_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                   microwatt_defconfig
+arm                        multi_v5_defconfig
+xtensa                       common_defconfig
+m68k                        m5272c3_defconfig
+s390                       zfcpdump_defconfig
+sparc                            alldefconfig
+sparc                       sparc64_defconfig
+sh                        sh7757lcr_defconfig
+sh                          rsk7264_defconfig
+mips                       capcella_defconfig
+arm                           h5000_defconfig
+sh                            migor_defconfig
+openrisc                    or1ksim_defconfig
+arc                          axs101_defconfig
+sh                          kfr2r09_defconfig
+mips                        maltaup_defconfig
+mips                      loongson3_defconfig
+sh                   sh7724_generic_defconfig
+arm                           viper_defconfig
+arm                          simpad_defconfig
+powerpc                         ps3_defconfig
+h8300                            allyesconfig
+powerpc                      pasemi_defconfig
+powerpc64                           defconfig
+arm                          moxart_defconfig
+arm                           sama5_defconfig
+arc                     nsimosci_hs_defconfig
+m68k                        stmark2_defconfig
+arm                       omap2plus_defconfig
+mips                           ip27_defconfig
+mips                      malta_kvm_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                     davinci_all_defconfig
+sh                          polaris_defconfig
+xtensa                          iss_defconfig
+arm                       multi_v4t_defconfig
+powerpc                     ksi8560_defconfig
+mips                        bcm63xx_defconfig
+x86_64               randconfig-c001-20211003
+i386                 randconfig-c001-20211003
+arm                  randconfig-c002-20211003
+x86_64               randconfig-c001-20211004
+i386                 randconfig-c001-20211004
+arm                  randconfig-c002-20211004
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a015-20211004
+x86_64               randconfig-a012-20211004
+x86_64               randconfig-a016-20211004
+x86_64               randconfig-a014-20211004
+x86_64               randconfig-a013-20211004
+x86_64               randconfig-a011-20211004
+i386                 randconfig-a013-20211004
+i386                 randconfig-a016-20211004
+i386                 randconfig-a014-20211004
+i386                 randconfig-a011-20211004
+i386                 randconfig-a012-20211004
+i386                 randconfig-a015-20211004
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
 
-Fixes: 54a4f0239f2e ("KVM: MMU: make kvm_mmu_zap_page() return the
-number of pages it actually freed")
+clang tested configs:
+x86_64               randconfig-c007-20211003
+i386                 randconfig-c001-20211003
+arm                  randconfig-c002-20211003
+s390                 randconfig-c005-20211003
+powerpc              randconfig-c003-20211003
+riscv                randconfig-c006-20211003
+mips                 randconfig-c004-20211003
+x86_64               randconfig-a003-20211004
+x86_64               randconfig-a005-20211004
+x86_64               randconfig-a001-20211004
+x86_64               randconfig-a002-20211004
+x86_64               randconfig-a004-20211004
+x86_64               randconfig-a006-20211004
+i386                 randconfig-a001-20211004
+i386                 randconfig-a003-20211004
+i386                 randconfig-a005-20211004
+i386                 randconfig-a002-20211004
+i386                 randconfig-a004-20211004
+i386                 randconfig-a006-20211004
+hexagon              randconfig-r045-20211007
+hexagon              randconfig-r041-20211007
+s390                 randconfig-r044-20211007
+riscv                randconfig-r042-20211007
 
-https://www.kernel.org/doc/html/latest/process/submitting-
-patches.html#using-reported-by-tested-by-reviewed-by-suggested-by-and-
-fixes
-
-> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-> ---
-> ?.../net/ethernet/intel/iavf/iavf_virtchnl.c?? | 48
-> ++++++++++++++++++-
-> ?1 file changed, 47 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index 9c128462e..8e18ae0b5 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> @@ -1456,6 +1456,22 @@ void iavf_request_reset(struct iavf_adapter
-> *adapter)
-> ????????adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-> ?}
-> ?
-> +/**
-> + * iavf_netdev_features_vlan_strip_set
-> + * @netdev: ptr to netdev being adjusted
-> + * @enable: enable or disable vlan strip
-> + *
-> + * Helper function to change vlan strip status in netdev->features.
-> + **/
-> +static void iavf_netdev_features_vlan_strip_set(struct net_device
-> *netdev,
-> +????????????????????????????????????????????? const bool enable)
-> +{
-> +???????if (enable)
-> +??????????? netdev->features |= NETIF_F_HW_VLAN_CTAG_RX |
-> NETIF_F_HW_VLAN_RX;
-> +???????else
-> +??????????? netdev->features &= ~NETIF_F_HW_VLAN_CTAG_RX &
-> ~NETIF_F_HW_VLAN_RX;
-> +}
-> +
-> ?/**
-> ? * iavf_virtchnl_completion
-> ? * @adapter: adapter structure
-> @@ -1679,8 +1695,22 @@ void iavf_virtchnl_completion(struct
-> iavf_adapter *adapter,
-> ????????????????????????}
-> ????????????????????????break;
-> ????????????????case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-> +???????????????????????dev_warn(&adapter->pdev->dev,
-> +??????????????????????????????? "Changing VLAN Stripping is not
-> allowed when Port VLAN is configured\n");
-
-splitting this line isn't needed
-
-> +???????????????????????/*
-> +??????????????????????? * Vlan stripping could not be enabled by
-> ethtool.
-> +??????????????????????? * Disable it in netdev->features.
-> +??????????????????????? */
-> +???????????????????????iavf_netdev_features_vlan_strip_set(netdev,
-> false);
-> +???????????????????????break;
-> ????????????????case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-> -???????????????????????dev_warn(&adapter->pdev->dev, "Changing VLAN
-> Stripping is not allowed when Port VLAN is configured\n");
-> +???????????????????????dev_warn(&adapter->pdev->dev,
-> +??????????????????????????????? "Changing VLAN Stripping is not
-> allowed when Port VLAN is configured\n");
-
-Why the change? Strings can be long line
-
-> +???????????????????????/*
-> +??????????????????????? * Vlan stripping could not be disabled by
-> ethtool.
-> +??????????????????????? * Enable it in netdev->features.
-> +??????????????????????? */
-> +???????????????????????iavf_netdev_features_vlan_strip_set(netdev,
-> true);
-
-This comment style is incorrect for netdev patches.
-
-For files in net/ and drivers/net/ the preferred style for long (multi-
-line) comments is a little different.
-
-/* The preferred comment style for files in net/ and drivers/net
- * looks like this.
- *
- * It is nearly the same as the generally preferred comment style,
- * but there is no initial almost-blank line.
- */
-
-https://www.kernel.org/doc/html/latest/process/coding-style.html
-
-> ????????????????????????break;
-> ????????????????default:
-> ????????????????????????dev_err(&adapter->pdev->dev, "PF returned
-> error %d (%s) to our request %d\n",
-> @@ -1897,6 +1927,22 @@ void iavf_virtchnl_completion(struct
-> iavf_adapter *adapter,
-> ????????????????spin_unlock_bh(&adapter->adv_rss_lock);
-> ????????????????}
-> ????????????????break;
-> +???????case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-> +???????????????/*
-> +??????????????? * Got information that PF enabled vlan strip on this
-> VF.
-> +??????????????? * Update netdev->features if needed to be in sync
-> with ethtool.
-> +??????????????? */
-
-ditto for comment style
-
-> +???????????????if (!v_retval)
-> +???????????????????????iavf_netdev_features_vlan_strip_set(netdev,
-> true);
-> +???????????????break;
-> +???????case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-> +???????????????/*
-> +??????????????? * Got information that PF disabled vlan strip on
-> this VF.
-> +??????????????? * Update netdev->features if needed to be in sync
-> with ethtool.
-> +??????????????? */
-
-ditto for comment style
-
-> +???????????????if (!v_retval)
-> +???????????????????????iavf_netdev_features_vlan_strip_set(netdev,
-> false);
-> +???????????????break;
-> ????????default:
-> ????????????????if (adapter->current_op && (v_opcode != adapter-
-> >current_op))
-> ????????????????????????dev_dbg(&adapter->pdev->dev, "Expected
-> response %d from PF, received %d\n",
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
