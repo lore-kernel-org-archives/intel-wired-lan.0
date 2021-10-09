@@ -1,201 +1,261 @@
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-Date: Fri,  8 Oct 2021 10:44:03 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Refactor PR ethtool ops
-Message-ID: <20211008084403.6075-1-wojciech.drewek@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 09 Oct 2021 21:32:52 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ 7aae80cef7ba4b5245d392e62de1ebf1fc035f49
+Message-ID: <61619a04.ZYtWSHNHDfp8EnFD%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch improves a few things:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: 7aae80cef7ba4b5245d392e62de1ebf1fc035f49  ice: add port representor ethtool ops and stats
 
-- it fixes issue where ethtool -i reports that PR supports
-  priv-flags and tests when in fact it does not support them
-- instead of using the same functions for both PF and PR ethtool ops,
-  this patch introduces separate ops for both cases and internal
-  functions with core logic.
-- prevent accessing VF VSI while VF is not ready by calling
-  ice_check_vf_ready_for_cfg
-- all PR specific functions in ethtool.c were moved to one place in
-  file
-- instead overwriting n_priv_flags in ice_repr_get_drvinfo,
-  priv-flags code was moved from __ice_get_drvinfo to ice_get_drvinfo
+elapsed time: 2270m
 
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+configs tested: 229
+configs skipped: 5
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211009
+powerpc              randconfig-c003-20211009
+sh                           se7206_defconfig
+sh                   sh7724_generic_defconfig
+powerpc                      pasemi_defconfig
+x86_64                              defconfig
+arm                        cerfcube_defconfig
+nios2                         10m50_defconfig
+mips                       capcella_defconfig
+arm                        trizeps4_defconfig
+powerpc                 mpc85xx_cds_defconfig
+arm                            zeus_defconfig
+mips                     loongson1b_defconfig
+mips                          ath25_defconfig
+arm                          pxa168_defconfig
+arc                         haps_hs_defconfig
+mips                    maltaup_xpa_defconfig
+mips                          rb532_defconfig
+riscv             nommu_k210_sdcard_defconfig
+xtensa                          iss_defconfig
+sh                        sh7763rdp_defconfig
+mips                        jmr3927_defconfig
+mips                       rbtx49xx_defconfig
+arm                           h5000_defconfig
+m68k                        m5272c3_defconfig
+mips                           gcw0_defconfig
+s390                                defconfig
+powerpc                  mpc866_ads_defconfig
+arm                         bcm2835_defconfig
+powerpc                      cm5200_defconfig
+microblaze                      mmu_defconfig
+powerpc                     pq2fads_defconfig
+mips                         mpc30x_defconfig
+m68k                          multi_defconfig
+arm                         axm55xx_defconfig
+arm                           stm32_defconfig
+powerpc                     pseries_defconfig
+xtensa                           alldefconfig
+arm                          moxart_defconfig
+sh                           se7724_defconfig
+arc                 nsimosci_hs_smp_defconfig
+arm                       cns3420vb_defconfig
+mips                           rs90_defconfig
+xtensa                              defconfig
+powerpc                     mpc83xx_defconfig
+powerpc                          allyesconfig
+sh                      rts7751r2d1_defconfig
+m68k                          atari_defconfig
+arm                             mxs_defconfig
+sh                   sh7770_generic_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                  mpc885_ads_defconfig
+arm                       imx_v4_v5_defconfig
+arm                          collie_defconfig
+powerpc                     tqm8541_defconfig
+h8300                     edosk2674_defconfig
+mips                        qi_lb60_defconfig
+sparc64                          alldefconfig
+powerpc                  iss476-smp_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                            xcep_defconfig
+ia64                             alldefconfig
+mips                        bcm63xx_defconfig
+arm64                            alldefconfig
+sh                             espt_defconfig
+riscv                             allnoconfig
+arm                          ixp4xx_defconfig
+sh                          rsk7264_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                          g5_defconfig
+arm                        keystone_defconfig
+riscv                               defconfig
+sh                            titan_defconfig
+arm                        vexpress_defconfig
+powerpc                      ppc40x_defconfig
+um                                  defconfig
+mips                           ip22_defconfig
+mips                   sb1250_swarm_defconfig
+arm                        realview_defconfig
+arm                       versatile_defconfig
+powerpc                 mpc836x_mds_defconfig
+arc                        vdk_hs38_defconfig
+m68k                       bvme6000_defconfig
+powerpc                     taishan_defconfig
+sh                           sh2007_defconfig
+powerpc                        cell_defconfig
+sh                               j2_defconfig
+sh                            shmin_defconfig
+sh                           se7619_defconfig
+sh                           se7721_defconfig
+riscv                            alldefconfig
+arc                        nsim_700_defconfig
+mips                  decstation_64_defconfig
+sh                     sh7710voipgw_defconfig
+arm                     davinci_all_defconfig
+arm                            dove_defconfig
+mips                           xway_defconfig
+x86_64               randconfig-c001-20211008
+i386                 randconfig-c001-20211008
+arm                  randconfig-c002-20211008
+x86_64               randconfig-c001-20211009
+arm                  randconfig-c002-20211009
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a003-20211009
+x86_64               randconfig-a005-20211009
+x86_64               randconfig-a001-20211009
+x86_64               randconfig-a002-20211009
+x86_64               randconfig-a004-20211009
+x86_64               randconfig-a006-20211009
+i386                 randconfig-a001-20211009
+i386                 randconfig-a003-20211009
+i386                 randconfig-a005-20211009
+i386                 randconfig-a004-20211009
+i386                 randconfig-a002-20211009
+i386                 randconfig-a006-20211009
+x86_64               randconfig-a015-20211008
+x86_64               randconfig-a012-20211008
+x86_64               randconfig-a016-20211008
+x86_64               randconfig-a013-20211008
+x86_64               randconfig-a011-20211008
+x86_64               randconfig-a014-20211008
+x86_64               randconfig-a015-20211004
+x86_64               randconfig-a012-20211004
+x86_64               randconfig-a016-20211004
+x86_64               randconfig-a014-20211004
+x86_64               randconfig-a013-20211004
+x86_64               randconfig-a011-20211004
+i386                 randconfig-a013-20211008
+i386                 randconfig-a016-20211008
+i386                 randconfig-a014-20211008
+i386                 randconfig-a011-20211008
+i386                 randconfig-a012-20211008
+i386                 randconfig-a015-20211008
+arc                  randconfig-r043-20211007
+arc                  randconfig-r043-20211008
+s390                 randconfig-r044-20211008
+riscv                randconfig-r042-20211008
+arc                  randconfig-r043-20211004
+s390                 randconfig-r044-20211004
+riscv                randconfig-r042-20211004
+riscv                            allyesconfig
+riscv                            allmodconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-c007-20211009
+i386                 randconfig-c001-20211009
+arm                  randconfig-c002-20211009
+s390                 randconfig-c005-20211009
+powerpc              randconfig-c003-20211009
+riscv                randconfig-c006-20211009
+mips                 randconfig-c004-20211009
+x86_64               randconfig-a003-20211008
+x86_64               randconfig-a005-20211008
+x86_64               randconfig-a001-20211008
+x86_64               randconfig-a002-20211008
+x86_64               randconfig-a004-20211008
+x86_64               randconfig-a006-20211008
+i386                 randconfig-a001-20211008
+i386                 randconfig-a003-20211008
+i386                 randconfig-a005-20211008
+i386                 randconfig-a004-20211008
+i386                 randconfig-a002-20211008
+i386                 randconfig-a006-20211008
+i386                 randconfig-a001-20211004
+i386                 randconfig-a003-20211004
+i386                 randconfig-a005-20211004
+i386                 randconfig-a002-20211004
+i386                 randconfig-a004-20211004
+i386                 randconfig-a006-20211004
+x86_64               randconfig-a003-20211004
+x86_64               randconfig-a005-20211004
+x86_64               randconfig-a001-20211004
+x86_64               randconfig-a002-20211004
+x86_64               randconfig-a015-20211009
+x86_64               randconfig-a012-20211009
+x86_64               randconfig-a016-20211009
+x86_64               randconfig-a013-20211009
+x86_64               randconfig-a011-20211009
+x86_64               randconfig-a014-20211009
+i386                 randconfig-a013-20211009
+i386                 randconfig-a016-20211009
+i386                 randconfig-a014-20211009
+i386                 randconfig-a012-20211009
+i386                 randconfig-a011-20211009
+i386                 randconfig-a015-20211009
+hexagon              randconfig-r045-20211007
+hexagon              randconfig-r041-20211007
+s390                 randconfig-r044-20211007
+riscv                randconfig-r042-20211007
+hexagon              randconfig-r045-20211008
+hexagon              randconfig-r041-20211008
+
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 99 +++++++++++++++-----
- 1 file changed, 74 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index f4b3c5b73c7d..8b3eef6632e9 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -192,7 +192,6 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
- 
- 	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
--	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
- }
- 
- static void
-@@ -201,18 +200,8 @@ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 
- 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
--}
--
--static void
--ice_repr_get_drvinfo(struct net_device *netdev,
--		     struct ethtool_drvinfo *drvinfo)
--{
--	struct ice_repr *repr = ice_netdev_to_repr(netdev);
- 
--	if (ice_check_vf_ready_for_cfg(repr->vf))
--		return;
--
--	__ice_get_drvinfo(netdev, drvinfo, repr->src_vsi);
-+	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
- }
- 
- static int ice_get_regs_len(struct net_device __always_unused *netdev)
-@@ -886,10 +875,10 @@ ice_self_test(struct net_device *netdev, struct ethtool_test *eth_test,
- 	netdev_info(netdev, "testing finished\n");
- }
- 
--static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
-+static void
-+__ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data,
-+		  struct ice_vsi *vsi)
- {
--	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi *vsi = ice_get_netdev_priv_vsi(np);
- 	unsigned int i;
- 	u8 *p = data;
- 
-@@ -940,6 +929,13 @@ static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
- 	}
- }
- 
-+static void ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+
-+	__ice_get_strings(netdev, stringset, data, np->vsi);
-+}
-+
- static int
- ice_set_phys_id(struct net_device *netdev, enum ethtool_phys_id_state state)
- {
-@@ -1331,9 +1327,6 @@ static int ice_get_sset_count(struct net_device *netdev, int sset)
- 		 * order of strings will suffer from race conditions and are
- 		 * not safe.
- 		 */
--		if (ice_is_port_repr_netdev(netdev))
--			return ICE_VSI_STATS_LEN;
--
- 		return ICE_ALL_STATS_LEN(netdev);
- 	case ETH_SS_TEST:
- 		return ICE_TEST_LEN;
-@@ -1345,11 +1338,10 @@ static int ice_get_sset_count(struct net_device *netdev, int sset)
- }
- 
- static void
--ice_get_ethtool_stats(struct net_device *netdev,
--		      struct ethtool_stats __always_unused *stats, u64 *data)
-+__ice_get_ethtool_stats(struct net_device *netdev,
-+			struct ethtool_stats __always_unused *stats, u64 *data,
-+			struct ice_vsi *vsi)
- {
--	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_vsi *vsi = ice_get_netdev_priv_vsi(np);
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_tx_ring *tx_ring;
- 	struct ice_rx_ring *rx_ring;
-@@ -1416,6 +1408,15 @@ ice_get_ethtool_stats(struct net_device *netdev,
- 	}
- }
- 
-+static void
-+ice_get_ethtool_stats(struct net_device *netdev,
-+		      struct ethtool_stats __always_unused *stats, u64 *data)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(netdev);
-+
-+	__ice_get_ethtool_stats(netdev, stats, data, np->vsi);
-+}
-+
- #define ICE_PHY_TYPE_LOW_MASK_MIN_1G	(ICE_PHY_TYPE_LOW_100BASE_TX | \
- 					 ICE_PHY_TYPE_LOW_100M_SGMII)
- 
-@@ -3839,6 +3840,54 @@ ice_set_per_q_coalesce(struct net_device *netdev, u32 q_num,
- 	return __ice_set_coalesce(netdev, ec, q_num);
- }
- 
-+static void
-+ice_repr_get_drvinfo(struct net_device *netdev,
-+		     struct ethtool_drvinfo *drvinfo)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+
-+	if (ice_check_vf_ready_for_cfg(repr->vf))
-+		return;
-+
-+	__ice_get_drvinfo(netdev, drvinfo, repr->src_vsi);
-+}
-+
-+static void
-+ice_repr_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+
-+	/* for port representors only ETH_SS_STATS is supported */
-+	if (ice_check_vf_ready_for_cfg(repr->vf) ||
-+	    stringset != ETH_SS_STATS)
-+		return;
-+
-+	__ice_get_strings(netdev, stringset, data, repr->src_vsi);
-+}
-+
-+static void
-+ice_repr_get_ethtool_stats(struct net_device *netdev,
-+			   struct ethtool_stats __always_unused *stats,
-+			   u64 *data)
-+{
-+	struct ice_repr *repr = ice_netdev_to_repr(netdev);
-+
-+	if (ice_check_vf_ready_for_cfg(repr->vf))
-+		return;
-+
-+	__ice_get_ethtool_stats(netdev, stats, data, repr->src_vsi);
-+}
-+
-+static int ice_repr_get_sset_count(struct net_device *netdev, int sset)
-+{
-+	switch (sset) {
-+	case ETH_SS_STATS:
-+		return ICE_VSI_STATS_LEN;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
- #define ICE_I2C_EEPROM_DEV_ADDR		0xA0
- #define ICE_I2C_EEPROM_DEV_ADDR2	0xA2
- #define ICE_MODULE_TYPE_SFP		0x03
-@@ -4093,9 +4142,9 @@ void ice_set_ethtool_safe_mode_ops(struct net_device *netdev)
- static const struct ethtool_ops ice_ethtool_repr_ops = {
- 	.get_drvinfo		= ice_repr_get_drvinfo,
- 	.get_link		= ethtool_op_get_link,
--	.get_strings		= ice_get_strings,
--	.get_ethtool_stats      = ice_get_ethtool_stats,
--	.get_sset_count		= ice_get_sset_count,
-+	.get_strings		= ice_repr_get_strings,
-+	.get_ethtool_stats      = ice_repr_get_ethtool_stats,
-+	.get_sset_count		= ice_repr_get_sset_count,
- };
- 
- /**
--- 
-2.31.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
