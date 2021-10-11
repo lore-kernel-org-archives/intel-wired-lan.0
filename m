@@ -1,91 +1,45 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Mon, 11 Oct 2021 08:10:29 +0000
-Subject: [Intel-wired-lan] [PATCH net] ice: check whether PTP is
- initialized in ice_ptp_release()
-In-Reply-To: <20211011070216.40657-1-yongxin.liu@windriver.com>
-References: <20211011070216.40657-1-yongxin.liu@windriver.com>
-Message-ID: <CO1PR11MB5089DDA3AE43771D735673E0D6B59@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Date: Mon, 11 Oct 2021 11:48:17 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 0/4] support for tunnel in ice
+ eswitch
+Message-ID: <20211011094821.5286-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This series adds the support for ice vxlan, geneve and gre offload.
 
+Support adding drop and redirect filter from and to this tunnel deivces.
+From means from uplink to VF and to means from VF to uplink. There is no
+support for decapsulation and encapsulation offload.
 
-> -----Original Message-----
-> From: Yongxin Liu <yongxin.liu@windriver.com>
-> Sent: Monday, October 11, 2021 12:02 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>; G, GurucharanX
-> <gurucharanx.g@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
-> davem at davemloft.net; Brandeburg, Jesse <jesse.brandeburg@intel.com>; intel-
-> wired-lan at lists.osuosl.org; kuba at kernel.org
-> Subject: [PATCH net] ice: check whether PTP is initialized in ice_ptp_release()
-> 
-> PTP is currently only supported on E810 devices, it is checked
-> in ice_ptp_init(). However, there is no check in ice_ptp_release().
-> For other E800 series devices, ice_ptp_release() will be wrongly executed.
-> 
-> Fix the following calltrace.
-> 
+example:
+- vxlan from uplink to VF:
+tc filter add dev $VXLAN_DEV protocol ip parent ffff: flower enc_dst_ip  \
+$VF1_IP enc_key_id $VXLAN_VNI action mirred egress redirect dev $VF1_PR
+- vxlan from VF to uplink:
+tc filter add dev $VF1_PR protocol ip parent ffff: flower enc_dst_ip \
+$LP_IP enc_key_id $VXLAN_VNI action mirred egress redirect dev $VXLAN_DEV
 
+Michal Swiatkowski (4):
+  ice: support for indirect notification
+  ice: vxlan and geneve tc support
+  ice: low level support for tunnels
+  ice: support for gre in eswitch
 
-Ahhh. Yep.
+ drivers/net/ethernet/intel/ice/ice.h          |   8 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  26 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   4 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 196 ++++++++-
+ .../ethernet/intel/ice/ice_protocol_type.h    |  35 ++
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 374 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 393 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  10 +
+ 9 files changed, 1000 insertions(+), 49 deletions(-)
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-
->   INFO: trying to register non-static key.
->   The code is fine but needs lockdep annotation, or maybe
->   you didn't initialize this object before use?
->   turning off the locking correctness validator.
->   Workqueue: ice ice_service_task [ice]
->   Call Trace:
->    dump_stack_lvl+0x5b/0x82
->    dump_stack+0x10/0x12
->    register_lock_class+0x495/0x4a0
->    ? find_held_lock+0x3c/0xb0
->    __lock_acquire+0x71/0x1830
->    lock_acquire+0x1e6/0x330
->    ? ice_ptp_release+0x3c/0x1e0 [ice]
->    ? _raw_spin_lock+0x19/0x70
->    ? ice_ptp_release+0x3c/0x1e0 [ice]
->    _raw_spin_lock+0x38/0x70
->    ? ice_ptp_release+0x3c/0x1e0 [ice]
->    ice_ptp_release+0x3c/0x1e0 [ice]
->    ice_prepare_for_reset+0xcb/0xe0 [ice]
->    ice_do_reset+0x38/0x110 [ice]
->    ice_service_task+0x138/0xf10 [ice]
->    ? __this_cpu_preempt_check+0x13/0x20
->    process_one_work+0x26a/0x650
->    worker_thread+0x3f/0x3b0
->    ? __kthread_parkme+0x51/0xb0
->    ? process_one_work+0x650/0x650
->    kthread+0x161/0x190
->    ? set_kthread_struct+0x40/0x40
->    ret_from_fork+0x1f/0x30
-> 
-> Fixes: 4dd0d5c33c3e ("ice: add lock around Tx timestamp tracker flush")
-> Signed-off-by: Yongxin Liu <yongxin.liu@windriver.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_ptp.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 05cc5870e4ef..b1cd26a5ad33 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1572,6 +1572,9 @@ void ice_ptp_init(struct ice_pf *pf)
->   */
->  void ice_ptp_release(struct ice_pf *pf)
->  {
-> +	if (!test_bit(ICE_FLAG_PTP, pf->flags))
-> +		return;
-> +
->  	/* Disable timestamping for both Tx and Rx */
->  	ice_ptp_cfg_timestamp(pf, false);
-> 
-> --
-> 2.31.1
+-- 
+2.31.1
 
