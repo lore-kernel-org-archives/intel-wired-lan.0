@@ -1,202 +1,85 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 11 Oct 2021 14:54:33 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 9/9] ice: support
- crosstimestamping on E822 devices if supported
+Date: Mon, 11 Oct 2021 14:54:29 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 5/9] ice: convert clk_freq
+ capability into time_ref
 In-Reply-To: <20211011215433.1525457-1-jacob.e.keller@intel.com>
 References: <20211011215433.1525457-1-jacob.e.keller@intel.com>
-Message-ID: <20211011215433.1525457-10-jacob.e.keller@intel.com>
+Message-ID: <20211011215433.1525457-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-E822 devices on supported platforms can generate a cross timestamp
-between the platform ART and the device time. This process allows for
-very precise measurement of the difference between the PTP hardware
-clock and the platform time.
-
-This is only supported if we know the TSC frequency relative to ART, so
-we do not enable this unless the boot CPU has a known TSC frequency (as
-required by convert_art_ns_to_tsc).
+Convert the clk_freq value into the associated time_ref frequency value
+for E822 devices. This simplifies determining the time reference value
+for the clock.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 ++
- drivers/net/ethernet/intel/ice/ice_ptp.c      | 113 ++++++++++++++++++
- 2 files changed, 121 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_common.c | 12 +++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h   | 23 ++++++++++++++++++++-
+ 2 files changed, 34 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-index 7bff0450b76c..d16738a3d3a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-+++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-@@ -441,6 +441,10 @@
- #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
- #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
- #define PRTRPB_RDPC				0x000AC260
-+#define GLHH_ART_CTL				0x000A41D4
-+#define GLHH_ART_CTL_ACTIVE_M			BIT(0)
-+#define GLHH_ART_TIME_H				0x000A41D8
-+#define GLHH_ART_TIME_L				0x000A41DC
- #define GLTSYN_AUX_IN_0(_i)			(0x000889D8 + ((_i) * 4))
- #define GLTSYN_AUX_IN_0_INT_ENA_M		BIT(4)
- #define GLTSYN_AUX_OUT_0(_i)			(0x00088998 + ((_i) * 4))
-@@ -453,6 +457,8 @@
- #define GLTSYN_ENA_TSYN_ENA_M			BIT(0)
- #define GLTSYN_EVNT_H_0(_i)			(0x00088970 + ((_i) * 4))
- #define GLTSYN_EVNT_L_0(_i)			(0x00088968 + ((_i) * 4))
-+#define GLTSYN_HHTIME_H(_i)			(0x00088900 + ((_i) * 4))
-+#define GLTSYN_HHTIME_L(_i)			(0x000888F8 + ((_i) * 4))
- #define GLTSYN_INCVAL_H(_i)			(0x00088920 + ((_i) * 4))
- #define GLTSYN_INCVAL_L(_i)			(0x00088918 + ((_i) * 4))
- #define GLTSYN_SHADJ_H(_i)			(0x00088910 + ((_i) * 4))
-@@ -469,6 +475,8 @@
- #define GLTSYN_TGT_L_0(_i)			(0x00088928 + ((_i) * 4))
- #define GLTSYN_TIME_H(_i)			(0x000888D8 + ((_i) * 4))
- #define GLTSYN_TIME_L(_i)			(0x000888D0 + ((_i) * 4))
-+#define PFHH_SEM				0x000A4200 /* Reset Source: PFR */
-+#define PFHH_SEM_BUSY_M				BIT(0)
- #define PFTSYN_SEM				0x00088880
- #define PFTSYN_SEM_BUSY_M			BIT(0)
- #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 047914111389..ea853a744376 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1598,6 +1598,99 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 53c2fdc909ce..5d438e828a9d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2188,6 +2188,18 @@ ice_parse_1588_func_caps(struct ice_hw *hw, struct ice_hw_func_caps *func_p,
+ 	info->clk_freq = (number & ICE_TS_CLK_FREQ_M) >> ICE_TS_CLK_FREQ_S;
+ 	info->clk_src = ((number & ICE_TS_CLK_SRC_M) != 0);
  
-+/**
-+ * ice_ptp_get_syncdevicetime - Get the cross time stamp info
-+ * @device: Current device time
-+ * @system: System counter value read synchronously with device time
-+ * @ctx: Context provided by timekeeping code
-+ *
-+ * Read device and system (ART) clock simultaneously and return the corrected
-+ * clock values in ns.
-+ */
-+static int
-+ice_ptp_get_syncdevicetime(ktime_t *device,
-+			   struct system_counterval_t *system,
-+			   void *ctx)
-+{
-+	struct ice_pf *pf = (struct ice_pf *)ctx;
-+	struct ice_hw *hw = &pf->hw;
-+	u32 hh_lock, hh_art_ctl;
-+	int i;
-+
-+	/* Get the HW lock */
-+	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
-+	if (hh_lock & PFHH_SEM_BUSY_M) {
-+		dev_err(ice_pf_to_dev(pf), "PTP failed to get hh lock\n");
-+		return -EFAULT;
++	if (info->clk_freq < NUM_ICE_TIME_REF_FREQ) {
++		info->time_ref = (enum ice_time_ref_freq)info->clk_freq;
++	} else {
++		/* Unknown clock frequency, so assume a (probably incorrect)
++		 * default to avoid out-of-bounds look ups of frequency
++		 * related information.
++		 */
++		ice_debug(hw, ICE_DBG_INIT, "1588 func caps: unknown clock frequency %u\n",
++			  info->clk_freq);
++		info->time_ref = ICE_TIME_REF_FREQ_25_000;
 +	}
 +
-+	/* Start the ART and device clock sync sequence */
-+	hh_art_ctl = rd32(hw, GLHH_ART_CTL);
-+	hh_art_ctl = hh_art_ctl | GLHH_ART_CTL_ACTIVE_M;
-+	wr32(hw, GLHH_ART_CTL, hh_art_ctl);
-+
-+#define MAX_HH_LOCK_TRIES 100
-+
-+	for (i = 0; i < MAX_HH_LOCK_TRIES; i++) {
-+		/* Wait for sync to complete */
-+		hh_art_ctl = rd32(hw, GLHH_ART_CTL);
-+		if (hh_art_ctl & GLHH_ART_CTL_ACTIVE_M) {
-+			udelay(1);
-+			continue;
-+		} else {
-+			u32 hh_ts_lo, hh_ts_hi, tmr_idx;
-+			u64 hh_ts;
-+
-+			tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
-+			/* Read ART time */
-+			hh_ts_lo = rd32(hw, GLHH_ART_TIME_L);
-+			hh_ts_hi = rd32(hw, GLHH_ART_TIME_H);
-+			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
-+			*system = convert_art_ns_to_tsc(hh_ts);
-+			/* Read Device source clock time */
-+			hh_ts_lo = rd32(hw, GLTSYN_HHTIME_L(tmr_idx));
-+			hh_ts_hi = rd32(hw, GLTSYN_HHTIME_H(tmr_idx));
-+			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
-+			*device = ns_to_ktime(hh_ts);
-+			break;
-+		}
-+	}
-+	/* Release HW lock */
-+	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
-+	hh_lock = hh_lock & ~PFHH_SEM_BUSY_M;
-+	wr32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), hh_lock);
-+
-+	if (i == MAX_HH_LOCK_TRIES)
-+		return -ETIMEDOUT;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_getcrosststamp_e822 - Capture a device cross timestamp
-+ * @info: the driver's PTP info structure
-+ * @cts: The memory to fill the cross timestamp info
-+ *
-+ * Capture a cross timestamp between the ART and the device PTP hardware
-+ * clock. Fill the cross timestamp information and report it back to the
-+ * caller.
-+ *
-+ * This is only valid for E822 devices which have support for generating the
-+ * cross timestamp via PCIe PTM.
-+ *
-+ * In order to correctly correlate the ART timestamp back to the TSC time, the
-+ * CPU must have X86_FEATURE_TSC_KNOWN_FREQ.
-+ */
-+static int
-+ice_ptp_getcrosststamp_e822(struct ptp_clock_info *info,
-+			    struct system_device_crosststamp *cts)
-+{
-+	struct ice_pf *pf = ptp_info_to_pf(info);
-+
-+	return get_device_system_crosststamp(ice_ptp_get_syncdevicetime,
-+					     pf, NULL, cts);
-+}
-+
- /**
-  * ice_ptp_get_ts_config - ioctl interface to read the timestamping config
-  * @pf: Board private structure
-@@ -1822,6 +1915,24 @@ static void ice_ptp_setup_pins_e810(struct ptp_clock_info *info)
- 	info->n_ext_ts = N_EXT_TS_E810;
- }
+ 	ice_debug(hw, ICE_DBG_INIT, "func caps: ieee_1588 = %u\n",
+ 		  func_p->common_cap.ieee_1588);
+ 	ice_debug(hw, ICE_DBG_INIT, "func caps: src_tmr_owned = %u\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index a316d224fdc8..b8ae79af30cc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -297,9 +297,30 @@ struct ice_hw_common_caps {
+ #define ICE_TS_TMR_IDX_ASSOC_S		24
+ #define ICE_TS_TMR_IDX_ASSOC_M		BIT(24)
  
-+/**
-+ * ice_ptp_set_funcs_e822 - Set specialized functions for E822 support
-+ * @pf: Board private structure
-+ * @info: PTP info to fill
-+ *
-+ * Assign functions to the PTP capabiltiies structure for E822 devices.
-+ * Functions which operate across all device families should be set directly
-+ * in ice_ptp_set_caps. Only add functions here which are distinct for E822
-+ * devices.
-+ */
-+static void
-+ice_ptp_set_funcs_e822(struct ice_pf *pf, struct ptp_clock_info *info)
-+{
-+	if (boot_cpu_has(X86_FEATURE_ART) &&
-+	    boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ))
-+		info->getcrosststamp = ice_ptp_getcrosststamp_e822;
-+}
++/* TIME_REF clock rate specification */
++enum ice_time_ref_freq {
++	ICE_TIME_REF_FREQ_25_000	= 0,
++	ICE_TIME_REF_FREQ_122_880	= 1,
++	ICE_TIME_REF_FREQ_125_000	= 2,
++	ICE_TIME_REF_FREQ_153_600	= 3,
++	ICE_TIME_REF_FREQ_156_250	= 4,
++	ICE_TIME_REF_FREQ_245_760	= 5,
 +
- /**
-  * ice_ptp_set_funcs_e810 - Set specialized functions for E810 support
-  * @pf: Board private structure
-@@ -1863,6 +1974,8 @@ static void ice_ptp_set_caps(struct ice_pf *pf)
- 
- 	if (ice_is_e810(&pf->hw))
- 		ice_ptp_set_funcs_e810(pf, info);
-+	else
-+		ice_ptp_set_funcs_e822(pf, info);
- }
- 
- /**
++	NUM_ICE_TIME_REF_FREQ
++};
++
++/* Clock source specification */
++enum ice_clk_src {
++	ICE_CLK_SRC_TCX0	= 0, /* Temperature compensated oscillator  */
++	ICE_CLK_SRC_TIME_REF	= 1, /* Use TIME_REF reference clock */
++
++	NUM_ICE_CLK_SRC
++};
++
+ struct ice_ts_func_info {
+ 	/* Function specific info */
+-	u32 clk_freq;
++	enum ice_time_ref_freq time_ref;
++	u8 clk_freq;
+ 	u8 clk_src;
+ 	u8 tmr_index_assoc;
+ 	u8 ena;
 -- 
 2.31.1.331.gb0c09ab8796f
 
