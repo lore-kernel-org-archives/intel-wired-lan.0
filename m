@@ -1,136 +1,59 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 12 Oct 2021 22:37:09 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 01febf11b72e486288629835bd0fa938eda055e1
-Message-ID: <61659d95.jToMhRuRF+8sOhOT%lkp@intel.com>
+From: Andreas K. Huettel <andreas.huettel@ur.de>
+Date: Tue, 12 Oct 2021 18:34:35 +0200
+Subject: [Intel-wired-lan] [EXT] Re: Intel I350 regression 5.10 -> 5.14
+ ("The NVM Checksum Is Not Valid") [8086:1521]
+In-Reply-To: <c75203e9-0ef4-20bd-87a5-ad0846863886@intel.com>
+References: <1823864.tdWV9SEqCh@kailua> <2944777.ktpJ11cQ8Q@pinacolada>
+ <c75203e9-0ef4-20bd-87a5-ad0846863886@intel.com>
+Message-ID: <2801801.e9J7NaK4W3@kailua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 01febf11b72e486288629835bd0fa938eda055e1  ice: check whether PTP is initialized in ice_ptp_release()
+> > The messages easily identifiable are:
+> > 
+> > huettel at pinacolada ~/tmp $ cat kernel-messages-5.10.59.txt |grep igb
+> > Oct  5 15:11:18 dilfridge kernel: [    2.090675] igb: Intel(R) Gigabit Ethernet Network Driver
+> > Oct  5 15:11:18 dilfridge kernel: [    2.090676] igb: Copyright (c) 2007-2014 Intel Corporation.
+> > Oct  5 15:11:18 dilfridge kernel: [    2.090728] igb 0000:01:00.0: enabling device (0000 -> 0002)
+> 
+> This line is missing below, it indicates that the kernel couldn't or
+> didn't power up the PCIe for some reason. We're looking for something
+> like ACPI or PCI patches (possibly PCI-Power management) to be the
+> culprit here.
+> 
 
-elapsed time: 1221m
+So I did a git bisect from linux-v5.10 (good) to linux-v5.14.11 (bad).
 
-configs tested: 107
-configs skipped: 3
+The result was:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+dilfridge /usr/src/linux-git # git bisect bad
+6381195ad7d06ef979528c7452f3ff93659f86b1 is the first bad commit
+commit 6381195ad7d06ef979528c7452f3ff93659f86b1
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Mon May 24 17:26:16 2021 +0200
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211011
-sh                           se7705_defconfig
-m68k                             alldefconfig
-sh                              ul2_defconfig
-sh                            hp6xx_defconfig
-powerpc                 mpc837x_rdb_defconfig
-mips                   sb1250_swarm_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                           u8500_defconfig
-powerpc                     tqm8548_defconfig
-powerpc                      tqm8xx_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arm                            mmp2_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                        fsp2_defconfig
-um                                  defconfig
-riscv                    nommu_k210_defconfig
-m68k                            q40_defconfig
-mips                         mpc30x_defconfig
-powerpc                      ppc44x_defconfig
-arm                  randconfig-c002-20211011
-x86_64               randconfig-c001-20211011
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nds32                             allnoconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-parisc                              defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                             allyesconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a015-20211011
-x86_64               randconfig-a012-20211011
-x86_64               randconfig-a016-20211011
-x86_64               randconfig-a014-20211011
-x86_64               randconfig-a013-20211011
-x86_64               randconfig-a011-20211011
-i386                 randconfig-a016-20211011
-i386                 randconfig-a014-20211011
-i386                 randconfig-a011-20211011
-i386                 randconfig-a015-20211011
-i386                 randconfig-a012-20211011
-i386                 randconfig-a013-20211011
-arc                  randconfig-r043-20211011
-s390                 randconfig-r044-20211011
-riscv                randconfig-r042-20211011
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+    ACPI: power: Rework turning off unused power resources
+[...]
 
-clang tested configs:
-arm                  randconfig-c002-20211012
-mips                 randconfig-c004-20211012
-i386                 randconfig-c001-20211012
-s390                 randconfig-c005-20211012
-x86_64               randconfig-c007-20211012
-powerpc              randconfig-c003-20211012
-i386                 randconfig-a001-20211011
-i386                 randconfig-a003-20211011
-i386                 randconfig-a004-20211011
-i386                 randconfig-a005-20211011
-i386                 randconfig-a002-20211011
-i386                 randconfig-a006-20211011
-x86_64               randconfig-a004-20211011
-x86_64               randconfig-a006-20211011
-x86_64               randconfig-a001-20211011
-x86_64               randconfig-a005-20211011
-x86_64               randconfig-a002-20211011
-x86_64               randconfig-a003-20211011
-hexagon              randconfig-r041-20211011
-hexagon              randconfig-r045-20211011
+I tried naive reverting of this commit on top of 5.14.11. That applies nearly cleanly, 
+and after a reboot the additional ethernet interfaces show up with their MAC in the
+boot messages.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+(Not knowing how safe that experiment was, I did not go further than single mode and
+immediately rebooted into 5.10 afterwards.)
+
+-- 
+PD Dr. Andreas K. Huettel
+Institute for Experimental and Applied Physics
+University of Regensburg
+93040 Regensburg
+Germany
+
+e-mail andreas.huettel at ur.de
+http://www.akhuettel.de/
+http://www.physik.uni-r.de/forschung/huettel/
+
+
