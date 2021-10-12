@@ -1,97 +1,136 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Tue, 12 Oct 2021 13:52:45 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix reporting when setting
- descriptor count
-Message-ID: <20211012135245.6979-1-michal.maloszewski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 12 Oct 2021 22:37:09 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 01febf11b72e486288629835bd0fa938eda055e1
+Message-ID: <61659d95.jToMhRuRF+8sOhOT%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-iavf_set_ringparams doesn't communicate to the user that
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 01febf11b72e486288629835bd0fa938eda055e1  ice: check whether PTP is initialized in ice_ptp_release()
 
-1. The user requested descriptor count is out of range. Instead it
-   just quietly sets descriptors to the "clamped" value and calls it
-   done. This makes it look an invalid value was successfully set as
-   the descriptor count when this isn't actually true.
+elapsed time: 1221m
 
-2. The user provided descriptor count needs to be inflated for alignment
-   reasons.
+configs tested: 107
+configs skipped: 3
 
-This behavior is confusing. The ice driver has already addressed this
-by rejecting invalid values for descriptor count and messaging for alignment adjustments.
-Do the same thing here by adding the error and info messages.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fixes: fcea6f3da546 ("ice: Add stats and ethtool support")
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211011
+sh                           se7705_defconfig
+m68k                             alldefconfig
+sh                              ul2_defconfig
+sh                            hp6xx_defconfig
+powerpc                 mpc837x_rdb_defconfig
+mips                   sb1250_swarm_defconfig
+sh                 kfr2r09-romimage_defconfig
+arm                           u8500_defconfig
+powerpc                     tqm8548_defconfig
+powerpc                      tqm8xx_defconfig
+powerpc               mpc834x_itxgp_defconfig
+arm                            mmp2_defconfig
+arm                        mvebu_v5_defconfig
+powerpc                        fsp2_defconfig
+um                                  defconfig
+riscv                    nommu_k210_defconfig
+m68k                            q40_defconfig
+mips                         mpc30x_defconfig
+powerpc                      ppc44x_defconfig
+arm                  randconfig-c002-20211011
+x86_64               randconfig-c001-20211011
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+parisc                              defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                             allyesconfig
+arc                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a015-20211011
+x86_64               randconfig-a012-20211011
+x86_64               randconfig-a016-20211011
+x86_64               randconfig-a014-20211011
+x86_64               randconfig-a013-20211011
+x86_64               randconfig-a011-20211011
+i386                 randconfig-a016-20211011
+i386                 randconfig-a014-20211011
+i386                 randconfig-a011-20211011
+i386                 randconfig-a015-20211011
+i386                 randconfig-a012-20211011
+i386                 randconfig-a013-20211011
+arc                  randconfig-r043-20211011
+s390                 randconfig-r044-20211011
+riscv                randconfig-r042-20211011
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+arm                  randconfig-c002-20211012
+mips                 randconfig-c004-20211012
+i386                 randconfig-c001-20211012
+s390                 randconfig-c005-20211012
+x86_64               randconfig-c007-20211012
+powerpc              randconfig-c003-20211012
+i386                 randconfig-a001-20211011
+i386                 randconfig-a003-20211011
+i386                 randconfig-a004-20211011
+i386                 randconfig-a005-20211011
+i386                 randconfig-a002-20211011
+i386                 randconfig-a006-20211011
+x86_64               randconfig-a004-20211011
+x86_64               randconfig-a006-20211011
+x86_64               randconfig-a001-20211011
+x86_64               randconfig-a005-20211011
+x86_64               randconfig-a002-20211011
+x86_64               randconfig-a003-20211011
+hexagon              randconfig-r041-20211011
+hexagon              randconfig-r045-20211011
+
 ---
-v3: Commit with fixes tag changed.
----
- .../net/ethernet/intel/iavf/iavf_ethtool.c    | 43 ++++++++++++++-----
- 1 file changed, 32 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 7cbe59beee..cbfc8d07a0 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
- 		return -EINVAL;
- 
--	new_tx_count = clamp_t(u32, ring->tx_pending,
--			       IAVF_MIN_TXD,
--			       IAVF_MAX_TXD);
--	new_tx_count = ALIGN(new_tx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-+	if (ring->tx_pending > IAVF_MAX_TXD ||
-+	    ring->tx_pending < IAVF_MIN_TXD ||
-+	    ring->rx_pending > IAVF_MAX_RXD ||
-+	    ring->rx_pending < IAVF_MIN_RXD) {
-+		  netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
-+			     ring->tx_pending, ring->rx_pending, IAVF_MIN_TXD,
-+			     IAVF_MAX_RXD, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-+		  return -EINVAL;
-+	}
-+
-+	new_tx_count = ALIGN(ring->tx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-+	if (new_tx_count != ring->tx_pending)
-+		netdev_info(netdev, "Requested Tx descriptor count rounded up to %d\n",
-+			    new_tx_count);
- 
--	new_rx_count = clamp_t(u32, ring->rx_pending,
--			       IAVF_MIN_RXD,
--			       IAVF_MAX_RXD);
--	new_rx_count = ALIGN(new_rx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-+	new_rx_count = ALIGN(ring->rx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
-+	if (new_rx_count != ring->rx_pending)
-+		netdev_info(netdev, "Requested Rx descriptor count rounded up to %d\n",
-+			    new_rx_count);
- 
- 	/* if nothing to do return success */
- 	if ((new_tx_count == adapter->tx_desc_count) &&
--	    (new_rx_count == adapter->rx_desc_count))
-+	    (new_rx_count == adapter->rx_desc_count)) {
-+		netdev_dbg(netdev, "Nothing to change, descriptor count is same as requested\n");
- 		return 0;
-+	}
- 
--	adapter->tx_desc_count = new_tx_count;
--	adapter->rx_desc_count = new_rx_count;
-+	if (new_tx_count != adapter->tx_desc_count) {
-+		netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
-+			    adapter->tx_desc_count, new_tx_count);
-+		adapter->tx_desc_count = new_tx_count;
-+	}
-+
-+	if (new_rx_count != adapter->rx_desc_count) {
-+		netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
-+			    adapter->rx_desc_count, new_rx_count);
-+		adapter->rx_desc_count = new_rx_count;
-+	}
- 
- 	if (netif_running(netdev)) {
- 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
