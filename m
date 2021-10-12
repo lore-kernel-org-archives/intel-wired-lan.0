@@ -1,102 +1,103 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 11 Oct 2021 18:07:08 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2 2/9] ice: PTP: move setting of
- tstamp_config
-In-Reply-To: <20211012010715.1684027-1-jacob.e.keller@intel.com>
-References: <20211012010715.1684027-1-jacob.e.keller@intel.com>
-Message-ID: <20211012010715.1684027-3-jacob.e.keller@intel.com>
+Date: Mon, 11 Oct 2021 18:07:06 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 0/9] implement support for PTP
+ on E822 hardware
+Message-ID: <20211012010715.1684027-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The tstamp_config structure is being set inside of
-ice_ptp_cfg_timestamp, which is the function used to set Tx and
-Rx timestamping during initialization.
+Extend the ice driver implementation to support PTP for the E822 based
+devices.
 
-This function is also used in order to set the PHY port timestamping
-status. However, it makes sense to always set the tstamp_config directly
-whenever the ice_set_tx_tstamp or ice_set_rx_tstamp functions are
-called.
+This includes a few cleanup patches, that fix some minor issues spotted
+while preparing them. In addition, there are some slight refactors to ease
+the addition of E822 support, followed by adding the new hardware
+implementation ice_ptp_hw.c.
 
-Move assignment of tstamp_config into the related functions and out of
-ice_ptp_cfg_timestamp.
+There are a few major differences with E822 support compared to E810
+support:
 
-Now that we assign the timestamp mode in the relevant functions, we no
-longer modify the config valuie in ice_set_timestamp_mode. In turn, we
-no longer want to copy that config value into the PF cached structure.
-Instead, this is now the source of truth for actual configuration. On
-success of ice_set_timestamp_mode, copy the real configured mode back to
-report it out to userspace.
+*) The E822 device has a Clock Generation Unit which must be initialized in
+order to generate proper clock frequencies on the output that drives the PTP
+hardware clock registers
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+*) The E822 PHY is a bit different and requires a more complex
+initialization procedure which must be rerun any time the link configuration
+changes.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 71e715c7be4f..155842447ebe 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -285,6 +285,11 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 	else
- 		val &= ~PFINT_OICR_TSYN_TX_M;
- 	wr32(&pf->hw, PFINT_OICR_ENA, val);
-+
-+	if (on)
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
-+	else
-+		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
- }
- 
- /**
-@@ -307,6 +312,11 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
- 			continue;
- 		vsi->rx_rings[i]->ptp_rx = on;
- 	}
-+
-+	if (on)
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
-+	else
-+		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
- }
- 
- /**
-@@ -321,14 +331,6 @@ static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
- {
- 	ice_set_tx_tstamp(pf, ena);
- 	ice_set_rx_tstamp(pf, ena);
--
--	if (ena) {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
--	} else {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--	}
- }
- 
- /**
-@@ -1256,7 +1258,6 @@ ice_ptp_set_timestamp_mode(struct ice_pf *pf, struct hwtstamp_config *config)
- 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
- 	case HWTSTAMP_FILTER_NTP_ALL:
- 	case HWTSTAMP_FILTER_ALL:
--		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		ice_set_rx_tstamp(pf, true);
- 		break;
- 	default:
-@@ -1288,8 +1289,8 @@ int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
- 	if (err)
- 		return err;
- 
--	/* Save these settings for future reference */
--	pf->ptp.tstamp_config = config;
-+	/* Return the actual configuration set */
-+	config = pf->ptp.tstamp_config;
- 
- 	return copy_to_user(ifr->ifr_data, &config, sizeof(config)) ?
- 		-EFAULT : 0;
+*) The E822 devices support enhanced timestamp calibration by making use of
+a process called Vernier offset measurement. This allows the hardware to
+measure phase offset related to the PHY clocks for Serdes and FEC, reducing
+the inaccuracy of the timestamp relative to the actual packet transmission
+and receipt. Making use of this requires data gathered from the first
+transmitted and received packets, and waiting for the PHY to complete the
+calibration measurements. This is done as part of a new kthread, ov_work.
+Note that to avoid delay in enabling timestamps, we start the PHY in
+'bypass' mode which allows timestamps to be captured without the Vernier
+calibration measurement. Once the first packets have been sent and received,
+we then complete the calibration setup and exit bypass mode and begin using
+the more precise timestamps. According to the datasheet, timestamps without
+calibration data can be incorrect relative to actual receipt or transmission
+by up to 1 clock cycle (~1.25 nanoseconds), while calibrated timestamps
+should be correct to within 1/8th of a clock cycle (~0.15 nanoseconds).
+
+*) E822 devices support crosstimestamping via PCIe PTM, which we enable when
+available on the platform.
+
+There is a fair amount of logic required to perform PHY and CGU
+initialization, which is the vast majority of the new code, but it is fairly
+self contained within ice_ptp_hw.c, with the exception of monitoring for
+offset validity being handled by a kthread.
+
+Changes since v1 resend:
+* Restore the ICE_HWTS config that got dropped when regenerating the series.
+
+Changes since previous submission (v3):
+* Fix a bug with SIOCSHWTSTAMP failing to update returned filter to
+  HWTSTAMP_FILTER_ALL
+* Fix an issue with the Tx timestamp slot assignment using modulo instead
+  of division
+* Rebased on top of Intel Wired LAN dev-queue
+* Dropped the patches which were previously applied as fixes
+
+Changes since v2:
+* introduced helper functions to enable and disable clock outputs
+
+Changes since v1:
+* Fixed build against non-X86 arch for the PCIe PTM support
+
+
+Jacob Keller (9):
+  ice: introduce ice_base_incval function
+  ice: PTP: move setting of tstamp_config
+  ice: use 'int err' instead of 'int status' in ice_ptp_hw.c
+  ice: introduce ice_ptp_init_phc function
+  ice: convert clk_freq capability into time_ref
+  ice: implement basic E822 PTP support
+  ice: ensure the hardware Clock Generation Unit is configured
+  ice: exit bypass mode once hardware finishes timestamp calibration
+  ice: support crosstimestamping on E822 devices if supported
+
+ drivers/net/ethernet/intel/Kconfig            |   10 +
+ drivers/net/ethernet/intel/ice/ice_cgu_regs.h |  116 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |   12 +
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |    9 +
+ drivers/net/ethernet/intel/ice/ice_main.c     |    7 +
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  655 +++-
+ drivers/net/ethernet/intel/ice/ice_ptp.h      |   30 +-
+ .../net/ethernet/intel/ice/ice_ptp_consts.h   |  374 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 2794 ++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  345 ++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   23 +-
+ 11 files changed, 4174 insertions(+), 201 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp_consts.h
+
+
+base-commit: 2d82122b64363fe17521f26b63a7c89b204d17eb
 -- 
 2.31.1.331.gb0c09ab8796f
 
