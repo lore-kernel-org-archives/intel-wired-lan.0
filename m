@@ -1,119 +1,219 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 12 Oct 2021 07:15:38 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 3/4] ice: low level support
- for tunnels
-In-Reply-To: <20211011094821.5286-4-michal.swiatkowski@linux.intel.com>
-References: <20211011094821.5286-4-michal.swiatkowski@linux.intel.com>
-Message-ID: <202110120715.pAB0j6LV-lkp@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 11 Oct 2021 17:22:30 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 9/9] ice: support
+ crosstimestamping on E822 devices if supported
+In-Reply-To: <20211011215433.1525457-10-jacob.e.keller@intel.com>
+References: <20211011215433.1525457-1-jacob.e.keller@intel.com>
+ <20211011215433.1525457-10-jacob.e.keller@intel.com>
+Message-ID: <87mtnfhz21.fsf@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Michal,
+Jacob Keller <jacob.e.keller@intel.com> writes:
 
-Thank you for the patch! Yet something to improve:
+> E822 devices on supported platforms can generate a cross timestamp
+> between the platform ART and the device time. This process allows for
+> very precise measurement of the difference between the PTP hardware
+> clock and the platform time.
+>
+> This is only supported if we know the TSC frequency relative to ART, so
+> we do not enable this unless the boot CPU has a known TSC frequency (as
+> required by convert_art_ns_to_tsc).
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 ++
+>  drivers/net/ethernet/intel/ice/ice_ptp.c      | 113 ++++++++++++++++++
+>  2 files changed, 121 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> index 7bff0450b76c..d16738a3d3a7 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
+> @@ -441,6 +441,10 @@
+>  #define GLV_UPRCL(_i)				(0x003B2000 + ((_i) * 8))
+>  #define GLV_UPTCL(_i)				(0x0030A000 + ((_i) * 8))
+>  #define PRTRPB_RDPC				0x000AC260
+> +#define GLHH_ART_CTL				0x000A41D4
+> +#define GLHH_ART_CTL_ACTIVE_M			BIT(0)
+> +#define GLHH_ART_TIME_H				0x000A41D8
+> +#define GLHH_ART_TIME_L				0x000A41DC
+>  #define GLTSYN_AUX_IN_0(_i)			(0x000889D8 + ((_i) * 4))
+>  #define GLTSYN_AUX_IN_0_INT_ENA_M		BIT(4)
+>  #define GLTSYN_AUX_OUT_0(_i)			(0x00088998 + ((_i) * 4))
+> @@ -453,6 +457,8 @@
+>  #define GLTSYN_ENA_TSYN_ENA_M			BIT(0)
+>  #define GLTSYN_EVNT_H_0(_i)			(0x00088970 + ((_i) * 4))
+>  #define GLTSYN_EVNT_L_0(_i)			(0x00088968 + ((_i) * 4))
+> +#define GLTSYN_HHTIME_H(_i)			(0x00088900 + ((_i) * 4))
+> +#define GLTSYN_HHTIME_L(_i)			(0x000888F8 + ((_i) * 4))
+>  #define GLTSYN_INCVAL_H(_i)			(0x00088920 + ((_i) * 4))
+>  #define GLTSYN_INCVAL_L(_i)			(0x00088918 + ((_i) * 4))
+>  #define GLTSYN_SHADJ_H(_i)			(0x00088910 + ((_i) * 4))
+> @@ -469,6 +475,8 @@
+>  #define GLTSYN_TGT_L_0(_i)			(0x00088928 + ((_i) * 4))
+>  #define GLTSYN_TIME_H(_i)			(0x000888D8 + ((_i) * 4))
+>  #define GLTSYN_TIME_L(_i)			(0x000888D0 + ((_i) * 4))
+> +#define PFHH_SEM				0x000A4200 /* Reset Source: PFR */
+> +#define PFHH_SEM_BUSY_M				BIT(0)
+>  #define PFTSYN_SEM				0x00088880
+>  #define PFTSYN_SEM_BUSY_M			BIT(0)
+>  #define VSIQF_FD_CNT(_VSI)			(0x00464000 + ((_VSI) * 4))
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+> index 047914111389..ea853a744376 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+> @@ -1598,6 +1598,99 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
+>  	return 0;
+>  }
+>  
+> +/**
+> + * ice_ptp_get_syncdevicetime - Get the cross time stamp info
+> + * @device: Current device time
+> + * @system: System counter value read synchronously with device time
+> + * @ctx: Context provided by timekeeping code
+> + *
+> + * Read device and system (ART) clock simultaneously and return the corrected
+> + * clock values in ns.
+> + */
+> +static int
+> +ice_ptp_get_syncdevicetime(ktime_t *device,
+> +			   struct system_counterval_t *system,
+> +			   void *ctx)
+> +{
+> +	struct ice_pf *pf = (struct ice_pf *)ctx;
+> +	struct ice_hw *hw = &pf->hw;
+> +	u32 hh_lock, hh_art_ctl;
+> +	int i;
+> +
+> +	/* Get the HW lock */
+> +	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
+> +	if (hh_lock & PFHH_SEM_BUSY_M) {
+> +		dev_err(ice_pf_to_dev(pf), "PTP failed to get hh lock\n");
+> +		return -EFAULT;
+> +	}
+> +
+> +	/* Start the ART and device clock sync sequence */
+> +	hh_art_ctl = rd32(hw, GLHH_ART_CTL);
+> +	hh_art_ctl = hh_art_ctl | GLHH_ART_CTL_ACTIVE_M;
+> +	wr32(hw, GLHH_ART_CTL, hh_art_ctl);
+> +
+> +#define MAX_HH_LOCK_TRIES 100
+> +
+> +	for (i = 0; i < MAX_HH_LOCK_TRIES; i++) {
+> +		/* Wait for sync to complete */
+> +		hh_art_ctl = rd32(hw, GLHH_ART_CTL);
+> +		if (hh_art_ctl & GLHH_ART_CTL_ACTIVE_M) {
+> +			udelay(1);
+> +			continue;
+> +		} else {
+> +			u32 hh_ts_lo, hh_ts_hi, tmr_idx;
+> +			u64 hh_ts;
+> +
+> +			tmr_idx = hw->func_caps.ts_func_info.tmr_index_assoc;
+> +			/* Read ART time */
+> +			hh_ts_lo = rd32(hw, GLHH_ART_TIME_L);
+> +			hh_ts_hi = rd32(hw, GLHH_ART_TIME_H);
+> +			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
+> +			*system = convert_art_ns_to_tsc(hh_ts);
 
-[auto build test ERROR on tnguy-next-queue/dev-queue]
-[cannot apply to net-next/master v5.15-rc5 next-20211011]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Note that convert_art_ns_to_tsc() is only defined for x86, will not
+compile for others.
 
-url:    https://github.com/0day-ci/linux/commits/Michal-Swiatkowski/support-for-tunnel-in-ice-eswitch/20211011-175106
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: x86_64-randconfig-a001-20211011 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project f95d9c95bbf4cf662b9a181245fc6dcede39f590)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/f4c17653182af5b6d1de81aad68469380b734f1e
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Michal-Swiatkowski/support-for-tunnel-in-ice-eswitch/20211011-175106
-        git checkout f4c17653182af5b6d1de81aad68469380b734f1e
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+For igc, I wrote a very simple wrapper, if you have better suggestions I
+also would like to hear :-)
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+> +			/* Read Device source clock time */
+> +			hh_ts_lo = rd32(hw, GLTSYN_HHTIME_L(tmr_idx));
+> +			hh_ts_hi = rd32(hw, GLTSYN_HHTIME_H(tmr_idx));
+> +			hh_ts = ((u64)hh_ts_hi << 32) | hh_ts_lo;
+> +			*device = ns_to_ktime(hh_ts);
+> +			break;
+> +		}
+> +	}
+> +	/* Release HW lock */
+> +	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
+> +	hh_lock = hh_lock & ~PFHH_SEM_BUSY_M;
+> +	wr32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), hh_lock);
+> +
+> +	if (i == MAX_HH_LOCK_TRIES)
+> +		return -ETIMEDOUT;
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * ice_ptp_getcrosststamp_e822 - Capture a device cross timestamp
+> + * @info: the driver's PTP info structure
+> + * @cts: The memory to fill the cross timestamp info
+> + *
+> + * Capture a cross timestamp between the ART and the device PTP hardware
+> + * clock. Fill the cross timestamp information and report it back to the
+> + * caller.
+> + *
+> + * This is only valid for E822 devices which have support for generating the
+> + * cross timestamp via PCIe PTM.
+> + *
+> + * In order to correctly correlate the ART timestamp back to the TSC time, the
+> + * CPU must have X86_FEATURE_TSC_KNOWN_FREQ.
+> + */
+> +static int
+> +ice_ptp_getcrosststamp_e822(struct ptp_clock_info *info,
+> +			    struct system_device_crosststamp *cts)
+> +{
+> +	struct ice_pf *pf = ptp_info_to_pf(info);
+> +
+> +	return get_device_system_crosststamp(ice_ptp_get_syncdevicetime,
+> +					     pf, NULL, cts);
+> +}
+> +
+>  /**
+>   * ice_ptp_get_ts_config - ioctl interface to read the timestamping config
+>   * @pf: Board private structure
+> @@ -1822,6 +1915,24 @@ static void ice_ptp_setup_pins_e810(struct ptp_clock_info *info)
+>  	info->n_ext_ts = N_EXT_TS_E810;
+>  }
+>  
+> +/**
+> + * ice_ptp_set_funcs_e822 - Set specialized functions for E822 support
+> + * @pf: Board private structure
+> + * @info: PTP info to fill
+> + *
+> + * Assign functions to the PTP capabiltiies structure for E822 devices.
+> + * Functions which operate across all device families should be set directly
+> + * in ice_ptp_set_caps. Only add functions here which are distinct for E822
+> + * devices.
+> + */
+> +static void
+> +ice_ptp_set_funcs_e822(struct ice_pf *pf, struct ptp_clock_info *info)
+> +{
+> +	if (boot_cpu_has(X86_FEATURE_ART) &&
+> +	    boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ))
+> +		info->getcrosststamp = ice_ptp_getcrosststamp_e822;
+> +}
+> +
+>  /**
+>   * ice_ptp_set_funcs_e810 - Set specialized functions for E810 support
+>   * @pf: Board private structure
+> @@ -1863,6 +1974,8 @@ static void ice_ptp_set_caps(struct ice_pf *pf)
+>  
+>  	if (ice_is_e810(&pf->hw))
+>  		ice_ptp_set_funcs_e810(pf, info);
+> +	else
+> +		ice_ptp_set_funcs_e822(pf, info);
+>  }
+>  
+>  /**
+> -- 
+> 2.31.1.331.gb0c09ab8796f
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-All errors (new ones prefixed by >>):
-
->> drivers/net/ethernet/intel/ice/ice_switch.c:4346:1: error: incomplete result type 'enum ice_status' in function definition
-   ice_add_special_words(struct ice_adv_rule_info *rinfo,
-   ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4345:13: note: forward declaration of 'enum ice_status'
-   static enum ice_status
-               ^
->> drivers/net/ethernet/intel/ice/ice_switch.c:4362:11: error: use of undeclared identifier 'ICE_ERR_MAX_LIMIT'
-                           return ICE_ERR_MAX_LIMIT;
-                                  ^
->> drivers/net/ethernet/intel/ice/ice_switch.c:4366:9: error: use of undeclared identifier 'ICE_SUCCESS'
-           return ICE_SUCCESS;
-                  ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4792:1: error: incomplete result type 'enum ice_status' in function definition
-   ice_fill_adv_packet_tun(struct ice_hw *hw, enum ice_sw_tunnel_type tun_type,
-   ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4345:13: note: forward declaration of 'enum ice_status'
-   static enum ice_status
-               ^
->> drivers/net/ethernet/intel/ice/ice_switch.c:4801:11: error: use of undeclared identifier 'ICE_ERR_CFG'
-                           return ICE_ERR_CFG;
-                                  ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4806:10: error: use of undeclared identifier 'ICE_SUCCESS'
-                   return ICE_SUCCESS;
-                          ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4819:11: error: use of undeclared identifier 'ICE_SUCCESS'
-                           return ICE_SUCCESS;
-                                  ^
-   drivers/net/ethernet/intel/ice/ice_switch.c:4823:9: error: use of undeclared identifier 'ICE_ERR_CFG'
-           return ICE_ERR_CFG;
-                  ^
-   8 errors generated.
-
-
-vim +4346 drivers/net/ethernet/intel/ice/ice_switch.c
-
-  4339	
-  4340	/**
-  4341	 * ice_add_special_words - Add words that are not protocols, such as metadata
-  4342	 * @rinfo: other information regarding the rule e.g. priority and action info
-  4343	 * @lkup_exts: lookup word structure
-  4344	 */
-  4345	static enum ice_status
-> 4346	ice_add_special_words(struct ice_adv_rule_info *rinfo,
-  4347			      struct ice_prot_lkup_ext *lkup_exts)
-  4348	{
-  4349		u16 mask;
-  4350	
-  4351		/* If this is a tunneled packet, then add recipe index to match the
-  4352		 * tunnel bit in the packet metadata flags.
-  4353		 */
-  4354		if (ice_tun_type_match_word(rinfo->tun_type, &mask)) {
-  4355			if (lkup_exts->n_val_words < ICE_MAX_CHAIN_WORDS) {
-  4356				u8 word = lkup_exts->n_val_words++;
-  4357	
-  4358				lkup_exts->fv_words[word].prot_id = ICE_META_DATA_ID_HW;
-  4359				lkup_exts->fv_words[word].off = ICE_TUN_FLAG_MDID_OFF;
-  4360				lkup_exts->field_mask[word] = mask;
-  4361			} else {
-> 4362				return ICE_ERR_MAX_LIMIT;
-  4363			}
-  4364		}
-  4365	
-> 4366		return ICE_SUCCESS;
-  4367	}
-  4368	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 44255 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211012/e0332ab2/attachment-0001.bin>
+-- 
+Vinicius
