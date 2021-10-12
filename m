@@ -1,98 +1,97 @@
 From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Tue, 12 Oct 2021 13:04:47 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
- virtual channel messages
-Message-ID: <20211012130447.6177-1-michal.maloszewski@intel.com>
+Date: Tue, 12 Oct 2021 13:52:45 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix reporting when setting
+ descriptor count
+Message-ID: <20211012135245.6979-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Modify netdev->features for vlan stripping based on virtual
-channel messages received from the PF. Change is needed
-to synchronize vlan strip status between PF sysfs and iavf ethtool.
+iavf_set_ringparams doesn't communicate to the user that
 
-Fixes: 54a4f0239f2e ("KVM: MMU: make kvm_mmu_zap_page() return the number of pages it actually freed")
-Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+1. The user requested descriptor count is out of range. Instead it
+   just quietly sets descriptors to the "clamped" value and calls it
+   done. This makes it look an invalid value was successfully set as
+   the descriptor count when this isn't actually true.
+
+2. The user provided descriptor count needs to be inflated for alignment
+   reasons.
+
+This behavior is confusing. The ice driver has already addressed this
+by rejecting invalid values for descriptor count and messaging for alignment adjustments.
+Do the same thing here by adding the error and info messages.
+
+Fixes: fcea6f3da546 ("ice: Add stats and ethtool support")
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
 ---
-v2: commit message and comments corrected
-    note that splitting lines is necessary because the number of allowable characters on the line is exceeded
+v3: Commit with fixes tag changed.
 ---
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 44 ++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    | 43 ++++++++++++++-----
+ 1 file changed, 32 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 9c128462ed..68761b92f6 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1456,6 +1456,22 @@ void iavf_request_reset(struct iavf_adapter *adapter)
- 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- }
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 7cbe59beee..cbfc8d07a0 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -612,23 +612,44 @@ static int iavf_set_ringparam(struct net_device *netdev,
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
  
-+/**
-+ * iavf_netdev_features_vlan_strip_set
-+ * @netdev: ptr to netdev being adjusted
-+ * @enable: enable or disable vlan strip
-+ *
-+ * Helper function to change vlan strip status in netdev->features.
-+ **/
-+static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
-+					       const bool enable)
-+{
-+	if (enable)
-+	     netdev->features |= NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
-+	else
-+	     netdev->features &= ~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
-+}
+-	new_tx_count = clamp_t(u32, ring->tx_pending,
+-			       IAVF_MIN_TXD,
+-			       IAVF_MAX_TXD);
+-	new_tx_count = ALIGN(new_tx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (ring->tx_pending > IAVF_MAX_TXD ||
++	    ring->tx_pending < IAVF_MIN_TXD ||
++	    ring->rx_pending > IAVF_MAX_RXD ||
++	    ring->rx_pending < IAVF_MIN_RXD) {
++		  netdev_err(netdev, "Descriptors requested (Tx: %d / Rx: %d) out of range [%d-%d] (increment %d)\n",
++			     ring->tx_pending, ring->rx_pending, IAVF_MIN_TXD,
++			     IAVF_MAX_RXD, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++		  return -EINVAL;
++	}
 +
- /**
-  * iavf_virtchnl_completion
-  * @adapter: adapter structure
-@@ -1679,8 +1695,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			}
- 			break;
- 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+			dev_warn(&adapter->pdev->dev,
-+				 "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/*Vlan stripping could not be enabled by ethtool.
-+			 * Disable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+			break;
- 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
--			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			dev_warn(&adapter->pdev->dev,
-+				 "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/*Vlan stripping could not be disabled by ethtool.
-+			 * Enable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
- 			break;
- 		default:
- 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
-@@ -1897,6 +1925,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		spin_unlock_bh(&adapter->adv_rss_lock);
- 		}
- 		break;
-+	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+		/*Got information that PF enabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
-+		break;
-+	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-+		/* Got information that PF disabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+		break;
- 	default:
- 		if (adapter->current_op && (v_opcode != adapter->current_op))
- 			dev_dbg(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
++	new_tx_count = ALIGN(ring->tx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (new_tx_count != ring->tx_pending)
++		netdev_info(netdev, "Requested Tx descriptor count rounded up to %d\n",
++			    new_tx_count);
+ 
+-	new_rx_count = clamp_t(u32, ring->rx_pending,
+-			       IAVF_MIN_RXD,
+-			       IAVF_MAX_RXD);
+-	new_rx_count = ALIGN(new_rx_count, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	new_rx_count = ALIGN(ring->rx_pending, IAVF_REQ_DESCRIPTOR_MULTIPLE);
++	if (new_rx_count != ring->rx_pending)
++		netdev_info(netdev, "Requested Rx descriptor count rounded up to %d\n",
++			    new_rx_count);
+ 
+ 	/* if nothing to do return success */
+ 	if ((new_tx_count == adapter->tx_desc_count) &&
+-	    (new_rx_count == adapter->rx_desc_count))
++	    (new_rx_count == adapter->rx_desc_count)) {
++		netdev_dbg(netdev, "Nothing to change, descriptor count is same as requested\n");
+ 		return 0;
++	}
+ 
+-	adapter->tx_desc_count = new_tx_count;
+-	adapter->rx_desc_count = new_rx_count;
++	if (new_tx_count != adapter->tx_desc_count) {
++		netdev_info(netdev, "Changing Tx descriptor count from %d to %d\n",
++			    adapter->tx_desc_count, new_tx_count);
++		adapter->tx_desc_count = new_tx_count;
++	}
++
++	if (new_rx_count != adapter->rx_desc_count) {
++		netdev_info(netdev, "Changing Rx descriptor count from %d to %d\n",
++			    adapter->rx_desc_count, new_rx_count);
++		adapter->rx_desc_count = new_rx_count;
++	}
+ 
+ 	if (netif_running(netdev)) {
+ 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
 -- 
 2.27.0
 
