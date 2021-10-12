@@ -1,187 +1,98 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 12 Oct 2021 10:23:17 +0200
-Subject: [Intel-wired-lan] [net-next PATCH v2 4/9] ice: introduce
- ice_ptp_init_phc function
-In-Reply-To: <20211012010715.1684027-5-jacob.e.keller@intel.com>
-References: <20211012010715.1684027-1-jacob.e.keller@intel.com>
- <20211012010715.1684027-5-jacob.e.keller@intel.com>
-Message-ID: <fd7b8b1e-0d08-51ab-3688-c82902046784@molgen.mpg.de>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Tue, 12 Oct 2021 13:04:47 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
+ virtual channel messages
+Message-ID: <20211012130447.6177-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jacob,
+Modify netdev->features for vlan stripping based on virtual
+channel messages received from the PF. Change is needed
+to synchronize vlan strip status between PF sysfs and iavf ethtool.
 
+Fixes: 54a4f0239f2e ("KVM: MMU: make kvm_mmu_zap_page() return the number of pages it actually freed")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+---
+v2: commit message and comments corrected
+    note that splitting lines is necessary because the number of allowable characters on the line is exceeded
+---
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 44 ++++++++++++++++++-
+ 1 file changed, 43 insertions(+), 1 deletion(-)
 
-Thank you for the patch.
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 9c128462ed..68761b92f6 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1456,6 +1456,22 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+ }
+ 
++/**
++ * iavf_netdev_features_vlan_strip_set
++ * @netdev: ptr to netdev being adjusted
++ * @enable: enable or disable vlan strip
++ *
++ * Helper function to change vlan strip status in netdev->features.
++ **/
++static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
++					       const bool enable)
++{
++	if (enable)
++	     netdev->features |= NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
++	else
++	     netdev->features &= ~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
++}
++
+ /**
+  * iavf_virtchnl_completion
+  * @adapter: adapter structure
+@@ -1679,8 +1695,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			}
+ 			break;
+ 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++			dev_warn(&adapter->pdev->dev,
++				 "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/*Vlan stripping could not be enabled by ethtool.
++			 * Disable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++			break;
+ 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
+-			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			dev_warn(&adapter->pdev->dev,
++				 "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/*Vlan stripping could not be disabled by ethtool.
++			 * Enable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, true);
+ 			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+@@ -1897,6 +1925,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		spin_unlock_bh(&adapter->adv_rss_lock);
+ 		}
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		/*Got information that PF enabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, true);
++		break;
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		/* Got information that PF disabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++		break;
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_dbg(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+-- 
+2.27.0
 
-Am 12.10.21 um 03:07 schrieb Jacob Keller:
-> When we enable support for E822 devices, there are some additional
-> steps required to initialize the PTP hardware clock. To make this easier
-> to implement as device-specific behavior, refactor the register setups
-> in ice_ptp_init_owner to a new ice_ptp_init_phc function defined in
-> ice_ptp_hw.c
-> 
-> This function will have a common section, and an e810 specific
-> sub-implementation.
-> 
-> This will enable easily extending the functionality to cover the E822
-> specific setup required to initialize the hardware clock generation
-> unit. It also makes it clear which steps are E810 specific vs which ones
-> are necessary for all ice devices.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_ptp.c    | 38 +++++++++------------
->   drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 34 ++++++++++++++++++
->   drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
->   3 files changed, 52 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 155842447ebe..4fffae345bf9 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -1815,24 +1815,14 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
->   	struct device *dev = ice_pf_to_dev(pf);
->   	struct ice_hw *hw = &pf->hw;
->   	struct timespec64 ts;
-> -	u8 src_idx;
->   	int err;
->   
-> -	wr32(hw, GLTSYN_SYNC_DLAY, 0);
-> -
-> -	/* Clear some HW residue and enable source clock */
-> -	src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
-> -
-> -	/* Enable source clocks */
-> -	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
-> -
-> -	/* Enable PHY time sync */
-> -	err = ice_ptp_init_phy_e810(hw);
-> -	if (err)
-> -		goto err_exit;
-> -
-> -	/* Clear event status indications for auxiliary pins */
-> -	(void)rd32(hw, GLTSYN_STAT(src_idx));
-> +	err = ice_ptp_init_phc(hw);
-> +	if (err) {
-> +		dev_err(dev, "Failed to initialize PHC, err %d\n",
-
-Thank you for adding logging. For users it?d be great, if the message 
-contained some solution to the problem. Something like (no idea if 
-true): The hardware is brocken and won?t work, please check with the vendor.
-
-> +			err);
-> +		return err;
-> +	}
->   
->   	/* Acquire the global hardware lock */
->   	if (!ice_ptp_lock(hw)) {
-> @@ -1877,12 +1867,16 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
->   }
->   
->   /**
-> - * ice_ptp_init - Initialize the PTP support after device probe or reset
-> + * ice_ptp_init - Initialize PTP hardware clock support
->    * @pf: Board private structure
->    *
-> - * This function sets device up for PTP support. The first time it is run, it
-> - * will create a clock device. It does not create a clock device if one
-> - * already exists. It also reconfigures the device after a reset.
-> + * Setup the device for interacting with the PTP hardware clock for all
-
-Nit: The verb is spelled with a space: Set up
-
-> + * functions, both the function that owns the clock hardware, and the
-> + * functions connected to the clock hardware.
-> + *
-> + * The clock owner will allocate and register a ptp_clock with the
-> + * PTP_1588_CLOCK infrastructure. All functions allocate a kthread and work
-> + * items used for asynchronous work such as Tx timestamps and periodic work.
->    */
->   void ice_ptp_init(struct ice_pf *pf)
->   {
-> @@ -1895,7 +1889,9 @@ void ice_ptp_init(struct ice_pf *pf)
->   	if (!ice_is_e810(hw))
->   		return;
->   
-> -	/* Check if this PF owns the source timer */
-> +	/* If this function owns the clock hardware, it must allocate and
-> +	 * configure the PTP clock device to represent it.
-> +	 */
->   	if (hw->func_caps.ts_func_info.src_tmr_owned) {
->   		err = ice_ptp_init_owner(pf);
->   		if (err)
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> index b75aa7bcd421..9787d45c2fdb 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-> @@ -213,6 +213,21 @@ int ice_ptp_init_phy_e810(struct ice_hw *hw)
->   	return err;
->   }
->   
-> +/**
-> + * ice_ptp_init_phc_e810 - Perform E810 specific PHC initialization
-> + * @hw: pointer to HW struct
-> + *
-> + * Perform E810-specific PTP hardware clock initialization steps.
-> + */
-> +static int ice_ptp_init_phc_e810(struct ice_hw *hw)
-> +{
-> +	/* Ensure synchronization delay is zero */
-> +	wr32(hw, GLTSYN_SYNC_DLAY, 0);
-> +
-> +	/* Initialize the PHY */
-> +	return ice_ptp_init_phy_e810(hw);
-> +}
-> +
->   /**
->    * ice_ptp_prep_phy_time_e810 - Prepare PHY port with initial time
->    * @hw: Board private structure
-> @@ -840,3 +855,22 @@ bool ice_is_pca9575_present(struct ice_hw *hw)
->   
->   	return false;
->   }
-> +
-> +/**
-> + * ice_ptp_init_phc - Initialize PTP hardware clock
-> + * @hw: pointer to the HW struct
-> + *
-> + * Perform the steps required to initialize the PTP hardware clock.
-> + */
-> +int ice_ptp_init_phc(struct ice_hw *hw)
-> +{
-> +	u8 src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
-> +
-> +	/* Enable source clocks */
-> +	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
-> +
-> +	/* Clear event err indications for auxiliary pins */
-> +	(void)rd32(hw, GLTSYN_STAT(src_idx));
-> +
-> +	return ice_ptp_init_phc_e810(hw);
-> +}
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> index 4ca1b6fc5ba8..06819d91e3bc 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-> @@ -27,6 +27,7 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
->   int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
->   int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
->   int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
-> +int ice_ptp_init_phc(struct ice_hw *hw);
->   
->   /* E810 family functions */
->   int ice_ptp_init_phy_e810(struct ice_hw *hw);
-> 
-
-The rest looks good:
-
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-
-
-Kind regards,
-
-Paul
