@@ -1,73 +1,112 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Tue, 12 Oct 2021 13:31:21 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix problems with DSCP QoS
- implementation
-Message-ID: <20211012203121.85155-1-david.m.ertman@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 12 Oct 2021 21:29:57 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v2 0/9] implement support for
+ PTP on E822 hardware
+In-Reply-To: <20211012010715.1684027-1-jacob.e.keller@intel.com>
+References: <20211012010715.1684027-1-jacob.e.keller@intel.com>
+Message-ID: <a461d675-7451-e2af-c7ed-9e7cfe80121e@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The patch that implemented DSCP QoS implementation removed a
-bandwidth check that was used to check for a specific condition
-caused by some corner cases.  This check should not of been
-removed.
+On 10/11/2021 6:07 PM, Keller, Jacob E wrote:
+> Extend the ice driver implementation to support PTP for the E822 based
+> devices.
+> 
+> This includes a few cleanup patches, that fix some minor issues spotted
+> while preparing them. In addition, there are some slight refactors to ease
+> the addition of E822 support, followed by adding the new hardware
+> implementation ice_ptp_hw.c.
+> 
+> There are a few major differences with E822 support compared to E810
+> support:
+> 
+> *) The E822 device has a Clock Generation Unit which must be initialized in
+> order to generate proper clock frequencies on the output that drives the PTP
+> hardware clock registers
+> 
+> *) The E822 PHY is a bit different and requires a more complex
+> initialization procedure which must be rerun any time the link configuration
+> changes.
+> 
+> *) The E822 devices support enhanced timestamp calibration by making use of
+> a process called Vernier offset measurement. This allows the hardware to
+> measure phase offset related to the PHY clocks for Serdes and FEC, reducing
+> the inaccuracy of the timestamp relative to the actual packet transmission
+> and receipt. Making use of this requires data gathered from the first
+> transmitted and received packets, and waiting for the PHY to complete the
+> calibration measurements. This is done as part of a new kthread, ov_work.
+> Note that to avoid delay in enabling timestamps, we start the PHY in
+> 'bypass' mode which allows timestamps to be captured without the Vernier
+> calibration measurement. Once the first packets have been sent and received,
+> we then complete the calibration setup and exit bypass mode and begin using
+> the more precise timestamps. According to the datasheet, timestamps without
+> calibration data can be incorrect relative to actual receipt or transmission
+> by up to 1 clock cycle (~1.25 nanoseconds), while calibrated timestamps
+> should be correct to within 1/8th of a clock cycle (~0.15 nanoseconds).
+> 
+> *) E822 devices support crosstimestamping via PCIe PTM, which we enable when
+> available on the platform.
+> 
+> There is a fair amount of logic required to perform PHY and CGU
+> initialization, which is the vast majority of the new code, but it is fairly
+> self contained within ice_ptp_hw.c, with the exception of monitoring for
+> offset validity being handled by a kthread.
+> 
+> Changes since v1 resend:
+> * Restore the ICE_HWTS config that got dropped when regenerating the series.
+> 
+> Changes since previous submission (v3):
+> * Fix a bug with SIOCSHWTSTAMP failing to update returned filter to
+>   HWTSTAMP_FILTER_ALL
+> * Fix an issue with the Tx timestamp slot assignment using modulo instead
+>   of division
+> * Rebased on top of Intel Wired LAN dev-queue
+> * Dropped the patches which were previously applied as fixes
+> 
+> Changes since v2:
+> * introduced helper functions to enable and disable clock outputs
+> 
+> Changes since v1:
+> * Fixed build against non-X86 arch for the PCIe PTM support
+> 
+> 
+> Jacob Keller (9):
+>   ice: introduce ice_base_incval function
+>   ice: PTP: move setting of tstamp_config
+>   ice: use 'int err' instead of 'int status' in ice_ptp_hw.c
+>   ice: introduce ice_ptp_init_phc function
+>   ice: convert clk_freq capability into time_ref
+>   ice: implement basic E822 PTP support
+>   ice: ensure the hardware Clock Generation Unit is configured
+>   ice: exit bypass mode once hardware finishes timestamp calibration
+>   ice: support crosstimestamping on E822 devices if supported
+> 
+>  drivers/net/ethernet/intel/Kconfig            |   10 +
+>  drivers/net/ethernet/intel/ice/ice_cgu_regs.h |  116 +
+>  drivers/net/ethernet/intel/ice/ice_common.c   |   12 +
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |    9 +
+>  drivers/net/ethernet/intel/ice/ice_main.c     |    7 +
+>  drivers/net/ethernet/intel/ice/ice_ptp.c      |  655 +++-
+>  drivers/net/ethernet/intel/ice/ice_ptp.h      |   30 +-
+>  .../net/ethernet/intel/ice/ice_ptp_consts.h   |  374 +++
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.c   | 2794 ++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  345 ++
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   23 +-
+>  11 files changed, 4174 insertions(+), 201 deletions(-)
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_cgu_regs.h
+>  create mode 100644 drivers/net/ethernet/intel/ice/ice_ptp_consts.h
+> 
+> 
+> base-commit: 2d82122b64363fe17521f26b63a7c89b204d17eb
+> 
 
-The same patch also added a check for when the DCBx state could
-be changed in relation to DSCP, but the check was erroneously
-added nested in a check for CEE mode, which made the check useless.
+Due to a rebasing error, this series still has a few ice_status mixups.
+I've fixed these and double checked everything and am re-sending a v3
+with also the small fixups noted by Paul Menzel! Thanks for the review!
 
-Fix these problems by re-adding the bandwidth check and relocating
-the DSCP mode check earlier in the function that changes DCBx state
-in the driver.
-
-Fixes: 2a87bd73e5 ("ice: Add DSCP support")
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 7fdeb411b6df..3eb01731e496 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -97,6 +97,9 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 
- 	new_cfg->etscfg.maxtcs = pf->hw.func_caps.common_cap.maxtc;
- 
-+	if (!bwcfg)
-+		new_cfg->etscfg.tcbwtable[0] = 100;
-+
- 	if (!bwrec)
- 		new_cfg->etsrec.tcbwtable[0] = 100;
- 
-@@ -167,15 +170,18 @@ static u8 ice_dcbnl_setdcbx(struct net_device *netdev, u8 mode)
- 	if (mode == pf->dcbx_cap)
- 		return ICE_DCB_NO_HW_CHG;
- 
--	pf->dcbx_cap = mode;
- 	qos_cfg = &pf->hw.port_info->qos_cfg;
--	if (mode & DCB_CAP_DCBX_VER_CEE) {
--		if (qos_cfg->local_dcbx_cfg.pfc_mode == ICE_QOS_MODE_DSCP)
--			return ICE_DCB_NO_HW_CHG;
-+
-+	/* DSCP configuration is not DCBx negotiated */
-+	if (qos_cfg->local_dcbx_cfg.pfc_mode == ICE_QOS_MODE_DSCP)
-+		return ICE_DCB_NO_HW_CHG;
-+
-+	pf->dcbx_cap = mode;
-+
-+	if (mode & DCB_CAP_DCBX_VER_CEE)
- 		qos_cfg->local_dcbx_cfg.dcbx_mode = ICE_DCBX_MODE_CEE;
--	} else {
-+	else
- 		qos_cfg->local_dcbx_cfg.dcbx_mode = ICE_DCBX_MODE_IEEE;
--	}
- 
- 	dev_info(ice_pf_to_dev(pf), "DCBx mode = 0x%x\n", mode);
- 	return ICE_DCB_HW_CHG_RST;
--- 
-2.31.1
+Regards,
+Jake
 
