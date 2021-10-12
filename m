@@ -1,97 +1,166 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 12 Oct 2021 14:32:23 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 2/9] ice: PTP: move setting of
- tstamp_config
+Date: Tue, 12 Oct 2021 14:32:25 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v3 4/9] ice: introduce
+ ice_ptp_init_phc function
 In-Reply-To: <20211012213230.2684338-1-jacob.e.keller@intel.com>
 References: <20211012213230.2684338-1-jacob.e.keller@intel.com>
-Message-ID: <20211012213230.2684338-3-jacob.e.keller@intel.com>
+Message-ID: <20211012213230.2684338-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The tstamp_config structure is being set inside of
-ice_ptp_cfg_timestamp, which is the function used to set Tx and
-Rx timestamping during initialization.
+When we enable support for E822 devices, there are some additional
+steps required to initialize the PTP hardware clock. To make this easier
+to implement as device-specific behavior, refactor the register setups
+in ice_ptp_init_owner to a new ice_ptp_init_phc function defined in
+ice_ptp_hw.c
 
-This function is also used in order to set the PHY port timestamping
-status. However, it makes sense to always set the tstamp_config directly
-whenever the ice_set_tx_tstamp or ice_set_rx_tstamp functions are
-called.
+This function will have a common section, and an e810 specific
+sub-implementation.
 
-Move assignment of tstamp_config into the related functions and out of
-ice_ptp_cfg_timestamp.
-
-Now that we assign the timestamp mode in the relevant functions, we no
-longer modify the config value in ice_set_timestamp_mode. In turn, we
-no longer want to copy that config value into the PF cached structure.
-Instead, this is now the source of truth for actual configuration. On
-success of ice_set_timestamp_mode, copy the real configured mode back to
-report it out to userspace.
+This will enable easily extending the functionality to cover the E822
+specific setup required to initialize the hardware clock generation
+unit. It also makes it clear which steps are E810 specific vs which ones
+are necessary for all ice devices.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 38 +++++++++------------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 34 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
+ 3 files changed, 52 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 71e715c7be4f..d275078d6737 100644
+index d275078d6737..076599202d57 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -285,6 +285,8 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
- 	else
- 		val &= ~PFINT_OICR_TSYN_TX_M;
- 	wr32(&pf->hw, PFINT_OICR_ENA, val);
-+
-+	pf->ptp.tstamp_config.tx_type = on ? HWTSTAMP_TX_ON : HWTSTAMP_TX_OFF;
- }
+@@ -1810,24 +1810,14 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct timespec64 ts;
+-	u8 src_idx;
+ 	int err;
  
- /**
-@@ -307,6 +309,9 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
- 			continue;
- 		vsi->rx_rings[i]->ptp_rx = on;
- 	}
-+
-+	pf->ptp.tstamp_config.rx_filter = on ? HWTSTAMP_FILTER_ALL :
-+					       HWTSTAMP_FILTER_NONE;
- }
- 
- /**
-@@ -321,14 +326,6 @@ static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
- {
- 	ice_set_tx_tstamp(pf, ena);
- 	ice_set_rx_tstamp(pf, ena);
+-	wr32(hw, GLTSYN_SYNC_DLAY, 0);
 -
--	if (ena) {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_ALL;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_ON;
--	} else {
--		pf->ptp.tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--		pf->ptp.tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--	}
+-	/* Clear some HW residue and enable source clock */
+-	src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+-
+-	/* Enable source clocks */
+-	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
+-
+-	/* Enable PHY time sync */
+-	err = ice_ptp_init_phy_e810(hw);
+-	if (err)
+-		goto err_exit;
+-
+-	/* Clear event status indications for auxiliary pins */
+-	(void)rd32(hw, GLTSYN_STAT(src_idx));
++	err = ice_ptp_init_phc(hw);
++	if (err) {
++		dev_err(dev, "Failed to initialize PHC, err %d\n",
++			err);
++		return err;
++	}
+ 
+ 	/* Acquire the global hardware lock */
+ 	if (!ice_ptp_lock(hw)) {
+@@ -1872,12 +1862,16 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
  }
  
  /**
-@@ -1256,7 +1253,6 @@ ice_ptp_set_timestamp_mode(struct ice_pf *pf, struct hwtstamp_config *config)
- 	case HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ:
- 	case HWTSTAMP_FILTER_NTP_ALL:
- 	case HWTSTAMP_FILTER_ALL:
--		config->rx_filter = HWTSTAMP_FILTER_ALL;
- 		ice_set_rx_tstamp(pf, true);
- 		break;
- 	default:
-@@ -1288,8 +1284,8 @@ int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
- 	if (err)
- 		return err;
+- * ice_ptp_init - Initialize the PTP support after device probe or reset
++ * ice_ptp_init - Initialize PTP hardware clock support
+  * @pf: Board private structure
+  *
+- * This function sets device up for PTP support. The first time it is run, it
+- * will create a clock device. It does not create a clock device if one
+- * already exists. It also reconfigures the device after a reset.
++ * Set up the device for interacting with the PTP hardware clock for all
++ * functions, both the function that owns the clock hardware, and the
++ * functions connected to the clock hardware.
++ *
++ * The clock owner will allocate and register a ptp_clock with the
++ * PTP_1588_CLOCK infrastructure. All functions allocate a kthread and work
++ * items used for asynchronous work such as Tx timestamps and periodic work.
+  */
+ void ice_ptp_init(struct ice_pf *pf)
+ {
+@@ -1890,7 +1884,9 @@ void ice_ptp_init(struct ice_pf *pf)
+ 	if (!ice_is_e810(hw))
+ 		return;
  
--	/* Save these settings for future reference */
--	pf->ptp.tstamp_config = config;
-+	/* Return the actual configuration set */
-+	config = pf->ptp.tstamp_config;
+-	/* Check if this PF owns the source timer */
++	/* If this function owns the clock hardware, it must allocate and
++	 * configure the PTP clock device to represent it.
++	 */
+ 	if (hw->func_caps.ts_func_info.src_tmr_owned) {
+ 		err = ice_ptp_init_owner(pf);
+ 		if (err)
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index b75aa7bcd421..9787d45c2fdb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -213,6 +213,21 @@ int ice_ptp_init_phy_e810(struct ice_hw *hw)
+ 	return err;
+ }
  
- 	return copy_to_user(ifr->ifr_data, &config, sizeof(config)) ?
- 		-EFAULT : 0;
++/**
++ * ice_ptp_init_phc_e810 - Perform E810 specific PHC initialization
++ * @hw: pointer to HW struct
++ *
++ * Perform E810-specific PTP hardware clock initialization steps.
++ */
++static int ice_ptp_init_phc_e810(struct ice_hw *hw)
++{
++	/* Ensure synchronization delay is zero */
++	wr32(hw, GLTSYN_SYNC_DLAY, 0);
++
++	/* Initialize the PHY */
++	return ice_ptp_init_phy_e810(hw);
++}
++
+ /**
+  * ice_ptp_prep_phy_time_e810 - Prepare PHY port with initial time
+  * @hw: Board private structure
+@@ -840,3 +855,22 @@ bool ice_is_pca9575_present(struct ice_hw *hw)
+ 
+ 	return false;
+ }
++
++/**
++ * ice_ptp_init_phc - Initialize PTP hardware clock
++ * @hw: pointer to the HW struct
++ *
++ * Perform the steps required to initialize the PTP hardware clock.
++ */
++int ice_ptp_init_phc(struct ice_hw *hw)
++{
++	u8 src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
++
++	/* Enable source clocks */
++	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
++
++	/* Clear event err indications for auxiliary pins */
++	(void)rd32(hw, GLTSYN_STAT(src_idx));
++
++	return ice_ptp_init_phc_e810(hw);
++}
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 4ca1b6fc5ba8..06819d91e3bc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -27,6 +27,7 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
+ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
+ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
+ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
++int ice_ptp_init_phc(struct ice_hw *hw);
+ 
+ /* E810 family functions */
+ int ice_ptp_init_phy_e810(struct ice_hw *hw);
 -- 
 2.31.1.331.gb0c09ab8796f
 
