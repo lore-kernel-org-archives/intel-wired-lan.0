@@ -1,146 +1,66 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 13 Oct 2021 21:36:55 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 32759999f0df6a8b98c2146d0752db4ddec8f3cb
-Message-ID: <6166e0f7.eH091zYxAvEykDmU%lkp@intel.com>
+From: Ruud Bos <kernel.hbk@gmail.com>
+Date: Wed, 13 Oct 2021 09:15:27 +0200
+Subject: [Intel-wired-lan] [PATCH net-next RESEND 0/4] igb: support PEROUT
+ and EXTTS PTP pin functions on 82580/i354/i350
+Message-ID: <20211013071531.1145-1-kernel.hbk@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 32759999f0df6a8b98c2146d0752db4ddec8f3cb  ice: Implement support for SMA and U.FL on E810-T
+The igb driver provides support for PEROUT and EXTTS pin functions that
+allow adapter external use of timing signals. At Hottinger Bruel & Kjaer we
+are using the PEROUT function to feed a PTP corrected 1pps signal into an
+FPGA as cross system synchronized time source.
 
-elapsed time: 1264m
+Support for the PEROUT and EXTTS SDP functions is currently limited to
+i210/i211 based adapters. This patch series enables these functions also
+for 82580/i354/i350 based ones. Because the time registers of these
+adapters do not have the nice split in second rollovers as the i210 has,
+the implementation is slightly more complex compared to the i210
+implementation.
 
-configs tested: 117
-configs skipped: 3
+The PEROUT function has been successfully tested on an i350 based ethernet
+adapter. Using the following user space code excerpt, the driver outputs a
+PTP corrected 1pps signal on the SDP0 pin of an i350:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+    struct ptp_pin_desc desc;
+    memset(&desc, 0, sizeof(desc));
+    desc.index = 0;
+    desc.func = PTP_PF_PEROUT;
+    desc.chan = 0;
+    if (ioctl(fd, PTP_PIN_SETFUNC, &desc) == 0) {
+        struct timespec ts;
+        if (clock_gettime(clkid, &ts) == 0) {
+            struct ptp_perout_request rq;
+            memset(&rq, 0, sizeof(rq));
+            rq.index = 0;
+            rq.start.sec = ts.tv_sec + 1;
+            rq.start.nsec = 500000000;
+            rq.period.sec  = 1;
+            rq.period.nsec = 0;
+            if (ioctl(fd, PTP_PEROUT_REQUEST, &rq) == 0) {
+                /* 1pps signal is now available on SDP0 */
+            }
+        }
+    }
 
-gcc tested configs:
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                 randconfig-c001-20211013
-i386                 randconfig-c001-20211012
-mips                        workpad_defconfig
-m68k                         apollo_defconfig
-powerpc                 linkstation_defconfig
-arm                           sama5_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                     mpc5200_defconfig
-xtensa                generic_kc705_defconfig
-arm                            mmp2_defconfig
-powerpc                      makalu_defconfig
-mips                  maltasmvp_eva_defconfig
-openrisc                            defconfig
-arm64                            alldefconfig
-arm                           omap1_defconfig
-arm                           sunxi_defconfig
-mips                          malta_defconfig
-m68k                         amcore_defconfig
-arm                          badge4_defconfig
-sh                            hp6xx_defconfig
-arm                          collie_defconfig
-mips                         tb0287_defconfig
-sh                          r7785rp_defconfig
-powerpc                     tqm8555_defconfig
-arm                         s3c2410_defconfig
-arm                            mps2_defconfig
-arm                         socfpga_defconfig
-m68k                          amiga_defconfig
-arm                          pcm027_defconfig
-arm                  randconfig-c002-20211012
-x86_64               randconfig-c001-20211012
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nds32                             allnoconfig
-arc                              allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-xtensa                           allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                             allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20211012
-x86_64               randconfig-a006-20211012
-x86_64               randconfig-a001-20211012
-x86_64               randconfig-a005-20211012
-x86_64               randconfig-a002-20211012
-x86_64               randconfig-a003-20211012
-i386                 randconfig-a001-20211012
-i386                 randconfig-a003-20211012
-i386                 randconfig-a004-20211012
-i386                 randconfig-a005-20211012
-i386                 randconfig-a002-20211012
-i386                 randconfig-a006-20211012
-i386                 randconfig-a016-20211013
-i386                 randconfig-a014-20211013
-i386                 randconfig-a011-20211013
-i386                 randconfig-a015-20211013
-i386                 randconfig-a012-20211013
-i386                 randconfig-a013-20211013
-arc                  randconfig-r043-20211012
-riscv                            allyesconfig
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
+The added EXTTS function has not been tested. However, looking at the data
+sheets, the layout of the registers involved match the i210 exactly except
+for the time registers mentioned before. Hence the almost identical
+implementation.
 
-clang tested configs:
-x86_64               randconfig-a015-20211012
-x86_64               randconfig-a012-20211012
-x86_64               randconfig-a016-20211012
-x86_64               randconfig-a014-20211012
-x86_64               randconfig-a013-20211012
-x86_64               randconfig-a011-20211012
-i386                 randconfig-a016-20211012
-i386                 randconfig-a014-20211012
-i386                 randconfig-a011-20211012
-i386                 randconfig-a015-20211012
-i386                 randconfig-a012-20211012
-i386                 randconfig-a013-20211012
-hexagon              randconfig-r041-20211012
-s390                 randconfig-r044-20211012
-riscv                randconfig-r042-20211012
-hexagon              randconfig-r045-20211012
+Ruud Bos (4):
+  igb: move SDP config initialization to separate function
+  igb: move PEROUT and EXTTS isr logic to separate functions
+  igb: support PEROUT on 82580/i354/i350
+  igb: support EXTTS on 82580/i354/i350
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igb/igb_main.c | 141 ++++++++++++-----
+ drivers/net/ethernet/intel/igb/igb_ptp.c  | 183 ++++++++++++++++++++--
+ 2 files changed, 279 insertions(+), 45 deletions(-)
+
+-- 
+2.30.2
+
