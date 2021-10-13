@@ -1,139 +1,112 @@
 From: Ruud Bos <kernel.hbk@gmail.com>
-Date: Wed, 13 Oct 2021 09:15:29 +0200
-Subject: [Intel-wired-lan] [PATCH net-next RESEND 2/4] igb: move PEROUT and
- EXTTS isr logic to separate functions
+Date: Wed, 13 Oct 2021 09:15:31 +0200
+Subject: [Intel-wired-lan] [PATCH net-next RESEND 4/4] igb: support EXTTS on
+ 82580/i354/i350
 In-Reply-To: <20211013071531.1145-1-kernel.hbk@gmail.com>
 References: <20211013071531.1145-1-kernel.hbk@gmail.com>
-Message-ID: <20211013071531.1145-3-kernel.hbk@gmail.com>
+Message-ID: <20211013071531.1145-5-kernel.hbk@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove code duplication in the tsync interrupt handler function by moving
-this logic to separate functions. This keeps the interrupt handler readable
-and allows the new functions to be extended for adapter types other than
-i210.
+Support for the EXTTS PTP pin function on 82580/i354/i350 based adapters.
+Because the time registers of these adapters do not have the nice split in
+second rollovers as the i210 has, the implementation is slightly more
+complex compared to the i210 implementation.
 
 Signed-off-by: Ruud Bos <kernel.hbk@gmail.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 79 +++++++++++++----------
- 1 file changed, 44 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++---
+ drivers/net/ethernet/intel/igb/igb_ptp.c  | 36 ++++++++++++++++++++++-
+ 2 files changed, 51 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index e67a71c3f141..1ff9bc452fcf 100644
+index 5f59c5de7033..30f16cacd972 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6732,12 +6732,50 @@ void igb_update_stats(struct igb_adapter *adapter)
- 	}
- }
- 
-+static void igb_perout(struct igb_adapter *adapter, int sdp)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct timespec64 ts;
-+	u32 tsauxc;
-+
-+	if (sdp < 0 || sdp >= IGB_N_PEROUT)
-+		return;
-+
-+	spin_lock(&adapter->tmreg_lock);
-+	ts = timespec64_add(adapter->perout[sdp].start,
-+			    adapter->perout[sdp].period);
-+	/* u32 conversion of tv_sec is safe until y2106 */
-+	wr32((sdp == 1) ? E1000_TRGTTIML1 : E1000_TRGTTIML0, ts.tv_nsec);
-+	wr32((sdp == 1) ? E1000_TRGTTIMH1 : E1000_TRGTTIMH0, (u32)ts.tv_sec);
-+	tsauxc = rd32(E1000_TSAUXC);
-+	tsauxc |= TSAUXC_EN_TT0;
-+	wr32(E1000_TSAUXC, tsauxc);
-+	adapter->perout[sdp].start = ts;
-+	spin_unlock(&adapter->tmreg_lock);
-+}
-+
-+static void igb_extts(struct igb_adapter *adapter, int sdp)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 sec, nsec;
-+	struct ptp_clock_event event;
-+
-+	if (sdp < 0 || sdp >= IGB_N_EXTTS)
-+		return;
-+
-+	nsec = rd32((sdp == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0);
-+	sec  = rd32((sdp == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0);
-+	event.type = PTP_CLOCK_EXTTS;
-+	event.index = sdp;
-+	event.timestamp = sec * 1000000000ULL + nsec;
-+	ptp_clock_event(adapter->ptp_clock, &event);
-+}
-+
- static void igb_tsync_interrupt(struct igb_adapter *adapter)
+@@ -6807,17 +6807,29 @@ static void igb_perout(struct igb_adapter *adapter, int sdp)
+ static void igb_extts(struct igb_adapter *adapter, int sdp)
  {
  	struct e1000_hw *hw = &adapter->hw;
+-	u32 sec, nsec;
++	int auxstmpl = (sdp == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0;
++	int auxstmph = (sdp == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0;
++	struct timespec64 ts;
  	struct ptp_clock_event event;
--	struct timespec64 ts;
--	u32 ack = 0, tsauxc, sec, nsec, tsicr = rd32(E1000_TSICR);
-+	u32 ack = 0, tsicr = rd32(E1000_TSICR);
  
- 	if (tsicr & TSINTR_SYS_WRAP) {
- 		event.type = PTP_CLOCK_PPS;
-@@ -6753,51 +6791,22 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
- 	}
+ 	if (sdp < 0 || sdp >= IGB_N_EXTTS)
+ 		return;
  
- 	if (tsicr & TSINTR_TT0) {
--		spin_lock(&adapter->tmreg_lock);
--		ts = timespec64_add(adapter->perout[0].start,
--				    adapter->perout[0].period);
--		/* u32 conversion of tv_sec is safe until y2106 */
--		wr32(E1000_TRGTTIML0, ts.tv_nsec);
--		wr32(E1000_TRGTTIMH0, (u32)ts.tv_sec);
--		tsauxc = rd32(E1000_TSAUXC);
--		tsauxc |= TSAUXC_EN_TT0;
--		wr32(E1000_TSAUXC, tsauxc);
--		adapter->perout[0].start = ts;
--		spin_unlock(&adapter->tmreg_lock);
-+		igb_perout(adapter, 0);
- 		ack |= TSINTR_TT0;
- 	}
+-	nsec = rd32((sdp == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0);
+-	sec  = rd32((sdp == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0);
++	if ((hw->mac.type == e1000_82580) ||
++	    (hw->mac.type == e1000_i354) ||
++	    (hw->mac.type == e1000_i350)) {
++		s64 ns = rd32(auxstmpl);
++
++		ns += ((s64)(rd32(auxstmph) & 0xFF)) << 32;
++		ts = ns_to_timespec64(ns);
++	} else {
++		ts.tv_nsec = rd32(auxstmpl);
++		ts.tv_sec  = rd32(auxstmph);
++	}
++
+ 	event.type = PTP_CLOCK_EXTTS;
+ 	event.index = sdp;
+-	event.timestamp = sec * 1000000000ULL + nsec;
++	event.timestamp = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+ 	ptp_clock_event(adapter->ptp_clock, &event);
+ }
  
- 	if (tsicr & TSINTR_TT1) {
--		spin_lock(&adapter->tmreg_lock);
--		ts = timespec64_add(adapter->perout[1].start,
--				    adapter->perout[1].period);
--		wr32(E1000_TRGTTIML1, ts.tv_nsec);
--		wr32(E1000_TRGTTIMH1, (u32)ts.tv_sec);
--		tsauxc = rd32(E1000_TSAUXC);
--		tsauxc |= TSAUXC_EN_TT1;
--		wr32(E1000_TSAUXC, tsauxc);
--		adapter->perout[1].start = ts;
--		spin_unlock(&adapter->tmreg_lock);
-+		igb_perout(adapter, 1);
- 		ack |= TSINTR_TT1;
- 	}
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index 64a949bb5d8a..bc24295b6b52 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -524,7 +524,41 @@ static int igb_ptp_feature_enable_82580(struct ptp_clock_info *ptp,
  
- 	if (tsicr & TSINTR_AUTT0) {
--		nsec = rd32(E1000_AUXSTMPL0);
--		sec  = rd32(E1000_AUXSTMPH0);
--		event.type = PTP_CLOCK_EXTTS;
--		event.index = 0;
--		event.timestamp = sec * 1000000000ULL + nsec;
--		ptp_clock_event(adapter->ptp_clock, &event);
-+		igb_extts(adapter, 0);
- 		ack |= TSINTR_AUTT0;
- 	}
+ 	switch (rq->type) {
+ 	case PTP_CLK_REQ_EXTTS:
+-		return -EOPNOTSUPP;
++		/* Reject requests with unsupported flags */
++		if (rq->extts.flags & ~(PTP_ENABLE_FEATURE |
++					PTP_RISING_EDGE |
++					PTP_FALLING_EDGE |
++					PTP_STRICT_FLAGS))
++			return -EOPNOTSUPP;
++
++		if (on) {
++			pin = ptp_find_pin(igb->ptp_clock, PTP_PF_EXTTS,
++					   rq->extts.index);
++			if (pin < 0)
++				return -EBUSY;
++		}
++		if (rq->extts.index == 1) {
++			tsauxc_mask = TSAUXC_EN_TS1;
++			tsim_mask = TSINTR_AUTT1;
++		} else {
++			tsauxc_mask = TSAUXC_EN_TS0;
++			tsim_mask = TSINTR_AUTT0;
++		}
++		spin_lock_irqsave(&igb->tmreg_lock, flags);
++		tsauxc = rd32(E1000_TSAUXC);
++		tsim = rd32(E1000_TSIM);
++		if (on) {
++			igb_pin_extts(igb, rq->extts.index, pin);
++			tsauxc |= tsauxc_mask;
++			tsim |= tsim_mask;
++		} else {
++			tsauxc &= ~tsauxc_mask;
++			tsim &= ~tsim_mask;
++		}
++		wr32(E1000_TSAUXC, tsauxc);
++		wr32(E1000_TSIM, tsim);
++		spin_unlock_irqrestore(&igb->tmreg_lock, flags);
++		return 0;
  
- 	if (tsicr & TSINTR_AUTT1) {
--		nsec = rd32(E1000_AUXSTMPL1);
--		sec  = rd32(E1000_AUXSTMPH1);
--		event.type = PTP_CLOCK_EXTTS;
--		event.index = 1;
--		event.timestamp = sec * 1000000000ULL + nsec;
--		ptp_clock_event(adapter->ptp_clock, &event);
-+		igb_extts(adapter, 1);
- 		ack |= TSINTR_AUTT1;
- 	}
- 
+ 	case PTP_CLK_REQ_PEROUT:
+ 		/* Reject requests with unsupported flags */
 -- 
 2.30.2
 
