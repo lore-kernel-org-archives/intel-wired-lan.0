@@ -1,78 +1,35 @@
-From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Wed, 13 Oct 2021 11:22:39 -0500
-Subject: [Intel-wired-lan] [net-next 1/3] devlink: Add 'enable_iwarp'
- generic device param
-In-Reply-To: <20211013162241.689-1-shiraz.saleem@intel.com>
-References: <20211013162241.689-1-shiraz.saleem@intel.com>
-Message-ID: <20211013162241.689-2-shiraz.saleem@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 13 Oct 2021 16:15:20 -0700
+Subject: [Intel-wired-lan] [PATCH v2 net] ice: Avoid crash from
+ unnecessary IDA free
+In-Reply-To: <20211004121525.6384-1-david.m.ertman@intel.com>
+References: <20211004121525.6384-1-david.m.ertman@intel.com>
+Message-ID: <0215a7cc-0a9e-874d-0962-638b5b2a3489@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add a new device generic parameter to enable and disable
-iWARP functionality on a multi-protocol RDMA device.
+On 10/4/2021 5:15 AM, Dave Ertman wrote:
+> In the remove path, there is an attempt to free the aux_idx IDA whether
+> it was allocated or not.  This can potentially cause a crash when
+> unloading the driver on systems that do not initialize support for RDMA.
+> But, this free cannot be gated by the status bit for RDMA, since it is
+> allocated if the driver detects support for RDMA at probe time, but the
+> driver can enter into a state where RDMA is not supported after the IDA
+> has been allocated at probe time and this would lead to a memory leak.
+> 
+> Initialize aux_idx to an invalid value and check for a valid value when
+> unloading to determine if an IDA free is necessary.
+> 
+> Fixes: d25a0fc41c1f9 ("ice: Initialize RDMA support")
+> Reported-by: Jun Miao <jun.miao@windriver.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 
-Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
----
- Documentation/networking/devlink/devlink-params.rst | 3 +++
- include/net/devlink.h                               | 4 ++++
- net/core/devlink.c                                  | 5 +++++
- 3 files changed, 12 insertions(+)
+Please send upstream!
+With this patch applied I can now rmmod my ice driver without a panic!
 
-diff --git a/Documentation/networking/devlink/devlink-params.rst b/Documentation/networking/devlink/devlink-params.rst
-index 4878907..b7dfe69 100644
---- a/Documentation/networking/devlink/devlink-params.rst
-+++ b/Documentation/networking/devlink/devlink-params.rst
-@@ -109,6 +109,9 @@ own name.
-      - Boolean
-      - When enabled, the device driver will instantiate VDPA networking
-        specific auxiliary device of the devlink device.
-+   * - ``enable_iwarp``
-+     - Boolean
-+     - Enable handling of iWARP traffic in the device.
-    * - ``internal_err_reset``
-      - Boolean
-      - When enabled, the device driver will reset the device on internal
-diff --git a/include/net/devlink.h b/include/net/devlink.h
-index a7852a2..9f39f38 100644
---- a/include/net/devlink.h
-+++ b/include/net/devlink.h
-@@ -524,6 +524,7 @@ enum devlink_param_generic_id {
- 	DEVLINK_PARAM_GENERIC_ID_ENABLE_ETH,
- 	DEVLINK_PARAM_GENERIC_ID_ENABLE_RDMA,
- 	DEVLINK_PARAM_GENERIC_ID_ENABLE_VNET,
-+	DEVLINK_PARAM_GENERIC_ID_ENABLE_IWARP,
- 
- 	/* add new param generic ids above here*/
- 	__DEVLINK_PARAM_GENERIC_ID_MAX,
-@@ -573,6 +574,9 @@ enum devlink_param_generic_id {
- #define DEVLINK_PARAM_GENERIC_ENABLE_VNET_NAME "enable_vnet"
- #define DEVLINK_PARAM_GENERIC_ENABLE_VNET_TYPE DEVLINK_PARAM_TYPE_BOOL
- 
-+#define DEVLINK_PARAM_GENERIC_ENABLE_IWARP_NAME "enable_iwarp"
-+#define DEVLINK_PARAM_GENERIC_ENABLE_IWARP_TYPE DEVLINK_PARAM_TYPE_BOOL
-+
- #define DEVLINK_PARAM_GENERIC(_id, _cmodes, _get, _set, _validate)	\
- {									\
- 	.id = DEVLINK_PARAM_GENERIC_ID_##_id,				\
-diff --git a/net/core/devlink.c b/net/core/devlink.c
-index 4917112..9803fb0 100644
---- a/net/core/devlink.c
-+++ b/net/core/devlink.c
-@@ -4358,6 +4358,11 @@ static int devlink_nl_cmd_flash_update(struct sk_buff *skb,
- 		.name = DEVLINK_PARAM_GENERIC_ENABLE_VNET_NAME,
- 		.type = DEVLINK_PARAM_GENERIC_ENABLE_VNET_TYPE,
- 	},
-+	{
-+		.id = DEVLINK_PARAM_GENERIC_ID_ENABLE_IWARP,
-+		.name = DEVLINK_PARAM_GENERIC_ENABLE_IWARP_NAME,
-+		.type = DEVLINK_PARAM_GENERIC_ENABLE_IWARP_TYPE,
-+	},
- };
- 
- static int devlink_param_generic_verify(const struct devlink_param *param)
--- 
-1.8.3.1
+Tested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+
 
