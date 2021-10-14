@@ -1,60 +1,45 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 14 Oct 2021 11:16:07 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Forbid trusted VFs in
- switchdev mode
-In-Reply-To: <20211014160958.238689-1-wojciech.drewek@intel.com>
-References: <20211014160958.238689-1-wojciech.drewek@intel.com>
-Message-ID: <456e1efa-c48d-df56-5372-91db6e33e6f9@intel.com>
+Date: Thu, 14 Oct 2021 12:52:17 -0700
+Subject: [Intel-wired-lan] i40e pppoe rss
+In-Reply-To: <55127ee0-e85c-9dba-4086-31516a843d27@intel.com>
+References: <20211011222800.GA17234@kvack.org>
+ <55127ee0-e85c-9dba-4086-31516a843d27@intel.com>
+Message-ID: <6bb0f7d2-1d25-0d0a-7141-ebd277082994@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/14/2021 9:09 AM, Wojciech Drewek wrote:
-> During auto-merge, check for switchdev mode has been inserted
-> in wrong place. It should be in ice_set_vf_trust not in ice_set_vf_mac.
+On 10/12/2021 12:28 PM, Jesse Brandeburg wrote:
+> On 10/11/2021 3:28 PM, Benjamin LaHaise wrote:
+>> I have been trying to get RSS working for incoming PPPoE packets with the
+>> Linux i40e driver.? After loading the DDP .pkgo file for PPPoE using
+>> "ethtool -f enp43s0f0 ppp-oe-ol2tpv2.pkgo 100", packets still come in 
+>> on a
+>> single queue.? Changing destination IP addresses or port numbers in UDP
+>> packets does not result in any change in the ingress queue.? Are the
+>> ethtool commands required to enable RSS with PPPoE documented anywhere?
+>> The only documentation seems to rely on test-pmd with DPDK, but I am 
+>> using
+>> the native Linux drivers and XDP.
 > 
-> Trusted VFs are forbidden in switchdev mode because they should
-> be configured only from the host side.
+> Hi Ben, this was a known issue on an older package version, and since 
+> you asked, we realized that the version on intel.com hasn't been updated 
+> in a long time, and so doesn't have the fix.
 > 
-
-should have had
-Fixes: 1c54c839935b ("ice: enable/disable switchdev when managing VFs")
-
-
-> Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 10 +++++-----
->   1 file changed, 5 insertions(+), 5 deletions(-)
+> We are working to correct the internal issues that lead to this stale 
+> package being left there and not updated, and are grateful you pointed 
+> us to the issue!
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 3e7fdd7f2e1d..edbc417f8c7d 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -4815,11 +4815,6 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
->   	struct ice_vf *vf;
->   	int ret;
->   
-> -	if (ice_is_eswitch_mode_switchdev(pf)) {
-> -		dev_info(ice_pf_to_dev(pf), "Trusted VF is forbidden in switchdev mode\n");
-> -		return -EOPNOTSUPP;
-> -	}
-> -
->   	if (ice_validate_vf_id(pf, vf_id))
->   		return -EINVAL;
->   
-> @@ -4882,6 +4877,11 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
->   	struct ice_vf *vf;
->   	int ret;
->   
-> +	if (ice_is_eswitch_mode_switchdev(pf)) {
-> +		dev_info(ice_pf_to_dev(pf), "Trusted VF is forbidden in switchdev mode\n");
-> +		return -EOPNOTSUPP;
-> +	}
-> +
->   	if (ice_validate_vf_id(pf, vf_id))
->   		return -EINVAL;
->   
+> Please keep an eye out for the intel.com download page to be updated 
+> with the latest PPPoE package. Once you have that, RSS should start 
+> working correctly after loading the newer package.
 > 
+> Thanks for your patience, I don't have a direct ETA on this, but I did 
+> start the ball rolling internally.
 
+The latest package has been uploaded, feedback is appreciated.
+https://downloadcenter.intel.com/download/28040
+
+Jesse
