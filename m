@@ -1,36 +1,47 @@
-From: Benjamin LaHaise <bcrl@kvack.org>
-Date: Thu, 14 Oct 2021 16:25:12 -0400
-Subject: [Intel-wired-lan] i40e pppoe rss
-In-Reply-To: <6bb0f7d2-1d25-0d0a-7141-ebd277082994@intel.com>
-References: <20211011222800.GA17234@kvack.org>
- <55127ee0-e85c-9dba-4086-31516a843d27@intel.com>
- <6bb0f7d2-1d25-0d0a-7141-ebd277082994@intel.com>
-Message-ID: <20211014202512.GD30927@kvack.org>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 14 Oct 2021 22:17:08 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v2 1/4] ice: devlink: add
+ shadow-ram region to snapshot Shadow RAM
+In-Reply-To: <20211012004113.1583133-2-jacob.e.keller@intel.com>
+References: <20211012004113.1583133-1-jacob.e.keller@intel.com>
+ <20211012004113.1583133-2-jacob.e.keller@intel.com>
+Message-ID: <BYAPR11MB3367BCF77AD52F22403E5D47FCB89@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jesse,
 
-On Thu, Oct 14, 2021 at 12:52:17PM -0700, Jesse Brandeburg wrote:
-> On 10/12/2021 12:28 PM, Jesse Brandeburg wrote:
-> >Please keep an eye out for the intel.com download page to be updated 
-> >with the latest PPPoE package. Once you have that, RSS should start 
-> >working correctly after loading the newer package.
-> >
-> >Thanks for your patience, I don't have a direct ETA on this, but I did 
-> >start the ball rolling internally.
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jacob Keller
+> Sent: Tuesday, October 12, 2021 6:11 AM
+> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Intel Wired LAN <intel-
+> wired-lan at lists.osuosl.org>
+> Subject: [Intel-wired-lan] [net-next PATCH v2 1/4] ice: devlink: add shadow-ram
+> region to snapshot Shadow RAM
 > 
-> The latest package has been uploaded, feedback is appreciated.
-> https://downloadcenter.intel.com/download/28040
+> We have a region for reading the contents of the NVM flash as a snapshot. This
+> region does not allow reading the Shadow RAM, as it always passes the
+> FLASH_ONLY bit to the low level firmware interface.
+> 
+> Add a separate shadow-ram region which will allow snapshot of the current
+> contents of the Shadow RAM. This data is built from the NVM contents but is
+> distinct as the device builds up the Shadow RAM during initialization, so being
+> able to snapshot its contents can be useful when attempting to debug flash
+> related issues.
+> 
+> Fix the comment description of the nvm-flash region which incorrectly stated
+> that it filled the shadow-ram region, and add a comment explaining that the
+> nvm-flash region does not actually read the Shadow RAM.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h         |  1 +
+>  drivers/net/ethernet/intel/ice/ice_devlink.c | 93 ++++++++++++++++++--
+>  2 files changed, 89 insertions(+), 5 deletions(-)
+> 
 
-It looks like this works for UDP, which is good.  All ICMP packets
-seem to end up on the same rx queue regardless of source or destination ip
-address which is not ideal.  I'll run a few more tests, but this is
-definitely better than it was.  Thanks!
-
-		-ben
--- 
-"Thought is the essence of where you are now."
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
