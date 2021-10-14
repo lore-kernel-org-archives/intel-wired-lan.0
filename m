@@ -1,35 +1,50 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 13 Oct 2021 16:15:20 -0700
-Subject: [Intel-wired-lan] [PATCH v2 net] ice: Avoid crash from
- unnecessary IDA free
-In-Reply-To: <20211004121525.6384-1-david.m.ertman@intel.com>
-References: <20211004121525.6384-1-david.m.ertman@intel.com>
-Message-ID: <0215a7cc-0a9e-874d-0962-638b5b2a3489@intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Wed, 13 Oct 2021 22:05:16 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] net: intel: igc_ptp: fix build
+ for UML
+Message-ID: <20211014050516.6846-1-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/4/2021 5:15 AM, Dave Ertman wrote:
-> In the remove path, there is an attempt to free the aux_idx IDA whether
-> it was allocated or not.  This can potentially cause a crash when
-> unloading the driver on systems that do not initialize support for RDMA.
-> But, this free cannot be gated by the status bit for RDMA, since it is
-> allocated if the driver detects support for RDMA at probe time, but the
-> driver can enter into a state where RDMA is not supported after the IDA
-> has been allocated at probe time and this would lead to a memory leak.
-> 
-> Initialize aux_idx to an invalid value and check for a valid value when
-> unloading to determine if an IDA free is necessary.
-> 
-> Fixes: d25a0fc41c1f9 ("ice: Initialize RDMA support")
-> Reported-by: Jun Miao <jun.miao@windriver.com>
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+On a UML build, the igc_ptp driver uses CONFIG_X86_TSC for timestamp
+conversion. The function that is used is not available on UML builds,
+so have the function use the default system_counterval_t timestamp
+instead for UML builds.
 
-Please send upstream!
-With this patch applied I can now rmmod my ice driver without a panic!
+Prevents this build error on UML:
 
-Tested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+../drivers/net/ethernet/intel/igc/igc_ptp.c: In function ?igc_device_tstamp_to_system?:
+../drivers/net/ethernet/intel/igc/igc_ptp.c:777:9: error: implicit declaration of function ?convert_art_ns_to_tsc? [-Werror=implicit-function-declaration]
+  return convert_art_ns_to_tsc(tstamp);
+../drivers/net/ethernet/intel/igc/igc_ptp.c:777:9: error: incompatible types when returning type ?int? but ?struct system_counterval_t? was expected
+  return convert_art_ns_to_tsc(tstamp);
 
+Fixes: 68f5d3f3b654 ("um: add PCI over virtio emulation driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: linux-um at lists.infradead.org
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Anton Ivanov <anton.ivanov@cambridgegreys.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+---
+ drivers/net/ethernet/intel/igc/igc_ptp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+--- linux-next-20211013.orig/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ linux-next-20211013/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -773,7 +773,7 @@ static bool igc_is_crosststamp_supported
+ 
+ static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
+ {
+-#if IS_ENABLED(CONFIG_X86_TSC)
++#if IS_ENABLED(CONFIG_X86_TSC) && !defined(CONFIG_UML)
+ 	return convert_art_ns_to_tsc(tstamp);
+ #else
+ 	return (struct system_counterval_t) { };
