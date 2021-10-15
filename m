@@ -1,47 +1,38 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 14 Oct 2021 22:17:08 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v2 1/4] ice: devlink: add
- shadow-ram region to snapshot Shadow RAM
-In-Reply-To: <20211012004113.1583133-2-jacob.e.keller@intel.com>
-References: <20211012004113.1583133-1-jacob.e.keller@intel.com>
- <20211012004113.1583133-2-jacob.e.keller@intel.com>
-Message-ID: <BYAPR11MB3367BCF77AD52F22403E5D47FCB89@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
+Date: Fri, 15 Oct 2021 02:30:08 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] net: intel: igc_ptp: fix
+ build for UML
+In-Reply-To: <20211014050516.6846-1-rdunlap@infradead.org>
+References: <20211014050516.6846-1-rdunlap@infradead.org>
+Message-ID: <163426500834.31820.14758482906938638216.git-patchwork-notify@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hello:
+
+This patch was applied to netdev/net-next.git (master)
+by Jakub Kicinski <kuba@kernel.org>:
+
+On Wed, 13 Oct 2021 22:05:16 -0700 you wrote:
+> On a UML build, the igc_ptp driver uses CONFIG_X86_TSC for timestamp
+> conversion. The function that is used is not available on UML builds,
+> so have the function use the default system_counterval_t timestamp
+> instead for UML builds.
+> 
+> Prevents this build error on UML:
+> 
+> [...]
+
+Here is the summary with links:
+  - [net-next] net: intel: igc_ptp: fix build for UML
+    https://git.kernel.org/netdev/net-next/c/523994ba3ad1
+
+You are awesome, thank you!
+--
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jacob Keller
-> Sent: Tuesday, October 12, 2021 6:11 AM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Intel Wired LAN <intel-
-> wired-lan at lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH v2 1/4] ice: devlink: add shadow-ram
-> region to snapshot Shadow RAM
-> 
-> We have a region for reading the contents of the NVM flash as a snapshot. This
-> region does not allow reading the Shadow RAM, as it always passes the
-> FLASH_ONLY bit to the low level firmware interface.
-> 
-> Add a separate shadow-ram region which will allow snapshot of the current
-> contents of the Shadow RAM. This data is built from the NVM contents but is
-> distinct as the device builds up the Shadow RAM during initialization, so being
-> able to snapshot its contents can be useful when attempting to debug flash
-> related issues.
-> 
-> Fix the comment description of the nvm-flash region which incorrectly stated
-> that it filled the shadow-ram region, and add a comment explaining that the
-> nvm-flash region does not actually read the Shadow RAM.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h         |  1 +
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 93 ++++++++++++++++++--
->  2 files changed, 89 insertions(+), 5 deletions(-)
-> 
-
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
