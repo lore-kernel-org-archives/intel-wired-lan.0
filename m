@@ -1,38 +1,54 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Fri, 15 Oct 2021 02:30:08 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] net: intel: igc_ptp: fix
- build for UML
-In-Reply-To: <20211014050516.6846-1-rdunlap@infradead.org>
-References: <20211014050516.6846-1-rdunlap@infradead.org>
-Message-ID: <163426500834.31820.14758482906938638216.git-patchwork-notify@kernel.org>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Fri, 15 Oct 2021 10:27:19 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Forbid trusted VFs in
+ switchdev mode
+Message-ID: <20211015082719.7952-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+During auto-merge, check for switchdev mode has been inserted
+in wrong place. It should be in ice_set_vf_trust not in ice_set_vf_mac.
 
-This patch was applied to netdev/net-next.git (master)
-by Jakub Kicinski <kuba@kernel.org>:
+Trusted VFs are forbidden in switchdev mode because they should
+be configured only from the host side.
 
-On Wed, 13 Oct 2021 22:05:16 -0700 you wrote:
-> On a UML build, the igc_ptp driver uses CONFIG_X86_TSC for timestamp
-> conversion. The function that is used is not available on UML builds,
-> so have the function use the default system_counterval_t timestamp
-> instead for UML builds.
-> 
-> Prevents this build error on UML:
-> 
-> [...]
+Fixes: 1c54c839935b ("ice: enable/disable switchdev when managing VFs")
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Here is the summary with links:
-  - [net-next] net: intel: igc_ptp: fix build for UML
-    https://git.kernel.org/netdev/net-next/c/523994ba3ad1
-
-You are awesome, thank you!
---
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 3e7fdd7f2e1d..edbc417f8c7d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -4815,11 +4815,6 @@ int ice_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	struct ice_vf *vf;
+ 	int ret;
+ 
+-	if (ice_is_eswitch_mode_switchdev(pf)) {
+-		dev_info(ice_pf_to_dev(pf), "Trusted VF is forbidden in switchdev mode\n");
+-		return -EOPNOTSUPP;
+-	}
+-
+ 	if (ice_validate_vf_id(pf, vf_id))
+ 		return -EINVAL;
+ 
+@@ -4882,6 +4877,11 @@ int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted)
+ 	struct ice_vf *vf;
+ 	int ret;
+ 
++	if (ice_is_eswitch_mode_switchdev(pf)) {
++		dev_info(ice_pf_to_dev(pf), "Trusted VF is forbidden in switchdev mode\n");
++		return -EOPNOTSUPP;
++	}
++
+ 	if (ice_validate_vf_id(pf, vf_id))
+ 		return -EINVAL;
+ 
+-- 
+2.31.1
 
