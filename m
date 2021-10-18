@@ -1,44 +1,62 @@
-From: Marcin Szycik <marcin.szycik@intel.com>
-Date: Mon, 18 Oct 2021 13:30:32 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Add support for changing
- MTU on PR in switchdev mode
-Message-ID: <20211018113032.76288-1-marcin.szycik@intel.com>
+From: yanjun.zhu@linux.dev <yanjun.zhu@linux.dev>
+Date: Mon, 18 Oct 2021 09:17:13 -0400
+Subject: [Intel-wired-lan] [PATCH 1/1] ice: compact the file ice_nvm.c
+Message-ID: <20211018131713.3478-1-yanjun.zhu@linux.dev>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change adds support for changing MTU on port representor in
-switchdev mode, by setting the min/max MTU values on port representor
-netdev. Before it was possible to change the MTU only in a limited,
-default range (68-1500).
+From: Zhu Yanjun <yanjun.zhu@linux.dev>
 
-Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
+The function ice_aq_nvm_update_empr is not used, so remove it.
+
+Signed-off-by: Zhu Yanjun <yanjun.zhu@linux.dev>
 ---
- drivers/net/ethernet/intel/ice/ice_repr.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 16 ----------------
+ drivers/net/ethernet/intel/ice/ice_nvm.h |  1 -
+ 2 files changed, 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index c49eeea7cb67..af8e6ef5f571 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -267,6 +267,9 @@ static int ice_repr_add(struct ice_vf *vf)
- 	if (err)
- 		goto err_devlink;
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index fee37a5844cf..bad374bd7ab3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -1106,22 +1106,6 @@ enum ice_status ice_nvm_write_activate(struct ice_hw *hw, u8 cmd_flags)
+ 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+ }
  
-+	repr->netdev->min_mtu = ETH_MIN_MTU;
-+	repr->netdev->max_mtu = ICE_MAX_MTU;
-+
- 	err = ice_repr_reg_netdev(repr->netdev);
- 	if (err)
- 		goto err_netdev;
+-/**
+- * ice_aq_nvm_update_empr
+- * @hw: pointer to the HW struct
+- *
+- * Update empr (0x0709). This command allows SW to
+- * request an EMPR to activate new FW.
+- */
+-enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw)
+-{
+-	struct ice_aq_desc desc;
+-
+-	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_update_empr);
+-
+-	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+-}
+-
+ /* ice_nvm_set_pkg_data
+  * @hw: pointer to the HW struct
+  * @del_pkg_data_flag: If is set then the current pkg_data store by FW
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
+index c6f05f43d593..925225905491 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.h
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+@@ -39,7 +39,6 @@ enum ice_status
+ ice_aq_erase_nvm(struct ice_hw *hw, u16 module_typeid, struct ice_sq_cd *cd);
+ enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
+ enum ice_status ice_nvm_write_activate(struct ice_hw *hw, u8 cmd_flags);
+-enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw);
+ enum ice_status
+ ice_nvm_set_pkg_data(struct ice_hw *hw, bool del_pkg_data_flag, u8 *data,
+ 		     u16 length, struct ice_sq_cd *cd);
 -- 
-2.31.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+2.27.0
 
