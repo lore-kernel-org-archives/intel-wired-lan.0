@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 18 Oct 2021 18:53:19 +0000
+Date: Mon, 18 Oct 2021 19:05:43 +0000
 Subject: [Intel-wired-lan] [PATCH net-next v6 3/3] iavf: Fix init and
  watchdog state machines
 In-Reply-To: <20210819084758.2657-1-mateusz.palczewski@intel.com>
 References: <20210819084758.2657-1-mateusz.palczewski@intel.com>
-Message-ID: <DM8PR11MB562101E6850CE8F989011EF2ABBC9@DM8PR11MB5621.namprd11.prod.outlook.com>
+Message-ID: <DM8PR11MB56210BCAB0C7EF71C287B511ABBC9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -309,3 +309,4 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 2.17.1
 > 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+
