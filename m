@@ -1,38 +1,39 @@
 From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Mon, 18 Oct 2021 18:16:03 -0500
-Subject: [Intel-wired-lan] [net-next 3/3] RDMA/irdma: Set protocol based on
- PF rdma_mode flag
-In-Reply-To: <20211018231603.1690-1-shiraz.saleem@intel.com>
-References: <20211018231603.1690-1-shiraz.saleem@intel.com>
-Message-ID: <20211018231603.1690-4-shiraz.saleem@intel.com>
+Date: Mon, 18 Oct 2021 18:16:00 -0500
+Subject: [Intel-wired-lan] [net-next 0/3] Configure iWARP or RoCEv2 protocol
+ support for E800 devices
+Message-ID: <20211018231603.1690-1-shiraz.saleem@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Set the RDMA protocol to use at driver bind time based on the ice PF's
-rdma_mode flag.
+Currently E800 devices come up as RoCEv2 devices by default.
 
-Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
----
- drivers/infiniband/hw/irdma/main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This series add supports for users to configure iWARP or RoCEv2 functionality
+per PCI function. devlink parameters is used to realize this and is keyed
+off similar work in [1].
 
-diff --git a/drivers/infiniband/hw/irdma/main.c b/drivers/infiniband/hw/irdma/main.c
-index 51a4135..3fda7b7 100644
---- a/drivers/infiniband/hw/irdma/main.c
-+++ b/drivers/infiniband/hw/irdma/main.c
-@@ -228,7 +228,8 @@ static void irdma_fill_device_info(struct irdma_device *iwdev, struct ice_pf *pf
- 	rf->msix_count =  pf->num_rdma_msix;
- 	rf->msix_entries = &pf->msix_entries[pf->rdma_base_vector];
- 	rf->default_vsi.vsi_idx = vsi->vsi_num;
--	rf->protocol_used = IRDMA_ROCE_PROTOCOL_ONLY;
-+	rf->protocol_used = pf->rdma_mode & IIDC_RDMA_PROTOCOL_ROCEV2 ?
-+			    IRDMA_ROCE_PROTOCOL_ONLY : IRDMA_IWARP_PROTOCOL_ONLY;
- 	rf->rdma_ver = IRDMA_GEN_2;
- 	rf->rsrc_profile = IRDMA_HMC_PROFILE_DEFAULT;
- 	rf->rst_to = IRDMA_RST_TIMEOUT_HZ;
+[1] https://lore.kernel.org/linux-rdma/20210810132424.9129-1-parav at nvidia.com/
+
+Shiraz Saleem (3):
+  devlink: Add 'enable_iwarp' generic device param
+  net/ice: Add support for enable_iwarp and enable_roce devlink param
+  RDMA/irdma: Set protocol based on PF rdma_mode flag
+
+ .../networking/devlink/devlink-params.rst          |   3 +
+ drivers/infiniband/hw/irdma/main.c                 |   3 +-
+ drivers/net/ethernet/intel/ice/ice.h               |   1 +
+ drivers/net/ethernet/intel/ice/ice_devlink.c       | 144 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_devlink.h       |   6 +
+ drivers/net/ethernet/intel/ice/ice_idc.c           |   4 +-
+ drivers/net/ethernet/intel/ice/ice_main.c          |   9 +-
+ include/linux/net/intel/iidc.h                     |   7 +-
+ include/net/devlink.h                              |   4 +
+ net/core/devlink.c                                 |   5 +
+ 10 files changed, 180 insertions(+), 6 deletions(-)
+
 -- 
 1.8.3.1
 
