@@ -1,83 +1,54 @@
-From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
-Date: Mon, 18 Oct 2021 16:06:49 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] ice: Add tc-flower
- filter support for channel
-In-Reply-To: <20211011192518.1867431-4-sudheer.mogilappagari@intel.com>
-References: <20211011192518.1867431-1-sudheer.mogilappagari@intel.com>
- <20211011192518.1867431-4-sudheer.mogilappagari@intel.com>
-Message-ID: <MN2PR11MB3614AB15A5ADC354C6BF89FA8EBC9@MN2PR11MB3614.namprd11.prod.outlook.com>
+From: jesse.brandeburg@intel.com <jesse.brandeburg@intel.com>
+Date: Mon, 18 Oct 2021 09:10:57 -0700
+Subject: [Intel-wired-lan] [PATCH linux-next] e1000: Remove redundant
+ statement
+In-Reply-To: <20211018085305.853996-1-luo.penghao@zte.com.cn>
+References: <20211018085305.853996-1-luo.penghao@zte.com.cn>
+Message-ID: <fdd05a99-7cae-c6c2-f44a-d48202fb0543@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> sudheer.mogilappagari at intel.com
-> Sent: Tuesday, October 12, 2021 12:55 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next 3/3] ice: Add tc-flower filter
-> support for channel
+On 10/18/21 1:53 AM, luo penghao <cgel.zte@gmail.com> wrote:
+> This statement is redundant in the context, because there will be
+> an identical statement next. otherwise, the variable initialization
+> is actually unnecessary.
 > 
-> From: Kiran Patil <kiran.patil@intel.com>
+> The clang_analyzer complains as follows:
 > 
-> Add support to add/delete channel specific filter using tc-flower.
-> For now, only supported action is "skip_sw hw_tc <tc_num>"
+> drivers/net/ethernet/intel/e1000/e1000_ethtool.c:1218:2 warning:
 > 
-> Filter criteria is specific to channel and it can be combination of L3, L3+L4,
-> L2+L4.
+> Value stored to 'ctrl_reg' is never read.
 > 
-> Example:
-> MATCH criteria       Action
-> ---------------------------
-> src and/or dest IPv4[6]/mask -> Forward to "hw_tc <tc_num>"
-> dest IPv4[6]/mask + dest L4 port -> Forward to "hw_tc <tc_num>"
-> dest MAC + dest L4 port -> Forward to "hw_tc <tc_num>"
-> src IPv4[6]/mask + src L4 port -> Forward to "hw_tc <tc_num>"
-> src MAC + src L4 port -> Forward to "hw_tc <tc_num>"
-> 
-> Adding tc-flower filter for channel using "hw_tc"
-> -------------------------------------------------
-> tc qdisc add dev <ethX> clsact
-> 
-> Above two steps are only needed the first time when adding tc-flower filter.
-> 
-> tc filter add dev <ethX> protocol ip ingress prio 1 flower \
->      dst_ip 192.168.0.1/32 ip_proto tcp dst_port 5001 \
->      skip_sw hw_tc 1
-> 
-> tc filter show dev <ethX> ingress
-> filter protocol ip pref 1 flower chain 0 filter protocol ip pref 1 flower chain 0
-> handle 0x1 hw_tc 1
->   eth_type ipv4
->   ip_proto tcp
->   dst_ip 192.168.0.1
->   dst_port 5001
->   skip_sw
->   in_hw in_hw_count 1
-> 
-> Delete specific filter:
-> -------------------------
-> tc filter del  dev <ethx> ingress pref 1 handle 0x1 flower
-> 
-> Delete All filters:
-> ------------------
-> tc filter del dev <ethX> ingress
-> 
-> Co-developed-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: luo penghao <luo.penghao@zte.com.cn>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h        |   9 +-
->  drivers/net/ethernet/intel/ice/ice_main.c   |  77 ++++++-
->  drivers/net/ethernet/intel/ice/ice_switch.c | 119 +++++++++++
->  drivers/net/ethernet/intel/ice/ice_switch.h |   2 +
->  drivers/net/ethernet/intel/ice/ice_tc_lib.c | 217 +++++++++++++++++++-
-> drivers/net/ethernet/intel/ice/ice_tc_lib.h |  22 ++
->  6 files changed, 438 insertions(+), 8 deletions(-)
+>   drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 2 --
+>   1 file changed, 2 deletions(-)
 > 
-Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> index 0a57172..8951f2a 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+> @@ -1215,8 +1215,6 @@ static int e1000_integrated_phy_loopback(struct e1000_adapter *adapter)
+>   		e1000_write_phy_reg(hw, PHY_CTRL, 0x8140);
+>   	}
+>   
+> -	ctrl_reg = er32(CTRL);
+
+Thanks for your patch, but this change is not safe. you're removing a read that could do two things. The first is that the read "flushes" the write just above to PCI (it's a PCI barrier), and the second is that the read can have some side effects.
+
+If this change must be done, the code should be to remove the assignment to ctrl_reg, but leave the read, so the line would just look like:
+        er32(CTRL);
+
+This will get rid of the warning and not change the flow from the hardware perspective.
+
+> -
+>   	/* force 1000, set loopback */
+>   	e1000_write_phy_reg(hw, PHY_CTRL, 0x4140);
+>   
+> 
+> 
+
