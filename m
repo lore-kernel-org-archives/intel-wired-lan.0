@@ -1,153 +1,717 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 19 Oct 2021 18:39:15 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- 898ef1cb1cb24040c3e89263e02c605af70c776a
-Message-ID: <616ea053.tomQzqSxW3Qq6Jxh%lkp@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 19 Oct 2021 11:28:31 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for VF
+ rate limiting
+In-Reply-To: <20210913182219.70446-1-anthony.l.nguyen@intel.com>
+References: <20210913182219.70446-1-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB56212C4C4651323DEB010FBCABBD9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: 898ef1cb1cb24040c3e89263e02c605af70c776a  iavf: Combine init and watchdog state machines
 
-elapsed time: 721m
 
-configs tested: 122
-configs skipped: 3
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: poniedzia?ek, 13 wrze?nia 2021 20:22
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for VF rate
+> limiting
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Implement ndo_set_vf_rate to support setting of min_tx_rate and
+> max_tx_rate; set the appropriate bandwidth in the scheduler for the node
+> representing the specified VF VSI.
+> 
+> Co-developed-by: Tarun Singh <tarun.k.singh@intel.com>
+> Signed-off-by: Tarun Singh <tarun.k.singh@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+> v2:
+>  - Make ice_sched_set_node_bw_lmt_per_tc() static
+>  - Move ice_cfg_vsi_bw_lmt_per_tc() and ice_cfg_dflt_vsi_bw_lmt_per_tc()
+>    to avoid forward declaration of ice_sched_set_node_bw_lmt_per_tc()
+> 
+>  drivers/net/ethernet/intel/ice/ice_lib.c      | 174 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   4 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_sched.c    | 130 +++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_sched.h    |   6 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 160 +++++++++++++++-
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  15 +-
+>  7 files changed, 486 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c
+> b/drivers/net/ethernet/intel/ice/ice_lib.c
+> index c6d849222dfa..fa8f42e80851 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -3590,6 +3590,180 @@ int ice_clear_dflt_vsi(struct ice_sw *sw)
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_get_link_speed_mbps - get link speed in Mbps
+> + * @vsi: the VSI whose link speed is being queried
+> + *
+> + * Return current VSI link speed and 0 if the speed is unknown.
+> + */
+> +int ice_get_link_speed_mbps(struct ice_vsi *vsi) {
+> +	switch (vsi->port_info->phy.link_info.link_speed) {
+> +	case ICE_AQ_LINK_SPEED_100GB:
+> +		return SPEED_100000;
+> +	case ICE_AQ_LINK_SPEED_50GB:
+> +		return SPEED_50000;
+> +	case ICE_AQ_LINK_SPEED_40GB:
+> +		return SPEED_40000;
+> +	case ICE_AQ_LINK_SPEED_25GB:
+> +		return SPEED_25000;
+> +	case ICE_AQ_LINK_SPEED_20GB:
+> +		return SPEED_20000;
+> +	case ICE_AQ_LINK_SPEED_10GB:
+> +		return SPEED_10000;
+> +	case ICE_AQ_LINK_SPEED_5GB:
+> +		return SPEED_5000;
+> +	case ICE_AQ_LINK_SPEED_2500MB:
+> +		return SPEED_2500;
+> +	case ICE_AQ_LINK_SPEED_1000MB:
+> +		return SPEED_1000;
+> +	case ICE_AQ_LINK_SPEED_100MB:
+> +		return SPEED_100;
+> +	case ICE_AQ_LINK_SPEED_10MB:
+> +		return SPEED_10;
+> +	case ICE_AQ_LINK_SPEED_UNKNOWN:
+> +	default:
+> +		return 0;
+> +	}
+> +}
+> +
+> +/**
+> + * ice_get_link_speed_kbps - get link speed in Kbps
+> + * @vsi: the VSI whose link speed is being queried
+> + *
+> + * Return current VSI link speed and 0 if the speed is unknown.
+> + */
+> +static int ice_get_link_speed_kbps(struct ice_vsi *vsi) {
+> +	int speed_mbps;
+> +
+> +	speed_mbps = ice_get_link_speed_mbps(vsi);
+> +
+> +	return speed_mbps * 1000;
+> +}
+> +
+> +/**
+> + * ice_set_min_bw_limit - setup minimum BW limit for Tx based on
+> +min_tx_rate
+> + * @vsi: VSI to be configured
+> + * @min_tx_rate: min Tx rate in Kbps to be configured as BW limit
+> + *
+> + * If the min_tx_rate is specified as 0 that means to clear the minimum
+> +BW limit
+> + * profile, otherwise a non-zero value will force a minimum BW limit
+> +for the VSI
+> + * on TC 0.
+> + */
+> +int ice_set_min_bw_limit(struct ice_vsi *vsi, u64 min_tx_rate) {
+> +	struct ice_pf *pf = vsi->back;
+> +	enum ice_status status;
+> +	struct device *dev;
+> +	int speed;
+> +
+> +	dev = ice_pf_to_dev(pf);
+> +	if (!vsi->port_info) {
+> +		dev_dbg(dev, "VSI %d, type %u specified doesn't have valid
+> port_info\n",
+> +			vsi->idx, vsi->type);
+> +		return -EINVAL;
+> +	}
+> +
+> +	speed = ice_get_link_speed_kbps(vsi);
+> +	if (min_tx_rate > (u64)speed) {
+> +		dev_err(dev, "invalid min Tx rate %llu Kbps specified for %s
+> %d is greater than current link speed %u Kbps\n",
+> +			min_tx_rate, ice_vsi_type_str(vsi->type), vsi->idx,
+> +			speed);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Configure min BW for VSI limit */
+> +	if (min_tx_rate) {
+> +		status = ice_cfg_vsi_bw_lmt_per_tc(vsi->port_info, vsi->idx,
+> 0,
+> +						   ICE_MIN_BW,
+> min_tx_rate);
+> +		if (status) {
+> +			dev_err(dev, "failed to set min Tx rate(%llu Kbps) for
+> %s %d\n",
+> +				min_tx_rate, ice_vsi_type_str(vsi->type),
+> +				vsi->idx);
+> +			return -EIO;
+> +		}
+> +
+> +		dev_dbg(dev, "set min Tx rate(%llu Kbps) for %s\n",
+> +			min_tx_rate, ice_vsi_type_str(vsi->type));
+> +	} else {
+> +		status = ice_cfg_vsi_bw_dflt_lmt_per_tc(vsi->port_info,
+> +							vsi->idx, 0,
+> +							ICE_MIN_BW);
+> +		if (status) {
+> +			dev_err(dev, "failed to clear min Tx rate
+> configuration for %s %d\n",
+> +				ice_vsi_type_str(vsi->type), vsi->idx);
+> +			return -EIO;
+> +		}
+> +
+> +		dev_dbg(dev, "cleared min Tx rate configuration for %s
+> %d\n",
+> +			ice_vsi_type_str(vsi->type), vsi->idx);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * ice_set_max_bw_limit - setup maximum BW limit for Tx based on
+> +max_tx_rate
+> + * @vsi: VSI to be configured
+> + * @max_tx_rate: max Tx rate in Kbps to be configured as BW limit
+> + *
+> + * If the max_tx_rate is specified as 0 that means to clear the maximum
+> +BW limit
+> + * profile, otherwise a non-zero value will force a maximum BW limit
+> +for the VSI
+> + * on TC 0.
+> + */
+> +int ice_set_max_bw_limit(struct ice_vsi *vsi, u64 max_tx_rate) {
+> +	struct ice_pf *pf = vsi->back;
+> +	enum ice_status status;
+> +	struct device *dev;
+> +	int speed;
+> +
+> +	dev = ice_pf_to_dev(pf);
+> +	if (!vsi->port_info) {
+> +		dev_dbg(dev, "VSI %d, type %u specified doesn't have valid
+> port_info\n",
+> +			vsi->idx, vsi->type);
+> +		return -EINVAL;
+> +	}
+> +
+> +	speed = ice_get_link_speed_kbps(vsi);
+> +	if (max_tx_rate > (u64)speed) {
+> +		dev_err(dev, "invalid max Tx rate %llu Kbps specified for %s
+> %d is greater than current link speed %u Kbps\n",
+> +			max_tx_rate, ice_vsi_type_str(vsi->type), vsi->idx,
+> +			speed);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Configure max BW for VSI limit */
+> +	if (max_tx_rate) {
+> +		status = ice_cfg_vsi_bw_lmt_per_tc(vsi->port_info, vsi->idx,
+> 0,
+> +						   ICE_MAX_BW,
+> max_tx_rate);
+> +		if (status) {
+> +			dev_err(dev, "failed setting max Tx rate(%llu Kbps)
+> for %s %d\n",
+> +				max_tx_rate, ice_vsi_type_str(vsi->type),
+> +				vsi->idx);
+> +			return -EIO;
+> +		}
+> +
+> +		dev_dbg(dev, "set max Tx rate(%llu Kbps) for %s %d\n",
+> +			max_tx_rate, ice_vsi_type_str(vsi->type), vsi->idx);
+> +	} else {
+> +		status = ice_cfg_vsi_bw_dflt_lmt_per_tc(vsi->port_info,
+> +							vsi->idx, 0,
+> +							ICE_MAX_BW);
+> +		if (status) {
+> +			dev_err(dev, "failed clearing max Tx rate
+> configuration for %s %d\n",
+> +				ice_vsi_type_str(vsi->type), vsi->idx);
+> +			return -EIO;
+> +		}
+> +
+> +		dev_dbg(dev, "cleared max Tx rate configuration for %s
+> %d\n",
+> +			ice_vsi_type_str(vsi->type), vsi->idx);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * ice_set_link - turn on/off physical link
+>   * @vsi: VSI to modify physical link on diff --git
+> a/drivers/net/ethernet/intel/ice/ice_lib.h
+> b/drivers/net/ethernet/intel/ice/ice_lib.h
+> index b443ea46274f..0cef9b665d8c 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+> @@ -116,7 +116,9 @@ bool ice_is_vsi_dflt_vsi(struct ice_sw *sw, struct
+> ice_vsi *vsi);  int ice_set_dflt_vsi(struct ice_sw *sw, struct ice_vsi *vsi);
+> 
+>  int ice_clear_dflt_vsi(struct ice_sw *sw);
+> -
+> +int ice_set_min_bw_limit(struct ice_vsi *vsi, u64 min_tx_rate); int
+> +ice_set_max_bw_limit(struct ice_vsi *vsi, u64 max_tx_rate); int
+> +ice_get_link_speed_mbps(struct ice_vsi *vsi);
+>  int ice_vsi_update_security(struct ice_vsi *vsi,
+>  			    void (*fill)(struct ice_vsi_ctx *));
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> b/drivers/net/ethernet/intel/ice/ice_main.c
+> index e8e114db8304..1d1a0a359c7b 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -7411,6 +7411,7 @@ static const struct net_device_ops ice_netdev_ops
+> = {
+>  	.ndo_set_vf_vlan = ice_set_vf_port_vlan,
+>  	.ndo_set_vf_link_state = ice_set_vf_link_state,
+>  	.ndo_get_vf_stats = ice_get_vf_stats,
+> +	.ndo_set_vf_rate = ice_set_vf_bw,
+>  	.ndo_vlan_rx_add_vid = ice_vlan_rx_add_vid,
+>  	.ndo_vlan_rx_kill_vid = ice_vlan_rx_kill_vid,
+>  	.ndo_setup_tc = ice_setup_tc,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c
+> b/drivers/net/ethernet/intel/ice/ice_sched.c
+> index 2d9b10277186..a3b957621a03 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sched.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+> @@ -3783,6 +3783,136 @@ ice_cfg_q_bw_dflt_lmt(struct ice_port_info *pi,
+> u16 vsi_handle, u8 tc,
+>  				      ICE_SCHED_DFLT_BW);
+>  }
+> 
+> +/**
+> + * ice_sched_get_node_by_id_type - get node from ID type
+> + * @pi: port information structure
+> + * @id: identifier
+> + * @agg_type: type of aggregator
+> + * @tc: traffic class
+> + *
+> + * This function returns node identified by ID of type aggregator, and
+> + * based on traffic class (TC). This function needs to be called with
+> + * the scheduler lock held.
+> + */
+> +static struct ice_sched_node *
+> +ice_sched_get_node_by_id_type(struct ice_port_info *pi, u32 id,
+> +			      enum ice_agg_type agg_type, u8 tc) {
+> +	struct ice_sched_node *node = NULL;
+> +
+> +	switch (agg_type) {
+> +	case ICE_AGG_TYPE_VSI: {
+> +		struct ice_vsi_ctx *vsi_ctx;
+> +		u16 vsi_handle = (u16)id;
+> +
+> +		if (!ice_is_vsi_valid(pi->hw, vsi_handle))
+> +			break;
+> +		/* Get sched_vsi_info */
+> +		vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
+> +		if (!vsi_ctx)
+> +			break;
+> +		node = vsi_ctx->sched.vsi_node[tc];
+> +		break;
+> +	}
+> +
+> +	case ICE_AGG_TYPE_AGG: {
+> +		struct ice_sched_node *tc_node;
+> +
+> +		tc_node = ice_sched_get_tc_node(pi, tc);
+> +		if (tc_node)
+> +			node = ice_sched_get_agg_node(pi, tc_node, id);
+> +		break;
+> +	}
+> +
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return node;
+> +}
+> +
+> +/**
+> + * ice_sched_set_node_bw_lmt_per_tc - set node BW limit per TC
+> + * @pi: port information structure
+> + * @id: ID (software VSI handle or AGG ID)
+> + * @agg_type: aggregator type (VSI or AGG type node)
+> + * @tc: traffic class
+> + * @rl_type: min or max
+> + * @bw: bandwidth in Kbps
+> + *
+> + * This function sets BW limit of VSI or Aggregator scheduling node
+> + * based on TC information from passed in argument BW.
+> + */
+> +static enum ice_status
+> +ice_sched_set_node_bw_lmt_per_tc(struct ice_port_info *pi, u32 id,
+> +				 enum ice_agg_type agg_type, u8 tc,
+> +				 enum ice_rl_type rl_type, u32 bw)
+> +{
+> +	enum ice_status status = ICE_ERR_PARAM;
+> +	struct ice_sched_node *node;
+> +
+> +	if (!pi)
+> +		return status;
+> +
+> +	if (rl_type == ICE_UNKNOWN_BW)
+> +		return status;
+> +
+> +	mutex_lock(&pi->sched_lock);
+> +	node = ice_sched_get_node_by_id_type(pi, id, agg_type, tc);
+> +	if (!node) {
+> +		ice_debug(pi->hw, ICE_DBG_SCHED, "Wrong id, agg type, or
+> tc\n");
+> +		goto exit_set_node_bw_lmt_per_tc;
+> +	}
+> +	if (bw == ICE_SCHED_DFLT_BW)
+> +		status = ice_sched_set_node_bw_dflt_lmt(pi, node,
+> rl_type);
+> +	else
+> +		status = ice_sched_set_node_bw_lmt(pi, node, rl_type,
+> bw);
+> +
+> +exit_set_node_bw_lmt_per_tc:
+> +	mutex_unlock(&pi->sched_lock);
+> +	return status;
+> +}
+> +
+> +/**
+> + * ice_cfg_vsi_bw_lmt_per_tc - configure VSI BW limit per TC
+> + * @pi: port information structure
+> + * @vsi_handle: software VSI handle
+> + * @tc: traffic class
+> + * @rl_type: min or max
+> + * @bw: bandwidth in Kbps
+> + *
+> + * This function configures BW limit of VSI scheduling node based on TC
+> + * information.
+> + */
+> +enum ice_status
+> +ice_cfg_vsi_bw_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+> +			  enum ice_rl_type rl_type, u32 bw)
+> +{
+> +	return ice_sched_set_node_bw_lmt_per_tc(pi, vsi_handle,
+> +						ICE_AGG_TYPE_VSI,
+> +						tc, rl_type, bw);
+> +}
+> +
+> +/**
+> + * ice_cfg_vsi_bw_dflt_lmt_per_tc - configure default VSI BW limit per
+> +TC
+> + * @pi: port information structure
+> + * @vsi_handle: software VSI handle
+> + * @tc: traffic class
+> + * @rl_type: min or max
+> + *
+> + * This function configures default BW limit of VSI scheduling node
+> +based on TC
+> + * information.
+> + */
+> +enum ice_status
+> +ice_cfg_vsi_bw_dflt_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle,
+> u8 tc,
+> +			       enum ice_rl_type rl_type)
+> +{
+> +	return ice_sched_set_node_bw_lmt_per_tc(pi, vsi_handle,
+> +						ICE_AGG_TYPE_VSI,
+> +						tc, rl_type,
+> +						ICE_SCHED_DFLT_BW);
+> +}
+> +
+>  /**
+>   * ice_cfg_rl_burst_size - Set burst size value
+>   * @hw: pointer to the HW struct
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h
+> b/drivers/net/ethernet/intel/ice/ice_sched.h
+> index fdf7a5882f07..11ad8336899f 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sched.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+> @@ -104,6 +104,12 @@ ice_cfg_q_bw_lmt(struct ice_port_info *pi, u16
+> vsi_handle, u8 tc,  enum ice_status  ice_cfg_q_bw_dflt_lmt(struct
+> ice_port_info *pi, u16 vsi_handle, u8 tc,
+>  		      u16 q_handle, enum ice_rl_type rl_type);
+> +enum ice_status
+> +ice_cfg_vsi_bw_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+> +			  enum ice_rl_type rl_type, u32 bw); enum ice_status
+> +ice_cfg_vsi_bw_dflt_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle,
+> u8 tc,
+> +			       enum ice_rl_type rl_type);
+>  enum ice_status ice_cfg_rl_burst_size(struct ice_hw *hw, u32 bytes);  void
+> ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw);  void
+> ice_sched_replay_agg(struct ice_hw *hw); diff --git
+> a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index ee3051b8ed15..42fb112fdea1 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -5,6 +5,7 @@
+>  #include "ice_base.h"
+>  #include "ice_lib.h"
+>  #include "ice_fltr.h"
+> +#include "ice_dcb_lib.h"
+>  #include "ice_flow.h"
+>  #include "ice_eswitch.h"
+>  #include "ice_virtchnl_allowlist.h"
+> @@ -768,6 +769,40 @@ static int ice_calc_vf_first_vector_idx(struct ice_pf
+> *pf, struct ice_vf *vf)
+>  	return pf->sriov_base_vector + vf->vf_id * pf->num_msix_per_vf;  }
+> 
+> +/**
+> + * ice_vf_rebuild_host_tx_rate_cfg - re-apply the Tx rate limiting
+> +configuration
+> + * @vf: VF to re-apply the configuration for
+> + *
+> + * Called after a VF VSI has been re-added/rebuild during reset. The PF
+> +driver
+> + * needs to re-apply the host configured Tx rate limiting configuration.
+> + */
+> +static int ice_vf_rebuild_host_tx_rate_cfg(struct ice_vf *vf) {
+> +	struct device *dev = ice_pf_to_dev(vf->pf);
+> +	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
+> +	int err;
+> +
+> +	if (vf->min_tx_rate) {
+> +		err = ice_set_min_bw_limit(vsi, (u64)vf->min_tx_rate *
+> 1000);
+> +		if (err) {
+> +			dev_err(dev, "failed to set min Tx rate to %d Mbps
+> for VF %u, error %d\n",
+> +				vf->min_tx_rate, vf->vf_id, err);
+> +			return err;
+> +		}
+> +	}
+> +
+> +	if (vf->max_tx_rate) {
+> +		err = ice_set_max_bw_limit(vsi, (u64)vf->max_tx_rate *
+> 1000);
+> +		if (err) {
+> +			dev_err(dev, "failed to set max Tx rate to %d Mbps
+> for VF %u, error %d\n",
+> +				vf->max_tx_rate, vf->vf_id, err);
+> +			return err;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * ice_vf_rebuild_host_vlan_cfg - add VLAN 0 filter or rebuild the Port VLAN
+>   * @vf: VF to add MAC filters for
+> @@ -1309,6 +1344,11 @@ static void ice_vf_rebuild_host_cfg(struct ice_vf
+> *vf)
+>  	if (ice_vf_rebuild_host_vlan_cfg(vf))
+>  		dev_err(dev, "failed to rebuild VLAN configuration for VF
+> %u\n",
+>  			vf->vf_id);
+> +
+> +	if (ice_vf_rebuild_host_tx_rate_cfg(vf))
+> +		dev_err(dev, "failed to rebuild Tx rate limiting configuration
+> for VF %u\n",
+> +			vf->vf_id);
+> +
+>  	/* rebuild aggregator node config for main VF VSI */
+>  	ice_vf_rebuild_aggregator_node_cfg(vsi);
+>  }
+> @@ -4719,8 +4759,8 @@ ice_get_vf_cfg(struct net_device *netdev, int
+> vf_id, struct ifla_vf_info *ivi)
+>  		ivi->linkstate = IFLA_VF_LINK_STATE_ENABLE;
+>  	else
+>  		ivi->linkstate = IFLA_VF_LINK_STATE_DISABLE;
+> -	ivi->max_tx_rate = vf->tx_rate;
+> -	ivi->min_tx_rate = 0;
+> +	ivi->max_tx_rate = vf->max_tx_rate;
+> +	ivi->min_tx_rate = vf->min_tx_rate;
+>  	return 0;
+>  }
+> 
+> @@ -4899,6 +4939,122 @@ int ice_set_vf_link_state(struct net_device
+> *netdev, int vf_id, int link_state)
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_calc_all_vfs_min_tx_rate - calculate cumulative min Tx rate on
+> +all VFs
+> + * @pf: PF associated with VFs
+> + */
+> +static int ice_calc_all_vfs_min_tx_rate(struct ice_pf *pf) {
+> +	int rate = 0, i;
+> +
+> +	ice_for_each_vf(pf, i)
+> +		rate += pf->vf[i].min_tx_rate;
+> +
+> +	return rate;
+> +}
+> +
+> +/**
+> + * ice_min_tx_rate_oversubscribed - check if min Tx rate causes
+> +oversubscription
+> + * @vf: VF trying to configure min_tx_rate
+> + * @min_tx_rate: min Tx rate in Mbps
+> + *
+> + * Check if the min_tx_rate being passed in will cause oversubscription
+> +of total
+> + * min_tx_rate based on the current link speed and all other VFs
+> +configured
+> + * min_tx_rate
+> + *
+> + * Return true if the passed min_tx_rate would cause oversubscription,
+> +else
+> + * return false
+> + */
+> +static bool
+> +ice_min_tx_rate_oversubscribed(struct ice_vf *vf, int min_tx_rate) {
+> +	int link_speed_mbps =
+> ice_get_link_speed_mbps(ice_get_vf_vsi(vf));
+> +	int all_vfs_min_tx_rate = ice_calc_all_vfs_min_tx_rate(vf->pf);
+> +
+> +	/* this VF's previous rate is being overwritten */
+> +	all_vfs_min_tx_rate -= vf->min_tx_rate;
+> +
+> +	if (all_vfs_min_tx_rate + min_tx_rate > link_speed_mbps) {
+> +		dev_err(ice_pf_to_dev(vf->pf), "min_tx_rate of %d Mbps
+> on VF %u would cause oversubscription of %d Mbps based on the current
+> link speed %d Mbps\n",
+> +			min_tx_rate, vf->vf_id,
+> +			all_vfs_min_tx_rate + min_tx_rate -
+> link_speed_mbps,
+> +			link_speed_mbps);
+> +		return true;
+> +	}
+> +
+> +	return false;
+> +}
+> +
+> +/**
+> + * ice_set_vf_bw - set min/max VF bandwidth
+> + * @netdev: network interface device structure
+> + * @vf_id: VF identifier
+> + * @min_tx_rate: Minimum Tx rate in Mbps
+> + * @max_tx_rate: Maximum Tx rate in Mbps  */ int ice_set_vf_bw(struct
+> +net_device *netdev, int vf_id, int min_tx_rate,
+> +	      int max_tx_rate)
+> +{
+> +	struct ice_pf *pf = ice_netdev_to_pf(netdev);
+> +	struct ice_vsi *vsi;
+> +	struct device *dev;
+> +	struct ice_vf *vf;
+> +	int ret;
+> +
+> +	dev = ice_pf_to_dev(pf);
+> +	if (ice_validate_vf_id(pf, vf_id))
+> +		return -EINVAL;
+> +
+> +	vf = &pf->vf[vf_id];
+> +	ret = ice_check_vf_ready_for_cfg(vf);
+> +	if (ret)
+> +		return ret;
+> +
+> +	vsi = ice_get_vf_vsi(vf);
+> +
+> +	/* when max_tx_rate is zero that means no max Tx rate limiting, so
+> only
+> +	 * check if max_tx_rate is non-zero
+> +	 */
+> +	if (max_tx_rate && min_tx_rate > max_tx_rate) {
+> +		dev_err(dev, "Cannot set min Tx rate %d Mbps greater than
+> max Tx rate %d Mbps\n",
+> +			min_tx_rate, max_tx_rate);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (min_tx_rate && ice_is_dcb_active(pf)) {
+> +		dev_err(dev, "DCB on PF is currently enabled. VF min Tx rate
+> limiting not allowed on this PF.\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	if (ice_min_tx_rate_oversubscribed(vf, min_tx_rate))
+> +		return -EINVAL;
+> +
+> +	if (vf->min_tx_rate != (unsigned int)min_tx_rate) {
+> +		ret = ice_set_min_bw_limit(vsi, (u64)min_tx_rate * 1000);
+> +		if (ret) {
+> +			dev_err(dev, "Unable to set min-tx-rate for VF
+> %d\n",
+> +				vf->vf_id);
+> +			return ret;
+> +		}
+> +
+> +		vf->min_tx_rate = min_tx_rate;
+> +	}
+> +
+> +	if (vf->max_tx_rate != (unsigned int)max_tx_rate) {
+> +		ret = ice_set_max_bw_limit(vsi, (u64)max_tx_rate * 1000);
+> +		if (ret) {
+> +			dev_err(dev, "Unable to set max-tx-rate for VF
+> %d\n",
+> +				vf->vf_id);
+> +			return ret;
+> +		}
+> +
+> +		vf->max_tx_rate = max_tx_rate;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * ice_get_vf_stats - populate some stats for the VF
+>   * @netdev: the netdev of the PF
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> index 6333b651d18e..9de19cc97f48 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+> @@ -125,7 +125,8 @@ struct ice_vf {
+>  	 * the main LAN VSI for the PF.
+>  	 */
+>  	u16 lan_vsi_num;		/* ID as used by firmware */
+> -	unsigned int tx_rate;		/* Tx bandwidth limit in Mbps */
+> +	unsigned int min_tx_rate;	/* Minimum Tx bandwidth limit in
+> Mbps */
+> +	unsigned int max_tx_rate;	/* Maximum Tx bandwidth limit in
+> Mbps */
+>  	DECLARE_BITMAP(vf_states, ICE_VF_STATES_NBITS);	/* VF runtime
+> states */
+> 
+>  	u64 num_inval_msgs;		/* number of continuous invalid msgs
+> */
+> @@ -172,6 +173,10 @@ int
+>  ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8
+> qos,
+>  		     __be16 vlan_proto);
+> 
+> +int
+> +ice_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
+> +	      int max_tx_rate);
+> +
+>  int ice_set_vf_trust(struct net_device *netdev, int vf_id, bool trusted);
+> 
+>  int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int
+> link_state); @@ -304,6 +309,14 @@ ice_set_vf_link_state(struct net_device
+> __always_unused *netdev,
+>  	return -EOPNOTSUPP;
+>  }
+> 
+> +static inline int
+> +ice_set_vf_bw(struct net_device __always_unused *netdev,
+> +	      int __always_unused vf_id, int __always_unused min_tx_rate,
+> +	      int __always_unused max_tx_rate) {
+> +	return -EOPNOTSUPP;
+> +}
+> +
+>  static inline int
+>  ice_calc_vf_reg_idx(struct ice_vf __always_unused *vf,
+>  		    struct ice_q_vector __always_unused *q_vector)
+> --
+> 2.20.1
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211019
-powerpc                     pseries_defconfig
-powerpc                     tqm8548_defconfig
-xtensa                       common_defconfig
-mips                            gpr_defconfig
-mips                  cavium_octeon_defconfig
-sh                          rsk7203_defconfig
-arm                           stm32_defconfig
-um                               alldefconfig
-arm                          lpd270_defconfig
-mips                      maltaaprp_defconfig
-sh                          urquell_defconfig
-sh                          sdk7780_defconfig
-openrisc                    or1ksim_defconfig
-arm                        spear3xx_defconfig
-s390                       zfcpdump_defconfig
-arc                        vdk_hs38_defconfig
-m68k                            q40_defconfig
-powerpc                 linkstation_defconfig
-arm                        keystone_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                        neponset_defconfig
-powerpc                           allnoconfig
-sh                         ap325rxa_defconfig
-sh                          r7780mp_defconfig
-m68k                          sun3x_defconfig
-arc                        nsim_700_defconfig
-m68k                        mvme147_defconfig
-m68k                       bvme6000_defconfig
-h8300                               defconfig
-arm                         orion5x_defconfig
-powerpc                      pasemi_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                      acadia_defconfig
-ia64                            zx1_defconfig
-arm                           corgi_defconfig
-arm                        realview_defconfig
-powerpc                  storcenter_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                  randconfig-c002-20211019
-x86_64               randconfig-c001-20211019
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nds32                             allnoconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a015-20211019
-x86_64               randconfig-a012-20211019
-x86_64               randconfig-a016-20211019
-x86_64               randconfig-a014-20211019
-x86_64               randconfig-a013-20211019
-x86_64               randconfig-a011-20211019
-i386                 randconfig-a014-20211019
-i386                 randconfig-a016-20211019
-i386                 randconfig-a011-20211019
-i386                 randconfig-a015-20211019
-i386                 randconfig-a012-20211019
-i386                 randconfig-a013-20211019
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-arm                  randconfig-c002-20211019
-mips                 randconfig-c004-20211019
-i386                 randconfig-c001-20211019
-s390                 randconfig-c005-20211019
-x86_64               randconfig-c007-20211019
-riscv                randconfig-c006-20211019
-powerpc              randconfig-c003-20211019
-x86_64               randconfig-a004-20211019
-x86_64               randconfig-a006-20211019
-x86_64               randconfig-a005-20211019
-x86_64               randconfig-a001-20211019
-x86_64               randconfig-a002-20211019
-x86_64               randconfig-a003-20211019
-i386                 randconfig-a001-20211019
-i386                 randconfig-a003-20211019
-i386                 randconfig-a004-20211019
-i386                 randconfig-a005-20211019
-i386                 randconfig-a002-20211019
-i386                 randconfig-a006-20211019
-hexagon              randconfig-r041-20211019
-hexagon              randconfig-r045-20211019
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
