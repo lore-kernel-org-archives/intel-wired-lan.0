@@ -1,321 +1,63 @@
-From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Mon, 18 Oct 2021 18:16:02 -0500
-Subject: [Intel-wired-lan] [net-next 2/3] net/ice: Add support for
- enable_iwarp and enable_roce devlink param
-In-Reply-To: <20211018231603.1690-1-shiraz.saleem@intel.com>
-References: <20211018231603.1690-1-shiraz.saleem@intel.com>
-Message-ID: <20211018231603.1690-3-shiraz.saleem@intel.com>
+From: yanjun.zhu@linux.dev <yanjun.zhu@linux.dev>
+Date: Tue, 19 Oct 2021 05:17:43 -0400
+Subject: [Intel-wired-lan] [PATCH 1/1] ice: remove the unused function
+ ice_aq_nvm_update_empr
+Message-ID: <20211019091743.12046-1-yanjun.zhu@linux.dev>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Allow support for 'enable_iwarp' and 'enable_roce' devlink params to turn
-on/off iWARP or RoCE protocol support for E800 devices.
+From: Zhu Yanjun <yanjun.zhu@linux.dev>
 
-For example, a user can turn on iWARP functionality with,
+The function ice_aq_nvm_update_empr is not used, so remove it.
 
-devlink dev param set pci/0000:07:00.0 name enable_iwarp value true cmode runtime
-
-This add an iWARP auxiliary rdma device, ice.iwarp.<>, under this PF.
-
-A user request to enable both iWARP and RoCE under the same PF is rejected
-since this device does not support both protocols simultaneously on the
-same port.
-
-Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
+Signed-off-by: Zhu Yanjun <yanjun.zhu@linux.dev>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |   1 +
- drivers/net/ethernet/intel/ice/ice_devlink.c | 144 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_devlink.h |   6 ++
- drivers/net/ethernet/intel/ice/ice_idc.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_main.c    |   9 +-
- include/linux/net/intel/iidc.h               |   7 +-
- 6 files changed, 166 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 16 ----------------
+ drivers/net/ethernet/intel/ice/ice_nvm.h |  1 -
+ 2 files changed, 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 6bfbf70..7873da6 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -505,6 +505,7 @@ struct ice_pf {
- 	struct ice_hw_port_stats stats_prev;
- 	struct ice_hw hw;
- 	u8 stat_prev_loaded:1; /* has previous stats been loaded */
-+	u8 rdma_mode;
- 	u16 dcbx_cap;
- 	u32 tx_timeout_count;
- 	unsigned long tx_timeout_last_recovery;
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 55353bf..f1036fa 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -430,6 +430,120 @@ static int ice_devlink_info_get(struct devlink *devlink,
- 	.flash_update = ice_devlink_flash_update,
- };
- 
-+static int
-+ice_devlink_enable_roce_get(struct devlink *devlink, u32 id,
-+			    struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	ctx->val.vbool = pf->rdma_mode & IIDC_RDMA_PROTOCOL_ROCEV2;
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_enable_roce_set(struct devlink *devlink, u32 id,
-+			    struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	bool roce_ena = ctx->val.vbool;
-+	int ret;
-+
-+	if (!roce_ena) {
-+		ice_unplug_aux_dev(pf);
-+		pf->rdma_mode &= ~IIDC_RDMA_PROTOCOL_ROCEV2;
-+		return 0;
-+	}
-+
-+	pf->rdma_mode |= IIDC_RDMA_PROTOCOL_ROCEV2;
-+	ret = ice_plug_aux_dev(pf);
-+	if (ret)
-+		pf->rdma_mode &= ~IIDC_RDMA_PROTOCOL_ROCEV2;
-+
-+	return ret;
-+}
-+
-+static int
-+ice_devlink_enable_roce_validate(struct devlink *devlink, u32 id,
-+				 union devlink_param_value val,
-+				 struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	if (!test_bit(ICE_FLAG_RDMA_ENA, pf->flags))
-+		return -EOPNOTSUPP;
-+
-+	if (pf->rdma_mode & IIDC_RDMA_PROTOCOL_IWARP) {
-+		NL_SET_ERR_MSG_MOD(extack, "iWARP is currently enabled. This device cannot enable iWARP and RoCEv2 simultaneously");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_enable_iw_get(struct devlink *devlink, u32 id,
-+			  struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	ctx->val.vbool = pf->rdma_mode & IIDC_RDMA_PROTOCOL_IWARP;
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_enable_iw_set(struct devlink *devlink, u32 id,
-+			  struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	bool iw_ena = ctx->val.vbool;
-+	int ret;
-+
-+	if (!iw_ena) {
-+		ice_unplug_aux_dev(pf);
-+		pf->rdma_mode &= ~IIDC_RDMA_PROTOCOL_IWARP;
-+		return 0;
-+	}
-+
-+	pf->rdma_mode |= IIDC_RDMA_PROTOCOL_IWARP;
-+	ret = ice_plug_aux_dev(pf);
-+	if (ret)
-+		pf->rdma_mode &= ~IIDC_RDMA_PROTOCOL_IWARP;
-+
-+	return ret;
-+}
-+
-+static int
-+ice_devlink_enable_iw_validate(struct devlink *devlink, u32 id,
-+			       union devlink_param_value val,
-+			       struct netlink_ext_ack *extack)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	if (!test_bit(ICE_FLAG_RDMA_ENA, pf->flags))
-+		return -EOPNOTSUPP;
-+
-+	if (pf->rdma_mode & IIDC_RDMA_PROTOCOL_ROCEV2) {
-+		NL_SET_ERR_MSG_MOD(extack, "RoCEv2 is currently enabled. This device cannot enable iWARP and RoCEv2 simultaneously");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct devlink_param ice_devlink_params[] = {
-+	DEVLINK_PARAM_GENERIC(ENABLE_ROCE, BIT(DEVLINK_PARAM_CMODE_RUNTIME),
-+			      ice_devlink_enable_roce_get,
-+			      ice_devlink_enable_roce_set,
-+			      ice_devlink_enable_roce_validate),
-+	DEVLINK_PARAM_GENERIC(ENABLE_IWARP, BIT(DEVLINK_PARAM_CMODE_RUNTIME),
-+			      ice_devlink_enable_iw_get,
-+			      ice_devlink_enable_iw_set,
-+			      ice_devlink_enable_iw_validate),
-+
-+};
-+
- static void ice_devlink_free(void *devlink_ptr)
- {
- 	devlink_free((struct devlink *)devlink_ptr);
-@@ -486,6 +600,36 @@ void ice_devlink_unregister(struct ice_pf *pf)
- 	devlink_unregister(priv_to_devlink(pf));
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index fee37a5844cf..bad374bd7ab3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -1106,22 +1106,6 @@ enum ice_status ice_nvm_write_activate(struct ice_hw *hw, u8 cmd_flags)
+ 	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
  }
  
-+int ice_devlink_register_params(struct ice_pf *pf)
-+{
-+	struct devlink *devlink = priv_to_devlink(pf);
-+	union devlink_param_value value;
-+	int err;
-+
-+	err = devlink_params_register(devlink, ice_devlink_params,
-+				      ARRAY_SIZE(ice_devlink_params));
-+	if (err)
-+		return err;
-+
-+	value.vbool = false;
-+	devlink_param_driverinit_value_set(devlink,
-+					   DEVLINK_PARAM_GENERIC_ID_ENABLE_IWARP,
-+					   value);
-+
-+	value.vbool = test_bit(ICE_FLAG_RDMA_ENA, pf->flags) ? true : false;
-+	devlink_param_driverinit_value_set(devlink,
-+					   DEVLINK_PARAM_GENERIC_ID_ENABLE_ROCE,
-+					   value);
-+
-+	return 0;
-+}
-+
-+void ice_devlink_unregister_params(struct ice_pf *pf)
-+{
-+	devlink_params_unregister(priv_to_devlink(pf), ice_devlink_params,
-+				  ARRAY_SIZE(ice_devlink_params));
-+}
-+
- /**
-  * ice_devlink_create_pf_port - Create a devlink port for this PF
-  * @pf: the PF to create a devlink port for
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.h b/drivers/net/ethernet/intel/ice/ice_devlink.h
-index b7f9551e..faea757 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.h
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.h
-@@ -4,10 +4,16 @@
- #ifndef _ICE_DEVLINK_H_
- #define _ICE_DEVLINK_H_
- 
-+enum ice_devlink_param_id {
-+	ICE_DEVLINK_PARAM_ID_BASE = DEVLINK_PARAM_GENERIC_ID_MAX,
-+};
-+
- struct ice_pf *ice_allocate_pf(struct device *dev);
- 
- void ice_devlink_register(struct ice_pf *pf);
- void ice_devlink_unregister(struct ice_pf *pf);
-+int ice_devlink_register_params(struct ice_pf *pf);
-+void ice_devlink_unregister_params(struct ice_pf *pf);
- int ice_devlink_create_pf_port(struct ice_pf *pf);
- void ice_devlink_destroy_pf_port(struct ice_pf *pf);
- int ice_devlink_create_vf_port(struct ice_vf *vf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index adcc9a2..fc35801 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -288,7 +288,7 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 	adev->id = pf->aux_idx;
- 	adev->dev.release = ice_adev_release;
- 	adev->dev.parent = &pf->pdev->dev;
--	adev->name = IIDC_RDMA_ROCE_NAME;
-+	adev->name = pf->rdma_mode & IIDC_RDMA_PROTOCOL_ROCEV2 ? "roce" : "iwarp";
- 
- 	ret = auxiliary_device_init(adev);
- 	if (ret) {
-@@ -335,6 +335,6 @@ int ice_init_rdma(struct ice_pf *pf)
- 		dev_err(dev, "failed to reserve vectors for RDMA\n");
- 		return ret;
- 	}
+-/**
+- * ice_aq_nvm_update_empr
+- * @hw: pointer to the HW struct
+- *
+- * Update empr (0x0709). This command allows SW to
+- * request an EMPR to activate new FW.
+- */
+-enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw)
+-{
+-	struct ice_aq_desc desc;
 -
-+	pf->rdma_mode |= IIDC_RDMA_PROTOCOL_ROCEV2;
- 	return ice_plug_aux_dev(pf);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index ceb0912..1214eb9 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4488,6 +4488,10 @@ static int ice_register_netdev(struct ice_pf *pf)
- 	if (err)
- 		goto err_netdev_reg;
- 
-+	err = ice_devlink_register_params(pf);
-+	if (err)
-+		goto err_netdev_reg;
-+
- 	/* ready to go, so clear down state bit */
- 	clear_bit(ICE_DOWN, pf->state);
- 	if (ice_is_aux_ena(pf)) {
-@@ -4495,7 +4499,7 @@ static int ice_register_netdev(struct ice_pf *pf)
- 		if (pf->aux_idx < 0) {
- 			dev_err(dev, "Failed to allocate device ID for AUX driver\n");
- 			err = -ENOMEM;
--			goto err_netdev_reg;
-+			goto err_devlink_reg_param;
- 		}
- 
- 		err = ice_init_rdma(pf);
-@@ -4514,6 +4518,8 @@ static int ice_register_netdev(struct ice_pf *pf)
- err_init_aux_unroll:
- 	pf->adev = NULL;
- 	ida_free(&ice_aux_ida, pf->aux_idx);
-+err_devlink_reg_param:
-+	ice_devlink_unregister_params(pf);
- err_netdev_reg:
- err_send_version_unroll:
- 	ice_vsi_release_all(pf);
-@@ -4625,6 +4631,7 @@ static void ice_remove(struct pci_dev *pdev)
- 	ice_aq_cancel_waiting_tasks(pf);
- 	ice_unplug_aux_dev(pf);
- 	ida_free(&ice_aux_ida, pf->aux_idx);
-+	ice_devlink_unregister_params(pf);
- 	set_bit(ICE_DOWN, pf->state);
- 
- 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
-diff --git a/include/linux/net/intel/iidc.h b/include/linux/net/intel/iidc.h
-index e32f671..1289593 100644
---- a/include/linux/net/intel/iidc.h
-+++ b/include/linux/net/intel/iidc.h
-@@ -26,6 +26,11 @@ enum iidc_reset_type {
- 	IIDC_GLOBR,
- };
- 
-+enum iidc_rdma_protocol {
-+	IIDC_RDMA_PROTOCOL_IWARP = BIT(0),
-+	IIDC_RDMA_PROTOCOL_ROCEV2 = BIT(1),
-+};
-+
- #define IIDC_MAX_USER_PRIORITY		8
- 
- /* Struct to hold per RDMA Qset info */
-@@ -70,8 +75,6 @@ struct iidc_event {
- int ice_rdma_update_vsi_filter(struct ice_pf *pf, u16 vsi_id, bool enable);
- void ice_get_qos_params(struct ice_pf *pf, struct iidc_qos_params *qos);
- 
--#define IIDC_RDMA_ROCE_NAME	"roce"
+-	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_nvm_update_empr);
 -
- /* Structure representing auxiliary driver tailored information about the core
-  * PCI dev, each auxiliary driver using the IIDC interface will have an
-  * instance of this struct dedicated to it.
+-	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+-}
+-
+ /* ice_nvm_set_pkg_data
+  * @hw: pointer to the HW struct
+  * @del_pkg_data_flag: If is set then the current pkg_data store by FW
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h b/drivers/net/ethernet/intel/ice/ice_nvm.h
+index c6f05f43d593..925225905491 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.h
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+@@ -39,7 +39,6 @@ enum ice_status
+ ice_aq_erase_nvm(struct ice_hw *hw, u16 module_typeid, struct ice_sq_cd *cd);
+ enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
+ enum ice_status ice_nvm_write_activate(struct ice_hw *hw, u8 cmd_flags);
+-enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw);
+ enum ice_status
+ ice_nvm_set_pkg_data(struct ice_hw *hw, bool del_pkg_data_flag, u8 *data,
+ 		     u16 length, struct ice_sq_cd *cd);
 -- 
-1.8.3.1
+2.27.0
 
