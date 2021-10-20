@@ -1,55 +1,83 @@
-From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Date: Wed, 20 Oct 2021 11:08:11 -0700
-Subject: [Intel-wired-lan] [PATCH linux-next] e1000: Remove redundant
- statement
-In-Reply-To: <20211020092537.GF3935@kernel.org>
-References: <20211018085305.853996-1-luo.penghao@zte.com.cn>
- <20211020092537.GF3935@kernel.org>
-Message-ID: <CAEuXFEzXSU-Ws6T_8TBVfgskh4VA14LmirFYSjdQpwtndfeeww@mail.gmail.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 20 Oct 2021 18:49:40 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] ice: remove the unused function
+ ice_aq_nvm_update_empr
+In-Reply-To: <20211019091743.12046-1-yanjun.zhu@linux.dev>
+References: <20211019091743.12046-1-yanjun.zhu@linux.dev>
+Message-ID: <adf52e0ca3fbe0c9726f283a9690bd335afbf3a6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Apologies for the duplicates, mail from my intel account going out
-through outlook.com is not being delivered.
+On Tue, 2021-10-19 at 05:17 -0400, yanjun.zhu at linux.dev wrote:
+> From: Zhu Yanjun <yanjun.zhu@linux.dev>
+> 
+> The function ice_aq_nvm_update_empr is not used, so remove it.
 
-On Wed, Oct 20, 2021 at 7:00 AM Simon Horman <horms@kernel.org> wrote:
+Thanks for the patch, but there is another one coming soon that will be
+using this function[1]. I'd prefer to keep this to save us from another
+patch reintroducing it in the near future.
 
-> > Value stored to 'ctrl_reg' is never read.
->
-> I agree this does seem to be the case.
->
-> > Reported-by: Zeal Robot <zealci@zte.com.cn>
-> > Signed-off-by: luo penghao <luo.penghao@zte.com.cn>
->
-> Reviewed-by: Simon Horman <horms@kernel.org>
+Thanks,
+Tony
 
-Thanks for the review, but (davem/kuba) please do not apply.
+[1] https://patchwork.ozlabs.org/project/intel-wired-
+lan/patch/20211019215423.3383750-1-jacob.e.keller at intel.com/
 
-> > @@ -1215,8 +1215,6 @@ static int e1000_integrated_phy_loopback(struct e1000_adapter *adapter)
-> >               e1000_write_phy_reg(hw, PHY_CTRL, 0x8140);
-> >       }
-> >
-> > -     ctrl_reg = er32(CTRL);
 
-Thanks for your patch, but this change is not safe. you're removing a
-read that could do two things. The first is that the read "flushes"
-the write just above to PCI (it's a PCI barrier), and the second is
-that the read can have some side effects.
+> Signed-off-by: Zhu Yanjun <yanjun.zhu@linux.dev>
+> ---
+> ?drivers/net/ethernet/intel/ice/ice_nvm.c | 16 ----------------
+> ?drivers/net/ethernet/intel/ice/ice_nvm.h |? 1 -
+> ?2 files changed, 17 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c
+> b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> index fee37a5844cf..bad374bd7ab3 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> @@ -1106,22 +1106,6 @@ enum ice_status ice_nvm_write_activate(struct
+> ice_hw *hw, u8 cmd_flags)
+> ????????return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+> ?}
+> ?
+> -/**
+> - * ice_aq_nvm_update_empr
+> - * @hw: pointer to the HW struct
+> - *
+> - * Update empr (0x0709). This command allows SW to
+> - * request an EMPR to activate new FW.
+> - */
+> -enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw)
+> -{
+> -???????struct ice_aq_desc desc;
+> -
+> -???????ice_fill_dflt_direct_cmd_desc(&desc,
+> ice_aqc_opc_nvm_update_empr);
+> -
+> -???????return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
+> -}
+> -
+> ?/* ice_nvm_set_pkg_data
+> ? * @hw: pointer to the HW struct
+> ? * @del_pkg_data_flag: If is set then the current pkg_data store by
+> FW
+> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.h
+> b/drivers/net/ethernet/intel/ice/ice_nvm.h
+> index c6f05f43d593..925225905491 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_nvm.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.h
+> @@ -39,7 +39,6 @@ enum ice_status
+> ?ice_aq_erase_nvm(struct ice_hw *hw, u16 module_typeid, struct
+> ice_sq_cd *cd);
+> ?enum ice_status ice_nvm_validate_checksum(struct ice_hw *hw);
+> ?enum ice_status ice_nvm_write_activate(struct ice_hw *hw, u8
+> cmd_flags);
+> -enum ice_status ice_aq_nvm_update_empr(struct ice_hw *hw);
+> ?enum ice_status
+> ?ice_nvm_set_pkg_data(struct ice_hw *hw, bool del_pkg_data_flag, u8
+> *data,
+> ???????????????????? u16 length, struct ice_sq_cd *cd);
 
-If this change must be done, the code should be to remove the
-assignment to ctrl_reg, but leave the read, so the line would just
-look like:
-        er32(CTRL);
-
-This will get rid of the warning and not change the flow from the
-hardware perspective.
-
-> > -
-> >       /* force 1000, set loopback */
-> >       e1000_write_phy_reg(hw, PHY_CTRL, 0x4140);
-> >
-
-Please do not apply this.
