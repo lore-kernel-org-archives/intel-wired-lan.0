@@ -1,33 +1,39 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 25 Oct 2021 17:14:09 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Allow disabling NBASE-T
- suppression hack
-In-Reply-To: <trinity-7ec48fc1-b568-49df-8837-218ec2c431c4-1634940936574@3c-app-gmx-bs49>
-References: <trinity-58e35e17-0323-4cde-bbed-1582c3520822-1634891867291@3c-app-gmx-bap44>
- <9f4603a5-7811-c653-951b-777070f7ce54@molgen.mpg.de>
- <392a6fe-e920-31b-42dc-a214e311233c@twofifty.com>
- <trinity-7ec48fc1-b568-49df-8837-218ec2c431c4-1634940936574@3c-app-gmx-bs49>
-Message-ID: <3ec21b215c88604e4e8475240be9d11f5abdb1e5.camel@intel.com>
+From: Brelinski, Tony <tony.brelinski@intel.com>
+Date: Mon, 25 Oct 2021 18:37:02 +0000
+Subject: [Intel-wired-lan] [PATCH -next] intel: Simplify bool conversion
+In-Reply-To: <1632898586-96655-1-git-send-email-yang.lee@linux.alibaba.com>
+References: <1632898586-96655-1-git-send-email-yang.lee@linux.alibaba.com>
+Message-ID: <MN2PR11MB422476A7898C84BAA9840A0D82839@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, 2021-10-23 at 00:15 +0200, Robert Schlabbach wrote:
-> On Fri, 22 Oct 2021, Hisashi T Fujinaka wrote:
+> -----Original Message-----
+> From: Yang Li <yang.lee@linux.alibaba.com>
+> Sent: Tuesday, September 28, 2021 11:56 PM
+> To: kuba at kernel.org
+> Cc: davem at davemloft.net; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Yang Li
+> <yang.lee@linux.alibaba.com>
+> Subject: [PATCH -next] intel: Simplify bool conversion
 > 
-> > We're not likely to accept this patch because it adds a private
-> > module
-> > parameter and upstream will not accept it.
+> Fix the following coccicheck warning:
+> ./drivers/net/ethernet/intel/i40e/i40e_xsk.c:229:35-40: WARNING:
+> conversion to bool not needed here
+> ./drivers/net/ethernet/intel/ice/ice_xsk.c:399:35-40: WARNING:
+> conversion to bool not needed here
 > 
-> I don't understand. The module already has 3 parameters, so why is a
-> 4th not acceptable?
+> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_xsk.c   | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-The community has changed their acceptance of private module
-parameters. While previous ones were accepted, they are not accepting
-any new additions.
+Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
-Thanks,
-Tony
 
