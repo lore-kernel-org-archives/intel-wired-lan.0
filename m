@@ -1,49 +1,85 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 26 Oct 2021 16:21:42 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/4] ice: transmit
- improvement series
-In-Reply-To: <20211026000826.156803-1-jesse.brandeburg@intel.com>
-References: <20211026000826.156803-1-jesse.brandeburg@intel.com>
-Message-ID: <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Tue, 26 Oct 2021 17:56:24 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Hide bus-info in ethtool
+ for PRs in switchdev mode
+Message-ID: <20211026155624.17106-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-10-25 at 17:08 -0700, Jesse Brandeburg wrote:
-> Modify the ice driver to make a few modest changes to the transmit
-> hot path in order to reduce the number of cycles used, particularly
-> with high intensity workloads such as pktgen or IP forwarding.
-> 
-> Several of these changes are just using simpler API calls in
-> netdevice.h (welcome to 2015!)
-> 
-> The VSI_DOWN patch is a simple fix to make sure the driver's
-> statements
-> about holding certain state bits for functions is enforced and
-> remains
-> that way.
-> 
-> Jesse Brandeburg (4):
-> ? ice: update to newer kernel API
-> ? ice: use prefetch methods
-> ? ice: tighter control over VSI_DOWN state
-> ? ice: use modern kernel API for kick
+Disable showing bus-info information for port representors in switchdev
+mode. This fixes a bug that caused displaying wrong netdev descriptions in
+lshw tool - one port representor displayed PF branding string, and in turn
+one PF displayed a "generic" description. The bug occurs when many devices
+show the same bus-info in ethtool, which was the case in switchdev mode (PF
+and its port representors displayed the same bus-info). The bug occurs only
+if a port representor netdev appears before PF netdev in /proc/net/dev.
 
-It looks like patch 2 never made it to the list [1]. Seems like the
-email issues may be further reaching than kernel.org.
+In the examples below:
+ens6fX is PF
+ens6fXvY is VF
+ethX is port representor
+One irrelevant column was removed from output
 
-Thanks,
-Tony
+Before:
+$ sudo lshw -c net -businfo
+Bus info          Device      Description
+=========================================
+pci at 0000:02:00.0  eth102       Ethernet Controller E810-XXV for SFP
+pci at 0000:02:00.1  ens6f1       Ethernet Controller E810-XXV for SFP
+pci at 0000:02:01.0  ens6f0v0     Ethernet Adaptive Virtual Function
+pci at 0000:02:01.1  ens6f0v1     Ethernet Adaptive Virtual Function
+pci at 0000:02:01.2  ens6f0v2     Ethernet Adaptive Virtual Function
+pci at 0000:02:00.0  ens6f0       Ethernet interface
 
-[1] https://patchwork.ozlabs.org/project/intel-wired-
-lan/list/?series=268871
+Notice that eth102 and ens6f0 have the same bus-info and their descriptions
+are swapped.
 
-> ?drivers/net/ethernet/intel/ice/ice_ethtool.c |? 6 ++-
-> ?drivers/net/ethernet/intel/ice/ice_main.c??? |? 7 ++--
-> ?drivers/net/ethernet/intel/ice/ice_txrx.c??? | 40 +++++++++++++-----
-> --
-> ?3 files changed, 34 insertions(+), 19 deletions(-)
-> 
+After:
+$ sudo lshw -c net -businfo
+Bus info          Device      Description
+=========================================
+pci at 0000:02:00.0  ens6f0      Ethernet Controller E810-XXV for SFP
+pci at 0000:02:00.1  ens6f1      Ethernet Controller E810-XXV for SFP
+pci at 0000:02:01.0  ens6f0v0    Ethernet Adaptive Virtual Function
+pci at 0000:02:01.1  ens6f0v1    Ethernet Adaptive Virtual Function
+pci at 0000:02:01.2  ens6f0v2    Ethernet Adaptive Virtual Function
+
+Fixes: 7aae80cef7ba ("ice: add port representor ethtool ops and stats")
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 870d02adcfe8..dfbba64e691c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -189,18 +189,19 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
+ 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
+ 		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
+ 		 nvm->eetrack, orom->major, orom->build, orom->patch);
+-
+-	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+-		sizeof(drvinfo->bus_info));
+ }
+ 
+ static void
+ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
++	struct ice_pf *pf = np->vsi->back;
+ 
+ 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
+ 
++	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
++		sizeof(drvinfo->bus_info));
++
+ 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+ }
+ 
+-- 
+2.31.1
 
