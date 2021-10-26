@@ -1,35 +1,78 @@
-From: robert_s@gmx.net <robert_s@gmx.net>
-Date: Tue, 26 Oct 2021 02:22:25 +0200
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Allow disabling NBASE-T
- suppression hack
-In-Reply-To: <3ec21b215c88604e4e8475240be9d11f5abdb1e5.camel@intel.com>
-References: <trinity-58e35e17-0323-4cde-bbed-1582c3520822-1634891867291@3c-app-gmx-bap44>
- <9f4603a5-7811-c653-951b-777070f7ce54@molgen.mpg.de>
- <392a6fe-e920-31b-42dc-a214e311233c@twofifty.com>
- <trinity-7ec48fc1-b568-49df-8837-218ec2c431c4-1634940936574@3c-app-gmx-bs49>
- <3ec21b215c88604e4e8475240be9d11f5abdb1e5.camel@intel.com>
-Message-ID: <trinity-71d0a350-a27f-4ed0-9c08-53a1f3f6b42a-1635207745364@3c-app-gmx-bap12>
+From: Robert Schlabbach <robert_s@gmx.net>
+Date: Tue, 26 Oct 2021 02:24:48 +0200
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: Document how to enable NBASE-T
+ support
+Message-ID: <trinity-d1eee2a2-f92d-4a57-adcb-d82f227094f7-1635207888762@3c-app-gmx-bap12>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From:?"Nguyen, Anthony L" <anthony.l.nguyen@intel.com>
+Commit a296d665eae1 ("ixgbe: Add ethtool support to enable 2.5 and 5.0
+Gbps support") introduced suppression of the advertisement of NBASE-T
+speeds by default, according to Todd Fujinaka to accommodate customers
+with network switches which could not cope with advertised NBASE-T
+speeds, as posted in the E1000-devel mailing list:
 
-> The community has changed their acceptance of private module
-> parameters. While previous ones were accepted, they are not accepting
-> any new additions.
+https://sourceforge.net/p/e1000/mailman/message/37106269/
 
-A reference would have been helpful, but I eventually found it myself:
+However, the suppression was not documented at all, nor was how to
+enable NBASE-T support.
 
-https://lore.kernel.org/netdev/20170324.144017.1545614773504954414.davem at davemloft.net/
+Properly document the NBASE-T suppression and how to enable NBASE-T
+support.
 
-After short discussion on netdev, I realized that the module parameter is
-indeed not needed, so I'm revoking this patch.
+Fixes: a296d665eae1 ("ixgbe: Add ethtool support to enable 2.5 and 5.0 Gbps support")
+Reported-by: Robert Schlabbach <robert_s@gmx.net>
+Signed-off-by: Robert Schlabbach <robert_s@gmx.net>
+---
+ .../device_drivers/ethernet/intel/ixgbe.rst      | 16 ++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  4 ++++
+ 2 files changed, 20 insertions(+)
 
-Instead, I'll submit another patch that only adds the missing documentation
-about NBASE-T support and how to enable it. That should be acceptable.
+diff --git a/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst b/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
+index f1d5233e5e51..a60b507e5173 100644
+--- a/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
++++ b/Documentation/networking/device_drivers/ethernet/intel/ixgbe.rst
+@@ -515,6 +515,22 @@ The offload is also supported for ixgbe's VFs, but the VF must be set as
+   ethtool --set-priv-flags eth<x> vf-ipsec on
+   ip link set eth<x> vf <y> trust on
 
-Best regards,
--Robert Schlabbach
++NBASE-T Support
++---------------
++The ixgbe driver supports NBASE-T on some devices. However, the advertisement
++of NBASE-T speeds is suppressed by default, to accommodate broken network
++switches which cannot cope with advertised NBASE-T speeds. Use the ethtool
++command to enable advertising NBASE-T speeds on devices which support it::
++
++  ethtool -s eth? advertise 0x1800000001028
++
++On Linux systems with INTERFACES(5), this can be specified as a pre-up command
++in /etc/network/interfaces so that the interface is always brought up with
++NBASE-T support, e.g.::
++
++  iface eth? inet dhcp
++       pre-up ethtool -s eth? advertise 0x1800000001028 || true
++
+
+ Known Issues/Troubleshooting
+ ============================
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 13c4782b920a..750b02bb2fdc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5526,6 +5526,10 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ 	if (!speed && hw->mac.ops.get_link_capabilities) {
+ 		ret = hw->mac.ops.get_link_capabilities(hw, &speed,
+ 							&autoneg);
++		/* remove NBASE-T speeds from default autonegotiation
++		 * to accommodate broken network switches in the field
++		 * which cannot cope with advertised NBASE-T speeds
++		 */
+ 		speed &= ~(IXGBE_LINK_SPEED_5GB_FULL |
+ 			   IXGBE_LINK_SPEED_2_5GB_FULL);
+ 	}
+--
+2.17.1
+
