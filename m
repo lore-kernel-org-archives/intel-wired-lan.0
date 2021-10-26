@@ -1,85 +1,79 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Tue, 26 Oct 2021 17:56:24 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Hide bus-info in ethtool
- for PRs in switchdev mode
-Message-ID: <20211026155624.17106-1-marcin.szycik@linux.intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 27 Oct 2021 01:40:07 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ fd1b5beb177a8372cea2a0d014835491e4886f77
+Message-ID: <61783d77.UIkPY1O5dv1fxkqV%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Disable showing bus-info information for port representors in switchdev
-mode. This fixes a bug that caused displaying wrong netdev descriptions in
-lshw tool - one port representor displayed PF branding string, and in turn
-one PF displayed a "generic" description. The bug occurs when many devices
-show the same bus-info in ethtool, which was the case in switchdev mode (PF
-and its port representors displayed the same bus-info). The bug occurs only
-if a port representor netdev appears before PF netdev in /proc/net/dev.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: fd1b5beb177a8372cea2a0d014835491e4886f77  ice: check whether PTP is initialized in ice_ptp_release()
 
-In the examples below:
-ens6fX is PF
-ens6fXvY is VF
-ethX is port representor
-One irrelevant column was removed from output
+elapsed time: 1214m
 
-Before:
-$ sudo lshw -c net -businfo
-Bus info          Device      Description
-=========================================
-pci at 0000:02:00.0  eth102       Ethernet Controller E810-XXV for SFP
-pci at 0000:02:00.1  ens6f1       Ethernet Controller E810-XXV for SFP
-pci at 0000:02:01.0  ens6f0v0     Ethernet Adaptive Virtual Function
-pci at 0000:02:01.1  ens6f0v1     Ethernet Adaptive Virtual Function
-pci at 0000:02:01.2  ens6f0v2     Ethernet Adaptive Virtual Function
-pci at 0000:02:00.0  ens6f0       Ethernet interface
+configs tested: 52
+configs skipped: 3
 
-Notice that eth102 and ens6f0 have the same bus-info and their descriptions
-are swapped.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-After:
-$ sudo lshw -c net -businfo
-Bus info          Device      Description
-=========================================
-pci at 0000:02:00.0  ens6f0      Ethernet Controller E810-XXV for SFP
-pci at 0000:02:00.1  ens6f1      Ethernet Controller E810-XXV for SFP
-pci at 0000:02:01.0  ens6f0v0    Ethernet Adaptive Virtual Function
-pci at 0000:02:01.1  ens6f0v1    Ethernet Adaptive Virtual Function
-pci at 0000:02:01.2  ens6f0v2    Ethernet Adaptive Virtual Function
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                                defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+s390                             allmodconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
 
-Fixes: 7aae80cef7ba ("ice: add port representor ethtool ops and stats")
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 870d02adcfe8..dfbba64e691c 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -189,18 +189,19 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
- 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
- 		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
- 		 nvm->eetrack, orom->major, orom->build, orom->patch);
--
--	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
--		sizeof(drvinfo->bus_info));
- }
- 
- static void
- ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
-+	struct ice_pf *pf = np->vsi->back;
- 
- 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
- 
-+	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
-+		sizeof(drvinfo->bus_info));
-+
- 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
- }
- 
--- 
-2.31.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
