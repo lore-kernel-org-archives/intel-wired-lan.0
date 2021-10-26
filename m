@@ -1,79 +1,72 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 27 Oct 2021 01:40:07 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- fd1b5beb177a8372cea2a0d014835491e4886f77
-Message-ID: <61783d77.UIkPY1O5dv1fxkqV%lkp@intel.com>
+From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Date: Tue, 26 Oct 2021 19:31:41 +0200
+Subject: [Intel-wired-lan] [RFC v5 net-next 0/5] Add RTNL interface for SyncE
+Message-ID: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: fd1b5beb177a8372cea2a0d014835491e4886f77  ice: check whether PTP is initialized in ice_ptp_release()
+Synchronous Ethernet networks use a physical layer clock to syntonize
+the frequency across different network elements.
 
-elapsed time: 1214m
+Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+Equipment Clock (EEC) and have the ability to recover synchronization
+from the synchronization inputs - either traffic interfaces or external
+frequency sources.
+The EEC can synchronize its frequency (syntonize) to any of those sources.
+It is also able to select synchronization source through priority tables
+and synchronization status messaging. It also provides neccessary
+filtering and holdover capabilities
 
-configs tested: 52
-configs skipped: 3
+This patch series introduces basic interface for reading the Ethernet
+Equipment Clock (EEC) state on a SyncE capable device. This state gives
+information about the source of the syntonization signal (ether my port,
+or any external one) and the state of EEC. This interface is required\
+to implement Synchronization Status Messaging on upper layers.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+v2:
+- removed whitespace changes
+- fix issues reported by test robot
+v3:
+- Changed naming from SyncE to EEC
+- Clarify cover letter and commit message for patch 1
+v4:
+- Removed sync_source and pin_idx info
+- Changed one structure to attributes
+- Added EEC_SRC_PORT flag to indicate that the EEC is synchronized
+  to the recovered clock of a port that returns the state
+v5:
+- add EEC source as an optiona attribute
+- implement support for recovered clocks
+- align states returned by EEC to ITU-T G.781
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                                defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-s390                             allmodconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allyesconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
+Maciej Machnikowski (5):
+  ice: add support detecting features based on netlist
+  rtnetlink: Add new RTM_GETEECSTATE message to get SyncE status
+  ice: add support for reading SyncE DPLL state
+  rtnetlink: Add support for SyncE recovered clock configuration
+  ice: add support for SyncE recovered clocks
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice.h          |   7 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  94 ++++++-
+ drivers/net/ethernet/intel/ice/ice_common.c   | 175 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  17 +-
+ drivers/net/ethernet/intel/ice/ice_devids.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   6 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     | 138 ++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  34 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  94 +++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  25 ++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ include/linux/netdevice.h                     |  18 ++
+ include/uapi/linux/if_link.h                  |  53 ++++
+ include/uapi/linux/rtnetlink.h                |  10 +
+ net/core/rtnetlink.c                          | 253 ++++++++++++++++++
+ security/selinux/nlmsgtab.c                   |   6 +-
+ 16 files changed, 930 insertions(+), 4 deletions(-)
+
+-- 
+2.26.3
+
