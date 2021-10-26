@@ -1,63 +1,49 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Tue, 26 Oct 2021 17:46:28 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Clear synchronized addrs
- when adding VFs in switchdev mode
-Message-ID: <20211026154628.15787-1-marcin.szycik@linux.intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 26 Oct 2021 16:21:42 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/4] ice: transmit
+ improvement series
+In-Reply-To: <20211026000826.156803-1-jesse.brandeburg@intel.com>
+References: <20211026000826.156803-1-jesse.brandeburg@intel.com>
+Message-ID: <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When spawning VFs in switchdev mode, internal filter list of vsi is
-cleared, which includes MAC rules. However MAC entries stay on netdev's
-multicast list, which causes error message when bringing link up after
-spawning VFs ("Failed to delete MAC filters"). __dev_mc_sync() is
-called and tries to unsync addresses that were already removed
-internally when adding VFs.
+On Mon, 2021-10-25 at 17:08 -0700, Jesse Brandeburg wrote:
+> Modify the ice driver to make a few modest changes to the transmit
+> hot path in order to reduce the number of cycles used, particularly
+> with high intensity workloads such as pktgen or IP forwarding.
+> 
+> Several of these changes are just using simpler API calls in
+> netdevice.h (welcome to 2015!)
+> 
+> The VSI_DOWN patch is a simple fix to make sure the driver's
+> statements
+> about holding certain state bits for functions is enforced and
+> remains
+> that way.
+> 
+> Jesse Brandeburg (4):
+> ? ice: update to newer kernel API
+> ? ice: use prefetch methods
+> ? ice: tighter control over VSI_DOWN state
+> ? ice: use modern kernel API for kick
 
-This can be reproduced with:
-1) Load ice driver
-2) Change PF to switchdev mode
-3) Bring PF link up
-4) Bring PF link down
-5) Create a VF on PF
-6) Bring PF link up
+It looks like patch 2 never made it to the list [1]. Seems like the
+email issues may be further reaching than kernel.org.
 
-Added clearing of netdev's multicast (and also unicast) list when
-spawning VFs in switchdev mode, so the state of internal rule list and
-netdev's MAC list is consistent.
+Thanks,
+Tony
 
-Fixes: 1a1c40df2e80 ("ice: set and release switchdev environment")
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+[1] https://patchwork.ozlabs.org/project/intel-wired-
+lan/list/?series=268871
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 6cb50653b18d..d1d7389b0bff 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -19,6 +19,7 @@
- static int ice_eswitch_setup_env(struct ice_pf *pf)
- {
- 	struct ice_vsi *uplink_vsi = pf->switchdev.uplink_vsi;
-+	struct net_device *uplink_netdev = uplink_vsi->netdev;
- 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
- 	struct ice_port_info *pi = pf->hw.port_info;
- 	bool rule_added = false;
-@@ -27,6 +28,11 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
- 
- 	ice_remove_vsi_fltr(&pf->hw, uplink_vsi->idx);
- 
-+	netif_addr_lock_bh(uplink_netdev);
-+	__dev_uc_unsync(uplink_netdev, NULL);
-+	__dev_mc_unsync(uplink_netdev, NULL);
-+	netif_addr_unlock_bh(uplink_netdev);
-+
- 	if (ice_vsi_add_vlan(uplink_vsi, 0, ICE_FWD_TO_VSI))
- 		goto err_def_rx;
- 
--- 
-2.31.1
+> ?drivers/net/ethernet/intel/ice/ice_ethtool.c |? 6 ++-
+> ?drivers/net/ethernet/intel/ice/ice_main.c??? |? 7 ++--
+> ?drivers/net/ethernet/intel/ice/ice_txrx.c??? | 40 +++++++++++++-----
+> --
+> ?3 files changed, 34 insertions(+), 19 deletions(-)
+> 
 
