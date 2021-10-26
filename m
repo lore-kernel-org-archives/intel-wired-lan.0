@@ -1,30 +1,63 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 26 Oct 2021 17:30:26 +0200
-Subject: [Intel-wired-lan] Wrong date/time of messages (was: [PATCH
- intel-next 0/2] ice: ethtool -L fixes)
-In-Reply-To: <20211026164719.1766911-1-maciej.fijalkowski@intel.com>
-References: <20211026164719.1766911-1-maciej.fijalkowski@intel.com>
-Message-ID: <745fff43-4649-ac63-5c6e-6fb3877953c0@molgen.mpg.de>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Tue, 26 Oct 2021 17:46:28 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Clear synchronized addrs
+ when adding VFs in switchdev mode
+Message-ID: <20211026154628.15787-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Intel folks,
+When spawning VFs in switchdev mode, internal filter list of vsi is
+cleared, which includes MAC rules. However MAC entries stay on netdev's
+multicast list, which causes error message when bringing link up after
+spawning VFs ("Failed to delete MAC filters"). __dev_mc_sync() is
+called and tries to unsync addresses that were already removed
+internally when adding VFs.
 
+This can be reproduced with:
+1) Load ice driver
+2) Change PF to switchdev mode
+3) Bring PF link up
+4) Bring PF link down
+5) Create a VF on PF
+6) Bring PF link up
 
-On 26.10.21 18:47, Maciej Fijalkowski wrote:
+Added clearing of netdev's multicast (and also unicast) list when
+spawning VFs in switchdev mode, so the state of internal rule list and
+netdev's MAC list is consistent.
 
-[?]
+Fixes: 1a1c40df2e80 ("ice: set and release switchdev environment")
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Once again messages were sent to the list with a Date from the future. 
-Why can?t Intel employees work on systems with a correct clock?
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 6cb50653b18d..d1d7389b0bff 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -19,6 +19,7 @@
+ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ {
+ 	struct ice_vsi *uplink_vsi = pf->switchdev.uplink_vsi;
++	struct net_device *uplink_netdev = uplink_vsi->netdev;
+ 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
+ 	struct ice_port_info *pi = pf->hw.port_info;
+ 	bool rule_added = false;
+@@ -27,6 +28,11 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 
+ 	ice_remove_vsi_fltr(&pf->hw, uplink_vsi->idx);
+ 
++	netif_addr_lock_bh(uplink_netdev);
++	__dev_uc_unsync(uplink_netdev, NULL);
++	__dev_mc_unsync(uplink_netdev, NULL);
++	netif_addr_unlock_bh(uplink_netdev);
++
+ 	if (ice_vsi_add_vlan(uplink_vsi, 0, ICE_FWD_TO_VSI))
+ 		goto err_def_rx;
+ 
+-- 
+2.31.1
 
-It?d would be great if somebody from Intel would at least have the 
-courtesy to analyze and fix the root cause.
-
-
-Kind regards,
-
-Paul
