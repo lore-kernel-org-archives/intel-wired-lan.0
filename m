@@ -1,58 +1,35 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 25 Oct 2021 17:08:26 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 4/4] ice: use modern kernel
- API for kick
-In-Reply-To: <20211026000826.156803-1-jesse.brandeburg@intel.com>
-References: <20211026000826.156803-1-jesse.brandeburg@intel.com>
-Message-ID: <20211026000826.156803-5-jesse.brandeburg@intel.com>
+From: robert_s@gmx.net <robert_s@gmx.net>
+Date: Tue, 26 Oct 2021 02:22:25 +0200
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Allow disabling NBASE-T
+ suppression hack
+In-Reply-To: <3ec21b215c88604e4e8475240be9d11f5abdb1e5.camel@intel.com>
+References: <trinity-58e35e17-0323-4cde-bbed-1582c3520822-1634891867291@3c-app-gmx-bap44>
+ <9f4603a5-7811-c653-951b-777070f7ce54@molgen.mpg.de>
+ <392a6fe-e920-31b-42dc-a214e311233c@twofifty.com>
+ <trinity-7ec48fc1-b568-49df-8837-218ec2c431c4-1634940936574@3c-app-gmx-bs49>
+ <3ec21b215c88604e4e8475240be9d11f5abdb1e5.camel@intel.com>
+Message-ID: <trinity-71d0a350-a27f-4ed0-9c08-53a1f3f6b42a-1635207745364@3c-app-gmx-bap12>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The kernel gained a new interface for drivers to use to combine tail
-bump (doorbell) and BQL updates, attempt to use those new interfaces.
+From:?"Nguyen, Anthony L" <anthony.l.nguyen@intel.com>
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+> The community has changed their acceptance of private module
+> parameters. While previous ones were accepted, they are not accepting
+> any new additions.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index de9247d45c39..3987a0dd0e11 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1576,6 +1576,7 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
- 	struct sk_buff *skb;
- 	skb_frag_t *frag;
- 	dma_addr_t dma;
-+	bool kick;
- 
- 	td_tag = off->td_l2tag1;
- 	td_cmd = off->td_cmd;
-@@ -1657,9 +1658,6 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
- 		tx_buf = &tx_ring->tx_buf[i];
- 	}
- 
--	/* record bytecount for BQL */
--	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
--
- 	/* record SW timestamp if HW timestamp is not available */
- 	skb_tx_timestamp(first->skb);
- 
-@@ -1688,7 +1686,10 @@ ice_tx_map(struct ice_tx_ring *tx_ring, struct ice_tx_buf *first,
- 	ice_maybe_stop_tx(tx_ring, DESC_NEEDED);
- 
- 	/* notify HW of packet */
--	if (netif_xmit_stopped(txring_txq(tx_ring)) || !netdev_xmit_more())
-+	kick = __netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount,
-+				      netdev_xmit_more());
-+	if (kick)
-+		/* notify HW of packet */
- 		writel(i, tx_ring->tail);
- 
- 	return;
--- 
-2.31.1
+A reference would have been helpful, but I eventually found it myself:
 
+https://lore.kernel.org/netdev/20170324.144017.1545614773504954414.davem at davemloft.net/
+
+After short discussion on netdev, I realized that the module parameter is
+indeed not needed, so I'm revoking this patch.
+
+Instead, I'll submit another patch that only adds the missing documentation
+about NBASE-T support and how to enable it. That should be acceptable.
+
+Best regards,
+-Robert Schlabbach
