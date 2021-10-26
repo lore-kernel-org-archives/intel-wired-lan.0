@@ -1,8 +1,8 @@
 From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Tue, 26 Oct 2021 14:36:23 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Add a delay to let ME unconfigure
- s0ix when DPG_EXIT_DONE is already flagged
-Message-ID: <20211026063623.1363652-1-kai.heng.feng@canonical.com>
+Date: Tue, 26 Oct 2021 14:51:12 +0800
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: Add a delay to let ME
+ unconfigure s0ix when DPG_EXIT_DONE is already flagged
+Message-ID: <20211026065112.1366205-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,9 +15,13 @@ polling logic doesn't wait until ME really unconfigures s0ix.
 So check DPG_EXIT_DONE before issuing EXIT_DPG, and if it's already
 flagged, wait for 1 second to let ME unconfigure s0ix.
 
+Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix")
 Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
 Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
+v2:
+ Add missing "Fixes:" tag
+
  drivers/net/ethernet/intel/e1000e/netdev.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
