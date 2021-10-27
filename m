@@ -1,37 +1,64 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 27 Oct 2021 12:46:07 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/4] ice: transmit
- improvement series
-In-Reply-To: <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
-References: <20211026000826.156803-1-jesse.brandeburg@intel.com>
- <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
-Message-ID: <850d2742-2191-9cec-e585-dbbb1d796510@intel.com>
+Date: Wed, 27 Oct 2021 12:54:38 -0700
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
+ strip virtual channel messages
+In-Reply-To: <20211027144855.53214-1-michal.maloszewski@intel.com>
+References: <20211027144855.53214-1-michal.maloszewski@intel.com>
+Message-ID: <3a99e26a-1649-9ea1-cdaf-a670341398a4@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/26/2021 9:21 AM, Nguyen, Anthony L wrote:
+On 10/27/2021 7:48 AM, Michal Maloszewski wrote:
+> Modify netdev->features for vlan stripping based on virtual
+> channel messages received from the PF. Change is needed
+> to synchronize vlan strip status between PF sysfs and iavf ethtool.
+> 
+> Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
 
->> Jesse Brandeburg (4):
->>  ? ice: update to newer kernel API
->>  ? ice: use prefetch methods
->>  ? ice: tighter control over VSI_DOWN state
->>  ? ice: use modern kernel API for kick
-> 
-> It looks like patch 2 never made it to the list [1]. Seems like the
-> email issues may be further reaching than kernel.org.
-> 
-> Thanks,
-> Tony
-> 
-> [1] https://patchwork.ozlabs.org/project/intel-wired-
-> lan/list/?series=268871
+good so far.
 
-Thanks for letting me know!
-The issue was root caused to a typo in the To:email address on my end, 
-and I attempted to resend the patch with a correct reply-to, it seems to 
-have failed to do what I wanted (but did show up on patchwork now) so 
-please let me know if you want me to resend the whole series as a v2.
+> Title: Fix handling of vlan strip virtual channel messages
+> Change-type: DefectResolution
+> HSDES-number: 1809974314
+> HSDES-tenant: server_platf_lan.bug
+
+remove the above lines, not needed or wanted upstream.
+
+> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+> ---
+>   .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
+>   1 file changed, 42 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> index bdc6040361..dbce5c17ab 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> @@ -1456,6 +1456,24 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+>   	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+>   }
+>   
+> +/**
+> + * iavf_netdev_features_vlan_strip_set
+> + * @netdev: ptr to netdev being adjusted
+> + * @enable: enable or disable vlan strip
+> + *
+> + * Helper function to change vlan strip status in netdev->features.
+> + **/
+> +static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
+> +						const bool enable)
+> +{
+> +	if (enable)
+> +		netdev->features |=
+> +			NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
+> +	else
+> +		netdev->features &=
+> +			~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
+
+you're forgetting a call to netdev_update_features(), and without that, 
+layered devices won't know about the change.
+
 
