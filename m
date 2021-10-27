@@ -1,11 +1,12 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 27 Oct 2021 12:08:27 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/7] ice: Remove string
- printing for ice_status
-In-Reply-To: <20211007220127.70514-3-anthony.l.nguyen@intel.com>
-References: <20211007220127.70514-1-anthony.l.nguyen@intel.com>
- <20211007220127.70514-3-anthony.l.nguyen@intel.com>
-Message-ID: <BYAPR11MB3367561E57B4EE820BE6B7ECFC859@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Wed, 27 Oct 2021 13:16:22 +0000
+Subject: [Intel-wired-lan] [RFC v5 net-next 2/5] rtnetlink: Add new
+ RTM_GETEECSTATE message to get SyncE status
+In-Reply-To: <YXj7WkEb0PagWfSw@shredder>
+References: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
+ <20211026173146.1031412-3-maciej.machnikowski@intel.com>
+ <YXj7WkEb0PagWfSw@shredder>
+Message-ID: <PH0PR11MB495191854BF5470E9BF223F5EA859@PH0PR11MB4951.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,29 +16,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
-> Nguyen
-> Sent: Friday, October 8, 2021 3:31 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next 2/7] ice: Remove string printing for
-> ice_status
+> From: Ido Schimmel <idosch@idosch.org>
+> Sent: Wednesday, October 27, 2021 9:10 AM
+> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> Subject: Re: [RFC v5 net-next 2/5] rtnetlink: Add new RTM_GETEECSTATE
+> message to get SyncE status
 > 
-> Remove the ice_stat_str() function which prints the string representation of the
-> ice_status error code. With upcoming changes moving away from ice_status,
-> there will be no need for this function.
+> On Tue, Oct 26, 2021 at 07:31:43PM +0200, Maciej Machnikowski wrote:
+> > +/* SyncE section */
+> > +
+> > +enum if_eec_state {
+> > +	IF_EEC_STATE_INVALID = 0,
+> > +	IF_EEC_STATE_FREERUN,
+> > +	IF_EEC_STATE_LOCKED,
+> > +	IF_EEC_STATE_LOCKED_HO_ACQ,
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h          |   1 -
->  drivers/net/ethernet/intel/ice/ice_base.c     |   8 +-
->  drivers/net/ethernet/intel/ice/ice_devlink.c  |  24 +--
-> drivers/net/ethernet/intel/ice/ice_ethtool.c  |  28 +--
->  .../net/ethernet/intel/ice/ice_flex_pipe.c    |   8 +-
->  .../net/ethernet/intel/ice/ice_fw_update.c    |  24 +--
->  drivers/net/ethernet/intel/ice/ice_lib.c      |  96 +++++------
->  drivers/net/ethernet/intel/ice/ice_main.c     | 162 +++++-------------
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  48 +++---
->  9 files changed, 163 insertions(+), 236 deletions(-)
-> 
+> Is this referring to "Locked mode, acquiring holdover: This is a
+> temporary mode, when coming from free-run, to acquire holdover
+> memory."
+> ?
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Locked HO ACQ means locked and holdover acquired. It's the state that
+allows transferring to the holdover state. Locked means that we locked
+our frequency and started acquiring the holdover memory.
+ 
+> It seems ice isn't using it, so maybe drop it? Can be added later in
+> case we have a driver that can report it
+
+I'll update the driver in the next revision
+ 
+> There is also "Locked mode, holdover acquired: This is a steady state
+> mode, entered when holdover memory is acquired." But I assume that's
+> "IF_EEC_STATE_LOCKED"
+> 
+> > +	IF_EEC_STATE_HOLDOVER,
+> > +};
