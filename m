@@ -1,50 +1,55 @@
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Wed, 27 Oct 2021 06:32:50 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: remove unnecessary RTNL
- lock assert
-Message-ID: <20211027043250.5241-1-michal.swiatkowski@linux.intel.com>
+Date: Wed, 27 Oct 2021 06:36:54 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] ice: matching on nvgre key id
+Message-ID: <20211027043654.6445-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Follow changes in commit 7c3a0a018e67 ("net/{mlx5|nfp|bnxt}: Remove
-unnecessary RTNL lock assert").
-
-Remove the assert from the callback priv lookup function since it does
-not require RTNL lock and is already protected by flow_indr_block_lock.
-
-Having this assert in the ice_indr_block_priv_lookup leads to ugly
-assert failed information in dmesg after:
-- creating gretap tunnel
-- adding tc qdisc on the tunnel device
-- rmmod driver
-- insmod driver
-
-As this assert isn't needed, remove it.
+In ice driver nvgre header is stored in different structure than vxlan
+and geneve. Also the id can be 32 bit. Check tunnel type before adding
+encap key id matching to reflect these differences.
 
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
-This commit should be squashed with "ice: support for indirect notification"
+This commit should be squashed with "ice: support for GRE in eswitch"
 
- drivers/net/ethernet/intel/ice/ice_main.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 728c11103b37..d7ecbec93b11 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -8153,9 +8153,6 @@ ice_indr_block_priv_lookup(struct ice_netdev_priv *np,
- {
- 	struct ice_indr_block_priv *cb_priv;
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index 2fff16bb5d7c..4e1dac813339 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -138,10 +138,22 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
+ 		u32 tenant_id;
  
--	/* All callback list access should be protected by RTNL. */
--	ASSERT_RTNL();
--
- 	list_for_each_entry(cb_priv, &np->tc_indr_block_priv_list, list) {
- 		if (!cb_priv->netdev)
- 			return NULL;
+ 		list[i].type = ice_proto_type_from_tunnel(fltr->tunnel_type);
+-		tenant_id = be32_to_cpu(fltr->tenant_id) << 8;
+-		list[i].h_u.tnl_hdr.vni = cpu_to_be32(tenant_id);
+-		memcpy(&list[i].m_u.tnl_hdr.vni, "\xff\xff\xff\x00", 4);
+-		i++;
++		switch (fltr->tunnel_type) {
++		case TNL_VXLAN:
++		case TNL_GENEVE:
++			tenant_id = be32_to_cpu(fltr->tenant_id) << 8;
++			list[i].h_u.tnl_hdr.vni = cpu_to_be32(tenant_id);
++			memcpy(&list[i].m_u.tnl_hdr.vni, "\xff\xff\xff\x00", 4);
++			i++;
++			break;
++		case TNL_GRETAP:
++			list[i].h_u.nvgre_hdr.tni_flow = fltr->tenant_id;
++			memcpy(&list[i].m_u.nvgre_hdr.tni_flow, "\xff\xff\xff\xff", 4);
++			i++;
++			break;
++		default:
++			break;
++		}
+ 	}
+ 
+ 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
 -- 
 2.31.1
 
