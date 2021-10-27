@@ -1,78 +1,43 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 27 Oct 2021 14:04:47 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix VF failed to init
- adminq: -53
-Message-ID: <20211027120447.28075-1-mateusz.palczewski@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Wed, 27 Oct 2021 12:08:27 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 2/7] ice: Remove string
+ printing for ice_status
+In-Reply-To: <20211007220127.70514-3-anthony.l.nguyen@intel.com>
+References: <20211007220127.70514-1-anthony.l.nguyen@intel.com>
+ <20211007220127.70514-3-anthony.l.nguyen@intel.com>
+Message-ID: <BYAPR11MB3367561E57B4EE820BE6B7ECFC859@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Norbert Zulinski <norbertx.zulinski@intel.com>
 
-Fix the problem with init adminq in VF reset handler.
-When the PF finished reinitialize VF resource set VFR_VFACTIVE bit
-in VF Reset Status register. It is sign for VF driver among others
-to shut down and reinitialize the admin queue. VF handle reset procedure
-is sampling this register to check every 10ms. PF driver give up to 20ms
-to VF reset procedure. For a single VF reset it is enoungh time to do it
-but in case request VF reset twice, the first VF reset can be not
-completely finished when PF requests it one more time.
-Fixed by adding additional time for VF to finish reset procedure
-before sending next VF reset request by PF.
 
-Fixes: 5c3c48ac6bf5 ("i40e: implement virtual device interface")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 2 ++
- 2 files changed, 6 insertions(+)
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
+> Nguyen
+> Sent: Friday, October 8, 2021 3:31 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next 2/7] ice: Remove string printing for
+> ice_status
+> 
+> Remove the ice_stat_str() function which prints the string representation of the
+> ice_status error code. With upcoming changes moving away from ice_status,
+> there will be no need for this function.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |   1 -
+>  drivers/net/ethernet/intel/ice/ice_base.c     |   8 +-
+>  drivers/net/ethernet/intel/ice/ice_devlink.c  |  24 +--
+> drivers/net/ethernet/intel/ice/ice_ethtool.c  |  28 +--
+>  .../net/ethernet/intel/ice/ice_flex_pipe.c    |   8 +-
+>  .../net/ethernet/intel/ice/ice_fw_update.c    |  24 +--
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  96 +++++------
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 162 +++++-------------
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  48 +++---
+>  9 files changed, 163 insertions(+), 236 deletions(-)
+> 
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 5a488ce..ec0e52c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -172,6 +172,9 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
- 	    !test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
- 		return;
- 
-+	if (ktime_get_ns() - vf->reset_timestamp < I40E_VF_RESET_TIME_MIN)
-+		usleep_range(30000, 60000);
-+
- 	abs_vf_id = vf->vf_id + (int)vf->pf->hw.func_caps.vf_base_id;
- 
- 	pfe.event = VIRTCHNL_EVENT_RESET_IMPENDING;
-@@ -1536,6 +1539,7 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
- 	i40e_cleanup_reset_vf(vf);
- 
- 	i40e_flush(hw);
-+	vf->reset_timestamp = ktime_get_ns();
- 	clear_bit(__I40E_VF_DISABLE, pf->state);
- 
- 	return true;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 49575a6..0e7d555 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -19,6 +19,7 @@
- #define I40E_MAX_VF_PROMISC_FLAGS	3
- 
- #define I40E_VF_STATE_WAIT_COUNT	20
-+#define I40E_VF_RESET_TIME_MIN		30000000	// time in nsec
- 
- /* Various queue ctrls */
- enum i40e_queue_ctrl {
-@@ -80,6 +81,7 @@ struct i40e_vf {
- 	u16 port_vlan_id;
- 	bool pf_set_mac;	/* The VMM admin set the VF MAC address */
- 	bool trusted;
-+	u64 reset_timestamp;
- 
- 	/* VSI indices - actual VSI pointers are maintained in the PF structure
- 	 * When assigned, these will be non-zero, because VSI 0 is always
--- 
-2.27.0
-
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
