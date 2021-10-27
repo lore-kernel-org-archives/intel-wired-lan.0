@@ -1,55 +1,64 @@
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Wed, 27 Oct 2021 06:36:54 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: matching on nvgre key id
-Message-ID: <20211027043654.6445-1-michal.swiatkowski@linux.intel.com>
+From: Ido Schimmel <idosch@idosch.org>
+Date: Wed, 27 Oct 2021 09:50:08 +0300
+Subject: [Intel-wired-lan] [RFC v5 net-next 0/5] Add RTNL interface for
+ SyncE
+In-Reply-To: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
+References: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
+Message-ID: <YXj2oKjjobd0ZgBi@shredder>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In ice driver nvgre header is stored in different structure than vxlan
-and geneve. Also the id can be 32 bit. Check tunnel type before adding
-encap key id matching to reflect these differences.
+On Tue, Oct 26, 2021 at 07:31:41PM +0200, Maciej Machnikowski wrote:
+> Synchronous Ethernet networks use a physical layer clock to syntonize
+> the frequency across different network elements.
+> 
+> Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+> Equipment Clock (EEC) and have the ability to recover synchronization
+> from the synchronization inputs - either traffic interfaces or external
+> frequency sources.
+> The EEC can synchronize its frequency (syntonize) to any of those sources.
+> It is also able to select synchronization source through priority tables
+> and synchronization status messaging. It also provides neccessary
+> filtering and holdover capabilities
+> 
+> This patch series introduces basic interface for reading the Ethernet
+> Equipment Clock (EEC) state on a SyncE capable device. This state gives
+> information about the source of the syntonization signal (ether my port,
+> or any external one) and the state of EEC. This interface is required\
+> to implement Synchronization Status Messaging on upper layers.
+> 
+> v2:
+> - removed whitespace changes
+> - fix issues reported by test robot
+> v3:
+> - Changed naming from SyncE to EEC
+> - Clarify cover letter and commit message for patch 1
+> v4:
+> - Removed sync_source and pin_idx info
+> - Changed one structure to attributes
+> - Added EEC_SRC_PORT flag to indicate that the EEC is synchronized
+>   to the recovered clock of a port that returns the state
+> v5:
+> - add EEC source as an optiona attribute
+> - implement support for recovered clocks
+> - align states returned by EEC to ITU-T G.781
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
-This commit should be squashed with "ice: support for GRE in eswitch"
+Hi,
 
- drivers/net/ethernet/intel/ice/ice_tc_lib.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+Thanks for continuing to work on this.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index 2fff16bb5d7c..4e1dac813339 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -138,10 +138,22 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
- 		u32 tenant_id;
- 
- 		list[i].type = ice_proto_type_from_tunnel(fltr->tunnel_type);
--		tenant_id = be32_to_cpu(fltr->tenant_id) << 8;
--		list[i].h_u.tnl_hdr.vni = cpu_to_be32(tenant_id);
--		memcpy(&list[i].m_u.tnl_hdr.vni, "\xff\xff\xff\x00", 4);
--		i++;
-+		switch (fltr->tunnel_type) {
-+		case TNL_VXLAN:
-+		case TNL_GENEVE:
-+			tenant_id = be32_to_cpu(fltr->tenant_id) << 8;
-+			list[i].h_u.tnl_hdr.vni = cpu_to_be32(tenant_id);
-+			memcpy(&list[i].m_u.tnl_hdr.vni, "\xff\xff\xff\x00", 4);
-+			i++;
-+			break;
-+		case TNL_GRETAP:
-+			list[i].h_u.nvgre_hdr.tni_flow = fltr->tenant_id;
-+			memcpy(&list[i].m_u.nvgre_hdr.tni_flow, "\xff\xff\xff\xff", 4);
-+			i++;
-+			break;
-+		default:
-+			break;
-+		}
- 	}
- 
- 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
--- 
-2.31.1
+I was under the impression (might be wrong) that the consensus last time
+was to add a new ethtool message to query the mapping between the port
+and the EEC clock (similar to TSINFO_GET) and then use a new generic
+netlink family to perform operations on the clock itself.
 
+At least in the case of RTM_GETEECSTATE and a multi-port adapter, you
+would actually query the same state via each netdev, but without
+realizing it's the same clock.
+
+I think another reason to move to ethtool was that this stuff is
+completely specific to Ethernet and not applicable to all logical
+netdevs.
