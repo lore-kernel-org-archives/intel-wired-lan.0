@@ -1,64 +1,85 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 27 Oct 2021 12:54:38 -0700
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
- strip virtual channel messages
-In-Reply-To: <20211027144855.53214-1-michal.maloszewski@intel.com>
-References: <20211027144855.53214-1-michal.maloszewski@intel.com>
-Message-ID: <3a99e26a-1649-9ea1-cdaf-a670341398a4@intel.com>
+From: Brelinski, Tony <tony.brelinski@intel.com>
+Date: Wed, 27 Oct 2021 20:55:29 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] i40e: Fix changing
+ previously set num_queue_pairs for PFs
+In-Reply-To: <20210423114326.22393-2-eryk.roch.rybak@intel.com>
+References: <20210423114326.22393-1-eryk.roch.rybak@intel.com>
+ <20210423114326.22393-2-eryk.roch.rybak@intel.com>
+Message-ID: <MN2PR11MB42244C849644036FA11758AF82859@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/27/2021 7:48 AM, Michal Maloszewski wrote:
-> Modify netdev->features for vlan stripping based on virtual
-> channel messages received from the PF. Change is needed
-> to synchronize vlan strip status between PF sysfs and iavf ethtool.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Rybak, Eryk Roch
+> Sent: Friday, April 23, 2021 4:43 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Rybak, Eryk Roch <eryk.roch.rybak@intel.com>; Patynowski,
+> PrzemyslawX <przemyslawx.patynowski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] i40e: Fix changing
+> previously set num_queue_pairs for PFs
 > 
-> Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
-
-good so far.
-
-> Title: Fix handling of vlan strip virtual channel messages
-> Change-type: DefectResolution
-> HSDES-number: 1809974314
-> HSDES-tenant: server_platf_lan.bug
-
-remove the above lines, not needed or wanted upstream.
-
-> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+> Currently, the i40e_vsi_setup_queue_map is basing the count of queues in
+> TCs on a VSI's alloc_queue_pairs member which is not changed throughout
+> any user's action (for example via ethtool's set_channels callback).
+> 
+> This implies that vsi->tc_config.tc_info[n].qcount value that is given to the
+> kernel via netdev_set_tc_queue() that notifies about the count of queues
+> per particular traffic class is constant even if user has changed the total count
+> of queues.
+> 
+> This in turn caused the kernel warning after setting the queue count to the
+> lower value than the initial one:
+> 
+> $ ethtool -l ens801f0
+> Channel parameters for ens801f0:
+> Pre-set maximums:
+> RX:             0
+> TX:             0
+> Other:          1
+> Combined:       64
+> Current hardware settings:
+> RX:             0
+> TX:             0
+> Other:          1
+> Combined:       64
+> 
+> $ ethtool -L ens801f0 combined 40
+> 
+> [dmesg]
+> Number of in use tx queues changed invalidating tc mappings. Priority traffic
+> classification disabled!
+> 
+> Reason was that vsi->alloc_queue_pairs stayed at 64 value which was used
+> to set the qcount on TC0 (by default only TC0 exists so all of the existing
+> queues are assigned to TC0). we update the offset/qcount via
+> netdev_set_tc_queue() back to the old value but then the
+> netif_set_real_num_tx_queues() is using the vsi->num_queue_pairs as a
+> value which got set to 40.
+> 
+> Fix it by using vsi->req_queue_pairs as a queue count that will be distributed
+> across TCs. Do it only for non-zero values, which implies that user actually
+> requested the new count of queues.
+> 
+> For VSIs other than main, stay with the vsi->alloc_queue_pairs as we only
+> allow manipulating the queue count on main VSI.
+> 
+> Fixes: bc6d33c8d93f ("i40e: Fix the number of queues available to be mapped
+> for use")
+> Co-developed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Co-developed-by: Przemyslaw Patynowski
+> <przemyslawx.patynowski@intel.com>
+> Signed-off-by: Przemyslaw Patynowski
+> <przemyslawx.patynowski@intel.com>
+> Signed-off-by: Eryk Rybak <eryk.roch.rybak@intel.com>
 > ---
->   .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
->   1 file changed, 42 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index bdc6040361..dbce5c17ab 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> @@ -1456,6 +1456,24 @@ void iavf_request_reset(struct iavf_adapter *adapter)
->   	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
->   }
->   
-> +/**
-> + * iavf_netdev_features_vlan_strip_set
-> + * @netdev: ptr to netdev being adjusted
-> + * @enable: enable or disable vlan strip
-> + *
-> + * Helper function to change vlan strip status in netdev->features.
-> + **/
-> +static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
-> +						const bool enable)
-> +{
-> +	if (enable)
-> +		netdev->features |=
-> +			NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
-> +	else
-> +		netdev->features &=
-> +			~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 35 ++++++++++++++-------
+>  1 file changed, 23 insertions(+), 12 deletions(-)
 
-you're forgetting a call to netdev_update_features(), and without that, 
-layered devices won't know about the change.
+Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
 
