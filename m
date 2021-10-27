@@ -1,82 +1,37 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 27 Oct 2021 12:38:36 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1 2/4] ice: use prefetch methods
-In-Reply-To: <20211023004128.86999-1-jesse.brandeburg@intel.com>
-References: <20211023004128.86999-1-jesse.brandeburg@intel.com>
-Message-ID: <20211027193836.372561-1-jesse.brandeburg@intel.com>
+Date: Wed, 27 Oct 2021 12:46:07 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/4] ice: transmit
+ improvement series
+In-Reply-To: <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
+References: <20211026000826.156803-1-jesse.brandeburg@intel.com>
+ <7afd99cc66d66f81ce68e9bd9e9cc116cefab1eb.camel@intel.com>
+Message-ID: <850d2742-2191-9cec-e585-dbbb1d796510@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The kernel provides some prefetch mechanisms to speed up commonly
-cold cache line accesses during receive processing. Since these are
-software structures it helps to have these strategically placed
-prefetches.
+On 10/26/2021 9:21 AM, Nguyen, Anthony L wrote:
 
-Be careful to call BQL prefetch complete only for non XDP queues.
+>> Jesse Brandeburg (4):
+>>  ? ice: update to newer kernel API
+>>  ? ice: use prefetch methods
+>>  ? ice: tighter control over VSI_DOWN state
+>>  ? ice: use modern kernel API for kick
+> 
+> It looks like patch 2 never made it to the list [1]. Seems like the
+> email issues may be further reaching than kernel.org.
+> 
+> Thanks,
+> Tony
+> 
+> [1] https://patchwork.ozlabs.org/project/intel-wired-
+> lan/list/?series=268871
 
-Co-developed-by: Piotr Raczynski <piotr.raczynski@intel.com>
-Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
-Testing Hints:
-Run AF_XDP socket and then terminate it or run xdp2
-sample and send some traffic into the port.
-
-Performance numbers for xdp2 sample are not noticeably
-affected by introducing branch from this patch.
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 12a2edd13877..de9247d45c39 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -3,8 +3,9 @@
- 
- /* The driver transmit and receive code */
- 
--#include <linux/prefetch.h>
- #include <linux/mm.h>
-+#include <linux/netdevice.h>
-+#include <linux/prefetch.h>
- #include <linux/bpf_trace.h>
- #include <net/dsfield.h>
- #include <net/xdp.h>
-@@ -219,6 +220,10 @@ static bool ice_clean_tx_irq(struct ice_tx_ring *tx_ring, int napi_budget)
- 	struct ice_tx_desc *tx_desc;
- 	struct ice_tx_buf *tx_buf;
- 
-+	/* get the bql data ready */
-+	if (!ice_ring_is_xdp(tx_ring))
-+		netdev_txq_bql_complete_prefetchw(txring_txq(tx_ring));
-+
- 	tx_buf = &tx_ring->tx_buf[i];
- 	tx_desc = ICE_TX_DESC(tx_ring, i);
- 	i -= tx_ring->count;
-@@ -232,6 +237,9 @@ static bool ice_clean_tx_irq(struct ice_tx_ring *tx_ring, int napi_budget)
- 		if (!eop_desc)
- 			break;
- 
-+		/* follow the guidelines of other drivers */
-+		prefetchw(&tx_buf->skb->users);
-+
- 		smp_rmb();	/* prevent any other reads prior to eop_desc */
- 
- 		ice_trace(clean_tx_irq, tx_ring, tx_desc, tx_buf);
-@@ -2265,6 +2273,9 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_tx_ring *tx_ring)
- 		return NETDEV_TX_BUSY;
- 	}
- 
-+	/* prefetch for bql data which is infrequently used */
-+	netdev_txq_bql_enqueue_prefetchw(txring_txq(tx_ring));
-+
- 	offload.tx_ring = tx_ring;
- 
- 	/* record the location of the first descriptor for this packet */
--- 
-2.31.1
+Thanks for letting me know!
+The issue was root caused to a typo in the To:email address on my end, 
+and I attempted to resend the patch with a correct reply-to, it seems to 
+have failed to do what I wanted (but did show up on patchwork now) so 
+please let me know if you want me to resend the whole series as a v2.
 
