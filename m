@@ -1,65 +1,65 @@
-From: Ido Schimmel <idosch@idosch.org>
-Date: Wed, 27 Oct 2021 18:10:46 +0300
-Subject: [Intel-wired-lan] [RFC v5 net-next 2/5] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <PH0PR11MB495191854BF5470E9BF223F5EA859@PH0PR11MB4951.namprd11.prod.outlook.com>
-References: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
- <20211026173146.1031412-3-maciej.machnikowski@intel.com>
- <YXj7WkEb0PagWfSw@shredder>
- <PH0PR11MB495191854BF5470E9BF223F5EA859@PH0PR11MB4951.namprd11.prod.outlook.com>
-Message-ID: <YXlr9jEZ6jrywpe9@shredder>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Wed, 27 Oct 2021 15:51:56 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix adopting new combined
+ setting
+Message-ID: <20211027155156.54453-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 27, 2021 at 01:16:22PM +0000, Machnikowski, Maciej wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Ido Schimmel <idosch@idosch.org>
-> > Sent: Wednesday, October 27, 2021 9:10 AM
-> > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> > Subject: Re: [RFC v5 net-next 2/5] rtnetlink: Add new RTM_GETEECSTATE
-> > message to get SyncE status
-> > 
-> > On Tue, Oct 26, 2021 at 07:31:43PM +0200, Maciej Machnikowski wrote:
-> > > +/* SyncE section */
-> > > +
-> > > +enum if_eec_state {
-> > > +	IF_EEC_STATE_INVALID = 0,
-> > > +	IF_EEC_STATE_FREERUN,
-> > > +	IF_EEC_STATE_LOCKED,
-> > > +	IF_EEC_STATE_LOCKED_HO_ACQ,
-> > 
-> > Is this referring to "Locked mode, acquiring holdover: This is a
-> > temporary mode, when coming from free-run, to acquire holdover
-> > memory."
-> > ?
-> 
-> Locked HO ACQ means locked and holdover acquired. It's the state that
-> allows transferring to the holdover state. Locked means that we locked
-> our frequency and started acquiring the holdover memory.
+New combined setting is fixed adopt after VF reset.
+This has been implemented by call reinit interrupt scheme
+during VF reset.
+Without this fix new combined setting has never been adopted.
 
-So that's a transient state, right? FWIW, I find it weird to call such a
-state "LOCKED".
+Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
->  
-> > It seems ice isn't using it, so maybe drop it? Can be added later in
-> > case we have a driver that can report it
-> 
-> I'll update the driver in the next revision
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 80437ef26..355f98924 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -2233,7 +2233,8 @@ continue_reset:
+ 			 err);
+ 	adapter->aq_required = 0;
+ 
+-	if (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED) {
++	if ((adapter->flags & IAVF_FLAG_REINIT_MSIX_NEEDED) ||
++	    (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED)) {
+ 		err = iavf_reinit_interrupt_scheme(adapter);
+ 		if (err)
+ 			goto reset_err;
+@@ -2304,10 +2305,11 @@ continue_reset:
+ 		if (err)
+ 			goto reset_err;
+ 
+-		if (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED) {
+-			err = iavf_request_traffic_irqs(adapter, netdev->name);
+-			if (err)
+-				goto reset_err;
++	if ((adapter->flags & IAVF_FLAG_REINIT_MSIX_NEEDED) ||
++	    (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED)) {
++		err = iavf_request_traffic_irqs(adapter, netdev->name);
++		if (err)
++			goto reset_err;
+ 
+ 			adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
+ 		}
+@@ -2321,6 +2323,8 @@ continue_reset:
+ 		adapter->state = __IAVF_DOWN;
+ 		wake_up(&adapter->down_waitqueue);
+ 	}
++
++	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
+ 	mutex_unlock(&adapter->client_lock);
+ 	mutex_unlock(&adapter->crit_lock);
+ 
+-- 
+2.27.0
 
-You mean update it to use "IF_EEC_STATE_LOCKED_HO_ACQ" instead of
-"IF_EEC_STATE_LOCKED"?
-
-Regardless, would be good to document these values.
-
->  
-> > There is also "Locked mode, holdover acquired: This is a steady state
-> > mode, entered when holdover memory is acquired." But I assume that's
-> > "IF_EEC_STATE_LOCKED"
-> > 
-> > > +	IF_EEC_STATE_HOLDOVER,
-> > > +};
