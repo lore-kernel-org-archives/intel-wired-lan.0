@@ -1,65 +1,50 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Wed, 27 Oct 2021 15:51:56 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix adopting new combined
- setting
-Message-ID: <20211027155156.54453-1-michal.maloszewski@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Wed, 27 Oct 2021 16:49:53 +0000
+Subject: [Intel-wired-lan] [next-queue v2 4/4] ice: support for GRE in
+ eswitch
+In-Reply-To: <20211012183106.2315477-5-anthony.l.nguyen@intel.com>
+References: <20211012183106.2315477-1-anthony.l.nguyen@intel.com>
+ <20211012183106.2315477-5-anthony.l.nguyen@intel.com>
+Message-ID: <MW3PR11MB4554903A2C75D02CC92ADB319C859@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-New combined setting is fixed adopt after VF reset.
-This has been implemented by call reinit interrupt scheme
-during VF reset.
-Without this fix new combined setting has never been adopted.
-
-Fixes: 129cf89e5856 ("iavf: rename functions and structs to new name")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 80437ef26..355f98924 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2233,7 +2233,8 @@ continue_reset:
- 			 err);
- 	adapter->aq_required = 0;
- 
--	if (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED) {
-+	if ((adapter->flags & IAVF_FLAG_REINIT_MSIX_NEEDED) ||
-+	    (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED)) {
- 		err = iavf_reinit_interrupt_scheme(adapter);
- 		if (err)
- 			goto reset_err;
-@@ -2304,10 +2305,11 @@ continue_reset:
- 		if (err)
- 			goto reset_err;
- 
--		if (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED) {
--			err = iavf_request_traffic_irqs(adapter, netdev->name);
--			if (err)
--				goto reset_err;
-+	if ((adapter->flags & IAVF_FLAG_REINIT_MSIX_NEEDED) ||
-+	    (adapter->flags & IAVF_FLAG_REINIT_ITR_NEEDED)) {
-+		err = iavf_request_traffic_irqs(adapter, netdev->name);
-+		if (err)
-+			goto reset_err;
- 
- 			adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
- 		}
-@@ -2321,6 +2323,8 @@ continue_reset:
- 		adapter->state = __IAVF_DOWN;
- 		wake_up(&adapter->down_waitqueue);
- 	}
-+
-+	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
- 	mutex_unlock(&adapter->client_lock);
- 	mutex_unlock(&adapter->crit_lock);
- 
--- 
-2.27.0
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Tony Nguyen
+>Sent: Wednesday, October 13, 2021 12:01 AM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [next-queue v2 4/4] ice: support for GRE in eswitch
+>
+>From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>
+>Mostly reuse code from geneve and vxlan in TC parsing code. Add new GRE
+>header to match on correct fields. Create new dummy packets with GRE fields.
+>
+>Instead of checking if any encap values are presented in TC flower, check if
+>device is tunnel type or redirect is to tunnel device. This will allow adding all
+>combination of rules. For example filters only with inner fields.
+>
+>Return error in case device isn't tunnel but encap values are presented.
+>
+>gre example:
+>- create tunnel device
+>ip l add $NVGRE_DEV type gretap remote $NVGRE_REM_IP local $VF1_IP \ dev
+>$PF
+>- add tc filter (in switchdev mode)
+>tc filter add dev $NVGRE_DEV protocol ip parent ffff: flower dst_ip \
+>$NVGRE1_IP action mirred egress redirect dev $VF1_PR
+>
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>---
+> .../net/ethernet/intel/ice/ice_flex_pipe.c    |   4 +
+> .../net/ethernet/intel/ice/ice_flex_type.h    |   2 +
+> .../ethernet/intel/ice/ice_protocol_type.h    |  10 ++
+> drivers/net/ethernet/intel/ice/ice_switch.c   | 111 ++++++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  28 +++--
+> 5 files changed, 145 insertions(+), 10 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
