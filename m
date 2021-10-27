@@ -1,36 +1,43 @@
-From: Ido Schimmel <idosch@idosch.org>
-Date: Wed, 27 Oct 2021 10:10:18 +0300
-Subject: [Intel-wired-lan] [RFC v5 net-next 2/5] rtnetlink: Add new
- RTM_GETEECSTATE message to get SyncE status
-In-Reply-To: <20211026173146.1031412-3-maciej.machnikowski@intel.com>
-References: <20211026173146.1031412-1-maciej.machnikowski@intel.com>
- <20211026173146.1031412-3-maciej.machnikowski@intel.com>
-Message-ID: <YXj7WkEb0PagWfSw@shredder>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 27 Oct 2021 08:56:07 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add helper function
+ to go from pci_dev to adapter
+In-Reply-To: <20210915064123.69945-1-karen.sornek@intel.com>
+References: <20210915064123.69945-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB5621D240B634033A5BB9B029AB859@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 26, 2021 at 07:31:43PM +0200, Maciej Machnikowski wrote:
-> +/* SyncE section */
-> +
-> +enum if_eec_state {
-> +	IF_EEC_STATE_INVALID = 0,
-> +	IF_EEC_STATE_FREERUN,
-> +	IF_EEC_STATE_LOCKED,
-> +	IF_EEC_STATE_LOCKED_HO_ACQ,
 
-Is this referring to "Locked mode, acquiring holdover: This is a
-temporary mode, when coming from free-run, to acquire holdover memory."
-?
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Karen Sornek
+> Sent: ?roda, 15 wrze?nia 2021 08:41
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add helper function to go
+> from pci_dev to adapter
+> 
+> Add helper function to go from pci_dev to adapter to make work simple - to
+> go from a pci_dev to the adapter structure and make netdev assigment
+> instead of having to go to the net_device then the adapter.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 24 +++++++++++++++------
+>  1 file changed, 17 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 80437ef26..39620fe6c 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -51,6 +51,15 @@ MODULE_LICENSE("GPL v2");  static const struct
+> net_device_ops iavf_netdev_ops;  struct workqueue_struct *iavf_wq;
+> 
 
-It seems ice isn't using it, so maybe drop it? Can be added later in
-case we have a driver that can report it
-
-There is also "Locked mode, holdover acquired: This is a steady state
-mode, entered when holdover memory is acquired." But I assume that's
-"IF_EEC_STATE_LOCKED"
-
-> +	IF_EEC_STATE_HOLDOVER,
-> +};
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
