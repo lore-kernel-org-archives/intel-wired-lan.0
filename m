@@ -1,50 +1,176 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Thu, 28 Oct 2021 06:41:15 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix refreshing iavf
- adapter stats on ethtool request
-In-Reply-To: <20210915090100.25340-1-jedrzej.jagielski@intel.com>
-References: <20210915090100.25340-1-jedrzej.jagielski@intel.com>
-Message-ID: <DM8PR11MB562197638B086A9F61623145AB869@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Thu, 28 Oct 2021 08:43:16 +0200
+Subject: [Intel-wired-lan] [PATCH v7 1/2] ice: reduce time to read
+ Option ROM CIVD data
+In-Reply-To: <20211027232255.669167-1-jacob.e.keller@intel.com>
+References: <20211027232255.669167-1-jacob.e.keller@intel.com>
+Message-ID: <a9ab1f26-69f6-9f31-8ffb-14a7bfa21505@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+[Cc: +linux-pci for ideas how to work with Option ROMs]
+
+Dear Jacob,
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jedrzej Jagielski
-> Sent: ?roda, 15 wrze?nia 2021 11:01
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix refreshing iavf adapter
-> stats on ethtool request
+On 28.10.21 01:22, Jacob Keller wrote:
+> During probe and device reset, the ice driver reads some data from the
+> NVM image as part of ice_init_nvm. Part of this data includes a section
+> of the Option ROM which contains version information.
 > 
-> Currently iavf adapter statistics are refreshed only in a watchdog task,
-> triggered approximately every two seconds, which causes some ethtool
-> requests to return outdated values.
+> The function ice_get_orom_civd_data is used to locate the '$CIV' data
+> section of the Option ROM.
 > 
-> Add explicit statistics refresh when requested by ethtool -S.
+> Timing of ice_probe and ice_rebuild indicate that the
+> ice_get_orom_civd_data function takes about 10 seconds to finish
+> executing.
 > 
-> Fixes: b476b0030e61 ("iavf: Move commands processing to the separate
-> function")
-> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> The function locates the section by scanning the Option ROM every 512
+> bytes. This requires a significant number of NVM read accesses, since
+> the Option ROM bank is 500KB. In the worst case it would take about 1000
+> reads. Worse, all PFs serialize this operation during reload because of
+> acquiring the NVM semaphore.
+> 
+> The CIVD section is located at the end of the Option ROM image data.
+> Unfortunately, the driver has no easy method to determine the offset
+> manually. Practical experiments have shown that the data could be at
+> a variety of locations, so simply reversing the scanning order is not
+> sufficient to reduce the overall read time.
+> 
+> Instead, copy the entire contents of the Option ROM into memory. This
+> allows reading the data using 4Kb pages instead of 512 bytes at a time.
+> This reduces the total number of firmware commands by a factor of 8. In
+> addition, reading the whole section together at once allows better
+> indication to firmware of when we're "done".
+> 
+> Re-write ice_get_orom_civd_data to allocate virtual memory to store the
+> Option ROM data. Copy the entire OptionROM contents at once using
+
+Option ROM
+
+> ice_read_flash_module. Finally, use this memory copy to scan for the
+> '$CIV' section.
+> 
+> This change significantly reduces the time to read the Option ROM CIVD
+> section from ~10 seconds down to ~1 second. This has a significant
+> impact on the total time to complete a driver rebuild or probe.
+
+Thank you for taking up the challenge and looking into this, and for 
+decreasing the time.
+
+OT: Out of curiosity, how does it work on UEFI systems without using 
+Compatibility System Mode (CSM) and just ?EFI drivers??
+
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
-> V2: Squash 44a4808a78f6 ("iavf: Fix ethtool stats request scheduling")
-> V3: Change value returning by iavf_process_aq_command()
-> ---
->  drivers/net/ethernet/intel/iavf/iavf.h         |  2 ++
->  drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  3 +++
->  drivers/net/ethernet/intel/iavf/iavf_main.c    | 18 ++++++++++++++++++
->  3 files changed, 23 insertions(+)
+> Changes since v6
+> * fix a memory leak
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 21c95775509a..afe6b0d24a9a 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> Changes since v5
+> * new patch
+> 
+>   drivers/net/ethernet/intel/ice/ice_nvm.c | 48 ++++++++++++++++++------
+>   1 file changed, 36 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> index 941bfce97bf4..c5a39aa8ac94 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> @@ -619,7 +619,7 @@ static int
+>   ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
+>   		       struct ice_orom_civd_info *civd)
+>   {
+> -	struct ice_orom_civd_info tmp;
+> +	u8 *orom_data;
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+I know the function names use orom, but oprom is already used in other 
+subsystems.
+
+>   	int status;
+>   	u32 offset;
+>   
+> @@ -627,36 +627,60 @@ ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
+>   	 * The first 4 bytes must contain the ASCII characters "$CIV".
+>   	 * A simple modulo 256 sum of all of the bytes of the structure must
+>   	 * equal 0.
+> +	 *
+> +	 * The exact location is unknown and varies between images but is
+> +	 * usually somewhere in the middle of the bank. We need to scan the
+> +	 * Option ROM bank to locate it.
+> +	 *
+> +	 * It's significantly faster to read the entire Option ROM up front
+> +	 * using the maximum page size, than to read each possible location
+> +	 * with a separate firmware command.
+>   	 */
+> +	orom_data = vzalloc(hw->flash.banks.orom_size);
+> +	if (!orom_data)
+> +		return -ENOMEM;
+> +
+> +	status = ice_read_flash_module(hw, bank, ICE_SR_1ST_OROM_BANK_PTR, 0,
+> +				       orom_data, hw->flash.banks.orom_size);
+> +	if (status) {
+> +		ice_debug(hw, ICE_DBG_NVM, "Unable to read Option ROM data\n");
+> +		return status;
+> +	}
+> +
+> +	/* Scan the memory buffer to locate the CIVD data section */
+>   	for (offset = 0; (offset + 512) <= hw->flash.banks.orom_size; offset += 512) {
+> +		struct ice_orom_civd_info *tmp;
+>   		u8 sum = 0, i;
+>   
+> -		status = ice_read_flash_module(hw, bank, ICE_SR_1ST_OROM_BANK_PTR,
+> -					       offset, (u8 *)&tmp, sizeof(tmp));
+> -		if (status) {
+> -			ice_debug(hw, ICE_DBG_NVM, "Unable to read Option ROM CIVD data\n");
+> -			return status;
+> -		}
+> +		tmp = (struct ice_orom_civd_info *)&orom_data[offset];
+>   
+>   		/* Skip forward until we find a matching signature */
+> -		if (memcmp("$CIV", tmp.signature, sizeof(tmp.signature)) != 0)
+> +		if (memcmp("$CIV", tmp->signature, sizeof(tmp->signature)) != 0)
+>   			continue;
+>   
+> +		ice_debug(hw, ICE_DBG_NVM, "Found CIVD section at offset %u\n",
+> +			  offset);
+> +
+>   		/* Verify that the simple checksum is zero */
+> -		for (i = 0; i < sizeof(tmp); i++)
+> +		for (i = 0; i < sizeof(*tmp); i++)
+>   			/* cppcheck-suppress objectIndex */
+> -			sum += ((u8 *)&tmp)[i];
+> +			sum += ((u8 *)tmp)[i];
+>   
+>   		if (sum) {
+>   			ice_debug(hw, ICE_DBG_NVM, "Found CIVD data with invalid checksum of %u\n",
+>   				  sum);
+> -			return -EIO;
+> +			goto err_invalid_checksum;
+>   		}
+>   
+> -		*civd = tmp;
+> +		*civd = *tmp;
+> +		vfree(orom_data);
+>   		return 0;
+>   	}
+>   
+> +	ice_debug(hw, ICE_DBG_NVM, "Unable to locate CIVD data within the Option ROM\n");
+> +
+> +err_invalid_checksum:
+> +	vfree(orom_data);
+>   	return -EIO;
+>   }
+
+Please excuse my ignorance. I would have though, that the system 
+firmware already put that Option ROM into memory. There is a function 
+`pci_map_biosrom()` declared in `arch/x86/include/asm/probe_roms.h` and 
+implemented in `arch/x86/kernel/probe_roms.c`, which might be used?
+
+
+Kind regards,
+
+Paul
+
