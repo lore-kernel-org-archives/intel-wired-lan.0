@@ -1,113 +1,145 @@
-From: Ruud Bos <kernel.hbk@gmail.com>
-Date: Thu, 28 Oct 2021 16:34:59 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2 4/4] igb: support EXTTS on
- 82580/i354/i350
-In-Reply-To: <20211028143459.903439-1-kernel.hbk@gmail.com>
-References: <20211028143459.903439-1-kernel.hbk@gmail.com>
-Message-ID: <20211028143459.903439-5-kernel.hbk@gmail.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 28 Oct 2021 17:56:41 +0000
+Subject: [Intel-wired-lan] [PATCH v7 1/2] ice: reduce time to read
+ Option ROM CIVD data
+In-Reply-To: <a9ab1f26-69f6-9f31-8ffb-14a7bfa21505@molgen.mpg.de>
+References: <20211027232255.669167-1-jacob.e.keller@intel.com>
+ <a9ab1f26-69f6-9f31-8ffb-14a7bfa21505@molgen.mpg.de>
+Message-ID: <CO1PR11MB5089365FA06C9EBEE67291B3D6869@CO1PR11MB5089.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Support for the PTP pin function on 82580/i354/i350 based adapters.
-Because the time registers of these adapters do not have the nice split in
-second rollovers as the i210 has, the implementation is slightly more
-complex compared to the i210 implementation.
+> -----Original Message-----
+> From: Paul Menzel <pmenzel@molgen.mpg.de>
+> Sent: Wednesday, October 27, 2021 11:43 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; intel-wired-
+> lan at lists.osuosl.org; linux-pci at vger.kernel.org
+> Subject: Re: [PATCH v7 1/2] ice: reduce time to read Option ROM CIVD data
+> 
+> [Cc: +linux-pci for ideas how to work with Option ROMs]
+> 
+> Dear Jacob,
+> 
+> 
+> On 28.10.21 01:22, Jacob Keller wrote:
+> > During probe and device reset, the ice driver reads some data from the
+> > NVM image as part of ice_init_nvm. Part of this data includes a section
+> > of the Option ROM which contains version information.
+> >
+> > The function ice_get_orom_civd_data is used to locate the '$CIV' data
+> > section of the Option ROM.
+> >
+> > Timing of ice_probe and ice_rebuild indicate that the
+> > ice_get_orom_civd_data function takes about 10 seconds to finish
+> > executing.
+> >
+> > The function locates the section by scanning the Option ROM every 512
+> > bytes. This requires a significant number of NVM read accesses, since
+> > the Option ROM bank is 500KB. In the worst case it would take about 1000
+> > reads. Worse, all PFs serialize this operation during reload because of
+> > acquiring the NVM semaphore.
+> >
+> > The CIVD section is located at the end of the Option ROM image data.
+> > Unfortunately, the driver has no easy method to determine the offset
+> > manually. Practical experiments have shown that the data could be at
+> > a variety of locations, so simply reversing the scanning order is not
+> > sufficient to reduce the overall read time.
+> >
+> > Instead, copy the entire contents of the Option ROM into memory. This
+> > allows reading the data using 4Kb pages instead of 512 bytes at a time.
+> > This reduces the total number of firmware commands by a factor of 8. In
+> > addition, reading the whole section together at once allows better
+> > indication to firmware of when we're "done".
+> >
+> > Re-write ice_get_orom_civd_data to allocate virtual memory to store the
+> > Option ROM data. Copy the entire OptionROM contents at once using
+> 
+> Option ROM
+> 
+> > ice_read_flash_module. Finally, use this memory copy to scan for the
+> > '$CIV' section.
+> >
+> > This change significantly reduces the time to read the Option ROM CIVD
+> > section from ~10 seconds down to ~1 second. This has a significant
+> > impact on the total time to complete a driver rebuild or probe.
+> 
+> Thank you for taking up the challenge and looking into this, and for
+> decreasing the time.
+> 
+> OT: Out of curiosity, how does it work on UEFI systems without using
+> Compatibility System Mode (CSM) and just ?EFI drivers??
+> 
 
-Signed-off-by: Ruud Bos <kernel.hbk@gmail.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++---
- drivers/net/ethernet/intel/igb/igb_ptp.c  | 36 ++++++++++++++++++++++-
- 2 files changed, 51 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 715302377b1a..13b0c1bb26f0 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6813,18 +6813,30 @@ static void igb_perout(struct igb_adapter *adapter, int tsintr_tt)
- static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
- {
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 sec, nsec;
-+	int auxstmpl = (tsintr_tt == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0;
-+	int auxstmph = (tsintr_tt == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0;
-+	struct timespec64 ts;
- 	struct ptp_clock_event event;
- 	int pin = ptp_find_pin(adapter->ptp_clock, PTP_PF_EXTTS, tsintr_tt);
- 
- 	if (pin < 0 || pin >= IGB_N_EXTTS)
- 		return;
- 
--	nsec = rd32((tsintr_tt == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0);
--	sec  = rd32((tsintr_tt == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0);
-+	if ((hw->mac.type == e1000_82580) ||
-+	    (hw->mac.type == e1000_i354) ||
-+	    (hw->mac.type == e1000_i350)) {
-+		s64 ns = rd32(auxstmpl);
-+
-+		ns += ((s64)(rd32(auxstmph) & 0xFF)) << 32;
-+		ts = ns_to_timespec64(ns);
-+	} else {
-+		ts.tv_nsec = rd32(auxstmpl);
-+		ts.tv_sec  = rd32(auxstmph);
-+	}
-+
- 	event.type = PTP_CLOCK_EXTTS;
- 	event.index = tsintr_tt;
--	event.timestamp = sec * 1000000000ULL + nsec;
-+	event.timestamp = ts.tv_sec * 1000000000ULL + ts.tv_nsec;
- 	ptp_clock_event(adapter->ptp_clock, &event);
- }
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 57af8db73be6..6d59847f5097 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -524,7 +524,41 @@ static int igb_ptp_feature_enable_82580(struct ptp_clock_info *ptp,
- 
- 	switch (rq->type) {
- 	case PTP_CLK_REQ_EXTTS:
--		return -EOPNOTSUPP;
-+		/* Reject requests with unsupported flags */
-+		if (rq->extts.flags & ~(PTP_ENABLE_FEATURE |
-+					PTP_RISING_EDGE |
-+					PTP_FALLING_EDGE |
-+					PTP_STRICT_FLAGS))
-+			return -EOPNOTSUPP;
-+
-+		if (on) {
-+			pin = ptp_find_pin(igb->ptp_clock, PTP_PF_EXTTS,
-+					   rq->extts.index);
-+			if (pin < 0)
-+				return -EBUSY;
-+		}
-+		if (rq->extts.index == 1) {
-+			tsauxc_mask = TSAUXC_EN_TS1;
-+			tsim_mask = TSINTR_AUTT1;
-+		} else {
-+			tsauxc_mask = TSAUXC_EN_TS0;
-+			tsim_mask = TSINTR_AUTT0;
-+		}
-+		spin_lock_irqsave(&igb->tmreg_lock, flags);
-+		tsauxc = rd32(E1000_TSAUXC);
-+		tsim = rd32(E1000_TSIM);
-+		if (on) {
-+			igb_pin_extts(igb, rq->extts.index, pin);
-+			tsauxc |= tsauxc_mask;
-+			tsim |= tsim_mask;
-+		} else {
-+			tsauxc &= ~tsauxc_mask;
-+			tsim &= ~tsim_mask;
-+		}
-+		wr32(E1000_TSAUXC, tsauxc);
-+		wr32(E1000_TSIM, tsim);
-+		spin_unlock_irqrestore(&igb->tmreg_lock, flags);
-+		return 0;
- 
- 	case PTP_CLK_REQ_PEROUT:
- 		/* Reject requests with unsupported flags */
--- 
-2.30.2
+This code is just about accessing the version data that we report via devlink info.
+
+Thanks,
+Jake
+
+> >   ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
+> >   		       struct ice_orom_civd_info *civd)
+> >   {
+> > -	struct ice_orom_civd_info tmp;
+> > +	u8 *orom_data;
+> 
+> I know the function names use orom, but oprom is already used in other
+> subsystems.
+> 
+
+Sure, but there's dozens of instances in this driver where we use the short 'orom'. Not worth changing that in this patch series.
+
+> >   }
+> 
+> Please excuse my ignorance. I would have though, that the system
+> firmware already put that Option ROM into memory. There is a function
+> `pci_map_biosrom()` declared in `arch/x86/include/asm/probe_roms.h` and
+> implemented in `arch/x86/kernel/probe_roms.c`, which might be used?
+> 
+
+Sure. This function is used to read the version data that we report about the flash contents via devlink info.
+
+I believe the reasoning this is done during rebuild is because there wasn't a need to scan it on demand since it won't change unless you do a flash update.
+
+We read information on the 3 major components of the flash during init: the EMP firmware versions, the Option ROM version data, and something we call netlist which I understand contains some configuration TLVs
+
+The point of this separate function is to be able to report precisely what version of the firmware image that we have loaded onto the device.
+
+This gets reported in devlink info:
+pci/0000:af:00.1:
+  driver ice
+  serial_number 00-01-00-ff-ff-00-00-00
+  versions:
+      fixed:
+        board.id K91258-000
+      running:
+        fw.mgmt 6.1.5
+        fw.mgmt.api 1.7.9
+        fw.mgmt.build 0x6986bfdb
+        fw.undi 1.3025.0
+        fw.psid.api 3.10
+        fw.bundle_id 0x80008e6a
+        fw.app.name ICE OS Default Package
+        fw.app 1.3.27.0
+        fw.app.bundle_id 0xc0000001
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x4154dfac
+      stored:
+        fw.undi 1.3025.0
+        fw.psid.api 3.10
+        fw.bundle_id 0x80008e6a
+        fw.netlist 3.10.2000-3.1e.0
+        fw.netlist.build 0x4154dfac
+
+Specifically, fw.undi contains the version of the Option ROM image. We report both the "running" version, and, if there is a pending bank switch during next firmware load, the version stored in the inactive flash bank that will be switched to next load.
+
+Thanks,
+Jake
+
+> Kind regards,
+> 
+> Paul
 
