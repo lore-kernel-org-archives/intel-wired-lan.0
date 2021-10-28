@@ -1,93 +1,95 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Thu, 28 Oct 2021 06:44:12 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix return of set the
- new channel count
-In-Reply-To: <20210209115938.2266-1-mateusz.palczewski@intel.com>
-References: <20210209115938.2266-1-mateusz.palczewski@intel.com>
-Message-ID: <DM8PR11MB56217FB4207F2A9D28D845FEAB869@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Thu, 28 Oct 2021 10:41:14 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
+ virtual channel messages
+Message-ID: <20211028104114.71879-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Modify netdev->features for vlan stripping based on virtual
+channel messages received from the PF. Change is needed
+to synchronize vlan strip status between PF sysfs and iavf ethtool.
 
+Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: wtorek, 9 lutego 2021 13:00
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] iavf: Fix return of set the new
-> channel count
-> 
-> Fixed return correct code from set the new channel count.
-> Implemented by check if reset is done in appropriate time.
-> This solution give a extra time to pf for reset vf in case when user want set
-> new channel count for all vfs.
-> Without this patch it is possible to return misleading output code to user and
-> vf reset not to be correctly performed by pf.
-> 
-> Fixes: 5520deb15326("iavf: Enable support for up to 16 queues")
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> ---
-> v2:
->  - added missing define in iavf.h file
-> 
->  drivers/net/ethernet/intel/iavf/iavf.h         |  1 +
->  drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 15 +++++++++++++++
->  2 files changed, 16 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index bda2a90..09e5b9c 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -220,6 +220,7 @@ struct iavf_cloud_filter {
->  	bool add;		/* filter needs to be added */
->  };
-> 
-> +#define IAVF_RESET_WAIT_COUNT 500
->  #define IAVF_RESET_WAIT_MS 10
->  #define IAVF_RESET_WAIT_DETECTED_COUNT 500  #define
-> IAVF_RESET_WAIT_COMPLETE_COUNT 2000 diff --git
-> a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> index 3ebfef7..d9ed4d4 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> @@ -1522,6 +1522,7 @@ static int iavf_set_channels(struct net_device
-> *netdev,  {
->  	struct iavf_adapter *adapter = netdev_priv(netdev);
->  	u32 num_req = ch->combined_count;
-> +	int i;
-> 
->  	if ((adapter->vf_res->vf_cap_flags & VIRTCHNL_VF_OFFLOAD_ADQ)
-> &&
->  	    adapter->num_tc) {
-> @@ -1544,6 +1545,20 @@ static int iavf_set_channels(struct net_device
-> *netdev,
->  	adapter->num_req_queues = num_req;
->  	adapter->flags |= IAVF_FLAG_REINIT_ITR_NEEDED;
->  	iavf_schedule_reset(adapter);
-> +
-> +	/* wait for the reset is done */
-> +	for (i = 0; i < IAVF_RESET_WAIT_COUNT; i++) {
-> +		msleep(IAVF_RESET_WAIT_MS);
-> +		if (adapter->flags & IAVF_FLAG_RESET_PENDING)
-> +			continue;
-> +		break;
-> +	}
-> +	if (i == IAVF_RESET_WAIT_COUNT) {
-> +		adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
-> +		adapter->num_active_queues = num_req;
-> +		return -EOPNOTSUPP;
-> +	}
-> +
->  	return 0;
->  }
-> 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index bdc6040361..ed1c8bc3f4 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1456,6 +1456,24 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+ }
+ 
++/**
++ * iavf_netdev_features_vlan_strip_set - update vlan strip status
++ * @netdev: ptr to netdev being adjusted
++ * @enable: enable or disable vlan strip
++ *
++ * Helper function to change vlan strip status in netdev->features.
++ */
++static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
++						const bool enable)
++{
++	if (enable)
++		netdev->features |=
++			NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
++	else
++		netdev->features &=
++			~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
++}
++
+ /**
+  * iavf_virtchnl_completion
+  * @adapter: adapter structure
+@@ -1679,8 +1697,18 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			}
+ 			break;
+ 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be enabled by ethtool.
++			 * Disable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++			break;
+ 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
+ 			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be disabled by ethtool.
++			 * Enable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, true);
+ 			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+@@ -1897,6 +1925,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		spin_unlock_bh(&adapter->adv_rss_lock);
+ 		}
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		/* PF enabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, true);
++		break;
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		/* PF disabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++		break;
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_dbg(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+-- 
+2.27.0
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
