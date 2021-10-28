@@ -1,95 +1,79 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Thu, 28 Oct 2021 10:41:14 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
- virtual channel messages
-Message-ID: <20211028104114.71879-1-michal.maloszewski@intel.com>
+From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Date: Thu, 28 Oct 2021 13:58:26 +0200
+Subject: [Intel-wired-lan] [RFC v6 net-next 0/6] Add RTNL interface for SyncE
+Message-ID: <20211028115832.1385376-1-maciej.machnikowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Modify netdev->features for vlan stripping based on virtual
-channel messages received from the PF. Change is needed
-to synchronize vlan strip status between PF sysfs and iavf ethtool.
+Synchronous Ethernet networks use a physical layer clock to syntonize
+the frequency across different network elements.
 
-Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
-Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
----
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
- 1 file changed, 42 insertions(+)
+Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+Equipment Clock (EEC) and have the ability to recover synchronization
+from the synchronization inputs - either traffic interfaces or external
+frequency sources.
+The EEC can synchronize its frequency (syntonize) to any of those sources.
+It is also able to select synchronization source through priority tables
+and synchronization status messaging. It also provides neccessary
+filtering and holdover capabilities
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index bdc6040361..ed1c8bc3f4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1456,6 +1456,24 @@ void iavf_request_reset(struct iavf_adapter *adapter)
- 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- }
- 
-+/**
-+ * iavf_netdev_features_vlan_strip_set - update vlan strip status
-+ * @netdev: ptr to netdev being adjusted
-+ * @enable: enable or disable vlan strip
-+ *
-+ * Helper function to change vlan strip status in netdev->features.
-+ */
-+static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
-+						const bool enable)
-+{
-+	if (enable)
-+		netdev->features |=
-+			NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
-+	else
-+		netdev->features &=
-+			~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
-+}
-+
- /**
-  * iavf_virtchnl_completion
-  * @adapter: adapter structure
-@@ -1679,8 +1697,18 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			}
- 			break;
- 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/* Vlan stripping could not be enabled by ethtool.
-+			 * Disable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+			break;
- 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
- 			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/* Vlan stripping could not be disabled by ethtool.
-+			 * Enable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
- 			break;
- 		default:
- 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
-@@ -1897,6 +1925,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		spin_unlock_bh(&adapter->adv_rss_lock);
- 		}
- 		break;
-+	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+		/* PF enabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
-+		break;
-+	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-+		/* PF disabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+		break;
- 	default:
- 		if (adapter->current_op && (v_opcode != adapter->current_op))
- 			dev_dbg(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+This patch series introduces basic interface for reading the Ethernet
+Equipment Clock (EEC) state on a SyncE capable device. This state gives
+information about the source of the syntonization signal (ether my port,
+or any external one) and the state of EEC. This interface is required\
+to implement Synchronization Status Messaging on upper layers.
+
+v2:
+- removed whitespace changes
+- fix issues reported by test robot
+v3:
+- Changed naming from SyncE to EEC
+- Clarify cover letter and commit message for patch 1
+v4:
+- Removed sync_source and pin_idx info
+- Changed one structure to attributes
+- Added EEC_SRC_PORT flag to indicate that the EEC is synchronized
+  to the recovered clock of a port that returns the state
+v5:
+- add EEC source as an optiona attribute
+- implement support for recovered clocks
+- align states returned by EEC to ITU-T G.781
+v6:
+- fix EEC clock state reporting
+- add documentation
+- fix descriptions in code comments
+
+Maciej Machnikowski (6):
+  ice: add support detecting features based on netlist
+  rtnetlink: Add new RTM_GETEECSTATE message to get SyncE status
+  ice: add support for reading SyncE DPLL state
+  rtnetlink: Add support for SyncE recovered clock configuration
+  ice: add support for SyncE recovered clocks
+  docs: net: Add description of SyncE interfaces
+
+ Documentation/networking/synce.rst            |  88 ++++++
+ drivers/net/ethernet/intel/ice/ice.h          |   7 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  94 ++++++-
+ drivers/net/ethernet/intel/ice/ice_common.c   | 175 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  17 +-
+ drivers/net/ethernet/intel/ice/ice_devids.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   6 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     | 138 ++++++++++
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  34 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  98 +++++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  25 ++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ include/linux/netdevice.h                     |  33 +++
+ include/uapi/linux/if_link.h                  |  57 ++++
+ include/uapi/linux/rtnetlink.h                |  10 +
+ net/core/rtnetlink.c                          | 253 ++++++++++++++++++
+ security/selinux/nlmsgtab.c                   |   6 +-
+ 17 files changed, 1041 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/networking/synce.rst
+
 -- 
-2.27.0
+2.26.3
 
