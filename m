@@ -1,53 +1,141 @@
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Thu, 28 Oct 2021 13:51:14 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Increase delay to 1 s after
- global EMP reset
-Message-ID: <20211028135114.202530-1-jedrzej.jagielski@intel.com>
+From: Ruud Bos <kernel.hbk@gmail.com>
+Date: Thu, 28 Oct 2021 16:34:57 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/4] igb: move PEROUT and
+ EXTTS isr logic to separate functions
+In-Reply-To: <20211028143459.903439-1-kernel.hbk@gmail.com>
+References: <20211028143459.903439-1-kernel.hbk@gmail.com>
+Message-ID: <20211028143459.903439-3-kernel.hbk@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recently simplified i40e_rebuild causes that FW sometimes
-is not ready after NVM update, the ping does not return.
+Remove code duplication in the tsync interrupt handler function by moving
+this logic to separate functions. This keeps the interrupt handler readable
+and allows the new functions to be extended for adapter types other than
+i210.
 
-Increase the delay in case of EMP reset.
-Old delay of 300 ms was introduced for specific cards for 710 series.
-Now it works for all the cards and delay was increased.
+Signed-off-by: Ruud Bos <kernel.hbk@gmail.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 81 +++++++++++++----------
+ 1 file changed, 46 insertions(+), 35 deletions(-)
 
-Fixes: 1fa51a650e1d ("i40e: Add delay after EMP reset for firmware to recover")
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
----
-V2: Fix commit msg
----
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 85b076123663..1cec920bff28 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10492,15 +10492,9 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index e67a71c3f141..c603f17e50be 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6732,12 +6732,52 @@ void igb_update_stats(struct igb_adapter *adapter)
  	}
- 	i40e_get_oem_version(&pf->hw);
+ }
  
--	if (test_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state) &&
--	    ((hw->aq.fw_maj_ver == 4 && hw->aq.fw_min_ver <= 33) ||
--	     hw->aq.fw_maj_ver < 4) && hw->mac.type == I40E_MAC_XL710) {
--		/* The following delay is necessary for 4.33 firmware and older
--		 * to recover after EMP reset. 200 ms should suffice but we
--		 * put here 300 ms to be sure that FW is ready to operate
--		 * after reset.
--		 */
--		mdelay(300);
-+	if (test_and_clear_bit(__I40E_EMP_RESET_INTR_RECEIVED, pf->state)) {
-+		/* The following delay is necessary for firmware update. */
-+		mdelay(1000);
++static void igb_perout(struct igb_adapter *adapter, int tsintr_tt)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	struct timespec64 ts;
++	u32 tsauxc;
++	int pin = ptp_find_pin(adapter->ptp_clock, PTP_PF_PEROUT, tsintr_tt);
++
++	if (pin < 0 || pin >= IGB_N_PEROUT)
++		return;
++
++	spin_lock(&adapter->tmreg_lock);
++	ts = timespec64_add(adapter->perout[pin].start,
++			    adapter->perout[pin].period);
++	/* u32 conversion of tv_sec is safe until y2106 */
++	wr32((tsintr_tt == 1) ? E1000_TRGTTIML1 : E1000_TRGTTIML0, ts.tv_nsec);
++	wr32((tsintr_tt == 1) ? E1000_TRGTTIMH1 : E1000_TRGTTIMH0, (u32)ts.tv_sec);
++	tsauxc = rd32(E1000_TSAUXC);
++	tsauxc |= TSAUXC_EN_TT0;
++	wr32(E1000_TSAUXC, tsauxc);
++	adapter->perout[pin].start = ts;
++	spin_unlock(&adapter->tmreg_lock);
++}
++
++static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 sec, nsec;
++	struct ptp_clock_event event;
++	int pin = ptp_find_pin(adapter->ptp_clock, PTP_PF_EXTTS, tsintr_tt);
++
++	if (pin < 0 || pin >= IGB_N_EXTTS)
++		return;
++
++	nsec = rd32((tsintr_tt == 1) ? E1000_AUXSTMPL1 : E1000_AUXSTMPL0);
++	sec  = rd32((tsintr_tt == 1) ? E1000_AUXSTMPH1 : E1000_AUXSTMPH0);
++	event.type = PTP_CLOCK_EXTTS;
++	event.index = tsintr_tt;
++	event.timestamp = sec * 1000000000ULL + nsec;
++	ptp_clock_event(adapter->ptp_clock, &event);
++}
++
+ static void igb_tsync_interrupt(struct igb_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct ptp_clock_event event;
+-	struct timespec64 ts;
+-	u32 ack = 0, tsauxc, sec, nsec, tsicr = rd32(E1000_TSICR);
++	u32 ack = 0, tsicr = rd32(E1000_TSICR);
+ 
+ 	if (tsicr & TSINTR_SYS_WRAP) {
+ 		event.type = PTP_CLOCK_PPS;
+@@ -6753,51 +6793,22 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
  	}
  
- 	/* re-verify the eeprom if we just had an EMP reset */
+ 	if (tsicr & TSINTR_TT0) {
+-		spin_lock(&adapter->tmreg_lock);
+-		ts = timespec64_add(adapter->perout[0].start,
+-				    adapter->perout[0].period);
+-		/* u32 conversion of tv_sec is safe until y2106 */
+-		wr32(E1000_TRGTTIML0, ts.tv_nsec);
+-		wr32(E1000_TRGTTIMH0, (u32)ts.tv_sec);
+-		tsauxc = rd32(E1000_TSAUXC);
+-		tsauxc |= TSAUXC_EN_TT0;
+-		wr32(E1000_TSAUXC, tsauxc);
+-		adapter->perout[0].start = ts;
+-		spin_unlock(&adapter->tmreg_lock);
++		igb_perout(adapter, 0);
+ 		ack |= TSINTR_TT0;
+ 	}
+ 
+ 	if (tsicr & TSINTR_TT1) {
+-		spin_lock(&adapter->tmreg_lock);
+-		ts = timespec64_add(adapter->perout[1].start,
+-				    adapter->perout[1].period);
+-		wr32(E1000_TRGTTIML1, ts.tv_nsec);
+-		wr32(E1000_TRGTTIMH1, (u32)ts.tv_sec);
+-		tsauxc = rd32(E1000_TSAUXC);
+-		tsauxc |= TSAUXC_EN_TT1;
+-		wr32(E1000_TSAUXC, tsauxc);
+-		adapter->perout[1].start = ts;
+-		spin_unlock(&adapter->tmreg_lock);
++		igb_perout(adapter, 1);
+ 		ack |= TSINTR_TT1;
+ 	}
+ 
+ 	if (tsicr & TSINTR_AUTT0) {
+-		nsec = rd32(E1000_AUXSTMPL0);
+-		sec  = rd32(E1000_AUXSTMPH0);
+-		event.type = PTP_CLOCK_EXTTS;
+-		event.index = 0;
+-		event.timestamp = sec * 1000000000ULL + nsec;
+-		ptp_clock_event(adapter->ptp_clock, &event);
++		igb_extts(adapter, 0);
+ 		ack |= TSINTR_AUTT0;
+ 	}
+ 
+ 	if (tsicr & TSINTR_AUTT1) {
+-		nsec = rd32(E1000_AUXSTMPL1);
+-		sec  = rd32(E1000_AUXSTMPH1);
+-		event.type = PTP_CLOCK_EXTTS;
+-		event.index = 1;
+-		event.timestamp = sec * 1000000000ULL + nsec;
+-		ptp_clock_event(adapter->ptp_clock, &event);
++		igb_extts(adapter, 1);
+ 		ack |= TSINTR_AUTT1;
+ 	}
+ 
 -- 
-2.27.0
+2.30.2
 
