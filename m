@@ -1,69 +1,70 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Fri, 29 Oct 2021 08:47:45 +0200
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: set X550 MDIO speed before
- talking to PHY
-In-Reply-To: <81be24c4-a7e4-0761-abf4-204f4849b6eb@lynx.com>
-References: <81be24c4-a7e4-0761-abf4-204f4849b6eb@lynx.com>
-Message-ID: <89af2e39-fe5c-c285-7805-8c7a6a5a2e51@molgen.mpg.de>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Fri, 29 Oct 2021 08:27:47 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 3/7] ice: Use int for
+ ice_status
+In-Reply-To: <20211007220127.70514-4-anthony.l.nguyen@intel.com>
+References: <20211007220127.70514-1-anthony.l.nguyen@intel.com>
+ <20211007220127.70514-4-anthony.l.nguyen@intel.com>
+Message-ID: <BYAPR11MB3367909B8B92EC2CC060DE6EFC879@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Cyril,
 
 
-On 29.10.21 03:03, Cyril Novikov wrote:
-> The MDIO bus speed must be initialized before talking to the PHY the first
-> time in order to avoid talking to it using a speed that the PHY doesn't
-> support.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
+> Nguyen
+> Sent: Friday, October 8, 2021 3:31 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next 3/7] ice: Use int for ice_status
 > 
-> This fixes HW initialization error -17 (IXGBE_ERR_PHY_ADDR_INVALID) on
-> Denverton CPUs (a.k.a. the Atom C3000 family) on ports with a 10Gb network
-> plugged in. On those devices, HLREG0[MDCSPD] resets to 1, which combined
-> with the 10Gb network results in a 24MHz MDIO speed, which is apparently
-> too fast for the connected PHY. PHY register reads over MDIO bus return
-> garbage, leading to initialization failure.
-
-Maybe add a Fixes tag?
-
-> Signed-off-by: Cyril Novikov <cnovikov@lynx.com>
+> To prepare for removal of ice_status, change the variables from
+> ice_status to int. This eases the transition when values are changed to
+> return standard int error codes over enum ice_status.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 3 +++
->   1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
+>  drivers/net/ethernet/intel/ice/ice_common.c   | 209 +++++++++--------
+>  drivers/net/ethernet/intel/ice/ice_common.h   | 102 ++++----
+>  drivers/net/ethernet/intel/ice/ice_controlq.c |  54 ++---
+>  drivers/net/ethernet/intel/ice/ice_dcb.c      |  58 ++---
+>  drivers/net/ethernet/intel/ice/ice_dcb.h      |  26 +--
+>  drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_devlink.c  |  12 +-
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  24 +-
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c |   4 +-
+>  drivers/net/ethernet/intel/ice/ice_fdir.c     |  10 +-
+>  drivers/net/ethernet/intel/ice/ice_fdir.h     |  10 +-
+>  .../net/ethernet/intel/ice/ice_flex_pipe.c    | 194 +++++++--------
+>  .../net/ethernet/intel/ice/ice_flex_pipe.h    |  16 +-
+>  drivers/net/ethernet/intel/ice/ice_flow.c     |  84 +++----
+>  drivers/net/ethernet/intel/ice/ice_flow.h     |  18 +-
+>  drivers/net/ethernet/intel/ice/ice_fltr.c     |  79 +++----
+>  drivers/net/ethernet/intel/ice/ice_fltr.h     |  34 +--
+>  .../net/ethernet/intel/ice/ice_fw_update.c    |  14 +-
+>  drivers/net/ethernet/intel/ice/ice_gnss.c     |   6 +-
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  38 +--
+>  drivers/net/ethernet/intel/ice/ice_lib.h      |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  50 ++--
+>  drivers/net/ethernet/intel/ice/ice_nvm.c      |  98 ++++----
+>  drivers/net/ethernet/intel/ice/ice_nvm.h      |  32 +--
+>  drivers/net/ethernet/intel/ice/ice_ptp.c      |   4 +-
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_sched.c    | 220 +++++++++---------
+>  drivers/net/ethernet/intel/ice/ice_sched.h    |  36 +--
+>  drivers/net/ethernet/intel/ice/ice_sriov.c    |  14 +-
+>  drivers/net/ethernet/intel/ice/ice_sriov.h    |  12 +-
+>  drivers/net/ethernet/intel/ice/ice_switch.c   | 208 ++++++++---------
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |  48 ++--
+>  drivers/net/ethernet/intel/ice/ice_tc_lib.c   |   2 +-
+>  .../ethernet/intel/ice/ice_virtchnl_fdir.c    |   4 +-
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |  28 +--
+>  37 files changed, 882 insertions(+), 878 deletions(-)
 > 
-> Reproduced with Linux kernel 4.19 and 5.15-rc7. Can be reproduced using
-> the following setup:
-> 
-> * Use an Atom C3000 family system with at least one X550 LAN on the SoC
-> * Disable PXE or other BIOS network initialization if possible
->    (the interface must not be initialized before Linux boots)
-> * Connect a live 10Gb Ethernet cable to an X550 port
-> * Power cycle (not reset, doesn't always work) the system and boot Linux
-> * Observe: ixgbe interfaces w/ 10GbE cables plugged in fail with error -17
 
-Why not add that to the commit message?
-
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> index 9724ffb16518..e4b50c7781ff 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-> @@ -3405,6 +3405,9 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
->   	/* flush pending Tx transactions */
->   	ixgbe_clear_tx_pending(hw);
->   
-> +	/* set MDIO speed before talking to the PHY in case it's the 1st time */
-> +	ixgbe_set_mdio_speed(hw);
-> +
->   	/* PHY ops must be identified and initialized prior to reset */
->   	status = hw->phy.ops.init(hw);
->   	if (status == IXGBE_ERR_SFP_NOT_SUPPORTED ||
-> 
-
-Is `ixgbe_set_mdio_speed(hw)` at the end of the function then still needed?
-
-
-Kind regards,
-
-Paul
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
