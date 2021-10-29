@@ -1,10 +1,11 @@
 From: Brelinski, Tony <tony.brelinski@intel.com>
-Date: Fri, 29 Oct 2021 20:54:53 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] virtchnl: Remove unused
- VIRTCHNL_VF_OFFLOAD_RSVD define
-In-Reply-To: <20210507220911.116361-1-brett.creeley@intel.com>
+Date: Fri, 29 Oct 2021 20:55:22 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] virtchnl: Use the BIT() macro for
+ capability/offload flags
+In-Reply-To: <20210507220911.116361-2-brett.creeley@intel.com>
 References: <20210507220911.116361-1-brett.creeley@intel.com>
-Message-ID: <MN2PR11MB42249E6063F76A0AEB11E63682879@MN2PR11MB4224.namprd11.prod.outlook.com>
+ <20210507220911.116361-2-brett.creeley@intel.com>
+Message-ID: <MN2PR11MB422448D2DF3C335BF08D4AC582879@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Creeley, Brett
 > Sent: Friday, May 7, 2021 3:09 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/2] virtchnl: Remove unused
-> VIRTCHNL_VF_OFFLOAD_RSVD define
+> Subject: [Intel-wired-lan] [PATCH 2/2] virtchnl: Use the BIT() macro for
+> capability/offload flags
 > 
-> Remove unused define that is currently marked as reserved. This will open
-> up space for a new feature if/when it's introduced. Also, there is no reason
-> to keep unused defines around.
+> Currently raw hex values are used to define specific bits for each
+> capability/offload in virtchnl.h. Using raw hex values makes it unclear which
+> bits are used/available. Fix this by using the BIT() macro so it's immediately
+> obvious which bits are used/available.
+> 
+> Also, move the VIRTCHNL_VF_CAP_ADV_LINK_SPEED define in the correct
+> place to line up with the other bit values and add a comment for its purpose.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Suggested-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  include/linux/avf/virtchnl.h | 1 -
->  1 file changed, 1 deletion(-)
+>  include/linux/avf/virtchnl.h | 40 ++++++++++++++++++------------------
+>  1 file changed, 20 insertions(+), 20 deletions(-)
 
 Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
