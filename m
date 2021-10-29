@@ -1,11 +1,11 @@
 From: Brelinski, Tony <tony.brelinski@intel.com>
-Date: Fri, 29 Oct 2021 20:57:10 +0000
-Subject: [Intel-wired-lan] [PATCH S59 07/13] ice: Remove boolean
- vlan_promisc flag from function
-In-Reply-To: <20210506154008.12880-7-anthony.l.nguyen@intel.com>
+Date: Fri, 29 Oct 2021 20:57:46 +0000
+Subject: [Intel-wired-lan] [PATCH S59 08/13] ice: Fix replacing VF
+ hardware MAC to existing MAC filter
+In-Reply-To: <20210506154008.12880-8-anthony.l.nguyen@intel.com>
 References: <20210506154008.12880-1-anthony.l.nguyen@intel.com>
- <20210506154008.12880-7-anthony.l.nguyen@intel.com>
-Message-ID: <MN2PR11MB422485960A253AEE71E7F67B82879@MN2PR11MB4224.namprd11.prod.outlook.com>
+ <20210506154008.12880-8-anthony.l.nguyen@intel.com>
+Message-ID: <MN2PR11MB4224C14DC87457CAF89B2F7F82879@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Nguyen, Anthony L
 > Sent: Thursday, May 6, 2021 8:40 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH S59 07/13] ice: Remove boolean
-> vlan_promisc flag from function
+> Subject: [Intel-wired-lan] [PATCH S59 08/13] ice: Fix replacing VF hardware
+> MAC to existing MAC filter
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 > 
-> Currently, the vlan_promisc flag is used exclusively by VF VSI to determine
-> whether or not to toggle VLAN pruning along with trusted/true-promiscuous
-> mode. This is not needed for a couple of reasons. First, trusted/true-
-> promiscuous mode is only supposed to allow all MAC filters within VLANs
-> that a VF has added filters for, so VLAN pruning should not be disabled.
-> Second, the boolean argument makes the function confusing and
-> unintuitive. Remove this flag.
+> VF was not able to change its hardware MAC address in case the new
+> address was already present in the MAC filter list.
+> Change the handling of VF add mac request to not return if requested MAC
+> address is already present on the list and check if its hardware MAC needs to
+> be updated in this case.
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_lib.c         |  7 ++-----
->  drivers/net/ethernet/intel/ice/ice_lib.h         |  2 +-
->  drivers/net/ethernet/intel/ice/ice_main.c        | 12 ++++++------
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  9 ++++++---
->  4 files changed, 15 insertions(+), 15 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
 
 Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
