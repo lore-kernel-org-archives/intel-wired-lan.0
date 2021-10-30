@@ -1,310 +1,128 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Sat, 30 Oct 2021 05:46:09 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix failed opcode
- appearing if handling messages from VF
-In-Reply-To: <20210514094313.133485-1-karen.sornek@intel.com>
-References: <20210514094313.133485-1-karen.sornek@intel.com>
-Message-ID: <01f95f1e-5357-7d9f-dd5d-68b94227582c@molgen.mpg.de>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Sat, 30 Oct 2021 19:28:39 +0200
+Subject: [Intel-wired-lan] [PATCH net] ixgbe: set X550 MDIO speed before
+ talking to PHY
+In-Reply-To: <df9504c8-bdfd-9cc0-d002-f1e59f57a79b@lynx.com>
+References: <81be24c4-a7e4-0761-abf4-204f4849b6eb@lynx.com>
+ <89af2e39-fe5c-c285-7805-8c7a6a5a2e51@molgen.mpg.de>
+ <df9504c8-bdfd-9cc0-d002-f1e59f57a79b@lynx.com>
+Message-ID: <YX2Ax364TiC7ngjI@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Grzegorz, dear Karen,
-
-
-Thank you for your patch.
-
-
-On 14.05.21 11:43, Karen Sornek wrote:
-> Fix failed operation code appearing if handling messages from VF.
-> Implemented by waiting for VF appropriate state if request starts
-> handle while VF reset.
-> Without this patch the message handling request while VF is in
-> a reset state ends with error -5 (I40E_ERR_PARAM).
-
-With what device and Linux kernel did you reproduce this error?
-
-Below you introduce `usleep_range(10000, 20000);`. Where is that range 
-documented? Please amend the commit message with the datasheet name and 
-revision.
-
-> Fixes: 6322e63c35d6 ("i40e: properly spell I40E_VF_STATE_* flags")
-
-As this commit only renames an enum, it is not the right commit. Please 
-investigate.
-
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> ---
->   .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 70 +++++++++++++------
->   .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  2 +
->   2 files changed, 50 insertions(+), 22 deletions(-)
+On Fri, Oct 29, 2021 at 04:06:26PM -0700, Cyril Novikov wrote:
+> On 10/28/2021 11:47 PM, Paul Menzel wrote:
+> > Dear Cyril,
+> > 
+> > 
+> > On 29.10.21 03:03, Cyril Novikov wrote:
+> > > The MDIO bus speed must be initialized before talking to the PHY the
+> > > first
+> > > time in order to avoid talking to it using a speed that the PHY doesn't
+> > > support.
+> > > 
+> > > This fixes HW initialization error -17 (IXGBE_ERR_PHY_ADDR_INVALID) on
+> > > Denverton CPUs (a.k.a. the Atom C3000 family) on ports with a 10Gb
+> > > network
+> > > plugged in. On those devices, HLREG0[MDCSPD] resets to 1, which combined
+> > > with the 10Gb network results in a 24MHz MDIO speed, which is apparently
+> > > too fast for the connected PHY. PHY register reads over MDIO bus return
+> > > garbage, leading to initialization failure.
+> > 
+> > Maybe add a Fixes tag?
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 139562aaf..5af16d209 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -1960,6 +1960,32 @@ static int i40e_vc_send_resp_to_vf(struct i40e_vf *vf,
->   	return i40e_vc_send_msg_to_vf(vf, opcode, retval, NULL, 0);
->   }
->   
-> +/**
-> + * i40e_sync_vf_state
-> + * @vf: pointer to the VF info
-> + * @state: VF state
-> + *
-> + * Called from a VF message to synchronize the service with a potential
-> + * VF reset state
-> + **/
-> +static bool i40e_sync_vf_state(struct i40e_vf *vf, enum i40e_vf_states state)
-> +{
-> +	int i;
-> +
-> +	/* When handling some messages, it needs vf state to be set.
-> +	 * It is possible that this flag is cleared during vf reset,
-> +	 * so there is a need to wait until the end of the reset to
+> This is my first patch submission for Linux kernel.
 
-Maybe shorter: ? so wait until ?
+Welcome to the community.
 
-> +	 * handle the request message correctly.
-> +	 */
-> +	for (i = 0; i < I40E_VF_STATE_WAIT_COUNT; i++) {
-> +		if (test_bit(state, &vf->vf_states))
-> +			return true;
-> +		usleep_range(10000, 20000);
-> +	}
+> What I read about the
+> Fixes tag says it identifies a previous commit that had introduced the bug.
+> I have no idea which commit introduced this bug. We saw it in 4.19 which
+> probably means the bug was always there and is not a regression. It's also
+> quite possible the original commit was correct for the hardware existing at
+> that time and it only started behaving incorrectly with new hardware, so it
+> wasn't actually a bug at the time it was submitted. I also don't have the
+> capability or time to bisect this problem.
 
-I would have thought, the Linux kernel would already define macros or 
-functions to deal with such waits, but I couldn?t find it. 
-`drivers/net/ethernet/intel/i40e/i40e_main.c` already has some opencoded 
-implementations, and then it would look like:
+From how you describe it, i assume the issue is present for any 10G
+links? git blame suggests:
 
-```
-size_t wait_count = 20;
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3357) static void ixgbe_set_mdio_speed(struct ixgbe_hw *hw)
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3358) {
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3359)      u32 hlreg0;
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3360) 
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3361)      switch (hw->device_id) {
+e84db7272798e (Mark Rustad         2016-04-01 12:18:30 -0700 3362)      case IXGBE_DEV_ID_X550EM_X_10G_T:
+a83c27e79068c (Don Skidmore        2016-08-17 17:34:07 -0400 3363)      case IXGBE_DEV_ID_X550EM_A_SGMII:
+a83c27e79068c (Don Skidmore        2016-08-17 17:34:07 -0400 3364)      case IXGBE_DEV_ID_X550EM_A_SGMII_L:
+92ed84300718d (Don Skidmore        2016-08-17 20:34:40 -0400 3365)      case IXGBE_DEV_ID_X550EM_A_10G_T:
 
-do {	
-	if (test_bit(state, &vf->vf_states))
-		break;
-	usleep_range(10000, 20000);
-} while (wait_count--);
-```
+commit e84db7272798ed8abb2760a3fcd9c6d89abf99a5
+Author: Mark Rustad <mark.d.rustad@intel.com>
+Date:   Fri Apr 1 12:18:30 2016 -0700
 
-> +
-> +	return test_bit(state, &vf->vf_states);
-> +}
-> +
->   /**
->    * i40e_vc_get_version_msg
->    * @vf: pointer to the VF info
-> @@ -2020,7 +2046,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
->   	size_t len = 0;
->   	int ret;
->   
-> -	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_INIT)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -2157,7 +2183,7 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf, u8 *msg)
->   	bool allmulti = false;
->   	bool alluni = false;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err_out;
->   	}
-> @@ -2244,7 +2270,7 @@ static int i40e_vc_config_queues_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int i, j = 0, idx = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto error_param;
->   	}
-> @@ -2387,7 +2413,7 @@ static int i40e_vc_config_irq_map_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int i;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto error_param;
->   	}
-> @@ -2559,7 +2585,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg)
->   	struct i40e_pf *pf = vf->pf;
->   	i40e_status aq_ret = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto error_param;
->   	}
-> @@ -2609,7 +2635,7 @@ static int i40e_vc_request_queues_msg(struct i40e_vf *vf, u8 *msg)
->   	u8 cur_pairs = vf->num_queue_pairs;
->   	struct i40e_pf *pf = vf->pf;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states))
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE))
->   		return -EINVAL;
->   
->   	if (req_pairs > I40E_MAX_VF_QUEUES) {
-> @@ -2655,7 +2681,7 @@ static int i40e_vc_get_stats_msg(struct i40e_vf *vf, u8 *msg)
->   
->   	memset(&stats, 0, sizeof(struct i40e_eth_stats));
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto error_param;
->   	}
-> @@ -2780,7 +2806,7 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status ret = 0;
->   	int i;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
->   	    !i40e_vc_isvalid_vsi_id(vf, al->vsi_id)) {
->   		ret = I40E_ERR_PARAM;
->   		goto error_param;
-> @@ -2852,7 +2878,7 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status ret = 0;
->   	int i;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
->   	    !i40e_vc_isvalid_vsi_id(vf, al->vsi_id)) {
->   		ret = I40E_ERR_PARAM;
->   		goto error_param;
-> @@ -2996,7 +3022,7 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int i;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
->   	    !i40e_vc_isvalid_vsi_id(vf, vfl->vsi_id)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto error_param;
-> @@ -3116,9 +3142,9 @@ static int i40e_vc_config_rss_key(struct i40e_vf *vf, u8 *msg)
->   	struct i40e_vsi *vsi = NULL;
->   	i40e_status aq_ret = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
->   	    !i40e_vc_isvalid_vsi_id(vf, vrk->vsi_id) ||
-> -	    (vrk->key_len != I40E_HKEY_ARRAY_SIZE)) {
-> +	    vrk->key_len != I40E_HKEY_ARRAY_SIZE) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3147,9 +3173,9 @@ static int i40e_vc_config_rss_lut(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	u16 i;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states) ||
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE) ||
->   	    !i40e_vc_isvalid_vsi_id(vf, vrl->vsi_id) ||
-> -	    (vrl->lut_entries != I40E_VF_HLUT_ARRAY_SIZE)) {
-> +	    vrl->lut_entries != I40E_VF_HLUT_ARRAY_SIZE) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3182,7 +3208,7 @@ static int i40e_vc_get_rss_hena(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int len = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3218,7 +3244,7 @@ static int i40e_vc_set_rss_hena(struct i40e_vf *vf, u8 *msg)
->   	struct i40e_hw *hw = &pf->hw;
->   	i40e_status aq_ret = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3243,7 +3269,7 @@ static int i40e_vc_enable_vlan_stripping(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	struct i40e_vsi *vsi;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3269,7 +3295,7 @@ static int i40e_vc_disable_vlan_stripping(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	struct i40e_vsi *vsi;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3496,7 +3522,7 @@ static int i40e_vc_del_cloud_filter(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int i, ret;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3627,7 +3653,7 @@ static int i40e_vc_add_cloud_filter(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	int i, ret;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err_out;
->   	}
-> @@ -3736,7 +3762,7 @@ static int i40e_vc_add_qch_msg(struct i40e_vf *vf, u8 *msg)
->   	i40e_status aq_ret = 0;
->   	u64 speed = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> @@ -3853,7 +3879,7 @@ static int i40e_vc_del_qch_msg(struct i40e_vf *vf, u8 *msg)
->   	struct i40e_pf *pf = vf->pf;
->   	i40e_status aq_ret = 0;
->   
-> -	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
-> +	if (!i40e_sync_vf_state(vf, I40E_VF_STATE_ACTIVE)) {
->   		aq_ret = I40E_ERR_PARAM;
->   		goto err;
->   	}
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> index 091e32c1b..49575a640 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> @@ -18,6 +18,8 @@
->   
->   #define I40E_MAX_VF_PROMISC_FLAGS	3
->   
-> +#define I40E_VF_STATE_WAIT_COUNT	20
-> +
+    ixgbe: Introduce function to control MDIO speed
+    
+    Move code that controls MDIO speed into a new function because
+    there will be more MACs that need the control.
+    
+    Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+    Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+    Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Why 20? Please amend the commit message, or add a comment.
+So the fixes would be
 
-It?s a little bit confusing as there are also the I40E_VF_STATE_* enums.
+Fixes: e84db7272798 ("ixgbe: Introduce function to control MDIO speed")
 
->   /* Various queue ctrls */
->   enum i40e_queue_ctrl {
->   	I40E_QUEUE_CTRL_UNKNOWN = 0,
+> > > Signed-off-by: Cyril Novikov <cnovikov@lynx.com>
+> > > ---
+> > > ? drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 3 +++
+> > > ? 1 file changed, 3 insertions(+)
+> > > 
+> > > Reproduced with Linux kernel 4.19 and 5.15-rc7. Can be reproduced using
+> > > the following setup:
+> > > 
+> > > * Use an Atom C3000 family system with at least one X550 LAN on the SoC
+> > > * Disable PXE or other BIOS network initialization if possible
+> > > ?? (the interface must not be initialized before Linux boots)
+> > > * Connect a live 10Gb Ethernet cable to an X550 port
+> > > * Power cycle (not reset, doesn't always work) the system and boot Linux
+> > > * Observe: ixgbe interfaces w/ 10GbE cables plugged in fail with
+> > > error -17
+> > 
+> > Why not add that to the commit message?
 > 
+> I wasn't sure if the reproduction scenario belonged to the commit message,
+> and have no problem adding it if you believe it does.
 
+> > 
+> > Is `ixgbe_set_mdio_speed(hw)` at the end of the function then still needed?
+> 
+> The code between the two calls issues a global reset to the MAC and
+> optionally the link, depending on some flags. That may reset the MDIO speed
+> back to the wrong value or, according to the comments in the code, may reset
+> the PHY and result in renegotiation and a different link speed. So, the MDIO
+> speed setting may require an adjustment. Even if it actually doesn't at the
+> moment, doing the second call makes the code robust to future software and
+> hardware changes.
 
-Kind regards,
+This is useful information to put in the commit message.
 
-Paul
+When writing commit messages, try to also think from the perspective
+of the person doing the review. What questions are the reviewers
+likely to ask, and can those questions be answered in the commit
+message, rather than having them asked on the list?
+
+Another use case of the commit message is when it turns out a change
+causes a regression. It happens sometimes, and including information
+about how you tested your change can be useful for helping fix the
+regression. It allows whoever is fixing the regression to also test
+your case, or at least something similar.
+
+So in general, more information in the commit messages is better than
+less.
+
+     Andrew
