@@ -1,85 +1,115 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 31 Oct 2021 21:19:06 +0800
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
- strip virtual channel messages
-In-Reply-To: <20211028104114.71879-1-michal.maloszewski@intel.com>
-References: <20211028104114.71879-1-michal.maloszewski@intel.com>
-Message-ID: <202110312151.U7sLbJej-lkp@intel.com>
+Date: Sun, 31 Oct 2021 21:30:25 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 24c8e5bb5fc453e2ef6c25c7f7aae94594673854
+Message-ID: <617e9a71.VEH1RtpDCADO51gu%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Michal,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 24c8e5bb5fc453e2ef6c25c7f7aae94594673854  i40e: Fix display error code in dmesg
 
-Thank you for the patch! Yet something to improve:
+elapsed time: 2331m
 
-[auto build test ERROR on tnguy-next-queue/dev-queue]
-[also build test ERROR on v5.15-rc7 next-20211029]
-[cannot apply to net/master]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+configs tested: 86
+configs skipped: 3
 
-url:    https://github.com/0day-ci/linux/commits/Michal-Maloszewski/iavf-Fix-handling-of-vlan-strip-virtual-channel-messages/20211028-190947
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: x86_64-randconfig-a011-20211031 (attached as .config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project d321548c3ce987f4f21350ba1c81fdb5d4354224)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/a899b5944ecc501aa3c6075c2edfe0ec702802f7
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Michal-Maloszewski/iavf-Fix-handling-of-vlan-strip-virtual-channel-messages/20211028-190947
-        git checkout a899b5944ecc501aa3c6075c2edfe0ec702802f7
-        # save the attached .config to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+h8300                     edosk2674_defconfig
+powerpc                   lite5200b_defconfig
+xtensa                              defconfig
+arm                          pxa168_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nds32                               defconfig
+csky                                defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a003-20211031
+i386                 randconfig-a006-20211031
+i386                 randconfig-a002-20211031
+i386                 randconfig-a005-20211031
+i386                 randconfig-a001-20211031
+i386                 randconfig-a004-20211031
+x86_64               randconfig-a005-20211031
+x86_64               randconfig-a004-20211031
+x86_64               randconfig-a002-20211031
+x86_64               randconfig-a003-20211031
+x86_64               randconfig-a001-20211031
+x86_64               randconfig-a006-20211031
+arc                  randconfig-r043-20211029
+riscv                randconfig-r042-20211029
+s390                 randconfig-r044-20211029
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
 
-All errors (new ones prefixed by >>):
-
->> drivers/net/ethernet/intel/iavf/iavf_virtchnl.c:1471:30: error: use of undeclared identifier 'NETIF_F_HW_VLAN_RX'
-                           NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
-                                                     ^
-   drivers/net/ethernet/intel/iavf/iavf_virtchnl.c:1474:32: error: use of undeclared identifier 'NETIF_F_HW_VLAN_RX'
-                           ~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
-                                                       ^
-   2 errors generated.
-
-
-vim +/NETIF_F_HW_VLAN_RX +1471 drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-
-  1458	
-  1459	/**
-  1460	 * iavf_netdev_features_vlan_strip_set - update vlan strip status
-  1461	 * @netdev: ptr to netdev being adjusted
-  1462	 * @enable: enable or disable vlan strip
-  1463	 *
-  1464	 * Helper function to change vlan strip status in netdev->features.
-  1465	 */
-  1466	static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
-  1467							const bool enable)
-  1468	{
-  1469		if (enable)
-  1470			netdev->features |=
-> 1471				NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
-  1472		else
-  1473			netdev->features &=
-  1474				~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
-  1475	}
-  1476	
+clang tested configs:
+x86_64               randconfig-a013-20211031
+x86_64               randconfig-a015-20211031
+x86_64               randconfig-a014-20211031
+x86_64               randconfig-a011-20211031
+x86_64               randconfig-a016-20211031
+x86_64               randconfig-a012-20211031
+i386                 randconfig-a013-20211031
+i386                 randconfig-a012-20211031
+i386                 randconfig-a014-20211031
+i386                 randconfig-a015-20211031
+i386                 randconfig-a011-20211031
+i386                 randconfig-a016-20211031
+hexagon              randconfig-r045-20211029
+hexagon              randconfig-r041-20211029
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/gzip
-Size: 34630 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211031/87d1b25c/attachment-0001.bin>
