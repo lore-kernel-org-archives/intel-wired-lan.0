@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 31 Oct 2021 14:09:21 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 28131d896d6d316bc1f6f305d1a9ed6d96c3f2a1
-Message-ID: <617e3311.EdKPUhEmTFAdPr2b%lkp@intel.com>
+Date: Sun, 31 Oct 2021 15:50:28 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
+ 1b9abade3e75e8ea33302cbba1d7f637399534d2
+Message-ID: <617e4ac4.4NY8Qjx7e2JEhb7c%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 28131d896d6d316bc1f6f305d1a9ed6d96c3f2a1  Merge tag 'wireless-drivers-next-2021-10-29' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers-next
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
+branch HEAD: 1b9abade3e75e8ea33302cbba1d7f637399534d2  net: ixgbevf: Remove redundant initialization of variable ret_val
 
-elapsed time: 2274m
+elapsed time: 2300m
 
-configs tested: 148
+configs tested: 142
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -69,8 +69,8 @@ ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                             allyesconfig
 m68k                                defconfig
-nios2                               defconfig
 arc                              allyesconfig
+nios2                               defconfig
 nds32                             allnoconfig
 nds32                               defconfig
 csky                                defconfig
@@ -86,11 +86,11 @@ s390                             allmodconfig
 parisc                           allyesconfig
 parisc                              defconfig
 s390                                defconfig
+i386                             allyesconfig
 sparc                            allyesconfig
 sparc                               defconfig
 i386                                defconfig
 i386                              debian-10.3
-i386                             allyesconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
@@ -120,16 +120,13 @@ x86_64               randconfig-a005-20211028
 x86_64               randconfig-a001-20211028
 x86_64               randconfig-a006-20211028
 x86_64               randconfig-a003-20211028
-arc                  randconfig-r043-20211029
-riscv                randconfig-r042-20211029
-s390                 randconfig-r044-20211029
-riscv                            allyesconfig
-riscv                            allmodconfig
 riscv                    nommu_k210_defconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
+riscv                            allyesconfig
+riscv                            allmodconfig
 x86_64                    rhel-8.3-kselftests
 um                             i386_defconfig
 x86_64                              defconfig
@@ -165,9 +162,6 @@ x86_64               randconfig-a011-20211028
 x86_64               randconfig-a014-20211028
 x86_64               randconfig-a012-20211028
 x86_64               randconfig-a016-20211028
-x86_64               randconfig-a016-20211031
-i386                 randconfig-a015-20211031
-i386                 randconfig-a016-20211031
 hexagon              randconfig-r045-20211029
 hexagon              randconfig-r041-20211029
 hexagon              randconfig-r045-20211028
