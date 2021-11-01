@@ -1,88 +1,84 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 1 Nov 2021 10:22:00 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix race conditions
- between virtchnl handling and VF ndo ops
-In-Reply-To: <20210909213809.27461-2-brett.creeley@intel.com>
-References: <20210909213809.27461-1-brett.creeley@intel.com>
- <20210909213809.27461-2-brett.creeley@intel.com>
-Message-ID: <DM8PR11MB5621D1A1660CAAD1E9780A8CAB8A9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Mon, 1 Nov 2021 15:23:14 +0800
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
+ strip virtual channel messages
+In-Reply-To: <20211028104114.71879-1-michal.maloszewski@intel.com>
+References: <20211028104114.71879-1-michal.maloszewski@intel.com>
+Message-ID: <202111011533.xMiDQuxH-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi Michal,
+
+Thank you for the patch! Yet something to improve:
+
+[auto build test ERROR on tnguy-next-queue/dev-queue]
+[also build test ERROR on v5.15 next-20211029]
+[cannot apply to net/master]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
+
+url:    https://github.com/0day-ci/linux/commits/Michal-Maloszewski/iavf-Fix-handling-of-vlan-strip-virtual-channel-messages/20211028-190947
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+config: s390-allyesconfig (attached as .config)
+compiler: s390-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/a899b5944ecc501aa3c6075c2edfe0ec702802f7
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Michal-Maloszewski/iavf-Fix-handling-of-vlan-strip-virtual-channel-messages/20211028-190947
+        git checkout a899b5944ecc501aa3c6075c2edfe0ec702802f7
+        # save the attached .config to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=s390 SHELL=/bin/bash
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/iavf/iavf_virtchnl.c: In function 'iavf_netdev_features_vlan_strip_set':
+>> drivers/net/ethernet/intel/iavf/iavf_virtchnl.c:1471:51: error: 'NETIF_F_HW_VLAN_RX' undeclared (first use in this function); did you mean 'NETIF_F_HW_TLS_RX'?
+    1471 |                         NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
+         |                                                   ^~~~~~~~~~~~~~~~~~
+         |                                                   NETIF_F_HW_TLS_RX
+   drivers/net/ethernet/intel/iavf/iavf_virtchnl.c:1471:51: note: each undeclared identifier is reported only once for each function it appears in
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Brett Creeley
-> Sent: czwartek, 9 wrze?nia 2021 23:38
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Patynowski, PrzemyslawX <przemyslawx.patynowski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix race conditions between
-> virtchnl handling and VF ndo ops
-> 
-> The VF can be configured via the PF's ndo ops at the same time the PF is
-> receiving/handling virtchnl messages. This has many issues, with one of them
-> being the ndo op could be actively resetting a VF (i.e.
-> resetting it to the default state and deleting/re-adding the VF's VSI) while a
-> virtchnl message is being handled. The following error was seen because a VF
-> ndo op was used to change a VF's trust setting while the
-> VIRTCHNL_OP_CONFIG_VSI_QUEUES was ongoing:
-> 
-> [35274.192484] ice 0000:88:00.0: Failed to set LAN Tx queue context, error:
-> ICE_ERR_PARAM [35274.193074] ice 0000:88:00.0: VF 0 failed opcode 6,
-> retval: -5 [35274.193640] iavf 0000:88:01.0: PF returned error -5
-> (IAVF_ERR_PARAM) to our request 6
-> 
-> Fix this by making sure the virtchnl handling and VF ndo ops that trigger VF
-> resets cannot run concurrently. This is done by adding a struct mutex
-> cfg_lock to each VF structure. For VF ndo ops, the mutex will be locked
-> around the critical operations and VFR. Since the ndo ops will trigger a VFR,
-> the virtchnl thread will use mutex_trylock(). This is done because if any other
-> thread (i.e. VF ndo op) has the mutex, then that means the current VF
-> message being handled is no longer valid, so just ignore it.
-> 
-> This issue can be seen using the following commands:
-> 
-> for i in {0..50}; do
->         rmmod ice
->         modprobe ice
-> 
->         sleep 1
-> 
->         echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
->         echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-> 
->         ip link set ens785f1 vf 0 trust on
->         ip link set ens785f0 vf 0 trust on
-> 
->         sleep 2
-> 
->         echo 0 > /sys/class/net/ens785f0/device/sriov_numvfs
->         echo 0 > /sys/class/net/ens785f1/device/sriov_numvfs
->         sleep 1
->         echo 1 > /sys/class/net/ens785f0/device/sriov_numvfs
->         echo 1 > /sys/class/net/ens785f1/device/sriov_numvfs
-> 
->         ip link set ens785f1 vf 0 trust on
->         ip link set ens785f0 vf 0 trust on done
-> 
-> Fixes: 7c710869d64e ("ice: Add handlers for VF netdevice operations")
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> ---
-> v2: Update Fixes tag
-> 
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 25 +++++++++++++++++++
-> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  5 ++++
->  2 files changed, 30 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index e93430ab37f1..bf6bffbc2173 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -647,6 +647,8 @@ void ice_free_vfs(struct ice_pf *pf)
+vim +1471 drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+  1458	
+  1459	/**
+  1460	 * iavf_netdev_features_vlan_strip_set - update vlan strip status
+  1461	 * @netdev: ptr to netdev being adjusted
+  1462	 * @enable: enable or disable vlan strip
+  1463	 *
+  1464	 * Helper function to change vlan strip status in netdev->features.
+  1465	 */
+  1466	static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
+  1467							const bool enable)
+  1468	{
+  1469		if (enable)
+  1470			netdev->features |=
+> 1471				NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_RX;
+  1472		else
+  1473			netdev->features &=
+  1474				~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_RX;
+  1475	}
+  1476	
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 67922 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211101/f61ea037/attachment-0001.bin>
