@@ -1,10 +1,11 @@
 From: Brelinski, Tony <tony.brelinski@intel.com>
-Date: Tue, 2 Nov 2021 23:03:20 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add ensurance of
- MacVlan resources for every trusted VF
-In-Reply-To: <20210617071926.256183-1-karen.sornek@intel.com>
-References: <20210617071926.256183-1-karen.sornek@intel.com>
-Message-ID: <MN2PR11MB42247CC4F3287AFB46D05B07828B9@MN2PR11MB4224.namprd11.prod.outlook.com>
+Date: Tue, 2 Nov 2021 23:03:43 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 6/7] ice: refactor PTYPE
+ validating
+In-Reply-To: <20210716221644.45946-7-anthony.l.nguyen@intel.com>
+References: <20210716221644.45946-1-anthony.l.nguyen@intel.com>
+ <20210716221644.45946-7-anthony.l.nguyen@intel.com>
+Message-ID: <MN2PR11MB422457026C8A375B4073C8C6828B9@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,26 +14,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Sornek, Karen
-> Sent: Thursday, June 17, 2021 12:19 AM
+> Nguyen, Anthony L
+> Sent: Friday, July 16, 2021 3:17 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Patynowski, PrzemyslawX <przemyslawx.patynowski@intel.com>;
-> Sornek, Karen <karen.sornek@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add ensurance of
-> MacVlan resources for every trusted VF
+> Subject: [Intel-wired-lan] [PATCH net-next 6/7] ice: refactor PTYPE validating
 > 
-> Trusted VF can use up every resource available, leaving nothing to other
-> trusted VFs.
-> Introduce define, which calculates MacVlan resources available based on
-> maximum available MacVlan resources, bare minimum for each VF and
-> number of currently allocated VFs.
+> From: Jeff Guo <jia.guo@intel.com>
 > 
-> Signed-off-by: Przemyslaw Patynowski
-> <przemyslawx.patynowski@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> Since the capability of a PTYPE within a specific package could be negotiated
+> by checking the HW bit map, it means that there's no need to maintain a
+> different PTYPE list for each type of the package when parsing PTYPE. So
+> refactor the PTYPE validating mechanism.
+> 
+> Signed-off-by: Jeff Guo <jia.guo@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 34 ++++++++++++++++---
->  1 file changed, 29 insertions(+), 5 deletions(-)
+>  .../net/ethernet/intel/ice/ice_flex_type.h    |  22 ++
+>  .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 274 +-----------------
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 207 ++++++-------
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |   2 +
+>  4 files changed, 133 insertions(+), 372 deletions(-)
 
 Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
