@@ -1,11 +1,9 @@
-From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
-Date: Tue, 2 Nov 2021 16:36:27 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 07/15] iavf: Restore non MAC
- filters after link down
-In-Reply-To: <20210604165335.33329-7-anthony.l.nguyen@intel.com>
-References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
- <20210604165335.33329-7-anthony.l.nguyen@intel.com>
-Message-ID: <PH0PR11MB51441320BF0B02BA7D4459A9E28B9@PH0PR11MB5144.namprd11.prod.outlook.com>
+From: Brelinski, Tony <tony.brelinski@intel.com>
+Date: Tue, 2 Nov 2021 23:02:57 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] igbvf: Refactor trace
+In-Reply-To: <20210707064025.55096-1-karen.sornek@intel.com>
+References: <20210707064025.55096-1-karen.sornek@intel.com>
+Message-ID: <MN2PR11MB422482939EDB463B72D9A62D828B9@MN2PR11MB4224.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +12,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Nguyen, Anthony L
-> Sent: Friday, June 4, 2021 9:53 AM
+> Sornek, Karen
+> Sent: Tuesday, July 6, 2021 11:40 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next 07/15] iavf: Restore non MAC filters
-> after link down
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] igbvf: Refactor trace
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Refactoring "PF still resetting" message, because previous version looked like
+> a bug - it informed about changes that worked as designed but might
+> confuse users. Changes requested to make message more user-friendly.
 > 
-> Restore VLAN filters after the link is brought down, and up - since all filters are
-> deleted from HW during the netdev link down routine.
-> 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h      |  1 +
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 35 ++++++++++++++++++---
->  2 files changed, 31 insertions(+), 5 deletions(-)
-> 
+>  drivers/net/ethernet/intel/igbvf/netdev.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>  
+Tested-by: Tony Brelinski <tony.brelinski@intel.com>
+
+
