@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 2 Nov 2021 12:14:50 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor
- iavf_mac_filter struct memory usage
-In-Reply-To: <20210830082536.274203-1-jedrzej.jagielski@intel.com>
-References: <20210830082536.274203-1-jedrzej.jagielski@intel.com>
-Message-ID: <DM8PR11MB562102006F47ED929785D42FAB8B9@DM8PR11MB5621.namprd11.prod.outlook.com>
+Date: Tue, 2 Nov 2021 12:23:06 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix static code analysis
+ warning
+In-Reply-To: <20210830083801.269798-1-karen.sornek@intel.com>
+References: <20210830083801.269798-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB56217718664F35822EA6FA07AB8B9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,29 +15,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jedrzej Jagielski
-> Sent: poniedzia?ek, 30 sierpnia 2021 10:26
+> Karen Sornek
+> Sent: poniedzia?ek, 30 sierpnia 2021 10:38
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>; Jagielski,
-> Jedrzej <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor iavf_mac_filter
-> struct memory usage
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix static code analysis warning
 > 
-> iavf_mac_filter struct contained couple boolean flags using up more memory
-> than is necessary.
-> Change the flags to be bitfields in an anonymous struct so all the flags now fit
-> in one byte.
+> Change min() to min_t() to fix static code analysis warning of possible
+> overflow.
 > 
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> Fixes: 6beb84a73ec5 ("i40e/i40evf: napi_poll must return the work done")
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf_txrx.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 21c95775509a..3feb9edb8131 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> index 3525eab8e..42c9f9dc2 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+
