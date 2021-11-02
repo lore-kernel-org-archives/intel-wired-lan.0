@@ -1,41 +1,56 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 2 Nov 2021 12:23:06 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix static code analysis
- warning
-In-Reply-To: <20210830083801.269798-1-karen.sornek@intel.com>
-References: <20210830083801.269798-1-karen.sornek@intel.com>
-Message-ID: <DM8PR11MB56217718664F35822EA6FA07AB8B9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Cyril Novikov <cnovikov@lynx.com>
+Date: Mon, 1 Nov 2021 18:39:36 -0700
+Subject: [Intel-wired-lan] [PATCH v2 net] ixgbe: set X550 MDIO speed before
+ talking to PHY
+Message-ID: <896681e4-fcd7-3187-8e59-75ce0896ebd3@lynx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The MDIO bus speed must be initialized before talking to the PHY the first
+time in order to avoid talking to it using a speed that the PHY doesn't
+support.
 
+This fixes HW initialization error -17 (IXGBE_ERR_PHY_ADDR_INVALID) on
+Denverton CPUs (a.k.a. the Atom C3000 family) on ports with a 10Gb network
+plugged in. On those devices, HLREG0[MDCSPD] resets to 1, which combined
+with the 10Gb network results in a 24MHz MDIO speed, which is apparently
+too fast for the connected PHY. PHY register reads over MDIO bus return
+garbage, leading to initialization failure.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Karen Sornek
-> Sent: poniedzia?ek, 30 sierpnia 2021 10:38
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Sornek, Karen <karen.sornek@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix static code analysis warning
-> 
-> Change min() to min_t() to fix static code analysis warning of possible
-> overflow.
-> 
-> Fixes: 6beb84a73ec5 ("i40e/i40evf: napi_poll must return the work done")
-> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-> b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-> index 3525eab8e..42c9f9dc2 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+Reproduced with Linux kernel 4.19 and 5.15-rc7. Can be reproduced using
+the following setup:
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+* Use an Atom C3000 family system with at least one X552 LAN on the SoC
+* Disable PXE or other BIOS network initialization if possible
+  (the interface must not be initialized before Linux boots)
+* Connect a live 10Gb Ethernet cable to an X550 port
+* Power cycle (not reset, doesn't always work) the system and boot Linux
+* Observe: ixgbe interfaces w/ 10GbE cables plugged in fail with error -17
 
+Signed-off-by: Cyril Novikov <cnovikov@lynx.com>
+Fixes: e84db7272798 ("ixgbe: Introduce function to control MDIO speed")
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+Patch v2 addresses review comments: add a Fixed line, move reproduction steps to the commit message. No changes to the code.
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 9724ffb16518..e4b50c7781ff 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -3405,6 +3405,9 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
+ 	/* flush pending Tx transactions */
+ 	ixgbe_clear_tx_pending(hw);
+ 
++	/* set MDIO speed before talking to the PHY in case it's the 1st time */
++	ixgbe_set_mdio_speed(hw);
++
+ 	/* PHY ops must be identified and initialized prior to reset */
+ 	status = hw->phy.ops.init(hw);
+ 	if (status == IXGBE_ERR_SFP_NOT_SUPPORTED ||
+-- 
+2.19.1-412.replication
