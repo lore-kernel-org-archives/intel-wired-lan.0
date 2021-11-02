@@ -1,10 +1,10 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 2 Nov 2021 08:22:26 +0000
-Subject: [Intel-wired-lan] [PATCH v7 1/2] ice: reduce time to read
- Option ROM CIVD data
-In-Reply-To: <20211027232255.669167-1-jacob.e.keller@intel.com>
-References: <20211027232255.669167-1-jacob.e.keller@intel.com>
-Message-ID: <BYAPR11MB33677276867974237488BFB5FC8B9@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 2 Nov 2021 11:59:45 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3] iavf: Add trace while
+ removing device
+In-Reply-To: <20210622134348.342191-1-jedrzej.jagielski@intel.com>
+References: <20210622134348.342191-1-jedrzej.jagielski@intel.com>
+Message-ID: <DM8PR11MB5621AB3CC7DE3C2BC6BBC3FEAB8B9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,61 +15,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jacob Keller
-> Sent: Thursday, October 28, 2021 4:53 AM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Intel Wired LAN <intel-
-> wired-lan at lists.osuosl.org>
-> Cc: pmenzel at molgen.mpg.de
-> Subject: [Intel-wired-lan] [PATCH v7 1/2] ice: reduce time to read Option ROM
-> CIVD data
+> Jedrzej Jagielski
+> Sent: wtorek, 22 czerwca 2021 15:44
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v3] iavf: Add trace while removing
+> device
 > 
-> During probe and device reset, the ice driver reads some data from the NVM
-> image as part of ice_init_nvm. Part of this data includes a section of the Option
-> ROM which contains version information.
+> From: =  Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 > 
-> The function ice_get_orom_civd_data is used to locate the '$CIV' data section
-> of the Option ROM.
+> Add kernel trace that device was removed.
+> Currently there is no such information.
+> I.e. Host admin removes a PCI device from a VM, than on VM shall be info
+> about the event.
 > 
-> Timing of ice_probe and ice_rebuild indicate that the ice_get_orom_civd_data
-> function takes about 10 seconds to finish executing.
+> This patch adds info log to iavf_remove function.
 > 
-> The function locates the section by scanning the Option ROM every 512 bytes.
-> This requires a significant number of NVM read accesses, since the Option
-> ROM bank is 500KB. In the worst case it would take about 1000 reads. Worse,
-> all PFs serialize this operation during reload because of acquiring the NVM
-> semaphore.
-> 
-> The CIVD section is located at the end of the Option ROM image data.
-> Unfortunately, the driver has no easy method to determine the offset manually.
-> Practical experiments have shown that the data could be at a variety of
-> locations, so simply reversing the scanning order is not sufficient to reduce the
-> overall read time.
-> 
-> Instead, copy the entire contents of the Option ROM into memory. This allows
-> reading the data using 4Kb pages instead of 512 bytes at a time.
-> This reduces the total number of firmware commands by a factor of 8. In
-> addition, reading the whole section together at once allows better indication to
-> firmware of when we're "done".
-> 
-> Re-write ice_get_orom_civd_data to allocate virtual memory to store the
-> Option ROM data. Copy the entire OptionROM contents at once using
-> ice_read_flash_module. Finally, use this memory copy to scan for the '$CIV'
-> section.
-> 
-> This change significantly reduces the time to read the Option ROM CIVD
-> section from ~10 seconds down to ~1 second. This has a significant impact on
-> the total time to complete a driver rebuild or probe.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 > ---
-> Changes since v6
-> * fix a memory leak
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Changes since v5
-> * new patch
-> 
->  drivers/net/ethernet/intel/ice/ice_nvm.c | 48 ++++++++++++++++++------
->  1 file changed, 36 insertions(+), 12 deletions(-)
-> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index d64e2567e16e..60f08a5276b2 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
