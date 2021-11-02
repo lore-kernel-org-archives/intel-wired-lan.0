@@ -1,149 +1,36 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 02 Nov 2021 22:21:36 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 18aeb4bdf06aecc8676eacd3efe2098d7da77ba0
-Message-ID: <61814970.PRMT3XxTVyRmoW3J%lkp@intel.com>
+From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
+Date: Tue, 2 Nov 2021 16:36:27 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 07/15] iavf: Restore non MAC
+ filters after link down
+In-Reply-To: <20210604165335.33329-7-anthony.l.nguyen@intel.com>
+References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
+ <20210604165335.33329-7-anthony.l.nguyen@intel.com>
+Message-ID: <PH0PR11MB51441320BF0B02BA7D4459A9E28B9@PH0PR11MB5144.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 18aeb4bdf06aecc8676eacd3efe2098d7da77ba0  i40e: Fix display error code in dmesg
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Nguyen, Anthony L
+> Sent: Friday, June 4, 2021 9:53 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next 07/15] iavf: Restore non MAC filters
+> after link down
+> 
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> 
+> Restore VLAN filters after the link is brought down, and up - since all filters are
+> deleted from HW during the netdev link down routine.
+> 
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h      |  1 +
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 35 ++++++++++++++++++---
+>  2 files changed, 31 insertions(+), 5 deletions(-)
+> 
 
-elapsed time: 773m
-
-configs tested: 120
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          landisk_defconfig
-mips                          malta_defconfig
-powerpc                     tqm8555_defconfig
-arm                        cerfcube_defconfig
-mips                        bcm63xx_defconfig
-arm                        mvebu_v7_defconfig
-mips                      loongson3_defconfig
-mips                      maltasmvp_defconfig
-m68k                        stmark2_defconfig
-arc                          axs103_defconfig
-powerpc                   bluestone_defconfig
-arm                          moxart_defconfig
-arc                        vdk_hs38_defconfig
-powerpc                 mpc8272_ads_defconfig
-mips                           xway_defconfig
-m68k                             allmodconfig
-sh                        apsh4ad0a_defconfig
-xtensa                  audio_kc705_defconfig
-s390                          debug_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                      acadia_defconfig
-arm                           h5000_defconfig
-arc                              alldefconfig
-sh                            hp6xx_defconfig
-arm                         cm_x300_defconfig
-powerpc                 linkstation_defconfig
-sh                           se7712_defconfig
-riscv                             allnoconfig
-mips                          ath79_defconfig
-sh                           se7705_defconfig
-powerpc                      tqm8xx_defconfig
-m68k                       m5475evb_defconfig
-powerpc                      cm5200_defconfig
-arm                        mvebu_v5_defconfig
-microblaze                      mmu_defconfig
-openrisc                         alldefconfig
-arm                         s3c6400_defconfig
-powerpc                     ep8248e_defconfig
-sh                            migor_defconfig
-arm                  randconfig-c002-20211101
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-xtensa                           allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a012-20211101
-x86_64               randconfig-a015-20211101
-x86_64               randconfig-a016-20211101
-x86_64               randconfig-a013-20211101
-x86_64               randconfig-a011-20211101
-x86_64               randconfig-a014-20211101
-i386                 randconfig-a016-20211101
-i386                 randconfig-a014-20211101
-i386                 randconfig-a015-20211101
-i386                 randconfig-a013-20211101
-i386                 randconfig-a011-20211101
-i386                 randconfig-a012-20211101
-arc                  randconfig-r043-20211101
-riscv                randconfig-r042-20211101
-s390                 randconfig-r044-20211101
-riscv                            allyesconfig
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a004-20211101
-x86_64               randconfig-a006-20211101
-x86_64               randconfig-a001-20211101
-x86_64               randconfig-a002-20211101
-x86_64               randconfig-a003-20211101
-x86_64               randconfig-a005-20211101
-i386                 randconfig-a005-20211101
-i386                 randconfig-a001-20211101
-i386                 randconfig-a003-20211101
-i386                 randconfig-a004-20211101
-i386                 randconfig-a006-20211101
-i386                 randconfig-a002-20211101
-hexagon              randconfig-r041-20211101
-hexagon              randconfig-r045-20211101
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>  
