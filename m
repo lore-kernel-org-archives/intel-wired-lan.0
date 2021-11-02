@@ -1,11 +1,11 @@
-From: Brelinski, Tony <tony.brelinski@intel.com>
-Date: Mon, 1 Nov 2021 23:05:10 +0000
-Subject: [Intel-wired-lan] [PATCH net 7/8] iavf: Fix for the false
- positive ASQ/ARQ errors while issuing VF reset
-In-Reply-To: <20210604164900.33156-7-anthony.l.nguyen@intel.com>
-References: <20210604164900.33156-1-anthony.l.nguyen@intel.com>
- <20210604164900.33156-7-anthony.l.nguyen@intel.com>
-Message-ID: <MN2PR11MB42242191344DA8943E85C521828A9@MN2PR11MB4224.namprd11.prod.outlook.com>
+From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
+Date: Tue, 2 Nov 2021 00:21:40 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 11/15] iavf: Prevent changing
+ static ITR values if adaptive moderation is on
+In-Reply-To: <20210604165335.33329-11-anthony.l.nguyen@intel.com>
+References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
+ <20210604165335.33329-11-anthony.l.nguyen@intel.com>
+Message-ID: <PH0PR11MB5144CB199B7CCAB42FA9085CE28B9@PH0PR11MB5144.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,28 +15,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Nguyen, Anthony L
-> Sent: Friday, June 4, 2021 9:49 AM
+> Sent: Friday, June 4, 2021 9:54 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net 7/8] iavf: Fix for the false positive
-> ASQ/ARQ errors while issuing VF reset
+> Subject: [Intel-wired-lan] [PATCH net-next 11/15] iavf: Prevent changing static
+> ITR values if adaptive moderation is on
 > 
-> From: Surabhi Boob <surabhi.boob@intel.com>
+> From: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
 > 
-> While issuing VF Reset from the guest OS, the VF driver prints logs about
-> critical / Overflow error detection. This is not an actual error since the
-> VF_MBX_ARQLEN register is set to all FF's for a short period of time and the
-> VF would catch the bits set if it was reading the register during that spike of
-> time.
-> This patch introduces an additional check to ignore this condition since the VF
-> is in reset.
+> Resolve being able to change static values on VF when adaptive interrupt
+> moderation is enabled.
 > 
-> Fixes: 19b73d8efaa4 ("i40evf: Add additional check for reset")
-> Signed-off-by: Surabhi Boob <surabhi.boob@intel.com>
+> This problem is fixed by checking the interrupt settings is not a combination of
+> change of static value while adaptive interrupt moderation is turned on.
+> 
+> Without this fix, the user would be able to change static values on VF with
+> adaptive moderation enabled.
+> 
+> Signed-off-by: Nitesh B Venkatesh <nitesh.b.venkatesh@intel.com>
 > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  .../net/ethernet/intel/iavf/iavf_ethtool.c    | 30 ++++++++++++++++---
+>  1 file changed, 26 insertions(+), 4 deletions(-)
 
-Tested-by: Tony Brelinski <tony.brelinski@intel.com>
-
+Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>  
 
