@@ -1,50 +1,159 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 3 Nov 2021 08:55:22 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix deadlock occurrence
- during resetting VF interface
-In-Reply-To: <20210907092540.59568-1-jedrzej.jagielski@intel.com>
-References: <20210907092540.59568-1-jedrzej.jagielski@intel.com>
-Message-ID: <DM8PR11MB5621CF6907354AC9BCD51915AB8C9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 03 Nov 2021 17:59:17 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 11d5a44cb7419a256a18b69c1b64c39e00987d3c
+Message-ID: <61825d75.cazgj+fNI7N9p8Gf%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 11d5a44cb7419a256a18b69c1b64c39e00987d3c  igc: Fix typo in i225 LTR functions
 
+elapsed time: 722m
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jedrzej Jagielski
-> Sent: wtorek, 7 wrze?nia 2021 11:26
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Gawin, JaroslawX <jaroslawx.gawin@intel.com>; Jagielski, Jedrzej
-> <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix deadlock occurrence during
-> resetting VF interface
-> 
-> System hangs if close the interface is called from the kernel during the
-> interface is in resetting state.
-> During resetting operation the link is closing but kernel didn't know it and it
-> tried to close this interface again what sometimes led to deadlock.
-> Inform kernel about current state of interface and turn off the flag IFF_UP
-> when interface is closing until reset is finished.
-> Previously it was most likely to hang the system when kernel (network
-> manager) tried to close the interface in the same time when interface was in
-> resetting state because of deadlock.
-> 
-> Fixes: 3c8e0b989aa1 ("i40vf: don't stop me now")
-> Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 80437ef26391..a089c0cbc26c 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -2207,6 +2207,7 @@ continue_reset:
+configs tested: 128
+configs skipped: 4
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allmodconfig
+arm                              allyesconfig
+i386                 randconfig-c001-20211103
+arm                         lpc18xx_defconfig
+sh                         ecovec24_defconfig
+mips                       lemote2f_defconfig
+sh                          lboxre2_defconfig
+m68k                          hp300_defconfig
+sh                ecovec24-romimage_defconfig
+powerpc                     kmeter1_defconfig
+mips                         rt305x_defconfig
+powerpc                     pq2fads_defconfig
+sh                          rsk7264_defconfig
+m68k                       m5249evb_defconfig
+mips                         tb0219_defconfig
+h8300                               defconfig
+sh                           se7619_defconfig
+arm                            mps2_defconfig
+arm                            zeus_defconfig
+arm                         cm_x300_defconfig
+arm                            hisi_defconfig
+arm                          collie_defconfig
+powerpc                 mpc8540_ads_defconfig
+arm                        spear6xx_defconfig
+powerpc                         wii_defconfig
+mips                        vocore2_defconfig
+sh                     magicpanelr2_defconfig
+powerpc                    sam440ep_defconfig
+arm                     eseries_pxa_defconfig
+arm                       imx_v6_v7_defconfig
+riscv                    nommu_virt_defconfig
+h8300                    h8300h-sim_defconfig
+arc                     haps_hs_smp_defconfig
+arm                         s3c6400_defconfig
+openrisc                 simple_smp_defconfig
+mips                      maltaaprp_defconfig
+sh                           se7206_defconfig
+powerpc                 mpc8313_rdb_defconfig
+s390                             alldefconfig
+powerpc                 mpc837x_mds_defconfig
+ia64                            zx1_defconfig
+arm                            xcep_defconfig
+x86_64                              defconfig
+m68k                            mac_defconfig
+arm                  randconfig-c002-20211103
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                             allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a012-20211103
+x86_64               randconfig-a015-20211103
+x86_64               randconfig-a016-20211103
+x86_64               randconfig-a011-20211103
+x86_64               randconfig-a013-20211103
+x86_64               randconfig-a014-20211103
+i386                 randconfig-a014-20211103
+i386                 randconfig-a016-20211103
+i386                 randconfig-a013-20211103
+i386                 randconfig-a015-20211103
+i386                 randconfig-a011-20211103
+i386                 randconfig-a012-20211103
+arc                  randconfig-r043-20211103
+riscv                randconfig-r042-20211103
+s390                 randconfig-r044-20211103
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allyesconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                           allyesconfig
+
+clang tested configs:
+mips                 randconfig-c004-20211103
+arm                  randconfig-c002-20211103
+i386                 randconfig-c001-20211103
+s390                 randconfig-c005-20211103
+powerpc              randconfig-c003-20211103
+riscv                randconfig-c006-20211103
+x86_64               randconfig-c007-20211103
+x86_64               randconfig-a006-20211103
+x86_64               randconfig-a004-20211103
+x86_64               randconfig-a001-20211103
+x86_64               randconfig-a002-20211103
+x86_64               randconfig-a005-20211103
+x86_64               randconfig-a003-20211103
+i386                 randconfig-a005-20211103
+i386                 randconfig-a003-20211103
+i386                 randconfig-a001-20211103
+i386                 randconfig-a004-20211103
+i386                 randconfig-a006-20211103
+i386                 randconfig-a002-20211103
+hexagon              randconfig-r041-20211103
+hexagon              randconfig-r045-20211103
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
