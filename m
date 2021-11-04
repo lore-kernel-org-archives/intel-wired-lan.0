@@ -1,39 +1,35 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 4 Nov 2021 11:08:55 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 6/6] docs: net: Add
- description of SyncE interfaces
-In-Reply-To: <20211104081231.1982753-7-maciej.machnikowski@intel.com>
-References: <20211104081231.1982753-1-maciej.machnikowski@intel.com>
- <20211104081231.1982753-7-maciej.machnikowski@intel.com>
-Message-ID: <20211104110855.3ead1642@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
+Date: Thu, 4 Nov 2021 18:36:53 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor text of
+ informational message
+In-Reply-To: <20210831101202.3532-1-karen.sornek@intel.com>
+References: <20210831101202.3532-1-karen.sornek@intel.com>
+Message-ID: <PH0PR11MB51449532535F0A45DF55FC89E28D9@PH0PR11MB5144.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu,  4 Nov 2021 09:12:31 +0100 Maciej Machnikowski wrote:
-> +Synchronous Ethernet networks use a physical layer clock to syntonize
-> +the frequency across different network elements.
-> +
-> +Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
-> +Equipment Clock (EEC) and can recover synchronization
-> +from the synchronization inputs - either traffic interfaces or external
-> +frequency sources.
-> +The EEC can synchronize its frequency (syntonize) to any of those sources.
-> +It is also able to select a synchronization source through priority tables
-> +and synchronization status messaging. It also provides necessary
-> +filtering and holdover capabilities.
-> +
-> +The following interface can be applicable to diffferent packet network types
-> +following ITU-T G.8261/G.8262 recommendations.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Karen
+> Sornek
+> Sent: Tuesday, August 31, 2021 3:12 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Bruce Allan <bruce.w.allan@intel.com>; Sornek, Karen
+> <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Refactor text of informational
+> message
+> 
+> This message is intended to be informational to indicate a reset is about to
+> happen, but the use of "warning" in the message text can cause concern with
+> users.  Reword the message to make it less alarming.
+> 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-Can we get a diagram in here in terms of how the port feeds its
-recovered Rx freq into EEC and that feeds freq of Tx on other ports?
-
-I'm still struggling to understand your reasoning around not making 
-EEC its own object. "We can do this later" seems like trading
-relatively little effort now for extra work for driver and application
-developers for ever.
-
-Also patch 3 still has a kdoc warning.
+Tested-by: George Kuruvinakunnel <george.kuruvinakunnel@intel.com>  
