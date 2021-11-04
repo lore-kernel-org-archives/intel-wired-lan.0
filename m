@@ -1,36 +1,80 @@
 From: Karol Kolacinski <karol.kolacinski@intel.com>
-Date: Thu,  4 Nov 2021 14:52:11 +0100
-Subject: [Intel-wired-lan] [PATCH intel-next] ice: Use div64_u64 instead of
- div_u64 in adjfine
-Message-ID: <20211104135211.21315-1-karol.kolacinski@intel.com>
+Date: Thu,  4 Nov 2021 14:58:36 +0100
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: Don't put stale
+ timestamps in the skb
+Message-ID: <20211104135836.24301-1-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change the division in ice_ptp_adjfine from div_u64 to div64_u64.
-div_u64 is used when the divisor is 32 bit but in this case incval is
-64 bit and it caused incorrect calculations and incval adjustments.
-
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+The driver has to check if it does not accidentally put the timestamp in
+the SKB before previous timestamp gets overwritten.
+Timestamp values in the PHY are read only and do not get cleared except
+at hardware reset or when a new timestamp value is captured.
+The cached_tstamp field is used to detect the case where a new timestamp
+has not yet been captured, ensuring that we avoid sending stale
+timestamp data to the stack.
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 11 ++++-------
+ drivers/net/ethernet/intel/ice/ice_ptp.h |  6 ++++++
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 2b3b2060b504..2149595cc632 100644
+index 2b3b2060b504..9a1a09661c78 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1104,7 +1104,7 @@ static int ice_ptp_adjfine(struct ptp_clock_info *info, long scaled_ppm)
- 		scaled_ppm = -scaled_ppm;
- 	}
+@@ -2069,19 +2069,16 @@ static void ice_ptp_tx_tstamp_work(struct kthread_work *work)
+ 		if (err)
+ 			continue;
  
--	while ((u64)scaled_ppm > div_u64(U64_MAX, incval)) {
-+	while ((u64)scaled_ppm > div64_u64(U64_MAX, incval)) {
- 		/* handle overflow by scaling down the scaled_ppm and
- 		 * the divisor, losing some precision
+-		/* Check if the timestamp is valid */
+-		if (!(raw_tstamp & ICE_PTP_TS_VALID))
++		/* Check if the timestamp is invalid or stale */
++		if (!(raw_tstamp & ICE_PTP_TS_VALID) ||
++		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
+ 			continue;
+ 
+-		/* clear the timestamp register, so that it won't show valid
+-		 * again when re-used.
+-		 */
+-		ice_clear_phy_tstamp(hw, tx->quad, phy_idx);
+-
+ 		/* The timestamp is valid, so we'll go ahead and clear this
+ 		 * index and then send the timestamp up to the stack.
  		 */
+ 		spin_lock(&tx->lock);
++		tx->tstamps[idx].cached_tstamp = raw_tstamp;
+ 		clear_bit(idx, tx->in_use);
+ 		skb = tx->tstamps[idx].skb;
+ 		tx->tstamps[idx].skb = NULL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 92b202ef3c15..eef8ec894871 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -55,15 +55,21 @@ struct ice_perout_channel {
+  * struct ice_tx_tstamp - Tracking for a single Tx timestamp
+  * @skb: pointer to the SKB for this timestamp request
+  * @start: jiffies when the timestamp was first requested
++ * @cached_tstamp: last read timestamp
+  *
+  * This structure tracks a single timestamp request. The SKB pointer is
+  * provided when initiating a request. The start time is used to ensure that
+  * we discard old requests that were not fulfilled within a 2 second time
+  * window.
++ * Timestamp values in the PHY are read only and do not get cleared except at
++ * hardware reset or when a new timestamp value is captured. The cached_tstamp
++ * field is used to detect the case where a new timestamp has not yet been
++ * captured, ensuring that we avoid sending stale timestamp data to the stack.
+  */
+ struct ice_tx_tstamp {
+ 	struct sk_buff *skb;
+ 	unsigned long start;
++	u64 cached_tstamp;
+ };
+ 
+ /**
 -- 
 2.32.0
 
