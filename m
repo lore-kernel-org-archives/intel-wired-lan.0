@@ -1,61 +1,81 @@
 From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Fri, 5 Nov 2021 11:51:48 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 6/6] docs: net: Add
- description of SyncE interfaces
-In-Reply-To: <20211104110855.3ead1642@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Date: Fri, 5 Nov 2021 12:17:19 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 4/6] rtnetlink: Add support
+ for SyncE recovered clock configuration
+In-Reply-To: <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
 References: <20211104081231.1982753-1-maciej.machnikowski@intel.com>
- <20211104081231.1982753-7-maciej.machnikowski@intel.com>
- <20211104110855.3ead1642@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <MW5PR11MB5812FA6647FF189D368C75A5EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <20211104081231.1982753-5-maciej.machnikowski@intel.com>
+ <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
+Message-ID: <MW5PR11MB5812F4FD090FCEA7CD83E984EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
-> From: Jakub Kicinski <kuba@kernel.org>
-> Sent: Thursday, November 4, 2021 7:09 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: Re: [PATCH net-next 6/6] docs: net: Add description of SyncE
-> interfaces
+> From: Roopa Prabhu <roopa@nvidia.com>
+> Sent: Thursday, November 4, 2021 7:25 PM
+> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>;
+> netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Cc: richardcochran at gmail.com; abyagowi at fb.com; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
+> linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz;
+> saeed at kernel.org; michael.chan at broadcom.com
+> Subject: Re: [PATCH net-next 4/6] rtnetlink: Add support for SyncE recovered
+> clock configuration
 > 
-> On Thu,  4 Nov 2021 09:12:31 +0100 Maciej Machnikowski wrote:
-> > +Synchronous Ethernet networks use a physical layer clock to syntonize
-> > +the frequency across different network elements.
-> > +
-> > +Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
-> > +Equipment Clock (EEC) and can recover synchronization
-> > +from the synchronization inputs - either traffic interfaces or external
-> > +frequency sources.
-> > +The EEC can synchronize its frequency (syntonize) to any of those
-> sources.
-> > +It is also able to select a synchronization source through priority tables
-> > +and synchronization status messaging. It also provides necessary
-> > +filtering and holdover capabilities.
-> > +
-> > +The following interface can be applicable to diffferent packet network
-> types
-> > +following ITU-T G.8261/G.8262 recommendations.
 > 
-> Can we get a diagram in here in terms of how the port feeds its
-> recovered Rx freq into EEC and that feeds freq of Tx on other ports?
+> On 11/4/21 1:12 AM, Maciej Machnikowski wrote:
+> > Add support for RTNL messages for reading/configuring SyncE recovered
+> > clocks.
+> > The messages are:
+> > RTM_GETRCLKRANGE: Reads the allowed pin index range for the
+> recovered
+> > 		  clock outputs. This can be aligned to PHY outputs or
+> > 		  to EEC inputs, whichever is better for a given
+> > 		  application
+> >
+> > RTM_GETRCLKSTATE: Read the state of recovered pins that output
+> recovered
+> > 		  clock from a given port. The message will contain the
+> > 		  number of assigned clocks (IFLA_RCLK_STATE_COUNT) and
+> > 		  a N pin inexes in IFLA_RCLK_STATE_OUT_IDX
+> >
+> > RTM_SETRCLKSTATE: Sets the redirection of the recovered clock for
+> > 		  a given pin
+> >
+> > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
+> > ---
+> 
+> 
+> Can't we just use a single RTM msg with nested attributes ?
+> 
+> With separate RTM msgtype for each syncE attribute we will end up
+> bloating the RTM msg namespace.
+> 
+> (these api's could also be in ethtool given its directly querying the
+> drivers)
 
-Will try - yet my ASCII art skills are not very well developed :)
+I'm not a fan of merging those messages. The mergeable ones are
+GETRCLKRANGE and GETCLKSTATE, but the get range function may be
+result in a significantly longer call if the information about the underlying
+HW require any HW calls.
+They are currently grouped in 3 categories:
+- reading the boundaries in GetRclkRange (we can later add more to it, like
+	configurable frequency limits)
+- Reading current configuration
+- setting the required configuration
 
-> I'm still struggling to understand your reasoning around not making
-> EEC its own object. "We can do this later" seems like trading
-> relatively little effort now for extra work for driver and application
-> developers for ever.
+I don't plan adding any additional RTM msg types for those (and that's
+the reason why I pulled them before EEC state which may have more
+messages in the future)
 
-That's not the case. We need EEC and the other subsystem we wanted
-to make is the DPLL subsystem. While EEC can be a DPLL - it doesn't have
-to, and it's also the other way round - the DPLL can have numerous different
-usages.
-When we add the DPLL subsystem support the future work will be as simple 
-as routing the EEC state read function to the DPLL subsystem. But if someone
-decides to use a different HW implementation he will still be able to
-implement his own version of API to handle it without a bigger DPLL block
+We also discussed ethtool way in the past RFCs, but this concept
+is applicable to any transport layer so I'd rather not limit it to ethernet
+devices (i.e. SONET, infiniband and others).
 
-> Also patch 3 still has a kdoc warning.
-Will fix.
+Regards
+Maciek
