@@ -1,81 +1,251 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Fri, 5 Nov 2021 12:17:19 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 4/6] rtnetlink: Add support
- for SyncE recovered clock configuration
-In-Reply-To: <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
-References: <20211104081231.1982753-1-maciej.machnikowski@intel.com>
- <20211104081231.1982753-5-maciej.machnikowski@intel.com>
- <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
-Message-ID: <MW5PR11MB5812F4FD090FCEA7CD83E984EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
+From: Brett Creeley <brett.creeley@intel.com>
+Date: Fri,  5 Nov 2021 09:20:25 -0700
+Subject: [Intel-wired-lan] [PATCH net] iavf: Fix VLAN feature flags after VFR
+Message-ID: <20211105162025.23912-1-brett.creeley@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When a VF goes through a reset, it's possible for the VF's feature set
+to change. For example it may lose the VIRTCHNL_VF_OFFLOAD_VLAN
+capability after VF reset. Unfortunately, the driver doesn't correctly
+deal with this situation and errors are seen from downing/upping the
+interface and/or moving the interface in/out of a network namespace.
 
+When setting the interface down/up we see the following errors after the
+VIRTCHNL_VF_OFFLOAD_VLAN capability was taken away from the VF:
 
-> -----Original Message-----
-> From: Roopa Prabhu <roopa@nvidia.com>
-> Sent: Thursday, November 4, 2021 7:25 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>;
-> netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Cc: richardcochran at gmail.com; abyagowi at fb.com; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
-> linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz;
-> saeed at kernel.org; michael.chan at broadcom.com
-> Subject: Re: [PATCH net-next 4/6] rtnetlink: Add support for SyncE recovered
-> clock configuration
-> 
-> 
-> On 11/4/21 1:12 AM, Maciej Machnikowski wrote:
-> > Add support for RTNL messages for reading/configuring SyncE recovered
-> > clocks.
-> > The messages are:
-> > RTM_GETRCLKRANGE: Reads the allowed pin index range for the
-> recovered
-> > 		  clock outputs. This can be aligned to PHY outputs or
-> > 		  to EEC inputs, whichever is better for a given
-> > 		  application
-> >
-> > RTM_GETRCLKSTATE: Read the state of recovered pins that output
-> recovered
-> > 		  clock from a given port. The message will contain the
-> > 		  number of assigned clocks (IFLA_RCLK_STATE_COUNT) and
-> > 		  a N pin inexes in IFLA_RCLK_STATE_OUT_IDX
-> >
-> > RTM_SETRCLKSTATE: Sets the redirection of the recovered clock for
-> > 		  a given pin
-> >
-> > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
-> > ---
-> 
-> 
-> Can't we just use a single RTM msg with nested attributes ?
-> 
-> With separate RTM msgtype for each syncE attribute we will end up
-> bloating the RTM msg namespace.
-> 
-> (these api's could also be in ethtool given its directly querying the
-> drivers)
+ice 0000:51:00.1: VF 1 failed opcode 12, retval: -64 iavf 0000:51:09.1:
+Failed to add VLAN filter, error IAVF_NOT_SUPPORTED ice 0000:51:00.1: VF
+1 failed opcode 13, retval: -64 iavf 0000:51:09.1: Failed to delete VLAN
+filter, error IAVF_NOT_SUPPORTED
 
-I'm not a fan of merging those messages. The mergeable ones are
-GETRCLKRANGE and GETCLKSTATE, but the get range function may be
-result in a significantly longer call if the information about the underlying
-HW require any HW calls.
-They are currently grouped in 3 categories:
-- reading the boundaries in GetRclkRange (we can later add more to it, like
-	configurable frequency limits)
-- Reading current configuration
-- setting the required configuration
+These add/delete errors are happening because the VLAN filters are
+tracked internally to the driver and regardless of the VLAN_ALLOWED()
+setting the driver tries to delete/re-add them over virtchnl.
 
-I don't plan adding any additional RTM msg types for those (and that's
-the reason why I pulled them before EEC state which may have more
-messages in the future)
+Fix the delete failure by making sure to delete any VLAN filter tracking
+in the driver when a removal request is made, while preventing the
+virtchnl request.  This makes it so the driver's VLAN list is up to date
+and the errors are
 
-We also discussed ethtool way in the past RFCs, but this concept
-is applicable to any transport layer so I'd rather not limit it to ethernet
-devices (i.e. SONET, infiniband and others).
+Fix the add failure by making sure the check for VLAN_ALLOWED() during
+reset is done after the VF receives its capability list from the PF via
+VIRTCHNL_OP_GET_VF_RESOURCES. If VLAN functionality is not allowed, then
+prevent requesting re-adding the filters over virtchnl.
 
-Regards
-Maciek
+When moving the interface into a network namespace we see the following
+errors after the VIRTCHNL_VF_OFFLOAD_VLAN capability was taken away from
+the VF:
+
+iavf 0000:51:09.1 enp81s0f1v1: NIC Link is Up Speed is 25 Gbps Full Duplex
+iavf 0000:51:09.1 temp_27: renamed from enp81s0f1v1
+iavf 0000:51:09.1 mgmt: renamed from temp_27
+iavf 0000:51:09.1 dev27: set_features() failed (-22); wanted 0x020190001fd54833, left 0x020190001fd54bb3
+
+These errors are happening because we aren't correctly updating the
+netdev capabilities and dealing with ndo_fix_features() and
+ndo_set_features() correctly.
+
+Fix this by only reporting errors in the driver's ndo_set_features()
+callback when VIRTCHNL_VF_OFFLOAD_VLAN is not allowed and any attempt to
+enable the VLAN features is made. Also, make sure to disable VLAN
+insertion, filtering, and stripping since the VIRTCHNL_VF_OFFLOAD_VLAN
+flag applies to all of them and not just VLAN stripping.
+
+Also, after we process the capabilities in the VF reset path, make sure
+to call netdev_update_features() in case the capabilities have changed
+in order to update the netdev's feature set to match the VF's actual
+capabilities.
+
+Lastly, make sure to always report success on VLAN filter delete when
+VIRTCHNL_VF_OFFLOAD_VLAN is not supported. The changed flow in
+iavf_del_vlans() allows the stack to delete previosly existing VLAN
+filters even if VLAN filtering is not allowed. This makes it so the VLAN
+filter list is up to date.
+
+Fixes: 8774370d268f ("i40e/i40evf: support for VF VLAN tag stripping control")
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 33 ++++++--------
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 45 +++++++++++++++++--
+ 3 files changed, 56 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index e66a7e455ce1..4d62231ec6b5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -505,4 +505,5 @@ void iavf_add_adv_rss_cfg(struct iavf_adapter *adapter);
+ void iavf_del_adv_rss_cfg(struct iavf_adapter *adapter);
+ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ 					const u8 *macaddr);
++int iavf_lock_timeout(struct mutex *lock, unsigned int msecs);
+ #endif /* _IAVF_H_ */
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 814c87715f68..a655073af6c7 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -147,7 +147,7 @@ enum iavf_status iavf_free_virt_mem_d(struct iavf_hw *hw,
+  *
+  * Returns 0 on success, negative on failure
+  **/
+-static int iavf_lock_timeout(struct mutex *lock, unsigned int msecs)
++int iavf_lock_timeout(struct mutex *lock, unsigned int msecs)
+ {
+ 	unsigned int wait, delay = 10;
+ 
+@@ -717,13 +717,11 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, u16 vlan)
+  **/
+ static void iavf_restore_filters(struct iavf_adapter *adapter)
+ {
+-	/* re-add all VLAN filters */
+-	if (VLAN_ALLOWED(adapter)) {
+-		u16 vid;
++	u16 vid;
+ 
+-		for_each_set_bit(vid, adapter->vsi.active_vlans, VLAN_N_VID)
+-			iavf_add_vlan(adapter, vid);
+-	}
++	/* re-add all VLAN filters */
++	for_each_set_bit(vid, adapter->vsi.active_vlans, VLAN_N_VID)
++		iavf_add_vlan(adapter, vid);
+ }
+ 
+ /**
+@@ -758,9 +756,6 @@ static int iavf_vlan_rx_kill_vid(struct net_device *netdev,
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 
+-	if (!VLAN_ALLOWED(adapter))
+-		return -EIO;
+-
+ 	iavf_del_vlan(adapter, vid);
+ 	clear_bit(vid, adapter->vsi.active_vlans);
+ 
+@@ -2191,7 +2186,6 @@ static void iavf_reset_task(struct work_struct *work)
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	struct iavf_mac_filter *f, *ftmp;
+-	struct iavf_vlan_filter *vlf;
+ 	struct iavf_cloud_filter *cf;
+ 	u32 reg_val;
+ 	int i = 0, err;
+@@ -2332,11 +2326,6 @@ static void iavf_reset_task(struct work_struct *work)
+ 	list_for_each_entry(f, &adapter->mac_filter_list, list) {
+ 		f->add = true;
+ 	}
+-	/* re-add all VLAN filters */
+-	list_for_each_entry(vlf, &adapter->vlan_filter_list, list) {
+-		vlf->add = true;
+-	}
+-
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 
+ 	/* check if TCs are running and re-add all cloud filters */
+@@ -2350,7 +2339,6 @@ static void iavf_reset_task(struct work_struct *work)
+ 	spin_unlock_bh(&adapter->cloud_filter_list_lock);
+ 
+ 	adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
+-	adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
+ 	adapter->aq_required |= IAVF_FLAG_AQ_ADD_CLOUD_FILTER;
+ 	iavf_misc_irq_enable(adapter);
+ 
+@@ -3465,11 +3453,16 @@ static int iavf_set_features(struct net_device *netdev,
+ {
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 
+-	/* Don't allow changing VLAN_RX flag when adapter is not capable
+-	 * of VLAN offload
++	/* Don't allow enabling VLAN features when adapter is not capable
++	 * of VLAN offload/filtering
+ 	 */
+ 	if (!VLAN_ALLOWED(adapter)) {
+-		if ((netdev->features ^ features) & NETIF_F_HW_VLAN_CTAG_RX)
++		netdev->hw_features &= ~(NETIF_F_HW_VLAN_CTAG_RX |
++					 NETIF_F_HW_VLAN_CTAG_TX |
++					 NETIF_F_HW_VLAN_CTAG_FILTER);
++		if (features & (NETIF_F_HW_VLAN_CTAG_RX |
++				NETIF_F_HW_VLAN_CTAG_TX |
++				NETIF_F_HW_VLAN_CTAG_FILTER))
+ 			return -EINVAL;
+ 	} else if ((netdev->features ^ features) & NETIF_F_HW_VLAN_CTAG_RX) {
+ 		if (features & NETIF_F_HW_VLAN_CTAG_RX)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 8c3f0f77cb57..26ae289a0524 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -607,7 +607,7 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
+ 		if (f->add)
+ 			count++;
+ 	}
+-	if (!count) {
++	if (!count || !VLAN_ALLOWED(adapter)) {
+ 		adapter->aq_required &= ~IAVF_FLAG_AQ_ADD_VLAN_FILTER;
+ 		spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 		return;
+@@ -673,9 +673,19 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
+ 
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 
+-	list_for_each_entry(f, &adapter->vlan_filter_list, list) {
+-		if (f->remove)
++	list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
++		/* since VLAN capabilities are not allowed, we dont want to send
++		 * a VLAN delete request because it will most likely fail and
++		 * create unnecessary errors/noise, so just free the VLAN
++		 * filters marked for removal to enable bailing out before
++		 * sending a virtchnl message
++		 */
++		if (f->remove && !VLAN_ALLOWED(adapter)) {
++			list_del(&f->list);
++			kfree(f);
++		} else if (f->remove) {
+ 			count++;
++		}
+ 	}
+ 	if (!count) {
+ 		adapter->aq_required &= ~IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+@@ -1722,8 +1732,37 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		}
+ 		spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 		iavf_add_filter(adapter, adapter->hw.mac.addr);
++
++		if (VLAN_ALLOWED(adapter)) {
++			if (!list_empty(&adapter->vlan_filter_list)) {
++				struct iavf_vlan_filter *vlf;
++
++				/* re-add all VLAN filters over virtchnl */
++				list_for_each_entry(vlf,
++						    &adapter->vlan_filter_list,
++						    list)
++					vlf->add = true;
++
++				adapter->aq_required |=
++					IAVF_FLAG_AQ_ADD_VLAN_FILTER;
++			}
++		}
++
+ 		spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 		iavf_process_config(adapter);
++
++		/* unlock crit_lock before acquiring rtnl_lock as other
++		 * processes holding rtnl_lock could be waiting for the same
++		 * crit_lock
++		 */
++		mutex_unlock(&adapter->crit_lock);
++		rtnl_lock();
++		netdev_update_features(adapter->netdev);
++		rtnl_unlock();
++		if (iavf_lock_timeout(&adapter->crit_lock, 10000))
++			dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n",
++				 __FUNCTION__);
++
+ 		}
+ 		break;
+ 	case VIRTCHNL_OP_ENABLE_QUEUES:
+-- 
+2.26.3
+
