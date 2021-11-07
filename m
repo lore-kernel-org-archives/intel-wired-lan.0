@@ -1,173 +1,86 @@
 From: Ido Schimmel <idosch@idosch.org>
-Date: Sun, 7 Nov 2021 16:08:44 +0200
-Subject: [Intel-wired-lan] [PATCH v2 net-next 6/6] docs: net: Add
- description of SyncE interfaces
-In-Reply-To: <20211105205331.2024623-7-maciej.machnikowski@intel.com>
-References: <20211105205331.2024623-1-maciej.machnikowski@intel.com>
- <20211105205331.2024623-7-maciej.machnikowski@intel.com>
-Message-ID: <YYfd7DCFFtj/x+zQ@shredder>
+Date: Sun, 7 Nov 2021 16:21:12 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 4/6] rtnetlink: Add support
+ for SyncE recovered clock configuration
+In-Reply-To: <MW5PR11MB5812F4FD090FCEA7CD83E984EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
+References: <20211104081231.1982753-1-maciej.machnikowski@intel.com>
+ <20211104081231.1982753-5-maciej.machnikowski@intel.com>
+ <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
+ <MW5PR11MB5812F4FD090FCEA7CD83E984EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
+Message-ID: <YYfg2Gty6dNmjp1E@shredder>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Nov 05, 2021 at 09:53:31PM +0100, Maciej Machnikowski wrote:
-> Add Documentation/networking/synce.rst describing new RTNL messages
-> and respective NDO ops supporting SyncE (Synchronous Ethernet).
+On Fri, Nov 05, 2021 at 12:17:19PM +0000, Machnikowski, Maciej wrote:
 > 
-> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
-> ---
->  Documentation/networking/synce.rst | 117 +++++++++++++++++++++++++++++
->  1 file changed, 117 insertions(+)
->  create mode 100644 Documentation/networking/synce.rst
 > 
-> diff --git a/Documentation/networking/synce.rst b/Documentation/networking/synce.rst
-> new file mode 100644
-> index 000000000000..4ca41fb9a481
-> --- /dev/null
-> +++ b/Documentation/networking/synce.rst
-> @@ -0,0 +1,117 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +====================
-> +Synchronous Ethernet
-> +====================
-> +
-> +Synchronous Ethernet networks use a physical layer clock to syntonize
-> +the frequency across different network elements.
-> +
-> +Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
-> +Equipment Clock (EEC) and a PHY that has dedicated outputs of recovered clocks
-> +and a dedicated TX clock input that is used as to transmit data to other nodes.
-> +
-> +The SyncE capable PHY is able to recover the incomning frequency of the data
-> +stream on RX lanes and redirect it (sometimes dividing it) to recovered
-> +clock outputs. In SyncE PHY the TX frequency is directly dependent on the
-> +input frequency - either on the PHY CLK input, or on a dedicated
-> +TX clock input.
-> +
-> +      ????????????????????????
-> +      ? RX        ? TX       ?
-> +  1   ? lanes     ? lanes    ? 1
-> +  ????????????    ?          ???????
-> +  2   ?      ?    ?          ? 2
-> +  ????????   ?    ?          ???????
-> +  3   ?  ?   ?    ?          ? 3
-> +  ????????   ?    ?          ???????
-> +      ? ??????    ?          ?
-> +      ? \____/    ?          ?
-> +      ????????????????????????
-> +        1? 2?        ?
-> + RCLK out?  ?        ? TX CLK in
-> +         ?  ?        ?
-> +       ???????????????????
-> +       ?                 ?
-> +       ?       EEC       ?
-> +       ?                 ?
-> +       ???????????????????
-> +
-> +The EEC can synchronize its frequency to one of the synchronization inputs
-> +either clocks recovered on traffic interfaces or (in advanced deployments)
-> +external frequency sources.
-> +
-> +Some EEC implementations can select synchronization source through
-> +priority tables and synchronization status messaging and provide necessary
-> +filtering and holdover capabilities.
-> +
-> +The following interface can be applicable to diffferent packet network types
-> +following ITU-T G.8261/G.8262 recommendations.
-> +
-> +Interface
-> +=========
-> +
-> +The following RTNL messages are used to read/configure SyncE recovered
-> +clocks.
-> +
-> +RTM_GETRCLKRANGE
-> +-----------------
-> +Reads the allowed pin index range for the recovered clock outputs.
-> +This can be aligned to PHY outputs or to EEC inputs, whichever is
-> +better for a given application.
-
-Can you explain the difference between PHY outputs and EEC inputs? It is
-no clear to me from the diagram.
-
-How would the diagram look in a multi-port adapter where you have a
-single EEC?
-
-> +Will call the ndo_get_rclk_range function to read the allowed range
-> +of output pin indexes.
-> +Will call ndo_get_rclk_range to determine the allowed recovered clock
-> +range and return them in the IFLA_RCLK_RANGE_MIN_PIN and the
-> +IFLA_RCLK_RANGE_MAX_PIN attributes
-
-The first sentence seems to be redundant
-
-> +
-> +RTM_GETRCLKSTATE
-> +-----------------
-> +Read the state of recovered pins that output recovered clock from
-> +a given port. The message will contain the number of assigned clocks
-> +(IFLA_RCLK_STATE_COUNT) and an N pin indexes in IFLA_RCLK_STATE_OUT_IDX
-> +To support multiple recovered clock outputs from the same port, this message
-> +will return the IFLA_RCLK_STATE_COUNT attribute containing the number of
-> +active recovered clock outputs (N) and N IFLA_RCLK_STATE_OUT_IDX attributes
-> +listing the active output indexes.
-> +This message will call the ndo_get_rclk_range to determine the allowed
-> +recovered clock indexes and then will loop through them, calling
-> +the ndo_get_rclk_state for each of them.
-
-Why do you need both RTM_GETRCLKRANGE and RTM_GETRCLKSTATE? Isn't
-RTM_GETRCLKSTATE enough? Instead of skipping over "disabled" pins in the
-range IFLA_RCLK_RANGE_MIN_PIN..IFLA_RCLK_RANGE_MAX_PIN, just report the
-state (enabled / disable) for all
-
-> +
-> +RTM_SETRCLKSTATE
-> +-----------------
-> +Sets the redirection of the recovered clock for a given pin. This message
-> +expects one attribute:
-> +struct if_set_rclk_msg {
-> +	__u32 ifindex; /* interface index */
-> +	__u32 out_idx; /* output index (from a valid range)
-> +	__u32 flags; /* configuration flags */
-> +};
-> +
-> +Supported flags are:
-> +SET_RCLK_FLAGS_ENA - if set in flags - the given output will be enabled,
-> +		     if clear - the output will be disabled.
-
-In the diagram you have two recovered clock outputs going into the EEC.
-According to which the EEC is synchronized?
-
-How does user space know which pins to enable?
-
-> +
-> +RTM_GETEECSTATE
-> +----------------
-> +Reads the state of the EEC or equivalent physical clock synchronizer.
-> +This message returns the following attributes:
-> +IFLA_EEC_STATE - current state of the EEC or equivalent clock generator.
-> +		 The states returned in this attribute are aligned to the
-> +		 ITU-T G.781 and are:
-> +		  IF_EEC_STATE_INVALID - state is not valid
-> +		  IF_EEC_STATE_FREERUN - clock is free-running
-> +		  IF_EEC_STATE_LOCKED - clock is locked to the reference,
-> +		                        but the holdover memory is not valid
-> +		  IF_EEC_STATE_LOCKED_HO_ACQ - clock is locked to the reference
-> +		                               and holdover memory is valid
-> +		  IF_EEC_STATE_HOLDOVER - clock is in holdover mode
-> +State is read from the netdev calling the:
-> +int (*ndo_get_eec_state)(struct net_device *dev, enum if_eec_state *state,
-> +			 u32 *src_idx, struct netlink_ext_ack *extack);
-> +
-> +IFLA_EEC_SRC_IDX - optional attribute returning the index of the reference that
-> +		   is used for the current IFLA_EEC_STATE, i.e., the index of
-> +		   the pin that the EEC is locked to.
-> +
-> +Will be returned only if the ndo_get_eec_src is implemented.
-> \ No newline at end of file
-> -- 
-> 2.26.3
+> > -----Original Message-----
+> > From: Roopa Prabhu <roopa@nvidia.com>
+> > Sent: Thursday, November 4, 2021 7:25 PM
+> > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>;
+> > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> > Cc: richardcochran at gmail.com; abyagowi at fb.com; Nguyen, Anthony L
+> > <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
+> > linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz;
+> > saeed at kernel.org; michael.chan at broadcom.com
+> > Subject: Re: [PATCH net-next 4/6] rtnetlink: Add support for SyncE recovered
+> > clock configuration
+> > 
+> > 
+> > On 11/4/21 1:12 AM, Maciej Machnikowski wrote:
+> > > Add support for RTNL messages for reading/configuring SyncE recovered
+> > > clocks.
+> > > The messages are:
+> > > RTM_GETRCLKRANGE: Reads the allowed pin index range for the
+> > recovered
+> > > 		  clock outputs. This can be aligned to PHY outputs or
+> > > 		  to EEC inputs, whichever is better for a given
+> > > 		  application
+> > >
+> > > RTM_GETRCLKSTATE: Read the state of recovered pins that output
+> > recovered
+> > > 		  clock from a given port. The message will contain the
+> > > 		  number of assigned clocks (IFLA_RCLK_STATE_COUNT) and
+> > > 		  a N pin inexes in IFLA_RCLK_STATE_OUT_IDX
+> > >
+> > > RTM_SETRCLKSTATE: Sets the redirection of the recovered clock for
+> > > 		  a given pin
+> > >
+> > > Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
+> > > ---
+> > 
+> > 
+> > Can't we just use a single RTM msg with nested attributes ?
+> > 
+> > With separate RTM msgtype for each syncE attribute we will end up
+> > bloating the RTM msg namespace.
+> > 
+> > (these api's could also be in ethtool given its directly querying the
+> > drivers)
 > 
+> I'm not a fan of merging those messages. The mergeable ones are
+> GETRCLKRANGE and GETCLKSTATE, but the get range function may be
+> result in a significantly longer call if the information about the underlying
+> HW require any HW calls.
+> They are currently grouped in 3 categories:
+> - reading the boundaries in GetRclkRange (we can later add more to it, like
+> 	configurable frequency limits)
+> - Reading current configuration
+> - setting the required configuration
+> 
+> I don't plan adding any additional RTM msg types for those (and that's
+> the reason why I pulled them before EEC state which may have more
+> messages in the future)
+> 
+> We also discussed ethtool way in the past RFCs, but this concept
+> is applicable to any transport layer so I'd rather not limit it to ethernet
+> devices (i.e. SONET, infiniband and others).
+
+I'm still not convinced that this doesn't belong in ethtool. I find it
+very weird to have a message called "Get Ethernet Equipment Clock State"
+in rtnetlink and not in ethtool. I also believe it was a mistake to add
+DCB to rtnetlink (for example, why PAUSE is configured via ethtool, but
+PFC via rtnetlink?)
