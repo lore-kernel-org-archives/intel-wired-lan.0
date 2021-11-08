@@ -1,107 +1,150 @@
-From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-Date: Mon, 8 Nov 2021 09:03:58 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 4/6] rtnetlink: Add support
- for SyncE recovered clock configuration
-In-Reply-To: <YYfg2Gty6dNmjp1E@shredder>
-References: <20211104081231.1982753-1-maciej.machnikowski@intel.com>
- <20211104081231.1982753-5-maciej.machnikowski@intel.com>
- <2d379392-a381-e60a-7658-5ac695c30df1@nvidia.com>
- <MW5PR11MB5812F4FD090FCEA7CD83E984EA8E9@MW5PR11MB5812.namprd11.prod.outlook.com>
- <YYfg2Gty6dNmjp1E@shredder>
-Message-ID: <MW5PR11MB5812A805FD73E435EF43E9CDEA919@MW5PR11MB5812.namprd11.prod.outlook.com>
+From: Ido Schimmel <idosch@idosch.org>
+Date: Mon, 8 Nov 2021 18:29:50 +0200
+Subject: [Intel-wired-lan] [PATCH v2 net-next 6/6] docs: net: Add
+ description of SyncE interfaces
+In-Reply-To: <MW5PR11MB58120F585A5CF1BCA1E7E958EA919@MW5PR11MB5812.namprd11.prod.outlook.com>
+References: <20211105205331.2024623-1-maciej.machnikowski@intel.com>
+ <20211105205331.2024623-7-maciej.machnikowski@intel.com>
+ <YYfd7DCFFtj/x+zQ@shredder>
+ <MW5PR11MB58120F585A5CF1BCA1E7E958EA919@MW5PR11MB5812.namprd11.prod.outlook.com>
+Message-ID: <YYlQfm3eW/jRS4Ra@shredder>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Ido Schimmel <idosch@idosch.org>
-> Sent: Sunday, November 7, 2021 3:21 PM
-> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> Subject: Re: [PATCH net-next 4/6] rtnetlink: Add support for SyncE recovered
-> clock configuration
+On Mon, Nov 08, 2021 at 08:35:17AM +0000, Machnikowski, Maciej wrote:
+> > -----Original Message-----
+> > From: Ido Schimmel <idosch@idosch.org>
+> > Sent: Sunday, November 7, 2021 3:09 PM
+> > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> > Subject: Re: [PATCH v2 net-next 6/6] docs: net: Add description of SyncE
+> > interfaces
+> > 
+> > On Fri, Nov 05, 2021 at 09:53:31PM +0100, Maciej Machnikowski wrote:
+> > > +Interface
+> > > +=========
+> > > +
+> > > +The following RTNL messages are used to read/configure SyncE recovered
+> > > +clocks.
+> > > +
+> > > +RTM_GETRCLKRANGE
+> > > +-----------------
+> > > +Reads the allowed pin index range for the recovered clock outputs.
+> > > +This can be aligned to PHY outputs or to EEC inputs, whichever is
+> > > +better for a given application.
+> > 
+> > Can you explain the difference between PHY outputs and EEC inputs? It is
+> > no clear to me from the diagram.
 > 
-> On Fri, Nov 05, 2021 at 12:17:19PM +0000, Machnikowski, Maciej wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Roopa Prabhu <roopa@nvidia.com>
-> > > Sent: Thursday, November 4, 2021 7:25 PM
-> > > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>;
-> > > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> > > Cc: richardcochran at gmail.com; abyagowi at fb.com; Nguyen, Anthony L
-> > > <anthony.l.nguyen@intel.com>; davem at davemloft.net;
-> kuba at kernel.org;
-> > > linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz;
-> > > saeed at kernel.org; michael.chan at broadcom.com
-> > > Subject: Re: [PATCH net-next 4/6] rtnetlink: Add support for SyncE
-> recovered
-> > > clock configuration
-> > >
-> > >
-> > > On 11/4/21 1:12 AM, Maciej Machnikowski wrote:
-> > > > Add support for RTNL messages for reading/configuring SyncE
-> recovered
-> > > > clocks.
-> > > > The messages are:
-> > > > RTM_GETRCLKRANGE: Reads the allowed pin index range for the
-> > > recovered
-> > > > 		  clock outputs. This can be aligned to PHY outputs or
-> > > > 		  to EEC inputs, whichever is better for a given
-> > > > 		  application
-> > > >
-> > > > RTM_GETRCLKSTATE: Read the state of recovered pins that output
-> > > recovered
-> > > > 		  clock from a given port. The message will contain the
-> > > > 		  number of assigned clocks (IFLA_RCLK_STATE_COUNT) and
-> > > > 		  a N pin inexes in IFLA_RCLK_STATE_OUT_IDX
-> > > >
-> > > > RTM_SETRCLKSTATE: Sets the redirection of the recovered clock for
-> > > > 		  a given pin
-> > > >
-> > > > Signed-off-by: Maciej Machnikowski
-> <maciej.machnikowski@intel.com>
-> > > > ---
-> > >
-> > >
-> > > Can't we just use a single RTM msg with nested attributes ?
-> > >
-> > > With separate RTM msgtype for each syncE attribute we will end up
-> > > bloating the RTM msg namespace.
-> > >
-> > > (these api's could also be in ethtool given its directly querying the
-> > > drivers)
-> >
-> > I'm not a fan of merging those messages. The mergeable ones are
-> > GETRCLKRANGE and GETCLKSTATE, but the get range function may be
-> > result in a significantly longer call if the information about the underlying
-> > HW require any HW calls.
-> > They are currently grouped in 3 categories:
-> > - reading the boundaries in GetRclkRange (we can later add more to it, like
-> > 	configurable frequency limits)
-> > - Reading current configuration
-> > - setting the required configuration
-> >
-> > I don't plan adding any additional RTM msg types for those (and that's
-> > the reason why I pulled them before EEC state which may have more
-> > messages in the future)
-> >
-> > We also discussed ethtool way in the past RFCs, but this concept
-> > is applicable to any transport layer so I'd rather not limit it to ethernet
-> > devices (i.e. SONET, infiniband and others).
+> PHY is the source of frequency for the EEC, so PHY produces the reference
+> And EEC synchronizes to it.
 > 
-> I'm still not convinced that this doesn't belong in ethtool. I find it
-> very weird to have a message called "Get Ethernet Equipment Clock State"
-> in rtnetlink and not in ethtool. I also believe it was a mistake to add
-> DCB to rtnetlink (for example, why PAUSE is configured via ethtool, but
-> PFC via rtnetlink?)
+> Both PHY outputs and EEC inputs are configurable. PHY outputs usually are
+> configured using PHY registers, and EEC inputs in the DPLL references
+> block
+>  
+> > How would the diagram look in a multi-port adapter where you have a
+> > single EEC?
+> 
+> That depends. It can be either a multiport PHY - in this case it will look
+> exactly like the one I drawn. In case we have multiple PHYs their recovered
+> clock outputs will go to different recovered clock inputs and each PHY
+> TX clock inputs will be driven from different EEC's synchronized outputs
+> or from a single one through  clock fan out.
+> 
+> > > +Will call the ndo_get_rclk_range function to read the allowed range
+> > > +of output pin indexes.
+> > > +Will call ndo_get_rclk_range to determine the allowed recovered clock
+> > > +range and return them in the IFLA_RCLK_RANGE_MIN_PIN and the
+> > > +IFLA_RCLK_RANGE_MAX_PIN attributes
+> > 
+> > The first sentence seems to be redundant
+> > 
+> > > +
+> > > +RTM_GETRCLKSTATE
+> > > +-----------------
+> > > +Read the state of recovered pins that output recovered clock from
+> > > +a given port. The message will contain the number of assigned clocks
+> > > +(IFLA_RCLK_STATE_COUNT) and an N pin indexes in
+> > IFLA_RCLK_STATE_OUT_IDX
+> > > +To support multiple recovered clock outputs from the same port, this
+> > message
+> > > +will return the IFLA_RCLK_STATE_COUNT attribute containing the number
+> > of
+> > > +active recovered clock outputs (N) and N IFLA_RCLK_STATE_OUT_IDX
+> > attributes
+> > > +listing the active output indexes.
+> > > +This message will call the ndo_get_rclk_range to determine the allowed
+> > > +recovered clock indexes and then will loop through them, calling
+> > > +the ndo_get_rclk_state for each of them.
+> > 
+> > Why do you need both RTM_GETRCLKRANGE and RTM_GETRCLKSTATE? Isn't
+> > RTM_GETRCLKSTATE enough? Instead of skipping over "disabled" pins in the
+> > range IFLA_RCLK_RANGE_MIN_PIN..IFLA_RCLK_RANGE_MAX_PIN, just
+> > report the
+> > state (enabled / disable) for all
+> 
+> Great idea! Will implement it.
+>  
+> > > +
+> > > +RTM_SETRCLKSTATE
+> > > +-----------------
+> > > +Sets the redirection of the recovered clock for a given pin. This message
+> > > +expects one attribute:
+> > > +struct if_set_rclk_msg {
+> > > +	__u32 ifindex; /* interface index */
+> > > +	__u32 out_idx; /* output index (from a valid range)
+> > > +	__u32 flags; /* configuration flags */
+> > > +};
+> > > +
+> > > +Supported flags are:
+> > > +SET_RCLK_FLAGS_ENA - if set in flags - the given output will be enabled,
+> > > +		     if clear - the output will be disabled.
+> > 
+> > In the diagram you have two recovered clock outputs going into the EEC.
+> > According to which the EEC is synchronized?
+> 
+> That will depend on the future DPLL configuration. For now it'll be based
+> on the DPLL's auto select ability and its default configuration.
+>  
+> > How does user space know which pins to enable?
+> 
+> That's why the RTM_GETRCLKRANGE was invented but I like the suggestion
+> you made above so will rework the code to remove the range one and
+> just return the indexes with enable/disable bit for each of them. In this
+> case youserspace will just send the RTM_GETRCLKSTATE to learn what
+> can be enabled.
 
-We can use:
-- SEC - Synchronous Equipment Clock
-- EC - Equipment Clock
+In the diagram there are multiple Rx lanes, all of which might be used
+by the same port. How does user space know to differentiate between the
+quality levels of the clock signal recovered from each lane / pin when
+the information is transmitted on a per-port basis via ESMC messages?
 
-SyncE is a specific implementation of a more generic concept. I'd rather not limit
-it to Ethernet only, as there are more network types that already use this concept,
-like Sonet/SDH or PDH as well as GPON/EPON networks and given the recent
-growth in timing applications - I expect more to follow.
+The uAPI seems to be too low-level and is not compatible with Nvidia's
+devices and potentially other vendors. We really just need a logical
+interface that says "Synchronize the frequency of the EEC to the clock
+recovered from port X". The kernel / drivers should abstract the inner
+workings of the device from user space. Any reason this can't work for
+ice?
+
+I also want to re-iterate my dissatisfaction with the interface being
+netdev-centric. By modelling the EEC as a standalone object we will be
+able to extend it to set the source of the EEC to something other than a
+netdev in the future. If we don't do it now, we will end up with two
+ways to report the source of the EEC (i.e., EEC_SRC_PORT and something
+else).
+
+Other advantages of modelling the EEC as a separate object include the
+ability for user space to determine the mapping between netdevs and EECs
+(currently impossible) and reporting additional EEC attributes such as
+SyncE clockIdentity and default SSM code. There is really no reason to
+report all of this identical information via multiple netdevs.
+
+With regards to rtnetlink vs. something else, in my suggestion the only
+thing that should be reported per-netdev is the mapping between the
+netdev and the EEC. Similar to the way user space determines the mapping
+from netdev to PHC via ETHTOOL_GET_TS_INFO. If we go with rtnetlink,
+this can be reported as a new attribute in RTM_NEWLINK, no need to add
+new messages.
