@@ -1,45 +1,30 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 10 Nov 2021 11:13:50 +0300
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 10 Nov 2021 09:53:50 +0100
 Subject: [Intel-wired-lan] [PATCH net] iavf: missing unlocks in
  iavf_watchdog_task()
-Message-ID: <20211110081350.GI5176@kili>
+In-Reply-To: <20211110081350.GI5176@kili>
+References: <20211110081350.GI5176@kili>
+Message-ID: <89022668-5c63-bf19-a768-6bef2a3be3b0@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This code was re-organized and there some unlocks missing now.
+Dear Dan,
 
-Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 847d67e32a54..b97f685a5cf8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2012,6 +2012,7 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		}
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-+		mutex_unlock(&adapter->crit_lock);
- 		queue_delayed_work(iavf_wq,
- 				   &adapter->watchdog_task,
- 				   msecs_to_jiffies(10));
-@@ -2042,9 +2043,8 @@ static void iavf_watchdog_task(struct work_struct *work)
- 			iavf_detect_recover_hung(&adapter->vsi);
- 		break;
- 	case __IAVF_REMOVE:
--		mutex_unlock(&adapter->crit_lock);
--		return;
- 	default:
-+		mutex_unlock(&adapter->crit_lock);
- 		return;
- 	}
- 
--- 
-2.20.1
+Thank you for your patch.
 
+For the future, just a nit for the commit message summary. Could you 
+make it a statement by adding a verb (in imperative mood) [1].
+
+ > iavf: Add missing unlocks in iavf_watchdog_task()
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://chris.beams.io/posts/git-commit/
