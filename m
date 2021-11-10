@@ -1,39 +1,45 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 10 Nov 2021 10:50:23 +0300
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Remove unnecessary casts
-Message-ID: <20211110075023.GC5176@kili>
+Date: Wed, 10 Nov 2021 11:13:50 +0300
+Subject: [Intel-wired-lan] [PATCH net] iavf: missing unlocks in
+ iavf_watchdog_task()
+Message-ID: <20211110081350.GI5176@kili>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The "bitmap" variable is already an unsigned long so there is no need
-for this cast.
+This code was re-organized and there some unlocks missing now.
 
+Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
 Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index ce3c7bded4cb..61c3f88d6ed2 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -2661,11 +2661,9 @@ ice_cfg_agg(struct ice_port_info *pi, u32 agg_id, enum ice_agg_type agg_type,
- 	enum ice_status status;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 847d67e32a54..b97f685a5cf8 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -2012,6 +2012,7 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 		}
+ 		adapter->aq_required = 0;
+ 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
++		mutex_unlock(&adapter->crit_lock);
+ 		queue_delayed_work(iavf_wq,
+ 				   &adapter->watchdog_task,
+ 				   msecs_to_jiffies(10));
+@@ -2042,9 +2043,8 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 			iavf_detect_recover_hung(&adapter->vsi);
+ 		break;
+ 	case __IAVF_REMOVE:
+-		mutex_unlock(&adapter->crit_lock);
+-		return;
+ 	default:
++		mutex_unlock(&adapter->crit_lock);
+ 		return;
+ 	}
  
- 	mutex_lock(&pi->sched_lock);
--	status = ice_sched_cfg_agg(pi, agg_id, agg_type,
--				   (unsigned long *)&bitmap);
-+	status = ice_sched_cfg_agg(pi, agg_id, agg_type, &bitmap);
- 	if (!status)
--		status = ice_save_agg_tc_bitmap(pi, agg_id,
--						(unsigned long *)&bitmap);
-+		status = ice_save_agg_tc_bitmap(pi, agg_id, &bitmap);
- 	mutex_unlock(&pi->sched_lock);
- 	return status;
- }
 -- 
 2.20.1
 
