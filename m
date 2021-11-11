@@ -1,99 +1,27 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 11 Nov 2021 13:43:56 -0800
-Subject: [Intel-wired-lan] [PATCH net v2] e100: fix device suspend/resume
-Message-ID: <20211111214356.612453-1-jesse.brandeburg@intel.com>
+Date: Thu, 11 Nov 2021 13:44:29 -0800
+Subject: [Intel-wired-lan] [PATCH net v1] e100: fix device suspend/resume
+In-Reply-To: <20211111213722.606364-1-jesse.brandeburg@intel.com>
+References: <20211111213722.606364-1-jesse.brandeburg@intel.com>
+Message-ID: <0e247faf-77d3-c05b-88c3-515b612d0c3f@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-As reported in [1], e100 was no longer working for suspend/resume
-cycles. The previous commit mentioned in the fixes appears to have
-broken things and this attempts to practice best known methods for
-device power management and keep wake-up working while allowing
-suspend/resume to work. To do this, I reorder a little bit of code
-and fix the resume path to make sure the device is enabled.
+On 11/11/2021 1:37 PM, Jesse Brandeburg wrote:
+> As reported in [1], e100 was no longer working for suspend/resume
+> cycles. The previous commit mentioned in the fixes appears to have
+> broken things and this attempts to practice best known methods for
+> device power management and keep wake-up working while allowing
+> suspend/resume to work. To do this, I reorder a little bit of code
+> and fix the resume path to make sure the device is enabled.
+> 
+> [1] https://bugzilla.kernel.org/show_bug.cgi?id=214933
+> 
+> Reported-by: Alexey Kuznetsov <axet@me.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=214933
-
-Fixes: 69a74aef8a18 ("e100: use generic power management")
-Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Reported-by: Alexey Kuznetsov <axet@me.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
---
-v2: added Fixes and Cc
-
-NOTE: Alexey tested it already and it unbreaks his system, which is a
-great start. I would like our internal team to try to do some basic
-testing but given the age of this part, it shouldn't hold up the patch
-going upstream.
----
- drivers/net/ethernet/intel/e100.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
-index 09ae1939e6db..36d52246bdc6 100644
---- a/drivers/net/ethernet/intel/e100.c
-+++ b/drivers/net/ethernet/intel/e100.c
-@@ -3003,9 +3003,10 @@ static void __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct nic *nic = netdev_priv(netdev);
- 
-+	netif_device_detach(netdev);
-+
- 	if (netif_running(netdev))
- 		e100_down(nic);
--	netif_device_detach(netdev);
- 
- 	if ((nic->flags & wol_magic) | e100_asf(nic)) {
- 		/* enable reverse auto-negotiation */
-@@ -3022,7 +3023,7 @@ static void __e100_shutdown(struct pci_dev *pdev, bool *enable_wake)
- 		*enable_wake = false;
- 	}
- 
--	pci_clear_master(pdev);
-+	pci_disable_device(pdev);
- }
- 
- static int __e100_power_off(struct pci_dev *pdev, bool wake)
-@@ -3042,8 +3043,6 @@ static int __maybe_unused e100_suspend(struct device *dev_d)
- 
- 	__e100_shutdown(to_pci_dev(dev_d), &wake);
- 
--	device_wakeup_disable(dev_d);
--
- 	return 0;
- }
- 
-@@ -3051,6 +3050,14 @@ static int __maybe_unused e100_resume(struct device *dev_d)
- {
- 	struct net_device *netdev = dev_get_drvdata(dev_d);
- 	struct nic *nic = netdev_priv(netdev);
-+	int err;
-+
-+	err = pci_enable_device(to_pci_dev(dev_d));
-+	if (err) {
-+		netdev_err(netdev, "Resume cannot enable PCI device, aborting\n");
-+		return err;
-+	}
-+	pci_set_master(to_pci_dev(dev_d));
- 
- 	/* disable reverse auto-negotiation */
- 	if (nic->phy == phy_82552_v) {
-@@ -3062,10 +3069,11 @@ static int __maybe_unused e100_resume(struct device *dev_d)
- 		           smartspeed & ~(E100_82552_REV_ANEG));
- 	}
- 
--	netif_device_attach(netdev);
- 	if (netif_running(netdev))
- 		e100_up(nic);
- 
-+	netif_device_attach(netdev);
-+
- 	return 0;
- }
- 
--- 
-2.33.1
+Please drop v1, v2 sent.
 
