@@ -1,22 +1,39 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Thu, 11 Nov 2021 08:50:01 -0800
-Subject: [Intel-wired-lan] [PATCH linux] e1000e: Delete redundant
- variable definitions
-In-Reply-To: <202111112246.M0trEfiC-lkp@intel.com>
-References: <20211111090555.158828-1-luo.penghao@zte.com.cn>
- <202111112246.M0trEfiC-lkp@intel.com>
-Message-ID: <20211111085001.24b58b5c@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Florian Westphal <fw@strlen.de>
+Date: Thu, 11 Nov 2021 17:22:52 +0100
+Subject: [Intel-wired-lan] [PATCH v3 net-next 2/6] rtnetlink: Add new
+ RTM_GETEECSTATE message to get SyncE status
+In-Reply-To: <YY0+PmNU4MSGfgqA@hog>
+References: <20211110114448.2792314-1-maciej.machnikowski@intel.com>
+ <20211110114448.2792314-3-maciej.machnikowski@intel.com>
+ <YY0+PmNU4MSGfgqA@hog>
+Message-ID: <20211111162252.GJ16363@breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 11 Nov 2021 22:56:38 +0800 kernel test robot wrote:
-> >> drivers/net/ethernet/intel/e1000e/e1000.h:31:20: error: 'hw' undeclared (first use in this function)  
->       31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+Sabrina Dubroca <sd@queasysnail.net> wrote:
+> Hello Maciej,
+> 
+> 2021-11-10, 12:44:44 +0100, Maciej Machnikowski wrote:
+> > diff --git a/include/uapi/linux/rtnetlink.h b/include/uapi/linux/rtnetlink.h
+> > index 5888492a5257..1d8662afd6bd 100644
+> > --- a/include/uapi/linux/rtnetlink.h
+> > +++ b/include/uapi/linux/rtnetlink.h
+> > @@ -185,6 +185,9 @@ enum {
+> >  	RTM_GETNEXTHOPBUCKET,
+> >  #define RTM_GETNEXTHOPBUCKET	RTM_GETNEXTHOPBUCKET
+> >  
+> > +	RTM_GETEECSTATE = 124,
+> > +#define RTM_GETEECSTATE	RTM_GETEECSTATE
+> 
+> I'm not sure about this. All the other RTM_GETxxx are such that
+> RTM_GETxxx % 4 == 2. Following the current pattern, 124 should be
+> reserved for RTM_NEWxxx, and RTM_GETEECSTATE would be 126.
 
-Yeah, the infinite wisdom of Intel drivers using macros with implicit
-arguments :/
+More importantly, why is this added to rtnetlink (routing sockets)?
+It appears to be unrelated?
 
-You should build test your patches, tho.
+Looks like this should be in ethtool (it has netlink api nowadays) or
+devlink.
