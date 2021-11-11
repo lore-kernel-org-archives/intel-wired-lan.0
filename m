@@ -1,181 +1,110 @@
-From: Petr Machata <petrm@nvidia.com>
-Date: Thu, 11 Nov 2021 13:43:21 +0100
-Subject: [Intel-wired-lan] [PATCH v3 net-next 6/6] docs: net: Add
- description of SyncE interfaces
-In-Reply-To: <20211110114448.2792314-7-maciej.machnikowski@intel.com>
-References: <20211110114448.2792314-1-maciej.machnikowski@intel.com>
- <20211110114448.2792314-7-maciej.machnikowski@intel.com>
-Message-ID: <87tugic17a.fsf@nvidia.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 11 Nov 2021 22:56:38 +0800
+Subject: [Intel-wired-lan] [PATCH linux] e1000e: Delete redundant
+ variable definitions
+In-Reply-To: <20211111090555.158828-1-luo.penghao@zte.com.cn>
+References: <20211111090555.158828-1-luo.penghao@zte.com.cn>
+Message-ID: <202111112246.M0trEfiC-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi,
 
-Maciej Machnikowski <maciej.machnikowski@intel.com> writes:
+Thank you for the patch! Yet something to improve:
 
-> Add Documentation/networking/synce.rst describing new RTNL messages
-> and respective NDO ops supporting SyncE (Synchronous Ethernet).
->
-> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
-> ---
->  Documentation/networking/synce.rst | 124 +++++++++++++++++++++++++++++
->  1 file changed, 124 insertions(+)
->  create mode 100644 Documentation/networking/synce.rst
->
-> diff --git a/Documentation/networking/synce.rst b/Documentation/networking/synce.rst
-> new file mode 100644
-> index 000000000000..a7bb75685c07
-> --- /dev/null
-> +++ b/Documentation/networking/synce.rst
-> @@ -0,0 +1,124 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=============================
-> +Synchronous Equipment Clocks
-> +=============================
-> +
-> +Synchronous Equipment Clocks use a physical layer clock to syntonize
-> +the frequency across different network elements.
-> +
-> +Basic Synchronous network node consist of a Synchronous Equipment
-> +Clock (SEC) and and a PHY that has dedicated outputs of clocks recovered
-> +from the Receive side and a dedicated TX clock input that is used as
-> +a reference for the physical frequency of the transmit data to other nodes.
-> +
-> +The PHY is able to recover the physical signal frequency of the RX data
-> +stream on RX ports and redirect it (sometimes dividing it) to recovered
-> +clock outputs. Number of recovered clock output pins is usually lower than
-> +the number of RX portx. As a result the RX port to Recovered Clock output
-> +mapping needs to be configured. the TX frequency is directly depends on the
-> +input frequency - either on the PHY CLK input, or on a dedicated
-> +TX clock input.
-> +
-> +      ???????????????????????
-> +      ? RX       ? TX       ?
-> +  1   ? ports    ? ports    ? 1
-> +  ???????????    ?          ???????
-> +  2   ?     ?    ?          ? 2
-> +  ????????? ?    ?          ???????
-> +  3   ?   ? ?    ?          ? 3
-> +  ??????? ? ?    ?          ???????
-> +      ? ? ? ?    ?          ?
-> +      ? ??????   ?          ?
-> +      ? \____/   ?          ?
-> +      ???????????????????????
-> +        1? 2?        ?
-> + RCLK out?  ?        ? TX CLK in
-> +         ?  ?        ?
-> +       ???????????????????
-> +       ?                 ?
-> +       ?       SEC       ?
-> +       ?                 ?
-> +       ???????????????????
-> +
-> +The SEC can synchronize its frequency to one of the synchronization inputs
-> +either clocks recovered on traffic interfaces or (in advanced deployments)
-> +external frequency sources.
-> +
-> +Some SEC implementations can automatically select synchronization source
-> +through priority tables and synchronization status messaging and provide
-> +necessary filtering and holdover capabilities.
-> +
-> +The following interface can be applicable to diffferent packet network types
-> +following ITU-T G.8261/G.8262 recommendations.
-> +
-> +Interface
-> +=========
-> +
-> +The following RTNL messages are used to read/configure SyncE recovered
-> +clocks.
-> +
-> +RTM_GETRCLKSTATE
-> +-----------------
-> +Read the state of recovered pins that output recovered clock from
-> +a given port. The message will contain the number of assigned clocks
-> +(IFLA_RCLK_STATE_COUNT) and an N pin indexes in IFLA_RCLK_STATE_OUT_STATE
-> +To support multiple recovered clock outputs from the same port, this message
-> +will return the IFLA_RCLK_STATE_COUNT attribute containing the number of
-> +recovered clock outputs (N) and N IFLA_RCLK_STATE_OUT_STATE attributes
-> +listing the output indexes with the respective GET_RCLK_FLAGS_ENA flag.
-> +This message will call the ndo_get_rclk_range to determine the allowed
-> +recovered clock indexes and then will loop through them, calling
-> +the ndo_get_rclk_state for each of them.
-> +
-> +
-> +Attributes:
-> +IFLA_RCLK_STATE_COUNT - Returns the number of recovered clock outputs
-> +IFLA_RCLK_STATE_OUT_STATE - Returns the current state of a single recovered
-> +			    clock output in the struct if_get_rclk_msg.
-> +struct if_get_rclk_msg {
-> +	__u32 out_idx; /* output index (from a valid range) */
-> +	__u32 flags;   /* configuration flags */
-> +};
-> +
-> +Currently supported flags:
-> +#define GET_RCLK_FLAGS_ENA	(1U << 0)
-> +
-> +
-> +RTM_SETRCLKSTATE
-> +-----------------
-> +Sets the redirection of the recovered clock for a given pin. This message
-> +expects one attribute:
-> +struct if_set_rclk_msg {
-> +	__u32 ifindex; /* interface index */
-> +	__u32 out_idx; /* output index (from a valid range) */
-> +	__u32 flags;   /* configuration flags */
-> +};
-> +
-> +Supported flags are:
-> +SET_RCLK_FLAGS_ENA - if set in flags - the given output will be enabled,
-> +		     if clear - the output will be disabled.
-> +
-> +RTM_GETEECSTATE
-> +----------------
-> +Reads the state of the EEC or equivalent physical clock synchronizer.
-> +This message returns the following attributes:
-> +IFLA_EEC_STATE - current state of the EEC or equivalent clock generator.
-> +		 The states returned in this attribute are aligned to the
-> +		 ITU-T G.781 and are:
-> +		  IF_EEC_STATE_INVALID - state is not valid
-> +		  IF_EEC_STATE_FREERUN - clock is free-running
-> +		  IF_EEC_STATE_LOCKED - clock is locked to the reference,
-> +		                        but the holdover memory is not valid
-> +		  IF_EEC_STATE_LOCKED_HO_ACQ - clock is locked to the reference
-> +		                               and holdover memory is valid
-> +		  IF_EEC_STATE_HOLDOVER - clock is in holdover mode
-> +State is read from the netdev calling the:
-> +int (*ndo_get_eec_state)(struct net_device *dev, enum if_eec_state *state,
-> +			 u32 *src_idx, struct netlink_ext_ack *extack);
-> +
-> +IFLA_EEC_SRC_IDX - optional attribute returning the index of the reference
-> +		   that is used for the current IFLA_EEC_STATE, i.e.,
-> +		   the index of the pin that the EEC is locked to.
-> +
-> +Will be returned only if the ndo_get_eec_src is implemented.
-> \ No newline at end of file
+[auto build test ERROR on linux/master]
 
-Just to be clear, I have much the same objections to this UAPI as I had
-to v2:
+url:    https://github.com/0day-ci/linux/commits/cgel-zte-gmail-com/e1000e-Delete-redundant-variable-definitions/20211111-170640
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git debe436e77c72fcee804fb867f275e6d31aa999c
+config: arc-allyesconfig (attached as .config)
+compiler: arceb-elf-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/81faea6b288a1c17c390413bcb3021fef7e89bad
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review cgel-zte-gmail-com/e1000e-Delete-redundant-variable-definitions/20211111-170640
+        git checkout 81faea6b288a1c17c390413bcb3021fef7e89bad
+        # save the attached .config to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=arc SHELL=/bin/bash
 
-- RTM_GETEECSTATE will become obsolete as soon as DPLL object is added.
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-- Reporting pins through the netdevices that use them allows for
-  configurations that are likely invalid, like disjoint "frequency
-  bridges".
+All errors (new ones prefixed by >>):
 
-- It's not clear what enabling several pins means, and it's not clear
-  whether this genericity is not going to be an issue in the future when
-  we know what enabling more pins means.
+   In file included from include/linux/printk.h:555,
+                    from include/asm-generic/bug.h:22,
+                    from arch/arc/include/asm/bug.h:30,
+                    from include/linux/ktime.h:26,
+                    from include/linux/timer.h:6,
+                    from drivers/net/ethernet/intel/e1000e/e1000.h:11,
+                    from drivers/net/ethernet/intel/e1000e/ptp.c:9:
+   drivers/net/ethernet/intel/e1000e/ptp.c: In function 'e1000e_systim_overflow_work':
+>> drivers/net/ethernet/intel/e1000e/e1000.h:31:20: error: 'hw' undeclared (first use in this function)
+      31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+         |                    ^~
+   include/linux/dynamic_debug.h:134:29: note: in definition of macro '__dynamic_func_call'
+     134 |                 func(&id, ##__VA_ARGS__);               \
+         |                             ^~~~~~~~~~~
+   include/linux/dynamic_debug.h:170:9: note: in expansion of macro '_dynamic_func_call'
+     170 |         _dynamic_func_call(fmt, __dynamic_netdev_dbg,           \
+         |         ^~~~~~~~~~~~~~~~~~
+   include/linux/netdevice.h:5324:9: note: in expansion of macro 'dynamic_netdev_dbg'
+    5324 |         dynamic_netdev_dbg(__dev, format, ##args);              \
+         |         ^~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/e1000e/e1000.h:31:9: note: in expansion of macro 'netdev_dbg'
+      31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+         |         ^~~~~~~~~~
+   drivers/net/ethernet/intel/e1000e/ptp.c:248:9: note: in expansion of macro 'e_dbg'
+     248 |         e_dbg("SYSTIM overflow check at %lld.%09lu\n",
+         |         ^~~~~
+   drivers/net/ethernet/intel/e1000e/e1000.h:31:20: note: each undeclared identifier is reported only once for each function it appears in
+      31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+         |                    ^~
+   include/linux/dynamic_debug.h:134:29: note: in definition of macro '__dynamic_func_call'
+     134 |                 func(&id, ##__VA_ARGS__);               \
+         |                             ^~~~~~~~~~~
+   include/linux/dynamic_debug.h:170:9: note: in expansion of macro '_dynamic_func_call'
+     170 |         _dynamic_func_call(fmt, __dynamic_netdev_dbg,           \
+         |         ^~~~~~~~~~~~~~~~~~
+   include/linux/netdevice.h:5324:9: note: in expansion of macro 'dynamic_netdev_dbg'
+    5324 |         dynamic_netdev_dbg(__dev, format, ##args);              \
+         |         ^~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/e1000e/e1000.h:31:9: note: in expansion of macro 'netdev_dbg'
+      31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+         |         ^~~~~~~~~~
+   drivers/net/ethernet/intel/e1000e/ptp.c:248:9: note: in expansion of macro 'e_dbg'
+     248 |         e_dbg("SYSTIM overflow check at %lld.%09lu\n",
+         |         ^~~~~
 
-- No way as a user to tell whether two interfaces that report the same
-  pins are actually connected to the same EEC. How many EEC's are there,
-  in the system, anyway?
 
-In particular, I think that the proposed UAPIs should belong to a DPLL
-object. That object must know about the pins, so have it enumerate them.
-That object needs to know about which pin/s to track, so configure it
-there. That object has the state, so have it report it. Really, it looks
-basically 1:1 vs. the proposed API, except the object over which the
-UAPIs should be defined is a DPLL, not a netdev.
+vim +/hw +31 drivers/net/ethernet/intel/e1000e/e1000.h
+
+bc7f75fa97884d drivers/net/e1000e/e1000.h Auke Kok     2007-09-17  29  
+44defeb3f6f98e drivers/net/e1000e/e1000.h Jeff Kirsher 2008-08-04  30  #define e_dbg(format, arg...) \
+8544b9f7371ec6 drivers/net/e1000e/e1000.h Bruce Allan  2010-03-24 @31  	netdev_dbg(hw->adapter->netdev, format, ## arg)
+44defeb3f6f98e drivers/net/e1000e/e1000.h Jeff Kirsher 2008-08-04  32  #define e_err(format, arg...) \
+8544b9f7371ec6 drivers/net/e1000e/e1000.h Bruce Allan  2010-03-24  33  	netdev_err(adapter->netdev, format, ## arg)
+44defeb3f6f98e drivers/net/e1000e/e1000.h Jeff Kirsher 2008-08-04  34  #define e_info(format, arg...) \
+8544b9f7371ec6 drivers/net/e1000e/e1000.h Bruce Allan  2010-03-24  35  	netdev_info(adapter->netdev, format, ## arg)
+44defeb3f6f98e drivers/net/e1000e/e1000.h Jeff Kirsher 2008-08-04  36  #define e_warn(format, arg...) \
+8544b9f7371ec6 drivers/net/e1000e/e1000.h Bruce Allan  2010-03-24  37  	netdev_warn(adapter->netdev, format, ## arg)
+44defeb3f6f98e drivers/net/e1000e/e1000.h Jeff Kirsher 2008-08-04  38  #define e_notice(format, arg...) \
+8544b9f7371ec6 drivers/net/e1000e/e1000.h Bruce Allan  2010-03-24  39  	netdev_notice(adapter->netdev, format, ## arg)
+bc7f75fa97884d drivers/net/e1000e/e1000.h Auke Kok     2007-09-17  40  
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/gzip
+Size: 70030 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211111/20d54e3b/attachment-0001.bin>
