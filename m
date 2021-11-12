@@ -1,86 +1,78 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 12 Nov 2021 17:09:05 -0800
-Subject: [Intel-wired-lan] [PATCH intel-next] ice: Don't put stale
- timestamps in the skb
-In-Reply-To: <20211112135359.155502-1-karol.kolacinski@intel.com>
-References: <20211112135359.155502-1-karol.kolacinski@intel.com>
-Message-ID: <b320f02c-a973-e478-e74e-0329b5db699b@intel.com>
+From: Letu Ren <fantasquex@gmail.com>
+Date: Fri, 12 Nov 2021 22:20:02 +0800
+Subject: [Intel-wired-lan] [PATCH] net: igbvf: fix double free in
+ `igbvf_probe`
+Message-ID: <20211112142002.23156-1-fantasquex@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/12/2021 5:53 AM, Karol Kolacinski wrote:
-> The driver has to check if it does not accidentally put the timestamp in
-> the SKB before previous timestamp gets overwritten.
-> Timestamp values in the PHY are read only and do not get cleared except
-> at hardware reset or when a new timestamp value is captured.
-> The cached_tstamp field is used to detect the case where a new timestamp
-> has not yet been captured, ensuring that we avoid sending stale
-> timestamp data to the stack.
+In `igbvf_probe`, if register_netdev() fails, the program will go to
+label err_hw_init, and then to label err_ioremap. In free_netdev() which
+is just below label err_ioremap, there is `list_for_each_entry_safe` and
+`netif_napi_del` which aims to delete all entries in `dev->napi_list`.
+The program has added an entry `adapter->rx_ring->napi` which is added by
+`netif_napi_add` in igbvf_alloc_queues(). However, adapter->rx_ring has
+been freed below label err_hw_init. So this a UAF.
 
-Missing sign off, please run checkpatch --strict and build tests on your 
-patches before sending to the list.
+In terms of how to patch the problem, we can refer to igbvf_remove() and
+delete the entry before `adapter->rx_ring`.
 
-> ---
->   drivers/net/ethernet/intel/ice/ice_ptp.c | 11 ++++-------
->   drivers/net/ethernet/intel/ice/ice_ptp.h |  6 ++++++
->   2 files changed, 10 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> index 2b3b2060b504..9a1a09661c78 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-> @@ -2069,19 +2069,16 @@ static void ice_ptp_tx_tstamp_work(struct kthread_work *work)
->   		if (err)
->   			continue;
->   
-> -		/* Check if the timestamp is valid */
-> -		if (!(raw_tstamp & ICE_PTP_TS_VALID))
-> +		/* Check if the timestamp is invalid or stale */
-> +		if (!(raw_tstamp & ICE_PTP_TS_VALID) ||
-> +		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
->   			continue;
->   
-> -		/* clear the timestamp register, so that it won't show valid
-> -		 * again when re-used.
-> -		 */
-> -		ice_clear_phy_tstamp(hw, tx->quad, phy_idx);
-> -
->   		/* The timestamp is valid, so we'll go ahead and clear this
->   		 * index and then send the timestamp up to the stack.
->   		 */
->   		spin_lock(&tx->lock);
-> +		tx->tstamps[idx].cached_tstamp = raw_tstamp;
->   		clear_bit(idx, tx->in_use);
->   		skb = tx->tstamps[idx].skb;
->   		tx->tstamps[idx].skb = NULL;
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-> index 92b202ef3c15..eef8ec894871 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-> @@ -55,15 +55,21 @@ struct ice_perout_channel {
->    * struct ice_tx_tstamp - Tracking for a single Tx timestamp
->    * @skb: pointer to the SKB for this timestamp request
->    * @start: jiffies when the timestamp was first requested
-> + * @cached_tstamp: last read timestamp
->    *
->    * This structure tracks a single timestamp request. The SKB pointer is
->    * provided when initiating a request. The start time is used to ensure that
->    * we discard old requests that were not fulfilled within a 2 second time
->    * window.
-> + * Timestamp values in the PHY are read only and do not get cleared except at
-> + * hardware reset or when a new timestamp value is captured. The cached_tstamp
-> + * field is used to detect the case where a new timestamp has not yet been
-> + * captured, ensuring that we avoid sending stale timestamp data to the stack.
->    */
->   struct ice_tx_tstamp {
->   	struct sk_buff *skb;
->   	unsigned long start;
-> +	u64 cached_tstamp;
->   };
->   
->   /**
-> 
+The KASAN logs are as follows:
+
+[   35.126075] BUG: KASAN: use-after-free in free_netdev+0x1fd/0x450
+[   35.127170] Read of size 8 at addr ffff88810126d990 by task modprobe/366
+[   35.128360]
+[   35.128643] CPU: 1 PID: 366 Comm: modprobe Not tainted 5.15.0-rc2+ #14
+[   35.129789] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+[   35.131749] Call Trace:
+[   35.132199]  dump_stack_lvl+0x59/0x7b
+[   35.132865]  print_address_description+0x7c/0x3b0
+[   35.133707]  ? free_netdev+0x1fd/0x450
+[   35.134378]  __kasan_report+0x160/0x1c0
+[   35.135063]  ? free_netdev+0x1fd/0x450
+[   35.135738]  kasan_report+0x4b/0x70
+[   35.136367]  free_netdev+0x1fd/0x450
+[   35.137006]  igbvf_probe+0x121d/0x1a10 [igbvf]
+[   35.137808]  ? igbvf_vlan_rx_add_vid+0x100/0x100 [igbvf]
+[   35.138751]  local_pci_probe+0x13c/0x1f0
+[   35.139461]  pci_device_probe+0x37e/0x6c0
+[   35.165526]
+[   35.165806] Allocated by task 366:
+[   35.166414]  ____kasan_kmalloc+0xc4/0xf0
+[   35.167117]  foo_kmem_cache_alloc_trace+0x3c/0x50 [igbvf]
+[   35.168078]  igbvf_probe+0x9c5/0x1a10 [igbvf]
+[   35.168866]  local_pci_probe+0x13c/0x1f0
+[   35.169565]  pci_device_probe+0x37e/0x6c0
+[   35.179713]
+[   35.179993] Freed by task 366:
+[   35.180539]  kasan_set_track+0x4c/0x80
+[   35.181211]  kasan_set_free_info+0x1f/0x40
+[   35.181942]  ____kasan_slab_free+0x103/0x140
+[   35.182703]  kfree+0xe3/0x250
+[   35.183239]  igbvf_probe+0x1173/0x1a10 [igbvf]
+[   35.184040]  local_pci_probe+0x13c/0x1f0
+
+Reported-by: Zheyu Ma <zheyuma97@gmail.com>
+Signed-off-by: Letu Ren <fantasquex@gmail.com>
+---
+ drivers/net/ethernet/intel/igbvf/netdev.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index d32e72d953c8..d051918dfdff 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -2861,6 +2861,7 @@ static int igbvf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	return 0;
+ 
+ err_hw_init:
++	netif_napi_del(&adapter->rx_ring->napi);
+ 	kfree(adapter->tx_ring);
+ 	kfree(adapter->rx_ring);
+ err_sw_init:
+-- 
+2.33.1
 
