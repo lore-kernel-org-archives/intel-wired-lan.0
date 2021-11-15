@@ -1,107 +1,64 @@
-From: syzbot <syzbot+4c63f36709a642f801c5@syzkaller.appspotmail.com>
-Date: Mon, 15 Nov 2021 00:38:25 -0800
-Subject: [Intel-wired-lan] [syzbot] kernel BUG in pskb_expand_head
-Message-ID: <0000000000007ea16705d0cfbb53@google.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 15 Nov 2021 17:58:45 +0100
+Subject: [Intel-wired-lan] [PATCH 5.15 430/917] net: intel: igc_ptp: fix
+ build for UML
+In-Reply-To: <20211115165428.722074685@linuxfoundation.org>
+References: <20211115165428.722074685@linuxfoundation.org>
+Message-ID: <20211115165443.371123535@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+From: Randy Dunlap <rdunlap@infradead.org>
 
-syzbot found the following issue on:
+[ Upstream commit 523994ba3ad1b7b55abe4a72e156897b5e2db825 ]
 
-HEAD commit:    debe436e77c7 Merge tag 'ext4_for_linus' of git://git.kerne..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=17cdbcf1b00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=dcce4e862d74e466
-dashboard link: https://syzkaller.appspot.com/bug?extid=4c63f36709a642f801c5
-compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+On a UML build, the igc_ptp driver uses CONFIG_X86_TSC for timestamp
+conversion. The function that is used is not available on UML builds,
+so have the function use the default system_counterval_t timestamp
+instead for UML builds.
 
-Unfortunately, I don't have any reproducer for this issue yet.
+Prevents this build error on UML:
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+4c63f36709a642f801c5 at syzkaller.appspotmail.com
+../drivers/net/ethernet/intel/igc/igc_ptp.c: In function ?igc_device_tstamp_to_system?:
+../drivers/net/ethernet/intel/igc/igc_ptp.c:777:9: error: implicit declaration of function ?convert_art_ns_to_tsc? [-Werror=implicit-function-declaration]
+  return convert_art_ns_to_tsc(tstamp);
+../drivers/net/ethernet/intel/igc/igc_ptp.c:777:9: error: incompatible types when returning type ?int? but ?struct system_counterval_t? was expected
+  return convert_art_ns_to_tsc(tstamp);
 
-------------[ cut here ]------------
-kernel BUG at net/core/skbuff.c:1695!
-invalid opcode: 0000 [#1] PREEMPT SMP KASAN
-CPU: 0 PID: 13268 Comm: syz-executor.1 Not tainted 5.15.0-syzkaller #0
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.14.0-2 04/01/2014
-RIP: 0010:pskb_expand_head+0xb28/0x1060 net/core/skbuff.c:1695
-Code: 8d 75 ff e9 60 fe ff ff e8 75 dd 5a fa 48 c7 c6 a0 60 8c 8a 4c 89 f7 e8 c6 d6 8d fa 0f 0b e8 5f dd 5a fa 0f 0b e8 58 dd 5a fa <0f> 0b e8 51 dd 5a fa 41 81 cc 00 00 02 00 e9 f6 f5 ff ff e8 40 dd
-RSP: 0018:ffffc90005a6f2e0 EFLAGS: 00010212
-RAX: 0000000000030e8b RBX: ffff88801fa215c0 RCX: ffffc90020bf5000
-RDX: 0000000000040000 RSI: ffffffff871c2298 RDI: 0000000000000003
-RBP: 00000000ffffffbb R08: 0000000000000001 R09: ffff88801fa2169f
-R10: ffffffff871c1842 R11: 0000000000000000 R12: 0000000000000a20
-R13: 0000000000000002 R14: 0000000000000001 R15: 0000000000000000
-FS:  00007f39135d8700(0000) GS:ffff88802ca00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000020004038 CR3: 0000000065ef5000 CR4: 0000000000150ef0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000600
-Call Trace:
- <TASK>
- __skb_pad+0x181/0x5f0 net/core/skbuff.c:1929
- __skb_put_padto include/linux/skbuff.h:3331 [inline]
- skb_put_padto include/linux/skbuff.h:3350 [inline]
- eth_skb_pad include/linux/etherdevice.h:584 [inline]
- e1000_xmit_frame+0x2de3/0x4650 drivers/net/ethernet/intel/e1000/e1000_main.c:3125
- __netdev_start_xmit include/linux/netdevice.h:4987 [inline]
- netdev_start_xmit include/linux/netdevice.h:5001 [inline]
- xmit_one net/core/dev.c:3590 [inline]
- dev_hard_start_xmit+0x1eb/0x920 net/core/dev.c:3606
- sch_direct_xmit+0x19f/0xbc0 net/sched/sch_generic.c:342
- __dev_xmit_skb net/core/dev.c:3817 [inline]
- __dev_queue_xmit+0x149c/0x3630 net/core/dev.c:4194
- llc_sap_action_send_test_c+0x22e/0x2c0 net/llc/llc_s_ac.c:144
- llc_exec_sap_trans_actions net/llc/llc_sap.c:153 [inline]
- llc_sap_next_state net/llc/llc_sap.c:182 [inline]
- llc_sap_state_process+0x22a/0x4f0 net/llc/llc_sap.c:209
- llc_ui_sendmsg+0x9f3/0x10b0 net/llc/af_llc.c:964
- sock_sendmsg_nosec net/socket.c:704 [inline]
- sock_sendmsg+0xcf/0x120 net/socket.c:724
- ____sys_sendmsg+0x331/0x810 net/socket.c:2409
- ___sys_sendmsg+0xf3/0x170 net/socket.c:2463
- __sys_sendmmsg+0x195/0x470 net/socket.c:2549
- __do_sys_sendmmsg net/socket.c:2578 [inline]
- __se_sys_sendmmsg net/socket.c:2575 [inline]
- __x64_sys_sendmmsg+0x99/0x100 net/socket.c:2575
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x7f3916062ae9
-Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 bc ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007f39135d8188 EFLAGS: 00000246 ORIG_RAX: 0000000000000133
-RAX: ffffffffffffffda RBX: 00007f3916175f60 RCX: 00007f3916062ae9
-RDX: 03fffffffffffeed RSI: 0000000020001380 RDI: 0000000000000005
-RBP: 00007f39160bcf6d R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007ffe4b72644f R14: 00007f39135d8300 R15: 0000000000022000
- </TASK>
-Modules linked in:
----[ end trace 518f993fe030bf9b ]---
-RIP: 0010:pskb_expand_head+0xb28/0x1060 net/core/skbuff.c:1695
-Code: 8d 75 ff e9 60 fe ff ff e8 75 dd 5a fa 48 c7 c6 a0 60 8c 8a 4c 89 f7 e8 c6 d6 8d fa 0f 0b e8 5f dd 5a fa 0f 0b e8 58 dd 5a fa <0f> 0b e8 51 dd 5a fa 41 81 cc 00 00 02 00 e9 f6 f5 ff ff e8 40 dd
-RSP: 0018:ffffc90005a6f2e0 EFLAGS: 00010212
-RAX: 0000000000030e8b RBX: ffff88801fa215c0 RCX: ffffc90020bf5000
-RDX: 0000000000040000 RSI: ffffffff871c2298 RDI: 0000000000000003
-RBP: 00000000ffffffbb R08: 0000000000000001 R09: ffff88801fa2169f
-R10: ffffffff871c1842 R11: 0000000000000000 R12: 0000000000000a20
-R13: 0000000000000002 R14: 0000000000000001 R15: 0000000000000000
-FS:  00007f39135d8700(0000) GS:ffff88802ca00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000020004038 CR3: 0000000065ef5000 CR4: 0000000000150ef0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000600
-
-
+Fixes: 68f5d3f3b654 ("um: add PCI over virtio emulation driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: linux-um at lists.infradead.org
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Anton Ivanov <anton.ivanov@cambridgegreys.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Link: https://lore.kernel.org/r/20211014050516.6846-1-rdunlap at infradead.org
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller at googlegroups.com.
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 0f021909b430a..30568e3544cda 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -773,7 +773,7 @@ static bool igc_is_crosststamp_supported(struct igc_adapter *adapter)
+ 
+ static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
+ {
+-#if IS_ENABLED(CONFIG_X86_TSC)
++#if IS_ENABLED(CONFIG_X86_TSC) && !defined(CONFIG_UML)
+ 	return convert_art_ns_to_tsc(tstamp);
+ #else
+ 	return (struct system_counterval_t) { };
+-- 
+2.33.0
+
+
+
