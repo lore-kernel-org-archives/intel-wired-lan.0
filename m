@@ -1,204 +1,125 @@
-From: Barry Song <21cnbao@gmail.com>
-Date: Sun, 3 Oct 2021 21:32:28 +1300
-Subject: [Intel-wired-lan] [PCI/MSI] a4fc4cf388:
- dmesg.genirq:Flags_mismatch_irq##(mei_me)vs.#(xhci_hcd)
-In-Reply-To: <8ab95f7f784448038d7777c45f1f2d55@intel.com>
-References: <20210825102636.52757-4-21cnbao@gmail.com>
- <20210829145552.GA11556@xsang-OptiPlex-9020>
- <CAGsJ_4yYwjuWsEeK3CvnOhc10mbBNYWXqxqp+mR5587R2FD3gQ@mail.gmail.com>
- <CAGsJ_4zwRdR2QuoR0K0_J86w0=t=mFh=tAKRuP1+Tx8aLn4kKw@mail.gmail.com>
- <8ab95f7f784448038d7777c45f1f2d55@intel.com>
-Message-ID: <CAGsJ_4ygPbLFqpRu7_N4RvfTY++OumQCFz=yxgcnb3VoqPwRAg@mail.gmail.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Mon, 15 Nov 2021 10:12:25 +0000
+Subject: [Intel-wired-lan] [PATCH v2 net-next 6/6] docs: net: Add
+ description of SyncE interfaces
+In-Reply-To: <87y25vbu19.fsf@nvidia.com>
+References: <20211105205331.2024623-1-maciej.machnikowski@intel.com>
+ <20211105205331.2024623-7-maciej.machnikowski@intel.com>
+ <87r1bqcyto.fsf@nvidia.com>
+ <MW5PR11MB5812B0A4E6227C6896AC12B5EA929@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <87mtmdcrf2.fsf@nvidia.com>
+ <MW5PR11MB5812D4A8419C37FE9C890D3AEA929@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <87bl2scnly.fsf@nvidia.com>
+ <MW5PR11MB5812034EA5FC331FA5A2D37CEA939@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <874k8kca9t.fsf@nvidia.com>
+ <MW5PR11MB5812757CFF0ACED1D9CFC5A2EA939@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <87y25vbu19.fsf@nvidia.com>
+Message-ID: <MW5PR11MB58121DC2755B9AADA3516E75EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 3, 2021 at 7:34 AM Winkler, Tomas <tomas.winkler@intel.com> wrote:
->
-> > dmesg.genirq:Flags_mismatch_irq##(mei_me)vs.#(xhci_hcd)
+
+
+> -----Original Message-----
+> From: Petr Machata <petrm@nvidia.com>
+> Sent: Wednesday, November 10, 2021 10:06 PM
+> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> Cc: Petr Machata <petrm@nvidia.com>; netdev at vger.kernel.org; intel-
+> wired-lan at lists.osuosl.org; richardcochran at gmail.com; abyagowi at fb.com;
+> Nguyen, Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net;
+> kuba at kernel.org; linux-kselftest at vger.kernel.org; idosch at idosch.org;
+> mkubecek at suse.cz; saeed at kernel.org; michael.chan at broadcom.com
+> Subject: Re: [PATCH v2 net-next 6/6] docs: net: Add description of SyncE
+> interfaces
+> 
+> 
+> Machnikowski, Maciej <maciej.machnikowski@intel.com> writes:
+> 
+> >> >> Wait, so how do I do failover? Which of the set pins in primary and
+> >> >> which is backup? Should the backup be sticky, i.e. do primary and
+> backup
+> >> >> switch roles after primary goes into holdover? It looks like there are a
+> >> >> number of policy decisions that would be best served by a userspace
+> >> >> tool.
+> >> >
+> >> > The clock priority is configured in the SEC/EEC/DPLL. Recovered clock API
+> >> > only configures the redirections (aka. Which clocks will be available to
+> the
+> >> > DPLL as references). In some DPLLs the fallback is automatic as long as
+> >> > secondary clock is available when the primary goes away. Userspace
+> tool
+> >> > can preconfigure that before the failure occurs.
+> >>
+> >> OK, I see. It looks like this priority list implies which pins need to
+> >> be enabled. That makes the netdev interface redundant.
 > >
-> > On Tue, Aug 31, 2021 at 1:21 PM Barry Song <21cnbao@gmail.com> wrote:
-> > >
-> > > On Mon, Aug 30, 2021 at 2:38 AM kernel test robot
-> > <oliver.sang@intel.com> wrote:
-> > > >
-> > > >
-> > > >
-> > > > Greeting,
-> > > >
-> > > > FYI, we noticed the following commit (built with gcc-9):
-> > > >
-> > > > commit: a4fc4cf388319ea957ffbdab5073bdd267de9082 ("[PATCH v3 3/3]
-> > > > PCI/MSI: remove msi_attrib.default_irq in msi_desc")
-> > > > url:
-> > > > https://github.com/0day-ci/linux/commits/Barry-Song/PCI-MSI-Clarify-
-> > > > the-IRQ-sysfs-ABI-for-PCI-devices/20210825-183018
-> > > > base:
-> > > > https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git
-> > > > 6e764bcd1cf72a2846c0e53d3975a09b242c04c9
-> > > >
-> > > > in testcase: kernel-selftests
-> > > > version: kernel-selftests-x86_64-ebaa603b-1_20210825
-> > > > with following parameters:
-> > > >
-> > > >         group: pidfd
-> > > >         ucode: 0xe2
-> > > >
-> > > > test-description: The kernel contains a set of "self tests" under the
-> > tools/testing/selftests/ directory. These are intended to be small unit tests
-> > to exercise individual code paths in the kernel.
-> > > > test-url: https://www.kernel.org/doc/Documentation/kselftest.txt
-> > > >
-> > > >
-> > > > on test machine: 4 threads Intel(R) Core(TM) i5-6500 CPU @ 3.20GHz
-> > > > with 32G memory
-> > > >
-> > > > caused below changes (please refer to attached dmesg/kmsg for entire
-> > log/backtrace):
-> > > >
-> > > >
-> > > >
-> > > > If you fix the issue, kindly add following tag
-> > > > Reported-by: kernel test robot <oliver.sang@intel.com>
-> > > >
-> > > >
-> > > >
-> > > > [  179.602028][   T34] genirq: Flags mismatch irq 16. 00002000 (mei_me) vs.
-> > 00000000 (xhci_hcd)
-> > > > [  179.614073][   T34] CPU: 2 PID: 34 Comm: kworker/u8:2 Not tainted
-> > 5.14.0-rc7-00014-ga4fc4cf38831 #1
-> > > > [  179.623225][   T34] Hardware name: Dell Inc. OptiPlex 7040/0Y7WYT,
-> > BIOS 1.8.1 12/05/2017
-> > > > [  179.631432][   T34] Workqueue: events_unbound async_run_entry_fn
-> > > > [  179.637543][   T34] Call Trace:
-> > > > [  179.640789][   T34]  dump_stack_lvl+0x45/0x59
-> > > > [  179.645253][   T34]  __setup_irq.cold+0x50/0xd4
-> > > > [  179.649893][   T34]  ? mei_me_pg_exit_sync+0x480/0x480 [mei_me]
-> > > > [  179.655923][   T34]  request_threaded_irq+0x10c/0x180
-> > > > [  179.661073][   T34]  ? mei_me_irq_quick_handler+0x240/0x240
-> > [mei_me]
-> > > > [  179.667528][   T34]  mei_me_probe+0x131/0x300 [mei_me]
-> > > > [  179.672767][   T34]  local_pci_probe+0x42/0x80
-> > > > [  179.677313][   T34]  pci_device_probe+0x107/0x1c0
-> > > > [  179.682118][   T34]  really_probe+0xb6/0x380
-> > > > [  179.687094][   T34]  __driver_probe_device+0xfe/0x180
-> > > > [  179.692242][   T34]  driver_probe_device+0x1e/0xc0
-> > > > [  179.697133][   T34]  __driver_attach_async_helper+0x2b/0x80
-> > > > [  179.702802][   T34]  async_run_entry_fn+0x30/0x140
-> > > > [  179.707693][   T34]  process_one_work+0x274/0x5c0
-> > > > [  179.712503][   T34]  worker_thread+0x50/0x3c0
-> > > > [  179.716959][   T34]  ? process_one_work+0x5c0/0x5c0
-> > > > [  179.721936][   T34]  kthread+0x14f/0x180
-> > > > [  179.725958][   T34]  ? set_kthread_struct+0x40/0x40
-> > > > [  179.730935][   T34]  ret_from_fork+0x22/0x30
-> > > > [  179.735699][   T34] mei_me 0000:00:16.0: request_threaded_irq failure.
-> > irq = 16
-> > > > [  179.743125][   T34] mei_me 0000:00:16.0: initialization failed.
-> > > > [  179.749399][   T34] mei_me: probe of 0000:00:16.0 failed with error -16
-> > > >
-> > > >
-> > >
-> > > it seems there is a direct reference to pdev->irq.
-> > > Hi Oliver, would you try if the below patch can fix the problem:
+> > Netdev owns the PHY, so it needs to enable/disable clock from a given
+> > port/lane - other than that it's EECs task. Technically - those subsystems
+> > are separate.
+> 
+> So why is the UAPI conflating the two?
+
+Because EEC can be a separate external device, but also can be integrated
+inside the netdev. In the second case it makes more sense to just return
+the state from a netdev 
+ 
+> >> As a user, say I know the signal coming from swp1 is freqency-locked.
+> >> How can I instruct the switch ASIC to propagate that signal to the other
+> >> ports? Well, I go through swp2..swpN, and issue RTM_SETRCLKSTATE or
+> >> whatever, with flags indicating I set up tracking, and pin number...
+> >> what exactly? How do I know which pin carries clock recovered from
+> swp1?
 > >
-> > + Tomas
+> > You send the RTM_SETRCLKSTATE to the port that has the best reference
+> > clock available.
+> > If you want to know which pin carries the clock you simply send the
+> > RTM_GETRCLKSTATE and it'll return the list of possible outputs with the
+> flags
+> > saying which of them are enabled (see the newer revision)
+> 
+> As a user I would really prefer to have a pin reference reported
+> somewhere at the netdev / phy / somewhere. Similarly to how a netdev can
+> reference a PHC. But whatever, I won't split hairs over this, this is
+> acutally one aspect that is easy to add later.
+
+I believe the best way would be to use sysfs entry for that (and provide a basic
+control using it as well). But first we need the UAPI defined.
+ 
+> >> >> > More advanced functionality will be grown organically, as I also have
+> >> >> > a limited view of SyncE and am not expert on switches.
+> >> >>
+> >> >> We are growing it organically _right now_. I am strongly advocating an
+> >> >> organic growth in the direction of a first-class DPLL object.
+> >> >
+> >> > If it helps - I can separate the PHY RCLK control patches and leave EEC
+> state
+> >> > under review
+> >>
+> >> Not sure what you mean by that.
 > >
-> > sorry. after second looking, drivers/misc/mei/pci-me.c has many places using
-> > pdev->irq directly. We really need this driver's maintainers to address the
-> > problem.
->
-> Will look at that.
+> > Commit RTM_GETRCLKSTATE and RTM_SETRCLKSTATE now, wait with
+> > RTM_GETEECSTATE  till we clarify further direction of the DPLL subsystem
+> 
+> It's not just state though. There is another oddity that I am not sure
+> is intentional. The proposed UAPI allows me to set up fairly general
+> frequency bridging. In a device with a bunch of ports, it would allow me
+> to set up, say, swp1 to track RCLK from swp2, then swp3 from swp4, etc.
+> But what will be the EEC state in that case?
 
-Hi Tomas,
+Yes. GET/SET UAPI is exactly there to configure that bridging. All it does
+is to set up the recovered frequency on physical frequency output pins
+of the phy/integrated device. In case DPLL is embedded the pins may be 
+internal to the device and not exposed externally. It doesn't allow creation
+of the tracking maps, as that's usually not a case in SyncE appliances.
+In typical ones you recover the clock from a single port and then use that 
+clock on all other ports.
+The EEC state will depend on the signal quality and the configuration.
+When the clock is enabled and is valid the EEC will tune its internal frequency
+and report locked/Locked HO Acquired state.
 
-I assume using hw->irq or not is a separate topic, does vim command
-%s/pdev->irq/pci_irq_vector(pdev, 0)/g
-as below fix the current crash problem because of directly dereferencing
-pdev->irq?
+Can remove word STATE from name and change to RTM_{GET,SET}RCLK 
+if state is confusing there.
 
-diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
-index c3393b383e59..97495931fadd 100644
---- a/drivers/misc/mei/pci-me.c
-+++ b/drivers/misc/mei/pci-me.c
-@@ -216,18 +216,18 @@ static int mei_me_probe(struct pci_dev *pdev,
-const struct pci_device_id *ent)
-
-  pci_enable_msi(pdev);
-
-- hw->irq = pdev->irq;
-+ hw->irq = pci_irq_vector(pdev, 0);
-
-  /* request and enable interrupt */
-  irqflags = pci_dev_msi_enabled(pdev) ? IRQF_ONESHOT : IRQF_SHARED;
-
-- err = request_threaded_irq(pdev->irq,
-+ err = request_threaded_irq(pci_irq_vector(pdev, 0),
-  mei_me_irq_quick_handler,
-  mei_me_irq_thread_handler,
-  irqflags, KBUILD_MODNAME, dev);
-  if (err) {
-  dev_err(&pdev->dev, "request_threaded_irq failure. irq = %d\n",
--        pdev->irq);
-+        pci_irq_vector(pdev, 0));
-  goto end;
-  }
-
-@@ -278,7 +278,7 @@ static int mei_me_probe(struct pci_dev *pdev,
-const struct pci_device_id *ent)
- release_irq:
-  mei_cancel_work(dev);
-  mei_disable_interrupts(dev);
-- free_irq(pdev->irq, dev);
-+ free_irq(pci_irq_vector(pdev, 0), dev);
- end:
-  dev_err(&pdev->dev, "initialization failed.\n");
-  return err;
-@@ -307,7 +307,7 @@ static void mei_me_shutdown(struct pci_dev *pdev)
-  mei_me_unset_pm_domain(dev);
-
-  mei_disable_interrupts(dev);
-- free_irq(pdev->irq, dev);
-+ free_irq(pci_irq_vector(pdev, 0), dev);
- }
-
- /**
-@@ -336,7 +336,7 @@ static void mei_me_remove(struct pci_dev *pdev)
-
-  mei_disable_interrupts(dev);
-
-- free_irq(pdev->irq, dev);
-+ free_irq(pci_irq_vector(pdev, 0), dev);
-
-  mei_deregister(dev);
- }
-@@ -356,7 +356,7 @@ static int mei_me_pci_suspend(struct device *device)
-
-  mei_disable_interrupts(dev);
-
-- free_irq(pdev->irq, dev);
-+ free_irq(pci_irq_vector(pdev, 0), dev);
-  pci_disable_msi(pdev);
-
-  return 0;
-@@ -378,14 +378,14 @@ static int mei_me_pci_resume(struct device *device)
-  irqflags = pci_dev_msi_enabled(pdev) ? IRQF_ONESHOT : IRQF_SHARED;
-
-  /* request and enable interrupt */
-- err = request_threaded_irq(pdev->irq,
-+ err = request_threaded_irq(pci_irq_vector(pdev, 0),
-  mei_me_irq_quick_handler,
-  mei_me_irq_thread_handler,
-  irqflags, KBUILD_MODNAME, dev);
-
-  if (err) {
-  dev_err(&pdev->dev, "request_threaded_irq failed: irq = %d.\n",
-- pdev->irq);
-+ pci_irq_vector(pdev, 0));
-  return err;
-  }
-
-
-Thanks
-barry
