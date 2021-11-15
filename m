@@ -1,47 +1,119 @@
 From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 15 Nov 2021 21:36:25 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] igc: AF_XDP zero-copy
- metadata adjust breaks SKBs on XDP_PASS
+Date: Mon, 15 Nov 2021 21:36:30 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] igc: enable XDP metadata in
+ driver
 In-Reply-To: <163700856423.565980.10162564921347693758.stgit@firesoul>
 References: <163700856423.565980.10162564921347693758.stgit@firesoul>
-Message-ID: <163700858579.565980.15265721798644582439.stgit@firesoul>
+Message-ID: <163700859087.565980.3578855072170209153.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Driver already implicitly supports XDP metadata access in AF_XDP
-zero-copy mode, as xsk_buff_pool's xp_alloc() naturally set xdp_buff
-data_meta equal data.
+Enabling the XDP bpf_prog access to data_meta area is a very small
+change. Hint passing 'true' to xdp_prepare_buff().
 
-This works fine for XDP and AF_XDP, but if a BPF-prog adjust via
-bpf_xdp_adjust_meta() and choose to call XDP_PASS, then igc function
-igc_construct_skb_zc() will construct an invalid SKB packet. The
-function correctly include the xdp->data_meta area in the memcpy, but
-forgot to pull header to take metasize into account.
+The SKB layers can also access data_meta area, which required more
+driver changes to support. Reviewers, notice the igc driver have two
+different functions that can create SKBs, depending on driver config.
 
-Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
+Hint for testers, ethtool priv-flags legacy-rx enables
+the function igc_construct_skb()
+
+ ethtool --set-priv-flags DEV legacy-rx on
+
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_main.c |   29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 8e448288ee26..76b0a7311369 100644
+index 76b0a7311369..b516f1b301b4 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -2448,8 +2448,10 @@ static struct sk_buff *igc_construct_skb_zc(struct igc_ring *ring,
+@@ -1718,24 +1718,26 @@ static void igc_add_rx_frag(struct igc_ring *rx_ring,
  
- 	skb_reserve(skb, xdp->data_meta - xdp->data_hard_start);
- 	memcpy(__skb_put(skb, totalsize), xdp->data_meta, totalsize);
--	if (metasize)
+ static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
+ 				     struct igc_rx_buffer *rx_buffer,
+-				     union igc_adv_rx_desc *rx_desc,
+-				     unsigned int size)
++				     struct xdp_buff *xdp)
+ {
+-	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
++	unsigned int size = xdp->data_end - xdp->data;
+ 	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
++	unsigned int metasize = xdp->data - xdp->data_meta;
+ 	struct sk_buff *skb;
+ 
+ 	/* prefetch first cache line of first page */
+-	net_prefetch(va);
++	net_prefetch(xdp->data);
+ 
+ 	/* build an skb around the page buffer */
+-	skb = build_skb(va - IGC_SKB_PAD, truesize);
++	skb = build_skb(xdp->data_hard_start, truesize);
+ 	if (unlikely(!skb))
+ 		return NULL;
+ 
+ 	/* update pointers within the skb to store the data */
+-	skb_reserve(skb, IGC_SKB_PAD);
++	skb_reserve(skb, xdp->data - xdp->data_hard_start);
+ 	__skb_put(skb, size);
++	if (metasize)
++		skb_metadata_set(skb, metasize);
+ 
+ 	igc_rx_buffer_flip(rx_buffer, truesize);
+ 	return skb;
+@@ -1746,6 +1748,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 					 struct xdp_buff *xdp,
+ 					 ktime_t timestamp)
+ {
++	unsigned int metasize = xdp->data - xdp->data_meta;
+ 	unsigned int size = xdp->data_end - xdp->data;
+ 	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
+ 	void *va = xdp->data;
+@@ -1756,7 +1759,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 	net_prefetch(va);
+ 
+ 	/* allocate a skb to store the frags */
+-	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IGC_RX_HDR_LEN);
++	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IGC_RX_HDR_LEN + metasize);
+ 	if (unlikely(!skb))
+ 		return NULL;
+ 
+@@ -1769,7 +1772,13 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
+ 		headlen = eth_get_headlen(skb->dev, va, IGC_RX_HDR_LEN);
+ 
+ 	/* align pull length to size of long to optimize memcpy performance */
+-	memcpy(__skb_put(skb, headlen), va, ALIGN(headlen, sizeof(long)));
++	memcpy(__skb_put(skb, headlen + metasize), xdp->data_meta,
++	       ALIGN(headlen + metasize, sizeof(long)));
++
 +	if (metasize) {
- 		skb_metadata_set(skb, metasize);
++		skb_metadata_set(skb, metasize);
 +		__skb_pull(skb, metasize);
 +	}
  
- 	return skb;
- }
+ 	/* update all of the pointers */
+ 	size -= headlen;
+@@ -2354,7 +2363,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 		if (!skb) {
+ 			xdp_init_buff(&xdp, truesize, &rx_ring->xdp_rxq);
+ 			xdp_prepare_buff(&xdp, pktbuf - igc_rx_offset(rx_ring),
+-					 igc_rx_offset(rx_ring) + pkt_offset, size, false);
++					 igc_rx_offset(rx_ring) + pkt_offset, size, true);
+ 
+ 			skb = igc_xdp_run_prog(adapter, &xdp);
+ 		}
+@@ -2378,7 +2387,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 		} else if (skb)
+ 			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
+ 		else if (ring_uses_build_skb(rx_ring))
+-			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
++			skb = igc_build_skb(rx_ring, rx_buffer, &xdp);
+ 		else
+ 			skb = igc_construct_skb(rx_ring, rx_buffer, &xdp,
+ 						timestamp);
 
 
