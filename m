@@ -1,27 +1,47 @@
 From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 15 Nov 2021 21:36:20 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 0/2] igc: driver change to
- support XDP metadata
-Message-ID: <163700856423.565980.10162564921347693758.stgit@firesoul>
+Date: Mon, 15 Nov 2021 21:36:25 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] igc: AF_XDP zero-copy
+ metadata adjust breaks SKBs on XDP_PASS
+In-Reply-To: <163700856423.565980.10162564921347693758.stgit@firesoul>
+References: <163700856423.565980.10162564921347693758.stgit@firesoul>
+Message-ID: <163700858579.565980.15265721798644582439.stgit@firesoul>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changes to fix and enable XDP metadata to a specific Intel driver igc.
-Tested with hardware i225 that uses driver igc, while testing AF_XDP
-access to metadata area.
+Driver already implicitly supports XDP metadata access in AF_XDP
+zero-copy mode, as xsk_buff_pool's xp_alloc() naturally set xdp_buff
+data_meta equal data.
 
+This works fine for XDP and AF_XDP, but if a BPF-prog adjust via
+bpf_xdp_adjust_meta() and choose to call XDP_PASS, then igc function
+igc_construct_skb_zc() will construct an invalid SKB packet. The
+function correctly include the xdp->data_meta area in the memcpy, but
+forgot to pull header to take metasize into account.
+
+Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
+Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
+ drivers/net/ethernet/intel/igc/igc_main.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Jesper Dangaard Brouer (2):
-      igc: AF_XDP zero-copy metadata adjust breaks SKBs on XDP_PASS
-      igc: enable XDP metadata in driver
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 8e448288ee26..76b0a7311369 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2448,8 +2448,10 @@ static struct sk_buff *igc_construct_skb_zc(struct igc_ring *ring,
+ 
+ 	skb_reserve(skb, xdp->data_meta - xdp->data_hard_start);
+ 	memcpy(__skb_put(skb, totalsize), xdp->data_meta, totalsize);
+-	if (metasize)
++	if (metasize) {
+ 		skb_metadata_set(skb, metasize);
++		__skb_pull(skb, metasize);
++	}
+ 
+ 	return skb;
+ }
 
-
- drivers/net/ethernet/intel/igc/igc_main.c |   33 +++++++++++++++++++----------
- 1 file changed, 22 insertions(+), 11 deletions(-)
-
---
 
