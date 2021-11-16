@@ -1,77 +1,158 @@
-From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-Date: Tue, 16 Nov 2021 12:57:05 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: avoid spin loop in
- i40e_asq_send_command()
-Message-ID: <DM6PR11MB2731840AD08E22F73CE850B1F0999@DM6PR11MB2731.namprd11.prod.outlook.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Tue, 16 Nov 2021 13:13:29 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Minimize amount of
+ busy-waiting during AQ send
+Message-ID: <20211116131329.626045-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Caleb Sander <csander at purestorage.com<mailto:csander@purestorage.com>>
+The i40e_asq_send_command will now use a non blocking
+usleep_range if possible (non-atomic context), instead of busy-waiting
+udelay. The usleep_range function uses hrtimers to provide better
+performance and remove the negative impact of busy-waiting in
+time-critical environments.
 
-> Sent: Friday, October 1, 2021 8:50 AM
+1. Rename i40e_asq_send_command to i40e_asq_send_command_atomic
+   and add 5th parameter to inform if called from an atomic context.
+   Call inside usleep_range (if non-atomic) or udelay (if atomic).
 
-> To: intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
+2. Change i40e_asq_send_command to invoke
+   i40e_asq_send_command_atomic(..., false).
 
-> Cc: Brandeburg, Jesse <jesse.brandeburg at intel.com<mailto:jesse.brandeburg@intel.com>>; Nguyen, Anthony L
+3. Change two functions:
+    - i40e_aq_set_vsi_uc_promisc_on_vlan
+    - i40e_aq_set_vsi_mc_promisc_on_vlan
+   to explicitly use i40e_asq_send_command_atomic(..., true)
+   instead of i40e_asq_send_command, as they use spinlocks and do some
+   work in an atomic context.
+   All other calls to i40e_asq_send_command remain unchanged.
 
-> <anthony.l.nguyen at intel.com<mailto:anthony.l.nguyen@intel.com>>; Caleb Sander <csander at purestorage.com<mailto:csander@purestorage.com>>
+Title: Minimize amount of busy-waiting during AQ send
+Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c | 29 ++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_common.c |  6 ++--
+ .../net/ethernet/intel/i40e/i40e_prototype.h  | 14 +++++----
+ 3 files changed, 35 insertions(+), 14 deletions(-)
 
-> Subject: [PATCH] i40e: avoid spin loop in i40e_asq_send_command()
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 593912b17609..7abef88801fb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -769,21 +769,22 @@ static bool i40e_asq_done(struct i40e_hw *hw)
+ }
+ 
+ /**
+- *  i40e_asq_send_command - send command to Admin Queue
++ *  i40e_asq_send_command_atomic - send command to Admin Queue
+  *  @hw: pointer to the hw struct
+  *  @desc: prefilled descriptor describing the command (non DMA mem)
+  *  @buff: buffer to use for indirect commands
+  *  @buff_size: size of buffer for indirect commands
+  *  @cmd_details: pointer to command details structure
++ *  @is_atomic_context: is the function called in an atomic context?
+  *
+  *  This is the main send command driver routine for the Admin Queue send
+  *  queue.  It runs the queue, cleans the queue, etc
+  **/
+-i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+-				struct i40e_aq_desc *desc,
+-				void *buff, /* can be NULL */
+-				u16  buff_size,
+-				struct i40e_asq_cmd_details *cmd_details)
++i40e_status
++i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++			     void *buff, /* can be NULL */ u16  buff_size,
++			     struct i40e_asq_cmd_details *cmd_details,
++			     bool is_atomic_context)
+ {
+ 	i40e_status status = 0;
+ 	struct i40e_dma_mem *dma_buff = NULL;
+@@ -910,7 +911,12 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+ 			 */
+ 			if (i40e_asq_done(hw))
+ 				break;
+-			udelay(50);
++
++			if (is_atomic_context)
++				udelay(50);
++			else
++				usleep_range(40, 60);
++
+ 			total_delay += 50;
+ 		} while (total_delay < hw->aq.asq_cmd_timeout);
+ 	}
+@@ -967,6 +973,15 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
++i40e_status
++i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++		      void *buff, /* can be NULL */ u16  buff_size,
++		      struct i40e_asq_cmd_details *cmd_details)
++{
++	return i40e_asq_send_command_atomic(hw, desc, buff, buff_size,
++					    cmd_details, false);
++}
++
+ /**
+  *  i40e_fill_default_direct_cmd_desc - AQ descriptor helper function
+  *  @desc:     pointer to the temp descriptor (non DMA mem)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index b4d3fed0d2f2..f81a674c8d40 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2073,7 +2073,8 @@ enum i40e_status_code i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
+ 	cmd->seid = cpu_to_le16(seid);
+ 	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
+ 
+-	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++	status = i40e_asq_send_command_atomic(hw, &desc, NULL, 0,
++					      cmd_details, true);
+ 
+ 	return status;
+ }
+@@ -2114,7 +2115,8 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
+ 	cmd->seid = cpu_to_le16(seid);
+ 	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
+ 
+-	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++	status = i40e_asq_send_command_atomic(hw, &desc, NULL, 0,
++					      cmd_details, true);
+ 
+ 	return status;
+ }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index aaea297640e0..9241b6005ad3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -22,11 +22,15 @@ void i40e_adminq_init_ring_data(struct i40e_hw *hw);
+ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
+ 					     struct i40e_arq_event_info *e,
+ 					     u16 *events_pending);
+-i40e_status i40e_asq_send_command(struct i40e_hw *hw,
+-				struct i40e_aq_desc *desc,
+-				void *buff, /* can be NULL */
+-				u16  buff_size,
+-				struct i40e_asq_cmd_details *cmd_details);
++i40e_status
++i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++		      void *buff, /* can be NULL */ u16  buff_size,
++		      struct i40e_asq_cmd_details *cmd_details);
++i40e_status
++i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
++			     void *buff, /* can be NULL */ u16  buff_size,
++			     struct i40e_asq_cmd_details *cmd_details,
++			     bool is_atomic_context);
+ 
+ /* debug function for adminq */
+ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask,
 
->
+base-commit: 12d9cd00f10317ab4e34e150f2137f3061ecaa8f
+-- 
+2.27.0
 
-> Previously, the kernel could spend up to 250 ms waiting for a command
-
-> to be submitted to an admin queue. This function is also called in a
-
-> loop, e.g., in
-
-> i40e_get_module_eeprom() (through i40e_aq_get_phy_register()), so the
-
-> time spent in the kernel may be even higher. We observed scheduling
-
-> delays of over 2 seconds in production, with stacktraces pointing to
-
-> this code as the culprit.
-
->
-
-> Add a call to cond_resched() so the loop can yield the CPU.
-
-> Also compute the total time using the jiffies counter instead of
-
-> assuming
-
-> udelay() waits the precise time interval requested.
-
->
-
-> Signed-off-by: Caleb Sander <csander at purestorage.com<mailto:csander@purestorage.com>>
-
-> Reviewed-by: Joern Engel <joern at purestorage.com<mailto:joern@purestorage.com>>
-
-> ---
-
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c | 6 +++---
-
->  1 file changed, 3 insertions(+), 3 deletions(-)
-
-Hello Caleb,
-Thank you for your patch fixing timing in  i40e_asq_send_command().
-We have also already prepared patch which fixes that issue.
-Moreover during tests was noticed that this should not be
-changed globally and it should be invoked in atomic/nonatomic
-context depending on the function that invoke asq_send_command().
-Other functions in the code take advantage of this dependency,
-so to maintain integrity I will upstream our solution.
-
-Best regards,
-Jedrzej
-
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211116/23775fae/attachment-0001.html>
