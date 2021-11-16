@@ -1,41 +1,67 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 16 Nov 2021 14:36:27 +0300
-Subject: [Intel-wired-lan] [bug report] ice: split ice_ring onto Tx/Rx
- separate structs
-Message-ID: <20211116113627.GA11394@kili>
+From: Petr Machata <petrm@nvidia.com>
+Date: Tue, 16 Nov 2021 12:52:42 +0100
+Subject: [Intel-wired-lan] [PATCH v3 net-next 6/6] docs: net: Add
+ description of SyncE interfaces
+In-Reply-To: <MW5PR11MB5812E733ED2BB621A3249CD5EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
+References: <20211110114448.2792314-1-maciej.machnikowski@intel.com>
+ <20211110114448.2792314-7-maciej.machnikowski@intel.com>
+ <87tugic17a.fsf@nvidia.com>
+ <MW5PR11MB5812E733ED2BB621A3249CD5EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
+Message-ID: <87fsrwtj05.fsf@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Maciej Fijalkowski,
 
-This is a semi-automatic email about new static checker warnings.
+Machnikowski, Maciej <maciej.machnikowski@intel.com> writes:
 
-The patch e72bba21355d: "ice: split ice_ring onto Tx/Rx separate
-structs" from Aug 19, 2021, leads to the following Smatch complaint:
+>> - Reporting pins through the netdevices that use them allows for
+>>   configurations that are likely invalid, like disjoint "frequency
+>>   bridges".
+>
+> Not sure if I understand that comment. In target application a given
+> netdev will receive an ESMC message containing the quality of the
+> clock that it has on the receive side. The upper layer software will
+> see QL_PRC on one port and QL_EEC on other and will need to enable
+> clock output from the port that received QL_PRC, as it's the higher clock
+> class. Once the EEC reports Locked state all other ports that are traceable
+> to a given EEC (either using the DPLL subsystem, or the config file)
+> will start reporting QL_PRC to downstream devices.
 
-    drivers/net/ethernet/intel/ice/ice_main.c:5933 ice_update_vsi_tx_ring_stats()
-    error: we previously assumed 'ring' could be null (see line 5929)
+I think I had the reading of the UAPI wrong. So RTM_SETRCLKSTATE means,
+take the clock recovered from ifindex, and send it to pins that I have
+marked with the ENA flag.
 
-drivers/net/ethernet/intel/ice/ice_main.c
-  5928			ring = READ_ONCE(rings[i]);
-  5929			if (ring)
-                            ^^^^
-The patch adds a new check for NULL but presumably it can be removed
+But that still does not work well for multi-port devices. I can set it
+up to forward frequency from swp1 to swp2 and swp3, from swp4 to swp5
+and swp6, etc. But in reality I only have one underlying DPLL and can't
+support this. So yeah, obviously, I bounce it in the driver. It also
+means that when I want to switch tracking from swp1 to swp2, I first
+need to unset all the swp1 pins (64 messages or whaveter) and then set
+it up at swp2 (64 more messages). As a user I still don't know which of
+my ports share DPLL. It's just not a great interface for multi-port
+devices.
 
-  5930				ice_fetch_u64_stats_per_ring(&ring->syncp, ring->stats, &pkts, &bytes);
-  5931			vsi_stats->tx_packets += pkts;
-  5932			vsi_stats->tx_bytes += bytes;
-  5933			vsi->tx_restart += ring->tx_stats.restart_q;
-                                           ^^^^^^^^^^^^^^^^^^^^^^^^
-  5934			vsi->tx_busy += ring->tx_stats.tx_busy;
-                                        ^^^^^^^^^^^^^^^^^^^^^^
-  5935			vsi->tx_linearize += ring->tx_stats.tx_linearize;
-                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Having this stuff at a dedicated DPLL object would make the issue go
+away completely. A driver then instantiates one DPLL, sets it up with
+RCLK pins and TX pins. The DPLL can be configured with which pin to take
+the frequency from, and which subset of pins to forward it to. There are
+as many DPLL objects as there are DPLL circuits in the system.
 
-Because the previous code didn' check
+This works for simple port devices as well as switches, as well as
+non-networked devices.
 
-regards,
-dan carpenter
+The in-driver LOC overhead is a couple of _init / _fini calls and an ops
+structure that the DPLL subsystem uses to talk to the driver. Everything
+else remains the same.
+
+>> - It's not clear what enabling several pins means, and it's not clear
+>>   whether this genericity is not going to be an issue in the future when
+>>   we know what enabling more pins means.
+>
+> It means that the recovered frequency will appear on 2 or more physical
+> pins of the package.
+
+Yes, agreed now.
