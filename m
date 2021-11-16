@@ -1,158 +1,92 @@
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Tue, 16 Nov 2021 13:13:29 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Minimize amount of
- busy-waiting during AQ send
-Message-ID: <20211116131329.626045-1-jedrzej.jagielski@intel.com>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Tue, 16 Nov 2021 14:26:27 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net-next 6/6] docs: net: Add
+ description of SyncE interfaces
+In-Reply-To: <87fsrwtj05.fsf@nvidia.com>
+References: <20211110114448.2792314-1-maciej.machnikowski@intel.com>
+ <20211110114448.2792314-7-maciej.machnikowski@intel.com>
+ <87tugic17a.fsf@nvidia.com>
+ <MW5PR11MB5812E733ED2BB621A3249CD5EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <87fsrwtj05.fsf@nvidia.com>
+Message-ID: <MW5PR11MB5812CBDF240A6D08E76655C1EA999@MW5PR11MB5812.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The i40e_asq_send_command will now use a non blocking
-usleep_range if possible (non-atomic context), instead of busy-waiting
-udelay. The usleep_range function uses hrtimers to provide better
-performance and remove the negative impact of busy-waiting in
-time-critical environments.
+> -----Original Message-----
+> From: Petr Machata <petrm@nvidia.com>
+> Sent: Tuesday, November 16, 2021 12:53 PM
+> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> Subject: Re: [PATCH v3 net-next 6/6] docs: net: Add description of SyncE
+> interfaces
+> 
+> 
+> Machnikowski, Maciej <maciej.machnikowski@intel.com> writes:
+> 
+> >> - Reporting pins through the netdevices that use them allows for
+> >>   configurations that are likely invalid, like disjoint "frequency
+> >>   bridges".
+> >
+> > Not sure if I understand that comment. In target application a given
+> > netdev will receive an ESMC message containing the quality of the
+> > clock that it has on the receive side. The upper layer software will
+> > see QL_PRC on one port and QL_EEC on other and will need to enable
+> > clock output from the port that received QL_PRC, as it's the higher clock
+> > class. Once the EEC reports Locked state all other ports that are traceable
+> > to a given EEC (either using the DPLL subsystem, or the config file)
+> > will start reporting QL_PRC to downstream devices.
+> 
+> I think I had the reading of the UAPI wrong. So RTM_SETRCLKSTATE means,
+> take the clock recovered from ifindex, and send it to pins that I have
+> marked with the ENA flag.
+> 
+> But that still does not work well for multi-port devices. I can set it
+> up to forward frequency from swp1 to swp2 and swp3, from swp4 to swp5
+> and swp6, etc. But in reality I only have one underlying DPLL and can't
+> support this. So yeah, obviously, I bounce it in the driver. It also
+> means that when I want to switch tracking from swp1 to swp2, I first
+> need to unset all the swp1 pins (64 messages or whaveter) and then set
+> it up at swp2 (64 more messages). As a user I still don't know which of
+> my ports share DPLL. It's just not a great interface for multi-port
+> devices.
 
-1. Rename i40e_asq_send_command to i40e_asq_send_command_atomic
-   and add 5th parameter to inform if called from an atomic context.
-   Call inside usleep_range (if non-atomic) or udelay (if atomic).
+This will only be done on init - after everything is configured - you will not
+really need to check anything there.
 
-2. Change i40e_asq_send_command to invoke
-   i40e_asq_send_command_atomic(..., false).
+> Having this stuff at a dedicated DPLL object would make the issue go
+> away completely. A driver then instantiates one DPLL, sets it up with
+> RCLK pins and TX pins. The DPLL can be configured with which pin to take
+> the frequency from, and which subset of pins to forward it to. There are
+> as many DPLL objects as there are DPLL circuits in the system.
+>
+> This works for simple port devices as well as switches, as well as
+> non-networked devices.
+> 
+> The in-driver LOC overhead is a couple of _init / _fini calls and an ops
+> structure that the DPLL subsystem uses to talk to the driver. Everything
+> else remains the same.
 
-3. Change two functions:
-    - i40e_aq_set_vsi_uc_promisc_on_vlan
-    - i40e_aq_set_vsi_mc_promisc_on_vlan
-   to explicitly use i40e_asq_send_command_atomic(..., true)
-   instead of i40e_asq_send_command, as they use spinlocks and do some
-   work in an atomic context.
-   All other calls to i40e_asq_send_command remain unchanged.
+That won't work - a single recovered clock may be physically connected
+to more than one DPLL device and a single DPLL device may be used for
+more than one MAC chip at the same time - we shouldn't mix subsystems 
+as recovered clocks belong to PHY/MAC layer.
 
-Title: Minimize amount of busy-waiting during AQ send
-Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_adminq.c | 29 ++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_common.c |  6 ++--
- .../net/ethernet/intel/i40e/i40e_prototype.h  | 14 +++++----
- 3 files changed, 35 insertions(+), 14 deletions(-)
+Also in that case the DPLL would need to track the relation between
+all netdev ports upstream - which will be nightmare to keep track of
+when ports reset/get removed or added.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 593912b17609..7abef88801fb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -769,21 +769,22 @@ static bool i40e_asq_done(struct i40e_hw *hw)
- }
- 
- /**
-- *  i40e_asq_send_command - send command to Admin Queue
-+ *  i40e_asq_send_command_atomic - send command to Admin Queue
-  *  @hw: pointer to the hw struct
-  *  @desc: prefilled descriptor describing the command (non DMA mem)
-  *  @buff: buffer to use for indirect commands
-  *  @buff_size: size of buffer for indirect commands
-  *  @cmd_details: pointer to command details structure
-+ *  @is_atomic_context: is the function called in an atomic context?
-  *
-  *  This is the main send command driver routine for the Admin Queue send
-  *  queue.  It runs the queue, cleans the queue, etc
-  **/
--i40e_status i40e_asq_send_command(struct i40e_hw *hw,
--				struct i40e_aq_desc *desc,
--				void *buff, /* can be NULL */
--				u16  buff_size,
--				struct i40e_asq_cmd_details *cmd_details)
-+i40e_status
-+i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
-+			     void *buff, /* can be NULL */ u16  buff_size,
-+			     struct i40e_asq_cmd_details *cmd_details,
-+			     bool is_atomic_context)
- {
- 	i40e_status status = 0;
- 	struct i40e_dma_mem *dma_buff = NULL;
-@@ -910,7 +911,12 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 			 */
- 			if (i40e_asq_done(hw))
- 				break;
--			udelay(50);
-+
-+			if (is_atomic_context)
-+				udelay(50);
-+			else
-+				usleep_range(40, 60);
-+
- 			total_delay += 50;
- 		} while (total_delay < hw->aq.asq_cmd_timeout);
- 	}
-@@ -967,6 +973,15 @@ i40e_status i40e_asq_send_command(struct i40e_hw *hw,
- 	return status;
- }
- 
-+i40e_status
-+i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
-+		      void *buff, /* can be NULL */ u16  buff_size,
-+		      struct i40e_asq_cmd_details *cmd_details)
-+{
-+	return i40e_asq_send_command_atomic(hw, desc, buff, buff_size,
-+					    cmd_details, false);
-+}
-+
- /**
-  *  i40e_fill_default_direct_cmd_desc - AQ descriptor helper function
-  *  @desc:     pointer to the temp descriptor (non DMA mem)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index b4d3fed0d2f2..f81a674c8d40 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2073,7 +2073,8 @@ enum i40e_status_code i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
- 	cmd->seid = cpu_to_le16(seid);
- 	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
- 
--	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-+	status = i40e_asq_send_command_atomic(hw, &desc, NULL, 0,
-+					      cmd_details, true);
- 
- 	return status;
- }
-@@ -2114,7 +2115,8 @@ enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
- 	cmd->seid = cpu_to_le16(seid);
- 	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
- 
--	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-+	status = i40e_asq_send_command_atomic(hw, &desc, NULL, 0,
-+					      cmd_details, true);
- 
- 	return status;
- }
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index aaea297640e0..9241b6005ad3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -22,11 +22,15 @@ void i40e_adminq_init_ring_data(struct i40e_hw *hw);
- i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
- 					     struct i40e_arq_event_info *e,
- 					     u16 *events_pending);
--i40e_status i40e_asq_send_command(struct i40e_hw *hw,
--				struct i40e_aq_desc *desc,
--				void *buff, /* can be NULL */
--				u16  buff_size,
--				struct i40e_asq_cmd_details *cmd_details);
-+i40e_status
-+i40e_asq_send_command(struct i40e_hw *hw, struct i40e_aq_desc *desc,
-+		      void *buff, /* can be NULL */ u16  buff_size,
-+		      struct i40e_asq_cmd_details *cmd_details);
-+i40e_status
-+i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc *desc,
-+			     void *buff, /* can be NULL */ u16  buff_size,
-+			     struct i40e_asq_cmd_details *cmd_details,
-+			     bool is_atomic_context);
- 
- /* debug function for adminq */
- void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask,
+Also the netdev is the one that will receive the packet containing quality
+so the userspace app will know which netdev received it and not which
+DPLL pin it should configure. I think this approach will make everything
+more complex (unless I'm missing something).
 
-base-commit: 12d9cd00f10317ab4e34e150f2137f3061ecaa8f
--- 
-2.27.0
-
+> >> - It's not clear what enabling several pins means, and it's not clear
+> >>   whether this genericity is not going to be an issue in the future when
+> >>   we know what enabling more pins means.
+> >
+> > It means that the recovered frequency will appear on 2 or more physical
+> > pins of the package.
+> 
+> Yes, agreed now.
