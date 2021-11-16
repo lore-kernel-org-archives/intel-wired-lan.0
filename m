@@ -1,67 +1,160 @@
-From: Petr Machata <petrm@nvidia.com>
-Date: Tue, 16 Nov 2021 12:52:42 +0100
-Subject: [Intel-wired-lan] [PATCH v3 net-next 6/6] docs: net: Add
- description of SyncE interfaces
-In-Reply-To: <MW5PR11MB5812E733ED2BB621A3249CD5EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
-References: <20211110114448.2792314-1-maciej.machnikowski@intel.com>
- <20211110114448.2792314-7-maciej.machnikowski@intel.com>
- <87tugic17a.fsf@nvidia.com>
- <MW5PR11MB5812E733ED2BB621A3249CD5EA989@MW5PR11MB5812.namprd11.prod.outlook.com>
-Message-ID: <87fsrwtj05.fsf@nvidia.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 16 Nov 2021 20:02:15 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ a9c12f0326b2682923fb0f8bfccf576e27fd4a86
+Message-ID: <61939dc7.33lv+CubJdFKwlE9%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: a9c12f0326b2682923fb0f8bfccf576e27fd4a86  iavf: Fix VLAN feature flags after VFR
 
-Machnikowski, Maciej <maciej.machnikowski@intel.com> writes:
+elapsed time: 722m
 
->> - Reporting pins through the netdevices that use them allows for
->>   configurations that are likely invalid, like disjoint "frequency
->>   bridges".
->
-> Not sure if I understand that comment. In target application a given
-> netdev will receive an ESMC message containing the quality of the
-> clock that it has on the receive side. The upper layer software will
-> see QL_PRC on one port and QL_EEC on other and will need to enable
-> clock output from the port that received QL_PRC, as it's the higher clock
-> class. Once the EEC reports Locked state all other ports that are traceable
-> to a given EEC (either using the DPLL subsystem, or the config file)
-> will start reporting QL_PRC to downstream devices.
+configs tested: 129
+configs skipped: 3
 
-I think I had the reading of the UAPI wrong. So RTM_SETRCLKSTATE means,
-take the clock recovered from ifindex, and send it to pins that I have
-marked with the ENA flag.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-But that still does not work well for multi-port devices. I can set it
-up to forward frequency from swp1 to swp2 and swp3, from swp4 to swp5
-and swp6, etc. But in reality I only have one underlying DPLL and can't
-support this. So yeah, obviously, I bounce it in the driver. It also
-means that when I want to switch tracking from swp1 to swp2, I first
-need to unset all the swp1 pins (64 messages or whaveter) and then set
-it up at swp2 (64 more messages). As a user I still don't know which of
-my ports share DPLL. It's just not a great interface for multi-port
-devices.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211116
+m68k                             alldefconfig
+powerpc                 linkstation_defconfig
+ia64                                defconfig
+mips                         db1xxx_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                        cell_defconfig
+arm                         lubbock_defconfig
+sh                             shx3_defconfig
+sh                          lboxre2_defconfig
+m68k                       m5208evb_defconfig
+powerpc                     ppa8548_defconfig
+arm                         cm_x300_defconfig
+arm                       cns3420vb_defconfig
+sparc                       sparc64_defconfig
+powerpc                      ppc6xx_defconfig
+powerpc                mpc7448_hpc2_defconfig
+m68k                            mac_defconfig
+arm                          badge4_defconfig
+sh                           sh2007_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                     kilauea_defconfig
+arm                      tct_hammer_defconfig
+sh                          sdk7780_defconfig
+powerpc                      cm5200_defconfig
+powerpc                   microwatt_defconfig
+mips                       bmips_be_defconfig
+um                               alldefconfig
+powerpc                    ge_imp3a_defconfig
+sh                          rsk7203_defconfig
+m68k                        m5407c3_defconfig
+sh                        sh7763rdp_defconfig
+mips                         mpc30x_defconfig
+sh                     sh7710voipgw_defconfig
+arm                  randconfig-c002-20211116
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a003-20211115
+i386                 randconfig-a001-20211115
+i386                 randconfig-a004-20211115
+i386                 randconfig-a002-20211115
+i386                 randconfig-a006-20211115
+i386                 randconfig-a005-20211115
+x86_64               randconfig-a015-20211116
+x86_64               randconfig-a013-20211116
+x86_64               randconfig-a012-20211116
+x86_64               randconfig-a011-20211116
+x86_64               randconfig-a016-20211116
+x86_64               randconfig-a014-20211116
+i386                 randconfig-a014-20211116
+i386                 randconfig-a016-20211116
+i386                 randconfig-a012-20211116
+i386                 randconfig-a013-20211116
+i386                 randconfig-a011-20211116
+i386                 randconfig-a015-20211116
+arc                  randconfig-r043-20211115
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                           allyesconfig
 
-Having this stuff at a dedicated DPLL object would make the issue go
-away completely. A driver then instantiates one DPLL, sets it up with
-RCLK pins and TX pins. The DPLL can be configured with which pin to take
-the frequency from, and which subset of pins to forward it to. There are
-as many DPLL objects as there are DPLL circuits in the system.
+clang tested configs:
+x86_64               randconfig-c007-20211116
+i386                 randconfig-c001-20211116
+arm                  randconfig-c002-20211116
+riscv                randconfig-c006-20211116
+powerpc              randconfig-c003-20211116
+s390                 randconfig-c005-20211116
+mips                 randconfig-c004-20211116
+x86_64               randconfig-a005-20211116
+x86_64               randconfig-a003-20211116
+x86_64               randconfig-a001-20211116
+x86_64               randconfig-a002-20211116
+x86_64               randconfig-a006-20211116
+x86_64               randconfig-a004-20211116
+i386                 randconfig-a006-20211116
+i386                 randconfig-a003-20211116
+i386                 randconfig-a005-20211116
+i386                 randconfig-a001-20211116
+i386                 randconfig-a004-20211116
+i386                 randconfig-a002-20211116
+hexagon              randconfig-r045-20211115
+hexagon              randconfig-r041-20211115
+s390                 randconfig-r044-20211115
+riscv                randconfig-r042-20211115
+hexagon              randconfig-r045-20211116
+hexagon              randconfig-r041-20211116
 
-This works for simple port devices as well as switches, as well as
-non-networked devices.
-
-The in-driver LOC overhead is a couple of _init / _fini calls and an ops
-structure that the DPLL subsystem uses to talk to the driver. Everything
-else remains the same.
-
->> - It's not clear what enabling several pins means, and it's not clear
->>   whether this genericity is not going to be an issue in the future when
->>   we know what enabling more pins means.
->
-> It means that the recovered frequency will appear on 2 or more physical
-> pins of the package.
-
-Yes, agreed now.
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
