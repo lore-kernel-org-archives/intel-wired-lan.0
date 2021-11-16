@@ -1,178 +1,82 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 16 Nov 2021 20:02:18 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- 4293014230b887d94b68aa460ff00153454a3709
-Message-ID: <61939dca.BvuMH7bDqUcx0i4q%lkp@intel.com>
+From: Karol Kolacinski <karol.kolacinski@intel.com>
+Date: Tue, 16 Nov 2021 13:07:14 +0100
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: Don't put stale
+ timestamps in the skb
+Message-ID: <20211116120714.310539-1-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
-branch HEAD: 4293014230b887d94b68aa460ff00153454a3709  iavf: Restore VLAN filters after link down
+The driver has to check if it does not accidentally put the timestamp in
+the SKB before previous timestamp gets overwritten.
+Timestamp values in the PHY are read only and do not get cleared except
+at hardware reset or when a new timestamp value is captured.
+The cached_tstamp field is used to detect the case where a new timestamp
+has not yet been captured, ensuring that we avoid sending stale
+timestamp data to the stack.
 
-elapsed time: 723m
-
-configs tested: 147
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211115
-i386                 randconfig-c001-20211116
-m68k                             alldefconfig
-powerpc                 linkstation_defconfig
-mips                         db1xxx_defconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                        cell_defconfig
-arm                         lubbock_defconfig
-sh                          lboxre2_defconfig
-arc                                 defconfig
-arm                       netwinder_defconfig
-arm                        mini2440_defconfig
-powerpc                mpc7448_hpc2_defconfig
-m68k                        m5307c3_defconfig
-powerpc                     stx_gp3_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                               j2_defconfig
-powerpc                      ppc6xx_defconfig
-mips                          ath25_defconfig
-openrisc                 simple_smp_defconfig
-sh                         ecovec24_defconfig
-mips                     decstation_defconfig
-sh                         apsh4a3a_defconfig
-sparc64                             defconfig
-arm                       aspeed_g4_defconfig
-m68k                       m5275evb_defconfig
-arm                        magician_defconfig
-sh                             shx3_defconfig
-mips                           ip22_defconfig
-arm                      tct_hammer_defconfig
-sh                          sdk7780_defconfig
-powerpc                      cm5200_defconfig
-powerpc                   microwatt_defconfig
-mips                       bmips_be_defconfig
-um                               alldefconfig
-sh                          rsk7203_defconfig
-m68k                        m5407c3_defconfig
-mips                           xway_defconfig
-riscv                             allnoconfig
-arm                  colibri_pxa270_defconfig
-arm                         at91_dt_defconfig
-m68k                         amcore_defconfig
-sh                   sh7770_generic_defconfig
-mips                      malta_kvm_defconfig
-sparc                               defconfig
-um                             i386_defconfig
-s390                             alldefconfig
-s390                                defconfig
-powerpc                    ge_imp3a_defconfig
-sh                        sh7763rdp_defconfig
-mips                         mpc30x_defconfig
-sh                     sh7710voipgw_defconfig
-arm                  randconfig-c002-20211116
-arm                  randconfig-c002-20211115
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-sparc                            allyesconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-i386                 randconfig-a006-20211115
-i386                 randconfig-a003-20211115
-i386                 randconfig-a005-20211115
-i386                 randconfig-a001-20211115
-i386                 randconfig-a004-20211115
-i386                 randconfig-a002-20211115
-x86_64               randconfig-a015-20211116
-x86_64               randconfig-a013-20211116
-x86_64               randconfig-a012-20211116
-x86_64               randconfig-a011-20211116
-x86_64               randconfig-a016-20211116
-x86_64               randconfig-a014-20211116
-i386                 randconfig-a014-20211116
-i386                 randconfig-a016-20211116
-i386                 randconfig-a012-20211116
-i386                 randconfig-a013-20211116
-i386                 randconfig-a011-20211116
-i386                 randconfig-a015-20211116
-x86_64               randconfig-a005-20211115
-x86_64               randconfig-a003-20211115
-x86_64               randconfig-a002-20211115
-x86_64               randconfig-a001-20211115
-x86_64               randconfig-a006-20211115
-x86_64               randconfig-a004-20211115
-riscv                            allmodconfig
-riscv                            allyesconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                           allyesconfig
-
-clang tested configs:
-x86_64               randconfig-c007-20211116
-i386                 randconfig-c001-20211116
-arm                  randconfig-c002-20211116
-riscv                randconfig-c006-20211116
-powerpc              randconfig-c003-20211116
-s390                 randconfig-c005-20211116
-mips                 randconfig-c004-20211116
-x86_64               randconfig-a005-20211116
-x86_64               randconfig-a003-20211116
-x86_64               randconfig-a001-20211116
-x86_64               randconfig-a002-20211116
-x86_64               randconfig-a006-20211116
-x86_64               randconfig-a004-20211116
-i386                 randconfig-a014-20211115
-i386                 randconfig-a016-20211115
-i386                 randconfig-a012-20211115
-i386                 randconfig-a013-20211115
-i386                 randconfig-a011-20211115
-i386                 randconfig-a015-20211115
-hexagon              randconfig-r045-20211115
-hexagon              randconfig-r041-20211115
-s390                 randconfig-r044-20211115
-riscv                randconfig-r042-20211115
-
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 11 ++++-------
+ drivers/net/ethernet/intel/ice/ice_ptp.h |  6 ++++++
+ 2 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 2149595cc632..df846b66a9a7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2069,19 +2069,16 @@ static void ice_ptp_tx_tstamp_work(struct kthread_work *work)
+ 		if (err)
+ 			continue;
+ 
+-		/* Check if the timestamp is valid */
+-		if (!(raw_tstamp & ICE_PTP_TS_VALID))
++		/* Check if the timestamp is invalid or stale */
++		if (!(raw_tstamp & ICE_PTP_TS_VALID) ||
++		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
+ 			continue;
+ 
+-		/* clear the timestamp register, so that it won't show valid
+-		 * again when re-used.
+-		 */
+-		ice_clear_phy_tstamp(hw, tx->quad, phy_idx);
+-
+ 		/* The timestamp is valid, so we'll go ahead and clear this
+ 		 * index and then send the timestamp up to the stack.
+ 		 */
+ 		spin_lock(&tx->lock);
++		tx->tstamps[idx].cached_tstamp = raw_tstamp;
+ 		clear_bit(idx, tx->in_use);
+ 		skb = tx->tstamps[idx].skb;
+ 		tx->tstamps[idx].skb = NULL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 92b202ef3c15..eef8ec894871 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -55,15 +55,21 @@ struct ice_perout_channel {
+  * struct ice_tx_tstamp - Tracking for a single Tx timestamp
+  * @skb: pointer to the SKB for this timestamp request
+  * @start: jiffies when the timestamp was first requested
++ * @cached_tstamp: last read timestamp
+  *
+  * This structure tracks a single timestamp request. The SKB pointer is
+  * provided when initiating a request. The start time is used to ensure that
+  * we discard old requests that were not fulfilled within a 2 second time
+  * window.
++ * Timestamp values in the PHY are read only and do not get cleared except at
++ * hardware reset or when a new timestamp value is captured. The cached_tstamp
++ * field is used to detect the case where a new timestamp has not yet been
++ * captured, ensuring that we avoid sending stale timestamp data to the stack.
+  */
+ struct ice_tx_tstamp {
+ 	struct sk_buff *skb;
+ 	unsigned long start;
++	u64 cached_tstamp;
+ };
+ 
+ /**
+-- 
+2.32.0
+
