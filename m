@@ -1,48 +1,45 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 17 Nov 2021 11:17:37 +0100
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix NULL pointer dereference
- in i40e_dbg_dump_desc
-Message-ID: <20211117101737.8961-1-mateusz.palczewski@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 17 Nov 2021 10:27:41 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 14/15] iavf: return errno
+ code instead of status code
+In-Reply-To: <20210604165335.33329-14-anthony.l.nguyen@intel.com>
+References: <20210604165335.33329-1-anthony.l.nguyen@intel.com>
+ <20210604165335.33329-14-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB5621EE379CD58A6542F88A55AB9A9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Norbert Zulinski <norbertx.zulinski@intel.com>
 
-When trying to dump VFs VSI RX/TX descriptors
-using debugfs there was a crash
-due to NULL pointer dereference in i40e_dbg_dump_desc.
-Added a check to i40e_dbg_dump_desc that checks if
-VSI type is correct for dumping RX/TX descriptors.
 
-Fixes: 02e9c290814c ("i40e: debugfs interface")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: pi?tek, 4 czerwca 2021 18:54
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next 14/15] iavf: return errno code
+> instead of status code
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> The iavf_parse_cls_flower function returns an integer error code, and not an
+> iavf_status enumeration.
+> 
+> Fix the function to use the standard errno value EINVAL as its return instead
+> of using IAVF_ERR_CONFIG.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 892aa22b39da..7730de0ef236 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 291e61a..2c1b1da 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -553,6 +553,14 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
- 		dev_info(&pf->pdev->dev, "vsi %d not found\n", vsi_seid);
- 		return;
- 	}
-+	if (vsi->type != I40E_VSI_MAIN &&
-+	    vsi->type != I40E_VSI_FDIR &&
-+	    vsi->type != I40E_VSI_VMDQ2) {
-+		dev_info(&pf->pdev->dev,
-+			 "vsi %d type %d descriptor rings not available\n",
-+			 vsi_seid, vsi->type);
-+		return;
-+	}
- 	if (type == RING_TYPE_XDP && !i40e_enabled_xdp_vsi(vsi)) {
- 		dev_info(&pf->pdev->dev, "XDP not enabled on VSI %d\n", vsi_seid);
- 		return;
--- 
-2.27.0
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
