@@ -1,204 +1,197 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 17 Nov 2021 12:44:13 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- e6f93269a3a545d9c7bf7e2f61020e43f331518a
-Message-ID: <6194889d.536KiaOLrJy+4CB4%lkp@intel.com>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Date: Wed, 17 Nov 2021 00:33:00 -0500
+Subject: [Intel-wired-lan] [PATCH net] ice: fix adding different tunnels
+In-Reply-To: <20211116093606.10635-1-michal.swiatkowski@intel.com>
+References: <20211116093606.10635-1-michal.swiatkowski@intel.com>
+Message-ID: <YZSUDK6TmLembE4T@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: e6f93269a3a545d9c7bf7e2f61020e43f331518a  iavf: Fix VLAN feature flags after VFR
+On Tue, Nov 16, 2021 at 10:36:06AM +0100, Michal Swiatkowski wrote:
+> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> 
+> Adding filters with the same values inside for VXLAN and geneve causes hw
+> error, because it looks exactly the same. To choose between different
+> type of tunnels new recipe is needed. Add storing tunnel types in
+> creatig recipes function and start checking it in finding function.
+> 
+> Change getting open tunnels function to return port on correct tunnel
+> type. This is needed to copy correct port to dummy packet.
+> 
+> Block user from adding enc_dst_port via tc flower, because  VXLAN and
+> geneve filters can be created only with destination port which was
+> previously opened.
+> 
+> Fixes: 8b032a55c1bd5 ("ice: low level support for tunnels")
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c   |  4 ++--
+>  drivers/net/ethernet/intel/ice/ice_fdir.c       |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.c  |  6 ++++--
+>  drivers/net/ethernet/intel/ice/ice_flex_pipe.h  |  3 ++-
+>  drivers/net/ethernet/intel/ice/ice_switch.c     | 17 ++++++++++++-----
+>  drivers/net/ethernet/intel/ice/ice_tc_lib.c     |  3 ++-
+>  6 files changed, 23 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+> index 68ac0be68107..bbc64d6ce4cd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c
+> @@ -1258,7 +1258,7 @@ ice_fdir_write_all_fltr(struct ice_pf *pf, struct ice_fdir_fltr *input,
+>  		bool is_tun = tun == ICE_FD_HW_SEG_TUN;
+>  		int err;
+>  
+> -		if (is_tun && !ice_get_open_tunnel_port(&pf->hw, &port_num))
+> +		if (is_tun && !ice_get_open_tunnel_port(&pf->hw, &port_num, TNL_ALL))
+>  			continue;
+>  		err = ice_fdir_write_fltr(pf, input, add, is_tun);
+>  		if (err)
+> @@ -1642,7 +1642,7 @@ int ice_add_fdir_ethtool(struct ice_vsi *vsi, struct ethtool_rxnfc *cmd)
+>  	}
+>  
+>  	/* return error if not an update and no available filters */
+> -	fltrs_needed = ice_get_open_tunnel_port(hw, &tunnel_port) ? 2 : 1;
+> +	fltrs_needed = ice_get_open_tunnel_port(hw, &tunnel_port, TNL_ALL) ? 2 : 1;
+>  	if (!ice_fdir_find_fltr_by_idx(hw, fsp->location) &&
+>  	    ice_fdir_num_avail_fltr(hw, pf->vsi[vsi->idx]) < fltrs_needed) {
+>  		dev_err(dev, "Failed to add filter.  The maximum number of flow director filters has been reached.\n");
+> diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
+> index 9970ac3884f6..bbef6f4366de 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_fdir.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
+> @@ -924,7 +924,7 @@ ice_fdir_get_gen_prgm_pkt(struct ice_hw *hw, struct ice_fdir_fltr *input,
+>  		memcpy(pkt, ice_fdir_pkt[idx].pkt, ice_fdir_pkt[idx].pkt_len);
+>  		loc = pkt;
+>  	} else {
+> -		if (!ice_get_open_tunnel_port(hw, &tnl_port))
+> +		if (!ice_get_open_tunnel_port(hw, &tnl_port, TNL_ALL))
+>  			return -ENOENT;
+>  		if (!ice_fdir_pkt[idx].tun_pkt)
+>  			return -EINVAL;
+> diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> index b12da3cda78b..d98d7e00d542 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+> @@ -2042,7 +2042,8 @@ static struct ice_buf *ice_pkg_buf(struct ice_buf_build *bld)
+>   * @port: returns open port
+>   */
+>  bool
+> -ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port)
+> +ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port,
+> +			 enum ice_tunnel_type type)
+>  {
+>  	bool res = false;
+>  	u16 i;
+> @@ -2050,7 +2051,8 @@ ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port)
+>  	mutex_lock(&hw->tnl_lock);
+>  
+>  	for (i = 0; i < hw->tnl.count && i < ICE_TUNNEL_MAX_ENTRIES; i++)
+> -		if (hw->tnl.tbl[i].valid && hw->tnl.tbl[i].port) {
+> +		if (hw->tnl.tbl[i].valid && hw->tnl.tbl[i].port &&
+> +		    (type == TNL_LAST || type == hw->tnl.tbl[i].type)) {
+>  			*port = hw->tnl.tbl[i].port;
+>  			res = true;
+>  			break;
+> diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+> index 1c2be376a537..dd602285c78e 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+> @@ -90,7 +90,8 @@ int
+>  ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
+>  		   unsigned long *bm, struct list_head *fv_list);
+>  bool
+> -ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port);
+> +ice_get_open_tunnel_port(struct ice_hw *hw, u16 *port,
+> +			 enum ice_tunnel_type type);
+>  int ice_udp_tunnel_set_port(struct net_device *netdev, unsigned int table,
+>  			    unsigned int idx, struct udp_tunnel_info *ti);
+>  int ice_udp_tunnel_unset_port(struct net_device *netdev, unsigned int table,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+> index c1dbac5f8d6b..8948580bdab0 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_switch.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+> @@ -3795,7 +3795,9 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
+>   *
+>   * Returns index of matching recipe, or ICE_MAX_NUM_RECIPES if not found.
+>   */
+> -static u16 ice_find_recp(struct ice_hw *hw, struct ice_prot_lkup_ext *lkup_exts)
+> +static u16
+> +ice_find_recp(struct ice_hw *hw, struct ice_prot_lkup_ext *lkup_exts,
+> +	      enum ice_sw_tunnel_type tun_type)
+>  {
+>  	bool refresh_required = true;
+>  	struct ice_sw_recipe *recp;
+> @@ -3856,8 +3858,9 @@ static u16 ice_find_recp(struct ice_hw *hw, struct ice_prot_lkup_ext *lkup_exts)
+>  			}
+>  			/* If for "i"th recipe the found was never set to false
+>  			 * then it means we found our match
+> +			 * Also tun type of recipe needs to be checked
+>  			 */
+> -			if (found)
+> +			if (found && recp[i].tun_type == tun_type)
+>  				return i; /* Return the recipe ID */
+>  		}
+>  	}
+> @@ -4647,11 +4650,12 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+>  	}
+>  
+>  	/* Look for a recipe which matches our requested fv / mask list */
+> -	*rid = ice_find_recp(hw, lkup_exts);
+> +	*rid = ice_find_recp(hw, lkup_exts, rinfo->tun_type);
+>  	if (*rid < ICE_MAX_NUM_RECIPES)
+>  		/* Success if found a recipe that match the existing criteria */
+>  		goto err_unroll;
+>  
+> +	rm->tun_type = rinfo->tun_type;
+>  	/* Recipe we need does not exist, add a recipe */
+>  	status = ice_add_sw_recipe(hw, rm, profiles);
+>  	if (status)
+> @@ -4954,8 +4958,11 @@ ice_fill_adv_packet_tun(struct ice_hw *hw, enum ice_sw_tunnel_type tun_type,
+>  
+>  	switch (tun_type) {
+>  	case ICE_SW_TUN_VXLAN:
+> +		if (!ice_get_open_tunnel_port(hw, &open_port, TNL_VXLAN))
+> +			return -EIO;
+> +		break;
+>  	case ICE_SW_TUN_GENEVE:
+> -		if (!ice_get_open_tunnel_port(hw, &open_port))
+> +		if (!ice_get_open_tunnel_port(hw, &open_port, TNL_GENEVE))
+>  			return -EIO;
+>  		break;
+>  
+> @@ -5551,7 +5558,7 @@ ice_rem_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+>  	if (status)
+>  		return status;
+>  
+> -	rid = ice_find_recp(hw, &lkup_exts);
+> +	rid = ice_find_recp(hw, &lkup_exts, rinfo->tun_type);
+>  	/* If did not find a recipe that match the existing criteria */
+>  	if (rid == ICE_MAX_NUM_RECIPES)
+>  		return -EINVAL;
+> diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> index f243dacda8a0..e8feb41e6dbe 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+> @@ -800,7 +800,8 @@ ice_parse_tunnel_attr(struct net_device *dev, struct flow_rule *rule,
+>  		headers->l3_mask.ttl = match.mask->ttl;
+>  	}
+>  
+> -	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_PORTS)) {
+> +	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_PORTS) &&
+> +	    fltr->tunnel_type != TNL_VXLAN && fltr->tunnel_type != TNL_GENEVE) {
+>  		struct flow_match_ports match;
+>  
+>  		flow_rule_match_enc_ports(rule, &match);
+> -- 
+> 2.31.1
+> 
 
-elapsed time: 722m
+Please ignore it, I sent it from wrong mail, sorry.
 
-configs tested: 172
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211116
-mips                 randconfig-c004-20211116
-powerpc                 mpc836x_rdk_defconfig
-arm                             pxa_defconfig
-powerpc                 mpc8313_rdb_defconfig
-sh                          r7785rp_defconfig
-s390                             allmodconfig
-microblaze                      mmu_defconfig
-mips                         tb0287_defconfig
-sh                   sh7724_generic_defconfig
-m68k                       m5249evb_defconfig
-arm                        cerfcube_defconfig
-powerpc                       eiger_defconfig
-mips                     loongson2k_defconfig
-powerpc                    socrates_defconfig
-xtensa                       common_defconfig
-mips                  decstation_64_defconfig
-powerpc                         ps3_defconfig
-sh                      rts7751r2d1_defconfig
-sh                            titan_defconfig
-um                             i386_defconfig
-ia64                             allyesconfig
-ia64                        generic_defconfig
-powerpc                     tqm8555_defconfig
-xtensa                  audio_kc705_defconfig
-sh                              ul2_defconfig
-mips                      maltasmvp_defconfig
-powerpc                      ppc44x_defconfig
-s390                       zfcpdump_defconfig
-arm                        mini2440_defconfig
-microblaze                          defconfig
-powerpc                     pq2fads_defconfig
-powerpc                      walnut_defconfig
-arm                             mxs_defconfig
-mips                          ath79_defconfig
-powerpc                      makalu_defconfig
-mips                   sb1250_swarm_defconfig
-arm                            hisi_defconfig
-ia64                            zx1_defconfig
-arc                          axs103_defconfig
-arm                         axm55xx_defconfig
-arm                           sama5_defconfig
-mips                          rm200_defconfig
-arm                           stm32_defconfig
-arm                       spear13xx_defconfig
-ia64                             alldefconfig
-arm                            xcep_defconfig
-arm                       netwinder_defconfig
-powerpc                     skiroot_defconfig
-arm                       aspeed_g4_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                 mpc832x_mds_defconfig
-s390                             alldefconfig
-arm                          exynos_defconfig
-m68k                          hp300_defconfig
-arm                            qcom_defconfig
-arm                      tct_hammer_defconfig
-arm                        oxnas_v6_defconfig
-arm                            lart_defconfig
-powerpc                     pseries_defconfig
-sh                            hp6xx_defconfig
-mips                      maltaaprp_defconfig
-nios2                         3c120_defconfig
-arm                       mainstone_defconfig
-powerpc                         wii_defconfig
-powerpc                     mpc512x_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                 kfr2r09-romimage_defconfig
-sh                          rsk7264_defconfig
-m68k                         apollo_defconfig
-sh                            shmin_defconfig
-h8300                            alldefconfig
-mips                         rt305x_defconfig
-riscv                             allnoconfig
-arm                            mps2_defconfig
-xtensa                  cadence_csp_defconfig
-sh                         ap325rxa_defconfig
-m68k                         amcore_defconfig
-arm                        mvebu_v7_defconfig
-sh                        dreamcast_defconfig
-sh                          urquell_defconfig
-sh                           se7751_defconfig
-arm                       cns3420vb_defconfig
-arm                    vt8500_v6_v7_defconfig
-arc                        nsim_700_defconfig
-arm                   milbeaut_m10v_defconfig
-sh                   sh7770_generic_defconfig
-xtensa                         virt_defconfig
-ia64                          tiger_defconfig
-arm                  randconfig-c002-20211116
-ia64                             allmodconfig
-ia64                                defconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a015-20211116
-x86_64               randconfig-a013-20211116
-x86_64               randconfig-a012-20211116
-x86_64               randconfig-a011-20211116
-x86_64               randconfig-a016-20211116
-x86_64               randconfig-a014-20211116
-i386                 randconfig-a014-20211116
-i386                 randconfig-a016-20211116
-i386                 randconfig-a012-20211116
-i386                 randconfig-a013-20211116
-i386                 randconfig-a011-20211116
-i386                 randconfig-a015-20211116
-arc                  randconfig-r043-20211116
-s390                 randconfig-r044-20211116
-riscv                randconfig-r042-20211116
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-c007-20211116
-i386                 randconfig-c001-20211116
-arm                  randconfig-c002-20211116
-riscv                randconfig-c006-20211116
-powerpc              randconfig-c003-20211116
-s390                 randconfig-c005-20211116
-mips                 randconfig-c004-20211116
-x86_64               randconfig-a005-20211116
-x86_64               randconfig-a003-20211116
-x86_64               randconfig-a001-20211116
-x86_64               randconfig-a002-20211116
-x86_64               randconfig-a006-20211116
-x86_64               randconfig-a004-20211116
-i386                 randconfig-a006-20211116
-i386                 randconfig-a003-20211116
-i386                 randconfig-a005-20211116
-i386                 randconfig-a001-20211116
-i386                 randconfig-a004-20211116
-i386                 randconfig-a002-20211116
-hexagon              randconfig-r045-20211116
-hexagon              randconfig-r041-20211116
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
