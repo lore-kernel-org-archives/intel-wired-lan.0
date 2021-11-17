@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 17 Nov 2021 20:26:17 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 1/6] devlink: Remove misleading
- internal_flags from health reporter dump
+Date: Wed, 17 Nov 2021 20:26:21 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 5/6] devlink: Reshuffle resource
+ registration logic
 In-Reply-To: <cover.1637173517.git.leonro@nvidia.com>
 References: <cover.1637173517.git.leonro@nvidia.com>
-Message-ID: <cbca8d8874fe2dc9d7b13975705916907df90899.1637173517.git.leonro@nvidia.com>
+Message-ID: <6176a137a4ded48501e8a06fda0e305f9cfc787c.1637173517.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,28 +13,77 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-DEVLINK_CMD_HEALTH_REPORTER_DUMP_GET command doesn't have .doit callback
-and has no use in internal_flags at all. Remove this misleading assignment.
+The devlink->lock doesn't need to be held during whole execution of
+function, but only when recursive path walk and list addition are
+performed. So reshuffle the resource registration logic to allocate
+resource and configure it without lock.
 
-Fixes: e44ef4e4516c ("devlink: Hang reporter's dump method on a dumpit cb")
+As part of this change, complain more louder if driver authors used
+already existed resource_id. It is performed outside of the locks as
+drivers were supposed to provide unique IDs and such error can't happen.
+
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- net/core/devlink.c | 2 --
- 1 file changed, 2 deletions(-)
+ net/core/devlink.c | 30 ++++++++++++------------------
+ 1 file changed, 12 insertions(+), 18 deletions(-)
 
 diff --git a/net/core/devlink.c b/net/core/devlink.c
-index 5ba4f9434acd..1cb2e0ae9173 100644
+index 356057ea2e52..1dda313d6d1b 100644
 --- a/net/core/devlink.c
 +++ b/net/core/devlink.c
-@@ -8838,8 +8838,6 @@ static const struct genl_small_ops devlink_nl_ops[] = {
- 			    GENL_DONT_VALIDATE_DUMP_STRICT,
- 		.dumpit = devlink_nl_cmd_health_reporter_dump_get_dumpit,
- 		.flags = GENL_ADMIN_PERM,
--		.internal_flags = DEVLINK_NL_FLAG_NEED_DEVLINK_OR_PORT |
--				  DEVLINK_NL_FLAG_NO_LOCK,
- 	},
- 	{
- 		.cmd = DEVLINK_CMD_HEALTH_REPORTER_DUMP_CLEAR,
+@@ -9833,17 +9833,9 @@ int devlink_resource_register(struct devlink *devlink,
+ {
+ 	struct devlink_resource *resource;
+ 	struct list_head *resource_list;
+-	bool top_hierarchy;
+ 	int err = 0;
+ 
+-	top_hierarchy = parent_resource_id == DEVLINK_RESOURCE_ID_PARENT_TOP;
+-
+-	mutex_lock(&devlink->lock);
+-	resource = devlink_resource_find(devlink, NULL, resource_id);
+-	if (resource) {
+-		err = -EINVAL;
+-		goto out;
+-	}
++	WARN_ON(devlink_resource_find(devlink, NULL, resource_id));
+ 
+ 	resource = kzalloc(sizeof(*resource), GFP_KERNEL);
+ 	if (!resource) {
+@@ -9851,7 +9843,17 @@ int devlink_resource_register(struct devlink *devlink,
+ 		goto out;
+ 	}
+ 
+-	if (top_hierarchy) {
++	resource->name = resource_name;
++	resource->size = resource_size;
++	resource->size_new = resource_size;
++	resource->id = resource_id;
++	resource->size_valid = true;
++	memcpy(&resource->size_params, size_params,
++	       sizeof(resource->size_params));
++	INIT_LIST_HEAD(&resource->resource_list);
++
++	mutex_lock(&devlink->lock);
++	if (parent_resource_id == DEVLINK_RESOURCE_ID_PARENT_TOP) {
+ 		resource_list = &devlink->resource_list;
+ 	} else {
+ 		struct devlink_resource *parent_resource;
+@@ -9868,14 +9870,6 @@ int devlink_resource_register(struct devlink *devlink,
+ 		}
+ 	}
+ 
+-	resource->name = resource_name;
+-	resource->size = resource_size;
+-	resource->size_new = resource_size;
+-	resource->id = resource_id;
+-	resource->size_valid = true;
+-	memcpy(&resource->size_params, size_params,
+-	       sizeof(resource->size_params));
+-	INIT_LIST_HEAD(&resource->resource_list);
+ 	list_add_tail(&resource->list, resource_list);
+ out:
+ 	mutex_unlock(&devlink->lock);
 -- 
 2.33.1
 
