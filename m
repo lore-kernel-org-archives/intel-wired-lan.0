@@ -1,32 +1,37 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 17 Nov 2021 23:51:30 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Removed unused
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 17 Nov 2021 15:55:05 -0800
+Subject: [Intel-wired-lan] [PATCH v2 net-next] ice: Remove unused
  ICE_FLOW_SEG_HDRS_L2_MASK
-In-Reply-To: <b06891ed-4e46-d37f-70a3-391026ed7a4d@molgen.mpg.de>
-References: <20211117221038.70579-1-anthony.l.nguyen@intel.com>
- <b06891ed-4e46-d37f-70a3-391026ed7a4d@molgen.mpg.de>
-Message-ID: <c4abc512a80261c88b989e48687d6831f658428e.camel@intel.com>
+Message-ID: <20211117235505.70783-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-11-17 at 23:17 +0100, Paul Menzel wrote:
-> Dear Tony,
-> 
-> 
-> Am 17.11.21 um 23:10 schrieb Tony Nguyen:
-> > ICE_FLOW_SEG_HDRS_L2_MASK is not being used; remove the define.
-> 
-> Nit: It?d be great if you used imperative mood (present tense) in the
-> summary: Remove unused ?.
-> 
+Remove the unused define ICE_FLOW_SEG_HDRS_L2_MASK.
 
-I can do that. I'll send a v2 shortly.
+Reported-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+v2: Reword title and description to be imperative
 
-Thanks,
-Tony
+ drivers/net/ethernet/intel/ice/ice_flow.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-> > Reported-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 2bfe9d9d7edc..ef10f0941231 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -609,8 +609,6 @@ struct ice_flow_prof_params {
+ 	ICE_FLOW_SEG_HDR_ESP | ICE_FLOW_SEG_HDR_AH | \
+ 	ICE_FLOW_SEG_HDR_NAT_T_ESP)
+ 
+-#define ICE_FLOW_SEG_HDRS_L2_MASK	\
+-	(ICE_FLOW_SEG_HDR_ETH | ICE_FLOW_SEG_HDR_VLAN)
+ #define ICE_FLOW_SEG_HDRS_L3_MASK	\
+ 	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6 | ICE_FLOW_SEG_HDR_ARP)
+ #define ICE_FLOW_SEG_HDRS_L4_MASK	\
+-- 
+2.20.1
+
