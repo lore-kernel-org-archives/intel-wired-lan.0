@@ -1,46 +1,35 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Wed, 17 Nov 2021 22:21:19 +0100
-Subject: [Intel-wired-lan] [PATCH] ice: Slightly simply
- ice_find_free_recp_res_idx
-Message-ID: <dc5cd04eed7dd3100f5860acaa995efa40ddecc8.1637183999.git.christophe.jaillet@wanadoo.fr>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 17 Nov 2021 14:10:38 -0800
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Removed unused
+ ICE_FLOW_SEG_HDRS_L2_MASK
+Message-ID: <20211117221038.70579-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 'possible_idx' bitmap is set just after it is zeroed, so we can save
-the first step.
+ICE_FLOW_SEG_HDRS_L2_MASK is not being used; remove the define.
 
-The 'free_idx' bitmap is used only at the end of the function as the
-result of a bitmap xor operation. So there is no need to explicitly
-zero it before.
-
-So, slightly simply the code and remove 2 useless 'bitmap_zero()' call
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reported-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-I don't think it will make any differences in RL. ICE_MAX_FV_WORDS is
-just 48 (bits), so 1 or 2 longs
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 2 --
+ drivers/net/ethernet/intel/ice/ice_flow.c | 2 --
  1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 793f4a9fc2cd..78bfb9fd318d 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -4071,10 +4071,8 @@ ice_find_free_recp_res_idx(struct ice_hw *hw, const unsigned long *profiles,
- 	DECLARE_BITMAP(used_idx, ICE_MAX_FV_WORDS);
- 	u16 bit;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
+index 2bfe9d9d7edc..ef10f0941231 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.c
++++ b/drivers/net/ethernet/intel/ice/ice_flow.c
+@@ -609,8 +609,6 @@ struct ice_flow_prof_params {
+ 	ICE_FLOW_SEG_HDR_ESP | ICE_FLOW_SEG_HDR_AH | \
+ 	ICE_FLOW_SEG_HDR_NAT_T_ESP)
  
--	bitmap_zero(possible_idx, ICE_MAX_FV_WORDS);
- 	bitmap_zero(recipes, ICE_MAX_NUM_RECIPES);
- 	bitmap_zero(used_idx, ICE_MAX_FV_WORDS);
--	bitmap_zero(free_idx, ICE_MAX_FV_WORDS);
- 
- 	bitmap_set(possible_idx, 0, ICE_MAX_FV_WORDS);
- 
+-#define ICE_FLOW_SEG_HDRS_L2_MASK	\
+-	(ICE_FLOW_SEG_HDR_ETH | ICE_FLOW_SEG_HDR_VLAN)
+ #define ICE_FLOW_SEG_HDRS_L3_MASK	\
+ 	(ICE_FLOW_SEG_HDR_IPV4 | ICE_FLOW_SEG_HDR_IPV6 | ICE_FLOW_SEG_HDR_ARP)
+ #define ICE_FLOW_SEG_HDRS_L4_MASK	\
 -- 
-2.30.2
+2.20.1
 
