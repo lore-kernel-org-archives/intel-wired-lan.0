@@ -1,46 +1,126 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 17 Nov 2021 23:59:19 +0000
-Subject: [Intel-wired-lan] [PATCH net] ice: fix adding different tunnels
-In-Reply-To: <20211116102438.11756-1-michal.swiatkowski@linux.intel.com>
-References: <20211116102438.11756-1-michal.swiatkowski@linux.intel.com>
-Message-ID: <5ae646ac06ec21eeb82dda74b13c79f84709bcb4.camel@intel.com>
+Date: Thu, 18 Nov 2021 00:06:02 +0000
+Subject: [Intel-wired-lan] [PATCH linux-next] e1000e: Remove useless
+ variables
+In-Reply-To: <20211111090712.158901-1-luo.penghao@zte.com.cn>
+References: <20211111090712.158901-1-luo.penghao@zte.com.cn>
+Message-ID: <9278b8115aab6a1a01987ce62dcd390299477bc1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2021-11-16 at 11:24 +0100, Michal Swiatkowski wrote:
-> Adding filters with the same values inside for VXLAN and geneve
-> causes hw
-> error, because it looks exactly the same. To choose between different
-> type of tunnels new recipe is needed. Add storing tunnel types in
-> creatig recipes function and start checking it in finding function.
+On Thu, 2021-11-11 at 09:07 +0000, cgel.zte at gmail.com wrote:
+> From: luo penghao <luo.penghao@zte.com.cn>
 > 
-> Change getting open tunnels function to return port on correct tunnel
-> type. This is needed to copy correct port to dummy packet.
+> This variable is not used in the function.
 > 
-> Block user from adding enc_dst_port via tc flower, because? VXLAN and
-> geneve filters can be created only with destination port which was
-> previously opened.
+> The clang_analyzer complains as follows:
 > 
-> Fixes: 8b032a55c1bd5 ("ice: low level support for tunnels")
-> Signed-off-by: Michal Swiatkowski
-> <michal.swiatkowski@linux.intel.com>
-> ---
-> ?.../net/ethernet/intel/ice/ice_ethtool_fdir.c?? |? 4 ++--
-> ?drivers/net/ethernet/intel/ice/ice_fdir.c?????? |? 2 +-
-> ?drivers/net/ethernet/intel/ice/ice_flex_pipe.c? |? 6 ++++--
-> ?drivers/net/ethernet/intel/ice/ice_flex_pipe.h? |? 3 ++-
-> ?drivers/net/ethernet/intel/ice/ice_switch.c???? | 17 ++++++++++++---
-> --
-> ?drivers/net/ethernet/intel/ice/ice_tc_lib.c???? |? 3 ++-
-> ?6 files changed, 23 insertions(+), 12 deletions(-)
+> drivers/net/ethernet/intel/e1000e/netdev.c:916:19 warning
+> drivers/net/ethernet/intel/e1000e/netdev.c:1310:19 warning
+> 
+> Value stored to 'hw' during its initialization is never read
 
-The added function parameters need to be documented:
+This patch also doesn't build:
 
-drivers/net/ethernet/intel/ice/ice_switch.c:3801: warning: Function
-parameter or member 'tun_type' not described in 'ice_find_recp'
-drivers/net/ethernet/intel/ice/ice_flex_pipe.c:2047: warning: Function
-parameter or member 'type' not described in 'ice_get_open_tunnel_port'
+In file included from ./include/linux/printk.h:555,
+                 from ./include/linux/kernel.h:20,
+                 from ./arch/x86/include/asm/percpu.h:27,
+                 from ./arch/x86/include/asm/current.h:6,
+                 from ./arch/x86/include/asm/processor.h:17,
+                 from ./arch/x86/include/asm/timex.h:5,
+                 from ./include/linux/timex.h:65,
+                 from ./include/linux/time32.h:13,
+                 from ./include/linux/time.h:60,
+                 from ./include/linux/stat.h:19,
+                 from ./include/linux/module.h:13,
+                 from drivers/net/ethernet/intel/e1000e/netdev.c:6:
+drivers/net/ethernet/intel/e1000e/netdev.c: In function
+e1000_clean_rx_irq:
+drivers/net/ethernet/intel/e1000e/e1000.h:31:20: error: hw undeclared
+(first use in this function)
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |                    ^~
+./include/linux/dynamic_debug.h:134:29: note: in definition of macro
+__dynamic_func_call
+  134 |                 func(&id, ##__VA_ARGS__);               \
+      |                             ^~~~~~~~~~~
+./include/linux/dynamic_debug.h:170:9: note: in expansion of macro
+_dynamic_func_call
+  170 |         _dynamic_func_call(fmt, __dynamic_netdev_dbg,         
+\
+      |         ^~~~~~~~~~~~~~~~~~
+./include/linux/netdevice.h:4950:9: note: in expansion of macro
+dynamic_netdev_dbg
+ 4950 |         dynamic_netdev_dbg(__dev, format, ##args);            
+\
+      |         ^~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/e1000.h:31:9: note: in expansion of
+macro netdev_dbg
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |         ^~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/netdev.c:970:25: note: in expansion
+of macro e_dbg
+  970 |                         e_dbg("Receive packet consumed multiple
+buffers\n");
+      |                         ^~~~~
+drivers/net/ethernet/intel/e1000e/e1000.h:31:20: note: each undeclared
+identifier is reported only once for each function it appears in
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |                    ^~
+./include/linux/dynamic_debug.h:134:29: note: in definition of macro
+__dynamic_func_call
+  134 |                 func(&id, ##__VA_ARGS__);               \
+      |                             ^~~~~~~~~~~
+./include/linux/dynamic_debug.h:170:9: note: in expansion of macro
+_dynamic_func_call
+  170 |         _dynamic_func_call(fmt, __dynamic_netdev_dbg,         
+\
+      |         ^~~~~~~~~~~~~~~~~~
+./include/linux/netdevice.h:4950:9: note: in expansion of macro
+dynamic_netdev_dbg
+ 4950 |         dynamic_netdev_dbg(__dev, format, ##args);            
+\
+      |         ^~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/e1000.h:31:9: note: in expansion of
+macro netdev_dbg
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |         ^~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/netdev.c:970:25: note: in expansion
+of macro e_dbg
+  970 |                         e_dbg("Receive packet consumed multiple
+buffers\n");
+      |                         ^~~~~
+drivers/net/ethernet/intel/e1000e/netdev.c: In function
+e1000_clean_rx_irq_ps:
+drivers/net/ethernet/intel/e1000e/e1000.h:31:20: error: hw undeclared
+(first use in this function)
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |                    ^~
+./include/linux/dynamic_debug.h:134:29: note: in definition of macro
+__dynamic_func_call
+  134 |                 func(&id, ##__VA_ARGS__);               \
+      |                             ^~~~~~~~~~~
+./include/linux/dynamic_debug.h:170:9: note: in expansion of macro
+_dynamic_func_call
+  170 |         _dynamic_func_call(fmt, __dynamic_netdev_dbg,         
+\
+      |         ^~~~~~~~~~~~~~~~~~
+./include/linux/netdevice.h:4950:9: note: in expansion of macro
+dynamic_netdev_dbg
+ 4950 |         dynamic_netdev_dbg(__dev, format, ##args);            
+\
+      |         ^~~~~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/e1000.h:31:9: note: in expansion of
+macro netdev_dbg
+   31 |         netdev_dbg(hw->adapter->netdev, format, ## arg)
+      |         ^~~~~~~~~~
+drivers/net/ethernet/intel/e1000e/netdev.c:1356:25: note: in expansion
+of macro e_dbg
+ 1356 |                         e_dbg("Packet Split buffers didn't pick
+up the full packet\n");
+      |                         ^~~~~
+
 
