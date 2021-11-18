@@ -1,89 +1,162 @@
-From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Thu, 18 Nov 2021 09:05:07 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next 1/2] ice: fix vsi->txq_map
- sizing
-In-Reply-To: <20211026164719.1766911-2-maciej.fijalkowski@intel.com>
-References: <20211026164719.1766911-1-maciej.fijalkowski@intel.com>
- <20211026164719.1766911-2-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB32922DF618203E2040B6A84DF19B9@DM6PR11MB3292.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 18 Nov 2021 21:43:12 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:10GbE] BUILD SUCCESS
+ 339f28964147db9cb5c45d84a9b9d86a8ceb9260
+Message-ID: <61965870.jtxm+8mjUH9O+u6H%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Tuesday, October 26, 2021 10:17 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Lobakin, Alexandr <alexandr.lobakin@intel.com>;
-> netdev at vger.kernel.org; Plantykow, Marta A
-> <marta.a.plantykow@intel.com>; kuba at kernel.org; bpf at vger.kernel.org;
-> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-next 1/2] ice: fix vsi->txq_map sizing
-> 
-> The approach of having XDP queue per CPU regardless of user's setting
-> exposed a hidden bug that could occur in case when Rx queue count differ
-> from Tx queue count. Currently vsi->txq_map's size is equal to the doubled
-> vsi->alloc_txq, which is not correct due to the fact that XDP rings were
-> previously based on the Rx queue count. Below splat can be seen when
-> ethtool -L is used and XDP rings are configured:
-> 
-> [  682.875339] BUG: kernel NULL pointer dereference, address:
-> 000000000000000f [  682.883403] #PF: supervisor read access in kernel mode
-> [  682.889345] #PF: error_code(0x0000) - not-present page [  682.895289]
-> PGD 0 P4D 0 [  682.898218] Oops: 0000 [#1] PREEMPT SMP PTI
-> [  682.903055] CPU: 42 PID: 2878 Comm: ethtool Tainted: G           OE     5.15.0-
-> rc5+ #1
-> [  682.912214] Hardware name: Intel Corp. GRANTLEY/GRANTLEY, BIOS
-> GRRFCRB1.86B.0276.D07.1605190235 05/19/2016 [  682.923380] RIP:
-> 0010:devres_remove+0x44/0x130 [  682.928527] Code: 49 89 f4 55 48 89 fd
-> 4c 89 ff 53 48 83 ec 10 e8 92 b9 49 00 48 8b 9d a8 02 00 00 48 8d 8d a0 02 00
-> 00 49 89 c2 48 39 cb 74 0f <4c> 3b 63 10 74 25 48 8b 5b 08 48 39 cb 75 f1 4c
-> 89 ff 4c 89 d6 e8 [  682.950237] RSP: 0018:ffffc90006a679f0 EFLAGS:
-> 00010002 [  682.956285] RAX: 0000000000000286 RBX: ffffffffffffffff RCX:
-> ffff88908343a370 [  682.964538] RDX: 0000000000000001 RSI:
-> ffffffff81690d60 RDI: 0000000000000000 [  682.972789] RBP:
-> ffff88908343a0d0 R08: 0000000000000000 R09: 0000000000000000 [
-> 682.981040] R10: 0000000000000286 R11: 3fffffffffffffff R12: ffffffff81690d60
-> [  682.989282] R13: ffffffff81690a00 R14: ffff8890819807a8 R15:
-> ffff88908343a36c [  682.997535] FS:  00007f08c7bfa740(0000)
-> GS:ffff88a03fd00000(0000) knlGS:0000000000000000 [  683.006910] CS:  0010
-> DS: 0000 ES: 0000 CR0: 0000000080050033 [  683.013557] CR2:
-> 000000000000000f CR3: 0000001080a66003 CR4: 00000000003706e0 [
-> 683.021819] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> 0000000000000000 [  683.030075] DR3: 0000000000000000 DR6:
-> 00000000fffe0ff0 DR7: 0000000000000400 [  683.038336] Call Trace:
-> [  683.041167]  devm_kfree+0x33/0x50
-> [  683.045004]  ice_vsi_free_arrays+0x5e/0xc0 [ice] [  683.050380]
-> ice_vsi_rebuild+0x4c8/0x750 [ice] [  683.055543]
-> ice_vsi_recfg_qs+0x9a/0x110 [ice] [  683.060697]
-> ice_set_channels+0x14f/0x290 [ice] [  683.065962]
-> ethnl_set_channels+0x333/0x3f0 [  683.070807]
-> genl_family_rcv_msg_doit+0xea/0x150
-> [  683.076152]  genl_rcv_msg+0xde/0x1d0
-> [  683.080289]  ? channels_prepare_data+0x60/0x60 [  683.085432]  ?
-> genl_get_cmd+0xd0/0xd0 [  683.089667]  netlink_rcv_skb+0x50/0xf0 [
-> 683.094006]  genl_rcv+0x24/0x40 [  683.097638]
-> netlink_unicast+0x239/0x340 [  683.102177]  netlink_sendmsg+0x22e/0x470 [
-> 683.106717]  sock_sendmsg+0x5e/0x60 [  683.110756]
-> __sys_sendto+0xee/0x150 [  683.114894]  ? handle_mm_fault+0xd0/0x2a0 [
-> 683.119535]  ? do_user_addr_fault+0x1f3/0x690 [  683.134173]
-> __x64_sys_sendto+0x25/0x30 [  683.148231]  do_syscall_64+0x3b/0xc0 [
-> 683.161992]  entry_SYSCALL_64_after_hwframe+0x44/0xae
-> 
-> Fix this by taking into account the value that num_possible_cpus() yields in
-> addition to vsi->alloc_txq instead of doubling the latter.
-> 
-> Fixes: efc2214b6047 ("ice: Add support for XDP")
-> Fixes: 22bf877e528f ("ice: introduce XDP_TX fallback path")
-> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 10GbE
+branch HEAD: 339f28964147db9cb5c45d84a9b9d86a8ceb9260  ixgbevf: Add support for new mailbox communication between PF and VF
 
-Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
+elapsed time: 723m
 
+configs tested: 133
+configs skipped: 3
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211118
+i386                             allyesconfig
+m68k                        mvme16x_defconfig
+mips                        vocore2_defconfig
+mips                         cobalt_defconfig
+xtensa                    xip_kc705_defconfig
+m68k                          atari_defconfig
+mips                       rbtx49xx_defconfig
+arm                          badge4_defconfig
+powerpc                     tqm8540_defconfig
+powerpc                     mpc512x_defconfig
+riscv                    nommu_k210_defconfig
+arm                           sama7_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                     stx_gp3_defconfig
+sh                        sh7785lcr_defconfig
+arm                      jornada720_defconfig
+i386                             alldefconfig
+arm                         lpc18xx_defconfig
+arm                         socfpga_defconfig
+sh                             espt_defconfig
+sh                            hp6xx_defconfig
+mips                           ip22_defconfig
+mips                           gcw0_defconfig
+arm                         axm55xx_defconfig
+powerpc                      obs600_defconfig
+powerpc                     tqm8555_defconfig
+mips                      maltaaprp_defconfig
+h8300                     edosk2674_defconfig
+arm                         bcm2835_defconfig
+alpha                            alldefconfig
+mips                      fuloong2e_defconfig
+arm                          pxa168_defconfig
+sh                                  defconfig
+mips                            ar7_defconfig
+powerpc                 mpc8560_ads_defconfig
+mips                        bcm47xx_defconfig
+powerpc                     tqm8548_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                    amigaone_defconfig
+arc                 nsimosci_hs_smp_defconfig
+m68k                        mvme147_defconfig
+h8300                    h8300h-sim_defconfig
+powerpc                 canyonlands_defconfig
+m68k                          hp300_defconfig
+arm                       imx_v6_v7_defconfig
+arm                             mxs_defconfig
+ia64                          tiger_defconfig
+sh                           se7343_defconfig
+arm                           tegra_defconfig
+openrisc                         alldefconfig
+powerpc                      mgcoge_defconfig
+powerpc                    klondike_defconfig
+xtensa                          iss_defconfig
+xtensa                              defconfig
+arm                  randconfig-c002-20211118
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a015-20211118
+x86_64               randconfig-a012-20211118
+x86_64               randconfig-a011-20211118
+x86_64               randconfig-a013-20211118
+x86_64               randconfig-a016-20211118
+x86_64               randconfig-a014-20211118
+i386                 randconfig-a016-20211118
+i386                 randconfig-a014-20211118
+i386                 randconfig-a012-20211118
+i386                 randconfig-a011-20211118
+i386                 randconfig-a013-20211118
+i386                 randconfig-a015-20211118
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a005-20211118
+x86_64               randconfig-a003-20211118
+x86_64               randconfig-a001-20211118
+x86_64               randconfig-a002-20211118
+x86_64               randconfig-a006-20211118
+x86_64               randconfig-a004-20211118
+i386                 randconfig-a006-20211118
+i386                 randconfig-a003-20211118
+i386                 randconfig-a001-20211118
+i386                 randconfig-a005-20211118
+i386                 randconfig-a004-20211118
+i386                 randconfig-a002-20211118
+hexagon              randconfig-r045-20211118
+hexagon              randconfig-r041-20211118
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
