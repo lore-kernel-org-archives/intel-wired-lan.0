@@ -1,11 +1,11 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Thu, 18 Nov 2021 09:03:10 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next 2/2] ice: avoid bpf_prog
- refcount underflow
-In-Reply-To: <20211026164719.1766911-3-maciej.fijalkowski@intel.com>
+Date: Thu, 18 Nov 2021 09:05:07 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next 1/2] ice: fix vsi->txq_map
+ sizing
+In-Reply-To: <20211026164719.1766911-2-maciej.fijalkowski@intel.com>
 References: <20211026164719.1766911-1-maciej.fijalkowski@intel.com>
- <20211026164719.1766911-3-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB32927456F152029AD3EF665EF19B9@DM6PR11MB3292.namprd11.prod.outlook.com>
+ <20211026164719.1766911-2-maciej.fijalkowski@intel.com>
+Message-ID: <DM6PR11MB32922DF618203E2040B6A84DF19B9@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,101 +20,70 @@ List-ID: <intel-wired-lan.osuosl.org>
 > netdev at vger.kernel.org; Plantykow, Marta A
 > <marta.a.plantykow@intel.com>; kuba at kernel.org; bpf at vger.kernel.org;
 > davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-next 2/2] ice: avoid bpf_prog refcount
-> underflow
+> Subject: [Intel-wired-lan] [PATCH intel-next 1/2] ice: fix vsi->txq_map sizing
 > 
-> From: Marta Plantykow <marta.a.plantykow@intel.com>
+> The approach of having XDP queue per CPU regardless of user's setting
+> exposed a hidden bug that could occur in case when Rx queue count differ
+> from Tx queue count. Currently vsi->txq_map's size is equal to the doubled
+> vsi->alloc_txq, which is not correct due to the fact that XDP rings were
+> previously based on the Rx queue count. Below splat can be seen when
+> ethtool -L is used and XDP rings are configured:
 > 
-> Ice driver has the routines for managing XDP resources that are shared
-> between ndo_bpf op and VSI rebuild flow. The latter takes place for example
-> when user changes queue count on an interface via ethtool's set_channels().
-> 
-> There is an issue around the bpf_prog refcounting when VSI is being rebuilt -
-> since ice_prepare_xdp_rings() is called with vsi->xdp_prog as an argument
-> that is used later on by ice_vsi_assign_bpf_prog(), same bpf_prog pointers
-> are swapped with each other. Then it is also interpreted as an 'old_prog'
-> which in turn causes us to call bpf_prog_put on it that will decrement its
-> refcount.
-> 
-> Below splat can be interpreted in a way that due to zero refcount of a
-> bpf_prog it is wiped out from the system while kernel still tries to refer to it:
-> 
-> [  481.069429] BUG: unable to handle page fault for address:
-> ffffc9000640f038 [  481.077390] #PF: supervisor read access in kernel mode [
-> 481.083335] #PF: error_code(0x0000) - not-present page [  481.089276] PGD
-> 100000067 P4D 100000067 PUD 1001cb067 PMD 106d2b067 PTE 0 [
-> 481.097141] Oops: 0000 [#1] PREEMPT SMP PTI
-> [  481.101980] CPU: 12 PID: 3339 Comm: sudo Tainted: G           OE     5.15.0-
+> [  682.875339] BUG: kernel NULL pointer dereference, address:
+> 000000000000000f [  682.883403] #PF: supervisor read access in kernel mode
+> [  682.889345] #PF: error_code(0x0000) - not-present page [  682.895289]
+> PGD 0 P4D 0 [  682.898218] Oops: 0000 [#1] PREEMPT SMP PTI
+> [  682.903055] CPU: 42 PID: 2878 Comm: ethtool Tainted: G           OE     5.15.0-
 > rc5+ #1
-> [  481.110840] Hardware name: Intel Corp. GRANTLEY/GRANTLEY, BIOS
-> GRRFCRB1.86B.0276.D07.1605190235 05/19/2016 [  481.122021] RIP:
-> 0010:dev_xdp_prog_id+0x25/0x40 [  481.127265] Code: 80 00 00 00 00 0f 1f
-> 44 00 00 89 f6 48 c1 e6 04 48 01 fe 48 8b 86 98 08 00 00 48 85 c0 74 13 48 8b
-> 50 18 31 c0 48 85 d2 74 07 <48> 8b 42 38 8b 40 20 c3 48 8b 96 90 08 00 00 eb
-> e8 66 2e 0f 1f 84 [  481.148991] RSP: 0018:ffffc90007b63868 EFLAGS:
-> 00010286 [  481.155034] RAX: 0000000000000000 RBX: ffff889080824000
-> RCX: 0000000000000000 [  481.163278] RDX: ffffc9000640f000 RSI:
-> ffff889080824010 RDI: ffff889080824000 [  481.171527] RBP:
-> ffff888107af7d00 R08: 0000000000000000 R09: ffff88810db5f6e0 [
-> 481.179776] R10: 0000000000000000 R11: ffff8890885b9988 R12:
-> ffff88810db5f4bc [  481.188026] R13: 0000000000000000 R14:
-> 0000000000000000 R15: 0000000000000000 [  481.196276] FS:
-> 00007f5466d5bec0(0000) GS:ffff88903fb00000(0000)
-> knlGS:0000000000000000 [  481.205633] CS:  0010 DS: 0000 ES: 0000 CR0:
-> 0000000080050033 [  481.212279] CR2: ffffc9000640f038 CR3:
-> 000000014429c006 CR4: 00000000003706e0 [  481.220530] DR0:
-> 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000 [
-> 481.228771] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
-> 0000000000000400 [  481.237029] Call Trace:
-> [  481.239856]  rtnl_fill_ifinfo+0x768/0x12e0 [  481.244602]
-> rtnl_dump_ifinfo+0x525/0x650 [  481.249246]  ? __alloc_skb+0xa5/0x280 [
-> 481.253484]  netlink_dump+0x168/0x3c0 [  481.257725]
-> netlink_recvmsg+0x21e/0x3e0 [  481.262263]  ____sys_recvmsg+0x87/0x170
-> [  481.266707]  ? __might_fault+0x20/0x30 [  481.271046]  ?
-> _copy_from_user+0x66/0xa0 [  481.275591]  ? iovec_from_user+0xf6/0x1c0 [
-> 481.280226]  ___sys_recvmsg+0x82/0x100 [  481.284566]  ?
-> sock_sendmsg+0x5e/0x60 [  481.288791]  ? __sys_sendto+0xee/0x150 [
-> 481.293129]  __sys_recvmsg+0x56/0xa0 [  481.297267]
-> do_syscall_64+0x3b/0xc0 [  481.301395]
-> entry_SYSCALL_64_after_hwframe+0x44/0xae
-> [  481.307238] RIP: 0033:0x7f5466f39617
-> [  481.311373] Code: 0c 00 f7 d8 64 89 02 48 c7 c0 ff ff ff ff eb bd 0f 1f 00 f3 0f
-> 1e fa 64 8b 04 25 18 00 00 00 85 c0 75 10 b8 2f 00 00 00 0f 05 <48> 3d 00 f0 ff
-> ff 77 51 c3 48 83 ec 28 89 54 24 1c 48 89 74 24 10 [  481.342944] RSP:
-> 002b:00007ffedc7f4308 EFLAGS: 00000246 ORIG_RAX: 000000000000002f [
-> 481.361783] RAX: ffffffffffffffda RBX: 00007ffedc7f5460 RCX:
-> 00007f5466f39617 [  481.380278] RDX: 0000000000000000 RSI:
-> 00007ffedc7f5360 RDI: 0000000000000003 [  481.398500] RBP:
-> 00007ffedc7f53f0 R08: 0000000000000000 R09: 000055d556f04d50 [
-> 481.416463] R10: 0000000000000077 R11: 0000000000000246 R12:
-> 00007ffedc7f5360 [  481.434131] R13: 00007ffedc7f5350 R14:
-> 00007ffedc7f5344 R15: 0000000000000e98 [  481.451520] Modules linked in:
-> ice(OE) af_packet binfmt_misc nls_iso8859_1 ipmi_ssif intel_rapl_msr
-> intel_rapl_common x86_pkg_temp_thermal intel_powerclamp mxm_wmi
-> mei_me coretemp mei ipmi_si ipmi_msghandler wmi acpi_pad
-> acpi_power_meter ip_tables x_tables autofs4 crct10dif_pclmul crc32_pclmul
-> ghash_clmulni_intel aesni_intel ahci crypto_simd cryptd libahci lpc_ich [last
-> unloaded: ice] [  481.528558] CR2: ffffc9000640f038 [  481.542041] ---[ end
-> trace d1f24c9ecf5b61c1 ]---
+> [  682.912214] Hardware name: Intel Corp. GRANTLEY/GRANTLEY, BIOS
+> GRRFCRB1.86B.0276.D07.1605190235 05/19/2016 [  682.923380] RIP:
+> 0010:devres_remove+0x44/0x130 [  682.928527] Code: 49 89 f4 55 48 89 fd
+> 4c 89 ff 53 48 83 ec 10 e8 92 b9 49 00 48 8b 9d a8 02 00 00 48 8d 8d a0 02 00
+> 00 49 89 c2 48 39 cb 74 0f <4c> 3b 63 10 74 25 48 8b 5b 08 48 39 cb 75 f1 4c
+> 89 ff 4c 89 d6 e8 [  682.950237] RSP: 0018:ffffc90006a679f0 EFLAGS:
+> 00010002 [  682.956285] RAX: 0000000000000286 RBX: ffffffffffffffff RCX:
+> ffff88908343a370 [  682.964538] RDX: 0000000000000001 RSI:
+> ffffffff81690d60 RDI: 0000000000000000 [  682.972789] RBP:
+> ffff88908343a0d0 R08: 0000000000000000 R09: 0000000000000000 [
+> 682.981040] R10: 0000000000000286 R11: 3fffffffffffffff R12: ffffffff81690d60
+> [  682.989282] R13: ffffffff81690a00 R14: ffff8890819807a8 R15:
+> ffff88908343a36c [  682.997535] FS:  00007f08c7bfa740(0000)
+> GS:ffff88a03fd00000(0000) knlGS:0000000000000000 [  683.006910] CS:  0010
+> DS: 0000 ES: 0000 CR0: 0000000080050033 [  683.013557] CR2:
+> 000000000000000f CR3: 0000001080a66003 CR4: 00000000003706e0 [
+> 683.021819] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+> 0000000000000000 [  683.030075] DR3: 0000000000000000 DR6:
+> 00000000fffe0ff0 DR7: 0000000000000400 [  683.038336] Call Trace:
+> [  683.041167]  devm_kfree+0x33/0x50
+> [  683.045004]  ice_vsi_free_arrays+0x5e/0xc0 [ice] [  683.050380]
+> ice_vsi_rebuild+0x4c8/0x750 [ice] [  683.055543]
+> ice_vsi_recfg_qs+0x9a/0x110 [ice] [  683.060697]
+> ice_set_channels+0x14f/0x290 [ice] [  683.065962]
+> ethnl_set_channels+0x333/0x3f0 [  683.070807]
+> genl_family_rcv_msg_doit+0xea/0x150
+> [  683.076152]  genl_rcv_msg+0xde/0x1d0
+> [  683.080289]  ? channels_prepare_data+0x60/0x60 [  683.085432]  ?
+> genl_get_cmd+0xd0/0xd0 [  683.089667]  netlink_rcv_skb+0x50/0xf0 [
+> 683.094006]  genl_rcv+0x24/0x40 [  683.097638]
+> netlink_unicast+0x239/0x340 [  683.102177]  netlink_sendmsg+0x22e/0x470 [
+> 683.106717]  sock_sendmsg+0x5e/0x60 [  683.110756]
+> __sys_sendto+0xee/0x150 [  683.114894]  ? handle_mm_fault+0xd0/0x2a0 [
+> 683.119535]  ? do_user_addr_fault+0x1f3/0x690 [  683.134173]
+> __x64_sys_sendto+0x25/0x30 [  683.148231]  do_syscall_64+0x3b/0xc0 [
+> 683.161992]  entry_SYSCALL_64_after_hwframe+0x44/0xae
 > 
-> Fix this by only calling ice_vsi_assign_bpf_prog() inside
-> ice_prepare_xdp_rings() when current vsi->xdp_prog pointer is NULL.
-> This way set_channels() flow will not attempt to swap the vsi->xdp_prog
-> pointers with itself.
-> 
-> Also, sprinkle around some comments that provide a reasoning about
-> correlation between driver and kernel in terms of bpf_prog refcount.
+> Fix this by taking into account the value that num_possible_cpus() yields in
+> addition to vsi->alloc_txq instead of doubling the latter.
 > 
 > Fixes: efc2214b6047 ("ice: Add support for XDP")
+> Fixes: 22bf877e528f ("ice: introduce XDP_TX fallback path")
 > Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Signed-off-by: Marta Plantykow <marta.a.plantykow@intel.com> [ Maciej:
-> don't assign the prog if already present, expand commit
->   message ]
-> Co-developed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 18 +++++++++++++++++-
->  1 file changed, 17 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 > 
 
 Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
+
+
