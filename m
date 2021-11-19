@@ -1,102 +1,52 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 19 Nov 2021 15:38:16 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- aef70bbd926bddaf88ae30ecdbfa1d65024500ce
-Message-ID: <61975468.wcTujK6jC34OSGxi%lkp@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Fri, 19 Nov 2021 13:46:03 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for displaying message
+ regarding NVM version
+Message-ID: <20211119124603.19611-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: aef70bbd926bddaf88ae30ecdbfa1d65024500ce  igb: remove never changed variable `ret_val'
+When loading the i40e driver, it prints a message like:
+'The driver for the device detected a newer version of the NVM image v1.x than
+expected v1.y. Please install the most recent version of the network driver.'
+This is misleading as the driver is working as expected.
 
-elapsed time: 829m
+Fix that by removing the second part of message and changing it from
+dev_info to dev_dgb.
 
-configs tested: 73
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm64                               defconfig
-arm64                            allyesconfig
-mips                      bmips_stb_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                  randconfig-c002-20211118
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-m68k                                defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allmodconfig
-mips                             allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64               randconfig-a012-20211118
-x86_64               randconfig-a011-20211118
-x86_64               randconfig-a013-20211118
-x86_64               randconfig-a015-20211118
-x86_64               randconfig-a014-20211118
-x86_64               randconfig-a016-20211118
-i386                 randconfig-a014-20211118
-i386                 randconfig-a012-20211118
-i386                 randconfig-a011-20211118
-i386                 randconfig-a013-20211118
-i386                 randconfig-a015-20211118
-i386                 randconfig-a016-20211118
-arc                  randconfig-r043-20211118
-riscv                randconfig-r042-20211118
-s390                 randconfig-r044-20211118
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                    rhel-8.3-kselftests
-
-clang tested configs:
-hexagon              randconfig-r045-20211118
-hexagon              randconfig-r041-20211118
-
+Fixes: 4fb29bddb ("i40e: The driver now prints the API version in error message")
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4664d07..d61def5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15469,15 +15469,15 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+ 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
+-		dev_info(&pdev->dev,
+-			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
++		dev_dbg(&pdev->dev,
++			"The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
+ 			 I40E_FW_MINOR_VERSION(hw));
+ 	else if (hw->aq.api_maj_ver == 1 && hw->aq.api_min_ver < 4)
+-		dev_info(&pdev->dev,
+-			 "The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u. Please update the NVM image.\n",
++		dev_dbg(&pdev->dev,
++			"The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
+-- 
+2.27.0
+
