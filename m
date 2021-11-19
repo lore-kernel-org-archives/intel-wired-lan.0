@@ -1,27 +1,40 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 19 Nov 2021 18:22:30 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix NULL pointer
- dereference in i40e_dbg_dump_desc
-In-Reply-To: <20211117101737.8961-1-mateusz.palczewski@intel.com>
-References: <20211117101737.8961-1-mateusz.palczewski@intel.com>
-Message-ID: <491af7df6c21a21148316723ab4b720e7bbdcd90.camel@intel.com>
+Date: Fri, 19 Nov 2021 18:23:45 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for displaying
+ message regarding NVM version
+In-Reply-To: <20211119124603.19611-1-mateusz.palczewski@intel.com>
+References: <20211119124603.19611-1-mateusz.palczewski@intel.com>
+Message-ID: <c066d91ca5a3b3f4323c6cd6c448a316dbb6a7ee.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2021-11-17 at 11:17 +0100, Mateusz Palczewski wrote:
-> From: Norbert Zulinski <norbertx.zulinski@intel.com>
+On Fri, 2021-11-19 at 13:46 +0100, Mateusz Palczewski wrote:
+> When loading the i40e driver, it prints a message like:
+> 'The driver for the device detected a newer version of the NVM image
+> v1.x than
+> expected v1.y. Please install the most recent version of the network
+> driver.'
+> This is misleading as the driver is working as expected.
 > 
-> When trying to dump VFs VSI RX/TX descriptors
-> using debugfs there was a crash
-> due to NULL pointer dereference in i40e_dbg_dump_desc.
-> Added a check to i40e_dbg_dump_desc that checks if
-> VSI type is correct for dumping RX/TX descriptors.
+> Fix that by removing the second part of message and changing it from
+> dev_info to dev_dgb.
 > 
-> Fixes: 02e9c290814c ("i40e: debugfs interface")
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Fixes: 4fb29bddb ("i40e: The driver now prints the API version in
+> error message")
+
+This fixes is not formatted correctly:
+
+Fixes tag: Fixes: 4fb29bddb ("i40e: The driver now prints the API
+version in error message")
+	Has these problem(s):
+		- SHA1 should be at least 12 digits long
+		  Can be fixed by setting core.abbrev to 12 (or more)
+or (for git v2.11
+		  or later) just making sure it is not set (or set to
+"auto").
+
 > Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 
-There is no Signed-off-by from the author.
