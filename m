@@ -1,18 +1,18 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 20 Nov 2021 15:28:45 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 5fb4e2df55686e5cac3dea8439cadc69dc9a7a42
-Message-ID: <6198a3ad.YkpznHhukxFA+TlB%lkp@intel.com>
+Date: Sat, 20 Nov 2021 15:28:48 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
+ 5951a2b9812d8227d33f20d1899fae60e4f72c04
+Message-ID: <6198a3b0.wmww96xdXodDRRx4%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 5fb4e2df55686e5cac3dea8439cadc69dc9a7a42  net: igbvf: fix double free in `igbvf_probe`
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
+branch HEAD: 5951a2b9812d8227d33f20d1899fae60e4f72c04  iavf: Fix VLAN feature flags after VFR
 
-elapsed time: 724m
+elapsed time: 725m
 
 configs tested: 186
 configs skipped: 3
