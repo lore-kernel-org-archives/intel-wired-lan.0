@@ -1,158 +1,137 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 20 Nov 2021 16:51:44 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 9362561a477127389030d577f7c8917f3388468e
-Message-ID: <6198b720.DGU6waJRhzimEwUJ%lkp@intel.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Sun, 21 Nov 2021 10:45:12 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 5/6] devlink: Reshuffle
+ resource registration logic
+In-Reply-To: <20211119081017.6676843b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <cover.1637173517.git.leonro@nvidia.com>
+ <6176a137a4ded48501e8a06fda0e305f9cfc787c.1637173517.git.leonro@nvidia.com>
+ <20211117204956.6a36963b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YZYFvIK9mkP107tD@unreal>
+ <20211118174813.54c3731f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YZfFDSnnjOG+wSyK@unreal>
+ <20211119081017.6676843b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <YZoHGKqLz6UBk2Sx@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 9362561a477127389030d577f7c8917f3388468e  ice: add TTY for GNSS module for E810T device
+On Fri, Nov 19, 2021 at 08:10:17AM -0800, Jakub Kicinski wrote:
+> On Fri, 19 Nov 2021 17:38:53 +0200 Leon Romanovsky wrote:
+> > On Thu, Nov 18, 2021 at 05:48:13PM -0800, Jakub Kicinski wrote:
+> > > On Thu, 18 Nov 2021 09:50:20 +0200 Leon Romanovsky wrote:  
+> > > > And it shouldn't. devlink_resource_find() will return valid resource only
+> > > > if there driver is completely bogus with races or incorrect allocations of
+> > > > resource_id.
+> > > > 
+> > > > devlink_*_register(..)
+> > > >  mutex_lock(&devlink->lock);
+> > > >  if (devlink_*_find(...)) {
+> > > >     mutex_unlock(&devlink->lock);
+> > > >     return ....;
+> > > >  }
+> > > >  .....
+> > > > 
+> > > > It is almost always wrong from locking and layering perspective the pattern above,
+> > > > as it is racy by definition if not protected by top layer.
+> > > > 
+> > > > There are exceptions from the rule above, but devlink is clearly not the
+> > > > one of such exceptions.  
+> > > 
+> > > Just drop the unnecessary "cleanup" patches and limit the amount 
+> > > of driver code we'll have to revert if your approach fails.  
+> > 
+> > My approach works, exactly like it works in other subsystems.
+> > https://lore.kernel.org/netdev/cover.1636390483.git.leonro at nvidia.com/
+> 
+> What "other subsystems"? I'm aware of the RFC version of these patches.
 
-elapsed time: 727m
+Approach to have fine-grained locking scheme, instead of having one big lock.
+This was done in MM for mmap_sem, we did it for RDMA too.
 
-configs tested: 127
-configs skipped: 3
+> 
+> Breaking up the locks to to protect sub-objects only is fine for
+> protecting internal lists but now you can't guarantee that the object
+> exists when driver is called.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I can only guess about which objects you are talking.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211118
-powerpc                      walnut_defconfig
-mips                             allyesconfig
-arm                        mvebu_v5_defconfig
-mips                         mpc30x_defconfig
-powerpc                      acadia_defconfig
-arm                       omap2plus_defconfig
-sh                 kfr2r09-romimage_defconfig
-m68k                         apollo_defconfig
-mips                           mtx1_defconfig
-powerpc                        icon_defconfig
-powerpc                     pseries_defconfig
-arc                        nsim_700_defconfig
-powerpc                     tqm8555_defconfig
-arm                         s3c2410_defconfig
-m68k                             alldefconfig
-arc                     haps_hs_smp_defconfig
-sh                   sh7770_generic_defconfig
-mips                       bmips_be_defconfig
-m68k                            mac_defconfig
-h8300                     edosk2674_defconfig
-arm                             mxs_defconfig
-arm                           stm32_defconfig
-arm                            hisi_defconfig
-arm                         cm_x300_defconfig
-m68k                        m5407c3_defconfig
-powerpc                     ep8248e_defconfig
-parisc                generic-64bit_defconfig
-csky                                defconfig
-powerpc                      ppc40x_defconfig
-s390                       zfcpdump_defconfig
-um                           x86_64_defconfig
-arm                           tegra_defconfig
-ia64                            zx1_defconfig
-mips                           rs90_defconfig
-arm                         mv78xx0_defconfig
-ia64                             alldefconfig
-sh                        sh7785lcr_defconfig
-arm                  randconfig-c002-20211118
-arm                  randconfig-c002-20211119
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20211119
-x86_64               randconfig-a003-20211119
-x86_64               randconfig-a002-20211119
-x86_64               randconfig-a001-20211119
-x86_64               randconfig-a006-20211119
-x86_64               randconfig-a004-20211119
-x86_64               randconfig-a015-20211118
-x86_64               randconfig-a012-20211118
-x86_64               randconfig-a011-20211118
-x86_64               randconfig-a013-20211118
-x86_64               randconfig-a016-20211118
-x86_64               randconfig-a014-20211118
-i386                 randconfig-a016-20211118
-i386                 randconfig-a014-20211118
-i386                 randconfig-a012-20211118
-i386                 randconfig-a011-20211118
-i386                 randconfig-a013-20211118
-i386                 randconfig-a015-20211118
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
+If you are talking about various devlink sub-objects (ports, traps,
+e.t.c), they created by the drivers and as such should be managed by them.
+Also they are connected to devlink which is guaranteed to exist. At the end,
+they called to devlink_XXX->devlink pointer without any existence check.
 
-clang tested configs:
-i386                 randconfig-c001-20211118
-x86_64               randconfig-c007-20211118
-arm                  randconfig-c002-20211118
-s390                 randconfig-c005-20211118
-powerpc              randconfig-c003-20211118
-riscv                randconfig-c006-20211118
-mips                 randconfig-c004-20211118
-x86_64               randconfig-a005-20211118
-x86_64               randconfig-a003-20211118
-x86_64               randconfig-a001-20211118
-x86_64               randconfig-a002-20211118
-x86_64               randconfig-a006-20211118
-x86_64               randconfig-a004-20211118
-i386                 randconfig-a006-20211118
-i386                 randconfig-a003-20211118
-i386                 randconfig-a001-20211118
-i386                 randconfig-a005-20211118
-i386                 randconfig-a004-20211118
-i386                 randconfig-a002-20211118
-hexagon              randconfig-r045-20211118
-hexagon              randconfig-r041-20211118
+If you are talking about devlink instance itself, we guarantee that it
+exists between devlink_alloc() and devlink_free(). It seems to me pretty
+reasonable request from drivers do not access devlink before devlink_alloc()
+or after devlink_free(),
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> 
+> I'm sure you'll utter your unprovable "in real drivers.." but the fact
+> is my approach does not suffer from any such issues. Or depends on
+> drivers registering devlink last.
+
+Registration of devlink doesn't do anything except opening it to the world.
+The lifetime is controlled with alloc and free. My beloved sentence "in
+real drivers ..." belongs to use of devlink_put and devlink_locks outside
+of devlink.c and nothing more.
+
+> 
+> I can start passing a pointer to a devlink_port to split/unsplit
+> functions, which is a great improvement to the devlink driver API.
+
+You can do it with my approach too. We incremented reference counter
+of devlink instance when devlink_nl_cmd_port_split_doit() was called,
+and we can safely take devlink->port_list_lock lock before returning
+from pre_doit.
+
+> 
+> > We are waiting to see your proposal extended to support parallel devlink
+> > execution and to be applied to real drivers.
+> > https://lore.kernel.org/netdev/20211030231254.2477599-1-kuba at kernel.org/
+> 
+> The conversion to xarray you have done is a great improvement, I don't
+> disagree with the way you convert to allow parallel calls either.
+> 
+> I already told you that real drivers can be converted rather easily,
+> even if it's not really necessary.
+> 
+> But I'm giving you time to make your proposal. If I spend time
+> polishing my patches I'll be even more eager to put this behind me.
+
+I see exposure of devlink internals to the driver as last resort, so I
+stopped to make proposals after your responses:
+
+"I prefer my version."
+https://lore.kernel.org/netdev/20211108101646.0a4e5ca4 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
+
+"If by "fixed first" you mean it needs 5 locks to be added and to remove
+any guarantees on sub-object lifetime then no thanks."
+https://lore.kernel.org/netdev/20211108104608.378c106e at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
+
+> 
+> > Anyway, you are maintainer, you want half work, you will get half work.
+> 
+> What do you mean half work? You have a record of breaking things 
+> in the area and changing directions. How is my request to limit
+> unnecessary "cleanups" affecting drivers until the work is finished
+> not perfectly reasonable?!?!
+
+I don't know what made you think so. My end goals (parallel execution
+and safe devlink reload) and solutions didn't changes:
+ * Devlink instance is safe to access by kernel between devlink_alloc() and devlink_free().
+ * Devlink instance is visible for users between devlink_register() and devlink_unregister().
+ * Locks should be fine-grained and limited.
+
+By saying, half work, I mean that attempt to limit locks leave many
+functions to be such that can't fail and as such should be void and not
+"return 0".
+
+And regarding "breaking things", I'm not doing it for fun, but with real
+desire to improve kernel for everyone, not only for our driver.
+
+> 
+> > > I spent enough time going back and forth with you.
+> > 
+> > Disagreements are hard for everyone, not only for you.
