@@ -1,11 +1,11 @@
 From: Kaliszczuk, Leszek <leszek.kaliszczuk@intel.com>
-Date: Mon, 22 Nov 2021 10:10:07 +0000
-Subject: [Intel-wired-lan] [net-next 2/3] net/ice: Add support for
- enable_iwarp and enable_roce devlink param
-In-Reply-To: <20211018231603.1690-3-shiraz.saleem@intel.com>
+Date: Mon, 22 Nov 2021 10:11:19 +0000
+Subject: [Intel-wired-lan] [net-next 3/3] RDMA/irdma: Set protocol based
+ on PF rdma_mode flag
+In-Reply-To: <20211018231603.1690-4-shiraz.saleem@intel.com>
 References: <20211018231603.1690-1-shiraz.saleem@intel.com>
- <20211018231603.1690-3-shiraz.saleem@intel.com>
-Message-ID: <BYAPR11MB272768549B7804453234F1B8EE9F9@BYAPR11MB2727.namprd11.prod.outlook.com>
+ <20211018231603.1690-4-shiraz.saleem@intel.com>
+Message-ID: <BYAPR11MB2727D089A462029E79CF63B9EE9F9@BYAPR11MB2727.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,32 +18,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Tuesday, October 19, 2021 1:16 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Saleem, Shiraz <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [net-next 2/3] net/ice: Add support for enable_iwarp and
-> enable_roce devlink param
+> Subject: [Intel-wired-lan] [net-next 3/3] RDMA/irdma: Set protocol based on PF
+> rdma_mode flag
 > 
-> Allow support for 'enable_iwarp' and 'enable_roce' devlink params to turn on/off
-> iWARP or RoCE protocol support for E800 devices.
-> 
-> For example, a user can turn on iWARP functionality with,
-> 
-> devlink dev param set pci/0000:07:00.0 name enable_iwarp value true cmode
-> runtime
-> 
-> This add an iWARP auxiliary rdma device, ice.iwarp.<>, under this PF.
-> 
-> A user request to enable both iWARP and RoCE under the same PF is rejected since
-> this device does not support both protocols simultaneously on the same port.
+> Set the RDMA protocol to use at driver bind time based on the ice PF's rdma_mode
+> flag.
 > 
 > Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h         |   1 +
->  drivers/net/ethernet/intel/ice/ice_devlink.c | 144
-> +++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_devlink.h |   6 ++
->  drivers/net/ethernet/intel/ice/ice_idc.c     |   4 +-
->  drivers/net/ethernet/intel/ice/ice_main.c    |   9 +-
->  include/linux/net/intel/iidc.h               |   7 +-
->  6 files changed, 166 insertions(+), 5 deletions(-)
+>  drivers/infiniband/hw/irdma/main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
 
 Tested-by: Leszek Kaliszczuk <leszek.kaliszczuk@intel.com>
