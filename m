@@ -1,11 +1,10 @@
 From: Kaliszczuk, Leszek <leszek.kaliszczuk@intel.com>
-Date: Mon, 22 Nov 2021 10:11:19 +0000
-Subject: [Intel-wired-lan] [net-next 3/3] RDMA/irdma: Set protocol based
- on PF rdma_mode flag
-In-Reply-To: <20211018231603.1690-4-shiraz.saleem@intel.com>
-References: <20211018231603.1690-1-shiraz.saleem@intel.com>
- <20211018231603.1690-4-shiraz.saleem@intel.com>
-Message-ID: <BYAPR11MB2727D089A462029E79CF63B9EE9F9@BYAPR11MB2727.namprd11.prod.outlook.com>
+Date: Mon, 22 Nov 2021 10:12:28 +0000
+Subject: [Intel-wired-lan] [PATCH v2 net-next] ice: Simplify tracking
+ status of RDMA support
+In-Reply-To: <20211005141446.33609-1-david.m.ertman@intel.com>
+References: <20211005141446.33609-1-david.m.ertman@intel.com>
+Message-ID: <BYAPR11MB2727D9D9F2D9ECB2660246E5EE9F9@BYAPR11MB2727.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +12,31 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Saleem,
-> Shiraz
-> Sent: Tuesday, October 19, 2021 1:16 AM
+> From: Ertman, David M <david.m.ertman@intel.com>
+> Sent: Tuesday, October 5, 2021 4:15 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Saleem, Shiraz <shiraz.saleem@intel.com>
-> Subject: [Intel-wired-lan] [net-next 3/3] RDMA/irdma: Set protocol based on PF
-> rdma_mode flag
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+> Subject: [PATCH v2 net-next] ice: Simplify tracking status of RDMA support
 > 
-> Set the RDMA protocol to use at driver bind time based on the ice PF's rdma_mode
-> flag.
+> The status of support for RDMA is currently being tracked with two separate status
+> flags.  This is unnecessary with the current state of the driver.
 > 
-> Signed-off-by: Shiraz Saleem <shiraz.saleem@intel.com>
+> Simplify status tracking down to a single flag.
+> 
+> Rename the helper function to denote the RDMA specific status and universally use
+> the helper function to test the status bit.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ----
+> v2: change helper function to ice_is_rdma_ena.
+>     universally use helper function.
 > ---
->  drivers/infiniband/hw/irdma/main.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice.h      |  3 ---
+>  drivers/net/ethernet/intel/ice/ice_idc.c  |  6 +++---
+> drivers/net/ethernet/intel/ice/ice_lib.c  |  8 ++++----
+> drivers/net/ethernet/intel/ice/ice_lib.h  |  2 +-
+> drivers/net/ethernet/intel/ice/ice_main.c | 13 +++++--------
+>  5 files changed, 13 insertions(+), 19 deletions(-)
 > 
 
 Tested-by: Leszek Kaliszczuk <leszek.kaliszczuk@intel.com>
