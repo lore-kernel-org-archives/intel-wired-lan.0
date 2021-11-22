@@ -1,51 +1,54 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Mon, 22 Nov 2021 12:29:05 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix NULL pointer dereference
- in i40e_dbg_dump_desc
-Message-ID: <20211122112905.30552-1-mateusz.palczewski@intel.com>
+Date: Mon, 22 Nov 2021 12:46:22 +0100
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix for displaying message
+ regarding NVM version
+Message-ID: <20211122114622.4804-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Norbert Zulinski <norbertx.zulinski@intel.com>
+When loading the i40e driver, it prints a message like:
+'The driver for the device detected a newer version of the NVM image v1.x than
+expected v1.y. Please install the most recent version of the network driver.'
+This is misleading as the driver is working as expected.
 
-When trying to dump VFs VSI RX/TX descriptors
-using debugfs there was a crash
-due to NULL pointer dereference in i40e_dbg_dump_desc.
-Added a check to i40e_dbg_dump_desc that checks if
-VSI type is correct for dumping RX/TX descriptors.
+Fix that by removing the second part of message and changing it from
+dev_info to dev_dgb.
 
-Fixes: 02e9c290814c ("i40e: debugfs interface")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
+Fixes: 4fb29bddb57f ("i40e: The driver now prints the API version in error message")
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- v2: Added missing signed-off-by tag
+ v2: Fixed the fixes tag to be 12 digits long
 ---
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 291e61a..2c1b1da 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -553,6 +553,14 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
- 		dev_info(&pf->pdev->dev, "vsi %d not found\n", vsi_seid);
- 		return;
- 	}
-+	if (vsi->type != I40E_VSI_MAIN &&
-+	    vsi->type != I40E_VSI_FDIR &&
-+	    vsi->type != I40E_VSI_VMDQ2) {
-+		dev_info(&pf->pdev->dev,
-+			 "vsi %d type %d descriptor rings not available\n",
-+			 vsi_seid, vsi->type);
-+		return;
-+	}
- 	if (type == RING_TYPE_XDP && !i40e_enabled_xdp_vsi(vsi)) {
- 		dev_info(&pf->pdev->dev, "XDP not enabled on VSI %d\n", vsi_seid);
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4664d07..d61def5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15469,15 +15469,15 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+ 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
+-		dev_info(&pdev->dev,
+-			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
++		dev_dbg(&pdev->dev,
++			"The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
+ 			 I40E_FW_MINOR_VERSION(hw));
+ 	else if (hw->aq.api_maj_ver == 1 && hw->aq.api_min_ver < 4)
+-		dev_info(&pdev->dev,
+-			 "The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u. Please update the NVM image.\n",
++		dev_dbg(&pdev->dev,
++			"The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
 -- 
 2.27.0
 
