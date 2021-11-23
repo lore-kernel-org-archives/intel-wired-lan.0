@@ -1,91 +1,44 @@
 From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Tue, 23 Nov 2021 18:18:32 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 1/9] e1000: switch to
- napi_consume_skb()
+Date: Tue, 23 Nov 2021 18:18:39 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 8/9] ixgbe: switch to
+ napi_build_skb()
 In-Reply-To: <20211123171840.157471-1-alexandr.lobakin@intel.com>
 References: <20211123171840.157471-1-alexandr.lobakin@intel.com>
-Message-ID: <20211123171840.157471-2-alexandr.lobakin@intel.com>
+Message-ID: <20211123171840.157471-9-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In order to take the best from per-cpu NAPI skbuff_head caches and
-CPU cycles, let's switch from dev_kfree_skb_any(), which passes skb
-back to the mm layer, to napi_consume_skb(), which feeds those
-caches on non-zero budget instead (falls back to the former on 0).
-Do the replacement in e1000_unmap_and_free_tx_resource(). There are
-4 call sites of this function throughout the driver:
- * e1000_clean_tx_ring(). Slowpath, process context, cleans the
-   whole Tx ring on ifdown. Use budget of 0 here;
- * e1000_tx_map(). Hotpath, net Tx softirq, unmaps the buffers in
-   case of error. Use 0 as well;
- * e1000_clean_tx_irq(). Hotpath, NAPI Tx completion polling cycle.
-   As the driver doesn't count completed Tx entries towards the NAPI
-   budget, just use the poll budget of 64 to utilize caches.
-
-Apart from being a preparation for switching to napi_build_skb(),
-this is useful on its own as well, as napi_consume_skb() flushes
-skb caches by batches of 32 instead of one-at-a-time.
+napi_build_skb() reuses per-cpu NAPI skbuff_head cache in order
+to save some cycles on freeing/allocating skbuff_heads on every
+new Rx or completed Tx.
+ixgbe driver runs Tx completion polling cycle right before the Rx
+one and uses napi_consume_skb() to feed the cache with skbuff_heads
+of completed entries, so it's never empty and always warm at that
+moment. Switch to the napi_build_skb() to relax mm pressure on
+heavy Rx.
 
 Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 669060a2e6aa..975a145d48ef 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -1953,7 +1953,8 @@ void e1000_free_all_tx_resources(struct e1000_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0f9f022260d7..80d2d10fd465 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2170,7 +2170,7 @@ static struct sk_buff *ixgbe_build_skb(struct ixgbe_ring *rx_ring,
+ 	net_prefetch(xdp->data_meta);
 
- static void
- e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
--				 struct e1000_tx_buffer *buffer_info)
-+				 struct e1000_tx_buffer *buffer_info,
-+				 int budget)
- {
- 	if (buffer_info->dma) {
- 		if (buffer_info->mapped_as_page)
-@@ -1966,7 +1967,7 @@ e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
- 		buffer_info->dma = 0;
- 	}
- 	if (buffer_info->skb) {
--		dev_kfree_skb_any(buffer_info->skb);
-+		napi_consume_skb(buffer_info->skb, budget);
- 		buffer_info->skb = NULL;
- 	}
- 	buffer_info->time_stamp = 0;
-@@ -1990,7 +1991,7 @@ static void e1000_clean_tx_ring(struct e1000_adapter *adapter,
+ 	/* build an skb to around the page buffer */
+-	skb = build_skb(xdp->data_hard_start, truesize);
++	skb = napi_build_skb(xdp->data_hard_start, truesize);
+ 	if (unlikely(!skb))
+ 		return NULL;
 
- 	for (i = 0; i < tx_ring->count; i++) {
- 		buffer_info = &tx_ring->buffer_info[i];
--		e1000_unmap_and_free_tx_resource(adapter, buffer_info);
-+		e1000_unmap_and_free_tx_resource(adapter, buffer_info, 0);
- 	}
-
- 	netdev_reset_queue(adapter->netdev);
-@@ -2958,7 +2959,7 @@ static int e1000_tx_map(struct e1000_adapter *adapter,
- 			i += tx_ring->count;
- 		i--;
- 		buffer_info = &tx_ring->buffer_info[i];
--		e1000_unmap_and_free_tx_resource(adapter, buffer_info);
-+		e1000_unmap_and_free_tx_resource(adapter, buffer_info, 0);
- 	}
-
- 	return 0;
-@@ -3856,7 +3857,8 @@ static bool e1000_clean_tx_irq(struct e1000_adapter *adapter,
- 				}
-
- 			}
--			e1000_unmap_and_free_tx_resource(adapter, buffer_info);
-+			e1000_unmap_and_free_tx_resource(adapter, buffer_info,
-+							 64);
- 			tx_desc->upper.data = 0;
-
- 			if (unlikely(++i == tx_ring->count))
 --
 2.33.1
 
