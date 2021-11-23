@@ -1,66 +1,38 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Tue, 23 Nov 2021 10:25:36 -0800
-Subject: [Intel-wired-lan] [PATCH net-next] ice: add support for DSCP QoS
- for IDC
-Message-ID: <20211123182536.315714-1-david.m.ertman@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 23 Nov 2021 12:36:11 -0800
+Subject: [Intel-wired-lan] [igb] netconsole triggers warning in
+ netpoll_poll_dev
+In-Reply-To: <CAKgT0Uc5ggH24LuKCbSTubDSiTnD5UsLbrC5G6C73rj7ZEnTYQ@mail.gmail.com>
+References: <DM6PR12MB45165BFF3AB84602238FA595D89B9@DM6PR12MB4516.namprd12.prod.outlook.com>
+ <CAKgT0UfGvcGXAC5VBjXRpR5Y5uAPEPPCsYWjQR8RmW_1kw8TMQ@mail.gmail.com>
+ <DM6PR12MB45162662DF7FAF82E7BD2207D89E9@DM6PR12MB4516.namprd12.prod.outlook.com>
+ <CAKgT0Uc5ggH24LuKCbSTubDSiTnD5UsLbrC5G6C73rj7ZEnTYQ@mail.gmail.com>
+Message-ID: <8de1a0ac-f707-8b45-787c-469ebba4a6ce@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice driver provides QoS information to auxiliary drivers
-through the exported function ice_get_qos_params.  This function
-doesn't currently support L3 DSCP QoS.
+On 11/21/2021 1:16 PM, Alexander Duyck wrote:
+>>> The easiest fix for all of this in the in-kernel driver is to just get rid of the
+>>> "min" at the end and instead just "return work_done;". The extra
+>>> complication is only needed if you were to be polling multiple queues and
+>>> that isn't the case here so we should simplify it and get rid of the buggy
+>>> "budget - 1" return value.
+>>
+>> Thank you very much for your reply Alexander!
+>> It seems to work well!
+>>
+>> Are you planning to send it upstream?
+> 
+> No, I was just suggesting it as a possible solution. Feel free to put
+> together your own patch and submit it if it is working for you.
 
-Add the necessary defines, structure elements and code to support
-DSCP QoS through the IDC functions.
+Thanks for your feedback and work on this, I've prepared a patch and 
+will send to netdev and intel-wired-lan shortly.
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_idc.c | 5 +++++
- include/linux/net/intel/iidc.h           | 5 +++++
- 2 files changed, 10 insertions(+)
+I don't have an easy way to test this one, please let me know what you 
+think.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index fc3580167e7b..263a2e7577a2 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -227,6 +227,11 @@ void ice_get_qos_params(struct ice_pf *pf, struct iidc_qos_params *qos)
- 
- 	for (i = 0; i < IEEE_8021QAZ_MAX_TCS; i++)
- 		qos->tc_info[i].rel_bw = dcbx_cfg->etscfg.tcbwtable[i];
-+
-+	qos->pfc_mode = dcbx_cfg->pfc_mode;
-+	if (qos->pfc_mode == IIDC_DSCP_PFC_MODE)
-+		for (i = 0; i < IIDC_MAX_DSCP_MAPPING; i++)
-+			qos->dscp_map[i] = dcbx_cfg->dscp_map[i];
- }
- EXPORT_SYMBOL_GPL(ice_get_qos_params);
- 
-diff --git a/include/linux/net/intel/iidc.h b/include/linux/net/intel/iidc.h
-index 1289593411d3..0a90f301679d 100644
---- a/include/linux/net/intel/iidc.h
-+++ b/include/linux/net/intel/iidc.h
-@@ -32,6 +32,9 @@ enum iidc_rdma_protocol {
- };
- 
- #define IIDC_MAX_USER_PRIORITY		8
-+#define IIDC_MAX_DSCP_MAPPING		64
-+#define IIDC_VLAN_PFC_MODE		0x0
-+#define IIDC_DSCP_PFC_MODE		0x1
- 
- /* Struct to hold per RDMA Qset info */
- struct iidc_rdma_qset_params {
-@@ -60,6 +63,8 @@ struct iidc_qos_params {
- 	u8 vport_relative_bw;
- 	u8 vport_priority_type;
- 	u8 num_tc;
-+	u8 pfc_mode;
-+	u8 dscp_map[IIDC_MAX_DSCP_MAPPING];
- };
- 
- struct iidc_event {
--- 
-2.31.1
 
