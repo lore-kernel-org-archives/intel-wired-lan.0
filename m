@@ -1,38 +1,59 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 23 Nov 2021 12:36:11 -0800
-Subject: [Intel-wired-lan] [igb] netconsole triggers warning in
- netpoll_poll_dev
-In-Reply-To: <CAKgT0Uc5ggH24LuKCbSTubDSiTnD5UsLbrC5G6C73rj7ZEnTYQ@mail.gmail.com>
-References: <DM6PR12MB45165BFF3AB84602238FA595D89B9@DM6PR12MB4516.namprd12.prod.outlook.com>
- <CAKgT0UfGvcGXAC5VBjXRpR5Y5uAPEPPCsYWjQR8RmW_1kw8TMQ@mail.gmail.com>
- <DM6PR12MB45162662DF7FAF82E7BD2207D89E9@DM6PR12MB4516.namprd12.prod.outlook.com>
- <CAKgT0Uc5ggH24LuKCbSTubDSiTnD5UsLbrC5G6C73rj7ZEnTYQ@mail.gmail.com>
-Message-ID: <8de1a0ac-f707-8b45-787c-469ebba4a6ce@intel.com>
+Date: Tue, 23 Nov 2021 12:40:00 -0800
+Subject: [Intel-wired-lan] [PATCH net v2] igb: fix netpoll exit with traffic
+Message-ID: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/21/2021 1:16 PM, Alexander Duyck wrote:
->>> The easiest fix for all of this in the in-kernel driver is to just get rid of the
->>> "min" at the end and instead just "return work_done;". The extra
->>> complication is only needed if you were to be polling multiple queues and
->>> that isn't the case here so we should simplify it and get rid of the buggy
->>> "budget - 1" return value.
->>
->> Thank you very much for your reply Alexander!
->> It seems to work well!
->>
->> Are you planning to send it upstream?
-> 
-> No, I was just suggesting it as a possible solution. Feel free to put
-> together your own patch and submit it if it is working for you.
+Oleksandr brought a bug report where netpoll causes trace
+messages in the log on igb.
 
-Thanks for your feedback and work on this, I've prepared a patch and 
-will send to netdev and intel-wired-lan shortly.
+Danielle brought this back up as still occuring, so we'll try
+again.
 
-I don't have an easy way to test this one, please let me know what you 
-think.
+[22038.710800] ------------[ cut here ]------------
+[22038.710801] igb_poll+0x0/0x1440 [igb] exceeded budget in poll
+[22038.710802] WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155 netpoll_poll_dev+0x18a/0x1a0
 
+As Alex suggested, change the driver to return work_done at the
+exit of napi_poll, which should be safe to do in this driver
+because it is not polling multiple queues in this single napi
+context (multiple queues attached to one MSI-X vector). Several
+other drivers contain the same simple sequence, so I hope
+this will not create new problems.
+
+Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and improve performance")
+Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
+Reported-by: Danielle Ratson <danieller@nvidia.com>
+Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+COMPILE TESTED ONLY! I have no way to reproduce this even on a machine I
+have with igb. It works fine to load the igb driver and netconsole with
+no errors.
+---
+v2: simplified patch with an attempt to make it work
+v1: original patch that apparently didn't work
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index e647cc89c239..5e24b7ce5a92 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8104,7 +8104,7 @@ static int igb_poll(struct napi_struct *napi, int budget)
+ 	if (likely(napi_complete_done(napi, work_done)))
+ 		igb_ring_irq_enable(q_vector);
+ 
+-	return min(work_done, budget - 1);
++	return work_done;
+ }
+ 
+ /**
+-- 
+2.33.1
 
