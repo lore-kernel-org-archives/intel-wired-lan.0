@@ -1,69 +1,80 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 22 Nov 2021 18:04:03 -0800
-Subject: [Intel-wired-lan] 710/i40e, RSS and 802.1ad (double vlan)
-In-Reply-To: <20210211174937.00006632@intel.com>
-References: <fc55ca6fb012c9e36e53d2ab80d47894c38e85a8.camel@coverfire.com>
- <AB117487-C2C3-47EF-A3C4-FDCED9304282@intel.com>
- <8c7d255047890290948cf51450b1f860e013b48c.camel@coverfire.com>
- <d3f0614118192ba0df5ec0e845f61e092f187744.camel@coverfire.com>
- <20210209120223.000041ca@intel.com>
- <5ff376e94c76a9b475242d829ca7b7d2e1786620.camel@coverfire.com>
- <20210211174937.00006632@intel.com>
-Message-ID: <65909259-6de3-e595-bbe8-f07693c66543@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 22 Nov 2021 18:27:28 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 5/6] devlink: Reshuffle
+ resource registration logic
+In-Reply-To: <YZoHGKqLz6UBk2Sx@unreal>
+References: <cover.1637173517.git.leonro@nvidia.com>
+ <6176a137a4ded48501e8a06fda0e305f9cfc787c.1637173517.git.leonro@nvidia.com>
+ <20211117204956.6a36963b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YZYFvIK9mkP107tD@unreal>
+ <20211118174813.54c3731f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YZfFDSnnjOG+wSyK@unreal>
+ <20211119081017.6676843b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <YZoHGKqLz6UBk2Sx@unreal>
+Message-ID: <20211122182728.370889f2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/11/2021 5:49 PM, Jesse Brandeburg wrote:
-> Dan Siemon wrote:
+On Sun, 21 Nov 2021 10:45:12 +0200 Leon Romanovsky wrote:
+> On Fri, Nov 19, 2021 at 08:10:17AM -0800, Jakub Kicinski wrote:
+> > On Fri, 19 Nov 2021 17:38:53 +0200 Leon Romanovsky wrote:  
+> > > My approach works, exactly like it works in other subsystems.
+> > > https://lore.kernel.org/netdev/cover.1636390483.git.leonro at nvidia.com/  
+> > 
+> > What "other subsystems"? I'm aware of the RFC version of these patches.  
 > 
->> On Tue, 2021-02-09 at 12:02 -0800, Jesse Brandeburg wrote:
->>> Please provide us with which driver/kernel/firmware you're running,
->>> uname -a
->>> ethtool -i ethx
->>> lspci -vvv -s < your pci bus:dev.fn>
->>
->> We are ok to update to the latest 710 firmware and we follow the kernel
->> releases closely.
->>
->> As we haven't had problems related to firmware, we still have many 710s
->> in the field that are on 6.01 firmware. Below are dumps from a couple
->> of our test boxes where I have upgraded the firmware.
-> 
-> Hi Dan, thanks for the detail, I think your firmware is new enough, but
-> I'm pretty sure our driver isn't configuring enough (it's currently an
-> unsupported feature in Linux i40e) to get it working. Newer than 6.01 is
-> all I know of that is required for firmware based on what I know right
-> now.
-> 
-> I've filed an internal issue tracker against i40e and sometime
-> (hopefully) soon we'll have the team looking into details. I don't have
-> any timeline for you currently, sorry.
-> 
-> I agree this is an important use case. We appreciate your reporting the
-> issue to us. Based on what I found when doing some initial triage, it
-> doesn't seem like a simple fix in the code, so I can't offer you a
-> patch to fix the issue like I wish I could.
-> 
-> Please keep us posted if you find any other relevant details, and I'll
-> try to update this thread if we find any info or get a test patch up
-> and running.
+> Approach to have fine-grained locking scheme, instead of having one big lock.
+> This was done in MM for mmap_sem, we did it for RDMA too.
 
-An update to this old thread:
-The current i40e out-of-tree driver from intel.com/e1000.sf.net has 
-support for a limited use case of double vlan for virtual machines (VFs) 
-but the interface used is customer specific and not upstream (it's in 
-sysfs).
+You're breaking things up to avoid lock ordering issues. The user can
+still only run a single write command at a time.
 
-In the meantime, I guess your best bet is DPDK. Currently an 
-implementation for the upstream kernel is not available and I don't know 
-when it will become so.
+> > Breaking up the locks to to protect sub-objects only is fine for
+> > protecting internal lists but now you can't guarantee that the object
+> > exists when driver is called.  
+> 
+> I can only guess about which objects you are talking.
 
-Thanks for your patience on this one, I'm working with the team to make 
-sure we don't create feature gaps like this between out-of-tree and 
-upstream in the future. I appreciate that you brought this to our attention.
+It obviously refers to the port splitting I mentioned below.
 
-Thanks,
-  Jesse
+> If you are talking about various devlink sub-objects (ports, traps,
+> e.t.c), they created by the drivers and as such should be managed by them.
+> Also they are connected to devlink which is guaranteed to exist. At the end,
+> they called to devlink_XXX->devlink pointer without any existence check.
+> 
+> If you are talking about devlink instance itself, we guarantee that it
+> exists between devlink_alloc() and devlink_free(). It seems to me pretty
+> reasonable request from drivers do not access devlink before devlink_alloc()
+> or after devlink_free(),
+> 
+> > I'm sure you'll utter your unprovable "in real drivers.." but the fact
+> > is my approach does not suffer from any such issues. Or depends on
+> > drivers registering devlink last.  
+> 
+> Registration of devlink doesn't do anything except opening it to the world.
+> The lifetime is controlled with alloc and free. My beloved sentence "in
+> real drivers ..." belongs to use of devlink_put and devlink_locks outside
+> of devlink.c and nothing more.
+
+As soon as there is a inter-dependency between two subsystems "must 
+be last" breaks down.
+
+> > I can start passing a pointer to a devlink_port to split/unsplit
+> > functions, which is a great improvement to the devlink driver API.  
+> 
+> You can do it with my approach too. We incremented reference counter
+> of devlink instance when devlink_nl_cmd_port_split_doit() was called,
+> and we can safely take devlink->port_list_lock lock before returning
+> from pre_doit.
+
+Wait, I thought you'd hold devlink->lock around split/unsplit.
+
+Please look at the port splitting case, mlx5 doesn't implement it
+but it's an important feature.
+
+Either way, IDK how ref count on devlink helps with lifetime of a
+subobject. You must assume the sub-objects can only be created outside
+of the time devlink instance is visible or under devlink->lock?
