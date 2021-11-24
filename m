@@ -1,35 +1,29 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 24 Nov 2021 12:42:05 +0000
-Subject: [Intel-wired-lan] [PATCH v2 net-next] ice: Remove unused
- ICE_FLOW_SEG_HDRS_L2_MASK
-In-Reply-To: <20211117235505.70783-1-anthony.l.nguyen@intel.com>
-References: <20211117235505.70783-1-anthony.l.nguyen@intel.com>
-Message-ID: <BYAPR11MB33679AA7BE742C57FB46F8FCFC619@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Wed, 24 Nov 2021 13:47:03 +0100
+Subject: [Intel-wired-lan] [PATCH 2/2] net/ice: Remove unused enum
+In-Reply-To: <20211124124136.1776-2-shiraz.saleem@intel.com>
+References: <20211124124136.1776-1-shiraz.saleem@intel.com>
+ <20211124124136.1776-2-shiraz.saleem@intel.com>
+Message-ID: <6f95e1de-6c35-76e5-eb83-68b60dc55c05@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Dear Shiraz,
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
-> Nguyen
-> Sent: Thursday, November 18, 2021 5:25 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 net-next] ice: Remove unused
-> ICE_FLOW_SEG_HDRS_L2_MASK
+Am 24.11.21 um 13:41 schrieb Shiraz Saleem:
+> From: "Shiraz Saleem" <shiraz.saleem@intel.com>
 > 
-> Remove the unused define ICE_FLOW_SEG_HDRS_L2_MASK.
-> 
-> Reported-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
-> v2: Reword title and description to be imperative
-> 
->  drivers/net/ethernet/intel/ice/ice_flow.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
+> Remove ice_devlink_param_id enum as its not used.
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Please add the name `ice_devlink_param_id` to the commit message summary.
+
+[?]
+
+
+Kind regards,
+
+Paul
