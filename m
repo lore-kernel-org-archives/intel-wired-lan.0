@@ -1,29 +1,36 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 24 Nov 2021 13:47:03 +0100
-Subject: [Intel-wired-lan] [PATCH 2/2] net/ice: Remove unused enum
-In-Reply-To: <20211124124136.1776-2-shiraz.saleem@intel.com>
-References: <20211124124136.1776-1-shiraz.saleem@intel.com>
- <20211124124136.1776-2-shiraz.saleem@intel.com>
-Message-ID: <6f95e1de-6c35-76e5-eb83-68b60dc55c05@molgen.mpg.de>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Wed, 24 Nov 2021 13:01:59 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: remove never changed variable
+ `ret_val'
+In-Reply-To: <20211114060222.231075-1-wangborong@cdjrlc.com>
+References: <20211114060222.231075-1-wangborong@cdjrlc.com>
+Message-ID: <BYAPR11MB33678E55E77438B1B16B990EFC619@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Shiraz,
 
 
-Am 24.11.21 um 13:41 schrieb Shiraz Saleem:
-> From: "Shiraz Saleem" <shiraz.saleem@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jason Wang
+> Sent: Sunday, November 14, 2021 11:32 AM
+> To: kuba at kernel.org
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Jason Wang
+> <wangborong@cdjrlc.com>; intel-wired-lan at lists.osuosl.org;
+> davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH] igb: remove never changed variable `ret_val'
 > 
-> Remove ice_devlink_param_id enum as its not used.
+> The variable used for return status in `igb_write_xmdio_reg' function is never
+> changed  and this function is just need return 0. Thus, the `ret_val' can be
+> removed and return 0 at the end of the `igb_write_xmdio_reg' function.
+> 
+> Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_i210.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
 
-Please add the name `ice_devlink_param_id` to the commit message summary.
-
-[?]
-
-
-Kind regards,
-
-Paul
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
