@@ -1,10 +1,10 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 24 Nov 2021 13:01:59 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: remove never changed variable
- `ret_val'
-In-Reply-To: <20211114060222.231075-1-wangborong@cdjrlc.com>
-References: <20211114060222.231075-1-wangborong@cdjrlc.com>
-Message-ID: <BYAPR11MB33678E55E77438B1B16B990EFC619@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Danielle Ratson <danieller@nvidia.com>
+Date: Wed, 24 Nov 2021 07:51:41 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] igb: fix netpoll exit with
+ traffic
+In-Reply-To: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
+References: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
+Message-ID: <DM6PR12MB451635351CFBBD86059A0078D8619@DM6PR12MB4516.namprd12.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,25 +12,70 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jason Wang
-> Sent: Sunday, November 14, 2021 11:32 AM
-> To: kuba at kernel.org
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Jason Wang
-> <wangborong@cdjrlc.com>; intel-wired-lan at lists.osuosl.org;
-> davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH] igb: remove never changed variable `ret_val'
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Sent: Tuesday, November 23, 2021 10:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>;
+> netdev at vger.kernel.org; Oleksandr Natalenko
+> <oleksandr@natalenko.name>; Danielle Ratson <danieller@nvidia.com>;
+> Alexander Duyck <alexander.duyck@gmail.com>
+> Subject: [PATCH net v2] igb: fix netpoll exit with traffic
 > 
-> The variable used for return status in `igb_write_xmdio_reg' function is never
-> changed  and this function is just need return 0. Thus, the `ret_val' can be
-> removed and return 0 at the end of the `igb_write_xmdio_reg' function.
+> Oleksandr brought a bug report where netpoll causes trace messages in the
+> log on igb.
 > 
-> Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_i210.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
+> Danielle brought this back up as still occuring, so we'll try again.
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Hi Jessi,
+
+Ill run tests with you patch and give you results for if it is ok.
+Thanks!
+
+> 
+> [22038.710800] ------------[ cut here ]------------ [22038.710801]
+> igb_poll+0x0/0x1440 [igb] exceeded budget in poll [22038.710802]
+> WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155
+> netpoll_poll_dev+0x18a/0x1a0
+> 
+> As Alex suggested, change the driver to return work_done at the exit of
+> napi_poll, which should be safe to do in this driver because it is not polling
+> multiple queues in this single napi context (multiple queues attached to one
+> MSI-X vector). Several other drivers contain the same simple sequence, so I
+> hope this will not create new problems.
+> 
+> Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and
+> improve performance")
+> Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
+> Reported-by: Danielle Ratson <danieller@nvidia.com>
+> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+> COMPILE TESTED ONLY! I have no way to reproduce this even on a machine I
+> have with igb. It works fine to load the igb driver and netconsole with no
+> errors.
+> ---
+> v2: simplified patch with an attempt to make it work
+> v1: original patch that apparently didn't work
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> b/drivers/net/ethernet/intel/igb/igb_main.c
+> index e647cc89c239..5e24b7ce5a92 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -8104,7 +8104,7 @@ static int igb_poll(struct napi_struct *napi, int
+> budget)
+>  	if (likely(napi_complete_done(napi, work_done)))
+>  		igb_ring_irq_enable(q_vector);
+> 
+> -	return min(work_done, budget - 1);
+> +	return work_done;
+>  }
+> 
+>  /**
+> --
+> 2.33.1
+
