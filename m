@@ -1,93 +1,95 @@
-From: Danielle Ratson <danieller@nvidia.com>
-Date: Wed, 24 Nov 2021 08:03:10 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] igb: fix netpoll exit with
- traffic
-In-Reply-To: <DM6PR12MB451635351CFBBD86059A0078D8619@DM6PR12MB4516.namprd12.prod.outlook.com>
-References: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
- <DM6PR12MB451635351CFBBD86059A0078D8619@DM6PR12MB4516.namprd12.prod.outlook.com>
-Message-ID: <DM6PR12MB451625B7328FD36E7B30F325D8619@DM6PR12MB4516.namprd12.prod.outlook.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Wed, 24 Nov 2021 17:06:37 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add VF VLAN pruning
+In-Reply-To: <20211122120216.11512-1-mateusz.palczewski@intel.com>
+References: <20211122120216.11512-1-mateusz.palczewski@intel.com>
+Message-ID: <20d6054551498fedcf6d9604017a7809fcdd9aa2.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-> > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> > Sent: Tuesday, November 23, 2021 10:40 PM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>;
-> > netdev at vger.kernel.org; Oleksandr Natalenko
-> > <oleksandr@natalenko.name>; Danielle Ratson <danieller@nvidia.com>;
-> > Alexander Duyck <alexander.duyck@gmail.com>
-> > Subject: [PATCH net v2] igb: fix netpoll exit with traffic
-> >
-> > Oleksandr brought a bug report where netpoll causes trace messages in
-> > the log on igb.
-> >
-> > Danielle brought this back up as still occuring, so we'll try again.
-
-And also:
-
-WARNING: 'occuring' may be misspelled - perhaps 'occurring'?
-#9:
-Danielle brought this back up as still occuring, so we'll try
-                                       ^^^^^^^^
-total: 0 errors, 1 warnings, 0 checks, 8 lines checked
-
-Please Reword.
-
+On Mon, 2021-11-22 at 13:02 +0100, Mateusz Palczewski wrote:
+> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 > 
-> Hi Jessi,
+> VFs by default are able to see all tagged traffic regardless of trust
+> and VLAN filters configured.
 > 
-> Ill run tests with you patch and give you results for if it is ok.
-> Thanks!
+> Add new private flag vf-vlan-pruning that allows changing of default
+> VF behavior for tagged traffic. When the flag is turned on
+> untrusted VF will only be able to receive untagged traffic
+> or traffic with VLAN tags it has created interfaces for
 > 
-> >
-> > [22038.710800] ------------[ cut here ]------------ [22038.710801]
-> > igb_poll+0x0/0x1440 [igb] exceeded budget in poll [22038.710802]
-> > WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155
-> > netpoll_poll_dev+0x18a/0x1a0
-> >
-> > As Alex suggested, change the driver to return work_done at the exit
-> > of napi_poll, which should be safe to do in this driver because it is
-> > not polling multiple queues in this single napi context (multiple
-> > queues attached to one MSI-X vector). Several other drivers contain
-> > the same simple sequence, so I hope this will not create new problems.
-> >
-> > Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead
-> > and improve performance")
-> > Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
-> > Reported-by: Danielle Ratson <danieller@nvidia.com>
-> > Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-> > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> > ---
-> > COMPILE TESTED ONLY! I have no way to reproduce this even on a machine
-> > I have with igb. It works fine to load the igb driver and netconsole
-> > with no errors.
-> > ---
-> > v2: simplified patch with an attempt to make it work
-> > v1: original patch that apparently didn't work
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> > b/drivers/net/ethernet/intel/igb/igb_main.c
-> > index e647cc89c239..5e24b7ce5a92 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > @@ -8104,7 +8104,7 @@ static int igb_poll(struct napi_struct *napi,
-> > int
-> > budget)
-> >  	if (likely(napi_complete_done(napi, work_done)))
-> >  		igb_ring_irq_enable(q_vector);
-> >
-> > -	return min(work_done, budget - 1);
-> > +	return work_done;
-> >  }
-> >
-> >  /**
-> > --
-> > 2.33.1
+> The flag is off by default and can only be changed if
+> there are no VFs spawned on the PF. This flag will only be effective
+> when no PVID is set on VF and VF is not trusted.
+> Add new function that computes the correct VLAN ID for VF VLAN
+> filters
+> based on trust, PVID, vf-vlan-prune-disable flag and current VLAN ID.
+> 
+> Testing Hints:
+> 
+> Test 1: vf-vlan-pruning == off
+> ==============================
+> 1. Set the private flag
+> > ethtool --set-priv-flag eth0 vf-vlan-pruning off (default setting)
+> 2. Use scapy to send any VLAN tagged traffic and make sure the VF
+> receives all VLAN tagged traffic that matches its destination MAC
+> filters (unicast, multicast, and broadcast).
+> 
+> Test 2: vf-vlan-pruning == on
+> ==============================
+> 1. Set the private flag
+> > ethtool --set-priv-flag eth0 vf-vlan-pruning on
+> 2. Use scapy to send any VLAN tagged traffic and make sure the VF
+> does
+> not receive any VLAN tagged traffic that matches its destination MAC
+> filters (unicast, multicast, and broadcast).
+> 3. Add a VLAN filter on the VF netdev
+> > ip link add link eth0v0 name vlan10 type vlan id 10
+> 4. Bring the VLAN netdev up
+> > ip link set vlan10 up
+> 4. Use scapy to send traffic with VLAN 10, VLAN 11 (anything not VLAN
+> 10), and untagged traffic. Make sure the VF only receives VLAN 10
+> and untagged traffic when the link partner is sending.
+> 
+> Test 3: vf-vlan-pruning == off && VF is in a port VLAN
+> ==============================
+> 1. Set the private flag
+> > ethtool --set-priv-flag eth0 vf-vlan-pruning off (default setting)
+> 2. Create a VF
+> > echo 1 > sriov_numvfs
+> 3. Put the VF in a port VLAN
+> > ip link set eth0 vf 0 vlan 10
+> 4. Use scapy to send traffic with VLAN 10 and VLAN 11 (anything not
+> VLAN
+> 10) and make sure the VF only receives untagged traffic when the link
+> partner is sending VLAN 10 tagged traffic as the VLAN tag is expected
+> to be stripped by HW for port VLANs and not visible to the VF.
+> 
+> Test 4: Change vf-vlan-pruning while VFs are created
+> ==============================
+> echo 0 > sriov_numvfs
+> ethtool --set-priv-flag eth0 vf-vlan-pruning off
+> echo 1 > sriov_numvfs
+> ethtool --set-priv-flag eth0 vf-vlan-pruning on (expect failure)
+> 
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Signed-off-by: Przemyslaw Patynowski
+> <przemyslawx.patynowski@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+This has checkpatch issues, please fix.
+
+CHECK: Alignment should match open parenthesis
+#108: FILE: drivers/net/ethernet/intel/i40e/i40e_ethtool.c:5283:
++               dev_warn(&pf->pdev->dev,
++                       "Changing vf-vlan-pruning flag while VF(s) are
+active is not supported\n");
+
+CHECK: Please don't use multiple blank lines
+#112: FILE: drivers/net/ethernet/intel/i40e/i40e_ethtool.c:5287:
++
++
+
 
