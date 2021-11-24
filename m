@@ -1,82 +1,44 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 24 Nov 2021 10:51:50 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] ice: add support for DSCP
- QoS for IDC
-In-Reply-To: <20211123182536.315714-1-david.m.ertman@intel.com>
-References: <20211123182536.315714-1-david.m.ertman@intel.com>
-Message-ID: <10cc4a54-0b25-3c3c-bcc0-41b8bd096cb5@molgen.mpg.de>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Wed, 24 Nov 2021 10:26:51 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix for displaying
+ message regarding NVM version
+In-Reply-To: <20211122114622.4804-1-mateusz.palczewski@intel.com>
+References: <20211122114622.4804-1-mateusz.palczewski@intel.com>
+Message-ID: <BYAPR11MB33673ACDD7686961FCBA948EFC619@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Dave,
 
 
-Am 23.11.21 um 19:25 schrieb Dave Ertman:
-> The ice driver provides QoS information to auxiliary drivers
-> through the exported function ice_get_qos_params.  This function
-> doesn't currently support L3 DSCP QoS.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mateusz Palczewski
+> Sent: Monday, November 22, 2021 5:16 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix for displaying message
+> regarding NVM version
 > 
-> Add the necessary defines, structure elements and code to support
-> DSCP QoS through the IDC functions.
-
-How did you test this?
-
-In what datasheet (name, revision, section) is that documented?
-
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> When loading the i40e driver, it prints a message like:
+> 'The driver for the device detected a newer version of the NVM image v1.x
+> than expected v1.y. Please install the most recent version of the network
+> driver.'
+> This is misleading as the driver is working as expected.
+> 
+> Fix that by removing the second part of message and changing it from dev_info
+> to dev_dgb.
+> 
+> Fixes: 4fb29bddb57f ("i40e: The driver now prints the API version in error
+> message")
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 > ---
->   drivers/net/ethernet/intel/ice/ice_idc.c | 5 +++++
->   include/linux/net/intel/iidc.h           | 5 +++++
->   2 files changed, 10 insertions(+)
+>  v2: Fixed the fixes tag to be 12 digits long
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-> index fc3580167e7b..263a2e7577a2 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_idc.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-> @@ -227,6 +227,11 @@ void ice_get_qos_params(struct ice_pf *pf, struct iidc_qos_params *qos)
->   
->   	for (i = 0; i < IEEE_8021QAZ_MAX_TCS; i++)
->   		qos->tc_info[i].rel_bw = dcbx_cfg->etscfg.tcbwtable[i];
-> +
-> +	qos->pfc_mode = dcbx_cfg->pfc_mode;
-> +	if (qos->pfc_mode == IIDC_DSCP_PFC_MODE)
 
-Just a nit as the compiler will probably do it itself, but you could use 
-`dcbx_cfg->pfc_mode` in the check, and move the assignment into the body.
-
-> +		for (i = 0; i < IIDC_MAX_DSCP_MAPPING; i++)
-> +			qos->dscp_map[i] = dcbx_cfg->dscp_map[i];
->   }
->   EXPORT_SYMBOL_GPL(ice_get_qos_params);
->   
-> diff --git a/include/linux/net/intel/iidc.h b/include/linux/net/intel/iidc.h
-> index 1289593411d3..0a90f301679d 100644
-> --- a/include/linux/net/intel/iidc.h
-> +++ b/include/linux/net/intel/iidc.h
-> @@ -32,6 +32,9 @@ enum iidc_rdma_protocol {
->   };
->   
->   #define IIDC_MAX_USER_PRIORITY		8
-> +#define IIDC_MAX_DSCP_MAPPING		64
-> +#define IIDC_VLAN_PFC_MODE		0x0
-> +#define IIDC_DSCP_PFC_MODE		0x1
->   
->   /* Struct to hold per RDMA Qset info */
->   struct iidc_rdma_qset_params {
-> @@ -60,6 +63,8 @@ struct iidc_qos_params {
->   	u8 vport_relative_bw;
->   	u8 vport_priority_type;
->   	u8 num_tc;
-> +	u8 pfc_mode;
-> +	u8 dscp_map[IIDC_MAX_DSCP_MAPPING];
->   };
->   
->   struct iidc_event {
-
-
-Kind regards,
-
-Paul
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
