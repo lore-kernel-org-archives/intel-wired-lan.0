@@ -1,95 +1,251 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 24 Nov 2021 17:06:37 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add VF VLAN pruning
-In-Reply-To: <20211122120216.11512-1-mateusz.palczewski@intel.com>
-References: <20211122120216.11512-1-mateusz.palczewski@intel.com>
-Message-ID: <20d6054551498fedcf6d9604017a7809fcdd9aa2.camel@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 24 Nov 2021 15:34:49 -0800
+Subject: [Intel-wired-lan] [REGRESSION] Kernel 5.15 reboots / freezes
+ upon ifup/ifdown
+In-Reply-To: <8119066974f099aa11f08a4dad3653ac0ba32cd6.camel@gmx.de>
+References: <924175a188159f4e03bd69908a91e606b574139b.camel@gmx.de>
+ <YZ3q4OKhU2EPPttE@kroah.com>
+ <8119066974f099aa11f08a4dad3653ac0ba32cd6.camel@gmx.de>
+Message-ID: <20211124153449.72c9cfcd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-11-22 at 13:02 +0100, Mateusz Palczewski wrote:
-> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+On Wed, 24 Nov 2021 18:20:40 +0100 Stefan Dietrich wrote:
+> Hi all,
 > 
-> VFs by default are able to see all tagged traffic regardless of trust
-> and VLAN filters configured.
+> six exciting hours and a lot of learning later, here it is.
+> Symptomatically, the critical commit appears for me between 5.14.21-
+> 051421-generic and 5.15.0-051500rc2-generic - I did not find an amd64
+> build for rc1.
 > 
-> Add new private flag vf-vlan-pruning that allows changing of default
-> VF behavior for tagged traffic. When the flag is turned on
-> untrusted VF will only be able to receive untagged traffic
-> or traffic with VLAN tags it has created interfaces for
-> 
-> The flag is off by default and can only be changed if
-> there are no VFs spawned on the PF. This flag will only be effective
-> when no PVID is set on VF and VF is not trusted.
-> Add new function that computes the correct VLAN ID for VF VLAN
-> filters
-> based on trust, PVID, vf-vlan-prune-disable flag and current VLAN ID.
-> 
-> Testing Hints:
-> 
-> Test 1: vf-vlan-pruning == off
-> ==============================
-> 1. Set the private flag
-> > ethtool --set-priv-flag eth0 vf-vlan-pruning off (default setting)
-> 2. Use scapy to send any VLAN tagged traffic and make sure the VF
-> receives all VLAN tagged traffic that matches its destination MAC
-> filters (unicast, multicast, and broadcast).
-> 
-> Test 2: vf-vlan-pruning == on
-> ==============================
-> 1. Set the private flag
-> > ethtool --set-priv-flag eth0 vf-vlan-pruning on
-> 2. Use scapy to send any VLAN tagged traffic and make sure the VF
-> does
-> not receive any VLAN tagged traffic that matches its destination MAC
-> filters (unicast, multicast, and broadcast).
-> 3. Add a VLAN filter on the VF netdev
-> > ip link add link eth0v0 name vlan10 type vlan id 10
-> 4. Bring the VLAN netdev up
-> > ip link set vlan10 up
-> 4. Use scapy to send traffic with VLAN 10, VLAN 11 (anything not VLAN
-> 10), and untagged traffic. Make sure the VF only receives VLAN 10
-> and untagged traffic when the link partner is sending.
-> 
-> Test 3: vf-vlan-pruning == off && VF is in a port VLAN
-> ==============================
-> 1. Set the private flag
-> > ethtool --set-priv-flag eth0 vf-vlan-pruning off (default setting)
-> 2. Create a VF
-> > echo 1 > sriov_numvfs
-> 3. Put the VF in a port VLAN
-> > ip link set eth0 vf 0 vlan 10
-> 4. Use scapy to send traffic with VLAN 10 and VLAN 11 (anything not
-> VLAN
-> 10) and make sure the VF only receives untagged traffic when the link
-> partner is sending VLAN 10 tagged traffic as the VLAN tag is expected
-> to be stripped by HW for port VLANs and not visible to the VF.
-> 
-> Test 4: Change vf-vlan-pruning while VFs are created
-> ==============================
-> echo 0 > sriov_numvfs
-> ethtool --set-priv-flag eth0 vf-vlan-pruning off
-> echo 1 > sriov_numvfs
-> ethtool --set-priv-flag eth0 vf-vlan-pruning on (expect failure)
-> 
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Przemyslaw Patynowski
-> <przemyslawx.patynowski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-This has checkpatch issues, please fix.
+> Please see the git-bisect output below and let me know how I may
+> further assist in debugging!
 
-CHECK: Alignment should match open parenthesis
-#108: FILE: drivers/net/ethernet/intel/i40e/i40e_ethtool.c:5283:
-+               dev_warn(&pf->pdev->dev,
-+                       "Changing vf-vlan-pruning flag while VF(s) are
-active is not supported\n");
+Well, let's CC those involved, shall we? :)
 
-CHECK: Please don't use multiple blank lines
-#112: FILE: drivers/net/ethernet/intel/i40e/i40e_ethtool.c:5287:
-+
-+
+Thanks for working thru the bisection!
 
+> a90ec84837325df4b9a6798c2cc0df202b5680bd is the first bad commit
+> commit a90ec84837325df4b9a6798c2cc0df202b5680bd
+> Author: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Date:   Mon Jul 26 20:36:57 2021 -0700
+> 
+>     igc: Add support for PTP getcrosststamp()
+> 
+>     i225 supports PCIe Precision Time Measurement (PTM), allowing us to
+>     support the PTP_SYS_OFFSET_PRECISE ioctl() in the driver via the
+>     getcrosststamp() function.
+> 
+>     The easiest way to expose the PTM registers would be to configure
+> the PTM
+>     dialogs to run periodically, but the PTP_SYS_OFFSET_PRECISE ioctl()
+>     semantics are more aligned to using a kind of "one-shot" way of
+> retrieving
+>     the PTM timestamps. But this causes a bit more code to be written:
+> the
+>     trigger registers for the PTM dialogs are not cleared
+> automatically.
+> 
+>     i225 can be configured to send "fake" packets with the PTM
+>     information, adding support for handling these types of packets is
+>     left for the future.
+> 
+>     PTM improves the accuracy of time synchronization, for example,
+> using
+>     phc2sys, while a simple application is sending packets as fast as
+>     possible. First, without .getcrosststamp():
+> 
+>     phc2sys[191.382]: enp4s0 sys offset      -959 s2 freq    -454
+> delay   4492
+>     phc2sys[191.482]: enp4s0 sys offset       798 s2 freq   +1015
+> delay   4069
+>     phc2sys[191.583]: enp4s0 sys offset       962 s2 freq   +1418
+> delay   3849
+>     phc2sys[191.683]: enp4s0 sys offset       924 s2 freq   +1669
+> delay   3753
+>     phc2sys[191.783]: enp4s0 sys offset       664 s2 freq   +1686
+> delay   3349
+>     phc2sys[191.883]: enp4s0 sys offset       218 s2 freq   +1439
+> delay   2585
+>     phc2sys[191.983]: enp4s0 sys offset       761 s2 freq   +2048
+> delay   3750
+>     phc2sys[192.083]: enp4s0 sys offset       756 s2 freq   +2271
+> delay   4061
+>     phc2sys[192.183]: enp4s0 sys offset       809 s2 freq   +2551
+> delay   4384
+>     phc2sys[192.283]: enp4s0 sys offset      -108 s2 freq   +1877
+> delay   2480
+>     phc2sys[192.383]: enp4s0 sys offset     -1145 s2 freq    +807
+> delay   4438
+>     phc2sys[192.484]: enp4s0 sys offset       571 s2 freq   +2180
+> delay   3849
+>     phc2sys[192.584]: enp4s0 sys offset       241 s2 freq   +2021
+> delay   3389
+>     phc2sys[192.684]: enp4s0 sys offset       405 s2 freq   +2257
+> delay   3829
+>     phc2sys[192.784]: enp4s0 sys offset        17 s2 freq   +1991
+> delay   3273
+>     phc2sys[192.884]: enp4s0 sys offset       152 s2 freq   +2131
+> delay   3948
+>     phc2sys[192.984]: enp4s0 sys offset      -187 s2 freq   +1837
+> delay   3162
+>     phc2sys[193.084]: enp4s0 sys offset     -1595 s2 freq    +373
+> delay   4557
+>     phc2sys[193.184]: enp4s0 sys offset       107 s2 freq   +1597
+> delay   3740
+>     phc2sys[193.284]: enp4s0 sys offset       199 s2 freq   +1721
+> delay   4010
+>     phc2sys[193.385]: enp4s0 sys offset      -169 s2 freq   +1413
+> delay   3701
+>     phc2sys[193.485]: enp4s0 sys offset       -47 s2 freq   +1484
+> delay   3581
+>     phc2sys[193.585]: enp4s0 sys offset       -65 s2 freq   +1452
+> delay   3778
+>     phc2sys[193.685]: enp4s0 sys offset        95 s2 freq   +1592
+> delay   3888
+>     phc2sys[193.785]: enp4s0 sys offset       206 s2 freq   +1732
+> delay   4445
+>     phc2sys[193.885]: enp4s0 sys offset      -652 s2 freq    +936
+> delay   2521
+>     phc2sys[193.985]: enp4s0 sys offset      -203 s2 freq   +1189
+> delay   3391
+>     phc2sys[194.085]: enp4s0 sys offset      -376 s2 freq    +955
+> delay   2951
+>     phc2sys[194.185]: enp4s0 sys offset      -134 s2 freq   +1084
+> delay   3330
+>     phc2sys[194.285]: enp4s0 sys offset       -22 s2 freq   +1156
+> delay   3479
+>     phc2sys[194.386]: enp4s0 sys offset        32 s2 freq   +1204
+> delay   3602
+>     phc2sys[194.486]: enp4s0 sys offset       122 s2 freq   +1303
+> delay   3731
+> 
+>     Statistics for this run (total of 2179 lines), in nanoseconds:
+>       average: -1.12
+>       stdev: 634.80
+>       max: 1551
+>       min: -2215
+> 
+>     With .getcrosststamp() via PCIe PTM:
+> 
+>     phc2sys[367.859]: enp4s0 sys offset         6 s2 freq   +1727
+> delay      0
+>     phc2sys[367.959]: enp4s0 sys offset        -2 s2 freq   +1721
+> delay      0
+>     phc2sys[368.059]: enp4s0 sys offset         5 s2 freq   +1727
+> delay      0
+>     phc2sys[368.160]: enp4s0 sys offset        -1 s2 freq   +1723
+> delay      0
+>     phc2sys[368.260]: enp4s0 sys offset        -4 s2 freq   +1719
+> delay      0
+>     phc2sys[368.360]: enp4s0 sys offset        -5 s2 freq   +1717
+> delay      0
+>     phc2sys[368.460]: enp4s0 sys offset         1 s2 freq   +1722
+> delay      0
+>     phc2sys[368.560]: enp4s0 sys offset        -3 s2 freq   +1718
+> delay      0
+>     phc2sys[368.660]: enp4s0 sys offset         5 s2 freq   +1725
+> delay      0
+>     phc2sys[368.760]: enp4s0 sys offset        -1 s2 freq   +1721
+> delay      0
+>     phc2sys[368.860]: enp4s0 sys offset         0 s2 freq   +1721
+> delay      0
+>     phc2sys[368.960]: enp4s0 sys offset         0 s2 freq   +1721
+> delay      0
+>     phc2sys[369.061]: enp4s0 sys offset         4 s2 freq   +1725
+> delay      0
+>     phc2sys[369.161]: enp4s0 sys offset         1 s2 freq   +1724
+> delay      0
+>     phc2sys[369.261]: enp4s0 sys offset         4 s2 freq   +1727
+> delay      0
+>     phc2sys[369.361]: enp4s0 sys offset         8 s2 freq   +1732
+> delay      0
+>     phc2sys[369.461]: enp4s0 sys offset         7 s2 freq   +1733
+> delay      0
+>     phc2sys[369.561]: enp4s0 sys offset         4 s2 freq   +1733
+> delay      0
+>     phc2sys[369.661]: enp4s0 sys offset         1 s2 freq   +1731
+> delay      0
+>     phc2sys[369.761]: enp4s0 sys offset         1 s2 freq   +1731
+> delay      0
+>     phc2sys[369.861]: enp4s0 sys offset        -5 s2 freq   +1725
+> delay      0
+>     phc2sys[369.961]: enp4s0 sys offset        -4 s2 freq   +1725
+> delay      0
+>     phc2sys[370.062]: enp4s0 sys offset         2 s2 freq   +1730
+> delay      0
+>     phc2sys[370.162]: enp4s0 sys offset        -7 s2 freq   +1721
+> delay      0
+>     phc2sys[370.262]: enp4s0 sys offset        -3 s2 freq   +1723
+> delay      0
+>     phc2sys[370.362]: enp4s0 sys offset         1 s2 freq   +1726
+> delay      0
+>     phc2sys[370.462]: enp4s0 sys offset        -3 s2 freq   +1723
+> delay      0
+>     phc2sys[370.562]: enp4s0 sys offset        -1 s2 freq   +1724
+> delay      0
+>     phc2sys[370.662]: enp4s0 sys offset        -4 s2 freq   +1720
+> delay      0
+>     phc2sys[370.762]: enp4s0 sys offset        -7 s2 freq   +1716
+> delay      0
+>     phc2sys[370.862]: enp4s0 sys offset        -2 s2 freq   +1719
+> delay      0
+> 
+>     Statistics for this run (total of 2179 lines), in nanoseconds:
+>       average: 0.14
+>       stdev: 5.03
+>       max: 48
+>       min: -27
+> 
+>     For reference, the statistics for runs without PCIe congestion show
+>     that the improvements from enabling PTM are less dramatic. For two
+>     runs of 16466 entries:
+>       without PTM: avg -0.04 stdev 10.57 max 39 min -42
+>       with PTM: avg 0.01 stdev 4.20 max 19 min -16
+> 
+>     One possible explanation is that when PTM is not enabled, and
+> there's a lot
+>     of traffic in the PCIe fabric, some register reads will take more
+> time
+>     than the others because of congestion on the PCIe fabric.
+> 
+>     When PTM is enabled, even if the PTM dialogs take more time to
+>     complete under heavy traffic, the time measurements do not depend
+> on
+>     the time to read the registers.
+> 
+>     This was implemented following the i225 EAS version 0.993.
+> 
+>     Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>     Tested-by: Dvora Fuxbrumer <dvorax.fuxbrumer@linux.intel.com>
+>     Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> 
+>  drivers/net/ethernet/intel/igc/igc.h         |   1 +
+>  drivers/net/ethernet/intel/igc/igc_defines.h |  31 +++++
+>  drivers/net/ethernet/intel/igc/igc_ptp.c     | 179
+> +++++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/igc/igc_regs.h    |  23 ++++
+>  4 files changed, 234 insertions(+)
+> 
+> 
+> On Wed, 2021-11-24 at 08:33 +0100, Greg KH wrote:
+> > On Wed, Nov 24, 2021 at 08:28:39AM +0100, Stefan Dietrich wrote:  
+> > > Summary: When attempting to rise or shut down a NIC manually or via
+> > > network-manager under 5.15, the machine reboots or freezes.
+> > >
+> > > Occurs with: 5.15.4-051504-generic and earlier 5.15 mainline (
+> > > https://kernel.ubuntu.com/~kernel-ppa/mainline/v5.15.4/) as well as
+> > > liquorix flavours.
+> > > Does not occur with: 5.14 and 5.13 (both with various flavours)  
+> >
+> > Can you use 'git bisect' between 5.14 and 5.15 to find the problem
+> > commit?
+> >
+> > thanks,
+> >
+> > greg k-h  
+> 
 
