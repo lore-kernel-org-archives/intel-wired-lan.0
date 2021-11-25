@@ -1,85 +1,106 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 26 Nov 2021 02:00:38 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- ee5087b9ea97bd9be70eb71026db7e2893803506
-Message-ID: <619fcf46.F1pv18bikaqL7ZNp%lkp@intel.com>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Date: Thu, 25 Nov 2021 22:11:16 +0100
+Subject: [Intel-wired-lan] [Bug 215129] New: Linux kernel hangs during
+ power down
+In-Reply-To: <1849b7a3-cdfe-f9dc-e4d1-172e8b1667d2@gmail.com>
+References: <20211124144505.31e15716@hermes.local>
+ <20211124164648.43c354f4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <1849b7a3-cdfe-f9dc-e4d1-172e8b1667d2@gmail.com>
+Message-ID: <4a28ad86-1b1e-ab51-2351-efdd6caf8e1d@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: ee5087b9ea97bd9be70eb71026db7e2893803506  iavf: Fix displaying queue statistics shown by ethtool
+On 25.11.2021 08:32, Heiner Kallweit wrote:
+> On 25.11.2021 01:46, Jakub Kicinski wrote:
+>> Adding Kalle and Hainer.
+>>
+>> On Wed, 24 Nov 2021 14:45:05 -0800 Stephen Hemminger wrote:
+>>> Begin forwarded message:
+>>>
+>>> Date: Wed, 24 Nov 2021 21:14:53 +0000
+>>> From: bugzilla-daemon at bugzilla.kernel.org
+>>> To: stephen at networkplumber.org
+>>> Subject: [Bug 215129] New: Linux kernel hangs during power down
+>>>
+>>>
+>>> https://bugzilla.kernel.org/show_bug.cgi?id=215129
+>>>
+>>>             Bug ID: 215129
+>>>            Summary: Linux kernel hangs during power down
+>>>            Product: Networking
+>>>            Version: 2.5
+>>>     Kernel Version: 5.15
+>>>           Hardware: All
+>>>                 OS: Linux
+>>>               Tree: Mainline
+>>>             Status: NEW
+>>>           Severity: normal
+>>>           Priority: P1
+>>>          Component: Other
+>>>           Assignee: stephen at networkplumber.org
+>>>           Reporter: martin.stolpe at gmail.com
+>>>         Regression: No
+>>>
+>>> Created attachment 299703
+>>>   --> https://bugzilla.kernel.org/attachment.cgi?id=299703&action=edit    
+>>> Kernel log after timeout occured
+>>>
+>>> On my system the kernel is waiting for a task during shutdown which doesn't
+>>> complete.
+>>>
+>>> The commit which causes this behavior is:
+>>> [f32a213765739f2a1db319346799f130a3d08820] ethtool: runtime-resume netdev
+>>> parent before ethtool ioctl ops
+>>>
+>>> This bug causes also that the system gets unresponsive after starting Steam:
+>>> https://steamcommunity.com/app/221410/discussions/2/3194736442566303600/
+>>>
+>>
+> 
+> I think the reference to ath10k_pci is misleading, Kalle isn't needed here.
+> The actual issue is a RTNL deadlock in igb_resume(). See log snippet:
+> 
+> Nov 24 18:56:19 MartinsPc kernel:  igb_resume+0xff/0x1e0 [igb 21bf6a00cb1f20e9b0e8434f7f8748a0504e93f8]
+> Nov 24 18:56:19 MartinsPc kernel:  pci_pm_runtime_resume+0xa7/0xd0
+> Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
+> Nov 24 18:56:19 MartinsPc kernel:  __rpm_callback+0x41/0x120
+> Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
+> Nov 24 18:56:19 MartinsPc kernel:  rpm_callback+0x35/0x70
+> Nov 24 18:56:19 MartinsPc kernel:  rpm_resume+0x567/0x810
+> Nov 24 18:56:19 MartinsPc kernel:  __pm_runtime_resume+0x4a/0x80
+> Nov 24 18:56:19 MartinsPc kernel:  dev_ethtool+0xd4/0x2d80
+> 
+> We have at least two places in net core where runtime_resume() is called
+> under RTNL. This conflicts with the current structure in few Intel drivers
+> that have something like the following in their resume path.
+> 
+> 	rtnl_lock();
+> 	if (!err && netif_running(netdev))
+> 		err = __igb_open(netdev, true);
+> 
+> 	if (!err)
+> 		netif_device_attach(netdev);
+> 	rtnl_unlock();
+> 
+> Other drivers don't do this, so it's the question whether it's actually
+> needed here to take RTNL. Some discussion was started [0], but it ended
+> w/o tangible result and since then it has been surprisingly quiet.
+> 
+> [0] https://www.spinics.net/lists/netdev/msg736880.html
+> 
 
-elapsed time: 1442m
+I think the problem with runtime_resume() taking RTNL could also hit
+the driver internally. See following call chain: If this would ever
+be called when the device is runtime-suspended, then a similar
+deadlock would occur.
 
-configs tested: 56
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211125
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                              debian-10.3
-mips                             allmodconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-hexagon              randconfig-r045-20211124
-hexagon              randconfig-r041-20211124
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+__dev_open()    - called with RTNL held
+  igb_open()
+    __igb_open()   - arg resuming is false
+      if (!resuming)
+        pm_runtime_get_sync(&pdev->dev);
+          igb_resume()
+            rtnl_lock()
