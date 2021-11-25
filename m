@@ -1,126 +1,49 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Thu, 25 Nov 2021 11:02:21 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 5/6] devlink: Reshuffle
- resource registration logic
-In-Reply-To: <20211123153312.4eecb490@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <6176a137a4ded48501e8a06fda0e305f9cfc787c.1637173517.git.leonro@nvidia.com>
- <20211117204956.6a36963b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YZYFvIK9mkP107tD@unreal>
- <20211118174813.54c3731f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YZfFDSnnjOG+wSyK@unreal>
- <20211119081017.6676843b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YZoHGKqLz6UBk2Sx@unreal>
- <20211122182728.370889f2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <YZynSa6s8kBKtSYB@unreal>
- <20211123153312.4eecb490@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <YZ9RHX8CbIMbP55t@unreal>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Thu, 25 Nov 2021 07:49:49 -0800
+Subject: [Intel-wired-lan] [Bug 215129] New: Linux kernel hangs during
+ power down
+In-Reply-To: <1849b7a3-cdfe-f9dc-e4d1-172e8b1667d2@gmail.com>
+References: <20211124144505.31e15716@hermes.local>
+ <20211124164648.43c354f4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <1849b7a3-cdfe-f9dc-e4d1-172e8b1667d2@gmail.com>
+Message-ID: <20211125074949.5f897431@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 23, 2021 at 03:33:12PM -0800, Jakub Kicinski wrote:
-> On Tue, 23 Nov 2021 10:33:13 +0200 Leon Romanovsky wrote:
-> > > > You can do it with my approach too. We incremented reference counter
-> > > > of devlink instance when devlink_nl_cmd_port_split_doit() was called,
-> > > > and we can safely take devlink->port_list_lock lock before returning
-> > > > from pre_doit.  
-> > > 
-> > > Wait, I thought you'd hold devlink->lock around split/unsplit.  
-> > 
-> > I'm holding.
-> > 
-> >     519 static int devlink_nl_pre_doit(const struct genl_ops *ops,
-> >     520                                struct sk_buff *skb, struct genl_info *info)
-> >     521 {
-> >     ...
-> >     529
-> >     530         mutex_lock(&devlink->lock);
+On Thu, 25 Nov 2021 08:32:18 +0100 Heiner Kallweit wrote:
+> I think the reference to ath10k_pci is misleading, Kalle isn't needed here.
+> The actual issue is a RTNL deadlock in igb_resume(). See log snippet:
 > 
-> Then I'm confused why you said you need to hold a ref count on devlink.
-
-This was an example to your sentence "I can start passing a pointer
-to a devlink_port to split/unsplit functions, which is a great improvement
-to the devlink driver API."
-https://lore.kernel.org/all/20211119081017.6676843b at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
-
-In my view, it is complete over-engineering and not needed at all. In
-current driver model, you can pass devlink_port pointer pretty safely
-without worries that "->devlink" disappear.
-
-> Is it devlink_unregister() that's not taking devlink->lock?
-
-Maybe, but my rationale for devlink_get in my example was slightly different.
-We need to use it when the ->devlink structure and sub-object are
-managed completely independent with different lifetimes and sub-object
-can over-live the devlink structure.
-
-All devlink_*_register() calls require valid devlink structure, so as I
-wrote above, devlink_get is not needed really needed.
-
-However you used that example so many times that I started to fear that
-I'm missing something very basic.
-
+> Nov 24 18:56:19 MartinsPc kernel:  igb_resume+0xff/0x1e0 [igb 21bf6a00cb1f20e9b0e8434f7f8748a0504e93f8]
+> Nov 24 18:56:19 MartinsPc kernel:  pci_pm_runtime_resume+0xa7/0xd0
+> Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
+> Nov 24 18:56:19 MartinsPc kernel:  __rpm_callback+0x41/0x120
+> Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
+> Nov 24 18:56:19 MartinsPc kernel:  rpm_callback+0x35/0x70
+> Nov 24 18:56:19 MartinsPc kernel:  rpm_resume+0x567/0x810
+> Nov 24 18:56:19 MartinsPc kernel:  __pm_runtime_resume+0x4a/0x80
+> Nov 24 18:56:19 MartinsPc kernel:  dev_ethtool+0xd4/0x2d80
 > 
-> > > Please look at the port splitting case, mlx5 doesn't implement it
-> > > but it's an important feature.  
-> > 
-> > I'll, but please don't forget that it was RFC, just to present that
-> > devlink can be changed internally without exposing internals.
-> > 
-> > > Either way, IDK how ref count on devlink helps with lifetime of a
-> > > subobject. You must assume the sub-objects can only be created outside
-> > > of the time devlink instance is visible or under devlink->lock?  
-> > 
-> > The devlink lifetime is:
-> > stages:        I                   II                   III   
-> >  devlink_alloc -> devlink_register -> devlink_unregister -> devlink_free.
-> > 
-> > All sub-objects should be created between devlink_alloc and devlink_free.
-> > It will ensure that ->devlink pointer is always valid.
-> > 
-> > Stage I:
-> >  * There is no need to hold any devlink locks or increase reference counter.
-> >    If driver doesn't do anything crazy during its init, nothing in devlink
-> >    land will run in parallel. 
-> > Stage II:
-> >  * There is a need to hold devlink->lock and/or play with reference counter
-> >    and/or use fine-grained locks. Users can issue "devlink ..." commands.
+> We have at least two places in net core where runtime_resume() is called
+> under RTNL. This conflicts with the current structure in few Intel drivers
+> that have something like the following in their resume path.
 > 
-> So sub-objects can (dis)appear only in I/III or under devlink->lock.
-> Why did you add the per-sub object list locks, then?
+> 	rtnl_lock();
+> 	if (!err && netif_running(netdev))
+> 		err = __igb_open(netdev, true);
+> 
+> 	if (!err)
+> 		netif_device_attach(netdev);
+> 	rtnl_unlock();
+> 
+> Other drivers don't do this, so it's the question whether it's actually
+> needed here to take RTNL. Some discussion was started [0], but it ended
+> w/o tangible result and since then it has been surprisingly quiet.
+> 
+> [0] https://www.spinics.net/lists/netdev/msg736880.html
 
-There are number of reasons and not all of them are technical.
-
-I wanted to do that, my initial plan was to cleanly separate user-visible
-API vs. in-kernel API and use one lock or no locks at all.
-
-But at some point of time, I recalculated my path, when I saw that
-I'm failing to explain even simple devlink lifetime model, together
-with warm feedback from the community and need to have this patch:
-
-[RFC PATCH 14/16] devlink: Require devlink lock during device reload
-https://lore.kernel.org/netdev/ad7f5f275bcda1ee058d7bd3020b7d85cd44b9f6.1636390483.git.leonro at nvidia.com/
-
-That patch is super-important in the devlink_reload puzzle, it closes the hack
-used in devlink_reload flow to allow to call to same devlink_*_register() calls
-without taking devlink->lock, so they can take it. In order to do it, I
-used list locks, because only for this that devlink->lock was needed in
-these calls.
-
-However, there is a way to avoid list locks. It can be achieved if we start
-to manage devlink state machine (at least for reload) internally and add
-something like that in devlink_*_register() calls:
-
- if (devlink->not_in_reload)
-    mutex_lock(&devlink->lock);
-
-It doesn't look nice, and invites immediate question: "why don't we
-provide two APIs? locked and unlocked? Locked for reload, and unlocked
-for all other parts". Unfortunately, this will require major changes in
-the drivers and in offline conversation I was told "do whatever you need
-in devlink as long as it doesn't require change in the driver, we want
-same drver flow for probe and reload.".
-
-Thanks
+Ah, that makes perfect sense, I didn't see that stack trace. 
+Dropping Kalle from CC. Let's hear what Intel folks have to say..
