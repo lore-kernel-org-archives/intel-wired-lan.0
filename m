@@ -1,90 +1,77 @@
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Date: Thu, 25 Nov 2021 08:32:18 +0100
-Subject: [Intel-wired-lan] [Bug 215129] New: Linux kernel hangs during
- power down
-In-Reply-To: <20211124164648.43c354f4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <20211124144505.31e15716@hermes.local>
- <20211124164648.43c354f4@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <1849b7a3-cdfe-f9dc-e4d1-172e8b1667d2@gmail.com>
+From: Danielle Ratson <danieller@nvidia.com>
+Date: Thu, 25 Nov 2021 07:37:29 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] igb: fix netpoll exit with
+ traffic
+In-Reply-To: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
+References: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
+Message-ID: <DM6PR12MB451662EC02B77D17A9C27473D8629@DM6PR12MB4516.namprd12.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 25.11.2021 01:46, Jakub Kicinski wrote:
-> Adding Kalle and Hainer.
+
+
+> -----Original Message-----
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Sent: Tuesday, November 23, 2021 10:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>;
+> netdev at vger.kernel.org; Oleksandr Natalenko
+> <oleksandr@natalenko.name>; Danielle Ratson <danieller@nvidia.com>;
+> Alexander Duyck <alexander.duyck@gmail.com>
+> Subject: [PATCH net v2] igb: fix netpoll exit with traffic
 > 
-> On Wed, 24 Nov 2021 14:45:05 -0800 Stephen Hemminger wrote:
->> Begin forwarded message:
->>
->> Date: Wed, 24 Nov 2021 21:14:53 +0000
->> From: bugzilla-daemon at bugzilla.kernel.org
->> To: stephen at networkplumber.org
->> Subject: [Bug 215129] New: Linux kernel hangs during power down
->>
->>
->> https://bugzilla.kernel.org/show_bug.cgi?id=215129
->>
->>             Bug ID: 215129
->>            Summary: Linux kernel hangs during power down
->>            Product: Networking
->>            Version: 2.5
->>     Kernel Version: 5.15
->>           Hardware: All
->>                 OS: Linux
->>               Tree: Mainline
->>             Status: NEW
->>           Severity: normal
->>           Priority: P1
->>          Component: Other
->>           Assignee: stephen at networkplumber.org
->>           Reporter: martin.stolpe at gmail.com
->>         Regression: No
->>
->> Created attachment 299703
->>   --> https://bugzilla.kernel.org/attachment.cgi?id=299703&action=edit    
->> Kernel log after timeout occured
->>
->> On my system the kernel is waiting for a task during shutdown which doesn't
->> complete.
->>
->> The commit which causes this behavior is:
->> [f32a213765739f2a1db319346799f130a3d08820] ethtool: runtime-resume netdev
->> parent before ethtool ioctl ops
->>
->> This bug causes also that the system gets unresponsive after starting Steam:
->> https://steamcommunity.com/app/221410/discussions/2/3194736442566303600/
->>
+> Oleksandr brought a bug report where netpoll causes trace messages in the
+> log on igb.
 > 
+> Danielle brought this back up as still occuring, so we'll try again.
+> 
+> [22038.710800] ------------[ cut here ]------------ [22038.710801]
+> igb_poll+0x0/0x1440 [igb] exceeded budget in poll [22038.710802]
+> WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155
+> netpoll_poll_dev+0x18a/0x1a0
+> 
+> As Alex suggested, change the driver to return work_done at the exit of
+> napi_poll, which should be safe to do in this driver because it is not polling
+> multiple queues in this single napi context (multiple queues attached to one
+> MSI-X vector). Several other drivers contain the same simple sequence, so I
+> hope this will not create new problems.
+> 
+> Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and
+> improve performance")
+> Reported-by: Oleksandr Natalenko <oleksandr@natalenko.name>
+> Reported-by: Danielle Ratson <danieller@nvidia.com>
+> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+> COMPILE TESTED ONLY! I have no way to reproduce this even on a machine I
+> have with igb. It works fine to load the igb driver and netconsole with no
+> errors.
+> ---
+> v2: simplified patch with an attempt to make it work
+> v1: original patch that apparently didn't work
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> b/drivers/net/ethernet/intel/igb/igb_main.c
+> index e647cc89c239..5e24b7ce5a92 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -8104,7 +8104,7 @@ static int igb_poll(struct napi_struct *napi, int
+> budget)
+>  	if (likely(napi_complete_done(napi, work_done)))
+>  		igb_ring_irq_enable(q_vector);
+> 
+> -	return min(work_done, budget - 1);
+> +	return work_done;
+>  }
+> 
+>  /**
+> --
+> 2.33.1
 
-I think the reference to ath10k_pci is misleading, Kalle isn't needed here.
-The actual issue is a RTNL deadlock in igb_resume(). See log snippet:
-
-Nov 24 18:56:19 MartinsPc kernel:  igb_resume+0xff/0x1e0 [igb 21bf6a00cb1f20e9b0e8434f7f8748a0504e93f8]
-Nov 24 18:56:19 MartinsPc kernel:  pci_pm_runtime_resume+0xa7/0xd0
-Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
-Nov 24 18:56:19 MartinsPc kernel:  __rpm_callback+0x41/0x120
-Nov 24 18:56:19 MartinsPc kernel:  ? pci_pm_freeze_noirq+0x110/0x110
-Nov 24 18:56:19 MartinsPc kernel:  rpm_callback+0x35/0x70
-Nov 24 18:56:19 MartinsPc kernel:  rpm_resume+0x567/0x810
-Nov 24 18:56:19 MartinsPc kernel:  __pm_runtime_resume+0x4a/0x80
-Nov 24 18:56:19 MartinsPc kernel:  dev_ethtool+0xd4/0x2d80
-
-We have at least two places in net core where runtime_resume() is called
-under RTNL. This conflicts with the current structure in few Intel drivers
-that have something like the following in their resume path.
-
-	rtnl_lock();
-	if (!err && netif_running(netdev))
-		err = __igb_open(netdev, true);
-
-	if (!err)
-		netif_device_attach(netdev);
-	rtnl_unlock();
-
-Other drivers don't do this, so it's the question whether it's actually
-needed here to take RTNL. Some discussion was started [0], but it ended
-w/o tangible result and since then it has been surprisingly quiet.
-
-[0] https://www.spinics.net/lists/netdev/msg736880.html
+Tested and looks ok, thanks!
