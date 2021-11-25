@@ -1,78 +1,72 @@
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Date: Thu, 25 Nov 2021 08:03:18 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] igb: fix netpoll exit with
- traffic
-In-Reply-To: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
-References: <20211123204000.1597971-1-jesse.brandeburg@intel.com>
-Message-ID: <4695060.31r3eYUQgx@natalenko.name>
+From: Stefan Dietrich <roots@gmx.de>
+Date: Thu, 25 Nov 2021 09:41:56 +0100
+Subject: [Intel-wired-lan] [REGRESSION] Kernel 5.15 reboots / freezes
+ upon ifup/ifdown
+In-Reply-To: <87a6htm4aj.fsf@intel.com>
+References: <924175a188159f4e03bd69908a91e606b574139b.camel@gmx.de>
+ <YZ3q4OKhU2EPPttE@kroah.com>
+ <8119066974f099aa11f08a4dad3653ac0ba32cd6.camel@gmx.de>
+ <20211124153449.72c9cfcd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <87a6htm4aj.fsf@intel.com>
+Message-ID: <227af6b0692a0a57f5fb349d4d9c914301753209.camel@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello.
+Hi Vinicius,
 
-On ?ter? 23. listopadu 2021 21:40:00 CET Jesse Brandeburg wrote:
-> Oleksandr brought a bug report where netpoll causes trace
-> messages in the log on igb.
-> 
-> Danielle brought this back up as still occuring, so we'll try
-> again.
-> 
-> [22038.710800] ------------[ cut here ]------------
-> [22038.710801] igb_poll+0x0/0x1440 [igb] exceeded budget in poll
-> [22038.710802] WARNING: CPU: 12 PID: 40362 at net/core/netpoll.c:155
-> netpoll_poll_dev+0x18a/0x1a0
-> 
-> As Alex suggested, change the driver to return work_done at the
-> exit of napi_poll, which should be safe to do in this driver
-> because it is not polling multiple queues in this single napi
-> context (multiple queues attached to one MSI-X vector). Several
-> other drivers contain the same simple sequence, so I hope
-> this will not create new problems.
-> 
-> Fixes: 16eb8815c235 ("igb: Refactor clean_rx_irq to reduce overhead and
-> improve performance") Reported-by: Oleksandr Natalenko
-> <oleksandr@natalenko.name>
-> Reported-by: Danielle Ratson <danieller@nvidia.com>
-> Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> ---
-> COMPILE TESTED ONLY! I have no way to reproduce this even on a machine I
-> have with igb. It works fine to load the igb driver and netconsole with
-> no errors.
-> ---
-> v2: simplified patch with an attempt to make it work
-> v1: original patch that apparently didn't work
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> b/drivers/net/ethernet/intel/igb/igb_main.c index
-> e647cc89c239..5e24b7ce5a92 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -8104,7 +8104,7 @@ static int igb_poll(struct napi_struct *napi, int
-> budget) if (likely(napi_complete_done(napi, work_done)))
->  		igb_ring_irq_enable(q_vector);
-> 
-> -	return min(work_done, budget - 1);
-> +	return work_done;
->  }
-> 
->  /**
+thanks - this was spot-on: disabling CONFIG_PCIE_PTM resolves the issue
+for latest 5.15.4 (stable from git) for both manual and network-manager
+NIC configuration.
 
-This seems to address the issue for me. I do not see a warning after a couple 
-of suspend/resume cycles any more, while previously it occurred after the first 
-cycle.
+Let me know if I may assist in debugging this further.
 
-Tested-by: Oleksandr Natalenko <oleksandr@natalenko.name>
 
-Thanks!
+Cheers,
+Stefan
 
--- 
-Oleksandr Natalenko (post-factum)
 
+On Wed, 2021-11-24 at 17:07 -0800, Vinicius Costa Gomes wrote:
+> Hi Stefan,
+>
+> Jakub Kicinski <kuba@kernel.org> writes:
+>
+> > On Wed, 24 Nov 2021 18:20:40 +0100 Stefan Dietrich wrote:
+> > > Hi all,
+> > >
+> > > six exciting hours and a lot of learning later, here it is.
+> > > Symptomatically, the critical commit appears for me between
+> > > 5.14.21-
+> > > 051421-generic and 5.15.0-051500rc2-generic - I did not find an
+> > > amd64
+> > > build for rc1.
+> > >
+> > > Please see the git-bisect output below and let me know how I may
+> > > further assist in debugging!
+> >
+> > Well, let's CC those involved, shall we? :)
+> >
+> > Thanks for working thru the bisection!
+> >
+> > > a90ec84837325df4b9a6798c2cc0df202b5680bd is the first bad commit
+> > > commit a90ec84837325df4b9a6798c2cc0df202b5680bd
+> > > Author: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> > > Date:   Mon Jul 26 20:36:57 2021 -0700
+> > >
+> > >     igc: Add support for PTP getcrosststamp()
+>
+> Oh! That's interesting.
+>
+> Can you try disabling CONFIG_PCIE_PTM in your kernel config? If it
+> works, then it's a point in favor that this commit is indeed the
+> problematic one.
+>
+> I am still trying to think of what could be causing the lockup you
+> are
+> seeing.
+>
+>
+> Cheers,
 
