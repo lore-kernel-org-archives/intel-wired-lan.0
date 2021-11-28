@@ -1,132 +1,85 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Fri, 26 Nov 2021 17:16:49 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] igc: enable XDP metadata
- in driver
-In-Reply-To: <163700859087.565980.3578855072170209153.stgit@firesoul>
-References: <163700856423.565980.10162564921347693758.stgit@firesoul>
- <163700859087.565980.3578855072170209153.stgit@firesoul>
-Message-ID: <20211126161649.151100-1-alexandr.lobakin@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 28 Nov 2021 14:33:07 +0200
+Subject: [Intel-wired-lan] [PATCH 1/3] Revert "e1000e: Additional PHY
+ power saving in S0ix"
+In-Reply-To: <CAAd53p4cQ+3HQKP3--SW68fNPM9LZPbkBrrA68iu12-gA4-B7Q@mail.gmail.com>
+References: <20211122161927.874291-1-kai.heng.feng@canonical.com>
+ <14e6c86d-0764-ceaf-4244-fcbf2c2dc23e@intel.com>
+ <CAAd53p4cQ+3HQKP3--SW68fNPM9LZPbkBrrA68iu12-gA4-B7Q@mail.gmail.com>
+Message-ID: <b9f738b6-1140-55d1-bb3f-d54f3521b739@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 15 Nov 2021 21:36:30 +0100
-
-> Enabling the XDP bpf_prog access to data_meta area is a very small
-> change. Hint passing 'true' to xdp_prepare_buff().
+On 11/24/2021 08:34, Kai-Heng Feng wrote:
+> Hi, Vitaly,
 > 
-> The SKB layers can also access data_meta area, which required more
-> driver changes to support. Reviewers, notice the igc driver have two
-> different functions that can create SKBs, depending on driver config.
+> On Tue, Nov 23, 2021 at 11:22 PM Lifshits, Vitaly
+> <vitaly.lifshits@intel.com> wrote:
+>>
+>> Hello Kai,
+>>
+>>
+>> We believe that simply reverting these patches is not a good idea. It will cause the driver to behave on a corporate system as if the CSME firmware is not there. This can lead to an unpredictable behavior in the long run.
 > 
-> Hint for testers, ethtool priv-flags legacy-rx enables
-> the function igc_construct_skb()
+> I really don't want to revert the series either.
 > 
->  ethtool --set-priv-flags DEV legacy-rx on
+>>
+>>
+>> The issue exposed by these patches is currently under active debug. We would like to find the root cause and fix it in a way that will still enable S0ix power savings on both corporate and consumer systems.
 > 
-> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c |   29 +++++++++++++++++++----------
->  1 file changed, 19 insertions(+), 10 deletions(-)
+> I am aware. But we've been waiting for the fix for a while, so I guess
+> it's better to revert the series now, and re-apply them when the fix
+> is ready.
 > 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 76b0a7311369..b516f1b301b4 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -1718,24 +1718,26 @@ static void igc_add_rx_frag(struct igc_ring *rx_ring,
->  
->  static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
->  				     struct igc_rx_buffer *rx_buffer,
-> -				     union igc_adv_rx_desc *rx_desc,
-> -				     unsigned int size)
-> +				     struct xdp_buff *xdp)
->  {
-> -	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-> +	unsigned int size = xdp->data_end - xdp->data;
->  	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
-> +	unsigned int metasize = xdp->data - xdp->data_meta;
->  	struct sk_buff *skb;
->  
->  	/* prefetch first cache line of first page */
-> -	net_prefetch(va);
-> +	net_prefetch(xdp->data);
-
-I'd prefer prefetching xdp->data_meta here. GRO layer accesses it.
-Maximum meta size for now is 32, so at least 96 bytes of the frame
-will stil be prefetched.
-
->  
->  	/* build an skb around the page buffer */
-> -	skb = build_skb(va - IGC_SKB_PAD, truesize);
-> +	skb = build_skb(xdp->data_hard_start, truesize);
->  	if (unlikely(!skb))
->  		return NULL;
->  
->  	/* update pointers within the skb to store the data */
-> -	skb_reserve(skb, IGC_SKB_PAD);
-> +	skb_reserve(skb, xdp->data - xdp->data_hard_start);
->  	__skb_put(skb, size);
-> +	if (metasize)
-> +		skb_metadata_set(skb, metasize);
->  
->  	igc_rx_buffer_flip(rx_buffer, truesize);
->  	return skb;
-> @@ -1746,6 +1748,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
->  					 struct xdp_buff *xdp,
->  					 ktime_t timestamp)
->  {
-> +	unsigned int metasize = xdp->data - xdp->data_meta;
->  	unsigned int size = xdp->data_end - xdp->data;
->  	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
->  	void *va = xdp->data;
-> @@ -1756,7 +1759,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
->  	net_prefetch(va);
-
-...here as well.
-
->  
->  	/* allocate a skb to store the frags */
-> -	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IGC_RX_HDR_LEN);
-> +	skb = napi_alloc_skb(&rx_ring->q_vector->napi, IGC_RX_HDR_LEN + metasize);
->  	if (unlikely(!skb))
->  		return NULL;
->  
-> @@ -1769,7 +1772,13 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
->  		headlen = eth_get_headlen(skb->dev, va, IGC_RX_HDR_LEN);
->  
->  	/* align pull length to size of long to optimize memcpy performance */
-> -	memcpy(__skb_put(skb, headlen), va, ALIGN(headlen, sizeof(long)));
-> +	memcpy(__skb_put(skb, headlen + metasize), xdp->data_meta,
-> +	       ALIGN(headlen + metasize, sizeof(long)));
-> +
-> +	if (metasize) {
-> +		skb_metadata_set(skb, metasize);
-> +		__skb_pull(skb, metasize);
-> +	}
->  
->  	/* update all of the pointers */
->  	size -= headlen;
-> @@ -2354,7 +2363,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
->  		if (!skb) {
->  			xdp_init_buff(&xdp, truesize, &rx_ring->xdp_rxq);
->  			xdp_prepare_buff(&xdp, pktbuf - igc_rx_offset(rx_ring),
-> -					 igc_rx_offset(rx_ring) + pkt_offset, size, false);
-> +					 igc_rx_offset(rx_ring) + pkt_offset, size, true);
->  
->  			skb = igc_xdp_run_prog(adapter, &xdp);
->  		}
-> @@ -2378,7 +2387,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
->  		} else if (skb)
->  			igc_add_rx_frag(rx_ring, rx_buffer, skb, size);
->  		else if (ring_uses_build_skb(rx_ring))
-> -			skb = igc_build_skb(rx_ring, rx_buffer, rx_desc, size);
-> +			skb = igc_build_skb(rx_ring, rx_buffer, &xdp);
->  		else
->  			skb = igc_construct_skb(rx_ring, rx_buffer, &xdp,
->  						timestamp);
-
-Thanks!
-Al
+> Kai-Heng
+Hello Kai-Heng,
+In this patch, we addressed additional PHY power saving. There is no 
+point in trying to revert it.
+> 
+>>
+>>
+>> On 11/22/2021 18:19, Kai-Heng Feng wrote:
+>>
+>> This reverts commit 3ad3e28cb203309fb29022dea41cd65df0583632.
+>>
+>> The s0ix series makes e1000e on TGL and ADL fails to work after s2idle
+>> resume.
+>>
+>> There doesn't seem to be any solution soon, so revert the whole series.
+>>
+>> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>> ---
+>>   drivers/net/ethernet/intel/e1000e/netdev.c | 6 ------
+>>   1 file changed, 6 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> index 44e2dc8328a22..e16b7c0d98089 100644
+>> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+>> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+>> @@ -6380,16 +6380,10 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
+>>    ew32(CTRL_EXT, mac_data);
+>>
+>>    /* DFT control: PHY bit: page769_20[0] = 1
+>> - * page769_20[7] - PHY PLL stop
+>> - * page769_20[8] - PHY go to the electrical idle
+>> - * page769_20[9] - PHY serdes disable
+>>    * Gate PPW via EXTCNF_CTRL - set 0x0F00[7] = 1
+>>    */
+>>    e1e_rphy(hw, I82579_DFT_CTRL, &phy_data);
+>>    phy_data |= BIT(0);
+>> - phy_data |= BIT(7);
+>> - phy_data |= BIT(8);
+>> - phy_data |= BIT(9);
+>>    e1e_wphy(hw, I82579_DFT_CTRL, phy_data);
+>>
+>>    mac_data = er32(EXTCNF_CTRL);
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+Sasha
