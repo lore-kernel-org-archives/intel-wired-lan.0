@@ -1,123 +1,143 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Mon, 29 Nov 2021 15:53:03 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] igc: enable XDP metadata
- in driver
-In-Reply-To: <6de05aea-9cf4-c938-eff2-9e3b138512a4@redhat.com>
-References: <163700856423.565980.10162564921347693758.stgit@firesoul>
- <163700859087.565980.3578855072170209153.stgit@firesoul>
- <20211126161649.151100-1-alexandr.lobakin@intel.com>
- <6de05aea-9cf4-c938-eff2-9e3b138512a4@redhat.com>
-Message-ID: <20211129145303.10507-1-alexandr.lobakin@intel.com>
+From: Rui Zhang <zhangrui182@huawei.com>
+Date: Mon, 29 Nov 2021 19:52:01 +0600
+Subject: [Intel-wired-lan] [PATCH] i40e: fix use-after-free in
+ i40e_sync_filters_subtask()
+Message-ID: <20211129135201.4097648-1-zhangrui182@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Mon, 29 Nov 2021 15:39:04 +0100
+From: Di Zhu <zhudi2@huawei.com>
 
-> On 26/11/2021 17.16, Alexander Lobakin wrote:
-> > From: Jesper Dangaard Brouer <brouer@redhat.com>
-> > Date: Mon, 15 Nov 2021 21:36:30 +0100
-> > 
-> >> Enabling the XDP bpf_prog access to data_meta area is a very small
-> >> change. Hint passing 'true' to xdp_prepare_buff().
-> >>
-> >> The SKB layers can also access data_meta area, which required more
-> >> driver changes to support. Reviewers, notice the igc driver have two
-> >> different functions that can create SKBs, depending on driver config.
-> >>
-> >> Hint for testers, ethtool priv-flags legacy-rx enables
-> >> the function igc_construct_skb()
-> >>
-> >>   ethtool --set-priv-flags DEV legacy-rx on
-> >>
-> >> Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> >> ---
-> >>   drivers/net/ethernet/intel/igc/igc_main.c |   29 +++++++++++++++++++----------
-> >>   1 file changed, 19 insertions(+), 10 deletions(-)
-> >>
-> >> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> >> index 76b0a7311369..b516f1b301b4 100644
-> >> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> >> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> >> @@ -1718,24 +1718,26 @@ static void igc_add_rx_frag(struct igc_ring *rx_ring,
-> >>   
-> >>   static struct sk_buff *igc_build_skb(struct igc_ring *rx_ring,
-> >>   				     struct igc_rx_buffer *rx_buffer,
-> >> -				     union igc_adv_rx_desc *rx_desc,
-> >> -				     unsigned int size)
-> >> +				     struct xdp_buff *xdp)
-> >>   {
-> >> -	void *va = page_address(rx_buffer->page) + rx_buffer->page_offset;
-> >> +	unsigned int size = xdp->data_end - xdp->data;
-> >>   	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
-> >> +	unsigned int metasize = xdp->data - xdp->data_meta;
-> >>   	struct sk_buff *skb;
-> >>   
-> >>   	/* prefetch first cache line of first page */
-> >> -	net_prefetch(va);
-> >> +	net_prefetch(xdp->data);
-> > 
-> > I'd prefer prefetching xdp->data_meta here. GRO layer accesses it.
-> > Maximum meta size for now is 32, so at least 96 bytes of the frame
-> > will stil be prefetched.
-> 
-> Prefetch works for "full" cachelines. Intel CPUs often prefect two 
-> cache-lines, when doing this, thus I guess we still get xdp->data.
+Using ifconfig command to delete the ipv6 address will cause 
+the i40e network card driver to delete its internal mac_filter and 
+i40e_service_task kernel thread will concurrently access the mac_filter.
+These two processes are not protected by lock
+so causing the following use-after-free problems.
 
-Sure. I mean, net_prefetch() prefetches 128 bytes in a row.
-xdp->data is usually aligned to XDP_PACKET_HEADROOM (or two bytes
-to the right). If our CL is 64 and the meta is present, then... ah
-right, 64 to the left and 64 starting from data to the right.
+ print_address_description+0x70/0x360
+ ? vprintk_func+0x5e/0xf0
+ kasan_report+0x1b2/0x330
+ i40e_sync_vsi_filters+0x4f0/0x1850 [i40e]
+ i40e_sync_filters_subtask+0xe3/0x130 [i40e]
+ i40e_service_task+0x195/0x24c0 [i40e]
+ process_one_work+0x3f5/0x7d0
+ worker_thread+0x61/0x6c0
+ ? process_one_work+0x7d0/0x7d0
+ kthread+0x1c3/0x1f0
+ ? kthread_park+0xc0/0xc0
+ ret_from_fork+0x35/0x40
 
-> I don't mind prefetching xdp->data_meta, but (1) I tried to keep the 
-> change minimal as current behavior was data area I kept that. (2) 
-> xdp->data starts on a cacheline and we know NIC hardware have touched 
-> that, it is not a full-cache-miss due to DDIO/DCA it is known to be in 
-> L3 cache (gain is around 2-3 ns in my machine for data prefetch).
-> Given this is only a 2.5 Gbit/s driver/HW I doubt this make any difference.
+Allocated by task 2279810:
+ kasan_kmalloc+0xa0/0xd0
+ kmem_cache_alloc_trace+0xf3/0x1e0
+ i40e_add_filter+0x127/0x2b0 [i40e]
+ i40e_add_mac_filter+0x156/0x190 [i40e]
+ i40e_addr_sync+0x2d/0x40 [i40e]
+ __hw_addr_sync_dev+0x154/0x210
+ i40e_set_rx_mode+0x6d/0xf0 [i40e]
+ __dev_set_rx_mode+0xfb/0x1f0
+ __dev_mc_add+0x6c/0x90
+ igmp6_group_added+0x214/0x230
+ __ipv6_dev_mc_inc+0x338/0x4f0
+ addrconf_join_solict.part.7+0xa2/0xd0
+ addrconf_dad_work+0x500/0x980
+ process_one_work+0x3f5/0x7d0
+ worker_thread+0x61/0x6c0
+ kthread+0x1c3/0x1f0
+ ret_from_fork+0x35/0x40
 
-Code constistency at least. On 10+ Gbps we prefetch meta, and I plan
-to continue doing this in my series.
+Freed by task 2547073:
+ __kasan_slab_free+0x130/0x180
+ kfree+0x90/0x1b0
+ __i40e_del_filter+0xa3/0xf0 [i40e]
+ i40e_del_mac_filter+0xf3/0x130 [i40e]
+ i40e_addr_unsync+0x85/0xa0 [i40e]
+ __hw_addr_sync_dev+0x9d/0x210
+ i40e_set_rx_mode+0x6d/0xf0 [i40e]
+ __dev_set_rx_mode+0xfb/0x1f0
+ __dev_mc_del+0x69/0x80
+ igmp6_group_dropped+0x279/0x510
+ __ipv6_dev_mc_dec+0x174/0x220
+ addrconf_leave_solict.part.8+0xa2/0xd0
+ __ipv6_ifa_notify+0x4cd/0x570
+ ipv6_ifa_notify+0x58/0x80
+ ipv6_del_addr+0x259/0x4a0
+ inet6_addr_del+0x188/0x260
+ addrconf_del_ifaddr+0xcc/0x130
+ inet6_ioctl+0x152/0x190
+ sock_do_ioctl+0xd8/0x2b0
+ sock_ioctl+0x2e5/0x4c0
+ do_vfs_ioctl+0x14e/0xa80
+ ksys_ioctl+0x7c/0xa0
+ __x64_sys_ioctl+0x42/0x50
+ do_syscall_64+0x98/0x2c0
+ entry_SYSCALL_64_after_hwframe+0x65/0xca
 
-> Tony is it worth resending a V2 of this patch?
+Signed-off-by: Di Zhu <zhudi2@huawei.com>
+Signed-off-by: Rui Zhang <zhangrui182@huawei.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Tony, you can take it as it is if you want, I'll correct it later in
-mine. Up to you.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 8221c3364..11c1e9421 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -96,6 +96,24 @@ MODULE_VERSION(DRV_VERSION);
+ 
+ static struct workqueue_struct *i40e_wq;
+ 
++static void netdev_hw_addr_refcnt(struct i40e_mac_filter *f,
++				  struct net_device *netdev, int delta)
++{
++	struct netdev_hw_addr *ha;
++
++	if (f == NULL || netdev == NULL)
++		return;
++
++	netdev_for_each_mc_addr(ha, netdev) {
++		if (ether_addr_equal(ha->addr, f->macaddr)) {
++			ha->refcount += delta;
++			if (ha->refcount <= 0)
++				ha->refcount = 1;
++			break;
++		}
++	}
++}
++
+ /**
+  * i40e_allocate_dma_mem_d - OS specific memory alloc for shared code
+  * @hw:   pointer to the HW structure
+@@ -1994,6 +2012,7 @@ static void i40e_undo_add_filter_entries(struct i40e_vsi *vsi,
+ 	hlist_for_each_entry_safe(new, h, from, hlist) {
+ 		/* We can simply free the wrapper structure */
+ 		hlist_del(&new->hlist);
++		netdev_hw_addr_refcnt(new->f, vsi->netdev, -1);
+ 		kfree(new);
+ 	}
+ }
+@@ -2330,6 +2349,10 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 						       &tmp_add_list,
+ 						       &tmp_del_list,
+ 						       vlan_filters);
++
++		hlist_for_each_entry(new, &tmp_add_list, hlist)
++			netdev_hw_addr_refcnt(new->f, vsi->netdev, 1);
++
+ 		if (retval)
+ 			goto err_no_memory_locked;
+ 
+@@ -2462,6 +2485,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 			if (new->f->state == I40E_FILTER_NEW)
+ 				new->f->state = new->state;
+ 			hlist_del(&new->hlist);
++			netdev_hw_addr_refcnt(new->f, vsi->netdev, -1);
+ 			kfree(new);
+ 		}
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-- 
+2.23.0
 
-Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-
-> >>   
-> >>   	/* build an skb around the page buffer */
-> >> -	skb = build_skb(va - IGC_SKB_PAD, truesize);
-> >> +	skb = build_skb(xdp->data_hard_start, truesize);
-> >>   	if (unlikely(!skb))
-> >>   		return NULL;
-> >>   
-> >>   	/* update pointers within the skb to store the data */
-> >> -	skb_reserve(skb, IGC_SKB_PAD);
-> >> +	skb_reserve(skb, xdp->data - xdp->data_hard_start);
-> >>   	__skb_put(skb, size);
-> >> +	if (metasize)
-> >> +		skb_metadata_set(skb, metasize);
-> >>   
-> >>   	igc_rx_buffer_flip(rx_buffer, truesize);
-> >>   	return skb;
-> >> @@ -1746,6 +1748,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
-> >>   					 struct xdp_buff *xdp,
-> >>   					 ktime_t timestamp)
-> >>   {
-> >> +	unsigned int metasize = xdp->data - xdp->data_meta;
-> >>   	unsigned int size = xdp->data_end - xdp->data;
-> >>   	unsigned int truesize = igc_get_rx_frame_truesize(rx_ring, size);
-> >>   	void *va = xdp->data;
-> >> @@ -1756,7 +1759,7 @@ static struct sk_buff *igc_construct_skb(struct igc_ring *rx_ring,
-> >>   	net_prefetch(va);
-> > 
-> > ...here as well.
-> >
-
-Thanks,
-Al
