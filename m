@@ -1,49 +1,29 @@
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Date: Tue, 30 Nov 2021 22:35:27 +0100
-Subject: [Intel-wired-lan] [PATCH net] igb: fix deadlock caused by
- taking RTNL in RPM resume path
-In-Reply-To: <20211130091206.488a541f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <6bb28d2f-4884-7696-0582-c26c35534bae@gmail.com>
- <20211129171712.500e37cb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <6edc23a1-5907-3a41-7b46-8d53c5664a56@gmail.com>
- <20211130091206.488a541f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-Message-ID: <c6f3caef-dac2-cc4a-b5b5-70e7fa54d73f@gmail.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 30 Nov 2021 21:42:33 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix for failed to init
+ adminq while VF reset
+In-Reply-To: <20211130073211.1114232-1-karen.sornek@intel.com>
+References: <20211130073211.1114232-1-karen.sornek@intel.com>
+Message-ID: <8f454effc188a4e01b758caa9579f933621c381e.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 30.11.2021 18:12, Jakub Kicinski wrote:
-> On Tue, 30 Nov 2021 07:46:22 +0100 Heiner Kallweit wrote:
->> On 30.11.2021 02:17, Jakub Kicinski wrote:
->>> On Mon, 29 Nov 2021 22:14:06 +0100 Heiner Kallweit wrote:  
->>>> -	rtnl_lock();
->>>> +	if (!rpm)
->>>> +		rtnl_lock();  
->>>
->>> Is there an ASSERT_RTNL() hidden in any of the below? Can we add one?
->>> Unless we're 100% confident nobody will RPM resume without rtnl held..
->>>   
->>
->> Not sure whether igb uses RPM the same way as r8169. There the device
->> is runtime-suspended (D3hot) w/o link. Once cable is plugged in the PHY
->> triggers a PME, and PCI core runtime-resumes the device (MAC).
->> In this case RTNL isn't held by the caller. Therefore I don't think
->> it's safe to assume that all callers hold RTNL.
+On Tue, 2021-11-30 at 08:32 +0100, Sornek, Karen wrote:
+> From: Karen Sornek <karen.sornek@intel.com>
 > 
-> No, no - I meant to leave the locking in but add ASSERT_RTNL() to catch
-> if rpm == true && rtnl_held() == false.
+> Fix for failed to init adminq: -53 while VF is resetting via MAC
+> address changing procedure.
+> Added sync module to avoid reading deadbeef value in reinit adminq
+> during software reset.
+> Without this patch it is possible to trigger VF reset procedure
+> during reinit adminq. This resulted in an incorrect reading of
+> value from the AQP registers and generated the -53 error.
 > 
-This is a valid case. Maybe it's not my day today, I still don't get
-how we would benefit from adding an ASSERT_RTNL().
 
-Based on the following I think that RPM resume and device open()
-can't collide, because RPM resume is finished before open()
-starts its actual work.
+If this is for net, it needs a Fixes:
 
-static int __igb_open(struct net_device *netdev, bool resuming)
-{
-...
-if (!resuming)
-		pm_runtime_get_sync(&pdev->dev);
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
