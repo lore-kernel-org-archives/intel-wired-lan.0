@@ -1,56 +1,62 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Tue, 30 Nov 2021 12:25:47 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] igc: enable XDP metadata
- in driver
-In-Reply-To: <9948428f33d013105108872d51f7e6ebec21203c.camel@intel.com>
-References: <163700856423.565980.10162564921347693758.stgit@firesoul>
- <163700859087.565980.3578855072170209153.stgit@firesoul>
- <20211126161649.151100-1-alexandr.lobakin@intel.com>
- <6de05aea-9cf4-c938-eff2-9e3b138512a4@redhat.com>
- <20211129145303.10507-1-alexandr.lobakin@intel.com>
- <20211129181320.579477-1-alexandr.lobakin@intel.com>
- <9948428f33d013105108872d51f7e6ebec21203c.camel@intel.com>
-Message-ID: <e462ac19-0598-5b68-eab9-93358b7e7a57@redhat.com>
+From: Mark Pearson <markpearson@lenovo.com>
+Date: Tue, 30 Nov 2021 10:52:20 -0500
+Subject: [Intel-wired-lan] [External] Re: [PATCH 3/3] Revert "e1000e:
+ Add handshake with the CSME to support S0ix"
+In-Reply-To: <0ba36a30-95d3-a5f4-93c2-443cf2259756@intel.com>
+References: <20211122161927.874291-1-kai.heng.feng@canonical.com>
+ <20211122161927.874291-3-kai.heng.feng@canonical.com>
+ <0ba36a30-95d3-a5f4-93c2-443cf2259756@intel.com>
+Message-ID: <3fad0b95-fe97-8c4a-3ca9-3ed2a9fa2134@lenovo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi Sasha
 
-
-On 29/11/2021 20.03, Nguyen, Anthony L wrote:
-> On Mon, 2021-11-29 at 19:13 +0100, Alexander Lobakin wrote:
->> From: Alexander Lobakin <alexandr.lobakin@intel.com>
->> Date: Mon, 29 Nov 2021 15:53:03 +0100
+On 2021-11-28 08:23, Sasha Neftin wrote:
+> On 11/22/2021 18:19, Kai-Heng Feng wrote:
+>> This reverts commit 3e55d231716ea361b1520b801c6778c4c48de102.
 >>
->>> From: Jesper Dangaard Brouer <jbrouer@redhat.com>
->>> Date: Mon, 29 Nov 2021 15:39:04 +0100
->>>
->>>> On 26/11/2021 17.16, Alexander Lobakin wrote:
->>>>> From: Jesper Dangaard Brouer <brouer@redhat.com>
->>>>> Date: Mon, 15 Nov 2021 21:36:30 +0100
->>>>>
->>>>>> Enabling the XDP bpf_prog access to data_meta area is a very
->>>>>> small
->>>>>> change. Hint passing 'true' to xdp_prepare_buff().
+>> Bugzilla:
+>> https://bugzilla.kernel.org/show_bug.cgi?id=214821>>>
+>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>> ---
+<snip>
 >>
->> [ snip ]
-[ snip ]
->>
->>>
->>>> Tony is it worth resending a V2 of this patch?
->>>
->>> Tony, you can take it as it is if you want, I'll correct it later
->>> in
->>> mine. Up to you.
->>
->> My "fixup" looks like (in case of v2 needed or so):
+> Hello Kai-Heng,
+> I believe it is the wrong approach. Reverting this patch will put
+> corporate systems in an unpredictable state. SW will perform s0ix flow
+> independent to CSME. (The CSME firmware will continue run
+> independently.) LAN controller could be in an unknown state.
+> Please, afford us to continue to debug the problem (it is could be
+> incredible complexity)
 > 
-> Thanks Al. If Jesper is ok with this, I'll incorporate it in before
-> sending the pull request to netdev. Otherwise, you can do it as follow
-> on in the other series you previously referenced.
+> You always can skip the s0ix flow on problematic corporate systems by
+> using privilege flag: ethtool --set-priv-flags enp0s31f6 s0ix-enabled off
+> 
+> Also, there is no impact on consumer systems.
+> Sasha
 
-I'm fine with you incorporating this change. Thanks! :-)
---Jesper
+I know we've discussed this offline, and your team are working on the
+correct fix but I wanted to check based on your comments above that "it
+was complex". I thought, and maybe misunderstood, that it was going to
+be relatively simple to disable the change for older CPUs - which is the
+biggest problem caused by the patch.
 
+Right now it's breaking networking for folk who happen to have a vPro
+Tigerlake (and I believe even potentially Cometlake or older) system. I
+think the impact of that could potentially be quite severe.
+
+I understand not wanting to revert the change for the ADL platforms I
+believe this is targeting and to fix this instead - but your comment
+made me nervous that Linux users on older Intel based platforms are in
+for a long and painful wait - it is likely a lot of users....
+
+Can you or Dima confirm the fix for older platforms will be available
+soon? I appreciate the ADL platform might take a bit more work and time
+to get right.
+
+Thanks
+Mark
