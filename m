@@ -1,88 +1,98 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed,  1 Dec 2021 10:57:31 -0800
-Subject: [Intel-wired-lan] [PATCH] igc: Avoid possible deadlock during
- suspend/resume
-In-Reply-To: <87r1awtdx3.fsf@intel.com>
-References: <87r1awtdx3.fsf@intel.com>
-Message-ID: <20211201185731.236130-1-vinicius.gomes@intel.com>
+From: Mark Pearson <markpearson@lenovo.com>
+Date: Wed, 1 Dec 2021 14:00:40 -0500
+Subject: [Intel-wired-lan] [External] Re: [PATCH 3/3] Revert "e1000e:
+ Add handshake with the CSME to support S0ix"
+In-Reply-To: <aa685a4f-c270-7b6e-1ede-24570d30dd98@intel.com>
+References: <20211122161927.874291-1-kai.heng.feng@canonical.com>
+ <20211122161927.874291-3-kai.heng.feng@canonical.com>
+ <0ba36a30-95d3-a5f4-93c2-443cf2259756@intel.com>
+ <3fad0b95-fe97-8c4a-3ca9-3ed2a9fa2134@lenovo.com>
+ <aa685a4f-c270-7b6e-1ede-24570d30dd98@intel.com>
+Message-ID: <809af77d-493a-cba4-a1fe-def12dabe602@lenovo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Inspired by:
-https://bugzilla.kernel.org/show_bug.cgi?id=215129
 
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
-Just to see if it's indeed the same problem as the bug report above.
 
- drivers/net/ethernet/intel/igc/igc_main.c | 19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+On 2021-12-01 11:38, Ruinskiy, Dima wrote:
+> On 30/11/2021 17:52, Mark Pearson wrote:
+>> Hi Sasha
+>>
+>> On 2021-11-28 08:23, Sasha Neftin wrote:
+>>> On 11/22/2021 18:19, Kai-Heng Feng wrote:
+>>>> This reverts commit 3e55d231716ea361b1520b801c6778c4c48de102.
+>>>>
+>>>> Bugzilla:
+>>>> https://bugzilla.kernel.org/show_bug.cgi?id=214821>>>>>
+>>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>>>> ---
+>> <snip>
+>>>>
+>>> Hello Kai-Heng,
+>>> I believe it is the wrong approach. Reverting this patch will put
+>>> corporate systems in an unpredictable state. SW will perform s0ix flow
+>>> independent to CSME. (The CSME firmware will continue run
+>>> independently.) LAN controller could be in an unknown state.
+>>> Please, afford us to continue to debug the problem (it is could be
+>>> incredible complexity)
+>>>
+>>> You always can skip the s0ix flow on problematic corporate systems by
+>>> using privilege flag: ethtool --set-priv-flags enp0s31f6 s0ix-enabled
+>>> off
+>>>
+>>> Also, there is no impact on consumer systems.
+>>> Sasha
+>>
+>> I know we've discussed this offline, and your team are working on the
+>> correct fix but I wanted to check based on your comments above that "it
+>> was complex". I thought, and maybe misunderstood, that it was going to
+>> be relatively simple to disable the change for older CPUs - which is the
+>> biggest problem caused by the patch.
+>>
+>> Right now it's breaking networking for folk who happen to have a vPro
+>> Tigerlake (and I believe even potentially Cometlake or older) system. I
+>> think the impact of that could potentially be quite severe.
+>>
+>> I understand not wanting to revert the change for the ADL platforms I
+>> believe this is targeting and to fix this instead - but your comment
+>> made me nervous that Linux users on older Intel based platforms are in
+>> for a long and painful wait - it is likely a lot of users....
+>>
+>> Can you or Dima confirm the fix for older platforms will be available
+>> soon? I appreciate the ADL platform might take a bit more work and time
+>> to get right.
+>>
+>> Thanks
+>> Mark
+>>
+> Hi Mark,
+> 
+> What we currently see is that the issue manifests itself similarly on
+> ADL and TGL platforms. Thus, the fix will likely be the same for both.
+> 
+> If we cannot find a proper fix soon, we will provide a workaround (for
+> example by temporary disabling the feature on vPro platforms until we do
+> have a fix).
+> 
+> This can be done without reverting the patch series, and I don't see
+> much value in selectively disabling it for CML/TGL while leaving it on
+> for ADL, unless our ongoing debug shows otherwise.
+> 
+Got it - thanks Dima.
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 0e19b4d02e62..c58bf557a2a1 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6619,7 +6619,7 @@ static void igc_deliver_wake_packet(struct net_device *netdev)
- 	netif_rx(skb);
- }
- 
--static int __maybe_unused igc_resume(struct device *dev)
-+static int __maybe_unused __igc_resume(struct device *dev, bool rpm)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct net_device *netdev = pci_get_drvdata(pdev);
-@@ -6661,20 +6661,27 @@ static int __maybe_unused igc_resume(struct device *dev)
- 
- 	wr32(IGC_WUS, ~0);
- 
--	rtnl_lock();
-+	if (!rpm)
-+		rtnl_lock();
- 	if (!err && netif_running(netdev))
- 		err = __igc_open(netdev, true);
- 
- 	if (!err)
- 		netif_device_attach(netdev);
--	rtnl_unlock();
-+	if (!rpm)
-+		rtnl_unlock();
- 
- 	return err;
- }
- 
- static int __maybe_unused igc_runtime_resume(struct device *dev)
- {
--	return igc_resume(dev);
-+	return __igc_resume(dev, true);
-+}
-+
-+static int __maybe_unused igc_resume(struct device *dev)
-+{
-+	return __igc_resume(dev, false);
- }
- 
- static int __maybe_unused igc_suspend(struct device *dev)
-@@ -6738,7 +6745,7 @@ static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
-  *  @pdev: Pointer to PCI device
-  *
-  *  Restart the card from scratch, as if from a cold-boot. Implementation
-- *  resembles the first-half of the igc_resume routine.
-+ *  resembles the first-half of the __igc_resume routine.
-  **/
- static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
- {
-@@ -6777,7 +6784,7 @@ static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
-  *
-  *  This callback is called when the error recovery driver tells us that
-  *  its OK to resume normal operation. Implementation resembles the
-- *  second-half of the igc_resume routine.
-+ *  second-half of the __igc_resume routine.
-  */
- static void igc_io_resume(struct pci_dev *pdev)
- {
--- 
-2.33.1
+As a note - the obvious advantage of selectively disabling for CML/TGL
+is there is a ton of those platforms out there in users hands, whereas
+the ADL platforms won't be landing for a few more months (at least in
+our case). I'm OK if the fixes take a touch longer with ADL (though
+we'll want them soon so they have time to make it upstream and down into
+the distro's) - but there's going to be a lot of unhappy Intel users as
+soon as they start picking up the updates (that are landing in some
+distro's) and finding that networking is broken. I'd expect TGL/CML to
+be a priority...
 
+Keep us posted when the fix is ready please.
+
+Mark
