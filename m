@@ -1,168 +1,44 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 01 Dec 2021 21:12:57 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- aa9e3fb7a6d237a034d97ae4daccce6b7e44392e
-Message-ID: <61a774d9.0x5ubOilEJvgNWmF%lkp@intel.com>
+From: Hayes Wang <hayeswang@realtek.com>
+Date: Wed, 1 Dec 2021 02:57:00 +0000
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
+In-Reply-To: <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211129101315.16372-381-nic_swsd@realtek.com>
+ <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: aa9e3fb7a6d237a034d97ae4daccce6b7e44392e  iavf: Restrict maximum VLAN filters for VIRTCHNL_VF_OFFLOAD_VLAN_V2
+Jakub Kicinski <kuba@kernel.org>
+> Sent: Tuesday, November 30, 2021 2:00 AM
+> Subject: Re: [RFC PATCH 0/4] r8169: support dash
+> 
+> On Mon, 29 Nov 2021 18:13:11 +0800 Hayes Wang wrote:
+> > These patches are used to support dash for RTL8111EP and
+> > RTL8111FP(RTL81117).
+> 
+> If I understand correctly DASH is a DMTF standard for remote control.
+> 
+> Since it's a standard I think we should have a common way of
+> configuring it across drivers.
 
-elapsed time: 1025m
+Excuse me. I am not familiar with it.
+What document or sample code could I start?
 
-configs tested: 139
-configs skipped: 3
+> Is enable/disable the only configuration
+> that we will need?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+I don't think I could answer it before I understand the above way
+you mentioned.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-um                               alldefconfig
-mips                           ci20_defconfig
-sh                          rsk7201_defconfig
-h8300                            allyesconfig
-mips                           rs90_defconfig
-arm                       netwinder_defconfig
-arm                       versatile_defconfig
-arm                        magician_defconfig
-powerpc                   currituck_defconfig
-sh                          polaris_defconfig
-sh                          landisk_defconfig
-ia64                         bigsur_defconfig
-powerpc                     stx_gp3_defconfig
-mips                       lemote2f_defconfig
-m68k                                defconfig
-arm                            qcom_defconfig
-arc                              alldefconfig
-m68k                        m5272c3_defconfig
-powerpc                      bamboo_defconfig
-sh                           se7712_defconfig
-arm                  randconfig-c002-20211128
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-i386                             allyesconfig
-sparc                               defconfig
-sparc                            allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20211130
-i386                 randconfig-a002-20211130
-i386                 randconfig-a006-20211130
-i386                 randconfig-a004-20211130
-i386                 randconfig-a003-20211130
-i386                 randconfig-a001-20211130
-i386                 randconfig-a001-20211129
-i386                 randconfig-a002-20211129
-i386                 randconfig-a006-20211129
-i386                 randconfig-a005-20211129
-i386                 randconfig-a004-20211129
-i386                 randconfig-a003-20211129
-x86_64               randconfig-a011-20211128
-x86_64               randconfig-a014-20211128
-x86_64               randconfig-a012-20211128
-x86_64               randconfig-a016-20211128
-x86_64               randconfig-a013-20211128
-x86_64               randconfig-a015-20211128
-i386                 randconfig-a015-20211128
-i386                 randconfig-a016-20211128
-i386                 randconfig-a013-20211128
-i386                 randconfig-a012-20211128
-i386                 randconfig-a014-20211128
-i386                 randconfig-a011-20211128
-arc                  randconfig-r043-20211130
-arc                  randconfig-r043-20211128
-s390                 randconfig-r044-20211128
-riscv                randconfig-r042-20211128
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+> We don't use sysfs too much these days, can we move the knob to
+> devlink, please? (If we only need an on/off switch generic devlink param
+> should be fine).
 
-clang tested configs:
-x86_64               randconfig-a001-20211128
-x86_64               randconfig-a006-20211128
-x86_64               randconfig-a003-20211128
-x86_64               randconfig-a005-20211128
-x86_64               randconfig-a004-20211128
-x86_64               randconfig-a002-20211128
-i386                 randconfig-a001-20211128
-i386                 randconfig-a002-20211128
-i386                 randconfig-a006-20211128
-i386                 randconfig-a005-20211128
-i386                 randconfig-a004-20211128
-i386                 randconfig-a003-20211128
-x86_64               randconfig-a014-20211130
-x86_64               randconfig-a016-20211130
-x86_64               randconfig-a013-20211130
-x86_64               randconfig-a012-20211130
-x86_64               randconfig-a015-20211130
-x86_64               randconfig-a011-20211130
-x86_64               randconfig-a016-20211201
-x86_64               randconfig-a011-20211201
-x86_64               randconfig-a013-20211201
-x86_64               randconfig-a015-20211201
-x86_64               randconfig-a012-20211201
-x86_64               randconfig-a014-20211201
-i386                 randconfig-a015-20211129
-i386                 randconfig-a016-20211129
-i386                 randconfig-a013-20211129
-i386                 randconfig-a012-20211129
-i386                 randconfig-a014-20211129
-i386                 randconfig-a011-20211129
-hexagon              randconfig-r045-20211129
-hexagon              randconfig-r041-20211129
-s390                 randconfig-r044-20211129
-riscv                randconfig-r042-20211129
-hexagon              randconfig-r045-20211130
-s390                 randconfig-r044-20211130
-hexagon              randconfig-r041-20211130
-riscv                randconfig-r042-20211130
+Thanks. I would study devlink.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Best Regards,
+Hayes
+
