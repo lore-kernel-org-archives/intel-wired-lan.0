@@ -1,97 +1,79 @@
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Date: Wed, 1 Dec 2021 12:45:38 +0100
-Subject: [Intel-wired-lan] [REGRESSION] Kernel 5.15 reboots / freezes
- upon ifup/ifdown
-In-Reply-To: <227af6b0692a0a57f5fb349d4d9c914301753209.camel@gmx.de>
-References: <924175a188159f4e03bd69908a91e606b574139b.camel@gmx.de>
- <YZ3q4OKhU2EPPttE@kroah.com>
- <8119066974f099aa11f08a4dad3653ac0ba32cd6.camel@gmx.de>
- <20211124153449.72c9cfcd@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <87a6htm4aj.fsf@intel.com>
- <227af6b0692a0a57f5fb349d4d9c914301753209.camel@gmx.de>
-Message-ID: <cd155eaf-8559-b7ad-d9da-818f59f21872@leemhuis.info>
+From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
+Date: Wed, 1 Dec 2021 18:38:06 +0200
+Subject: [Intel-wired-lan] [External] Re: [PATCH 3/3] Revert "e1000e:
+ Add handshake with the CSME to support S0ix"
+In-Reply-To: <3fad0b95-fe97-8c4a-3ca9-3ed2a9fa2134@lenovo.com>
+References: <20211122161927.874291-1-kai.heng.feng@canonical.com>
+ <20211122161927.874291-3-kai.heng.feng@canonical.com>
+ <0ba36a30-95d3-a5f4-93c2-443cf2259756@intel.com>
+ <3fad0b95-fe97-8c4a-3ca9-3ed2a9fa2134@lenovo.com>
+Message-ID: <aa685a4f-c270-7b6e-1ede-24570d30dd98@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi, this is your Linux kernel regression tracker speaking.
-
-On 25.11.21 09:41, Stefan Dietrich wrote:
+On 30/11/2021 17:52, Mark Pearson wrote:
+> Hi Sasha
 > 
-> thanks - this was spot-on: disabling CONFIG_PCIE_PTM resolves the issue
-> for latest 5.15.4 (stable from git) for both manual and network-manager
-> NIC configuration.
+> On 2021-11-28 08:23, Sasha Neftin wrote:
+>> On 11/22/2021 18:19, Kai-Heng Feng wrote:
+>>> This reverts commit 3e55d231716ea361b1520b801c6778c4c48de102.
+>>>
+>>> Bugzilla:
+>>> https://bugzilla.kernel.org/show_bug.cgi?id=214821>>>
+>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>>> ---
+> <snip>
+>>>
+>> Hello Kai-Heng,
+>> I believe it is the wrong approach. Reverting this patch will put
+>> corporate systems in an unpredictable state. SW will perform s0ix flow
+>> independent to CSME. (The CSME firmware will continue run
+>> independently.) LAN controller could be in an unknown state.
+>> Please, afford us to continue to debug the problem (it is could be
+>> incredible complexity)
+>>
+>> You always can skip the s0ix flow on problematic corporate systems by
+>> using privilege flag: ethtool --set-priv-flags enp0s31f6 s0ix-enabled off
+>>
+>> Also, there is no impact on consumer systems.
+>> Sasha
 > 
-> Let me know if I may assist in debugging this further.
+> I know we've discussed this offline, and your team are working on the
+> correct fix but I wanted to check based on your comments above that "it
+> was complex". I thought, and maybe misunderstood, that it was going to
+> be relatively simple to disable the change for older CPUs - which is the
+> biggest problem caused by the patch.
+> 
+> Right now it's breaking networking for folk who happen to have a vPro
+> Tigerlake (and I believe even potentially Cometlake or older) system. I
+> think the impact of that could potentially be quite severe.
+> 
+> I understand not wanting to revert the change for the ADL platforms I
+> believe this is targeting and to fix this instead - but your comment
+> made me nervous that Linux users on older Intel based platforms are in
+> for a long and painful wait - it is likely a lot of users....
+> 
+> Can you or Dima confirm the fix for older platforms will be available
+> soon? I appreciate the ADL platform might take a bit more work and time
+> to get right.
+> 
+> Thanks
+> Mark
+> 
+Hi Mark,
 
-What is the status here? There afaics hasn't been any progress since
-nearly a week.
+What we currently see is that the issue manifests itself similarly on 
+ADL and TGL platforms. Thus, the fix will likely be the same for both.
 
-Vinicius, do you still have this on your radar? Or was there some progress?
+If we cannot find a proper fix soon, we will provide a workaround (for 
+example by temporary disabling the feature on vPro platforms until we do 
+have a fix).
 
-Or is this really related to another issue, as Jakub suspected? Then it
-might be solved by the patch here:
+This can be done without reverting the patch series, and I don't see 
+much value in selectively disabling it for CML/TGL while leaving it on 
+for ADL, unless our ongoing debug shows otherwise.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=215129
-
-Ciao, Thorsten
-
-> On Wed, 2021-11-24 at 17:07 -0800, Vinicius Costa Gomes wrote:
->> Hi Stefan,
->>
->> Jakub Kicinski <kuba@kernel.org> writes:
->>
->>> On Wed, 24 Nov 2021 18:20:40 +0100 Stefan Dietrich wrote:
->>>> Hi all,
->>>>
->>>> six exciting hours and a lot of learning later, here it is.
->>>> Symptomatically, the critical commit appears for me between
->>>> 5.14.21-
->>>> 051421-generic and 5.15.0-051500rc2-generic - I did not find an
->>>> amd64
->>>> build for rc1.
->>>>
->>>> Please see the git-bisect output below and let me know how I may
->>>> further assist in debugging!
->>>
->>> Well, let's CC those involved, shall we? :)
->>>
->>> Thanks for working thru the bisection!
->>>
->>>> a90ec84837325df4b9a6798c2cc0df202b5680bd is the first bad commit
->>>> commit a90ec84837325df4b9a6798c2cc0df202b5680bd
->>>> Author: Vinicius Costa Gomes <vinicius.gomes@intel.com>
->>>> Date:   Mon Jul 26 20:36:57 2021 -0700
->>>>
->>>>     igc: Add support for PTP getcrosststamp()
->>
->> Oh! That's interesting.
->>
->> Can you try disabling CONFIG_PCIE_PTM in your kernel config? If it
->> works, then it's a point in favor that this commit is indeed the
->> problematic one.
->>
->> I am still trying to think of what could be causing the lockup you
->> are
->> seeing.
->>
->>
-
-P.S.: As a Linux kernel regression tracker I'm getting a lot of reports
-on my table. I can only look briefly into most of them. Unfortunately
-therefore I sometimes will get things wrong or miss something important.
-I hope that's not the case here; if you think it is, don't hesitate to
-tell me about it in a public reply. That's in everyone's interest, as
-what I wrote above might be misleading to everyone reading this; any
-suggestion I gave they thus might sent someone reading this down the
-wrong rabbit hole, which none of us wants.
-
-BTW, I have no personal interest in this issue, which is tracked using
-regzbot, my Linux kernel regression tracking bot
-(https://linux-regtracking.leemhuis.info/regzbot/). I'm only posting
-this mail to get things rolling again and hence don't need to be CC on
-all further activities wrt to this regression.
-
-#regzbot poke
+--Dima
