@@ -1,42 +1,59 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 30 Nov 2021 16:51:10 -0800
-Subject: [Intel-wired-lan] [PATCH net] igb: fix deadlock caused by
- taking RTNL in RPM resume path
-In-Reply-To: <c6f3caef-dac2-cc4a-b5b5-70e7fa54d73f@gmail.com>
-References: <6bb28d2f-4884-7696-0582-c26c35534bae@gmail.com>
- <20211129171712.500e37cb@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <6edc23a1-5907-3a41-7b46-8d53c5664a56@gmail.com>
- <20211130091206.488a541f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <c6f3caef-dac2-cc4a-b5b5-70e7fa54d73f@gmail.com>
-Message-ID: <20211130165110.291af62a@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Date: Tue, 30 Nov 2021 19:09:26 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
+In-Reply-To: <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
+References: <20211129101315.16372-381-nic_swsd@realtek.com>
+ <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
+Message-ID: <20211130190926.7c1d735d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 30 Nov 2021 22:35:27 +0100 Heiner Kallweit wrote:
-> On 30.11.2021 18:12, Jakub Kicinski wrote:
-> >> Not sure whether igb uses RPM the same way as r8169. There the device
-> >> is runtime-suspended (D3hot) w/o link. Once cable is plugged in the PHY
-> >> triggers a PME, and PCI core runtime-resumes the device (MAC).
-> >> In this case RTNL isn't held by the caller. Therefore I don't think
-> >> it's safe to assume that all callers hold RTNL.  
+On Wed, 1 Dec 2021 02:57:00 +0000 Hayes Wang wrote:
+> Jakub Kicinski <kuba@kernel.org>
+> > Sent: Tuesday, November 30, 2021 2:00 AM
+> > Subject: Re: [RFC PATCH 0/4] r8169: support dash
 > > 
-> > No, no - I meant to leave the locking in but add ASSERT_RTNL() to catch
-> > if rpm == true && rtnl_held() == false.
-> >   
-> This is a valid case. Maybe it's not my day today, I still don't get
-> how we would benefit from adding an ASSERT_RTNL().
+> > On Mon, 29 Nov 2021 18:13:11 +0800 Hayes Wang wrote:  
+> > > These patches are used to support dash for RTL8111EP and
+> > > RTL8111FP(RTL81117).  
+> > 
+> > If I understand correctly DASH is a DMTF standard for remote control.
+> > 
+> > Since it's a standard I think we should have a common way of
+> > configuring it across drivers.  
 > 
-> Based on the following I think that RPM resume and device open()
-> can't collide, because RPM resume is finished before open()
-> starts its actual work.
+> Excuse me. I am not familiar with it.
+> What document or sample code could I start?
 > 
-> static int __igb_open(struct net_device *netdev, bool resuming)
-> {
-> ...
-> if (!resuming)
-> 		pm_runtime_get_sync(&pdev->dev);
+> > Is enable/disable the only configuration
+> > that we will need?  
+> 
+> I don't think I could answer it before I understand the above way
+> you mentioned.
+> 
+> > We don't use sysfs too much these days, can we move the knob to
+> > devlink, please? (If we only need an on/off switch generic devlink param
+> > should be fine).  
+> 
+> Thanks. I would study devlink.
 
-Ah, thanks, gotta start looking at the code before I say things..
+I'm not sure how relevant it will be to you but this is the
+documentation we have:
+
+https://www.kernel.org/doc/html/latest/networking/devlink/index.html
+https://www.kernel.org/doc/html/latest/networking/devlink/devlink-params.html
+
+You'll need to add a generic parameter (define + a short description)
+like 325e0d0aa683 ("devlink: Add 'enable_iwarp' generic device param")
+
+In terms of driver changes I think the most relevant example to you
+will be:
+
+drivers/net/ethernet/ti/cpsw_new.c
+
+You need to call devlink_alloc(), devlink_register and
+devlink_params_register() (and the inverse functions).
