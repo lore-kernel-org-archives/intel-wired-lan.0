@@ -1,132 +1,163 @@
-From: Sornek, Karen <karen.sornek@intel.com>
-Date: Thu,  2 Dec 2021 12:52:01 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix for failed to init
- adminq while VF reset
-Message-ID: <20211202115201.1304422-1-karen.sornek@intel.com>
+From: Ido Schimmel <idosch@idosch.org>
+Date: Thu, 2 Dec 2021 14:43:39 +0200
+Subject: [Intel-wired-lan] [PATCH v4 net-next 2/4] ethtool: Add ability
+ to configure recovered clock for SyncE feature
+In-Reply-To: <20211201180208.640179-3-maciej.machnikowski@intel.com>
+References: <20211201180208.640179-1-maciej.machnikowski@intel.com>
+ <20211201180208.640179-3-maciej.machnikowski@intel.com>
+Message-ID: <Yai/e5jz3NZAg0pm@shredder>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Karen Sornek <karen.sornek@intel.com>
+On Wed, Dec 01, 2021 at 07:02:06PM +0100, Maciej Machnikowski wrote:
+> +RCLK_GET
+> +========
+> +
+> +Get status of an output pin for PHY recovered frequency clock.
+> +
+> +Request contents:
+> +
+> +  ======================================  ======  ==========================
+> +  ``ETHTOOL_A_RCLK_HEADER``               nested  request header
+> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
+> +  ======================================  ======  ==========================
+> +
+> +Kernel response contents:
+> +
+> +  ======================================  ======  ==========================
+> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
+> +  ``ETHTOOL_A_RCLK_PIN_FLAGS``            u32     state of a pin
+> +  ``ETHTOOL_A_RCLK_RANGE_MIN_PIN``        u32     min index of RCLK pins
+> +  ``ETHTOOL_A_RCLK_RANGE_MAX_PIN``        u32     max index of RCLK pins
+> +  ======================================  ======  ==========================
+> +
+> +Supported device can have mulitple reference recover clock pins available
 
-Fix for failed to init adminq: -53 while VF is resetting via MAC
-address changing procedure.
-Added sync module to avoid reading deadbeef value in reinit adminq
-during software reset.
-Without this patch it is possible to trigger VF reset procedure
-during reinit adminq. This resulted in an incorrect reading of
-value from the AQP registers and generated the -53 error.
+s/mulitple/multiple/
 
-Fixes: 5c3c48ac6bf5 ("i40e: implement virtual device interface")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
----
-v2: Added "Fixes" tag
----
- .../net/ethernet/intel/i40e/i40e_register.h   |  3 ++
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 44 ++++++++++++++++++-
- .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
- 3 files changed, 46 insertions(+), 2 deletions(-)
+> +to be used as source of frequency for a DPLL.
+> +Once a pin on given port is enabled. The PHY recovered frequency is being
+> +fed onto that pin, and can be used by DPLL to synchonize with its signal.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
-index 8d0588a27a05..1908eed4fa5e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_register.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
-@@ -413,6 +413,9 @@
- #define I40E_VFINT_DYN_CTLN(_INTVF) (0x00024800 + ((_INTVF) * 4)) /* _i=0...511 */ /* Reset: VFR */
- #define I40E_VFINT_DYN_CTLN_CLEARPBA_SHIFT 1
- #define I40E_VFINT_DYN_CTLN_CLEARPBA_MASK I40E_MASK(0x1, I40E_VFINT_DYN_CTLN_CLEARPBA_SHIFT)
-+#define I40E_VFINT_ICR0_ADMINQ_SHIFT 30
-+#define I40E_VFINT_ICR0_ADMINQ_MASK I40E_MASK(0x1, I40E_VFINT_ICR0_ADMINQ_SHIFT)
-+#define I40E_VFINT_ICR0_ENA(_VF) (0x0002C000 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
- #define I40E_VPINT_AEQCTL(_VF) (0x0002B800 + ((_VF) * 4)) /* _i=0...127 */ /* Reset: CORER */
- #define I40E_VPINT_AEQCTL_MSIX_INDX_SHIFT 0
- #define I40E_VPINT_AEQCTL_ITR_INDX_SHIFT 11
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3efc6926d308..d4c6914d2347 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1379,6 +1379,32 @@ static i40e_status i40e_config_vf_promiscuous_mode(struct i40e_vf *vf,
- 	return aq_ret;
- }
- 
-+/**
-+ * i40e_sync_vfr_reset
-+ * @hw: pointer to hw struct
-+ * @vf_id: VF identifier
-+ *
-+ * Before trigger hardware reset, we need to know if no other process has
-+ * reserved the hardware for any reset operations. This check is done by
-+ * examining the status of the RSTAT1 register used to signal the reset.
-+ **/
-+static int i40e_sync_vfr_reset(struct i40e_hw *hw, int vf_id)
-+{
-+	u32 reg;
-+	int i;
-+
-+	for (i = 0; i < I40E_VFR_WAIT_COUNT; i++) {
-+		reg = rd32(hw, I40E_VFINT_ICR0_ENA(vf_id)) &
-+			   I40E_VFINT_ICR0_ADMINQ_MASK;
-+		if (reg)
-+			return 0;
-+
-+		usleep_range(100, 200);
-+	}
-+
-+	return -EAGAIN;
-+}
-+
- /**
-  * i40e_trigger_vf_reset
-  * @vf: pointer to the VF structure
-@@ -1393,9 +1419,11 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
- 	struct i40e_pf *pf = vf->pf;
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 reg, reg_idx, bit_idx;
-+	bool vf_active;
-+	u32 radq;
- 
- 	/* warn the VF */
--	clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
-+	vf_active = test_and_clear_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states);
- 
- 	/* Disable VF's configuration API during reset. The flag is re-enabled
- 	 * in i40e_alloc_vf_res(), when it's safe again to access VF's VSI.
-@@ -1409,7 +1437,19 @@ static void i40e_trigger_vf_reset(struct i40e_vf *vf, bool flr)
- 	 * just need to clean up, so don't hit the VFRTRIG register.
- 	 */
- 	if (!flr) {
--		/* reset VF using VPGEN_VFRTRIG reg */
-+		/* Sync VFR reset before trigger next one */
-+		radq = rd32(hw, I40E_VFINT_ICR0_ENA(vf->vf_id)) &
-+			    I40E_VFINT_ICR0_ADMINQ_MASK;
-+		if (vf_active && !radq)
-+			/* waiting for finish reset by virtual driver */
-+			if (i40e_sync_vfr_reset(hw, vf->vf_id))
-+				dev_info(&pf->pdev->dev,
-+					 "Reset VF %d never finished\n",
-+				vf->vf_id);
-+
-+		/* Reset VF using VPGEN_VFRTRIG reg. It is also setting
-+		 * in progress state in rstat1 register.
-+		 */
- 		reg = rd32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id));
- 		reg |= I40E_VPGEN_VFRTRIG_VFSWR_MASK;
- 		wr32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id), reg);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 6aa35c8c9091..8135bd6a1c0a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -19,6 +19,7 @@
- #define I40E_MAX_VF_PROMISC_FLAGS	3
- 
- #define I40E_VF_STATE_WAIT_COUNT	20
-+#define I40E_VFR_WAIT_COUNT		100
- #define I40E_VF_RESET_TIME_MIN		30000000	/* time in nsec */
- 
- /* Various queue ctrls */
--- 
-2.27.0
+s/synchonize/synchronize/
 
+Please run a spell checker on documentation
+
+> +Pins don't have to start with index equal 0 - device can also have different
+> +external sources pins.
+> +
+> +The ``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is optional parameter. If present in
+> +the RCLK_GET request, the ``ETHTOOL_A_RCLK_PIN_ENABLED`` is provided in a
+
+The `ETHTOOL_A_RCLK_PIN_ENABLED` attribute is no where to be found in
+this submission
+
+> +response, it contatins state of the pin pointed by the index. Values are:
+
+s/contatins/contains/
+
+> +
+> +.. kernel-doc:: include/uapi/linux/ethtool.h
+> +    :identifiers: ethtool_rclk_pin_state
+
+This structure is also no where to be found
+
+> +
+> +If ``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is not present in the RCLK_GET request,
+> +the range of available pins is returned:
+> +``ETHTOOL_A_RCLK_RANGE_MIN_PIN`` is lowest possible index of a pin available
+> +for recovering frequency from PHY.
+> +``ETHTOOL_A_RCLK_RANGE_MAX_PIN`` is highest possible index of a pin available
+> +for recovering frequency from PHY.
+> +
+> +RCLK_SET
+> +==========
+> +
+> +Set status of an output pin for PHY recovered frequency clock.
+> +
+> +Request contents:
+> +
+> +  ======================================  ======  ========================
+> +  ``ETHTOOL_A_RCLK_HEADER``               nested  request header
+> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
+> +  ``ETHTOOL_A_RCLK_PIN_FLAGS``            u32      requested state
+> +  ======================================  ======  ========================
+> +
+> +``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is a index of a pin for which the change of
+> +state is requested. Values of ``ETHTOOL_A_RCLK_PIN_ENABLED`` are:
+> +
+> +.. kernel-doc:: include/uapi/linux/ethtool.h
+> +    :identifiers: ethtool_rclk_pin_state
+
+Same.
+
+Looking at the diagram from the previous submission [1]:
+
+      ???????????????????????
+      ? RX       ? TX       ?
+  1   ? ports    ? ports    ? 1
+  ???????????    ?          ???????
+  2   ?     ?    ?          ? 2
+  ????????? ?    ?          ???????
+  3   ?   ? ?    ?          ? 3
+  ??????? ? ?    ?          ???????
+      ? ? ? ?    ?          ?
+      ? ??????   ?          ?
+      ? \____/   ?          ?
+      ???????????????????????
+        1? 2?        ?
+ RCLK out?  ?        ? TX CLK in
+         ?  ?        ?
+       ???????????????????
+       ?                 ?
+       ?       SEC       ?
+       ?                 ?
+       ???????????????????
+
+Given a netdev (1, 2 or 3 in the diagram), the RCLK_SET message allows
+me to redirect the frequency recovered from this netdev to the EEC via
+either pin 1, pin 2 or both.
+
+Given a netdev, the RCLK_GET message allows me to query the range of
+pins (RCLK out 1-2 in the diagram) through which the frequency can be
+fed into the EEC.
+
+Questions:
+
+1. The query for all the above netdevs will return the same range of
+pins. How does user space know that these are the same pins? That is,
+how does user space know that RCLK_SET message to redirect the frequency
+recovered from netdev 1 to pin 1 will be overridden by the same message
+but for netdev 2?
+
+2. How does user space know the mapping between a netdev and an EEC?
+That is, how does user space know that RCLK_SET message for netdev 1
+will cause the Tx frequency of netdev 2 to change according to the
+frequency recovered from netdev 1?
+
+3. If user space sends two RCLK_SET messages to redirect the frequency
+recovered from netdev 1 to RCLK out 1 and from netdev 2 to RCLK out 2,
+how does it know which recovered frequency is actually used an input to
+the EEC?
+
+4. Why these pins are represented as attributes of a netdev and not as
+attributes of the EEC? That is, why are they represented as output pins
+of the PHY as opposed to input pins of the EEC?
+
+5. What is the problem with the following model?
+
+- The EEC is a separate object with following attributes:
+  * State: Invalid / Freerun / Locked / etc
+  * Sources: Netdev / external / etc
+  * Potentially more
+
+- Notifications are emitted to user space when the state of the EEC
+  changes. Drivers will either poll the state from the device or get
+  interrupts
+
+- The mapping from netdev to EEC is queried via ethtool
+
+[1] https://lore.kernel.org/netdev/20211110114448.2792314-1-maciej.machnikowski at intel.com/
