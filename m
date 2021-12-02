@@ -1,98 +1,29 @@
-From: Mark Pearson <markpearson@lenovo.com>
-Date: Wed, 1 Dec 2021 14:00:40 -0500
-Subject: [Intel-wired-lan] [External] Re: [PATCH 3/3] Revert "e1000e:
- Add handshake with the CSME to support S0ix"
-In-Reply-To: <aa685a4f-c270-7b6e-1ede-24570d30dd98@intel.com>
-References: <20211122161927.874291-1-kai.heng.feng@canonical.com>
- <20211122161927.874291-3-kai.heng.feng@canonical.com>
- <0ba36a30-95d3-a5f4-93c2-443cf2259756@intel.com>
- <3fad0b95-fe97-8c4a-3ca9-3ed2a9fa2134@lenovo.com>
- <aa685a4f-c270-7b6e-1ede-24570d30dd98@intel.com>
-Message-ID: <809af77d-493a-cba4-a1fe-def12dabe602@lenovo.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Wed, 1 Dec 2021 17:56:15 -0800
+Subject: [Intel-wired-lan] [PATCH v4 net-next 4/4] ice: add support for
+ SyncE recovered clocks
+In-Reply-To: <20211201180208.640179-5-maciej.machnikowski@intel.com>
+References: <20211201180208.640179-1-maciej.machnikowski@intel.com>
+ <20211201180208.640179-5-maciej.machnikowski@intel.com>
+Message-ID: <20211201175615.4b403560@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 2021-12-01 11:38, Ruinskiy, Dima wrote:
-> On 30/11/2021 17:52, Mark Pearson wrote:
->> Hi Sasha
->>
->> On 2021-11-28 08:23, Sasha Neftin wrote:
->>> On 11/22/2021 18:19, Kai-Heng Feng wrote:
->>>> This reverts commit 3e55d231716ea361b1520b801c6778c4c48de102.
->>>>
->>>> Bugzilla:
->>>> https://bugzilla.kernel.org/show_bug.cgi?id=214821>>>>>
->>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->>>> ---
->> <snip>
->>>>
->>> Hello Kai-Heng,
->>> I believe it is the wrong approach. Reverting this patch will put
->>> corporate systems in an unpredictable state. SW will perform s0ix flow
->>> independent to CSME. (The CSME firmware will continue run
->>> independently.) LAN controller could be in an unknown state.
->>> Please, afford us to continue to debug the problem (it is could be
->>> incredible complexity)
->>>
->>> You always can skip the s0ix flow on problematic corporate systems by
->>> using privilege flag: ethtool --set-priv-flags enp0s31f6 s0ix-enabled
->>> off
->>>
->>> Also, there is no impact on consumer systems.
->>> Sasha
->>
->> I know we've discussed this offline, and your team are working on the
->> correct fix but I wanted to check based on your comments above that "it
->> was complex". I thought, and maybe misunderstood, that it was going to
->> be relatively simple to disable the change for older CPUs - which is the
->> biggest problem caused by the patch.
->>
->> Right now it's breaking networking for folk who happen to have a vPro
->> Tigerlake (and I believe even potentially Cometlake or older) system. I
->> think the impact of that could potentially be quite severe.
->>
->> I understand not wanting to revert the change for the ADL platforms I
->> believe this is targeting and to fix this instead - but your comment
->> made me nervous that Linux users on older Intel based platforms are in
->> for a long and painful wait - it is likely a lot of users....
->>
->> Can you or Dima confirm the fix for older platforms will be available
->> soon? I appreciate the ADL platform might take a bit more work and time
->> to get right.
->>
->> Thanks
->> Mark
->>
-> Hi Mark,
+On Wed,  1 Dec 2021 19:02:08 +0100 Maciej Machnikowski wrote:
+> Implement ethtool netlink functions for handling SyncE recovered clocks
+> configuration on ice driver:
+> - ETHTOOL_MSG_RCLK_SET
+> - ETHTOOL_MSG_RCLK_GET
 > 
-> What we currently see is that the issue manifests itself similarly on
-> ADL and TGL platforms. Thus, the fix will likely be the same for both.
-> 
-> If we cannot find a proper fix soon, we will provide a workaround (for
-> example by temporary disabling the feature on vPro platforms until we do
-> have a fix).
-> 
-> This can be done without reverting the patch series, and I don't see
-> much value in selectively disabling it for CML/TGL while leaving it on
-> for ADL, unless our ongoing debug shows otherwise.
-> 
-Got it - thanks Dima.
+> Co-developed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 
-As a note - the obvious advantage of selectively disabling for CML/TGL
-is there is a ton of those platforms out there in users hands, whereas
-the ADL platforms won't be landing for a few more months (at least in
-our case). I'm OK if the fixes take a touch longer with ADL (though
-we'll want them soon so they have time to make it upstream and down into
-the distro's) - but there's going to be a lot of unhappy Intel users as
-soon as they start picking up the updates (that are landing in some
-distro's) and finding that networking is broken. I'd expect TGL/CML to
-be a priority...
+drivers/net/ethernet/intel/ice/ice_ethtool.c:4090: warning: Excess function parameter 'ena_mask' description in 'ice_get_rclk_range'
 
-Keep us posted when the fix is ready please.
-
-Mark
+drivers/net/ethernet/intel/ice/ice_dcb_nl.c:66:6: warning: variable 'bwcfg' set but not used [-Wunused-but-set-variable]
+        int bwcfg = 0, bwrec = 0;
+            ^
