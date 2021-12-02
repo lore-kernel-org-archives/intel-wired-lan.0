@@ -1,29 +1,34 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 1 Dec 2021 17:56:15 -0800
-Subject: [Intel-wired-lan] [PATCH v4 net-next 4/4] ice: add support for
- SyncE recovered clocks
-In-Reply-To: <20211201180208.640179-5-maciej.machnikowski@intel.com>
-References: <20211201180208.640179-1-maciej.machnikowski@intel.com>
- <20211201180208.640179-5-maciej.machnikowski@intel.com>
-Message-ID: <20211201175615.4b403560@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Thu, 2 Dec 2021 07:41:34 +0100
+Subject: [Intel-wired-lan] [PATCH] igc: Avoid possible deadlock during
+ suspend/resume
+In-Reply-To: <20211201185731.236130-1-vinicius.gomes@intel.com>
+References: <87r1awtdx3.fsf@intel.com>
+ <20211201185731.236130-1-vinicius.gomes@intel.com>
+Message-ID: <YahqnvgmT63iG48E@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed,  1 Dec 2021 19:02:08 +0100 Maciej Machnikowski wrote:
-> Implement ethtool netlink functions for handling SyncE recovered clocks
-> configuration on ice driver:
-> - ETHTOOL_MSG_RCLK_SET
-> - ETHTOOL_MSG_RCLK_GET
+On Wed, Dec 01, 2021 at 10:57:31AM -0800, Vinicius Costa Gomes wrote:
+> Inspired by:
+> https://bugzilla.kernel.org/show_bug.cgi?id=215129
 > 
-> Co-developed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
 
-drivers/net/ethernet/intel/ice/ice_ethtool.c:4090: warning: Excess function parameter 'ena_mask' description in 'ice_get_rclk_range'
+This changelog does not say anything at all, sorry.  Please explain what
+is happening here as the kernel documentation asks you to.
 
-drivers/net/ethernet/intel/ice/ice_dcb_nl.c:66:6: warning: variable 'bwcfg' set but not used [-Wunused-but-set-variable]
-        int bwcfg = 0, bwrec = 0;
-            ^
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+> Just to see if it's indeed the same problem as the bug report above.
+
+<formletter>
+
+This is not the correct way to submit patches for inclusion in the
+stable kernel tree.  Please read:
+    https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
+for how to do this properly.
+
+</formletter>
