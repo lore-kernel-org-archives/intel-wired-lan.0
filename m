@@ -1,163 +1,104 @@
-From: Ido Schimmel <idosch@idosch.org>
-Date: Thu, 2 Dec 2021 14:43:39 +0200
-Subject: [Intel-wired-lan] [PATCH v4 net-next 2/4] ethtool: Add ability
- to configure recovered clock for SyncE feature
-In-Reply-To: <20211201180208.640179-3-maciej.machnikowski@intel.com>
-References: <20211201180208.640179-1-maciej.machnikowski@intel.com>
- <20211201180208.640179-3-maciej.machnikowski@intel.com>
-Message-ID: <Yai/e5jz3NZAg0pm@shredder>
+From: Stefan Dietrich <roots@gmx.de>
+Date: Thu, 02 Dec 2021 09:34:03 +0100
+Subject: [Intel-wired-lan] [PATCH] igc: Avoid possible deadlock during
+ suspend/resume
+In-Reply-To: <20211201185731.236130-1-vinicius.gomes@intel.com>
+References: <87r1awtdx3.fsf@intel.com>
+ <20211201185731.236130-1-vinicius.gomes@intel.com>
+Message-ID: <5a4b31d43d9bf32e518188f3ef84c433df3a18b1.camel@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 01, 2021 at 07:02:06PM +0100, Maciej Machnikowski wrote:
-> +RCLK_GET
-> +========
+Hi Vinicius,
+
+thanks for the patch - unfortunately it did not solve the issue and I
+am still getting reboots/lockups.
+
+
+Cheers,
+Stefan
+
+On Wed, 2021-12-01 at 10:57 -0800, Vinicius Costa Gomes wrote:
+> Inspired by:
+> https://bugzilla.kernel.org/show_bug.cgi?id=215129
+>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+> Just to see if it's indeed the same problem as the bug report above.
+>
+>  drivers/net/ethernet/intel/igc/igc_main.c | 19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
+> b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 0e19b4d02e62..c58bf557a2a1 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -6619,7 +6619,7 @@ static void igc_deliver_wake_packet(struct
+> net_device *netdev)
+>  	netif_rx(skb);
+>  }
+>
+> -static int __maybe_unused igc_resume(struct device *dev)
+> +static int __maybe_unused __igc_resume(struct device *dev, bool rpm)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+>  	struct net_device *netdev = pci_get_drvdata(pdev);
+> @@ -6661,20 +6661,27 @@ static int __maybe_unused igc_resume(struct
+> device *dev)
+>
+>  	wr32(IGC_WUS, ~0);
+>
+> -	rtnl_lock();
+> +	if (!rpm)
+> +		rtnl_lock();
+>  	if (!err && netif_running(netdev))
+>  		err = __igc_open(netdev, true);
+>
+>  	if (!err)
+>  		netif_device_attach(netdev);
+> -	rtnl_unlock();
+> +	if (!rpm)
+> +		rtnl_unlock();
+>
+>  	return err;
+>  }
+>
+>  static int __maybe_unused igc_runtime_resume(struct device *dev)
+>  {
+> -	return igc_resume(dev);
+> +	return __igc_resume(dev, true);
+> +}
 > +
-> +Get status of an output pin for PHY recovered frequency clock.
-> +
-> +Request contents:
-> +
-> +  ======================================  ======  ==========================
-> +  ``ETHTOOL_A_RCLK_HEADER``               nested  request header
-> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
-> +  ======================================  ======  ==========================
-> +
-> +Kernel response contents:
-> +
-> +  ======================================  ======  ==========================
-> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
-> +  ``ETHTOOL_A_RCLK_PIN_FLAGS``            u32     state of a pin
-> +  ``ETHTOOL_A_RCLK_RANGE_MIN_PIN``        u32     min index of RCLK pins
-> +  ``ETHTOOL_A_RCLK_RANGE_MAX_PIN``        u32     max index of RCLK pins
-> +  ======================================  ======  ==========================
-> +
-> +Supported device can have mulitple reference recover clock pins available
+> +static int __maybe_unused igc_resume(struct device *dev)
+> +{
+> +	return __igc_resume(dev, false);
+>  }
+>
+>  static int __maybe_unused igc_suspend(struct device *dev)
+> @@ -6738,7 +6745,7 @@ static pci_ers_result_t
+> igc_io_error_detected(struct pci_dev *pdev,
+>   *  @pdev: Pointer to PCI device
+>   *
+>   *  Restart the card from scratch, as if from a cold-boot.
+> Implementation
+> - *  resembles the first-half of the igc_resume routine.
+> + *  resembles the first-half of the __igc_resume routine.
+>   **/
+>  static pci_ers_result_t igc_io_slot_reset(struct pci_dev *pdev)
+>  {
+> @@ -6777,7 +6784,7 @@ static pci_ers_result_t
+> igc_io_slot_reset(struct pci_dev *pdev)
+>   *
+>   *  This callback is called when the error recovery driver tells us
+> that
+>   *  its OK to resume normal operation. Implementation resembles the
+> - *  second-half of the igc_resume routine.
+> + *  second-half of the __igc_resume routine.
+>   */
+>  static void igc_io_resume(struct pci_dev *pdev)
+>  {
 
-s/mulitple/multiple/
-
-> +to be used as source of frequency for a DPLL.
-> +Once a pin on given port is enabled. The PHY recovered frequency is being
-> +fed onto that pin, and can be used by DPLL to synchonize with its signal.
-
-s/synchonize/synchronize/
-
-Please run a spell checker on documentation
-
-> +Pins don't have to start with index equal 0 - device can also have different
-> +external sources pins.
-> +
-> +The ``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is optional parameter. If present in
-> +the RCLK_GET request, the ``ETHTOOL_A_RCLK_PIN_ENABLED`` is provided in a
-
-The `ETHTOOL_A_RCLK_PIN_ENABLED` attribute is no where to be found in
-this submission
-
-> +response, it contatins state of the pin pointed by the index. Values are:
-
-s/contatins/contains/
-
-> +
-> +.. kernel-doc:: include/uapi/linux/ethtool.h
-> +    :identifiers: ethtool_rclk_pin_state
-
-This structure is also no where to be found
-
-> +
-> +If ``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is not present in the RCLK_GET request,
-> +the range of available pins is returned:
-> +``ETHTOOL_A_RCLK_RANGE_MIN_PIN`` is lowest possible index of a pin available
-> +for recovering frequency from PHY.
-> +``ETHTOOL_A_RCLK_RANGE_MAX_PIN`` is highest possible index of a pin available
-> +for recovering frequency from PHY.
-> +
-> +RCLK_SET
-> +==========
-> +
-> +Set status of an output pin for PHY recovered frequency clock.
-> +
-> +Request contents:
-> +
-> +  ======================================  ======  ========================
-> +  ``ETHTOOL_A_RCLK_HEADER``               nested  request header
-> +  ``ETHTOOL_A_RCLK_OUT_PIN_IDX``          u32     index of a pin
-> +  ``ETHTOOL_A_RCLK_PIN_FLAGS``            u32      requested state
-> +  ======================================  ======  ========================
-> +
-> +``ETHTOOL_A_RCLK_OUT_PIN_IDX`` is a index of a pin for which the change of
-> +state is requested. Values of ``ETHTOOL_A_RCLK_PIN_ENABLED`` are:
-> +
-> +.. kernel-doc:: include/uapi/linux/ethtool.h
-> +    :identifiers: ethtool_rclk_pin_state
-
-Same.
-
-Looking at the diagram from the previous submission [1]:
-
-      ???????????????????????
-      ? RX       ? TX       ?
-  1   ? ports    ? ports    ? 1
-  ???????????    ?          ???????
-  2   ?     ?    ?          ? 2
-  ????????? ?    ?          ???????
-  3   ?   ? ?    ?          ? 3
-  ??????? ? ?    ?          ???????
-      ? ? ? ?    ?          ?
-      ? ??????   ?          ?
-      ? \____/   ?          ?
-      ???????????????????????
-        1? 2?        ?
- RCLK out?  ?        ? TX CLK in
-         ?  ?        ?
-       ???????????????????
-       ?                 ?
-       ?       SEC       ?
-       ?                 ?
-       ???????????????????
-
-Given a netdev (1, 2 or 3 in the diagram), the RCLK_SET message allows
-me to redirect the frequency recovered from this netdev to the EEC via
-either pin 1, pin 2 or both.
-
-Given a netdev, the RCLK_GET message allows me to query the range of
-pins (RCLK out 1-2 in the diagram) through which the frequency can be
-fed into the EEC.
-
-Questions:
-
-1. The query for all the above netdevs will return the same range of
-pins. How does user space know that these are the same pins? That is,
-how does user space know that RCLK_SET message to redirect the frequency
-recovered from netdev 1 to pin 1 will be overridden by the same message
-but for netdev 2?
-
-2. How does user space know the mapping between a netdev and an EEC?
-That is, how does user space know that RCLK_SET message for netdev 1
-will cause the Tx frequency of netdev 2 to change according to the
-frequency recovered from netdev 1?
-
-3. If user space sends two RCLK_SET messages to redirect the frequency
-recovered from netdev 1 to RCLK out 1 and from netdev 2 to RCLK out 2,
-how does it know which recovered frequency is actually used an input to
-the EEC?
-
-4. Why these pins are represented as attributes of a netdev and not as
-attributes of the EEC? That is, why are they represented as output pins
-of the PHY as opposed to input pins of the EEC?
-
-5. What is the problem with the following model?
-
-- The EEC is a separate object with following attributes:
-  * State: Invalid / Freerun / Locked / etc
-  * Sources: Netdev / external / etc
-  * Potentially more
-
-- Notifications are emitted to user space when the state of the EEC
-  changes. Drivers will either poll the state from the device or get
-  interrupts
-
-- The mapping from netdev to EEC is queried via ethtool
-
-[1] https://lore.kernel.org/netdev/20211110114448.2792314-1-maciej.machnikowski at intel.com/
