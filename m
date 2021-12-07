@@ -1,33 +1,43 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue,  7 Dec 2021 08:19:18 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove obsolete define
-Message-ID: <20211207061918.929674-1-sasha.neftin@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Tue, 7 Dec 2021 09:09:55 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: fix choosing udp header type
+In-Reply-To: <20211116102426.11675-1-michal.swiatkowski@linux.intel.com>
+References: <20211116102426.11675-1-michal.swiatkowski@linux.intel.com>
+Message-ID: <MW3PR11MB4554BA2A155AD38D882B72299C6E9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-'MII_CR_FULL_DUPLEX' define not in use. This patch comes to tidy up
- obsolete define.
-
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_defines.h | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index 0666bf4b54d5..ac25dbdd5d76 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -581,7 +581,6 @@
- #define IGC_GEN_POLL_TIMEOUT	1920
- 
- /* PHY Control Register */
--#define MII_CR_FULL_DUPLEX	0x0100  /* FDX =1, half duplex =0 */
- #define MII_CR_RESTART_AUTO_NEG	0x0200  /* Restart auto negotiation */
- #define MII_CR_POWER_DOWN	0x0800  /* Power down */
- #define MII_CR_AUTO_NEG_EN	0x1000  /* Auto Neg Enable */
--- 
-2.25.1
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Michal Swiatkowski
+>Sent: Tuesday, November 16, 2021 3:54 PM
+To: intel-wired-lan@osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net] ice: fix choosing udp header type
+>
+>In tunnels packet there can be two UDP headers:
+>- outer which for hw should be mark as ICE_UDP_OF
+>- inner which for hw should be mark as ICE_UDP_ILOS or as ICE_TCP_IL if
+>  inner header is of TCP type
+>
+>In none tunnels packet header can be:
+>- UDP, which for hw should be mark as ICE_UDP_ILOS
+>- TCP, which for hw should be mark as ICE_TCP_IL
+>
+>Change incorrect ICE_UDP_OF for none tunnel packets to ICE_UDP_ILOS.
+>ICE_UDP_OF is incorrect for none tunnel packets and setting it leads to error
+>from hw while adding this kind of recipe.
+>
+>In summary, for tunnel outer port type should always be set to ICE_UDP_OF,
+>for none tunnel outer and tunnel inner it should always be set to
+>ICE_UDP_ILOS.
+>
+>Fixes: 9e300987d4a81 ("ice: VXLAN and Geneve TC support")
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>---
+> drivers/net/ethernet/intel/ice/ice_tc_lib.c | 26 ++++++++-------------
+> 1 file changed, 10 insertions(+), 16 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
