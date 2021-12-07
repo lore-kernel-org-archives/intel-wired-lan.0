@@ -1,40 +1,128 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 7 Dec 2021 11:19:16 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] ice: safer stats processing
-In-Reply-To: <20211113010602.795866-1-jesse.brandeburg@intel.com>
-References: <20211113010602.795866-1-jesse.brandeburg@intel.com>
-Message-ID: <SN6PR11MB33743254E447455AA2E9331FFC6E9@SN6PR11MB3374.namprd11.prod.outlook.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Tue,  7 Dec 2021 13:23:06 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/2] e1000e: Separate ADP board type
+ from TGP
+Message-ID: <20211207112306.1290098-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+We have the same LAN controller on different PCH's. Separate ADP board
+type from a TGP which will allow for specific fixes to be applied for
+ADP platforms.
 
+Suggested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  4 ++-
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 20 +++++++++++++
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 33 +++++++++++----------
+ 3 files changed, 40 insertions(+), 17 deletions(-)
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jesse
-> Brandeburg
-> Sent: Saturday, November 13, 2021 6:36 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net v3] ice: safer stats processing
-> 
-> The driver was zeroing live stats that could be fetched by
-> ndo_get_stats64 at any time. This could result in inconsistent statistics, and the
-> telltale sign was when reading stats frequently from /proc/net/dev, the stats
-> would go backwards.
-> 
-> Fix by collecting stats into a local, and delaying when we write to the structure
-> so it's not incremental.
-> 
-> Fixes: fcea6f3da546 ("ice: Add stats and ethtool support")
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> ---
-> v3: change to use GFP_ATOMIC to prevent BUG due to sleeping alloc
-> v2: changed to use kzalloc instead of stack variable
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 31 +++++++++++++++--------
->  1 file changed, 20 insertions(+), 11 deletions(-)
-> 
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index c3def0ee7788..8d06c9d8ff8b 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -115,7 +115,8 @@ enum e1000_boards {
+ 	board_pch_lpt,
+ 	board_pch_spt,
+ 	board_pch_cnp,
+-	board_pch_tgp
++	board_pch_tgp,
++	board_pch_adp
+ };
+ 
+ struct e1000_ps_page {
+@@ -502,6 +503,7 @@ extern const struct e1000_info e1000_pch_lpt_info;
+ extern const struct e1000_info e1000_pch_spt_info;
+ extern const struct e1000_info e1000_pch_cnp_info;
+ extern const struct e1000_info e1000_pch_tgp_info;
++extern const struct e1000_info e1000_pch_adp_info;
+ extern const struct e1000_info e1000_es2_info;
+ 
+ void e1000e_ptp_init(struct e1000_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 5e4fc9b4e2ad..c908c84b86d2 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -6021,3 +6021,23 @@ const struct e1000_info e1000_pch_tgp_info = {
+ 	.phy_ops		= &ich8_phy_ops,
+ 	.nvm_ops		= &spt_nvm_ops,
+ };
++
++const struct e1000_info e1000_pch_adp_info = {
++	.mac			= e1000_pch_adp,
++	.flags			= FLAG_IS_ICH
++				  | FLAG_HAS_WOL
++				  | FLAG_HAS_HW_TIMESTAMP
++				  | FLAG_HAS_CTRLEXT_ON_LOAD
++				  | FLAG_HAS_AMT
++				  | FLAG_HAS_FLASH
++				  | FLAG_HAS_JUMBO_FRAMES
++				  | FLAG_APME_IN_WUC,
++	.flags2			= FLAG2_HAS_PHY_STATS
++				  | FLAG2_HAS_EEE,
++	.pba			= 26,
++	.max_hw_frame_size	= 9022,
++	.get_variants		= e1000_get_variants_ich8lan,
++	.mac_ops		= &ich8_mac_ops,
++	.phy_ops		= &ich8_phy_ops,
++	.nvm_ops		= &spt_nvm_ops,
++};
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 44e2dc8328a2..2cfd03c6b37e 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -52,6 +52,7 @@ static const struct e1000_info *e1000_info_tbl[] = {
+ 	[board_pch_spt]		= &e1000_pch_spt_info,
+ 	[board_pch_cnp]		= &e1000_pch_cnp_info,
+ 	[board_pch_tgp]		= &e1000_pch_tgp_info,
++	[board_pch_adp]		= &e1000_pch_adp_info,
+ };
+ 
+ struct e1000_reg_info {
+@@ -7902,22 +7903,22 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V14), board_pch_tgp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_LM15), board_pch_tgp },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_TGP_I219_V15), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_tgp },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_tgp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM23), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V23), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM16), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V16), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_LM17), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_ADP_I219_V17), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_LM22), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_RPL_I219_V22), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM18), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V18), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_LM19), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_MTP_I219_V19), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM20), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V20), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_LM21), board_pch_adp },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LNP_I219_V21), board_pch_adp },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
+-- 
+2.25.1
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
