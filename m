@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 08 Dec 2021 02:04:45 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- a919bf22e7b438986baa113c806b1c93f3ad6b17
-Message-ID: <61afa23d.S136kcpde6FMyOS4%lkp@intel.com>
+Date: Wed, 08 Dec 2021 02:04:42 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 1c5526968e270e4efccfa1da21d211a4915cdeda
+Message-ID: <61afa23a.oy2gx4vjdIShgjk1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: a919bf22e7b438986baa113c806b1c93f3ad6b17  i40e: Remove non-inclusive language
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 1c5526968e270e4efccfa1da21d211a4915cdeda  net/smc: Clear memory when release and reuse buffer
 
-elapsed time: 936m
+elapsed time: 1015m
 
-configs tested: 142
+configs tested: 155
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -37,6 +37,12 @@ powerpc                 mpc836x_rdk_defconfig
 m68k                            q40_defconfig
 riscv                            alldefconfig
 arm                           u8500_defconfig
+mips                        workpad_defconfig
+m68k                        m5307c3_defconfig
+m68k                         apollo_defconfig
+m68k                          atari_defconfig
+arm                       multi_v4t_defconfig
+xtensa                  nommu_kc705_defconfig
 nds32                            alldefconfig
 powerpc                     redwood_defconfig
 sh                          sdk7786_defconfig
@@ -62,10 +68,18 @@ h8300                    h8300h-sim_defconfig
 sh                   rts7751r2dplus_defconfig
 arm                       imx_v4_v5_defconfig
 arm                           sama7_defconfig
+powerpc                   motionpro_defconfig
+openrisc                         alldefconfig
+powerpc                   lite5200b_defconfig
+mips                         mpc30x_defconfig
 powerpc                 xes_mpc85xx_defconfig
 parisc                generic-64bit_defconfig
 m68k                       bvme6000_defconfig
 sh                              ul2_defconfig
+arc                         haps_hs_defconfig
+sparc                            alldefconfig
+arm                         s5pv210_defconfig
+powerpc                     stx_gp3_defconfig
 powerpc                    ge_imp3a_defconfig
 sh                             espt_defconfig
 powerpc                   microwatt_defconfig
@@ -78,7 +92,6 @@ arm                        cerfcube_defconfig
 mips                     decstation_defconfig
 powerpc                        fsp2_defconfig
 powerpc                 mpc836x_mds_defconfig
-xtensa                  nommu_kc705_defconfig
 sh                           se7722_defconfig
 arm                          moxart_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -139,8 +152,8 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-um                             i386_defconfig
 um                           x86_64_defconfig
+um                             i386_defconfig
 x86_64                           allyesconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
