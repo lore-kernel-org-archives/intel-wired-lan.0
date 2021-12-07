@@ -1,145 +1,39 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 07 Dec 2021 22:42:55 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 5e2ab46c96c826eccef410db3db4240e273e7532
-Message-ID: <61af72ef.cbIbQfkVfsVkSn4w%lkp@intel.com>
+From: Hayes Wang <hayeswang@realtek.com>
+Date: Tue, 7 Dec 2021 07:28:02 +0000
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
+In-Reply-To: <20211203070410.1b4abc4d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211129101315.16372-381-nic_swsd@realtek.com>
+ <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
+ <20211130190926.7c1d735d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <d3a1e1c469844aa697d6d315c9549eda@realtek.com>
+ <20211203070410.1b4abc4d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <e2fd429a489545e7a521283600cb7caa@realtek.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 5e2ab46c96c826eccef410db3db4240e273e7532  igb: fix deadlock caused by taking RTNL in RPM resume path
+Jakub Kicinski <kuba@kernel.org>
+> Sent: Friday, December 3, 2021 11:04 PM
+[...]
+> Ah, I've only spotted the enable/disable knob in the patch.
+> If you're exchanging arbitrary binary data with the FW we
+> can't help you. It's not going to fly upstream. 
 
-elapsed time: 735m
+How is it that we only provide certain basic settings,
+such as IPv4 address, IPv6 address, and so on? Then,
+they are not the arbitrary binary data.
 
-configs tested: 114
-configs skipped: 3
+Could devlink param be used for more than 4 bytes settings?
+At least the IPv6 address is longer.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Besides, we need the information of SMBIOS which could
+be 4K ~ 8K bytes data. Is there any way we could transmit
+it to firmware?
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211207
-mips                        workpad_defconfig
-m68k                        m5307c3_defconfig
-m68k                         apollo_defconfig
-m68k                          atari_defconfig
-arm                       multi_v4t_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                         shannon_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                            titan_defconfig
-m68k                             allmodconfig
-arm                             rpc_defconfig
-mips                    maltaup_xpa_defconfig
-xtensa                generic_kc705_defconfig
-arm                         at91_dt_defconfig
-arm                           spitz_defconfig
-arc                           tb10x_defconfig
-arm                         lpc32xx_defconfig
-arm                          simpad_defconfig
-powerpc                     akebono_defconfig
-sparc                            allyesconfig
-mips                         db1xxx_defconfig
-mips                     cu1000-neo_defconfig
-mips                            e55_defconfig
-powerpc                      pmac32_defconfig
-mips                     decstation_defconfig
-powerpc                        fsp2_defconfig
-powerpc                 mpc836x_mds_defconfig
-arm                  randconfig-c002-20211207
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20211207
-x86_64               randconfig-a005-20211207
-x86_64               randconfig-a001-20211207
-x86_64               randconfig-a002-20211207
-x86_64               randconfig-a004-20211207
-x86_64               randconfig-a003-20211207
-i386                 randconfig-a001-20211207
-i386                 randconfig-a005-20211207
-i386                 randconfig-a002-20211207
-i386                 randconfig-a003-20211207
-i386                 randconfig-a006-20211207
-i386                 randconfig-a004-20211207
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+Best Regards,
+Hayes
 
-clang tested configs:
-x86_64               randconfig-c007-20211207
-arm                  randconfig-c002-20211207
-riscv                randconfig-c006-20211207
-mips                 randconfig-c004-20211207
-i386                 randconfig-c001-20211207
-powerpc              randconfig-c003-20211207
-s390                 randconfig-c005-20211207
-x86_64               randconfig-a016-20211207
-x86_64               randconfig-a011-20211207
-x86_64               randconfig-a013-20211207
-x86_64               randconfig-a014-20211207
-x86_64               randconfig-a015-20211207
-x86_64               randconfig-a012-20211207
-i386                 randconfig-a016-20211207
-i386                 randconfig-a013-20211207
-i386                 randconfig-a011-20211207
-i386                 randconfig-a014-20211207
-i386                 randconfig-a012-20211207
-i386                 randconfig-a015-20211207
-hexagon              randconfig-r045-20211207
-s390                 randconfig-r044-20211207
-riscv                randconfig-r042-20211207
-hexagon              randconfig-r041-20211207
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
