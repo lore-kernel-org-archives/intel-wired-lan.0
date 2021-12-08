@@ -1,117 +1,60 @@
 From: Ken Cox <jkc@redhat.com>
-Date: Wed,  8 Dec 2021 04:21:53 -0600
-Subject: [Intel-wired-lan] [Patch 2/2] iavf: Prevent reset from being
- scheduled while adapter is being removed
+Date: Wed,  8 Dec 2021 04:21:52 -0600
+Subject: [Intel-wired-lan] [Patch 1/2] iavf: Fix panic in iavf_remove
 In-Reply-To: <20211208102153.669338-1-jkc@redhat.com>
 References: <20211208102153.669338-1-jkc@redhat.com>
-Message-ID: <20211208102153.669338-3-jkc@redhat.com>
+Message-ID: <20211208102153.669338-2-jkc@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If a reset gets scheduled while the adapter is being removed it can
-cause a panic.
+It's possible for the client_task to get scheduled by the watchdog
+after cancel_delayed_work_sync(&adapter->client_task);  This can cause
+a panic because free_netdev() is called with the client_task still queued
+on the work queue.
 
-The work_struct for the reset_task is contained in the iavf_adapter
-structure.  iavf_remove() eventually frees the iavf_adapter structure
-so if there is active work scheduled it can cause a panic.
+The stack backtrace usually looks similar to:
+
+[  121.272963] Workqueue:  0x0 (iavf)
+[  121.272969] RIP: 0010:__list_del_entry_valid.cold.1+0x20/0x4c
+...
+[  121.272980] Call Trace:
+[  121.272985]  move_linked_works+0x49/0xa0
+[  121.272988]  pwq_activate_delayed_work+0x43/0x100
+[  121.272991]  pwq_dec_nr_in_flight+0x5d/0x90
+[  121.272993]  worker_thread+0x30/0x370
+[  121.272995]  ? process_one_work+0x420/0x420
+[  121.272998]  kthread+0x15d/0x180
+[  121.273000]  ? __kthread_parkme+0xa0/0xa0
+[  121.273003]  ret_from_fork+0x1f/0x40
 
 Signed-off-by: Ken Cox <jkc@redhat.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c  |  7 +++++--
- drivers/net/ethernet/intel/iavf/iavf_main.c     | 15 ++++++++++-----
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c |  4 +++-
- 3 files changed, 18 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index af43fbd8cb75e..3cf1679153604 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -519,7 +519,9 @@ static int iavf_set_priv_flags(struct net_device *netdev, u32 flags)
- 
- 	/* issue a reset to force legacy-rx change to take effect */
- 	if (changed_flags & IAVF_FLAG_LEGACY_RX) {
--		if (netif_running(netdev)) {
-+
-+		if (netif_running(netdev) &&
-+		    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
- 			adapter->flags |= IAVF_FLAG_RESET_NEEDED;
- 			queue_work(iavf_wq, &adapter->reset_task);
- 		}
-@@ -630,7 +632,8 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 	adapter->tx_desc_count = new_tx_count;
- 	adapter->rx_desc_count = new_rx_count;
- 
--	if (netif_running(netdev)) {
-+	if (netif_running(netdev) &&
-+	    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
- 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
- 		queue_work(iavf_wq, &adapter->reset_task);
- 	}
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 63eec7edbf60a..af2788c997ca2 100644
+index 6c2afbc8acbcd..63eec7edbf60a 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -164,7 +164,8 @@ static int iavf_lock_timeout(struct iavf_adapter *adapter,
- void iavf_schedule_reset(struct iavf_adapter *adapter)
- {
- 	if (!(adapter->flags &
--	      (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED))) {
-+	      (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) &&
-+	    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
- 		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
- 		queue_work(iavf_wq, &adapter->reset_task);
- 	}
-@@ -2013,7 +2014,8 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
--		queue_work(iavf_wq, &adapter->reset_task);
-+		if (!test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+			queue_work(iavf_wq, &adapter->reset_task);
- 		goto watchdog_done;
- 	}
+@@ -3940,7 +3940,6 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+ 	cancel_delayed_work_sync(&adapter->init_task);
+ 	cancel_work_sync(&adapter->reset_task);
+-	cancel_delayed_work_sync(&adapter->client_task);
+ 	if (adapter->netdev_registered) {
+ 		unregister_netdev(netdev);
+ 		adapter->netdev_registered = false;
+@@ -3974,6 +3973,7 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	iavf_free_q_vectors(adapter);
  
-@@ -3348,8 +3350,10 @@ static int iavf_change_mtu(struct net_device *netdev, int new_mtu)
- 		iavf_notify_client_l2_params(&adapter->vsi);
- 		adapter->flags |= IAVF_FLAG_SERVICE_CLIENT_REQUESTED;
- 	}
--	adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--	queue_work(iavf_wq, &adapter->reset_task);
-+	if (!test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
-+		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-+		queue_work(iavf_wq, &adapter->reset_task);
-+	}
+ 	cancel_delayed_work_sync(&adapter->watchdog_task);
++	cancel_delayed_work_sync(&adapter->client_task);
  
- 	return 0;
- }
-@@ -3909,7 +3913,8 @@ static int __maybe_unused iavf_resume(struct device *dev_d)
- 		return err;
- 	}
+ 	cancel_work_sync(&adapter->adminq_task);
  
--	queue_work(iavf_wq, &adapter->reset_task);
-+	if (!test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section))
-+		queue_work(iavf_wq, &adapter->reset_task);
- 
- 	netif_device_attach(netdev);
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 0eab3c43bdc59..ba973b2ab0547 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1470,7 +1470,9 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			break;
- 		case VIRTCHNL_EVENT_RESET_IMPENDING:
- 			dev_info(&adapter->pdev->dev, "Reset warning received from the PF\n");
--			if (!(adapter->flags & IAVF_FLAG_RESET_PENDING)) {
-+			if (!(adapter->flags & IAVF_FLAG_RESET_PENDING) &&
-+			    !test_bit(__IAVF_IN_REMOVE_TASK,
-+				      &adapter->crit_section)) {
- 				adapter->flags |= IAVF_FLAG_RESET_PENDING;
- 				dev_info(&adapter->pdev->dev, "Scheduling reset task\n");
- 				queue_work(iavf_wq, &adapter->reset_task);
 -- 
 2.31.1
 
