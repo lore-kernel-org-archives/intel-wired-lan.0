@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 8 Dec 2021 08:06:41 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 3/6] iavf: Add support
- VIRTCHNL_VF_OFFLOAD_VLAN_V2 during netdev config
-In-Reply-To: <20211130001604.22112-4-anthony.l.nguyen@intel.com>
+Date: Wed, 8 Dec 2021 08:07:30 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/6] iavf: Add support for
+ VIRTCHNL_VF_OFFLOAD_VLAN_V2 negotiation
+In-Reply-To: <20211130001604.22112-3-anthony.l.nguyen@intel.com>
 References: <20211130001604.22112-1-anthony.l.nguyen@intel.com>
- <20211130001604.22112-4-anthony.l.nguyen@intel.com>
-Message-ID: <DM8PR11MB56218F18B6C3AF7206B6E429AB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
+ <20211130001604.22112-3-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB56215ADA254276256B16172CAB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,57 +19,61 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: wtorek, 30 listopada 2021 01:16
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 3/6] iavf: Add support
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2 during netdev config
+> Subject: [Intel-wired-lan] [PATCH net-next v2 2/6] iavf: Add support for
+> VIRTCHNL_VF_OFFLOAD_VLAN_V2 negotiation
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Based on VIRTCHNL_VF_OFFLOAD_VLAN_V2, the VF can now support more
-> VLAN capabilities (i.e. 802.1AD offloads and filtering). In order to
-> communicate these capabilities to the netdev layer, the VF needs to parse its
-> VLAN capabilities based on whether it was able to negotiation
-> VIRTCHNL_VF_OFFLOAD_VLAN or VIRTCHNL_VF_OFFLOAD_VLAN_V2 or
-> neither of these.
+> In order to support the new VIRTCHNL_VF_OFFLOAD_VLAN_V2 capability
+> the VF driver needs to rework it's initialization state machine and reset flow.
+> This has to be done because successful negotiation of
+> VIRTCHNL_VF_OFFLOAD_VLAN_V2 requires the VF driver to perform a
+> second capability request via VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
+> before configuring the adapter and its netdev.
 > 
-> In order to support this, add the following functionality:
+> Add the VIRTCHNL_VF_OFFLOAD_VLAN_V2 bit when sending the
+> VIRTHCNL_OP_GET_VF_RESOURECES message. The underlying PF will either
+> support VIRTCHNL_VF_OFFLOAD_VLAN or
+> VIRTCHNL_VF_OFFLOAD_VLAN_V2 or neither. Both of these offloads should
+> never be supported together.
 > 
-> iavf_get_netdev_vlan_hw_features() - This is used to determine the VLAN
-> features that the underlying hardware supports and that can be toggled
-> off/on based on the negotiated capabiltiies. For example, if
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2 was negotiated, then any capability
-> marked with VIRTCHNL_VLAN_TOGGLE can be toggled on/off by the VF. If
-> VIRTCHNL_VF_OFFLOAD_VLAN was negotiated, then only VLAN insertion
-> and/or stripping can be toggled on/off.
+> Based on this, add 2 new states to the initialization state machine:
 > 
-> iavf_get_netdev_vlan_features() - This is used to determine the VLAN
-> features that the underlying hardware supports and that should be enabled
-> by default. For example, if VIRTHCNL_VF_OFFLOAD_VLAN_V2 was
-> negotiated, then any supported capability that has its ethertype_init filed set
-> should be enabled by default. If VIRTCHNL_VF_OFFLOAD_VLAN was
-> negotiated, then filtering, stripping, and insertion should be enabled by
-> default.
+> __IAVF_INIT_GET_OFFLOAD_VLAN_V2_CAPS
+> __IAVF_INIT_CONFIG_ADAPTER
 > 
-> Also, refactor iavf_fix_features() to take into account the new capabilities. To
-> do this, query all the supported features (enabled by default and toggleable)
-> and make sure the requested change is supported.
-> If VIRTCHNL_VF_OFFLOAD_VLAN_V2 is successfully negotiated, there is no
-> need to check VIRTCHNL_VLAN_TOGGLE here because the driver already
-> told the netdev layer which features can be toggled via netdev-
-> >hw_features during iavf_process_config(), so only those features will be
-> requested to change.
+> The __IAVF_INIT_GET_OFFLOAD_VLAN_V2_CAPS state is used to
+> request/store the new VLAN capabilities if and only if
+> VIRTCHNL_VLAN_OFFLOAD_VLAN_V2 was successfully negotiated in the
+> __IAVF_INIT_GET_RESOURCES state.
+> 
+> The __IAVF_INIT_CONFIG_ADAPTER state is used to configure the
+> adapter/netdev after the resource requests have finished. The VF will move
+> into this state regardless of whether it successfully negotiated
+> VIRTCHNL_VF_OFFLOAD_VLAN or VIRTCHNL_VF_OFFLOAD_VLAN_V2.
+> 
+> Also, add a the new flag IAVF_FLAG_AQ_GET_OFFLOAD_VLAN_V2_CAPS
+> and set it during VF reset. If VIRTCHNL_VF_OFFLOAD_VLAN_V2 was
+> successfully negotiated then the VF will request its VLAN capabilities via
+> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS during the reset. This is
+> needed because the PF may change/modify the VF's configuration during VF
+> reset (i.e. modifying the VF's port VLAN configuration).
+> 
+> This also, required the VF to call netdev_update_features() since its VLAN
+> features may change during VF reset. Make sure to call this under rtnl_lock().
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h        |  17 +-
->  drivers/net/ethernet/intel/iavf/iavf_main.c   | 279 ++++++++++++++++--
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 251 +++++++++++-----
->  3 files changed, 453 insertions(+), 94 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf.h        |   9 +
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 205 +++++++++++++-----
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  78 ++++++-
+>  3 files changed, 240 insertions(+), 52 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
 > b/drivers/net/ethernet/intel/iavf/iavf.h
-> index edb139834437..5fb6ebf9a760 100644
+> index b5728bdbcf33..edb139834437 100644
 > --- a/drivers/net/ethernet/intel/iavf/iavf.h
 > +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -55,7 +55,8 @@ enum iavf_vsi_state_t {  struct iavf_vsi {
+> @@ -181,6 +181,8 @@ enum iavf_state_t {
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
