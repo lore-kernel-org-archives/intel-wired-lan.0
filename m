@@ -1,53 +1,38 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Tue,  7 Dec 2021 21:55:28 +0100
-Subject: [Intel-wired-lan] [PATCH v3 net-next 1/9] i40e: don't reserve
- excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-In-Reply-To: <20211207205536.563550-1-alexandr.lobakin@intel.com>
-References: <20211207205536.563550-1-alexandr.lobakin@intel.com>
-Message-ID: <20211207205536.563550-2-alexandr.lobakin@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 7 Dec 2021 20:21:01 -0800
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
+In-Reply-To: <e2fd429a489545e7a521283600cb7caa@realtek.com>
+References: <20211129101315.16372-381-nic_swsd@realtek.com>
+ <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
+ <20211130190926.7c1d735d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <d3a1e1c469844aa697d6d315c9549eda@realtek.com>
+ <20211203070410.1b4abc4d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <e2fd429a489545e7a521283600cb7caa@realtek.com>
+Message-ID: <20211207202101.3a3a93b0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-{__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
-+ NET_IP_ALIGN for any skb.
-OTOH, i40e_construct_skb_zc() currently allocates and reserves
-additional `xdp->data - xdp->data_hard_start`, which is
-XDP_PACKET_HEADROOM for XSK frames.
-There's no need for that at all as the frame is post-XDP and will
-go only to the networking stack core.
-Pass the size of the actual data only to __napi_alloc_skb() and
-don't reserve anything. This will give enough headroom for stack
-processing.
+On Tue, 7 Dec 2021 07:28:02 +0000 Hayes Wang wrote:
+> Jakub Kicinski <kuba@kernel.org>
+> > Ah, I've only spotted the enable/disable knob in the patch.
+> > If you're exchanging arbitrary binary data with the FW we
+> > can't help you. It's not going to fly upstream.   
+> 
+> How is it that we only provide certain basic settings,
+> such as IPv4 address, IPv6 address, and so on? Then,
+> they are not the arbitrary binary data.
+> 
+> Could devlink param be used for more than 4 bytes settings?
+> At least the IPv6 address is longer.
 
-Fixes: 0a714186d3c0 ("i40e: add AF_XDP zero-copy Rx support")
-Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+We can add a new devlink sub-command and driver callback in that case.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index f08d19b8c554..9564906b7da8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -245,13 +245,11 @@ static struct sk_buff *i40e_construct_skb_zc(struct i40e_ring *rx_ring,
- 	struct sk_buff *skb;
- 
- 	/* allocate a skb to store the frags */
--	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
--			       xdp->data_end - xdp->data_hard_start,
-+	skb = __napi_alloc_skb(&rx_ring->q_vector->napi, datasize,
- 			       GFP_ATOMIC | __GFP_NOWARN);
- 	if (unlikely(!skb))
- 		goto out;
- 
--	skb_reserve(skb, xdp->data - xdp->data_hard_start);
- 	memcpy(__skb_put(skb, datasize), xdp->data, datasize);
- 	if (metasize)
- 		skb_metadata_set(skb, metasize);
--- 
-2.33.1
+> Besides, we need the information of SMBIOS which could
+> be 4K ~ 8K bytes data. Is there any way we could transmit
+> it to firmware?
 
+Is structure of that data defined by some DMTF standard?
