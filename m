@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 8 Dec 2021 08:07:30 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/6] iavf: Add support for
- VIRTCHNL_VF_OFFLOAD_VLAN_V2 negotiation
-In-Reply-To: <20211130001604.22112-3-anthony.l.nguyen@intel.com>
+Date: Wed, 8 Dec 2021 08:08:06 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 1/6] virtchnl: Add support
+ for new VLAN capabilities
+In-Reply-To: <20211130001604.22112-2-anthony.l.nguyen@intel.com>
 References: <20211130001604.22112-1-anthony.l.nguyen@intel.com>
- <20211130001604.22112-3-anthony.l.nguyen@intel.com>
-Message-ID: <DM8PR11MB56215ADA254276256B16172CAB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
+ <20211130001604.22112-2-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB56212059F295026BBFF34300AB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,61 +19,63 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: wtorek, 30 listopada 2021 01:16
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 2/6] iavf: Add support for
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2 negotiation
+> Subject: [Intel-wired-lan] [PATCH net-next v2 1/6] virtchnl: Add support for
+> new VLAN capabilities
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> In order to support the new VIRTCHNL_VF_OFFLOAD_VLAN_V2 capability
-> the VF driver needs to rework it's initialization state machine and reset flow.
-> This has to be done because successful negotiation of
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2 requires the VF driver to perform a
-> second capability request via VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
-> before configuring the adapter and its netdev.
+> Currently VIRTCHNL only allows for VLAN filtering and offloads to happen on
+> a single 802.1Q VLAN. Add support to filter and offload on inner, outer,
+> and/or inner + outer VLANs.
 > 
-> Add the VIRTCHNL_VF_OFFLOAD_VLAN_V2 bit when sending the
-> VIRTHCNL_OP_GET_VF_RESOURECES message. The underlying PF will either
-> support VIRTCHNL_VF_OFFLOAD_VLAN or
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2 or neither. Both of these offloads should
-> never be supported together.
+> This is done by introducing the new capability
+> VIRTCHNL_VF_OFFLOAD_VLAN_V2. The flow to negotiate this new capability
+> is shown below.
 > 
-> Based on this, add 2 new states to the initialization state machine:
+> 1. VF - sets the VIRTCHNL_VF_OFFLOAD_VLAN_V2 bit in the
+>    virtchnl_vf_resource.vf_caps_flags during the
+>    VIRTCHNL_OP_GET_VF_RESOURCES request message. The VF should also
+> set
+>    the VIRTCHNL_VF_OFFLOAD_VLAN bit in case the PF driver doesn't support
+>    the new capability.
 > 
-> __IAVF_INIT_GET_OFFLOAD_VLAN_V2_CAPS
-> __IAVF_INIT_CONFIG_ADAPTER
+> 2. PF - sets the VLAN capability bit it supports in the
+>    VIRTCHNL_OP_GET_VF_RESOURCES response message. This will either be
+>    VIRTCHNL_VF_OFFLOAD_VLAN_V2, VIRTCHNL_VF_OFFLOAD_VLAN, or
+> none.
 > 
-> The __IAVF_INIT_GET_OFFLOAD_VLAN_V2_CAPS state is used to
-> request/store the new VLAN capabilities if and only if
-> VIRTCHNL_VLAN_OFFLOAD_VLAN_V2 was successfully negotiated in the
-> __IAVF_INIT_GET_RESOURCES state.
+> 3. VF - If the VIRTCHNL_VF_OFFLOAD_VLAN_V2 capability was ACK'd by the
+>    PF, then the VF needs to request the VLAN capabilities of the
+>    PF/Device by issuing a VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
+> request.
+>    If the VIRTCHNL_VF_OFFLOAD_VLAN capability was ACK'd then the VF
+>    knows only single 802.1Q VLAN filtering/offloads are supported. If no
+>    VLAN capability is ACK'd then the PF/Device doesn't support hardware
+>    VLAN filtering/offloads for this VF.
 > 
-> The __IAVF_INIT_CONFIG_ADAPTER state is used to configure the
-> adapter/netdev after the resource requests have finished. The VF will move
-> into this state regardless of whether it successfully negotiated
-> VIRTCHNL_VF_OFFLOAD_VLAN or VIRTCHNL_VF_OFFLOAD_VLAN_V2.
+> 4. PF - Populates the virtchnl_vlan_caps structure based on what it
+>    allows/supports for that VF and sends that response via
+>    VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS.
 > 
-> Also, add a the new flag IAVF_FLAG_AQ_GET_OFFLOAD_VLAN_V2_CAPS
-> and set it during VF reset. If VIRTCHNL_VF_OFFLOAD_VLAN_V2 was
-> successfully negotiated then the VF will request its VLAN capabilities via
-> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS during the reset. This is
-> needed because the PF may change/modify the VF's configuration during VF
-> reset (i.e. modifying the VF's port VLAN configuration).
+> After VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS is successfully
+> negotiated the VF driver needs to interpret the capabilities supported by the
+> underlying PF/Device. The VF will be allowed to filter/offload the inner
+> 802.1Q, outer (various ethertype), inner 802.1Q + outer (various ethertypes),
+> or none based on which fields are set.
 > 
-> This also, required the VF to call netdev_update_features() since its VLAN
-> features may change during VF reset. Make sure to call this under rtnl_lock().
+> The VF will also need to interpret where the VLAN tag should be inserted
+> and/or stripped based on the negotiated capabilities.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h        |   9 +
->  drivers/net/ethernet/intel/iavf/iavf_main.c   | 205 +++++++++++++-----
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  78 ++++++-
->  3 files changed, 240 insertions(+), 52 deletions(-)
+>  include/linux/avf/virtchnl.h | 377
+> +++++++++++++++++++++++++++++++++++
+>  1 file changed, 377 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index b5728bdbcf33..edb139834437 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -181,6 +181,8 @@ enum iavf_state_t {
+> diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h index
+> b30a1bc74fc7..2ce27e8e4f19 100644
+> --- a/include/linux/avf/virtchnl.h
+> +++ b/include/linux/avf/virtchnl.h
+> @@ -141,6 +141,13 @@ enum virtchnl_ops {
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
