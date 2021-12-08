@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 8 Dec 2021 08:08:06 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/6] virtchnl: Add support
- for new VLAN capabilities
-In-Reply-To: <20211130001604.22112-2-anthony.l.nguyen@intel.com>
+Date: Wed, 8 Dec 2021 08:09:45 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 5/6] iavf: Add support for
+ VIRTCHNL_VF_OFFLOAD_VLAN_V2 offload enable/disable
+In-Reply-To: <20211130001604.22112-6-anthony.l.nguyen@intel.com>
 References: <20211130001604.22112-1-anthony.l.nguyen@intel.com>
- <20211130001604.22112-2-anthony.l.nguyen@intel.com>
-Message-ID: <DM8PR11MB56212059F295026BBFF34300AB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
+ <20211130001604.22112-6-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB5621B98E2A0295F0D04E31A7AB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,63 +19,147 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Tony Nguyen
 > Sent: wtorek, 30 listopada 2021 01:16
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2 1/6] virtchnl: Add support for
-> new VLAN capabilities
+> Subject: [Intel-wired-lan] [PATCH net-next v2 5/6] iavf: Add support for
+> VIRTCHNL_VF_OFFLOAD_VLAN_V2 offload enable/disable
 > 
 > From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Currently VIRTCHNL only allows for VLAN filtering and offloads to happen on
-> a single 802.1Q VLAN. Add support to filter and offload on inner, outer,
-> and/or inner + outer VLANs.
+> The new VIRTCHNL_VF_OFFLOAD_VLAN_V2 capability added support that
+> allows the VF to support 802.1Q and 802.1ad VLAN insertion and stripping if
+> successfully negotiated via VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS.
+> Multiple changes were needed to support this new functionality.
 > 
-> This is done by introducing the new capability
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2. The flow to negotiate this new capability
-> is shown below.
+> 1. Added new aq_required flags to support any kind of VLAN stripping and
+>    insertion offload requests via virtchnl.
 > 
-> 1. VF - sets the VIRTCHNL_VF_OFFLOAD_VLAN_V2 bit in the
->    virtchnl_vf_resource.vf_caps_flags during the
->    VIRTCHNL_OP_GET_VF_RESOURCES request message. The VF should also
-> set
->    the VIRTCHNL_VF_OFFLOAD_VLAN bit in case the PF driver doesn't support
->    the new capability.
+> 2. Added the new method iavf_set_vlan_offload_features() that's
+>    used during VF initialization, VF reset, and iavf_set_features() to
+>    set the aq_required bits based on the current VLAN offload
+>    configuration of the VF's netdev.
 > 
-> 2. PF - sets the VLAN capability bit it supports in the
->    VIRTCHNL_OP_GET_VF_RESOURCES response message. This will either be
->    VIRTCHNL_VF_OFFLOAD_VLAN_V2, VIRTCHNL_VF_OFFLOAD_VLAN, or
-> none.
-> 
-> 3. VF - If the VIRTCHNL_VF_OFFLOAD_VLAN_V2 capability was ACK'd by the
->    PF, then the VF needs to request the VLAN capabilities of the
->    PF/Device by issuing a VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
-> request.
->    If the VIRTCHNL_VF_OFFLOAD_VLAN capability was ACK'd then the VF
->    knows only single 802.1Q VLAN filtering/offloads are supported. If no
->    VLAN capability is ACK'd then the PF/Device doesn't support hardware
->    VLAN filtering/offloads for this VF.
-> 
-> 4. PF - Populates the virtchnl_vlan_caps structure based on what it
->    allows/supports for that VF and sends that response via
->    VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS.
-> 
-> After VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS is successfully
-> negotiated the VF driver needs to interpret the capabilities supported by the
-> underlying PF/Device. The VF will be allowed to filter/offload the inner
-> 802.1Q, outer (various ethertype), inner 802.1Q + outer (various ethertypes),
-> or none based on which fields are set.
-> 
-> The VF will also need to interpret where the VLAN tag should be inserted
-> and/or stripped based on the negotiated capabilities.
+> 3. Added virtchnl handling for VIRTCHNL_OP_ENABLE_STRIPPING_V2,
+>    VIRTCHNL_OP_DISABLE_STRIPPING_V2,
+> VIRTCHNL_OP_ENABLE_INSERTION_V2,
+>    and VIRTCHNL_OP_ENABLE_INSERTION_V2.
 > 
 > Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 > ---
->  include/linux/avf/virtchnl.h | 377
-> +++++++++++++++++++++++++++++++++++
->  1 file changed, 377 insertions(+)
+>  drivers/net/ethernet/intel/iavf/iavf.h        |  80 ++++---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 151 +++++++++++--
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 203 ++++++++++++++++++
+>  3 files changed, 383 insertions(+), 51 deletions(-)
 > 
-> diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h index
-> b30a1bc74fc7..2ce27e8e4f19 100644
-> --- a/include/linux/avf/virtchnl.h
-> +++ b/include/linux/avf/virtchnl.h
-> @@ -141,6 +141,13 @@ enum virtchnl_ops {
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 2660d46da1b5..59806d1f7e79 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -287,39 +287,47 @@ struct iavf_adapter {
+>  /* duplicates for common code */
+>  #define IAVF_FLAG_DCB_ENABLED			0
+>  	/* flags for admin queue service task */
+> -	u32 aq_required;
+> -#define IAVF_FLAG_AQ_ENABLE_QUEUES		BIT(0)
+> -#define IAVF_FLAG_AQ_DISABLE_QUEUES		BIT(1)
+> -#define IAVF_FLAG_AQ_ADD_MAC_FILTER		BIT(2)
+> -#define IAVF_FLAG_AQ_ADD_VLAN_FILTER		BIT(3)
+> -#define IAVF_FLAG_AQ_DEL_MAC_FILTER		BIT(4)
+> -#define IAVF_FLAG_AQ_DEL_VLAN_FILTER		BIT(5)
+> -#define IAVF_FLAG_AQ_CONFIGURE_QUEUES		BIT(6)
+> -#define IAVF_FLAG_AQ_MAP_VECTORS		BIT(7)
+> -#define IAVF_FLAG_AQ_HANDLE_RESET		BIT(8)
+> -#define IAVF_FLAG_AQ_CONFIGURE_RSS		BIT(9) /* direct AQ
+> config */
+> -#define IAVF_FLAG_AQ_GET_CONFIG		BIT(10)
+> +	u64 aq_required;
+> +#define IAVF_FLAG_AQ_ENABLE_QUEUES		BIT_ULL(0)
+> +#define IAVF_FLAG_AQ_DISABLE_QUEUES		BIT_ULL(1)
+> +#define IAVF_FLAG_AQ_ADD_MAC_FILTER		BIT_ULL(2)
+> +#define IAVF_FLAG_AQ_ADD_VLAN_FILTER		BIT_ULL(3)
+> +#define IAVF_FLAG_AQ_DEL_MAC_FILTER		BIT_ULL(4)
+> +#define IAVF_FLAG_AQ_DEL_VLAN_FILTER		BIT_ULL(5)
+> +#define IAVF_FLAG_AQ_CONFIGURE_QUEUES		BIT_ULL(6)
+> +#define IAVF_FLAG_AQ_MAP_VECTORS		BIT_ULL(7)
+> +#define IAVF_FLAG_AQ_HANDLE_RESET		BIT_ULL(8)
+> +#define IAVF_FLAG_AQ_CONFIGURE_RSS		BIT_ULL(9) /* direct
+> AQ config */
+> +#define IAVF_FLAG_AQ_GET_CONFIG			BIT_ULL(10)
+>  /* Newer style, RSS done by the PF so we can ignore hardware vagaries. */
+> -#define IAVF_FLAG_AQ_GET_HENA			BIT(11)
+> -#define IAVF_FLAG_AQ_SET_HENA			BIT(12)
+> -#define IAVF_FLAG_AQ_SET_RSS_KEY		BIT(13)
+> -#define IAVF_FLAG_AQ_SET_RSS_LUT		BIT(14)
+> -#define IAVF_FLAG_AQ_REQUEST_PROMISC		BIT(15)
+> -#define IAVF_FLAG_AQ_RELEASE_PROMISC		BIT(16)
+> -#define IAVF_FLAG_AQ_REQUEST_ALLMULTI		BIT(17)
+> -#define IAVF_FLAG_AQ_RELEASE_ALLMULTI		BIT(18)
+> -#define IAVF_FLAG_AQ_ENABLE_VLAN_STRIPPING	BIT(19)
+> -#define IAVF_FLAG_AQ_DISABLE_VLAN_STRIPPING	BIT(20)
+> -#define IAVF_FLAG_AQ_ENABLE_CHANNELS		BIT(21)
+> -#define IAVF_FLAG_AQ_DISABLE_CHANNELS		BIT(22)
+> -#define IAVF_FLAG_AQ_ADD_CLOUD_FILTER		BIT(23)
+> -#define IAVF_FLAG_AQ_DEL_CLOUD_FILTER		BIT(24)
+> -#define IAVF_FLAG_AQ_ADD_FDIR_FILTER		BIT(25)
+> -#define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT(26)
+> -#define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT(27)
+> -#define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT(28)
+> -#define IAVF_FLAG_AQ_REQUEST_STATS		BIT(29)
+> -#define IAVF_FLAG_AQ_GET_OFFLOAD_VLAN_V2_CAPS	BIT(30)
+> +#define IAVF_FLAG_AQ_GET_HENA			BIT_ULL(11)
+> +#define IAVF_FLAG_AQ_SET_HENA			BIT_ULL(12)
+> +#define IAVF_FLAG_AQ_SET_RSS_KEY		BIT_ULL(13)
+> +#define IAVF_FLAG_AQ_SET_RSS_LUT		BIT_ULL(14)
+> +#define IAVF_FLAG_AQ_REQUEST_PROMISC		BIT_ULL(15)
+> +#define IAVF_FLAG_AQ_RELEASE_PROMISC		BIT_ULL(16)
+> +#define IAVF_FLAG_AQ_REQUEST_ALLMULTI		BIT_ULL(17)
+> +#define IAVF_FLAG_AQ_RELEASE_ALLMULTI		BIT_ULL(18)
+> +#define IAVF_FLAG_AQ_ENABLE_VLAN_STRIPPING	BIT_ULL(19)
+> +#define IAVF_FLAG_AQ_DISABLE_VLAN_STRIPPING	BIT_ULL(20)
+> +#define IAVF_FLAG_AQ_ENABLE_CHANNELS		BIT_ULL(21)
+> +#define IAVF_FLAG_AQ_DISABLE_CHANNELS		BIT_ULL(22)
+> +#define IAVF_FLAG_AQ_ADD_CLOUD_FILTER		BIT_ULL(23)
+> +#define IAVF_FLAG_AQ_DEL_CLOUD_FILTER		BIT_ULL(24)
+> +#define IAVF_FLAG_AQ_ADD_FDIR_FILTER		BIT_ULL(25)
+> +#define IAVF_FLAG_AQ_DEL_FDIR_FILTER		BIT_ULL(26)
+> +#define IAVF_FLAG_AQ_ADD_ADV_RSS_CFG		BIT_ULL(27)
+> +#define IAVF_FLAG_AQ_DEL_ADV_RSS_CFG		BIT_ULL(28)
+> +#define IAVF_FLAG_AQ_REQUEST_STATS		BIT_ULL(29)
+> +#define IAVF_FLAG_AQ_GET_OFFLOAD_VLAN_V2_CAPS	BIT_ULL(30)
+> +#define IAVF_FLAG_AQ_ENABLE_CTAG_VLAN_STRIPPING
+> 	BIT_ULL(31)
+> +#define IAVF_FLAG_AQ_DISABLE_CTAG_VLAN_STRIPPING	BIT_ULL(32)
+> +#define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_STRIPPING
+> 	BIT_ULL(33)
+> +#define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_STRIPPING	BIT_ULL(34)
+> +#define IAVF_FLAG_AQ_ENABLE_CTAG_VLAN_INSERTION
+> 	BIT_ULL(35)
+> +#define IAVF_FLAG_AQ_DISABLE_CTAG_VLAN_INSERTION	BIT_ULL(36)
+> +#define IAVF_FLAG_AQ_ENABLE_STAG_VLAN_INSERTION
+> 	BIT_ULL(37)
+> +#define IAVF_FLAG_AQ_DISABLE_STAG_VLAN_INSERTION	BIT_ULL(38)
+> 
+>  	/* OS defined structs */
+>  	struct net_device *netdev;
+> @@ -524,6 +532,14 @@ void iavf_enable_channels(struct iavf_adapter
+> *adapter);  void iavf_disable_channels(struct iavf_adapter *adapter);  void
+> iavf_add_cloud_filter(struct iavf_adapter *adapter);  void
+> iavf_del_cloud_filter(struct iavf_adapter *adapter);
+> +void iavf_enable_vlan_stripping_v2(struct iavf_adapter *adapter, u16
+> +tpid); void iavf_disable_vlan_stripping_v2(struct iavf_adapter
+> +*adapter, u16 tpid); void iavf_enable_vlan_insertion_v2(struct
+> +iavf_adapter *adapter, u16 tpid); void
+> +iavf_disable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid);
+> +void iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
+> +			       netdev_features_t prev_features,
+> +			       netdev_features_t features);
+>  void iavf_add_fdir_filter(struct iavf_adapter *adapter);  void
+> iavf_del_fdir_filter(struct iavf_adapter *adapter);  void
+> iavf_add_adv_rss_cfg(struct iavf_adapter *adapter); diff --git
+> a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 945369bbe04a..8bdadf6a3c0c 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -1815,6 +1815,39 @@ static int iavf_process_aq_command(struct
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
