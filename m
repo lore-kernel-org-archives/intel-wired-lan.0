@@ -1,74 +1,75 @@
 From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Wed,  8 Dec 2021 15:06:56 +0100
-Subject: [Intel-wired-lan] [PATCH v4 net-next 3/9] ice: respect metadata in
- legacy-rx/ice_construct_skb()
-In-Reply-To: <20211208140702.642741-1-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
-Message-ID: <20211208140702.642741-4-alexandr.lobakin@intel.com>
+Date: Wed,  8 Dec 2021 15:06:53 +0100
+Subject: [Intel-wired-lan] [PATCH v4 net-next 0/9] net: intel:
+ napi_alloc_skb() vs metadata
+Message-ID: <20211208140702.642741-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In "legacy-rx" mode represented by ice_construct_skb(), we can
-still use XDP (and XDP metadata), but after XDP_PASS the metadata
-will be lost as it doesn't get copied to the skb.
-Copy it along with the frame headers. Account its size on skb
-allocation, and when copying just treat it as a part of the frame
-and do a pull after to "move" it to the "reserved" zone.
-Point net_prefetch() to xdp->data_meta instead of data. This won't
-change anything when the meta is not here, but will save some cache
-misses otherwise.
+This is an interpolation of [0] to other Intel Ethernet drivers
+(and is (re)based on its code).
+The main aim is to keep XDP metadata not only in case with
+build_skb(), but also when we do napi_alloc_skb() + memcpy().
 
-Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
-Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_txrx.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+All Intel drivers suffers from the same here:
+ - metadata gets lost on XDP_PASS in legacy-rx;
+ - excessive headroom allocation on XSK Rx to skbs;
+ - metadata gets lost on XSK Rx to skbs.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index bc3ba19dc88f..d724b6376c43 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -968,15 +968,17 @@ static struct sk_buff *
- ice_construct_skb(struct ice_rx_ring *rx_ring, struct ice_rx_buf *rx_buf,
- 		  struct xdp_buff *xdp)
- {
-+	unsigned int metasize = xdp->data - xdp->data_meta;
- 	unsigned int size = xdp->data_end - xdp->data;
- 	unsigned int headlen;
- 	struct sk_buff *skb;
- 
- 	/* prefetch first cache line of first page */
--	net_prefetch(xdp->data);
-+	net_prefetch(xdp->data_meta);
- 
- 	/* allocate a skb to store the frags */
--	skb = __napi_alloc_skb(&rx_ring->q_vector->napi, ICE_RX_HDR_SIZE,
-+	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
-+			       ICE_RX_HDR_SIZE + metasize,
- 			       GFP_ATOMIC | __GFP_NOWARN);
- 	if (unlikely(!skb))
- 		return NULL;
-@@ -988,8 +990,13 @@ ice_construct_skb(struct ice_rx_ring *rx_ring, struct ice_rx_buf *rx_buf,
- 		headlen = eth_get_headlen(skb->dev, xdp->data, ICE_RX_HDR_SIZE);
- 
- 	/* align pull length to size of long to optimize memcpy performance */
--	memcpy(__skb_put(skb, headlen), xdp->data, ALIGN(headlen,
--							 sizeof(long)));
-+	memcpy(__skb_put(skb, headlen + metasize), xdp->data_meta,
-+	       ALIGN(headlen + metasize, sizeof(long)));
-+
-+	if (metasize) {
-+		skb_metadata_set(skb, metasize);
-+		__skb_pull(skb, metasize);
-+	}
- 
- 	/* if we exhaust the linear part then add what is left as a frag */
- 	size -= headlen;
+Those get especially actual in XDP Hints upcoming.
+I couldn't have addressed the first one for all Intel drivers due to
+that they don't reserve any headroom for now in legacy-rx mode even
+with XDP enabled. This is hugely wrong, but requires quite a bunch
+of work and a separate series. Luckily, ice doesn't suffer from
+that.
+igc has 1 and 3 already fixed in [0].
+
+From v3 ([1]):
+ - fix driver name and ixgbe_construct_skb() function name in the
+   commit message of #9 (Jesper);
+ - no functional changes.
+
+From v2 (unreleased upstream):
+ - tweaked 007 to pass bi->xdp directly and simplify code (Maciej);
+ - picked Michal's Reviewed-by.
+
+From v1 (unreleased upstream):
+ - drop "fixes" of legacy-rx for i40e, igb and ixgbe since they have
+   another flaw regarding headroom (see above);
+ - drop igc cosmetic fixes since they landed upstream incorporated
+   into Jesper's commits;
+ - picked one Acked-by from Maciej.
+
+[0] https://lore.kernel.org/netdev/163700856423.565980.10162564921347693758.stgit at firesoul
+[1] https://lore.kernel.org/netdev/20211207205536.563550-1-alexandr.lobakin at intel.com
+
+Alexander Lobakin (9):
+  i40e: don't reserve excessive XDP_PACKET_HEADROOM on XSK Rx to skb
+  i40e: respect metadata on XSK Rx to skb
+  ice: respect metadata in legacy-rx/ice_construct_skb()
+  ice: don't reserve excessive XDP_PACKET_HEADROOM on XSK Rx to skb
+  ice: respect metadata on XSK Rx to skb
+  igc: don't reserve excessive XDP_PACKET_HEADROOM on XSK Rx to skb
+  ixgbe: pass bi->xdp to ixgbe_construct_skb_zc() directly
+  ixgbe: don't reserve excessive XDP_PACKET_HEADROOM on XSK Rx to skb
+  ixgbe: respect metadata on XSK Rx to skb
+
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c   | 16 +++++++-----
+ drivers/net/ethernet/intel/ice/ice_txrx.c    | 15 ++++++++---
+ drivers/net/ethernet/intel/ice/ice_xsk.c     | 16 +++++++-----
+ drivers/net/ethernet/intel/igc/igc_main.c    | 13 +++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 27 ++++++++++++--------
+ 5 files changed, 54 insertions(+), 33 deletions(-)
+
 -- 
+Testing hints:
+
+Setup an XDP and AF_XDP program which will prepend metadata at the
+front of the frames and return XDP_PASS, then check that metadata
+is present after frames reach kernel network stack.
+--
 2.33.1
 
