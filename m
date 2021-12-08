@@ -1,38 +1,44 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 7 Dec 2021 20:21:01 -0800
-Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
-In-Reply-To: <e2fd429a489545e7a521283600cb7caa@realtek.com>
-References: <20211129101315.16372-381-nic_swsd@realtek.com>
- <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
- <20211130190926.7c1d735d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <d3a1e1c469844aa697d6d315c9549eda@realtek.com>
- <20211203070410.1b4abc4d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <e2fd429a489545e7a521283600cb7caa@realtek.com>
-Message-ID: <20211207202101.3a3a93b0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 8 Dec 2021 08:03:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 6/6] iavf: Restrict
+ maximum VLAN filters for VIRTCHNL_VF_OFFLOAD_VLAN_V2
+In-Reply-To: <20211130001604.22112-7-anthony.l.nguyen@intel.com>
+References: <20211130001604.22112-1-anthony.l.nguyen@intel.com>
+ <20211130001604.22112-7-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB56217286F2406A51C5F5784FAB6F9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 7 Dec 2021 07:28:02 +0000 Hayes Wang wrote:
-> Jakub Kicinski <kuba@kernel.org>
-> > Ah, I've only spotted the enable/disable knob in the patch.
-> > If you're exchanging arbitrary binary data with the FW we
-> > can't help you. It's not going to fly upstream.   
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: wtorek, 30 listopada 2021 01:16
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2 6/6] iavf: Restrict maximum
+> VLAN filters for VIRTCHNL_VF_OFFLOAD_VLAN_V2
 > 
-> How is it that we only provide certain basic settings,
-> such as IPv4 address, IPv6 address, and so on? Then,
-> they are not the arbitrary binary data.
+> From: Brett Creeley <brett.creeley@intel.com>
 > 
-> Could devlink param be used for more than 4 bytes settings?
-> At least the IPv6 address is longer.
+> For VIRTCHNL_VF_OFFLOAD_VLAN, PF's would limit the number of VLAN
+> filters a VF was allowed to add. However, by the time the opcode failed, the
+> VLAN netdev had already been added. VIRTCHNL_VF_OFFLOAD_VLAN_V2
+> added the ability for a PF to tell the VF how many VLAN filters it's allowed to
+> add. Make changes to support that functionality.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 50 +++++++++++++++++++++
+>  1 file changed, 50 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 8bdadf6a3c0c..cb48a4ecd221 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
 
-We can add a new devlink sub-command and driver callback in that case.
-
-> Besides, we need the information of SMBIOS which could
-> be 4K ~ 8K bytes data. Is there any way we could transmit
-> it to firmware?
-
-Is structure of that data defined by some DMTF standard?
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
