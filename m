@@ -1,53 +1,40 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Wed,  8 Dec 2021 15:07:01 +0100
-Subject: [Intel-wired-lan] [PATCH v4 net-next 8/9] ixgbe: don't reserve
- excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-1-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
-Message-ID: <20211208140702.642741-9-alexandr.lobakin@intel.com>
+From: Hayes Wang <hayeswang@realtek.com>
+Date: Wed, 8 Dec 2021 07:53:28 +0000
+Subject: [Intel-wired-lan] [RFC PATCH 0/4] r8169: support dash
+In-Reply-To: <20211207202101.3a3a93b0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+References: <20211129101315.16372-381-nic_swsd@realtek.com>
+ <20211129095947.547a765f@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <918d75ea873a453ab2ba588a35d66ab6@realtek.com>
+ <20211130190926.7c1d735d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <d3a1e1c469844aa697d6d315c9549eda@realtek.com>
+ <20211203070410.1b4abc4d@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <e2fd429a489545e7a521283600cb7caa@realtek.com>
+ <20211207202101.3a3a93b0@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+Message-ID: <67d7f6f7b6e84af692bc0a7c4c48bb84@realtek.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-{__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
-+ NET_IP_ALIGN for any skb.
-OTOH, ixgbe_construct_skb_zc() currently allocates and reserves
-additional `xdp->data - xdp->data_hard_start`, which is
-XDP_PACKET_HEADROOM for XSK frames.
-There's no need for that at all as the frame is post-XDP and will
-go only to the networking stack core.
-Pass the size of the actual data only to __napi_alloc_skb() and
-don't reserve anything. This will give enough headroom for stack
-processing.
+Jakub Kicinski <kuba@kernel.org>
+> Sent: Wednesday, December 8, 2021 12:21 PM
+[...]
+> > Could devlink param be used for more than 4 bytes settings?
+> > At least the IPv6 address is longer.
+> 
+> We can add a new devlink sub-command and driver callback in that case.
 
-Fixes: d0bcacd0a130 ("ixgbe: add AF_XDP zero-copy Rx support")
-Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Excuse me. Do you mean someone will add it? Then, I could use it.
+Or, I have to add it.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-index 1d74a7980d81..db20dc4c2488 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
-@@ -214,13 +214,11 @@ static struct sk_buff *ixgbe_construct_skb_zc(struct ixgbe_ring *rx_ring,
- 	struct sk_buff *skb;
- 
- 	/* allocate a skb to store the frags */
--	skb = __napi_alloc_skb(&rx_ring->q_vector->napi,
--			       xdp->data_end - xdp->data_hard_start,
-+	skb = __napi_alloc_skb(&rx_ring->q_vector->napi, datasize,
- 			       GFP_ATOMIC | __GFP_NOWARN);
- 	if (unlikely(!skb))
- 		return NULL;
- 
--	skb_reserve(skb, xdp->data - xdp->data_hard_start);
- 	memcpy(__skb_put(skb, datasize), xdp->data, datasize);
- 	if (metasize)
- 		skb_metadata_set(skb, metasize);
--- 
-2.33.1
+> > Besides, we need the information of SMBIOS which could
+> > be 4K ~ 8K bytes data. Is there any way we could transmit
+> > it to firmware?
+> 
+> Is structure of that data defined by some DMTF standard?
+Yes.
+
+Best Regards,
+Hayes
 
