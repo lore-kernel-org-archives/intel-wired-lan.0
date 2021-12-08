@@ -1,232 +1,70 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 08 Dec 2021 18:06:59 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- d17b9737c2bc09b4ac6caf469826e5a7ce3ffab7
-Message-ID: <61b083c3.yOg1EmrggIfp+X15%lkp@intel.com>
+From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+Date: Wed, 8 Dec 2021 10:13:45 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix for displaying
+ message regarding NVM version
+In-Reply-To: <37f3e44a-cc8b-9632-2982-8b28ac98bbb1@molgen.mpg.de>
+References: <20211207132525.26458-1-mateusz.palczewski@intel.com>
+ <8e8f07cb-899a-b184-78ed-323d3b436b11@molgen.mpg.de>
+ <BL1PR11MB52886124AEE0A8C9E6679731876E9@BL1PR11MB5288.namprd11.prod.outlook.com>
+ <37f3e44a-cc8b-9632-2982-8b28ac98bbb1@molgen.mpg.de>
+Message-ID: <BL1PR11MB528851994C2A9AF2CD976985876F9@BL1PR11MB5288.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: d17b9737c2bc09b4ac6caf469826e5a7ce3ffab7  net/qla3xxx: fix an error code in ql_adapter_up()
+Dear Paul,
 
-elapsed time: 876m
+>>> Am 07.12.21 um 14:25 schrieb Mateusz Palczewski:
+>>>> When loading the i40e driver, it prints a message like: 'The driver for the
+>>>> device detected a newer version of the NVM image v1.x than expected v1.y.
+>>>> Please install the most recent version of the network driver.' This is
+>>>> misleading as the driver is working as expected.
+>>>>
+>>>> Fix that by removing the second part of message and changing it from
+>>>> dev_info to dev_dgb.
+>>>>
+>>>> Fixes: 4fb29bddb ("i40e: The driver now prints the API version in error message")
+>>>> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+>>>> ---
+>>>>    v3: Changed the patch after community review
+>>>>    v2: Fixed the fixes tag to be 12 digits long
+>>>> ---
+>>>>    drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+>>>>    1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>>>> index 4664d07..c07746b 100644
+>>>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>>>> @@ -15469,8 +15469,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>>>>    
+>>>>    	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+>>>>    	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
+>>>> -		dev_info(&pdev->dev,
+>>>> -			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
+>>>> +		dev_dbg(&pdev->dev,
+>>>> +			"The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u.\n",
+>>>>    			 hw->aq.api_maj_ver,
+>>>>    			 hw->aq.api_min_ver,
+>>>>    			 I40E_FW_API_VERSION_MAJOR,
+>>>>
+>>>
+>>> It?s a debug message now, so only a few people are going to notice, but
+>>> a note on what to do to get rid of the message, would be still be nice.
+>>>
+>>>> To disable this informational message, update to a newer driver version.
+>> 
+>> I believe that, since the driver is working correctly, we shouldn't
+>> request any action from the user but just to inform about a NVM being
+>> newer version that expected.
+>
+>Then ?expected? should also be removed from the message.
+I don't agree. I believe that message without the information about
+expected NVM version will be more confusing than the on with it. 
 
-configs tested: 201
-configs skipped: 3
+Kind regards,
+Mateusz
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211207
-arm                         axm55xx_defconfig
-sh                         microdev_defconfig
-mips                     loongson1c_defconfig
-sh                     sh7710voipgw_defconfig
-powerpc                  iss476-smp_defconfig
-m68k                             alldefconfig
-arc                           tb10x_defconfig
-arm                           tegra_defconfig
-powerpc                 mpc837x_rdb_defconfig
-csky                                defconfig
-xtensa                           allyesconfig
-arm                           stm32_defconfig
-powerpc                  storcenter_defconfig
-arm                          imote2_defconfig
-m68k                          atari_defconfig
-arm                           sama7_defconfig
-arm                         s5pv210_defconfig
-arm                       spear13xx_defconfig
-h8300                     edosk2674_defconfig
-mips                           rs90_defconfig
-mips                      maltasmvp_defconfig
-h8300                            allyesconfig
-nds32                            alldefconfig
-powerpc                     redwood_defconfig
-sh                          sdk7786_defconfig
-arm                           h5000_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     ppa8548_defconfig
-mips                         tb0287_defconfig
-sh                                  defconfig
-powerpc                    mvme5100_defconfig
-sh                            shmin_defconfig
-mips                        bcm63xx_defconfig
-powerpc                 mpc8272_ads_defconfig
-arc                              alldefconfig
-powerpc                 mpc834x_mds_defconfig
-arc                          axs103_defconfig
-arm                         nhk8815_defconfig
-sh                           se7705_defconfig
-mips                           xway_defconfig
-powerpc                      cm5200_defconfig
-sparc64                             defconfig
-powerpc                         wii_defconfig
-sh                   sh7724_generic_defconfig
-mips                      pic32mzda_defconfig
-powerpc64                        alldefconfig
-powerpc                     kilauea_defconfig
-powerpc                   motionpro_defconfig
-parisc                           alldefconfig
-arm                           h3600_defconfig
-mips                      loongson3_defconfig
-sh                  sh7785lcr_32bit_defconfig
-mips                           ip22_defconfig
-arm                           omap1_defconfig
-powerpc                       holly_defconfig
-arm                      pxa255-idp_defconfig
-sh                   rts7751r2dplus_defconfig
-mips                        workpad_defconfig
-sh                             espt_defconfig
-arm                      footbridge_defconfig
-powerpc                      acadia_defconfig
-sh                           se7721_defconfig
-arm                        mvebu_v7_defconfig
-riscv             nommu_k210_sdcard_defconfig
-sh                         ecovec24_defconfig
-arm                         orion5x_defconfig
-sh                           se7780_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                   microwatt_defconfig
-mips                         tb0226_defconfig
-arm                          pxa910_defconfig
-i386                             allyesconfig
-mips                         db1xxx_defconfig
-arc                            hsdk_defconfig
-powerpc                      katmai_defconfig
-s390                                defconfig
-powerpc                      tqm8xx_defconfig
-parisc                generic-64bit_defconfig
-sparc64                          alldefconfig
-arm                         mv78xx0_defconfig
-mips                          ath79_defconfig
-arm                          pcm027_defconfig
-m68k                          sun3x_defconfig
-m68k                        m5272c3_defconfig
-powerpc                     powernv_defconfig
-arc                      axs103_smp_defconfig
-mips                     cu1000-neo_defconfig
-arm                        cerfcube_defconfig
-arm                  colibri_pxa270_defconfig
-m68k                            q40_defconfig
-nds32                             allnoconfig
-nios2                            allyesconfig
-powerpc                     tqm8548_defconfig
-sh                        sh7757lcr_defconfig
-sh                 kfr2r09-romimage_defconfig
-arm                         at91_dt_defconfig
-sparc                               defconfig
-mips                       rbtx49xx_defconfig
-xtensa                  nommu_kc705_defconfig
-mips                  maltasmvp_eva_defconfig
-arc                         haps_hs_defconfig
-arm                            pleb_defconfig
-arm                     am200epdkit_defconfig
-sh                     magicpanelr2_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                      walnut_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                  randconfig-c002-20211207
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                               defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20211207
-x86_64               randconfig-a005-20211207
-x86_64               randconfig-a001-20211207
-x86_64               randconfig-a002-20211207
-x86_64               randconfig-a004-20211207
-x86_64               randconfig-a003-20211207
-i386                 randconfig-a001-20211207
-i386                 randconfig-a005-20211207
-i386                 randconfig-a002-20211207
-i386                 randconfig-a003-20211207
-i386                 randconfig-a006-20211207
-i386                 randconfig-a004-20211207
-i386                 randconfig-a013-20211208
-i386                 randconfig-a016-20211208
-i386                 randconfig-a011-20211208
-i386                 randconfig-a014-20211208
-i386                 randconfig-a012-20211208
-i386                 randconfig-a015-20211208
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-arm                  randconfig-c002-20211208
-x86_64               randconfig-c007-20211208
-riscv                randconfig-c006-20211208
-i386                 randconfig-c001-20211208
-mips                 randconfig-c004-20211208
-powerpc              randconfig-c003-20211208
-s390                 randconfig-c005-20211208
-x86_64               randconfig-c007-20211207
-arm                  randconfig-c002-20211207
-riscv                randconfig-c006-20211207
-mips                 randconfig-c004-20211207
-i386                 randconfig-c001-20211207
-powerpc              randconfig-c003-20211207
-s390                 randconfig-c005-20211207
-x86_64               randconfig-a016-20211207
-x86_64               randconfig-a011-20211207
-x86_64               randconfig-a013-20211207
-x86_64               randconfig-a014-20211207
-x86_64               randconfig-a015-20211207
-x86_64               randconfig-a012-20211207
-i386                 randconfig-a016-20211207
-i386                 randconfig-a013-20211207
-i386                 randconfig-a011-20211207
-i386                 randconfig-a014-20211207
-i386                 randconfig-a012-20211207
-i386                 randconfig-a015-20211207
-hexagon              randconfig-r045-20211207
-s390                 randconfig-r044-20211207
-riscv                randconfig-r042-20211207
-hexagon              randconfig-r041-20211207
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
