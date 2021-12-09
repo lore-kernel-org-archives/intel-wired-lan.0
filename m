@@ -1,48 +1,52 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Thu,  9 Dec 2021 11:04:35 +0100
-Subject: [Intel-wired-lan] [PATCH net v5] i40e: Fix for displaying message
- regarding NVM version
-Message-ID: <20211209100435.14378-1-mateusz.palczewski@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 9 Dec 2021 10:29:54 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] ice: Add ability
+ for PF admin to enable VF VLAN pruning
+In-Reply-To: <20211202163852.36436-14-anthony.l.nguyen@intel.com>
+References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
+ <20211202163852.36436-14-anthony.l.nguyen@intel.com>
+Message-ID: <BYAPR11MB3367C0960EC463E50431F9E7FC709@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When loading the i40e driver, it prints a message like: 'The driver for the
-device detected a newer version of the NVM image v1.x than expected v1.y.
-Please install the most recent version of the network driver.' This is
-misleading as the driver is working as expected.
 
-Fix that by removing the second part of message and changing it from
-dev_info to dev_dgb.
 
-Fixes: 4fb29bddb ("i40e: The driver now prints the API version in error message")
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- v5: Fixed wrong formatting
- v4: Removed the word "expected' as this might have been misleading
- v3: Changed the patch after community review
- v2: Fixed the fixes tag to be 12 digits long
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
+> Nguyen
+> Sent: Thursday, December 2, 2021 10:09 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] ice: Add ability for PF
+> admin to enable VF VLAN pruning
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> VFs by default are able to see all tagged traffic regardless of trust and VLAN
+> filters. Based on legacy devices (i.e. ixgbe, i40e), customers expect VFs to
+> receive all VLAN tagged traffic with a matching destination MAC.
+> 
+> Add an ethtool private flag 'vf-vlan-pruning' and set the default to off so VFs
+> will receive all VLAN traffic directed towards them. When the flag is turned on,
+> VF will only be able to receive untagged traffic or traffic with VLAN tags it has
+> created interfaces for.
+> 
+> Also, the flag cannot be changed while any VFs are allocated. This was done to
+> simplify the implementation. So, if this flag is needed, then the PF admin must
+> enable it. If the user tries to enable the flag while VFs are active, then print an
+> unsupported message with the vf-vlan-pruning flag included. In case multiple
+> flags were specified, this makes it clear to the user which flag failed.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h           |  1 +
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c   |  9 +++++++++
+>  .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c   | 18 ++++++++++++++++--
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 14 ++++++++++++++
+>  4 files changed, 40 insertions(+), 2 deletions(-)
+> 
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4664d07..1688e2d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -15469,8 +15469,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
- 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
--		dev_info(&pdev->dev,
--			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
-+		dev_dbg(&pdev->dev,
-+			"The driver for the device detected a newer version of the NVM image v%u.%u than v%u.%u.\n",
- 			 hw->aq.api_maj_ver,
- 			 hw->aq.api_min_ver,
- 			 I40E_FW_API_VERSION_MAJOR,
--- 
-2.27.0
-
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
