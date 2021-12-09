@@ -1,254 +1,81 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 09 Dec 2021 18:44:35 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- 1a0f25a52e08b1f67510cabbb44888d2b3c46359
-Message-ID: <61b1de13.pGI2zY1b0IA3vfd7%lkp@intel.com>
+From: Joe Damato <jdamato@fastly.com>
+Date: Wed,  8 Dec 2021 17:56:33 -0800
+Subject: [Intel-wired-lan] [net v2] i40e: fix unsigned stat widths
+In-Reply-To: <202112090744.QwfPrzIW-lkp@intel.com>
+References: <202112090744.QwfPrzIW-lkp@intel.com>
+Message-ID: <1639014993-89752-1-git-send-email-jdamato@fastly.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: 1a0f25a52e08b1f67510cabbb44888d2b3c46359  ice: safer stats processing
+Change i40e_update_vsi_stats and struct i40e_vsi to use u64 fields to match
+the width of the stats counters in struct i40e_rx_queue_stats.
 
-elapsed time: 724m
+Update debugfs code to use the correct format specifier for u64.
 
-configs tested: 221
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211207
-i386                 randconfig-c001-20211208
-i386                 randconfig-c001-20211209
-powerpc                      mgcoge_defconfig
-arm                        mvebu_v7_defconfig
-m68k                        stmark2_defconfig
-arm                          imote2_defconfig
-sh                        edosk7760_defconfig
-riscv                            alldefconfig
-arm                            xcep_defconfig
-sh                        sh7763rdp_defconfig
-csky                             alldefconfig
-arc                        nsim_700_defconfig
-sh                           se7206_defconfig
-arc                      axs103_smp_defconfig
-mips                           mtx1_defconfig
-m68k                       m5249evb_defconfig
-arm                           spitz_defconfig
-powerpc64                        alldefconfig
-sh                            titan_defconfig
-powerpc                  storcenter_defconfig
-arm                          lpd270_defconfig
-parisc                           alldefconfig
-arm                        spear6xx_defconfig
-arm                           h5000_defconfig
-arm                         orion5x_defconfig
-powerpc                      pasemi_defconfig
-arm                           sama5_defconfig
-powerpc                     pseries_defconfig
-powerpc                     sequoia_defconfig
-sh                          rsk7201_defconfig
-powerpc                      chrp32_defconfig
-arc                    vdk_hs38_smp_defconfig
-powerpc                      pcm030_defconfig
-arm                         mv78xx0_defconfig
-um                           x86_64_defconfig
-arm                         palmz72_defconfig
-arm                       versatile_defconfig
-powerpc                 canyonlands_defconfig
-sh                           se7750_defconfig
-arm                         lpc18xx_defconfig
-arm                            hisi_defconfig
-powerpc                        icon_defconfig
-powerpc                       ebony_defconfig
-powerpc                        fsp2_defconfig
-powerpc                      ppc6xx_defconfig
-mips                         tb0287_defconfig
-sh                          landisk_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                      pxa255-idp_defconfig
-mips                       lemote2f_defconfig
-powerpc                   currituck_defconfig
-sh                           se7343_defconfig
-arm                        neponset_defconfig
-arc                     nsimosci_hs_defconfig
-arm                        clps711x_defconfig
-sh                     sh7710voipgw_defconfig
-arm                      integrator_defconfig
-powerpc                      makalu_defconfig
-m68k                             alldefconfig
-powerpc                          g5_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                            zeus_defconfig
-powerpc                      cm5200_defconfig
-xtensa                  cadence_csp_defconfig
-powerpc                 mpc836x_mds_defconfig
-arm                         hackkit_defconfig
-arm                          badge4_defconfig
-powerpc                  iss476-smp_defconfig
-powerpc                      acadia_defconfig
-h8300                       h8s-sim_defconfig
-sh                   sh7724_generic_defconfig
-powerpc               mpc834x_itxgp_defconfig
-um                                  defconfig
-sh                          lboxre2_defconfig
-xtensa                generic_kc705_defconfig
-powerpc                        warp_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                     magicpanelr2_defconfig
-powerpc                 mpc834x_itx_defconfig
-i386                                defconfig
-sh                            migor_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                 xes_mpc85xx_defconfig
-powerpc                 mpc8540_ads_defconfig
-sparc                       sparc64_defconfig
-arm                  randconfig-c002-20211207
-arm                  randconfig-c002-20211209
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20211207
-x86_64               randconfig-a005-20211207
-x86_64               randconfig-a001-20211207
-x86_64               randconfig-a002-20211207
-x86_64               randconfig-a004-20211207
-x86_64               randconfig-a003-20211207
-x86_64               randconfig-a006-20211209
-x86_64               randconfig-a005-20211209
-x86_64               randconfig-a001-20211209
-x86_64               randconfig-a002-20211209
-x86_64               randconfig-a004-20211209
-x86_64               randconfig-a003-20211209
-i386                 randconfig-a001-20211209
-i386                 randconfig-a005-20211209
-i386                 randconfig-a003-20211209
-i386                 randconfig-a002-20211209
-i386                 randconfig-a006-20211209
-i386                 randconfig-a004-20211209
-i386                 randconfig-a001-20211207
-i386                 randconfig-a005-20211207
-i386                 randconfig-a002-20211207
-i386                 randconfig-a003-20211207
-i386                 randconfig-a006-20211207
-i386                 randconfig-a004-20211207
-x86_64               randconfig-a016-20211208
-x86_64               randconfig-a011-20211208
-x86_64               randconfig-a013-20211208
-x86_64               randconfig-a012-20211208
-x86_64               randconfig-a015-20211208
-x86_64               randconfig-a014-20211208
-i386                 randconfig-a013-20211208
-i386                 randconfig-a016-20211208
-i386                 randconfig-a011-20211208
-i386                 randconfig-a014-20211208
-i386                 randconfig-a012-20211208
-i386                 randconfig-a015-20211208
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-c007-20211207
-arm                  randconfig-c002-20211207
-riscv                randconfig-c006-20211207
-i386                 randconfig-c001-20211207
-powerpc              randconfig-c003-20211207
-s390                 randconfig-c005-20211207
-arm                  randconfig-c002-20211209
-x86_64               randconfig-c007-20211209
-riscv                randconfig-c006-20211209
-i386                 randconfig-c001-20211209
-mips                 randconfig-c004-20211209
-powerpc              randconfig-c003-20211209
-s390                 randconfig-c005-20211209
-i386                 randconfig-a001-20211208
-i386                 randconfig-a005-20211208
-i386                 randconfig-a003-20211208
-i386                 randconfig-a002-20211208
-i386                 randconfig-a006-20211208
-i386                 randconfig-a004-20211208
-x86_64               randconfig-a016-20211207
-x86_64               randconfig-a011-20211207
-x86_64               randconfig-a013-20211207
-x86_64               randconfig-a014-20211207
-x86_64               randconfig-a015-20211207
-x86_64               randconfig-a012-20211207
-i386                 randconfig-a016-20211207
-i386                 randconfig-a013-20211207
-i386                 randconfig-a011-20211207
-i386                 randconfig-a014-20211207
-i386                 randconfig-a012-20211207
-i386                 randconfig-a015-20211207
-i386                 randconfig-a013-20211209
-i386                 randconfig-a016-20211209
-i386                 randconfig-a011-20211209
-i386                 randconfig-a014-20211209
-i386                 randconfig-a012-20211209
-i386                 randconfig-a015-20211209
-hexagon              randconfig-r045-20211208
-hexagon              randconfig-r041-20211208
-hexagon              randconfig-r045-20211209
-s390                 randconfig-r044-20211209
-hexagon              randconfig-r041-20211209
-riscv                randconfig-r042-20211209
-hexagon              randconfig-r045-20211207
-s390                 randconfig-r044-20211207
-riscv                randconfig-r042-20211207
-hexagon              randconfig-r041-20211207
-
+Signed-off-by: Joe Damato <jdamato@fastly.com>
+Reported-by: kernel test robot <lkp@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ v1 -> v2: make tx_restart and tx_busy also u64, and fix format specifiers in
+           debugfs code
+
+ drivers/net/ethernet/intel/i40e/i40e.h         | 8 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 4d939af..9a4c410 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -848,12 +848,12 @@ struct i40e_vsi {
+ 	struct rtnl_link_stats64 net_stats_offsets;
+ 	struct i40e_eth_stats eth_stats;
+ 	struct i40e_eth_stats eth_stats_offsets;
+-	u32 tx_restart;
+-	u32 tx_busy;
++	u64 tx_restart;
++	u64 tx_busy;
+ 	u64 tx_linearize;
+ 	u64 tx_force_wb;
+-	u32 rx_buf_failed;
+-	u32 rx_page_failed;
++	u64 rx_buf_failed;
++	u64 rx_page_failed;
+ 
+ 	/* These are containers of ring pointers, allocated at run-time */
+ 	struct i40e_ring **rx_rings;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 291e61a..c2c09dc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -240,7 +240,7 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 		 (unsigned long int)vsi->net_stats_offsets.rx_compressed,
+ 		 (unsigned long int)vsi->net_stats_offsets.tx_compressed);
+ 	dev_info(&pf->pdev->dev,
+-		 "    tx_restart = %d, tx_busy = %d, rx_buf_failed = %d, rx_page_failed = %d\n",
++		 "    tx_restart = %llu, tx_busy = %llu, rx_buf_failed = %llu, rx_page_failed = %llu\n",
+ 		 vsi->tx_restart, vsi->tx_busy,
+ 		 vsi->rx_buf_failed, vsi->rx_page_failed);
+ 	rcu_read_lock();
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index e118cf9..3352328 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -754,9 +754,9 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 	struct rtnl_link_stats64 *ns;   /* netdev stats */
+ 	struct i40e_eth_stats *oes;
+ 	struct i40e_eth_stats *es;     /* device's eth stats */
+-	u32 tx_restart, tx_busy;
++	u64 tx_restart, tx_busy;
+ 	struct i40e_ring *p;
+-	u32 rx_page, rx_buf;
++	u64 rx_page, rx_buf;
+ 	u64 bytes, packets;
+ 	unsigned int start;
+ 	u64 tx_linearize;
+-- 
+2.7.4
+
