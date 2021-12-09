@@ -1,52 +1,254 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 9 Dec 2021 10:29:54 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] ice: Add ability
- for PF admin to enable VF VLAN pruning
-In-Reply-To: <20211202163852.36436-14-anthony.l.nguyen@intel.com>
-References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
- <20211202163852.36436-14-anthony.l.nguyen@intel.com>
-Message-ID: <BYAPR11MB3367C0960EC463E50431F9E7FC709@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 09 Dec 2021 18:44:35 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 1a0f25a52e08b1f67510cabbb44888d2b3c46359
+Message-ID: <61b1de13.pGI2zY1b0IA3vfd7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 1a0f25a52e08b1f67510cabbb44888d2b3c46359  ice: safer stats processing
 
+elapsed time: 724m
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
-> Nguyen
-> Sent: Thursday, December 2, 2021 10:09 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 14/14] ice: Add ability for PF
-> admin to enable VF VLAN pruning
-> 
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> VFs by default are able to see all tagged traffic regardless of trust and VLAN
-> filters. Based on legacy devices (i.e. ixgbe, i40e), customers expect VFs to
-> receive all VLAN tagged traffic with a matching destination MAC.
-> 
-> Add an ethtool private flag 'vf-vlan-pruning' and set the default to off so VFs
-> will receive all VLAN traffic directed towards them. When the flag is turned on,
-> VF will only be able to receive untagged traffic or traffic with VLAN tags it has
-> created interfaces for.
-> 
-> Also, the flag cannot be changed while any VFs are allocated. This was done to
-> simplify the implementation. So, if this flag is needed, then the PF admin must
-> enable it. If the user tries to enable the flag while VFs are active, then print an
-> unsupported message with the vf-vlan-pruning flag included. In case multiple
-> flags were specified, this makes it clear to the user which flag failed.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h           |  1 +
->  drivers/net/ethernet/intel/ice/ice_ethtool.c   |  9 +++++++++
->  .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c   | 18 ++++++++++++++++--
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 14 ++++++++++++++
->  4 files changed, 40 insertions(+), 2 deletions(-)
-> 
+configs tested: 221
+configs skipped: 4
 
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211207
+i386                 randconfig-c001-20211208
+i386                 randconfig-c001-20211209
+powerpc                      mgcoge_defconfig
+arm                        mvebu_v7_defconfig
+m68k                        stmark2_defconfig
+arm                          imote2_defconfig
+sh                        edosk7760_defconfig
+riscv                            alldefconfig
+arm                            xcep_defconfig
+sh                        sh7763rdp_defconfig
+csky                             alldefconfig
+arc                        nsim_700_defconfig
+sh                           se7206_defconfig
+arc                      axs103_smp_defconfig
+mips                           mtx1_defconfig
+m68k                       m5249evb_defconfig
+arm                           spitz_defconfig
+powerpc64                        alldefconfig
+sh                            titan_defconfig
+powerpc                  storcenter_defconfig
+arm                          lpd270_defconfig
+parisc                           alldefconfig
+arm                        spear6xx_defconfig
+arm                           h5000_defconfig
+arm                         orion5x_defconfig
+powerpc                      pasemi_defconfig
+arm                           sama5_defconfig
+powerpc                     pseries_defconfig
+powerpc                     sequoia_defconfig
+sh                          rsk7201_defconfig
+powerpc                      chrp32_defconfig
+arc                    vdk_hs38_smp_defconfig
+powerpc                      pcm030_defconfig
+arm                         mv78xx0_defconfig
+um                           x86_64_defconfig
+arm                         palmz72_defconfig
+arm                       versatile_defconfig
+powerpc                 canyonlands_defconfig
+sh                           se7750_defconfig
+arm                         lpc18xx_defconfig
+arm                            hisi_defconfig
+powerpc                        icon_defconfig
+powerpc                       ebony_defconfig
+powerpc                        fsp2_defconfig
+powerpc                      ppc6xx_defconfig
+mips                         tb0287_defconfig
+sh                          landisk_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arm                      pxa255-idp_defconfig
+mips                       lemote2f_defconfig
+powerpc                   currituck_defconfig
+sh                           se7343_defconfig
+arm                        neponset_defconfig
+arc                     nsimosci_hs_defconfig
+arm                        clps711x_defconfig
+sh                     sh7710voipgw_defconfig
+arm                      integrator_defconfig
+powerpc                      makalu_defconfig
+m68k                             alldefconfig
+powerpc                          g5_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                            zeus_defconfig
+powerpc                      cm5200_defconfig
+xtensa                  cadence_csp_defconfig
+powerpc                 mpc836x_mds_defconfig
+arm                         hackkit_defconfig
+arm                          badge4_defconfig
+powerpc                  iss476-smp_defconfig
+powerpc                      acadia_defconfig
+h8300                       h8s-sim_defconfig
+sh                   sh7724_generic_defconfig
+powerpc               mpc834x_itxgp_defconfig
+um                                  defconfig
+sh                          lboxre2_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                        warp_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                     magicpanelr2_defconfig
+powerpc                 mpc834x_itx_defconfig
+i386                                defconfig
+sh                            migor_defconfig
+arm                       aspeed_g4_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                 mpc8540_ads_defconfig
+sparc                       sparc64_defconfig
+arm                  randconfig-c002-20211207
+arm                  randconfig-c002-20211209
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20211207
+x86_64               randconfig-a005-20211207
+x86_64               randconfig-a001-20211207
+x86_64               randconfig-a002-20211207
+x86_64               randconfig-a004-20211207
+x86_64               randconfig-a003-20211207
+x86_64               randconfig-a006-20211209
+x86_64               randconfig-a005-20211209
+x86_64               randconfig-a001-20211209
+x86_64               randconfig-a002-20211209
+x86_64               randconfig-a004-20211209
+x86_64               randconfig-a003-20211209
+i386                 randconfig-a001-20211209
+i386                 randconfig-a005-20211209
+i386                 randconfig-a003-20211209
+i386                 randconfig-a002-20211209
+i386                 randconfig-a006-20211209
+i386                 randconfig-a004-20211209
+i386                 randconfig-a001-20211207
+i386                 randconfig-a005-20211207
+i386                 randconfig-a002-20211207
+i386                 randconfig-a003-20211207
+i386                 randconfig-a006-20211207
+i386                 randconfig-a004-20211207
+x86_64               randconfig-a016-20211208
+x86_64               randconfig-a011-20211208
+x86_64               randconfig-a013-20211208
+x86_64               randconfig-a012-20211208
+x86_64               randconfig-a015-20211208
+x86_64               randconfig-a014-20211208
+i386                 randconfig-a013-20211208
+i386                 randconfig-a016-20211208
+i386                 randconfig-a011-20211208
+i386                 randconfig-a014-20211208
+i386                 randconfig-a012-20211208
+i386                 randconfig-a015-20211208
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-c007-20211207
+arm                  randconfig-c002-20211207
+riscv                randconfig-c006-20211207
+i386                 randconfig-c001-20211207
+powerpc              randconfig-c003-20211207
+s390                 randconfig-c005-20211207
+arm                  randconfig-c002-20211209
+x86_64               randconfig-c007-20211209
+riscv                randconfig-c006-20211209
+i386                 randconfig-c001-20211209
+mips                 randconfig-c004-20211209
+powerpc              randconfig-c003-20211209
+s390                 randconfig-c005-20211209
+i386                 randconfig-a001-20211208
+i386                 randconfig-a005-20211208
+i386                 randconfig-a003-20211208
+i386                 randconfig-a002-20211208
+i386                 randconfig-a006-20211208
+i386                 randconfig-a004-20211208
+x86_64               randconfig-a016-20211207
+x86_64               randconfig-a011-20211207
+x86_64               randconfig-a013-20211207
+x86_64               randconfig-a014-20211207
+x86_64               randconfig-a015-20211207
+x86_64               randconfig-a012-20211207
+i386                 randconfig-a016-20211207
+i386                 randconfig-a013-20211207
+i386                 randconfig-a011-20211207
+i386                 randconfig-a014-20211207
+i386                 randconfig-a012-20211207
+i386                 randconfig-a015-20211207
+i386                 randconfig-a013-20211209
+i386                 randconfig-a016-20211209
+i386                 randconfig-a011-20211209
+i386                 randconfig-a014-20211209
+i386                 randconfig-a012-20211209
+i386                 randconfig-a015-20211209
+hexagon              randconfig-r045-20211208
+hexagon              randconfig-r041-20211208
+hexagon              randconfig-r045-20211209
+s390                 randconfig-r044-20211209
+hexagon              randconfig-r041-20211209
+riscv                randconfig-r042-20211209
+hexagon              randconfig-r045-20211207
+s390                 randconfig-r044-20211207
+riscv                randconfig-r042-20211207
+hexagon              randconfig-r041-20211207
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
