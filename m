@@ -1,39 +1,46 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Thu, 9 Dec 2021 09:27:37 +0100
-Subject: [Intel-wired-lan] [PATCH v4 net-next 2/9] i40e: respect
- metadata on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-3-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-3-alexandr.lobakin@intel.com>
-Message-ID: <2811b35a-9179-88ce-d87a-e1f824851494@redhat.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Thu,  9 Dec 2021 10:58:46 +0100
+Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix for displaying message
+ regarding NVM version When loading the i40e driver,
+ it prints a message like: 'The driver for the device detected a newer
+ version of the NVM image v1.x than expected v1.y. Please install the most
+ recent version of the network driver.' This is misleading as the driver is
+ working as expected.
+Message-ID: <20211209095846.12221-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Fix that by removing the second part of message and changing it from
+dev_info to dev_dgb.
 
+Fixes: 4fb29bddb ("i40e: The driver now prints the API version in error message")
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+---
+ v4: Removed the word "expected' as this might have been misleading
+ v3: Changed the patch after community review
+ v2: Fixed the fixes tag to be 12 digits long
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On 08/12/2021 15.06, Alexander Lobakin wrote:
-> For now, if the XDP prog returns XDP_PASS on XSK, the metadata will
-> be lost as it doesn't get copied to the skb.
-
-I have an urge to add a newline here, when reading this, as IMHO it is a 
-paragraph with the problem statement.
-
-> Copy it along with the frame headers. Account its size on skb
-> allocation, and when copying just treat it as a part of the frame
-> and do a pull after to "move" it to the "reserved" zone.
-
-Also newline here, as next paragraph are some extra details, you felt a 
-need to explain to the reader.
-
-> net_prefetch() xdp->data_meta and align the copy size to speed-up
-> memcpy() a little and better match i40e_costruct_skb().
-                                      ^^^^^^xx^^^^^^^^^
-
-You have a general misspelling of this function name in all of your 
-commit messages.
-
---Jesper
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4664d07..1688e2d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15469,8 +15469,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+ 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
+-		dev_info(&pdev->dev,
+-			 "The driver for the device detected a newer version of the NVM image v%u.%u than expected v%u.%u. Please install the most recent version of the network driver.\n",
++		dev_dbg(&pdev->dev,
++			"The driver for the device detected a newer version of the NVM image v%u.%u than v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
+-- 
+2.27.0
 
