@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 10 Dec 2021 19:26:41 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 3150a73366b64e3109f0facbc98bcacbc14e81ba
-Message-ID: <61b33971.+HQMiXEmfNevLoQ+%lkp@intel.com>
+Date: Fri, 10 Dec 2021 20:32:15 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ ac735b4b67a1f60c143547daf93f47ccf8f7a979
+Message-ID: <61b348cf.O3dyEhZqJet6rDvE%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 3150a73366b64e3109f0facbc98bcacbc14e81ba  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: ac735b4b67a1f60c143547daf93f47ccf8f7a979  ixgbe: respect metadata on XSK Rx to skb
 
-elapsed time: 827m
+elapsed time: 723m
 
-configs tested: 127
+configs tested: 135
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -34,10 +34,18 @@ arm                         assabet_defconfig
 sh                        sh7785lcr_defconfig
 mips                      maltaaprp_defconfig
 powerpc                 mpc837x_rdb_defconfig
+sh                          sdk7780_defconfig
+arc                         haps_hs_defconfig
+powerpc                     tqm8548_defconfig
 powerpc                 mpc834x_mds_defconfig
 powerpc                     kilauea_defconfig
 powerpc                      makalu_defconfig
 sh                          lboxre2_defconfig
+arm                        spear6xx_defconfig
+parisc                generic-64bit_defconfig
+arm                          pxa168_defconfig
+arm                          pxa910_defconfig
+arm                         orion5x_defconfig
 sh                           se7712_defconfig
 arm                             rpc_defconfig
 sparc                       sparc32_defconfig
@@ -60,8 +68,8 @@ riscv             nommu_k210_sdcard_defconfig
 arm                           tegra_defconfig
 powerpc                 mpc836x_mds_defconfig
 arm                  randconfig-c002-20211210
-ia64                                defconfig
 ia64                             allmodconfig
+ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
