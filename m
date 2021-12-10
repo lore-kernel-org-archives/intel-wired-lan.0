@@ -1,48 +1,94 @@
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-Date: Fri, 10 Dec 2021 14:31:45 +0100
-Subject: [Intel-wired-lan] [PATCH v4 net-next 1/9] i40e: don't reserve
- excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-In-Reply-To: <20211209173307.5003-1-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-2-alexandr.lobakin@intel.com>
- <da317f39-8679-96f7-ec6f-309216b02f33@redhat.com>
- <20211209173307.5003-1-alexandr.lobakin@intel.com>
-Message-ID: <ccd27f5f-31c4-603f-ea36-ad32b16325b9@redhat.com>
+From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Date: Fri, 10 Dec 2021 14:45:46 +0100
+Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface for
+ RClocks
+Message-ID: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Synchronous Ethernet networks use a physical layer clock to syntonize
+the frequency across different network elements.
+
+Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+Equipment Clock (EEC) and have the ability to synchronize to reference
+frequency sources.
+
+This patch series is a prerequisite for EEC object and adds ability
+to enable recovered clocks in the physical layer of the netdev object.
+Recovered clocks can be used as one of the reference signal by the EEC.
+
+Further work is required to add the DPLL subsystem, link it to the
+netdev object and create API to read the EEC DPLL state.
+
+v5:
+- rewritten the documentation
+- fixed doxygen headers
+
+v4:
+- Dropped EEC_STATE reporting (TBD: DPLL subsystem)
+- moved recovered clock configuration to ethtool netlink
+
+v3:
+- remove RTM_GETRCLKRANGE
+- return state of all possible pins in the RTM_GETRCLKSTATE
+- clarify documentation
+
+v2:
+- improved documentation
+- fixed kdoc warning
+
+RFC history:
+v2:
+- removed whitespace changes
+- fix issues reported by test robot
+v3:
+- Changed naming from SyncE to EEC
+- Clarify cover letter and commit message for patch 1
+v4:
+- Removed sync_source and pin_idx info
+- Changed one structure to attributes
+- Added EEC_SRC_PORT flag to indicate that the EEC is synchronized
+  to the recovered clock of a port that returns the state
+v5:
+- add EEC source as an optiona attribute
+- implement support for recovered clocks
+- align states returned by EEC to ITU-T G.781
+v6:
+- fix EEC clock state reporting
+- add documentation
+- fix descriptions in code comments
 
 
-On 09/12/2021 18.33, Alexander Lobakin wrote:
-> From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-> Date: Thu, 9 Dec 2021 09:19:46 +0100
-> 
->> On 08/12/2021 15.06, Alexander Lobakin wrote:
->>> {__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
->>> + NET_IP_ALIGN for any skb.
->>> OTOH, i40e_construct_skb_zc() currently allocates and reserves
->>> additional `xdp->data - xdp->data_hard_start`, which is
->>> XDP_PACKET_HEADROOM for XSK frames.
->>> There's no need for that at all as the frame is post-XDP and will
->>> go only to the networking stack core.
->>
->> I disagree with this assumption, that headroom is not needed by netstack.
->> Why "no need for that at all" for netstack?
-> 
-> napi_alloc_skb() in our particular case will reserve 64 bytes, it is
-> sufficient for {TCP,UDP,SCTP,...}/IPv{4,6} etc.
+Maciej Machnikowski (4):
+  ice: add support detecting features based on netlist
+  ethtool: Add ability to configure recovered clock for SyncE feature
+  ice: add support for monitoring SyncE DPLL state
+  ice: add support for recovered clocks
 
-My bad, I misunderstood you. I now see (looking at code) that (as you 
-say) 64 bytes of headroom *is* reserved (in bottom of __napi_alloc_skb).
-Thus, the SKB *do* have headroom, so this patch should be fine.
+ Documentation/networking/ethtool-netlink.rst  |  62 ++++
+ drivers/net/ethernet/intel/ice/ice.h          |   7 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  70 ++++-
+ drivers/net/ethernet/intel/ice/ice_common.c   | 224 +++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  20 +-
+ drivers/net/ethernet/intel/ice/ice_devids.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  96 +++++++
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   6 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c      |  35 +++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  49 ++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  36 +++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ include/linux/ethtool.h                       |   9 +
+ include/uapi/linux/ethtool_netlink.h          |  21 ++
+ net/ethtool/Makefile                          |   3 +-
+ net/ethtool/netlink.c                         |  20 ++
+ net/ethtool/netlink.h                         |   4 +
+ net/ethtool/synce.c                           | 267 ++++++++++++++++++
+ 18 files changed, 929 insertions(+), 4 deletions(-)
+ create mode 100644 net/ethtool/synce.c
 
-Acked-by: Jesper Dangaard Brouer <brouer@redhat.com>
-
-Do watch out that 64 bytes is not always enough. Notice the define 
-LL_MAX_HEADER and MAX_HEADER in include/linux/netdevice.h (that tries to 
-determine worst-case header length) which is above 64 bytes. It is also 
-affected by HyperV and WiFi configs.
+-- 
+2.26.3
 
