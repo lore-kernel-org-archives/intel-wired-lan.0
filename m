@@ -1,63 +1,156 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Fri, 10 Dec 2021 12:08:48 +0100
-Subject: [Intel-wired-lan] [PATCH v4 net-next 2/9] i40e: respect
- metadata on XSK Rx to skb
-In-Reply-To: <11db2426b85eb8cedd5e2d66d6399143cb382b49.camel@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-3-alexandr.lobakin@intel.com>
- <2811b35a-9179-88ce-d87a-e1f824851494@redhat.com>
- <20211209173816.5157-1-alexandr.lobakin@intel.com>
- <11db2426b85eb8cedd5e2d66d6399143cb382b49.camel@intel.com>
-Message-ID: <20211210110848.708046-1-alexandr.lobakin@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 10 Dec 2021 19:26:41 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 3150a73366b64e3109f0facbc98bcacbc14e81ba
+Message-ID: <61b33971.+HQMiXEmfNevLoQ+%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Thu, 9 Dec 2021 18:50:07 +0000
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 3150a73366b64e3109f0facbc98bcacbc14e81ba  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
 
-> On Thu, 2021-12-09 at 18:38 +0100, Alexander Lobakin wrote:
-> > From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-> > Date: Thu, 9 Dec 2021 09:27:37 +0100
-> > 
-> > > On 08/12/2021 15.06, Alexander Lobakin wrote:
-> > > > For now, if the XDP prog returns XDP_PASS on XSK, the metadata
-> > > > will
-> > > > be lost as it doesn't get copied to the skb.
-> > > 
-> > > I have an urge to add a newline here, when reading this, as IMHO it
-> > > is a 
-> > > paragraph with the problem statement.
-> > > 
-> > > > Copy it along with the frame headers. Account its size on skb
-> > > > allocation, and when copying just treat it as a part of the frame
-> > > > and do a pull after to "move" it to the "reserved" zone.
-> > > 
-> > > Also newline here, as next paragraph are some extra details, you
-> > > felt a 
-> > > need to explain to the reader.
-> > > 
-> > > > net_prefetch() xdp->data_meta and align the copy size to speed-up
-> > > > memcpy() a little and better match i40e_costruct_skb().
-> > >                                       ^^^^^^xx^^^^^^^^^
-> > > 
-> > > commit messages.
-> > 
-> > Oh gosh, I thought I don't have attention deficit. Thanks, maybe
-> > Tony will fix it for me or I could send a follow-up (or resend if
-> > needed, I saw those were already applied to dev-queue).
-> 
-> If there's no need for follow-ups beyond this change, I'll fix it up.
+elapsed time: 827m
 
-The rest is fine, thank you!
+configs tested: 127
+configs skipped: 3
 
-> Thanks,
-> Tony
-> 
-> > > --Jesper
-> > 
-> > Al
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Al
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211210
+mips                 randconfig-c004-20211210
+sh                          polaris_defconfig
+arm                           corgi_defconfig
+arm                         assabet_defconfig
+sh                        sh7785lcr_defconfig
+mips                      maltaaprp_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     kilauea_defconfig
+powerpc                      makalu_defconfig
+sh                          lboxre2_defconfig
+sh                           se7712_defconfig
+arm                             rpc_defconfig
+sparc                       sparc32_defconfig
+sh                  sh7785lcr_32bit_defconfig
+nds32                               defconfig
+m68k                         apollo_defconfig
+sh                        sh7763rdp_defconfig
+arm                     am200epdkit_defconfig
+mips                         mpc30x_defconfig
+powerpc                 canyonlands_defconfig
+mips                           ip28_defconfig
+powerpc                      pcm030_defconfig
+arm                        keystone_defconfig
+xtensa                              defconfig
+powerpc                     ppa8548_defconfig
+arm                             pxa_defconfig
+m68k                        m5407c3_defconfig
+powerpc                        warp_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                           tegra_defconfig
+powerpc                 mpc836x_mds_defconfig
+arm                  randconfig-c002-20211210
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20211210
+x86_64               randconfig-a005-20211210
+x86_64               randconfig-a001-20211210
+x86_64               randconfig-a002-20211210
+x86_64               randconfig-a003-20211210
+x86_64               randconfig-a004-20211210
+i386                 randconfig-a001-20211209
+i386                 randconfig-a005-20211209
+i386                 randconfig-a003-20211209
+i386                 randconfig-a002-20211209
+i386                 randconfig-a006-20211209
+i386                 randconfig-a004-20211209
+i386                 randconfig-a001-20211210
+i386                 randconfig-a002-20211210
+i386                 randconfig-a005-20211210
+i386                 randconfig-a003-20211210
+i386                 randconfig-a006-20211210
+i386                 randconfig-a004-20211210
+x86_64               randconfig-a006-20211209
+x86_64               randconfig-a005-20211209
+x86_64               randconfig-a001-20211209
+x86_64               randconfig-a002-20211209
+x86_64               randconfig-a004-20211209
+x86_64               randconfig-a003-20211209
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a011-20211210
+x86_64               randconfig-a012-20211210
+x86_64               randconfig-a014-20211210
+x86_64               randconfig-a013-20211210
+x86_64               randconfig-a016-20211210
+x86_64               randconfig-a015-20211210
+i386                 randconfig-a013-20211210
+i386                 randconfig-a011-20211210
+i386                 randconfig-a016-20211210
+i386                 randconfig-a014-20211210
+i386                 randconfig-a015-20211210
+i386                 randconfig-a012-20211210
+hexagon              randconfig-r045-20211210
+riscv                randconfig-r042-20211210
+s390                 randconfig-r044-20211210
+hexagon              randconfig-r041-20211210
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
