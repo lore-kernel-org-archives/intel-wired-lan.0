@@ -1,40 +1,59 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Fri, 10 Dec 2021 15:59:36 +0100
-Subject: [Intel-wired-lan] [PATCH intel-net 0/5] ice: xsk: Rx processing
- fixes
-Message-ID: <20211210145941.5865-1-maciej.fijalkowski@intel.com>
+Date: Fri, 10 Dec 2021 15:59:37 +0100
+Subject: [Intel-wired-lan] [PATCH intel-net 1/5] ice: xsk: return xsk
+ buffers back to pool when cleaning the ring
+In-Reply-To: <20211210145941.5865-1-maciej.fijalkowski@intel.com>
+References: <20211210145941.5865-1-maciej.fijalkowski@intel.com>
+Message-ID: <20211210145941.5865-2-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi there,
-it seems that previous [0] Rx fix was not enough and there are still
-issues with AF_XDP Rx ZC support in ice driver. Elza reported that for
-multiple XSK sockets configured on a single netdev, some of them were
-becoming dead after a while. We have spotted more things that needed to
-be addressed this time. More of information can be found in particular
-commit messages.
+Currently we only NULL the xdp_buff pointer in the internal SW ring but
+we never give it back to the xsk buffer pool. This means that buffers
+can be leaked out of the buff pool and never be used again.
 
-Thanks,
-Maciej
+Add missing xsk_buff_free() call to the routine that is supposed to
+clean the entries that are left in the ring so that these buffers in the
+umem can be used by other sockets.
 
-[0]: https://lore.kernel.org/bpf/20211129231746.2767739-1-anthony.l.nguyen at intel.com/
+Also, only go through the space that is actually left to be cleaned
+instead of a whole ring.
 
-Maciej Fijalkowski (5):
-  ice: xsk: return xsk buffers back to pool when cleaning the ring
-  ice: xsk: allocate separate memory for XDP SW ring
-  ice: xsk: do not clear status_error0 for ntu + nb_buffs descriptor
-  ice: xsk: allow empty Rx descriptors on XSK ZC data path
-  ice: xsk: fix cleaned_count setting
+Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
+Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_xsk.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- drivers/net/ethernet/intel/ice/ice_base.c | 19 +++++++
- drivers/net/ethernet/intel/ice/ice_txrx.c | 19 ++++---
- drivers/net/ethernet/intel/ice/ice_txrx.h |  1 -
- drivers/net/ethernet/intel/ice/ice_xsk.c  | 62 +++++++++++------------
- 4 files changed, 62 insertions(+), 39 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index ff55cb415b11..75c3e98241e0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -810,14 +810,14 @@ bool ice_xsk_any_rx_ring_ena(struct ice_vsi *vsi)
+  */
+ void ice_xsk_clean_rx_ring(struct ice_rx_ring *rx_ring)
+ {
+-	u16 i;
+-
+-	for (i = 0; i < rx_ring->count; i++) {
+-		struct xdp_buff **xdp = &rx_ring->xdp_buf[i];
++	u16 count_mask = rx_ring->count - 1;
++	u16 ntc = rx_ring->next_to_clean;
++	u16 ntu = rx_ring->next_to_use;
+ 
+-		if (!xdp)
+-			continue;
++	for ( ; ntc != ntu; ntc = (ntc + 1) & count_mask) {
++		struct xdp_buff **xdp = &rx_ring->xdp_buf[ntc];
+ 
++		xsk_buff_free(*xdp);
+ 		*xdp = NULL;
+ 	}
+ }
 -- 
 2.33.1
 
