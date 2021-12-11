@@ -1,75 +1,64 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Fri, 10 Dec 2021 23:37:46 +0100
-Subject: [Intel-wired-lan] [PATCH intel-net 3/5] ice: xsk: do not clear
- status_error0 for ntu + nb_buffs descriptor
-In-Reply-To: <20211210145941.5865-4-maciej.fijalkowski@intel.com>
-References: <20211210145941.5865-1-maciej.fijalkowski@intel.com>
- <20211210145941.5865-4-maciej.fijalkowski@intel.com>
-Message-ID: <20211210223746.2711444-1-alexandr.lobakin@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Fri, 10 Dec 2021 16:41:32 -0800
+Subject: [Intel-wired-lan] [PATCH] igc: Avoid possible deadlock during
+ suspend/resume
+In-Reply-To: <d4c9bb101aa79c5acaaa6dd7b42159fb0c91a341.camel@gmx.de>
+References: <87r1awtdx3.fsf@intel.com>
+ <20211201185731.236130-1-vinicius.gomes@intel.com>
+ <5a4b31d43d9bf32e518188f3ef84c433df3a18b1.camel@gmx.de>
+ <87o85yljpu.fsf@intel.com>
+ <063995d8-acf3-9f33-5667-f284233c94b4@leemhuis.info>
+ <8e59b7d6b5d4674d5843bb45dde89e9881d0c741.camel@gmx.de>
+ <5c5b606a-4694-be1b-0d4b-80aad1999bd9@leemhuis.info>
+ <d4c9bb101aa79c5acaaa6dd7b42159fb0c91a341.camel@gmx.de>
+Message-ID: <87h7bgrn0j.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Fri, 10 Dec 2021 15:59:39 +0100
+Hi Stefan,
 
-> The descriptor that ntu is pointing at when we exit
-> ice_alloc_rx_bufs_zc() should not have its corresponding DD bit cleared
-> as descriptor is not allocated in there and it is not valid for HW
-> usage.
-> 
-> The allocation routine at the entry will fill the descriptor that ntu
-> points to after it was set to ntu + nb_buffs on previous call.
-> 
-> Even the spec says:
-> "The tail pointer should be set to one descriptor beyond the last empty
-> descriptor in host descriptor ring."
-> 
-> Therefore, step away from clearing the status_error0 on ntu + nb_buffs
-> descriptor.
-> 
-> Fixes: db804cfc21e9 ("ice: Use the xsk batched rx allocation interface")
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_xsk.c | 7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-> index 5cb61955c1f3..874fce9fa1c3 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-> @@ -394,14 +394,9 @@ bool ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring, u16 count)
->  	}
->  
->  	ntu += nb_buffs;
-> -	if (ntu == rx_ring->count) {
-> -		rx_desc = ICE_RX_DESC(rx_ring, 0);
-> -		xdp = rx_ring->xdp_buf;
-> +	if (ntu == rx_ring->count)
+Stefan Dietrich <roots@gmx.de> writes:
 
-Maybe use unlikely() here while at it? 1/512 (depending on ring
-size) chance is low enough.
+> Agreed and thanks for the pointers; please see the log files and
+> .config attached as requested.
+>
 
->  		ntu = 0;
-> -	}
->  
-> -	/* clear the status bits for the next_to_use descriptor */
-> -	rx_desc->wb.status_error0 = 0;
->  	ice_release_rx_desc(rx_ring, ntu);
+Thanks for the logs.
 
-This interferes with my patch in next-queue ([0]) (well, supersedes
-it to be precise).
-Tony, what would be better to do with it, just drop mine or correct
-this one (it would become an oneliner removing status_error0
-assignment then)?
+Very interesting that the initialization of the device is fine, so it's
+something that happens later.
 
->  
->  	return count == nb_buffs;
-> -- 
-> 2.33.1
+Can you test the attached patch?
 
-[0] https://lore.kernel.org/netdev/20211130183649.1166842-2-alexandr.lobakin at intel.com
+If the patch works, I would also be interested if you notice any loss of
+functionality with your NIC. (I wouldn't think so, as far as I know,
+i225-V models have PTM support but don't have any PTP support).
 
-Al
+>
+> Cheers,
+> Stefan
+>
+>
+> On Fri, 2021-12-10 at 15:01 +0100, Thorsten Leemhuis wrote:
+>> On 10.12.21 14:45, Stefan Dietrich wrote:
+>> > thanks for keeping an eye on the issue. I've sent the files in
+>> > private
+>> > because I did not want to spam the mailing lists with them. Please
+>> > let
+>> > me know if this is the correct procedure.
+>>
+
+Cheers,
+-- 
+Vinicius
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0001-igc-Do-not-enable-crosstimestamping-for-i225-V-model.patch
+Type: text/x-patch
+Size: 1164 bytes
+Desc: test patch for deadlock in igc
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20211210/e0ce035c/attachment.bin>
