@@ -1,123 +1,93 @@
-From: Ido Schimmel <idosch@idosch.org>
-Date: Sun, 12 Dec 2021 13:47:42 +0200
-Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
- for RClocks
-In-Reply-To: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
-References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
-Message-ID: <YbXhXstRpzpQRBR8@shredder>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Sun, 12 Dec 2021 12:18:46 +0000
+Subject: [Intel-wired-lan] [PATCH v2] net: igbvf: fix double free in
+ `igbvf_probe`
+In-Reply-To: <20211113034235.8153-1-fantasquex@gmail.com>
+References: <20211113034235.8153-1-fantasquex@gmail.com>
+Message-ID: <DM8PR11MB5621C68793BED519CC5D7A11AB739@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Dec 10, 2021 at 02:45:46PM +0100, Maciej Machnikowski wrote:
-> Synchronous Ethernet networks use a physical layer clock to syntonize
-> the frequency across different network elements.
-> 
-> Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
-> Equipment Clock (EEC) and have the ability to synchronize to reference
-> frequency sources.
-> 
-> This patch series is a prerequisite for EEC object and adds ability
-> to enable recovered clocks in the physical layer of the netdev object.
-> Recovered clocks can be used as one of the reference signal by the EEC.
 
-The dependency is the other way around. It doesn't make sense to add
-APIs to configure the inputs of an object that doesn't exist. First add
-the EEC object, then we can talk about APIs to configure its inputs from
-netdevs.
 
-With these four patches alone, user space doesn't know how many EECs
-there are in the system, it doesn't know the mapping from netdev to EEC,
-it doesn't know the state of the EEC, it doesn't know which source is
-chosen in case more than one source is enabled. Patch #3 tries to work
-around it by having ice print to kernel log, when the information should
-really be exposed via the EEC object.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Letu Ren
+> Sent: sobota, 13 listopada 2021 04:43
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org
+> Cc: netdev at vger.kernel.org; Letu Ren <fantasquex@gmail.com>; intel-
+> wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org; Zheyu Ma
+> <zheyuma97@gmail.com>
+> Subject: [Intel-wired-lan] [PATCH v2] net: igbvf: fix double free in
+> `igbvf_probe`
+> 
+> In `igbvf_probe`, if register_netdev() fails, the program will go to label
+> err_hw_init, and then to label err_ioremap. In free_netdev() which is just
+> below label err_ioremap, there is `list_for_each_entry_safe` and
+> `netif_napi_del` which aims to delete all entries in `dev->napi_list`.
+> The program has added an entry `adapter->rx_ring->napi` which is added by
+> `netif_napi_add` in igbvf_alloc_queues(). However, adapter->rx_ring has
+> been freed below label err_hw_init. So this a UAF.
+> 
+> In terms of how to patch the problem, we can refer to igbvf_remove() and
+> delete the entry before `adapter->rx_ring`.
+> 
+> The KASAN logs are as follows:
+> 
+> [   35.126075] BUG: KASAN: use-after-free in free_netdev+0x1fd/0x450
+> [   35.127170] Read of size 8 at addr ffff88810126d990 by task modprobe/366
+> [   35.128360]
+> [   35.128643] CPU: 1 PID: 366 Comm: modprobe Not tainted 5.15.0-rc2+ #14
+> [   35.129789] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
+> rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+> [   35.131749] Call Trace:
+> [   35.132199]  dump_stack_lvl+0x59/0x7b
+> [   35.132865]  print_address_description+0x7c/0x3b0
+> [   35.133707]  ? free_netdev+0x1fd/0x450
+> [   35.134378]  __kasan_report+0x160/0x1c0
+> [   35.135063]  ? free_netdev+0x1fd/0x450
+> [   35.135738]  kasan_report+0x4b/0x70
+> [   35.136367]  free_netdev+0x1fd/0x450
+> [   35.137006]  igbvf_probe+0x121d/0x1a10 [igbvf]
+> [   35.137808]  ? igbvf_vlan_rx_add_vid+0x100/0x100 [igbvf]
+> [   35.138751]  local_pci_probe+0x13c/0x1f0
+> [   35.139461]  pci_device_probe+0x37e/0x6c0
+> [   35.165526]
+> [   35.165806] Allocated by task 366:
+> [   35.166414]  ____kasan_kmalloc+0xc4/0xf0
+> [   35.167117]  foo_kmem_cache_alloc_trace+0x3c/0x50 [igbvf]
+> [   35.168078]  igbvf_probe+0x9c5/0x1a10 [igbvf]
+> [   35.168866]  local_pci_probe+0x13c/0x1f0
+> [   35.169565]  pci_device_probe+0x37e/0x6c0
+> [   35.179713]
+> [   35.179993] Freed by task 366:
+> [   35.180539]  kasan_set_track+0x4c/0x80
+> [   35.181211]  kasan_set_free_info+0x1f/0x40
+> [   35.181942]  ____kasan_slab_free+0x103/0x140
+> [   35.182703]  kfree+0xe3/0x250
+> [   35.183239]  igbvf_probe+0x1173/0x1a10 [igbvf]
+> [   35.184040]  local_pci_probe+0x13c/0x1f0
+> 
+> Fixes: d4e0fe01a38a0 (igbvf: add new driver to support 82576 virtual
+> functions)
+> Reported-by: Zheyu Ma <zheyuma97@gmail.com>
+> Signed-off-by: Letu Ren <fantasquex@gmail.com>
+> ---
+> Changes in v2:
+>     - Add fixes tag
+> ---
+>  drivers/net/ethernet/intel/igbvf/netdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c
+> b/drivers/net/ethernet/intel/igbvf/netdev.c
+> index d32e72d953c8..d051918dfdff 100644
+> --- a/drivers/net/ethernet/intel/igbvf/netdev.c
+> +++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+> @@ -2861,6 +2861,7 @@ static int igbvf_probe(struct pci_dev *pdev, const
 
-+		dev_warn(ice_pf_to_dev(pf),
-+			 "<DPLL%i> state changed to: %d, pin %d",
-+			 ICE_CGU_DPLL_SYNCE,
-+			 pf->synce_dpll_state,
-+			 pin);
-
-> 
-> Further work is required to add the DPLL subsystem, link it to the
-> netdev object and create API to read the EEC DPLL state.
-
-When the EEC object materializes, we might find out that this API needs
-to be changed / reworked / removed, but we won't be able to do that
-given it's uAPI. I don't know where the confidence that it won't happen
-stems from when there are so many question marks around this new
-object.
-
-> 
-> v5:
-> - rewritten the documentation
-> - fixed doxygen headers
-> 
-> v4:
-> - Dropped EEC_STATE reporting (TBD: DPLL subsystem)
-> - moved recovered clock configuration to ethtool netlink
-> 
-> v3:
-> - remove RTM_GETRCLKRANGE
-> - return state of all possible pins in the RTM_GETRCLKSTATE
-> - clarify documentation
-> 
-> v2:
-> - improved documentation
-> - fixed kdoc warning
-> 
-> RFC history:
-> v2:
-> - removed whitespace changes
-> - fix issues reported by test robot
-> v3:
-> - Changed naming from SyncE to EEC
-> - Clarify cover letter and commit message for patch 1
-> v4:
-> - Removed sync_source and pin_idx info
-> - Changed one structure to attributes
-> - Added EEC_SRC_PORT flag to indicate that the EEC is synchronized
->   to the recovered clock of a port that returns the state
-> v5:
-> - add EEC source as an optiona attribute
-> - implement support for recovered clocks
-> - align states returned by EEC to ITU-T G.781
-> v6:
-> - fix EEC clock state reporting
-> - add documentation
-> - fix descriptions in code comments
-> 
-> 
-> Maciej Machnikowski (4):
->   ice: add support detecting features based on netlist
->   ethtool: Add ability to configure recovered clock for SyncE feature
->   ice: add support for monitoring SyncE DPLL state
->   ice: add support for recovered clocks
-> 
->  Documentation/networking/ethtool-netlink.rst  |  62 ++++
->  drivers/net/ethernet/intel/ice/ice.h          |   7 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  70 ++++-
->  drivers/net/ethernet/intel/ice/ice_common.c   | 224 +++++++++++++++
->  drivers/net/ethernet/intel/ice/ice_common.h   |  20 +-
->  drivers/net/ethernet/intel/ice/ice_devids.h   |   3 +
->  drivers/net/ethernet/intel/ice/ice_ethtool.c  |  96 +++++++
->  drivers/net/ethernet/intel/ice/ice_lib.c      |   6 +-
->  drivers/net/ethernet/intel/ice/ice_ptp.c      |  35 +++
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  49 ++++
->  drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |  36 +++
->  drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
->  include/linux/ethtool.h                       |   9 +
->  include/uapi/linux/ethtool_netlink.h          |  21 ++
->  net/ethtool/Makefile                          |   3 +-
->  net/ethtool/netlink.c                         |  20 ++
->  net/ethtool/netlink.h                         |   4 +
->  net/ethtool/synce.c                           | 267 ++++++++++++++++++
->  18 files changed, 929 insertions(+), 4 deletions(-)
->  create mode 100644 net/ethtool/synce.c
-> 
-> -- 
-> 2.26.3
-> 
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
