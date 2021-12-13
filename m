@@ -1,86 +1,60 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Mon, 13 Dec 2021 16:31:11 +0100
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 6/6] ice: xsk: fix
- cleaned_count setting
-In-Reply-To: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
-References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
-Message-ID: <20211213153111.110877-7-maciej.fijalkowski@intel.com>
+From: Yang Li <yang.lee@linux.alibaba.com>
+Date: Mon, 13 Dec 2021 11:11:07 +0800
+Subject: [Intel-wired-lan] [PATCH -next] i40e: remove variables set but not
+ used
+Message-ID: <20211213031107.52438-1-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently cleaned_count is initialized to ICE_DESC_UNUSED(rx_ring) and
-later on during the Rx processing it is incremented per each frame that
-driver consumed. This can result in excessive buffers requested from xsk
-pool based on that value.
+The code that uses variables pe_cntx_size and pe_filt_size 
+has been removed, so they should be removed as well.
 
-To address this, just drop cleaned_count and pass
-ICE_DESC_UNUSED(rx_ring) directly as a function argument to
-ice_alloc_rx_bufs_zc(). Idea is to ask for buffers as many as consumed.
+Eliminate the following clang warnings:
+drivers/net/ethernet/intel/i40e/i40e_common.c:4139:20:
+warning: variable 'pe_filt_size' set but not used.
+drivers/net/ethernet/intel/i40e/i40e_common.c:4139:6:
+warning: variable 'pe_cntx_size' set but not used.
 
-Let us also call ice_alloc_rx_bufs_zc unconditionally at the end of
-ice_clean_rx_irq_zc. This has been changed in that way for corresponding
-ice_clean_rx_irq, but not here.
-
-Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Fixes: 467d729abb72 ("i40e/i40evf: Fix code to accommodate i40e_register.h changes")
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.h | 1 -
- drivers/net/ethernet/intel/ice/ice_xsk.c  | 6 +-----
- 2 files changed, 1 insertion(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index c56dd1749903..b7b3bd4816f0 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -24,7 +24,6 @@
- #define ICE_MAX_DATA_PER_TXD_ALIGNED \
- 	(~(ICE_MAX_READ_REQ_SIZE - 1) & ICE_MAX_DATA_PER_TXD)
- 
--#define ICE_RX_BUF_WRITE	16	/* Must be power of 2 */
- #define ICE_MAX_TXQ_PER_TXQG	128
- 
- /* Attempt to maximize the headroom available for incoming frames. We use a 2K
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index c1491dc0675d..c895351b25e0 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -505,7 +505,6 @@ ice_run_xdp_zc(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
- int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index b4d3fed0d2f2..a775e55ae8bc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -4136,7 +4136,6 @@ static i40e_status i40e_validate_filter_settings(struct i40e_hw *hw,
+ 				struct i40e_filter_control_settings *settings)
  {
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
--	u16 cleaned_count = ICE_DESC_UNUSED(rx_ring);
- 	struct ice_tx_ring *xdp_ring;
- 	unsigned int xdp_xmit = 0;
- 	struct bpf_prog *xdp_prog;
-@@ -562,7 +561,6 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+ 	u32 fcoe_cntx_size, fcoe_filt_size;
+-	u32 pe_cntx_size, pe_filt_size;
+ 	u32 fcoe_fmax;
+ 	u32 val;
  
- 			total_rx_bytes += size;
- 			total_rx_packets++;
--			cleaned_count++;
- 
- 			ice_bump_ntc(rx_ring);
- 			continue;
-@@ -575,7 +573,6 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
- 			break;
- 		}
- 
--		cleaned_count++;
- 		ice_bump_ntc(rx_ring);
- 
- 		if (eth_skb_pad(skb)) {
-@@ -597,8 +594,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
- 		ice_receive_skb(rx_ring, skb, vlan_tag);
- 	}
- 
--	if (cleaned_count >= ICE_RX_BUF_WRITE)
--		failure = !ice_alloc_rx_bufs_zc(rx_ring, cleaned_count);
-+	failure = !ice_alloc_rx_bufs_zc(rx_ring, ICE_DESC_UNUSED(rx_ring));
- 
- 	ice_finalize_xdp_rx(xdp_ring, xdp_xmit);
- 	ice_update_rx_ring_stats(rx_ring, total_rx_packets, total_rx_bytes);
+@@ -4180,8 +4179,6 @@ static i40e_status i40e_validate_filter_settings(struct i40e_hw *hw,
+ 	case I40E_HASH_FILTER_SIZE_256K:
+ 	case I40E_HASH_FILTER_SIZE_512K:
+ 	case I40E_HASH_FILTER_SIZE_1M:
+-		pe_filt_size = I40E_HASH_FILTER_BASE_SIZE;
+-		pe_filt_size <<= (u32)settings->pe_filt_num;
+ 		break;
+ 	default:
+ 		return I40E_ERR_PARAM;
+@@ -4198,8 +4195,6 @@ static i40e_status i40e_validate_filter_settings(struct i40e_hw *hw,
+ 	case I40E_DMA_CNTX_SIZE_64K:
+ 	case I40E_DMA_CNTX_SIZE_128K:
+ 	case I40E_DMA_CNTX_SIZE_256K:
+-		pe_cntx_size = I40E_DMA_CNTX_BASE_SIZE;
+-		pe_cntx_size <<= (u32)settings->pe_cntx_num;
+ 		break;
+ 	default:
+ 		return I40E_ERR_PARAM;
 -- 
-2.33.1
+2.20.1.7.g153144c
 
