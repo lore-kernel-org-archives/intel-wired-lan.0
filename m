@@ -1,51 +1,26 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Dec 2021 20:14:34 +0000
-Subject: [Intel-wired-lan] [PATCH v3 intel-next] ice: add TTY for GNSS
- module for E810T device
-In-Reply-To: <20211213105234.397045-1-karol.kolacinski@intel.com>
-References: <20211213105234.397045-1-karol.kolacinski@intel.com>
-Message-ID: <bce5f2e32aa835d43c9e2deba39df9342dfbaec7.camel@intel.com>
+Date: Mon, 13 Dec 2021 20:19:53 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] i40e: Hw tc offload
+ and hw tc offload settings
+In-Reply-To: <20211213121248.4137-1-mateusz.palczewski@intel.com>
+References: <20211213121248.4137-1-mateusz.palczewski@intel.com>
+Message-ID: <4a1340d6941d7c1b3653eb29a934570a1197a7ac.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-12-13 at 11:52 +0100, Karol Kolacinski wrote:
-> Add a new ice_gnss.c file for holding the basic GNSS module
-> functions.
-> If the device supports GNSS module, call the new ice_gnss_init and
-> ice_gnss_release functions where appropriate.
+On Mon, 2021-12-13 at 13:12 +0100, Mateusz Palczewski wrote:
+> Patch series created to change the behaviour of driver related to hw-
+> tc-offload and changing ntuple setting.
 > 
-> Implement basic functionality for reading the data from GNSS module
-> using TTY device.
+> Mateusz Palczewski (2):
+> ? i40e: Disable hw-tc-offload feature on driver load
+> ? i40e: Fix ntuple setting change
 > 
-> Add I2C read AQ command. It is now required for controlling the
-> external
-> physical connectors via external I2C port expander on E810-T
-> adapters.
-> 
-> Future changes will introduce write functionality.
-> 
-> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-> Signed-off-by: Sudhansu Sekhar Mishra <sudhansu.mishra@intel.com>
-> ---
-> V1 -> V2: Added CONFIG_TTY dependency
-> V2 -> V3: Removed unnecessary & on pf->hw pointer check
+> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++++-
+> ?1 file changed, 4 insertions(+), 1 deletion(-)
 
-<snip>
-
-> +???????pf = gnss->back;
-> +???????if (!pf || !pf->hw || !gnss->tty || !gnss->tty->port) {
-> +???????????????err = -EFAULT;
-> +???????????????goto exit;
-> +???????}
-
-../drivers/net/ethernet/intel/ice/ice_gnss.c: In function
-ice_gnss_read:
-../drivers/net/ethernet/intel/ice/ice_gnss.c:30:13: error: wrong type
-argument to unary exclamation mark
-  if (!pf || !pf->hw || !gnss->tty || !gnss->tty->port) {
-             ^
-
-I believe Piotr's comment meant the &pf->hw check is not needed at all.
+This seems better suited as one patch since the second patch is fixing
+an issue caused by the first.
