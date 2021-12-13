@@ -1,63 +1,86 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Mon, 13 Dec 2021 16:31:10 +0100
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 5/6] ice: xsk: allow empty Rx
- descriptors on XSK ZC data path
+Date: Mon, 13 Dec 2021 16:31:11 +0100
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 6/6] ice: xsk: fix
+ cleaned_count setting
 In-Reply-To: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
 References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
-Message-ID: <20211213153111.110877-6-maciej.fijalkowski@intel.com>
+Message-ID: <20211213153111.110877-7-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit ac6f733a7bd5 ("ice: allow empty Rx descriptors") stated that ice
-HW can produce empty descriptors that are valid and they should be
-processed.
+Currently cleaned_count is initialized to ICE_DESC_UNUSED(rx_ring) and
+later on during the Rx processing it is incremented per each frame that
+driver consumed. This can result in excessive buffers requested from xsk
+pool based on that value.
 
-Add this support to xsk ZC path to avoid potential processing problems.
+To address this, just drop cleaned_count and pass
+ICE_DESC_UNUSED(rx_ring) directly as a function argument to
+ice_alloc_rx_bufs_zc(). Idea is to ask for buffers as many as consumed.
+
+Let us also call ice_alloc_rx_bufs_zc unconditionally at the end of
+ice_clean_rx_irq_zc. This has been changed in that way for corresponding
+ice_clean_rx_irq, but not here.
 
 Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_xsk.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.h | 1 -
+ drivers/net/ethernet/intel/ice/ice_xsk.c  | 6 +-----
+ 2 files changed, 1 insertion(+), 6 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
+index c56dd1749903..b7b3bd4816f0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.h
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
+@@ -24,7 +24,6 @@
+ #define ICE_MAX_DATA_PER_TXD_ALIGNED \
+ 	(~(ICE_MAX_READ_REQ_SIZE - 1) & ICE_MAX_DATA_PER_TXD)
+ 
+-#define ICE_RX_BUF_WRITE	16	/* Must be power of 2 */
+ #define ICE_MAX_TXQ_PER_TXQG	128
+ 
+ /* Attempt to maximize the headroom available for incoming frames. We use a 2K
 diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index ffa9a160766a..c1491dc0675d 100644
+index c1491dc0675d..c895351b25e0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_xsk.c
 +++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -538,12 +538,18 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
- 		 */
- 		dma_rmb();
+@@ -505,7 +505,6 @@ ice_run_xdp_zc(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
+ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+ {
+ 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+-	u16 cleaned_count = ICE_DESC_UNUSED(rx_ring);
+ 	struct ice_tx_ring *xdp_ring;
+ 	unsigned int xdp_xmit = 0;
+ 	struct bpf_prog *xdp_prog;
+@@ -562,7 +561,6 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
  
-+		xdp = *ice_xdp_buf(rx_ring, rx_ring->next_to_clean);
-+
- 		size = le16_to_cpu(rx_desc->wb.pkt_len) &
- 				   ICE_RX_FLX_DESC_PKT_LEN_M;
--		if (!size)
--			break;
-+		if (!size) {
-+			xdp->data = NULL;
-+			xdp->data_end = NULL;
-+			xdp->data_hard_start = NULL;
-+			xdp->data_meta = NULL;
-+			goto construct_skb;
-+		}
+ 			total_rx_bytes += size;
+ 			total_rx_packets++;
+-			cleaned_count++;
  
--		xdp = *ice_xdp_buf(rx_ring, rx_ring->next_to_clean);
- 		xsk_buff_set_size(xdp, size);
- 		xsk_buff_dma_sync_for_cpu(xdp, rx_ring->xsk_pool);
- 
-@@ -561,7 +567,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
  			ice_bump_ntc(rx_ring);
  			continue;
+@@ -575,7 +573,6 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+ 			break;
  		}
--
-+construct_skb:
- 		/* XDP_PASS path */
- 		skb = ice_construct_skb_zc(rx_ring, xdp);
- 		if (!skb) {
+ 
+-		cleaned_count++;
+ 		ice_bump_ntc(rx_ring);
+ 
+ 		if (eth_skb_pad(skb)) {
+@@ -597,8 +594,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+ 		ice_receive_skb(rx_ring, skb, vlan_tag);
+ 	}
+ 
+-	if (cleaned_count >= ICE_RX_BUF_WRITE)
+-		failure = !ice_alloc_rx_bufs_zc(rx_ring, cleaned_count);
++	failure = !ice_alloc_rx_bufs_zc(rx_ring, ICE_DESC_UNUSED(rx_ring));
+ 
+ 	ice_finalize_xdp_rx(xdp_ring, xdp_xmit);
+ 	ice_update_rx_ring_stats(rx_ring, total_rx_packets, total_rx_bytes);
 -- 
 2.33.1
 
