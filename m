@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 13 Dec 2021 13:34:32 +0000
-Subject: [Intel-wired-lan] [PATCH net] iavf: missing unlocks in
- iavf_watchdog_task()
-In-Reply-To: <20211110081350.GI5176@kili>
-References: <20211110081350.GI5176@kili>
-Message-ID: <DM8PR11MB562120FE054D26F5E43475ECAB749@DM8PR11MB5621.namprd11.prod.outlook.com>
+Date: Mon, 13 Dec 2021 14:20:37 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Refactor VF queue
+ requesting
+In-Reply-To: <20211109072744.56924-1-karen.sornek@intel.com>
+References: <20211109072744.56924-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB5621D1C88E1486D62629CAF2AB749@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,30 +15,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Dan Carpenter
-> Sent: ?roda, 10 listopada 2021 09:14
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Palczewski, Mateusz
-> <mateusz.palczewski@intel.com>
-> Cc: Pawlak, Jakub <jakub.pawlak@intel.com>; netdev at vger.kernel.org;
-> kernel-janitors at vger.kernel.org; Jakub Kicinski <kuba@kernel.org>; intel-
-> wired-lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net] iavf: missing unlocks in
-> iavf_watchdog_task()
+> Karen Sornek
+> Sent: wtorek, 9 listopada 2021 08:28
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Refactor VF queue
+> requesting
 > 
-> This code was re-organized and there some unlocks missing now.
+> Simplify changing number of queues for VF's by moving logic to another
+> function, i40e_vf_set_num_queues.
 > 
-> Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 72 +++++++++++--------
+>  1 file changed, 42 insertions(+), 30 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 847d67e32a54..b97f685a5cf8 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -2012,6 +2012,7 @@ static void iavf_watchdog_task(struct work_struct
-> *work)
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 5a488ce545..fa881d9b0f 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -2669,6 +2669,47 @@ static int i40e_check_enough_queue(struct
+> i40e_vf *vf, u16 needed)
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
