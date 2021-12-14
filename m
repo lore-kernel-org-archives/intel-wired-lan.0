@@ -1,57 +1,51 @@
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 13 Dec 2021 16:39:49 -0800
-Subject: [Intel-wired-lan] [PATCH net v1] igc: Do not enable
- crosstimestamping for i225-V models
-In-Reply-To: <87wnk8qrt8.fsf@intel.com>
-References: <87wnk8qrt8.fsf@intel.com>
-Message-ID: <20211214003949.666642-1-vinicius.gomes@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Tue, 14 Dec 2021 04:31:55 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 06/14] ice: Use the proto
+ argument for VLAN ops
+In-Reply-To: <20211202163852.36436-6-anthony.l.nguyen@intel.com>
+References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
+ <20211202163852.36436-6-anthony.l.nguyen@intel.com>
+Message-ID: <BYAPR11MB336760BBC7CA20951578B575FC759@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It was reported that when PCIe PTM is enabled, some lockups could
-be observed with some integrated i225-V models.
 
-While the issue is investigated, we can disable crosstimestamp for
-those models and see no loss of functionality, because those models
-don't have any support for time synchronization.
 
-Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
-Link: https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
-Reported-by: Stefan Dietrich <roots@gmx.de>
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
+> Nguyen
+> Sent: Thursday, December 2, 2021 10:09 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v3 06/14] ice: Use the proto
+> argument for VLAN ops
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Currently the proto argument is unused. This is because the driver only
+> supports 802.1Q VLAN filtering. This policy is enforced via netdev features that
+> the driver sets up when configuring the netdev, so the proto argument won't
+> ever be anything other than 802.1Q. However, this will allow for future
+> iterations of the driver to seemlessly support 802.1ad filtering. Begin using the
+> proto argument and extend the related structures to support its use.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_fltr.c     |  2 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_main.c     | 22 ++++-----
+>  drivers/net/ethernet/intel/ice/ice_switch.c   |  5 ++
+>  drivers/net/ethernet/intel/ice/ice_switch.h   |  2 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 10 ++--
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_vlan.h     |  3 +-
+>  .../net/ethernet/intel/ice/ice_vsi_vlan_lib.c | 48 ++++++++++++++++++-
+> .../net/ethernet/intel/ice/ice_vsi_vlan_lib.h |  4 +-
+> .../net/ethernet/intel/ice/ice_vsi_vlan_ops.h |  4 +-
+>  11 files changed, 78 insertions(+), 26 deletions(-)
+> 
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 30568e3544cd..4f9245aa79a1 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -768,7 +768,20 @@ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr)
-  */
- static bool igc_is_crosststamp_supported(struct igc_adapter *adapter)
- {
--	return IS_ENABLED(CONFIG_X86_TSC) ? pcie_ptm_enabled(adapter->pdev) : false;
-+	if (!IS_ENABLED(CONFIG_X86_TSC))
-+		return false;
-+
-+	/* FIXME: it was noticed that enabling support for PCIe PTM in
-+	 * some i225-V models could cause lockups when bringing the
-+	 * interface up/down. There should be no downsides to
-+	 * disabling crosstimestamping support for i225-V, as it
-+	 * doesn't have any PTP support. That way we gain some time
-+	 * while root causing the issue.
-+	 */
-+	if (adapter->pdev->device == IGC_DEV_ID_I225_V)
-+		return false;
-+
-+	return pcie_ptm_enabled(adapter->pdev);
- }
- 
- static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
--- 
-2.34.1
-
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
