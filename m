@@ -1,95 +1,88 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Tue, 14 Dec 2021 13:53:25 +0100
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix incorrect netdev's
- real number of RX/TX queues
-In-Reply-To: <20211214101016.5959-1-jedrzej.jagielski@intel.com>
-References: <20211214101016.5959-1-jedrzej.jagielski@intel.com>
-Message-ID: <20211214125325.1081251-1-alexandr.lobakin@intel.com>
+From: Ken Cox <jkc@redhat.com>
+Date: Tue, 14 Dec 2021 07:18:57 -0600
+Subject: [Intel-wired-lan] [Patch 1/2] iavf: Fix panic in iavf_remove
+In-Reply-To: <5da6e781833ce519a052754a68fde14d8477180b.camel@intel.com>
+References: <20211208102153.669338-1-jkc@redhat.com>
+ <20211208102153.669338-2-jkc@redhat.com>
+ <5da6e781833ce519a052754a68fde14d8477180b.camel@intel.com>
+Message-ID: <50c30d0c-213d-dd2f-1346-40f92fd315bd@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Tue, 14 Dec 2021 10:10:16 +0000
 
-> There was a wrong queues representation in sysfs during
-> driver's reinitialization in case of online cpus number is
-> less than combined queues. It was caused by stopped
-> NetworkManager, which is responsible for calling vsi_open
-> function during driver's initialization.
-> In specific situation (ex. 12 cpus online) there were 16 queues
-> in /sys/class/net/<iface>/queues. In case of modifying queues with
-> value higher, than number of online cpus, then it caused write
-> errors and other errors.
-> Add updating of sysfs's queues representation during driver
-> initialization.
+
+On 12/13/21 12:26, Nguyen, Anthony L wrote:
+> On Wed, 2021-12-08 at 04:21 -0600, Ken Cox wrote:
+>> It's possible for the client_task to get scheduled by the watchdog
+>> after cancel_delayed_work_sync(&adapter->client_task);? This can
+>> cause
+>> a panic because free_netdev() is called with the client_task still
+>> queued
+>> on the work queue.
+>>
+>> The stack backtrace usually looks similar to:
+>>
+>> [? 121.272963] Workqueue:? 0x0 (iavf)
+>> [? 121.272969] RIP: 0010:__list_del_entry_valid.cold.1+0x20/0x4c
+>> ...
+>> [? 121.272980] Call Trace:
+>> [? 121.272985]? move_linked_works+0x49/0xa0
+>> [? 121.272988]? pwq_activate_delayed_work+0x43/0x100
+>> [? 121.272991]? pwq_dec_nr_in_flight+0x5d/0x90
+>> [? 121.272993]? worker_thread+0x30/0x370
+>> [? 121.272995]? ? process_one_work+0x420/0x420
+>> [? 121.272998]? kthread+0x15d/0x180
+>> [? 121.273000]? ? __kthread_parkme+0xa0/0xa0
+>> [? 121.273003]? ret_from_fork+0x1f/0x40
+>>
+>> Signed-off-by: Ken Cox <jkc@redhat.com>
+>> ---
+>>  ?drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
+>>  ?1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> index 6c2afbc8acbcd..63eec7edbf60a 100644
+>> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> @@ -3940,7 +3940,6 @@ static void iavf_remove(struct pci_dev *pdev)
+>>  ????????set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+>>  ????????cancel_delayed_work_sync(&adapter->init_task);
+>>  ????????cancel_work_sync(&adapter->reset_task);
+>> -???????cancel_delayed_work_sync(&adapter->client_task);
+>>  ????????if (adapter->netdev_registered) {
+>>  ????????????????unregister_netdev(netdev);
+>>  ????????????????adapter->netdev_registered = false;
+>> @@ -3974,6 +3973,7 @@ static void iavf_remove(struct pci_dev *pdev)
+>>  ????????iavf_free_q_vectors(adapter);
+>>   
+>>  ????????cancel_delayed_work_sync(&adapter->watchdog_task);
+>> +???????cancel_delayed_work_sync(&adapter->client_task);
+>>   
+>>  ????????cancel_work_sync(&adapter->adminq_task);
+>>   
 > 
-> Fixes: 41c445ff0f48 ("i40e: main driver core")
-> Signed-off-by: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 22 +++++++++++++++++++++
->  1 file changed, 22 insertions(+)
+> Hi Ken,
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 5322f44ed6ce..850264c4285b 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -14074,6 +14074,25 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
->  	return NULL;
->  }
->  
-> +/**
-> + * i40e_netif_set_realnum_tx_rx_queues - Update number of tx/rx queues
-> + * @vsi: vsi structure
-> + *
-> + * This updates netdev's number of tx/rx queues
-> + *
-> + * Returns status of setting tx/rx queues
-> + **/
-> +static int i40e_netif_set_realnum_tx_rx_queues(struct i40e_vsi *vsi)
-> +{
-> +	netif_set_real_num_rx_queues(
-> +		vsi->netdev,
-> +		vsi->num_queue_pairs);
-> +
-> +	return netif_set_real_num_tx_queues(
-> +		vsi->netdev,
-> +		vsi->num_queue_pairs);
-> +}
+> What tree is this patch based on? This doesn't apply to either of the
+> IWL trees or the netdev trees.
+Sorry, I was in the wrong branch when I generated these patches.  Please 
+disregard.  I will re-evaluate and resend if necessary.
 
-CHECK: Lines should not end with a '('
-#393: FILE: drivers/net/ethernet/intel/i40e/i40e_main.c:14087:
-+	netif_set_real_num_rx_queues(
+> 
+> The ordering looks correct on the kernel tree with watchdog_task being
+> cancelled before the client_task [1]. However, we do have an extra
+> 'cancel_delayed_work_sync(&adapter->watchdog_task)'. I'll get a patch
+> together to remove the extra one.
+> 
+> Thanks,
+> Tony
+> 
+> 
+> [1] https://elixir.bootlin.com/linux/v5.16-
+> rc5/source/drivers/net/ethernet/intel/iavf/iavf_main.c#3979
+> 
 
-CHECK: Lines should not end with a '('
-#397: FILE: drivers/net/ethernet/intel/i40e/i40e_main.c:14091:
-+	return netif_set_real_num_tx_queues(
-
-The first parameter (vsi->netdev) fits into 79/80 chars, so only
-the second one should be wrapped.
-
-Please run `checkpatch --codespell --strict` on every patch you
-create.
-
-> +
->  /**
->   * i40e_vsi_setup - Set up a VSI by a given type
->   * @pf: board private structure
-> @@ -14203,6 +14222,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
->  	case I40E_VSI_MAIN:
->  	case I40E_VSI_VMDQ2:
->  		ret = i40e_config_netdev(vsi);
-> +		if (ret)
-> +			goto err_netdev;
-> +		ret = i40e_netif_set_realnum_tx_rx_queues(vsi);
->  		if (ret)
->  			goto err_netdev;
->  		ret = register_netdev(vsi->netdev);
-> -- 
-> 2.27.0
-
-Thanks,
-Al
