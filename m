@@ -1,135 +1,73 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 14 Dec 2021 23:18:02 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- a7bf7f4b09f16a142fdbd1d9c1a7a4d93358773b
-Message-ID: <61b8b5aa.+N8nKGQfp/UVIIPy%lkp@intel.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Date: Tue, 14 Dec 2021 06:49:20 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] igc: Do not enable
+ crosstimestamping for i225-V models
+In-Reply-To: <20211214003949.666642-1-vinicius.gomes@intel.com>
+References: <87wnk8qrt8.fsf@intel.com>
+ <20211214003949.666642-1-vinicius.gomes@intel.com>
+Message-ID: <28922ca0-8513-c804-7f1d-bcce30147b68@leemhuis.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: a7bf7f4b09f16a142fdbd1d9c1a7a4d93358773b  i40e: Fix for displaying message regarding NVM version
+Hi, this is your Linux kernel regression tracker speaking.
 
-elapsed time: 980m
+Thx for working on this. Two small details:
 
-configs tested: 106
-configs skipped: 3
+On 14.12.21 01:39, Vinicius Costa Gomes wrote:
+> It was reported that when PCIe PTM is enabled, some lockups could
+> be observed with some integrated i225-V models.
+> 
+> While the issue is investigated, we can disable crosstimestamp for
+> those models and see no loss of functionality, because those models
+> don't have any support for time synchronization.
+> 
+> Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+That commit is in 5.15 (and Stefan is facing the problem there), hence
+to make backporting explicit it's afaics better to add this line :
 
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20211213
-mips                     loongson1c_defconfig
-arm                        mini2440_defconfig
-arm                         orion5x_defconfig
-mips                  maltasmvp_eva_defconfig
-xtensa                  audio_kc705_defconfig
-mips                            e55_defconfig
-sh                         ecovec24_defconfig
-sh                     magicpanelr2_defconfig
-sh                          r7780mp_defconfig
-mips                         mpc30x_defconfig
-sh                        dreamcast_defconfig
-powerpc                     tqm8540_defconfig
-powerpc64                        alldefconfig
-sh                           se7712_defconfig
-arm                  randconfig-c002-20211213
-ia64                                defconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                   debian-10.3-kselftests
-sparc                            allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a001-20211214
-x86_64               randconfig-a002-20211214
-x86_64               randconfig-a003-20211214
-x86_64               randconfig-a004-20211214
-x86_64               randconfig-a006-20211214
-x86_64               randconfig-a005-20211214
-i386                 randconfig-a001-20211214
-i386                 randconfig-a002-20211214
-i386                 randconfig-a005-20211214
-i386                 randconfig-a003-20211214
-i386                 randconfig-a006-20211214
-i386                 randconfig-a004-20211214
-x86_64               randconfig-a011-20211213
-x86_64               randconfig-a012-20211213
-x86_64               randconfig-a014-20211213
-x86_64               randconfig-a013-20211213
-x86_64               randconfig-a016-20211213
-x86_64               randconfig-a015-20211213
-i386                 randconfig-a013-20211213
-i386                 randconfig-a011-20211213
-i386                 randconfig-a016-20211213
-i386                 randconfig-a014-20211213
-i386                 randconfig-a015-20211213
-i386                 randconfig-a012-20211213
-arc                  randconfig-r043-20211213
-s390                 randconfig-r044-20211213
-riscv                randconfig-r042-20211213
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
+Cc: stable at vger.kernel.org #5.15
 
-clang tested configs:
-i386                 randconfig-a001-20211213
-i386                 randconfig-a002-20211213
-i386                 randconfig-a003-20211213
-hexagon              randconfig-r045-20211214
-s390                 randconfig-r044-20211214
-riscv                randconfig-r042-20211214
-hexagon              randconfig-r041-20211214
-hexagon              randconfig-r041-20211213
-hexagon              randconfig-r045-20211213
+> Link: https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Nitpicking: not sure if it's really important for anything, but to get
+the proper format you afaik should do a s!/all/!/r/! to that line.
+
+Ciao, Thorsten
+
+> Reported-by: Stefan Dietrich <roots@gmx.de>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> index 30568e3544cd..4f9245aa79a1 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> @@ -768,7 +768,20 @@ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr)
+>   */
+>  static bool igc_is_crosststamp_supported(struct igc_adapter *adapter)
+>  {
+> -	return IS_ENABLED(CONFIG_X86_TSC) ? pcie_ptm_enabled(adapter->pdev) : false;
+> +	if (!IS_ENABLED(CONFIG_X86_TSC))
+> +		return false;
+> +
+> +	/* FIXME: it was noticed that enabling support for PCIe PTM in
+> +	 * some i225-V models could cause lockups when bringing the
+> +	 * interface up/down. There should be no downsides to
+> +	 * disabling crosstimestamping support for i225-V, as it
+> +	 * doesn't have any PTP support. That way we gain some time
+> +	 * while root causing the issue.
+> +	 */
+> +	if (adapter->pdev->device == IGC_DEV_ID_I225_V)
+> +		return false;
+> +
+> +	return pcie_ptm_enabled(adapter->pdev);
+>  }
+>  
+>  static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
+> 
