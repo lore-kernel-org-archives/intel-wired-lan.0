@@ -1,11 +1,11 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 14 Dec 2021 04:33:30 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 02/14] ice: Add helper
- function for adding VLAN 0
-In-Reply-To: <20211202163852.36436-2-anthony.l.nguyen@intel.com>
-References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
- <20211202163852.36436-2-anthony.l.nguyen@intel.com>
-Message-ID: <BYAPR11MB3367EAA2222AF23B6AB1BDE9FC759@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Tue, 14 Dec 2021 09:15:03 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v3 9/9] ice: support
+ crosstimestamping on E822 devices if supported
+In-Reply-To: <20211012213230.2684338-10-jacob.e.keller@intel.com>
+References: <20211012213230.2684338-1-jacob.e.keller@intel.com>
+ <20211012213230.2684338-10-jacob.e.keller@intel.com>
+Message-ID: <BYAPR11MB33673F01DDE858004E6C5548FC759@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,27 +15,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Tony
-> Nguyen
-> Sent: Thursday, December 2, 2021 10:09 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 02/14] ice: Add helper function
-> for adding VLAN 0
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jacob Keller
+> Sent: Wednesday, October 13, 2021 3:03 AM
+> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Intel Wired LAN <intel-
+> wired-lan at lists.osuosl.org>
+> Subject: [Intel-wired-lan] [net-next PATCH v3 9/9] ice: support
+> crosstimestamping on E822 devices if supported
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
+> E822 devices on supported platforms can generate a cross timestamp between
+> the platform ART and the device time. This process allows for very precise
+> measurement of the difference between the PTP hardware clock and the
+> platform time.
 > 
-> There are multiple places where VLAN 0 is being added. Create a function to be
-> called in order to minimize changes as the implementation is expanded to
-> support double VLAN and avoid duplicated code.
+> This is only supported if we know the TSC frequency relative to ART, so we do
+> not enable this unless the boot CPU has a known TSC frequency (as required by
+> convert_art_ns_to_tsc).
 > 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Because PCIe PTM support is not available on all platforms, introduce
+> CONFIG_ICE_HWTS and make it depend on X86 where we know the support
+> exists.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_eswitch.c     |  4 ++--
->  drivers/net/ethernet/intel/ice/ice_lib.c         | 11 ++++++++++-
->  drivers/net/ethernet/intel/ice/ice_lib.h         |  2 +-
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c |  2 +-
->  4 files changed, 14 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/Kconfig            |  10 ++
+>  .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 ++
+>  drivers/net/ethernet/intel/ice/ice_ptp.c      | 117 ++++++++++++++++++
+>  3 files changed, 135 insertions(+)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
