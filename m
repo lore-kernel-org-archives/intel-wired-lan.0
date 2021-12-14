@@ -1,26 +1,57 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 13 Dec 2021 20:19:53 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] i40e: Hw tc offload
- and hw tc offload settings
-In-Reply-To: <20211213121248.4137-1-mateusz.palczewski@intel.com>
-References: <20211213121248.4137-1-mateusz.palczewski@intel.com>
-Message-ID: <4a1340d6941d7c1b3653eb29a934570a1197a7ac.camel@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 13 Dec 2021 16:39:49 -0800
+Subject: [Intel-wired-lan] [PATCH net v1] igc: Do not enable
+ crosstimestamping for i225-V models
+In-Reply-To: <87wnk8qrt8.fsf@intel.com>
+References: <87wnk8qrt8.fsf@intel.com>
+Message-ID: <20211214003949.666642-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2021-12-13 at 13:12 +0100, Mateusz Palczewski wrote:
-> Patch series created to change the behaviour of driver related to hw-
-> tc-offload and changing ntuple setting.
-> 
-> Mateusz Palczewski (2):
-> ? i40e: Disable hw-tc-offload feature on driver load
-> ? i40e: Fix ntuple setting change
-> 
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++++-
-> ?1 file changed, 4 insertions(+), 1 deletion(-)
+It was reported that when PCIe PTM is enabled, some lockups could
+be observed with some integrated i225-V models.
 
-This seems better suited as one patch since the second patch is fixing
-an issue caused by the first.
+While the issue is investigated, we can disable crosstimestamp for
+those models and see no loss of functionality, because those models
+don't have any support for time synchronization.
+
+Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
+Link: https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
+Reported-by: Stefan Dietrich <roots@gmx.de>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 30568e3544cd..4f9245aa79a1 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -768,7 +768,20 @@ int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr)
+  */
+ static bool igc_is_crosststamp_supported(struct igc_adapter *adapter)
+ {
+-	return IS_ENABLED(CONFIG_X86_TSC) ? pcie_ptm_enabled(adapter->pdev) : false;
++	if (!IS_ENABLED(CONFIG_X86_TSC))
++		return false;
++
++	/* FIXME: it was noticed that enabling support for PCIe PTM in
++	 * some i225-V models could cause lockups when bringing the
++	 * interface up/down. There should be no downsides to
++	 * disabling crosstimestamping support for i225-V, as it
++	 * doesn't have any PTP support. That way we gain some time
++	 * while root causing the issue.
++	 */
++	if (adapter->pdev->device == IGC_DEV_ID_I225_V)
++		return false;
++
++	return pcie_ptm_enabled(adapter->pdev);
+ }
+ 
+ static struct system_counterval_t igc_device_tstamp_to_system(u64 tstamp)
+-- 
+2.34.1
+
