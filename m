@@ -1,47 +1,70 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 14 Dec 2021 14:16:59 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix limit of total
- number of queues to active queues of VF
-In-Reply-To: <20210901072146.71558-1-karen.sornek@intel.com>
-References: <20210901072146.71558-1-karen.sornek@intel.com>
-Message-ID: <DM8PR11MB5621E06A56D7FB893A7E47C8AB759@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+Date: Tue, 14 Dec 2021 15:46:19 +0100
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 0/6] ice: xsk: Rx
+ processing fixes
+In-Reply-To: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
+References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
+Message-ID: <CAJ8uoz0Fb-hciySWAy79X2d_H=oUddbFGCm3RUAtRYhUQ5-K5w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, Dec 13, 2021 at 4:31 PM Maciej Fijalkowski
+<maciej.fijalkowski@intel.com> wrote:
+>
+> Hi there,
+> it seems that previous [0] Rx fix was not enough and there are still
+> issues with AF_XDP Rx ZC support in ice driver. Elza reported that for
+> multiple XSK sockets configured on a single netdev, some of them were
+> becoming dead after a while. We have spotted more things that needed to
+> be addressed this time. More of information can be found in particular
+> commit messages.
+>
+> v2 has a diff around only patch 2:
+> - use array_size() in memsets (Alexandr)
+> - remove unnecessary ternary operator from ice_alloc_rx_buf{, _zc}()
+>   (Alexandr)
+> - respect RCT in ice_construct_skb_zc() (Alexandr)
+> - fix kdoc issue (Anthony)
+>
+> It also carries Alexandr's patch that was sent previously which was
+> overlapping with this set.
+>
+> Thanks,
+> Maciej
+>
+> [0]: https://lore.kernel.org/bpf/20211129231746.2767739-1-anthony.l.nguyen at intel.com/
 
+Thank you so much for all these fixes Maciej and Alexandr!
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Karen Sornek
-> Sent: ?roda, 1 wrze?nia 2021 09:22
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Ashwin Vijayavel <ashwin.vijayavel@intel.com>; Sornek, Karen
-> <karen.sornek@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix limit of total number of
-> queues to active queues of VF
-> 
-> In the absence of this validation, if the user requests to configure queues
-> more than the enabled queues, it results in sending the requested number
-> of queues to the kernel stack (due to the asynchronous nature of VF
-> response), in which case the stack might pick a queue to transmit that is not
-> enabled and result in Tx hang. Fix this bug by limiting the total number of
-> queues allocated for VF to active queues of VF.
-> 
-> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
-> Signed-off-by: Ashwin Vijayavel <ashwin.vijayavel@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 80437ef26..c215ca503 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -2647,8 +2647,11 @@ static int iavf_validate_ch_config(struct
+BTW, ice zero-copy support in bpf and bpf-next does not work at all
+without this patch set, so need to get this in as soon as possible.
+net and net-next might not work either, but have not tried.
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Acked-by: Magnus Karlsson <magnus.karlsson@intel.com>
+
+> Alexander Lobakin (1):
+>   ice: remove dead store on XSK hotpath
+>
+> Maciej Fijalkowski (5):
+>   ice: xsk: return xsk buffers back to pool when cleaning the ring
+>   ice: xsk: allocate separate memory for XDP SW ring
+>   ice: xsk: do not clear status_error0 for ntu + nb_buffs descriptor
+>   ice: xsk: allow empty Rx descriptors on XSK ZC data path
+>   ice: xsk: fix cleaned_count setting
+>
+>  drivers/net/ethernet/intel/ice/ice_base.c | 17 ++++++
+>  drivers/net/ethernet/intel/ice/ice_txrx.c | 19 ++++---
+>  drivers/net/ethernet/intel/ice/ice_txrx.h |  1 -
+>  drivers/net/ethernet/intel/ice/ice_xsk.c  | 66 +++++++++++------------
+>  4 files changed, 62 insertions(+), 41 deletions(-)
+>
+> --
+> 2.33.1
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
