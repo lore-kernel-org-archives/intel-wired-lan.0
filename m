@@ -1,230 +1,46 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 15 Dec 2021 19:54:12 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- 37e738b6fdb14529534dca441e0222313688fde3
-Message-ID: <61b9d764.mWZVnWPecfkoKGOe%lkp@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 15 Dec 2021 11:59:57 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add placeholder for
+ ndo set VLANs
+In-Reply-To: <20211109072331.56673-1-karen.sornek@intel.com>
+References: <20211109072331.56673-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB5621831FCFE2ACA1CFA9BD25AB769@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: 37e738b6fdb14529534dca441e0222313688fde3  ice: Don't put stale timestamps in the skb
 
-elapsed time: 725m
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Karen Sornek
+> Sent: wtorek, 9 listopada 2021 08:24
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Patynowski, PrzemyslawX <przemyslawx.patynowski@intel.com>;
+> Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add placeholder for ndo
+> set VLANs
+> 
+> VLANs set by ndo, were not accounted.
+> Implement placeholder, by which driver can account VLANs set by ndo.
+> Ensure that once PF changes trunk, every guest filter is removed from the list
+> 'vm_vlan_list'.
+> Implement logic for deletion/addition of guest(from VM) filters.
+> 
+> Signed-off-by: Przemyslaw Patynowski
+> <przemyslawx.patynowski@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 102 ++++++++++++++++--
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  10 ++
+>  2 files changed, 102 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> index 5a488ce545..cf19e118ee 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+> @@ -986,6 +986,81 @@ static void i40e_disable_vf_mappings(struct i40e_vf
 
-configs tested: 198
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211214
-mips                 randconfig-c004-20211214
-sh                 kfr2r09-romimage_defconfig
-xtensa                    xip_kc705_defconfig
-powerpc                    klondike_defconfig
-arm                      tct_hammer_defconfig
-m68k                          amiga_defconfig
-arm                          pcm027_defconfig
-sh                        apsh4ad0a_defconfig
-arm                         lpc32xx_defconfig
-powerpc                      tqm8xx_defconfig
-arm                          gemini_defconfig
-csky                             alldefconfig
-arm                        cerfcube_defconfig
-powerpc                        cell_defconfig
-powerpc                   motionpro_defconfig
-powerpc                 mpc834x_itx_defconfig
-sh                               alldefconfig
-arm                             mxs_defconfig
-nds32                             allnoconfig
-mips                           ip27_defconfig
-powerpc                      ep88xc_defconfig
-arm                           stm32_defconfig
-xtensa                       common_defconfig
-sh                         ecovec24_defconfig
-powerpc                      pasemi_defconfig
-powerpc                    gamecube_defconfig
-powerpc64                        alldefconfig
-s390                                defconfig
-mips                  cavium_octeon_defconfig
-arm                     eseries_pxa_defconfig
-arm                      footbridge_defconfig
-arm                          pxa168_defconfig
-riscv                            allmodconfig
-powerpc                          allyesconfig
-m68k                          sun3x_defconfig
-arm                         s5pv210_defconfig
-mips                         tb0226_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                      acadia_defconfig
-arc                     nsimosci_hs_defconfig
-powerpc                 mpc85xx_cds_defconfig
-um                             i386_defconfig
-powerpc                        fsp2_defconfig
-mips                         mpc30x_defconfig
-arm                            dove_defconfig
-arm                        oxnas_v6_defconfig
-sh                          polaris_defconfig
-mips                     loongson2k_defconfig
-arc                 nsimosci_hs_smp_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                 mpc836x_mds_defconfig
-arm                         hackkit_defconfig
-mips                      malta_kvm_defconfig
-mips                           ci20_defconfig
-sh                          r7780mp_defconfig
-arm                   milbeaut_m10v_defconfig
-arm                  colibri_pxa270_defconfig
-powerpc                      makalu_defconfig
-arm                      jornada720_defconfig
-sh                          urquell_defconfig
-arm                           sama5_defconfig
-mips                            ar7_defconfig
-arm                       aspeed_g5_defconfig
-riscv             nommu_k210_sdcard_defconfig
-arm                       imx_v4_v5_defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm                          lpd270_defconfig
-powerpc                     ppa8548_defconfig
-mips                      maltaaprp_defconfig
-arm                          imote2_defconfig
-sparc                               defconfig
-sh                         microdev_defconfig
-powerpc                     stx_gp3_defconfig
-i386                             alldefconfig
-mips                      bmips_stb_defconfig
-mips                           rs90_defconfig
-mips                    maltaup_xpa_defconfig
-sparc                       sparc32_defconfig
-h8300                               defconfig
-sh                      rts7751r2d1_defconfig
-openrisc                            defconfig
-powerpc                       ppc64_defconfig
-powerpc                      pmac32_defconfig
-m68k                             alldefconfig
-arm                            qcom_defconfig
-sh                           se7724_defconfig
-sparc64                             defconfig
-h8300                    h8300h-sim_defconfig
-arm                         socfpga_defconfig
-powerpc                      bamboo_defconfig
-ia64                         bigsur_defconfig
-arm                        multi_v5_defconfig
-mips                        workpad_defconfig
-mips                           jazz_defconfig
-arm                            mmp2_defconfig
-arm                         s3c2410_defconfig
-arm                        shmobile_defconfig
-arm                        magician_defconfig
-sh                                  defconfig
-powerpc                    mvme5100_defconfig
-arm                          moxart_defconfig
-sparc                            alldefconfig
-powerpc                     pseries_defconfig
-arm                      pxa255-idp_defconfig
-m68k                       bvme6000_defconfig
-powerpc                          g5_defconfig
-arm                           sama7_defconfig
-arm                  randconfig-c002-20211214
-arm                  randconfig-c002-20211215
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20211214
-x86_64               randconfig-a005-20211214
-x86_64               randconfig-a001-20211214
-x86_64               randconfig-a002-20211214
-x86_64               randconfig-a003-20211214
-x86_64               randconfig-a004-20211214
-i386                 randconfig-a001-20211214
-i386                 randconfig-a002-20211214
-i386                 randconfig-a005-20211214
-i386                 randconfig-a003-20211214
-i386                 randconfig-a006-20211214
-i386                 randconfig-a004-20211214
-x86_64               randconfig-a011-20211215
-x86_64               randconfig-a014-20211215
-x86_64               randconfig-a012-20211215
-x86_64               randconfig-a013-20211215
-x86_64               randconfig-a016-20211215
-x86_64               randconfig-a015-20211215
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-arm                  randconfig-c002-20211214
-x86_64               randconfig-c007-20211214
-riscv                randconfig-c006-20211214
-mips                 randconfig-c004-20211214
-i386                 randconfig-c001-20211214
-s390                 randconfig-c005-20211214
-powerpc              randconfig-c003-20211214
-x86_64               randconfig-a011-20211214
-x86_64               randconfig-a014-20211214
-x86_64               randconfig-a012-20211214
-x86_64               randconfig-a013-20211214
-x86_64               randconfig-a016-20211214
-x86_64               randconfig-a015-20211214
-i386                 randconfig-a013-20211214
-i386                 randconfig-a011-20211214
-i386                 randconfig-a016-20211214
-i386                 randconfig-a014-20211214
-i386                 randconfig-a015-20211214
-i386                 randconfig-a012-20211214
-hexagon              randconfig-r045-20211214
-s390                 randconfig-r044-20211214
-riscv                randconfig-r042-20211214
-hexagon              randconfig-r041-20211214
-hexagon              randconfig-r045-20211215
-hexagon              randconfig-r041-20211215
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
