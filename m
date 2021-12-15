@@ -1,68 +1,57 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Wed, 15 Dec 2021 12:14:39 +0000
-Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
- for RClocks
-In-Reply-To: <MW5PR11MB58126A8F6466A8EAD1293D5EEA749@MW5PR11MB5812.namprd11.prod.outlook.com>
-References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
- <20211210081654.233a41b6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <MW5PR11MB58126A8F6466A8EAD1293D5EEA749@MW5PR11MB5812.namprd11.prod.outlook.com>
-Message-ID: <DM6PR11MB4657CE134223B65B5F2EF5F29B769@DM6PR11MB4657.namprd11.prod.outlook.com>
+From: Piotr Raczynski <piotr.raczynski@intel.com>
+Date: Wed, 15 Dec 2021 16:47:37 +0100
+Subject: [Intel-wired-lan] [PATCH v3 intel-next] ice: add TTY for GNSS
+ module for E810T device
+In-Reply-To: <bce5f2e32aa835d43c9e2deba39df9342dfbaec7.camel@intel.com>
+References: <20211213105234.397045-1-karol.kolacinski@intel.com>
+ <bce5f2e32aa835d43c9e2deba39df9342dfbaec7.camel@intel.com>
+Message-ID: <20211215154737.GA94623@bpll.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Machnikowski, Maciej <maciej.machnikowski@intel.com> 
-> Sent: poniedzia?ek, 13 grudnia 2021 09:54
-> To: Jakub Kicinski <kuba@kernel.org>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz; saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; Vadim Fedorenko <vfedorenko@novek.ru>
-> Subject: RE: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
+On Mon, Dec 13, 2021 at 08:14:34PM +0000, Nguyen, Anthony L wrote:
+> On Mon, 2021-12-13 at 11:52 +0100, Karol Kolacinski wrote:
+> > Add a new ice_gnss.c file for holding the basic GNSS module
+> > functions.
+> > If the device supports GNSS module, call the new ice_gnss_init and
+> > ice_gnss_release functions where appropriate.
+> >
+> > Implement basic functionality for reading the data from GNSS module
+> > using TTY device.
+> >
+> > Add I2C read AQ command. It is now required for controlling the
+> > external
+> > physical connectors via external I2C port expander on E810-T
+> > adapters.
+> >
+> > Future changes will introduce write functionality.
+> >
+> > Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> > Signed-off-by: Sudhansu Sekhar Mishra <sudhansu.mishra@intel.com>
+> > ---
+> > V1 -> V2: Added CONFIG_TTY dependency
+> > V2 -> V3: Removed unnecessary & on pf->hw pointer check
 > 
-> > -----Original Message-----
-> > From: Jakub Kicinski <kuba@kernel.org>
-> > Sent: Friday, December 10, 2021 5:17 PM
-> > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
-> > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; 
-> > Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; 
-> > richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, 
-> > Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux- 
-> > kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz; 
-> > saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; Vadim 
-> > Fedorenko <vfedorenko@novek.ru>
-> > Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
-> > 
-> > On Fri, 10 Dec 2021 14:45:46 +0100 Maciej Machnikowski wrote:
-> > > Synchronous Ethernet networks use a physical layer clock to 
-> > > syntonize the frequency across different network elements.
-> > >
-> > > Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet 
-> > > Equipment Clock (EEC) and have the ability to synchronize to 
-> > > reference frequency sources.
-> > >
-> > > This patch series is a prerequisite for EEC object and adds ability 
-> > > to enable recovered clocks in the physical layer of the netdev object.
-> > > Recovered clocks can be used as one of the reference signal by the EEC.
-> > >
-> > > Further work is required to add the DPLL subsystem, link it to the 
-> > > netdev object and create API to read the EEC DPLL state.
-> > 
-> > You missed CCing Vadim. I guess Ccing the right people may be right up 
-> > there with naming things as the hardest things in SW development..
-> > 
-> > Anyway, Vadim - do you have an ETA on the first chunk of the PLL work?
+> <snip>
 > 
-> Sounds about right :) thanks for adding Vadim!
+> > +       pf = gnss->back;
+> > +       if (!pf || !pf->hw || !gnss->tty || !gnss->tty->port) {
+> > +               err = -EFAULT;
+> > +               goto exit;
+> > +       }
 > 
+> ../drivers/net/ethernet/intel/ice/ice_gnss.c: In function
+> ice_gnss_read:
+> ../drivers/net/ethernet/intel/ice/ice_gnss.c:30:13: error: wrong type
+> argument to unary exclamation mark
+>   if (!pf || !pf->hw || !gnss->tty || !gnss->tty->port) {
+>              ^
+> 
+> I believe Piotr's comment meant the &pf->hw check is not needed at all.
 
-Good day Vadim,
+Yes, exactly. Sorry if that comment was a little misleading.
 
-Can we help on the new PLL interfaces?
-I can start some works related to that, although would need a guidance
-from the expert. 
-Where to place it?
-What in-kernel interfaces to use?
-Any other high level tips that could be useful?
-Or if you already started some work, could you please share some
-information?
+Piotr
