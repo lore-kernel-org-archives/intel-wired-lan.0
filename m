@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 15 Dec 2021 19:54:15 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- f8a3bcceb4224494ac4fa2b7e9428ac1bbdd6d52
-Message-ID: <61b9d767.7u90hg+CwEJ4WFLM%lkp@intel.com>
+Date: Wed, 15 Dec 2021 19:54:12 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 37e738b6fdb14529534dca441e0222313688fde3
+Message-ID: <61b9d764.mWZVnWPecfkoKGOe%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: f8a3bcceb4224494ac4fa2b7e9428ac1bbdd6d52  ice: Remove unused ICE_FLOW_SEG_HDRS_L2_MASK
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 37e738b6fdb14529534dca441e0222313688fde3  ice: Don't put stale timestamps in the skb
 
-elapsed time: 723m
+elapsed time: 725m
 
-configs tested: 191
+configs tested: 198
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -46,6 +46,11 @@ powerpc                 mpc834x_itx_defconfig
 sh                               alldefconfig
 arm                             mxs_defconfig
 nds32                             allnoconfig
+mips                           ip27_defconfig
+powerpc                      ep88xc_defconfig
+arm                           stm32_defconfig
+xtensa                       common_defconfig
+sh                         ecovec24_defconfig
 powerpc                      pasemi_defconfig
 powerpc                    gamecube_defconfig
 powerpc64                        alldefconfig
@@ -118,6 +123,8 @@ mips                        workpad_defconfig
 mips                           jazz_defconfig
 arm                            mmp2_defconfig
 arm                         s3c2410_defconfig
+arm                        shmobile_defconfig
+arm                        magician_defconfig
 sh                                  defconfig
 powerpc                    mvme5100_defconfig
 arm                          moxart_defconfig
