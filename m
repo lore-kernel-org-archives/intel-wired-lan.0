@@ -1,90 +1,223 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Wed, 15 Dec 2021 11:57:44 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix incorrect netdev's
- real number of RX/TX queues
-In-Reply-To: <20211215104554.31524-1-jedrzej.jagielski@intel.com>
-References: <20211215104554.31524-1-jedrzej.jagielski@intel.com>
-Message-ID: <YbnKKBspT3YqMgZP@boxer>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 15 Dec 2021 19:54:15 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ f8a3bcceb4224494ac4fa2b7e9428ac1bbdd6d52
+Message-ID: <61b9d767.7u90hg+CwEJ4WFLM%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 15, 2021 at 10:45:54AM +0000, Jedrzej Jagielski wrote:
-> There was a wrong queues representation in sysfs during
-> driver's reinitialization in case of online cpus number is
-> less than combined queues. It was caused by stopped
-> NetworkManager, which is responsible for calling vsi_open
-> function during driver's initialization.
-> In specific situation (ex. 12 cpus online) there were 16 queues
-> in /sys/class/net/<iface>/queues. In case of modifying queues with
-> value higher, than number of online cpus, then it caused write
-> errors and other errors.
-> Add updating of sysfs's queues representation during driver
-> initialization.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: f8a3bcceb4224494ac4fa2b7e9428ac1bbdd6d52  ice: Remove unused ICE_FLOW_SEG_HDRS_L2_MASK
 
-Description is not very clear to me - how did you get the value of 16
-queues? Do you have 16 cpu system and then modified the count of cpus
-being online?
+elapsed time: 723m
 
-> 
-> Fixes: 41c445ff0f48 ("i40e: main driver core")
-> Signed-off-by: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
-> v2:Fix "CHECK: Lines should not end with a '('" warning
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 4ff1c9b9217b..1b6f03cc41da 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -14074,6 +14074,22 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
->  	return NULL;
->  }
->  
-> +/**
-> + * i40e_netif_set_realnum_tx_rx_queues - Update number of tx/rx queues
-> + * @vsi: vsi structure
-> + *
-> + * This updates netdev's number of tx/rx queues
-> + *
-> + * Returns status of setting tx/rx queues
-> + **/
-> +static int i40e_netif_set_realnum_tx_rx_queues(struct i40e_vsi *vsi)
-> +{
-> +	netif_set_real_num_rx_queues(vsi->netdev, vsi->num_queue_pairs);
+configs tested: 191
+configs skipped: 3
 
-Why return value of above is not checked?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Also would be good to convert the i40e_vsi_open() to make use of this
-function you're introducing, I guess.
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20211214
+mips                 randconfig-c004-20211214
+sh                 kfr2r09-romimage_defconfig
+xtensa                    xip_kc705_defconfig
+powerpc                    klondike_defconfig
+arm                      tct_hammer_defconfig
+m68k                          amiga_defconfig
+arm                          pcm027_defconfig
+sh                        apsh4ad0a_defconfig
+arm                         lpc32xx_defconfig
+powerpc                      tqm8xx_defconfig
+arm                          gemini_defconfig
+csky                             alldefconfig
+arm                        cerfcube_defconfig
+powerpc                        cell_defconfig
+powerpc                   motionpro_defconfig
+powerpc                 mpc834x_itx_defconfig
+sh                               alldefconfig
+arm                             mxs_defconfig
+nds32                             allnoconfig
+powerpc                      pasemi_defconfig
+powerpc                    gamecube_defconfig
+powerpc64                        alldefconfig
+s390                                defconfig
+mips                  cavium_octeon_defconfig
+arm                     eseries_pxa_defconfig
+arm                      footbridge_defconfig
+arm                          pxa168_defconfig
+riscv                            allmodconfig
+powerpc                          allyesconfig
+m68k                          sun3x_defconfig
+arm                         s5pv210_defconfig
+mips                         tb0226_defconfig
+powerpc                   lite5200b_defconfig
+powerpc                      acadia_defconfig
+arc                     nsimosci_hs_defconfig
+powerpc                 mpc85xx_cds_defconfig
+um                             i386_defconfig
+powerpc                        fsp2_defconfig
+mips                         mpc30x_defconfig
+arm                            dove_defconfig
+arm                        oxnas_v6_defconfig
+sh                          polaris_defconfig
+mips                     loongson2k_defconfig
+arc                 nsimosci_hs_smp_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                 mpc836x_mds_defconfig
+arm                         hackkit_defconfig
+mips                      malta_kvm_defconfig
+mips                           ci20_defconfig
+sh                          r7780mp_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                  colibri_pxa270_defconfig
+powerpc                      makalu_defconfig
+arm                      jornada720_defconfig
+sh                          urquell_defconfig
+arm                           sama5_defconfig
+mips                            ar7_defconfig
+arm                       aspeed_g5_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                       imx_v4_v5_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                          lpd270_defconfig
+powerpc                     ppa8548_defconfig
+mips                      maltaaprp_defconfig
+arm                          imote2_defconfig
+sparc                               defconfig
+sh                         microdev_defconfig
+powerpc                     stx_gp3_defconfig
+i386                             alldefconfig
+mips                      bmips_stb_defconfig
+mips                           rs90_defconfig
+mips                    maltaup_xpa_defconfig
+sparc                       sparc32_defconfig
+h8300                               defconfig
+sh                      rts7751r2d1_defconfig
+openrisc                            defconfig
+powerpc                       ppc64_defconfig
+powerpc                      pmac32_defconfig
+m68k                             alldefconfig
+arm                            qcom_defconfig
+sh                           se7724_defconfig
+sparc64                             defconfig
+h8300                    h8300h-sim_defconfig
+arm                         socfpga_defconfig
+powerpc                      bamboo_defconfig
+ia64                         bigsur_defconfig
+arm                        multi_v5_defconfig
+mips                        workpad_defconfig
+mips                           jazz_defconfig
+arm                            mmp2_defconfig
+arm                         s3c2410_defconfig
+sh                                  defconfig
+powerpc                    mvme5100_defconfig
+arm                          moxart_defconfig
+sparc                            alldefconfig
+powerpc                     pseries_defconfig
+arm                      pxa255-idp_defconfig
+m68k                       bvme6000_defconfig
+powerpc                          g5_defconfig
+arm                           sama7_defconfig
+arm                  randconfig-c002-20211214
+arm                  randconfig-c002-20211215
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a006-20211214
+x86_64               randconfig-a005-20211214
+x86_64               randconfig-a001-20211214
+x86_64               randconfig-a002-20211214
+x86_64               randconfig-a003-20211214
+x86_64               randconfig-a004-20211214
+i386                 randconfig-a001-20211214
+i386                 randconfig-a002-20211214
+i386                 randconfig-a005-20211214
+i386                 randconfig-a003-20211214
+i386                 randconfig-a006-20211214
+i386                 randconfig-a004-20211214
+x86_64               randconfig-a011-20211215
+x86_64               randconfig-a014-20211215
+x86_64               randconfig-a012-20211215
+x86_64               randconfig-a013-20211215
+x86_64               randconfig-a016-20211215
+x86_64               randconfig-a015-20211215
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
 
-> +
-> +	return netif_set_real_num_tx_queues(vsi->netdev,
-> +					    vsi->num_queue_pairs);
-> +}
-> +
->  /**
->   * i40e_vsi_setup - Set up a VSI by a given type
->   * @pf: board private structure
-> @@ -14203,6 +14219,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
->  	case I40E_VSI_MAIN:
->  	case I40E_VSI_VMDQ2:
->  		ret = i40e_config_netdev(vsi);
-> +		if (ret)
-> +			goto err_netdev;
-> +		ret = i40e_netif_set_realnum_tx_rx_queues(vsi);
->  		if (ret)
->  			goto err_netdev;
->  		ret = register_netdev(vsi->netdev);
-> -- 
-> 2.27.0
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+clang tested configs:
+arm                  randconfig-c002-20211214
+x86_64               randconfig-c007-20211214
+riscv                randconfig-c006-20211214
+mips                 randconfig-c004-20211214
+i386                 randconfig-c001-20211214
+s390                 randconfig-c005-20211214
+powerpc              randconfig-c003-20211214
+x86_64               randconfig-a011-20211214
+x86_64               randconfig-a014-20211214
+x86_64               randconfig-a012-20211214
+x86_64               randconfig-a013-20211214
+x86_64               randconfig-a016-20211214
+x86_64               randconfig-a015-20211214
+i386                 randconfig-a013-20211214
+i386                 randconfig-a011-20211214
+i386                 randconfig-a016-20211214
+i386                 randconfig-a014-20211214
+i386                 randconfig-a015-20211214
+i386                 randconfig-a012-20211214
+hexagon              randconfig-r045-20211214
+s390                 randconfig-r044-20211214
+riscv                randconfig-r042-20211214
+hexagon              randconfig-r041-20211214
+hexagon              randconfig-r045-20211215
+hexagon              randconfig-r041-20211215
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
