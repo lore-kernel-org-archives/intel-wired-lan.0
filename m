@@ -1,11 +1,11 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Fri, 17 Dec 2021 15:23:42 +0000
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 6/6] ice: xsk: fix
- cleaned_count setting
-In-Reply-To: <20211213153111.110877-7-maciej.fijalkowski@intel.com>
+Date: Fri, 17 Dec 2021 15:23:52 +0000
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 5/6] ice: xsk: allow
+ empty Rx descriptors on XSK ZC data path
+In-Reply-To: <20211213153111.110877-6-maciej.fijalkowski@intel.com>
 References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
- <20211213153111.110877-7-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB32924BE7BB15755573E2BE80F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
+ <20211213153111.110877-6-maciej.fijalkowski@intel.com>
+Message-ID: <DM6PR11MB32928282AF0C5E3C90621516F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,28 +21,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Mathew, Elza <elza.mathew@intel.com>; netdev at vger.kernel.org;
 > kuba at kernel.org; bpf at vger.kernel.org; davem at davemloft.net; Karlsson,
 > Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 intel-net 6/6] ice: xsk: fix cleaned_count
-> setting
+> Subject: [Intel-wired-lan] [PATCH v2 intel-net 5/6] ice: xsk: allow empty Rx
+> descriptors on XSK ZC data path
 > 
-> Currently cleaned_count is initialized to ICE_DESC_UNUSED(rx_ring) and later
-> on during the Rx processing it is incremented per each frame that driver
-> consumed. This can result in excessive buffers requested from xsk pool
-> based on that value.
+> Commit ac6f733a7bd5 ("ice: allow empty Rx descriptors") stated that ice HW
+> can produce empty descriptors that are valid and they should be processed.
 > 
-> To address this, just drop cleaned_count and pass
-> ICE_DESC_UNUSED(rx_ring) directly as a function argument to
-> ice_alloc_rx_bufs_zc(). Idea is to ask for buffers as many as consumed.
-> 
-> Let us also call ice_alloc_rx_bufs_zc unconditionally at the end of
-> ice_clean_rx_irq_zc. This has been changed in that way for corresponding
-> ice_clean_rx_irq, but not here.
+> Add this support to xsk ZC path to avoid potential processing problems.
 > 
 > Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx.h | 1 -
-> drivers/net/ethernet/intel/ice/ice_xsk.c  | 6 +-----
->  2 files changed, 1 insertion(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_xsk.c | 14 ++++++++++----
+>  1 file changed, 10 insertions(+), 4 deletions(-)
 > 
 
 Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
