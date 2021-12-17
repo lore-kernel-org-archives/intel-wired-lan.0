@@ -1,162 +1,106 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 17 Dec 2021 10:16:37 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 9c99d099f7e7860b39d9bf605ba1f3c6d7ae1319
-Message-ID: <61bbf305.jSXZEKD3v5u6l7bF%lkp@intel.com>
+From: Sornek, Karen <karen.sornek@intel.com>
+Date: Fri, 17 Dec 2021 08:32:16 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset path while
+ removing the driver
+Message-ID: <20211217073216.257633-1-karen.sornek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 9c99d099f7e7860b39d9bf605ba1f3c6d7ae1319  ice: use modern kernel API for kick
+From: Karen Sornek <karen.sornek@intel.com>
 
-elapsed time: 1551m
+Fix the crash in kernel while dereferencing the NULL pointer,
+when the driver is unloaded and simultaneously the vsi rings
+are being stopped.
 
-configs tested: 133
-configs skipped: 3
+The hardware requires 50msec in order to finish RX queues
+disable. For this purpose the driver spins in mdelay function
+for the operation to be completed.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+For example changing number of queues which requires reset would
+fail in the following call stack:
 
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20211216
-m68k                          hp300_defconfig
-arm                        clps711x_defconfig
-arc                    vdk_hs38_smp_defconfig
-powerpc                     tqm8540_defconfig
-arm                      tct_hammer_defconfig
-powerpc                      katmai_defconfig
-sh                            migor_defconfig
-arm                       imx_v4_v5_defconfig
-sh                         ap325rxa_defconfig
-mips                        jmr3927_defconfig
-sh                        sh7785lcr_defconfig
-arm                       cns3420vb_defconfig
-arm                            dove_defconfig
-arm                        trizeps4_defconfig
-arc                          axs103_defconfig
-sh                           se7724_defconfig
-m68k                       m5208evb_defconfig
-mips                        vocore2_defconfig
-sh                   rts7751r2dplus_defconfig
-sparc                               defconfig
-mips                     loongson1b_defconfig
-powerpc                     rainier_defconfig
-powerpc                      pmac32_defconfig
-powerpc                      walnut_defconfig
-sh                            hp6xx_defconfig
-arm                         axm55xx_defconfig
-powerpc                   bluestone_defconfig
-arc                     haps_hs_smp_defconfig
-mips                malta_qemu_32r6_defconfig
-arm                         nhk8815_defconfig
-powerpc                         ps3_defconfig
-arm                             mxs_defconfig
-mips                       capcella_defconfig
-powerpc                     taishan_defconfig
-arm                          imote2_defconfig
-h8300                       h8s-sim_defconfig
-arm                           h3600_defconfig
-powerpc                 mpc8313_rdb_defconfig
-sh                               j2_defconfig
-arm                        keystone_defconfig
-sh                        edosk7705_defconfig
-mips                         tb0287_defconfig
-powerpc                     powernv_defconfig
-arc                      axs103_smp_defconfig
-arm                         orion5x_defconfig
-sh                          lboxre2_defconfig
-nios2                               defconfig
-sh                                  defconfig
-m68k                       m5275evb_defconfig
-microblaze                          defconfig
-arm                  randconfig-c002-20211216
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64               randconfig-a006-20211216
-x86_64               randconfig-a005-20211216
-x86_64               randconfig-a001-20211216
-x86_64               randconfig-a002-20211216
-x86_64               randconfig-a003-20211216
-x86_64               randconfig-a004-20211216
-i386                 randconfig-a001-20211216
-i386                 randconfig-a002-20211216
-i386                 randconfig-a005-20211216
-i386                 randconfig-a003-20211216
-i386                 randconfig-a006-20211216
-i386                 randconfig-a004-20211216
-arc                  randconfig-r043-20211216
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+1) i40e_prep_for_reset
+2) i40e_pf_quiesce_all_vsi
+3) i40e_quiesce_vsi
+4) i40e_vsi_close
+5) i40e_down
+6) i40e_vsi_stop_rings
+7) i40e_vsi_control_rx -> disable requires the delay of 50msecs
+8) continue back in i40e_down function where
+   i40e_clean_tx_ring(vsi->tx_rings[i]) is going to crash
 
-clang tested configs:
-x86_64               randconfig-a011-20211216
-x86_64               randconfig-a014-20211216
-x86_64               randconfig-a012-20211216
-x86_64               randconfig-a013-20211216
-x86_64               randconfig-a016-20211216
-x86_64               randconfig-a015-20211216
-i386                 randconfig-a011-20211216
-i386                 randconfig-a014-20211216
-i386                 randconfig-a012-20211216
-i386                 randconfig-a013-20211216
-i386                 randconfig-a015-20211216
-i386                 randconfig-a016-20211216
-hexagon              randconfig-r045-20211216
-s390                 randconfig-r044-20211216
-riscv                randconfig-r042-20211216
-hexagon              randconfig-r041-20211216
+When the driver was spinning vsi_release called
+i40e_vsi_free_arrays where the vsi->tx_rings resources
+were freed and the pointer was set to NULL.
 
+Fixes: 41c445ff0f48 ("i40e: main driver core")
+Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 8b2edacb0a30..707805c339f6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -144,6 +144,7 @@ enum i40e_state_t {
+ 	__I40E_VIRTCHNL_OP_PENDING,
+ 	__I40E_RECOVERY_MODE,
+ 	__I40E_VF_RESETS_DISABLED,	/* disable resets during i40e_remove */
++	__I40E_IN_REMOVE,
+ 	__I40E_VFS_RELEASING,
+ 	/* This must be last as it determines the size of the BITMAP */
+ 	__I40E_STATE_SIZE__,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5e01875c7961..a850a75adc69 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10763,6 +10763,9 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
+ 				   bool lock_acquired)
+ {
+ 	int ret;
++
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return;
+ 	/* Now we wait for GRST to settle out.
+ 	 * We don't have to delete the VEBs or VSIs from the hw switch
+ 	 * because the reset will make them disappear.
+@@ -12122,6 +12125,8 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 
+ 		vsi->req_queue_pairs = queue_count;
+ 		i40e_prep_for_reset(pf);
++		if (test_bit(__I40E_IN_REMOVE, pf->state))
++			return pf->alloc_rss_size;
+ 
+ 		pf->alloc_rss_size = new_rss_size;
+ 
+@@ -12948,6 +12953,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+ 	if (need_reset)
+ 		i40e_prep_for_reset(pf);
+ 
++	/* VSI shall be deleted in a moment, just return EINVAL */
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return -EINVAL;
++
+ 	old_prog = xchg(&vsi->xdp_prog, prog);
+ 
+ 	if (need_reset) {
+@@ -16035,6 +16044,9 @@ static void i40e_pci_error_reset_done(struct pci_dev *pdev)
+ {
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+ 
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return;
++
+ 	i40e_reset_and_rebuild(pf, false, false);
+ }
+ 
+-- 
+2.27.0
+
