@@ -1,66 +1,81 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 16 Dec 2021 12:20:37 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v3] i40e: Disable
- hw-tc-offload feature on driver load.
-In-Reply-To: <20211216123113.2142-1-mateusz.palczewski@intel.com>
-References: <20211216123113.2142-1-mateusz.palczewski@intel.com>
-Message-ID: <253c5cfe-5cac-2eb0-e952-32417efae975@intel.com>
+From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
+Date: Fri, 17 Dec 2021 00:01:43 +0000
+Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
+ for RClocks
+In-Reply-To: <4d4f5c27-90a3-c411-ea2f-e6f44ec74148@novek.ru>
+References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
+ <20211210081654.233a41b6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <MW5PR11MB58126A8F6466A8EAD1293D5EEA749@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <DM6PR11MB4657CE134223B65B5F2EF5F29B769@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <4d4f5c27-90a3-c411-ea2f-e6f44ec74148@novek.ru>
+Message-ID: <DM6PR11MB465758ECC87273A56CA2826F9B789@DM6PR11MB4657.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/16/2021 4:31 AM, Mateusz Palczewski wrote:
-> After loading driver hw-tc-offload is enabled by default.
-> Change the behaviour of driver to disable hw-tc-offload by default as this
-> is the expected state. Additionaly since this impacts ntuple feature state
-> change the way of checking NETIF_F_HW_TC flag.
+>On 15.12.2021 12:14, Kubalewski, Arkadiusz wrote:
+>>> -----Original Message-----
+>>> From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+>>> Sent: poniedzia?ek, 13 grudnia 2021 09:54
+>>> To: Jakub Kicinski <kuba@kernel.org>
+>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux-kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz; saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; Vadim Fedorenko <vfedorenko@novek.ru>
+>>> Subject: RE: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
+>>>
+>>>> -----Original Message-----
+>>>> From: Jakub Kicinski <kuba@kernel.org>
+>>>> Sent: Friday, December 10, 2021 5:17 PM
+>>>> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+>>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org;
+>>>> Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>;
+>>>> richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen,
+>>>> Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux-
+>>>> kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz;
+>>>> saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; Vadim
+>>>> Fedorenko <vfedorenko@novek.ru>
+>>>> Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
+>>>>
+>>>> On Fri, 10 Dec 2021 14:45:46 +0100 Maciej Machnikowski wrote:
+>>>>> Synchronous Ethernet networks use a physical layer clock to
+>>>>> syntonize the frequency across different network elements.
+>>>>>
+>>>>> Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+>>>>> Equipment Clock (EEC) and have the ability to synchronize to
+>>>>> reference frequency sources.
+>>>>>
+>>>>> This patch series is a prerequisite for EEC object and adds ability
+>>>>> to enable recovered clocks in the physical layer of the netdev object.
+>>>>> Recovered clocks can be used as one of the reference signal by the EEC.
+>>>>>
+>>>>> Further work is required to add the DPLL subsystem, link it to the
+>>>>> netdev object and create API to read the EEC DPLL state.
+>>>>
+>>>> You missed CCing Vadim. I guess Ccing the right people may be right up
+>>>> there with naming things as the hardest things in SW development..
+>>>>
+>>>> Anyway, Vadim - do you have an ETA on the first chunk of the PLL work?
+>>>
+>>> Sounds about right :) thanks for adding Vadim!
+>>>
+>> 
+>> Good day Vadim,
+>> 
+>> Can we help on the new PLL interfaces?
+>> I can start some works related to that, although would need a guidance
+>> from the expert.
+>> Where to place it?
+>> What in-kernel interfaces to use?
+>> Any other high level tips that could be useful?
+>> Or if you already started some work, could you please share some
+>> information?
+>> 
+>Hi!
+>
+>I'm going to publish RFC till the end of the week and we will be able to
+>continue discussion via this mailing list. I think that netlink is a good
+>option for in-kernel interface and is easy to implement.
+>
 
-Again, why are you doing this? What's wrong with having it enabled by 
-default? Does a user have to turn it on before programming rules after 
-your change? In order for the maintainers to be interested to apply your 
-patch, you have to explain why it benefits them/kernel/community.
-
-> Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
-> Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-
-Why are there three sign-offs? Did three people work on this patch? If 
-so, did they co-develop it? Three sign-offs in a row would be what's 
-done if you're just handling the patch from one user to another. And in 
-that case, then usually the first person listed would be also credited 
-with the patch upstream by being the From: and set as git author.
-
-
-> ---
->   v3: Removed internal tags and fixed commit message
->   v2: Squashed two commits into one
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 3fd3f10..fec4d51 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -12724,7 +12724,8 @@ static int i40e_set_features(struct net_device *netdev,
->   	else
->   		i40e_vlan_stripping_disable(vsi);
->   
-> -	if (!(features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
-> +	if (!(features & NETIF_F_HW_TC) &&
-> +	    (netdev->features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
->   		dev_err(&pf->pdev->dev,
->   			"Offloaded tc filters active, can't turn hw_tc_offload off");
->   		return -EINVAL;
-> @@ -13476,6 +13477,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
->   	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
->   	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
->   
-> +	netdev->features &= ~NETIF_F_HW_TC;
-> +
->   	if (vsi->type == I40E_VSI_MAIN) {
->   		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
->   		ether_addr_copy(mac_addr, hw->mac.perm_addr);
-
+Oh, that sounds great!
+Thank you!
