@@ -1,48 +1,41 @@
 From: Joe Damato <jdamato@fastly.com>
-Date: Fri, 17 Dec 2021 11:35:14 -0800
+Date: Fri, 17 Dec 2021 11:35:15 -0800
 Subject: [Intel-wired-lan] [net-queue, v2,
- 0/5] i40e: stat counter updates and additions
-Message-ID: <1639769719-81285-1-git-send-email-jdamato@fastly.com>
+ 1/5] i40e: Remove rx page reuse double count.
+In-Reply-To: <1639769719-81285-1-git-send-email-jdamato@fastly.com>
+References: <1639769719-81285-1-git-send-email-jdamato@fastly.com>
+Message-ID: <1639769719-81285-2-git-send-email-jdamato@fastly.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Greetings:
+Page reuse was being tracked from two locations:
+  - i40e_reuse_rx_page (via 40e_clean_rx_irq), and
+  - i40e_alloc_mapped_page
 
-This patch set makes several updates to the i40e driver stats collection
-and reporting code to help users of i40e get a better sense of how the
-driver is performing and interacting with the rest of the kernel.
+Remove the double count and only count reuse from i40e_alloc_mapped_page
+when the page is about to be reused.
 
-These patches include some new stats (like waived and busy) which were
-inspired by other drivers that track stats using the same nomenclature.
-
-The new stats and an existing stat, rx_reuse, are now accessible with
-ethtool to make harvesting this data more convenient for users.
-
-These patches apply cleanly to the net-queue/devqueue branch.
-
+Signed-off-by: Joe Damato <jdamato@fastly.com>
 ---
-v1 -> v2: patch 3/5: - "rx_reuse" corrected to "rx_alloc".
-                     - Unnecessary else clause in i40e_alloc_mapped_page
-                       removed.
----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Joe Damato (5):
-  i40e: Remove rx page reuse double count.
-  i40e: Aggregate and export RX page reuse stat.
-  i40e: Add a stat tracking new RX page allocations.
-  i40e: Add a stat for tracking pages waived.
-  i40e: Add a stat for tracking busy rx pages.
-
- drivers/net/ethernet/intel/i40e/i40e.h         |  4 ++++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  4 ++++
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 14 +++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 25 ++++++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  3 +++
- 5 files changed, 42 insertions(+), 8 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 10a83e5..8b3ffb7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1382,8 +1382,6 @@ static void i40e_reuse_rx_page(struct i40e_ring *rx_ring,
+ 	new_buff->page_offset	= old_buff->page_offset;
+ 	new_buff->pagecnt_bias	= old_buff->pagecnt_bias;
+ 
+-	rx_ring->rx_stats.page_reuse_count++;
+-
+ 	/* clear contents of buffer_info */
+ 	old_buff->page = NULL;
+ }
 -- 
 2.7.4
 
