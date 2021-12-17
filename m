@@ -1,11 +1,11 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Fri, 17 Dec 2021 15:23:55 +0000
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 4/6] ice: xsk: do not
- clear status_error0 for ntu + nb_buffs descriptor
-In-Reply-To: <20211213153111.110877-5-maciej.fijalkowski@intel.com>
+Date: Fri, 17 Dec 2021 15:24:03 +0000
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/6] ice: xsk: allocate
+ separate memory for XDP SW ring
+In-Reply-To: <20211213153111.110877-3-maciej.fijalkowski@intel.com>
 References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
- <20211213153111.110877-5-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB3292039CD30AE96145240042F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
+ <20211213153111.110877-3-maciej.fijalkowski@intel.com>
+Message-ID: <DM6PR11MB3292041274105D441B44A7F8F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,29 +21,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Mathew, Elza <elza.mathew@intel.com>; netdev at vger.kernel.org;
 > kuba at kernel.org; bpf at vger.kernel.org; davem at davemloft.net; Karlsson,
 > Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 intel-net 4/6] ice: xsk: do not clear
-> status_error0 for ntu + nb_buffs descriptor
+> Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/6] ice: xsk: allocate separate
+> memory for XDP SW ring
 > 
-> The descriptor that ntu is pointing at when we exit
-> ice_alloc_rx_bufs_zc() should not have its corresponding DD bit cleared as
-> descriptor is not allocated in there and it is not valid for HW usage.
+> Currently, the zero-copy data path is reusing the memory region that was
+> initially allocated for an array of struct ice_rx_buf for its own purposes. This
+> is error prone as it is based on the ice_rx_buf struct always being the same
+> size or bigger than what the zero-copy path needs.
+> There can also be old values present in that array giving rise to errors when
+> the zero-copy path uses it.
 > 
-> The allocation routine at the entry will fill the descriptor that ntu points to
-> after it was set to ntu + nb_buffs on previous call.
+> Fix this by freeing the ice_rx_buf region and allocating a new array for the
+> zero-copy path that has the right length and is initialized to zero.
 > 
-> Even the spec says:
-> "The tail pointer should be set to one descriptor beyond the last empty
-> descriptor in host descriptor ring."
-> 
-> Therefore, step away from clearing the status_error0 on ntu + nb_buffs
-> descriptor.
-> 
-> Fixes: db804cfc21e9 ("ice: Use the xsk batched rx allocation interface")
-> Reported-by: Elza Mathew <elza.mathew@intel.com>
+> Fixes: 57f7f8b6bc0b ("ice: Use xdp_buf instead of rx_buf for xsk zero-copy")
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_xsk.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_base.c | 17 ++++++++++++
+> drivers/net/ethernet/intel/ice/ice_txrx.c | 19 ++++++++-----
+> drivers/net/ethernet/intel/ice/ice_xsk.c  | 33 ++++++++++++-----------
+>  3 files changed, 47 insertions(+), 22 deletions(-)
 > 
 
 Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
