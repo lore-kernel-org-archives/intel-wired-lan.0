@@ -1,70 +1,77 @@
-From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-Date: Fri, 17 Dec 2021 10:49:38 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3] i40e: Disable
- hw-tc-offload feature on driver load.
-In-Reply-To: <253c5cfe-5cac-2eb0-e952-32417efae975@intel.com>
-References: <20211216123113.2142-1-mateusz.palczewski@intel.com>
- <253c5cfe-5cac-2eb0-e952-32417efae975@intel.com>
-Message-ID: <BL1PR11MB52887B5E0CF12C5E3956607A87789@BL1PR11MB5288.namprd11.prod.outlook.com>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Fri, 17 Dec 2021 12:36:25 +0100
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Match on all profiles in
+ slow-path
+Message-ID: <20211217113625.31128-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->On 12/16/2021 4:31 AM, Mateusz Palczewski wrote:
->> After loading driver hw-tc-offload is enabled by default.
->> Change the behaviour of driver to disable hw-tc-offload by default as this
->> is the expected state. Additionaly since this impacts ntuple feature state
->> change the way of checking NETIF_F_HW_TC flag.
->
->Again, why are you doing this? What's wrong with having it enabled by 
->default? Does a user have to turn it on before programming rules after 
->your change? In order for the maintainers to be interested to apply your 
->patch, you have to explain why it benefits them/kernel/community.
->
->> Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
->> Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
->> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
->
->Why are there three sign-offs? Did three people work on this patch? If 
->so, did they co-develop it? Three sign-offs in a row would be what's 
->done if you're just handling the patch from one user to another. And in 
->that case, then usually the first person listed would be also credited 
->with the patch upstream by being the From: and set as git author.
->
->
-This patch was made as squash of two different ones as requested here:
-https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20211213121248.4137-1-mateusz.palczewski at intel.com/
-Since both of the authors of the patches agreed to it in internal review I believe that three signed-offs are correct here.
->> ---
->>   v3: Removed internal tags and fixed commit message
->>   v2: Squashed two commits into one
->> ---
->>   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> index 3fd3f10..fec4d51 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> @@ -12724,7 +12724,8 @@ static int i40e_set_features(struct net_device *netdev,
->>   	else
->>   		i40e_vlan_stripping_disable(vsi);
->>   
->> -	if (!(features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
->> +	if (!(features & NETIF_F_HW_TC) &&
->> +	    (netdev->features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
->>   		dev_err(&pf->pdev->dev,
->>   			"Offloaded tc filters active, can't turn hw_tc_offload off");
->>   		return -EINVAL;
->> @@ -13476,6 +13477,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
->>   	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
->>   	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
->>   
->> +	netdev->features &= ~NETIF_F_HW_TC;
->> +
->>   	if (vsi->type == I40E_VSI_MAIN) {
->>   		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
->>   		ether_addr_copy(mac_addr, hw->mac.perm_addr);
+In switchdev mode, slow-path rules need to match all protocols, in order
+to correctly redirect unfiltered or missed packets to the uplink. To set
+this up for the virtual function to uplink flow, the rule that redirects
+packets to the control VSI must have the tunnel type set to
+ICE_SW_TUN_AND_NON_TUN. As a result of that new tunnel type being set,
+ice_get_compat_fv_bitmap will select ICE_PROF_ALL. At that point all
+profiles would be selected for this rule, resulting in the desired
+behavior. Without this change slow-path would not work with
+tunnel protocols.
+
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_eswitch.c       | 1 +
+ drivers/net/ethernet/intel/ice/ice_protocol_type.h | 1 +
+ drivers/net/ethernet/intel/ice/ice_switch.c        | 4 +++-
+ 3 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 30a00fe59c52..f70eaf49b083 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -44,6 +44,7 @@ int ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf,
+ 				       ctrl_vsi->rxq_map[vf->vf_id];
+ 	rule_info.flags_info.act |= ICE_SINGLE_ACT_LB_ENABLE;
+ 	rule_info.flags_info.act_valid = true;
++	rule_info.tun_type = ICE_SW_TUN_AND_NON_TUN;
+ 
+ 	err = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info,
+ 			       vf->repr->mac_rule);
+diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+index dc1b0e9e6df5..695b6dd61dc2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+@@ -47,6 +47,7 @@ enum ice_protocol_type {
+ 
+ enum ice_sw_tunnel_type {
+ 	ICE_NON_TUN = 0,
++	ICE_SW_TUN_AND_NON_TUN,
+ 	ICE_SW_TUN_VXLAN,
+ 	ICE_SW_TUN_GENEVE,
+ 	ICE_SW_TUN_NVGRE,
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 4834debafcba..170c0a418cca 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -4618,6 +4618,7 @@ ice_get_compat_fv_bitmap(struct ice_hw *hw, struct ice_adv_rule_info *rinfo,
+ 	case ICE_SW_TUN_NVGRE:
+ 		prof_type = ICE_PROF_TUN_GRE;
+ 		break;
++	case ICE_SW_TUN_AND_NON_TUN:
+ 	default:
+ 		prof_type = ICE_PROF_ALL;
+ 		break;
+@@ -5386,7 +5387,8 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+ 	if (status)
+ 		goto err_ice_add_adv_rule;
+ 
+-	if (rinfo->tun_type != ICE_NON_TUN) {
++	if (rinfo->tun_type != ICE_NON_TUN &&
++	    rinfo->tun_type != ICE_SW_TUN_AND_NON_TUN) {
+ 		status = ice_fill_adv_packet_tun(hw, rinfo->tun_type,
+ 						 s_rule->pdata.lkup_tx_rx.hdr,
+ 						 pkt_offsets);
+-- 
+2.31.1
 
