@@ -1,106 +1,70 @@
-From: Sornek, Karen <karen.sornek@intel.com>
-Date: Fri, 17 Dec 2021 08:32:16 +0100
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset path while
- removing the driver
-Message-ID: <20211217073216.257633-1-karen.sornek@intel.com>
+From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+Date: Fri, 17 Dec 2021 10:49:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3] i40e: Disable
+ hw-tc-offload feature on driver load.
+In-Reply-To: <253c5cfe-5cac-2eb0-e952-32417efae975@intel.com>
+References: <20211216123113.2142-1-mateusz.palczewski@intel.com>
+ <253c5cfe-5cac-2eb0-e952-32417efae975@intel.com>
+Message-ID: <BL1PR11MB52887B5E0CF12C5E3956607A87789@BL1PR11MB5288.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Karen Sornek <karen.sornek@intel.com>
-
-Fix the crash in kernel while dereferencing the NULL pointer,
-when the driver is unloaded and simultaneously the vsi rings
-are being stopped.
-
-The hardware requires 50msec in order to finish RX queues
-disable. For this purpose the driver spins in mdelay function
-for the operation to be completed.
-
-For example changing number of queues which requires reset would
-fail in the following call stack:
-
-1) i40e_prep_for_reset
-2) i40e_pf_quiesce_all_vsi
-3) i40e_quiesce_vsi
-4) i40e_vsi_close
-5) i40e_down
-6) i40e_vsi_stop_rings
-7) i40e_vsi_control_rx -> disable requires the delay of 50msecs
-8) continue back in i40e_down function where
-   i40e_clean_tx_ring(vsi->tx_rings[i]) is going to crash
-
-When the driver was spinning vsi_release called
-i40e_vsi_free_arrays where the vsi->tx_rings resources
-were freed and the pointer was set to NULL.
-
-Fixes: 41c445ff0f48 ("i40e: main driver core")
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Karen Sornek <karen.sornek@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++++++++
- 2 files changed, 13 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 8b2edacb0a30..707805c339f6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -144,6 +144,7 @@ enum i40e_state_t {
- 	__I40E_VIRTCHNL_OP_PENDING,
- 	__I40E_RECOVERY_MODE,
- 	__I40E_VF_RESETS_DISABLED,	/* disable resets during i40e_remove */
-+	__I40E_IN_REMOVE,
- 	__I40E_VFS_RELEASING,
- 	/* This must be last as it determines the size of the BITMAP */
- 	__I40E_STATE_SIZE__,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5e01875c7961..a850a75adc69 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10763,6 +10763,9 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
- 				   bool lock_acquired)
- {
- 	int ret;
-+
-+	if (test_bit(__I40E_IN_REMOVE, pf->state))
-+		return;
- 	/* Now we wait for GRST to settle out.
- 	 * We don't have to delete the VEBs or VSIs from the hw switch
- 	 * because the reset will make them disappear.
-@@ -12122,6 +12125,8 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
- 
- 		vsi->req_queue_pairs = queue_count;
- 		i40e_prep_for_reset(pf);
-+		if (test_bit(__I40E_IN_REMOVE, pf->state))
-+			return pf->alloc_rss_size;
- 
- 		pf->alloc_rss_size = new_rss_size;
- 
-@@ -12948,6 +12953,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 	if (need_reset)
- 		i40e_prep_for_reset(pf);
- 
-+	/* VSI shall be deleted in a moment, just return EINVAL */
-+	if (test_bit(__I40E_IN_REMOVE, pf->state))
-+		return -EINVAL;
-+
- 	old_prog = xchg(&vsi->xdp_prog, prog);
- 
- 	if (need_reset) {
-@@ -16035,6 +16044,9 @@ static void i40e_pci_error_reset_done(struct pci_dev *pdev)
- {
- 	struct i40e_pf *pf = pci_get_drvdata(pdev);
- 
-+	if (test_bit(__I40E_IN_REMOVE, pf->state))
-+		return;
-+
- 	i40e_reset_and_rebuild(pf, false, false);
- }
- 
--- 
-2.27.0
+>On 12/16/2021 4:31 AM, Mateusz Palczewski wrote:
+>> After loading driver hw-tc-offload is enabled by default.
+>> Change the behaviour of driver to disable hw-tc-offload by default as this
+>> is the expected state. Additionaly since this impacts ntuple feature state
+>> change the way of checking NETIF_F_HW_TC flag.
+>
+>Again, why are you doing this? What's wrong with having it enabled by 
+>default? Does a user have to turn it on before programming rules after 
+>your change? In order for the maintainers to be interested to apply your 
+>patch, you have to explain why it benefits them/kernel/community.
+>
+>> Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
+>> Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+>> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+>
+>Why are there three sign-offs? Did three people work on this patch? If 
+>so, did they co-develop it? Three sign-offs in a row would be what's 
+>done if you're just handling the patch from one user to another. And in 
+>that case, then usually the first person listed would be also credited 
+>with the patch upstream by being the From: and set as git author.
+>
+>
+This patch was made as squash of two different ones as requested here:
+https://patchwork.ozlabs.org/project/intel-wired-lan/cover/20211213121248.4137-1-mateusz.palczewski at intel.com/
+Since both of the authors of the patches agreed to it in internal review I believe that three signed-offs are correct here.
+>> ---
+>>   v3: Removed internal tags and fixed commit message
+>>   v2: Squashed two commits into one
+>> ---
+>>   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 3fd3f10..fec4d51 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -12724,7 +12724,8 @@ static int i40e_set_features(struct net_device *netdev,
+>>   	else
+>>   		i40e_vlan_stripping_disable(vsi);
+>>   
+>> -	if (!(features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
+>> +	if (!(features & NETIF_F_HW_TC) &&
+>> +	    (netdev->features & NETIF_F_HW_TC) && pf->num_cloud_filters) {
+>>   		dev_err(&pf->pdev->dev,
+>>   			"Offloaded tc filters active, can't turn hw_tc_offload off");
+>>   		return -EINVAL;
+>> @@ -13476,6 +13477,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+>>   	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
+>>   	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
+>>   
+>> +	netdev->features &= ~NETIF_F_HW_TC;
+>> +
+>>   	if (vsi->type == I40E_VSI_MAIN) {
+>>   		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
+>>   		ether_addr_copy(mac_addr, hw->mac.perm_addr);
 
