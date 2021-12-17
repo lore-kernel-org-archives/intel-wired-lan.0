@@ -1,171 +1,183 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 17 Dec 2021 19:40:06 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 0f473bb6ed2d0b8533a079ee133f625f83de5315
-Message-ID: <61bc7716.UY46rrAThX21VK5p%lkp@intel.com>
+From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Date: Fri, 17 Dec 2021 14:24:33 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix incorrect netdev's
+ real number of RX/TX queues
+In-Reply-To: <YbnKKBspT3YqMgZP@boxer>
+References: <20211215104554.31524-1-jedrzej.jagielski@intel.com>
+ <YbnKKBspT3YqMgZP@boxer>
+Message-ID: <DM6PR11MB2731291951344BE0A1A79202F0789@DM6PR11MB2731.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 0f473bb6ed2d0b8533a079ee133f625f83de5315  Merge branch 'fib-merge-nl-policies'
+>> There was a wrong queues representation in sysfs during
+>> driver's reinitialization in case of online cpus number is
+>> less than combined queues. It was caused by stopped
+>> NetworkManager, which is responsible for calling vsi_open
+>> function during driver's initialization.
+>> In specific situation (ex. 12 cpus online) there were 16 queues
+>> in /sys/class/net/<iface>/queues. In case of modifying queues with
+>> value higher, than number of online cpus, then it caused write
+>> errors and other errors.
+>> Add updating of sysfs's queues representation during driver
+>> initialization.
+>
+>Description is not very clear to me - how did you get the value of 16
+>queues? Do you have 16 cpu system and then modified the count of cpus
+>being online?
+>
 
-elapsed time: 1072m
+When You have less than 16 available/online cpus and network manager
+is disabled, the maximum preset number of combined queues of the
+interface goes to 16. So you can set combined queues up to 16.
+Then there is sysfs representation of TX/RX queues index greater than
+available/online cpus. Then trying to write some value to (for example)
+/sys/class/net/ethx/queues/tx-15/xps_cpus causes Invalid argument error.
 
-configs tested: 142
-configs skipped: 3
+>> 
+>> Fixes: 41c445ff0f48 ("i40e: main driver core")
+>> Signed-off-by: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
+>> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+>> ---
+>> v2:Fix "CHECK: Lines should not end with a '('" warning
+>> ---
+>>  drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++++++++++
+>>  1 file changed, 19 insertions(+)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 4ff1c9b9217b..1b6f03cc41da 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -14074,6 +14074,22 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+>>  	return NULL;
+>>  }
+>>  
+>> +/**
+>> + * i40e_netif_set_realnum_tx_rx_queues - Update number of tx/rx queues
+>> + * @vsi: vsi structure
+>> + *
+>> + * This updates netdev's number of tx/rx queues
+>> + *
+>> + * Returns status of setting tx/rx queues
+>> + **/
+>> +static int i40e_netif_set_realnum_tx_rx_queues(struct i40e_vsi *vsi)
+>> +{
+>> +	netif_set_real_num_rx_queues(vsi->netdev, vsi->num_queue_pairs);
+>
+>Why return value of above is not checked?
+>
+>Also would be good to convert the i40e_vsi_open() to make use of this
+>function you're introducing, I guess.
+>
+Sure, good point.
+>> +
+>> +	return netif_set_real_num_tx_queues(vsi->netdev,
+>> +					    vsi->num_queue_pairs);
+>> +}
+>> +
+>>  /**
+>>   * i40e_vsi_setup - Set up a VSI by a given type
+>>   * @pf: board private structure
+>> @@ -14203,6 +14219,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+>>  	case I40E_VSI_MAIN:
+>>  	case I40E_VSI_VMDQ2:
+>>  		ret = i40e_config_netdev(vsi);
+>> +		if (ret)
+>> +			goto err_netdev;
+>> +		ret = i40e_netif_set_realnum_tx_rx_queues(vsi);
+>>  		if (ret)
+>>  			goto err_netdev;
+>>  		ret = register_netdev(vsi->netdev);
+>> -- 
+>> 2.27.0
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thanks for your suggestions,
+Jedrzej
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211216
-m68k                       m5475evb_defconfig
-arm                         lubbock_defconfig
-arm                        magician_defconfig
-arm                         s3c2410_defconfig
-ia64                            zx1_defconfig
-sh                           se7712_defconfig
-sh                           se7724_defconfig
-m68k                       m5208evb_defconfig
-sparc                               defconfig
-mips                        vocore2_defconfig
-sh                   rts7751r2dplus_defconfig
-i386                             allyesconfig
-powerpc                 xes_mpc85xx_defconfig
-arm                            pleb_defconfig
-mips                         mpc30x_defconfig
-powerpc                   currituck_defconfig
-m68k                          atari_defconfig
-h8300                    h8300h-sim_defconfig
-sh                        dreamcast_defconfig
-arm                           sunxi_defconfig
-powerpc                     redwood_defconfig
-sh                          rsk7269_defconfig
-sh                               j2_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                      walnut_defconfig
-mips                     loongson1b_defconfig
-powerpc                     rainier_defconfig
-sh                            hp6xx_defconfig
-powerpc                      pmac32_defconfig
-sh                           se7722_defconfig
-mips                           mtx1_defconfig
-arm                        mvebu_v7_defconfig
-sparc                       sparc32_defconfig
-powerpc                 mpc836x_mds_defconfig
-m68k                            q40_defconfig
-sh                         microdev_defconfig
-arm                       omap2plus_defconfig
-arm                           u8500_defconfig
-m68k                         amcore_defconfig
-arm                      integrator_defconfig
-s390                       zfcpdump_defconfig
-arm                       imx_v4_v5_defconfig
-arm                        mvebu_v5_defconfig
-sparc64                             defconfig
-mips                           ip32_defconfig
-mips                            e55_defconfig
-m68k                             alldefconfig
-mips                         bigsur_defconfig
-arc                    vdk_hs38_smp_defconfig
-mips                          ath25_defconfig
-arm                          lpd270_defconfig
-h8300                     edosk2674_defconfig
-arm                       mainstone_defconfig
-arm                          ixp4xx_defconfig
-mips                           ip22_defconfig
-arm                        trizeps4_defconfig
-sh                          lboxre2_defconfig
-h8300                            allyesconfig
-powerpc                    adder875_defconfig
-parisc                generic-32bit_defconfig
-arm                  randconfig-c002-20211216
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20211216
-x86_64               randconfig-a005-20211216
-x86_64               randconfig-a001-20211216
-x86_64               randconfig-a002-20211216
-x86_64               randconfig-a003-20211216
-x86_64               randconfig-a004-20211216
-i386                 randconfig-a001-20211216
-i386                 randconfig-a002-20211216
-i386                 randconfig-a005-20211216
-i386                 randconfig-a003-20211216
-i386                 randconfig-a006-20211216
-i386                 randconfig-a004-20211216
-i386                 randconfig-a013-20211217
-i386                 randconfig-a011-20211217
-i386                 randconfig-a016-20211217
-i386                 randconfig-a014-20211217
-i386                 randconfig-a015-20211217
-i386                 randconfig-a012-20211217
-arc                  randconfig-r043-20211216
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
 
-clang tested configs:
-x86_64               randconfig-a011-20211216
-x86_64               randconfig-a012-20211216
-x86_64               randconfig-a013-20211216
-x86_64               randconfig-a014-20211216
-x86_64               randconfig-a015-20211216
-x86_64               randconfig-a016-20211216
-hexagon              randconfig-r045-20211216
-s390                 randconfig-r044-20211216
-riscv                randconfig-r042-20211216
-hexagon              randconfig-r041-20211216
+-----Original Message-----
+From: Fijalkowski, Maciej <maciej.fijalkowski@intel.com> 
+Sent: ?roda, 15 grudnia 2021 11:58
+To: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org; Cieplicki, LukaszX <lukaszx.cieplicki@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net v2] i40e: Fix incorrect netdev's real number of RX/TX queues
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+On Wed, Dec 15, 2021 at 10:45:54AM +0000, Jedrzej Jagielski wrote:
+> There was a wrong queues representation in sysfs during
+> driver's reinitialization in case of online cpus number is
+> less than combined queues. It was caused by stopped
+> NetworkManager, which is responsible for calling vsi_open
+> function during driver's initialization.
+> In specific situation (ex. 12 cpus online) there were 16 queues
+> in /sys/class/net/<iface>/queues. In case of modifying queues with
+> value higher, than number of online cpus, then it caused write
+> errors and other errors.
+> Add updating of sysfs's queues representation during driver
+> initialization.
+
+Description is not very clear to me - how did you get the value of 16
+queues? Do you have 16 cpu system and then modified the count of cpus
+being online?
+
+> 
+> Fixes: 41c445ff0f48 ("i40e: main driver core")
+> Signed-off-by: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+> v2:Fix "CHECK: Lines should not end with a '('" warning
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 4ff1c9b9217b..1b6f03cc41da 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -14074,6 +14074,22 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+>  	return NULL;
+>  }
+>  
+> +/**
+> + * i40e_netif_set_realnum_tx_rx_queues - Update number of tx/rx queues
+> + * @vsi: vsi structure
+> + *
+> + * This updates netdev's number of tx/rx queues
+> + *
+> + * Returns status of setting tx/rx queues
+> + **/
+> +static int i40e_netif_set_realnum_tx_rx_queues(struct i40e_vsi *vsi)
+> +{
+> +	netif_set_real_num_rx_queues(vsi->netdev, vsi->num_queue_pairs);
+
+Why return value of above is not checked?
+
+Also would be good to convert the i40e_vsi_open() to make use of this
+function you're introducing, I guess.
+
+> +
+> +	return netif_set_real_num_tx_queues(vsi->netdev,
+> +					    vsi->num_queue_pairs);
+> +}
+> +
+>  /**
+>   * i40e_vsi_setup - Set up a VSI by a given type
+>   * @pf: board private structure
+> @@ -14203,6 +14219,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+>  	case I40E_VSI_MAIN:
+>  	case I40E_VSI_VMDQ2:
+>  		ret = i40e_config_netdev(vsi);
+> +		if (ret)
+> +			goto err_netdev;
+> +		ret = i40e_netif_set_realnum_tx_rx_queues(vsi);
+>  		if (ret)
+>  			goto err_netdev;
+>  		ret = register_netdev(vsi->netdev);
+> -- 
+> 2.27.0
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
