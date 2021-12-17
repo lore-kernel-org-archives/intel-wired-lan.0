@@ -1,11 +1,11 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Fri, 17 Dec 2021 15:24:03 +0000
-Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/6] ice: xsk: allocate
- separate memory for XDP SW ring
-In-Reply-To: <20211213153111.110877-3-maciej.fijalkowski@intel.com>
+Date: Fri, 17 Dec 2021 15:24:07 +0000
+Subject: [Intel-wired-lan] [PATCH v2 intel-net 1/6] ice: xsk: return xsk
+ buffers back to pool when cleaning the ring
+In-Reply-To: <20211213153111.110877-2-maciej.fijalkowski@intel.com>
 References: <20211213153111.110877-1-maciej.fijalkowski@intel.com>
- <20211213153111.110877-3-maciej.fijalkowski@intel.com>
-Message-ID: <DM6PR11MB3292041274105D441B44A7F8F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
+ <20211213153111.110877-2-maciej.fijalkowski@intel.com>
+Message-ID: <DM6PR11MB32922CEAA0F5B5C7476D3FA9F1789@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,26 +21,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Mathew, Elza <elza.mathew@intel.com>; netdev at vger.kernel.org;
 > kuba at kernel.org; bpf at vger.kernel.org; davem at davemloft.net; Karlsson,
 > Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v2 intel-net 2/6] ice: xsk: allocate separate
-> memory for XDP SW ring
+> Subject: [Intel-wired-lan] [PATCH v2 intel-net 1/6] ice: xsk: return xsk buffers
+> back to pool when cleaning the ring
 > 
-> Currently, the zero-copy data path is reusing the memory region that was
-> initially allocated for an array of struct ice_rx_buf for its own purposes. This
-> is error prone as it is based on the ice_rx_buf struct always being the same
-> size or bigger than what the zero-copy path needs.
-> There can also be old values present in that array giving rise to errors when
-> the zero-copy path uses it.
+> Currently we only NULL the xdp_buff pointer in the internal SW ring but we
+> never give it back to the xsk buffer pool. This means that buffers can be
+> leaked out of the buff pool and never be used again.
 > 
-> Fix this by freeing the ice_rx_buf region and allocating a new array for the
-> zero-copy path that has the right length and is initialized to zero.
+> Add missing xsk_buff_free() call to the routine that is supposed to clean the
+> entries that are left in the ring so that these buffers in the umem can be used
+> by other sockets.
 > 
-> Fixes: 57f7f8b6bc0b ("ice: Use xdp_buf instead of rx_buf for xsk zero-copy")
+> Also, only go through the space that is actually left to be cleaned instead of a
+> whole ring.
+> 
+> Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
 > Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c | 17 ++++++++++++
-> drivers/net/ethernet/intel/ice/ice_txrx.c | 19 ++++++++-----
-> drivers/net/ethernet/intel/ice/ice_xsk.c  | 33 ++++++++++++-----------
->  3 files changed, 47 insertions(+), 22 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_xsk.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 > 
 
 Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
