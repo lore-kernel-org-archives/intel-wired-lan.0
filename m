@@ -1,8 +1,8 @@
 From: James McLaughlin <james.mclaughlin@qsc.com>
-Date: Fri, 17 Dec 2021 16:43:10 -0700
-Subject: [Intel-wired-lan] [PATCH v2] igc: Fix TX timestamp support for
+Date: Fri, 17 Dec 2021 16:49:33 -0700
+Subject: [Intel-wired-lan] [PATCH net v3] igc: Fix TX timestamp support for
  non-MSI-X platforms
-Message-ID: <20211217234310.740255-1-james.mclaughlin@qsc.com>
+Message-ID: <20211217234933.740942-1-james.mclaughlin@qsc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,8 +17,8 @@ Signed-off-by: James McLaughlin <james.mclaughlin@qsc.com>
 Reviewed-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
 
-Having trouble with work email client, understand and agree with comments from Vinicius.
-v1->v2 updated commit message, email subject, and reference original commit this is fixing.
+Still same work email client issues.  Apologies, mis-titled it again.
+v2->v3 fixed title
 
  drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
  1 file changed, 6 insertions(+)
