@@ -1,43 +1,46 @@
-From: Jason Wang <wangborong@cdjrlc.com>
-Date: Sun, 12 Dec 2021 16:10:01 +0800
-Subject: [Intel-wired-lan] [PATCH] iavf: remove an unneeded variable
-Message-ID: <20211212081001.368126-1-wangborong@cdjrlc.com>
+From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
+Date: Mon, 20 Dec 2021 11:40:34 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add flow director
+ support for channel mode
+In-Reply-To: <20211213172511.1083932-1-sudheer.mogilappagari@intel.com>
+References: <20211213172511.1083932-1-sudheer.mogilappagari@intel.com>
+Message-ID: <MN2PR11MB36146F67D5192545677223C08E7B9@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The variable `ret_code' used for returning is never changed in function
-`iavf_shutdown_adminq'. So that it can be removed and just return its
-initial value 0 at the end of `iavf_shutdown_adminq' function.
 
-Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
----
- drivers/net/ethernet/intel/iavf/iavf_adminq.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq.c b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
-index 9fa3fa99b4c2..cd4e6a22d0f9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_adminq.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
-@@ -551,15 +551,13 @@ enum iavf_status iavf_init_adminq(struct iavf_hw *hw)
-  **/
- enum iavf_status iavf_shutdown_adminq(struct iavf_hw *hw)
- {
--	enum iavf_status ret_code = 0;
--
- 	if (iavf_check_asq_alive(hw))
- 		iavf_aq_queue_shutdown(hw, true);
- 
- 	iavf_shutdown_asq(hw);
- 	iavf_shutdown_arq(hw);
- 
--	return ret_code;
-+	return 0;
- }
- 
- /**
--- 
-2.34.1
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> sudheer.mogilappagari at intel.com
+> Sent: Monday, December 13, 2021 10:55 PM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add flow director support for
+> channel mode
+> 
+> From: Kiran Patil <kiran.patil@intel.com>
+> 
+> Add support to enable flow-director filter when multiple TCs are configured.
+> Flow director filter can be configured using ethtool (--config-ntuple option).
+> When multiple TCs are configured, each TC is mapped to an unique HW VSI. So
+> VSI corresponding to queue used in filter is identified and flow director context is
+> updated with correct VSI while configuring ntuple filter in HW.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |   7 +-
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 260 +++++++++++++++++-
+>  drivers/net/ethernet/intel/ice/ice_fdir.h     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_flow.c     |  51 ++++
+>  drivers/net/ethernet/intel/ice/ice_flow.h     |   1 +
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  69 ++++-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  75 +++++
+>  drivers/net/ethernet/intel/ice/ice_type.h     |   5 +-
+>  8 files changed, 444 insertions(+), 25 deletions(-)
+> 
+Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
