@@ -1,378 +1,87 @@
-From: Karol Kolacinski <karol.kolacinski@intel.com>
-Date: Mon, 20 Dec 2021 15:18:53 +0100
-Subject: [Intel-wired-lan] [PATCH v3 intel-next] ice: Fix E810 PTP reset flow
-Message-ID: <20211220141852.695800-1-karol.kolacinski@intel.com>
+From: syzbot <syzbot+4c63f36709a642f801c5@syzkaller.appspotmail.com>
+Date: Sun, 19 Dec 2021 16:19:20 -0800
+Subject: [Intel-wired-lan] [syzbot] kernel BUG in pskb_expand_head
+In-Reply-To: <0000000000007ea16705d0cfbb53@google.com>
+Message-ID: <0000000000000fbea205d388d749@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The PF reset does not reset PHC and PHY clocks so it's unnecessary to
-stop them and reinitialize after the reset.
-Configuring timestamping changes the VSI fields so it needs to be
-performed after VSIs are initialized, which was not done in case of a
-reset.
+syzbot has found a reproducer for the following issue on:
 
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
----
-V1 -> V2: Fixed minor issues
-V2 -> V3: Added PTP flag check before configuring timestamping
+HEAD commit:    434ed2138994 Merge branch 'tc-action-offload'
+git tree:       net-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=1722300db00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=7488eea316146357
+dashboard link: https://syzkaller.appspot.com/bug?extid=4c63f36709a642f801c5
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14141ca3b00000
 
- drivers/net/ethernet/intel/ice/ice_main.c |   8 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c  | 202 ++++++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_ptp.h  |   8 +
- 3 files changed, 183 insertions(+), 35 deletions(-)
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+4c63f36709a642f801c5 at syzkaller.appspotmail.com
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a3ce54a78859..9663173ff1bf 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -539,7 +539,7 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	ice_pf_dis_all_vsi(pf, false);
- 
- 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
--		ice_ptp_release(pf);
-+		ice_ptp_prepare_for_reset(pf);
- 
- 	if (hw->port_info)
- 		ice_sched_clear_port(hw->port_info);
-@@ -6728,7 +6728,7 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	 * fail.
- 	 */
- 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
--		ice_ptp_init(pf);
-+		ice_ptp_reset(pf);
- 
- 	/* rebuild PF VSI */
- 	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_PF);
-@@ -6737,6 +6737,10 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 		goto err_vsi_rebuild;
- 	}
- 
-+	/* configure PTP timestamping after VSI rebuild */
-+	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
-+		ice_ptp_cfg_timestamp(pf, false);
-+
- 	err = ice_vsi_rebuild_by_type(pf, ICE_VSI_SWITCHDEV_CTRL);
- 	if (err) {
- 		dev_err(dev, "Switchdev CTRL VSI rebuild failed: %d\n", err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index bf7247c6f58e..ea512a5ec8cd 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -313,7 +313,7 @@ static void ice_set_rx_tstamp(struct ice_pf *pf, bool on)
-  * This function will configure timestamping during PTP initialization
-  * and deinitialization
-  */
--static void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
-+void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena)
- {
- 	ice_set_tx_tstamp(pf, ena);
- 	ice_set_rx_tstamp(pf, ena);
-@@ -1783,6 +1783,122 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
- 				   msecs_to_jiffies(500));
- }
- 
-+/**
-+ * ice_ptp_reset - Initialize PTP hardware clock support after reset
-+ * @pf: Board private structure
-+ */
-+void ice_ptp_reset(struct ice_pf *pf)
-+{
-+	struct ice_ptp *ptp = &pf->ptp;
-+	struct ice_hw *hw = &pf->hw;
-+	struct timespec64 ts;
-+	u64 time_diff;
-+	int err = 1;
-+	u8 src_idx;
-+
-+	if (test_bit(ICE_PFR_REQ, pf->state))
-+		goto pfr;
-+
-+	src_idx = hw->func_caps.ts_func_info.tmr_index_owned;
-+
-+	wr32(hw, GLTSYN_SYNC_DLAY, 0);
-+
-+	/* Enable source clocks */
-+	wr32(hw, GLTSYN_ENA(src_idx), GLTSYN_ENA_TSYN_ENA_M);
-+
-+	/* Enable PHY time sync */
-+	err = ice_ptp_init_phy_e810(hw);
-+	if (err)
-+		goto err;
-+
-+	/* Clear event status indications for auxiliary pins */
-+	(void)rd32(hw, GLTSYN_STAT(src_idx));
-+
-+	/* Acquire the global hardware lock */
-+	if (!ice_ptp_lock(hw)) {
-+		err = -EBUSY;
-+		goto err;
-+	}
-+
-+	/* Write the increment time value to PHY and LAN */
-+	err = ice_ptp_write_incval(hw, ICE_PTP_NOMINAL_INCVAL_E810);
-+	if (err) {
-+		ice_ptp_unlock(hw);
-+		goto err;
-+	}
-+
-+	/* Write the initial Time value to PHY and LAN using the cached PHC
-+	 * time before the reset and time difference between stopping and
-+	 * starting the clock.
-+	 */
-+	if (ptp->cached_phc_time) {
-+		time_diff = ktime_get_real_ns() - ptp->reset_time;
-+		ts = ns_to_timespec64(ptp->cached_phc_time + time_diff);
-+	} else {
-+		ts = ktime_to_timespec64(ktime_get_real());
-+	}
-+	err = ice_ptp_write_init(pf, &ts);
-+	if (err) {
-+		ice_ptp_unlock(hw);
-+		goto err;
-+	}
-+
-+	/* Release the global hardware lock */
-+	ice_ptp_unlock(hw);
-+
-+pfr:
-+	/* Init Tx structures */
-+	if (ice_is_e810(&pf->hw))
-+		err = ice_ptp_init_tx_e810(pf, &ptp->port.tx);
-+	if (err)
-+		goto err;
-+
-+	set_bit(ICE_FLAG_PTP, pf->flags);
-+
-+	/* Start periodic work going */
-+	kthread_queue_delayed_work(ptp->kworker, &ptp->work, 0);
-+
-+	dev_info(ice_pf_to_dev(pf), "PTP reset successful\n");
-+	return;
-+
-+err:
-+	dev_err(ice_pf_to_dev(pf), "PTP reset failed %d\n", err);
-+}
-+
-+/**
-+ * ice_ptp_prepare_for_reset - Prepare PTP for reset
-+ * @pf: Board private structure
-+ */
-+void ice_ptp_prepare_for_reset(struct ice_pf *pf)
-+{
-+	struct ice_ptp *ptp = &pf->ptp;
-+	u8 src_tmr;
-+
-+	clear_bit(ICE_FLAG_PTP, pf->flags);
-+
-+	/* Disable timestamping for both Tx and Rx */
-+	ice_ptp_cfg_timestamp(pf, false);
-+
-+	kthread_cancel_delayed_work_sync(&ptp->work);
-+	kthread_cancel_work_sync(&ptp->extts_work);
-+
-+	if (test_bit(ICE_PFR_REQ, pf->state))
-+		return;
-+
-+	ice_ptp_release_tx_tracker(pf, &pf->ptp.port.tx);
-+
-+	/* Disable periodic outputs */
-+	ice_ptp_disable_all_clkout(pf);
-+
-+	src_tmr = ice_get_ptp_src_clock_index(&pf->hw);
-+
-+	/* Disable source clock */
-+	wr32(&pf->hw, GLTSYN_ENA(src_tmr), (u32)~GLTSYN_ENA_TSYN_ENA_M);
-+
-+	/* Acquire PHC and system timer to restore after reset */
-+	ptp->reset_time = ktime_get_real_ns();
-+}
-+
- /**
-  * ice_ptp_init_owner - Initialize PTP_1588_CLOCK device
-  * @pf: Board private structure
-@@ -1793,7 +1909,6 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
-  */
- static int ice_ptp_init_owner(struct ice_pf *pf)
- {
--	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_hw *hw = &pf->hw;
- 	struct timespec64 ts;
- 	u8 src_idx;
-@@ -1852,11 +1967,48 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
- err_clk:
- 	pf->ptp.clock = NULL;
- err_exit:
--	dev_err(dev, "PTP failed to register clock, err %d\n", err);
--
- 	return err;
- }
- 
-+/**
-+ * ice_ptp_init_work - Initialize PTP work threads
-+ * @pf: Board private structure
-+ * @ptp: PF PTP structure
-+ */
-+static int ice_ptp_init_work(struct ice_pf *pf, struct ice_ptp *ptp)
-+{
-+	struct kthread_worker *kworker;
-+
-+	/* Initialize work functions */
-+	kthread_init_delayed_work(&ptp->work, ice_ptp_periodic_work);
-+	kthread_init_work(&ptp->extts_work, ice_ptp_extts_work);
-+
-+	/* Allocate a kworker for handling work required for the ports
-+	 * connected to the PTP hardware clock.
-+	 */
-+	kworker = kthread_create_worker(0, "ice-ptp-%s",
-+					dev_name(ice_pf_to_dev(pf)));
-+	if (IS_ERR(kworker))
-+		return PTR_ERR(kworker);
-+
-+	ptp->kworker = kworker;
-+
-+	/* Start periodic work going */
-+	kthread_queue_delayed_work(ptp->kworker, &ptp->work, 0);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_ptp_init_port - Initialize PTP port structure
-+ * @pf: Board private structure
-+ * @ptp_port: PTP port structure
-+ */
-+static int ice_ptp_init_port(struct ice_pf *pf, struct ice_ptp_port *ptp_port)
-+{
-+	return ice_ptp_init_tx_e810(pf, &ptp_port->tx);
-+}
-+
- /**
-  * ice_ptp_init - Initialize the PTP support after device probe or reset
-  * @pf: Board private structure
-@@ -1867,8 +2019,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
-  */
- void ice_ptp_init(struct ice_pf *pf)
- {
--	struct device *dev = ice_pf_to_dev(pf);
--	struct kthread_worker *kworker;
-+	struct ice_ptp *ptp = &pf->ptp;
- 	struct ice_hw *hw = &pf->hw;
- 	int err;
- 
-@@ -1880,44 +2031,29 @@ void ice_ptp_init(struct ice_pf *pf)
- 	if (hw->func_caps.ts_func_info.src_tmr_owned) {
- 		err = ice_ptp_init_owner(pf);
- 		if (err)
--			return;
-+			goto err;
- 	}
- 
--	/* Disable timestamping for both Tx and Rx */
--	ice_ptp_cfg_timestamp(pf, false);
--
--	/* Initialize the PTP port Tx timestamp tracker */
--	ice_ptp_init_tx_e810(pf, &pf->ptp.port.tx);
--
--	/* Initialize work functions */
--	kthread_init_delayed_work(&pf->ptp.work, ice_ptp_periodic_work);
--	kthread_init_work(&pf->ptp.extts_work, ice_ptp_extts_work);
--
--	/* Allocate a kworker for handling work required for the ports
--	 * connected to the PTP hardware clock.
--	 */
--	kworker = kthread_create_worker(0, "ice-ptp-%s", dev_name(dev));
--	if (IS_ERR(kworker)) {
--		err = PTR_ERR(kworker);
--		goto err_kworker;
--	}
--	pf->ptp.kworker = kworker;
-+	err = ice_ptp_init_port(pf, &ptp->port);
-+	if (err)
-+		goto err;
- 
- 	set_bit(ICE_FLAG_PTP, pf->flags);
-+	err = ice_ptp_init_work(pf, ptp);
-+	if (err)
-+		goto err;
- 
--	/* Start periodic work going */
--	kthread_queue_delayed_work(pf->ptp.kworker, &pf->ptp.work, 0);
--
--	dev_info(dev, "PTP init successful\n");
-+	dev_info(ice_pf_to_dev(pf), "PTP init successful\n");
- 	return;
- 
--err_kworker:
-+err:
- 	/* If we registered a PTP clock, release it */
- 	if (pf->ptp.clock) {
--		ptp_clock_unregister(pf->ptp.clock);
-+		ptp_clock_unregister(ptp->clock);
- 		pf->ptp.clock = NULL;
- 	}
--	dev_err(dev, "PTP failed %d\n", err);
-+	clear_bit(ICE_FLAG_PTP, pf->flags);
-+	dev_err(ice_pf_to_dev(pf), "PTP failed %d\n", err);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index f71ad317d6c8..6f3bbf0718b0 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -121,6 +121,7 @@ struct ice_ptp_port {
-  * @info: structure defining PTP hardware capabilities
-  * @clock: pointer to registered PTP clock device
-  * @tstamp_config: hardware timestamping configuration
-+ * @reset_time: kernel time after clock stop on reset
-  */
- struct ice_ptp {
- 	struct ice_ptp_port port;
-@@ -134,6 +135,7 @@ struct ice_ptp {
- 	struct ptp_clock_info info;
- 	struct ptp_clock *clock;
- 	struct hwtstamp_config tstamp_config;
-+	u64 reset_time;
- };
- 
- #define __ptp_port_to_ptp(p) \
-@@ -174,6 +176,7 @@ struct ice_ptp {
- struct ice_pf;
- int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr);
- int ice_ptp_get_ts_config(struct ice_pf *pf, struct ifreq *ifr);
-+void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena);
- int ice_get_ptp_clock_index(struct ice_pf *pf);
- 
- s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb);
-@@ -182,6 +185,8 @@ void ice_ptp_process_ts(struct ice_pf *pf);
- void
- ice_ptp_rx_hwtstamp(struct ice_rx_ring *rx_ring,
- 		    union ice_32b_rx_flex_desc *rx_desc, struct sk_buff *skb);
-+void ice_ptp_reset(struct ice_pf *pf);
-+void ice_ptp_prepare_for_reset(struct ice_pf *pf);
- void ice_ptp_init(struct ice_pf *pf);
- void ice_ptp_release(struct ice_pf *pf);
- #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
-@@ -195,6 +200,7 @@ static inline int ice_ptp_get_ts_config(struct ice_pf *pf, struct ifreq *ifr)
- 	return -EOPNOTSUPP;
- }
- 
-+static inline void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena) { }
- static inline int ice_get_ptp_clock_index(struct ice_pf *pf)
- {
- 	return -1;
-@@ -210,6 +216,8 @@ static inline void ice_ptp_process_ts(struct ice_pf *pf) { }
- static inline void
- ice_ptp_rx_hwtstamp(struct ice_rx_ring *rx_ring,
- 		    union ice_32b_rx_flex_desc *rx_desc, struct sk_buff *skb) { }
-+static inline void ice_ptp_reset(struct ice_pf *pf) { }
-+static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf) { }
- static inline void ice_ptp_init(struct ice_pf *pf) { }
- static inline void ice_ptp_release(struct ice_pf *pf) { }
- #endif /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
--- 
-2.32.0
+skbuff: skb_over_panic: text:ffffffff88257728 len:4096 put:4096 head:ffff8880769c1400 data:ffff8880769c1400 tail:0x1000 end:0xc0 dev:<NULL>
+------------[ cut here ]------------
+kernel BUG at net/core/skbuff.c:113!
+invalid opcode: 0000 [#1] PREEMPT SMP KASAN
+CPU: 0 PID: 13 Comm: ksoftirqd/0 Not tainted 5.16.0-rc5-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+RIP: 0010:skb_panic+0x16c/0x16e net/core/skbuff.c:113 net/core/skbuff.c:113
+Code: f8 4c 8b 4c 24 10 8b 4b 70 41 56 45 89 e8 4c 89 e2 41 57 48 89 ee 48 c7 c7 a0 82 ad 8a ff 74 24 10 ff 74 24 20 e8 13 20 c2 ff <0f> 0b e8 6c 3d 35 f8 4c 8b 64 24 18 e8 f2 9e 7c f8 48 c7 c1 40 8f
+RSP: 0018:ffffc90000d279e0 EFLAGS: 00010286
+RAX: 000000000000008b RBX: ffff88801c5b8640 RCX: 0000000000000000
+RDX: ffff888011938000 RSI: ffffffff815f21d8 RDI: fffff520001a4f2e
+RBP: ffffffff8aad8f80 R08: 000000000000008b R09: 0000000000000000
+R10: ffffffff815ebf7e R11: 0000000000000000 R12: ffffffff88257728
+R13: 0000000000001000 R14: ffffffff8aad8260 R15: 00000000000000c0
+FS:  0000000000000000(0000) GS:ffff8880b9c00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f14858bf718 CR3: 0000000072e5c000 CR4: 00000000003506f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ <TASK>
+ skb_over_panic net/core/skbuff.c:118 [inline]
+ skb_over_panic net/core/skbuff.c:118 [inline] net/core/skbuff.c:1986
+ skb_put.cold+0x24/0x24 net/core/skbuff.c:1986 net/core/skbuff.c:1986
+ isotp_rcv_cf net/can/isotp.c:570 [inline]
+ isotp_rcv_cf net/can/isotp.c:570 [inline] net/can/isotp.c:668
+ isotp_rcv+0xa38/0x1e30 net/can/isotp.c:668 net/can/isotp.c:668
+ deliver net/can/af_can.c:574 [inline]
+ deliver net/can/af_can.c:574 [inline] net/can/af_can.c:635
+ can_rcv_filter+0x445/0x8d0 net/can/af_can.c:635 net/can/af_can.c:635
+ can_receive+0x31d/0x580 net/can/af_can.c:665 net/can/af_can.c:665
+ can_rcv+0x120/0x1c0 net/can/af_can.c:696 net/can/af_can.c:696
+ __netif_receive_skb_one_core+0x114/0x180 net/core/dev.c:5350 net/core/dev.c:5350
+ __netif_receive_skb+0x24/0x1b0 net/core/dev.c:5464 net/core/dev.c:5464
+ process_backlog+0x2a5/0x6c0 net/core/dev.c:5796 net/core/dev.c:5796
+ __napi_poll+0xaf/0x440 net/core/dev.c:6364 net/core/dev.c:6364
+ napi_poll net/core/dev.c:6431 [inline]
+ napi_poll net/core/dev.c:6431 [inline] net/core/dev.c:6518
+ net_rx_action+0x801/0xb40 net/core/dev.c:6518 net/core/dev.c:6518
+ __do_softirq+0x29b/0x9c2 kernel/softirq.c:558 kernel/softirq.c:558
+ run_ksoftirqd kernel/softirq.c:921 [inline]
+ run_ksoftirqd kernel/softirq.c:921 [inline] kernel/softirq.c:913
+ run_ksoftirqd+0x2d/0x60 kernel/softirq.c:913 kernel/softirq.c:913
+ smpboot_thread_fn+0x645/0x9c0 kernel/smpboot.c:164 kernel/smpboot.c:164
+ kthread+0x405/0x4f0 kernel/kthread.c:327 kernel/kthread.c:327
+ ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:295 arch/x86/entry/entry_64.S:295
+ </TASK>
+Modules linked in:
+---[ end trace 076cfcb09686117c ]---
+RIP: 0010:skb_panic+0x16c/0x16e net/core/skbuff.c:113 net/core/skbuff.c:113
+Code: f8 4c 8b 4c 24 10 8b 4b 70 41 56 45 89 e8 4c 89 e2 41 57 48 89 ee 48 c7 c7 a0 82 ad 8a ff 74 24 10 ff 74 24 20 e8 13 20 c2 ff <0f> 0b e8 6c 3d 35 f8 4c 8b 64 24 18 e8 f2 9e 7c f8 48 c7 c1 40 8f
+RSP: 0018:ffffc90000d279e0 EFLAGS: 00010286
+RAX: 000000000000008b RBX: ffff88801c5b8640 RCX: 0000000000000000
+RDX: ffff888011938000 RSI: ffffffff815f21d8 RDI: fffff520001a4f2e
+RBP: ffffffff8aad8f80 R08: 000000000000008b R09: 0000000000000000
+R10: ffffffff815ebf7e R11: 0000000000000000 R12: ffffffff88257728
+R13: 0000000000001000 R14: ffffffff8aad8260 R15: 00000000000000c0
+FS:  0000000000000000(0000) GS:ffff8880b9c00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f14858bf718 CR3: 0000000072e5c000 CR4: 00000000003506f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
 
