@@ -1,90 +1,55 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Mon, 20 Dec 2021 19:56:28 +0000
-Subject: [Intel-wired-lan] [PATCH net] igb: fix deadlock caused by
- taking RTNL in RPM resume path
-In-Reply-To: <edb8c052-9d20-d190-54e2-ed9bb03ba204@leemhuis.info>
-References: <6bb28d2f-4884-7696-0582-c26c35534bae@gmail.com>
- <edb8c052-9d20-d190-54e2-ed9bb03ba204@leemhuis.info>
-Message-ID: <b4be04bbd6a20855526b961ef80669bd2647564c.camel@intel.com>
+From: Brelinski, Tony <tony.brelinski@intel.com>
+Date: Tue, 21 Dec 2021 00:23:59 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Minimize amount of
+ busy-waiting during AQ send
+In-Reply-To: <20211116131329.626045-1-jedrzej.jagielski@intel.com>
+References: <20211116131329.626045-1-jedrzej.jagielski@intel.com>
+Message-ID: <DM6PR11MB421826531C4B6A51D270AE41827C9@DM6PR11MB4218.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 2021-12-19 at 09:31 +0100, Thorsten Leemhuis wrote:
-> Hi, this is your Linux kernel regression tracker speaking.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jedrzej Jagielski
+> Sent: Tuesday, November 16, 2021 5:13 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Lukwinski, Dawid <dawid.lukwinski@intel.com>; Jagielski, Jedrzej
+> <jedrzej.jagielski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Minimize amount of
+> busy-waiting during AQ send
 > 
-> On 29.11.21 22:14, Heiner Kallweit wrote:
-> > Recent net core changes caused an issue with few Intel drivers
-> > (reportedly igb), where taking RTNL in RPM resume path results in a
-> > deadlock. See [0] for a bug report. I don't think the core changes
-> > are wrong, but taking RTNL in RPM resume path isn't needed.
-> > The Intel drivers are the only ones doing this. See [1] for a
-> > discussion on the issue. Following patch changes the RPM resume
-> > path
-> > to not take RTNL.
-> > 
-> > [0] https://bugzilla.kernel.org/show_bug.cgi?id=215129
-> > [1]
-> > https://lore.kernel.org/netdev/20211125074949.5f897431 at kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/t/
-> > 
-> > Fixes: bd869245a3dc ("net: core: try to runtime-resume detached
-> > device in __dev_open")
-> > Fixes: f32a21376573 ("ethtool: runtime-resume netdev parent before
-> > ethtool ioctl ops")
-> > Tested-by: Martin Stolpe <martin.stolpe@gmail.com>
-> > Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> The i40e_asq_send_command will now use a non blocking usleep_range if
+> possible (non-atomic context), instead of busy-waiting udelay. The
+> usleep_range function uses hrtimers to provide better performance and
+> remove the negative impact of busy-waiting in time-critical environments.
 > 
-> Long story short: what is taken this fix so long to get mainlined? It
-> to
-> me seems progressing unnecessary slow, especially as it's a
-> regression
-> that made it into v5.15 and thus for weeks now seems to bug more and
-> more people.
+> 1. Rename i40e_asq_send_command to i40e_asq_send_command_atomic
+>    and add 5th parameter to inform if called from an atomic context.
+>    Call inside usleep_range (if non-atomic) or udelay (if atomic).
 > 
+> 2. Change i40e_asq_send_command to invoke
+>    i40e_asq_send_command_atomic(..., false).
 > 
-> The long story, starting with the background details:
+> 3. Change two functions:
+>     - i40e_aq_set_vsi_uc_promisc_on_vlan
+>     - i40e_aq_set_vsi_mc_promisc_on_vlan
+>    to explicitly use i40e_asq_send_command_atomic(..., true)
+>    instead of i40e_asq_send_command, as they use spinlocks and do some
+>    work in an atomic context.
+>    All other calls to i40e_asq_send_command remain unchanged.
 > 
-> The quoted patch fixes a regression among others caused by
-> f32a21376573
-> ("ethtool: runtime-resume netdev parent before ethtool ioctl ops"),
-> which got merged for v5.15-rc1.
-> 
-> The regression ("kernel hangs during power down") was afaik first
-> reported on Wed, 24 Nov (IOW: nearly a month ago) and forwarded to
-> the
-> list shortly afterwards:
-> https://bugzilla.kernel.org/show_bug.cgi?id=215129
-> https://lore.kernel.org/netdev/20211124144505.31e15716 at hermes.local/
-> 
-> The quoted patch to fix the regression was posted on Mon, 29 Nov (thx
-> Heiner for providing it!). Obviously reviewing patches can take a few
-> days when they are complicated, as the other messages in this thread
-> show. But according to
-> https://bugzilla.kernel.org/show_bug.cgi?id=215129#c8?the patch was
-> ACKed by Thu, 7 Dec. To quote: ```The patch is on its way via the
-> Intel
-> network driver tree:
-> https://kernel.googlesource.com/pub/scm/linux/kernel/git/tnguy/net-queue/+/refs/heads/dev-queue```
-> 
-> And that's where the patch afaics still is. It hasn't even reached
-> linux-next yet, unless I'm missing something. A merge into mainline
-> thus
-> is not even in sight; this seems especially bad with the holiday
-> season
-> coming up, as getting the fix mainlined is a prerequisite to get it
-> backported to 5.15.y, as our latest stable kernel is affected by
-> this.
+> Title: Minimize amount of busy-waiting during AQ send
+> Signed-off-by: Dawid Lukwinski <dawid.lukwinski@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c | 29 ++++++++++++++-----
+> drivers/net/ethernet/intel/i40e/i40e_common.c |  6 ++--
+> .../net/ethernet/intel/i40e/i40e_prototype.h  | 14 +++++----
+>  3 files changed, 35 insertions(+), 14 deletions(-)
 
-I've been waiting for our validation team to get to this patch to do
-some additional testing. However, as you mentioned, with the holidays
-coming up, it seems the tester is now out. As it looks like some in the
-community have been able to do some testing on this, I'll go ahead and
-send this on.
-
-Thanks,
-Tony
-
+Tested-by: Tony Brelinski <tony.brelinski@intel.com>
 
 
