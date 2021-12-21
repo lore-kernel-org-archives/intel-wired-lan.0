@@ -1,170 +1,199 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Tue, 21 Dec 2021 11:48:08 -0600
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <9303c33a8faa83597db807a8c418ef17@walle.cc>
-Message-ID: <20211221174808.GA1094860@bhelgaas>
+From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+Date: Tue, 21 Dec 2021 22:12:44 +0000
+Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
+ for RClocks
+In-Reply-To: <YcCKLnrvbu9RBlR8@shredder>
+References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
+ <YbXhXstRpzpQRBR8@shredder>
+ <MW5PR11MB5812E5A30C05E2F1EAB2D9D5EA769@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <YcCKLnrvbu9RBlR8@shredder>
+Message-ID: <MW5PR11MB58127387AC887DFF43140697EA7C9@MW5PR11MB5812.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[+to Jesse, Tony for Intel advice;
-beginning of thread: https://lore.kernel.org/all/20201230185317.30915-1-michael at walle.cc/]
-
-On Mon, Dec 20, 2021 at 06:43:03PM +0100, Michael Walle wrote:
-> ...
-> ping #4
+> -----Original Message-----
+> From: Ido Schimmel <idosch@idosch.org>
+> Sent: Monday, December 20, 2021 2:51 PM
+> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
 > 
-> In a few days this is a year old. Please have a look at it and
-> either add my quirk patch or apply your patch. This is still
-> breaking i210 on my board.
+> On Wed, Dec 15, 2021 at 12:13:47PM +0000, Machnikowski, Maciej wrote:
+> > > -----Original Message-----
+> > > From: Ido Schimmel <idosch@idosch.org>
+> > > Sent: Sunday, December 12, 2021 12:48 PM
+> > > To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+> > > Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for RClocks
+> > >
+> > > On Fri, Dec 10, 2021 at 02:45:46PM +0100, Maciej Machnikowski wrote:
+> > > > Synchronous Ethernet networks use a physical layer clock to syntonize
+> > > > the frequency across different network elements.
+> > > >
+> > > > Basic SyncE node defined in the ITU-T G.8264 consist of an Ethernet
+> > > > Equipment Clock (EEC) and have the ability to synchronize to reference
+> > > > frequency sources.
+> > > >
+> > > > This patch series is a prerequisite for EEC object and adds ability
+> > > > to enable recovered clocks in the physical layer of the netdev object.
+> > > > Recovered clocks can be used as one of the reference signal by the EEC.
+> > >
+> > > The dependency is the other way around. It doesn't make sense to add
+> > > APIs to configure the inputs of an object that doesn't exist. First add
+> > > the EEC object, then we can talk about APIs to configure its inputs from
+> > > netdevs.
+> >
+> > This API configures frequency outputs of the PTY layer of
+> > a PHY/integrated MAC. It does not configure any inputs nor it interacts
+> > with the EEC. The goal of it is to expose the clock to the piece that
+> > requires it as a reference one (a DPLL/FPGA/anything else).
 > 
-> TBH, this is really frustrating.
+> My fundamental issue with these patches is that instead of abstracting
+> the hardware from user space they give user space direct control over
+> it.
 
-You are right to be frustrated.  I'm very sorry that I have dropped
-the ball on this.  Thanks for reminding me *again*.
+Unfortunately, I don't see any other way to address the use cases that I listed
+otherwise. I'm a big fan of simple solutions, but only when they address
+all use cases that are known at the time of defining them.
 
-I think we agree that this looks like an I210 defect.  I210 should
-ignore the ROM BAR contents unless PCI_ROM_ADDRESS_ENABLE is set.  It
-would be great if an Intel person could confirm/deny this and supply
-an erratum reference and verify the affected device IDs.
+> This approach has the advantage of keeping the kernel relatively simple
+> and fitting more use cases than just EEC, but these are also its
+> disadvantages. Complexity needs to live somewhere and if this complexity
+> is related to the abstraction of hardware, then it should live in the
+> kernel and not in user space. We should strive to come up with an API
+> that does the same thing regardless of the underlying hardware
+> implementation.
+> 
+> Look at the proposed API, it basically says "Make the clock recovered
+> from eth0 available on pin 1". If user space issues this command on
+> different systems, it will mean different things, based on the
+> underlying design of the hardware and the connection of the pin: To
+> "DPLL/FPGA/anything else".
 
-It seems that when the BARs are programmed like this:
+The link to the right DPLL input can be easily added later by adding
+the new attribute to those commands. This has a big advantage
+over the other model, as it is scalable to multiple different devices
+serviced by different drivers, as it doesn't have the issue we have with
+linking objects in kernel...
 
-  BAR 0: 0x40000000 (32-bit, non-prefetchable) [size=1M]
-  BAR 3: 0x40200000 (32-bit, non-prefetchable) [size=16K]
-  ROM:   0x40200000 (disabled) [size=1M]
+> Contrast that with an API that says "Set the source of EEC X to the
+> clock recovered from eth0". This API is well defined and does the same
+> thing across different systems.
+> 
+> Lets assume that these patches are merged as-is and tomorrow we get
+> another implementation of these two ethtool operations in a different
+> driver. We can't tell if these are used to feed the recovered clock into
+> an EEC like ice does or enable some other use case that we never
+> intended to enable.
 
-networking doesn't work at all and the transmit queue times out.
+...that issue is caused by the randomness and scalability of that 
+infrastructure. At the time system boots it enumerates devices and
+initializes them in  "random" order depending on the current system 
+configuration which makes it impossible to code any co-driver 
+dependencies, as it's impossible to guess what identifier the kernel
+assigned to the other device that's connected to the same DPLL.
 
-Linux assigns non-overlapping address space to the ROM BAR, but
-pci_std_update_resource() currently doesn't update the BAR itself
-unless it is enabled.
+> Even if all the implementations use this API to feed the EEC, consider
+> how difficult it is going to be for user space to use it. Ideally, user
+> space should be able to query the state of the EEC and its source via an
+> EEC object in a single command. With the current approach in which we
+> have some amorphic object called "DPLL" that is only aware of pins and
+> not netdevs, it's going to be very hard. User space will see that the
+> DPLL is locked to the clock fed via pin 1. How user space is supposed to
+> understand what is the source of this clock? Issue RCLK_GET dump and
+> check for matching pin index that is enabled? User space has no reason
+> to do it given that it doesn't even know that the source is a netdev.
 
-My proposal [1] worked around the defect by always updating the BAR,
-but there's no clue that this covers up the I210 issue, so it remains
-as sort of a land mine.  A future change could re-expose the problem,
-so I don't think this was a good approach.
+Userspace tool will always know what ports it works with - it will come
+from the config file, as - even if you have a dozen ports linked to a single
+DPLL you may decide that you don't want to send ESMC messages
+on some of them - just like we do with ptp4l.
 
-Your original patch [2] makes it clear that it's an issue with I210,
-but there's an implicit connection between the normal BAR update path
-(which skips the actual BAR write) and the quirk that does the BAR
-write:
+The amorphic DPLL device has much more uses that a dedicated EEC
+object and if we know what pin the DPLL uses and what is the link
+between the RCLK output and the DPLL input it'll be very easy to
+figure out what's going on.
 
-  <enumeration resource assignment>
-    ...
-      pci_assign_resource
-        pci_update_resource
-          pci_std_update_resource
-            if (ROM && ROM-disabled)
-              return
-            pci_write_config_dword      # ROM BAR update (skipped)
+The dump will also not be needed, as we know who we set as the best
+source after receiving the ESMC packets from neighbors.
 
-  pci_fixup_write_rom_bar               # final fixup
-    pci_write_config_dword              # ROM BAR update
+> >
+> > I don't agree with the statement that we must have EEC object first,
+> > as we can already configure different frequency sources using different
+> > subsystems.
+> 
+> Regardless of all the above technical arguments, I think that these
+> patches should not be merged now based on common sense alone. Not only
+> these patches are of very limited use without an EEC object, they also
+> prevent us from making changes to the API when such an object is
+> introduced.
 
-In the boot-time resource assignment path, this works fine, but if
-pci_assign_resource() is called from pci_map_rom(), the fixup will not
-happen, so we could still have problem.
+And I see a big value of merging them in as that would enable upstreaming
+of the userspace tools that will explain a lot and close many gaps.
 
-If we tweaked pci_std_update_resource() to take account of this
-defect, I think we could cover that path, too.
+> > The source of signal should be separated from its consumer.
+> 
+> If it is completely separated (despite being hardwired on the board),
+> then user space does not know how the signal is used when it issues the
+> command. Is this signal fed into an EEC that controls that transmission
+> rate of other netdev? Is this signal fed into an FPGA that blinks a led?
 
-Can you try the patch below?
+It's the same thing with frequency pins of the PTP subsystem. Userspace
+tool can enable them, but has no idea what's on the other end of them.
 
-[1] https://lore.kernel.org/all/20210115235721.GA1862880 at bjorn-Precision-5520/
-[2] https://lore.kernel.org/all/20201230185317.30915-1-michael at walle.cc/
+> >
+> > > With these four patches alone, user space doesn't know how many EECs
+> > > there are in the system, it doesn't know the mapping from netdev to EEC,
+> > > it doesn't know the state of the EEC, it doesn't know which source is
+> > > chosen in case more than one source is enabled. Patch #3 tries to work
+> > > around it by having ice print to kernel log, when the information should
+> > > really be exposed via the EEC object.
+> >
+> > The goal of them is to add API for recovered clocks - not for EECs.
+> 
+> What do you mean by "not for EECs"? The file is called
+> "net/ethtool/synce.c", if the signal is not being fed into an EEC then
+> into what? It is unclear what kind of back doors this API will open.
 
+Can be a DPLL of the radio part of the device, or different devices that
+expects frequency reference.
+If it makes it better we can move that to net/ethtool/rclk.c.
 
-commit 021481cfa576 ("PCI: Work around Intel I210 ROM BAR overlap defect")
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Tue Dec 21 10:45:07 2021 -0600
+> > This part is there for observability and will still be there when EEC
+> > is in place.  Those will need to be addressed by the DPLL subsystem.
+> 
+> If it is it only meant for observability, then why these messages are
+> emitted as warnings to the kernel log? Regardless, the user API should
+> be designed with observability in mind so that you wouldn't need to rely
+> on prints to the kernel log.
 
-    PCI: Work around Intel I210 ROM BAR overlap defect
-    
-    Per PCIe r5, sec 7.5.1.2.4, a device must not claim accesses to its
-    Expansion ROM unless both the Memory Space Enable and the Expansion ROM
-    Enable bit are set.  But apparently some Intel I210 NICs don't work
-    correctly if the ROM BAR overlaps another BAR, even if the Expansion ROM is
-    disabled.
-    
-    Michael reported that on a Kontron SMARC-sAL28 ARM64 system with U-Boot
-    v2021.01-rc3, the ROM BAR overlaps BAR 3, and networking doesn't work at
-    all:
-    
-      BAR 0: 0x40000000 (32-bit, non-prefetchable) [size=1M]
-      BAR 3: 0x40200000 (32-bit, non-prefetchable) [size=16K]
-      ROM:   0x40200000 (disabled) [size=1M]
-    
-      NETDEV WATCHDOG: enP2p1s0 (igb): transmit queue 0 timed out
-      Hardware name: Kontron SMARC-sAL28 (Single PHY) on SMARC Eval 2.0 carrier (DT)
-      igb 0002:01:00.0 enP2p1s0: Reset adapter
-    
-    Previously, pci_std_update_resource() wrote the assigned ROM address to the
-    BAR only when the ROM was enabled.  This meant that the I210 ROM BAR could
-    be left with an address assigned by firmware, which might overlap with
-    other BARs.
-    
-    Quirk these I210 devices so we always write the assigned address to the ROM
-    BAR, whether or not the ROM is enabled.
-    
-    Link: https://lore.kernel.org/r/20201230185317.30915-1-michael at walle.cc
-    Link: https://bugzilla.kernel.org/show_bug.cgi?id=211105
-    Reported-by: Michael Walle <michael@walle.cc>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+You're right - need to change that to dev_info.
+And yes - in the final form userspace tools will pull EEC's info from the DPLL
+subsystem - this prints the state of 2 DPLLs and is designed for debuggability.
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 003950c738d2..c14ddbd9146d 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -5857,3 +5857,13 @@ static void nvidia_ion_ahci_fixup(struct pci_dev *pdev)
- 	pdev->dev_flags |= PCI_DEV_FLAGS_HAS_MSI_MASKING;
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, 0x0ab8, nvidia_ion_ahci_fixup);
-+
-+static void intel_i210_rom_defect(struct pci_dev *dev)
-+{
-+	pci_info(dev, "working around ROM BAR overlap defect\n");
-+	dev->rom_bar_overlap = 1;
-+}
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1533, intel_i210_rom_defect);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1536, intel_i210_rom_defect);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1537, intel_i210_rom_defect);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1538, intel_i210_rom_defect);
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 7f1acb3918d0..439ac5f5907a 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -75,12 +75,16 @@ static void pci_std_update_resource(struct pci_dev *dev, int resno)
- 		 * as zero when disabled, so don't update ROM BARs unless
- 		 * they're enabled.  See
- 		 * https://lore.kernel.org/r/43147B3D.1030309 at vc.cvut.cz/
-+		 * But we must update ROM BAR for buggy devices where even a
-+		 * disabled ROM can conflict with other BARs.
- 		 */
--		if (!(res->flags & IORESOURCE_ROM_ENABLE))
-+		if (!(res->flags & IORESOURCE_ROM_ENABLE) &&
-+		    !dev->rom_bar_overlap)
- 			return;
- 
- 		reg = dev->rom_base_reg;
--		new |= PCI_ROM_ADDRESS_ENABLE;
-+		if (res->flags & IORESOURCE_ROM_ENABLE)
-+			new |= PCI_ROM_ADDRESS_ENABLE;
- 	} else
- 		return;
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 18a75c8e615c..51c4a063f489 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -455,6 +455,7 @@ struct pci_dev {
- 	unsigned int	link_active_reporting:1;/* Device capable of reporting link active */
- 	unsigned int	no_vf_scan:1;		/* Don't scan for VFs after IOV enablement */
- 	unsigned int	no_command_memory:1;	/* No PCI_COMMAND_MEMORY */
-+	unsigned int	rom_bar_overlap:1;	/* ROM BAR disable broken */
- 	pci_dev_flags_t dev_flags;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
- 
+> >
+> > > +		dev_warn(ice_pf_to_dev(pf),
+> > > +			 "<DPLL%i> state changed to: %d, pin %d",
+> > > +			 ICE_CGU_DPLL_SYNCE,
+> > > +			 pf->synce_dpll_state,
+> > > +			 pin);
+> > >
+> > > >
+> > > > Further work is required to add the DPLL subsystem, link it to the
+> > > > netdev object and create API to read the EEC DPLL state.
+> > >
+> > > When the EEC object materializes, we might find out that this API needs
+> > > to be changed / reworked / removed, but we won't be able to do that
+> > > given it's uAPI. I don't know where the confidence that it won't happen
+> > > stems from when there are so many question marks around this new
+> > > object.
+> >
+> > This API follows the functionality of other frequency outputs that exist
+> > in the kernel, like PTP period file for frequency output of PTP clock
+> > or other GPIOs. I highly doubt it'll change - we may extend it to add
+> mapping
+> > between pins, but like I indicated - this will not always be known to SW.
+> >
+> > Regards
+> > Maciek
