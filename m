@@ -1,11 +1,11 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 22 Dec 2021 03:45:07 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 6/9] igb: switch to
- napi_build_skb()
-In-Reply-To: <20211123171840.157471-7-alexandr.lobakin@intel.com>
-References: <20211123171840.157471-1-alexandr.lobakin@intel.com>
- <20211123171840.157471-7-alexandr.lobakin@intel.com>
-Message-ID: <BYAPR11MB3367C988566786D2DEBC4A90FC7D9@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Wed, 22 Dec 2021 04:17:37 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 4/4] igb: support EXTTS on
+ 82580/i354/i350
+In-Reply-To: <20211028143459.903439-5-kernel.hbk@gmail.com>
+References: <20211028143459.903439-1-kernel.hbk@gmail.com>
+ <20211028143459.903439-5-kernel.hbk@gmail.com>
+Message-ID: <BYAPR11MB33670A9B2D87F28FD502B478FC7D9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,26 +15,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Alexander Lobakin
-> Sent: Tuesday, November 23, 2021 10:49 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Jakub Kicinski
-> <kuba@kernel.org>; David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net-next 6/9] igb: switch to napi_build_skb()
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Ruud
+> Bos
+> Sent: Thursday, October 28, 2021 8:05 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; richardcochran at gmail.com; Ruud Bos
+> <kernel.hbk@gmail.com>; davem at davemloft.net; kuba at kernel.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2 4/4] igb: support EXTTS on
+> 82580/i354/i350
 > 
-> napi_build_skb() reuses per-cpu NAPI skbuff_head cache in order to save some
-> cycles on freeing/allocating skbuff_heads on every new Rx or completed Tx.
-> igb driver runs Tx completion polling cycle right before the Rx one and uses
-> napi_consume_skb() to feed the cache with skbuff_heads of completed entries,
-> so it's never empty and always warm at that moment. Switch to the
-> napi_build_skb() to relax mm pressure on heavy Rx.
+> Support for the PTP pin function on 82580/i354/i350 based adapters.
+> Because the time registers of these adapters do not have the nice split in
+> second rollovers as the i210 has, the implementation is slightly more complex
+> compared to the i210 implementation.
 > 
-> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> Signed-off-by: Ruud Bos <kernel.hbk@gmail.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++---
+> drivers/net/ethernet/intel/igb/igb_ptp.c  | 36 ++++++++++++++++++++++-
+>  2 files changed, 51 insertions(+), 5 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
