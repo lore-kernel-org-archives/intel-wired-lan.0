@@ -1,49 +1,24 @@
 From: Jonathan Toppins <jtoppins@redhat.com>
-Date: Wed, 22 Dec 2021 11:33:14 -0500
-Subject: [Intel-wired-lan] [PATCH net-next 0/3] refactor irq allocation
- in ice
-In-Reply-To: <20211222062201.36302-1-michal.swiatkowski@linux.intel.com>
-References: <20211222062201.36302-1-michal.swiatkowski@linux.intel.com>
-Message-ID: <eb45db6c-7ff5-7aea-7b5e-0cc41d63e689@redhat.com>
+Date: Wed, 22 Dec 2021 11:35:52 -0500
+Subject: [Intel-wired-lan] [PATCH v3 intel-next] ice: Fix E810 PTP reset
+ flow
+In-Reply-To: <20211220141852.695800-1-karol.kolacinski@intel.com>
+References: <20211220141852.695800-1-karol.kolacinski@intel.com>
+Message-ID: <e665d7d1-56ec-2f1b-ced6-2103336957cf@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/22/21 01:21, Michal Swiatkowski wrote:
-> The ice driver uses the old PCI irq reseveration API. Change the ice
-> driver to use the current API.
+On 12/20/21 09:18, Karol Kolacinski wrote:
+> The PF reset does not reset PHC and PHY clocks so it's unnecessary to
+> stop them and reinitialize after the reset.
+> Configuring timestamping changes the VSI fields so it needs to be
+> performed after VSIs are initialized, which was not done in case of a
+> reset.
 > 
-> Implement a fallback mechanism where, if the driver can't reserve the
-> maximum number of interrupts, it will limit the number of queues or
-> disable capabilities.
-> 
-> First two patches add ability to turn on and off eswitch offload. This
-> is needed when driver can't reserve maximum number of interrupts. In
-> this case driver turns off eswitch offload as driver can work
-> without it. Additionally, the eswitch can be supported only if SRIOV is
-> available, so set eswitch capabilities only if SRIOV is supported.
-> 
-> Michal Swiatkowski (3):
->    ice: add check for eswitch support
->    ice: change mode only if eswitch is supported
->    ice: use new alloc irqs API
-> 
->   drivers/net/ethernet/intel/ice/Makefile      |   3 +-
->   drivers/net/ethernet/intel/ice/ice.h         |   4 +-
->   drivers/net/ethernet/intel/ice/ice_arfs.c    |   3 +-
->   drivers/net/ethernet/intel/ice/ice_eswitch.c |  46 +++-
->   drivers/net/ethernet/intel/ice/ice_eswitch.h |  12 +
->   drivers/net/ethernet/intel/ice/ice_irq.c     | 213 ++++++++++++++++++
->   drivers/net/ethernet/intel/ice/ice_irq.h     |  12 +
->   drivers/net/ethernet/intel/ice/ice_lib.c     |   5 +-
->   drivers/net/ethernet/intel/ice/ice_main.c    | 220 +------------------
->   drivers/net/ethernet/intel/ice/ice_xsk.c     |   3 +-
->   10 files changed, 300 insertions(+), 221 deletions(-)
->   create mode 100644 drivers/net/ethernet/intel/ice/ice_irq.c
->   create mode 100644 drivers/net/ethernet/intel/ice/ice_irq.h
-> 
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 
 Reviewed-by: Jonathan Toppins <jtoppins@redhat.com>
 
