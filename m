@@ -1,35 +1,37 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 27 Dec 2021 09:48:50 -0800
-Subject: [Intel-wired-lan] [RFC 01/32] Kconfig: introduce and depend on
- LEGACY_PCI
-In-Reply-To: <20211227164317.4146918-2-schnelle@linux.ibm.com>
-References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
- <20211227164317.4146918-2-schnelle@linux.ibm.com>
-Message-ID: <281298ec-3898-9b02-1d92-66bf6df41170@roeck-us.net>
+From: Kraus, NechamaX <nechamax.kraus@linux.intel.com>
+Date: Mon, 27 Dec 2021 22:34:10 +0200
+Subject: [Intel-wired-lan] [PATCH v4 net-next 6/9] igc: don't reserve
+ excessive XDP_PACKET_HEADROOM on XSK Rx to skb
+In-Reply-To: <20211208140702.642741-7-alexandr.lobakin@intel.com>
+References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
+ <20211208140702.642741-7-alexandr.lobakin@intel.com>
+Message-ID: <e7145513-1808-fb59-35cc-37169ecec047@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/27/21 8:42 AM, Niklas Schnelle wrote:
-> Introduce a new LEGACY_PCI Kconfig option which gates support for legacy
-> PCI devices including those attached to a PCI-to-PCI Express bridge and
-> PCI Express devices using legacy I/O spaces. Note that this is different
-> from non PCI uses of I/O ports such as by ACPI.
+On 12/8/2021 16:06, Alexander Lobakin wrote:
+> {__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
+> + NET_IP_ALIGN for any skb.
+> OTOH, igc_construct_skb_zc() currently allocates and reserves
+> additional `xdp->data_meta - xdp->data_hard_start`, which is about
+> XDP_PACKET_HEADROOM for XSK frames.
+> There's no need for that at all as the frame is post-XDP and will
+> go only to the networking stack core.
+> Pass the size of the actual data only (+ meta) to
+> __napi_alloc_skb() and don't reserve anything. This will give
+> enough headroom for stack processing.
+> Also, net_prefetch() xdp->data_meta and align the copy size to
+> speed-up memcpy() a little and better match igc_costruct_skb().
 > 
-> Add dependencies on LEGACY_PCI for all PCI drivers which only target
-> legacy PCI devices and ifdef legacy PCI specific functions in ata
-> handling.
-> 
+> Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
+> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_main.c | 13 +++++++------
+>   1 file changed, 7 insertions(+), 6 deletions(-)
+>
+Tested-by: Nechama Kraus <nechamax.kraus@linux.intel.com>
 
-This effectively disables all default configurations which now depend
-on CONFIG_LEGACY_PCI. Yet, I don't see CONFIG_LEGACY_PCI added to
-configuration files which explicitly enable any of the affected
-configurations. Is that on purpose ? If so, I think it should at least
-be mentioned in the commit description. However, I think it would be
-more appropriate to either delete all affected configuration flags from
-the affected configuration files, or to add CONFIG_LEGACY_PCI=y to those
-files.
-
-Guenter
