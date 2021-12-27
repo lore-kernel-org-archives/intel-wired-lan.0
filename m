@@ -1,32 +1,30 @@
 From: Kraus, NechamaX <nechamax.kraus@linux.intel.com>
-Date: Mon, 27 Dec 2021 22:35:31 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] igc: Do not enable
- crosstimestamping for i225-V models
-In-Reply-To: <20211214003949.666642-1-vinicius.gomes@intel.com>
-References: <87wnk8qrt8.fsf@intel.com>
- <20211214003949.666642-1-vinicius.gomes@intel.com>
-Message-ID: <30f0321d-14de-e2b8-26b3-c0ed3b01f5de@linux.intel.com>
+Date: Mon, 27 Dec 2021 22:38:38 +0200
+Subject: [Intel-wired-lan] [PATCH v2] igc: Fix TX timestamp support for
+ non-MSI-X platforms
+In-Reply-To: <20211217234310.740255-1-james.mclaughlin@qsc.com>
+References: <20211217234310.740255-1-james.mclaughlin@qsc.com>
+Message-ID: <1d2b0af5-540c-df14-2f78-9698f7055e5a@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/14/2021 02:39, Vinicius Costa Gomes wrote:
-> It was reported that when PCIe PTM is enabled, some lockups could
-> be observed with some integrated i225-V models.
+On 12/18/2021 01:43, James McLaughlin wrote:
+> Time synchronization was not properly enabled on non-MSI-X platforms.
 > 
-> While the issue is investigated, we can disable crosstimestamp for
-> those models and see no loss of functionality, because those models
-> don't have any support for time synchronization.
+> Fixes: 2c344ae24501 ("igc: Add support for TX timestamping")
 > 
-> Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
-> Link: https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
-> Reported-by: Stefan Dietrich <roots@gmx.de>
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: James McLaughlin <james.mclaughlin@qsc.com>
+> Reviewed-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
->   1 file changed, 14 insertions(+), 1 deletion(-)
+> 
+> Having trouble with work email client, understand and agree with comments from Vinicius.
+> v1->v2 updated commit message, email subject, and reference original commit this is fixing.
+> 
+>   drivers/net/ethernet/intel/igc/igc_main.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
 > 
 Tested-by: Nechama Kraus <nechamax.kraus@linux.intel.com>
 
