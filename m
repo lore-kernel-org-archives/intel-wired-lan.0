@@ -1,37 +1,32 @@
 From: Kraus, NechamaX <nechamax.kraus@linux.intel.com>
-Date: Mon, 27 Dec 2021 22:34:10 +0200
-Subject: [Intel-wired-lan] [PATCH v4 net-next 6/9] igc: don't reserve
- excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-7-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-7-alexandr.lobakin@intel.com>
-Message-ID: <e7145513-1808-fb59-35cc-37169ecec047@linux.intel.com>
+Date: Mon, 27 Dec 2021 22:35:31 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] igc: Do not enable
+ crosstimestamping for i225-V models
+In-Reply-To: <20211214003949.666642-1-vinicius.gomes@intel.com>
+References: <87wnk8qrt8.fsf@intel.com>
+ <20211214003949.666642-1-vinicius.gomes@intel.com>
+Message-ID: <30f0321d-14de-e2b8-26b3-c0ed3b01f5de@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/8/2021 16:06, Alexander Lobakin wrote:
-> {__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
-> + NET_IP_ALIGN for any skb.
-> OTOH, igc_construct_skb_zc() currently allocates and reserves
-> additional `xdp->data_meta - xdp->data_hard_start`, which is about
-> XDP_PACKET_HEADROOM for XSK frames.
-> There's no need for that at all as the frame is post-XDP and will
-> go only to the networking stack core.
-> Pass the size of the actual data only (+ meta) to
-> __napi_alloc_skb() and don't reserve anything. This will give
-> enough headroom for stack processing.
-> Also, net_prefetch() xdp->data_meta and align the copy size to
-> speed-up memcpy() a little and better match igc_costruct_skb().
+On 12/14/2021 02:39, Vinicius Costa Gomes wrote:
+> It was reported that when PCIe PTM is enabled, some lockups could
+> be observed with some integrated i225-V models.
 > 
-> Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
-> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> While the issue is investigated, we can disable crosstimestamp for
+> those models and see no loss of functionality, because those models
+> don't have any support for time synchronization.
+> 
+> Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
+> Link: https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
+> Reported-by: Stefan Dietrich <roots@gmx.de>
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_main.c | 13 +++++++------
->   1 file changed, 7 insertions(+), 6 deletions(-)
->
+>   drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
+>   1 file changed, 14 insertions(+), 1 deletion(-)
+> 
 Tested-by: Nechama Kraus <nechamax.kraus@linux.intel.com>
 
