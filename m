@@ -1,74 +1,75 @@
 From: Mauro Carvalho Chehab <mchehab@kernel.org>
-Date: Tue, 28 Dec 2021 03:09:46 +0100
+Date: Tue, 28 Dec 2021 10:15:16 +0100
 Subject: [Intel-wired-lan] [RFC 01/32] Kconfig: introduce and depend on
  LEGACY_PCI
-In-Reply-To: <20211227164317.4146918-2-schnelle@linux.ibm.com>
+In-Reply-To: <YcrJAwsKIxxX18pW@kroah.com>
 References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
  <20211227164317.4146918-2-schnelle@linux.ibm.com>
-Message-ID: <20211228030946.65932d2e@coco.lan>
+ <YcrJAwsKIxxX18pW@kroah.com>
+Message-ID: <20211228101435.3a55b983@coco.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Em Mon, 27 Dec 2021 17:42:46 +0100
-Niklas Schnelle <schnelle@linux.ibm.com> escreveu:
+Em Tue, 28 Dec 2021 09:21:23 +0100
+Greg Kroah-Hartman <gregkh@linuxfoundation.org> escreveu:
 
-> Introduce a new LEGACY_PCI Kconfig option which gates support for legacy
-> PCI devices including those attached to a PCI-to-PCI Express bridge and
-> PCI Express devices using legacy I/O spaces. Note that this is different
-> from non PCI uses of I/O ports such as by ACPI.
+> On Mon, Dec 27, 2021 at 05:42:46PM +0100, Niklas Schnelle wrote:
+> > --- a/drivers/pci/Kconfig
+> > +++ b/drivers/pci/Kconfig
+> > @@ -23,6 +23,17 @@ menuconfig PCI
+> >  
+> >  if PCI
+> >  
+> > +config LEGACY_PCI
+> > +	bool "Enable support for legacy PCI devices"
+> > +	depends on HAVE_PCI
+> > +	help
+> > +	   This option enables support for legacy PCI devices. This includes
+> > +	   PCI devices attached directly or via a bridge on a PCI Express bus.
+> > +	   It also includes compatibility features on PCI Express devices which
+> > +	   make use of legacy I/O spaces.  
+
+This Kconfig doesn't seem what it is needed there, as this should be an 
+arch-dependent feature, and not something that the poor user should be
+aware if a given architecture supports it or not. Also, the above will keep
+causing warnings or errors with randconfigs.
+
+Also, the "depends on HAVE_CPI" is bogus, as PCI already depends on 
+HAVE_PCI:
+
+	menuconfig PCI
+	bool "PCI support"
+	depends on HAVE_PCI
+	help
+	  This option enables support for the PCI local bus, including
+	  support for PCI-X and the foundations for PCI Express support.
+	  Say 'Y' here unless you know what you are doing.
+
+So, instead, I would expect that a new HAVE_xxx option would be
+added at arch/*/Kconfig, like:
+
+	config X86
+		...
+		select HAVE_PCI_DIRECT_IO
+
+It would also make sense to document it at Documentation/features/.
+
 > 
-> Add dependencies on LEGACY_PCI for all PCI drivers which only target
-> legacy PCI devices and ifdef legacy PCI specific functions in ata
-> handling.
+> All you really care about is the "legacy" I/O spaces here, this isn't
+> tied to PCI specifically at all, right?
 > 
-> Co-developed-by: Arnd Bergmann <arnd@kernel.org>
-> Signed-off-by: Arnd Bergmann <arnd@kernel.org>
-> Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
-> ---
->  drivers/ata/Kconfig                          | 34 ++++++++--------
->  drivers/ata/ata_generic.c                    |  3 +-
->  drivers/ata/libata-sff.c                     |  2 +
->  drivers/comedi/Kconfig                       | 42 +++++++++++++++++++
->  drivers/gpio/Kconfig                         |  2 +-
->  drivers/hwmon/Kconfig                        |  6 +--
->  drivers/i2c/busses/Kconfig                   | 24 +++++------
->  drivers/input/gameport/Kconfig               |  4 +-
->  drivers/isdn/hardware/mISDN/Kconfig          | 14 +++----
+> So why not just have a OLD_STYLE_IO config option or something like
+> that, to show that it's the i/o functions we care about here, not PCI at
+> all?
+> 
+> And maybe not call it "old" or "legacy" as time constantly goes forward,
+> just describe it as it is, "DIRECT_IO"?
 
->  drivers/media/cec/platform/Kconfig           |  2 +-
->  drivers/media/pci/dm1105/Kconfig             |  2 +-
->  drivers/media/radio/Kconfig                  |  2 +-
+Agreed. HAVE_PCI_DIRECT_IO (or something similar) seems a more appropriate
+name for it.
 
-Not sure what you meant by "legacy I/O spaces" on this patch. 
-I mean, I would expect non-PCIe devices - like bttv and other
-devices developed at the past millennium or so to be "legacy",
-but at least on media, it is touching some drivers that aren't
-that old, while keeping the really old ones untouched. Instead,
-it is touching a driver developed in 2017 plus two other ones
-that are a way newer than other drivers.
-
-The support for the Bt8xx chipset, in particular, is really 
-weird, as a sound driver for such chipset:
-
-> @@ -172,6 +177,7 @@ config SND_AZT3328
->  
->  config SND_BT87X
->  	tristate "Bt87x Audio Capture"
-> +	depends on LEGACY_PCI
->  	select SND_PCM
->  	help
->  	  If you want to record audio from TV cards based on
-
-was marked as dependent of LEGACY_PCI, while the DVB and V4L2 ones 
-weren't.
-
-Sounds confusing to me, as the PCI bridge used by a Bt87x device 
-should be the same for all three subdevices.
-
-I'm confused...
-
-Regards,
+Thanks,
 Mauro
