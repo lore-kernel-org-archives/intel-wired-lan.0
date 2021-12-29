@@ -1,183 +1,170 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 29 Dec 2021 15:49:10 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- ef1e036c523655890e6b2b1995378bdcc910406f
-Message-ID: <61cc12f6.iah60HR5ULx9OLw/%lkp@intel.com>
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+Date: Wed, 29 Dec 2021 12:45:38 +0100
+Subject: [Intel-wired-lan] [RFC 01/32] Kconfig: introduce and depend on
+ LEGACY_PCI
+In-Reply-To: <20211228181107.2d476028@coco.lan>
+References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
+ <20211227164317.4146918-2-schnelle@linux.ibm.com>
+ <YcrJAwsKIxxX18pW@kroah.com> <20211228101435.3a55b983@coco.lan>
+ <b1475f6aecb752a858941f44a957b2183cd68405.camel@linux.ibm.com>
+ <20211228135425.0a69168c@coco.lan>
+ <4b630b7b87bd983291f628c42a1394fc0d2d86bd.camel@linux.ibm.com>
+ <20211228181107.2d476028@coco.lan>
+Message-ID: <8c59271de66dfa230142186d593f3501b8c789b1.camel@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: ef1e036c523655890e6b2b1995378bdcc910406f  igb: support EXTTS on 82580/i354/i350
+On Tue, 2021-12-28 at 18:12 +0100, Mauro Carvalho Chehab wrote:
+> Em Tue, 28 Dec 2021 16:06:44 +0100
+> Niklas Schnelle <schnelle@linux.ibm.com> escreveu:
+> 
+> (on a side note: the c/c list of this patch is too long. I would try to
+> avoid using a too long list, as otherwise this e-mail may end being rejected
+> by mail servers)
+> 
+> > On Tue, 2021-12-28 at 13:54 +0100, Mauro Carvalho Chehab wrote:
+> > >  
+> > ---8<---
+> > >     
+> > > > > > All you really care about is the "legacy" I/O spaces here, this isn't
+> > > > > > tied to PCI specifically at all, right?
+> > > > > > 
+> > > > > > So why not just have a OLD_STYLE_IO config option or something like
+> > > > > > that, to show that it's the i/o functions we care about here, not PCI at
+> > > > > > all?
+> > > > > > 
+> > > > > > And maybe not call it "old" or "legacy" as time constantly goes forward,
+> > > > > > just describe it as it is, "DIRECT_IO"?    
+> > > > > 
+> > > > > Agreed. HAVE_PCI_DIRECT_IO (or something similar) seems a more appropriate
+> > > > > name for it.
+> > > > > 
+> > > > > Thanks,
+> > > > > Mauro    
+> > > > 
+> > > > Hmm, I might be missing something here but that sounds a lot like the
+> > > > HAS_IOPORT option added in patch 02.
+> > > > 
+> > > > We add both LEGACY_PCI and HAS_IOPORT to differentiate between two
+> > > > cases. HAS_IOPORT is for PC-style devices that are not on a PCI card
+> > > > while LEGACY_PCI is for PCI drivers that require port I/O.   
+> > > 
+> > > I didn't look at the other patches on this series, but why it is needed
+> > > to deal with them on a separate way? Won't "PCI" and "HAS_IOPORT" be enough? 
+> > > 
+> > > I mean, are there any architecture where HAVE_PCI=y and HAS_IOPORT=y
+> > > where LEGACY_PCI shall be "n"?  
+> > 
+> > In the current patch set LEGACY_PCI is not currently selected by
+> > architectures, though of course it could be if we know that an
+> > architecture requires it. We should probably also set it in any
+> > defconfig that has devices depending on it so as not to break these.
+> > 
+> > Other than that it would be set during kernel configuration if one
+> > wants/needs support for legacy PCI devices. For testing I ran with
+> > HAVE_PCI=y, HAS_IOPORT=y and LEGACY_PCI=n on both my local Ryzen 3990X
+> > based workstation and Raspberry Pi 4 (DT). I guess at the moment it
+> > would make most sense for special configs such as those tailored for
+> > vitualization guets but in the end that would be something for
+> > distributions to decide.
+> 
+> IMO, it makes sense to have a "default y" there, as on systems that
+> support I/O space, disabling it will just randomly disable some drivers
+> that could be required by some hardware. I won't doubt that some of 
+> those could be ported from using inb/outb to use, instead, readb/writeb.
 
-elapsed time: 727m
+Makes sense, if these get more legacy over time we can always change
+the default. This would also mean we don't need to change defconfigs
+that include legacy PCI devices.
 
-configs tested: 154
-configs skipped: 4
+> 
+> > Arnd described the options here:
+> > https://lore.kernel.org/lkml/CAK8P3a3HHeP+Gw_k2P7Qtig0OmErf0HN30G22+qHic_uZTh11Q at mail.gmail.com/
+> 
+> Based on Arnd's description, LEGACY_PCI should depend on HAS_IOPORT.
+> This is missing on patch 1. You should probably reorder your patch
+> series to first create HAS_IOPORT and then add LEGACY_PCI with
+> depends on, as otherwise it may cause randconfig build issues
+> at robots and/or git bisect.
+> 
+> I would also suggest to first introduce such change and then send
+> a per-subsystem LEGACY_PCI patch, as it would be a lot easier for
+> maintainers to review.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Playing around with the reordering I think it might make sense to
+introduce HAS_IOPORT in patch 01, then LEGACY_PCI in patch 02 and then
+add dependencies for both on a per subsystem basis. I think it would be
+overkill to have two series of per subsystem patches.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211228
-powerpc              randconfig-c003-20211229
-i386                 randconfig-c001-20211229
-arc                     haps_hs_smp_defconfig
-mips                         db1xxx_defconfig
-arm                             mxs_defconfig
-parisc                generic-32bit_defconfig
-arm                          simpad_defconfig
-powerpc                     mpc5200_defconfig
-m68k                        mvme16x_defconfig
-um                             i386_defconfig
-riscv                    nommu_virt_defconfig
-mips                         tb0226_defconfig
-arc                                 defconfig
-sh                           se7724_defconfig
-parisc                generic-64bit_defconfig
-arm                          exynos_defconfig
-xtensa                       common_defconfig
-powerpc                     mpc512x_defconfig
-arm                          pxa168_defconfig
-mips                     loongson2k_defconfig
-powerpc                     taishan_defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc                 mpc834x_mds_defconfig
-mips                  cavium_octeon_defconfig
-h8300                     edosk2674_defconfig
-powerpc                    ge_imp3a_defconfig
-arm                             rpc_defconfig
-ia64                            zx1_defconfig
-powerpc                 mpc836x_mds_defconfig
-arm                         axm55xx_defconfig
-mips                         bigsur_defconfig
-mips                          rm200_defconfig
-riscv                            allyesconfig
-powerpc                         wii_defconfig
-arm                         hackkit_defconfig
-powerpc                      arches_defconfig
-sh                           se7619_defconfig
-openrisc                            defconfig
-sh                         ecovec24_defconfig
-sh                        edosk7705_defconfig
-sparc                               defconfig
-m68k                       m5249evb_defconfig
-microblaze                      mmu_defconfig
-sh                        sh7757lcr_defconfig
-powerpc                         ps3_defconfig
-powerpc                       maple_defconfig
-mips                        maltaup_defconfig
-arm                            xcep_defconfig
-mips                          ath79_defconfig
-powerpc                  mpc885_ads_defconfig
-arm                         lpc18xx_defconfig
-powerpc                     pq2fads_defconfig
-arm                           sama5_defconfig
-arm                       imx_v6_v7_defconfig
-arm                          pxa910_defconfig
-h8300                       h8s-sim_defconfig
-openrisc                         alldefconfig
-m68k                          atari_defconfig
-m68k                          sun3x_defconfig
-arm                             ezx_defconfig
-arm                  randconfig-c002-20211228
-arm                  randconfig-c002-20211229
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20211228
-x86_64               randconfig-a001-20211228
-x86_64               randconfig-a003-20211228
-x86_64               randconfig-a006-20211228
-x86_64               randconfig-a004-20211228
-x86_64               randconfig-a002-20211228
-i386                 randconfig-a006-20211228
-i386                 randconfig-a004-20211228
-i386                 randconfig-a002-20211228
-i386                 randconfig-a003-20211228
-i386                 randconfig-a001-20211228
-i386                 randconfig-a005-20211228
-x86_64               randconfig-a011-20211229
-x86_64               randconfig-a012-20211229
-x86_64               randconfig-a016-20211229
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+> 
+> > >   
+> > > > This
+> > > > includes pre-PCIe devices as well as PCIe devices which require
+> > > > features like I/O spaces. The "legacy" naming is comes from the PCIe
+> > > > spec which in section 2.1.1.2 says "PCI Express supports I/O Space for
+> > > > compatibility with legacy devices which require their use. Future
+> > > > revisions of this specification may deprecate the use of I/O Space."  
+> > > 
+> > > I would still avoid calling it LEGACY_PCI, as this sounds too generic.
+> > > 
+> > > I didn't read the PCI/PCIe specs, but I suspect that are a lot more
+> > > features that were/will be deprecated on PCI specs as time goes by.
+> > > 
+> > > So, I would, instead, use something like PCI_LEGACY_IO_SPACE or 
+> > > HAVE_PCI_LEGACY_IO_SPACE, in order to let it clear what "legacy"
+> > > means.  
+> > 
+> > Hmm, I'd like to hear Bjorn's opinion on this. Personally I feel like
+> > LEGACY_PCI is pretty clear since most devices are either pre-PCIe
+> > devices or a compatibility feature allowing drivers for a pre-PCIe
+> > device to work with a PCIe device.
+> 
+> That's the main point: it is *not* disabling pre-PCIe devices or
+> even legacy PCI drivers. It just disables a random set of drivers just
+> because they use inb/outb instead of readb/writeb. It keeps several pure 
+> PCI drivers selected, and disables some PCIe for no real reason.
 
-clang tested configs:
-x86_64               randconfig-a005-20211229
-x86_64               randconfig-a004-20211229
-i386                 randconfig-a002-20211229
-i386                 randconfig-a003-20211229
-i386                 randconfig-a001-20211229
-i386                 randconfig-a006-20211229
-i386                 randconfig-a004-20211229
-i386                 randconfig-a005-20211229
-x86_64               randconfig-a015-20211228
-x86_64               randconfig-a014-20211228
-x86_64               randconfig-a013-20211228
-x86_64               randconfig-a012-20211228
-x86_64               randconfig-a011-20211228
-x86_64               randconfig-a016-20211228
-i386                 randconfig-a012-20211228
-i386                 randconfig-a011-20211228
-i386                 randconfig-a014-20211228
-i386                 randconfig-a016-20211228
-i386                 randconfig-a013-20211228
-i386                 randconfig-a015-20211228
-x86_64               randconfig-a001-20211229
-x86_64               randconfig-a003-20211229
-x86_64               randconfig-a006-20211229
-x86_64               randconfig-a002-20211229
-hexagon              randconfig-r045-20211228
-hexagon              randconfig-r041-20211228
-riscv                randconfig-r042-20211228
-s390                 randconfig-r044-20211228
+That is not intentional. The dependencies are certainly not perfect yet
+which is one of the reasons this is still an RFC. I hope getting these
+right will be a lot easier if we do both LEGACY_PCI and HAS_IOPORT
+dependency selection on a per subsystem basis.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> 
+> Just to give one example, this symbol:
+> 
+> > diff --git a/drivers/media/cec/platform/Kconfig b/drivers/media/cec/platform/Kconfig
+> > index b672d3142eb7..5e92ece5b104 100644
+> > --- a/drivers/media/cec/platform/Kconfig
+> > +++ b/drivers/media/cec/platform/Kconfig
+> > @@ -100,7 +100,7 @@ config CEC_TEGRA
+> >  config CEC_SECO
+> >  	tristate "SECO Boards HDMI CEC driver"
+> >  	depends on (X86 || IA64) || COMPILE_TEST
+> > -	depends on PCI && DMI
+> > +	depends on LEGACY_PCI && DMI
+> >  	select CEC_CORE
+> >  	select CEC_NOTIFIER
+> >  	help
+> 
+> Disables HDMI CEC support on some Intel motherboards.
+> Any distro meant to run on generic hardware should keep it selected.
+
+As far as I can see this one actually uses a hardcoded I/O port numbers
+and googling it looks like it's an on-board device on the UDOO x86
+board. I guess that should indeed just be
+"depends on PCI && DMI && HAS_IOPORT".
+
+> 
+> I can see some value of a "PCI_LEGACY" option to disable all
+> non-PCIe drivers, but this is not the case here.
+> 
+> Thanks,
+> Mauro
+
+Ok, I think we definitely need to work on getting the dependencies
+right. I do think we agree that once done correctly there is value in
+such an option independent of HAS_IOPORT only gating inb() etc uses.
+
