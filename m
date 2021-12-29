@@ -1,8 +1,8 @@
 From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 28 Dec 2021 11:25:19 -0800
-Subject: [Intel-wired-lan] [PATCH bpf-next] net: don't include filter.h from
- net/sock.h
-Message-ID: <20211228192519.386913-1-kuba@kernel.org>
+Date: Tue, 28 Dec 2021 16:49:13 -0800
+Subject: [Intel-wired-lan] [PATCH bpf-next v2] net: don't include filter.h
+ from net/sock.h
+Message-ID: <20211229004913.513372-1-kuba@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,8 +18,13 @@ is touched from ~5k to ~1k.
 There's a lot of missing includes this was masking. Primarily
 in networking tho, this time.
 
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 ---
+v2: https://lore.kernel.org/all/20211228192519.386913-1-kuba at kernel.org/
+ - fix build in bond on ia64
+ - fix build in ip6_fib with randconfig
+
 CC: marcel at holtmann.org
 CC: johan.hedberg at gmail.com
 CC: luiz.dentz at gmail.com
@@ -30,9 +35,7 @@ CC: shiraz.saleem at intel.com
 CC: leon at kernel.org
 CC: ap420073 at gmail.com
 CC: wg at grandegger.com
-CC: mkl at pengutronix.de
 CC: woojung.huh at microchip.com
-CC: UNGLinuxDriver at microchip.com
 CC: andrew at lunn.ch
 CC: vivien.didelot at gmail.com
 CC: f.fainelli at gmail.com
@@ -100,6 +103,7 @@ CC: virtualization at lists.linux-foundation.org
  drivers/infiniband/hw/mlx5/qp.c                   | 1 +
  drivers/net/amt.c                                 | 1 +
  drivers/net/appletalk/ipddp.c                     | 1 +
+ drivers/net/bonding/bond_main.c                   | 1 +
  drivers/net/can/usb/peak_usb/pcan_usb.c           | 1 +
  drivers/net/dsa/microchip/ksz8795.c               | 1 +
  drivers/net/dsa/xrs700x/xrs700x.c                 | 1 +
@@ -144,6 +148,7 @@ CC: virtualization at lists.linux-foundation.org
  net/dsa/dsa_priv.h                                | 1 +
  net/ethtool/ioctl.c                               | 1 +
  net/ipv4/nexthop.c                                | 1 +
+ net/ipv6/ip6_fib.c                                | 1 +
  net/ipv6/seg6_local.c                             | 1 +
  net/iucv/af_iucv.c                                | 1 +
  net/kcm/kcmsock.c                                 | 1 +
@@ -160,7 +165,7 @@ CC: virtualization at lists.linux-foundation.org
  net/xdp/xskmap.c                                  | 1 +
  net/xfrm/xfrm_state.c                             | 1 +
  net/xfrm/xfrm_user.c                              | 1 +
- 68 files changed, 78 insertions(+), 1 deletion(-)
+ 70 files changed, 80 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/bluetooth/btqca.c b/drivers/bluetooth/btqca.c
 index be04d74037d2..f7bf311d7910 100644
@@ -258,6 +263,18 @@ index 5566daefbff4..d558535390f9 100644
  #include <linux/module.h>
  #include <linux/kernel.h>
  #include <linux/init.h>
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 0f39ad2af81c..d483f1102a9e 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -35,6 +35,7 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/fcntl.h>
++#include <linux/filter.h>
+ #include <linux/interrupt.h>
+ #include <linux/ptrace.h>
+ #include <linux/ioport.h>
 diff --git a/drivers/net/can/usb/peak_usb/pcan_usb.c b/drivers/net/can/usb/peak_usb/pcan_usb.c
 index 876218752766..ac6772fe9746 100644
 --- a/drivers/net/can/usb/peak_usb/pcan_usb.c
@@ -798,6 +815,18 @@ index 1319d093cdda..eeafeccebb8d 100644
  #include <net/arp.h>
  #include <net/ipv6_stubs.h>
  #include <net/lwtunnel.h>
+diff --git a/net/ipv6/ip6_fib.c b/net/ipv6/ip6_fib.c
+index 0371d2c14145..463c37dea449 100644
+--- a/net/ipv6/ip6_fib.c
++++ b/net/ipv6/ip6_fib.c
+@@ -15,6 +15,7 @@
+ 
+ #define pr_fmt(fmt) "IPv6: " fmt
+ 
++#include <linux/bpf.h>
+ #include <linux/errno.h>
+ #include <linux/types.h>
+ #include <linux/net.h>
 diff --git a/net/ipv6/seg6_local.c b/net/ipv6/seg6_local.c
 index 2dc40b3f373e..a5eea182149d 100644
 --- a/net/ipv6/seg6_local.c
