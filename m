@@ -1,205 +1,183 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 31 Dec 2021 14:20:02 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- bdf92669afcd4689dd7b16ec9b3607fa73710a77
-Message-ID: <61cea112.TDViwcsue3pne+os%lkp@intel.com>
+From: Piotr Skajewski <piotrx.skajewski@intel.com>
+Date: Fri, 31 Dec 2021 12:42:08 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove non-inclusive language from
+ Intel code.
+Message-ID: <20211231114208.9897-1-piotrx.skajewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: bdf92669afcd4689dd7b16ec9b3607fa73710a77  i40e: Add a stat for tracking busy rx pages
+Remove non-inclusive language from Intel code.
 
-elapsed time: 722m
-
-configs tested: 176
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20211230
-i386                 randconfig-c001-20211228
-mips                 randconfig-c004-20211230
-arm                         cm_x300_defconfig
-mips                           rs90_defconfig
-arm                            mps2_defconfig
-powerpc                    socrates_defconfig
-powerpc                   currituck_defconfig
-sh                             sh03_defconfig
-sh                   secureedge5410_defconfig
-powerpc                 canyonlands_defconfig
-sh                            hp6xx_defconfig
-arc                        nsimosci_defconfig
-arm                            hisi_defconfig
-mips                       lemote2f_defconfig
-powerpc                     ppa8548_defconfig
-powerpc                      makalu_defconfig
-sh                           se7780_defconfig
-arm                         at91_dt_defconfig
-powerpc                 mpc832x_rdb_defconfig
-sh                          sdk7780_defconfig
-powerpc                    mvme5100_defconfig
-ia64                        generic_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arm64                            alldefconfig
-mips                     cu1000-neo_defconfig
-powerpc                     taishan_defconfig
-powerpc                    gamecube_defconfig
-mips                         cobalt_defconfig
-mips                          rm200_defconfig
-powerpc                      pmac32_defconfig
-powerpc                     kilauea_defconfig
-sh                          lboxre2_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                          collie_defconfig
-powerpc                 mpc8315_rdb_defconfig
-arc                          axs103_defconfig
-sh                                  defconfig
-mips                     loongson2k_defconfig
-openrisc                         alldefconfig
-csky                                defconfig
-mips                        bcm63xx_defconfig
-sh                          rsk7203_defconfig
-arm                      footbridge_defconfig
-riscv             nommu_k210_sdcard_defconfig
-mips                            e55_defconfig
-powerpc                     ksi8560_defconfig
-h8300                       h8s-sim_defconfig
-arm                           spitz_defconfig
-powerpc                mpc7448_hpc2_defconfig
-arm                          pxa168_defconfig
-powerpc                          g5_defconfig
-openrisc                  or1klitex_defconfig
-powerpc                      cm5200_defconfig
-arm                            dove_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                   lite5200b_defconfig
-h8300                               defconfig
-parisc                           allyesconfig
-arm                         nhk8815_defconfig
-um                               alldefconfig
-mips                            gpr_defconfig
-m68k                           sun3_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                    ge_imp3a_defconfig
-mips                           mtx1_defconfig
-sh                ecovec24-romimage_defconfig
-arm                        mini2440_defconfig
-xtensa                           alldefconfig
-sh                            migor_defconfig
-sparc64                          alldefconfig
-xtensa                  cadence_csp_defconfig
-arm                        spear3xx_defconfig
-xtensa                generic_kc705_defconfig
-arm                   milbeaut_m10v_defconfig
-powerpc                        warp_defconfig
-arm                         orion5x_defconfig
-arm                       cns3420vb_defconfig
-powerpc                  storcenter_defconfig
-sh                        sh7785lcr_defconfig
-arm                  colibri_pxa300_defconfig
-arc                      axs103_smp_defconfig
-riscv                            alldefconfig
-arm                        realview_defconfig
-powerpc                      tqm8xx_defconfig
-sh                   sh7724_generic_defconfig
-sh                        edosk7705_defconfig
-arm                  randconfig-c002-20211230
-arm                  randconfig-c002-20211231
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a013-20211230
-x86_64               randconfig-a015-20211230
-x86_64               randconfig-a012-20211230
-x86_64               randconfig-a011-20211230
-x86_64               randconfig-a016-20211230
-x86_64               randconfig-a014-20211230
-i386                 randconfig-a016-20211230
-i386                 randconfig-a011-20211230
-i386                 randconfig-a012-20211230
-i386                 randconfig-a013-20211230
-i386                 randconfig-a014-20211230
-i386                 randconfig-a015-20211230
-arc                  randconfig-r043-20211230
-riscv                randconfig-r042-20211230
-s390                 randconfig-r044-20211230
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a002-20211230
-x86_64               randconfig-a001-20211230
-x86_64               randconfig-a003-20211230
-x86_64               randconfig-a006-20211230
-x86_64               randconfig-a004-20211230
-x86_64               randconfig-a005-20211230
-i386                 randconfig-a001-20211230
-i386                 randconfig-a005-20211230
-i386                 randconfig-a004-20211230
-i386                 randconfig-a002-20211230
-i386                 randconfig-a006-20211230
-i386                 randconfig-a003-20211230
-x86_64               randconfig-a015-20211228
-x86_64               randconfig-a014-20211228
-x86_64               randconfig-a013-20211228
-x86_64               randconfig-a012-20211228
-x86_64               randconfig-a011-20211228
-x86_64               randconfig-a016-20211228
-hexagon              randconfig-r041-20211230
-hexagon              randconfig-r045-20211230
-
+Signed-off-by: Piotr Skajewski <piotrx.skajewski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ .../net/ethernet/intel/ixgbe/ixgbe_common.c   | 36 +++++++++----------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  4 +--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 10 +++---
+ 3 files changed, 25 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index e90b5047e695..4c26c4b92f07 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -30,7 +30,7 @@ static s32 ixgbe_write_eeprom_buffer_bit_bang(struct ixgbe_hw *hw, u16 offset,
+ 					     u16 words, u16 *data);
+ static s32 ixgbe_detect_eeprom_page_size_generic(struct ixgbe_hw *hw,
+ 						 u16 offset);
+-static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw);
++static s32 ixgbe_disable_pcie_primary(struct ixgbe_hw *hw);
+ 
+ /* Base table for registers values that change by MAC */
+ const u32 ixgbe_mvals_8259X[IXGBE_MVALS_IDX_LIMIT] = {
+@@ -746,10 +746,10 @@ s32 ixgbe_stop_adapter_generic(struct ixgbe_hw *hw)
+ 	usleep_range(1000, 2000);
+ 
+ 	/*
+-	 * Prevent the PCI-E bus from from hanging by disabling PCI-E master
++	 * Prevent the PCI-E bus from hanging by disabling PCI-E primary
+ 	 * access and verify no pending requests
+ 	 */
+-	return ixgbe_disable_pcie_master(hw);
++	return ixgbe_disable_pcie_primary(hw);
+ }
+ 
+ /**
+@@ -2506,15 +2506,15 @@ static u32 ixgbe_pcie_timeout_poll(struct ixgbe_hw *hw)
+ }
+ 
+ /**
+- *  ixgbe_disable_pcie_master - Disable PCI-express master access
++ *  ixgbe_disable_pcie_primary - Disable PCI-express primary access
+  *  @hw: pointer to hardware structure
+  *
+- *  Disables PCI-Express master access and verifies there are no pending
+- *  requests. IXGBE_ERR_MASTER_REQUESTS_PENDING is returned if master disable
+- *  bit hasn't caused the master requests to be disabled, else 0
+- *  is returned signifying master requests disabled.
++ *  Disables PCI-Express primary access and verifies there are no pending
++ *  requests. IXGBE_ERR_PRIMARY_REQUESTS_PENDING is returned if primary disable
++ *  bit hasn't caused the primary requests to be disabled, else 0
++ *  is returned signifying primary requests disabled.
+  **/
+-static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw)
++static s32 ixgbe_disable_pcie_primary(struct ixgbe_hw *hw)
+ {
+ 	u32 i, poll;
+ 	u16 value;
+@@ -2523,23 +2523,23 @@ static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw)
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, IXGBE_CTRL_GIO_DIS);
+ 
+ 	/* Poll for bit to read as set */
+-	for (i = 0; i < IXGBE_PCI_MASTER_DISABLE_TIMEOUT; i++) {
++	for (i = 0; i < IXGBE_PCI_PRIMARY_DISABLE_TIMEOUT; i++) {
+ 		if (IXGBE_READ_REG(hw, IXGBE_CTRL) & IXGBE_CTRL_GIO_DIS)
+ 			break;
+ 		usleep_range(100, 120);
+ 	}
+-	if (i >= IXGBE_PCI_MASTER_DISABLE_TIMEOUT) {
++	if (i >= IXGBE_PCI_PRIMARY_DISABLE_TIMEOUT) {
+ 		hw_dbg(hw, "GIO disable did not set - requesting resets\n");
+ 		goto gio_disable_fail;
+ 	}
+ 
+-	/* Exit if master requests are blocked */
++	/* Exit if primary requests are blocked */
+ 	if (!(IXGBE_READ_REG(hw, IXGBE_STATUS) & IXGBE_STATUS_GIO) ||
+ 	    ixgbe_removed(hw->hw_addr))
+ 		return 0;
+ 
+-	/* Poll for master request bit to clear */
+-	for (i = 0; i < IXGBE_PCI_MASTER_DISABLE_TIMEOUT; i++) {
++	/* Poll for primary request bit to clear */
++	for (i = 0; i < IXGBE_PCI_PRIMARY_DISABLE_TIMEOUT; i++) {
+ 		udelay(100);
+ 		if (!(IXGBE_READ_REG(hw, IXGBE_STATUS) & IXGBE_STATUS_GIO))
+ 			return 0;
+@@ -2547,13 +2547,13 @@ static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw)
+ 
+ 	/*
+ 	 * Two consecutive resets are required via CTRL.RST per datasheet
+-	 * 5.2.5.3.2 Master Disable.  We set a flag to inform the reset routine
+-	 * of this need.  The first reset prevents new master requests from
++	 * 5.2.5.3.2 Primary Disable.  We set a flag to inform the reset routine
++	 * of this need.  The first reset prevents new primary requests from
+ 	 * being issued by our device.  We then must wait 1usec or more for any
+ 	 * remaining completions from the PCIe bus to trickle in, and then reset
+ 	 * again to clear out any effects they may have had on our device.
+ 	 */
+-	hw_dbg(hw, "GIO Master Disable bit didn't clear - requesting resets\n");
++	hw_dbg(hw, "GIO Primary Disable bit didn't clear - requesting resets\n");
+ gio_disable_fail:
+ 	hw->mac.flags |= IXGBE_FLAGS_DOUBLE_RESET_REQUIRED;
+ 
+@@ -2575,7 +2575,7 @@ static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw)
+ 	}
+ 
+ 	hw_dbg(hw, "PCIe transaction pending bit also did not clear.\n");
+-	return IXGBE_ERR_MASTER_REQUESTS_PENDING;
++	return IXGBE_ERR_PRIMARY_REQUESTS_PENDING;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 796b9895bc91..1cff14fc6c20 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5948,8 +5948,8 @@ void ixgbe_reset(struct ixgbe_adapter *adapter)
+ 	case IXGBE_ERR_SFP_NOT_PRESENT:
+ 	case IXGBE_ERR_SFP_NOT_SUPPORTED:
+ 		break;
+-	case IXGBE_ERR_MASTER_REQUESTS_PENDING:
+-		e_dev_err("master disable timed out\n");
++	case IXGBE_ERR_PRIMARY_REQUESTS_PENDING:
++		e_dev_err("primary disable timed out\n");
+ 		break;
+ 	case IXGBE_ERR_EEPROM_VERSION:
+ 		/* We are running on a pre-production device, log a warning */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 2647937f7f4d..6da9880d766a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1247,7 +1247,7 @@ struct ixgbe_nvm_version {
+ #define IXGBE_PSRTYPE_RQPL_SHIFT    29
+ 
+ /* CTRL Bit Masks */
+-#define IXGBE_CTRL_GIO_DIS      0x00000004 /* Global IO Master Disable bit */
++#define IXGBE_CTRL_GIO_DIS      0x00000004 /* Global IO Primary Disable bit */
+ #define IXGBE_CTRL_LNK_RST      0x00000008 /* Link Reset. Resets everything. */
+ #define IXGBE_CTRL_RST          0x04000000 /* Reset (SW) */
+ #define IXGBE_CTRL_RST_MASK     (IXGBE_CTRL_LNK_RST | IXGBE_CTRL_RST)
+@@ -1811,7 +1811,7 @@ enum {
+ /* STATUS Bit Masks */
+ #define IXGBE_STATUS_LAN_ID         0x0000000C /* LAN ID */
+ #define IXGBE_STATUS_LAN_ID_SHIFT   2          /* LAN ID Shift*/
+-#define IXGBE_STATUS_GIO            0x00080000 /* GIO Master Enable Status */
++#define IXGBE_STATUS_GIO            0x00080000 /* GIO Primary Enable Status */
+ 
+ #define IXGBE_STATUS_LAN_ID_0   0x00000000 /* LAN ID 0 */
+ #define IXGBE_STATUS_LAN_ID_1   0x00000004 /* LAN ID 1 */
+@@ -2193,8 +2193,8 @@ enum {
+ #define IXGBE_PCIDEVCTRL2_4_8s		0xd
+ #define IXGBE_PCIDEVCTRL2_17_34s	0xe
+ 
+-/* Number of 100 microseconds we wait for PCI Express master disable */
+-#define IXGBE_PCI_MASTER_DISABLE_TIMEOUT	800
++/* Number of 100 microseconds we wait for PCI Express primary disable */
++#define IXGBE_PCI_PRIMARY_DISABLE_TIMEOUT	800
+ 
+ /* RAH */
+ #define IXGBE_RAH_VIND_MASK     0x003C0000
+@@ -3671,7 +3671,7 @@ struct ixgbe_info {
+ #define IXGBE_ERR_ADAPTER_STOPPED               -9
+ #define IXGBE_ERR_INVALID_MAC_ADDR              -10
+ #define IXGBE_ERR_DEVICE_NOT_SUPPORTED          -11
+-#define IXGBE_ERR_MASTER_REQUESTS_PENDING       -12
++#define IXGBE_ERR_PRIMARY_REQUESTS_PENDING      -12
+ #define IXGBE_ERR_INVALID_LINK_SETTINGS         -13
+ #define IXGBE_ERR_AUTONEG_NOT_COMPLETE          -14
+ #define IXGBE_ERR_RESET_FAILED                  -15
+-- 
+2.22.0.rc3
+
