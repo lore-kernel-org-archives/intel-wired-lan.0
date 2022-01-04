@@ -1,81 +1,42 @@
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Date: Tue, 4 Jan 2022 13:24:07 +0530
-Subject: [Intel-wired-lan] [PATCH net-next] net: fixup build after bpf
- header changes
-In-Reply-To: <20220104034827.1564167-1-kuba@kernel.org>
-References: <20220104034827.1564167-1-kuba@kernel.org>
-Message-ID: <984e801f-494b-c84c-8efe-2d205af9bd7a@linux.vnet.ibm.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 4 Jan 2022 17:42:34 +0200
+Subject: [Intel-wired-lan] [PATCH bpf-next v2] net: don't include
+ filter.h from net/sock.h
+In-Reply-To: <20211229092012.635e9f2b@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+References: <20211229004913.513372-1-kuba@kernel.org>
+ <5a82690c-7dc0-81de-4dd6-06e26e4b9b92@gmail.com>
+ <20211229092012.635e9f2b@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+Message-ID: <YdRq6vKceOqscaKK@smile.fi.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi
+On Wed, Dec 29, 2021 at 09:20:12AM -0800, Jakub Kicinski wrote:
+> On Tue, 28 Dec 2021 17:33:39 -0800 Florian Fainelli wrote:
+> > It would be nice if we used the number of files rebuilt because of a 
+> > header file change as another metric that the kernel is evaluated with 
+> > from release to release (or even on a commit by commit basis). Food for 
+> > thought.
+> 
+> Maybe Andy has some thoughts, he has been working on dropping
+> unnecessary includes of kernel.h, it seems.
 
-Thank You Jakub for the patch.
+With this [1] announcement I believe Ingo is the best to tell you if this is a
+right direction.
 
-Kernel builds fine with given patch fix
+> It'd be cool to plug something that'd warn us about significant
+> increases in dependencies into the patchwork build bot.
+> 
+> I have one more small series which un-includes uapi/bpf.h from
+> netdevice.h at which point I hope we'll be largely in the clear 
+> from build bot performance perspective.
 
-Tested-by : Abdul haleem <abdhalee@linux.vnet.ibm.com>
-
-On 1/4/22 9:18 AM, Jakub Kicinski wrote:
-
-> Recent bpf-next merge brought in header changes which uncovered
-> includes missing in net-next which were not present in bpf-next.
-> Build problems happen only on less-popular arches like hppa,
-> sparc, alpha etc.
->
-> I could repro the build problem with ice but not the mlx5 problem
-> Abdul was reporting. mlx5 does look like it should include filter.h,
-> anyway.
->
-> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-> Fixes: e63a02348958 ("Merge git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next")
-> Link: https://lore.kernel.org/all/7c03768d-d948-c935-a7ab-b1f963ac7eed at linux.vnet.ibm.com/
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-> ---
-> CC: jesse.brandeburg at intel.com
-> CC: anthony.l.nguyen at intel.com
-> CC: saeedm at nvidia.com
-> CC: leon at kernel.org
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: linux-rdma at vger.kernel.org
-> CC: bpf at vger.kernel.org
-> ---
->   drivers/net/ethernet/intel/ice/ice_nvm.c          | 2 ++
->   drivers/net/ethernet/mellanox/mlx5/core/en_main.c | 1 +
->   2 files changed, 3 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
-> index cd739a2c64e8..4eb0599714f4 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
-> @@ -1,6 +1,8 @@
->   // SPDX-License-Identifier: GPL-2.0
->   /* Copyright (c) 2018, Intel Corporation. */
->
-> +#include <linux/vmalloc.h>
-> +
->   #include "ice_common.h"
->
->   /**
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> index efcf9d30b131..31c911182498 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> @@ -37,6 +37,7 @@
->   #include <net/geneve.h>
->   #include <linux/bpf.h>
->   #include <linux/if_bridge.h>
-> +#include <linux/filter.h>
->   #include <net/page_pool.h>
->   #include <net/xdp_sock_drv.h>
->   #include "eswitch.h"
+[1]: https://lore.kernel.org/lkml/YdIfz+LMewetSaEB at gmail.com/T/#u
 
 -- 
-Regard's
+With Best Regards,
+Andy Shevchenko
 
-Abdul Haleem
-IBM Linux Technology Center
 
