@@ -1,42 +1,60 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 4 Jan 2022 17:42:34 +0200
-Subject: [Intel-wired-lan] [PATCH bpf-next v2] net: don't include
- filter.h from net/sock.h
-In-Reply-To: <20211229092012.635e9f2b@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
-References: <20211229004913.513372-1-kuba@kernel.org>
- <5a82690c-7dc0-81de-4dd6-06e26e4b9b92@gmail.com>
- <20211229092012.635e9f2b@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
-Message-ID: <YdRq6vKceOqscaKK@smile.fi.intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 4 Jan 2022 21:56:03 +0000
+Subject: [Intel-wired-lan] [PATCH] intel: Simplify DMA setting
+In-Reply-To: <20220104132936.252202-1-alexandr.lobakin@intel.com>
+References: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
+ <20220104132936.252202-1-alexandr.lobakin@intel.com>
+Message-ID: <c258c3bb440b88e984b0385af8ffb38a017ba644.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Dec 29, 2021 at 09:20:12AM -0800, Jakub Kicinski wrote:
-> On Tue, 28 Dec 2021 17:33:39 -0800 Florian Fainelli wrote:
-> > It would be nice if we used the number of files rebuilt because of a 
-> > header file change as another metric that the kernel is evaluated with 
-> > from release to release (or even on a commit by commit basis). Food for 
-> > thought.
+On Tue, 2022-01-04 at 14:29 +0100, Alexander Lobakin wrote:
+> From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Date: Tue, 4 Jan 2022 01:15:20 +0100
 > 
-> Maybe Andy has some thoughts, he has been working on dropping
-> unnecessary includes of kernel.h, it seems.
-
-With this [1] announcement I believe Ingo is the best to tell you if this is a
-right direction.
-
-> It'd be cool to plug something that'd warn us about significant
-> increases in dependencies into the patchwork build bot.
+> > As stated in [1], dma_set_mask() with a 64-bit mask will never fail
+> > if
+> > dev->dma_mask is non-NULL.
+> > So, if it fails, the 32 bits case will also fail for the same
+> > reason.
+> > 
+> > Simplify code and remove some dead code accordingly.
+> > 
+> > [1]: https://lkml.org/lkml/2021/6/7/398
+> > 
+> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > ---
+> > ?drivers/net/ethernet/intel/e1000e/netdev.c??? | 22 ++++++---------
+> > ----
+> > ?drivers/net/ethernet/intel/i40e/i40e_main.c?? |? 9 +++-----
+> > ?drivers/net/ethernet/intel/iavf/iavf_main.c?? |? 9 +++-----
+> > ?drivers/net/ethernet/intel/ice/ice_main.c???? |? 2 --
+> > ?drivers/net/ethernet/intel/ixgb/ixgb_main.c?? | 19 +++++----------
+> > -
+> > ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 ++++++---------
+> > --
+> > ?.../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 20 +++++----------
+> > --
+> > ?7 files changed, 31 insertions(+), 70 deletions(-)
 > 
-> I have one more small series which un-includes uapi/bpf.h from
-> netdevice.h at which point I hope we'll be largely in the clear 
-> from build bot performance perspective.
+> I like it, thanks!
+> 
+> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+> 
+> Tony might ask to split it into per-driver patches tho, will see.
 
-[1]: https://lore.kernel.org/lkml/YdIfz+LMewetSaEB at gmail.com/T/#u
+Hi Christophe,
 
--- 
-With Best Regards,
-Andy Shevchenko
+As mentioned by others, would mind breaking these per-driver?
 
+Thanks,
+Tony
+
+> 
+> --- 8< ---
+> 
+> Al
 
