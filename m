@@ -1,40 +1,43 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Tue, 04 Jan 2022 12:40:11 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] net: fixup build after bpf
- header changes
-In-Reply-To: <20220104034827.1564167-1-kuba@kernel.org>
-References: <20220104034827.1564167-1-kuba@kernel.org>
-Message-ID: <164130001127.24992.5502128028484482791.git-patchwork-notify@kernel.org>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Tue,  4 Jan 2022 14:29:36 +0100
+Subject: [Intel-wired-lan] [PATCH] intel: Simplify DMA setting
+In-Reply-To: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
+References: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <20220104132936.252202-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Tue, 4 Jan 2022 01:15:20 +0100
 
-This patch was applied to netdev/net-next.git (master)
-by David S. Miller <davem@davemloft.net>:
-
-On Mon,  3 Jan 2022 19:48:27 -0800 you wrote:
-> Recent bpf-next merge brought in header changes which uncovered
-> includes missing in net-next which were not present in bpf-next.
-> Build problems happen only on less-popular arches like hppa,
-> sparc, alpha etc.
+> As stated in [1], dma_set_mask() with a 64-bit mask will never fail if
+> dev->dma_mask is non-NULL.
+> So, if it fails, the 32 bits case will also fail for the same reason.
 > 
-> I could repro the build problem with ice but not the mlx5 problem
-> Abdul was reporting. mlx5 does look like it should include filter.h,
-> anyway.
+> Simplify code and remove some dead code accordingly.
 > 
-> [...]
+> [1]: https://lkml.org/lkml/2021/6/7/398
+> 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c    | 22 ++++++-------------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |  9 +++-----
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   |  9 +++-----
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  2 --
+>  drivers/net/ethernet/intel/ixgb/ixgb_main.c   | 19 +++++-----------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 ++++++-----------
+>  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 20 +++++------------
+>  7 files changed, 31 insertions(+), 70 deletions(-)
 
-Here is the summary with links:
-  - [net-next] net: fixup build after bpf header changes
-    https://git.kernel.org/netdev/net-next/c/7d714ff14d64
+I like it, thanks!
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 
+Tony might ask to split it into per-driver patches tho, will see.
 
+--- 8< ---
+
+Al
