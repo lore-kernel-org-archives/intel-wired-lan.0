@@ -1,43 +1,81 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Tue,  4 Jan 2022 14:29:36 +0100
-Subject: [Intel-wired-lan] [PATCH] intel: Simplify DMA setting
-In-Reply-To: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
-References: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <20220104132936.252202-1-alexandr.lobakin@intel.com>
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Date: Tue, 4 Jan 2022 13:24:07 +0530
+Subject: [Intel-wired-lan] [PATCH net-next] net: fixup build after bpf
+ header changes
+In-Reply-To: <20220104034827.1564167-1-kuba@kernel.org>
+References: <20220104034827.1564167-1-kuba@kernel.org>
+Message-ID: <984e801f-494b-c84c-8efe-2d205af9bd7a@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Tue, 4 Jan 2022 01:15:20 +0100
+Hi
 
-> As stated in [1], dma_set_mask() with a 64-bit mask will never fail if
-> dev->dma_mask is non-NULL.
-> So, if it fails, the 32 bits case will also fail for the same reason.
-> 
-> Simplify code and remove some dead code accordingly.
-> 
-> [1]: https://lkml.org/lkml/2021/6/7/398
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Thank You Jakub for the patch.
+
+Kernel builds fine with given patch fix
+
+Tested-by : Abdul haleem <abdhalee@linux.vnet.ibm.com>
+
+On 1/4/22 9:18 AM, Jakub Kicinski wrote:
+
+> Recent bpf-next merge brought in header changes which uncovered
+> includes missing in net-next which were not present in bpf-next.
+> Build problems happen only on less-popular arches like hppa,
+> sparc, alpha etc.
+>
+> I could repro the build problem with ice but not the mlx5 problem
+> Abdul was reporting. mlx5 does look like it should include filter.h,
+> anyway.
+>
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> Fixes: e63a02348958 ("Merge git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next")
+> Link: https://lore.kernel.org/all/7c03768d-d948-c935-a7ab-b1f963ac7eed at linux.vnet.ibm.com/
+> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c    | 22 ++++++-------------
->  drivers/net/ethernet/intel/i40e/i40e_main.c   |  9 +++-----
->  drivers/net/ethernet/intel/iavf/iavf_main.c   |  9 +++-----
->  drivers/net/ethernet/intel/ice/ice_main.c     |  2 --
->  drivers/net/ethernet/intel/ixgb/ixgb_main.c   | 19 +++++-----------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 ++++++-----------
->  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 20 +++++------------
->  7 files changed, 31 insertions(+), 70 deletions(-)
+> CC: jesse.brandeburg at intel.com
+> CC: anthony.l.nguyen at intel.com
+> CC: saeedm at nvidia.com
+> CC: leon at kernel.org
+> CC: intel-wired-lan at lists.osuosl.org
+> CC: linux-rdma at vger.kernel.org
+> CC: bpf at vger.kernel.org
+> ---
+>   drivers/net/ethernet/intel/ice/ice_nvm.c          | 2 ++
+>   drivers/net/ethernet/mellanox/mlx5/core/en_main.c | 1 +
+>   2 files changed, 3 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> index cd739a2c64e8..4eb0599714f4 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_nvm.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+> @@ -1,6 +1,8 @@
+>   // SPDX-License-Identifier: GPL-2.0
+>   /* Copyright (c) 2018, Intel Corporation. */
+>
+> +#include <linux/vmalloc.h>
+> +
+>   #include "ice_common.h"
+>
+>   /**
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> index efcf9d30b131..31c911182498 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> @@ -37,6 +37,7 @@
+>   #include <net/geneve.h>
+>   #include <linux/bpf.h>
+>   #include <linux/if_bridge.h>
+> +#include <linux/filter.h>
+>   #include <net/page_pool.h>
+>   #include <net/xdp_sock_drv.h>
+>   #include "eswitch.h"
 
-I like it, thanks!
+-- 
+Regard's
 
-Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+Abdul Haleem
+IBM Linux Technology Center
 
-Tony might ask to split it into per-driver patches tho, will see.
-
---- 8< ---
-
-Al
