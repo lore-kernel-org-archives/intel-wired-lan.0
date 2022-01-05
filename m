@@ -1,41 +1,81 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Wed, 5 Jan 2022 07:31:10 +0100
-Subject: [Intel-wired-lan] [PATCH] intel: Simplify DMA setting
-In-Reply-To: <c258c3bb440b88e984b0385af8ffb38a017ba644.camel@intel.com>
-References: <c7a34d0096eb4ba98dd9ce5b64ba079126cab708.1641255235.git.christophe.jaillet@wanadoo.fr>
- <20220104132936.252202-1-alexandr.lobakin@intel.com>
- <c258c3bb440b88e984b0385af8ffb38a017ba644.camel@intel.com>
-Message-ID: <9b93f495-2bfe-1ade-141b-69c4842aee8e@wanadoo.fr>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 05 Jan 2022 19:34:50 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 1010c6ef6a2acb5559f9fd0ebb498f4b0c5662b0
+Message-ID: <61d5825a.9EJ/nQk4piEXKAUq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Le 04/01/2022 ? 22:56, Nguyen, Anthony L a ?crit?:
-> On Tue, 2022-01-04 at 14:29 +0100, Alexander Lobakin wrote:
->> From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->> Date: Tue, 4 Jan 2022 01:15:20 +0100
->>
->> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
->>
->> Tony might ask to split it into per-driver patches tho, will see.
-> 
-> Hi Christophe,
-> 
-> As mentioned by others, would mind breaking these per-driver?
-> 
-> Thanks,
-> Tony
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 1010c6ef6a2acb5559f9fd0ebb498f4b0c5662b0  ice: Use bitmap_free() to free bitmap
 
-I'll do, but to much bureaucracy will kill us all.
+elapsed time: 722m
 
-CJ
+configs tested: 54
+configs skipped: 3
 
->>
->> --- 8< ---
->>
->> Al
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
