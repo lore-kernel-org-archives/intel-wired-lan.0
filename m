@@ -1,96 +1,145 @@
-From: syzbot <syzbot+4c63f36709a642f801c5@syzkaller.appspotmail.com>
-Date: Wed, 05 Jan 2022 03:20:26 -0800
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+Date: Wed, 5 Jan 2022 12:44:10 +0100
 Subject: [Intel-wired-lan] [syzbot] kernel BUG in pskb_expand_head
-In-Reply-To: <0000000000007ea16705d0cfbb53@google.com>
-Message-ID: <000000000000c7845605d4d3f0a0@google.com>
+In-Reply-To: <0000000000000fbea205d388d749@google.com>
+References: <0000000000007ea16705d0cfbb53@google.com>
+ <0000000000000fbea205d388d749@google.com>
+Message-ID: <20220105114410.brzea3f5flgn5nl2@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-syzbot has found a reproducer for the following issue on:
+On 19.12.2021 16:19:20, syzbot wrote:
+>  skb_over_panic net/core/skbuff.c:118 [inline]
+>  skb_over_panic net/core/skbuff.c:118 [inline] net/core/skbuff.c:1986
+>  skb_put.cold+0x24/0x24 net/core/skbuff.c:1986 net/core/skbuff.c:1986
+>  isotp_rcv_cf net/can/isotp.c:570 [inline]
+>  isotp_rcv_cf net/can/isotp.c:570 [inline] net/can/isotp.c:668
+>  isotp_rcv+0xa38/0x1e30 net/can/isotp.c:668 net/can/isotp.c:668
 
-HEAD commit:    c9e6606c7fe9 Linux 5.16-rc8
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=148351c3b00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=32f9fa260d7413b4
-dashboard link: https://syzkaller.appspot.com/bug?extid=4c63f36709a642f801c5
-compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=15435e2bb00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12f4508db00000
+> struct tpcon {
+> 	int idx;
+> 	int len;
+        ^^^
+> 	u32 state;
+> 	u8 bs;
+> 	u8 sn;
+> 	u8 ll_dl;
+> 	u8 buf[MAX_MSG_LENGTH + 1];
+> };
+> 
+> static int isotp_rcv_ff(struct sock *sk, struct canfd_frame *cf, int ae)
+> {
 
-The issue was bisected to:
+[...]
 
-commit e4b8954074f6d0db01c8c97d338a67f9389c042f
-Author: Eric Dumazet <edumazet@google.com>
-Date:   Tue Dec 7 01:30:37 2021 +0000
+> 	/* Check for FF_DL escape sequence supporting 32 bit PDU length */
+> 	if (so->rx.len) {
+> 		ff_pci_sz = FF_PCI_SZ12;
+> 	} else {
+> 		/* FF_DL = 0 => get real length from next 4 bytes */
+> 		so->rx.len = cf->data[ae + 2] << 24;
+> 		so->rx.len += cf->data[ae + 3] << 16;
+> 		so->rx.len += cf->data[ae + 4] << 8;
+> 		so->rx.len += cf->data[ae + 5];
+> 		ff_pci_sz = FF_PCI_SZ32;
+> 	}
 
-    netlink: add net device refcount tracker to struct ethnl_req_info
+Full 32 Bit PDUs don't work with struct tpcon::len being an "int". I
+think converting it to "unsigned int" should be done.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=109e6fcbb00000
-final oops:     https://syzkaller.appspot.com/x/report.txt?x=129e6fcbb00000
-console output: https://syzkaller.appspot.com/x/log.txt?x=149e6fcbb00000
+[...]
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+4c63f36709a642f801c5 at syzkaller.appspotmail.com
-Fixes: e4b8954074f6 ("netlink: add net device refcount tracker to struct ethnl_req_info")
+> }
+> 
+> static int isotp_rcv_cf(struct sock *sk, struct canfd_frame *cf, int ae,
+> 			struct sk_buff *skb)
+> {
+> 	struct isotp_sock *so = isotp_sk(sk);
+> 	struct sk_buff *nskb;
+> 	int i;
+> 
+> 	if (so->rx.state != ISOTP_WAIT_DATA)
+> 		return 0;
+> 
+> 	/* drop if timestamp gap is less than force_rx_stmin nano secs */
+> 	if (so->opt.flags & CAN_ISOTP_FORCE_RXSTMIN) {
+> 		if (ktime_to_ns(ktime_sub(skb->tstamp, so->lastrxcf_tstamp)) <
+> 		    so->force_rx_stmin)
+> 			return 0;
+> 
+> 		so->lastrxcf_tstamp = skb->tstamp;
+> 	}
+> 
+> 	hrtimer_cancel(&so->rxtimer);
+> 
+> 	/* CFs are never longer than the FF */
+> 	if (cf->len > so->rx.ll_dl)
+> 		return 1;
+> 
+> 	/* CFs have usually the LL_DL length */
+> 	if (cf->len < so->rx.ll_dl) {
+> 		/* this is only allowed for the last CF */
+> 		if (so->rx.len - so->rx.idx > so->rx.ll_dl - ae - N_PCI_SZ)
+> 			return 1;
+> 	}
+> 
+> 	if ((cf->data[ae] & 0x0F) != so->rx.sn) {
+> 		/* wrong sn detected - report 'illegal byte sequence' */
+> 		sk->sk_err = EILSEQ;
+> 		if (!sock_flag(sk, SOCK_DEAD))
+> 			sk_error_report(sk);
+> 
+> 		/* reset rx state */
+> 		so->rx.state = ISOTP_IDLE;
+> 		return 1;
+> 	}
+> 	so->rx.sn++;
+> 	so->rx.sn %= 16;
+> 
+> 	for (i = ae + N_PCI_SZ; i < cf->len; i++) {
+> 		so->rx.buf[so->rx.idx++] = cf->data[i];
+> 		if (so->rx.idx >= so->rx.len)
+> 			break;
+> 	}
+> 
+> 	if (so->rx.idx >= so->rx.len) {
+> 		/* we are done */
+> 		so->rx.state = ISOTP_IDLE;
+> 
+> 		if ((so->opt.flags & ISOTP_CHECK_PADDING) &&
+> 		    check_pad(so, cf, i + 1, so->opt.rxpad_content)) {
+> 			/* malformed PDU - report 'not a data message' */
+> 			sk->sk_err = EBADMSG;
+> 			if (!sock_flag(sk, SOCK_DEAD))
+> 				sk_error_report(sk);
+> 			return 1;
+> 		}
+> 
+> 		nskb = alloc_skb(so->rx.len, gfp_any());
+> 		if (!nskb)
+> 			return 1;
+> 
+> 		memcpy(skb_put(nskb, so->rx.len), so->rx.buf,
+                       ^^^^^^^
+> 		       so->rx.len);
 
-skbuff: skb_over_panic: text:ffffffff88235fb8 len:4096 put:4096 head:ffff888021cb8400 data:ffff888021cb8400 tail:0x1000 end:0xc0 dev:<NULL>
-------------[ cut here ]------------
-kernel BUG at net/core/skbuff.c:113!
-invalid opcode: 0000 [#1] PREEMPT SMP KASAN
-CPU: 1 PID: 19 Comm: ksoftirqd/1 Not tainted 5.16.0-rc8-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-RIP: 0010:skb_panic+0x16c/0x16e net/core/skbuff.c:113
-Code: f8 4c 8b 4c 24 10 8b 4b 70 41 56 45 89 e8 4c 89 e2 41 57 48 89 ee 48 c7 c7 e0 4b ad 8a ff 74 24 10 ff 74 24 20 e8 6e 24 c2 ff <0f> 0b e8 74 92 38 f8 4c 8b 64 24 18 e8 da 47 7f f8 48 c7 c1 80 58
-RSP: 0018:ffffc90000d979e0 EFLAGS: 00010286
-RAX: 000000000000008b RBX: ffff888021ccb500 RCX: 0000000000000000
-RDX: ffff88801196d700 RSI: ffffffff815f0948 RDI: fffff520001b2f2e
-RBP: ffffffff8aad58c0 R08: 000000000000008b R09: 0000000000000000
-R10: ffffffff815ea6ee R11: 0000000000000000 R12: ffffffff88235fb8
-R13: 0000000000001000 R14: ffffffff8aad4ba0 R15: 00000000000000c0
-FS:  0000000000000000(0000) GS:ffff8880b9d00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f886c8cc718 CR3: 000000007ad6d000 CR4: 00000000003506e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- <TASK>
- skb_over_panic net/core/skbuff.c:118 [inline]
- skb_put.cold+0x24/0x24 net/core/skbuff.c:1990
- isotp_rcv_cf net/can/isotp.c:570 [inline]
- isotp_rcv+0xa38/0x1e30 net/can/isotp.c:668
- deliver net/can/af_can.c:574 [inline]
- can_rcv_filter+0x445/0x8d0 net/can/af_can.c:635
- can_receive+0x31d/0x580 net/can/af_can.c:665
- can_rcv+0x120/0x1c0 net/can/af_can.c:696
- __netif_receive_skb_one_core+0x114/0x180 net/core/dev.c:5465
- __netif_receive_skb+0x24/0x1b0 net/core/dev.c:5579
- process_backlog+0x2a5/0x6c0 net/core/dev.c:6455
- __napi_poll+0xaf/0x440 net/core/dev.c:7023
- napi_poll net/core/dev.c:7090 [inline]
- net_rx_action+0x801/0xb40 net/core/dev.c:7177
- __do_softirq+0x29b/0x9c2 kernel/softirq.c:558
- run_ksoftirqd kernel/softirq.c:921 [inline]
- run_ksoftirqd+0x2d/0x60 kernel/softirq.c:913
- smpboot_thread_fn+0x645/0x9c0 kernel/smpboot.c:164
- kthread+0x405/0x4f0 kernel/kthread.c:327
- ret_from_fork+0x1f/0x30 arch/x86/entry/entry_64.S:295
- </TASK>
-Modules linked in:
----[ end trace 9f06028ec4daf4be ]---
-RIP: 0010:skb_panic+0x16c/0x16e net/core/skbuff.c:113
-Code: f8 4c 8b 4c 24 10 8b 4b 70 41 56 45 89 e8 4c 89 e2 41 57 48 89 ee 48 c7 c7 e0 4b ad 8a ff 74 24 10 ff 74 24 20 e8 6e 24 c2 ff <0f> 0b e8 74 92 38 f8 4c 8b 64 24 18 e8 da 47 7f f8 48 c7 c1 80 58
-RSP: 0018:ffffc90000d979e0 EFLAGS: 00010286
-RAX: 000000000000008b RBX: ffff888021ccb500 RCX: 0000000000000000
-RDX: ffff88801196d700 RSI: ffffffff815f0948 RDI: fffff520001b2f2e
-RBP: ffffffff8aad58c0 R08: 000000000000008b R09: 0000000000000000
-R10: ffffffff815ea6ee R11: 0000000000000000 R12: ffffffff88235fb8
-R13: 0000000000001000 R14: ffffffff8aad4ba0 R15: 00000000000000c0
-FS:  0000000000000000(0000) GS:ffff8880b9d00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f886c8cc718 CR3: 000000007ad6d000 CR4: 00000000003506e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+This is where the skb_over_panic() happens.
 
+regards,
+Marc
+
+-- 
+Pengutronix e.K.                 | Marc Kleine-Budde           |
+Embedded Linux                   | https://www.pengutronix.de  |
+Vertretung West/Dortmund         | Phone: +49-231-2826-924     |
+Amtsgericht Hildesheim, HRA 2686 | Fax:   +49-5121-206917-5555 |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220105/f5328330/attachment-0001.asc>
