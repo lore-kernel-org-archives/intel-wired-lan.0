@@ -1,63 +1,59 @@
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-Date: Wed, 5 Jan 2022 15:04:43 +0100
-Subject: [Intel-wired-lan] [syzbot] kernel BUG in pskb_expand_head
-In-Reply-To: <CANn89i+LbcWn3xoYU-eMjjmQPz0x1pSAat2OpF=i0+RByc-h4w@mail.gmail.com>
-References: <0000000000007ea16705d0cfbb53@google.com>
- <000000000000c7845605d4d3f0a0@google.com>
- <CANn89i+LbcWn3xoYU-eMjjmQPz0x1pSAat2OpF=i0+RByc-h4w@mail.gmail.com>
-Message-ID: <20220105140443.vwobz3yx4z3rux6a@pengutronix.de>
+From: Joe Damato <jdamato@fastly.com>
+Date: Wed,  5 Jan 2022 07:49:13 -0800
+Subject: [Intel-wired-lan] [next-queue,
+ v2] i40e: Remove unused RX realloc stat
+Message-ID: <1641397753-121138-1-git-send-email-jdamato@fastly.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05.01.2022 05:59:35, Eric Dumazet wrote:
-> On Wed, Jan 5, 2022 at 3:20 AM syzbot
-> <syzbot+4c63f36709a642f801c5@syzkaller.appspotmail.com> wrote:
-> >
-> > syzbot has found a reproducer for the following issue on:
-> >
-> > HEAD commit:    c9e6606c7fe9 Linux 5.16-rc8
-> > git tree:       upstream
-> > console output: https://syzkaller.appspot.com/x/log.txt?x=148351c3b00000
-> > kernel config:  https://syzkaller.appspot.com/x/.config?x=32f9fa260d7413b4
-> > dashboard link: https://syzkaller.appspot.com/bug?extid=4c63f36709a642f801c5
-> > compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
-> > syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=15435e2bb00000
-> > C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=12f4508db00000
-> >
-> 
-> This C repro looks legit, bug should be in CAN layer.
+After commit 1a557afc4dd5 ("i40e: Refactor receive routine"),
+rx_stats.realloc_count is no longer being incremented, so remove it.
 
-ACK - it's bug in CAN's ISOTP
+The debugfs string was left, but hardcoded to 0. This is intended to
+prevent breaking any existing code / scripts that are parsing debugfs
+for i40e.
 
-> > The issue was bisected to:
-> >
-> > commit e4b8954074f6d0db01c8c97d338a67f9389c042f
-> > Author: Eric Dumazet <edumazet@google.com>
-> > Date:   Tue Dec 7 01:30:37 2021 +0000
-> >
-> >     netlink: add net device refcount tracker to struct ethnl_req_info
-> 
-> Ignore this bisection, an unrelated commit whent in its way.
+Fixes: 1a557afc4dd5 ("i40e: Refactor receive routine")
+Signed-off-by: Joe Damato <jdamato@fastly.com>
 
-ACK - We have a RFC fix for this:
+---
+v1 -> v2: Fix commit message to include one-line SHA summary. Patch is now
+          based on next-queue.
+--- 
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 3 +--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-https://lore.kernel.org/all/20220105132429.1170627-1-mkl at pengutronix.de
-
-regards,
-Marc
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 1e57cc8..90fff05 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -275,9 +275,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 rx_ring->rx_stats.alloc_page_failed,
+ 			 rx_ring->rx_stats.alloc_buff_failed);
+ 		dev_info(&pf->pdev->dev,
+-			 "    rx_rings[%i]: rx_stats: realloc_count = %lld, page_reuse_count = %lld\n",
++			 "    rx_rings[%i]: rx_stats: realloc_count = 0, page_reuse_count = %lld\n",
+ 			 i,
+-			 rx_ring->rx_stats.realloc_count,
+ 			 rx_ring->rx_stats.page_reuse_count);
+ 		dev_info(&pf->pdev->dev,
+ 			 "    rx_rings[%i]: size = %i\n",
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index fd22e2f..324699e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -298,7 +298,6 @@ struct i40e_rx_queue_stats {
+ 	u64 alloc_page_failed;
+ 	u64 alloc_buff_failed;
+ 	u64 page_reuse_count;
+-	u64 realloc_count;
+ 	u64 page_alloc_count;
+ 	u64 page_waive_count;
+ 	u64 page_busy_count;
 -- 
-Pengutronix e.K.                 | Marc Kleine-Budde           |
-Embedded Linux                   | https://www.pengutronix.de  |
-Vertretung West/Dortmund         | Phone: +49-231-2826-924     |
-Amtsgericht Hildesheim, HRA 2686 | Fax:   +49-5121-206917-5555 |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220105/1a7af409/attachment.asc>
+2.7.4
+
