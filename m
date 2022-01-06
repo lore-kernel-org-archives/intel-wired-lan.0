@@ -1,97 +1,67 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 06 Jan 2022 19:19:42 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 2d6ec25539b0e7a4b4ad670abbcb3ec27b33e8ce
-Message-ID: <61d6d04e.n9VuIykvR4Yqv9XR%lkp@intel.com>
+From: John Garry <john.garry@huawei.com>
+Date: Thu, 6 Jan 2022 17:41:00 +0000
+Subject: [Intel-wired-lan] [RFC 01/32] Kconfig: introduce and depend on
+ LEGACY_PCI
+In-Reply-To: <20220105194748.GA215560@bhelgaas>
+References: <20220105194748.GA215560@bhelgaas>
+Message-ID: <74bf4fde-3972-1c36-ca04-58089da0d82b@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 2d6ec25539b0e7a4b4ad670abbcb3ec27b33e8ce  netlink: do not allocate a device refcount tracker in ethnl_default_notify()
+On 05/01/2022 19:47, Bjorn Helgaas wrote:
+>>>>>   ok if the PCI maintainers decide otherwise.
+>>>> I don't really like the "LEGACY_PCI" Kconfig option.  "Legacy" just
+>>>> means something old and out of favor; it doesn't say*what*  that
+>>>> something is.
+>>>>
+>>>> I think you're specifically interested in I/O port space usage, and it
+>>>> seems that you want all PCI drivers that*only*  use I/O port space to
+>>>> depend on LEGACY_PCI?  Drivers that can use either I/O or memory
+>>>> space or both would not depend on LEGACY_PCI?  This seems a little
+>>>> murky and error-prone.
+>>> I'd like to hear Arnd's opinion on this but you're the PCI maintainer
+>>> so of course your buy-in would be quite important for such an option.
+> I'd like to hear Arnd's opinion, too.  If we do add LEGACY_PCI, I
+> think we need a clear guide for when to use it, e.g., "a PCI driver
+> that uses inb() must depend on LEGACY_PCI" or whatever it is.
+> 
+> I must be missing something because I don't see what we gain from
+> this.  We have PCI drivers, e.g., megaraid [1], for devices that have
+> either MEM or I/O BARs.  I think we want to build drivers like that on
+> any arch that supports PCI.
+> 
+> If the arch doesn't support I/O port space, devices that only have I/O
+> BARs won't work, of course, and hopefully the PCI core and driver can
+> figure that out and gracefully fail the probe.
+> 
+> But that same driver should still work with devices that have MEM
+> BARs.  If inb() isn't always present, I guess we could litter these
+> drivers with #ifdefs, but that would be pretty ugly. 
 
-elapsed time: 914m
+There were some ifdefs added to the 8250 drivers in Arnd's original 
+patch [0], but it does not seem included here.
 
-configs tested: 68
-configs skipped: 3
+Niklas, what happened to the 8250 and the other driver changes?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+[0] 
+https://lore.kernel.org/lkml/CAK8P3a0MNbx-iuzW_-=0ab6-TTZzwV-PT_6gAC1Gp5PgYyHcrA at mail.gmail.com/
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                  randconfig-c002-20220105
-arm                  randconfig-c002-20220106
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-csky                                defconfig
-alpha                               defconfig
-nds32                               defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20220105
-i386                 randconfig-a005-20220105
-i386                 randconfig-a004-20220105
-i386                 randconfig-a006-20220105
-i386                 randconfig-a002-20220105
-i386                 randconfig-a001-20220105
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
+> IMO inb() should
+> be present but do something innocuous like return ~0, as it would if
+> I/O port space is supported but there's no device at that address.
+> 
+> [1]https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/scsi/megaraid.c?id=v5.15#n4210
+> 
 
-clang tested configs:
-i386                 randconfig-a003-20220106
-i386                 randconfig-a005-20220106
-i386                 randconfig-a004-20220106
-i386                 randconfig-a006-20220106
-i386                 randconfig-a002-20220106
-i386                 randconfig-a001-20220106
+That driver would prob not be used on systems which does not support 
+PIO, and so could have a HAS_IOPORT dependency. But it is not strictly 
+necessary.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Anyway, it would be good to have an idea of how much ifdeffery is 
+required in drivers.
+
+Thanks,
+John
