@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 09 Jan 2022 20:16:54 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d2ab319d34cbe3d8e9f4f70791ccaa8acd6d11be
-Message-ID: <61dad236.MZjHj0lvyRqnkk6K%lkp@intel.com>
+Date: Sun, 09 Jan 2022 20:16:52 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ cf7f67acd75edf730854e51ecfd41713bbd651f1
+Message-ID: <61dad234.NnFcRsDRK1M844d/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d2ab319d34cbe3d8e9f4f70791ccaa8acd6d11be  ice: fix setting l4 port flag when adding filter
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: cf7f67acd75edf730854e51ecfd41713bbd651f1  i40e: Remove unused RX realloc stat
 
 elapsed time: 728m
 
-configs tested: 119
+configs tested: 141
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -31,12 +31,23 @@ nios2                         10m50_defconfig
 mips                         db1xxx_defconfig
 m68k                        m5272c3_defconfig
 riscv                            allmodconfig
+mips                            ar7_defconfig
+powerpc                     taishan_defconfig
+powerpc                        warp_defconfig
+sh                        dreamcast_defconfig
 m68k                             alldefconfig
 powerpc                 mpc8540_ads_defconfig
 um                                  defconfig
+um                             i386_defconfig
+powerpc                      ppc6xx_defconfig
+m68k                            mac_defconfig
+sh                            migor_defconfig
 nds32                            alldefconfig
 arc                          axs101_defconfig
 arc                     nsimosci_hs_defconfig
+openrisc                  or1klitex_defconfig
+sh                            hp6xx_defconfig
+arm                        multi_v7_defconfig
 powerpc                     tqm8541_defconfig
 i386                             alldefconfig
 alpha                               defconfig
@@ -45,12 +56,22 @@ m68k                        stmark2_defconfig
 sh                           sh2007_defconfig
 sh                           se7619_defconfig
 arm                        oxnas_v6_defconfig
+sh                      rts7751r2d1_defconfig
+m68k                       m5475evb_defconfig
+arm                            mps2_defconfig
+sh                                  defconfig
+nios2                            alldefconfig
+powerpc                      bamboo_defconfig
+powerpc                 mpc85xx_cds_defconfig
+sh                          kfr2r09_defconfig
+sh                     sh7710voipgw_defconfig
+m68k                                defconfig
 arm                         lpc18xx_defconfig
+sh                          landisk_defconfig
 arm                            qcom_defconfig
 arm                          exynos_defconfig
 powerpc                      makalu_defconfig
 sh                           se7780_defconfig
-sh                          landisk_defconfig
 powerpc                 mpc834x_itx_defconfig
 powerpc                      cm5200_defconfig
 x86_64                           alldefconfig
@@ -58,12 +79,13 @@ sh                        sh7757lcr_defconfig
 powerpc                      chrp32_defconfig
 m68k                            q40_defconfig
 sh                         ecovec24_defconfig
+sh                          rsk7264_defconfig
+mips                         bigsur_defconfig
 arm                  randconfig-c002-20220109
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
-m68k                                defconfig
 m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
@@ -111,7 +133,6 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 um                           x86_64_defconfig
-um                             i386_defconfig
 x86_64                           allyesconfig
 x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
@@ -126,6 +147,8 @@ i386                 randconfig-c001-20220109
 riscv                randconfig-c006-20220109
 powerpc              randconfig-c003-20220109
 x86_64               randconfig-c007-20220109
+powerpc                     ppa8548_defconfig
+mips                      maltaaprp_defconfig
 powerpc                          allyesconfig
 powerpc                     ksi8560_defconfig
 x86_64               randconfig-a015-20220109
@@ -143,7 +166,6 @@ i386                 randconfig-a013-20220109
 hexagon              randconfig-r041-20220109
 riscv                randconfig-r042-20220109
 hexagon              randconfig-r045-20220109
-s390                 randconfig-r044-20220109
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
