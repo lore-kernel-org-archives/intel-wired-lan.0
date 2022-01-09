@@ -1,8 +1,8 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun,  9 Jan 2022 19:24:08 +0100
-Subject: [Intel-wired-lan] [PATCH] iavf: Remove useless DMA-32 fallback
+Date: Sun,  9 Jan 2022 19:25:05 +0100
+Subject: [Intel-wired-lan] [PATCH] ice: Remove useless DMA-32 fallback
  configuration
-Message-ID: <afb3317bc87677096e55fc96f317df29f2ff3408.1641752631.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <6a4df3e0a0849f179f9747f47b9c8cae53b29b59.1641752692.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,29 +21,22 @@ Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
 Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 8125b9120615..b0bd95c85480 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -4368,12 +4368,9 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e29176889c23..785d98889cb4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4435,8 +4435,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
  
- 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+ 	/* set up for high or low DMA */
+ 	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+-	if (err)
+-		err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
  	if (err) {
--		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
--		if (err) {
--			dev_err(&pdev->dev,
--				"DMA configuration failed: 0x%x\n", err);
--			goto err_dma;
--		}
-+		dev_err(&pdev->dev,
-+			"DMA configuration failed: 0x%x\n", err);
-+		goto err_dma;
- 	}
- 
- 	err = pci_request_regions(pdev, iavf_driver_name);
+ 		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
+ 		return err;
 -- 
 2.32.0
 
