@@ -1,245 +1,82 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 09 Jan 2022 20:16:30 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 6dc9a23e29061e50c36523270de60039ccf536fa
-Message-ID: <61dad21e.j2FavaJD/NvU4KIS%lkp@intel.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Sun,  9 Jan 2022 18:14:40 +0100
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+ configuration
+Message-ID: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 6dc9a23e29061e50c36523270de60039ccf536fa  octeontx2-af: Fix interrupt name strings
+As stated in [1], dma_set_mask() with a 64-bit mask never fails if
+dev->dma_mask is non-NULL.
+So, if it fails, the 32 bits case will also fail for the same reason.
 
-elapsed time: 1462m
+So, if dma_set_mask_and_coherent() succeeds, 'pci_using_dac' is known to be
+1.
 
-configs tested: 212
-configs skipped: 3
+Simplify code and remove some dead code accordingly.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+[1]: https://lkml.org/lkml/2021/6/7/398
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20220108
-arm                            zeus_defconfig
-nios2                         10m50_defconfig
-mips                         db1xxx_defconfig
-m68k                        m5272c3_defconfig
-riscv                            allmodconfig
-mips                            ar7_defconfig
-powerpc                     taishan_defconfig
-powerpc                        warp_defconfig
-sh                        dreamcast_defconfig
-arm                         cm_x300_defconfig
-arm                         lpc18xx_defconfig
-sh                          landisk_defconfig
-sparc                               defconfig
-sh                            shmin_defconfig
-m68k                             alldefconfig
-powerpc                 mpc8540_ads_defconfig
-um                                  defconfig
-arm                        realview_defconfig
-m68k                       m5275evb_defconfig
-mips                        vocore2_defconfig
-arm                           sunxi_defconfig
-um                             i386_defconfig
-powerpc                      ppc6xx_defconfig
-m68k                            mac_defconfig
-sh                            migor_defconfig
-sh                           se7750_defconfig
-arm                          iop32x_defconfig
-powerpc                 canyonlands_defconfig
-nds32                            alldefconfig
-arc                          axs101_defconfig
-arc                     nsimosci_hs_defconfig
-sh                        edosk7760_defconfig
-powerpc                     mpc83xx_defconfig
-ia64                         bigsur_defconfig
-openrisc                  or1klitex_defconfig
-sh                            hp6xx_defconfig
-arm                        multi_v7_defconfig
-arc                        vdk_hs38_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                          badge4_defconfig
-powerpc                           allnoconfig
-powerpc                     tqm8541_defconfig
-i386                             alldefconfig
-alpha                               defconfig
-powerpc                mpc7448_hpc2_defconfig
-m68k                        stmark2_defconfig
-powerpc                    sam440ep_defconfig
-um                           x86_64_defconfig
-arm64                            alldefconfig
-h8300                            allyesconfig
-riscv             nommu_k210_sdcard_defconfig
-sh                           sh2007_defconfig
-sh                           se7619_defconfig
-arm                        oxnas_v6_defconfig
-sh                      rts7751r2d1_defconfig
-m68k                       m5475evb_defconfig
-arm                            mps2_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                           jazz_defconfig
-arm                       aspeed_g5_defconfig
-parisc                generic-64bit_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                                  defconfig
-nios2                            alldefconfig
-powerpc                      bamboo_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                          kfr2r09_defconfig
-sh                     sh7710voipgw_defconfig
-m68k                                defconfig
-arm                            qcom_defconfig
-arm                          exynos_defconfig
-powerpc                      makalu_defconfig
-sh                           se7780_defconfig
-s390                          debug_defconfig
-powerpc                 linkstation_defconfig
-sh                         ecovec24_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                      cm5200_defconfig
-x86_64                           alldefconfig
-sh                        sh7757lcr_defconfig
-sh                          r7780mp_defconfig
-sparc                       sparc32_defconfig
-alpha                            allyesconfig
-powerpc                      chrp32_defconfig
-m68k                            q40_defconfig
-sh                          rsk7264_defconfig
-mips                         bigsur_defconfig
-arm                  randconfig-c002-20220109
-arm                  randconfig-c002-20220108
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a005-20220109
-x86_64               randconfig-a001-20220109
-x86_64               randconfig-a004-20220109
-x86_64               randconfig-a006-20220109
-x86_64               randconfig-a003-20220109
-x86_64               randconfig-a002-20220109
-i386                 randconfig-a003-20220109
-i386                 randconfig-a005-20220109
-i386                 randconfig-a006-20220109
-i386                 randconfig-a004-20220109
-i386                 randconfig-a001-20220109
-i386                 randconfig-a002-20220109
-x86_64               randconfig-a015-20220108
-x86_64               randconfig-a012-20220108
-x86_64               randconfig-a014-20220108
-x86_64               randconfig-a013-20220108
-x86_64               randconfig-a011-20220108
-x86_64               randconfig-a016-20220108
-i386                 randconfig-a012-20220108
-i386                 randconfig-a016-20220108
-i386                 randconfig-a015-20220108
-i386                 randconfig-a014-20220108
-i386                 randconfig-a011-20220108
-i386                 randconfig-a013-20220108
-s390                 randconfig-r044-20220108
-arc                  randconfig-r043-20220108
-riscv                randconfig-r042-20220108
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-arm                  randconfig-c002-20220108
-mips                 randconfig-c004-20220108
-i386                 randconfig-c001-20220108
-riscv                randconfig-c006-20220108
-powerpc              randconfig-c003-20220108
-x86_64               randconfig-c007-20220108
-arm                  randconfig-c002-20220109
-mips                 randconfig-c004-20220109
-i386                 randconfig-c001-20220109
-riscv                randconfig-c006-20220109
-powerpc              randconfig-c003-20220109
-x86_64               randconfig-c007-20220109
-s390                 randconfig-c005-20220108
-mips                 randconfig-c004-20220107
-arm                  randconfig-c002-20220107
-i386                 randconfig-c001-20220107
-riscv                randconfig-c006-20220107
-powerpc              randconfig-c003-20220107
-x86_64               randconfig-c007-20220107
-powerpc                     ppa8548_defconfig
-mips                      maltaaprp_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                     tqm8560_defconfig
-powerpc                     skiroot_defconfig
-powerpc                          allyesconfig
-powerpc                     ksi8560_defconfig
-x86_64               randconfig-a005-20220108
-x86_64               randconfig-a001-20220108
-x86_64               randconfig-a004-20220108
-x86_64               randconfig-a006-20220108
-x86_64               randconfig-a003-20220108
-x86_64               randconfig-a002-20220108
-i386                 randconfig-a003-20220108
-i386                 randconfig-a005-20220108
-i386                 randconfig-a006-20220108
-i386                 randconfig-a004-20220108
-i386                 randconfig-a001-20220108
-i386                 randconfig-a002-20220108
-x86_64               randconfig-a015-20220109
-x86_64               randconfig-a012-20220109
-x86_64               randconfig-a014-20220109
-x86_64               randconfig-a013-20220109
-x86_64               randconfig-a011-20220109
-x86_64               randconfig-a016-20220109
-i386                 randconfig-a012-20220109
-i386                 randconfig-a016-20220109
-i386                 randconfig-a015-20220109
-i386                 randconfig-a014-20220109
-i386                 randconfig-a011-20220109
-i386                 randconfig-a013-20220109
-hexagon              randconfig-r041-20220109
-riscv                randconfig-r042-20220109
-hexagon              randconfig-r045-20220109
-s390                 randconfig-r044-20220109
-
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 635a95927e93..4f6ee5c44f75 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7385,9 +7385,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	resource_size_t flash_start, flash_len;
+ 	static int cards_found;
+ 	u16 aspm_disable_flag = 0;
+-	int bars, i, err, pci_using_dac;
+ 	u16 eeprom_data = 0;
+ 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
++	int bars, i, err;
+ 	s32 ret_val = 0;
+ 
+ 	if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
+@@ -7401,17 +7401,11 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err)
+ 		return err;
+ 
+-	pci_using_dac = 0;
+ 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+-	if (!err) {
+-		pci_using_dac = 1;
+-	} else {
+-		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+-		if (err) {
+-			dev_err(&pdev->dev,
+-				"No usable DMA configuration, aborting\n");
+-			goto err_dma;
+-		}
++	if (err) {
++		dev_err(&pdev->dev,
++			"No usable DMA configuration, aborting\n");
++		goto err_dma;
+ 	}
+ 
+ 	bars = pci_select_bars(pdev, IORESOURCE_MEM);
+@@ -7547,10 +7541,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 
+-	if (pci_using_dac) {
+-		netdev->features |= NETIF_F_HIGHDMA;
+-		netdev->vlan_features |= NETIF_F_HIGHDMA;
+-	}
++	netdev->features |= NETIF_F_HIGHDMA;
++	netdev->vlan_features |= NETIF_F_HIGHDMA;
+ 
+ 	/* MTU range: 68 - max_hw_frame_size */
+ 	netdev->min_mtu = ETH_MIN_MTU;
+-- 
+2.32.0
+
