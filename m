@@ -1,8 +1,8 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun,  9 Jan 2022 19:38:49 +0100
-Subject: [Intel-wired-lan] [PATCH] igc: Remove useless DMA-32 fallback
+Date: Sun,  9 Jan 2022 19:41:30 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: Remove useless DMA-32 fallback
  configuration
-Message-ID: <b20b6197cb83640c3cf9707bc4c46301839de3f9.1641753497.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <abb2371cc7fabfa26d96abc1ff1b80ac038448b1.1641753678.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -25,21 +25,24 @@ Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 This patch was not part of the 1st serie I've sent. So there is no
 Reviewed-by tag.
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 19 ++++++-------------
+ drivers/net/ethernet/intel/igb/igb_main.c | 19 ++++++-------------
  1 file changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 2f17f36e94fd..6b51baadee3d 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6251,23 +6251,17 @@ static int igc_probe(struct pci_dev *pdev,
- 	struct net_device *netdev;
- 	struct igc_hw *hw;
- 	const struct igc_info *ei = igc_info_tbl[ent->driver_data];
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 38ba92022cd4..bfa321e4003f 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3164,8 +3164,8 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	s32 ret_val;
+ 	static int global_quad_port_a; /* global quad port a indication */
+ 	const struct e1000_info *ei = igb_info_tbl[ent->driver_data];
 -	int err, pci_using_dac;
+ 	u8 part_str[E1000_PBANUM_LENGTH];
 +	int err;
  
- 	err = pci_enable_device_mem(pdev);
+ 	/* Catch broken hardware that put the wrong VF device ID in
+ 	 * the PCIe SR-IOV capability.
+@@ -3180,17 +3180,11 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	if (err)
  		return err;
  
@@ -60,10 +63,10 @@ index 2f17f36e94fd..6b51baadee3d 100644
 +		goto err_dma;
  	}
  
- 	err = pci_request_mem_regions(pdev, igc_driver_name);
-@@ -6367,8 +6361,7 @@ static int igc_probe(struct pci_dev *pdev,
- 	netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_RX;
- 	netdev->hw_features |= netdev->features;
+ 	err = pci_request_mem_regions(pdev, igb_driver_name);
+@@ -3306,8 +3300,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (hw->mac.type >= e1000_i350)
+ 		netdev->hw_features |= NETIF_F_NTUPLE;
  
 -	if (pci_using_dac)
 -		netdev->features |= NETIF_F_HIGHDMA;
