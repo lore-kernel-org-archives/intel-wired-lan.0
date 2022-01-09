@@ -1,8 +1,8 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun,  9 Jan 2022 18:14:40 +0100
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+Date: Sun,  9 Jan 2022 18:19:22 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgb: Remove useless DMA-32 fallback
  configuration
-Message-ID: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <a56f72c090866c11a0c091e561dbfc69d826cd0e.1641748751.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,25 +24,22 @@ Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
 Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c | 19 +++++--------------
+ 1 file changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 635a95927e93..4f6ee5c44f75 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7385,9 +7385,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	resource_size_t flash_start, flash_len;
- 	static int cards_found;
- 	u16 aspm_disable_flag = 0;
--	int bars, i, err, pci_using_dac;
- 	u16 eeprom_data = 0;
- 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
-+	int bars, i, err;
- 	s32 ret_val = 0;
- 
- 	if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
-@@ -7401,17 +7401,11 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index 99d481904ce6..affdefcca7e3 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -361,7 +361,6 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct net_device *netdev = NULL;
+ 	struct ixgb_adapter *adapter;
+ 	static int cards_found = 0;
+-	int pci_using_dac;
+ 	u8 addr[ETH_ALEN];
+ 	int i;
+ 	int err;
+@@ -370,16 +369,10 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	if (err)
  		return err;
  
@@ -53,20 +50,18 @@ index 635a95927e93..4f6ee5c44f75 100644
 -	} else {
 -		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
 -		if (err) {
--			dev_err(&pdev->dev,
--				"No usable DMA configuration, aborting\n");
--			goto err_dma;
+-			pr_err("No usable DMA configuration, aborting\n");
+-			goto err_dma_mask;
 -		}
 +	if (err) {
-+		dev_err(&pdev->dev,
-+			"No usable DMA configuration, aborting\n");
-+		goto err_dma;
++		pr_err("No usable DMA configuration, aborting\n");
++		goto err_dma_mask;
  	}
  
- 	bars = pci_select_bars(pdev, IORESOURCE_MEM);
-@@ -7547,10 +7541,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 	err = pci_request_regions(pdev, ixgb_driver_name);
+@@ -444,10 +437,8 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			   NETIF_F_HW_VLAN_CTAG_FILTER;
+ 	netdev->hw_features |= NETIF_F_RXCSUM;
  
 -	if (pci_using_dac) {
 -		netdev->features |= NETIF_F_HIGHDMA;
@@ -75,7 +70,7 @@ index 635a95927e93..4f6ee5c44f75 100644
 +	netdev->features |= NETIF_F_HIGHDMA;
 +	netdev->vlan_features |= NETIF_F_HIGHDMA;
  
- 	/* MTU range: 68 - max_hw_frame_size */
+ 	/* MTU range: 68 - 16114 */
  	netdev->min_mtu = ETH_MIN_MTU;
 -- 
 2.32.0
