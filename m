@@ -1,8 +1,8 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun,  9 Jan 2022 18:19:22 +0100
-Subject: [Intel-wired-lan] [PATCH] ixgb: Remove useless DMA-32 fallback
+Date: Sun,  9 Jan 2022 18:20:57 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove useless DMA-32 fallback
  configuration
-Message-ID: <a56f72c090866c11a0c091e561dbfc69d826cd0e.1641748751.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <aafc0597758dd8ba58c15e4bf2e669872246c839.1641748850.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,54 +24,56 @@ Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
 Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/ixgb/ixgb_main.c | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 20 +++++++------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-index 99d481904ce6..affdefcca7e3 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-@@ -361,7 +361,6 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct net_device *netdev = NULL;
- 	struct ixgb_adapter *adapter;
- 	static int cards_found = 0;
--	int pci_using_dac;
- 	u8 addr[ETH_ALEN];
- 	int i;
- 	int err;
-@@ -370,16 +369,10 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 89b467006291..2c8a4a06f56a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10632,9 +10632,9 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct ixgbe_adapter *adapter = NULL;
+ 	struct ixgbe_hw *hw;
+ 	const struct ixgbe_info *ii = ixgbe_info_tbl[ent->driver_data];
+-	int i, err, pci_using_dac, expected_gts;
+ 	unsigned int indices = MAX_TX_QUEUES;
+ 	u8 part_str[IXGBE_PBANUM_LENGTH];
++	int i, err, expected_gts;
+ 	bool disable_dev = false;
+ #ifdef IXGBE_FCOE
+ 	u16 device_caps;
+@@ -10654,16 +10654,11 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	if (err)
  		return err;
  
--	pci_using_dac = 0;
- 	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
--	if (!err) {
+-	if (!dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64))) {
 -		pci_using_dac = 1;
 -	} else {
 -		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
 -		if (err) {
--			pr_err("No usable DMA configuration, aborting\n");
--			goto err_dma_mask;
+-			dev_err(&pdev->dev,
+-				"No usable DMA configuration, aborting\n");
+-			goto err_dma;
 -		}
+-		pci_using_dac = 0;
++	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 +	if (err) {
-+		pr_err("No usable DMA configuration, aborting\n");
-+		goto err_dma_mask;
++		dev_err(&pdev->dev,
++			"No usable DMA configuration, aborting\n");
++		goto err_dma;
  	}
  
- 	err = pci_request_regions(pdev, ixgb_driver_name);
-@@ -444,10 +437,8 @@ ixgb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			   NETIF_F_HW_VLAN_CTAG_FILTER;
- 	netdev->hw_features |= NETIF_F_RXCSUM;
+ 	err = pci_request_mem_regions(pdev, ixgbe_driver_name);
+@@ -10861,8 +10856,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		netdev->hw_features |= NETIF_F_NTUPLE |
+ 				       NETIF_F_HW_TC;
  
--	if (pci_using_dac) {
+-	if (pci_using_dac)
 -		netdev->features |= NETIF_F_HIGHDMA;
--		netdev->vlan_features |= NETIF_F_HIGHDMA;
--	}
 +	netdev->features |= NETIF_F_HIGHDMA;
-+	netdev->vlan_features |= NETIF_F_HIGHDMA;
  
- 	/* MTU range: 68 - 16114 */
- 	netdev->min_mtu = ETH_MIN_MTU;
+ 	netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
+ 	netdev->hw_enc_features |= netdev->vlan_features;
 -- 
 2.32.0
 
