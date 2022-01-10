@@ -1,51 +1,49 @@
-From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Mon, 10 Jan 2022 11:37:21 +0000
-Subject: [Intel-wired-lan] [PATCH v4 net-next 5/9] ice: respect metadata
- on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-6-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-6-alexandr.lobakin@intel.com>
-Message-ID: <DM6PR11MB3292226E5E815F1F335437F8F1509@DM6PR11MB3292.namprd11.prod.outlook.com>
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Mon, 10 Jan 2022 13:11:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/4] Eliminate race condition
+ occurrence during sending ASQ commands
+Message-ID: <20220110131142.8481-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Provide modifications in ASQ commands in order to
+prevent for race condition occurrences.
+Add new versions of ASQ commands based on sending commands
+in atomic context. New versions of commands are marked as _v2.
+Also change already existing ASQ commands to be able to work
+in atomic context. Make them to invoking previously added
+i40e_asq_send_command_atomic() function to perform aq calls.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Alexander Lobakin
-> Sent: Wednesday, December 8, 2021 7:37 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Song Liu <songliubraving@fb.com>; Alexei Starovoitov <ast@kernel.org>;
-> Andrii Nakryiko <andrii@kernel.org>; Daniel Borkmann
-> <daniel@iogearbox.net>; John Fastabend <john.fastabend@gmail.com>;
-> Jesper Dangaard Brouer <brouer@redhat.com>; Yonghong Song
-> <yhs@fb.com>; Jesper Dangaard Brouer <hawk@kernel.org>; KP Singh
-> <kpsingh@kernel.org>; Jakub Kicinski <kuba@kernel.org>;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org; David S. Miller
-> <davem@davemloft.net>; Bj?rn T?pel <bjorn@kernel.org>;
-> bpf at vger.kernel.org; Martin KaFai Lau <kafai@fb.com>
-> Subject: [Intel-wired-lan] [PATCH v4 net-next 5/9] ice: respect metadata on
-> XSK Rx to skb
-> 
-> For now, if the XDP prog returns XDP_PASS on XSK, the metadata will be lost
-> as it doesn't get copied to the skb.
-> Copy it along with the frame headers. Account its size on skb allocation, and
-> when copying just treat it as a part of the frame and do a pull after to "move"
-> it to the "reserved" zone.
-> net_prefetch() xdp->data_meta and align the copy size to speed-up
-> memcpy() a little and better match ice_costruct_skb().
-> 
-> Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
-> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_xsk.c | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
-> 
+Eliminate problem with race conditions connected to accessing
+hw->aq.asq_last_status during callig ASQ commands.
 
-Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
+1. Add new versions of send ASQ command functions including
+new version of i40e_aq_remove_macvlan().
+
+2. Add new version of i40e_aq_add_macvlan() function.
+
+3. Change i40e_aqc_add_filters() and i40e_aqc_del_filters() functions
+located in i40e_main.c to use new versions of i40e_aq_add_macvlan()
+and i40e_aq_remove_macvlan().
+
+4. Change several i40e_aq_ functions to send commands in atomic
+context by using i40e_asq_send_command_atomic(..., true).
+
+Jedrzej Jagielski (4):
+  i40e: Add new versions of send ASQ command functions
+  i40e: Add new version of i40e_aq_add_macvlan function
+  i40e: Fix race condition while adding/deleting MAC/VLAN filters
+  i40e: Add sending commands in atomic context
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  92 +++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 162 +++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  24 +--
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  25 +++
+ 4 files changed, 258 insertions(+), 45 deletions(-)
+
+-- 
+2.27.0
+
