@@ -1,11 +1,11 @@
 From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Mon, 10 Jan 2022 10:31:26 +0000
-Subject: [Intel-wired-lan] [PATCH v3 net-next 2/9] i40e: respect
+Date: Mon, 10 Jan 2022 11:24:21 +0000
+Subject: [Intel-wired-lan] [PATCH v4 net-next 2/9] i40e: respect
  metadata on XSK Rx to skb
-In-Reply-To: <20211207205536.563550-3-alexandr.lobakin@intel.com>
-References: <20211207205536.563550-1-alexandr.lobakin@intel.com>
- <20211207205536.563550-3-alexandr.lobakin@intel.com>
-Message-ID: <DM6PR11MB32929AFBEAB5A2F42AC17543F1509@DM6PR11MB3292.namprd11.prod.outlook.com>
+In-Reply-To: <20211208140702.642741-3-alexandr.lobakin@intel.com>
+References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
+ <20211208140702.642741-3-alexandr.lobakin@intel.com>
+Message-ID: <DM6PR11MB32922FF17EC415EC54D541EFF1509@DM6PR11MB3292.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +16,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Lobakin, Alexandr
-> Sent: Wednesday, December 8, 2021 2:25 AM
+> Sent: Wednesday, December 8, 2021 7:37 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Andre Guedes <andre.guedes@intel.com>; Jesper Dangaard Brouer
-> <hawk@kernel.org>; Daniel Borkmann <daniel@iogearbox.net>;
-> netdev at vger.kernel.org; Krzysztof Kazimierczak
-> <krzysztof.kazimierczak@intel.com>; bpf at vger.kernel.org; John Fastabend
-> <john.fastabend@gmail.com>; Alexei Starovoitov <ast@kernel.org>; Brouer,
-> Jesper <brouer@redhat.com>; Bj?rn T?pel <bjorn@kernel.org>; Jeff Kirsher
-> <jeffrey.t.kirsher@intel.com>; Jakub Kicinski <kuba@kernel.org>; linux-
-> kernel at vger.kernel.org; David S. Miller <davem@davemloft.net>; Vedang
-> Patel <vedang.patel@intel.com>
-> Subject: [Intel-wired-lan] [PATCH v3 net-next 2/9] i40e: respect metadata on
+> Cc: Song Liu <songliubraving@fb.com>; Alexei Starovoitov <ast@kernel.org>;
+> Andrii Nakryiko <andrii@kernel.org>; Daniel Borkmann
+> <daniel@iogearbox.net>; John Fastabend <john.fastabend@gmail.com>;
+> Brouer, Jesper <brouer@redhat.com>; Yonghong Song <yhs@fb.com>;
+> Jesper Dangaard Brouer <hawk@kernel.org>; KP Singh
+> <kpsingh@kernel.org>; Jakub Kicinski <kuba@kernel.org>;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org; David S. Miller
+> <davem@davemloft.net>; Bj?rn T?pel <bjorn@kernel.org>;
+> bpf at vger.kernel.org; Martin KaFai Lau <kafai@fb.com>
+> Subject: [Intel-wired-lan] [PATCH v4 net-next 2/9] i40e: respect metadata on
 > XSK Rx to skb
 > 
 > For now, if the XDP prog returns XDP_PASS on XSK, the metadata will be lost
