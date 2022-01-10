@@ -1,68 +1,120 @@
-From: cgel.zte@gmail.com <cgel.zte@gmail.com>
-Date: Mon, 10 Jan 2022 10:46:56 +0000
-Subject: [Intel-wired-lan] [PATCH] ethernet/intel: remove redundant ret
- variable
-Message-ID: <20220110104656.646861-1-chi.minghao@zte.com.cn>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Mon, 10 Jan 2022 16:06:38 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v3] iavf: Add support for
+ 50G/100G in AIM algorithm
+Message-ID: <20220110150638.24305-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+Advanced link speed support was added long back, but adding AIM support was
+missed. This patch adds AIM support for advanced link speed support, which
+allows the algorithm to take into account 50G/100G link speeds. Also, other
+previous speeds are taken into consideration when advanced link speeds are
+supported.
 
-Return value directly instead of taking this in another redundant
-variable.
-
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
-Signed-off-by: CGEL ZTE <cgel.zte@gmail.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ v3: Fixed checkpatch errors
+ v2: Removed build issues
+---
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c | 62 ++++++++++++++++-----
+ 1 file changed, 47 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 504fea4e90fb..a138dc64b8b7 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1517,7 +1517,6 @@ static void iavf_fill_rss_lut(struct iavf_adapter *adapter)
- static int iavf_init_rss(struct iavf_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+index 8cbe7ad..978f651 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
+@@ -374,29 +374,60 @@ static inline bool iavf_container_is_rx(struct iavf_q_vector *q_vector,
+ 	return &q_vector->rx == rc;
+ }
+ 
+-static inline unsigned int iavf_itr_divisor(struct iavf_q_vector *q_vector)
++#define IAVF_AIM_MULTIPLIER_100G	2560
++#define IAVF_AIM_MULTIPLIER_50G		1280
++#define IAVF_AIM_MULTIPLIER_40G		1024
++#define IAVF_AIM_MULTIPLIER_20G		512
++#define IAVF_AIM_MULTIPLIER_10G		256
++#define IAVF_AIM_MULTIPLIER_1G		32
++
++static unsigned int iavf_mbps_itr_multiplier(u32 speed_mbps)
  {
- 	struct iavf_hw *hw = &adapter->hw;
--	int ret;
+-	unsigned int divisor;
++	switch (speed_mbps) {
++	case SPEED_100000:
++		return IAVF_AIM_MULTIPLIER_100G;
++	case SPEED_50000:
++		return IAVF_AIM_MULTIPLIER_50G;
++	case SPEED_40000:
++		return IAVF_AIM_MULTIPLIER_40G;
++	case SPEED_25000:
++	case SPEED_20000:
++		return IAVF_AIM_MULTIPLIER_20G;
++	case SPEED_10000:
++	default:
++		return IAVF_AIM_MULTIPLIER_10G;
++	case SPEED_1000:
++	case SPEED_100:
++		return IAVF_AIM_MULTIPLIER_1G;
++	}
++}
  
- 	if (!RSS_PF(adapter)) {
- 		/* Enable PCTYPES for RSS, TCP/UDP with IPv4/IPv6 */
-@@ -1533,9 +1532,8 @@ static int iavf_init_rss(struct iavf_adapter *adapter)
+-	switch (q_vector->adapter->link_speed) {
++static unsigned int
++iavf_virtchnl_itr_multiplier(enum virtchnl_link_speed speed_virtchnl)
++{
++	switch (speed_virtchnl) {
+ 	case VIRTCHNL_LINK_SPEED_40GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 1024;
+-		break;
++		return IAVF_AIM_MULTIPLIER_40G;
+ 	case VIRTCHNL_LINK_SPEED_25GB:
+ 	case VIRTCHNL_LINK_SPEED_20GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 512;
+-		break;
+-	default:
++		return IAVF_AIM_MULTIPLIER_20G;
+ 	case VIRTCHNL_LINK_SPEED_10GB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 256;
+-		break;
++	default:
++		return IAVF_AIM_MULTIPLIER_10G;
+ 	case VIRTCHNL_LINK_SPEED_1GB:
+ 	case VIRTCHNL_LINK_SPEED_100MB:
+-		divisor = IAVF_ITR_ADAPTIVE_MIN_INC * 32;
+-		break;
++		return IAVF_AIM_MULTIPLIER_1G;
+ 	}
++}
  
- 	iavf_fill_rss_lut(adapter);
- 	netdev_rss_key_fill((void *)adapter->rss_key, adapter->rss_key_size);
--	ret = iavf_config_rss(adapter);
- 
--	return ret;
-+	return iavf_config_rss(adapter);
+-	return divisor;
++static unsigned int iavf_itr_divisor(struct iavf_adapter *adapter)
++{
++	if (ADV_LINK_SUPPORT(adapter))
++		return IAVF_ITR_ADAPTIVE_MIN_INC *
++			iavf_mbps_itr_multiplier(adapter->link_speed_mbps);
++	else
++		return IAVF_ITR_ADAPTIVE_MIN_INC *
++			iavf_virtchnl_itr_multiplier(adapter->link_speed);
  }
  
  /**
-@@ -4689,8 +4687,6 @@ static struct pci_driver iavf_driver = {
-  **/
- static int __init iavf_init_module(void)
- {
--	int ret;
--
- 	pr_info("iavf: %s\n", iavf_driver_string);
+@@ -586,8 +617,9 @@ static void iavf_update_itr(struct iavf_q_vector *q_vector,
+ 	 * Use addition as we have already recorded the new latency flag
+ 	 * for the ITR value.
+ 	 */
+-	itr += DIV_ROUND_UP(avg_wire_size, iavf_itr_divisor(q_vector)) *
+-	       IAVF_ITR_ADAPTIVE_MIN_INC;
++	itr += DIV_ROUND_UP(avg_wire_size,
++			    iavf_itr_divisor(q_vector->adapter)) *
++		IAVF_ITR_ADAPTIVE_MIN_INC;
  
- 	pr_info("%s\n", iavf_copyright);
-@@ -4701,8 +4697,7 @@ static int __init iavf_init_module(void)
- 		pr_err("%s: Failed to create workqueue\n", iavf_driver_name);
- 		return -ENOMEM;
- 	}
--	ret = pci_register_driver(&iavf_driver);
--	return ret;
-+	return pci_register_driver(&iavf_driver);
- }
- 
- module_init(iavf_init_module);
+ 	if ((itr & IAVF_ITR_MASK) > IAVF_ITR_ADAPTIVE_MAX_USECS) {
+ 		itr &= IAVF_ITR_ADAPTIVE_LATENCY;
 -- 
-2.25.1
+2.27.0
 
