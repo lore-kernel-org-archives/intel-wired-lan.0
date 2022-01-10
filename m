@@ -1,39 +1,77 @@
-From: Yury Norov <yury.norov@gmail.com>
-Date: Sun, 23 Jan 2022 10:39:02 -0800
-Subject: [Intel-wired-lan] [PATCH 31/54] net: ethernet: replace
- bitmap_weight with bitmap_weight_eq for intel
-In-Reply-To: <20220123183925.1052919-1-yury.norov@gmail.com>
-References: <20220123183925.1052919-1-yury.norov@gmail.com>
-Message-ID: <20220123183925.1052919-32-yury.norov@gmail.com>
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+Date: Mon, 10 Jan 2022 10:34:34 +0100
+Subject: [Intel-wired-lan] [RFC 01/32] Kconfig: introduce and depend on
+ LEGACY_PCI
+In-Reply-To: <74bf4fde-3972-1c36-ca04-58089da0d82b@huawei.com>
+References: <20220105194748.GA215560@bhelgaas>
+ <74bf4fde-3972-1c36-ca04-58089da0d82b@huawei.com>
+Message-ID: <822ad0da702f0953b7aae1febd2c4dfcc4707864.camel@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ixgbe_disable_sriov calls bitmap_weight() to compare the weight of bitmap
-with a given number. We can do it more efficiently with bitmap_weight_eq
-because conditional bitmap_weight may stop traversing the bitmap earlier,
-as soon as condition is met.
+On Thu, 2022-01-06 at 17:41 +0000, John Garry wrote:
+> On 05/01/2022 19:47, Bjorn Helgaas wrote:
+> > > > > >   ok if the PCI maintainers decide otherwise.
+> > > > > I don't really like the "LEGACY_PCI" Kconfig option.  "Legacy" just
+> > > > > means something old and out of favor; it doesn't say*what*  that
+> > > > > something is.
+> > > > > 
+> > > > > I think you're specifically interested in I/O port space usage, and it
+> > > > > seems that you want all PCI drivers that*only*  use I/O port space to
+> > > > > depend on LEGACY_PCI?  Drivers that can use either I/O or memory
+> > > > > space or both would not depend on LEGACY_PCI?  This seems a little
+> > > > > murky and error-prone.
+> > > > I'd like to hear Arnd's opinion on this but you're the PCI maintainer
+> > > > so of course your buy-in would be quite important for such an option.
+> > I'd like to hear Arnd's opinion, too.  If we do add LEGACY_PCI, I
+> > think we need a clear guide for when to use it, e.g., "a PCI driver
+> > that uses inb() must depend on LEGACY_PCI" or whatever it is.
+> > 
+> > I must be missing something because I don't see what we gain from
+> > this.  We have PCI drivers, e.g., megaraid [1], for devices that have
+> > either MEM or I/O BARs.  I think we want to build drivers like that on
+> > any arch that supports PCI.
+> > 
+> > If the arch doesn't support I/O port space, devices that only have I/O
+> > BARs won't work, of course, and hopefully the PCI core and driver can
+> > figure that out and gracefully fail the probe.
+> > 
+> > But that same driver should still work with devices that have MEM
+> > BARs.  If inb() isn't always present, I guess we could litter these
+> > drivers with #ifdefs, but that would be pretty ugly.
 
-Signed-off-by: Yury Norov <yury.norov@gmail.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think this is the big question here. If we do go with a compile-time
+solution as requested by Linus we will either get a lot of #ifdeffery,
+coarse driver dependencies or as proposed by Alan Stern for the USB
+#ifdefs might end up turning inb() into a compile-time nop.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 214a38de3f41..35297d8a488b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -246,7 +246,7 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
- #endif
- 
- 	/* Disable VMDq flag so device will be set in VM mode */
--	if (bitmap_weight(adapter->fwd_bitmask, adapter->num_rx_pools) == 1) {
-+	if (bitmap_weight_eq(adapter->fwd_bitmask, adapter->num_rx_pools, 1)) {
- 		adapter->flags &= ~IXGBE_FLAG_VMDQ_ENABLED;
- 		adapter->flags &= ~IXGBE_FLAG_SRIOV_ENABLED;
- 		rss = min_t(int, ixgbe_max_rss_indices(adapter),
--- 
-2.30.2
+The originally proposed change that returned ~0 from inb() and printed
+a warning clearly is the simpler change and sure we could also drop the
+warning. I'm honestly torn, I do agree with Linus that we shouldn't
+have run-time things that we know at compile-time will not work but I
+also dislike all the #ifdeffery a compile-time solution requires. Sadly
+C really doesn't give us any better tools here.
+
+Also I 100% agree with you Bjorn how likely it is to see a device on a
+platform really shouldn't matter. Without going into details, on s390
+we have already beneffited from PCI drivers working with 0 changes to
+support devices we previously didn't have on the platform or
+anticipated we would get in the future. Consequently drivers that could
+work in principle should be built.
+
+> >  
+> 
+> There were some ifdefs added to the 8250 drivers in Arnd's original 
+> patch [0], but it does not seem included here.
+> 
+> Niklas, what happened to the 8250 and the other driver changes?
+
+I missed it during the rebase, likely because the changed files compile
+depend on !S390 via config SERIAL_8250 and thus didn't cause any errors
+for my allyesconfig. That !S390 dependency is of course not really what
+we want if the driver can use MEM BARs.
+
 
