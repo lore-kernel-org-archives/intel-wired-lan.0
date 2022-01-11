@@ -1,49 +1,169 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Tue, 11 Jan 2022 11:52:12 +0000
-Subject: [Intel-wired-lan] [PATCH v4 net-next 9/9] ixgbe: respect
- metadata on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-10-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-10-alexandr.lobakin@intel.com>
-Message-ID: <MW3PR11MB4554E0499E598B382155A48E9C519@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 11 Jan 2022 21:24:35 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 07041751379490d044596e1e7e091d53af26d535
+Message-ID: <61dd8513.q4rwgximQ0j38lQz%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Alexander Lobakin
->Sent: Wednesday, December 8, 2021 7:37 PM
-To: intel-wired-lan@lists.osuosl.org
->Cc: Song Liu <songliubraving@fb.com>; Alexei Starovoitov <ast@kernel.org>;
->Andrii Nakryiko <andrii@kernel.org>; Daniel Borkmann
-><daniel@iogearbox.net>; John Fastabend <john.fastabend@gmail.com>;
->Jesper Dangaard Brouer <brouer@redhat.com>; Yonghong Song
-><yhs@fb.com>; Jesper Dangaard Brouer <hawk@kernel.org>; KP Singh
-><kpsingh@kernel.org>; Jakub Kicinski <kuba@kernel.org>;
->netdev at vger.kernel.org; linux-kernel at vger.kernel.org; David S. Miller
-><davem@davemloft.net>; Bj?rn T?pel <bjorn@kernel.org>;
->bpf at vger.kernel.org; Martin KaFai Lau <kafai@fb.com>
->Subject: [Intel-wired-lan] [PATCH v4 net-next 9/9] ixgbe: respect metadata on
->XSK Rx to skb
->
->For now, if the XDP prog returns XDP_PASS on XSK, the metadata will be lost
->as it doesn't get copied to the skb.
->Copy it along with the frame headers. Account its size on skb allocation, and
->when copying just treat it as a part of the frame and do a pull after to "move"
->it to the "reserved" zone.
->net_prefetch() xdp->data_meta and align the copy size to speed-up
->memcpy() a little and better match ixgbe_costruct_skb().
->
->Fixes: d0bcacd0a130 ("ixgbe: add AF_XDP zero-copy Rx support")
->Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
->Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
->Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
->Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->---
-> drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 14 ++++++++++----
-> 1 file changed, 10 insertions(+), 4 deletions(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 07041751379490d044596e1e7e091d53af26d535  ice: fix an error code in ice_cfg_phy_fec()
+
+elapsed time: 723m
+
+configs tested: 135
+configs skipped: 4
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+mips                 randconfig-c004-20220111
+powerpc                     tqm8541_defconfig
+nios2                            allyesconfig
+powerpc                      ppc40x_defconfig
+m68k                        stmark2_defconfig
+sh                           se7721_defconfig
+sh                           se7750_defconfig
+arm                          badge4_defconfig
+m68k                           sun3_defconfig
+mips                      fuloong2e_defconfig
+csky                             alldefconfig
+powerpc                       ppc64_defconfig
+powerpc                     taishan_defconfig
+sh                           se7780_defconfig
+sh                                  defconfig
+powerpc                      ep88xc_defconfig
+arm                        mini2440_defconfig
+sh                            migor_defconfig
+m68k                                defconfig
+sh                         microdev_defconfig
+arm                          iop32x_defconfig
+arm                        clps711x_defconfig
+powerpc                      arches_defconfig
+mips                       bmips_be_defconfig
+sh                            titan_defconfig
+arm                           stm32_defconfig
+arm                        multi_v7_defconfig
+arm                            zeus_defconfig
+sh                           se7722_defconfig
+ia64                        generic_defconfig
+mips                         mpc30x_defconfig
+arc                          axs103_defconfig
+m68k                       bvme6000_defconfig
+sh                   rts7751r2dplus_defconfig
+riscv                            allyesconfig
+m68k                         apollo_defconfig
+arm                       aspeed_g5_defconfig
+arm                        cerfcube_defconfig
+um                               alldefconfig
+arm                  randconfig-c002-20220111
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220111
+arc                  randconfig-r043-20220111
+s390                 randconfig-r044-20220111
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+arm                  randconfig-c002-20220111
+x86_64                        randconfig-c007
+riscv                randconfig-c006-20220111
+powerpc              randconfig-c003-20220111
+i386                          randconfig-c001
+s390                 randconfig-c005-20220111
+mips                 randconfig-c004-20220111
+arm                  colibri_pxa300_defconfig
+mips                          malta_defconfig
+arm                          ep93xx_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                     akebono_defconfig
+powerpc                     kilauea_defconfig
+powerpc                          g5_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                     tqm5200_defconfig
+arm                         hackkit_defconfig
+powerpc                   lite5200b_defconfig
+riscv                             allnoconfig
+arm                          ixp4xx_defconfig
+riscv                          rv32_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
