@@ -1,169 +1,270 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 11 Jan 2022 21:24:35 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 07041751379490d044596e1e7e091d53af26d535
-Message-ID: <61dd8513.q4rwgximQ0j38lQz%lkp@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 11 Jan 2022 21:35:18 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/4] i40e: Add new
+ versions of send ASQ command functions
+In-Reply-To: <20220110131142.8481-2-jedrzej.jagielski@intel.com>
+References: <20220110131142.8481-1-jedrzej.jagielski@intel.com>
+ <20220110131142.8481-2-jedrzej.jagielski@intel.com>
+Message-ID: <11c029eb87a2660c7bcff2b20ea367f3d3943478.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 07041751379490d044596e1e7e091d53af26d535  ice: fix an error code in ice_cfg_phy_fec()
+On Mon, 2022-01-10 at 13:11 +0000, Jedrzej Jagielski wrote:
+> ASQ send command functions are returning only i40e status codes
+> yet some calling functions also need Admin Queue status
+> that is stored in hw->aq.asq_last_status. Since hw object
+> is stored on a heap it introduces a possibility for
+> a race condition in access to hw if calling function is not
+> fast enough to read hw->aq.asq_last_status before next
+> send ASQ command is executed.
+> 
+> Add new versions of send ASQ command functions that return
+> Admin Queue status on the stack to avoid race conditions
+> in access to hw->aq.asq_last_status.
+> Add new _v2 version of i40e_aq_remove_macvlan that is using
+> new _v2 versions of ASQ send command functions and returns
+> the Admin Queue status on the stack.
+> 
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+> ?drivers/net/ethernet/intel/i40e/i40e_adminq.c | 92
+> +++++++++++++++++--
+> ?drivers/net/ethernet/intel/i40e/i40e_common.c | 49 ++++++++++
+> ?.../net/ethernet/intel/i40e/i40e_prototype.h? | 20 ++++
+> ?3 files changed, 153 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> index 7abef88801fb..10db5180d518 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+> @@ -769,7 +769,7 @@ static bool i40e_asq_done(struct i40e_hw *hw)
+> ?}
+> ?
+> ?/**
+> - *? i40e_asq_send_command_atomic - send command to Admin Queue
+> + *? i40e_asq_send_command_atomic_exec - send command to Admin Queue
+> ? *? @hw: pointer to the hw struct
+> ? *? @desc: prefilled descriptor describing the command (non DMA mem)
+> ? *? @buff: buffer to use for indirect commands
+> @@ -780,11 +780,13 @@ static bool i40e_asq_done(struct i40e_hw *hw)
+> ? *? This is the main send command driver routine for the Admin Queue
+> send
+> ? *? queue.? It runs the queue, cleans the queue, etc
+> ? **/
+> -i40e_status
+> -i40e_asq_send_command_atomic(struct i40e_hw *hw, struct i40e_aq_desc
+> *desc,
+> -??????????????????????????? void *buff, /* can be NULL */ u16?
+> buff_size,
+> -??????????????????????????? struct i40e_asq_cmd_details
+> *cmd_details,
+> -??????????????????????????? bool is_atomic_context)
+> +static i40e_status
+> +i40e_asq_send_command_atomic_exec(struct i40e_hw *hw,
+> +???????????????????????????????? struct i40e_aq_desc *desc,
+> +???????????????????????????????? void *buff, /* can be NULL */
+> +???????????????????????????????? u16? buff_size,
+> +???????????????????????????????? struct i40e_asq_cmd_details
+> *cmd_details,
+> +???????????????????????????????? bool is_atomic_context)
+> ?{
+> ????????i40e_status status = 0;
+> ????????struct i40e_dma_mem *dma_buff = NULL;
+> @@ -794,8 +796,6 @@ i40e_asq_send_command_atomic(struct i40e_hw *hw,
+> struct i40e_aq_desc *desc,
+> ????????u16? retval = 0;
+> ????????u32? val = 0;
+> ?
+> -???????mutex_lock(&hw->aq.asq_mutex);
+> -
+> ????????if (hw->aq.asq.count == 0) {
+> ????????????????i40e_debug(hw, I40E_DEBUG_AQ_MESSAGE,
+> ?????????????????????????? "AQTX: Admin queue not initialized.\n");
+> @@ -969,6 +969,36 @@ i40e_asq_send_command_atomic(struct i40e_hw *hw,
+> struct i40e_aq_desc *desc,
+> ????????}
+> ?
+> ?asq_send_command_error:
+> +???????return status;
+> +}
+> +
+> +/**
+> + *? i40e_asq_send_command_atomic - send command to Admin Queue
+> + *? @hw: pointer to the hw struct
+> + *? @desc: prefilled descriptor describing the command (non DMA mem)
+> + *? @buff: buffer to use for indirect commands
+> + *? @buff_size: size of buffer for indirect commands
+> + *? @cmd_details: pointer to command details structure
+> + *? @is_atomic_context: is the function called in an atomic context?
+> + *
+> + *? Acquires the lock and calls the main send command execution
+> + *? routine.
+> + **/
+> +i40e_status
+> +i40e_asq_send_command_atomic(struct i40e_hw *hw,
+> +??????????????????????????? struct i40e_aq_desc *desc,
+> +??????????????????????????? void *buff, /* can be NULL */
+> +??????????????????????????? u16? buff_size,
+> +??????????????????????????? struct i40e_asq_cmd_details
+> *cmd_details,
+> +??????????????????????????? bool is_atomic_context)
+> +{
+> +???????i40e_status status = I40E_SUCCESS;
 
-elapsed time: 723m
+This initialization isn't needed.
 
-configs tested: 135
-configs skipped: 4
+> +???????mutex_lock(&hw->aq.asq_mutex);
+> +???????status = i40e_asq_send_command_atomic_exec(hw, desc, buff,
+> buff_size,
+> +????????????????????????????????????????????????? cmd_details,
+> +?????????????????????????????????????????????????
+> is_atomic_context);
+> +
+> ????????mutex_unlock(&hw->aq.asq_mutex);
+> ????????return status;
+> ?}
+> @@ -982,6 +1012,52 @@ i40e_asq_send_command(struct i40e_hw *hw,
+> struct i40e_aq_desc *desc,
+> ??????????????????????????????????????????? cmd_details, false);
+> ?}
+> ?
+> +/**
+> + *? i40e_asq_send_command_atomic_v2 - send command to Admin Queue
+> + *? @hw: pointer to the hw struct
+> + *? @desc: prefilled descriptor describing the command (non DMA mem)
+> + *? @buff: buffer to use for indirect commands
+> + *? @buff_size: size of buffer for indirect commands
+> + *? @cmd_details: pointer to command details structure
+> + *? @is_atomic_context: is the function called in an atomic context?
+> + *? @aq_status: pointer to Admin Queue status return value
+> + *
+> + *? Acquires the lock and calls the main send command execution
+> + *? routine. Returns the last Admin Queue status in aq_status
+> + *? to avoid race conditions in access to hw->aq.asq_last_status.
+> + **/
+> +i40e_status
+> +i40e_asq_send_command_atomic_v2(struct i40e_hw *hw,
+> +???????????????????????????????struct i40e_aq_desc *desc,
+> +???????????????????????????????void *buff, /* can be NULL */
+> +???????????????????????????????u16? buff_size,
+> +???????????????????????????????struct i40e_asq_cmd_details
+> *cmd_details,
+> +???????????????????????????????bool is_atomic_context,
+> +???????????????????????????????enum i40e_admin_queue_err *aq_status)
+> +{
+> +???????i40e_status status = I40E_SUCCESS;
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+This as well.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220111
-powerpc                     tqm8541_defconfig
-nios2                            allyesconfig
-powerpc                      ppc40x_defconfig
-m68k                        stmark2_defconfig
-sh                           se7721_defconfig
-sh                           se7750_defconfig
-arm                          badge4_defconfig
-m68k                           sun3_defconfig
-mips                      fuloong2e_defconfig
-csky                             alldefconfig
-powerpc                       ppc64_defconfig
-powerpc                     taishan_defconfig
-sh                           se7780_defconfig
-sh                                  defconfig
-powerpc                      ep88xc_defconfig
-arm                        mini2440_defconfig
-sh                            migor_defconfig
-m68k                                defconfig
-sh                         microdev_defconfig
-arm                          iop32x_defconfig
-arm                        clps711x_defconfig
-powerpc                      arches_defconfig
-mips                       bmips_be_defconfig
-sh                            titan_defconfig
-arm                           stm32_defconfig
-arm                        multi_v7_defconfig
-arm                            zeus_defconfig
-sh                           se7722_defconfig
-ia64                        generic_defconfig
-mips                         mpc30x_defconfig
-arc                          axs103_defconfig
-m68k                       bvme6000_defconfig
-sh                   rts7751r2dplus_defconfig
-riscv                            allyesconfig
-m68k                         apollo_defconfig
-arm                       aspeed_g5_defconfig
-arm                        cerfcube_defconfig
-um                               alldefconfig
-arm                  randconfig-c002-20220111
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a003
-i386                          randconfig-a001
-i386                          randconfig-a005
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                randconfig-r042-20220111
-arc                  randconfig-r043-20220111
-s390                 randconfig-r044-20220111
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+> +???????mutex_lock(&hw->aq.asq_mutex);
+> +???????status = i40e_asq_send_command_atomic_exec(hw, desc, buff,
+> +????????????????????????????????????????????????? buff_size,
+> +????????????????????????????????????????????????? cmd_details,
+> +?????????????????????????????????????????????????
+> is_atomic_context);
+> +???????if (aq_status)
+> +???????????????*aq_status = hw->aq.asq_last_status;
+> +???????mutex_unlock(&hw->aq.asq_mutex);
+> +???????return status;
+> +}
+> +
+> +inline i40e_status
+> +i40e_asq_send_command_v2(struct i40e_hw *hw, struct i40e_aq_desc
+> *desc,
+> +??????????????????????? void *buff, /* can be NULL */ u16?
+> buff_size,
+> +??????????????????????? struct i40e_asq_cmd_details *cmd_details,
+> +??????????????????????? enum i40e_admin_queue_err *aq_status)
 
-clang tested configs:
-arm                  randconfig-c002-20220111
-x86_64                        randconfig-c007
-riscv                randconfig-c006-20220111
-powerpc              randconfig-c003-20220111
-i386                          randconfig-c001
-s390                 randconfig-c005-20220111
-mips                 randconfig-c004-20220111
-arm                  colibri_pxa300_defconfig
-mips                          malta_defconfig
-arm                          ep93xx_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                     akebono_defconfig
-powerpc                     kilauea_defconfig
-powerpc                          g5_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                     tqm5200_defconfig
-arm                         hackkit_defconfig
-powerpc                   lite5200b_defconfig
-riscv                             allnoconfig
-arm                          ixp4xx_defconfig
-riscv                          rv32_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
+Don't use inline in c files.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+> +{
+> +???????return i40e_asq_send_command_atomic_v2(hw, desc, buff,
+> buff_size,
+> +????????????????????????????????????????????? cmd_details, true,
+> aq_status);
+> +}
+> +
+> ?/**
+> ? *? i40e_fill_default_direct_cmd_desc - AQ descriptor helper
+> function
+> ? *? @desc:???? pointer to the temp descriptor (non DMA mem)
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c
+> b/drivers/net/ethernet/intel/i40e/i40e_common.c
+> index 9ddeb015eb7e..cdd6e5bdbe4f 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+> @@ -2721,6 +2721,55 @@ i40e_status i40e_aq_remove_macvlan(struct
+> i40e_hw *hw, u16 seid,
+> ????????return status;
+> ?}
+> ?
+> +/**
+> + * i40e_aq_remove_macvlan_v2
+> + * @hw: pointer to the hw struct
+> + * @seid: VSI for the mac address
+> + * @mv_list: list of macvlans to be removed
+> + * @count: length of the list
+> + * @cmd_details: pointer to command details structure or NULL
+> + * @aq_status: pointer to Admin Queue status return value
+> + *
+> + * Remove MAC/VLAN addresses from the HW filtering.
+> + * The _v2 version returns the last Admin Queue status in aq_status
+> + * to avoid race conditions in access to hw->aq.asq_last_status.
+> + * It also calls _v2 versions of asq_send_command functions to
+> + * get the aq_status on the stack.
+> + **/
+> +i40e_status
+> +i40e_aq_remove_macvlan_v2(struct i40e_hw *hw, u16 seid,
+> +???????????????????????? struct i40e_aqc_remove_macvlan_element_data
+> *mv_list,
+> +???????????????????????? u16 count, struct i40e_asq_cmd_details
+> *cmd_details,
+> +???????????????????????? enum i40e_admin_queue_err *aq_status)
+> +{
+> +???????struct i40e_aq_desc desc;
+> +???????struct i40e_aqc_macvlan *cmd;
+
+Not RCT.
+
+> +???????i40e_status status;
+> +???????u16 buf_size;
+> +
+> +???????if (count == 0 || !mv_list || !hw)
+> +???????????????return I40E_ERR_PARAM;
+> +
+> +???????buf_size = count * sizeof(*mv_list);
+> +
+> +???????/* prep the rest of the request */
+> +???????i40e_fill_default_direct_cmd_desc(&desc,
+> i40e_aqc_opc_remove_macvlan);
+> +???????cmd = (struct i40e_aqc_macvlan *)&desc.params.raw;
+> +???????cmd->num_addresses = cpu_to_le16(count);
+> +???????cmd->seid[0] = cpu_to_le16(I40E_AQC_MACVLAN_CMD_SEID_VALID |
+> seid);
+> +???????cmd->seid[1] = 0;
+> +???????cmd->seid[2] = 0;
+> +
+> +???????desc.flags |= cpu_to_le16((u16)(I40E_AQ_FLAG_BUF |
+> I40E_AQ_FLAG_RD));
+> +???????if (buf_size > I40E_AQ_LARGE_BUF)
+> +???????????????desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_LB);
+> +
+> +???????status = i40e_asq_send_command_atomic_v2(hw, &desc, mv_list,
+> buf_size,
+> +??????????????????????????????????????????????? cmd_details, true,
+> aq_status);
+
+This can be returned directly, there's no need to assign it to status.
+Which removes the need for the status variable.
+
+> +
+> +???????return status;
+> +}
+> +
+
