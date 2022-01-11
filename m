@@ -1,51 +1,42 @@
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-Date: Mon, 10 Jan 2022 18:07:11 +0200
-Subject: [Intel-wired-lan] "Missing unregister,
- handled but fix driver" when changing ring settings on igc interface
-Message-ID: <YdxZr0wMxvsDCpbV@wantstofly.org>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Tue, 11 Jan 2022 07:30:53 +0000
+Subject: [Intel-wired-lan] [PATCH v4 net-next 7/9] ixgbe: pass bi->xdp
+ to ixgbe_construct_skb_zc() directly
+In-Reply-To: <20211208140702.642741-8-alexandr.lobakin@intel.com>
+References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
+ <20211208140702.642741-8-alexandr.lobakin@intel.com>
+Message-ID: <MW3PR11MB45549D6C03955849FC75BCF89C519@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
-
-I didn't see this reported yet.  When doing e.g. this on an igc
-interface (I225-V):
-
-	# ethtool -G enp3s0 rx 512
-
-I get a few warnings like the following:
-
-[  225.198467] ------------[ cut here ]------------
-[  225.198473] Missing unregister, handled but fix driver
-[  225.198485] WARNING: CPU: 7 PID: 959 at net/core/xdp.c:168 xdp_rxq_info_reg+0x79/0xd0
-[...]
-[  225.198601] Call Trace:
-[  225.198604]  <TASK>
-[  225.198609]  igc_setup_rx_resources+0x3f/0xe0 [igc]
-[  225.198617]  igc_ethtool_set_ringparam+0x30e/0x450 [igc]
-[  225.198626]  ethnl_set_rings+0x18a/0x250
-[  225.198631]  genl_family_rcv_msg_doit+0xca/0x110
-[  225.198637]  genl_rcv_msg+0xce/0x1c0
-[  225.198640]  ? rings_prepare_data+0x60/0x60
-[  225.198644]  ? genl_get_cmd+0xd0/0xd0
-[  225.198647]  netlink_rcv_skb+0x4e/0xf0
-[  225.198652]  genl_rcv+0x24/0x40
-[  225.198655]  netlink_unicast+0x20e/0x330
-[  225.198659]  netlink_sendmsg+0x23f/0x480
-[  225.198663]  sock_sendmsg+0x5b/0x60
-[  225.198667]  __sys_sendto+0xf0/0x160
-[  225.198671]  ? handle_mm_fault+0xb2/0x280
-[  225.198676]  ? do_user_addr_fault+0x1eb/0x690
-[  225.198680]  __x64_sys_sendto+0x20/0x30
-[  225.198683]  do_syscall_64+0x38/0x90
-[  225.198687]  entry_SYSCALL_64_after_hwframe+0x44/0xae
-[  225.198693] RIP: 0033:0x7f7ae38ac3aa
-
-This is on vanilla 5.16.
-
-
-Thanks,
-Lennert
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Alexander Lobakin
+>Sent: Wednesday, December 8, 2021 7:37 PM
+To: intel-wired-lan@lists.osuosl.org
+>Cc: Song Liu <songliubraving@fb.com>; Jesper Dangaard Brouer
+><hawk@kernel.org>; Daniel Borkmann <daniel@iogearbox.net>; Yonghong
+>Song <yhs@fb.com>; Martin KaFai Lau <kafai@fb.com>; John Fastabend
+><john.fastabend@gmail.com>; Alexei Starovoitov <ast@kernel.org>; Andrii
+>Nakryiko <andrii@kernel.org>; Bj?rn T?pel <bjorn@kernel.org>;
+>netdev at vger.kernel.org; Jakub Kicinski <kuba@kernel.org>; KP Singh
+><kpsingh@kernel.org>; bpf at vger.kernel.org; David S. Miller
+><davem@davemloft.net>; linux-kernel at vger.kernel.org
+>Subject: [Intel-wired-lan] [PATCH v4 net-next 7/9] ixgbe: pass bi->xdp to
+>ixgbe_construct_skb_zc() directly
+>
+>To not dereference bi->xdp each time in ixgbe_construct_skb_zc(), pass bi-
+>>xdp as an argument instead of bi. We can also call
+>xsk_buff_free() outside of the function as well as assign bi->xdp to NULL,
+>which seems to make it closer to its name.
+>
+>Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+>Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+>---
+> drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c | 19 ++++++++++---------
+> 1 file changed, 10 insertions(+), 9 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
