@@ -1,69 +1,175 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Wed, 12 Jan 2022 08:50:53 -0600
-Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
- overlapping of BARs
-In-Reply-To: <9526698be0ced0f7a7ed00bd76538d16@walle.cc>
-Message-ID: <20220112145053.GA254177@bhelgaas>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 12 Jan 2022 23:19:40 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 61a0b1ca2485ddfe549cde9eccd93b06b53188e8
+Message-ID: <61def18c.+igfjUUHr1jkeBdH%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Dec 23, 2021 at 07:12:02PM +0100, Michael Walle wrote:
-> Am 2021-12-23 17:37, schrieb Bjorn Helgaas:
-> 
-> > I intended to change the quirk from FINAL to EARLY, but obviously
-> > forgot.  Here's the updated version:
-> > 
-> > commit bb5639b73a2d ("PCI: Work around Intel I210 ROM BAR overlap
-> > defect")
-> > Author: Bjorn Helgaas <bhelgaas@google.com>
-> > Date:   Tue Dec 21 10:45:07 2021 -0600
-> > 
-> >     PCI: Work around Intel I210 ROM BAR overlap defect
-> > 
-> >     Per PCIe r5, sec 7.5.1.2.4, a device must not claim accesses to its
-> >     Expansion ROM unless both the Memory Space Enable and the Expansion
-> > ROM
-> >     Enable bit are set.  But apparently some Intel I210 NICs don't work
-> >     correctly if the ROM BAR overlaps another BAR, even if the Expansion
-> > ROM is
-> >     disabled.
-> > 
-> >     Michael reported that on a Kontron SMARC-sAL28 ARM64 system with
-> > U-Boot
-> >     v2021.01-rc3, the ROM BAR overlaps BAR 3, and networking doesn't
-> > work at
-> >     all:
-> > 
-> >       BAR 0: 0x40000000 (32-bit, non-prefetchable) [size=1M]
-> >       BAR 3: 0x40200000 (32-bit, non-prefetchable) [size=16K]
-> >       ROM:   0x40200000 (disabled) [size=1M]
-> > 
-> >       NETDEV WATCHDOG: enP2p1s0 (igb): transmit queue 0 timed out
-> >       Hardware name: Kontron SMARC-sAL28 (Single PHY) on SMARC Eval
-> > 2.0 carrier (DT)
-> >       igb 0002:01:00.0 enP2p1s0: Reset adapter
-> > 
-> >     Previously, pci_std_update_resource() wrote the assigned ROM address
-> > to the
-> >     BAR only when the ROM was enabled.  This meant that the I210 ROM BAR
-> > could
-> >     be left with an address assigned by firmware, which might overlap
-> > with
-> >     other BARs.
-> > 
-> >     Quirk these I210 devices so pci_std_update_resource() always writes
-> > the
-> >     assigned address to the ROM BAR, whether or not the ROM is enabled.
-> > 
-> >     Link:
-> > https://lore.kernel.org/r/20201230185317.30915-1-michael at walle.cc
-> >     Link: https://bugzilla.kernel.org/show_bug.cgi?id=211105
-> >     Reported-by: Michael Walle <michael@walle.cc>
-> >     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> Tested-by: Michael Walle <michael@walle.cc>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 61a0b1ca2485ddfe549cde9eccd93b06b53188e8  iavf: Add support for 50G/100G in AIM algorithm
 
-Applied to pci/resource for v5.17, thanks!
+elapsed time: 805m
+
+configs tested: 141
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+mips                 randconfig-c004-20220111
+mips                 randconfig-c004-20220112
+arc                                 defconfig
+s390                             allmodconfig
+arm                         cm_x300_defconfig
+csky                             alldefconfig
+powerpc                      ppc6xx_defconfig
+powerpc                         wii_defconfig
+arm                           u8500_defconfig
+h8300                     edosk2674_defconfig
+sh                           se7724_defconfig
+m68k                           sun3_defconfig
+arc                     haps_hs_smp_defconfig
+sh                         microdev_defconfig
+powerpc                     rainier_defconfig
+sparc                            alldefconfig
+sh                          rsk7203_defconfig
+m68k                       m5275evb_defconfig
+sh                        edosk7705_defconfig
+arm                        realview_defconfig
+powerpc                       holly_defconfig
+powerpc                  storcenter_defconfig
+arm                         assabet_defconfig
+arm                            pleb_defconfig
+sh                            hp6xx_defconfig
+sh                            shmin_defconfig
+h8300                       h8s-sim_defconfig
+sh                           se7751_defconfig
+microblaze                          defconfig
+powerpc                    adder875_defconfig
+sh                             shx3_defconfig
+m68k                        stmark2_defconfig
+arm                        trizeps4_defconfig
+powerpc                 mpc834x_itx_defconfig
+microblaze                      mmu_defconfig
+sh                           se7721_defconfig
+sh                          polaris_defconfig
+arm                        mini2440_defconfig
+m68k                            q40_defconfig
+sh                          sdk7780_defconfig
+sh                        edosk7760_defconfig
+mips                        jmr3927_defconfig
+xtensa                           alldefconfig
+h8300                            alldefconfig
+arm                  randconfig-c002-20220111
+arm                  randconfig-c002-20220112
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220111
+arc                  randconfig-r043-20220112
+arc                  randconfig-r043-20220111
+s390                 randconfig-r044-20220111
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+arm                  randconfig-c002-20220111
+x86_64                        randconfig-c007
+riscv                randconfig-c006-20220111
+powerpc              randconfig-c003-20220111
+i386                          randconfig-c001
+mips                 randconfig-c004-20220111
+arm                  randconfig-c002-20220112
+riscv                randconfig-c006-20220112
+powerpc              randconfig-c003-20220112
+mips                 randconfig-c004-20220112
+arm                      tct_hammer_defconfig
+arm                    vt8500_v6_v7_defconfig
+arm                       cns3420vb_defconfig
+arm                     davinci_all_defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc                 mpc836x_mds_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220112
+riscv                randconfig-r042-20220112
+s390                 randconfig-r044-20220112
+hexagon              randconfig-r041-20220112
+hexagon              randconfig-r045-20220111
+hexagon              randconfig-r041-20220111
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
