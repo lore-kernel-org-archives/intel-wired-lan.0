@@ -1,175 +1,71 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 12 Jan 2022 23:19:40 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 61a0b1ca2485ddfe549cde9eccd93b06b53188e8
-Message-ID: <61def18c.+igfjUUHr1jkeBdH%lkp@intel.com>
+From: Samuel Mendoza-Jonas <samjonas@amazon.com>
+Date: Wed, 12 Jan 2022 15:32:31 -0800
+Subject: [Intel-wired-lan] [PATCH net] ixgbevf: Require large buffers for
+ build_skb on 82599VF
+Message-ID: <20220112233231.317259-1-samjonas@amazon.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 61a0b1ca2485ddfe549cde9eccd93b06b53188e8  iavf: Add support for 50G/100G in AIM algorithm
+From 4.17 onwards the ixgbevf driver uses build_skb() to build an skb
+around new data in the page buffer shared with the ixgbe PF.
+This uses either a 2K or 3K buffer, and offsets the DMA mapping by
+NET_SKB_PAD + NET_IP_ALIGN. When using a smaller buffer RXDCTL is set to
+ensure the PF does not write a full 2K bytes into the buffer, which is
+actually 2K minus the offset.
 
-elapsed time: 805m
+However on the 82599 virtual function, the RXDCTL mechanism is not
+available. The driver attempts to work around this by using the SET_LPE
+mailbox method to lower the maximm frame size, but the ixgbe PF driver
+ignores this in order to keep the PF and all VFs in sync[0].
 
-configs tested: 141
-configs skipped: 3
+This means the PF will write up to the full 2K set in SRRCTL, causing it
+to write NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the buffer.
+With 4K pages split into two buffers, this means it either writes
+NET_SKB_PAD + NET_IP_ALIGN bytes past the first buffer (and into the
+second), or NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the DMA
+mapping.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Avoid this by only enabling build_skb when using "large" buffers (3K).
+These are placed in each half of an order-1 page, preventing the PF from
+writing past the end of the mapping.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220111
-mips                 randconfig-c004-20220112
-arc                                 defconfig
-s390                             allmodconfig
-arm                         cm_x300_defconfig
-csky                             alldefconfig
-powerpc                      ppc6xx_defconfig
-powerpc                         wii_defconfig
-arm                           u8500_defconfig
-h8300                     edosk2674_defconfig
-sh                           se7724_defconfig
-m68k                           sun3_defconfig
-arc                     haps_hs_smp_defconfig
-sh                         microdev_defconfig
-powerpc                     rainier_defconfig
-sparc                            alldefconfig
-sh                          rsk7203_defconfig
-m68k                       m5275evb_defconfig
-sh                        edosk7705_defconfig
-arm                        realview_defconfig
-powerpc                       holly_defconfig
-powerpc                  storcenter_defconfig
-arm                         assabet_defconfig
-arm                            pleb_defconfig
-sh                            hp6xx_defconfig
-sh                            shmin_defconfig
-h8300                       h8s-sim_defconfig
-sh                           se7751_defconfig
-microblaze                          defconfig
-powerpc                    adder875_defconfig
-sh                             shx3_defconfig
-m68k                        stmark2_defconfig
-arm                        trizeps4_defconfig
-powerpc                 mpc834x_itx_defconfig
-microblaze                      mmu_defconfig
-sh                           se7721_defconfig
-sh                          polaris_defconfig
-arm                        mini2440_defconfig
-m68k                            q40_defconfig
-sh                          sdk7780_defconfig
-sh                        edosk7760_defconfig
-mips                        jmr3927_defconfig
-xtensa                           alldefconfig
-h8300                            alldefconfig
-arm                  randconfig-c002-20220111
-arm                  randconfig-c002-20220112
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                          randconfig-a003
-i386                          randconfig-a001
-i386                          randconfig-a005
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                randconfig-r042-20220111
-arc                  randconfig-r043-20220112
-arc                  randconfig-r043-20220111
-s390                 randconfig-r044-20220111
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+[0]: Technically it only ever raises the max frame size, see
+ixgbe_set_vf_lpe() in ixgbe_sriov.c
 
-clang tested configs:
-arm                  randconfig-c002-20220111
-x86_64                        randconfig-c007
-riscv                randconfig-c006-20220111
-powerpc              randconfig-c003-20220111
-i386                          randconfig-c001
-mips                 randconfig-c004-20220111
-arm                  randconfig-c002-20220112
-riscv                randconfig-c006-20220112
-powerpc              randconfig-c003-20220112
-mips                 randconfig-c004-20220112
-arm                      tct_hammer_defconfig
-arm                    vt8500_v6_v7_defconfig
-arm                       cns3420vb_defconfig
-arm                     davinci_all_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                 mpc836x_mds_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220112
-riscv                randconfig-r042-20220112
-s390                 randconfig-r044-20220112
-hexagon              randconfig-r041-20220112
-hexagon              randconfig-r045-20220111
-hexagon              randconfig-r041-20220111
-
+Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 0015fcf1df2b..0f293acd17e8 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1984,14 +1984,15 @@ static void ixgbevf_set_rx_buffer_len(struct ixgbevf_adapter *adapter,
+ 	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
+ 		return;
+ 
+-	set_ring_build_skb_enabled(rx_ring);
++	if (PAGE_SIZE < 8192)
++		if (max_frame > IXGBEVF_MAX_FRAME_BUILD_SKB)
++			set_ring_uses_large_buffer(rx_ring);
+ 
+-	if (PAGE_SIZE < 8192) {
+-		if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
+-			return;
++	/* 82599 can't rely on RXDCTL.RLPML to restrict the size of the frame */
++	if (adapter->hw.mac.type == ixgbe_mac_82599_vf && !ring_uses_large_buffer(rx_ring))
++		return;
+ 
+-		set_ring_uses_large_buffer(rx_ring);
+-	}
++	set_ring_build_skb_enabled(rx_ring);
+ }
+ 
+ /**
+-- 
+2.25.1
+
