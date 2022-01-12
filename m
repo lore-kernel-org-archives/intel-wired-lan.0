@@ -1,102 +1,119 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 11 Jan 2022 21:56:50 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v1 2/4] i40e: Add new version
- of i40e_aq_add_macvlan function
-In-Reply-To: <20220110131142.8481-3-jedrzej.jagielski@intel.com>
-References: <20220110131142.8481-1-jedrzej.jagielski@intel.com>
- <20220110131142.8481-3-jedrzej.jagielski@intel.com>
-Message-ID: <571acb2a7885338ccde1347a6ee92bad02fa9178.camel@intel.com>
+From: Karen Sornek <karen.sornek@intel.com>
+Date: Wed, 12 Jan 2022 10:19:47 +0100
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset path while
+ removing the driver
+Message-ID: <20220112091947.132769-1-karen.sornek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2022-01-10 at 13:11 +0000, Jedrzej Jagielski wrote:
+Fix the crash in kernel while dereferencing the NULL pointer,
+when the driver is unloaded and simultaneously the vsi rings
+are being stopped.
 
-<snip>
+The hardware requires 50msec in order to finish RX queues
+disable. For this purpose the driver spins in mdelay function
+for the operation to be completed.
 
-> +/**
-> + * i40e_aq_add_macvlan
-> + * @hw: pointer to the hw struct
-> + * @seid: VSI for the mac address
-> + * @mv_list: list of macvlans to be added
-> + * @count: length of the list
-> + * @cmd_details: pointer to command details structure or NULL
-> + *
-> + * Add MAC/VLAN addresses to the HW filtering
-> + **/
-> +i40e_status
-> +i40e_aq_add_macvlan(struct i40e_hw *hw, u16 seid,
-> +?????????????????? struct i40e_aqc_add_macvlan_element_data
-> *mv_list,
-> +?????????????????? u16 count, struct i40e_asq_cmd_details
-> *cmd_details)
-> +{
-> +???????struct i40e_aq_desc desc;
-> +???????i40e_status status;
-> +???????u16 buf_size;
-> +
-> +???????if (count == 0 || !mv_list || !hw)
-> +???????????????return I40E_ERR_PARAM;
-> +
-> +???????buf_size = i40e_prepare_add_macvlan(mv_list, &desc, count,
-> seid);
-> ?
-> ????????status = i40e_asq_send_command(hw, &desc, mv_list, buf_size,
-> ?????????????????????????????????????? cmd_details);
+For example changing number of queues which requires reset would
+fail in the following call stack:
 
-Not directly part of this patch, but if you are touching this function.
-This function could also be returned directly since the line directly
-following this is a 'return status'.
+1) i40e_prep_for_reset
+2) i40e_pf_quiesce_all_vsi
+3) i40e_quiesce_vsi
+4) i40e_vsi_close
+5) i40e_down
+6) i40e_vsi_stop_rings
+7) i40e_vsi_control_rx -> disable requires the delay of 50msecs
+8) continue back in i40e_down function where
+   i40e_clean_tx_ring(vsi->tx_rings[i]) is going to crash
 
-> @@ -2679,6 +2701,42 @@ i40e_status i40e_aq_add_macvlan(struct i40e_hw
-> *hw, u16 seid,
-> ????????return status;
-> ?}
-> ?
-> +/**
-> + * i40e_aq_add_macvlan_v2
-> + * @hw: pointer to the hw struct
-> + * @seid: VSI for the mac address
-> + * @mv_list: list of macvlans to be added
-> + * @count: length of the list
-> + * @cmd_details: pointer to command details structure or NULL
-> + * @aq_status: pointer to Admin Queue status return value
-> + *
-> + * Add MAC/VLAN addresses to the HW filtering.
-> + * The _v2 version returns the last Admin Queue status in aq_status
-> + * to avoid race conditions in access to hw->aq.asq_last_status.
-> + * It also calls _v2 versions of asq_send_command functions to
-> + * get the aq_status on the stack.
-> + **/
-> +i40e_status
-> +i40e_aq_add_macvlan_v2(struct i40e_hw *hw, u16 seid,
-> +????????????????????? struct i40e_aqc_add_macvlan_element_data
-> *mv_list,
-> +????????????????????? u16 count, struct i40e_asq_cmd_details
-> *cmd_details,
-> +????????????????????? enum i40e_admin_queue_err *aq_status)
-> +{
-> +???????struct i40e_aq_desc desc;
-> +???????i40e_status status;
-> +???????u16 buf_size;
-> +
-> +???????if (count == 0 || !mv_list || !hw)
-> +???????????????return I40E_ERR_PARAM;
-> +
-> +???????buf_size = i40e_prepare_add_macvlan(mv_list, &desc, count,
-> seid);
-> +
-> +???????status = i40e_asq_send_command_atomic_v2(hw, &desc, mv_list,
-> buf_size,
-> +??????????????????????????????????????????????? cmd_details, true,
-> aq_status);
-> +
-> +???????return status;
+When the driver was spinning vsi_release called
+i40e_vsi_free_arrays where the vsi->tx_rings resources
+were freed and the pointer was set to NULL.
 
-Same here. This function can be returned direclty and status removed.
+Fixes: 5b6d4a7f20b0 ("i40e: Fix crash during removing i40e driver")
+Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 19 ++++++++++++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-> +}
-> +
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 7f40f87a5f57..c7d3355be9f6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -144,6 +144,7 @@ enum i40e_state_t {
+ 	__I40E_VIRTCHNL_OP_PENDING,
+ 	__I40E_RECOVERY_MODE,
+ 	__I40E_VF_RESETS_DISABLED,	/* disable resets during i40e_remove */
++	__I40E_IN_REMOVE,
+ 	__I40E_VFS_RELEASING,
+ 	/* This must be last as it determines the size of the BITMAP */
+ 	__I40E_STATE_SIZE__,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 40c22bc0d409..fb6ad32bc74b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10900,6 +10900,9 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit,
+ 				   bool lock_acquired)
+ {
+ 	int ret;
++
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return;
+ 	/* Now we wait for GRST to settle out.
+ 	 * We don't have to delete the VEBs or VSIs from the hw switch
+ 	 * because the reset will make them disappear.
+@@ -12259,6 +12262,8 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 
+ 		vsi->req_queue_pairs = queue_count;
+ 		i40e_prep_for_reset(pf);
++		if (test_bit(__I40E_IN_REMOVE, pf->state))
++			return pf->alloc_rss_size;
+ 
+ 		pf->alloc_rss_size = new_rss_size;
+ 
+@@ -13085,6 +13090,10 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+ 	if (need_reset)
+ 		i40e_prep_for_reset(pf);
+ 
++	/* VSI shall be deleted in a moment, just return EINVAL */
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return -EINVAL;
++
+ 	old_prog = xchg(&vsi->xdp_prog, prog);
+ 
+ 	if (need_reset) {
+@@ -15975,8 +15984,13 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
+ 	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
+ 
+-	while (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
++	/* Grab __I40E_RESET_RECOVERY_PENDING and set __I40E_IN_REMOVE
++	 * flags, once they are set, i40e_rebuild should not be called as
++	 * i40e_prep_for_reset always returns early.
++	 */
++	while (test_and_set_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
+ 		usleep_range(1000, 2000);
++	set_bit(__I40E_IN_REMOVE, pf->state);
+ 
+ 	if (pf->flags & I40E_FLAG_SRIOV_ENABLED) {
+ 		set_bit(__I40E_VF_RESETS_DISABLED, pf->state);
+@@ -16175,6 +16189,9 @@ static void i40e_pci_error_reset_done(struct pci_dev *pdev)
+ {
+ 	struct i40e_pf *pf = pci_get_drvdata(pdev);
+ 
++	if (test_bit(__I40E_IN_REMOVE, pf->state))
++		return;
++
+ 	i40e_reset_and_rebuild(pf, false, false);
+ }
+ 
+-- 
+2.27.0
 
