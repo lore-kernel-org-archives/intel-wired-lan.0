@@ -1,66 +1,69 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 12 Jan 2022 14:29:37 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix issue when maximum
- queues is exceeded
-In-Reply-To: <20211105111700.204333-1-jedrzej.jagielski@intel.com>
-References: <20211105111700.204333-1-jedrzej.jagielski@intel.com>
-Message-ID: <DM8PR11MB5621A8A0E2CFBE711F66B441AB529@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Wed, 12 Jan 2022 08:50:53 -0600
+Subject: [Intel-wired-lan] [PATCH v2] PCI: Fix Intel i210 by avoiding
+ overlapping of BARs
+In-Reply-To: <9526698be0ced0f7a7ed00bd76538d16@walle.cc>
+Message-ID: <20220112145053.GA254177@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, Dec 23, 2021 at 07:12:02PM +0100, Michael Walle wrote:
+> Am 2021-12-23 17:37, schrieb Bjorn Helgaas:
+> 
+> > I intended to change the quirk from FINAL to EARLY, but obviously
+> > forgot.  Here's the updated version:
+> > 
+> > commit bb5639b73a2d ("PCI: Work around Intel I210 ROM BAR overlap
+> > defect")
+> > Author: Bjorn Helgaas <bhelgaas@google.com>
+> > Date:   Tue Dec 21 10:45:07 2021 -0600
+> > 
+> >     PCI: Work around Intel I210 ROM BAR overlap defect
+> > 
+> >     Per PCIe r5, sec 7.5.1.2.4, a device must not claim accesses to its
+> >     Expansion ROM unless both the Memory Space Enable and the Expansion
+> > ROM
+> >     Enable bit are set.  But apparently some Intel I210 NICs don't work
+> >     correctly if the ROM BAR overlaps another BAR, even if the Expansion
+> > ROM is
+> >     disabled.
+> > 
+> >     Michael reported that on a Kontron SMARC-sAL28 ARM64 system with
+> > U-Boot
+> >     v2021.01-rc3, the ROM BAR overlaps BAR 3, and networking doesn't
+> > work at
+> >     all:
+> > 
+> >       BAR 0: 0x40000000 (32-bit, non-prefetchable) [size=1M]
+> >       BAR 3: 0x40200000 (32-bit, non-prefetchable) [size=16K]
+> >       ROM:   0x40200000 (disabled) [size=1M]
+> > 
+> >       NETDEV WATCHDOG: enP2p1s0 (igb): transmit queue 0 timed out
+> >       Hardware name: Kontron SMARC-sAL28 (Single PHY) on SMARC Eval
+> > 2.0 carrier (DT)
+> >       igb 0002:01:00.0 enP2p1s0: Reset adapter
+> > 
+> >     Previously, pci_std_update_resource() wrote the assigned ROM address
+> > to the
+> >     BAR only when the ROM was enabled.  This meant that the I210 ROM BAR
+> > could
+> >     be left with an address assigned by firmware, which might overlap
+> > with
+> >     other BARs.
+> > 
+> >     Quirk these I210 devices so pci_std_update_resource() always writes
+> > the
+> >     assigned address to the ROM BAR, whether or not the ROM is enabled.
+> > 
+> >     Link:
+> > https://lore.kernel.org/r/20201230185317.30915-1-michael at walle.cc
+> >     Link: https://bugzilla.kernel.org/show_bug.cgi?id=211105
+> >     Reported-by: Michael Walle <michael@walle.cc>
+> >     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Tested-by: Michael Walle <michael@walle.cc>
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jedrzej Jagielski
-> Sent: pi?tek, 5 listopada 2021 12:17
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Gawin, JaroslawX <jaroslawx.gawin@intel.com>; Laba, SlawomirX
-> <slawomirx.laba@intel.com>; Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix issue when maximum
-> queues is exceeded
-> 
-> Before this patch VF interface vanished when maximum queue number was
-> exceeded. Driver tried to add next queues even if there was not enough
-> space. PF sent incorrect number of queues to the VF when there were not
-> enough of them.
-> 
-> Add an additional condition introduced to check available space in 'qp_pile'
-> before proceeding.
-> This condition makes it impossible to  add queues if they number is greater
-> than the number resulting from available space.
-> Also add the search for free space in PF queue pair piles.
-> 
-> Without this patch VF interfaces are not seen when available space for
-> queues has been exceeded and following logs appears permanently in
-> dmesg:
-> "Unable to get VF config (-32)".
-> "VF 62 failed opcode 3, retval: -5"
-> "Unable to get VF config due to PF error condition, not retrying"
-> 
-> ---
-> V2: little tweaks in commit msg and changes in the code including:
-> change from u16 type to unsigned int,
-> comments change and line reduction
-> ---
-> Fixes: 7daa6bf3294e ("i40e: driver core headers")
-> Fixes: 41c445ff0f48 ("i40e: main driver core")
-> Signed-off-by: Jaroslaw Gawin <jaroslawx.gawin@intel.com>
-> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h        |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 46 +++++++++++----
->  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 59 +++++++++++++++++++
->  3 files changed, 94 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
-> b/drivers/net/ethernet/intel/i40e/i40e.h
-> index d7db443abeaf..88883724c575 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Applied to pci/resource for v5.17, thanks!
