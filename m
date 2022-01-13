@@ -1,10 +1,10 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 13 Jan 2022 18:12:11 +0000
-Subject: [Intel-wired-lan] [PATCH net] ice: fix an error code in
- ice_cfg_phy_fec()
-In-Reply-To: <20220107080206.GI22086@kili>
-References: <20220107080206.GI22086@kili>
-Message-ID: <BYAPR11MB336762F8D52112D0A24DA039FC539@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Thu, 13 Jan 2022 18:33:36 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+ configuration
+In-Reply-To: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
+References: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <BYAPR11MB3367FFB4154822E9D881C8ACFC539@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,25 +15,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Dan Carpenter
-> Sent: Friday, January 7, 2022 1:32 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-> Cc: Swanson, Evan <evan.swanson@intel.com>; netdev at vger.kernel.org;
-> kernel-janitors at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Jakub
-> Kicinski <kuba@kernel.org>; David S. Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net] ice: fix an error code in
-> ice_cfg_phy_fec()
+> Christophe JAILLET
+> Sent: Sunday, January 9, 2022 10:45 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>
+> Cc: netdev at vger.kernel.org; kernel-janitors at vger.kernel.org; linux-
+> kernel at vger.kernel.org; Christophe JAILLET
+> <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org; Christoph
+> Hellwig <hch@lst.de>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+> configuration
 > 
-> Propagate the error code from ice_get_link_default_override() instead of
-> returning success.
+> As stated in [1], dma_set_mask() with a 64-bit mask never fails if
+> dev->dma_mask is non-NULL.
+> So, if it fails, the 32 bits case will also fail for the same reason.
 > 
-> Fixes: ea78ce4dab05 ("ice: add link lenient and default override support")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> So, if dma_set_mask_and_coherent() succeeds, 'pci_using_dac' is known to
+> be 1.
+> 
+> Simplify code and remove some dead code accordingly.
+> 
+> [1]: https://lkml.org/lkml/2021/6/7/398
+> 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 > ---
-> From static analysis.  Not tested!
-> 
->  drivers/net/ethernet/intel/ice/ice_common.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++---------------
+>  1 file changed, 7 insertions(+), 15 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
