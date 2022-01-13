@@ -1,71 +1,68 @@
-From: Samuel Mendoza-Jonas <samjonas@amazon.com>
-Date: Wed, 12 Jan 2022 15:32:31 -0800
-Subject: [Intel-wired-lan] [PATCH net] ixgbevf: Require large buffers for
- build_skb on 82599VF
-Message-ID: <20220112233231.317259-1-samjonas@amazon.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 12 Jan 2022 16:40:15 -0800
+Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix trying to register
+ an already registered xdp_rxq
+In-Reply-To: <YdxZr0wMxvsDCpbV@wantstofly.org>
+References: <YdxZr0wMxvsDCpbV@wantstofly.org>
+Message-ID: <20220113004015.449460-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From 4.17 onwards the ixgbevf driver uses build_skb() to build an skb
-around new data in the page buffer shared with the ixgbe PF.
-This uses either a 2K or 3K buffer, and offsets the DMA mapping by
-NET_SKB_PAD + NET_IP_ALIGN. When using a smaller buffer RXDCTL is set to
-ensure the PF does not write a full 2K bytes into the buffer, which is
-actually 2K minus the offset.
+When changing the number of RX descriptors, for example, by doing
 
-However on the 82599 virtual function, the RXDCTL mechanism is not
-available. The driver attempts to work around this by using the SET_LPE
-mailbox method to lower the maximm frame size, but the ixgbe PF driver
-ignores this in order to keep the PF and all VFs in sync[0].
+ $ ethtool -G enp3s0 rx 1024
 
-This means the PF will write up to the full 2K set in SRRCTL, causing it
-to write NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the buffer.
-With 4K pages split into two buffers, this means it either writes
-NET_SKB_PAD + NET_IP_ALIGN bytes past the first buffer (and into the
-second), or NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the DMA
-mapping.
+the XDP RX queue information (xdp_rxq) may be already registered, if
+it's registered there's no need to do any thing in relation to
+xdp_rxq, none of it's parameters will change if we change the number
+of descriptors, for example.
 
-Avoid this by only enabling build_skb when using "large" buffers (3K).
-These are placed in each half of an order-1 page, preventing the PF from
-writing past the end of the mapping.
-
-[0]: Technically it only ever raises the max frame size, see
-ixgbe_set_vf_lpe() in ixgbe_sriov.c
-
-Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
+Fixes: 4609ffb9f615 ("igc: Refactor XDP rxq info registration")
+Reported-by: Lennert Buytenhek <buytenh@wantstofly.org>
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+Lennert, I added your name and email to the Reported-by tag, please
+see if you are ok with it.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 0015fcf1df2b..0f293acd17e8 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1984,14 +1984,15 @@ static void ixgbevf_set_rx_buffer_len(struct ixgbevf_adapter *adapter,
- 	if (adapter->flags & IXGBEVF_FLAGS_LEGACY_RX)
- 		return;
+ drivers/net/ethernet/intel/igc/igc_main.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index e29aadbc6744..d163139161fc 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c)  2018 Intel Corporation */
  
--	set_ring_build_skb_enabled(rx_ring);
-+	if (PAGE_SIZE < 8192)
-+		if (max_frame > IXGBEVF_MAX_FRAME_BUILD_SKB)
-+			set_ring_uses_large_buffer(rx_ring);
++#include "net/xdp.h"
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/if_vlan.h>
+@@ -499,12 +500,14 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
+ 	u8 index = rx_ring->queue_index;
+ 	int size, desc_len, res;
  
--	if (PAGE_SIZE < 8192) {
--		if (max_frame <= IXGBEVF_MAX_FRAME_BUILD_SKB)
--			return;
-+	/* 82599 can't rely on RXDCTL.RLPML to restrict the size of the frame */
-+	if (adapter->hw.mac.type == ixgbe_mac_82599_vf && !ring_uses_large_buffer(rx_ring))
-+		return;
+-	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, ndev, index,
+-			       rx_ring->q_vector->napi.napi_id);
+-	if (res < 0) {
+-		netdev_err(ndev, "Failed to register xdp_rxq index %u\n",
+-			   index);
+-		return res;
++	if (!xdp_rxq_info_is_reg(&rx_ring->xdp_rxq)) {
++		res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, ndev, index,
++				       rx_ring->q_vector->napi.napi_id);
++		if (res < 0) {
++			netdev_err(ndev, "Failed to register xdp_rxq index %u\n",
++				   index);
++			return res;
++		}
+ 	}
  
--		set_ring_uses_large_buffer(rx_ring);
--	}
-+	set_ring_build_skb_enabled(rx_ring);
- }
- 
- /**
+ 	size = sizeof(struct igc_rx_buffer) * rx_ring->count;
 -- 
-2.25.1
+2.34.1
 
