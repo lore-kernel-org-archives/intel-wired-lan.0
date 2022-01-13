@@ -1,10 +1,10 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 13 Jan 2022 17:48:45 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Remove useless DMA-32
- fallback configuration
-In-Reply-To: <e9f8c8b59fe4a3b4dd34d37ccfaf9862b7ee14ba.1641748940.git.christophe.jaillet@wanadoo.fr>
-References: <e9f8c8b59fe4a3b4dd34d37ccfaf9862b7ee14ba.1641748940.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <BYAPR11MB33672B966278721139293D47FC539@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Thu, 13 Jan 2022 17:50:59 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+ configuration
+In-Reply-To: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
+References: <5549ec8837b3a6fab83e92c5206cc100ffd23d85.1641748468.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <BYAPR11MB33678E032ADCA171234C8132FC539@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,7 +16,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Christophe JAILLET
-> Sent: Sunday, January 9, 2022 10:52 PM
+> Sent: Sunday, January 9, 2022 10:45 PM
 > To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
 > <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
 > Jakub Kicinski <kuba@kernel.org>
@@ -24,7 +24,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > kernel at vger.kernel.org; Christophe JAILLET
 > <christophe.jaillet@wanadoo.fr>; intel-wired-lan at lists.osuosl.org; Christoph
 > Hellwig <hch@lst.de>
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Remove useless DMA-32 fallback
+> Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
 > configuration
 > 
 > As stated in [1], dma_set_mask() with a 64-bit mask never fails if
@@ -42,8 +42,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Reviewed-by: Christoph Hellwig <hch@lst.de>
 > Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 > ---
->  .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 20 ++++++-------------
->  1 file changed, 6 insertions(+), 14 deletions(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++---------------
+>  1 file changed, 7 insertions(+), 15 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
