@@ -1,92 +1,99 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Thu, 13 Jan 2022 13:03:46 +0100
-Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix trying to
- register an already registered xdp_rxq
-In-Reply-To: <20220113004015.449460-1-vinicius.gomes@intel.com>
-References: <YdxZr0wMxvsDCpbV@wantstofly.org>
- <20220113004015.449460-1-vinicius.gomes@intel.com>
-Message-ID: <20220113120346.9349-1-alexandr.lobakin@intel.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Thu, 13 Jan 2022 13:48:28 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
+ virtual channel messages
+Message-ID: <20220113134828.25230-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Wed, 12 Jan 2022 16:40:15 -0800
+Modify netdev->features for vlan stripping based on virtual
+channel messages received from the PF. Change is needed
+to synchronize vlan strip status between PF sysfs and iavf ethtool.
 
-> When changing the number of RX descriptors, for example, by doing
-> 
->  $ ethtool -G enp3s0 rx 1024
-> 
-> the XDP RX queue information (xdp_rxq) may be already registered, if
-> it's registered there's no need to do any thing in relation to
-> xdp_rxq, none of it's parameters will change if we change the number
-> of descriptors, for example.
-> 
-> Fixes: 4609ffb9f615 ("igc: Refactor XDP rxq info registration")
-> Reported-by: Lennert Buytenhek <buytenh@wantstofly.org>
-> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-> ---
-> Lennert, I added your name and email to the Reported-by tag, please
-> see if you are ok with it.
-> 
->  drivers/net/ethernet/intel/igc/igc_main.c | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index e29aadbc6744..d163139161fc 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -1,6 +1,7 @@
->  // SPDX-License-Identifier: GPL-2.0
->  /* Copyright (c)  2018 Intel Corporation */
->  
-> +#include "net/xdp.h"
->  #include <linux/module.h>
->  #include <linux/types.h>
->  #include <linux/if_vlan.h>
-> @@ -499,12 +500,14 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
->  	u8 index = rx_ring->queue_index;
->  	int size, desc_len, res;
->  
-> -	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, ndev, index,
-> -			       rx_ring->q_vector->napi.napi_id);
-> -	if (res < 0) {
-> -		netdev_err(ndev, "Failed to register xdp_rxq index %u\n",
-> -			   index);
-> -		return res;
-> +	if (!xdp_rxq_info_is_reg(&rx_ring->xdp_rxq)) {
-> +		res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, ndev, index,
-> +				       rx_ring->q_vector->napi.napi_id);
-> +		if (res < 0) {
-> +			netdev_err(ndev, "Failed to register xdp_rxq index %u\n",
-> +				   index);
-> +			return res;
-> +		}
->  	}
+Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+---
+v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because there's
+no such definition since Linux 3.10. The code is the same as the one from OOT.
+Code successfully passed inner review. netdev_update_features() function is not added 
+because it causes infinite loop.
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-While the fix itself is correct, I don't really like the setup flow
-in igc_ethtool_set_ringparam() (here: [0]).
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index a40e29455f7d..1805c1ae3bf4 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1490,6 +1490,24 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+ }
+ 
++/**
++ * iavf_netdev_features_vlan_strip_set - update vlan strip status
++ * @netdev: ptr to netdev being adjusted
++ * @enable: enable or disable vlan strip
++ *
++ * Helper function to change vlan strip status in netdev->features.
++ */
++static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
++						const bool enable)
++{
++	if (enable)
++		netdev->features |=
++			NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_CTAG_RX;
++	else
++		netdev->features &=
++			~NETIF_F_HW_VLAN_CTAG_RX & ~NETIF_F_HW_VLAN_CTAG_RX;
++}
++
+ /**
+  * iavf_virtchnl_completion
+  * @adapter: adapter structure
+@@ -1713,8 +1731,18 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			}
+ 			break;
+ 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be enabled by ethtool.
++			 * Disable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++			break;
+ 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
+ 			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be disabled by ethtool.
++			 * Enable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, true);
+ 			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+@@ -1960,6 +1988,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		spin_unlock_bh(&adapter->adv_rss_lock);
+ 		}
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		/* PF enabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, true);
++		break;
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		/* PF disabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++		break;
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+-- 
+2.27.0
 
-Instead of unregistering/freeing Rx rings at first and then
-allocating/registering the new ones, driver registers the new ones
-at first and then unregister the olds.
-It may cause other issues apart from this one. E.g. driver performs
-Rxq info unregistering at the end, so netdevice may end up with no
-Rxq info registered after changing the number of descriptors (Rxq
-info is enumerated by queue index).
-
-To me, the righteous approach would be changing this flow to more
-common, i.e. do unregistering/freeing at first and then register
-and allocate.
-
->  
->  	size = sizeof(struct igc_rx_buffer) * rx_ring->count;
-> -- 
-> 2.34.1
-
-[0] https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/igc/igc_ethtool.c#L664
-
-Thanks,
-Al
