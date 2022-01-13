@@ -1,8 +1,8 @@
 From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Thu, 13 Jan 2022 13:48:28 +0000
+Date: Thu, 13 Jan 2022 13:51:44 +0000
 Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan strip
  virtual channel messages
-Message-ID: <20220113134828.25230-1-michal.maloszewski@intel.com>
+Message-ID: <20220113135144.25320-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,12 +16,12 @@ to synchronize vlan strip status between PF sysfs and iavf ethtool.
 Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
 Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
 Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
 ---
 v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because there's
 no such definition since Linux 3.10. The code is the same as the one from OOT.
 Code successfully passed inner review. netdev_update_features() function is not added 
 because it causes infinite loop.
+---
  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 42 +++++++++++++++++++
  1 file changed, 42 insertions(+)
 
