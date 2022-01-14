@@ -1,76 +1,120 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Fri, 14 Jan 2022 20:45:20 +0100
-Subject: [Intel-wired-lan] [PATCH 2/2 net-next v4] igb: refactor XDP
- registration
-In-Reply-To: <20220114194520.1092894-1-vinschen@redhat.com>
-References: <20220114194520.1092894-1-vinschen@redhat.com>
-Message-ID: <20220114194520.1092894-3-vinschen@redhat.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 15 Jan 2022 04:48:04 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ d6721d794bfc1101a63a567e2d6d6f0de4c83fbe
+Message-ID: <61e1e184.bPqjvO4f6t8Xdxw3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On changing the RX ring parameters igb uses a hack to avoid a warning
-when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
-clears the struct xdp_rxq_info content.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: d6721d794bfc1101a63a567e2d6d6f0de4c83fbe  ice: fix an error code in ice_cfg_phy_fec()
 
-Change this to unregister if we're already registered instead.  Align
-code to the igc code.
+elapsed time: 1011m
 
-Fixes: 9cbc948b5a20c ("igb: add XDP support")
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+configs tested: 91
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+powerpc                      tqm8xx_defconfig
+powerpc                      arches_defconfig
+powerpc                     tqm8555_defconfig
+powerpc                      pcm030_defconfig
+arm                             pxa_defconfig
+arm                         axm55xx_defconfig
+arm                           h5000_defconfig
+powerpc                      pasemi_defconfig
+sh                               j2_defconfig
+arc                              alldefconfig
+mips                           ci20_defconfig
+arm                           h3600_defconfig
+sh                        sh7785lcr_defconfig
+arm                  randconfig-c002-20220113
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+powerpc                     skiroot_defconfig
+powerpc                       ebony_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220113
+hexagon              randconfig-r041-20220113
+
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
- drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++---
- 2 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 51a2dcaf553d..2a5782063f4c 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
- 			memcpy(&temp_ring[i], adapter->rx_ring[i],
- 			       sizeof(struct igb_ring));
- 
--			/* Clear copied XDP RX-queue info */
--			memset(&temp_ring[i].xdp_rxq, 0,
--			       sizeof(temp_ring[i].xdp_rxq));
--
- 			temp_ring[i].count = new_rx_count;
- 			err = igb_setup_rx_resources(&temp_ring[i]);
- 			if (err) {
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 38ba92022cd4..cea89d301bfd 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
- {
- 	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
- 	struct device *dev = rx_ring->dev;
--	int size;
-+	int size, res;
- 
- 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
- 
-@@ -4376,9 +4376,15 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
- 	rx_ring->xdp_prog = adapter->xdp_prog;
- 
- 	/* XDP RX-queue info */
--	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
--			     rx_ring->queue_index, 0) < 0)
-+	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
-+		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
-+	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-+			       rx_ring->queue_index, 0);
-+	if (res < 0) {
-+		dev_err(dev, "Failed to register xdp_rxq index %u\n",
-+			rx_ring->queue_index);
- 		goto err;
-+	}
- 
- 	return 0;
- 
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
