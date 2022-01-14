@@ -1,78 +1,54 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Fri, 14 Jan 2022 12:43:54 +0100
-Subject: [Intel-wired-lan] [PATCH 2/2 net-next v2] igb: refactor XDP
- registration
-In-Reply-To: <20220114114354.1071776-1-vinschen@redhat.com>
-References: <20220114114354.1071776-1-vinschen@redhat.com>
-Message-ID: <20220114114354.1071776-3-vinschen@redhat.com>
+From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Date: Fri, 14 Jan 2022 13:19:27 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/4] Eliminate race condition
+ occurrence during sending ASQ commands
+Message-ID: <20220114131931.346687-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On changing the RX ring parameters igb uses a hack to avoid a warning
-when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
-clears the struct xdp_rxq_info content.
+Provide modifications in ASQ commands in order to
+prevent for race condition occurrences.
+Add new versions of ASQ commands based on sending commands
+in atomic context. New versions of commands are marked as _v2.
+Also change already existing ASQ commands to be able to work
+in atomic context. Make them to invoking previously added
+i40e_asq_send_command_atomic() function to perform aq calls.
 
-Change this to unregister if we're already registered instead.  ALign
-code to the igc code.
+Eliminate problem with race conditions connected to accessing
+hw->aq.asq_last_status during callig ASQ commands.
 
-Fixes: 9cbc948b5a20c ("igb: add XDP support")
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+1. Change several i40e_aq_ functions to send commands in atomic
+context by using i40e_asq_send_command_atomic(..., true).
+
+2. Add new versions of send ASQ command functions including
+new version of i40e_aq_remove_macvlan().
+
+3. Add new version of i40e_aq_add_macvlan() function.
+
+4. Change i40e_aqc_add_filters() and i40e_aqc_del_filters() functions
+located in i40e_main.c to use new versions of i40e_aq_add_macvlan()
+and i40e_aq_remove_macvlan().
+
+Jedrzej Jagielski (4):
+  i40e: Add sending commands in atomic context
+  i40e: Add new versions of send ASQ command functions
+  i40e: Add new version of i40e_aq_add_macvlan function
+  i40e: Fix race condition while adding/deleting MAC/VLAN filters
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  92 ++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 155 +++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  24 +--
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  25 +++
+ 4 files changed, 250 insertions(+), 46 deletions(-)
+
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
- drivers/net/ethernet/intel/igb/igb_main.c    | 15 +++++++++++----
- 2 files changed, 11 insertions(+), 8 deletions(-)
+V2: change order of patches, provide several little changes connected to
+variables initialisation and removing unnecessary status variables
+---
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 51a2dcaf553d..2a5782063f4c 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
- 			memcpy(&temp_ring[i], adapter->rx_ring[i],
- 			       sizeof(struct igb_ring));
- 
--			/* Clear copied XDP RX-queue info */
--			memset(&temp_ring[i].xdp_rxq, 0,
--			       sizeof(temp_ring[i].xdp_rxq));
--
- 			temp_ring[i].count = new_rx_count;
- 			err = igb_setup_rx_resources(&temp_ring[i]);
- 			if (err) {
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 38ba92022cd4..9638cb9c6014 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
- {
- 	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
- 	struct device *dev = rx_ring->dev;
--	int size;
-+	int size, res;
- 
- 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
- 
-@@ -4376,9 +4376,16 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
- 	rx_ring->xdp_prog = adapter->xdp_prog;
- 
- 	/* XDP RX-queue info */
--	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
--			     rx_ring->queue_index, 0) < 0)
--		goto err;
-+	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
-+		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
-+	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-+			       rx_ring->queue_index, 0);
-+	if (res < 0) {
-+		netdev_err(rx_ring->netdev,
-+			   "Failed to register xdp_rxq index %u\n",
-+			   rx_ring->queue_index);
-+		return res;
-+	}
- 
- 	return 0;
- 
 -- 
-2.27.0
+2.18.2
 
