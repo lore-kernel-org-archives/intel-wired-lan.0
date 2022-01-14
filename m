@@ -1,82 +1,51 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Fri, 14 Jan 2022 23:07:19 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
- strip virtual channel messages
-In-Reply-To: <20220113134828.25230-1-michal.maloszewski@intel.com>
-References: <20220113134828.25230-1-michal.maloszewski@intel.com>
-Message-ID: <167bf4831ac49d4534866c699bb68bbb9f68747f.camel@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 14 Jan 2022 15:37:18 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v1] ice: enable parsing IPSEC SPI
+ headers for RSS
+Message-ID: <20220114233718.67841-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2022-01-13 at 13:48 +0000, Michal Maloszewski wrote:
-> Modify netdev->features for vlan stripping based on virtual
-> channel messages received from the PF. Change is needed
-> to synchronize vlan strip status between PF sysfs and iavf ethtool.
-> 
-> Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
+The COMMS package can enable the hardware parser to recognize IPSEC
+frames with ESP header and SPI identifier.  If this package is available
+and configured for loading in /lib/firmware, then the driver will
+succeed in enabling this protocol type for RSS.
 
-Please use the commit that introduced the functional issue, not a
-rename patch.
+This in turn allows the hardware to hash over the SPI and use it to pick
+a consistent receive queue for the same secure flow. Without this all
+traffic is steered to the same queue for multiple traffic threads from
+the same IP address.
 
-> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> ---
-> v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because
-> there's
-> no such definition since Linux 3.10. The code is the same as the one
-> from OOT.
-> Code successfully passed inner review. netdev_update_features()
-> function is not added 
-> because it causes infinite loop.
+If the package is not available, adding this type will fail, but the
+failure is ignored on purpose as it has no negative affect.
 
-This is a v1, but there's a v3 changelog?
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> ?.../net/ethernet/intel/iavf/iavf_virtchnl.c?? | 42
-> +++++++++++++++++++
-> ?1 file changed, 42 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index a40e29455f7d..1805c1ae3bf4 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> @@ -1490,6 +1490,24 @@ void iavf_request_reset(struct iavf_adapter
-> *adapter)
-> ????????adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-> ?}
-> ?
-> +/**
-> + * iavf_netdev_features_vlan_strip_set - update vlan strip status
-> + * @netdev: ptr to netdev being adjusted
-> + * @enable: enable or disable vlan strip
-> + *
-> + * Helper function to change vlan strip status in netdev->features.
-> + */
-> +static void iavf_netdev_features_vlan_strip_set(struct net_device
-> *netdev,
-> +???????????????????????????????????????????????const bool enable)
-> +{
-> +???????if (enable)
-> +???????????????netdev->features |=
-> +???????????????????????NETIF_F_HW_VLAN_CTAG_RX |
-> NETIF_F_HW_VLAN_CTAG_RX;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 4e9efd49c149..662493d1002b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1686,6 +1686,12 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
+ 	if (status)
+ 		dev_dbg(dev, "ice_add_rss_cfg failed for sctp6 flow, vsi = %d, error = %d\n",
+ 			vsi_num, status);
++
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_ESP_SPI,
++				 ICE_FLOW_SEG_HDR_ESP);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for esp/spi flow, vsi = %d, error = %d\n",
++			vsi_num, status);
+ }
+ 
+ /**
 
-These are the same flag.
-
-> +???????else
-> +???????????????netdev->features &=
-> +???????????????????????~NETIF_F_HW_VLAN_CTAG_RX &
-> ~NETIF_F_HW_VLAN_CTAG_RX;
-
-Same here.
-
-> +}
-> +
-> ?/**
-> ? * iavf_virtchnl_completion
-> ? * @adapter: adapter structure
+base-commit: 61a0b1ca2485ddfe549cde9eccd93b06b53188e8
+-- 
+2.33.1
 
