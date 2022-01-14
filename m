@@ -1,82 +1,179 @@
-From: Denis Kirjanov <dkirjanov@suse.de>
-Date: Fri, 14 Jan 2022 17:13:06 +0300
-Subject: [Intel-wired-lan] [PATCH 2/2 net-next v2] igb: refactor XDP
- registration
-In-Reply-To: <20220114114354.1071776-3-vinschen@redhat.com>
-References: <20220114114354.1071776-1-vinschen@redhat.com>
- <20220114114354.1071776-3-vinschen@redhat.com>
-Message-ID: <5521e35f-3adf-2949-f360-12e2f7946480@suse.de>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 15 Jan 2022 00:01:46 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ c2bcbaeb9c2ae7f07ae6b46d0c7a0a29e22e7c6f
+Message-ID: <61e19e6a.lwhovfP4h1jAyN5D%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: c2bcbaeb9c2ae7f07ae6b46d0c7a0a29e22e7c6f  iavf: Add support for 50G/100G in AIM algorithm
 
+elapsed time: 725m
 
-1/14/22 14:43, Corinna Vinschen ?????:
-> On changing the RX ring parameters igb uses a hack to avoid a warning
-> when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
-> clears the struct xdp_rxq_info content.
-> 
-> Change this to unregister if we're already registered instead.  ALign
-> code to the igc code.
-> 
-> Fixes: 9cbc948b5a20c ("igb: add XDP support")
-> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-> ---
->   drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
->   drivers/net/ethernet/intel/igb/igb_main.c    | 15 +++++++++++----
->   2 files changed, 11 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 51a2dcaf553d..2a5782063f4c 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
->   			memcpy(&temp_ring[i], adapter->rx_ring[i],
->   			       sizeof(struct igb_ring));
->   
-> -			/* Clear copied XDP RX-queue info */
-> -			memset(&temp_ring[i].xdp_rxq, 0,
-> -			       sizeof(temp_ring[i].xdp_rxq));
-> -
->   			temp_ring[i].count = new_rx_count;
->   			err = igb_setup_rx_resources(&temp_ring[i]);
->   			if (err) {
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 38ba92022cd4..9638cb9c6014 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
->   {
->   	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
->   	struct device *dev = rx_ring->dev;
-> -	int size;
-> +	int size, res;
->   
->   	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
->   
-> @@ -4376,9 +4376,16 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
->   	rx_ring->xdp_prog = adapter->xdp_prog;
->   
->   	/* XDP RX-queue info */
-> -	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-> -			     rx_ring->queue_index, 0) < 0)
-> -		goto err;
-> +	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
-> +		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
-> +	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-> +			       rx_ring->queue_index, 0);
-> +	if (res < 0) {
-> +		netdev_err(rx_ring->netdev,
-> +			   "Failed to register xdp_rxq index %u\n",
-> +			   rx_ring->queue_index);
-nit: would be nice to have the same printing functions like dev_err()
-in the error case
+configs tested: 147
+configs skipped: 3
 
-> +		return res;
-> +	}
->   
->   	return 0;
->   
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+arm                          gemini_defconfig
+arm                         at91_dt_defconfig
+nios2                         10m50_defconfig
+sparc64                             defconfig
+mips                        bcm47xx_defconfig
+powerpc                 mpc837x_mds_defconfig
+sh                 kfr2r09-romimage_defconfig
+sh                               alldefconfig
+m68k                       m5208evb_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                      tqm8xx_defconfig
+arm                         lpc18xx_defconfig
+powerpc                      pcm030_defconfig
+arm                         s3c6400_defconfig
+mips                       capcella_defconfig
+arm                         axm55xx_defconfig
+arm                           h5000_defconfig
+powerpc                    amigaone_defconfig
+arc                        nsim_700_defconfig
+sh                        sh7757lcr_defconfig
+sh                          landisk_defconfig
+csky                             alldefconfig
+xtensa                          iss_defconfig
+arm                           sunxi_defconfig
+arm                          iop32x_defconfig
+mips                         tb0226_defconfig
+arm                            mps2_defconfig
+arm                          lpd270_defconfig
+riscv                            allmodconfig
+arm                            qcom_defconfig
+arm                            pleb_defconfig
+ia64                        generic_defconfig
+sh                   rts7751r2dplus_defconfig
+s390                          debug_defconfig
+sh                          rsk7264_defconfig
+sh                          r7785rp_defconfig
+arm                            xcep_defconfig
+sh                           se7343_defconfig
+xtensa                    xip_kc705_defconfig
+arc                    vdk_hs38_smp_defconfig
+sh                                  defconfig
+i386                             alldefconfig
+sh                          sdk7786_defconfig
+arm                           tegra_defconfig
+sh                           se7705_defconfig
+arm64                            alldefconfig
+arc                            hsdk_defconfig
+arm                         vf610m4_defconfig
+sh                         microdev_defconfig
+powerpc                       ppc64_defconfig
+m68k                             allmodconfig
+sh                              ul2_defconfig
+arm                  randconfig-c002-20220113
+arm                  randconfig-c002-20220114
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220113
+arc                  randconfig-r043-20220113
+s390                 randconfig-r044-20220113
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+arm                  randconfig-c002-20220113
+x86_64                        randconfig-c007
+riscv                randconfig-c006-20220113
+powerpc              randconfig-c003-20220113
+i386                          randconfig-c001
+mips                 randconfig-c004-20220113
+mips                           ip28_defconfig
+arm                          pxa168_defconfig
+powerpc                     powernv_defconfig
+arm                         s3c2410_defconfig
+arm                          ixp4xx_defconfig
+powerpc                     mpc5200_defconfig
+mips                            e55_defconfig
+powerpc                 mpc836x_mds_defconfig
+riscv                             allnoconfig
+arm                       versatile_defconfig
+mips                      maltaaprp_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220113
+hexagon              randconfig-r041-20220113
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
