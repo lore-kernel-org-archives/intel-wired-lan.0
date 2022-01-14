@@ -1,34 +1,76 @@
 From: Corinna Vinschen <vinschen@redhat.com>
-Date: Fri, 14 Jan 2022 20:45:18 +0100
-Subject: [Intel-wired-lan] [PATCH 0/2 net-next v4] igb/igc: fix XDP
+Date: Fri, 14 Jan 2022 20:45:20 +0100
+Subject: [Intel-wired-lan] [PATCH 2/2 net-next v4] igb: refactor XDP
  registration
-Message-ID: <20220114194520.1092894-1-vinschen@redhat.com>
+In-Reply-To: <20220114194520.1092894-1-vinschen@redhat.com>
+References: <20220114194520.1092894-1-vinschen@redhat.com>
+Message-ID: <20220114194520.1092894-3-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the kernel warning "Missing unregister, handled but fix driver"
-when running, e.g.,
+On changing the RX ring parameters igb uses a hack to avoid a warning
+when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
+clears the struct xdp_rxq_info content.
 
-  $ ethtool -G eth0 rx 1024
+Change this to unregister if we're already registered instead.  Align
+code to the igc code.
 
-on igc.  Remove memset hack from igb and align igb code to igc. 
-
-v3: use dev_err rather than netdev_err, just as in error case.
-v4: fix a return copy/pasted from original igc code into the correct
-    `goto err', improve commit message.
-
-Corinna Vinschen (2):
-  igc: avoid kernel warning when changing RX ring parameters
-  igb: refactor XDP registration
-
+Fixes: 9cbc948b5a20c ("igb: add XDP support")
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+---
  drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
  drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++---
- drivers/net/ethernet/intel/igc/igc_main.c    | 20 +++++++++++---------
- 3 files changed, 20 insertions(+), 16 deletions(-)
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 51a2dcaf553d..2a5782063f4c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
+ 			memcpy(&temp_ring[i], adapter->rx_ring[i],
+ 			       sizeof(struct igb_ring));
+ 
+-			/* Clear copied XDP RX-queue info */
+-			memset(&temp_ring[i].xdp_rxq, 0,
+-			       sizeof(temp_ring[i].xdp_rxq));
+-
+ 			temp_ring[i].count = new_rx_count;
+ 			err = igb_setup_rx_resources(&temp_ring[i]);
+ 			if (err) {
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 38ba92022cd4..cea89d301bfd 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
+ 	struct device *dev = rx_ring->dev;
+-	int size;
++	int size, res;
+ 
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 
+@@ -4376,9 +4376,15 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ 	rx_ring->xdp_prog = adapter->xdp_prog;
+ 
+ 	/* XDP RX-queue info */
+-	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+-			     rx_ring->queue_index, 0) < 0)
++	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
++		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
++	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
++			       rx_ring->queue_index, 0);
++	if (res < 0) {
++		dev_err(dev, "Failed to register xdp_rxq index %u\n",
++			rx_ring->queue_index);
+ 		goto err;
++	}
+ 
+ 	return 0;
+ 
 -- 
 2.27.0
 
