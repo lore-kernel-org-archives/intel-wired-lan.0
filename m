@@ -1,51 +1,103 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 14 Jan 2022 15:37:18 -0800
-Subject: [Intel-wired-lan] [PATCH net-next v1] ice: enable parsing IPSEC SPI
- headers for RSS
-Message-ID: <20220114233718.67841-1-jesse.brandeburg@intel.com>
+Date: Fri, 14 Jan 2022 15:38:39 -0800
+Subject: [Intel-wired-lan] [PATCH net v1] ice: fix IPIP and SIT TSO offload
+Message-ID: <20220114233839.67979-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The COMMS package can enable the hardware parser to recognize IPSEC
-frames with ESP header and SPI identifier.  If this package is available
-and configured for loading in /lib/firmware, then the driver will
-succeed in enabling this protocol type for RSS.
+The driver was avoiding offload for IPIP (at least) frames due to
+parsing the inner header offsets incorrectly when trying to check
+lengths.
 
-This in turn allows the hardware to hash over the SPI and use it to pick
-a consistent receive queue for the same secure flow. Without this all
-traffic is steered to the same queue for multiple traffic threads from
-the same IP address.
+This length check works for VXLAN frames but fails on IPIP frames
+because skb_transport_offset points to the inner header in IPIP
+frames, which meant the subtraction of transport_header from
+inner_network_header returns a negative value (-20).
 
-If the package is not available, adding this type will fail, but the
-failure is ignored on purpose as it has no negative affect.
+With the code before this patch, everything continued to work, but GSO
+was being used to segment, causing throughputs of 1.5Gb/s per thread.
+After this patch, throughput is more like 10Gb/s per thread for IPIP
+traffic.
 
+Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump version")
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+--
+Testing Hints: test IPIP tunnel and VXLAN tunnel, both should use TSO.
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 25 +++++++++++++------
+ 2 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 4e9efd49c149..662493d1002b 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1686,6 +1686,12 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
- 	if (status)
- 		dev_dbg(dev, "ice_add_rss_cfg failed for sctp6 flow, vsi = %d, error = %d\n",
- 			vsi_num, status);
-+
-+	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_ESP_SPI,
-+				 ICE_FLOW_SEG_HDR_ESP);
-+	if (status)
-+		dev_dbg(dev, "ice_add_rss_cfg failed for esp/spi flow, vsi = %d, error = %d\n",
-+			vsi_num, status);
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+index d981dc6f2323..85a612838a89 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
++++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
+@@ -568,6 +568,7 @@ struct ice_tx_ctx_desc {
+ 			(0x3FFFFULL << ICE_TXD_CTX_QW1_TSO_LEN_S)
  
- /**
+ #define ICE_TXD_CTX_QW1_MSS_S	50
++#define ICE_TXD_CTX_MIN_MSS	64
+ 
+ #define ICE_TXD_CTX_QW1_VSI_S	50
+ #define ICE_TXD_CTX_QW1_VSI_M	(0x3FFULL << ICE_TXD_CTX_QW1_VSI_S)
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 73c61cdb036f..105b62b5e7cb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -8540,6 +8540,7 @@ ice_features_check(struct sk_buff *skb,
+ 		   struct net_device __always_unused *netdev,
+ 		   netdev_features_t features)
+ {
++	bool gso = skb_is_gso(skb);
+ 	size_t len;
+ 
+ 	/* No point in doing any of this if neither checksum nor GSO are
+@@ -8552,24 +8553,32 @@ ice_features_check(struct sk_buff *skb,
+ 	/* We cannot support GSO if the MSS is going to be less than
+ 	 * 64 bytes. If it is then we need to drop support for GSO.
+ 	 */
+-	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_size < 64))
++	if (gso && (skb_shinfo(skb)->gso_size < ICE_TXD_CTX_MIN_MSS))
+ 		features &= ~NETIF_F_GSO_MASK;
+ 
+-	len = skb_network_header(skb) - skb->data;
++	len = skb_network_offset(skb);
+ 	if (len > ICE_TXD_MACLEN_MAX || len & 0x1)
+ 		goto out_rm_features;
+ 
+-	len = skb_transport_header(skb) - skb_network_header(skb);
++	len = skb_network_header_len(skb);
+ 	if (len > ICE_TXD_IPLEN_MAX || len & 0x1)
+ 		goto out_rm_features;
+ 
+ 	if (skb->encapsulation) {
+-		len = skb_inner_network_header(skb) - skb_transport_header(skb);
+-		if (len > ICE_TXD_L4LEN_MAX || len & 0x1)
+-			goto out_rm_features;
++		/* this must work for vxlan frames AND IPIP/SIT frames, and in
++		 * the case of IPIP frames, the transport header pointer is
++		 * after the inner header! So check to make sure that this
++		 * is a GRE or UDP_TUNNEL frame before doing that math.
++		 */
++		if (gso && (skb_shinfo(skb)->gso_type &
++			    (SKB_GSO_GRE | SKB_GSO_UDP_TUNNEL))) {
++			len = skb_inner_network_header(skb) -
++			      skb_transport_header(skb);
++			if (len > ICE_TXD_L4LEN_MAX || len & 0x1)
++				goto out_rm_features;
++		}
+ 
+-		len = skb_inner_transport_header(skb) -
+-		      skb_inner_network_header(skb);
++		len = skb_inner_network_header_len(skb);
+ 		if (len > ICE_TXD_IPLEN_MAX || len & 0x1)
+ 			goto out_rm_features;
+ 	}
 
-base-commit: 61a0b1ca2485ddfe549cde9eccd93b06b53188e8
+base-commit: f1f62d37baf6f3ca96f3edb6f888bf90fe57cef2
 -- 
 2.33.1
 
