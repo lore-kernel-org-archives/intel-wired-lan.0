@@ -1,10 +1,10 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Fri, 14 Jan 2022 04:07:11 +0000
-Subject: [Intel-wired-lan] [next-queue,
- v2] i40e: Remove unused RX realloc stat
-In-Reply-To: <1641397753-121138-1-git-send-email-jdamato@fastly.com>
-References: <1641397753-121138-1-git-send-email-jdamato@fastly.com>
-Message-ID: <BYAPR11MB3367C4AD131796BE21D1FF2EFC549@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Fri, 14 Jan 2022 04:08:02 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove useless DMA-32 fallback
+ configuration
+In-Reply-To: <869bbf806431086683c64ad32594ff96e85b6aa2.1641749374.git.christophe.jaillet@wanadoo.fr>
+References: <869bbf806431086683c64ad32594ff96e85b6aa2.1641749374.git.christophe.jaillet@wanadoo.fr>
+Message-ID: <BYAPR11MB3367C34AB2311D81468B457DFC549@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +14,31 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Joe Damato <jdamato@fastly.com>
-> Sent: Wednesday, January 5, 2022 9:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; Joe Damato <jdamato@fastly.com>
-> Subject: [next-queue,v2] i40e: Remove unused RX realloc stat
+> From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Sent: Sunday, January 9, 2022 11:00 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>
+> Cc: linux-kernel at vger.kernel.org; kernel-janitors at vger.kernel.org;
+> Christophe JAILLET <christophe.jaillet@wanadoo.fr>; Christoph Hellwig
+> <hch@lst.de>; Lobakin, Alexandr <alexandr.lobakin@intel.com>; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org
+> Subject: [PATCH] i40e: Remove useless DMA-32 fallback configuration
 > 
-> After commit 1a557afc4dd5 ("i40e: Refactor receive routine"),
-> rx_stats.realloc_count is no longer being incremented, so remove it.
+> As stated in [1], dma_set_mask() with a 64-bit mask never fails if
+> dev->dma_mask is non-NULL.
+> So, if it fails, the 32 bits case will also fail for the same reason.
 > 
-> The debugfs string was left, but hardcoded to 0. This is intended to prevent
-> breaking any existing code / scripts that are parsing debugfs for i40e.
+> Simplify code and remove some dead code accordingly.
 > 
-> Fixes: 1a557afc4dd5 ("i40e: Refactor receive routine")
-> Signed-off-by: Joe Damato <jdamato@fastly.com>
+> [1]: https://lkml.org/lkml/2021/6/7/398
 > 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
+> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 > ---
-> v1 -> v2: Fix commit message to include one-line SHA summary. Patch is now
->           based on next-queue.
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 3 +--
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
->  2 files changed, 1 insertion(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
