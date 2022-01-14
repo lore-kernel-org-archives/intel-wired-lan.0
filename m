@@ -1,91 +1,82 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Fri, 14 Jan 2022 14:31:48 -0800
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix KASAN error in LAG
- NETDEV_UNREGISTER handler
-Message-ID: <20220114223148.976876-1-david.m.ertman@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Fri, 14 Jan 2022 23:07:19 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix handling of vlan
+ strip virtual channel messages
+In-Reply-To: <20220113134828.25230-1-michal.maloszewski@intel.com>
+References: <20220113134828.25230-1-michal.maloszewski@intel.com>
+Message-ID: <167bf4831ac49d4534866c699bb68bbb9f68747f.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, the same handler is called for both a NETDEV_BONDING_INFO
-LAG unlink notification as for a NETDEV_UNREGISTER call.  This is
-causing a problem though, since the netdev_notifier_info passed has
-a different structure depending on which event is passed.  The problem
-manifests as a call trace from a BUG: KASAN stack-out-of-bounds error.
+On Thu, 2022-01-13 at 13:48 +0000, Michal Maloszewski wrote:
+> Modify netdev->features for vlan stripping based on virtual
+> channel messages received from the PF. Change is needed
+> to synchronize vlan strip status between PF sysfs and iavf ethtool.
+> 
+> Fixes: 310a2ad92e3f ("virtchnl: rename i40e to generic virtchnl")
 
-Fix this by creating a handler specific to NETDEV_UNREGISTER that only
-is passed valid elements in the netdev_notifier_info struct for the
-NETDEV_UNREGISTER event.
+Please use the commit that introduced the functional issue, not a
+rename patch.
 
-Also included is the removal of an unbalanced dev_put on the peer_netdev
-and related braces.
+> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> ---
+> v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because
+> there's
+> no such definition since Linux 3.10. The code is the same as the one
+> from OOT.
+> Code successfully passed inner review. netdev_update_features()
+> function is not added 
+> because it causes infinite loop.
 
-Fixes: 6a8b357278f5 ("ice: Respond to a NETDEV_UNREGISTER event for LAG")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_lag.c | 32 +++++++++++++++++++++---
- 1 file changed, 28 insertions(+), 4 deletions(-)
+This is a v1, but there's a v3 changelog?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index e375ac849aec..2e8b1990c1c1 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -204,10 +204,8 @@ ice_lag_unlink(struct ice_lag *lag,
- 		lag->upper_netdev = NULL;
- 	}
- 
--	if (lag->peer_netdev) {
--		dev_put(lag->peer_netdev);
-+	if (lag->peer_netdev)
- 		lag->peer_netdev = NULL;
--	}
- 
- 	ice_set_sriov_cap(pf);
- 	ice_set_rdma_cap(pf);
-@@ -215,6 +213,32 @@ ice_lag_unlink(struct ice_lag *lag,
- 	lag->role = ICE_LAG_NONE;
- }
- 
-+/**
-+ * ice_lag_unregister - handle netdev unregister events
-+ * @lag: LAG info struct
-+ * @netdev: netdev reporting the event
-+ */
-+static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
-+{
-+	struct ice_pf *pf = lag->pf;
-+
-+	/* check to see if this event is for this netdev
-+	 * check that we are in an aggregate
-+	 */
-+	if (netdev != lag->netdev || !lag->bonded)
-+		return;
-+
-+	if (lag->upper_netdev) {
-+		dev_put(lag->upper_netdev);
-+		lag->upper_netdev = NULL;
-+		ice_set_sriov_cap(pf);
-+		ice_set_rdma_cap(pf);
-+	}
-+	/* perform some cleanup in case we come back */
-+	lag->bonded = false;
-+	lag->role = ICE_LAG_NONE;
-+}
-+
- /**
-  * ice_lag_changeupper_event - handle LAG changeupper event
-  * @lag: LAG info struct
-@@ -307,7 +331,7 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
- 		ice_lag_info_event(lag, ptr);
- 		break;
- 	case NETDEV_UNREGISTER:
--		ice_lag_unlink(lag, ptr);
-+		ice_lag_unregister(lag, netdev);
- 		break;
- 	default:
- 		break;
--- 
-2.33.1
+> ?.../net/ethernet/intel/iavf/iavf_virtchnl.c?? | 42
+> +++++++++++++++++++
+> ?1 file changed, 42 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> index a40e29455f7d..1805c1ae3bf4 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> @@ -1490,6 +1490,24 @@ void iavf_request_reset(struct iavf_adapter
+> *adapter)
+> ????????adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+> ?}
+> ?
+> +/**
+> + * iavf_netdev_features_vlan_strip_set - update vlan strip status
+> + * @netdev: ptr to netdev being adjusted
+> + * @enable: enable or disable vlan strip
+> + *
+> + * Helper function to change vlan strip status in netdev->features.
+> + */
+> +static void iavf_netdev_features_vlan_strip_set(struct net_device
+> *netdev,
+> +???????????????????????????????????????????????const bool enable)
+> +{
+> +???????if (enable)
+> +???????????????netdev->features |=
+> +???????????????????????NETIF_F_HW_VLAN_CTAG_RX |
+> NETIF_F_HW_VLAN_CTAG_RX;
+
+These are the same flag.
+
+> +???????else
+> +???????????????netdev->features &=
+> +???????????????????????~NETIF_F_HW_VLAN_CTAG_RX &
+> ~NETIF_F_HW_VLAN_CTAG_RX;
+
+Same here.
+
+> +}
+> +
+> ?/**
+> ? * iavf_virtchnl_completion
+> ? * @adapter: adapter structure
 
