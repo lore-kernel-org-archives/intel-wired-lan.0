@@ -1,101 +1,82 @@
-From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-Date: Fri, 14 Jan 2022 13:19:31 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 4/4] i40e: Fix race condition
- while adding/deleting MAC/VLAN filters
-In-Reply-To: <20220114131931.346687-1-jedrzej.jagielski@intel.com>
-References: <20220114131931.346687-1-jedrzej.jagielski@intel.com>
-Message-ID: <20220114131931.346687-5-jedrzej.jagielski@intel.com>
+From: Denis Kirjanov <dkirjanov@suse.de>
+Date: Fri, 14 Jan 2022 17:13:06 +0300
+Subject: [Intel-wired-lan] [PATCH 2/2 net-next v2] igb: refactor XDP
+ registration
+In-Reply-To: <20220114114354.1071776-3-vinschen@redhat.com>
+References: <20220114114354.1071776-1-vinschen@redhat.com>
+ <20220114114354.1071776-3-vinschen@redhat.com>
+Message-ID: <5521e35f-3adf-2949-f360-12e2f7946480@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 
-There was a race condition in access to hw->aq.asq_last_status
-while adding and deleting  MAC/VLAN filters causing
-incorrect error status to be printed as ERROR OK instead of
-the correct error.
 
-Change calls to i40e_aq_add_macvlan in i40e_aqc_add_filters
-and i40e_aq_remove_macvlan in i40e_aqc_del_filters
-to  _v2 versions that return Admin Queue status on the stack
-to avoid race conditions in access to hw->aq.asq_last_status.
+1/14/22 14:43, Corinna Vinschen ?????:
+> On changing the RX ring parameters igb uses a hack to avoid a warning
+> when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
+> clears the struct xdp_rxq_info content.
+> 
+> Change this to unregister if we're already registered instead.  ALign
+> code to the igc code.
+> 
+> Fixes: 9cbc948b5a20c ("igb: add XDP support")
+> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+> ---
+>   drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
+>   drivers/net/ethernet/intel/igb/igb_main.c    | 15 +++++++++++----
+>   2 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index 51a2dcaf553d..2a5782063f4c 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
+>   			memcpy(&temp_ring[i], adapter->rx_ring[i],
+>   			       sizeof(struct igb_ring));
+>   
+> -			/* Clear copied XDP RX-queue info */
+> -			memset(&temp_ring[i].xdp_rxq, 0,
+> -			       sizeof(temp_ring[i].xdp_rxq));
+> -
+>   			temp_ring[i].count = new_rx_count;
+>   			err = igb_setup_rx_resources(&temp_ring[i]);
+>   			if (err) {
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 38ba92022cd4..9638cb9c6014 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+>   {
+>   	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
+>   	struct device *dev = rx_ring->dev;
+> -	int size;
+> +	int size, res;
+>   
+>   	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+>   
+> @@ -4376,9 +4376,16 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+>   	rx_ring->xdp_prog = adapter->xdp_prog;
+>   
+>   	/* XDP RX-queue info */
+> -	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+> -			     rx_ring->queue_index, 0) < 0)
+> -		goto err;
+> +	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
+> +		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+> +	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+> +			       rx_ring->queue_index, 0);
+> +	if (res < 0) {
+> +		netdev_err(rx_ring->netdev,
+> +			   "Failed to register xdp_rxq index %u\n",
+> +			   rx_ring->queue_index);
+nit: would be nice to have the same printing functions like dev_err()
+in the error case
 
-Fixes: 0093631966aa ("i40e: remove duplicate add/delete adminq command code for filters")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 24 +++++++++++----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d2830e6396d9..de6c4fc8745a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2187,19 +2187,19 @@ void i40e_aqc_del_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 			  int num_del, int *retval)
- {
- 	struct i40e_hw *hw = &vsi->back->hw;
-+	enum i40e_admin_queue_err aq_status;
- 	i40e_status aq_ret;
--	int aq_err;
- 
--	aq_ret = i40e_aq_remove_macvlan(hw, vsi->seid, list, num_del, NULL);
--	aq_err = hw->aq.asq_last_status;
-+	aq_ret = i40e_aq_remove_macvlan_v2(hw, vsi->seid, list, num_del, NULL,
-+					   &aq_status);
- 
- 	/* Explicitly ignore and do not report when firmware returns ENOENT */
--	if (aq_ret && !(aq_err == I40E_AQ_RC_ENOENT)) {
-+	if (aq_ret && !(aq_status == I40E_AQ_RC_ENOENT)) {
- 		*retval = -EIO;
- 		dev_info(&vsi->back->pdev->dev,
- 			 "ignoring delete macvlan error on %s, err %s, aq_err %s\n",
- 			 vsi_name, i40e_stat_str(hw, aq_ret),
--			 i40e_aq_str(hw, aq_err));
-+			 i40e_aq_str(hw, aq_status));
- 	}
- }
- 
-@@ -2222,10 +2222,10 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 			  int num_add)
- {
- 	struct i40e_hw *hw = &vsi->back->hw;
--	int aq_err, fcnt;
-+	enum i40e_admin_queue_err aq_status;
-+	int fcnt;
- 
--	i40e_aq_add_macvlan(hw, vsi->seid, list, num_add, NULL);
--	aq_err = hw->aq.asq_last_status;
-+	i40e_aq_add_macvlan_v2(hw, vsi->seid, list, num_add, NULL, &aq_status);
- 	fcnt = i40e_update_filter_state(num_add, list, add_head);
- 
- 	if (fcnt != num_add) {
-@@ -2233,17 +2233,19 @@ void i40e_aqc_add_filters(struct i40e_vsi *vsi, const char *vsi_name,
- 			set_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
- 			dev_warn(&vsi->back->pdev->dev,
- 				 "Error %s adding RX filters on %s, promiscuous mode forced on\n",
--				 i40e_aq_str(hw, aq_err), vsi_name);
-+				 i40e_aq_str(hw, aq_status), vsi_name);
- 		} else if (vsi->type == I40E_VSI_SRIOV ||
- 			   vsi->type == I40E_VSI_VMDQ1 ||
- 			   vsi->type == I40E_VSI_VMDQ2) {
- 			dev_warn(&vsi->back->pdev->dev,
- 				 "Error %s adding RX filters on %s, please set promiscuous on manually for %s\n",
--				 i40e_aq_str(hw, aq_err), vsi_name, vsi_name);
-+				 i40e_aq_str(hw, aq_status), vsi_name,
-+					     vsi_name);
- 		} else {
- 			dev_warn(&vsi->back->pdev->dev,
- 				 "Error %s adding RX filters on %s, incorrect VSI type: %i.\n",
--				 i40e_aq_str(hw, aq_err), vsi_name, vsi->type);
-+				 i40e_aq_str(hw, aq_status), vsi_name,
-+					     vsi->type);
- 		}
- 	}
- }
--- 
-2.18.2
-
+> +		return res;
+> +	}
+>   
+>   	return 0;
+>   
