@@ -1,138 +1,144 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Sat, 15 Jan 2022 08:54:52 +0100
-Subject: [Intel-wired-lan] [PATCH net v1] ice: fix IPIP and SIT TSO
- offload
-In-Reply-To: <20220114233839.67979-1-jesse.brandeburg@intel.com>
-References: <20220114233839.67979-1-jesse.brandeburg@intel.com>
-Message-ID: <434da5fe-62cb-7ad6-0cb7-e117c6f716eb@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 15 Jan 2022 23:25:36 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 47c96796277acb62f2a21b9100dc200e1028af31
+Message-ID: <61e2e770.0Uc76vwzhjiGfBS/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jesse,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 47c96796277acb62f2a21b9100dc200e1028af31  i40e: Fix race condition while adding/deleting MAC/VLAN filters
 
+elapsed time: 817m
 
-Am 15.01.22 um 00:38 schrieb Jesse Brandeburg:
-> The driver was avoiding offload for IPIP (at least) frames due to
-> parsing the inner header offsets incorrectly when trying to check
-> lengths.
-> 
-> This length check works for VXLAN frames but fails on IPIP frames
-> because skb_transport_offset points to the inner header in IPIP
-> frames, which meant the subtraction of transport_header from
-> inner_network_header returns a negative value (-20).
-> 
-> With the code before this patch, everything continued to work, but GSO
-> was being used to segment, causing throughputs of 1.5Gb/s per thread.
-> After this patch, throughput is more like 10Gb/s per thread for IPIP
-> traffic.
+configs tested: 115
+configs skipped: 4
 
-Would be nice to reflow for 75 characters per line.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump version")
+gcc tested configs:
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+arm64                            allyesconfig
+i386                          randconfig-c001
+powerpc                      pcm030_defconfig
+arm                             pxa_defconfig
+arm                        mvebu_v7_defconfig
+arm                           viper_defconfig
+arm                      integrator_defconfig
+xtensa                generic_kc705_defconfig
+xtensa                    xip_kc705_defconfig
+ia64                                defconfig
+sh                   secureedge5410_defconfig
+mips                          rb532_defconfig
+arm                         assabet_defconfig
+m68k                            mac_defconfig
+sh                            shmin_defconfig
+sh                             shx3_defconfig
+sh                          r7785rp_defconfig
+powerpc                     tqm8541_defconfig
+arc                    vdk_hs38_smp_defconfig
+sh                          polaris_defconfig
+sh                          rsk7269_defconfig
+arm                         s3c6400_defconfig
+arm                       multi_v4t_defconfig
+sh                        dreamcast_defconfig
+arm                  randconfig-c002-20220114
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+sparc                               defconfig
+sparc                            allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220113
+arc                  randconfig-r043-20220113
+s390                 randconfig-r044-20220113
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                          rhel-8.3-func
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 
-Wow present since Linux 4.17.
+clang tested configs:
+powerpc                     skiroot_defconfig
+arm                     davinci_all_defconfig
+powerpc                     pseries_defconfig
+arm                       spear13xx_defconfig
+arm                       imx_v4_v5_defconfig
+arm                           spitz_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+x86_64                        randconfig-a001
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+hexagon              randconfig-r045-20220113
+hexagon              randconfig-r045-20220114
+riscv                randconfig-r042-20220114
+hexagon              randconfig-r041-20220114
+hexagon              randconfig-r041-20220113
 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> --
-> Testing Hints: test IPIP tunnel and VXLAN tunnel, both should use TSO.
-
-Do you have a script to test it? Would be nice to have in the commit 
-message.
-
-> ---
->   .../net/ethernet/intel/ice/ice_lan_tx_rx.h    |  1 +
->   drivers/net/ethernet/intel/ice/ice_main.c     | 25 +++++++++++++------
->   2 files changed, 18 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-> index d981dc6f2323..85a612838a89 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_lan_tx_rx.h
-> @@ -568,6 +568,7 @@ struct ice_tx_ctx_desc {
->   			(0x3FFFFULL << ICE_TXD_CTX_QW1_TSO_LEN_S)
->   
->   #define ICE_TXD_CTX_QW1_MSS_S	50
-> +#define ICE_TXD_CTX_MIN_MSS	64
->   
->   #define ICE_TXD_CTX_QW1_VSI_S	50
->   #define ICE_TXD_CTX_QW1_VSI_M	(0x3FFULL << ICE_TXD_CTX_QW1_VSI_S)
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index 73c61cdb036f..105b62b5e7cb 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -8540,6 +8540,7 @@ ice_features_check(struct sk_buff *skb,
->   		   struct net_device __always_unused *netdev,
->   		   netdev_features_t features)
->   {
-> +	bool gso = skb_is_gso(skb);
-
-Maybe name it `is_gso`, so it?s clear it?s a boolean, and make it const?
-
->   	size_t len;
->   
->   	/* No point in doing any of this if neither checksum nor GSO are
-> @@ -8552,24 +8553,32 @@ ice_features_check(struct sk_buff *skb,
->   	/* We cannot support GSO if the MSS is going to be less than
->   	 * 64 bytes. If it is then we need to drop support for GSO.
->   	 */
-> -	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_size < 64))
-> +	if (gso && (skb_shinfo(skb)->gso_size < ICE_TXD_CTX_MIN_MSS))
->   		features &= ~NETIF_F_GSO_MASK;
->   
-> -	len = skb_network_header(skb) - skb->data;
-> +	len = skb_network_offset(skb);
->   	if (len > ICE_TXD_MACLEN_MAX || len & 0x1)
->   		goto out_rm_features;
->   
-> -	len = skb_transport_header(skb) - skb_network_header(skb);
-> +	len = skb_network_header_len(skb);
-
-Ok, for networking unfamiliar, this is refactoring.
-
->   	if (len > ICE_TXD_IPLEN_MAX || len & 0x1)
->   		goto out_rm_features;
->   
->   	if (skb->encapsulation) {
-> -		len = skb_inner_network_header(skb) - skb_transport_header(skb);
-> -		if (len > ICE_TXD_L4LEN_MAX || len & 0x1)
-> -			goto out_rm_features;
-> +		/* this must work for vxlan frames AND IPIP/SIT frames, and in
-> +		 * the case of IPIP frames, the transport header pointer is
-> +		 * after the inner header! So check to make sure that this
-> +		 * is a GRE or UDP_TUNNEL frame before doing that math.
-> +		 */
-> +		if (gso && (skb_shinfo(skb)->gso_type &
-> +			    (SKB_GSO_GRE | SKB_GSO_UDP_TUNNEL))) {
-> +			len = skb_inner_network_header(skb) -
-> +			      skb_transport_header(skb);
-
-
-> +			if (len > ICE_TXD_L4LEN_MAX || len & 0x1)
-> +				goto out_rm_features;
-> +		}
->   
-> -		len = skb_inner_transport_header(skb) -
-> -		      skb_inner_network_header(skb);
-> +		len = skb_inner_network_header_len(skb);
-
-Just refactoring.
-
->   		if (len > ICE_TXD_IPLEN_MAX || len & 0x1)
->   			goto out_rm_features;
->   	}
-
-Next time, I?d prefer a separate patch doing the refactorings.
-
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>.
-
-
-Kind regards,
-
-Paul
-
-
-PS: Is this also needed for i40e 
-(`drivers/net/ethernet/intel/i40e/i40e_main.c`)?
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
