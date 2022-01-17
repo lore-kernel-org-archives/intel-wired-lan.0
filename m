@@ -1,36 +1,44 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Mon, 17 Jan 2022 19:29:12 +0100
-Subject: [Intel-wired-lan] [PATCH 0/3 net-next v5] igb/igc: fix XDP
- registration
-Message-ID: <20220117182915.1283151-1-vinschen@redhat.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Mon, 17 Jan 2022 20:31:23 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 13/14] ice: Add support
+ for 802.1ad port VLANs VF
+In-Reply-To: <20211202163852.36436-13-anthony.l.nguyen@intel.com>
+References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
+ <20211202163852.36436-13-anthony.l.nguyen@intel.com>
+Message-ID: <DM8PR11MB5621B2AD262C1A5EB6960790AB579@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix the kernel warning "Missing unregister, handled but fix driver"
-when running, e.g.,
 
-  $ ethtool -G eth0 rx 1024
 
-on igc.  Remove memset hack from igb and align igb code to igc. 
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: czwartek, 2 grudnia 2021 17:39
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v3 13/14] ice: Add support for
+> 802.1ad port VLANs VF
+> 
+> From: Brett Creeley <brett.creeley@intel.com>
+> 
+> Currently there is only support for 802.1Q port VLANs on SR-IOV VFs. Add
+> support to also allow 802.1ad port VLANs when double VLAN mode is
+> enabled.
+> 
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 51 ++++++++++++++++---
+>  1 file changed, 44 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index de74a2b4f846..f1802de98b82 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -768,6 +768,11 @@ bool ice_vf_is_port_vlan_ena(struct ice_vf *vf)
 
-v3: use dev_err rather than netdev_err, just as in error case.
-v4: fix a return copy/pasted from original igc code into the correct
-    `goto err', improve commit message.
-v5: add missing dma_free_coherent calls in error case.
-
-Corinna Vinschen (2):
-  igc: avoid kernel warning when changing RX ring parameters
-  igb: refactor XDP registration
-  igb/igc: RX queues: fix DMA leak in error case
-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
- drivers/net/ethernet/intel/igb/igb_main.c    | 13 +++++++++---
- drivers/net/ethernet/intel/igc/igc_main.c    | 21 +++++++++++---------
- 3 files changed, 22 insertions(+), 16 deletions(-)
-
--- 
-2.27.0
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
