@@ -1,96 +1,95 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Tue, 18 Jan 2022 21:01:30 +0100
-Subject: [Intel-wired-lan] [PATCH] ice: Don't use GFP_KERNEL in atomic
- context
-In-Reply-To: <YeSRUVmrdmlUXHDn@lunn.ch>
-References: <40c94af2f9140794351593047abc95ca65e4e576.1642358759.git.christophe.jaillet@wanadoo.fr>
- <YeSRUVmrdmlUXHDn@lunn.ch>
-Message-ID: <464d0428-42ba-cd68-f21c-630850e6f3c7@wanadoo.fr>
+From: Dave Ertman <david.m.ertman@intel.com>
+Date: Tue, 18 Jan 2022 13:08:20 -0800
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix KASAN error in LAG
+ NETDEV_UNREGISTER handler
+Message-ID: <20220118210820.1055792-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Le 16/01/2022 ? 22:42, Andrew Lunn a ?crit?:
-> On Sun, Jan 16, 2022 at 07:46:20PM +0100, Christophe JAILLET wrote:
->> ice_misc_intr() is an irq handler. It should not sleep.
->>
->> Use GFP_ATOMIC instead of GFP_KERNEL when allocating some memory.
->>
->> Fixes: 348048e724a0 ("ice: Implement iidc operations")
->> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->> ---
->> I've never played a lot with irq handler. My understanding is that they
->> should never sleep.
-> 
-> Hi Christophe
-> 
-> Threaded interrupt handlers are allowed to sleep. However, this
-> handler is not being used in such a way. So your are probably correct
-> about GFP_KERNEL vs GFP_ATOMIC.
-> 
->> ---
->>   drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
->> index 30814435f779..65de01f3a504 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->> @@ -3018,7 +3018,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
->>   		struct iidc_event *event;
->>   
->>   		ena_mask &= ~ICE_AUX_CRIT_ERR;
->> -		event = kzalloc(sizeof(*event), GFP_KERNEL);
->> +		event = kzalloc(sizeof(*event), GFP_ATOMIC);
->>   		if (event) {
->>   			set_bit(IIDC_EVENT_CRIT_ERR, event->type);
->>   			/* report the entire OICR value to AUX driver */
-> 
-> What happens next is interesting...
-> 
-> 
->                          event->reg = oicr;
->                          ice_send_event_to_aux(pf, event);
-> 
-> where:
-> 
-> void ice_send_event_to_aux(struct ice_pf *pf, struct iidc_event *event)
-> {
->          struct iidc_auxiliary_drv *iadrv;
-> 
->          if (!pf->adev)
->                  return;
-> 
->          device_lock(&pf->adev->dev);
->          iadrv = ice_get_auxiliary_drv(pf);
->          if (iadrv && iadrv->event_handler)
->                  iadrv->event_handler(pf, event);
->          device_unlock(&pf->adev->dev);
-> }
-> 
-> device_lock() takes a mutex, not something you should be doing in
-> atomic context.
-> 
-> So it looks to me, this handler really should be running in thread
-> context...
-> 
-> 	Andrew
-> 
+Currently, the same handler is called for both a NETDEV_BONDING_INFO
+LAG unlink notification as for a NETDEV_UNREGISTER call.  This is
+causing a problem though, since the netdev_notifier_info passed has
+a different structure depending on which event is passed.  The problem
+manifests as a call trace from a BUG: KASAN stack-out-of-bounds error.
 
-Ok, thanks for the explanation.
+Fix this by creating a handler specific to NETDEV_UNREGISTER that only
+is passed valid elements in the netdev_notifier_info struct for the
+NETDEV_UNREGISTER event.
 
-ice_misc_intr() is registered with devm_request_irq(), so it is a 
-handler that can't sleep.
+Also included is the removal of an unbalanced dev_put on the peer_netdev
+and related braces.
 
-I guess that more consideration should be taken into account than only:
-   s/devm_request_irq(handler)/devm_request_threaded_irq(NULL, handler)/
+Fixes: 6a8b357278f5 ("ice: Respond to a NETDEV_UNREGISTER event for LAG")
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 
-So I'll leave this one to people with the expected know-how.
+---
 
-If my s/GFP_KERNEL/GFP_ATOMIC/ makes enough sense as-is, that's fine for 
-me, but it looks that another solution is needed to fix the 2nd issue.
+v2: also remove unneeded if block
+---
+ drivers/net/ethernet/intel/ice/ice_lag.c | 34 +++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index e375ac849aec..4f954db01b92 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -204,17 +204,39 @@ ice_lag_unlink(struct ice_lag *lag,
+ 		lag->upper_netdev = NULL;
+ 	}
+ 
+-	if (lag->peer_netdev) {
+-		dev_put(lag->peer_netdev);
+-		lag->peer_netdev = NULL;
+-	}
+-
++	lag->peer_netdev = NULL;
+ 	ice_set_sriov_cap(pf);
+ 	ice_set_rdma_cap(pf);
+ 	lag->bonded = false;
+ 	lag->role = ICE_LAG_NONE;
+ }
+ 
++/**
++ * ice_lag_unregister - handle netdev unregister events
++ * @lag: LAG info struct
++ * @netdev: netdev reporting the event
++ */
++static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
++{
++	struct ice_pf *pf = lag->pf;
++
++	/* check to see if this event is for this netdev
++	 * check that we are in an aggregate
++	 */
++	if (netdev != lag->netdev || !lag->bonded)
++		return;
++
++	if (lag->upper_netdev) {
++		dev_put(lag->upper_netdev);
++		lag->upper_netdev = NULL;
++		ice_set_sriov_cap(pf);
++		ice_set_rdma_cap(pf);
++	}
++	/* perform some cleanup in case we come back */
++	lag->bonded = false;
++	lag->role = ICE_LAG_NONE;
++}
++
+ /**
+  * ice_lag_changeupper_event - handle LAG changeupper event
+  * @lag: LAG info struct
+@@ -307,7 +329,7 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+ 		ice_lag_info_event(lag, ptr);
+ 		break;
+ 	case NETDEV_UNREGISTER:
+-		ice_lag_unlink(lag, ptr);
++		ice_lag_unregister(lag, netdev);
+ 		break;
+ 	default:
+ 		break;
+-- 
+2.33.1
 
-CJ
