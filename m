@@ -1,84 +1,96 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 18 Jan 2022 18:10:50 +0000
-Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
- configuration flow messages
-In-Reply-To: <20211208092859.1876593-1-karen.sornek@intel.com>
-References: <20211208092859.1876593-1-karen.sornek@intel.com>
-Message-ID: <DM8PR11MB5621C55A3A72E439B83B2774AB589@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Tue, 18 Jan 2022 21:01:30 +0100
+Subject: [Intel-wired-lan] [PATCH] ice: Don't use GFP_KERNEL in atomic
+ context
+In-Reply-To: <YeSRUVmrdmlUXHDn@lunn.ch>
+References: <40c94af2f9140794351593047abc95ca65e4e576.1642358759.git.christophe.jaillet@wanadoo.fr>
+ <YeSRUVmrdmlUXHDn@lunn.ch>
+Message-ID: <464d0428-42ba-cd68-f21c-630850e6f3c7@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Le 16/01/2022 ? 22:42, Andrew Lunn a ?crit?:
+> On Sun, Jan 16, 2022 at 07:46:20PM +0100, Christophe JAILLET wrote:
+>> ice_misc_intr() is an irq handler. It should not sleep.
+>>
+>> Use GFP_ATOMIC instead of GFP_KERNEL when allocating some memory.
+>>
+>> Fixes: 348048e724a0 ("ice: Implement iidc operations")
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>> ---
+>> I've never played a lot with irq handler. My understanding is that they
+>> should never sleep.
+> 
+> Hi Christophe
+> 
+> Threaded interrupt handlers are allowed to sleep. However, this
+> handler is not being used in such a way. So your are probably correct
+> about GFP_KERNEL vs GFP_ATOMIC.
+> 
+>> ---
+>>   drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+>> index 30814435f779..65de01f3a504 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+>> @@ -3018,7 +3018,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+>>   		struct iidc_event *event;
+>>   
+>>   		ena_mask &= ~ICE_AUX_CRIT_ERR;
+>> -		event = kzalloc(sizeof(*event), GFP_KERNEL);
+>> +		event = kzalloc(sizeof(*event), GFP_ATOMIC);
+>>   		if (event) {
+>>   			set_bit(IIDC_EVENT_CRIT_ERR, event->type);
+>>   			/* report the entire OICR value to AUX driver */
+> 
+> What happens next is interesting...
+> 
+> 
+>                          event->reg = oicr;
+>                          ice_send_event_to_aux(pf, event);
+> 
+> where:
+> 
+> void ice_send_event_to_aux(struct ice_pf *pf, struct iidc_event *event)
+> {
+>          struct iidc_auxiliary_drv *iadrv;
+> 
+>          if (!pf->adev)
+>                  return;
+> 
+>          device_lock(&pf->adev->dev);
+>          iadrv = ice_get_auxiliary_drv(pf);
+>          if (iadrv && iadrv->event_handler)
+>                  iadrv->event_handler(pf, event);
+>          device_unlock(&pf->adev->dev);
+> }
+> 
+> device_lock() takes a mutex, not something you should be doing in
+> atomic context.
+> 
+> So it looks to me, this handler really should be running in thread
+> context...
+> 
+> 	Andrew
+> 
+
+Ok, thanks for the explanation.
+
+ice_misc_intr() is registered with devm_request_irq(), so it is a 
+handler that can't sleep.
+
+I guess that more consideration should be taken into account than only:
+   s/devm_request_irq(handler)/devm_request_threaded_irq(NULL, handler)/
+
+So I'll leave this one to people with the expected know-how.
+
+If my s/GFP_KERNEL/GFP_ATOMIC/ makes enough sense as-is, that's fine for 
+me, but it looks that another solution is needed to fix the 2nd issue.
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Sornek, Karen
-> Sent: ?roda, 8 grudnia 2021 10:29
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Sornek, Karen <karen.sornek@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
-> configuration flow messages
-> 
-> From: Karen Sornek <karen.sornek@intel.com>
-> 
-> Currently when configuring promiscuous mode on the AVF we detect a
-> change in the netdev->flags. We use IFF_PROMISC and IFF_ALLMULTI to
-> determine whether or not we need to request/release promiscuous mode
-> and/or multicast promiscuous mode. The problem is that the AQ calls for
-> setting/clearing promiscuous/multicast mode are treated separately. This
-> leads to a case where we can trigger two promiscuous mode AQ calls in a row
-> with the incorrect state. To fix this make a few changes.
-> 
-> Use IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE instead of the previous
-> IAVF_FLAG_AQ_[REQUEST|RELEASE]_[PROMISC|ALLMULTI] flags.
-> 
-> In iavf_set_rx_mode() detect if there is a change in the
-> netdev->flags in comparison with adapter->flags and set the
-> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE aq_required bit. Then in
-> iavf_process_aq_command() only check for
-> IAVF_FLAG_CONFIGURE_PROMISC_MODE and call iavf_set_promiscuous()
-> if it's set.
-> 
-> In iavf_set_promiscuous() check again to see which (if any) promiscuous
-> mode bits have changed when comparing the netdev->flags with the
-> adapter->flags. Use this to set the flags which get sent to the PF driver.
-> 
-> Add a spinlock that is used for updating current_netdev_promisc_flags and
-> only allows one promiscuous mode AQ at a time.
-> 
-> [1] Fixes the fact that we will only have one AQ call in the aq_required queue
-> at any one time.
-> 
-> [2] Streamlines the change in promiscuous mode to only set one AQ required
-> bit.
-> 
-> [3] This allows us to keep track of the current state of the flags and also
-> makes it so we can take the most recent netdev->flags promiscuous mode
-> state.
-> 
-> [4] This fixes the problem where a change in the netdev->flags can cause
-> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE to be set in
-> iavf_set_rx_mode(), but cleared in iavf_set_promiscuous() before the
-> change is ever made via AQ call.
-> 
-> Fixes: 47d3483988f6 ("i40evf: Add driver support for promiscuous mode")
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> ---
-> v3: Previous version had applying issue
-> ---
->  drivers/net/ethernet/intel/iavf/iavf.h        | 16 +++--
->  drivers/net/ethernet/intel/iavf/iavf_main.c   | 45 +++++--------
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 66 ++++++++++++++-----
->  3 files changed, 75 insertions(+), 52 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 4d62231ec6b5..14e120a82b1c 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-
-I am not able to force the promiscuous message correctly
+CJ
