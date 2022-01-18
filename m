@@ -1,95 +1,43 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Tue, 18 Jan 2022 13:08:20 -0800
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix KASAN error in LAG
- NETDEV_UNREGISTER handler
-Message-ID: <20220118210820.1055792-1-david.m.ertman@intel.com>
+From: Switzer, David <david.switzer@intel.com>
+Date: Tue, 18 Jan 2022 22:42:28 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Remove non-inclusive
+ language from Intel code
+In-Reply-To: <20220111102723.3546-1-piotrx.skajewski@intel.com>
+References: <20220111102723.3546-1-piotrx.skajewski@intel.com>
+Message-ID: <SN6PR11MB3518687236AC4A8D6624E2CCEB589@SN6PR11MB3518.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, the same handler is called for both a NETDEV_BONDING_INFO
-LAG unlink notification as for a NETDEV_UNREGISTER call.  This is
-causing a problem though, since the netdev_notifier_info passed has
-a different structure depending on which event is passed.  The problem
-manifests as a call trace from a BUG: KASAN stack-out-of-bounds error.
 
-Fix this by creating a handler specific to NETDEV_UNREGISTER that only
-is passed valid elements in the netdev_notifier_info struct for the
-NETDEV_UNREGISTER event.
 
-Also included is the removal of an unbalanced dev_put on the peer_netdev
-and related braces.
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Piotr Skajewski
+>Sent: Tuesday, January 11, 2022 2:27 AM
+To: intel-wired-lan@lists.osuosl.org; pmenzel at molgen.mpg.de
+>Cc: Skajewski, PiotrX <piotrx.skajewski@intel.com>
+>Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Remove non-inclusive language
+>from Intel code
+>
+>Remove non-inclusive language from Intel code as our entire industry
+>removes non-inclusive language from our documentation, user-interfaces and
+>code.
+>
+>Additionally correct the duplication "from from"
+>reported by checkpatch after the changes above.
+>
+>Signed-off-by: Piotr Skajewski <piotrx.skajewski@intel.com>
+>---
+>v2:
+> - removed dot/period from commit message summary
+> - commit message updated with word duplication
+>---
+> .../net/ethernet/intel/ixgbe/ixgbe_common.c   | 36 +++++++++----------
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  4 +--
+>drivers/net/ethernet/intel/ixgbe/ixgbe_type.h | 10 +++---
+> 3 files changed, 25 insertions(+), 25 deletions(-)
 
-Fixes: 6a8b357278f5 ("ice: Respond to a NETDEV_UNREGISTER event for LAG")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-
----
-
-v2: also remove unneeded if block
----
- drivers/net/ethernet/intel/ice/ice_lag.c | 34 +++++++++++++++++++-----
- 1 file changed, 28 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index e375ac849aec..4f954db01b92 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -204,17 +204,39 @@ ice_lag_unlink(struct ice_lag *lag,
- 		lag->upper_netdev = NULL;
- 	}
- 
--	if (lag->peer_netdev) {
--		dev_put(lag->peer_netdev);
--		lag->peer_netdev = NULL;
--	}
--
-+	lag->peer_netdev = NULL;
- 	ice_set_sriov_cap(pf);
- 	ice_set_rdma_cap(pf);
- 	lag->bonded = false;
- 	lag->role = ICE_LAG_NONE;
- }
- 
-+/**
-+ * ice_lag_unregister - handle netdev unregister events
-+ * @lag: LAG info struct
-+ * @netdev: netdev reporting the event
-+ */
-+static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
-+{
-+	struct ice_pf *pf = lag->pf;
-+
-+	/* check to see if this event is for this netdev
-+	 * check that we are in an aggregate
-+	 */
-+	if (netdev != lag->netdev || !lag->bonded)
-+		return;
-+
-+	if (lag->upper_netdev) {
-+		dev_put(lag->upper_netdev);
-+		lag->upper_netdev = NULL;
-+		ice_set_sriov_cap(pf);
-+		ice_set_rdma_cap(pf);
-+	}
-+	/* perform some cleanup in case we come back */
-+	lag->bonded = false;
-+	lag->role = ICE_LAG_NONE;
-+}
-+
- /**
-  * ice_lag_changeupper_event - handle LAG changeupper event
-  * @lag: LAG info struct
-@@ -307,7 +329,7 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
- 		ice_lag_info_event(lag, ptr);
- 		break;
- 	case NETDEV_UNREGISTER:
--		ice_lag_unlink(lag, ptr);
-+		ice_lag_unregister(lag, netdev);
- 		break;
- 	default:
- 		break;
--- 
-2.33.1
-
+Tested-by: Dave Switzer <david.switzer@intel.com>
