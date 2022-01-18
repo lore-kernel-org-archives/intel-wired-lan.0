@@ -1,81 +1,53 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 17 Jan 2022 20:32:16 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] ice: Add support
- for VIRTCHNL_VF_OFFLOAD_VLAN_V2
-In-Reply-To: <20211202163852.36436-10-anthony.l.nguyen@intel.com>
-References: <20211202163852.36436-1-anthony.l.nguyen@intel.com>
- <20211202163852.36436-10-anthony.l.nguyen@intel.com>
-Message-ID: <DM8PR11MB5621AE179E3C15F9C5DE829DAB579@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+Date: Tue, 18 Jan 2022 08:01:30 +0200
+Subject: [Intel-wired-lan] [PATCH 3/3 net-next v5] igb/igc: RX queues:
+ fix DMA leak in error case
+In-Reply-To: <20220117182915.1283151-4-vinschen@redhat.com>
+References: <20220117182915.1283151-1-vinschen@redhat.com>
+ <20220117182915.1283151-4-vinschen@redhat.com>
+Message-ID: <YeZXuoRa/39zzoEY@wantstofly.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Mon, Jan 17, 2022 at 07:29:15PM +0100, Corinna Vinschen wrote:
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: czwartek, 2 grudnia 2021 17:39
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v3 10/14] ice: Add support for
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2
+> When setting up the rx queues, igb and igc neglect to free DMA memory
+> in error case.  Add matching dma_free_coherent calls.
 > 
-> From: Brett Creeley <brett.creeley@intel.com>
-> 
-> Add support for the VF driver to be able to request
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2, negotiate its VLAN capabilities via
-> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS, add/delete VLAN filters,
-> and
-> enable/disable VLAN offloads.
-> 
-> VFs supporting VIRTCHNL_OFFLOAD_VLAN_V2 will be able to use the
-> following virtchnl opcodes:
-> 
-> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
-> VIRTCHNL_OP_ADD_VLAN_V2
-> VIRTCHNL_OP_DEL_VLAN_V2
-> VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2
-> VIRTCHNL_OP_DISABLE_VLAN_STRIPPING_V2
-> VIRTCHNL_OP_ENABLE_VLAN_INSERTION_V2
-> VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2
-> 
-> Legacy VF drivers may expect the initial VLAN stripping settings to be
-> configured by the PF, so the PF initializes VLAN stripping based on the
-> VIRTCHNL_OP_GET_VF_RESOURCES opcode. However, with VLAN support
-> via
-> VIRTCHNL_VF_OFFLOAD_VLAN_V2, this function is only expected to be used
-> for VFs that only support VIRTCHNL_VF_OFFLOAD_VLAN, which will only
-> be supported when a port VLAN is configured. Update the function
-> based on the new expectations. Also, change the message when the PF
-> can't enable/disable VLAN stripping to a dev_dbg() as this isn't fatal.
-> 
-> When a VF isn't in a port VLAN and it only supports
-> VIRTCHNL_VF_OFFLOAD_VLAN when Double VLAN Mode (DVM) is enabled,
-> then
-> the PF needs to reject the VIRTCHNL_VF_OFFLOAD_VLAN capability and
-> configure the VF in software only VLAN mode. To do this add the new
-> function ice_vf_vsi_cfg_legacy_vlan_mode(), which updates the VF's
-> inner and outer ice_vsi_vlan_ops functions and sets up software only
-> VLAN mode.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_base.c     |    1 +
->  .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  115 ++
->  .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.h  |    3 +
->  .../intel/ice/ice_virtchnl_allowlist.c        |   10 +
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 1132 ++++++++++++++++-
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |    8 +
->  6 files changed, 1226 insertions(+), 43 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>  drivers/net/ethernet/intel/igc/igc_main.c | 1 +
+>  2 files changed, 2 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_base.c
-> b/drivers/net/ethernet/intel/ice/ice_base.c
-> index 9ca0ae2bb1dc..0dec7c5463eb 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_base.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_base.c
-> @@ -5,6 +5,7 @@
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index cea89d301bfd..343568d4ff7f 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -4389,6 +4389,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+>  	return 0;
+>  
+>  err:
+> +	dma_free_coherent(dev, rx_ring->size, rx_ring->desc, rx_ring->dma);
+>  	vfree(rx_ring->rx_buffer_info);
+>  	rx_ring->rx_buffer_info = NULL;
+>  	dev_err(dev, "Unable to allocate memory for the Rx descriptor ring\n");
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 56ed0f1463e5..f323cec0b74f 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -540,6 +540,7 @@ int igc_setup_rx_resources(struct igc_ring *rx_ring)
+>  	return 0;
+>  
+>  err:
+> +	dma_free_coherent(dev, rx_ring->size, rx_ring->desc, rx_ring->dma);
+>  	vfree(rx_ring->rx_buffer_info);
+>  	rx_ring->rx_buffer_info = NULL;
+>  	netdev_err(ndev, "Unable to allocate memory for Rx descriptor ring\n");
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+If the vzalloc() call in igc_setup_rx_resources() fails, and we jump
+to 'err' before dma_alloc_coherent() was reached, won't dma_free_coherent()
+be called inadvertently here?
