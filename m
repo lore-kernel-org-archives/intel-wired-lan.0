@@ -1,105 +1,92 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Tue, 18 Jan 2022 13:18:54 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add usage of new
- virtchnl format to set default MAC
-Message-ID: <20220118121854.9577-1-mateusz.palczewski@intel.com>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Tue, 18 Jan 2022 16:05:12 +0100
+Subject: [Intel-wired-lan] [PATCH 2/3 net-next v5] igb: refactor XDP
+ registration
+In-Reply-To: <20220117182915.1283151-3-vinschen@redhat.com>
+References: <20220117182915.1283151-1-vinschen@redhat.com>
+ <20220117182915.1283151-3-vinschen@redhat.com>
+Message-ID: <20220118150512.25541-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use new type field of VIRTCHNL_OP_ADD_ETH_ADDR and
-VIRTCHNL_OP_DEL_ETH_ADDR requests to indicate that
-VF wants to change its default MAC address.
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Mon, 17 Jan 2022 19:29:14 +0100
 
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c     | 12 +++++++++---
- drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 16 ++++++++++++++++
- 2 files changed, 25 insertions(+), 3 deletions(-)
+> On changing the RX ring parameters igb uses a hack to avoid a warning
+> when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
+> clears the struct xdp_rxq_info content.
+> 
+> Change this to unregister if we're already registered instead.  Align
+> code to the igc code.
+> 
+> Fixes: 9cbc948b5a20c ("igb: add XDP support")
+> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++---
+>  2 files changed, 9 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index 51a2dcaf553d..2a5782063f4c 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
+>  			memcpy(&temp_ring[i], adapter->rx_ring[i],
+>  			       sizeof(struct igb_ring));
+>  
+> -			/* Clear copied XDP RX-queue info */
+> -			memset(&temp_ring[i].xdp_rxq, 0,
+> -			       sizeof(temp_ring[i].xdp_rxq));
+> -
+>  			temp_ring[i].count = new_rx_count;
+>  			err = igb_setup_rx_resources(&temp_ring[i]);
+>  			if (err) {
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 38ba92022cd4..cea89d301bfd 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+>  {
+>  	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
+>  	struct device *dev = rx_ring->dev;
+> -	int size;
+> +	int size, res;
+>  
+>  	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+>  
+> @@ -4376,9 +4376,15 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+>  	rx_ring->xdp_prog = adapter->xdp_prog;
+>  
+>  	/* XDP RX-queue info */
+> -	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+> -			     rx_ring->queue_index, 0) < 0)
+> +	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
+> +		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+> +	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+> +			       rx_ring->queue_index, 0);
+> +	if (res < 0) {
+> +		dev_err(dev, "Failed to register xdp_rxq index %u\n",
+> +			rx_ring->queue_index);
+>  		goto err;
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index ec4f85a..7fa29a8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -876,6 +876,7 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
- 		list_add_tail(&f->list, &adapter->mac_filter_list);
- 		f->add = true;
- 		f->is_new_mac = true;
-+		f->is_primary = false;
- 		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
- 	} else {
- 		f->remove = false;
-@@ -909,17 +910,22 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
- 	f = iavf_find_filter(adapter, hw->mac.addr);
- 	if (f) {
- 		f->remove = true;
-+		f->is_primary = true;
- 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
- 	}
- 
- 	f = iavf_add_filter(adapter, addr->sa_data);
--
--	spin_unlock_bh(&adapter->mac_vlan_list_lock);
--
- 	if (f) {
-+		f->is_primary = true;
- 		ether_addr_copy(hw->mac.addr, addr->sa_data);
- 	}
- 
-+	spin_unlock_bh(&adapter->mac_vlan_list_lock);
-+
-+	/* schedule the watchdog task to immediately process the request */
-+	if (f)
-+		queue_work(iavf_wq, &adapter->watchdog_task.work);
-+
- 	return (f == NULL) ? -ENOMEM : 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 5ee1d11..1889eca 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -453,6 +453,20 @@ void iavf_map_queues(struct iavf_adapter *adapter)
- 	kfree(vimi);
- }
- 
-+/**
-+ * iavf_set_mac_addr_type - Set the correct request type basing on the filter type
-+ * @virtchnl_ether_addr: pointer to requested list element
-+ * @filter: pointer to requested filter
-+ **/
-+static void
-+iavf_set_mac_addr_type(struct virtchnl_ether_addr *virtchnl_ether_addr,
-+		       const struct iavf_mac_filter *filter)
-+{
-+	virtchnl_ether_addr->type = filter->is_primary ?
-+		VIRTCHNL_ETHER_ADDR_PRIMARY :
-+		VIRTCHNL_ETHER_ADDR_EXTRA;
-+}
-+
- /**
-  * iavf_add_ether_addrs
-  * @adapter: adapter structure
-@@ -508,6 +522,7 @@ void iavf_add_ether_addrs(struct iavf_adapter *adapter)
- 	list_for_each_entry(f, &adapter->mac_filter_list, list) {
- 		if (f->add) {
- 			ether_addr_copy(veal->list[i].addr, f->macaddr);
-+			iavf_set_mac_addr_type(&veal->list[i], f);
- 			i++;
- 			f->add = false;
- 			if (i == count)
-@@ -577,6 +592,7 @@ void iavf_del_ether_addrs(struct iavf_adapter *adapter)
- 	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
- 		if (f->remove) {
- 			ether_addr_copy(veal->list[i].addr, f->macaddr);
-+			iavf_set_mac_addr_type(&veal->list[i], f);
- 			i++;
- 			list_del(&f->list);
- 			kfree(f);
--- 
-2.27.0
+Error path always returns -ENOMEM, even in this case, and reports
+that it failed to allocate memory for rings. Handle this correctly
+and return `res` instead and without one more error message?
 
+> +	}
+
+As I mentioned a bit above, `res` is unused here as an error code,
+only to test the value on < 0. Does it make sense to add a new
+variable?
+
+>  
+>  	return 0;
+>  
+> -- 
+> 2.27.0
+
+Thanks,
+Al
