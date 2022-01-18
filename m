@@ -1,120 +1,84 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Tue, 18 Jan 2022 16:16:00 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add usage of new
- virtchnl format to set default MAC
-In-Reply-To: <20220118121854.9577-1-mateusz.palczewski@intel.com>
-References: <20220118121854.9577-1-mateusz.palczewski@intel.com>
-Message-ID: <20220118151600.25869-1-alexandr.lobakin@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 18 Jan 2022 18:10:50 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
+ configuration flow messages
+In-Reply-To: <20211208092859.1876593-1-karen.sornek@intel.com>
+References: <20211208092859.1876593-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB5621C55A3A72E439B83B2774AB589@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Tue, 18 Jan 2022 13:18:54 +0100
 
-> Use new type field of VIRTCHNL_OP_ADD_ETH_ADDR and
-> VIRTCHNL_OP_DEL_ETH_ADDR requests to indicate that
-> VF wants to change its default MAC address.
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Sornek, Karen
+> Sent: ?roda, 8 grudnia 2021 10:29
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
+> configuration flow messages
 > 
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-
-Ah, it's in the lists already, I'm pasting my comment from GH below
-then.
-
+> From: Karen Sornek <karen.sornek@intel.com>
+> 
+> Currently when configuring promiscuous mode on the AVF we detect a
+> change in the netdev->flags. We use IFF_PROMISC and IFF_ALLMULTI to
+> determine whether or not we need to request/release promiscuous mode
+> and/or multicast promiscuous mode. The problem is that the AQ calls for
+> setting/clearing promiscuous/multicast mode are treated separately. This
+> leads to a case where we can trigger two promiscuous mode AQ calls in a row
+> with the incorrect state. To fix this make a few changes.
+> 
+> Use IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE instead of the previous
+> IAVF_FLAG_AQ_[REQUEST|RELEASE]_[PROMISC|ALLMULTI] flags.
+> 
+> In iavf_set_rx_mode() detect if there is a change in the
+> netdev->flags in comparison with adapter->flags and set the
+> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE aq_required bit. Then in
+> iavf_process_aq_command() only check for
+> IAVF_FLAG_CONFIGURE_PROMISC_MODE and call iavf_set_promiscuous()
+> if it's set.
+> 
+> In iavf_set_promiscuous() check again to see which (if any) promiscuous
+> mode bits have changed when comparing the netdev->flags with the
+> adapter->flags. Use this to set the flags which get sent to the PF driver.
+> 
+> Add a spinlock that is used for updating current_netdev_promisc_flags and
+> only allows one promiscuous mode AQ at a time.
+> 
+> [1] Fixes the fact that we will only have one AQ call in the aq_required queue
+> at any one time.
+> 
+> [2] Streamlines the change in promiscuous mode to only set one AQ required
+> bit.
+> 
+> [3] This allows us to keep track of the current state of the flags and also
+> makes it so we can take the most recent netdev->flags promiscuous mode
+> state.
+> 
+> [4] This fixes the problem where a change in the netdev->flags can cause
+> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE to be set in
+> iavf_set_rx_mode(), but cleared in iavf_set_promiscuous() before the
+> change is ever made via AQ call.
+> 
+> Fixes: 47d3483988f6 ("i40evf: Add driver support for promiscuous mode")
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c     | 12 +++++++++---
->  drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 16 ++++++++++++++++
->  2 files changed, 25 insertions(+), 3 deletions(-)
+> v3: Previous version had applying issue
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h        | 16 +++--
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 45 +++++--------
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 66 ++++++++++++++-----
+>  3 files changed, 75 insertions(+), 52 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index ec4f85a..7fa29a8 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -876,6 +876,7 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
->  		list_add_tail(&f->list, &adapter->mac_filter_list);
->  		f->add = true;
->  		f->is_new_mac = true;
-> +		f->is_primary = false;
->  		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
->  	} else {
->  		f->remove = false;
-> @@ -909,17 +910,22 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
->  	f = iavf_find_filter(adapter, hw->mac.addr);
->  	if (f) {
->  		f->remove = true;
-> +		f->is_primary = true;
->  		adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
->  	}
->  
->  	f = iavf_add_filter(adapter, addr->sa_data);
-> -
-> -	spin_unlock_bh(&adapter->mac_vlan_list_lock);
-> -
->  	if (f) {
-> +		f->is_primary = true;
->  		ether_addr_copy(hw->mac.addr, addr->sa_data);
->  	}
->  
-> +	spin_unlock_bh(&adapter->mac_vlan_list_lock);
-> +
-> +	/* schedule the watchdog task to immediately process the request */
-> +	if (f)
-> +		queue_work(iavf_wq, &adapter->watchdog_task.work);
-> +
->  	return (f == NULL) ? -ENOMEM : 0;
->  }
->  
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index 5ee1d11..1889eca 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> @@ -453,6 +453,20 @@ void iavf_map_queues(struct iavf_adapter *adapter)
->  	kfree(vimi);
->  }
->  
-> +/**
-> + * iavf_set_mac_addr_type - Set the correct request type basing on the filter type
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 4d62231ec6b5..14e120a82b1c 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
 
-Line is over 79/80, please wrap around or just replace "basing on"
-with "from" to reduce its length.
-
-> + * @virtchnl_ether_addr: pointer to requested list element
-> + * @filter: pointer to requested filter
-> + **/
-> +static void
-> +iavf_set_mac_addr_type(struct virtchnl_ether_addr *virtchnl_ether_addr,
-> +		       const struct iavf_mac_filter *filter)
-> +{
-> +	virtchnl_ether_addr->type = filter->is_primary ?
-> +		VIRTCHNL_ETHER_ADDR_PRIMARY :
-> +		VIRTCHNL_ETHER_ADDR_EXTRA;
-> +}
-> +
->  /**
->   * iavf_add_ether_addrs
->   * @adapter: adapter structure
-> @@ -508,6 +522,7 @@ void iavf_add_ether_addrs(struct iavf_adapter *adapter)
->  	list_for_each_entry(f, &adapter->mac_filter_list, list) {
->  		if (f->add) {
->  			ether_addr_copy(veal->list[i].addr, f->macaddr);
-> +			iavf_set_mac_addr_type(&veal->list[i], f);
->  			i++;
->  			f->add = false;
->  			if (i == count)
-> @@ -577,6 +592,7 @@ void iavf_del_ether_addrs(struct iavf_adapter *adapter)
->  	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
->  		if (f->remove) {
->  			ether_addr_copy(veal->list[i].addr, f->macaddr);
-> +			iavf_set_mac_addr_type(&veal->list[i], f);
->  			i++;
->  			list_del(&f->list);
->  			kfree(f);
-> -- 
-> 2.27.0
-
-Thanks,
-Al
+I am not able to force the promiscuous message correctly
