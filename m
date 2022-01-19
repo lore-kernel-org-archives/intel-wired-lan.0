@@ -1,269 +1,99 @@
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Date: Wed, 19 Jan 2022 19:23:25 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] iavf: Add reset to watchdog task
-Message-ID: <20220119182325.32133-1-arkadiusz.kubalewski@intel.com>
+From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
+Date: Wed, 19 Jan 2022 22:33:08 +0000
+Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
+ for RClocks
+In-Reply-To: <DM6PR11MB465758ECC87273A56CA2826F9B789@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
+ <20211210081654.233a41b6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <MW5PR11MB58126A8F6466A8EAD1293D5EEA749@MW5PR11MB5812.namprd11.prod.outlook.com>
+ <DM6PR11MB4657CE134223B65B5F2EF5F29B769@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <4d4f5c27-90a3-c411-ea2f-e6f44ec74148@novek.ru>
+ <DM6PR11MB465758ECC87273A56CA2826F9B789@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB46578F4AEA8EF56A880E542B9B599@DM6PR11MB4657.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Remove the reset as separate task and implement
-the reset procedure inside the watchdog state machine.
-This allows to avoid additional overhead for processes
-synchronization. The reset flags are still used to mark
-reset progress for asynchonous invoked callback functions.
+>>On 15.12.2021 12:14, Kubalewski, Arkadiusz wrote:
+>>>> -----Original Message-----
+>>>> From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+>>>> Sent: poniedzia?ek, 13 grudnia 2021 09:54
+>>>> To: Jakub Kicinski <kuba@kernel.org>
+>>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; 
+>>>> Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; 
+>>>> richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, 
+>>>> Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; 
+>>>> linux-kselftest at vger.kernel.org; idosch at idosch.org; 
+>>>> mkubecek at suse.cz; saeed at kernel.org; michael.chan at broadcom.com; 
+>>>> petrm at nvidia.com; Vadim Fedorenko <vfedorenko@novek.ru>
+>>>> Subject: RE: [PATCH v5 net-next 0/4] Add ethtool interface for 
+>>>> RClocks
+>>>>
+>>>>> -----Original Message-----
+>>>>> From: Jakub Kicinski <kuba@kernel.org>
+>>>>> Sent: Friday, December 10, 2021 5:17 PM
+>>>>> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
+>>>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; 
+>>>>> Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; 
+>>>>> richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, 
+>>>>> Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux- 
+>>>>> kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz; 
+>>>>> saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; 
+>>>>> Vadim Fedorenko <vfedorenko@novek.ru>
+>>>>> Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for 
+>>>>> RClocks
+>>>>>
+>>>>> On Fri, 10 Dec 2021 14:45:46 +0100 Maciej Machnikowski wrote:
+>>>>>> Synchronous Ethernet networks use a physical layer clock to 
+>>>>>> syntonize the frequency across different network elements.
+>>>>>>
+>>>>>> Basic SyncE node defined in the ITU-T G.8264 consist of an 
+>>>>>> Ethernet Equipment Clock (EEC) and have the ability to synchronize 
+>>>>>> to reference frequency sources.
+>>>>>>
+>>>>>> This patch series is a prerequisite for EEC object and adds 
+>>>>>> ability to enable recovered clocks in the physical layer of the netdev object.
+>>>>>> Recovered clocks can be used as one of the reference signal by the EEC.
+>>>>>>
+>>>>>> Further work is required to add the DPLL subsystem, link it to the 
+>>>>>> netdev object and create API to read the EEC DPLL state.
+>>>>>
+>>>>> You missed CCing Vadim. I guess Ccing the right people may be right 
+>>>>> up there with naming things as the hardest things in SW development..
+>>>>>
+>>>>> Anyway, Vadim - do you have an ETA on the first chunk of the PLL work?
+>>>>
+>>>> Sounds about right :) thanks for adding Vadim!
+>>>>
+>>> 
+>>> Good day Vadim,
+>>> 
+>>> Can we help on the new PLL interfaces?
+>>> I can start some works related to that, although would need a 
+>>> guidance from the expert.
+>>> Where to place it?
+>>> What in-kernel interfaces to use?
+>>> Any other high level tips that could be useful?
+>>> Or if you already started some work, could you please share some 
+>>> information?
+>>> 
+>>Hi!
+>>
+>>I'm going to publish RFC till the end of the week and we will be able 
+>>to continue discussion via this mailing list. I think that netlink is a 
+>>good option for in-kernel interface and is easy to implement.
+>>
+>
+>Oh, that sounds great!
+>Thank you!
+>
 
-Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf.h        |  1 -
- .../net/ethernet/intel/iavf/iavf_ethtool.c    | 12 ++--
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 71 ++++++-------------
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  4 +-
- 4 files changed, 29 insertions(+), 59 deletions(-)
+Good day Vadim,
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 16cd06f..a746f44 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -237,7 +237,6 @@ struct iavf_cloud_filter {
- 
- /* board specific private data structure */
- struct iavf_adapter {
--	struct work_struct reset_task;
- 	struct work_struct adminq_task;
- 	struct delayed_work client_task;
- 	wait_queue_head_t down_waitqueue;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 3bb5671..e55c532 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -530,10 +530,8 @@ static int iavf_set_priv_flags(struct net_device *netdev, u32 flags)
- 
- 	/* issue a reset to force legacy-rx change to take effect */
- 	if (changed_flags & IAVF_FLAG_LEGACY_RX) {
--		if (netif_running(netdev)) {
--			adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--			queue_work(iavf_wq, &adapter->reset_task);
--		}
-+		if (netif_running(netdev))
-+			iavf_schedule_reset(adapter);
- 	}
- 
- 	return 0;
-@@ -670,10 +668,8 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 		adapter->rx_desc_count = new_rx_count;
- 	}
- 
--	if (netif_running(netdev)) {
--		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--		queue_work(iavf_wq, &adapter->reset_task);
--	}
-+	if (netif_running(netdev))
-+		iavf_schedule_reset(adapter);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index ec4f85a..5f658d2 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -16,6 +16,7 @@ static int iavf_setup_all_rx_resources(struct iavf_adapter *adapter);
- static int iavf_close(struct net_device *netdev);
- static void iavf_init_get_resources(struct iavf_adapter *adapter);
- static int iavf_check_reset_complete(struct iavf_hw *hw);
-+static void iavf_handle_hw_reset(struct iavf_adapter *adapter);
- 
- char iavf_driver_name[] = "iavf";
- static const char iavf_driver_string[] =
-@@ -167,11 +168,8 @@ int iavf_lock_timeout(struct mutex *lock, unsigned int msecs)
-  **/
- void iavf_schedule_reset(struct iavf_adapter *adapter)
- {
--	if (!(adapter->flags &
--	      (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED))) {
--		adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--		queue_work(iavf_wq, &adapter->reset_task);
--	}
-+	adapter->flags |= IAVF_FLAG_RESET_NEEDED;
-+	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 0);
- }
- 
- /**
-@@ -2504,8 +2502,11 @@ static void iavf_watchdog_task(struct work_struct *work)
- 				   msecs_to_jiffies(10));
- 		return;
- 	case __IAVF_RESETTING:
-+		iavf_handle_hw_reset(adapter);
- 		mutex_unlock(&adapter->crit_lock);
--		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ * 2);
-+		queue_delayed_work(iavf_wq,
-+				   &adapter->watchdog_task,
-+				   msecs_to_jiffies(2));
- 		return;
- 	case __IAVF_DOWN:
- 	case __IAVF_DOWN_PENDING:
-@@ -2540,14 +2541,12 @@ static void iavf_watchdog_task(struct work_struct *work)
- 	/* check for hw reset */
- 	reg_val = rd32(hw, IAVF_VF_ARQLEN1) & IAVF_VF_ARQLEN1_ARQENABLE_MASK;
- 	if (!reg_val) {
--		adapter->flags |= IAVF_FLAG_RESET_PENDING;
-+		iavf_schedule_reset(adapter);
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
--		queue_work(iavf_wq, &adapter->reset_task);
- 		mutex_unlock(&adapter->crit_lock);
--		queue_delayed_work(iavf_wq,
--				   &adapter->watchdog_task, HZ * 2);
-+		queue_work(iavf_wq, &adapter->watchdog_task.work);
- 		return;
- 	}
- 
-@@ -2624,18 +2623,15 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
- }
- 
- /**
-- * iavf_reset_task - Call-back task to handle hardware reset
-- * @work: pointer to work_struct
-+ * iavf_handle_hw_reset - Handle hardware reset
-+ * @adapter: pointer to iavf_adapter
-  *
-  * During reset we need to shut down and reinitialize the admin queue
-  * before we can use it to communicate with the PF again. We also clear
-  * and reinit the rings because that context is lost as well.
-  **/
--static void iavf_reset_task(struct work_struct *work)
-+static void iavf_handle_hw_reset(struct iavf_adapter *adapter)
- {
--	struct iavf_adapter *adapter = container_of(work,
--						      struct iavf_adapter,
--						      reset_task);
- 	struct virtchnl_vf_resource *vfres = adapter->vf_res;
- 	struct net_device *netdev = adapter->netdev;
- 	struct iavf_hw *hw = &adapter->hw;
-@@ -2645,18 +2641,9 @@ static void iavf_reset_task(struct work_struct *work)
- 	int i = 0, err;
- 	bool running;
- 
--	/* When device is being removed it doesn't make sense to run the reset
--	 * task, just return in such a case.
--	 */
--	if (mutex_is_locked(&adapter->remove_lock))
--		return;
-+	adapter->flags |= IAVF_FLAG_RESET_PENDING;
-+	adapter->flags &= ~IAVF_FLAG_RESET_NEEDED;
- 
--	if (iavf_lock_timeout(&adapter->crit_lock, 200)) {
--		schedule_work(&adapter->reset_task);
--		return;
--	}
--	while (!mutex_trylock(&adapter->client_lock))
--		usleep_range(500, 1000);
- 	if (CLIENT_ENABLED(adapter)) {
- 		adapter->flags &= ~(IAVF_FLAG_CLIENT_NEEDS_OPEN |
- 				    IAVF_FLAG_CLIENT_NEEDS_CLOSE |
-@@ -2665,17 +2652,14 @@ static void iavf_reset_task(struct work_struct *work)
- 		cancel_delayed_work_sync(&adapter->client_task);
- 		iavf_notify_client_close(&adapter->vsi, true);
- 	}
-+
-+	/* Restart the AQ here. If we have been reset but didn't
-+	 * detect it, or if the PF had to reinit, our AQ will be hosed.
-+	 */
- 	iavf_misc_irq_disable(adapter);
--	if (adapter->flags & IAVF_FLAG_RESET_NEEDED) {
--		adapter->flags &= ~IAVF_FLAG_RESET_NEEDED;
--		/* Restart the AQ here. If we have been reset but didn't
--		 * detect it, or if the PF had to reinit, our AQ will be hosed.
--		 */
--		iavf_shutdown_adminq(hw);
--		iavf_init_adminq(hw);
--		iavf_request_reset(adapter);
--	}
--	adapter->flags |= IAVF_FLAG_RESET_PENDING;
-+	iavf_shutdown_adminq(hw);
-+	iavf_init_adminq(hw);
-+	iavf_request_reset(adapter);
- 
- 	/* poll until we see the reset actually happen */
- 	for (i = 0; i < IAVF_RESET_WAIT_DETECTED_COUNT; i++) {
-@@ -2804,8 +2788,6 @@ static void iavf_reset_task(struct work_struct *work)
- 	adapter->aq_required |= IAVF_FLAG_AQ_ADD_CLOUD_FILTER;
- 	iavf_misc_irq_enable(adapter);
- 
--	mod_delayed_work(iavf_wq, &adapter->watchdog_task, 2);
--
- 	/* We were running when the reset started, so we need to restore some
- 	 * state here.
- 	 */
-@@ -2841,12 +2823,9 @@ static void iavf_reset_task(struct work_struct *work)
- 		wake_up(&adapter->down_waitqueue);
- 	}
- 	mutex_unlock(&adapter->client_lock);
--	mutex_unlock(&adapter->crit_lock);
--
- 	return;
- reset_err:
- 	mutex_unlock(&adapter->client_lock);
--	mutex_unlock(&adapter->crit_lock);
- 	if (running) {
- 		iavf_change_state(adapter, __IAVF_RUNNING);
- 		netdev->flags |= IFF_UP;
-@@ -3900,8 +3879,7 @@ static int iavf_change_mtu(struct net_device *netdev, int new_mtu)
- 		iavf_notify_client_l2_params(&adapter->vsi);
- 		adapter->flags |= IAVF_FLAG_SERVICE_CLIENT_REQUESTED;
- 	}
--	adapter->flags |= IAVF_FLAG_RESET_NEEDED;
--	queue_work(iavf_wq, &adapter->reset_task);
-+	iavf_schedule_reset(adapter);
- 
- 	return 0;
- }
-@@ -4490,7 +4468,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	INIT_LIST_HEAD(&adapter->fdir_list_head);
- 	INIT_LIST_HEAD(&adapter->adv_rss_list_head);
- 
--	INIT_WORK(&adapter->reset_task, iavf_reset_task);
- 	INIT_WORK(&adapter->adminq_task, iavf_adminq_task);
- 	INIT_DELAYED_WORK(&adapter->watchdog_task, iavf_watchdog_task);
- 	INIT_DELAYED_WORK(&adapter->client_task, iavf_client_task);
-@@ -4572,8 +4549,7 @@ static int __maybe_unused iavf_resume(struct device *dev_d)
- 		return err;
- 	}
- 
--	queue_work(iavf_wq, &adapter->reset_task);
--
-+	iavf_schedule_reset(adapter);
- 	netif_device_attach(adapter->netdev);
- 
- 	return err;
-@@ -4602,7 +4578,6 @@ static void iavf_remove(struct pci_dev *pdev)
- 	int err;
- 	/* Indicate we are in remove and not to run reset_task */
- 	mutex_lock(&adapter->remove_lock);
--	cancel_work_sync(&adapter->reset_task);
- 	cancel_delayed_work_sync(&adapter->watchdog_task);
- 	cancel_delayed_work_sync(&adapter->client_task);
- 	if (adapter->netdev_registered) {
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 5ee1d11..115c1b1 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1899,8 +1899,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			dev_info(&adapter->pdev->dev, "Reset indication received from the PF\n");
- 			if (!(adapter->flags & IAVF_FLAG_RESET_PENDING)) {
- 				adapter->flags |= IAVF_FLAG_RESET_PENDING;
--				dev_info(&adapter->pdev->dev, "Scheduling reset task\n");
--				queue_work(iavf_wq, &adapter->reset_task);
-+				dev_info(&adapter->pdev->dev, "Scheduling reset\n");
-+				iavf_schedule_reset(adapter);
- 			}
- 			break;
- 		default:
--- 
-2.32.0
-
+Hope you are well!
+I have been trying to find a new RFC on mailing list, but could not find it.
+I guess, it was not submitted yet?
+Could you please share your current schedule for this task?
+Or maybe we could help somehow?
