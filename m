@@ -1,54 +1,85 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 19 Jan 2022 12:54:40 +0000
-Subject: [Intel-wired-lan] [PATCH] igbvf: Remove useless DMA-32 fallback
- configuration
-In-Reply-To: <dc75b24883381a060eaad21cb0deffb5a027b05f.1641753812.git.christophe.jaillet@wanadoo.fr>
-References: <dc75b24883381a060eaad21cb0deffb5a027b05f.1641753812.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <DM8PR11MB56214F1217ED05D3EDAF7968AB599@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Wed, 19 Jan 2022 15:52:59 +0100
+Subject: [Intel-wired-lan] [PATCH 2/2 net-next v6] igb: refactor XDP
+ registration
+In-Reply-To: <20220119145259.1790015-1-vinschen@redhat.com>
+References: <20220119145259.1790015-1-vinschen@redhat.com>
+Message-ID: <20220119145259.1790015-3-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On changing the RX ring parameters igb uses a hack to avoid a warning
+when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
+clears the struct xdp_rxq_info content.
 
+Instead, change this to unregister if we're already registered.  Align
+code to the igc code.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Christophe JAILLET
-> Sent: niedziela, 9 stycznia 2022 19:44
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
-> Jakub Kicinski <kuba@kernel.org>
-> Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-
-> lan at lists.osuosl.org; kernel-janitors at vger.kernel.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] igbvf: Remove useless DMA-32 fallback
-> configuration
-> 
-> As stated in [1], dma_set_mask() with a 64-bit mask never fails if
-> dev->dma_mask is non-NULL.
-> So, if it fails, the 32 bits case will also fail for the same reason.
-> 
-> So, if dma_set_mask_and_coherent() succeeds, 'pci_using_dac' is known to
-> be 1.
-> 
-> Simplify code and remove some dead code accordingly.
-> 
-> [1]: https://lkml.org/lkml/2021/6/7/398
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> This patch was not part of the 1st serie I've sent. So there is no Reviewed-by
-> tag.
-> ---
->  drivers/net/ethernet/intel/igbvf/netdev.c | 22 ++++++----------------
->  1 file changed, 6 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c
-> b/drivers/net/ethernet/intel/igbvf/netdev.c
-> index b78407289741..43ced78c3a2e 100644
-> --- a/drivers/net/ethernet/intel/igbvf/netdev.c
-> +++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+Fixes: 9cbc948b5a20c ("igb: add XDP support")
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
+ drivers/net/ethernet/intel/igb/igb_main.c    | 19 +++++++++++++------
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 51a2dcaf553d..2a5782063f4c 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
+ 			memcpy(&temp_ring[i], adapter->rx_ring[i],
+ 			       sizeof(struct igb_ring));
+ 
+-			/* Clear copied XDP RX-queue info */
+-			memset(&temp_ring[i].xdp_rxq, 0,
+-			       sizeof(temp_ring[i].xdp_rxq));
+-
+ 			temp_ring[i].count = new_rx_count;
+ 			err = igb_setup_rx_resources(&temp_ring[i]);
+ 			if (err) {
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 38ba92022cd4..c1e4ad65b02d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4352,7 +4352,18 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ {
+ 	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
+ 	struct device *dev = rx_ring->dev;
+-	int size;
++	int size, res;
++
++	/* XDP RX-queue info */
++	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
++		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
++	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
++			       rx_ring->queue_index, 0);
++	if (res < 0) {
++		dev_err(dev, "Failed to register xdp_rxq index %u\n",
++			rx_ring->queue_index);
++		return res;
++	}
+ 
+ 	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
+ 
+@@ -4375,14 +4386,10 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
+ 
+ 	rx_ring->xdp_prog = adapter->xdp_prog;
+ 
+-	/* XDP RX-queue info */
+-	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
+-			     rx_ring->queue_index, 0) < 0)
+-		goto err;
+-
+ 	return 0;
+ 
+ err:
++	xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
+ 	vfree(rx_ring->rx_buffer_info);
+ 	rx_ring->rx_buffer_info = NULL;
+ 	dev_err(dev, "Unable to allocate memory for the Rx descriptor ring\n");
+-- 
+2.27.0
+
