@@ -1,100 +1,86 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Wed, 19 Jan 2022 07:08:54 +0100
-Subject: [Intel-wired-lan] [PATCH 2/3 net-next v5] igb: refactor XDP
- registration
-In-Reply-To: <20220118150512.25541-1-alexandr.lobakin@intel.com>
-References: <20220117182915.1283151-1-vinschen@redhat.com>
- <20220117182915.1283151-3-vinschen@redhat.com>
- <20220118150512.25541-1-alexandr.lobakin@intel.com>
-Message-ID: <Yeeq9k5L/Md66Ktm@calimero.vinschen.de>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 19 Jan 2022 09:25:43 +0000
+Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
+ configuration flow messages
+In-Reply-To: <20211208092859.1876593-1-karen.sornek@intel.com>
+References: <20211208092859.1876593-1-karen.sornek@intel.com>
+Message-ID: <DM8PR11MB5621A3D5D03126F3BD7EC10AAB599@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Jan 18 16:05, Alexander Lobakin wrote:
-> From: Corinna Vinschen <vinschen@redhat.com>
-> Date: Mon, 17 Jan 2022 19:29:14 +0100
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Sornek, Karen
+> Sent: ?roda, 8 grudnia 2021 10:29
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sornek, Karen <karen.sornek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v3] iavf: Fix promiscuous mode
+> configuration flow messages
 > 
-> > On changing the RX ring parameters igb uses a hack to avoid a warning
-> > when calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just
-> > clears the struct xdp_rxq_info content.
-> > 
-> > Change this to unregister if we're already registered instead.  Align
-> > code to the igc code.
-> > 
-> > Fixes: 9cbc948b5a20c ("igb: add XDP support")
-> > Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
-> >  drivers/net/ethernet/intel/igb/igb_main.c    | 12 +++++++++---
-> >  2 files changed, 9 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > index 51a2dcaf553d..2a5782063f4c 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > @@ -965,10 +965,6 @@ static int igb_set_ringparam(struct net_device *netdev,
-> >  			memcpy(&temp_ring[i], adapter->rx_ring[i],
-> >  			       sizeof(struct igb_ring));
-> >  
-> > -			/* Clear copied XDP RX-queue info */
-> > -			memset(&temp_ring[i].xdp_rxq, 0,
-> > -			       sizeof(temp_ring[i].xdp_rxq));
-> > -
-> >  			temp_ring[i].count = new_rx_count;
-> >  			err = igb_setup_rx_resources(&temp_ring[i]);
-> >  			if (err) {
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> > index 38ba92022cd4..cea89d301bfd 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > @@ -4352,7 +4352,7 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
-> >  {
-> >  	struct igb_adapter *adapter = netdev_priv(rx_ring->netdev);
-> >  	struct device *dev = rx_ring->dev;
-> > -	int size;
-> > +	int size, res;
-> >  
-> >  	size = sizeof(struct igb_rx_buffer) * rx_ring->count;
-> >  
-> > @@ -4376,9 +4376,15 @@ int igb_setup_rx_resources(struct igb_ring *rx_ring)
-> >  	rx_ring->xdp_prog = adapter->xdp_prog;
-> >  
-> >  	/* XDP RX-queue info */
-> > -	if (xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-> > -			     rx_ring->queue_index, 0) < 0)
-> > +	if (xdp_rxq_info_is_reg(&rx_ring->xdp_rxq))
-> > +		xdp_rxq_info_unreg(&rx_ring->xdp_rxq);
-> > +	res = xdp_rxq_info_reg(&rx_ring->xdp_rxq, rx_ring->netdev,
-> > +			       rx_ring->queue_index, 0);
-> > +	if (res < 0) {
-> > +		dev_err(dev, "Failed to register xdp_rxq index %u\n",
-> > +			rx_ring->queue_index);
-> >  		goto err;
+> From: Karen Sornek <karen.sornek@intel.com>
 > 
-> Error path always returns -ENOMEM, even in this case, and reports
-> that it failed to allocate memory for rings. Handle this correctly
-> and return `res` instead and without one more error message?
+> Currently when configuring promiscuous mode on the AVF we detect a
+> change in the netdev->flags. We use IFF_PROMISC and IFF_ALLMULTI to
+> determine whether or not we need to request/release promiscuous mode
+> and/or multicast promiscuous mode. The problem is that the AQ calls for
+> setting/clearing promiscuous/multicast mode are treated separately. This
+> leads to a case where we can trigger two promiscuous mode AQ calls in a row
+> with the incorrect state. To fix this make a few changes.
+> 
+> Use IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE instead of the previous
+> IAVF_FLAG_AQ_[REQUEST|RELEASE]_[PROMISC|ALLMULTI] flags.
+> 
+> In iavf_set_rx_mode() detect if there is a change in the
+> netdev->flags in comparison with adapter->flags and set the
+> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE aq_required bit. Then in
+> iavf_process_aq_command() only check for
+> IAVF_FLAG_CONFIGURE_PROMISC_MODE and call iavf_set_promiscuous()
+> if it's set.
+> 
+> In iavf_set_promiscuous() check again to see which (if any) promiscuous
+> mode bits have changed when comparing the netdev->flags with the
+> adapter->flags. Use this to set the flags which get sent to the PF driver.
+> 
+> Add a spinlock that is used for updating current_netdev_promisc_flags and
+> only allows one promiscuous mode AQ at a time.
+> 
+> [1] Fixes the fact that we will only have one AQ call in the aq_required queue
+> at any one time.
+> 
+> [2] Streamlines the change in promiscuous mode to only set one AQ required
+> bit.
+> 
+> [3] This allows us to keep track of the current state of the flags and also
+> makes it so we can take the most recent netdev->flags promiscuous mode
+> state.
+> 
+> [4] This fixes the problem where a change in the netdev->flags can cause
+> IAVF_FLAG_AQ_CONFIGURE_PROMISC_MODE to be set in
+> iavf_set_rx_mode(), but cleared in iavf_set_promiscuous() before the
+> change is ever made via AQ call.
+> 
+> Fixes: 47d3483988f6 ("i40evf: Add driver support for promiscuous mode")
+> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+> v3: Previous version had applying issue
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h        | 16 +++--
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 45 +++++--------
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 66 ++++++++++++++-----
+>  3 files changed, 75 insertions(+), 52 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 4d62231ec6b5..14e120a82b1c 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -267,8 +267,6 @@ struct iavf_adapter {
 
-In that case, it makes sense to revert the code to the way igc did it,
-rather then trying to do as igb did it.
 
-I. e., for both drivers, call xdp_rxq_info_is_reg before the first
-allocation took place, and just return immediately from there if it
-fails.  Everything else complicates the code unnecessarily.
-
-> As I mentioned a bit above, `res` is unused here as an error code,
-> only to test the value on < 0. Does it make sense to add a new
-> variable?
-
-Following my above sugggestion, res will be used as error code, so
-it should stay.
-
-I'll provide a matching patchset later today.
-
-
-Thanks,
-Corinna
-
+I am not able to force the promiscuous message correctly
