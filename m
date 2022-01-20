@@ -1,43 +1,100 @@
-From: Hassan Reza Biswas, Imam <imam.hassan.reza.biswas@intel.com>
-Date: Thu, 20 Jan 2022 13:31:20 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset bw limit when
- DCB enabled with 1 TC
-In-Reply-To: <20211214100822.5781-1-jedrzej.jagielski@intel.com>
-References: <20211214100822.5781-1-jedrzej.jagielski@intel.com>
-Message-ID: <DM8PR11MB5751810B63FA0850DF79DB21FE5A9@DM8PR11MB5751.namprd11.prod.outlook.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Thu, 20 Jan 2022 13:45:34 +0000
+Subject: [Intel-wired-lan] [PATCH net v4] iavf: Fix handling of vlan strip
+ virtual channel messages
+Message-ID: <20220120134534.183322-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jagielski, Jedrzej
-> Sent: Tuesday, December 14, 2021 3:38 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>; Jagielski,
-> Jedrzej <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset bw limit when DCB
-> enabled with 1 TC
-> 
-> There was an AQ error I40E_AQ_RC_EINVAL when trying to reset bw limit as
-> part of bw allocation setup.
-> This was caused by trying to reset bw limit with DCB enabled. Bw limit should
-> not be reset when DCB is enabled. The code was relying on the pf->flags to
-> check if DCB is enabled but if only 1 TC is available this flag will not be set
-> even though DCB is enabled.
-> Add a check for number of TC and if it is 1 don't try to reset bw limit even if
-> pf->flags shows DCB as disabled.
-> 
-> Fixes: fa38e30ac73f ("i40e: Fix for Tx timeouts when interface is brought up if
-> DCB is enabled")
-> Suggested-by: Alexander Lobakin <alexandr.lobakin@intel.com> # Flatten
-> the condition
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-Tested-by: Imam Hassan Reza Biswas (imam.hassan.reza.biswas at intel.com)
+Modify netdev->features for vlan stripping based on virtual
+channel messages received from the PF. Change is needed
+to synchronize vlan strip status between PF sysfs and iavf ethtool.
+
+Fixes: 5961a2b9812d ("iavf: Fix VLAN feature flags after VFR")
+Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+---
+v4: Changed the same flags which occured in statement and did not have any sense.
+    Changed fixes tag into the proper one
+v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because there's
+    no such definition since Linux 3.10. The code is the same as the one from OOT.
+    Code successfully passed inner review. netdev_update_features() function is not added
+    because it causes infinite loop.
+v2: Changed fixes tag into the more probable and accurate
+---
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 40 +++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index e508122eddb7..6378d3c216f9 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1855,6 +1855,22 @@ void iavf_request_reset(struct iavf_adapter *adapter)
+ 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
+ }
+ 
++/**
++ * iavf_netdev_features_vlan_strip_set - update vlan strip status
++ * @netdev: ptr to netdev being adjusted
++ * @enable: enable or disable vlan strip
++ *
++ * Helper function to change vlan strip status in netdev->features.
++ */
++static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
++						const bool enable)
++{
++	if (enable)
++		netdev->features |= NETIF_F_HW_VLAN_CTAG_RX;
++	else
++		netdev->features &= ~NETIF_F_HW_VLAN_CTAG_RX;
++}
++
+ /**
+  * iavf_virtchnl_completion
+  * @adapter: adapter structure
+@@ -2078,8 +2094,18 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			}
+ 			break;
+ 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be enabled by ethtool.
++			 * Disable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++			break;
+ 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
+ 			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
++			/* Vlan stripping could not be disabled by ethtool.
++			 * Enable it in netdev->features.
++			 */
++			iavf_netdev_features_vlan_strip_set(netdev, true);
+ 			break;
+ 		default:
+ 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
+@@ -2355,6 +2381,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		spin_unlock_bh(&adapter->adv_rss_lock);
+ 		}
+ 		break;
++	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
++		/* PF enabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, true);
++		break;
++	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
++		/* PF disabled vlan strip on this VF.
++		 * Update netdev->features if needed to be in sync with ethtool.
++		 */
++		if (!v_retval)
++			iavf_netdev_features_vlan_strip_set(netdev, false);
++		break;
+ 	default:
+ 		if (adapter->current_op && (v_opcode != adapter->current_op))
+ 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
+-- 
+2.27.0
+
