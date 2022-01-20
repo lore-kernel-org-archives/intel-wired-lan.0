@@ -1,100 +1,45 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Thu, 20 Jan 2022 13:45:34 +0000
-Subject: [Intel-wired-lan] [PATCH net v4] iavf: Fix handling of vlan strip
- virtual channel messages
-Message-ID: <20220120134534.183322-1-michal.maloszewski@intel.com>
+From: Maurice Baijens (Ellips B.V.) <maurice.baijens@ellips.com>
+Date: Thu, 20 Jan 2022 09:23:06 +0000
+Subject: [Intel-wired-lan] ixgbe driver link down causes 100% load in
+ ksoftirqd/x
+Message-ID: <VI1PR02MB4142A638EC38107B262DB32F885A9@VI1PR02MB4142.eurprd02.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Modify netdev->features for vlan stripping based on virtual
-channel messages received from the PF. Change is needed
-to synchronize vlan strip status between PF sysfs and iavf ethtool.
+Hello,
 
-Fixes: 5961a2b9812d ("iavf: Fix VLAN feature flags after VFR")
-Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
----
-v4: Changed the same flags which occured in statement and did not have any sense.
-    Changed fixes tag into the proper one
-v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX because there's
-    no such definition since Linux 3.10. The code is the same as the one from OOT.
-    Code successfully passed inner review. netdev_update_features() function is not added
-    because it causes infinite loop.
-v2: Changed fixes tag into the more probable and accurate
----
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 40 +++++++++++++++++++
- 1 file changed, 40 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index e508122eddb7..6378d3c216f9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -1855,6 +1855,22 @@ void iavf_request_reset(struct iavf_adapter *adapter)
- 	adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- }
- 
-+/**
-+ * iavf_netdev_features_vlan_strip_set - update vlan strip status
-+ * @netdev: ptr to netdev being adjusted
-+ * @enable: enable or disable vlan strip
-+ *
-+ * Helper function to change vlan strip status in netdev->features.
-+ */
-+static void iavf_netdev_features_vlan_strip_set(struct net_device *netdev,
-+						const bool enable)
-+{
-+	if (enable)
-+		netdev->features |= NETIF_F_HW_VLAN_CTAG_RX;
-+	else
-+		netdev->features &= ~NETIF_F_HW_VLAN_CTAG_RX;
-+}
-+
- /**
-  * iavf_virtchnl_completion
-  * @adapter: adapter structure
-@@ -2078,8 +2094,18 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 			}
- 			break;
- 		case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/* Vlan stripping could not be enabled by ethtool.
-+			 * Disable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+			break;
- 		case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
- 			dev_warn(&adapter->pdev->dev, "Changing VLAN Stripping is not allowed when Port VLAN is configured\n");
-+			/* Vlan stripping could not be disabled by ethtool.
-+			 * Enable it in netdev->features.
-+			 */
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
- 			break;
- 		default:
- 			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
-@@ -2355,6 +2381,20 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 		spin_unlock_bh(&adapter->adv_rss_lock);
- 		}
- 		break;
-+	case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-+		/* PF enabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, true);
-+		break;
-+	case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-+		/* PF disabled vlan strip on this VF.
-+		 * Update netdev->features if needed to be in sync with ethtool.
-+		 */
-+		if (!v_retval)
-+			iavf_netdev_features_vlan_strip_set(netdev, false);
-+		break;
- 	default:
- 		if (adapter->current_op && (v_opcode != adapter->current_op))
- 			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
--- 
-2.27.0
+I have an issue with the ixgbe driver and X550Tx network adapter.
+When I disconnect the network cable I end up with 100% load in ksoftirqd/x. I am running the adapter in
+xdp mode (XDP_FLAGS_DRV_MODE). Problem seen in linux kernel 5.15.x and also 5.16.0+ (head).
 
+I traced the problem down to function ixgbe_xmit_zc in ixgbe_xsk.c:
+
+if (unlikely(!ixgbe_desc_unused(xdp_ring)) ||
+    !netif_carrier_ok(xdp_ring->netdev)) {
+            work_done = false;
+            break;
+}
+
+This function is called from ixgbe_poll() function via ixgbe_clean_xdp_tx_irq(). It sets
+work_done to false if netif_carrier_ok() returns false (so if link is down). Because work_done
+is always false, ixgbe_poll keeps on polling forever.
+
+I made a fix by checking link in ixgbe_poll() function and if no link exiting polling mode:
+
+/* If all work not completed, return budget and keep polling */
+if ((!clean_complete) && netif_carrier_ok(adapter->netdev))
+            return budget;
+
+This is probably fine for our application as we only run in xdpdrv mode, however I am not sure this
+is the correct way to fix this issue and the behaviour of the normal skb mode operation is 
+also affected by my fix.
+
+So hopefully my observations are correct and someone here can fix the issue and push it upstream.
+
+
+Best regards,
+	Maurice Baijens
