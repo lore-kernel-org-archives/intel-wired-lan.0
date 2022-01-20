@@ -1,99 +1,193 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Wed, 19 Jan 2022 22:33:08 +0000
-Subject: [Intel-wired-lan] [PATCH v5 net-next 0/4] Add ethtool interface
- for RClocks
-In-Reply-To: <DM6PR11MB465758ECC87273A56CA2826F9B789@DM6PR11MB4657.namprd11.prod.outlook.com>
-References: <20211210134550.1195182-1-maciej.machnikowski@intel.com>
- <20211210081654.233a41b6@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <MW5PR11MB58126A8F6466A8EAD1293D5EEA749@MW5PR11MB5812.namprd11.prod.outlook.com>
- <DM6PR11MB4657CE134223B65B5F2EF5F29B769@DM6PR11MB4657.namprd11.prod.outlook.com>
- <4d4f5c27-90a3-c411-ea2f-e6f44ec74148@novek.ru>
- <DM6PR11MB465758ECC87273A56CA2826F9B789@DM6PR11MB4657.namprd11.prod.outlook.com>
-Message-ID: <DM6PR11MB46578F4AEA8EF56A880E542B9B599@DM6PR11MB4657.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 20 Jan 2022 15:04:59 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ ff9fc0a31d85fcf0011eb4bc4ecaf47d3cc9e21c
+Message-ID: <61e9099b.kdvRn5xFhKekS6dI%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->>On 15.12.2021 12:14, Kubalewski, Arkadiusz wrote:
->>>> -----Original Message-----
->>>> From: Machnikowski, Maciej <maciej.machnikowski@intel.com>
->>>> Sent: poniedzia?ek, 13 grudnia 2021 09:54
->>>> To: Jakub Kicinski <kuba@kernel.org>
->>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; 
->>>> Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; 
->>>> richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, 
->>>> Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; 
->>>> linux-kselftest at vger.kernel.org; idosch at idosch.org; 
->>>> mkubecek at suse.cz; saeed at kernel.org; michael.chan at broadcom.com; 
->>>> petrm at nvidia.com; Vadim Fedorenko <vfedorenko@novek.ru>
->>>> Subject: RE: [PATCH v5 net-next 0/4] Add ethtool interface for 
->>>> RClocks
->>>>
->>>>> -----Original Message-----
->>>>> From: Jakub Kicinski <kuba@kernel.org>
->>>>> Sent: Friday, December 10, 2021 5:17 PM
->>>>> To: Machnikowski, Maciej <maciej.machnikowski@intel.com>
->>>>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; 
->>>>> Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>; 
->>>>> richardcochran at gmail.com; Byagowi, Ahmad <abyagowi@fb.com>; Nguyen, 
->>>>> Anthony L <anthony.l.nguyen@intel.com>; davem at davemloft.net; linux- 
->>>>> kselftest at vger.kernel.org; idosch at idosch.org; mkubecek at suse.cz; 
->>>>> saeed at kernel.org; michael.chan at broadcom.com; petrm at nvidia.com; 
->>>>> Vadim Fedorenko <vfedorenko@novek.ru>
->>>>> Subject: Re: [PATCH v5 net-next 0/4] Add ethtool interface for 
->>>>> RClocks
->>>>>
->>>>> On Fri, 10 Dec 2021 14:45:46 +0100 Maciej Machnikowski wrote:
->>>>>> Synchronous Ethernet networks use a physical layer clock to 
->>>>>> syntonize the frequency across different network elements.
->>>>>>
->>>>>> Basic SyncE node defined in the ITU-T G.8264 consist of an 
->>>>>> Ethernet Equipment Clock (EEC) and have the ability to synchronize 
->>>>>> to reference frequency sources.
->>>>>>
->>>>>> This patch series is a prerequisite for EEC object and adds 
->>>>>> ability to enable recovered clocks in the physical layer of the netdev object.
->>>>>> Recovered clocks can be used as one of the reference signal by the EEC.
->>>>>>
->>>>>> Further work is required to add the DPLL subsystem, link it to the 
->>>>>> netdev object and create API to read the EEC DPLL state.
->>>>>
->>>>> You missed CCing Vadim. I guess Ccing the right people may be right 
->>>>> up there with naming things as the hardest things in SW development..
->>>>>
->>>>> Anyway, Vadim - do you have an ETA on the first chunk of the PLL work?
->>>>
->>>> Sounds about right :) thanks for adding Vadim!
->>>>
->>> 
->>> Good day Vadim,
->>> 
->>> Can we help on the new PLL interfaces?
->>> I can start some works related to that, although would need a 
->>> guidance from the expert.
->>> Where to place it?
->>> What in-kernel interfaces to use?
->>> Any other high level tips that could be useful?
->>> Or if you already started some work, could you please share some 
->>> information?
->>> 
->>Hi!
->>
->>I'm going to publish RFC till the end of the week and we will be able 
->>to continue discussion via this mailing list. I think that netlink is a 
->>good option for in-kernel interface and is easy to implement.
->>
->
->Oh, that sounds great!
->Thank you!
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: ff9fc0a31d85fcf0011eb4bc4ecaf47d3cc9e21c  Merge branch 'ipv4-avoid-pathological-hash-tables'
 
-Good day Vadim,
+elapsed time: 798m
 
-Hope you are well!
-I have been trying to find a new RFC on mailing list, but could not find it.
-I guess, it was not submitted yet?
-Could you please share your current schedule for this task?
-Or maybe we could help somehow?
+configs tested: 164
+configs skipped: 4
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arc                        vdk_hs38_defconfig
+m68k                            q40_defconfig
+sh                ecovec24-romimage_defconfig
+mips                             allmodconfig
+arc                         haps_hs_defconfig
+sh                             espt_defconfig
+nios2                            alldefconfig
+sh                         ap325rxa_defconfig
+sh                          urquell_defconfig
+arc                           tb10x_defconfig
+mips                         mpc30x_defconfig
+sh                         ecovec24_defconfig
+arm                         cm_x300_defconfig
+arm                         lpc18xx_defconfig
+arc                      axs103_smp_defconfig
+powerpc                     asp8347_defconfig
+xtensa                       common_defconfig
+arc                 nsimosci_hs_smp_defconfig
+powerpc                   currituck_defconfig
+riscv                            allmodconfig
+sh                          rsk7201_defconfig
+sh                          sdk7780_defconfig
+powerpc                     sequoia_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                            lart_defconfig
+sh                          r7780mp_defconfig
+xtensa                           allyesconfig
+mips                           ip32_defconfig
+arm                      integrator_defconfig
+openrisc                 simple_smp_defconfig
+sh                             sh03_defconfig
+csky                             alldefconfig
+m68k                          atari_defconfig
+sh                           se7619_defconfig
+xtensa                generic_kc705_defconfig
+sh                          r7785rp_defconfig
+x86_64                           alldefconfig
+arc                     haps_hs_smp_defconfig
+sh                          lboxre2_defconfig
+powerpc                      pcm030_defconfig
+h8300                            allyesconfig
+arm                  randconfig-c002-20220116
+arm                  randconfig-c002-20220117
+arm                  randconfig-c002-20220118
+arm                  randconfig-c002-20220119
+arm                  randconfig-c002-20220120
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64               randconfig-a016-20220117
+x86_64               randconfig-a012-20220117
+x86_64               randconfig-a013-20220117
+x86_64               randconfig-a011-20220117
+x86_64               randconfig-a014-20220117
+x86_64               randconfig-a015-20220117
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                 randconfig-a012-20220117
+i386                 randconfig-a016-20220117
+i386                 randconfig-a014-20220117
+i386                 randconfig-a015-20220117
+i386                 randconfig-a011-20220117
+i386                 randconfig-a013-20220117
+riscv                randconfig-r042-20220119
+riscv                randconfig-r042-20220117
+arc                  randconfig-r043-20220116
+arc                  randconfig-r043-20220117
+s390                 randconfig-r044-20220119
+s390                 randconfig-r044-20220117
+arc                  randconfig-r043-20220118
+arc                  randconfig-r043-20220119
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+powerpc                 mpc836x_rdk_defconfig
+arm                         shannon_defconfig
+powerpc                 xes_mpc85xx_defconfig
+mips                     cu1000-neo_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                  mpc885_ads_defconfig
+arm                         s5pv210_defconfig
+arm                     am200epdkit_defconfig
+powerpc                     ppa8548_defconfig
+mips                     loongson2k_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                           ip22_defconfig
+x86_64               randconfig-a005-20220117
+x86_64               randconfig-a004-20220117
+x86_64               randconfig-a001-20220117
+x86_64               randconfig-a006-20220117
+x86_64               randconfig-a002-20220117
+x86_64               randconfig-a003-20220117
+i386                 randconfig-a005-20220117
+i386                 randconfig-a001-20220117
+i386                 randconfig-a006-20220117
+i386                 randconfig-a004-20220117
+i386                 randconfig-a002-20220117
+i386                 randconfig-a003-20220117
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+riscv                randconfig-r042-20220118
+hexagon              randconfig-r045-20220116
+hexagon              randconfig-r045-20220117
+hexagon              randconfig-r045-20220118
+hexagon              randconfig-r045-20220119
+riscv                randconfig-r042-20220116
+hexagon              randconfig-r041-20220118
+hexagon              randconfig-r041-20220119
+s390                 randconfig-r044-20220118
+s390                 randconfig-r044-20220116
+hexagon              randconfig-r041-20220116
+hexagon              randconfig-r041-20220117
+riscv                randconfig-r042-20220120
+hexagon              randconfig-r045-20220120
+hexagon              randconfig-r041-20220120
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
