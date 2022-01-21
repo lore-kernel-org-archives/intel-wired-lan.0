@@ -1,67 +1,158 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Thu, 20 Jan 2022 16:27:56 -0800
-Subject: [Intel-wired-lan] [PATCH net] ice: Avoid RTNL lock when re-creating
- auxiliary device
-Message-ID: <20220121002756.1105566-1-david.m.ertman@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 21 Jan 2022 14:24:12 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 99b0fd11dd7651865c581688bf13861038e04ea7
+Message-ID: <61ea518c.sdDdpROZOy4H/ipo%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If a call to re-create the auxiliary device happens in a context that has
-already taken the RTNL lock, then the call flow that recreates auxiliary
-device can hang if there is another attempt to claim the RTNL lock by the
-auxiliary driver.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 99b0fd11dd7651865c581688bf13861038e04ea7  ice: Fix KASAN error in LAG NETDEV_UNREGISTER handler
 
-To avoid this, any call to re-create auxiliary devices that comes from
-an source that is holding the RTNL lock (e.g. netdev notifier when
-interface exits a bond) should execute in a separate thread.  To
-accomplish this, add a flag to the PF that will be evaluated in the
-service task and dealt with there.
+elapsed time: 721m
 
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+configs tested: 127
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                 randconfig-c004-20220120
+i386                          randconfig-c001
+sh                               j2_defconfig
+arm                           stm32_defconfig
+sh                          urquell_defconfig
+sh                          sdk7780_defconfig
+sh                          landisk_defconfig
+arm                           corgi_defconfig
+powerpc                       eiger_defconfig
+xtensa                       common_defconfig
+ia64                      gensparse_defconfig
+m68k                       m5208evb_defconfig
+powerpc                     rainier_defconfig
+arm                           h5000_defconfig
+xtensa                generic_kc705_defconfig
+sh                          polaris_defconfig
+arm                       imx_v6_v7_defconfig
+m68k                       m5475evb_defconfig
+powerpc                         wii_defconfig
+arm                  randconfig-c002-20220116
+arm                  randconfig-c002-20220117
+arm                  randconfig-c002-20220118
+arm                  randconfig-c002-20220119
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allmodconfig
+s390                                defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64               randconfig-a012-20220117
+x86_64               randconfig-a013-20220117
+x86_64               randconfig-a011-20220117
+x86_64               randconfig-a015-20220117
+x86_64               randconfig-a014-20220117
+x86_64               randconfig-a016-20220117
+riscv                randconfig-r042-20220119
+s390                 randconfig-r044-20220119
+arc                  randconfig-r043-20220119
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+x86_64                        randconfig-c007
+arm                  randconfig-c002-20220121
+riscv                randconfig-c006-20220121
+powerpc              randconfig-c003-20220121
+mips                 randconfig-c004-20220121
+i386                          randconfig-c001
+arm                  randconfig-c002-20220120
+riscv                randconfig-c006-20220120
+powerpc              randconfig-c003-20220120
+mips                 randconfig-c004-20220120
+mips                     cu1000-neo_defconfig
+mips                      bmips_stb_defconfig
+powerpc                       ebony_defconfig
+mips                        omega2p_defconfig
+powerpc               mpc834x_itxgp_defconfig
+powerpc                     kmeter1_defconfig
+x86_64               randconfig-a004-20220117
+x86_64               randconfig-a001-20220117
+x86_64               randconfig-a002-20220117
+x86_64               randconfig-a003-20220117
+x86_64               randconfig-a005-20220117
+x86_64               randconfig-a006-20220117
+i386                 randconfig-a005-20220117
+i386                 randconfig-a001-20220117
+i386                 randconfig-a006-20220117
+i386                 randconfig-a004-20220117
+i386                 randconfig-a002-20220117
+i386                 randconfig-a003-20220117
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+riscv                randconfig-r042-20220120
+hexagon              randconfig-r045-20220120
+hexagon              randconfig-r041-20220120
+
 ---
- drivers/net/ethernet/intel/ice/ice.h      | 3 ++-
- drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
- 2 files changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 4e16d185077d..a9fa701aaa95 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -483,6 +483,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_VF_TRUE_PROMISC_ENA,
- 	ICE_FLAG_MDD_AUTO_RESET_VF,
- 	ICE_FLAG_LINK_LENIENT_MODE_ENA,
-+	ICE_FLAG_PLUG_AUX_DEV,
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
- 
-@@ -887,7 +888,7 @@ static inline void ice_set_rdma_cap(struct ice_pf *pf)
- 	if (pf->hw.func_caps.common_cap.rdma && pf->num_rdma_msix) {
- 		set_bit(ICE_FLAG_RDMA_ENA, pf->flags);
- 		set_bit(ICE_FLAG_AUX_ENA, pf->flags);
--		ice_plug_aux_dev(pf);
-+		set_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags);
- 	}
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 30814435f779..b948a865f359 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2253,6 +2253,9 @@ static void ice_service_task(struct work_struct *work)
- 		return;
- 	}
- 
-+	if (test_and_clear_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags))
-+		ice_plug_aux_dev(pf);
-+
- 	ice_clean_adminq_subtask(pf);
- 	ice_check_media_subtask(pf);
- 	ice_check_for_hang_subtask(pf);
--- 
-2.33.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
