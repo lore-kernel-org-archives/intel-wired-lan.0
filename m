@@ -1,158 +1,60 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 21 Jan 2022 14:24:12 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 99b0fd11dd7651865c581688bf13861038e04ea7
-Message-ID: <61ea518c.sdDdpROZOy4H/ipo%lkp@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Fri, 21 Jan 2022 08:59:15 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset path while
+ removing the driver
+In-Reply-To: <20220112091947.132769-1-karen.sornek@intel.com>
+References: <20220112091947.132769-1-karen.sornek@intel.com>
+Message-ID: <BYAPR11MB3367646A0992556E8F7161BFFC5B9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 99b0fd11dd7651865c581688bf13861038e04ea7  ice: Fix KASAN error in LAG NETDEV_UNREGISTER handler
 
-elapsed time: 721m
 
-configs tested: 127
-configs skipped: 3
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Karen Sornek
+> Sent: Wednesday, January 12, 2022 2:50 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Laba, SlawomirX <slawomirx.laba@intel.com>; Sornek, Karen
+> <karen.sornek@intel.com>; Sylwester Dziedziuch
+> <sylwesterx.dziedziuch@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix reset path while removing
+> the driver
+> 
+> Fix the crash in kernel while dereferencing the NULL pointer, when the driver
+> is unloaded and simultaneously the vsi rings are being stopped.
+> 
+> The hardware requires 50msec in order to finish RX queues disable. For this
+> purpose the driver spins in mdelay function for the operation to be
+> completed.
+> 
+> For example changing number of queues which requires reset would fail in
+> the following call stack:
+> 
+> 1) i40e_prep_for_reset
+> 2) i40e_pf_quiesce_all_vsi
+> 3) i40e_quiesce_vsi
+> 4) i40e_vsi_close
+> 5) i40e_down
+> 6) i40e_vsi_stop_rings
+> 7) i40e_vsi_control_rx -> disable requires the delay of 50msecs
+> 8) continue back in i40e_down function where
+>    i40e_clean_tx_ring(vsi->tx_rings[i]) is going to crash
+> 
+> When the driver was spinning vsi_release called i40e_vsi_free_arrays where
+> the vsi->tx_rings resources were freed and the pointer was set to NULL.
+> 
+> Fixes: 5b6d4a7f20b0 ("i40e: Fix crash during removing i40e driver")
+> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 19 ++++++++++++++++++-
+>  2 files changed, 19 insertions(+), 1 deletion(-)
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-mips                 randconfig-c004-20220120
-i386                          randconfig-c001
-sh                               j2_defconfig
-arm                           stm32_defconfig
-sh                          urquell_defconfig
-sh                          sdk7780_defconfig
-sh                          landisk_defconfig
-arm                           corgi_defconfig
-powerpc                       eiger_defconfig
-xtensa                       common_defconfig
-ia64                      gensparse_defconfig
-m68k                       m5208evb_defconfig
-powerpc                     rainier_defconfig
-arm                           h5000_defconfig
-xtensa                generic_kc705_defconfig
-sh                          polaris_defconfig
-arm                       imx_v6_v7_defconfig
-m68k                       m5475evb_defconfig
-powerpc                         wii_defconfig
-arm                  randconfig-c002-20220116
-arm                  randconfig-c002-20220117
-arm                  randconfig-c002-20220118
-arm                  randconfig-c002-20220119
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allmodconfig
-s390                                defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64               randconfig-a012-20220117
-x86_64               randconfig-a013-20220117
-x86_64               randconfig-a011-20220117
-x86_64               randconfig-a015-20220117
-x86_64               randconfig-a014-20220117
-x86_64               randconfig-a016-20220117
-riscv                randconfig-r042-20220119
-s390                 randconfig-r044-20220119
-arc                  randconfig-r043-20220119
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-x86_64                        randconfig-c007
-arm                  randconfig-c002-20220121
-riscv                randconfig-c006-20220121
-powerpc              randconfig-c003-20220121
-mips                 randconfig-c004-20220121
-i386                          randconfig-c001
-arm                  randconfig-c002-20220120
-riscv                randconfig-c006-20220120
-powerpc              randconfig-c003-20220120
-mips                 randconfig-c004-20220120
-mips                     cu1000-neo_defconfig
-mips                      bmips_stb_defconfig
-powerpc                       ebony_defconfig
-mips                        omega2p_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                     kmeter1_defconfig
-x86_64               randconfig-a004-20220117
-x86_64               randconfig-a001-20220117
-x86_64               randconfig-a002-20220117
-x86_64               randconfig-a003-20220117
-x86_64               randconfig-a005-20220117
-x86_64               randconfig-a006-20220117
-i386                 randconfig-a005-20220117
-i386                 randconfig-a001-20220117
-i386                 randconfig-a006-20220117
-i386                 randconfig-a004-20220117
-i386                 randconfig-a002-20220117
-i386                 randconfig-a003-20220117
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-riscv                randconfig-r042-20220120
-hexagon              randconfig-r045-20220120
-hexagon              randconfig-r041-20220120
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
