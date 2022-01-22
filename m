@@ -1,175 +1,156 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 22 Jan 2022 18:48:34 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d69aa713cce12bd6869d4c2ead52ed17edf60dd9
-Message-ID: <61ebe102.e0bLmqvjdf/V1vtr%lkp@intel.com>
+From: Martin Zaharinov <micron10@gmail.com>
+Date: Sat, 22 Jan 2022 19:35:15 +0200
+Subject: [Intel-wired-lan] Fwd: Intel i40e driver problem when is enable
+ rx-vlan-filter: on [fixed]
+In-Reply-To: <CALidq=UDYtC08Y0v+jsmkuro16CgBggW=B1PHmhn=6NyTN+G=Q@mail.gmail.com>
+References: <CALidq=UDYtC08Y0v+jsmkuro16CgBggW=B1PHmhn=6NyTN+G=Q@mail.gmail.com>
+Message-ID: <CALidq=UTiDv6V0psq0CxJ8vqmEC8JxjAtY=u88oKcahNbB342w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d69aa713cce12bd6869d4c2ead52ed17edf60dd9  ice: Fix KASAN error in LAG NETDEV_UNREGISTER handler
+Hello Intel Team
 
-elapsed time: 727m
+We found one big problem(Bug) in intel i40e driver .
 
-configs tested: 141
-configs skipped: 3
+test kernel is 5.16.2
+Card : INtel XL710 (AOC-S40G-i2Q (Supermicro))
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+this is ethtool -i :
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220120
-nds32                             allnoconfig
-sh                        apsh4ad0a_defconfig
-sh                        dreamcast_defconfig
-powerpc                 mpc837x_rdb_defconfig
-sh                          polaris_defconfig
-m68k                            q40_defconfig
-powerpc                  storcenter_defconfig
-arc                     nsimosci_hs_defconfig
-xtensa                  nommu_kc705_defconfig
-sh                        sh7763rdp_defconfig
-arm                           stm32_defconfig
-s390                             allmodconfig
-arc                          axs103_defconfig
-mips                          rb532_defconfig
-sh                                  defconfig
-sh                          rsk7203_defconfig
-sh                           se7206_defconfig
-parisc                generic-32bit_defconfig
-xtensa                  cadence_csp_defconfig
-m68k                         apollo_defconfig
-x86_64                           alldefconfig
-arm                           tegra_defconfig
-nios2                               defconfig
-mips                           gcw0_defconfig
-nios2                         10m50_defconfig
-mips                             allyesconfig
-arm                           h5000_defconfig
-arm                          exynos_defconfig
-mips                  maltasmvp_eva_defconfig
-arm                      footbridge_defconfig
-sh                     sh7710voipgw_defconfig
-mips                      maltasmvp_defconfig
-arm                     eseries_pxa_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                         wii_defconfig
-powerpc                      ppc40x_defconfig
-arm                  randconfig-c002-20220116
-arm                  randconfig-c002-20220117
-arm                  randconfig-c002-20220118
-arm                  randconfig-c002-20220119
-arm                  randconfig-c002-20220120
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                randconfig-r042-20220121
-arc                  randconfig-r043-20220121
-s390                 randconfig-r044-20220121
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
+driver: i40e
+version: 5.16.2
+firmware-version: 7.20 0x80008322 1.2585.0
+expansion-rom-version:
+bus-info: 0000:02:00.0
+supports-statistics: yes
+supports-test: yes
+supports-eeprom-access: yes
+supports-register-dump: yes
+supports-priv-flags: yes
 
-clang tested configs:
-x86_64                        randconfig-c007
-arm                  randconfig-c002-20220120
-riscv                randconfig-c006-20220120
-powerpc              randconfig-c003-20220120
-mips                 randconfig-c004-20220120
-i386                          randconfig-c001
-mips                      maltaaprp_defconfig
-arm                         shannon_defconfig
-powerpc                   bluestone_defconfig
-arm                        vexpress_defconfig
-arm                                 defconfig
-arm                   milbeaut_m10v_defconfig
-powerpc                          allmodconfig
-mips                           rs90_defconfig
-powerpc                     tqm8540_defconfig
-powerpc                      pmac32_defconfig
-powerpc                       ebony_defconfig
-arm                  colibri_pxa270_defconfig
-riscv                            alldefconfig
-powerpc                 mpc832x_rdb_defconfig
-mips                        bcm63xx_defconfig
-powerpc                    mvme5100_defconfig
-arm                        spear3xx_defconfig
-x86_64               randconfig-a005-20220117
-x86_64               randconfig-a004-20220117
-x86_64               randconfig-a001-20220117
-x86_64               randconfig-a006-20220117
-x86_64               randconfig-a002-20220117
-x86_64               randconfig-a003-20220117
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-i386                 randconfig-a005-20220117
-i386                 randconfig-a001-20220117
-i386                 randconfig-a006-20220117
-i386                 randconfig-a004-20220117
-i386                 randconfig-a002-20220117
-i386                 randconfig-a003-20220117
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-riscv                randconfig-r042-20220122
-hexagon              randconfig-r045-20220122
-hexagon              randconfig-r041-20220122
+Problem is this :
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+[   42.267788] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.304230] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.343222] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.383900] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.424674] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.465541] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.507650] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.551789] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.598153] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.645146] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.693241] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.741304] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.789719] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.839720] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.890856] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   42.943083] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.058643] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.110952] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.163266] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.215573] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.267887] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.320205] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.372544] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.424854] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.477162] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.529498] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.581811] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.634122] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.686429] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.738745] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.791061] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+[   43.908556] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[   43.960581] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+
+......
+
+[  233.152055] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.205430] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.258777] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.312141] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.365493] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.420367] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
+overflow promiscuous on PF
+[  233.473951] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
+filters on PF, promiscuous mode forced on
+
+
+Problem is flood dmesg and networking stop work on this time of message .
+
+do you have any idea how to fix or patch i40e driver to fix this problem.
+
+on machine is configured this interface only :
+
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
+group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP
+group default qlen 10000
+    link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
+3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
+default qlen 1000
+    link/ether 0c:c4:7a:19:70:19 brd ff:ff:ff:ff:ff:ff
+4: eth0.0101 at eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc
+noqueue state UP group default qlen 1000
+    link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.2/27 scope global eth0.0101
+       valid_lft forever preferred_lft forever
+
+Normaly problem stop when make this :
+
+ethtool -K eth0 rx-vlan-filter off
+Actual changes:
+rx-vlan-filter: on [requested off]
+Could not change any device features
+
+But in this card this options is hard set on ON and i not found
+options to disable.
+
+
+Best regards,
+Martin
