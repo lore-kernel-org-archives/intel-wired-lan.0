@@ -1,207 +1,404 @@
-From: Martin Zaharinov <micron10@gmail.com>
-Date: Mon, 24 Jan 2022 15:25:51 +0200
-Subject: [Intel-wired-lan] Fwd: Intel i40e driver problem when is enable
- rx-vlan-filter: on [fixed]
-In-Reply-To: <5291ac05-c329-0369-1ebb-5f6e7b953f9e@molgen.mpg.de>
-References: <CALidq=UDYtC08Y0v+jsmkuro16CgBggW=B1PHmhn=6NyTN+G=Q@mail.gmail.com>
- <CALidq=UTiDv6V0psq0CxJ8vqmEC8JxjAtY=u88oKcahNbB342w@mail.gmail.com>
- <5291ac05-c329-0369-1ebb-5f6e7b953f9e@molgen.mpg.de>
-Message-ID: <CALidq=XaQiQpvLWWOMiiRzKF8eYuaZviUFrqUvy=dw_7z+zjpA@mail.gmail.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Mon, 24 Jan 2022 16:45:53 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add waiting for
+ response from PF in set mac
+Message-ID: <20220124154553.29782-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Paul
+Make iavf_set_mac synchronous by waiting for a response
+from a PF. Without this iavf_set_mac is always returning
+success even though set_mac can be rejected by a PF.
+This ensures that when set_mac exits netdev MAC is updated.
+This is needed for sending ARPs with correct MAC after
+changing VF's MAC. This is also needed by bonding module.
 
-On Mon, Jan 24, 2022, 09:59 Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf.h        |  11 +-
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 123 +++++++++++++++---
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  77 +++++++++--
+ 3 files changed, 183 insertions(+), 28 deletions(-)
 
-> Dear Martin,
->
->
-> Am 22.01.22 um 18:35 schrieb Martin Zaharinov:
->
-> > We found one big problem(Bug) in intel i40e driver .
-> >
-> > test kernel is 5.16.2
-> > Card : Intel XL710 (AOC-S40G-i2Q (Supermicro))
-> >
-> > this is ethtool -i :
-> >
-> > driver: i40e
-> > version: 5.16.2
-> > firmware-version: 7.20 0x80008322 1.2585.0
-> > expansion-rom-version:
-> > bus-info: 0000:02:00.0
-> > supports-statistics: yes
-> > supports-test: yes
-> > supports-eeprom-access: yes
-> > supports-register-dump: yes
-> > supports-priv-flags: yes
-> >
-> > Problem is this :
-> >
-> > [   42.267788] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.304230] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.343222] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.383900] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.424674] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.465541] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.507650] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.551789] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.598153] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.645146] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.693241] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.741304] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.789719] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.839720] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.890856] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   42.943083] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.058643] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.110952] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.163266] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.215573] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.267887] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.320205] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.372544] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.424854] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.477162] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.529498] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.581811] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.634122] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.686429] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.738745] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.791061] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> > [   43.908556] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [   43.960581] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> >
-> > ......
-> >
-> > [  233.152055] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.205430] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.258777] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.312141] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.365493] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.420367] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing
-> overflow promiscuous on PF
-> > [  233.473951] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX
-> filters on PF, promiscuous mode forced on
-> >
-> >
-> > Problem is flood dmesg and networking stop work on this time of message .
-> >
-> > do you have any idea how to fix or patch i40e driver to fix this problem.
->
-> You tested with Linux 5.16.2. Do you know if it worked with older Linux
-> kernel version, that means, if this is a regression. If so, the fastest
-> way for everyone to fix the problem is often to bisect the issue.
->
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index a746f44..2854af1 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -143,7 +143,8 @@ struct iavf_mac_filter {
+ 		u8 remove:1;        /* filter needs to be removed */
+ 		u8 add:1;           /* filter needs to be added */
+ 		u8 is_primary:1;    /* filter is a default VF MAC */
+-		u8 padding:4;
++		u8 add_handled:1;   /* received response for filter add */
++		u8 padding:3;
+ 	};
+ };
+ 
+@@ -201,6 +202,10 @@ enum iavf_state_t {
+ 	__IAVF_RUNNING,		/* opened, working */
+ };
+ 
++enum iavf_critical_section_t {
++	__IAVF_IN_CRITICAL_TASK		/* cannot be interrupted */
++};
++
+ #define IAVF_CLOUD_FIELD_OMAC		0x01
+ #define IAVF_CLOUD_FIELD_IMAC		0x02
+ #define IAVF_CLOUD_FIELD_IVLAN	0x04
+@@ -240,6 +245,7 @@ struct iavf_adapter {
+ 	struct work_struct adminq_task;
+ 	struct delayed_work client_task;
+ 	wait_queue_head_t down_waitqueue;
++	wait_queue_head_t vc_waitqueue;
+ 	struct iavf_q_vector *q_vectors;
+ 	struct list_head vlan_filter_list;
+ 	struct list_head mac_filter_list;
+@@ -283,6 +289,7 @@ struct iavf_adapter {
+ #define IAVF_FLAG_LEGACY_RX			BIT(15)
+ #define IAVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
+ #define IAVF_FLAG_QUEUES_DISABLED		BIT(17)
++#define IAVF_FLAG_INITIAL_MAC_SET		BIT(23)
+ /* duplicates for common code */
+ #define IAVF_FLAG_DCB_ENABLED			0
+ 	/* flags for admin queue service task */
+@@ -550,6 +557,8 @@ void iavf_enable_vlan_stripping_v2(struct iavf_adapter *adapter, u16 tpid);
+ void iavf_disable_vlan_stripping_v2(struct iavf_adapter *adapter, u16 tpid);
+ void iavf_enable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid);
+ void iavf_disable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid);
++int iavf_replace_primary_mac(struct iavf_adapter *adapter,
++			     const u8 *new_mac);
+ void
+ iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
+ 			       netdev_features_t prev_features,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index a4c12a3..c816ecb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -873,6 +873,7 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ 
+ 		list_add_tail(&f->list, &adapter->mac_filter_list);
+ 		f->add = true;
++		f->add_handled = false;
+ 		f->is_new_mac = true;
+ 		f->is_primary = false;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
+@@ -884,47 +885,128 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
+ }
+ 
+ /**
+- * iavf_set_mac - NDO callback to set port mac address
+- * @netdev: network interface device structure
+- * @p: pointer to an address structure
++ * iavf_replace_primary_mac - Replace current primary address
++ * @adapter: board private structure
++ * @new_mac: new mac address to be applied
+  *
+- * Returns 0 on success, negative on failure
++ * Replace current dev_addr and send request to PF for removal of previous
++ * primary mac address filter and addition of new primary mac filter.
++ * Return 0 for success, -ENOMEM for failure.
++ *
++ * Do not call this with mac_vlan_list_lock!
+  **/
+-static int iavf_set_mac(struct net_device *netdev, void *p)
++int iavf_replace_primary_mac(struct iavf_adapter *adapter,
++			     const u8 *new_mac)
+ {
+-	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	struct iavf_mac_filter *f;
+-	struct sockaddr *addr = p;
+-
+-	if (!is_valid_ether_addr(addr->sa_data))
+-		return -EADDRNOTAVAIL;
+-
+-	if (ether_addr_equal(netdev->dev_addr, addr->sa_data))
+-		return 0;
+ 
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 
++	list_for_each_entry(f, &adapter->mac_filter_list, list) {
++		f->is_primary = false;
++	}
++
+ 	f = iavf_find_filter(adapter, hw->mac.addr);
+ 	if (f) {
+ 		f->remove = true;
+-		f->is_primary = true;
+ 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
+ 	}
+ 
+-	f = iavf_add_filter(adapter, addr->sa_data);
++	f = iavf_add_filter(adapter, new_mac);
++
+ 	if (f) {
++		/* Always send the request to add if changing primary MAC
++		 * even if filter is already present on the list
++		 */
+ 		f->is_primary = true;
+-		ether_addr_copy(hw->mac.addr, addr->sa_data);
++		f->add = true;
++		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
++		ether_addr_copy(hw->mac.addr, new_mac);
+ 	}
+ 
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ 
+ 	/* schedule the watchdog task to immediately process the request */
+-	if (f)
++	if (f) {
+ 		queue_work(iavf_wq, &adapter->watchdog_task.work);
++		return 0;
++	}
++	return -ENOMEM;
++}
++
++/**
++ * iavf_is_mac_set_handled - wait for a response to set MAC from PF
++ * @netdev: network interface device structure
++ * @macaddr: MAC address to set
++ *
++ * Returns true on success, false on failure
++ **/
++static bool iavf_is_mac_set_handled(struct net_device *netdev,
++				    const u8 *macaddr)
++{
++	struct iavf_adapter *adapter = netdev_priv(netdev);
++	struct iavf_mac_filter *f;
++	bool ret = false;
++
++	spin_lock_bh(&adapter->mac_vlan_list_lock);
++
++	f = iavf_find_filter(adapter, macaddr);
+ 
+-	return (f == NULL) ? -ENOMEM : 0;
++	if (!f || (!f->add && f->add_handled))
++		ret = true;
++
++	spin_unlock_bh(&adapter->mac_vlan_list_lock);
++
++	return ret;
++}
++
++/**
++ * iavf_set_mac - NDO callback to set port mac address
++ * @netdev: network interface device structure
++ * @p: pointer to an address structure
++ *
++ * Returns 0 on success, negative on failure
++ **/
++static int iavf_set_mac(struct net_device *netdev, void *p)
++{
++	struct iavf_adapter *adapter = netdev_priv(netdev);
++	struct sockaddr *addr = p;
++	bool handle_mac = iavf_is_mac_set_handled(netdev, addr->sa_data);
++	int ret;
++
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	ret = iavf_replace_primary_mac(adapter, addr->sa_data);
++
++	if (ret)
++		return ret;
++
++	/* If this is an initial set mac during VF spawn do not wait */
++	if (adapter->flags & IAVF_FLAG_INITIAL_MAC_SET) {
++		adapter->flags &= ~IAVF_FLAG_INITIAL_MAC_SET;
++		return 0;
++	}
++
++	ret = wait_event_interruptible_timeout(adapter->vc_waitqueue, handle_mac, msecs_to_jiffies(2500));
++
++	/* If ret < 0 then it means wait was interrupted.
++	 * If ret == 0 then it means we got a timeout.
++	 * If ret > 0 it means we got response for set MAC from PF,
++	 * check if netdev MAC was updated to requested MAC,
++	 * if yes then set MAC succeeded otherwise it failed return -EACCES
++	 */
++	if (ret < 0)
++		return ret;
++
++	if (ret == 0)
++		return -EAGAIN;
++
++	if (ret > 0 && !ether_addr_equal(netdev->dev_addr, addr->sa_data))
++		return -EACCES;
++
++	return 0;
+ }
+ 
+ /**
+@@ -2338,6 +2420,8 @@ static void iavf_init_config_adapter(struct iavf_adapter *adapter)
+ 		ether_addr_copy(netdev->perm_addr, adapter->hw.mac.addr);
+ 	}
+ 
++	adapter->flags |= IAVF_FLAG_INITIAL_MAC_SET;
++
+ 	adapter->tx_desc_count = IAVF_DEFAULT_TXD;
+ 	adapter->rx_desc_count = IAVF_DEFAULT_RXD;
+ 	err = iavf_init_interrupt_scheme(adapter);
+@@ -4483,6 +4567,9 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* Setup the wait queue for indicating transition to down status */
+ 	init_waitqueue_head(&adapter->down_waitqueue);
+ 
++	/* Setup the wait queue for indicating virtchannel events */
++	init_waitqueue_head(&adapter->vc_waitqueue);
++
+ 	return 0;
+ 
+ err_ioremap:
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 60ee462..e1fa2fe 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -622,6 +622,8 @@ static void iavf_mac_add_ok(struct iavf_adapter *adapter)
+ 	spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 	list_for_each_entry_safe(f, ftmp, &adapter->mac_filter_list, list) {
+ 		f->is_new_mac = false;
++		if (!f->add && !f->add_handled)
++			f->add_handled = true;
+ 	}
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+ }
+@@ -642,6 +644,9 @@ static void iavf_mac_add_reject(struct iavf_adapter *adapter)
+ 		if (f->remove && ether_addr_equal(f->macaddr, netdev->dev_addr))
+ 			f->remove = false;
+ 
++		if (!f->add && !f->add_handled)
++			f->add_handled = true;
++
+ 		if (f->is_new_mac) {
+ 			list_del(&f->list);
+ 			kfree(f);
+@@ -1938,6 +1943,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			iavf_mac_add_reject(adapter);
+ 			/* restore administratively set MAC address */
+ 			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
++			wake_up(&adapter->vc_waitqueue);
+ 			break;
+ 		case VIRTCHNL_OP_DEL_VLAN:
+ 			dev_err(&adapter->pdev->dev, "Failed to delete VLAN filter, error %s\n",
+@@ -2087,7 +2093,13 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		if (!v_retval)
+ 			iavf_mac_add_ok(adapter);
+ 		if (!ether_addr_equal(netdev->dev_addr, adapter->hw.mac.addr))
+-			eth_hw_addr_set(netdev, adapter->hw.mac.addr);
++			if (!ether_addr_equal(netdev->dev_addr,
++					      adapter->hw.mac.addr)) {
++				netif_addr_lock_bh(netdev);
++				eth_hw_addr_set(netdev, adapter->hw.mac.addr);
++				netif_addr_unlock_bh(netdev);
++			}
++		wake_up(&adapter->vc_waitqueue);
+ 		break;
+ 	case VIRTCHNL_OP_GET_STATS: {
+ 		struct iavf_eth_stats *stats =
+@@ -2117,10 +2129,11 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 			/* restore current mac address */
+ 			ether_addr_copy(adapter->hw.mac.addr, netdev->dev_addr);
+ 		} else {
++			netif_addr_lock_bh(netdev);
+ 			/* refresh current mac address if changed */
+-			eth_hw_addr_set(netdev, adapter->hw.mac.addr);
+ 			ether_addr_copy(netdev->perm_addr,
+ 					adapter->hw.mac.addr);
++			netif_addr_unlock_bh(netdev);
+ 		}
+ 		spin_lock_bh(&adapter->mac_vlan_list_lock);
+ 		iavf_add_filter(adapter, adapter->hw.mac.addr);
+@@ -2156,6 +2169,10 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 		}
+ 		fallthrough;
+ 	case VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS: {
++		struct iavf_mac_filter *f;
++		bool was_mac_changed;
++		u64 aq_required = 0;
++
+ 		if (v_opcode == VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS)
+ 			memcpy(&adapter->vlan_v2_caps, msg,
+ 			       min_t(u16, msglen,
+@@ -2163,20 +2180,21 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 
+ 		iavf_process_config(adapter);
+ 
+-		/* unlock crit_lock before acquiring rtnl_lock as other
+-		 * processes holding rtnl_lock could be waiting for the same
+-		 * crit_lock
++		/* Clear 'critical task' bit before acquiring rtnl_lock
++		 * as other process holding rtnl_lock could be waiting
++		 * for the same bit resulting in deadlock
+ 		 */
+-		mutex_unlock(&adapter->crit_lock);
++		clear_bit(__IAVF_IN_CRITICAL_TASK, &adapter->crit_section);
+ 		/* VLAN capabilities can change during VFR, so make sure to
+ 		 * update the netdev features with the new capabilities
+ 		 */
+ 		rtnl_lock();
+ 		netdev_update_features(netdev);
+ 		rtnl_unlock();
+-		if (iavf_lock_timeout(&adapter->crit_lock, 10000))
+-			dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n",
+-				 __FUNCTION__);
++		/* Set 'critical task' bit again */
++		while (test_and_set_bit(__IAVF_IN_CRITICAL_TASK,
++					&adapter->crit_section))
++			usleep_range(500, 1000);
+ 
+ 		/* Request VLAN offload settings */
+ 		if (VLAN_V2_ALLOWED(adapter))
+@@ -2185,6 +2203,47 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
+ 
+ 		iavf_set_queue_vlan_tag_loc(adapter);
+ 
++		was_mac_changed = !ether_addr_equal(netdev->dev_addr,
++						    adapter->hw.mac.addr);
++
++		spin_lock_bh(&adapter->mac_vlan_list_lock);
++
++		/* re-add all MAC filters */
++		list_for_each_entry(f, &adapter->mac_filter_list, list) {
++			if (was_mac_changed &&
++			    ether_addr_equal(netdev->dev_addr, f->macaddr))
++				ether_addr_copy(f->macaddr,
++						adapter->hw.mac.addr);
++
++			f->is_new_mac = true;
++			f->add = true;
++			f->add_handled = false;
++			f->remove = false;
++		}
++
++		/* re-add all VLAN filters */
++		if (VLAN_FILTERING_ALLOWED(adapter)) {
++			struct iavf_vlan_filter *vlf;
++
++			if (!list_empty(&adapter->vlan_filter_list)) {
++				list_for_each_entry(vlf,
++						    &adapter->vlan_filter_list,
++						    list)
++					vlf->add = true;
++
++				aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
++			}
++		}
++
++		spin_unlock_bh(&adapter->mac_vlan_list_lock);
++
++		netif_addr_lock_bh(netdev);
++		eth_hw_addr_set(netdev, adapter->hw.mac.addr);
++		netif_addr_unlock_bh(netdev);
++
++		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER |
++			aq_required;
++
+ 		}
+ 		break;
+ 	case VIRTCHNL_OP_ENABLE_QUEUES:
+-- 
+2.27.0
 
-Yes tested with kernel from 5.4 to 5.16.2 with internal driver and with
-driver from : https://sourceforge.net/projects/e1000/files/i40e%20stable/
- (latest 2.17.15)
-
-The problem is still there , when system is boot and up vlan 0101 all is
-fine , but after run service to like pppoe server problem start.
-
-
-
->
-> > on machine is configured this interface only :
-> >
-> > 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
-> group default qlen 1000
-> >      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> >      inet 127.0.0.1/8 scope host lo
-> >         valid_lft forever preferred_lft forever
-> > 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP
-> group default qlen 10000
-> >      link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
-> > 3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group
-> default qlen 1000
-> >      link/ether 0c:c4:7a:19:70:19 brd ff:ff:ff:ff:ff:ff
-> > 4: eth0.0101 at eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc
-> noqueue state UP group default qlen 1000
-> >      link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
-> >      inet 192.168.1.2/27 scope global eth0.0101
-> >         valid_lft forever preferred_lft forever
-> >
-> > Normally problem stop when make this:
->
-> So it?s a known problem with the i40e driver?
->
->
-Yes problem  is with driver i40e
-
-and only one options is to stop flood and start card work
-
-add bridge interface or bonding and add card in bridge/bonding.
-
-after that set on bridge/bonding rx-vlan-filter off.
-
-
-Same problem have with intel X722 dual port card.
-the problem has been there for a long time.
-
-
-> > ethtool -K eth0 rx-vlan-filter off
-> > Actual changes:
-> > rx-vlan-filter: on [requested off]
-> > Could not change any device features
-> >
-> > But in this card this options is hard set on ON and i not found
-> > options to disable.
->
-> Strange.
->
->
-> Kind regards,
->
-> Paul
->
-
-
-Best regards,
-Martin
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220124/5b3d0ac3/attachment.html>
