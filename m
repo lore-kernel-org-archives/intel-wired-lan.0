@@ -1,481 +1,125 @@
-From: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
-Date: Sun, 16 Jan 2022 10:01:43 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Add support for inner etype
- in switchdev
-Message-ID: <20220116090142.2934-1-martyna.szapar-mudlaw@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 24 Jan 2022 08:59:25 +0100
+Subject: [Intel-wired-lan] Fwd: Intel i40e driver problem when is enable
+ rx-vlan-filter: on [fixed]
+In-Reply-To: <CALidq=UTiDv6V0psq0CxJ8vqmEC8JxjAtY=u88oKcahNbB342w@mail.gmail.com>
+References: <CALidq=UDYtC08Y0v+jsmkuro16CgBggW=B1PHmhn=6NyTN+G=Q@mail.gmail.com>
+ <CALidq=UTiDv6V0psq0CxJ8vqmEC8JxjAtY=u88oKcahNbB342w@mail.gmail.com>
+Message-ID: <5291ac05-c329-0369-1ebb-5f6e7b953f9e@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Enable support for adding TC rules that filter on the inner
-EtherType field of tunneled packet headers.
+Dear Martin,
 
-Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
----
- .../ethernet/intel/ice/ice_protocol_type.h    |   2 +
- drivers/net/ethernet/intel/ice/ice_switch.c   | 272 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  15 +-
- 3 files changed, 277 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index dc1b0e9e6df5..3ca15a64476e 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -29,6 +29,7 @@ enum ice_protocol_type {
- 	ICE_MAC_OFOS = 0,
- 	ICE_MAC_IL,
- 	ICE_ETYPE_OL,
-+	ICE_ETYPE_IL,
- 	ICE_VLAN_OFOS,
- 	ICE_IPV4_OFOS,
- 	ICE_IPV4_IL,
-@@ -91,6 +92,7 @@ enum ice_prot_id {
- #define ICE_MAC_OFOS_HW		1
- #define ICE_MAC_IL_HW		4
- #define ICE_ETYPE_OL_HW		9
-+#define ICE_ETYPE_IL_HW		10
- #define ICE_VLAN_OF_HW		16
- #define ICE_VLAN_OL_HW		17
- #define ICE_IPV4_OFOS_HW	32
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index e477c2b1d5bb..cda005503052 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -41,6 +41,7 @@ static const struct ice_dummy_pkt_offsets dummy_gre_tcp_packet_offsets[] = {
- 	{ ICE_IPV4_OFOS,	14 },
- 	{ ICE_NVGRE,		34 },
- 	{ ICE_MAC_IL,		42 },
-+	{ ICE_ETYPE_IL,		54 },
- 	{ ICE_IPV4_IL,		56 },
- 	{ ICE_TCP_IL,		76 },
- 	{ ICE_PROTOCOL_LAST,	0 },
-@@ -65,7 +66,8 @@ static const u8 dummy_gre_tcp_packet[] = {
- 	0x00, 0x00, 0x00, 0x00,	/* ICE_MAC_IL 42 */
- 	0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00,
--	0x08, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_IL 54 */
- 
- 	0x45, 0x00, 0x00, 0x14,	/* ICE_IPV4_IL 56 */
- 	0x00, 0x00, 0x00, 0x00,
-@@ -86,6 +88,7 @@ static const struct ice_dummy_pkt_offsets dummy_gre_udp_packet_offsets[] = {
- 	{ ICE_IPV4_OFOS,	14 },
- 	{ ICE_NVGRE,		34 },
- 	{ ICE_MAC_IL,		42 },
-+	{ ICE_ETYPE_IL,		54 },
- 	{ ICE_IPV4_IL,		56 },
- 	{ ICE_UDP_ILOS,		76 },
- 	{ ICE_PROTOCOL_LAST,	0 },
-@@ -110,7 +113,8 @@ static const u8 dummy_gre_udp_packet[] = {
- 	0x00, 0x00, 0x00, 0x00,	/* ICE_MAC_IL 42 */
- 	0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00,
--	0x08, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_IL 54 */
- 
- 	0x45, 0x00, 0x00, 0x14,	/* ICE_IPV4_IL 56 */
- 	0x00, 0x00, 0x00, 0x00,
-@@ -131,6 +135,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_tun_tcp_packet_offsets[] = {
- 	{ ICE_GENEVE,		42 },
- 	{ ICE_VXLAN_GPE,	42 },
- 	{ ICE_MAC_IL,		50 },
-+	{ ICE_ETYPE_IL,		62 },
- 	{ ICE_IPV4_IL,		64 },
- 	{ ICE_TCP_IL,		84 },
- 	{ ICE_PROTOCOL_LAST,	0 },
-@@ -158,7 +163,8 @@ static const u8 dummy_udp_tun_tcp_packet[] = {
- 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 50 */
- 	0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00,
--	0x08, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_IL 62 */
- 
- 	0x45, 0x00, 0x00, 0x28, /* ICE_IPV4_IL 64 */
- 	0x00, 0x01, 0x00, 0x00,
-@@ -182,6 +188,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_tun_udp_packet_offsets[] = {
- 	{ ICE_GENEVE,		42 },
- 	{ ICE_VXLAN_GPE,	42 },
- 	{ ICE_MAC_IL,		50 },
-+	{ ICE_ETYPE_IL,		62 },
- 	{ ICE_IPV4_IL,		64 },
- 	{ ICE_UDP_ILOS,		84 },
- 	{ ICE_PROTOCOL_LAST,	0 },
-@@ -209,7 +216,8 @@ static const u8 dummy_udp_tun_udp_packet[] = {
- 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 50 */
- 	0x00, 0x00, 0x00, 0x00,
- 	0x00, 0x00, 0x00, 0x00,
--	0x08, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_IL 62 */
- 
- 	0x45, 0x00, 0x00, 0x1c, /* ICE_IPV4_IL 64 */
- 	0x00, 0x01, 0x00, 0x00,
-@@ -221,6 +229,224 @@ static const u8 dummy_udp_tun_udp_packet[] = {
- 	0x00, 0x08, 0x00, 0x00,
- };
- 
-+static const struct ice_dummy_pkt_offsets
-+dummy_gre_ipv6_tcp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_NVGRE,		34 },
-+	{ ICE_MAC_IL,		42 },
-+	{ ICE_ETYPE_IL,		54 },
-+	{ ICE_IPV6_IL,		56 },
-+	{ ICE_TCP_IL,		96 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+static const u8 dummy_gre_ipv6_tcp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x66, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x2F, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x80, 0x00, 0x65, 0x58, /* ICE_NVGRE 34 */
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xdd,		/* ICE_ETYPE_IL 54 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_IL 56 */
-+	0x00, 0x08, 0x06, 0x40,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 96 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x02, 0x20, 0x00,
-+	0x00, 0x00, 0x00, 0x00
-+};
-+
-+static const struct ice_dummy_pkt_offsets
-+dummy_gre_ipv6_udp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_NVGRE,		34 },
-+	{ ICE_MAC_IL,		42 },
-+	{ ICE_ETYPE_IL,		54 },
-+	{ ICE_IPV6_IL,		56 },
-+	{ ICE_UDP_ILOS,		96 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+static const u8 dummy_gre_ipv6_udp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x5a, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x2F, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x80, 0x00, 0x65, 0x58, /* ICE_NVGRE 34 */
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xdd,		/* ICE_ETYPE_IL 54 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_IL 56 */
-+	0x00, 0x08, 0x11, 0x40,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 96 */
-+	0x00, 0x08, 0x00, 0x00,
-+};
-+
-+static const struct ice_dummy_pkt_offsets
-+dummy_udp_tun_ipv6_tcp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_UDP_OF,		34 },
-+	{ ICE_VXLAN,		42 },
-+	{ ICE_GENEVE,		42 },
-+	{ ICE_VXLAN_GPE,	42 },
-+	{ ICE_MAC_IL,		50 },
-+	{ ICE_ETYPE_IL,		62 },
-+	{ ICE_IPV6_IL,		64 },
-+	{ ICE_TCP_IL,		104 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+static const u8 dummy_udp_tun_ipv6_tcp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x6e, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x40, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x12, 0xb5, /* ICE_UDP_OF 34 */
-+	0x00, 0x5a, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x65, 0x58, /* ICE_VXLAN 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 50 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xdd,		/* ICE_ETYPE_IL 62 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_IL 64 */
-+	0x00, 0x08, 0x06, 0x40,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 104 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x02, 0x20, 0x00,
-+	0x00, 0x00, 0x00, 0x00
-+};
-+
-+static const struct ice_dummy_pkt_offsets
-+dummy_udp_tun_ipv6_udp_packet_offsets[] = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_UDP_OF,		34 },
-+	{ ICE_VXLAN,		42 },
-+	{ ICE_GENEVE,		42 },
-+	{ ICE_VXLAN_GPE,	42 },
-+	{ ICE_MAC_IL,		50 },
-+	{ ICE_ETYPE_IL,		62 },
-+	{ ICE_IPV6_IL,		64 },
-+	{ ICE_UDP_ILOS,		104 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+static const u8 dummy_udp_tun_ipv6_udp_packet[] = {
-+	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x62, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x12, 0xb5, /* ICE_UDP_OF 34 */
-+	0x00, 0x4e, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x65, 0x58, /* ICE_VXLAN 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_IL 50 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xdd,		/* ICE_ETYPE_IL 62 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_IL 64 */
-+	0x00, 0x08, 0x11, 0x40,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 104 */
-+	0x00, 0x08, 0x00, 0x00,
-+};
-+
- /* offset info for MAC + IPv4 + UDP dummy packet */
- static const struct ice_dummy_pkt_offsets dummy_udp_packet_offsets[] = {
- 	{ ICE_MAC_OFOS,		0 },
-@@ -3755,6 +3981,7 @@ static const struct ice_prot_ext_tbl_entry ice_prot_ext[ICE_PROTOCOL_LAST] = {
- 	{ ICE_MAC_OFOS,		{ 0, 2, 4, 6, 8, 10, 12 } },
- 	{ ICE_MAC_IL,		{ 0, 2, 4, 6, 8, 10, 12 } },
- 	{ ICE_ETYPE_OL,		{ 0 } },
-+	{ ICE_ETYPE_IL,		{ 0 } },
- 	{ ICE_VLAN_OFOS,	{ 2, 0 } },
- 	{ ICE_IPV4_OFOS,	{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18 } },
- 	{ ICE_IPV4_IL,		{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18 } },
-@@ -3774,6 +4001,7 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
- 	{ ICE_MAC_OFOS,		ICE_MAC_OFOS_HW },
- 	{ ICE_MAC_IL,		ICE_MAC_IL_HW },
- 	{ ICE_ETYPE_OL,		ICE_ETYPE_OL_HW },
-+	{ ICE_ETYPE_IL,		ICE_ETYPE_IL_HW },
- 	{ ICE_VLAN_OFOS,	ICE_VLAN_OL_HW },
- 	{ ICE_IPV4_OFOS,	ICE_IPV4_OFOS_HW },
- 	{ ICE_IPV4_IL,		ICE_IPV4_IL_HW },
-@@ -4739,6 +4967,7 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 		      const struct ice_dummy_pkt_offsets **offsets)
- {
- 	bool tcp = false, udp = false, ipv6 = false, vlan = false;
-+	bool ipv6_il = false;
- 	u16 i;
- 
- 	for (i = 0; i < lkups_cnt; i++) {
-@@ -4754,18 +4983,35 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 			 lkups[i].h_u.ethertype.ethtype_id ==
- 				cpu_to_be16(ICE_IPV6_ETHER_ID) &&
- 			 lkups[i].m_u.ethertype.ethtype_id ==
--					cpu_to_be16(0xFFFF))
-+				cpu_to_be16(0xFFFF))
- 			ipv6 = true;
-+		else if (lkups[i].type == ICE_ETYPE_IL &&
-+			 lkups[i].h_u.ethertype.ethtype_id ==
-+				cpu_to_be16(ICE_IPV6_ETHER_ID) &&
-+			 lkups[i].m_u.ethertype.ethtype_id ==
-+				cpu_to_be16(0xFFFF))
-+			ipv6_il = true;
- 	}
- 
- 	if (tun_type == ICE_SW_TUN_NVGRE) {
-+		if (tcp && ipv6_il) {
-+			*pkt = dummy_gre_ipv6_tcp_packet;
-+			*pkt_len = sizeof(dummy_gre_ipv6_tcp_packet);
-+			*offsets = dummy_gre_ipv6_tcp_packet_offsets;
-+			return;
-+		}
- 		if (tcp) {
- 			*pkt = dummy_gre_tcp_packet;
- 			*pkt_len = sizeof(dummy_gre_tcp_packet);
- 			*offsets = dummy_gre_tcp_packet_offsets;
- 			return;
- 		}
--
-+		if (ipv6_il) {
-+			*pkt = dummy_gre_ipv6_udp_packet;
-+			*pkt_len = sizeof(dummy_gre_ipv6_udp_packet);
-+			*offsets = dummy_gre_ipv6_udp_packet_offsets;
-+			return;
-+		}
- 		*pkt = dummy_gre_udp_packet;
- 		*pkt_len = sizeof(dummy_gre_udp_packet);
- 		*offsets = dummy_gre_udp_packet_offsets;
-@@ -4774,13 +5020,24 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 
- 	if (tun_type == ICE_SW_TUN_VXLAN ||
- 	    tun_type == ICE_SW_TUN_GENEVE) {
-+		if (tcp && ipv6_il) {
-+			*pkt = dummy_udp_tun_ipv6_tcp_packet;
-+			*pkt_len = sizeof(dummy_udp_tun_ipv6_tcp_packet);
-+			*offsets = dummy_udp_tun_ipv6_tcp_packet_offsets;
-+			return;
-+		}
- 		if (tcp) {
- 			*pkt = dummy_udp_tun_tcp_packet;
- 			*pkt_len = sizeof(dummy_udp_tun_tcp_packet);
- 			*offsets = dummy_udp_tun_tcp_packet_offsets;
- 			return;
- 		}
--
-+		if (ipv6_il) {
-+			*pkt = dummy_udp_tun_ipv6_udp_packet;
-+			*pkt_len = sizeof(dummy_udp_tun_ipv6_udp_packet);
-+			*offsets = dummy_udp_tun_ipv6_udp_packet_offsets;
-+			return;
-+		}
- 		*pkt = dummy_udp_tun_udp_packet;
- 		*pkt_len = sizeof(dummy_udp_tun_udp_packet);
- 		*offsets = dummy_udp_tun_udp_packet_offsets;
-@@ -4886,6 +5143,7 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 			len = sizeof(struct ice_ether_hdr);
- 			break;
- 		case ICE_ETYPE_OL:
-+		case ICE_ETYPE_IL:
- 			len = sizeof(struct ice_ethtype_hdr);
- 			break;
- 		case ICE_VLAN_OFOS:
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index e8aab664270a..d19def5ddb1c 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -33,9 +33,7 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 	if (flags & ICE_TC_FLWR_FIELD_ENC_DEST_L4_PORT)
- 		lkups_cnt++;
- 
--	/* currently inner etype filter isn't supported */
--	if ((flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) &&
--	    fltr->tunnel_type == TNL_LAST)
-+	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID)
- 		lkups_cnt++;
- 
- 	/* are MAC fields specified? */
-@@ -64,6 +62,11 @@ static enum ice_protocol_type ice_proto_type_from_mac(bool inner)
- 	return inner ? ICE_MAC_IL : ICE_MAC_OFOS;
- }
- 
-+static enum ice_protocol_type ice_proto_type_from_etype(bool inner)
-+{
-+	return inner ? ICE_ETYPE_IL : ICE_ETYPE_OL;
-+}
-+
- static enum ice_protocol_type ice_proto_type_from_ipv4(bool inner)
- {
- 	return inner ? ICE_IPV4_IL : ICE_IPV4_OFOS;
-@@ -224,8 +227,10 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
- 
- 		headers = &tc_fltr->inner_headers;
- 		inner = true;
--	} else if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) {
--		list[i].type = ICE_ETYPE_OL;
-+	}
-+
-+	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) {
-+		list[i].type = ice_proto_type_from_etype(inner);
- 		list[i].h_u.ethertype.ethtype_id = headers->l2_key.n_proto;
- 		list[i].m_u.ethertype.ethtype_id = headers->l2_mask.n_proto;
- 		i++;
--- 
-2.31.1
+Am 22.01.22 um 18:35 schrieb Martin Zaharinov:
 
+> We found one big problem(Bug) in intel i40e driver .
+> 
+> test kernel is 5.16.2
+> Card : Intel XL710 (AOC-S40G-i2Q (Supermicro))
+> 
+> this is ethtool -i :
+> 
+> driver: i40e
+> version: 5.16.2
+> firmware-version: 7.20 0x80008322 1.2585.0
+> expansion-rom-version:
+> bus-info: 0000:02:00.0
+> supports-statistics: yes
+> supports-test: yes
+> supports-eeprom-access: yes
+> supports-register-dump: yes
+> supports-priv-flags: yes
+> 
+> Problem is this :
+> 
+> [   42.267788] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.304230] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.343222] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.383900] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.424674] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.465541] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.507650] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.551789] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.598153] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.645146] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.693241] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.741304] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.789719] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.839720] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.890856] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   42.943083] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.058643] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.110952] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.163266] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.215573] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.267887] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.320205] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.372544] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.424854] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.477162] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.529498] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.581811] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.634122] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.686429] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.738745] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.791061] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> [   43.908556] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [   43.960581] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> 
+> ......
+> 
+> [  233.152055] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.205430] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.258777] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.312141] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.365493] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.420367] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC, forcing overflow promiscuous on PF
+> [  233.473951] i40e 0000:02:00.0: Error I40E_AQ_RC_ENOSPC adding RX filters on PF, promiscuous mode forced on
+> 
+> 
+> Problem is flood dmesg and networking stop work on this time of message .
+> 
+> do you have any idea how to fix or patch i40e driver to fix this problem.
+
+You tested with Linux 5.16.2. Do you know if it worked with older Linux 
+kernel version, that means, if this is a regression. If so, the fastest 
+way for everyone to fix the problem is often to bisect the issue.
+
+> on machine is configured this interface only :
+> 
+> 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+>      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+>      inet 127.0.0.1/8 scope host lo
+>         valid_lft forever preferred_lft forever
+> 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 10000
+>      link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
+> 3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+>      link/ether 0c:c4:7a:19:70:19 brd ff:ff:ff:ff:ff:ff
+> 4: eth0.0101 at eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+>      link/ether 0c:c4:7a:19:70:18 brd ff:ff:ff:ff:ff:ff
+>      inet 192.168.1.2/27 scope global eth0.0101
+>         valid_lft forever preferred_lft forever
+> 
+> Normally problem stop when make this:
+
+So it?s a known problem with the i40e driver?
+
+> ethtool -K eth0 rx-vlan-filter off
+> Actual changes:
+> rx-vlan-filter: on [requested off]
+> Could not change any device features
+> 
+> But in this card this options is hard set on ON and i not found
+> options to disable.
+
+Strange.
+
+
+Kind regards,
+
+Paul
