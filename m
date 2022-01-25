@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 26 Jan 2022 00:47:33 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 6e667749271e58d34238cf700e543beabdbe6184
-Message-ID: <61f029a5.58npfwu2Wl9+MSNm%lkp@intel.com>
+Date: Wed, 26 Jan 2022 00:47:37 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 050b810d5cf585b8b54e91ca763fc6bbf82f3914
+Message-ID: <61f029a9.VChtIqrIlcHo4vKq%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 6e667749271e58d34238cf700e543beabdbe6184  net: fec_ptp: remove redundant initialization of variable val
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 050b810d5cf585b8b54e91ca763fc6bbf82f3914  iavf: Fix handling of vlan strip virtual channel messages
 
-elapsed time: 724m
+elapsed time: 723m
 
-configs tested: 164
+configs tested: 166
 configs skipped: 4
 
 The following configs have been built successfully.
@@ -53,12 +53,12 @@ powerpc                     tqm8548_defconfig
 riscv                    nommu_k210_defconfig
 csky                                defconfig
 sh                           se7206_defconfig
+ia64                          tiger_defconfig
+arm                       multi_v4t_defconfig
+arm                        trizeps4_defconfig
 arm                        mvebu_v7_defconfig
 arm                           viper_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                         microdev_defconfig
-arm                             ezx_defconfig
-mips                       bmips_be_defconfig
+mips                         rt305x_defconfig
 xtensa                generic_kc705_defconfig
 openrisc                         alldefconfig
 sh                           sh2007_defconfig
@@ -85,9 +85,9 @@ ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nds32                             allnoconfig
 nios2                               defconfig
 arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 alpha                               defconfig
@@ -140,8 +140,8 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
 x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
 um                             i386_defconfig
+um                           x86_64_defconfig
 x86_64                           allyesconfig
 x86_64                              defconfig
 x86_64                               rhel-8.3
@@ -164,8 +164,6 @@ mips                        bcm63xx_defconfig
 powerpc                     tqm5200_defconfig
 mips                       lemote2f_defconfig
 powerpc                        icon_defconfig
-powerpc                     mpc5200_defconfig
-powerpc                     tqm8560_defconfig
 mips                     cu1830-neo_defconfig
 arm                        neponset_defconfig
 mips                           ip22_defconfig
@@ -187,11 +185,15 @@ i386                 randconfig-a013-20220124
 i386                 randconfig-a014-20220124
 i386                 randconfig-a015-20220124
 i386                 randconfig-a012-20220124
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
 riscv                randconfig-r042-20220124
 hexagon              randconfig-r045-20220125
 hexagon              randconfig-r045-20220124
 hexagon              randconfig-r041-20220125
 hexagon              randconfig-r041-20220124
+s390                 randconfig-r044-20220124
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
