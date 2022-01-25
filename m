@@ -1,216 +1,124 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 26 Jan 2022 00:47:26 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- e52984be9a522fb55c8f3e3df860d464d6658585
-Message-ID: <61f0299e.Vqau7Xq1pd41AebT%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Tue, 25 Jan 2022 19:31:23 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible HW unit hang
+ after an s0ix exit
+Message-ID: <20220125173123.962540-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: e52984be9a522fb55c8f3e3df860d464d6658585  Merge tag 'linux-can-fixes-for-5.17-20220124' of git://git.kernel.org/pub/scm/linux/kernel/git/mkl/linux-can
+Disable the OEM bit/Gig Disable/restart AN impact and disable the PHY
+(LCD) reset during power management flows.
+Fix possible HW unit hangs on the s0ix exit on some corporate ADL
+platforms.
 
-elapsed time: 1179m
-
-configs tested: 182
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20220124
-powerpc              randconfig-c003-20220124
-sh                 kfr2r09-romimage_defconfig
-mips                         bigsur_defconfig
-arc                 nsimosci_hs_smp_defconfig
-powerpc                     rainier_defconfig
-mips                      maltasmvp_defconfig
-powerpc                    sam440ep_defconfig
-arc                            hsdk_defconfig
-sh                           se7722_defconfig
-mips                     decstation_defconfig
-sparc                       sparc64_defconfig
-powerpc                      ppc6xx_defconfig
-mips                            gpr_defconfig
-arc                          axs101_defconfig
-xtensa                    xip_kc705_defconfig
-powerpc                     asp8347_defconfig
-sh                          kfr2r09_defconfig
-nios2                         10m50_defconfig
-powerpc                     sequoia_defconfig
-arm                           h5000_defconfig
-riscv                    nommu_k210_defconfig
-m68k                          atari_defconfig
-powerpc                     tqm8548_defconfig
-openrisc                            defconfig
-csky                                defconfig
-sh                           se7206_defconfig
-ia64                          tiger_defconfig
-arm                       multi_v4t_defconfig
-arm                        trizeps4_defconfig
-arm                        mvebu_v7_defconfig
-arm                           viper_defconfig
-sh                   sh7724_generic_defconfig
-ia64                        generic_defconfig
-sh                           sh2007_defconfig
-arm                          simpad_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                         microdev_defconfig
-arm                             ezx_defconfig
-mips                       bmips_be_defconfig
-xtensa                generic_kc705_defconfig
-openrisc                         alldefconfig
-sh                          r7780mp_defconfig
-mips                  maltasmvp_eva_defconfig
-sh                             shx3_defconfig
-powerpc                           allnoconfig
-parisc                generic-32bit_defconfig
-riscv                            allmodconfig
-arm                           corgi_defconfig
-m68k                         apollo_defconfig
-powerpc                 mpc837x_mds_defconfig
-openrisc                  or1klitex_defconfig
-riscv             nommu_k210_sdcard_defconfig
-m68k                        m5272c3_defconfig
-arc                          axs103_defconfig
-powerpc                    amigaone_defconfig
-arm                            lart_defconfig
-arc                         haps_hs_defconfig
-mips                        bcm47xx_defconfig
-xtensa                          iss_defconfig
-mips                            ar7_defconfig
-arm                       aspeed_g5_defconfig
-arm                  randconfig-c002-20220124
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a002-20220124
-x86_64               randconfig-a003-20220124
-x86_64               randconfig-a001-20220124
-x86_64               randconfig-a004-20220124
-x86_64               randconfig-a005-20220124
-x86_64               randconfig-a006-20220124
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                 randconfig-a002-20220124
-i386                 randconfig-a005-20220124
-i386                 randconfig-a003-20220124
-i386                 randconfig-a004-20220124
-i386                 randconfig-a001-20220124
-i386                 randconfig-a006-20220124
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                randconfig-r042-20220125
-arc                  randconfig-r043-20220125
-arc                  randconfig-r043-20220124
-s390                 randconfig-r044-20220125
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-arm                  randconfig-c002-20220124
-riscv                randconfig-c006-20220124
-i386                 randconfig-c001-20220124
-powerpc              randconfig-c003-20220124
-mips                 randconfig-c004-20220124
-x86_64               randconfig-c007-20220124
-mips                        workpad_defconfig
-mips                     loongson2k_defconfig
-mips                     cu1000-neo_defconfig
-mips                  cavium_octeon_defconfig
-mips                        omega2p_defconfig
-powerpc                    mvme5100_defconfig
-arm                         lpc32xx_defconfig
-riscv                          rv32_defconfig
-arm                           sama7_defconfig
-powerpc                     kmeter1_defconfig
-mips                        bcm63xx_defconfig
-powerpc                          g5_defconfig
-arm                          imote2_defconfig
-powerpc                     tqm5200_defconfig
-mips                       lemote2f_defconfig
-powerpc                        icon_defconfig
-powerpc                     mpc5200_defconfig
-powerpc                     tqm8560_defconfig
-mips                     cu1830-neo_defconfig
-arm                        neponset_defconfig
-mips                           ip22_defconfig
-arm                     davinci_all_defconfig
-powerpc                      ppc44x_defconfig
-arm                              alldefconfig
-mips                           ip28_defconfig
-riscv                    nommu_virt_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64               randconfig-a011-20220124
-x86_64               randconfig-a013-20220124
-x86_64               randconfig-a015-20220124
-x86_64               randconfig-a016-20220124
-x86_64               randconfig-a014-20220124
-x86_64               randconfig-a012-20220124
-i386                 randconfig-a011-20220124
-i386                 randconfig-a016-20220124
-i386                 randconfig-a013-20220124
-i386                 randconfig-a014-20220124
-i386                 randconfig-a015-20220124
-i386                 randconfig-a012-20220124
-riscv                randconfig-r042-20220124
-hexagon              randconfig-r045-20220125
-hexagon              randconfig-r045-20220124
-hexagon              randconfig-r041-20220125
-hexagon              randconfig-r041-20220124
-
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix)
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Suggested-by: Nir Efrati <nir.efrati@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/e1000e/hw.h      |  1 +
+ drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 ++++
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  1 +
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 26 +++++++++++++++++++++
+ 4 files changed, 32 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index bcf680e83811..13382df2f2ef 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -630,6 +630,7 @@ struct e1000_phy_info {
+ 	bool disable_polarity_correction;
+ 	bool is_mdix;
+ 	bool polarity_correction;
++	bool reset_disable;
+ 	bool speed_downgraded;
+ 	bool autoneg_wait_to_complete;
+ };
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index c908c84b86d2..e298da712758 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -2050,6 +2050,10 @@ static s32 e1000_check_reset_block_ich8lan(struct e1000_hw *hw)
+ 	bool blocked = false;
+ 	int i = 0;
+ 
++	/* Check the PHY (LCD) reset flag */
++	if (hw->phy.reset_disable)
++		return true;
++
+ 	while ((blocked = !(er32(FWSM) & E1000_ICH_FWSM_RSPCIPHY)) &&
+ 	       (i++ < 30))
+ 		usleep_range(10000, 11000);
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 2504b11c3169..638a3ddd7ada 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -271,6 +271,7 @@
+ #define I217_CGFREG_ENABLE_MTA_RESET	0x0002
+ #define I217_MEMPWR			PHY_REG(772, 26)
+ #define I217_MEMPWR_DISABLE_SMB_RELEASE	0x0010
++#define I217_MEMPWR_MOEM		0x1000
+ 
+ /* Receive Address Initial CRC Calculation */
+ #define E1000_PCH_RAICC(_n)	(0x05F50 + ((_n) * 4))
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 6fb3437f68e0..fa06f68c8c80 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6987,8 +6987,21 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
++	struct e1000_hw *hw = &adapter->hw;
++	u16 phy_data;
+ 	int rc;
+ 
++	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
++	    hw->mac.type >= e1000_pch_adp) {
++		/* Mask OEM Bits / Gig Disable / Restart AN (772_26[12] = 1) */
++		e1e_rphy(hw, I217_MEMPWR, &phy_data);
++		phy_data |= I217_MEMPWR_MOEM;
++		e1e_wphy(hw, I217_MEMPWR, phy_data);
++
++		/* Disable LCD reset */
++		hw->phy.reset_disable = true;
++	}
++
+ 	e1000e_flush_lpic(pdev);
+ 
+ 	e1000e_pm_freeze(dev);
+@@ -7010,6 +7023,8 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
++	struct e1000_hw *hw = &adapter->hw;
++	u16 phy_data;
+ 	int rc;
+ 
+ 	/* Introduce S0ix implementation */
+@@ -7020,6 +7035,17 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	if (rc)
+ 		return rc;
+ 
++	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
++	    hw->mac.type >= e1000_pch_adp) {
++		/* Unmask OEM Bits / Gig Disable / Restart AN 772_26[12] = 0 */
++		e1e_rphy(hw, I217_MEMPWR, &phy_data);
++		phy_data &= ~I217_MEMPWR_MOEM;
++		e1e_wphy(hw, I217_MEMPWR, phy_data);
++
++		/* Enable LCD reset */
++		hw->phy.reset_disable = false;
++	}
++
+ 	return e1000e_pm_thaw(dev);
+ }
+ 
+-- 
+2.30.2
+
