@@ -1,51 +1,117 @@
 From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 25 Jan 2022 23:21:49 +0000
+Date: Tue, 25 Jan 2022 23:36:36 +0000
 Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Add waiting for
  response from PF in set mac
-In-Reply-To: <BL1PR11MB5288FC5E9F7779E972A1A43A875F9@BL1PR11MB5288.namprd11.prod.outlook.com>
+In-Reply-To: <20220124154553.29782-1-mateusz.palczewski@intel.com>
 References: <20220124154553.29782-1-mateusz.palczewski@intel.com>
- <028c789af62a63fbb64d96706ca0e36a57cbec39.camel@intel.com>
- <BL1PR11MB5288FC5E9F7779E972A1A43A875F9@BL1PR11MB5288.namprd11.prod.outlook.com>
-Message-ID: <ae8aeee37c90595fe8f2a1c3f289288964c11e1b.camel@intel.com>
+Message-ID: <eb3f148f9100496b07046d485eaa7080a9086043.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2022-01-25 at 11:19 +0000, Palczewski, Mateusz wrote:
-> > On Mon, 2022-01-24 at 16:45 +0100, Mateusz Palczewski wrote:
-> > > Make iavf_set_mac synchronous by waiting for a response from a
-> > > PF. 
-> > > Without this iavf_set_mac is always returning success even though
-> > > set_mac can be rejected by a PF.
-> > > This ensures that when set_mac exits netdev MAC is updated.
-> > > This is needed for sending ARPs with correct MAC after changing
-> > > VF's 
-> > > MAC. This is also needed by bonding module.
-> > 
-> > This sounds very much like this patch [1] or is this resolving a
-> > different issue?
-> Hi, 
-> this is resolving a different issue that is being currently tracked
-> on bugzilla:
-> https://bugzilla.redhat.com/show_bug.cgi?id=1938635
-
-Thanks for providing that info. I do have some feedback on the patch,
-I'll reply to the original so that I can make them inline.
-
-Thanks,
-Tony
-
-> > 
-> > > Signed-off-by: Sylwester Dziedziuch
-> > > <sylwesterx.dziedziuch@intel.com>
-> > > Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> > > ---
-> > 
-> > [1]
-> > https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git/commit/
-> > ?
-> > id=c5c922b3e09b6e5eeb9cd2b1122f3e49c0bf2283
+On Mon, 2022-01-24 at 16:45 +0100, Mateusz Palczewski wrote:
 > 
+<snip>
 
+> +enum iavf_critical_section_t {
+> +???????__IAVF_IN_CRITICAL_TASK?????????/* cannot be interrupted */
+> +};
+
+This was removed by maintainer request. Please don't re-add it. Use the
+crit_lock.
+
+> ?#define IAVF_CLOUD_FIELD_OMAC??????????0x01
+> ?#define IAVF_CLOUD_FIELD_IMAC??????????0x02
+> ?#define IAVF_CLOUD_FIELD_IVLAN?0x04
+> @@ -240,6 +245,7 @@ struct iavf_adapter {
+> ????????struct work_struct adminq_task;
+> ????????struct delayed_work client_task;
+> ????????wait_queue_head_t down_waitqueue;
+> +???????wait_queue_head_t vc_waitqueue;
+> ????????struct iavf_q_vector *q_vectors;
+> ????????struct list_head vlan_filter_list;
+> ????????struct list_head mac_filter_list;
+> @@ -283,6 +289,7 @@ struct iavf_adapter {
+> ?#define IAVF_FLAG_LEGACY_RX????????????????????BIT(15)
+> ?#define IAVF_FLAG_REINIT_ITR_NEEDED????????????BIT(16)
+> ?#define IAVF_FLAG_QUEUES_DISABLED??????????????BIT(17)
+> +#define IAVF_FLAG_INITIAL_MAC_SET??????????????BIT(23)
+> ?/* duplicates for common code */
+> ?#define IAVF_FLAG_DCB_ENABLED??????????????????0
+> ????????/* flags for admin queue service task */
+> @@ -550,6 +557,8 @@ void iavf_enable_vlan_stripping_v2(struct
+> iavf_adapter *adapter, u16 tpid);
+> ?void iavf_disable_vlan_stripping_v2(struct iavf_adapter *adapter,
+> u16 tpid);
+> ?void iavf_enable_vlan_insertion_v2(struct iavf_adapter *adapter, u16
+> tpid);
+> ?void iavf_disable_vlan_insertion_v2(struct iavf_adapter *adapter,
+> u16 tpid);
+> +int iavf_replace_primary_mac(struct iavf_adapter *adapter,
+> +??????????????????????????? const u8 *new_mac);
+> ?void
+> ?iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
+> ?????????????????????????????? netdev_features_t prev_features,
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index a4c12a3..c816ecb 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -873,6 +873,7 @@ struct iavf_mac_filter *iavf_add_filter(struct
+> iavf_adapter *adapter,
+> ?
+> ????????????????list_add_tail(&f->list, &adapter->mac_filter_list);
+> ????????????????f->add = true;
+> +???????????????f->add_handled = false;
+> ????????????????f->is_new_mac = true;
+> ????????????????f->is_primary = false;
+> ????????????????adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
+> @@ -884,47 +885,128 @@ struct iavf_mac_filter *iavf_add_filter(struct
+> iavf_adapter *adapter,
+> ?}
+> ?
+> ?/**
+> - * iavf_set_mac - NDO callback to set port mac address
+> - * @netdev: network interface device structure
+> - * @p: pointer to an address structure
+> + * iavf_replace_primary_mac - Replace current primary address
+> + * @adapter: board private structure
+> + * @new_mac: new mac address to be applied
+> ? *
+> - * Returns 0 on success, negative on failure
+> + * Replace current dev_addr and send request to PF for removal of
+> previous
+> + * primary mac address filter and addition of new primary mac
+> filter.
+> + * Return 0 for success, -ENOMEM for failure.
+> + *
+> + * Do not call this with mac_vlan_list_lock!
+> ? **/
+> -static int iavf_set_mac(struct net_device *netdev, void *p)
+> +int iavf_replace_primary_mac(struct iavf_adapter *adapter,
+> +??????????????????????????? const u8 *new_mac)
+> ?{
+> -???????struct iavf_adapter *adapter = netdev_priv(netdev);
+> ????????struct iavf_hw *hw = &adapter->hw;
+> ????????struct iavf_mac_filter *f;
+> -???????struct sockaddr *addr = p;
+> -
+> -???????if (!is_valid_ether_addr(addr->sa_data))
+> -???????????????return -EADDRNOTAVAIL;
+> -
+> -???????if (ether_addr_equal(netdev->dev_addr, addr->sa_data))
+> -???????????????return 0;
+> ?
+> ????????spin_lock_bh(&adapter->mac_vlan_list_lock);
+> ?
+> +???????list_for_each_entry(f, &adapter->mac_filter_list, list) {
+> +???????????????f->is_primary = false;
+> +???????}
+> +
+> ????????f = iavf_find_filter(adapter, hw->mac.addr);
+> ????????if (f) {
+> ????????????????f->remove = true;
+> -???????????????f->is_primary = true;
+> ????????????????adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
