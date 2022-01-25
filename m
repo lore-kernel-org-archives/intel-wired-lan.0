@@ -1,40 +1,75 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Mon, 24 Jan 2022 18:35:19 +0100
-Subject: [Intel-wired-lan] ice: Add support for inner etype in switchdev
-In-Reply-To: <20220124173116.739083-6-alexandr.lobakin@intel.com>
-References: <20220124173116.739083-1-alexandr.lobakin@intel.com>
- <20220124173116.739083-6-alexandr.lobakin@intel.com>
-Message-ID: <20220124173519.739323-1-alexandr.lobakin@intel.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Tue, 25 Jan 2022 00:31:28 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] iavf: Add reset to
+ watchdog task
+In-Reply-To: <CO1PR11MB48811E81C70B27754A77D92F995B9@CO1PR11MB4881.namprd11.prod.outlook.com>
+References: <CO1PR11MB48811E81C70B27754A77D92F995B9@CO1PR11MB4881.namprd11.prod.outlook.com>
+Message-ID: <fcb47365347a6eea578315cc9c8e6fa218be66b4.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Mon, 24 Jan 2022 18:31:16 +0100
-
-> From: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
+On Fri, 2022-01-21 at 14:58 +0000, Sokolowski, Jan wrote:
+> Remove the reset as separate task and implement
+> the reset procedure inside the watchdog state machine.
+> This allows to avoid additional overhead for processes
+> synchronization. The reset flags are still used to mark
+> reset progress for asynchonous invoked callback functions.
 > 
-> Enable support for adding TC rules that filter on the inner
-> EtherType field of tunneled packet headers.
-> 
-> Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
-> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-
-That one was included by mistake, sorry :c
-
+> Signed-off-by: Jakub Pawlak <jakub.pawlak@intel.com>
+> Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_protocol_type.h |   2 +
->  drivers/net/ethernet/intel/ice/ice_switch.c        | 272 ++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_tc_lib.c        |  15 +-
->  3 files changed, 277 insertions(+), 12 deletions(-)
-> 
 
---- 8< ---
+A changelog would be nice.
 
-> -- 
-> cgit 1.2.3-1.el7
+Also:
+WARNING: From:/Signed-off-by: email name mismatch: 'From: "Sokolowski,
+Jan" <jan.sokolowski@intel.com>' != 'Signed-off-by: Jan Sokolowski
+<jan.sokolowski@intel.com>'
 
-Thanks,
-Al
+
+> ?drivers/net/ethernet/intel/iavf/iavf.h??????? |? 1 -
+> ?.../net/ethernet/intel/iavf/iavf_ethtool.c??? | 12 ++--
+> ?drivers/net/ethernet/intel/iavf/iavf_main.c?? | 67 +++++++----------
+> --
+> ?.../net/ethernet/intel/iavf/iavf_virtchnl.c?? |? 4 +-
+> ?4 files changed, 30 insertions(+), 54 deletions(-)
+
+<snip>
+
+
+> -static void iavf_reset_task(struct work_struct *work)
+> +static void iavf_handle_hw_reset(struct iavf_adapter *adapter)
+> ?{
+> -???????struct iavf_adapter *adapter = container_of(work,
+> -???????????????????????????????????????????????????? struct
+> iavf_adapter,
+> -???????????????????????????????????????????????????? reset_task);
+> ????????struct virtchnl_vf_resource *vfres = adapter->vf_res;
+> ????????struct net_device *netdev = adapter->netdev;
+> ????????struct iavf_hw *hw = &adapter->hw;
+> @@ -2651,12 +2647,9 @@ static void iavf_reset_task(struct work_struct
+> *work)
+> ????????if (mutex_is_locked(&adapter->remove_lock))
+> ????????????????return;
+> ?
+> -???????if (iavf_lock_timeout(&adapter->crit_lock, 200)) {
+> -???????????????schedule_work(&adapter->reset_task);
+> -???????????????return;
+> -???????}
+> -???????while (!mutex_trylock(&adapter->client_lock))
+> -???????????????usleep_range(500, 1000);
+
+I missed this on v1, but doesn't this unbalance the client_lock?
+
+> +???????adapter->flags |= IAVF_FLAG_RESET_PENDING;
+> +???????adapter->flags &= ~IAVF_FLAG_RESET_NEEDED;
+> +
+> ????????if (CLIENT_ENABLED(adapter)) {
+> ????????????????adapter->flags &= ~(IAVF_FLAG_CLIENT_NEEDS_OPEN |
+> ??????????????????????????????????? IAVF_FLAG_CLIENT_NEEDS_CLOSE |
+
