@@ -1,180 +1,66 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 26 Jan 2022 18:07:51 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible HW unit
- hang after an s0ix exit
-In-Reply-To: <a223b8a3-e54f-0a50-1aba-05b8a09e1ace@molgen.mpg.de>
-References: <20220125173123.962540-1-sasha.neftin@intel.com>
- <a223b8a3-e54f-0a50-1aba-05b8a09e1ace@molgen.mpg.de>
-Message-ID: <885c9ac5-7210-b875-9db9-6f3ea54ab496@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Wed, 26 Jan 2022 09:13:16 -0800
+Subject: [Intel-wired-lan] [PATCH 1/2 net-next v6] igc: avoid kernel
+ warning when changing RX ring parameters
+In-Reply-To: <20220119145259.1790015-2-vinschen@redhat.com>
+References: <20220119145259.1790015-1-vinschen@redhat.com>
+ <20220119145259.1790015-2-vinschen@redhat.com>
+Message-ID: <87zgnimndf.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/25/2022 20:55, Paul Menzel wrote:
-> Dear Sasha,
-> 
-> 
-> Thank you for the patch.
-> 
-> Am 25.01.22 um 18:31 schrieb Sasha Neftin:
->> Disable the OEM bit/Gig Disable/restart AN impact and disable the PHY
->> (LCD) reset during power management flows.
-> 
-> What does LCD mean?
-LCD - LAN connected device. External Low Power 1 Gigabit Ethernet PHY.
-(I thought you already asked me about it if I recall correctly)
-> 
->> Fix possible HW unit hangs on the s0ix exit on some corporate ADL
->> platforms.
-> 
-> As this issue caused a lot of grieve and will affect thousands of 
-> devices, please elaborate much more. Please start with the problem 
-> description, and then explain, why the fix (first sentence) is supposed 
-> to work and even specify in what datasheet this behavior is defined.
-> 
-The problem described on Bugzilla: "HW unit hang on some ADL corporate 
-platforms". It could happen upon s0ix flow exit.
-> Lastly, please list, how? this patch was tested (device, ME firmware 
-> version, how many cycles).
-1.ADL
-2.Not sure how to expose the CSME version. I don't think I am the right 
-person to answer this question. This is not the same version as MEI
-cat /sys/class/mei/mei0/fw_ver
-I will check how we can communicate this.
-3.thousands cycles (on my platform)
-> 
->> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
->> Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support 
->> S0ix)
->> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
->> Suggested-by: Nir Efrati <nir.efrati@intel.com>
->> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
->> Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->> ---
->> ? drivers/net/ethernet/intel/e1000e/hw.h????? |? 1 +
->> ? drivers/net/ethernet/intel/e1000e/ich8lan.c |? 4 ++++
->> ? drivers/net/ethernet/intel/e1000e/ich8lan.h |? 1 +
->> ? drivers/net/ethernet/intel/e1000e/netdev.c? | 26 +++++++++++++++++++++
->> ? 4 files changed, 32 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h 
->> b/drivers/net/ethernet/intel/e1000e/hw.h
->> index bcf680e83811..13382df2f2ef 100644
->> --- a/drivers/net/ethernet/intel/e1000e/hw.h
->> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
->> @@ -630,6 +630,7 @@ struct e1000_phy_info {
->> ????? bool disable_polarity_correction;
->> ????? bool is_mdix;
->> ????? bool polarity_correction;
->> +??? bool reset_disable;
-> 
-> Above `disable_polarity_correction` is used as a name. Maybe use 
-> `disable_reset` then. As you add comments with LCD around the variable 
-> usage, maybe even `disable_lcd_reset`.
-simple 'grep -Irn "disable_reset" drivers/net/ethernet/*/ will show you 
-that it is a convention. I prefer keep it as it.
-> 
->> ????? bool speed_downgraded;
->> ????? bool autoneg_wait_to_complete;
->> ? };
->> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
->> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->> index c908c84b86d2..e298da712758 100644
->> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
->> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
->> @@ -2050,6 +2050,10 @@ static s32 
->> e1000_check_reset_block_ich8lan(struct e1000_hw *hw)
->> ????? bool blocked = false;
->> ????? int i = 0;
->> +??? /* Check the PHY (LCD) reset flag */
->> +??? if (hw->phy.reset_disable)
->> +??????? return true;
->> +
-> 
-> When/how is `e1000_check_reset_block_ich8lan()` called in relation to 
-> `e1000e_pm_suspend()` and `e1000e_pm_resume()`?
-This is legacy code and called as part of PHY workarounds.
-> 
->> ????? while ((blocked = !(er32(FWSM) & E1000_ICH_FWSM_RSPCIPHY)) &&
->> ???????????? (i++ < 30))
->> ????????? usleep_range(10000, 11000);
->> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h 
->> b/drivers/net/ethernet/intel/e1000e/ich8lan.h
->> index 2504b11c3169..638a3ddd7ada 100644
->> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
->> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
->> @@ -271,6 +271,7 @@
->> ? #define I217_CGFREG_ENABLE_MTA_RESET??? 0x0002
->> ? #define I217_MEMPWR??????????? PHY_REG(772, 26)
->> ? #define I217_MEMPWR_DISABLE_SMB_RELEASE??? 0x0010
->> +#define I217_MEMPWR_MOEM??????? 0x1000
-> 
-> Be clear and use `MEMPWR_MASK_OEM`?
-I prefer to keep the current definition. It is clear.
-> 
->> ? /* Receive Address Initial CRC Calculation */
->> ? #define E1000_PCH_RAICC(_n)??? (0x05F50 + ((_n) * 4))
->> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c 
->> b/drivers/net/ethernet/intel/e1000e/netdev.c
->> index 6fb3437f68e0..fa06f68c8c80 100644
->> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
->> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
->> @@ -6987,8 +6987,21 @@ static __maybe_unused int 
->> e1000e_pm_suspend(struct device *dev)
->> ????? struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->> ????? struct e1000_adapter *adapter = netdev_priv(netdev);
->> ????? struct pci_dev *pdev = to_pci_dev(dev);
->> +??? struct e1000_hw *hw = &adapter->hw;
->> +??? u16 phy_data;
->> ????? int rc;
->> +??? if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
->> +??????? hw->mac.type >= e1000_pch_adp) {
->> +??????? /* Mask OEM Bits / Gig Disable / Restart AN (772_26[12] = 1) */
-> 
-> What is AN?
-auto negotiation
-> 
->> +??????? e1e_rphy(hw, I217_MEMPWR, &phy_data);
->> +??????? phy_data |= I217_MEMPWR_MOEM;
->> +??????? e1e_wphy(hw, I217_MEMPWR, phy_data);
->> +
->> +??????? /* Disable LCD reset */
->> +??????? hw->phy.reset_disable = true;
->> +??? }
->> +
->> ????? e1000e_flush_lpic(pdev);
->> ????? e1000e_pm_freeze(dev);
->> @@ -7010,6 +7023,8 @@ static __maybe_unused int 
->> e1000e_pm_resume(struct device *dev)
->> ????? struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->> ????? struct e1000_adapter *adapter = netdev_priv(netdev);
->> ????? struct pci_dev *pdev = to_pci_dev(dev);
->> +??? struct e1000_hw *hw = &adapter->hw;
->> +??? u16 phy_data;
->> ????? int rc;
->> ????? /* Introduce S0ix implementation */
->> @@ -7020,6 +7035,17 @@ static __maybe_unused int 
->> e1000e_pm_resume(struct device *dev)
->> ????? if (rc)
->> ????????? return rc;
->> +??? if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
->> +??????? hw->mac.type >= e1000_pch_adp) {
->> +??????? /* Unmask OEM Bits / Gig Disable / Restart AN 772_26[12] = 0 */
->> +??????? e1e_rphy(hw, I217_MEMPWR, &phy_data);
->> +??????? phy_data &= ~I217_MEMPWR_MOEM;
->> +??????? e1e_wphy(hw, I217_MEMPWR, phy_data);
->> +
->> +??????? /* Enable LCD reset */
->> +??????? hw->phy.reset_disable = false;
->> +??? }
->> +
->> ????? return e1000e_pm_thaw(dev);
->> ? }
-> 
-> 
-> Kind regards,
-> 
-> Paul
-Sasha
+Corinna Vinschen <vinschen@redhat.com> writes:
+
+> Calling ethtool changing the RX ring parameters like this:
+>
+>   $ ethtool -G eth0 rx 1024
+>
+> on igc triggers kernel warnings like this:
+>
+> [  225.198467] ------------[ cut here ]------------
+> [  225.198473] Missing unregister, handled but fix driver
+> [  225.198485] WARNING: CPU: 7 PID: 959 at net/core/xdp.c:168
+> xdp_rxq_info_reg+0x79/0xd0
+> [...]
+> [  225.198601] Call Trace:
+> [  225.198604]  <TASK>
+> [  225.198609]  igc_setup_rx_resources+0x3f/0xe0 [igc]
+> [  225.198617]  igc_ethtool_set_ringparam+0x30e/0x450 [igc]
+> [  225.198626]  ethnl_set_rings+0x18a/0x250
+> [  225.198631]  genl_family_rcv_msg_doit+0xca/0x110
+> [  225.198637]  genl_rcv_msg+0xce/0x1c0
+> [  225.198640]  ? rings_prepare_data+0x60/0x60
+> [  225.198644]  ? genl_get_cmd+0xd0/0xd0
+> [  225.198647]  netlink_rcv_skb+0x4e/0xf0
+> [  225.198652]  genl_rcv+0x24/0x40
+> [  225.198655]  netlink_unicast+0x20e/0x330
+> [  225.198659]  netlink_sendmsg+0x23f/0x480
+> [  225.198663]  sock_sendmsg+0x5b/0x60
+> [  225.198667]  __sys_sendto+0xf0/0x160
+> [  225.198671]  ? handle_mm_fault+0xb2/0x280
+> [  225.198676]  ? do_user_addr_fault+0x1eb/0x690
+> [  225.198680]  __x64_sys_sendto+0x20/0x30
+> [  225.198683]  do_syscall_64+0x38/0x90
+> [  225.198687]  entry_SYSCALL_64_after_hwframe+0x44/0xae
+> [  225.198693] RIP: 0033:0x7f7ae38ac3aa
+>
+> igc_ethtool_set_ringparam() copies the igc_ring structure but neglects to
+> reset the xdp_rxq_info member before calling igc_setup_rx_resources().
+> This in turn calls xdp_rxq_info_reg() with an already registered xdp_rxq_info.
+>
+> Make sure to unregister the xdp_rxq_info structure first in
+> igc_setup_rx_resources.
+>
+> Fixes: 73f1071c1d29 ("igc: Add support for XDP_TX action")
+> Reported-by: Lennert Buytenhek <buytenh@arista.com>
+> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+> ---
+
+Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+
+
+-- 
+Vinicius
