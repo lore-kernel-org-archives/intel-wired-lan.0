@@ -1,8 +1,8 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 26 Jan 2022 15:59:54 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Fix incorrect use of
- assigning iavf_status to int
-Message-ID: <20220126145954.26647-1-mateusz.palczewski@intel.com>
+Date: Wed, 26 Jan 2022 16:03:20 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/2] iavf: Fix incorrect use
+ of assigning iavf_status to int
+Message-ID: <20220126150320.28079-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
