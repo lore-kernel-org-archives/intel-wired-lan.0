@@ -1,95 +1,343 @@
 From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Thu, 27 Jan 2022 16:40:06 +0100
-Subject: [Intel-wired-lan] [PATCH v2 net-next 1/4] ice: switch: add and use
- u16[] aliases to ice_adv_lkup_elem::{h, m}_u
+Date: Thu, 27 Jan 2022 16:40:09 +0100
+Subject: [Intel-wired-lan] [PATCH v2 net-next 4/4] ice: switch: use
+ convenience macros to declare dummy pkt templates
 In-Reply-To: <20220127154009.623304-1-alexandr.lobakin@intel.com>
 References: <20220127154009.623304-1-alexandr.lobakin@intel.com>
-Message-ID: <20220127154009.623304-2-alexandr.lobakin@intel.com>
+Message-ID: <20220127154009.623304-5-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ice_adv_lkup_elem fields h_u and m_u are being accessed as raw u16
-arrays in several places.
-To reduce cast and braces burden, add permanent array-of-u16 aliases
-with the same size as the `union ice_prot_hdr` itself via anonymous
-unions to the actual struct declaration, and just access them
-directly.
-
-This:
- - removes the need to cast the union to u16[] and then dereference
-   it each time -> reduces the horizon for potential bugs;
- - improves -Warray-bounds coverage -- the array size is now known
-   at compilation time;
- - addresses cppcheck complaints.
+Declarations of dummy/template packet headers and offsets can be
+minified to improve readability and simplify adding new templates.
+Move all the repetitive constructions into two macros and let them
+do the name and type expansions.
+Linewrap removal is yet another positive side effect.
 
 Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 15 +++++++--------
- drivers/net/ethernet/intel/ice/ice_switch.h | 12 ++++++++++--
- 2 files changed, 17 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 83 +++++++++++----------
+ 1 file changed, 42 insertions(+), 41 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index d98aa35c0337..7f7e929e73a8 100644
+index 68202671a114..2105cae0f2f8 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -5267,12 +5267,12 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 		 * over any significant packet data.
- 		 */
- 		for (j = 0; j < len / sizeof(u16); j++)
--			if (((u16 *)&lkups[i].m_u)[j])
-+			if (lkups[i].m_raw[j])
- 				((u16 *)(pkt + offset))[j] =
- 					(((u16 *)(pkt + offset))[j] &
--					 ~((u16 *)&lkups[i].m_u)[j]) |
--					(((u16 *)&lkups[i].h_u)[j] &
--					 ((u16 *)&lkups[i].m_u)[j]);
-+					 ~lkups[i].m_raw[j]) |
-+					(lkups[i].h_raw[j] &
-+					 lkups[i].m_raw[j]);
- 	}
- 
- 	s_rule->pdata.lkup_tx_rx.hdr_len = cpu_to_le16(pkt_len);
-@@ -5521,11 +5521,10 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	/* get # of words we need to match */
- 	word_cnt = 0;
- 	for (i = 0; i < lkups_cnt; i++) {
--		u16 j, *ptr;
-+		u16 j;
- 
--		ptr = (u16 *)&lkups[i].m_u;
--		for (j = 0; j < sizeof(lkups->m_u) / sizeof(u16); j++)
--			if (ptr[j] != 0)
-+		for (j = 0; j < ARRAY_SIZE(lkups->m_raw); j++)
-+			if (lkups[i].m_raw[j])
- 				word_cnt++;
- 	}
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 7b42c51a3eb0..950a66e86227 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -129,8 +129,16 @@ struct ice_update_recipe_lkup_idx_params {
- 
- struct ice_adv_lkup_elem {
- 	enum ice_protocol_type type;
--	union ice_prot_hdr h_u;	/* Header values */
--	union ice_prot_hdr m_u;	/* Mask of header values to match */
-+	union {
-+		union ice_prot_hdr h_u;	/* Header values */
-+		/* Used to iterate over the headers */
-+		u16 h_raw[sizeof(union ice_prot_hdr) / sizeof(u16)];
-+	};
-+	union {
-+		union ice_prot_hdr m_u;	/* Mask of header values to match */
-+		/* Used to iterate over header mask */
-+		u16 m_raw[sizeof(union ice_prot_hdr) / sizeof(u16)];
-+	};
+@@ -41,15 +41,22 @@ struct ice_dummy_pkt_profile {
+ 	u16 pkt_len;
  };
  
- struct ice_sw_act_ctrl {
++#define ICE_PKT_OFFSETS(type)						\
++	static const struct ice_dummy_pkt_offsets			\
++	ice_dummy_##type##_packet_offsets[]
++
++#define ICE_PKT_TEMPLATE(type)						\
++	static const u8 ice_dummy_##type##_packet[]
++
+ #define ICE_PKT_PROFILE(type) ({					\
+ 	(struct ice_dummy_pkt_profile){					\
+-		.pkt		= dummy_##type##_packet,		\
+-		.pkt_len	= sizeof(dummy_##type##_packet),	\
+-		.offsets	= dummy_##type##_packet_offsets,	\
++		.pkt		= ice_dummy_##type##_packet,		\
++		.pkt_len	= sizeof(ice_dummy_##type##_packet),	\
++		.offsets	= ice_dummy_##type##_packet_offsets,	\
+ 	};								\
+ })
+ 
+-static const struct ice_dummy_pkt_offsets dummy_gre_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(gre_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -61,7 +68,7 @@ static const struct ice_dummy_pkt_offsets dummy_gre_tcp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_gre_tcp_packet[] = {
++ICE_PKT_TEMPLATE(gre_tcp) = {
+ 	0x00, 0x00, 0x00, 0x00,	/* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -96,7 +103,7 @@ static const u8 dummy_gre_tcp_packet[] = {
+ 	0x00, 0x00, 0x00, 0x00
+ };
+ 
+-static const struct ice_dummy_pkt_offsets dummy_gre_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(gre_udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -108,7 +115,7 @@ static const struct ice_dummy_pkt_offsets dummy_gre_udp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_gre_udp_packet[] = {
++ICE_PKT_TEMPLATE(gre_udp) = {
+ 	0x00, 0x00, 0x00, 0x00,	/* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -140,7 +147,7 @@ static const u8 dummy_gre_udp_packet[] = {
+ 	0x00, 0x08, 0x00, 0x00,
+ };
+ 
+-static const struct ice_dummy_pkt_offsets dummy_udp_tun_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp_tun_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -155,7 +162,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_tun_tcp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_udp_tun_tcp_packet[] = {
++ICE_PKT_TEMPLATE(udp_tun_tcp) = {
+ 	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -193,7 +200,7 @@ static const u8 dummy_udp_tun_tcp_packet[] = {
+ 	0x00, 0x00, 0x00, 0x00
+ };
+ 
+-static const struct ice_dummy_pkt_offsets dummy_udp_tun_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp_tun_udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -208,7 +215,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_tun_udp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_udp_tun_udp_packet[] = {
++ICE_PKT_TEMPLATE(udp_tun_udp) = {
+ 	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -243,8 +250,7 @@ static const u8 dummy_udp_tun_udp_packet[] = {
+ 	0x00, 0x08, 0x00, 0x00,
+ };
+ 
+-static const struct ice_dummy_pkt_offsets
+-dummy_gre_ipv6_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(gre_ipv6_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -256,7 +262,7 @@ dummy_gre_ipv6_tcp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_gre_ipv6_tcp_packet[] = {
++ICE_PKT_TEMPLATE(gre_ipv6_tcp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -296,8 +302,7 @@ static const u8 dummy_gre_ipv6_tcp_packet[] = {
+ 	0x00, 0x00, 0x00, 0x00
+ };
+ 
+-static const struct ice_dummy_pkt_offsets
+-dummy_gre_ipv6_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(gre_ipv6_udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -309,7 +314,7 @@ dummy_gre_ipv6_udp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_gre_ipv6_udp_packet[] = {
++ICE_PKT_TEMPLATE(gre_ipv6_udp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -346,8 +351,7 @@ static const u8 dummy_gre_ipv6_udp_packet[] = {
+ 	0x00, 0x08, 0x00, 0x00,
+ };
+ 
+-static const struct ice_dummy_pkt_offsets
+-dummy_udp_tun_ipv6_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp_tun_ipv6_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -362,7 +366,7 @@ dummy_udp_tun_ipv6_tcp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_udp_tun_ipv6_tcp_packet[] = {
++ICE_PKT_TEMPLATE(udp_tun_ipv6_tcp) = {
+ 	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -405,8 +409,7 @@ static const u8 dummy_udp_tun_ipv6_tcp_packet[] = {
+ 	0x00, 0x00, 0x00, 0x00
+ };
+ 
+-static const struct ice_dummy_pkt_offsets
+-dummy_udp_tun_ipv6_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp_tun_ipv6_udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -421,7 +424,7 @@ dummy_udp_tun_ipv6_udp_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_udp_tun_ipv6_udp_packet[] = {
++ICE_PKT_TEMPLATE(udp_tun_ipv6_udp) = {
+ 	0x00, 0x00, 0x00, 0x00,  /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -462,7 +465,7 @@ static const u8 dummy_udp_tun_ipv6_udp_packet[] = {
+ };
+ 
+ /* offset info for MAC + IPv4 + UDP dummy packet */
+-static const struct ice_dummy_pkt_offsets dummy_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -471,7 +474,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_packet_offsets[] = {
+ };
+ 
+ /* Dummy packet for MAC + IPv4 + UDP */
+-static const u8 dummy_udp_packet[] = {
++ICE_PKT_TEMPLATE(udp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -491,7 +494,7 @@ static const u8 dummy_udp_packet[] = {
+ };
+ 
+ /* offset info for MAC + VLAN + IPv4 + UDP dummy packet */
+-static const struct ice_dummy_pkt_offsets dummy_vlan_udp_packet_offsets[] = {
++ICE_PKT_OFFSETS(vlan_udp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_VLAN_OFOS,	12 },
+ 	{ ICE_ETYPE_OL,		16 },
+@@ -501,7 +504,7 @@ static const struct ice_dummy_pkt_offsets dummy_vlan_udp_packet_offsets[] = {
+ };
+ 
+ /* C-tag (801.1Q), IPv4:UDP dummy packet */
+-static const u8 dummy_vlan_udp_packet[] = {
++ICE_PKT_TEMPLATE(vlan_udp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -523,7 +526,7 @@ static const u8 dummy_vlan_udp_packet[] = {
+ };
+ 
+ /* offset info for MAC + IPv4 + TCP dummy packet */
+-static const struct ice_dummy_pkt_offsets dummy_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV4_OFOS,	14 },
+@@ -532,7 +535,7 @@ static const struct ice_dummy_pkt_offsets dummy_tcp_packet_offsets[] = {
+ };
+ 
+ /* Dummy packet for MAC + IPv4 + TCP */
+-static const u8 dummy_tcp_packet[] = {
++ICE_PKT_TEMPLATE(tcp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -555,7 +558,7 @@ static const u8 dummy_tcp_packet[] = {
+ };
+ 
+ /* offset info for MAC + VLAN (C-tag, 802.1Q) + IPv4 + TCP dummy packet */
+-static const struct ice_dummy_pkt_offsets dummy_vlan_tcp_packet_offsets[] = {
++ICE_PKT_OFFSETS(vlan_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_VLAN_OFOS,	12 },
+ 	{ ICE_ETYPE_OL,		16 },
+@@ -565,7 +568,7 @@ static const struct ice_dummy_pkt_offsets dummy_vlan_tcp_packet_offsets[] = {
+ };
+ 
+ /* C-tag (801.1Q), IPv4:TCP dummy packet */
+-static const u8 dummy_vlan_tcp_packet[] = {
++ICE_PKT_TEMPLATE(vlan_tcp) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -589,7 +592,7 @@ static const u8 dummy_vlan_tcp_packet[] = {
+ 	0x00, 0x00,	/* 2 bytes for 4 byte alignment */
+ };
+ 
+-static const struct ice_dummy_pkt_offsets dummy_tcp_ipv6_packet_offsets[] = {
++ICE_PKT_OFFSETS(tcp_ipv6) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV6_OFOS,	14 },
+@@ -597,7 +600,7 @@ static const struct ice_dummy_pkt_offsets dummy_tcp_ipv6_packet_offsets[] = {
+ 	{ ICE_PROTOCOL_LAST,	0 },
+ };
+ 
+-static const u8 dummy_tcp_ipv6_packet[] = {
++ICE_PKT_TEMPLATE(tcp_ipv6) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -625,8 +628,7 @@ static const u8 dummy_tcp_ipv6_packet[] = {
+ };
+ 
+ /* C-tag (802.1Q): IPv6 + TCP */
+-static const struct ice_dummy_pkt_offsets
+-dummy_vlan_tcp_ipv6_packet_offsets[] = {
++ICE_PKT_OFFSETS(vlan_tcp_ipv6) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_VLAN_OFOS,	12 },
+ 	{ ICE_ETYPE_OL,		16 },
+@@ -636,7 +638,7 @@ dummy_vlan_tcp_ipv6_packet_offsets[] = {
+ };
+ 
+ /* C-tag (802.1Q), IPv6 + TCP dummy packet */
+-static const u8 dummy_vlan_tcp_ipv6_packet[] = {
++ICE_PKT_TEMPLATE(vlan_tcp_ipv6) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -666,7 +668,7 @@ static const u8 dummy_vlan_tcp_ipv6_packet[] = {
+ };
+ 
+ /* IPv6 + UDP */
+-static const struct ice_dummy_pkt_offsets dummy_udp_ipv6_packet_offsets[] = {
++ICE_PKT_OFFSETS(udp_ipv6) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+ 	{ ICE_IPV6_OFOS,	14 },
+@@ -675,7 +677,7 @@ static const struct ice_dummy_pkt_offsets dummy_udp_ipv6_packet_offsets[] = {
+ };
+ 
+ /* IPv6 + UDP dummy packet */
+-static const u8 dummy_udp_ipv6_packet[] = {
++ICE_PKT_TEMPLATE(udp_ipv6) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
+@@ -703,8 +705,7 @@ static const u8 dummy_udp_ipv6_packet[] = {
+ };
+ 
+ /* C-tag (802.1Q): IPv6 + UDP */
+-static const struct ice_dummy_pkt_offsets
+-dummy_vlan_udp_ipv6_packet_offsets[] = {
++ICE_PKT_OFFSETS(vlan_udp_ipv6) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_VLAN_OFOS,	12 },
+ 	{ ICE_ETYPE_OL,		16 },
+@@ -714,7 +715,7 @@ dummy_vlan_udp_ipv6_packet_offsets[] = {
+ };
+ 
+ /* C-tag (802.1Q), IPv6 + UDP dummy packet */
+-static const u8 dummy_vlan_udp_ipv6_packet[] = {
++ICE_PKT_TEMPLATE(vlan_udp_ipv6) = {
+ 	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
+ 	0x00, 0x00, 0x00, 0x00,
+ 	0x00, 0x00, 0x00, 0x00,
 -- 
 2.34.1
 
