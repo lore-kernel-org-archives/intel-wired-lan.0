@@ -1,74 +1,57 @@
-From: Thomas Bogendoerfer <tbogendoerfer@suse.de>
-Date: Thu, 27 Jan 2022 16:08:07 +0100
-Subject: [Intel-wired-lan] [PATCH net] net: e1000e: Recover at least
- in-memory copy of NVM checksum
-Message-ID: <20220127150807.26448-1-tbogendoerfer@suse.de>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Thu, 27 Jan 2022 16:40:05 +0100
+Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] ice: switch: debloat
+ packet templates code
+Message-ID: <20220127154009.623304-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 4051f68318ca ("e1000e: Do not take care about recovery NVM
-checksum") causes a regression for systems with a broken NVM checksum
-and hardware which is not able to update the NVM. Before the change the
-in-memory copy was correct even the NVM update doesn't work, which is
-good enough for the driver to work again.
+This hunts down several places around packet templates/dummies for
+switch rules which are either repetitive, fragile or just not
+really readable code.
+It's a common need to add new packet templates and to review such
+changes as well, try to simplify both with the help of a pair
+macros and aliases.
 
-See
+bloat-o-meter is happy about that (built w/ LLVM 13):
 
-https://bugzilla.opensuse.org/show_bug.cgi?id=1191663
+add/remove: 0/1 grow/shrink: 2/0 up/down: 148/-202 (-54)
+Function                                     old     new   delta
+ice_add_adv_rule                            2383    2529    +146
+ice_fill_adv_dummy_packet                    289     291      +2
+ice_adv_add_update_vsi_list                  202       -    -202
+Total: Before=395813, After=395759, chg -0.01%
 
-for more details.
+Diffstat also looks nice, and adding new packet templates now takes
+less lines.
 
-This patch reverts the change and moves the check for hardware without
-NVM update capability right before the real flash update.
+We'll probably come out with dynamic template crafting in a while,
+but for now let's improve what we have currently.
 
-Fixes: 4051f68318ca ("e1000e: Do not take care about recovery NVM checksum")
-Signed-off-by: Thomas Bogendoerfer <tbogendoerfer@suse.de>
----
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+Note: this will conflict with [1] going through net-next,
+a followup will be sent once accepted.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 5e4fc9b4e2ad..613a60f24ba6 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -3808,6 +3808,9 @@ static s32 e1000_update_nvm_checksum_spt(struct e1000_hw *hw)
- 	if (nvm->type != e1000_nvm_flash_sw)
- 		goto out;
- 
-+	if (hw->mac.type >= e1000_pch_cnp)
-+		goto out;
-+
- 	nvm->ops.acquire(hw);
- 
- 	/* We're writing to the opposite bank so if we're on bank 1,
-@@ -4136,17 +4139,13 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
- 		return ret_val;
- 
- 	if (!(data & valid_csum_mask)) {
--		e_dbg("NVM Checksum Invalid\n");
--
--		if (hw->mac.type < e1000_pch_cnp) {
--			data |= valid_csum_mask;
--			ret_val = e1000_write_nvm(hw, word, 1, &data);
--			if (ret_val)
--				return ret_val;
--			ret_val = e1000e_update_nvm_checksum(hw);
--			if (ret_val)
--				return ret_val;
--		}
-+		data |= valid_csum_mask;
-+		ret_val = e1000_write_nvm(hw, word, 1, &data);
-+		if (ret_val)
-+			return ret_val;
-+		ret_val = e1000e_update_nvm_checksum(hw);
-+		if (ret_val)
-+			return ret_val;
- 	}
- 
- 	return e1000e_validate_nvm_checksum_generic(hw);
+From v1 ([0]):
+ - rebase on top of the latest next-queue (to fix #3 not applying);
+ - adjust the kdoc accordingly to the function proto changes in #3;
+ - no functional changes.
+
+[0] https://lore.kernel.org/netdev/20220124173116.739083-1-alexandr.lobakin at intel.com
+[1] https://lore.kernel.org/netdev/20220127125525.125805-1-marcin.szycik at linux.intel.com
+
+Alexander Lobakin (4):
+  ice: switch: add and use u16[] aliases to ice_adv_lkup_elem::{h,m}_u
+  ice: switch: unobscurify bitops loop in ice_fill_adv_dummy_packet()
+  ice: switch: use a struct to pass packet template params
+  ice: switch: use convenience macros to declare dummy pkt templates
+
+ drivers/net/ethernet/intel/ice/ice_switch.c | 273 ++++++++------------
+ drivers/net/ethernet/intel/ice/ice_switch.h |  12 +-
+ 2 files changed, 123 insertions(+), 162 deletions(-)
+
 -- 
-2.29.2
+2.34.1
 
