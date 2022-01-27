@@ -1,132 +1,74 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Thu, 27 Jan 2022 16:04:26 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Add slow path offload stats
- on port representor in switchdev
-Message-ID: <20220127150426.368315-1-marcin.szycik@linux.intel.com>
+From: Thomas Bogendoerfer <tbogendoerfer@suse.de>
+Date: Thu, 27 Jan 2022 16:08:07 +0100
+Subject: [Intel-wired-lan] [PATCH net] net: e1000e: Recover at least
+ in-memory copy of NVM checksum
+Message-ID: <20220127150807.26448-1-tbogendoerfer@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement callbacks to check for stats and fetch port representor stats.
-Stats are taken from RX/TX ring corresponding to port representor and show
-the number of bytes/packets that were not offloaded.
+Commit 4051f68318ca ("e1000e: Do not take care about recovery NVM
+checksum") causes a regression for systems with a broken NVM checksum
+and hardware which is not able to update the NVM. Before the change the
+in-memory copy was correct even the NVM update doesn't work, which is
+good enough for the driver to work again.
 
-To see slow path stats run:
-ifstat -x cpu_hits -a
+See
 
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+https://bugzilla.opensuse.org/show_bug.cgi?id=1191663
+
+for more details.
+
+This patch reverts the change and moves the check for hardware without
+NVM update capability right before the real flash update.
+
+Fixes: 4051f68318ca ("e1000e: Do not take care about recovery NVM checksum")
+Signed-off-by: Thomas Bogendoerfer <tbogendoerfer@suse.de>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  3 ++
- drivers/net/ethernet/intel/ice/ice_main.c |  6 +--
- drivers/net/ethernet/intel/ice/ice_repr.c | 55 +++++++++++++++++++++++
- 3 files changed, 61 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index bf792523830c..f158620442fb 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -843,6 +843,9 @@ u16 ice_get_avail_rxq_count(struct ice_pf *pf);
- int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx);
- void ice_update_vsi_stats(struct ice_vsi *vsi);
- void ice_update_pf_stats(struct ice_pf *pf);
-+void
-+ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp,
-+			     struct ice_q_stats stats, u64 *pkts, u64 *bytes);
- int ice_up(struct ice_vsi *vsi);
- int ice_down(struct ice_vsi *vsi);
- int ice_vsi_cfg(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 303c5943dcda..3bfd1be99a26 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6103,9 +6103,9 @@ int ice_up(struct ice_vsi *vsi)
-  * This function fetches stats from the ring considering the atomic operations
-  * that needs to be performed to read u64 values in 32 bit machine.
-  */
--static void
--ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp, struct ice_q_stats stats,
--			     u64 *pkts, u64 *bytes)
-+void
-+ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp,
-+			     struct ice_q_stats stats, u64 *pkts, u64 *bytes)
- {
- 	unsigned int start;
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 5e4fc9b4e2ad..613a60f24ba6 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -3808,6 +3808,9 @@ static s32 e1000_update_nvm_checksum_spt(struct e1000_hw *hw)
+ 	if (nvm->type != e1000_nvm_flash_sw)
+ 		goto out;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index dcc310e29300..3f4af6a168d5 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -142,6 +142,59 @@ ice_repr_get_devlink_port(struct net_device *netdev)
- 	return &repr->vf->devlink_port;
- }
++	if (hw->mac.type >= e1000_pch_cnp)
++		goto out;
++
+ 	nvm->ops.acquire(hw);
  
-+/**
-+ * ice_repr_sp_stats64 - get slow path stats for port representor
-+ * @dev: network interface device structure
-+ * @stats: netlink stats structure
-+ *
-+ * RX/TX stats are being swapped here to be consistent with VF stats. In slow
-+ * path, port representor receives data when the corresponding VF is sending it
-+ * (and vice versa), TX and RX bytes/packets are effectively swapped on port
-+ * representor.
-+ */
-+static int
-+ice_repr_sp_stats64(const struct net_device *dev,
-+		    struct rtnl_link_stats64 *stats)
-+{
-+	struct ice_netdev_priv *np = netdev_priv(dev);
-+	int vf_id = np->repr->vf->vf_id;
-+	struct ice_tx_ring *tx_ring;
-+	struct ice_rx_ring *rx_ring;
-+	u64 pkts, bytes;
-+
-+	tx_ring = np->vsi->tx_rings[vf_id];
-+	ice_fetch_u64_stats_per_ring(&tx_ring->syncp, tx_ring->stats,
-+				     &pkts, &bytes);
-+	stats->rx_packets = pkts;
-+	stats->rx_bytes = bytes;
-+
-+	rx_ring = np->vsi->rx_rings[vf_id];
-+	ice_fetch_u64_stats_per_ring(&rx_ring->syncp, rx_ring->stats,
-+				     &pkts, &bytes);
-+	stats->tx_packets = pkts;
-+	stats->tx_bytes = bytes;
-+	stats->tx_dropped = rx_ring->rx_stats.alloc_page_failed +
-+			    rx_ring->rx_stats.alloc_buf_failed;
-+
-+	return 0;
-+}
-+
-+static bool
-+ice_repr_ndo_has_offload_stats(const struct net_device *dev, int attr_id)
-+{
-+	return attr_id == IFLA_OFFLOAD_XSTATS_CPU_HIT;
-+}
-+
-+static int
-+ice_repr_ndo_get_offload_stats(int attr_id, const struct net_device *dev,
-+			       void *sp)
-+{
-+	if (attr_id == IFLA_OFFLOAD_XSTATS_CPU_HIT)
-+		return ice_repr_sp_stats64(dev, (struct rtnl_link_stats64 *)sp);
-+
-+	return -EINVAL;
-+}
-+
- static int
- ice_repr_setup_tc_cls_flower(struct ice_repr *repr,
- 			     struct flow_cls_offload *flower)
-@@ -199,6 +252,8 @@ static const struct net_device_ops ice_repr_netdev_ops = {
- 	.ndo_start_xmit = ice_eswitch_port_start_xmit,
- 	.ndo_get_devlink_port = ice_repr_get_devlink_port,
- 	.ndo_setup_tc = ice_repr_setup_tc,
-+	.ndo_has_offload_stats = ice_repr_ndo_has_offload_stats,
-+	.ndo_get_offload_stats = ice_repr_ndo_get_offload_stats,
- };
+ 	/* We're writing to the opposite bank so if we're on bank 1,
+@@ -4136,17 +4139,13 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
+ 		return ret_val;
  
- /**
+ 	if (!(data & valid_csum_mask)) {
+-		e_dbg("NVM Checksum Invalid\n");
+-
+-		if (hw->mac.type < e1000_pch_cnp) {
+-			data |= valid_csum_mask;
+-			ret_val = e1000_write_nvm(hw, word, 1, &data);
+-			if (ret_val)
+-				return ret_val;
+-			ret_val = e1000e_update_nvm_checksum(hw);
+-			if (ret_val)
+-				return ret_val;
+-		}
++		data |= valid_csum_mask;
++		ret_val = e1000_write_nvm(hw, word, 1, &data);
++		if (ret_val)
++			return ret_val;
++		ret_val = e1000e_update_nvm_checksum(hw);
++		if (ret_val)
++			return ret_val;
+ 	}
+ 
+ 	return e1000e_validate_nvm_checksum_generic(hw);
 -- 
-2.31.1
+2.29.2
 
