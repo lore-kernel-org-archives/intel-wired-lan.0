@@ -1,793 +1,893 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Thu, 27 Jan 2022 16:10:08 -0800
-Subject: [Intel-wired-lan] [PATCH net-next 18/19] iecm: add advanced rss
+Date: Thu, 27 Jan 2022 16:10:00 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 10/19] iecm: alloc vport RX
+ resources
 In-Reply-To: <20220128001009.721392-1-alan.brady@intel.com>
 References: <20220128001009.721392-1-alan.brady@intel.com>
-Message-ID: <20220128001009.721392-19-alan.brady@intel.com>
+Message-ID: <20220128001009.721392-11-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Haiyue Wang <haiyue.wang@intel.com>
+This finishes what we need to do for open by adding RX resource
+allocations.
 
-Continuing with advanced features this implements what's needed to do
-advanced rss.
+As noted in the TX alloc patch, the splitq model is unique in introducing
+the concept of queue groups, which also applies to RX, albeit in a slightly
+different way. For RX we also split the queue between descriptor handling
+and buffer handling. We have some number of RX completion queues associated
+with up to two buffer queues in a given queue group. Once buffers are
+cleaned and recycled, they're given the buffer queues which then posts the
+buffers back to hardware. To enable this in a lockless way, there's also
+the concept of 'refill queues' introduced. Recycled buffers are put onto
+refill queues which is what the buffer queues clean to get buffers back.
 
-Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
+Signed-off-by: Phani Burra <phani.r.burra@intel.com>
+Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    | 547 ++++++++++++++++++
- .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  71 +++
- drivers/net/ethernet/intel/include/iecm.h     |  73 +++
- 3 files changed, 691 insertions(+)
+ drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 769 ++++++++++++++++++
+ .../net/ethernet/intel/include/iecm_txrx.h    |   7 +
+ 2 files changed, 776 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index d11413cb438c..baa1e312652a 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -1013,6 +1013,52 @@ static void iecm_remove_vlan_filters(struct iecm_vport *vport)
- 	}
- }
- 
-+/**
-+ * iecm_remove_adv_rss_cfgs - Remove all RSS configuration
-+ * @vport: vport structure
-+ */
-+static void iecm_remove_adv_rss_cfgs(struct iecm_vport *vport)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+
-+	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_ADV_RSS))
-+		return;
-+
-+	if (!list_empty(&adapter->config_data.adv_rss_list)) {
-+		struct iecm_adv_rss *rss;
-+
-+		spin_lock_bh(&adapter->adv_rss_list_lock);
-+		list_for_each_entry(rss, &adapter->config_data.adv_rss_list,
-+				    list) {
-+			rss->remove = true;
-+		}
-+		spin_unlock_bh(&adapter->adv_rss_list_lock);
-+		iecm_send_add_del_adv_rss_cfg_msg(vport, false);
-+	}
-+}
-+
-+/**
-+ * iecm_del_all_adv_rss_cfgs - delete all RSS configuration
-+ * @vport: vport structure
-+ *
-+ * This function will loop through the list of RSS configuration and deletes
-+ * them.
-+ **/
-+static void iecm_del_all_adv_rss_cfgs(struct iecm_vport *vport)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct iecm_adv_rss *rss, *rss_tmp;
-+
-+	spin_lock_bh(&adapter->adv_rss_list_lock);
-+	list_for_each_entry_safe(rss, rss_tmp,
-+				 &adapter->config_data.adv_rss_list,
-+				 list) {
-+		list_del(&rss->list);
-+		kfree(rss);
-+	}
-+	spin_unlock_bh(&adapter->adv_rss_list_lock);
-+}
-+
- /**
-  * iecm_remove_fdir_filters - Remove all Flow Director filters
-  * @vport: vport structure
-@@ -1099,6 +1145,7 @@ static void iecm_vport_stop(struct iecm_vport *vport)
- 		iecm_remove_vlan_filters(vport);
- 	}
- 
-+	iecm_remove_adv_rss_cfgs(vport);
- 	iecm_remove_fdir_filters(vport);
- 
- 	adapter->link_up = false;
-@@ -1332,6 +1379,27 @@ static void iecm_restore_cloud_filters(struct iecm_vport *vport)
- 	}
- }
- 
-+/**
-+ * iecm_restore_adv_rss_cfgs - Restore all RSS configuration
-+ * @vport: vport structure
-+ */
-+static void iecm_restore_adv_rss_cfgs(struct iecm_vport *vport)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+
-+	if (!list_empty(&adapter->config_data.adv_rss_list)) {
-+		struct iecm_adv_rss *rss;
-+
-+		spin_lock_bh(&adapter->adv_rss_list_lock);
-+		list_for_each_entry(rss, &adapter->config_data.adv_rss_list,
-+				    list) {
-+			rss->add = true;
-+		}
-+		spin_unlock_bh(&adapter->adv_rss_list_lock);
-+		iecm_send_add_del_adv_rss_cfg_msg(vport, true);
-+	}
-+}
-+
- /**
-  * iecm_restore_fdir_filters - Restore all Flow Director filters
-  * @vport: vport structure
-@@ -1380,6 +1448,9 @@ static void iecm_restore_features(struct iecm_vport *vport)
- 	if (iecm_is_feature_ena(vport, NETIF_F_HW_TC))
- 		iecm_restore_cloud_filters(vport);
- 
-+	if (iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_ADV_RSS))
-+		iecm_restore_adv_rss_cfgs(vport);
-+
- 	if (iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
- 		iecm_restore_fdir_filters(vport);
- }
-@@ -2219,6 +2290,7 @@ static void iecm_del_user_cfg_data(struct iecm_adapter *adapter)
- 		if (!adapter->vports[i])
- 			continue;
- 
-+		iecm_del_all_adv_rss_cfgs(adapter->vports[i]);
- 		iecm_del_all_fdir_filters(adapter->vports[i]);
- 	}
- }
-@@ -3633,6 +3705,481 @@ static int iecm_setup_tc(struct net_device *netdev, enum tc_setup_type type,
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+index 85e88a30370d..fb6a61277b00 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
+@@ -452,6 +452,545 @@ static int iecm_tx_desc_alloc_all(struct iecm_vport *vport)
  	return err;
  }
  
 +/**
-+ * iecm_fill_adv_rss_ip4_hdr - fill the IPv4 RSS protocol header
-+ * @hdr: the virtchnl message protocol header data structure
-+ * @hash_flds: the RSS configuration protocol hash fields
++ * iecm_rx_page_rel - Release an rx buffer page
++ * @rxq: the queue that owns the buffer
++ * @page_info: pointer to page metadata of page to be freed
 + */
-+static void
-+iecm_fill_adv_rss_ip4_hdr(struct virtchnl_proto_hdr *hdr, u64 hash_flds)
++static void iecm_rx_page_rel(struct iecm_queue *rxq,
++			     struct iecm_page_info *page_info)
 +{
-+	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, IPV4);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_IPV4_SA)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, SRC);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_IPV4_DA)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, DST);
-+}
-+
-+/**
-+ * iecm_fill_adv_rss_ip6_hdr - fill the IPv6 RSS protocol header
-+ * @hdr: the virtchnl message protocol header data structure
-+ * @hash_flds: the RSS configuration protocol hash fields
-+ */
-+static void
-+iecm_fill_adv_rss_ip6_hdr(struct virtchnl_proto_hdr *hdr, u64 hash_flds)
-+{
-+	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, IPV6);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_IPV6_SA)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, SRC);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_IPV6_DA)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, DST);
-+}
-+
-+/**
-+ * iecm_fill_adv_rss_tcp_hdr - fill the TCP RSS protocol header
-+ * @hdr: the virtchnl message protocol header data structure
-+ * @hash_flds: the RSS configuration protocol hash fields
-+ */
-+static void
-+iecm_fill_adv_rss_tcp_hdr(struct virtchnl_proto_hdr *hdr, u64 hash_flds)
-+{
-+	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, TCP);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_TCP_SRC_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, TCP, SRC_PORT);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_TCP_DST_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, TCP, DST_PORT);
-+}
-+
-+/**
-+ * iecm_fill_adv_rss_udp_hdr - fill the UDP RSS protocol header
-+ * @hdr: the virtchnl message protocol header data structure
-+ * @hash_flds: the RSS configuration protocol hash fields
-+ */
-+static void
-+iecm_fill_adv_rss_udp_hdr(struct virtchnl_proto_hdr *hdr, u64 hash_flds)
-+{
-+	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, UDP);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_UDP_SRC_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, UDP, SRC_PORT);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_UDP_DST_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, UDP, DST_PORT);
-+}
-+
-+/**
-+ * iecm_fill_adv_rss_sctp_hdr - fill the SCTP RSS protocol header
-+ * @hdr: the virtchnl message protocol header data structure
-+ * @hash_flds: the RSS configuration protocol hash fields
-+ */
-+static void
-+iecm_fill_adv_rss_sctp_hdr(struct virtchnl_proto_hdr *hdr, s64 hash_flds)
-+{
-+	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, SCTP);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_SCTP_SRC_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, SCTP, SRC_PORT);
-+
-+	if (hash_flds & IECM_ADV_RSS_HASH_FLD_SCTP_DST_PORT)
-+		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, SCTP, DST_PORT);
-+}
-+
-+/**
-+ * iecm_fill_adv_rss_cfg_msg - fill the RSS configuration into virtchnl message
-+ * @rss_cfg: the virtchnl message to be filled with RSS configuration setting
-+ * @packet_hdrs: the RSS configuration protocol header types
-+ * @hash_flds: the RSS configuration protocol hash fields
-+ *
-+ * Returns 0 if the RSS configuration virtchnl message is filled successfully
-+ */
-+static int
-+iecm_fill_adv_rss_cfg_msg(struct virtchnl_rss_cfg *rss_cfg,
-+			  u32 packet_hdrs, u64 hash_flds)
-+{
-+	struct virtchnl_proto_hdrs *proto_hdrs = &rss_cfg->proto_hdrs;
-+	struct virtchnl_proto_hdr *hdr;
-+
-+	rss_cfg->rss_algorithm = VIRTCHNL_RSS_ALG_TOEPLITZ_ASYMMETRIC;
-+
-+	proto_hdrs->tunnel_level = 0;	/* always outer layer */
-+
-+	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+	switch (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_L3) {
-+	case IECM_ADV_RSS_FLOW_SEG_HDR_IPV4:
-+		iecm_fill_adv_rss_ip4_hdr(hdr, hash_flds);
-+		break;
-+	case IECM_ADV_RSS_FLOW_SEG_HDR_IPV6:
-+		iecm_fill_adv_rss_ip6_hdr(hdr, hash_flds);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
-+	switch (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_L4) {
-+	case IECM_ADV_RSS_FLOW_SEG_HDR_TCP:
-+		iecm_fill_adv_rss_tcp_hdr(hdr, hash_flds);
-+		break;
-+	case IECM_ADV_RSS_FLOW_SEG_HDR_UDP:
-+		iecm_fill_adv_rss_udp_hdr(hdr, hash_flds);
-+		break;
-+	case IECM_ADV_RSS_FLOW_SEG_HDR_SCTP:
-+		iecm_fill_adv_rss_sctp_hdr(hdr, hash_flds);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * iecm_find_adv_rss_cfg_by_hdrs - find RSS configuration with header type
-+ * @vport: vport structure
-+ * @packet_hdrs: protocol header type to find.
-+ *
-+ * Returns pointer to advance RSS configuration if found or null
-+ */
-+static struct iecm_adv_rss *
-+iecm_find_adv_rss_cfg_by_hdrs(struct iecm_vport *vport, u32 packet_hdrs)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct iecm_adv_rss *rss;
-+
-+	list_for_each_entry(rss, &adapter->config_data.adv_rss_list, list)
-+		if (rss->packet_hdrs == packet_hdrs)
-+			return rss;
-+
-+	return NULL;
-+}
-+
-+/**
-+ * iecm_dump_adv_rss_cfg_info
-+ * @vport: vport structure
-+ * @packet_hdrs: The protocol headers for RSS configuration
-+ * @hash_flds: The protocol hash fields for RSS configuration
-+ * @prefix: the prefix string description to dump the RSS
-+ * @postfix: the postfix string description to dump the RSS
-+ *
-+ * Dump the advance RSS configuration
-+ **/
-+static void
-+iecm_dump_adv_rss_cfg_info(struct iecm_vport *vport,
-+			   u32 packet_hdrs, u64 hash_flds,
-+			   const char *prefix, const char *postfix)
-+{
-+	static char hash_opt[300];
-+	const char *proto;
-+
-+	if (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_TCP)
-+		proto = "TCP";
-+	else if (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_UDP)
-+		proto = "UDP";
-+	else if (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_SCTP)
-+		proto = "SCTP";
-+	else
++	if (!page_info->page)
 +		return;
 +
-+	memset(hash_opt, 0, sizeof(hash_opt));
++	/* free resources associated with mapping */
++	dma_unmap_page_attrs(rxq->dev, page_info->dma, PAGE_SIZE,
++			     DMA_FROM_DEVICE, IECM_RX_DMA_ATTR);
 +
-+	strcat(hash_opt, proto);
-+	if (packet_hdrs & IECM_ADV_RSS_FLOW_SEG_HDR_IPV4)
-+		strcat(hash_opt, "v4 ");
-+	else
-+		strcat(hash_opt, "v6 ");
++	__page_frag_cache_drain(page_info->page, page_info->pagecnt_bias);
 +
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_IPV4_SA |
-+			 IECM_ADV_RSS_HASH_FLD_IPV6_SA))
-+		strcat(hash_opt, "[IP SA] ");
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_IPV4_DA |
-+			 IECM_ADV_RSS_HASH_FLD_IPV6_DA))
-+		strcat(hash_opt, "[IP DA] ");
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_TCP_SRC_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_UDP_SRC_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_SCTP_SRC_PORT))
-+		strcat(hash_opt, "[src port] ");
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_TCP_DST_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_UDP_DST_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_SCTP_DST_PORT))
-+		strcat(hash_opt, "[dst port] ");
-+
-+	if (!prefix)
-+		prefix = "";
-+
-+	if (!postfix)
-+		postfix = "";
-+
-+	dev_info(&vport->adapter->pdev->dev, "%s %s %s\n",
-+		 prefix, hash_opt, postfix);
++	page_info->page = NULL;
++	page_info->page_offset = 0;
 +}
 +
 +/**
-+ * iecm_adv_rss_parse_hdrs - parses headers from RSS hash input
-+ * @cmd: ethtool rxnfc command
-+ *
-+ * This function parses the rxnfc command and returns intended
-+ * header types for RSS configuration
++ * iecm_rx_buf_rel - Release a rx buffer
++ * @rxq: the queue that owns the buffer
++ * @rx_buf: the buffer to free
 + */
-+static u32 iecm_adv_rss_parse_hdrs(struct ethtool_rxnfc *cmd)
++static void iecm_rx_buf_rel(struct iecm_queue *rxq,
++			    struct iecm_rx_buf *rx_buf)
 +{
-+	u32 hdrs = IECM_ADV_RSS_FLOW_SEG_HDR_NONE;
++	iecm_rx_page_rel(rxq, &rx_buf->page_info[0]);
++#if (PAGE_SIZE < 8192)
++	if (rx_buf->buf_size > IECM_RX_BUF_2048)
++		iecm_rx_page_rel(rxq, &rx_buf->page_info[1]);
 +
-+	switch (cmd->flow_type) {
-+	case TCP_V4_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_TCP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case UDP_V4_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_UDP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case SCTP_V4_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_SCTP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV4;
-+		break;
-+	case TCP_V6_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_TCP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case UDP_V6_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_UDP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	case SCTP_V6_FLOW:
-+		hdrs |= IECM_ADV_RSS_FLOW_SEG_HDR_SCTP |
-+			IECM_ADV_RSS_FLOW_SEG_HDR_IPV6;
-+		break;
-+	default:
-+		break;
++#endif
++	if (rx_buf->skb) {
++		dev_kfree_skb_any(rx_buf->skb);
++		rx_buf->skb = NULL;
 +	}
-+
-+	return hdrs;
 +}
 +
 +/**
-+ * iecm_adv_rss_parse_hash_flds - parses hash fields from RSS hash input
-+ * @cmd: ethtool rxnfc command
-+ *
-+ * This function parses the rxnfc command and returns intended hash fields for
-+ * RSS configuration
++ * iecm_rx_hdr_buf_rel_all - Release header buffer memory
++ * @rxq: queue to use
 + */
-+static u64 iecm_adv_rss_parse_hash_flds(struct ethtool_rxnfc *cmd)
++static void iecm_rx_hdr_buf_rel_all(struct iecm_queue *rxq)
 +{
-+	u64 hfld = IECM_ADV_RSS_HASH_INVALID;
++	struct iecm_hw *hw = &rxq->vport->adapter->hw;
++	int i;
 +
-+	if (cmd->data & RXH_IP_SRC || cmd->data & RXH_IP_DST) {
-+		switch (cmd->flow_type) {
-+		case TCP_V4_FLOW:
-+		case UDP_V4_FLOW:
-+		case SCTP_V4_FLOW:
-+			if (cmd->data & RXH_IP_SRC)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_IPV4_SA;
-+			if (cmd->data & RXH_IP_DST)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_IPV4_DA;
-+			break;
-+		case TCP_V6_FLOW:
-+		case UDP_V6_FLOW:
-+		case SCTP_V6_FLOW:
-+			if (cmd->data & RXH_IP_SRC)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_IPV6_SA;
-+			if (cmd->data & RXH_IP_DST)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_IPV6_DA;
-+			break;
-+		default:
-+			break;
++	if (!rxq)
++		return;
++
++	if (rxq->rx_buf.hdr_buf) {
++		for (i = 0; i < rxq->desc_count; i++) {
++			struct iecm_dma_mem *hbuf = rxq->rx_buf.hdr_buf[i];
++
++			if (hbuf) {
++				iecm_free_dma_mem(hw, hbuf);
++				kfree(hbuf);
++			}
++			rxq->rx_buf.hdr_buf[i] = NULL;
 +		}
++		kfree(rxq->rx_buf.hdr_buf);
++		rxq->rx_buf.hdr_buf = NULL;
 +	}
 +
-+	if (cmd->data & RXH_L4_B_0_1 || cmd->data & RXH_L4_B_2_3) {
-+		switch (cmd->flow_type) {
-+		case TCP_V4_FLOW:
-+		case TCP_V6_FLOW:
-+			if (cmd->data & RXH_L4_B_0_1)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_TCP_SRC_PORT;
-+			if (cmd->data & RXH_L4_B_2_3)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_TCP_DST_PORT;
-+			break;
-+		case UDP_V4_FLOW:
-+		case UDP_V6_FLOW:
-+			if (cmd->data & RXH_L4_B_0_1)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_UDP_SRC_PORT;
-+			if (cmd->data & RXH_L4_B_2_3)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_UDP_DST_PORT;
-+			break;
-+		case SCTP_V4_FLOW:
-+		case SCTP_V6_FLOW:
-+			if (cmd->data & RXH_L4_B_0_1)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_SCTP_SRC_PORT;
-+			if (cmd->data & RXH_L4_B_2_3)
-+				hfld |= IECM_ADV_RSS_HASH_FLD_SCTP_DST_PORT;
-+			break;
-+		default:
-+			break;
-+		}
-+	}
++	for (i = 0; i < rxq->hbuf_pages.nr_pages; i++)
++		iecm_rx_page_rel(rxq, &rxq->hbuf_pages.pages[i]);
 +
-+	return hfld;
++	kfree(rxq->hbuf_pages.pages);
 +}
 +
 +/**
-+ * iecm_set_adv_rss_hash_opt - Enable/Disable flow types for RSS hash
-+ * @vport: vport structure
-+ * @cmd: ethtool rxnfc command
-+ *
-+ * Returns Success if the flow input set is supported.
++ * iecm_rx_buf_rel_all - Free all Rx buffer resources for a queue
++ * @rxq: queue to be cleaned
 + */
-+int
-+iecm_set_adv_rss_hash_opt(struct iecm_vport *vport, struct ethtool_rxnfc *cmd)
++static void iecm_rx_buf_rel_all(struct iecm_queue *rxq)
 +{
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct iecm_adv_rss *rss, *rss_new;
-+	u64 hash_flds;
-+	u32 hdrs;
-+	int err;
++	u16 i;
 +
-+	if (adapter->state != __IECM_UP)
-+		return -EIO;
++	/* queue already cleared, nothing to do */
++	if (!rxq->rx_buf.buf)
++		return;
 +
-+	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_ADV_RSS))
-+		return -EOPNOTSUPP;
++	/* Free all the bufs allocated and given to hw on Rx queue */
++	for (i = 0; i < rxq->desc_count; i++)
++		iecm_rx_buf_rel(rxq, &rxq->rx_buf.buf[i]);
++	if (rxq->rx_hsplit_en)
++		iecm_rx_hdr_buf_rel_all(rxq);
 +
-+	hdrs = iecm_adv_rss_parse_hdrs(cmd);
-+	if (hdrs == IECM_ADV_RSS_FLOW_SEG_HDR_NONE)
-+		return -EINVAL;
++	kfree(rxq->rx_buf.buf);
++	rxq->rx_buf.buf = NULL;
++	kfree(rxq->rx_buf.hdr_buf);
++	rxq->rx_buf.hdr_buf = NULL;
++}
 +
-+	hash_flds = iecm_adv_rss_parse_hash_flds(cmd);
-+	if (hash_flds == IECM_ADV_RSS_HASH_INVALID)
-+		return -EINVAL;
++/**
++ * iecm_rx_desc_rel - Free a specific Rx q resources
++ * @rxq: queue to clean the resources from
++ * @bufq: buffer q or completion q
++ * @q_model: single or split q model
++ *
++ * Free a specific rx queue resources
++ */
++static void iecm_rx_desc_rel(struct iecm_queue *rxq, bool bufq, s32 q_model)
++{
++	if (!rxq)
++		return;
 +
-+	rss_new = kzalloc(sizeof(*rss_new), GFP_KERNEL);
-+	if (!rss_new)
-+		return -ENOMEM;
-+
-+	/* Since this can fail, do it now to avoid dirtying the list, we'll
-+	 * copy it from rss_new if it turns out we're updating an existing
-+	 * filter instead of adding a new one.
-+	 */
-+	if (iecm_fill_adv_rss_cfg_msg(&rss_new->cfg_msg, hdrs, hash_flds)) {
-+		kfree(rss_new);
-+		return -EINVAL;
++	if (!bufq && iecm_is_queue_model_split(q_model) && rxq->skb) {
++		dev_kfree_skb_any(rxq->skb);
++		rxq->skb = NULL;
 +	}
 +
-+	iecm_dump_adv_rss_cfg_info(vport, hdrs, hash_flds,
-+				   "Input set change for", "is pending");
++	if (bufq || !iecm_is_queue_model_split(q_model))
++		iecm_rx_buf_rel_all(rxq);
 +
-+	spin_lock_bh(&adapter->adv_rss_list_lock);
-+	rss = iecm_find_adv_rss_cfg_by_hdrs(vport, hdrs);
-+	if (rss) {
-+		if (rss->hash_flds != hash_flds) {
-+			rss->remove = false;
-+			memcpy(&rss->cfg_msg, &rss_new->cfg_msg,
-+			       sizeof(rss_new->cfg_msg));
-+			kfree(rss_new);
++	if (rxq->desc_ring) {
++		dmam_free_coherent(rxq->dev, rxq->size,
++				   rxq->desc_ring, rxq->dma);
++		rxq->desc_ring = NULL;
++		rxq->next_to_alloc = 0;
++		rxq->next_to_clean = 0;
++		rxq->next_to_use = 0;
++	}
++}
++
++/**
++ * iecm_rx_desc_rel_all - Free Rx Resources for All Queues
++ * @vport: virtual port structure
++ *
++ * Free all rx queues resources
++ */
++static void iecm_rx_desc_rel_all(struct iecm_vport *vport)
++{
++	struct iecm_rxq_group *rx_qgrp;
++	struct iecm_queue *q;
++	int i, j, num_rxq;
++
++	if (!vport->rxq_grps)
++		return;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		rx_qgrp = &vport->rxq_grps[i];
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			num_rxq = rx_qgrp->splitq.num_rxq_sets;
++			for (j = 0; j < num_rxq; j++) {
++				q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
++				iecm_rx_desc_rel(q, false,
++						 vport->rxq_model);
++			}
++
++			if (!rx_qgrp->splitq.bufq_sets)
++				continue;
++			for (j = 0; j < vport->num_bufqs_per_qgrp; j++) {
++				struct iecm_bufq_set *bufq_set =
++					&rx_qgrp->splitq.bufq_sets[j];
++
++				q = &bufq_set->bufq;
++				iecm_rx_desc_rel(q, true, vport->rxq_model);
++			}
 +		} else {
-+			kfree(rss_new);
-+			spin_unlock_bh(&adapter->adv_rss_list_lock);
-+			return -EEXIST;
-+		}
-+	} else {
-+		rss = rss_new;
-+		rss->packet_hdrs = hdrs;
-+		list_add_tail(&rss->list, &adapter->config_data.adv_rss_list);
-+	}
-+	rss->add = true;
-+	rss->hash_flds = hash_flds;
-+	spin_unlock_bh(&adapter->adv_rss_list_lock);
-+
-+	err = iecm_send_add_del_adv_rss_cfg_msg(vport, true);
-+	if (err) {
-+		spin_lock_bh(&adapter->adv_rss_list_lock);
-+		/* We have to find it again to make sure another thread hasn't
-+		 * already deleted and kfreed it.
-+		 */
-+		rss = iecm_find_adv_rss_cfg_by_hdrs(vport, hdrs);
-+		if (rss) {
-+			list_del(&rss->list);
-+			kfree(rss);
-+		}
-+		spin_unlock_bh(&adapter->adv_rss_list_lock);
-+	}
-+
-+	if (!err)
-+		iecm_dump_adv_rss_cfg_info(vport, hdrs, hash_flds,
-+					   "Input set change for",
-+					   "successful");
-+	else
-+		iecm_dump_adv_rss_cfg_info(vport, hdrs, hash_flds,
-+					   "Failed to change the input set for",
-+					   NULL);
-+
-+	return err;
-+}
-+
-+/**
-+ * iecm_get_adv_rss_hash_opt - Retrieve hash fields for a given flow-type
-+ * @vport: vport structure
-+ * @cmd: ethtool rxnfc command
-+ *
-+ * Returns Success if the flow input set is supported.
-+ */
-+int
-+iecm_get_adv_rss_hash_opt(struct iecm_vport *vport, struct ethtool_rxnfc *cmd)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct iecm_adv_rss *rss;
-+	u64 hash_flds;
-+	u32 hdrs;
-+
-+	if (adapter->state != __IECM_UP)
-+		return -EIO;
-+
-+	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_ADV_RSS))
-+		return -EOPNOTSUPP;
-+
-+	cmd->data = 0;
-+
-+	hdrs = iecm_adv_rss_parse_hdrs(cmd);
-+	if (hdrs == IECM_ADV_RSS_FLOW_SEG_HDR_NONE)
-+		return -EINVAL;
-+
-+	spin_lock_bh(&adapter->adv_rss_list_lock);
-+	rss = iecm_find_adv_rss_cfg_by_hdrs(vport, hdrs);
-+	if (rss)
-+		hash_flds = rss->hash_flds;
-+	else
-+		hash_flds = IECM_ADV_RSS_HASH_INVALID;
-+	spin_unlock_bh(&adapter->adv_rss_list_lock);
-+
-+	if (hash_flds == IECM_ADV_RSS_HASH_INVALID)
-+		return -EINVAL;
-+
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_IPV4_SA |
-+			 IECM_ADV_RSS_HASH_FLD_IPV6_SA))
-+		cmd->data |= (u64)RXH_IP_SRC;
-+
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_IPV4_DA |
-+			 IECM_ADV_RSS_HASH_FLD_IPV6_DA))
-+		cmd->data |= (u64)RXH_IP_DST;
-+
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_TCP_SRC_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_UDP_SRC_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_SCTP_SRC_PORT))
-+		cmd->data |= (u64)RXH_L4_B_0_1;
-+
-+	if (hash_flds & (IECM_ADV_RSS_HASH_FLD_TCP_DST_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_UDP_DST_PORT |
-+			 IECM_ADV_RSS_HASH_FLD_SCTP_DST_PORT))
-+		cmd->data |= (u64)RXH_L4_B_2_3;
-+
-+	return 0;
-+}
-+
- /**
-  * iecm_pkt_udp_no_pay_len - the length of UDP packet without payload
-  * @fltr: Flow Director filter data structure
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-index 94af45c36866..c05baf12515c 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
-@@ -2799,6 +2799,77 @@ int iecm_send_add_del_cloud_filter_msg(struct iecm_vport *vport, bool add)
- 	return err;
- }
- 
-+/**
-+ * iecm_send_add_del_adv_rss_cfg_msg: Send add/del RSS configuration message
-+ * @vport: vport structure
-+ * @add: True to add, false to delete RSS configuration
-+ *
-+ * Request the CP/PF to add/del RSS configuration as specified by the user via
-+ * ethtool
-+ *
-+ * Return 0 on success, negative on failure
-+ **/
-+int iecm_send_add_del_adv_rss_cfg_msg(struct iecm_vport *vport, bool add)
-+{
-+	struct iecm_adapter *adapter = vport->adapter;
-+	struct virtchnl_rss_cfg *rss_cfg;
-+	struct iecm_adv_rss *rss;
-+	int len, err = -ENXIO;
-+
-+	len = sizeof(struct virtchnl_rss_cfg);
-+	rss_cfg = kzalloc(len, GFP_KERNEL);
-+	if (!rss_cfg)
-+		return -ENOMEM;
-+
-+	while (true) {
-+		bool process_rss = false;
-+
-+		spin_lock_bh(&adapter->adv_rss_list_lock);
-+		list_for_each_entry(rss, &adapter->config_data.adv_rss_list, list) {
-+			if (add && rss->add) {
-+				/* Only add needs print the RSS information */
-+				process_rss = true;
-+				rss->add = false;
-+				memcpy(rss_cfg, &rss->cfg_msg, len);
-+				break;
-+			} else if (!add && rss->remove) {
-+				process_rss = true;
-+				rss->remove = false;
-+				memcpy(rss_cfg, &rss->cfg_msg, len);
-+				break;
++			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++) {
++				q = rx_qgrp->singleq.rxqs[j];
++				iecm_rx_desc_rel(q, false,
++						 vport->rxq_model);
 +			}
 +		}
-+		spin_unlock_bh(&adapter->adv_rss_list_lock);
++	}
++}
 +
-+		/* Don't send mailbox message when there are no RSS to add/del */
-+		if (!process_rss)
-+			break;
++/**
++ * iecm_rx_buf_hw_update - Store the new tail and head values
++ * @rxq: queue to bump
++ * @val: new head index
++ */
++void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val)
++{
++	rxq->next_to_use = val;
 +
-+		if (add) {
-+			err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_ADD_RSS_CFG,
-+					       len, (u8 *)rss_cfg);
-+			if (err)
-+				break;
++	if (unlikely(!rxq->tail))
++		return;
++	/* writel has an implicit memory barrier */
++	writel(val, rxq->tail);
++}
 +
-+			err = iecm_wait_for_event(adapter, IECM_VC_ADD_RSS_CFG,
-+						  IECM_VC_ADD_RSS_CFG_ERR);
-+		} else {
-+			err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_DEL_RSS_CFG,
-+					       len, (u8 *)rss_cfg);
-+			if (err)
-+				break;
++/**
++ * iecm_alloc_page - allocate page to back RX buffer
++ * @rxbufq: pointer to queue struct
++ * @page_info: pointer to page metadata struct
++ */
++static int
++iecm_alloc_page(struct iecm_queue *rxbufq, struct iecm_page_info *page_info)
++{
++	/* alloc new page for storage */
++	page_info->page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++	if (unlikely(!page_info->page))
++		return -ENOMEM;
 +
-+			err = iecm_min_wait_for_event(adapter, IECM_VC_DEL_RSS_CFG,
-+						      IECM_VC_DEL_RSS_CFG_ERR);
-+		}
-+		if (err)
-+			break;
++	/* map page for use */
++	page_info->dma = dma_map_page_attrs(rxbufq->dev, page_info->page,
++					    0, PAGE_SIZE, DMA_FROM_DEVICE,
++					    IECM_RX_DMA_ATTR);
++
++	/* if mapping failed free memory back to system since
++	 * there isn't much point in holding memory we can't use
++	 */
++	if (dma_mapping_error(rxbufq->dev, page_info->dma)) {
++		__free_pages(page_info->page, 0);
++		return -ENOMEM;
 +	}
 +
-+	kfree(rss_cfg);
++	page_info->page_offset = 0;
++
++	/* initialize pagecnt_bias to claim we fully own page */
++	page_ref_add(page_info->page, USHRT_MAX - 1);
++	page_info->pagecnt_bias = USHRT_MAX;
++
++	return 0;
++}
++
++/**
++ * iecm_init_rx_buf_hw_alloc - allocate initial RX buffer pages
++ * @rxbufq: ring to use; equivalent to rxq when operating in singleq mode
++ * @buf: rx_buffer struct to modify
++ *
++ * Returns true if the page was successfully allocated or
++ * reused.
++ */
++bool iecm_init_rx_buf_hw_alloc(struct iecm_queue *rxbufq, struct iecm_rx_buf *buf)
++{
++	if (iecm_alloc_page(rxbufq, &buf->page_info[0]))
++		return false;
++
++#if (PAGE_SIZE < 8192)
++	if (rxbufq->rx_buf_size > IECM_RX_BUF_2048)
++		if (iecm_alloc_page(rxbufq, &buf->page_info[1]))
++			return false;
++#endif
++
++	buf->page_indx = 0;
++	buf->buf_size = rxbufq->rx_buf_size;
++
++	return true;
++}
++
++/**
++ * iecm_rx_hdr_buf_alloc_all - Allocate memory for header buffers
++ * @rxq: ring to use
++ *
++ * Returns 0 on success, negative on failure.
++ */
++static int iecm_rx_hdr_buf_alloc_all(struct iecm_queue *rxq)
++{
++	struct iecm_page_info *page_info;
++	int nr_pages, offset;
++	int i, j = 0;
++
++	rxq->rx_buf.hdr_buf = kcalloc(rxq->desc_count,
++				      sizeof(struct iecm_dma_mem *),
++				      GFP_KERNEL);
++	if (!rxq->rx_buf.hdr_buf)
++		return -ENOMEM;
++
++	for (i = 0; i < rxq->desc_count; i++) {
++		rxq->rx_buf.hdr_buf[i] = kcalloc(1,
++						 sizeof(struct iecm_dma_mem),
++						 GFP_KERNEL);
++		if (!rxq->rx_buf.hdr_buf[i])
++			goto unroll_buf_alloc;
++	}
++
++	/* Determine the number of pages necessary to back the total number of header buffers */
++	nr_pages = (rxq->desc_count * rxq->rx_hbuf_size) / PAGE_SIZE;
++	rxq->hbuf_pages.pages = kcalloc(nr_pages,
++					sizeof(struct iecm_page_info),
++					GFP_KERNEL);
++	if (!rxq->hbuf_pages.pages)
++		goto unroll_buf_alloc;
++
++	rxq->hbuf_pages.nr_pages = nr_pages;
++	for (i = 0; i < nr_pages; i++) {
++		if (iecm_alloc_page(rxq, &rxq->hbuf_pages.pages[i]))
++			goto unroll_buf_alloc;
++	}
++
++	page_info = &rxq->hbuf_pages.pages[0];
++	for (i = 0, offset = 0; i < rxq->desc_count; i++, offset += rxq->rx_hbuf_size) {
++		struct iecm_dma_mem *hbuf = rxq->rx_buf.hdr_buf[i];
++
++		/* Move to next page */
++		if (offset >= PAGE_SIZE) {
++			offset = 0;
++			page_info = &rxq->hbuf_pages.pages[++j];
++		}
++
++		hbuf->va = page_address(page_info->page) + offset;
++		hbuf->pa = page_info->dma + offset;
++		hbuf->size = rxq->rx_hbuf_size;
++	}
++
++	return 0;
++unroll_buf_alloc:
++	iecm_rx_hdr_buf_rel_all(rxq);
++	return -ENOMEM;
++}
++
++/**
++ * iecm_rx_buf_hw_alloc_all - Allocate receive buffers
++ * @rxbufq: queue for which the hw buffers are allocated; equivalent to rxq
++ * when operating in singleq mode
++ * @alloc_count: number of buffers to allocate
++ *
++ * Returns false if all allocations were successful, true if any fail
++ */
++static bool
++iecm_rx_buf_hw_alloc_all(struct iecm_queue *rxbufq, u16 alloc_count)
++{
++	u16 nta = rxbufq->next_to_alloc;
++	struct iecm_rx_buf *buf;
++
++	if (!alloc_count)
++		return false;
++
++	buf = &rxbufq->rx_buf.buf[nta];
++
++	do {
++		if (!iecm_init_rx_buf_hw_alloc(rxbufq, buf))
++			break;
++
++		buf++;
++		nta++;
++		if (unlikely(nta == rxbufq->desc_count)) {
++			buf = rxbufq->rx_buf.buf;
++			nta = 0;
++		}
++
++		alloc_count--;
++	} while (alloc_count);
++
++	return !!alloc_count;
++}
++
++/**
++ * iecm_rx_post_buf_desc - Post buffer to bufq descriptor ring
++ * @bufq: buffer queue to post to
++ * @buf_id: buffer id to post
++ */
++static void iecm_rx_post_buf_desc(struct iecm_queue *bufq, u16 buf_id)
++{
++	struct virtchnl2_splitq_rx_buf_desc *splitq_rx_desc = NULL;
++	struct iecm_page_info *page_info;
++	u16 nta = bufq->next_to_alloc;
++	struct iecm_rx_buf *buf;
++
++	splitq_rx_desc = IECM_SPLITQ_RX_BUF_DESC(bufq, nta);
++	buf = &bufq->rx_buf.buf[buf_id];
++	page_info = &buf->page_info[buf->page_indx];
++	if (bufq->rx_hsplit_en)
++		splitq_rx_desc->hdr_addr = cpu_to_le64(bufq->rx_buf.hdr_buf[buf_id]->pa);
++
++	splitq_rx_desc->pkt_addr = cpu_to_le64(page_info->dma +
++					       page_info->page_offset);
++	splitq_rx_desc->qword0.buf_id = cpu_to_le16(buf_id);
++
++	nta++;
++	if (unlikely(nta == bufq->desc_count))
++		nta = 0;
++	bufq->next_to_alloc = nta;
++}
++
++/**
++ * iecm_rx_post_init_bufs - Post initial buffers to bufq
++ * @bufq: buffer queue to post working set to
++ * @working_set: number of buffers to put in working set
++ */
++static void iecm_rx_post_init_bufs(struct iecm_queue *bufq,
++				   u16 working_set)
++{
++	int i;
++
++	for (i = 0; i < working_set; i++)
++		iecm_rx_post_buf_desc(bufq, i);
++
++	iecm_rx_buf_hw_update(bufq, bufq->next_to_alloc & ~(bufq->rx_buf_stride - 1));
++}
++
++/**
++ * iecm_rx_buf_alloc_all - Allocate memory for all buffer resources
++ * @rxbufq: queue for which the buffers are allocated; equivalent to
++ * rxq when operating in singleq mode
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int iecm_rx_buf_alloc_all(struct iecm_queue *rxbufq)
++{
++	int err = 0;
++
++	/* Allocate book keeping buffers */
++	rxbufq->rx_buf.buf = kcalloc(rxbufq->desc_count,
++				     sizeof(struct iecm_rx_buf), GFP_KERNEL);
++	if (!rxbufq->rx_buf.buf) {
++		err = -ENOMEM;
++		goto rx_buf_alloc_all_out;
++	}
++
++	if (rxbufq->rx_hsplit_en) {
++		err = iecm_rx_hdr_buf_alloc_all(rxbufq);
++		if (err)
++			goto rx_buf_alloc_all_out;
++	}
++
++	/* Allocate buffers to be given to HW.	 */
++	if (iecm_is_queue_model_split(rxbufq->vport->rxq_model)) {
++		if (iecm_rx_buf_hw_alloc_all(rxbufq, rxbufq->desc_count - 1))
++			err = -ENOMEM;
++	} else {
++		if (iecm_rx_singleq_buf_hw_alloc_all(rxbufq, rxbufq->desc_count - 1))
++			err = -ENOMEM;
++	}
++
++rx_buf_alloc_all_out:
++	if (err)
++		iecm_rx_buf_rel_all(rxbufq);
++	return err;
++}
++
++/**
++ * iecm_rx_desc_alloc - Allocate queue Rx resources
++ * @rxq: Rx queue for which the resources are setup
++ * @bufq: buffer or completion queue
++ * @q_model: single or split queue model
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int iecm_rx_desc_alloc(struct iecm_queue *rxq, bool bufq, s32 q_model)
++{
++	struct device *dev = rxq->dev;
++
++	/* As both single and split descriptors are 32 byte, memory size
++	 * will be same for all three singleq_base rx, buf., splitq_base
++	 * rx. So pick anyone of them for size
++	 */
++	if (bufq) {
++		rxq->size = rxq->desc_count *
++			sizeof(struct virtchnl2_splitq_rx_buf_desc);
++	} else {
++		rxq->size = rxq->desc_count *
++			sizeof(union virtchnl2_rx_desc);
++	}
++
++	/* Allocate descriptors and also round up to nearest 4K */
++	rxq->size = ALIGN(rxq->size, 4096);
++	rxq->desc_ring = dmam_alloc_coherent(dev, rxq->size,
++					     &rxq->dma, GFP_KERNEL);
++	if (!rxq->desc_ring) {
++		dev_info(dev, "Unable to allocate memory for the Rx descriptor ring, size=%d\n",
++			 rxq->size);
++		return -ENOMEM;
++	}
++
++	rxq->next_to_alloc = 0;
++	rxq->next_to_clean = 0;
++	rxq->next_to_use = 0;
++	set_bit(__IECM_Q_GEN_CHK, rxq->flags);
++
++	/* Allocate buffers for a rx queue if the q_model is single OR if it
++	 * is a buffer queue in split queue model
++	 */
++	if (bufq || !iecm_is_queue_model_split(q_model)) {
++		int err = 0;
++
++		err = iecm_rx_buf_alloc_all(rxq);
++		if (err) {
++			iecm_rx_desc_rel(rxq, bufq, q_model);
++			return err;
++		}
++	}
++	return 0;
++}
++
++/**
++ * iecm_rx_desc_alloc_all - allocate all RX queues resources
++ * @vport: virtual port structure
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int iecm_rx_desc_alloc_all(struct iecm_vport *vport)
++{
++	struct device *dev = &vport->adapter->pdev->dev;
++	struct iecm_rxq_group *rx_qgrp;
++	int i, j, num_rxq, working_set;
++	struct iecm_queue *q;
++	int err = 0;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		rx_qgrp = &vport->rxq_grps[i];
++		if (iecm_is_queue_model_split(vport->rxq_model))
++			num_rxq = rx_qgrp->splitq.num_rxq_sets;
++		else
++			num_rxq = rx_qgrp->singleq.num_rxq;
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model))
++				q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
++			else
++				q = rx_qgrp->singleq.rxqs[j];
++			err = iecm_rx_desc_alloc(q, false, vport->rxq_model);
++			if (err) {
++				dev_err(dev, "Memory allocation for Rx Queue %u failed\n",
++					i);
++				goto err_out;
++			}
++		}
++
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < vport->num_bufqs_per_qgrp; j++) {
++				q = &rx_qgrp->splitq.bufq_sets[j].bufq;
++				err = iecm_rx_desc_alloc(q, true,
++							 vport->rxq_model);
++				if (err) {
++					dev_err(dev, "Memory allocation for Rx Buffer Queue %u failed\n",
++						i);
++					goto err_out;
++				}
++
++				working_set = IECM_RX_BUFQ_WORKING_SET(q);
++				iecm_rx_post_init_bufs(q, working_set);
++			}
++		}
++	}
++err_out:
++	if (err)
++		iecm_rx_desc_rel_all(vport);
 +	return err;
 +}
 +
  /**
-  * iecm_send_add_fdir_filter_msg: Send add Flow Director filter message
-  * @vport: vport structure
-diff --git a/drivers/net/ethernet/intel/include/iecm.h b/drivers/net/ethernet/intel/include/iecm.h
-index 0aab41cf982c..c7be8c88f9b3 100644
---- a/drivers/net/ethernet/intel/include/iecm.h
-+++ b/drivers/net/ethernet/intel/include/iecm.h
-@@ -432,6 +432,74 @@ struct iecm_channel_config {
- 	u8 num_tc;
+  * iecm_txq_group_rel - Release all resources for txq groups
+  * @vport: vport to release txq groups on
+@@ -478,6 +1017,61 @@ static void iecm_txq_group_rel(struct iecm_vport *vport)
+ 	}
+ }
+ 
++/**
++ * iecm_rxq_sw_queue_rel - Release software queue resources
++ * @rx_qgrp: rx queue group with software queues
++ */
++static void iecm_rxq_sw_queue_rel(struct iecm_rxq_group *rx_qgrp)
++{
++	int i, j;
++
++	for (i = 0; i < rx_qgrp->vport->num_bufqs_per_qgrp; i++) {
++		struct iecm_bufq_set *bufq_set = &rx_qgrp->splitq.bufq_sets[i];
++
++		for (j = 0; j < bufq_set->num_refillqs; j++) {
++			kfree(bufq_set->refillqs[j].ring);
++			bufq_set->refillqs[j].ring = NULL;
++		}
++		kfree(bufq_set->refillqs);
++		bufq_set->refillqs = NULL;
++	}
++}
++
++/**
++ * iecm_rxq_group_rel - Release all resources for rxq groups
++ * @vport: vport to release rxq groups on
++ */
++static void iecm_rxq_group_rel(struct iecm_vport *vport)
++{
++	if (vport->rxq_grps) {
++		int i;
++
++		for (i = 0; i < vport->num_rxq_grp; i++) {
++			struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++			int j, num_rxq;
++
++			if (iecm_is_queue_model_split(vport->rxq_model)) {
++				num_rxq = rx_qgrp->splitq.num_rxq_sets;
++				for (j = 0; j < num_rxq; j++) {
++					kfree(rx_qgrp->splitq.rxq_sets[j]);
++					rx_qgrp->splitq.rxq_sets[j] = NULL;
++				}
++				iecm_rxq_sw_queue_rel(rx_qgrp);
++				kfree(rx_qgrp->splitq.bufq_sets);
++				rx_qgrp->splitq.bufq_sets = NULL;
++			} else {
++				num_rxq = rx_qgrp->singleq.num_rxq;
++				for (j = 0; j < num_rxq; j++) {
++					kfree(rx_qgrp->singleq.rxqs[j]);
++					rx_qgrp->singleq.rxqs[j] = NULL;
++				}
++			}
++		}
++		kfree(vport->rxq_grps);
++		vport->rxq_grps = NULL;
++	}
++}
++
+ /**
+  * iecm_vport_queue_grp_rel_all - Release all queue groups
+  * @vport: vport to release queue groups for
+@@ -485,6 +1079,7 @@ static void iecm_txq_group_rel(struct iecm_vport *vport)
+ static void iecm_vport_queue_grp_rel_all(struct iecm_vport *vport)
+ {
+ 	iecm_txq_group_rel(vport);
++	iecm_rxq_group_rel(vport);
+ }
+ 
+ /**
+@@ -496,6 +1091,7 @@ static void iecm_vport_queue_grp_rel_all(struct iecm_vport *vport)
+ void iecm_vport_queues_rel(struct iecm_vport *vport)
+ {
+ 	iecm_tx_desc_rel_all(vport);
++	iecm_rx_desc_rel_all(vport);
+ 	iecm_vport_queue_grp_rel_all(vport);
+ 
+ 	kfree(vport->txqs);
+@@ -715,6 +1311,24 @@ void iecm_vport_calc_num_q_vec(struct iecm_vport *vport)
+ }
+ EXPORT_SYMBOL(iecm_vport_calc_num_q_vec);
+ 
++/**
++ * iecm_rxq_set_descids - set the descids supported by this queue
++ * @vport: virtual port data structure
++ * @q: rx queue for which descids are set
++ *
++ */
++static void iecm_rxq_set_descids(struct iecm_vport *vport, struct iecm_queue *q)
++{
++	if (vport->rxq_model == VIRTCHNL2_QUEUE_MODEL_SPLIT) {
++		q->rxdids = VIRTCHNL2_RXDID_1_FLEX_SPLITQ_M;
++	} else {
++		if (vport->base_rxd)
++			q->rxdids = VIRTCHNL2_RXDID_1_32B_BASE_M;
++		else
++			q->rxdids = VIRTCHNL2_RXDID_2_FLEX_SQ_NIC_M;
++	}
++}
++
+ /**
+  * iecm_set_vlan_tag_loc - set the tag location for a tx/rx queue
+  * @adapter: adapter structure
+@@ -827,6 +1441,152 @@ static int iecm_txq_group_alloc(struct iecm_vport *vport, int num_txq)
+ 	return err;
+ }
+ 
++/**
++ * iecm_rxq_group_alloc - Allocate all rxq group resources
++ * @vport: vport to allocate rxq groups for
++ * @num_rxq: number of rxqs to allocate for each group
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int iecm_rxq_group_alloc(struct iecm_vport *vport, int num_rxq)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_queue *q;
++	int i, k, err = 0;
++
++	vport->rxq_grps = kcalloc(vport->num_rxq_grp,
++				  sizeof(struct iecm_rxq_group), GFP_KERNEL);
++	if (!vport->rxq_grps)
++		return -ENOMEM;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct iecm_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++		int j;
++
++		rx_qgrp->vport = vport;
++		if (iecm_is_queue_model_split(vport->rxq_model)) {
++			rx_qgrp->splitq.num_rxq_sets = num_rxq;
++
++			for (j = 0; j < num_rxq; j++) {
++				rx_qgrp->splitq.rxq_sets[j] =
++					kzalloc(sizeof(struct iecm_rxq_set),
++						GFP_KERNEL);
++				if (!rx_qgrp->splitq.rxq_sets[j]) {
++					err = -ENOMEM;
++					goto err_alloc;
++				}
++			}
++
++			rx_qgrp->splitq.bufq_sets = kcalloc(vport->num_bufqs_per_qgrp,
++							    sizeof(struct iecm_bufq_set),
++							    GFP_KERNEL);
++			if (!rx_qgrp->splitq.bufq_sets) {
++				err = -ENOMEM;
++				goto err_alloc;
++			}
++
++			for (j = 0; j < vport->num_bufqs_per_qgrp; j++) {
++				struct iecm_bufq_set *bufq_set =
++					&rx_qgrp->splitq.bufq_sets[j];
++				int swq_size = sizeof(struct iecm_sw_queue);
++
++				q = &rx_qgrp->splitq.bufq_sets[j].bufq;
++				q->dev = &adapter->pdev->dev;
++				q->desc_count = vport->bufq_desc_count[j];
++				q->vport = vport;
++				q->rxq_grp = rx_qgrp;
++				q->idx = j;
++				q->rx_buf_size = vport->bufq_size[j];
++				q->rx_buffer_low_watermark = IECM_LOW_WATERMARK;
++				q->rx_buf_stride = IECM_RX_BUF_STRIDE;
++
++				if (test_bit(__IECM_PRIV_FLAGS_HDR_SPLIT,
++					     adapter->config_data.user_flags)) {
++					q->rx_hsplit_en = true;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++
++				bufq_set->num_refillqs = num_rxq;
++				bufq_set->refillqs = kcalloc(num_rxq,
++							     swq_size,
++							     GFP_KERNEL);
++				if (!bufq_set->refillqs) {
++					err = -ENOMEM;
++					goto err_alloc;
++				}
++				for (k = 0; k < bufq_set->num_refillqs; k++) {
++					struct iecm_sw_queue *refillq =
++						&bufq_set->refillqs[k];
++
++					refillq->dev =
++						&vport->adapter->pdev->dev;
++					refillq->buf_size = q->rx_buf_size;
++					refillq->desc_count =
++						vport->bufq_desc_count[j];
++					set_bit(__IECM_Q_GEN_CHK,
++						refillq->flags);
++					set_bit(__IECM_RFLQ_GEN_CHK,
++						refillq->flags);
++					refillq->ring = kcalloc(refillq->desc_count,
++								sizeof(u16),
++								GFP_KERNEL);
++					if (!refillq->ring) {
++						err = -ENOMEM;
++						goto err_alloc;
++					}
++				}
++			}
++		} else {
++			rx_qgrp->singleq.num_rxq = num_rxq;
++			for (j = 0; j < num_rxq; j++) {
++				rx_qgrp->singleq.rxqs[j] =
++					kzalloc(sizeof(*rx_qgrp->singleq.rxqs[j]), GFP_KERNEL);
++				if (!rx_qgrp->singleq.rxqs[j]) {
++					err = -ENOMEM;
++					goto err_alloc;
++				}
++			}
++		}
++
++		for (j = 0; j < num_rxq; j++) {
++			if (iecm_is_queue_model_split(vport->rxq_model)) {
++				q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
++				rx_qgrp->splitq.rxq_sets[j]->refillq0 =
++				      &rx_qgrp->splitq.bufq_sets[0].refillqs[j];
++				rx_qgrp->splitq.rxq_sets[j]->refillq1 =
++				      &rx_qgrp->splitq.bufq_sets[1].refillqs[j];
++
++				if (test_bit(__IECM_PRIV_FLAGS_HDR_SPLIT,
++					     adapter->config_data.user_flags)) {
++					q->rx_hsplit_en = true;
++					q->rx_hbuf_size = IECM_HDR_BUF_SIZE;
++				}
++			} else {
++				q = rx_qgrp->singleq.rxqs[j];
++			}
++			q->dev = &adapter->pdev->dev;
++			q->desc_count = vport->rxq_desc_count;
++			q->vport = vport;
++			q->rxq_grp = rx_qgrp;
++			q->idx = (i * num_rxq) + j;
++			/* In splitq mode, RXQ buffer size should be
++			 * set to that of the first buffer queue
++			 * associated with this RXQ
++			 */
++			q->rx_buf_size = vport->bufq_size[0];
++			q->rx_buffer_low_watermark = IECM_LOW_WATERMARK;
++			q->rx_max_pkt_size = vport->netdev->mtu +
++							IECM_PACKET_HDR_PAD;
++			iecm_rxq_set_descids(vport, q);
++			iecm_set_vlan_tag_loc(adapter, q);
++		}
++	}
++err_alloc:
++	if (err)
++		iecm_rxq_group_rel(vport);
++	return err;
++}
++
+ /**
+  * iecm_vport_queue_grp_alloc_all - Allocate all queue groups/resources
+  * @vport: vport with qgrps to allocate
+@@ -841,6 +1601,11 @@ static int iecm_vport_queue_grp_alloc_all(struct iecm_vport *vport)
+ 	iecm_vport_calc_numq_per_grp(vport, &num_txq, &num_rxq);
+ 
+ 	err = iecm_txq_group_alloc(vport, num_txq);
++	if (err)
++		goto err_out;
++
++	err = iecm_rxq_group_alloc(vport, num_rxq);
++err_out:
+ 	if (err)
+ 		iecm_vport_queue_grp_rel_all(vport);
+ 	return err;
+@@ -866,6 +1631,10 @@ int iecm_vport_queues_alloc(struct iecm_vport *vport)
+ 	if (err)
+ 		goto err_out;
+ 
++	err = iecm_rx_desc_alloc_all(vport);
++	if (err)
++		goto err_out;
++
+ 	err = iecm_vport_init_fast_path_txqs(vport);
+ 	if (err)
+ 		goto err_out;
+diff --git a/drivers/net/ethernet/intel/include/iecm_txrx.h b/drivers/net/ethernet/intel/include/iecm_txrx.h
+index 44c20f8a2039..5e29148938fb 100644
+--- a/drivers/net/ethernet/intel/include/iecm_txrx.h
++++ b/drivers/net/ethernet/intel/include/iecm_txrx.h
+@@ -198,6 +198,11 @@ struct iecm_page_info {
+ 	u16 pagecnt_bias;
  };
  
-+enum iecm_adv_rss_flow_seg_hdr {
-+	IECM_ADV_RSS_FLOW_SEG_HDR_NONE	= 0x00000000,
-+	IECM_ADV_RSS_FLOW_SEG_HDR_IPV4	= 0x00000001,
-+	IECM_ADV_RSS_FLOW_SEG_HDR_IPV6	= 0x00000002,
-+	IECM_ADV_RSS_FLOW_SEG_HDR_TCP	= 0x00000004,
-+	IECM_ADV_RSS_FLOW_SEG_HDR_UDP	= 0x00000008,
-+	IECM_ADV_RSS_FLOW_SEG_HDR_SCTP	= 0x00000010,
++struct iecm_rx_hdr_buf_pages {
++	u32 nr_pages;
++	struct iecm_page_info *pages;
 +};
 +
-+#define IECM_ADV_RSS_FLOW_SEG_HDR_L3		\
-+	(IECM_ADV_RSS_FLOW_SEG_HDR_IPV4	|	\
-+	 IECM_ADV_RSS_FLOW_SEG_HDR_IPV6)
+ struct iecm_rx_buf {
+ #define IECM_RX_BUF_MAX_PAGES 2
+ 	struct iecm_page_info page_info[IECM_RX_BUF_MAX_PAGES];
+@@ -498,6 +503,8 @@ struct iecm_queue {
+ 					 * with scatter-gather
+ 					 */
+ 	DECLARE_HASHTABLE(sched_buf_hash, 12);
 +
-+#define IECM_ADV_RSS_FLOW_SEG_HDR_L4		\
-+	(IECM_ADV_RSS_FLOW_SEG_HDR_TCP |	\
-+	 IECM_ADV_RSS_FLOW_SEG_HDR_UDP |	\
-+	 IECM_ADV_RSS_FLOW_SEG_HDR_SCTP)
-+
-+enum iecm_adv_rss_flow_field {
-+	/* L3 */
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_IPV4_SA,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_IPV4_DA,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_IPV6_SA,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_IPV6_DA,
-+	/* L4 */
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_TCP_SRC_PORT,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_TCP_DST_PORT,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_UDP_SRC_PORT,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_UDP_DST_PORT,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_SCTP_SRC_PORT,
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_SCTP_DST_PORT,
-+
-+	/* The total number of enums must not exceed 64 */
-+	IECM_ADV_RSS_FLOW_FIELD_IDX_MAX
-+};
-+
-+#define IECM_ADV_RSS_HASH_INVALID	0
-+#define IECM_ADV_RSS_HASH_FLD_IPV4_SA	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_IPV4_SA)
-+#define IECM_ADV_RSS_HASH_FLD_IPV6_SA	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_IPV6_SA)
-+#define IECM_ADV_RSS_HASH_FLD_IPV4_DA	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_IPV4_DA)
-+#define IECM_ADV_RSS_HASH_FLD_IPV6_DA	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_IPV6_DA)
-+#define IECM_ADV_RSS_HASH_FLD_TCP_SRC_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_TCP_SRC_PORT)
-+#define IECM_ADV_RSS_HASH_FLD_TCP_DST_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_TCP_DST_PORT)
-+#define IECM_ADV_RSS_HASH_FLD_UDP_SRC_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_UDP_SRC_PORT)
-+#define IECM_ADV_RSS_HASH_FLD_UDP_DST_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_UDP_DST_PORT)
-+#define IECM_ADV_RSS_HASH_FLD_SCTP_SRC_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_SCTP_SRC_PORT)
-+#define IECM_ADV_RSS_HASH_FLD_SCTP_DST_PORT	\
-+	BIT_ULL(IECM_ADV_RSS_FLOW_FIELD_IDX_SCTP_DST_PORT)
-+
-+/* bookkeeping of advanced RSS configuration */
-+struct iecm_adv_rss {
-+	struct list_head list;
-+	u32 packet_hdrs;
-+	u64 hash_flds;
-+	struct virtchnl_rss_cfg cfg_msg;
-+	bool remove;	/* RSS filter needs to be deleted */
-+	bool add;	/* RSS filter needs to be added */
-+};
-+
- enum iecm_fdir_flow_type {
- 	/* NONE - used for undef/error */
- 	IECM_FDIR_FLOW_NONE = 0,
-@@ -878,6 +946,11 @@ void iecm_vport_set_hsplit(struct iecm_vport *vport, bool ena);
- void iecm_add_del_ether_addrs(struct iecm_vport *vport, bool add, bool async);
- int iecm_set_promiscuous(struct iecm_adapter *adapter);
- int iecm_send_add_del_cloud_filter_msg(struct iecm_vport *vport, bool add);
-+int iecm_send_add_del_adv_rss_cfg_msg(struct iecm_vport *vport, bool add);
-+int iecm_set_adv_rss_hash_opt(struct iecm_vport *vport,
-+			      struct ethtool_rxnfc *cmd);
-+int iecm_get_adv_rss_hash_opt(struct iecm_vport *vport,
-+			      struct ethtool_rxnfc *cmd);
- int iecm_send_add_fdir_filter_msg(struct iecm_vport *vport);
- int iecm_send_del_fdir_filter_msg(struct iecm_vport *vport);
- int iecm_get_fdir_fltr_entry(struct iecm_vport *vport,
++	struct iecm_rx_hdr_buf_pages hbuf_pages;
+ } ____cacheline_internodealigned_in_smp;
+ 
+ /* Software queues are used in splitq mode to manage buffers between rxq
 -- 
 2.33.0
 
